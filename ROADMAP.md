@@ -207,7 +207,7 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   mark on the pinned label line exists only in the *Huge number* (`big`) style — the
   other three styles are plain `NotificationCompat` slots with no ImageView to hang it
   on, so giving them a mark means converting them to custom RemoteViews, which the
-  wireframe does not show. Filed as a build note, not a defect. See the device pass.
+  wireframe does not show. Filed as a build note, not a defect. **Device pass, 2026-09-06 — the build note stands, confirmed by looking at all four styles.** *Gauge* and *Number tile* carry no mark and still read, because their label line leads with `ChatGPT · 5-hour window`; the mark is reinforcement, not the only identifier. The fourth style is a different matter: *Progress bar* names no account at all when collapsed, filed as CCBG-20 (Pinned Identity Loss) — a single-account assumption this question surfaced, not a consequence of the missing mark. **Seen on the device:** the sheet's *waiting* state with a live `m:ss` countdown (the `Fmt.mmss` fix holds) and its *expired* state, by waiting the 15 minutes out; the tab's real numbers; the account card with `tier = null`, no expiry line and no backup/paste/QR; OpenAI-not-Anthropic quick links; the pinned panel on the ChatGPT account; and `[poll][chatgpt:p5]` carrying no token material. **Not seen, with reasons, in the wireframe's table:** *done*, *denied* and *unavailable* (not provocable from the phone, or needing an interactive OpenAI login); the forced-`Clear` re-sign-in (destroys the live token); the Quick Settings tile on a ChatGPT slot; and the absent-5-hour case on Ring and Bar — that last blocked by CCBG-19 (Fixture Unreachable), since no live account omits a window and the fixture needs a build that cannot coexist with the release install.
 - **Status of part 1** (2026-09-06). `ChatGptSource` +
   `ChatGptUsageParser`, `CodexDeviceSignIn`, `UsageRepository.completeDeviceSignIn` and
   the `ProbeHost.CHATGPT` allowlist entry are built and green (321 tests). **Signed in on
@@ -451,8 +451,14 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
 ### CCRM-56 · Provider Identity — Cooldown: the name, the three-sand hourglass, the marks and the accents
 - **Status:** Done (2026-09-06) — name, icon (rev C: 1.3x scale on review), marks (Claude/Gemini
   paths from Simple Icons, ChatGPT from Wikimedia Commons — all cross-checked against a real
-  source rather than recalled), three-level accents, Add-account sheet, hidden windows. Device
-  pass and the two narrative-only refinements below are open follow-ups, not blockers · wireframe
+  source rather than recalled), three-level accents, Add-account sheet, hidden windows. **Device
+  pass run 2026-09-06** (Fold 7, release build over the live install) — recorded as a table at
+  the foot of the wireframe. Name, About and its four trademark lines, the 48 dp launcher tile in
+  dark, the "Per provider" swatch, the Add-account sheet with Gemini greyed, and the three-level
+  accent at levels 2 and 3 all confirmed on the device; the per-account override, the light and
+  themed launcher tiles, and the widget-follows-accent half are **not seen** and stay open, and the
+  hidden-7-day-card state is blocked by CCBG-19 (Fixture Unreachable). The two narrative-only
+  refinements below are open follow-ups, not blockers · wireframe
   rev B `design/provider-identity-wireframe.html` approved 2026-09-06 (decisions 1–7 and B1–B3
   recorded at its foot) · gated every visible part of CCRM-54 (ChatGPT Account) · keep the
   wireframe until the device pass is signed off.

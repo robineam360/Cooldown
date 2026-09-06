@@ -506,6 +506,69 @@
     <tr><td>B2</td><td>Section 4, the two small panels</td><td><b>Approved as drawn:</b> ⋮ → Accent colour… per account; "Per provider" swatch leads the global grid; three-level resolution.</td></tr>
     <tr><td>B3</td><td>Section 6, first phone; section 1, decision 7</td><td><b>Both confirmed:</b> absent windows hidden on every surface, Claude included; ink pace ticks on multi-account faces only.</td></tr>
   </table>
+
+  <h2>Built and checked against this wireframe — Fold 7, 2026-09-06</h2>
+  <p class="sub">Runbook Step 5. One run, <b>release-signed build installed over the live
+    install</b>, cover screen, folded, <b>Huge number</b> pinned style first. Four live
+    accounts: three Claude (<b>Pro</b>, <b>Teams</b>, <b>Product</b>) and the ChatGPT account
+    <code>p5</code> from Step 2, labelled <b>ChatGPT</b>. Walks the <i>Device pass</i> bullets
+    of CCRM-54 (ChatGPT Account) and CCRM-56 (Provider Identity), plus the three items Step 4's
+    log left open. The global theme was <b>Claude Orange</b>; it was switched to <b>Per
+    provider</b> for the accent rows and set back, along with the pinned profile, the pinned
+    style and the screen timeout.</p>
+  <table class="rules">
+    <tr><th>State</th><th>Outcome</th></tr>
+
+    <tr><td colspan="2"><b>CCRM-56 (Provider Identity)</b></td></tr>
+    <tr><td>Name — top bar, About, launcher</td><td style="color:var(--good)">All three read <b>Cooldown</b>. The launcher label re-indexed on the over-install; found as "Cooldown" in the drawer.</td></tr>
+    <tr><td>Launcher tile at 48&nbsp;dp, dark</td><td style="color:var(--good)">Rev C three-sand hourglass reads cleanly at 48&nbsp;dp: cream frame on navy, Claude orange in the upper bulb, ChatGPT green and Gemini blue stacked in the lower. All three colours separable at size.</td></tr>
+    <tr><td>Launcher tile at 48&nbsp;dp, light · themed (monochrome)</td><td style="color:var(--bad)"><b>Not seen.</b> Only the dark drawer was walked; the adaptive icon carries its own dark background, so light changes the drawer behind it rather than the tile. The <code>monochrome</code> layer is declared in <code>mipmap-anydpi-v26/ic_launcher.xml</code> but was not rendered under a themed-icon launcher.</td></tr>
+    <tr><td>About screen</td><td style="color:var(--good)">Icon, <b>Cooldown</b>, and the disclaimer carrying <b>all four trademark lines</b> — Anthropic / OpenAI / Google, Claude, ChatGPT, Gemini and Antigravity — exactly as specced.</td></tr>
+    <tr><td>Settings theme grid, new first swatch</td><td style="color:var(--good)">The tri-colour <b>"Per provider"</b> dot leads the grid, ahead of Material You. Selecting it flips the label to "Selected: Per provider".</td></tr>
+    <tr><td>Three-level accent — level 2 (explicit global)</td><td style="color:var(--good)">The install's global was an explicit <b>Claude Orange</b>, so <i>every</i> account rendered peach including the ChatGPT tab. Correct per the rule, not a defect — checked before judging.</td></tr>
+    <tr><td>Three-level accent — level 3 (provider colour)</td><td style="color:var(--good)">Under <b>Per provider</b> the ChatGPT tab turned <b>ChatGPT Green</b> — bars, tab indicator, chart line and dots, <i>Refresh now</i> — while the Claude tabs stayed Claude Orange. <code>MaterialTheme.primary</code> follows the selected tab, as drawn.</td></tr>
+    <tr><td>Marks keep their own colour</td><td style="color:var(--good)">With the screen themed green, the three Claude spark marks stayed peach and the OpenAI mark green. Marks identify; colour themes.</td></tr>
+    <tr><td>Settings uses the global/default accent</td><td style="color:var(--good)">Under <b>Per provider</b> the Settings screen fell back to Claude Orange (<code>Palette.DEFAULT</code>) — the ChatGPT card's own quick links render peach there. As specced.</td></tr>
+    <tr><td>Provider marks on every surface</td><td style="color:var(--good)">Main tabs, account cards, the "Show profile" chips, the Add-account sheet and the pinned label line all carry the right mark.</td></tr>
+    <tr><td>Add-account sheet, greyed third row</td><td style="color:var(--good)"><b>As drawn.</b> Claude and ChatGPT rows with their exact sentences; <b>Gemini greyed</b> with "Not available yet — Google's sign-in for Antigravity can't finish on a phone. Coming when it can."</td></tr>
+    <tr><td>⋮ → Accent colour on one account, and a widget following it</td><td style="color:var(--bad)"><b>Not seen.</b> The per-account override (level 1) was not exercised — the global switch covered levels 2 and 3 — and the widget half was skipped with the widget rows below.</td></tr>
+    <tr><td>Claude account with the 7-day card hidden</td><td style="color:var(--bad)"><b>Not seen — see CCBG-19 (Fixture Unreachable).</b> Needs the debug faces activity, which cannot be installed alongside the release build this step mandates.</td></tr>
+
+    <tr><td colspan="2"><b>CCRM-54 (ChatGPT Account)</b></td></tr>
+    <tr><td>Device-code sheet · <b>waiting</b></td><td style="color:var(--good)"><b>As drawn.</b> Title, the any-browser sentence, <code>auth.openai.com/codex/device</code>, the code in monospace, <b>a live <code>m:ss</code> countdown</b> (14:56 → 0:40, ticking), "Waiting for you to finish…", Open in browser / Copy code / Cancel. Confirms Step 4's <code>Fmt.mmss</code> fix — part 1's <code>Fmt.dhm</code> sat frozen on "14m".</td></tr>
+    <tr><td>Device-code sheet · <b>expired</b></td><td style="color:var(--good)"><b>Seen, by waiting the 15 minutes out.</b> "That code expired before it was used. Codes last 15 minutes.", one <b>Get a new code</b> button and Close. The stale code, countdown and waiting note are all <i>gone</i> — nothing left on screen to mislead. Copy matches <code>DeviceCodeCopy</code> exactly.</td></tr>
+    <tr><td>Device-code sheet · <b>done</b></td><td style="color:var(--bad)"><b>Not seen, because</b> completing the flow needs an interactive OpenAI login, and the account was already signed in — the run deliberately avoided disturbing a working token.</td></tr>
+    <tr><td>Device-code sheet · <b>denied</b></td><td style="color:var(--bad)"><b>Not seen, because</b> it cannot be provoked from the phone: it needs OpenAI to return a terminal non-2xx from the poll. Copy is pinned by <code>DeviceCodeCopyTest</code> — "That sign-in didn't go through(…). Start again with a new code."</td></tr>
+    <tr><td>Device-code sheet · <b>unavailable</b></td><td style="color:var(--bad)"><b>Not seen, because</b> it needs a 404 from <code>/usercode</code> — OpenAI switching the flow off for this client. Copy pinned by the same test.</td></tr>
+    <tr><td>ChatGPT tab with real numbers</td><td style="color:var(--good)">5-hour <b>9% used</b>, 7-day <b>79% used</b>, both charts, pace lines and reset times live.</td></tr>
+    <tr><td>ChatGPT account card</td><td style="color:var(--good)"><b>Exactly to spec.</b> Mark + <i>Active</i> + <b>"Plus" with no multiplier</b> (<code>tier = null</code> holds); <b>no "expires around" line</b>; <i>Sign in with a code</i> / <i>Refresh</i> / <i>Clear</i>; <b>no backup / paste / QR</b>. Claude's cards keep their expiry line and "Use a computer token instead" alongside.</td></tr>
+    <tr><td>Provider-aware copy and quick links (CCRM-57)</td><td style="color:var(--good)">The ChatGPT card offers <b>OpenAI status</b> / <b>ChatGPT settings</b>; the Claude cards <b>Anthropic status</b> / <b>Usage dashboard</b>. Never the wrong vendor.</td></tr>
+    <tr><td>Pinned panel showing the ChatGPT account</td><td style="color:var(--good)">Headline carried ChatGPT's 5-hour figure and reset, with its 7-day bar (79%, over-pace segment in red) below and a Refresh action.</td></tr>
+    <tr><td>…with a Claude strip folded in</td><td style="color:var(--bad)"><b>Not seen.</b> No condition was live on any other account during the run, so no strip existed to fold.</td></tr>
+    <tr><td><code>[poll][chatgpt:p5]</code> in the log, no token material</td><td style="color:var(--good)">Present and interleaved with <code>[poll][personal]</code>, <code>[work]</code>, <code>[p2]</code>. Lines read <code>auto → OK</code> and carry <b>no token material</b>.</td></tr>
+    <tr><td>Quick Settings tile on the ChatGPT slot</td><td style="color:var(--bad)"><b>Not seen.</b> A Cooldown tile is placed and live — it read <code>Pro 37% · resets in 4h 9m</code>, monochrome as Android forces — but it sits on a <i>Claude</i> slot; the ChatGPT slot was not walked.</td></tr>
+    <tr><td>Re-sign-in after a forced <code>Clear</code></td><td style="color:var(--bad)"><b>Not seen, because</b> it destroys the live <code>p5</code> token and needs an interactive OpenAI login. Skipped by decision to keep the working account.</td></tr>
+    <tr><td>Absent 5-hour case · Ring at 110×110 and Bar</td><td style="color:var(--bad)"><b>Not seen — CCBG-19 (Fixture Unreachable).</b> All four live accounts report both windows, so <code>absentWindowMessage</code> never fires; the only other path is the debug faces activity, which cannot coexist with the release install. <i>Read from source, not observed:</i> on the <b>Bar</b> face the sentence goes through <code>CenteredMessage</code> and replaces the whole face, so it is never in a cramped slot; the risk is <b>Ring-only</b>, where it shares the single spare countdown line at <b>10&nbsp;sp with <code>maxLines = 2</code></b>.</td></tr>
+    <tr><td>Ring / Bar widget faces generally</td><td style="color:var(--bad)"><b>Not seen.</b> No widgets are placed on the device and placement was skipped during the run.</td></tr>
+
+    <tr><td colspan="2"><b>The provider mark on the pinned label line — all four styles</b></td></tr>
+    <tr><td><b>Huge number</b> (<code>big</code>)</td><td style="color:var(--good)">Mark <b>present</b>, before <code>ChatGPT · 5-hour window</code>, tinted to the theme (<code>setColorFilter</code>) rather than drawn in brand colour. Big number and bar in ChatGPT Green.</td></tr>
+    <tr><td><b>Gauge</b></td><td style="color:var(--good)"><b>No mark — and it still reads.</b> The label line leads with <code>ChatGPT · 5-hour window</code>, so the account is named in words.</td></tr>
+    <tr><td><b>Number tile</b></td><td style="color:var(--good)"><b>No mark — and it still reads.</b> Same label line, percentage in its own tile.</td></tr>
+    <tr><td><b>Progress bar</b></td><td style="color:var(--bad)"><b>No mark, and it does not read — CCBG-20 (Pinned Identity Loss).</b> Collapsed, the row is only <code>9% · resets in 6m</code>: neither the account nor the window is named. Expanding recovers <code>ChatGPT · 5-hour window</code>. Not caused by the missing mark — a single-account assumption the mark question surfaced.</td></tr>
+  </table>
+  <p class="sub"><b>Confirmed as a build note, not a defect:</b> the provider mark lives only in the
+    <i>Huge number</i> style. <code>bigNumberView</code> — the only place that sets
+    <code>R.id.provider_mark</code> — is called solely from the <code>"big"</code> branch; the
+    other three are plain <code>NotificationCompat</code> slots with no ImageView. Two of those
+    three still name the account in words, so the mark is reinforcement rather than the only
+    identifier, and giving them one means custom RemoteViews the wireframe does not show.
+    Decision taken with Robin during the pass, 2026-09-06.</p>
+  <p class="sub"><b>Two defects filed:</b> <b>CCBG-19 (Fixture Unreachable)</b> — the debug faces
+    activity shares <code>applicationId</code> with the release build, so every widget-face state
+    that needs a fixture is unobservable on the phone the app actually runs on; and
+    <b>CCBG-20 (Pinned Identity Loss)</b> — the Progress-bar pinned style names no account when
+    collapsed.</p>
 </div>
 </body>
 </html>

@@ -52,7 +52,7 @@ fix it in ROADMAP.md and note it in the step's *Log* line.
 | 2 | CCRM-54 (ChatGPT Account) part 1 — source, device flow, payload capture | Opus | high | one sign-in on the phone | ☑ |
 | 3 | CCRM-56 (Provider Identity) — rename, icon, marks, accents, Add-account sheet, hidden windows | Sonnet | medium | approve the icon at 48 dp | ☑ |
 | 4 | CCRM-54 (ChatGPT Account) part 2 + CCRM-57 (Provider Plumbing) — the ChatGPT account on every surface | Sonnet | medium | no | ☑ |
-| 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☐ |
+| 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☑ |
 | 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☐ |
 | A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☐ |
 | B | *After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe | Opus | high | wireframe review | ☐ |
@@ -447,11 +447,46 @@ docs(CCRM-56): device pass), then follow the Handover rule and print Step 6.
 ```
 
 **Done when:**
-- ☐ Every state in both lists is marked seen or explicitly "not seen, because …".
-- ☐ Defects filed as CCBG items; nothing severe left open.
-- ☐ Ticked, committed.
+- ☑ Every state in both lists is marked seen or explicitly "not seen, because …".
+- ☑ Defects filed as CCBG items; nothing severe left open.
+- ☑ Ticked, committed.
 
 **Log:**
+
+2026-09-06 — walked both device-pass lists on a release-signed build over the live
+install (four accounts: Pro / Teams / Product / ChatGPT `p5`), cover screen, folded.
+Every state is a row in the table at the foot of
+`design/provider-identity-wireframe.html`; settings changed during the run (theme,
+pinned profile, pinned style, screen timeout) were all restored and verified.
+
+**The three things Step 4 left.** **(1)** The absent-window sentence is **not seen, and
+cannot be** — every live account reports both windows, so `absentWindowMessage` never
+fires, and the only other path is `DebugFacesActivity`, which shares `applicationId`
+with the release build and so cannot be installed without destroying the four live
+accounts. Filed as **CCBG-19 (Fixture Unreachable)** — the device-pass bullet in CCRM-56
+(Provider Identity) asks for a fixture this step's own build rule forbids. Read from
+source rather than observed: on the **Bar** face the sentence goes through
+`CenteredMessage` and replaces the whole face, so the cramped-slot risk is **Ring-only**.
+**(2)** The provider mark is confirmed **Huge-number-only** — `bigNumberView` is the only
+setter of `R.id.provider_mark` and only the `"big"` branch calls it — and it **stays a
+build note**, decided with Robin: *Gauge* and *Number tile* lead with `ChatGPT · 5-hour
+window`, so the account is named in words without it. Looking at the fourth style found a
+real defect instead: **CCBG-20 (Pinned Identity Loss)**, the *Progress bar* style names no
+account when collapsed (`9% · resets in 6m`), because the identity sits on the very
+content-text line the shade drops when `setProgress` takes a row. Expanding recovers it.
+Pre-dates this arc. **(3)** Of the sheet's five states, **waiting** and **expired** were
+both seen — waiting with a live `m:ss` countdown ticking 14:56 → 0:40, which confirms
+Step 4's `Fmt.mmss` fix, and expired by waiting the fifteen minutes out rather than moving
+the clock, since this app stores real window history against it. **done**, **denied** and
+**unavailable** are marked *not seen, because …* with their reasons.
+
+Also confirmed, and worth recording because it looked wrong at first: the ChatGPT tab
+rendering in Claude peach is **correct**. The install carries an explicit global
+**Claude Orange**, which by the three-level rule overrides the provider colour for every
+account. Switching the global to **Per provider** turned the ChatGPT tab ChatGPT Green
+while the Claude tabs stayed orange, and the brand marks kept their own colours
+throughout — levels 2 and 3 both confirmed. Level 1, the per-account override, and every
+widget row are **not seen**: widget placement was skipped during the run.
 
 ---
 

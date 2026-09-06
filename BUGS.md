@@ -11,6 +11,68 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-19 · Fixture Unreachable — the debug faces activity cannot coexist with the install it must be compared against
+- **Status:** Open
+- **Severity:** Medium (no wrong number ships, but it guarantees a class of visual state
+  is never observed — the exact failure CCRM-15 (Above-Pace Verification) exists to remember)
+- **Symptom:** **Found during the CCRM-56 (Provider Identity) device pass, 2026-09-06.**
+  CCRM-56's own device-pass bullet asks for "a Claude account with the 7-day card hidden
+  (simulate with a fixture in the debug faces activity)", and CCRM-54 (ChatGPT Account) asks
+  for "a Ring widget on the absent window". Both are reachable only through
+  `DebugFacesActivity`. RUNBOOK.md Step 5 mandates the opposite build: release-signed,
+  installed **over the live install**. The two cannot both be satisfied on one phone, so
+  both states went unobserved.
+- **Cause:** `DebugFacesActivity` lives in the `debug` source set
+  (`app/src/debug/java/com/robin/claudeusage/debug/DebugFacesActivity.kt`) and
+  `app/build.gradle.kts` declares **no `applicationIdSuffix`** for the debug build type —
+  its `buildTypes` block configures `release` only. Debug and release therefore share
+  `applicationId com.robin.claudeusage` while being signed by different keys, so installing
+  one uninstalls the other. On this device that would destroy four live accounts, their
+  tokens, a year of history, the placed tiles and the widget bindings.
+- **Second half:** the absent-window states are not reachable from live data either. The
+  sentence only renders when a payload arrived and omitted that window
+  (`absentWindowMessage`, `WidgetFace.kt:166`), and all four accounts on the device — the
+  three Claude ones and ChatGPT `p5` — report both windows. The fixture is the only path.
+- **Where:** `app/build.gradle.kts` `buildTypes` (no debug suffix);
+  `app/src/debug/AndroidManifest.xml`; the device-pass bullets of CCRM-56 (Provider
+  Identity) and CCRM-54 (ChatGPT Account).
+- **Fix options, undecided:** add `debug { applicationIdSuffix = ".debug" }` so the harness
+  installs alongside the real app (widget/tile component names shift for debug only; the
+  release `applicationId` is untouched, so CLAUDE.md's package rule is not engaged) — or
+  move the faces harness behind a hidden gesture in the release build, or accept a
+  second device. Until one lands, every widget face state that needs a fixture is
+  permanently unobservable on the phone the app actually runs on.
+
+### CCBG-20 · Pinned Identity Loss — the Progress-bar style names no account when collapsed
+- **Status:** Open
+- **Severity:** Medium (the collapsed row is the always-visible one, and with four accounts
+  across two providers it does not say which account it is reporting)
+- **Symptom:** **Observed on the Fold 7, 2026-09-06**, during the CCRM-56 (Provider Identity)
+  device pass, with the pinned notification pointed at the ChatGPT account. Under the
+  **Progress bar** style the collapsed row reads only `9% · resets in 6m` — neither the
+  account label nor the window name appears. The other three styles all lead with
+  `ChatGPT · 5-hour window`. Expanding the notification recovers the identity, so the loss is
+  collapsed-only.
+- **Cause:** in `PinnedNotification`, `title` is `"$pctShort · $resetShort"` for this style
+  alone, because `setProgress()` occupies a row and the shade drops the content-text line
+  when collapsed — so the title is made to carry the number *and* the reset. The identity is
+  then put on `baseText` (`"$label · $headlineName"`), which is exactly the line the same
+  comment acknowledges the shade drops. The identity therefore has no collapsed slot at all.
+  A second path makes it worse: `collapsedText` gives its one line to the highest-priority
+  strip when one exists and only falls back to `baseText` otherwise, so even where the line
+  does survive, any live alert displaces the identity.
+- **Why it did not show before:** with a single Claude account `9% · resets in 6m` was
+  unambiguous. It became a defect when accounts multiplied (CCRM-6 (Multi-Account)) and again
+  when providers did (CCRM-53 (Provider Model)). Pre-dates this arc; the provider-mark
+  question in CCRM-54 (ChatGPT Account) surfaced it.
+- **Where:** `notify/PinnedNotification.kt` — the `title` / `baseText` / `collapsedText` block
+  (the `progress` branch), and the `"progress"` arm of the style `when`.
+- **Fix options, undecided:** shorten the title to `"$label · $pctShort"` and let the reset go
+  to the dropped line (the reset is also in the expanded panel); or give this style a custom
+  RemoteViews row like `big` has, which would also give it the provider mark and close the
+  build note in CCRM-54's status at the same time. Either is a visible change and needs a
+  wireframe per working agreement 2.
+
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
 - **Status:** Open
 - **Severity:** Low (one theme, and the orange/red rungs still land)
