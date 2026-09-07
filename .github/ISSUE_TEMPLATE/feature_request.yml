@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest something for CCooldown.
+description: Suggest something for Cooldown.
 title: "[Feature] "
 labels: ["enhancement"]
 body:
@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Before you write it up, a quick pass over
-        [ROADMAP.md](https://github.com/robineam360/CCooldown/blob/main/ROADMAP.md)
+        [ROADMAP.md](https://github.com/robineam360/Cooldown/blob/main/ROADMAP.md)
         saves everyone time:
 
         - The roadmap lists what's already planned, in order.

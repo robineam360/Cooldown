@@ -1,10 +1,14 @@
-# Claude Cooldown (CCooldown) — Android Widget
+# Cooldown — Android Widget
 
-**A personal home-screen widget for your Claude plan limits — for two accounts.**
-Shows the 5-hour and 7-day rolling windows for your **Personal** and **Work** profiles (including per-model caps like Fable), when each resets, how far into the week you are, forecasts *when* you'll hit a limit at your current pace, and warns you *before* you hit it — and *when* a window resets.
+**A personal home-screen widget for your Claude and ChatGPT plan limits — for as many accounts as you use.**
+Shows the 5-hour and 7-day rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, forecasts *when* you'll hit a limit at your current pace, and warns you *before* you hit it — and *when* a window resets.
 
-> Version **1.3** · released 21 Aug 2026 · sideloaded personal app, not on any store
-> Download the APK from the [latest GitHub release](https://github.com/robineam360/CCooldown/releases/latest)
+> Version **1.5** · released September 2026 · sideloaded personal app, not on any store
+> Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest)
+>
+> **Note:** the screenshots and the walkthrough below still show the v1.3-era single-provider
+> app. They are accurate for Claude accounts; for the ChatGPT flow and everything else new in
+> v1.5, the PDF guide is the current one — see `release/docs/Cooldown-User-Guide-v1.5.pdf`.
 
 ---
 
@@ -48,10 +52,10 @@ Shows the 5-hour and 7-day rolling windows for your **Personal** and **Work** pr
 
 ## 1 · Install (Galaxy Fold 7)
 
-1. Download `CCooldown.apk` from the [latest GitHub release](https://github.com/robineam360/CCooldown/releases/latest) onto the phone. (In-app, **Settings → About → Check for updates** links you straight there.)
+1. Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest) onto the phone. (In-app, **Settings → About → Check for updates** links you straight there.)
 2. Tap the APK. When Android warns about unknown apps, **allow installs from the app you opened it with**, then tap **Install**.
    *A Play Protect "scan app?" prompt may appear — scan or install anyway; it's your own app.*
-3. Open **CCooldown** and **allow notifications** when asked (needed for usage alerts).
+3. Open **Cooldown** and **allow notifications** when asked (needed for usage alerts).
 
 **Updating from v0.13 onward:** just install the new APK over it — token, settings, history, and widgets all survive (releases are now signed with a permanent key).
 
@@ -59,7 +63,7 @@ Shows the 5-hour and 7-day rolling windows for your **Personal** and **Work** pr
 
 ---
 
-## 2 · Connect your Claude accounts (two profiles)
+## 2 · Connect your accounts
 
 The app has two independent slots — **Personal** and **Work**. Since v0.12 each one signs in **right on the phone — no computer needed**:
 
@@ -290,6 +294,10 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 ---
 
 ## 9 · Version history
+
+- **1.5** — **ChatGPT accounts, and the app becomes just "Cooldown".** The app now tracks **ChatGPT** alongside Claude: pick the service from **"+ Add account"**, sign in with a **short code** at auth.openai.com (on the phone or any other device — no computer token to copy), and the account behaves exactly like a Claude one from there, with its own tab, widgets, tiles, alerts, history and pace chart. The name drops "Claude" and the launcher icon becomes a **three-sand hourglass**, one band per service; every account carries its **provider's own mark** on its card, its tab, the pinned notification and the widget picker. New **"Per provider"** theme, now the default — each account wears its own service's colour — with a per-account override under the card's **⋮ → Accent colour**. **A window an account doesn't have is no longer drawn at all** (no dash, no empty bar) — this applies to Claude accounts too, and a widget configured on a missing window says so in words. **Gemini** (Google Antigravity) is listed in the Add-account sheet but **greyed out**: its sign-in needs a callback only a desktop can answer. ChatGPT accounts show no "expires around" line, because OpenAI publishes no token lifetime and a wrong estimate is worse than none. The repo moved from `CCooldown` to `Cooldown`. Built with **Claude Opus 5** and **Sonnet 5**.
+
+- **1.4** — **As many accounts as you use, a clock-hand gauge, and alerts that actually turn off.** Accounts moved to a proper registry — **"+ Add account"** for a third, fourth or more, each with its own sign-in, tab, widgets, tiles and alerts, renamed from its card's **⋮ menu**; a permanent internal slot keeps notification IDs and alarms stable across a rename. The always-on notification's status-bar icon gets a **rails gauge**: usage as a length against tick-mark rungs, with the pace mark redrawn as a **clock-hand needle** sweeping from 12 o'clock, shared by the Ring and Pie styles. **Fixed:** switching an alert off in Settings left its pinned-notification strip stuck on screen until its own lifetime ran out; "keep alerts in the shade for" was a one-time stamp frozen when the alert first fired, not the live rule it reads as. Built with **Claude Sonnet 5**.
 
 - **1.3** — **A status-bar meter you can actually read, the weekly dot, and one alert surface.** The tiny status-bar icon was rebuilt around its real rendered size (~14 dp — measured on-device, not assumed): one large **pace-marked ring** for the 5-hour window, drawn **in your theme colour** and stepping to yellow/red near the limit, with a contrasting **pace line** at where you'd be at an even burn — each theme carries its own line colour, chosen never to clash with the warning ladder. New **weekly dot**: a dot appears in the ring's middle only when the **7-day window** deserves attention — grey = on even pace, yellow = above pace, red = spent; no dot means the week is fine. The dot uses the exact same pace verdicts as the in-app "above/on/below even pace" sentence, so the two can never disagree. **One alert surface:** with the pinned notification on, every alert for both profiles folds into its panel — nothing posts separately. **Display, your way:** a global **Used or Left** switch flips every numeric readout; your chosen reset form (**countdown or clock time**) leads on every surface; a **light/dark override** and follow-system time format. **When something breaks it says what to do:** typed failures ("Re-auth needed — paste a fresh token"), inferred numbers marked as inferred, and a shareable **app log** in Settings. The launcher icon became an **hourglass** — a tracker's identity. Smaller: **long-press the app icon** for Personal/Work/Refresh shortcuts; theme changes repaint the notification immediately. **Fixed:** light theme darkens the status-bar clock and icons (no more white-on-pink); a second notification can no longer hide the live meter. Built with **Claude Fable 5**.
 

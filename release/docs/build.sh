@@ -6,9 +6,9 @@
 #   ./release/docs/build.sh
 #
 # Outputs, all in release/docs/:
-#   CCooldown-User-Guide-v<version>.pdf   (version read from app/build.gradle.kts)
-#   CCooldown-Brochure.pdf
-#   CCooldown-whats-new-v<version>.png    (guide page 3, for Slack/email)
+#   Cooldown-User-Guide-v<version>.pdf   (version read from app/build.gradle.kts)
+#   Cooldown-Brochure.pdf
+#   Cooldown-whats-new-v<version>.png    (guide page 3, for Slack/email)
 #
 # The one-pager is *sliced out of* guide.html rather than authored separately, so
 # it can never drift from the guide. Nothing to keep in sync.
@@ -65,15 +65,15 @@ PY
           --force-device-scale-factor=2 --window-size=794,1121 \
           --screenshot="$WORK/whatsnew.png" "file://$WORK/whatsnew.html" >/dev/null 2>&1
 
-cp "$WORK/guide.pdf"     "$OUT/CCooldown-User-Guide-v$VERSION.pdf"
-cp "$WORK/brochure.pdf"  "$OUT/CCooldown-Brochure.pdf"
-cp "$WORK/whatsnew.png"  "$OUT/CCooldown-whats-new-v$VERSION.png"
+cp "$WORK/guide.pdf"     "$OUT/Cooldown-User-Guide-v$VERSION.pdf"
+cp "$WORK/brochure.pdf"  "$OUT/Cooldown-Brochure.pdf"
+cp "$WORK/whatsnew.png"  "$OUT/Cooldown-whats-new-v$VERSION.png"
 
 echo
 echo "wrote:"
-ls -1sh "$OUT/CCooldown-User-Guide-v$VERSION.pdf" \
-        "$OUT/CCooldown-Brochure.pdf" \
-        "$OUT/CCooldown-whats-new-v$VERSION.png"
+ls -1sh "$OUT/Cooldown-User-Guide-v$VERSION.pdf" \
+        "$OUT/Cooldown-Brochure.pdf" \
+        "$OUT/Cooldown-whats-new-v$VERSION.png"
 echo
 echo "NOW READ EVERY PAGE YOU CHANGED. .page is a fixed A4 box with"
 echo "overflow:hidden — too much content is silently clipped, not reflowed."

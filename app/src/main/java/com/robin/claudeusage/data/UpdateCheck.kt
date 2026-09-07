@@ -21,8 +21,13 @@ data class UpdateInfo(
  */
 object UpdateCheck {
 
+    // CCRM-58 (Repo Rename): the repo went CCooldown → Cooldown at v1.5. Every install
+    // of v1.4 and earlier has the *old* URL compiled in and reaches this release stream
+    // only through GitHub's rename redirect, which OkHttp follows. So: a repo named
+    // `robineam360/CCooldown` must never exist again — creating one would silently break
+    // "Check for updates" on every older install.
     private const val LATEST_RELEASE_URL =
-        "https://api.github.com/repos/robineam360/CCooldown/releases/latest"
+        "https://api.github.com/repos/robineam360/Cooldown/releases/latest"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -34,7 +39,7 @@ object UpdateCheck {
         val request = Request.Builder()
             .url(LATEST_RELEASE_URL)
             .header("Accept", "application/vnd.github+json")
-            .header("User-Agent", "CCooldown-android")
+            .header("User-Agent", "Cooldown-android")
             .build()
         client.newCall(request).execute().use { resp ->
             val body = resp.body?.string().orEmpty()

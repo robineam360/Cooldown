@@ -45,7 +45,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -432,6 +434,13 @@ private fun ProfileTabs(
             // pager's page can still be past the end — and TabRow's indicator indexes
             // straight into its tab positions with whatever it is handed.
             val selected = pagerState.currentPage.coerceIn(0, profiles.lastIndex)
+            // The strip's own text/indicator colour stays neutral, never the swiped-to
+            // profile's accent — MaterialTheme.colorScheme.primary is that accent, and
+            // it flips mid-drag (CCRM-56 (Provider Identity)'s onProfileChange effect
+            // above tracks pagerState.currentPage), so leaving Tab/TabRow at their
+            // defaults meant every label's hue crossfaded during a swipe, not just the
+            // selected one. Only the mark icon keeps its own per-profile tint.
+            val tabContentColor = MaterialTheme.colorScheme.onSurface
             val tabs: @Composable () -> Unit = {
                 profiles.forEachIndexed { index, profile ->
                     Tab(
@@ -448,6 +457,8 @@ private fun ProfileTabs(
                             }
                         },
                         text = { ProviderTabLabel(repo.cacheSettings(), profile) },
+                        selectedContentColor = tabContentColor,
+                        unselectedContentColor = tabContentColor.copy(alpha = 0.6f),
                     )
                 }
             }
@@ -456,10 +467,30 @@ private fun ProfileTabs(
             // label needs ~110, so it fits; four would get 82 dp on the cover screen and
             // every label — including the selected one — would truncate. One rule at both
             // widths deliberately, so the strip doesn't change shape when the phone unfolds.
+            // The default indicator ignores contentColor — Material3 hardcodes it to
+            // colorScheme.primary via the active-indicator token — so it still tracked
+            // the swiped-to profile's accent unless drawn explicitly in our neutral colour.
+            val tabIndicator: @Composable (List<TabPosition>) -> Unit = { tabPositions ->
+                TabRowDefaults.run {
+                    SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selected]),
+                        color = tabContentColor,
+                    )
+                }
+            }
             if (profiles.size <= FIXED_TAB_LIMIT) {
-                TabRow(selectedTabIndex = selected) { tabs() }
+                TabRow(
+                    selectedTabIndex = selected,
+                    contentColor = tabContentColor,
+                    indicator = tabIndicator,
+                ) { tabs() }
             } else {
-                ScrollableTabRow(selectedTabIndex = selected, edgePadding = 0.dp) { tabs() }
+                ScrollableTabRow(
+                    selectedTabIndex = selected,
+                    edgePadding = 0.dp,
+                    contentColor = tabContentColor,
+                    indicator = tabIndicator,
+                ) { tabs() }
             }
         }
         HorizontalPager(

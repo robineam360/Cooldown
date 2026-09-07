@@ -53,7 +53,7 @@ fix it in ROADMAP.md and note it in the step's *Log* line.
 | 3 | CCRM-56 (Provider Identity) — rename, icon, marks, accents, Add-account sheet, hidden windows | Sonnet | medium | approve the icon at 48 dp | ☑ |
 | 4 | CCRM-54 (ChatGPT Account) part 2 + CCRM-57 (Provider Plumbing) — the ChatGPT account on every surface | Sonnet | medium | no | ☑ |
 | 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☑ |
-| 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☐ |
+| 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☑ |
 | A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☐ |
 | B | *After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe | Opus | high | wireframe review | ☐ |
 
@@ -515,11 +515,27 @@ Handover rule: if Step A is still unticked print it, otherwise say the arc is co
 ```
 
 **Done when:**
-- ☐ README, guide PDF, brochure PDF regenerated and reviewed.
-- ☐ Signed APK built by Robin, GitHub release published, update check on a phone sees v1.5.
-- ☐ Ticked, committed and tagged.
+- ☑ README, guide PDF, brochure PDF regenerated and reviewed.
+- ◑ Signed APK built by Robin (confirmed 2026-09-07) — **GitHub release publication and the
+  update check on a phone are still outstanding**, and happen after this commit is pushed,
+  since `gh release create` needs the tag on the remote. Robin ticks this one.
+- ☑ Ticked, committed and tagged.
 
-**Log:**
+**Log:** 2026-09-07 — v1.5 prepared and committed. versionCode 19→20, versionName "1.5".
+Docs regenerated: the guide gained a ChatGPT sign-in page (page 6, inside section 2 so no
+section renumbering) and is now 14 pages; page 3 rewritten as *New in v1.5*; brochure and the
+Slack one-pager rebuilt. **Two real overflows caught by reading the render, both fixed** —
+the version-history table silently lost its last three rows, and the brochure's affiliation
+disclaimer fell off the page; on the brochure, bottom padding is *not* the lever, because once
+content overflows a fixed `.page` it runs straight past it, so the top padding lifts the column
+instead. **Scope added mid-step at Robin's call:** the repo rename `CCooldown` → `Cooldown`,
+filed as CCRM-58 (Repo Rename), which reverses review decision 6 — recorded as reversed rather
+than rewritten. Riding along: Robin's uncommitted neutral tab-strip work in `MainActivity.kt`
+and `HistoryScreen.kt`. **Left open, deliberately:** screenshots still show the old name and
+there are none of the ChatGPT flow, so the new guide page is text-only; `repo-qr.svg` still
+encodes the old URL (it resolves via the rename redirect, and no QR generator is installed
+here). Deviation from the Close-out rule noted above: the Progress box is ticked with Done-when
+item 2 half-open, because publication cannot precede this commit.
 
 ---
 

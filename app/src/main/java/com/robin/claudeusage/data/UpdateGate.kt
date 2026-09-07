@@ -18,7 +18,7 @@ object UpdateGate {
     const val MAX_NOTE_CHARS = 300
 
     /** Where a tap lands when the release payload's own URL can't be trusted. */
-    const val FALLBACK_RELEASE_URL = "https://github.com/robineam360/CCooldown/releases/latest"
+    const val FALLBACK_RELEASE_URL = "https://github.com/robineam360/Cooldown/releases/latest"
 
     /**
      * Whether a poll should spend a GitHub call. [lastSuccessAtMs] is the last

@@ -23,7 +23,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -102,19 +104,44 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
     // fixed up to three, scrollable at four or more.
     if (profiles.size > 1) {
         val selected = tab.coerceIn(0, profiles.lastIndex)
+        // Neutral strip colour, matching Main's ProfileTabs — the label/indicator hue
+        // must not follow the account's own accent, only the mark icon does.
+        val tabContentColor = MaterialTheme.colorScheme.onSurface
         val tabs: @Composable () -> Unit = {
             profiles.forEachIndexed { index, p ->
                 Tab(
                     selected = selected == index,
                     onClick = { tab = index },
                     text = { ProviderTabLabel(repo.cacheSettings(), p) },
+                    selectedContentColor = tabContentColor,
+                    unselectedContentColor = tabContentColor.copy(alpha = 0.6f),
+                )
+            }
+        }
+        // The default indicator ignores contentColor — it's hardcoded to
+        // colorScheme.primary via Material3's active-indicator token — so it has to be
+        // drawn explicitly to stay neutral.
+        val tabIndicator: @Composable (List<TabPosition>) -> Unit = { tabPositions ->
+            TabRowDefaults.run {
+                SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selected]),
+                    color = tabContentColor,
                 )
             }
         }
         if (profiles.size <= FIXED_TAB_LIMIT) {
-            TabRow(selectedTabIndex = selected) { tabs() }
+            TabRow(
+                selectedTabIndex = selected,
+                contentColor = tabContentColor,
+                indicator = tabIndicator,
+            ) { tabs() }
         } else {
-            ScrollableTabRow(selectedTabIndex = selected, edgePadding = 0.dp) { tabs() }
+            ScrollableTabRow(
+                selectedTabIndex = selected,
+                edgePadding = 0.dp,
+                contentColor = tabContentColor,
+                indicator = tabIndicator,
+            ) { tabs() }
         }
     }
     // Outside the strip: the top gap belongs to the screen, not to the tabs, so a

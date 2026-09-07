@@ -33,13 +33,16 @@ an account and signs into that one; everything downstream already works per acco
 1. **Provider colour is the account's default accent, overridable per account** the way the
    theme picker works today (the picker is global today; per-account is new — see CCRM-56 (Provider Identity)).
 2. **Name: Cooldown.** Package, namespace and repo stay `com.robin.claudeusage` / `CCooldown`.
+   *Superseded in part 2026-09-07:* the **repo** is renamed to `Cooldown` — see CCRM-58 (Repo
+   Rename). `applicationId` and namespace are unchanged and unchangeable.
 3. **Icon: the hourglass with three sands**, all three colours now (not two-then-three), the
    colours made more obvious; Antigravity is greyed in the Add-account sheet as "coming".
 4. **Official provider logos, not dots**, identify the service on every surface — the user's
    explicit call, overriding the trademark caution in rev A. Colour is for bars and theme.
 5. **Antigravity greyed in Add account** until CCRM-55 (Antigravity Account) unblocks.
-6. **Repo not renamed.** And a new rule: **a window the account does not have is not shown at
-   all** — no placeholder card, no dash, on any surface.
+6. **Repo not renamed.** *Reversed 2026-09-07 at Robin's call — see CCRM-58 (Repo Rename); the
+   second half of this decision stands unchanged.* And a new rule: **a window the account does
+   not have is not shown at all** — no placeholder card, no dash, on any surface.
 7. **Pace ticks are neutral ink on faces that show more than one account**, resolving the
    Gemini-blue / ChatGPT-green partner clash. Confirmed on rev B.
 
@@ -641,6 +644,44 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
 - **Contract tests** (CCRM-37 (Contract Tests)): the copy-drift test learns three provider
   names, three vendors and four trademark lines.
 - **Probe allowlist:** `ProbeHost.CHATGPT` (CCRM-54 (ChatGPT Account)) — GET-only rule unchanged.
+
+### CCRM-58 · Repo Rename — `CCooldown` → `Cooldown`, and the redirect we now depend on
+- **Status:** Done (2026-09-07), shipped with v1.5 · filed 2026-09-07 · **reverses review
+  decision 6**, which said the repo was not renamed. Robin's call, taken during the release
+  step: the app had already become *Cooldown* on every user-visible surface in CCRM-56
+  (Provider Identity), and leaving the repo, the README title and the PDF filenames on the old
+  name was the last inconsistency.
+- **What is renamed:** the GitHub repo `robineam360/CCooldown` → `robineam360/Cooldown`; the
+  two hardcoded URLs in the app (`UpdateCheck.LATEST_RELEASE_URL`,
+  `UpdateGate.FALLBACK_RELEASE_URL`) and `UpdateCheck`'s `User-Agent: Cooldown-android`;
+  README, RELEASING, `release/USER-GUIDE.md`, the four `.github/` files, `build.sh`'s three
+  output filenames, and the guide and brochure sources.
+- **What is not, and must not be:** `applicationId` / `namespace` `com.robin.claudeusage` —
+  unchanged for the reason CCRM-56 (Provider Identity) records, which has not weakened. Also
+  unchanged: the keystore filename `ccooldown-release.jks` (a real file on disk, gitignored,
+  and nothing reads its name but `keystore.properties`); the Mac repo's names `CCooldownMac`
+  and `CCooldownCore`, which are a different repo's business; the historical `0.7` changelog
+  entry in `release/USER-GUIDE.md`, which records the *old* rename and would be a lie if
+  edited; the approved wireframes in `design/`, which are the record of what was approved on
+  the day; and the PDFs already built as `CCooldown-*`.
+- **The one real cost, and the rule it creates.** Every install of v1.4 and earlier has
+  `api.github.com/repos/robineam360/CCooldown/releases/latest` compiled in. GitHub serves a
+  permanent redirect from a renamed repo and OkHttp follows it, so *Check for updates* keeps
+  working on those installs — **for as long as no repo named `robineam360/CCooldown` exists
+  again.** Creating one, even empty, even briefly, silently breaks the update check on every
+  older install, with no error the user would recognise. **Never re-create that name.** The
+  rule is repeated as a comment above the URL in `UpdateCheck.kt`, which is where someone
+  would actually be standing when it mattered.
+- **Local working copy:** the folder is still `~/Projects/CCooldown` and the git remote is
+  rewritten in place with `git remote set-url`. Renaming the folder is optional and cosmetic;
+  nothing in the build reads it.
+- **Open follow-up: the brochure QR.** `release/docs/src/repo-qr.svg` encodes the **old** repo
+  URL. It still resolves, through the same redirect the update check relies on, so the
+  brochure is not wrong — but it should be regenerated to point at `Cooldown` directly.
+  No QR generator is installed on the build Mac (`qrencode`, `python3-qrcode` and `segno` are
+  all absent), so this was deliberately left rather than installing a tool during a release.
+- **Tests:** `UpdateGateTest`'s sample URL follows the rename (it asserts parsing, not the
+  host, but a stale name in a fixture is the kind of thing that gets copied forward).
 
 ---
 

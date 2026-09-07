@@ -1,4 +1,4 @@
-# Contributing to CCooldown
+# Contributing to Cooldown
 
 Thanks for wanting to help. This is a small, deliberately scoped project — most of the
 rules below exist to keep it that way. The full working agreements live in

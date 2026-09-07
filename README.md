@@ -1,50 +1,78 @@
 <p align="center">
-  <img src="release/screenshots/hero.png" alt="CCooldown — your Claude usage limits, right on your Android home screen" width="100%">
+  <img src="release/screenshots/hero.png" alt="Cooldown — your AI usage limits, right on your Android home screen" width="100%">
 </p>
 
-# CCooldown
+# Cooldown
 
-**Claude Cooldown** — an Android home-screen widget and app that shows how much of your
-Claude Pro / Max / Team usage limits you've burned through, and when your 5-hour and 7-day
-windows reset. Built for people who live in Claude and keep hitting the wall mid-thought —
-especially in **Claude chat and Cowork**, where (unlike Claude Code) there's no built-in way
-to see how close you are.
+**Cooldown** — an Android home-screen widget and app that shows how much of your **Claude**
+and **ChatGPT** usage limits you've burned through, and when your 5-hour and 7-day windows
+reset. Built for people who live in these tools and keep hitting the wall mid-thought —
+especially in **Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude Code) there's
+no built-in way to see how close you are.
+
+Every account is a tab, a widget, a tile and its own set of alerts — mix Claude and ChatGPT
+accounts freely, as many as you use. **Gemini (Google Antigravity) is listed but greyed out**:
+its sign-in can't currently be completed on a phone, and the app says so rather than pretending
+otherwise.
 
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/CCooldown-User-Guide-v1.4.pdf) — the full
-install → sign-in → widgets walkthrough · [Brochure (PDF)](release/docs/CCooldown-Brochure.pdf) —
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.5.pdf) — the full
+install → sign-in → widgets walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
 > ⚠️ **Unofficial.** This is a personal community tool. It is not affiliated with, endorsed
-> by, or supported by Anthropic. "Claude" is a trademark of Anthropic, PBC.
+> by, or supported by **Anthropic, OpenAI or Google**. "Claude" is a trademark of Anthropic,
+> PBC. "ChatGPT" is a trademark of OpenAI. "Gemini" and "Antigravity" are trademarks of
+> Google LLC.
 
 > 🚩 **Please read before you install — this is unofficial and carries some account risk.**
-> To read your usage, CCooldown signs in with the **same OAuth client as the Claude Code
-> CLI** (identical client ID and scopes) and, when it fetches usage, identifies itself as
+>
+> **Claude.** To read your usage, Cooldown signs in with the **same OAuth client as the Claude
+> Code CLI** (identical client ID and scopes) and, when it fetches usage, identifies itself as
 > `claude-code/<version>` against an **undocumented** endpoint
 > (`api.anthropic.com/api/oauth/usage`) — deliberately, because without the CLI's identity
 > the request is routed to an aggressively rate-limited bucket. In other words, it
 > **impersonates the official CLI**. This is **not sanctioned by Anthropic**, and their
 > consumer terms restrict using consumer OAuth tokens in third-party tools. Installing means
 > accepting that Anthropic could **revoke your token or flag your account** for an unusual
-> traffic pattern. What lowers the practical risk: the app is **read-only** (it never sends
-> prompts or spends quota), signs in **once per install** (no repeated logins, no CLI
-> subprocess), and is shared privately, not on any store. Use it at your own discretion.
+> traffic pattern.
+>
+> **ChatGPT.** The same posture, with one honest difference. Cooldown mints **its own token**
+> through OpenAI's device-code sign-in — you type a short code at `auth.openai.com`, and the
+> phone never sees a token copied from a computer. It does so using the **Codex CLI's client
+> ID**, because that is the client the device flow is registered for, and it reads usage from
+> an **undocumented** endpoint (`chatgpt.com/backend-api/wham/usage`). Unlike the Claude path
+> it does **not** disguise itself: it sends an honest `User-Agent: Cooldown/<version>
+> (Android)`, because OpenAI's endpoint doesn't penalise an unfamiliar client. It is still an
+> internal endpoint reached with a consumer token by a tool OpenAI has not sanctioned, so the
+> same caveat applies — **OpenAI could revoke the token or flag the account**.
+>
+> What lowers the practical risk on both: the app is **read-only** (it never sends prompts or
+> spends quota — and it deliberately never calls OpenAI's one endpoint that *would* spend a
+> credit), signs in **once per install** (no repeated logins, no CLI subprocess), polls on a
+> slow interval, and is shared privately, not on any store. Use it at your own discretion.
 
 ## What it does
 
+- **Claude *and* ChatGPT accounts, side by side** 🆕 — pick the service when you add an
+  account; each one carries its provider's mark on every surface and its brand colour as its
+  default accent, which you can override per account. Gemini (Antigravity) is greyed out until
+  its sign-in works on a phone
+- **Sign in to ChatGPT with a short code** 🆕 — no computer, no copied token: the app shows a
+  code, you type it at `auth.openai.com` on any device, and the account appears
 - **Home-screen widgets** (small / medium / large, plus a compact single-bar widget) showing
   the 5-hour session window, the 7-day all-models window, and per-model 7-day caps —
-  with countdown and exact local reset time
+  with countdown and exact local reset time. A window your account doesn't have is simply not
+  shown — no placeholder, no dash
 - **Pinned notification** 🆕 — an optional always-on, silent notification with a status-bar
   gauge icon that fills as you use your 5-hour window; expands to show the 7-day and
   per-model bars, with a one-tap Refresh
 - **Usage history** 🆕 — a scrollable bar per 5-hour session, week by week (and a per-week
   view across weeks), so you can see how many sessions you ran and which ones hit 100%
-- **Multi-account with editable names** 🆕 — Personal and Work to start, "+ Add account" for
-  as many more as you use; each gets its own swipeable tab, widgets, tiles and alerts, and
-  renames from its account card
+- **Multi-account with editable names** — Personal and Work to start, "+ Add account" for
+  as many more as you use, on either service; each gets its own swipeable tab, widgets, tiles
+  and alerts, and renames from its account card
 - **Quick Settings tiles** — glance at your 5h/7d percentages from the notification shade
 - **Granular alerts** 🆕 — pick exactly which thresholds warn you per window (5-hour, 7-day,
   per-model), turn reset pings off / smart / always, and mute a whole profile — no more
@@ -53,12 +81,15 @@ a 2-page overview.
   forecast tail, plus a plain-words verdict ("At this pace: 100% at 2:40 PM — 1h 20m before
   the reset"), built from a local history of your own polls
 - **Pay-as-you-go usage credits** — spent, total and what's left, on the main screen and as
-  a widget; hidden for plans without a credit budget
+  a widget; hidden for plans without a credit budget. ChatGPT accounts show a plain
+  **"$12.40 balance"** instead, and nothing at all on an unlimited plan
 - **An "even pace" line on every chart** — the diagonal from 0% at the window's start to
   100% at its reset. Stay below it and you'll finish inside your limit; cross it and the
   overshoot shades amber
-- **13 theme colors** including Material You dynamic color, full light/dark support; usage
-  bars shade amber then a clear warning-red as you approach 100%
+- **15 theme colors** including Material You dynamic color, full light/dark support; usage
+  bars shade amber then a clear warning-red as you approach 100%. New: **Per provider** 🆕,
+  where each account just wears its own service's colour, and a per-account override under
+  the card's ⋮ menu when you'd rather it didn't
 
 ## Screenshots
 
@@ -98,28 +129,37 @@ mode; **Usage history** fills in over time as your windows close.
 
 All you need is your Android phone.
 
-**1. Install the app.** Grab `CCooldown.apk` from the
+**1. Install the app.** Grab the APK from the
 [latest release](../../releases/latest) onto your phone and open it (allow "install
 unknown apps" if your phone asks).
 
-**2. Sign in on the phone.** In the app: **Settings → tap "Sign in on this phone"** on
+**2a. Sign in to Claude.** In the app: **Settings → tap "Sign in on this phone"** on
 the account card. Your browser opens Claude's sign-in — log in (Pro, Max, and Team
 accounts all work), tap **Authorize**, copy the code the page shows, hop back to the app,
 and tap **Paste → Finish sign-in**. Usage loads immediately.
 
-Tracking more than one account? Do the same on the second card, or tap **"+ Add account"**
-for a third, fourth, or more — if you keep each account logged in to claude.ai in a
-different browser, the built-in browser picker lets you route each sign-in accordingly
+**2b. Sign in to ChatGPT** 🆕 **.** Tap **"+ Add account" → ChatGPT**. The app shows a short
+code and a countdown. Go to **auth.openai.com/codex/device** — on this phone with the
+**Open in browser** button, or on your laptop, whichever is easier — type the code, and
+approve. The sheet closes by itself and the new tab appears with your numbers. Nothing is
+copied from a computer; the phone mints its own sign-in.
+
+Tracking more than one account? Tap **"+ Add account"** as many times as you like and mix
+the two services freely — if you keep each account logged in to claude.ai in a
+different browser, the built-in browser picker lets you route each Claude sign-in accordingly
 (e.g. Work in Chrome, Personal in Brave).
 
-**3. Add a widget.** Long-press your home screen → **Widgets** → pick a **Claude
-Cooldown** widget.
+**Gemini?** The third row in the sheet is greyed out. Google's Antigravity sign-in can't be
+completed on a phone today; the app says so rather than hiding the option.
 
-The phone's sign-in renews itself for about a month, then the app reminds you before it
-lapses — re-signing in is the same one-minute flow.
+**3. Add a widget.** Long-press your home screen → **Widgets** → pick a **Cooldown** widget.
+
+A Claude sign-in renews itself for about a month, then the app reminds you before it
+lapses — re-signing in is the same one-minute flow. A ChatGPT sign-in has no fixed expiry we
+can predict, so the app doesn't guess one; it tells you if a refresh ever fails.
 
 <details>
-<summary><b>Backup method: import a token from a computer (QR / paste)</b></summary>
+<summary><b>Backup method (Claude accounts only): import a token from a computer (QR / paste)</b></summary>
 
 <br>
 
@@ -195,19 +235,36 @@ through channels you don't trust (email, group chats, cloud notes).
 
 ## How it works
 
-The app signs in with the **same OAuth client as the Claude Code CLI** — the identical
-client ID and scopes (`org:create_api_key user:profile user:inference
+Each account carries which service it belongs to, and the app swaps in that service's fetcher
+behind one shared interface. Everything above that — tabs, widgets, tiles, alerts, history —
+never learns the difference.
+
+**Claude.** The app signs in with the **same OAuth client as the Claude Code CLI** — the
+identical client ID and scopes (`org:create_api_key user:profile user:inference
 user:sessions:claude_code user:mcp_servers user:file_upload`) — via browser-based PKCE
 against `claude.com` / `platform.claude.com`. To read usage it calls an **undocumented**
 endpoint (`api.anthropic.com/api/oauth/usage`) and sends `User-Agent: claude-code/<version>`
 on that call, because without the CLI's identity the request is routed to an aggressively
-rate-limited bucket. It polls on a battery-friendly interval (15 minutes by default,
-configurable). In short, it presents itself to Anthropic as the official CLI — see the
+rate-limited bucket. In short, it presents itself to Anthropic as the official CLI — see the
 ⚠️ install warning near the top for what that means for your account.
 
-**Privacy:** your token stays on your device, encrypted with the Android Keystore
-(EncryptedSharedPreferences, AES-256-GCM). It is sent to Anthropic's API and nowhere else.
-There are no servers, no analytics, no third-party network calls.
+**ChatGPT.** Sign-in is OpenAI's **device-code flow**, the one the Codex CLI uses: the app
+asks `auth.openai.com` for a short user code, you approve it in a browser anywhere, and the
+app exchanges the result for its own token. It uses the **Codex CLI's client ID** — that is
+the client the flow is registered for — but sends an **honest** `User-Agent:
+Cooldown/<version> (Android)`, not a disguise: OpenAI's endpoint doesn't punish an unfamiliar
+client the way Anthropic's does, so there's no reason to pretend. Usage comes from the
+**undocumented** `chatgpt.com/backend-api/wham/usage`. The app **never** imports a token from
+a desktop `auth.json` — reusing that token family would trip OpenAI's rotation detection and
+sign you out of your own CLI — and it **never** calls the one nearby endpoint that would spend
+a credit.
+
+Both poll on the same battery-friendly interval (15 minutes by default, configurable).
+
+**Privacy:** your tokens stay on your device, encrypted with the Android Keystore
+(EncryptedSharedPreferences, AES-256-GCM). They are sent to Anthropic's and OpenAI's APIs and
+nowhere else. There are no servers, no analytics, no third-party network calls. Diagnostics
+logs record status codes only — never tokens, headers or response bodies.
 
 ## Build from source
 
@@ -223,15 +280,19 @@ OkHttp. No other dependencies.
 
 ## Fair-use notes
 
-- The usage endpoint is undocumented; the parser is deliberately lenient and this app may
-  break without notice if Anthropic changes it.
+- **Both** usage endpoints are undocumented; the parsers are deliberately lenient and this app
+  may break without notice if Anthropic or OpenAI changes a payload.
 - The app only **reads** usage data — it never sends prompts or consumes your quota
-  (checking your usage does not count as usage).
-- The app presents the Claude Code CLI's OAuth client identity and User-Agent to reach the
-  usage endpoint (see [How it works](#how-it-works)); this is not sanctioned by Anthropic.
-- Anthropic's consumer terms restrict the use of consumer OAuth tokens in third-party
-  tools. Installing accepts some risk of token revocation or account flagging. This project
-  exists for personal/educational use — use it at your own discretion.
+  (checking your usage does not count as usage). On the ChatGPT side it deliberately declines
+  two things the endpoint would allow: the header that reserves capacity, and the call that
+  spends a credit.
+- The app presents the Claude Code CLI's OAuth client identity **and User-Agent** to reach
+  Anthropic's usage endpoint (see [How it works](#how-it-works)); this is not sanctioned by
+  Anthropic. On OpenAI's side it uses the Codex CLI's client ID but identifies itself honestly
+  as Cooldown; this is not sanctioned by OpenAI either.
+- Anthropic's and OpenAI's consumer terms restrict the use of consumer OAuth tokens in
+  third-party tools. Installing accepts some risk of token revocation or account flagging.
+  This project exists for personal/educational use — use it at your own discretion.
 - Polling is rate-limit-friendly (default 15 min, hard floor of 5 min).
 
 ## Feedback
@@ -242,8 +303,15 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/CCooldown-User-Guide-v1.4.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.5.pdf).
 
+- **1.5** — **ChatGPT accounts.** The app is now just **Cooldown**, and tracks Claude *and*
+  ChatGPT side by side — add either from "+ Add account", sign into ChatGPT with a short code
+  at auth.openai.com (no computer, no copied token), and every tab, widget, tile and alert
+  works the same for both. New three-sand hourglass icon; each service's own mark on every
+  surface; a **Per provider** theme where each account wears its own colour, overridable per
+  account. A window an account doesn't have is now hidden rather than drawn as a dash. Gemini
+  (Google Antigravity) is listed but greyed out — its sign-in can't finish on a phone yet.
 - **1.4** — **Multi-account** — "+ Add account" for a third, fourth, or more, each with its own tab, widgets, tiles and alerts. A new clock-hand pace needle on the always-on notification's status-bar icon. Fixed: alerts switched off in Settings now retract their pinned-notification strip instead of leaving it stuck.
 - **1.3** — The status-bar icon rebuilt around its real size, with a theme-coloured pace ring and a dot for when the 7-day window needs a look; every alert for every profile now folds into one pinned-notification panel; new hourglass launcher icon; Used-or-Left and countdown-or-clock display switches.
 - **1.2** — Three new widget faces (Ring, Mini-Rings, Pace); pace marks on every bar and ring; **pace alerts** on the projection, not just the percent; automatic update checks.

@@ -135,7 +135,7 @@ class UpdateGateTest {
 
     @Test
     fun `a github release page passes through`() {
-        val url = "https://github.com/robineam360/CCooldown/releases/tag/v0.15"
+        val url = "https://github.com/robineam360/Cooldown/releases/tag/v0.15"
         assertEquals(url, UpdateGate.safeReleaseUrl(url))
     }
 

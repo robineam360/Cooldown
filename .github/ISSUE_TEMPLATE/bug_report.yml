@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in CCooldown is broken or behaving oddly.
+description: Something in Cooldown is broken or behaving oddly.
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -11,9 +11,9 @@ body:
         - **Never paste a real OAuth token, refresh token, or `Authorization` header
           here** — issues are public. Redact anything that looks like a credential.
           Security problems go through
-          [SECURITY.md](https://github.com/robineam360/CCooldown/blob/main/.github/SECURITY.md)
+          [SECURITY.md](https://github.com/robineam360/Cooldown/blob/main/.github/SECURITY.md)
           (Security tab → Report a vulnerability), not an issue.
-        - Check [BUGS.md](https://github.com/robineam360/CCooldown/blob/main/BUGS.md)
+        - Check [BUGS.md](https://github.com/robineam360/Cooldown/blob/main/BUGS.md)
           in case it's already tracked.
   - type: input
     id: app-version

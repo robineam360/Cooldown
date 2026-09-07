@@ -1,6 +1,6 @@
 # Releasing an update
 
-The routine for shipping a new version of CCooldown to GitHub. Colleagues install by
+The routine for shipping a new version of Cooldown to GitHub. Colleagues install by
 downloading the APK from the **Releases page** (the app's *Check for updates* button and
 the README both link to `releases/latest`). The APK is **no longer committed to the repo**
 — it ships only as a release asset. So every release is: bump, build, commit source, push,
@@ -55,13 +55,18 @@ It reads `versionName` from `app/build.gradle.kts` and writes three files into
 
 | Output | What it's for |
 |---|---|
-| `CCooldown-User-Guide-v<ver>.pdf` | the 13-page guide the README and release notes link to |
-| `CCooldown-Brochure.pdf` | the 2-page pitch |
-| `CCooldown-whats-new-v<ver>.png` | **guide page 3 as a single image** — paste under a Slack post |
+| `Cooldown-User-Guide-v<ver>.pdf` | the 13-page guide the README and release notes link to |
+| `Cooldown-Brochure.pdf` | the 2-page pitch |
+| `Cooldown-whats-new-v<ver>.png` | **guide page 3 as a single image** — paste under a Slack post |
 
 The one-pager is *sliced out of* `guide.html` at build time, not authored separately, so
 it can't drift. That's deliberate: don't add a fourth "what's new" document — the guide
 page already is one.
+
+**Filenames changed at v1.5** (CCRM-58 (Repo Rename)): the outputs were `CCooldown-*` up to
+and including v1.4. The older PDFs and PNGs keep their old names in `release/docs/` — they
+are the historical record and anything already linking to them still resolves. Don't rename
+them retroactively.
 
 **⚠️ Read every page you changed in the built PDF.** Each `.page` is a fixed A4 box with
 `overflow:hidden`, so content that doesn't fit is **silently clipped, not reflowed**. In
@@ -94,7 +99,7 @@ Publish the APK to the Releases page (the README's download link points at
 
 ```bash
 gh release create v0.8 app/build/outputs/apk/release/app-release.apk \
-  --title "CCooldown v0.8" \
+  --title "Cooldown v0.8" \
   --notes "<one line on what changed>"
 ```
 
