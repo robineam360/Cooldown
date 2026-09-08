@@ -54,7 +54,7 @@ fix it in ROADMAP.md and note it in the step's *Log* line.
 | 4 | CCRM-54 (ChatGPT Account) part 2 + CCRM-57 (Provider Plumbing) — the ChatGPT account on every surface | Sonnet | medium | no | ☑ |
 | 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☑ |
 | 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☑ |
-| A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☐ |
+| A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☑ |
 | B | *After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe | Opus | high | wireframe review | ☐ |
 
 Steps 1 and 3 do not depend on each other and can run in parallel sessions. 2 needs 1. 4 needs
@@ -565,12 +565,24 @@ if the fractions were real, otherwise say Step B does not apply and CCRM-55 stay
 ```
 
 **Done when:**
-- ☐ Verdict recorded: real fractions (→ Step B) or placeholders (→ CCRM-55 (Antigravity
+- ☑ Verdict recorded: real fractions (→ Step B) or placeholders (→ CCRM-55 (Antigravity
   Account) stays blocked; the Mac-relay route becomes the only option and gets its own roadmap
   item).
-- ☐ Ticked, committed.
+- ☑ Ticked, committed.
 
-**Log:**
+**Log:** 2026-09-08 — placeholders, not real fractions. All four buckets held
+`remainingFraction: 1` both before and after a genuine Gemini prompt sent in the same
+Antigravity session, and every `resetTime` slid forward by exactly the wall-clock time between
+calls rather than holding a fixed window boundary — the tell of an availability-shaped stub for
+tokens used outside a live IDE session, matching CodexBar's warning in the item. Also found and
+fixed along the way: the spike bullet's request body (`{"metadata": {...}}`) is the **local**
+`127.0.0.1` RPC's body, not the remote `cloudcode-pa.googleapis.com` one, which wants `{}`; and
+the Keychain blob's refresh token is nested one level under a `"token"` key, not top-level as
+`design/research/2026-09-06-openquota-antigravity.md` §1b's `token_from_value` guess implied.
+Full response bodies (tokens redacted, never recorded) and verdict in
+`design/research/2026-09-08-antigravity-spike.md`. CCRM-55 (Antigravity Account) moved to
+Blocked with the data blocker recorded; filed CCRM-59 (Antigravity Mac Relay) for the only
+route left. Step B does not apply — no wireframe to draw over stub data.
 
 ---
 

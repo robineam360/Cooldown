@@ -379,8 +379,15 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows, spike before design
-- **Status:** Needs design · **Blocked on a spike** · large · filed 2026-09-06 · after
-  CCRM-54 (ChatGPT Account) · shown greyed in Add account meanwhile (review decision 5)
+- **Status:** Blocked (2026-09-08) · spike found the data blocker is real, not just the auth
+  one: a token refreshed and used outside a live Antigravity session gets an
+  availability-shaped stub from `retrieveUserQuotaSummary` — all four buckets pinned at
+  `remainingFraction: 1`, `resetTime` sliding to "now + 5h"/"now + 7d" on every call rather than
+  holding a fixed window boundary, unmoved by genuine Gemini usage in between. Full response
+  bodies and the verdict paragraph in `design/research/2026-09-08-antigravity-spike.md`. The
+  only route left is the Mac relay, filed as CCRM-59 (Antigravity Mac Relay) · large · filed
+  2026-09-06 · after CCRM-54 (ChatGPT Account) · shown greyed in Add account meanwhile (review
+  decision 5)
 - **What the data is** (OpenQuota `providers/antigravity/*`, corroborated by CodexBar and
   OpenUsage docs; `design/research/2026-09-06-openquota-antigravity.md`):
   `POST https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary` with
@@ -450,6 +457,36 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
 - **Model impact:** the second pool's 5-hour window forces the `lanes` generalisation
   deferred in CCRM-53 (Provider Model). Do it then, with the real payload in hand.
 - **ToS posture:** the highest of the three. Disclose it as plainly as the Anthropic box does.
+
+### CCRM-59 · Antigravity Mac Relay — the only route left for real Gemini fractions
+- **Status:** Needs design · filed 2026-09-08, spun off CCRM-55 (Antigravity Account)'s spike ·
+  large · blocks CCRM-55 (Antigravity Account)
+- **Why this exists.** The 2026-09-08 spike in
+  `design/research/2026-09-08-antigravity-spike.md` found that
+  `cloudcode-pa.googleapis.com:retrieveUserQuotaSummary`, called with a token refreshed and
+  used outside a live Antigravity session, returns an availability-shaped stub — every bucket
+  pinned at `remainingFraction: 1`, `resetTime` sliding to "now + window" on every call,
+  unmoved by real Gemini usage in between — rather than tracked quota. That closes off
+  CCRM-55 (Antigravity Account)'s option **c** (loopback Custom Tab) and makes option **b**
+  (refresh-token paste) useless even if the auth blocker were solved, since the phone would
+  only ever see the same stub. The **local** language-server RPC
+  (`RetrieveUserQuotaSummary` over `127.0.0.1`, research doc §2 "Local RPC") is the one path
+  confirmed to carry real per-bucket fractions — see OpenQuota's own fixture and its priority
+  order, which tries the local RPC before ever falling back to the remote one. A phone cannot
+  reach `127.0.0.1` on the Mac; the Mac can.
+- **What it is.** CCRM-8 (Mac Menu-Bar)'s client — already the thing that lives on the Mac,
+  already the thing Antigravity itself lives on — polls the local language-server RPC while
+  Antigravity is running, normalises the four buckets into the `lanes` shape CCRM-53 (Provider
+  Model) defers for this exact case, and relays a snapshot to the phone. Needs, and this is the
+  large part: (a) a phone↔Mac channel, which **does not exist today** — CCRM-8 (Mac Menu-Bar)
+  is Mac-only and this repo has never talked to it; (b) a decision on transport (push over the
+  open internet vs. LAN-only vs. piggybacking on an existing sync channel) and on what happens
+  to the Gemini lane when the Mac is asleep or Antigravity isn't running; (c) the CCRM-55
+  (Antigravity Account) wireframe states (not started / unknown / untouched pool / stepped
+  signal) still apply once real data exists.
+- **Not started until:** the phone↔Mac channel gets its own design pass — this is not a small
+  follow-on to an existing feature, it's new plumbing between two repos that have never talked
+  to each other before.
 
 ### CCRM-56 · Provider Identity — Cooldown: the name, the three-sand hourglass, the marks and the accents
 - **Status:** Done (2026-09-06) — name, icon (rev C: 1.3x scale on review), marks (Claude/Gemini
