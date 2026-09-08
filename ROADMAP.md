@@ -40,6 +40,10 @@ an account and signs into that one; everything downstream already works per acco
 4. **Official provider logos, not dots**, identify the service on every surface — the user's
    explicit call, overriding the trademark caution in rev A. Colour is for bars and theme.
 5. **Antigravity greyed in Add account** until CCRM-55 (Antigravity Account) unblocks.
+   *Superseded 2026-09-08:* CCRM-55 (Antigravity Account) is dropped, not unblocked — see its
+   entry below. The greyed "coming" row is now stale copy describing a state that will never
+   arrive; changing it (to permanently absent, or to a different reason) is a visible UI change
+   and needs its own wireframe review per working agreement 2 before anyone touches it.
 6. **Repo not renamed.** *Reversed 2026-09-07 at Robin's call — see CCRM-58 (Repo Rename); the
    second half of this decision stands unchanged.* And a new rule: **a window the account does
    not have is not shown at all** — no placeholder card, no dash, on any surface.
@@ -379,15 +383,31 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows, spike before design
-- **Status:** Blocked (2026-09-08) · spike found the data blocker is real, not just the auth
-  one: a token refreshed and used outside a live Antigravity session gets an
-  availability-shaped stub from `retrieveUserQuotaSummary` — all four buckets pinned at
-  `remainingFraction: 1`, `resetTime` sliding to "now + 5h"/"now + 7d" on every call rather than
-  holding a fixed window boundary, unmoved by genuine Gemini usage in between. Full response
-  bodies and the verdict paragraph in `design/research/2026-09-08-antigravity-spike.md`. The
-  only route left is the Mac relay, filed as CCRM-59 (Antigravity Mac Relay) · large · filed
-  2026-09-06 · after CCRM-54 (ChatGPT Account) · shown greyed in Add account meanwhile (review
-  decision 5)
+- **Status:** Dropped (2026-09-08). A second, decisive round of the spike proved the data
+  blocker is not just soft-degraded but absolute: a real, substantial Gemini task run inside
+  Antigravity moved the app's own local usage view from 100%/100% to 99%/98% (screenshot in
+  `design/research/2026-09-08-antigravity-spike.md`), but the exact same moment, queried
+  through `retrieveUserQuotaSummary` — the only endpoint a phone-only app could ever reach —
+  still came back with all four buckets pinned at `remainingFraction: 1` and `resetTime`
+  sliding to "now + window" as always. Real Gemini usage data provably exists only behind the
+  local, `127.0.0.1`-only language-server RPC (confirmed unreachable from a phone in the
+  appendix's addendum below); the cloud endpoint is permanently a stub for any caller that
+  isn't the live IDE itself. **Robin's call 2026-09-08:** even setting the data blocker aside,
+  a Mac-dependent relay (CCRM-59 (Antigravity Mac Relay)) contradicts this app being
+  standalone, so that route is also off the table on product grounds, not just technical ones.
+  No further work planned — this is the fourth provider this repo has permanently ruled out
+  (alongside Cursor, Copilot, OpenRouter and the rest, see CLAUDE.md), just discovered later
+  than the others because it looked, at first read of OpenQuota's cloud fallback, like a plain
+  HTTPS call the phone could make itself. It never was. **ID retained per CLAUDE.md's rule —
+  never reused, never renumbered.**
+- **Full record:** `design/research/2026-09-06-openquota-antigravity.md` (original protocol
+  research) and `design/research/2026-09-08-antigravity-spike.md` (both spike rounds, verdict).
+- **Open follow-up, not done here:** the Add-account sheet's Antigravity row still reads
+  "coming" (review decision 3/5 above) — that copy is now wrong and needs a wireframe-reviewed
+  change (working agreement 2) to either remove the row or reword it, whenever that surface is
+  next touched.
+- *(Original filing, superseded above, kept for the record):* large · filed 2026-09-06 · after
+  CCRM-54 (ChatGPT Account) · shown greyed in Add account meanwhile (review decision 5)
 - **What the data is** (OpenQuota `providers/antigravity/*`, corroborated by CodexBar and
   OpenUsage docs; `design/research/2026-09-06-openquota-antigravity.md`):
   `POST https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary` with
@@ -459,8 +479,15 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
 - **ToS posture:** the highest of the three. Disclose it as plainly as the Anthropic box does.
 
 ### CCRM-59 · Antigravity Mac Relay — the only route left for real Gemini fractions
-- **Status:** Needs design · filed 2026-09-08, spun off CCRM-55 (Antigravity Account)'s spike ·
-  large · blocks CCRM-55 (Antigravity Account)
+- **Status:** Dropped (2026-09-08), same day it was filed. Robin's call: a design that makes
+  the phone app's Gemini data depend on a Mac being awake and running Antigravity contradicts
+  this app being standalone — a bar this item would fail even if CCRM-55 (Antigravity Account)
+  hadn't independently confirmed the data itself is unreachable any other way. **Do not revive
+  this as a way back into Antigravity support** — the standalone requirement is a settled
+  product decision, not a temporary constraint. ID retained per CLAUDE.md's rule. *(Rest of
+  this entry kept for the record of what the option would have required.)*
+- *(Original filing, superseded above):* filed 2026-09-08, spun off CCRM-55 (Antigravity
+  Account)'s spike · large · blocks CCRM-55 (Antigravity Account)
 - **Why this exists.** The 2026-09-08 spike in
   `design/research/2026-09-08-antigravity-spike.md` found that
   `cloudcode-pa.googleapis.com:retrieveUserQuotaSummary`, called with a token refreshed and
@@ -2894,7 +2921,9 @@ the machine it runs on:**
   via `ps` / `lsof` / `/proc`, a CSRF token read out of the process's own argv, TLS
   verification off, Connect-RPC to `127.0.0.1`. Phone-impossible by construction. Only the
   *cloud* fallback (`cloudcode-pa.googleapis.com` `v1internal:*`) is reachable from a phone,
-  and it is the degraded one — see CCRM-55 (Antigravity Account).
+  and it is the degraded one — confirmed 2026-09-08 by measurement, not just structural
+  reasoning: a real Gemini task moved Antigravity's own local usage view but never moved this
+  cloud endpoint's numbers at all — see CCRM-55 (Antigravity Account), now dropped.
 - **Auto-detecting installed tools**, drag-reorderable provider cards, a fixed 320 px popup,
   the tray composite — desktop shapes.
 - The **nine other providers** (Cursor, Copilot, Devin, Grok, OpenCode, OpenRouter, Z.ai,

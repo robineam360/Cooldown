@@ -89,17 +89,65 @@ Antigravity and `agy` again, then repeated the same `cloudcode-pa` call ~3 minut
 }
 ```
 
+## Call 3 — decisive round: a real, expensive task, checked against the IDE's own local view
+
+Robin's own screenshots of Antigravity's **Models & Usage** panel (which reads the local
+language-server RPC, `127.0.0.1`, in-session — the "richest source" per the research doc), one
+before and one after a real task ("do a web search and get me the updated take on agents in no
+less than 4000 words," a genuinely expensive Gemini Pro request):
+
+| | Gemini Weekly | Gemini 5h |
+|---|---|---|
+| Before | 100% | 100% |
+| After the 4000-word task | 99% | 98% |
+
+So the **local, in-IDE view moved** — real consumption happened and Antigravity's own UI
+correctly reflects it. Immediately after, quit Antigravity and `agy` again and repeated the
+identical remote call from Call 1/2 (fresh refresh, same terminal):
+
+```json
+{
+    "groups": [
+        {
+            "buckets": [
+                { "bucketId": "gemini-weekly", "displayName": "Weekly Limit Remaining", "window": "weekly", "resetTime": "2026-09-15T09:25:47Z", "remainingFraction": 1 },
+                { "bucketId": "gemini-5h", "displayName": "Five Hour Limit Remaining", "window": "5h", "resetTime": "2026-09-08T14:25:47Z", "remainingFraction": 1 }
+            ],
+            "displayName": "Gemini Models",
+            "description": "Models within this group: Gemini Flash, Gemini Pro"
+        },
+        {
+            "buckets": [
+                { "bucketId": "3p-weekly", "displayName": "Weekly Limit Remaining", "window": "weekly", "resetTime": "2026-09-15T09:25:47Z", "remainingFraction": 1 },
+                { "bucketId": "3p-5h", "displayName": "Five Hour Limit Remaining", "window": "5h", "resetTime": "2026-09-08T14:25:47Z", "remainingFraction": 1 }
+            ],
+            "displayName": "Claude and GPT models",
+            "description": "Models within this group: Claude Opus, Claude Sonnet, GPT-OSS"
+        }
+    ]
+}
+```
+
+Call made at `2026-09-08T09:25:44Z` (captured via `date -u` immediately before the request):
+`gemini-5h`'s `resetTime` is `09:25:44Z + ~5h0m3s`, `gemini-weekly`'s is `+ ~7 days 0h0m3s` —
+both still exactly "call time + fixed window," with zero relationship to the 1-2% just spent
+seconds earlier and visible in the same account's own IDE.
+
 ## Verdict
 
-**Placeholder, not real quota.** All four buckets read `remainingFraction: 1` both before and
-after genuine Gemini usage in the same session, and every `resetTime` moved forward by exactly
-the ~3 minutes elapsed between the two calls (`12:25:15Z` → `12:28:17Z`) rather than staying
-anchored to a fixed window boundary — the tell of a server-side "you're fine, ask again in five
-hours from *now*" stub rather than a tracked usage window, which by definition only moves at
-whole window rollovers. This matches CodexBar's warning in CCRM-55 (Antigravity Account)
-exactly: a token minted and used outside a live Antigravity session gets an availability-shaped
-payload, not live quota. **CCRM-55 (Antigravity Account) stays blocked** on the data blocker (not
-just the auth blocker); the Mac-relay route — filed as CCRM-59 (Antigravity Mac Relay) — becomes
-the only route this app can take for real Gemini fractions, since it is the one path that can
-present the local language-server's `RetrieveUserQuotaSummary` (§2 "Local RPC" in the OpenQuota
-research doc) rather than this stubbed remote one.
+**Confirmed, not just suspected: the remote endpoint never carries real Gemini usage, full
+stop.** A real, substantial task moved Antigravity's own local usage view (100%→98%/99%), but
+the exact same account, queried the same way as before through
+`cloudcode-pa.googleapis.com:retrieveUserQuotaSummary`, still returned all four buckets pinned
+at `remainingFraction: 1` with `resetTime` computed as "call time + fixed duration" — unrelated
+to any real window boundary or any real consumption. This is not a slow-to-update cache or a
+threshold effect a bigger prompt could surface; it is a hard split between two different data
+sources: the **local** `127.0.0.1` language-server RPC (real, and the one Antigravity's own UI
+reads) and the **remote** cloud RPC (permanently a stub for any caller without a live IDE
+session next to it). A phone can never be that caller.
+
+**Decision (Robin, 2026-09-08): drop CCRM-55 (Antigravity Account).** Even setting the data
+result aside, routing around it with a Mac relay (CCRM-59 (Antigravity Mac Relay)) would make
+the phone app's Gemini data depend on a Mac being awake and running Antigravity — which fails
+this app's own standalone requirement on its own terms. Both items are marked Dropped in
+ROADMAP.md; their IDs are retained, never reused, per CLAUDE.md.

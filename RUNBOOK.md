@@ -55,7 +55,7 @@ fix it in ROADMAP.md and note it in the step's *Log* line.
 | 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☑ |
 | 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☑ |
 | A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☑ |
-| B | *After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe | Opus | high | wireframe review | ☐ |
+| B | ~~*After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe~~ — N/A, CCRM-55 dropped 2026-09-08 | — | — | — | — |
 
 Steps 1 and 3 do not depend on each other and can run in parallel sessions. 2 needs 1. 4 needs
 1, 2 and 3. Do A whenever the Mac is free; it does not block 1–6. The handover after Step 1
@@ -580,13 +580,26 @@ fixed along the way: the spike bullet's request body (`{"metadata": {...}}`) is 
 the Keychain blob's refresh token is nested one level under a `"token"` key, not top-level as
 `design/research/2026-09-06-openquota-antigravity.md` §1b's `token_from_value` guess implied.
 Full response bodies (tokens redacted, never recorded) and verdict in
-`design/research/2026-09-08-antigravity-spike.md`. CCRM-55 (Antigravity Account) moved to
-Blocked with the data blocker recorded; filed CCRM-59 (Antigravity Mac Relay) for the only
-route left. Step B does not apply — no wireframe to draw over stub data.
+`design/research/2026-09-08-antigravity-spike.md`. **Follow-up same day, at Robin's request** —
+a decisive third round: ran a real, expensive Gemini task in Antigravity, confirmed via
+screenshots of its own Models & Usage panel that the local view moved (100%→98%/99%), then
+immediately re-queried the remote endpoint, which still returned all four buckets pinned at
+`remainingFraction: 1`. That rules out a bigger-prompt retest ever changing the answer — the
+remote endpoint is structurally a stub, not slow or threshold-gated. Robin's call: drop
+CCRM-55 (Antigravity Account) rather than chase the Mac-relay route (CCRM-59 (Antigravity Mac
+Relay)), since a Mac-dependent relay would fail this app's own standalone requirement even if
+the data problem had a fix. Both items marked Dropped in ROADMAP.md, IDs retained per
+CLAUDE.md. Step B does not apply, permanently — there is no design to do over stub data, and no
+future retest is expected to change that.
 
 ---
 
 ## Step B · CCRM-55 (Antigravity Account) design — only if Step A found real data
+
+**Does not apply.** Step A found placeholder data, not real fractions, and a decisive follow-up
+the same day (2026-09-08) ruled out a bigger prompt ever changing that — see Step A's Log.
+CCRM-55 (Antigravity Account) is dropped; kept below only as the record of what this step would
+have covered.
 
 **Model:** Opus · **Effort:** high · **wireframe review by Robin**
 
