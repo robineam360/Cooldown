@@ -72,7 +72,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -2118,21 +2117,26 @@ private fun ThemeColorPicker(themeName: String, onTheme: (String) -> Unit) {
     )
 }
 
-/** The tri-colour "Per provider" dot: a sweep of the three providers' own colours. */
+/**
+ * The "Per provider" dot: a sweep of the tracked providers' own colours. Two-way as of
+ * 2026-09-08 — CCRM-55 (Antigravity Account) dropped Google, so Antigravity's blue no
+ * longer belongs in this sweep.
+ */
 private fun providerOnlySwatch(dark: Boolean): Brush = Brush.sweepGradient(
     listOf(
         Palette.color(Provider.CLAUDE.themeName, dark),
         Palette.color(Provider.CHATGPT.themeName, dark),
-        Palette.color(Provider.ANTIGRAVITY.themeName, dark),
         Palette.color(Provider.CLAUDE.themeName, dark),
     )
 )
 
 /**
  * CCRM-56 (Provider Identity), decision 5: "+ Add account" opens this sheet
- * instead of minting a Claude profile directly. Antigravity is present and
- * greyed rather than hidden, so the app says what it is *for* — CCRM-55
- * (Antigravity Account) flips it live the day that unblocks.
+ * instead of minting a Claude profile directly. Only Claude and ChatGPT are
+ * listed — CCRM-55 (Antigravity Account) was dropped 2026-09-08 (Google never
+ * exposes real usage outside a live Antigravity session, to anyone), so
+ * Antigravity gets no row here, same as Cursor, Copilot or any other
+ * out-of-scope provider.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2144,36 +2148,25 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
             AddAccountRow(
                 Provider.CLAUDE,
                 "Signs in through your browser, then paste the code back — as before.",
-                enabled = true,
                 onClick = { onPick(Provider.CLAUDE) },
             )
             Spacer(Modifier.height(14.dp))
             AddAccountRow(
                 Provider.CHATGPT,
                 "Shows a short code to type at auth.openai.com — on this phone or any other device.",
-                enabled = true,
                 onClick = { onPick(Provider.CHATGPT) },
-            )
-            Spacer(Modifier.height(14.dp))
-            AddAccountRow(
-                Provider.ANTIGRAVITY,
-                "Not available yet — Google's sign-in for Antigravity can't finish on a phone. " +
-                    "Coming when it can.",
-                enabled = false,
-                onClick = {},
             )
         }
     }
 }
 
 @Composable
-private fun AddAccountRow(provider: Provider, subtitle: String, enabled: Boolean, onClick: () -> Unit) {
+private fun AddAccountRow(provider: Provider, subtitle: String, onClick: () -> Unit) {
     val dark = appDark()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.55f)
-            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
+            .clickable(onClick = onClick)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -2500,9 +2493,8 @@ private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
             }) { Text("Share feedback") }
             Spacer(Modifier.height(12.dp))
             Text(
-                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or " +
-                    "Google. \"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of " +
-                    "OpenAI. \"Gemini\" and \"Antigravity\" are trademarks of Google LLC.",
+                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI. " +
+                    "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

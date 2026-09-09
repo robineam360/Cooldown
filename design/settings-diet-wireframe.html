@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCRM-61 (Settings Diet) and CCRM-62 (Duet Notification)</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 96px; line-height: 1.5;
+  }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 70ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  h4.sh { font-size: 13px; font-weight: 700; margin: 22px 0 6px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 80ch; margin: 0 0 18px; }
+  code { overflow-wrap: anywhere; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  .cap.bad { color: var(--bad); }
+  .cap.good { color: var(--good); }
+  .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; }
+  .opt {
+    flex: 1 1 268px; max-width: 300px;
+    border: 1px solid var(--hair); border-radius: 18px; padding: 20px;
+    background: var(--card);
+  }
+  .opt.reject { opacity: .62; }
+  .opt h4 { margin: 0 0 2px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .opt .tag {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  }
+  .opt p { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+  .opt p b { color: var(--ink); }
+
+  .statusstrip {
+    display: flex; align-items: center; gap: 10px;
+    background: #16171A; border-radius: 10px; padding: 8px 12px; margin: 0 0 4px;
+    color: #F2F2F4; font-size: 11px; font-weight: 600; width: 240px;
+  }
+  .statusstrip .sp { flex: 1; }
+  .statusstrip .sig { opacity: .7; font-size: 9px; }
+
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .yes { color: var(--good); font-weight: 650; }
+  .no { color: var(--bad); font-weight: 650; }
+  .mid { color: var(--warn); font-weight: 650; }
+  .q {
+    border-left: 3px solid var(--accent); padding: 2px 0 2px 14px;
+    margin: 14px 0; font-size: 13.5px; max-width: 78ch;
+  }
+  .q.good { border-left-color: var(--good); }
+  .q.bad { border-left-color: var(--bad); }
+
+  /* ---------- shared layout ---------- */
+  .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .cols { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .col { flex: 0 0 auto; max-width: 100%; }
+  .col.cwide { flex: 1 1 440px; max-width: 560px; min-width: 0; }
+  @media (max-width: 620px) { .col.cwide { max-width: 100%; } }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 384px; margin: 10px 0 0; }
+  .note b { color: var(--ink); font-weight: 650; }
+  .scroll { overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+  .tbl-wrap { overflow-x: auto; max-width: 100%; }
+  .mk { flex: 0 0 auto; display: inline-block; vertical-align: -2px; }
+
+  /* ---------- Settings screen mock ---------- */
+  .sm {
+    width: 316px; max-width: 100%; border-radius: 20px; border: 1px solid var(--hair);
+    background: var(--card); padding: 4px 0 10px;
+  }
+  .sm .sl {
+    font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; padding: 13px 14px 5px;
+  }
+  .sm .sr { padding: 7px 14px; font-size: 12.5px; display: flex; gap: 9px; align-items: center; }
+  .sm .sr + .sr { border-top: 1px solid color-mix(in srgb, var(--hair) 65%, transparent); }
+  .sm .sr .n { flex: 1; min-width: 0; }
+  .sm .sr .d { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
+  .sm .sr .v { font-size: 11.5px; color: var(--accent); font-weight: 650; flex: 0 0 auto; }
+  .sm .sr .sw {
+    width: 26px; height: 15px; border-radius: 8px; background: var(--accent);
+    flex: 0 0 auto; position: relative;
+  }
+  .sm .sr .sw::after {
+    content: ""; position: absolute; top: 2px; right: 2px;
+    width: 11px; height: 11px; border-radius: 50%; background: #fff;
+  }
+  .sm .sr .sw.off { background: color-mix(in srgb, var(--hair) 90%, var(--muted)); }
+  .sm .sr .sw.off::after { right: auto; left: 2px; background: var(--muted); }
+  .sm .chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 14px 7px; }
+  .sm .chip {
+    font-size: 11px; padding: 2px 8px; border-radius: 9px;
+    border: 1px solid var(--hair); color: var(--muted); display: flex; gap: 4px; align-items: center;
+  }
+  .sm .chip.on {
+    border-color: var(--accent); color: var(--accent); font-weight: 650;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .sm .lbl2 { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 4px 14px 2px; }
+  .sm .expl { font-size: 11px; color: var(--muted); padding: 2px 14px 8px; }
+  .sm.before .drop { opacity: .5; }
+  .sm.before .drop .nt {
+    text-decoration: line-through; text-decoration-color: var(--bad);
+    text-decoration-thickness: 1px;
+  }
+  .sm.before .chips.drop, .sm.before .expl.drop, .sm.before .lbl2.drop { opacity: .5; }
+  .sm .badge {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9px;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--bad);
+    border: 1px solid var(--bad); border-radius: 5px; padding: 0 4px; flex: 0 0 auto;
+  }
+  .sm .badge.new { color: var(--good); border-color: var(--good); }
+  /* ---------- tabbed Settings mock ---------- */
+  .tabsheet {
+    width: 410px; border-radius: 20px; border: 1px solid var(--hair);
+    background: var(--card); overflow: hidden;
+  }
+  .tabsheet.wide { width: 750px; }
+  .tabbar { display: flex; border-bottom: 1px solid var(--hair); }
+  .tabbar .tb {
+    flex: 1 1 0; min-width: 0; text-align: center; font-size: 14px; font-weight: 600;
+    padding: 13px 10px 11px; color: var(--muted); position: relative;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .tabbar .tb.on { color: var(--accent); }
+  .tabbar .tb.on::after {
+    content: ""; position: absolute; left: 10px; right: 10px; bottom: 0;
+    height: 3px; background: var(--accent); border-radius: 2px 2px 0 0;
+  }
+  .tabbody { padding: 0 0 12px; }
+  .tabbody.two { display: flex; gap: 0; align-items: flex-start; }
+  .tabbody.two > * { flex: 1 1 0; min-width: 0; }
+  .tabbody.two > * + * { border-left: 1px solid color-mix(in srgb, var(--hair) 65%, transparent); }
+  .sm.flat { width: 100%; border: 0; background: transparent; padding: 0 0 2px; border-radius: 0; }
+  .swipe {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+    text-align: center; padding: 8px 0 2px;
+  }
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 14px 8px; }
+  .swatches i { width: 22px; height: 22px; border-radius: 50%; display: block; }
+  .swatches i.on { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
+  .cnt {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+    color: var(--muted); margin: 10px 0 0;
+  }
+
+  /* ---------- Android shade + notification ---------- */
+  .shade {
+    width: 384px; padding: 12px;
+    background: #16171A; border-radius: 28px; border: 1px solid #2A2C31;
+  }
+  .shade.light { background: #E4E4E4; border-color: #CFCFCF; }
+  .nc {
+    width: 360px; padding: 16px; border-radius: 24px;
+    background: #232529; color: #ECECEC;
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .nc.light { background: #F7F7F7; color: #1F1F1F; }
+  .nc .apphdr {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #9E9E9E; margin: 0 0 10px; font-weight: 600;
+  }
+  .nc.light .apphdr { color: #5C5C5C; }
+  .nc .apphdr .sp { opacity: .7; }
+
+  .duet { display: flex; align-items: center; }
+  .duet .gutter { width: 16px; flex: 0 0 auto; }
+  .half { width: 156px; flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+  .half .lft { flex: 1; min-width: 0; }
+  .hl { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .lbl {
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .lbl14 { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fig { font-weight: 700; letter-spacing: -.02em; line-height: 1; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .fig.dim { opacity: .5; }
+  .cdot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; }
+
+  .bar { position: relative; overflow: visible; }
+  .bar.dim { opacity: .45; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; border-radius: inherit; }
+  .bar > i { left: 0; }
+  .bar > s { position: absolute; top: -2px; bottom: -2px; width: 2px; }
+
+  /* expanded header block */
+  .hb { display: flex; align-items: center; gap: 14px; margin: 0 0 10px; }
+  .hb .lft { flex: 1; min-width: 0; }
+  .hb .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nc.light .hb .hsub { color: #5C5C5C; }
+  .hb .figwrap { flex: 0 0 auto; text-align: center; }
+  .hb .leftcap {
+    font-size: 10px; letter-spacing: .08em; color: #9E9E9E; margin-top: 1px;
+  }
+
+  /* expanded panel bitmap */
+  .pnl { margin-top: 10px; }
+  .prow { margin: 0 0 14px; }
+  .prow:last-child { margin-bottom: 0; }
+  .prow .ph { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+  .prow .pl { font-size: 13.5px; }
+  .prow .pv { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .prow .psub { font-size: 12px; color: #9E9E9E; margin-top: 6px; }
+  .nc.light .prow .psub { color: #5C5C5C; }
+
+  .cstrip {
+    display: flex; gap: 7px; align-items: flex-start; border-radius: 8px;
+    padding: 7px 9px; margin: 0 0 12px;
+    background: rgba(229, 153, 128, .13);
+  }
+  .cstrip.err { background: rgba(255, 82, 82, .13); }
+  .cstrip .cdot { margin-top: 5px; }
+  .cstrip .ct { font-size: 13.5px; font-weight: 700; }
+  .cstrip .cs { font-size: 12px; font-weight: 400; color: #9E9E9E; margin-top: 1px; }
+  .cmore { font-size: 12px; color: #9E9E9E; margin: 0 0 12px; padding-left: 2px; }
+
+  .acts {
+    margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08);
+    font-size: 13px; font-weight: 650; color: #E59980;
+  }
+  .nc.light .acts { border-top-color: rgba(0,0,0,.08); color: #D97757; }
+
+  /* tap-target overlay */
+  .taps { position: relative; }
+  .tapbox {
+    border: 1.5px dashed #7FC08F; border-radius: 10px; padding: 6px;
+    margin: 0; flex: 0 0 auto;
+  }
+  .taplbl {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px;
+    letter-spacing: .06em; text-transform: uppercase; color: #7FC08F; margin: 4px 0 0;
+  }
+
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 84ch; padding-left: 20px; }
+  ul.inv li { margin: 0 0 7px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 84ch; padding-left: 22px; }
+  .ok {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--good);
+    border: 1px solid var(--good); border-radius: 5px; padding: 1px 6px;
+    vertical-align: 2px; font-weight: 400;
+  }
+  ol.dec li { margin: 0 0 9px; }
+  ol.dec li b { font-weight: 650; }
+</style><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol><symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.98" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></symbol></defs></svg>
+<div class="page">
+
+  <p class="eyebrow">CCRM-61 (Settings Diet) &#183; CCRM-62 (Duet Notification) &mdash; proposed</p>
+  <h1>A shorter Settings screen, and one notification that shows two accounts</h1>
+  <p class="lede">
+    Every home-screen widget goes, every standalone notification goes except the reset ping, and
+    the four pinned styles collapse to the one that is actually run: Huge number. What is left is
+    one always-on notification carrying two accounts, and a Settings screen of four swipeable
+    tabs instead of thirteen stacked sections. This wireframe draws Settings before and after,
+    then draws the two-account notification in nine states so the layout can be judged before
+    any of it is built.
+  </p>
+
+  <hr class="hr">
+  <h2>1 &#183; Settings, before and after</h2>
+  <p class="sub">
+    Thirteen sections become four swipeable tabs. The mocks are the real row order at the real
+    type sizes; struck-through rows in the "before" column are the ones that go. Everything the
+    dropped rows controlled either stops existing or becomes a strip in the pinned panel, which
+    CCRM-44 (One Surface) already built. One thing on the Notifications list survives, and it is
+    the one that could not become a strip: <b>reset pings</b>.
+  </p>
+
+  <h3>Before</h3>
+  <div class="cols">
+    <div class="col">
+      <p class="cap bad">today &#183; 13 sections, 43 rows, one long scroll</p>
+      <div class="scroll"><div class="sm before"><div class="sl">Accounts</div><div class="sr"><span class="n"><span class="nt">Personal</span><span class="d">Claude &#183; signed in &#183; &#8942;</span></span></div><div class="sr"><span class="n"><span class="nt">ChatGPT</span><span class="d">ChatGPT &#183; signed in &#183; &#8942;</span></span></div><div class="sr"><span class="n"><span class="nt">+ Add account</span></span></div><div class="sl">Polling</div><div class="sr"><span class="n"><span class="nt">Check usage every</span><span class="d">Battery cost rises as this shortens</span></span><span class="v">15m</span></div><div class="sl">Notifications</div><div class="sr drop"><span class="n"><span class="nt">Usage warnings</span><span class="d">Nothing selected = silent</span></span></div><div class="lbl2 drop">5-hour window</div><div class="chips drop"><span class="chip on">80%</span><span class="chip on">90%</span><span class="chip">95%</span></div><div class="lbl2 drop">7-day window</div><div class="chips drop"><span class="chip">75%</span><span class="chip on">90%</span></div><div class="lbl2 drop">Per-model caps</div><div class="chips drop"><span class="chip">75%</span><span class="chip">90%</span></div><div class="sr drop"><span class="n"><span class="nt">Pace alerts</span><span class="d">Where usage is heading, not just where it is</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Will run out</span><span class="d">Projected past 100% before the reset</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Cutting it close</span><span class="d">Projected to land at 90% or more</span></span><span class="sw off"></span></div><div class="sr drop"><span class="n"><span class="nt">Almost out</span><span class="d">Under 10% of the window left</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Reset pings</span><span class="d">"If busy" pings only above 80%</span></span></div><div class="sr drop"><span class="n"><span class="nt">5-hour reset</span></span><span class="v">If busy</span></div><div class="sr drop"><span class="n"><span class="nt">7-day reset</span></span><span class="v">Off</span></div><div class="sr drop"><span class="n"><span class="nt">Personal alerts</span><span class="d">Usage warnings and reset pings</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">ChatGPT alerts</span><span class="d">Usage warnings and reset pings</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Sign-in alerts</span><span class="d">Token expiring or no longer working</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Stale data alerts</span><span class="d">Usage data hasn't refreshed for hours</span></span><span class="sw"></span></div><div class="sr drop"><span class="n"><span class="nt">Alert lifetime</span></span><span class="v">Auto</span></div><div class="sr drop"><span class="n"><span class="nt">System notification settings</span></span><span class="v">&#8599;</span></div><div class="sl">Pinned notification</div><div class="sr"><span class="n"><span class="nt">Always-on usage notification</span><span class="d">Silent, ongoing, with a status-bar icon. All alerts fold into this panel</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Show profile</span></span></div><div class="chips"><span class="chip on"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkClaude"/></svg>Personal</span><span class="chip"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkGpt"/></svg>ChatGPT</span></div><div class="sr drop"><span class="n"><span class="nt">Notification style</span></span></div><div class="chips drop"><span class="chip">Gauge</span><span class="chip">Number tile</span><span class="chip">Progress bar</span><span class="chip on">Huge number</span></div><div class="expl drop">The largest number a collapsed notification allows. Uses a custom layout, so a few phone skins may style it differently.</div><div class="sr"><span class="n"><span class="nt">Tapping the notification opens</span></span></div><div class="chips"><span class="chip on">Cooldown</span><span class="chip">Claude app</span></div><div class="sr drop"><span class="n"><span class="nt">Status-bar icon</span></span></div><div class="chips drop"><span class="chip on">Ring</span><span class="chip">Pie</span><span class="chip">Battery</span><span class="chip">Number</span></div><div class="expl drop">The colored gauge and bars follow your theme and turn orange, then red, near the limit. Ring and Pie both show the 5-hour window with a needle at even pace &#8230; <i>(139 words)</i></div><div class="sl">Quick Settings tile</div><div class="expl drop">The tile in the notification shade / Control Center. It shows the 5-hour percentage, with the reset under it &#8230; <i>(explainer only, no controls)</i></div><div class="sl">Usage credits</div><div class="expl">Pay-as-you-go credits that cover you once a plan window runs out.</div><div class="sr"><span class="n"><span class="nt">Show for Personal</span><span class="d">Credits card on this profile's screen</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Show for ChatGPT</span><span class="d">Credits card on this profile's screen</span></span><span class="sw off"></span></div><div class="sr drop"><span class="n"><span class="nt">Show on widgets</span><span class="d">Adds a credits bar to the tall usage widget</span></span><span class="sw off"></span></div><div class="sl">Appearance</div><div class="sr"><span class="n"><span class="nt">Theme</span></span></div><div class="chips"><span class="chip on">System</span><span class="chip">Light</span><span class="chip">Dark</span></div><div class="sr"><span class="n"><span class="nt">Time format</span><span class="d">Times shown like Thu 23:45</span></span></div><div class="chips"><span class="chip">System</span><span class="chip">12-hour</span><span class="chip on">24-hour</span></div><div class="sr"><span class="n"><span class="nt">Usage display</span><span class="d">Bars and colours always show what's spent</span></span></div><div class="chips"><span class="chip on">Used</span><span class="chip">Left</span></div><div class="sr"><span class="n"><span class="nt">Reset time</span><span class="d">Which form leads wherever a reset is shown</span></span></div><div class="chips"><span class="chip on">Countdown</span><span class="chip">Clock time</span></div><div class="sr"><span class="n"><span class="nt">Show red past the pace mark</span><span class="d">Off keeps the even-pace tick without the colour</span></span></div><div class="sr drop"><span class="n"><span class="nt">On widgets</span><span class="d">Bars and rings on the home screen</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">In-app bars</span><span class="d">The usage screen's bars</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Pinned notification</span><span class="d">The always-on notification's bars</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Theme color</span><span class="d">12 swatches &#183; Per provider</span></span></div><div class="sl">Widgets</div><div class="sr drop"><span class="n"><span class="nt">Add usage widget to home screen</span></span><span class="v">&#8599;</span></div><div class="sr drop"><span class="n"><span class="nt">Add single-bar widget to home screen</span></span><span class="v">&#8599;</span></div><div class="sl">Updates</div><div class="sr"><span class="n"><span class="nt">Check automatically</span><span class="d">GitHub every 6 hours</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Check for updates</span><span class="d">Last checked 14:02 today</span></span><span class="v">&#8635;</span></div><div class="sl">Diagnostics</div><div class="sr"><span class="n"><span class="nt">Diagnostics log</span><span class="d">Share or clear the rolling log</span></span><span class="v">&#8599;</span></div><div class="sl">About</div><div class="sr"><span class="n"><span class="nt">Cooldown v1.5</span><span class="d">Licences &#183; not affiliated &#183; tap 7&#215; for Debug</span></span></div><div class="sl">Debug <i>(hidden)</i></div><div class="sr"><span class="n"><span class="nt">Trend diagnostics &#183; Debug tools</span><span class="d">Only after the 7-tap unlock</span></span></div></div></div>
+    </div>
+    <div class="col cwide">
+      <p class="cap">what is wrong with it</p>
+      <p class="note" style="max-width:520px">
+        Thirteen section headings in one column, and the two that dominate it, Notifications and
+        Pinned notification, are <b>26 of the 43 rows between them</b>. On the Fold 7 cover
+        screen that is roughly four screens of scrolling to reach Appearance and six to reach
+        About. The inner screen already splits it into two columns, which helps the tablet case
+        and does nothing for the phone one.
+      </p>
+      <p class="note" style="max-width:520px">
+        The split it uses today is by subject: what the accounts are on one side, how this device
+        surfaces them on the other. That is a reasonable division and it is invisible, because a
+        section heading looks the same whichever column it lands in.
+      </p>
+    </div>
+  </div>
+
+  <h3>After &#183; four swipeable tabs <span class="ok">approved</span></h3>
+  <p class="sub">
+    A fixed <code>TabRow</code> of four tabs above a <code>HorizontalPager</code>, which is
+    exactly the pattern the main screen's <code>ProfileTabs</code> already uses: tap a tab or
+    swipe horizontally to move between them. Drawn at <b>410&nbsp;dp</b>, the Fold 7 cover width.
+  </p>
+  <div class="q">
+    <b>Tab-width arithmetic.</b> Four fixed tabs across 410&nbsp;dp is <b>102.5&nbsp;dp each</b>.
+    Measured at 14&nbsp;sp: "Accounts" 63&nbsp;dp, "Alerts" 39, "Appearance" <b>81</b>, "More"
+    35. Material's fixed tab wants 16&nbsp;dp of padding a side, which leaves 70.5&nbsp;dp of
+    text room, so <b>"Appearance" needs the padding down to 10&nbsp;dp a side</b> to fit
+    without truncating: 102.5 &#8722; 20 = 82.5&nbsp;dp against its 81, which is the whole margin,
+    one and a half dp. "Notifications" measures <b>85&nbsp;dp</b> and cannot be made to fit at
+    all, which is why that tab is called <b>Alerts</b>. If 10&nbsp;dp padding reads too tight on
+    a device, the fallback is a scrollable <code>TabRow</code>, which costs the "all four visible
+    at once" property that is the point of doing this.
+  </div>
+
+  <div class="row">
+    <div class="col"><p class="cap good">tab 1 of 4 &#183; accounts</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb on">Accounts</div><div class="tb">Alerts</div><div class="tb">Appearance</div><div class="tb">More</div></div><div class="tabbody"><div class="sm flat"><div class="sr"><span class="n"><span class="nt">Personal</span><span class="d">Claude &#183; signed in &#183; 42% of the 5h window &#183; &#8942;</span></span></div><div class="sr"><span class="n"><span class="nt">ChatGPT</span><span class="d">ChatGPT &#183; signed in &#183; 63% of the 5h window &#183; &#8942;</span></span></div><div class="sr"><span class="n"><span class="nt">+ Add account</span><span class="d">Claude, ChatGPT or Antigravity</span></span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">The account cards and Add account, unchanged from CCRM-6 (Multi-Account). With the Notifications section gone, each card's status chip is the only in-app place a sign-in problem shows, so the cards gained the percentage on their subtitle line.</p></div>
+    <div class="col"><p class="cap good">tab 2 of 4 &#183; alerts</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb">Accounts</div><div class="tb on">Alerts</div><div class="tb">Appearance</div><div class="tb">More</div></div><div class="tabbody"><div class="sm flat"><div class="sl">Always-on notification</div><div class="sr"><span class="n"><span class="nt">Always-on usage notification</span><span class="d">Silent and ongoing, with a status-bar ring. Nothing else posts on its own except the reset pings below</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Show accounts</span></span><span class="badge new">new</span></div><div class="lbl2">First</div><div class="chips"><span class="chip on"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkClaude"/></svg>Personal</span><span class="chip"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkGpt"/></svg>ChatGPT</span></div><div class="lbl2">Second &#183; optional</div><div class="chips"><span class="chip"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkClaude"/></svg>Personal</span><span class="chip on"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkGpt"/></svg>ChatGPT</span><span class="chip">None</span></div><div class="sr"><span class="n"><span class="nt">Tapping a number opens</span></span></div><div class="chips"><span class="chip on">Cooldown</span><span class="chip">That service's app</span></div><div class="sr"><span class="n"><span class="nt">Status-bar ring shows</span></span><span class="badge new">new</span></div><div class="chips"><span class="chip on">First</span><span class="chip">Second</span><span class="chip">Whichever is higher</span></div><div class="expl">A clean ring for the 5h window, in that account's own colour, so the colour tells you which account you are looking at.</div><div class="sr"><span class="n"><span class="nt">System notification settings</span><span class="d">The two channels left</span></span><span class="badge">moved</span><span class="v">&#8599;</span></div><div class="sl">Reset pings</div><div class="expl">The one notification that still posts on its own. "If busy" pings only when that window had reached 80% before it reset.</div><div class="lbl2">Personal</div><div class="sr"><span class="n"><span class="nt">5h reset</span></span></div><div class="chips"><span class="chip">Off</span><span class="chip on">If busy</span><span class="chip">Always</span></div><div class="sr"><span class="n"><span class="nt">Weekly reset</span></span></div><div class="chips"><span class="chip on">Off</span><span class="chip">If busy</span><span class="chip">Always</span></div><div class="lbl2">ChatGPT</div><div class="sr"><span class="n"><span class="nt">5h reset</span></span></div><div class="chips"><span class="chip">Off</span><span class="chip">If busy</span><span class="chip on">Always</span></div><div class="sr"><span class="n"><span class="nt">Weekly reset</span></span></div><div class="chips"><span class="chip on">Off</span><span class="chip">If busy</span><span class="chip">Always</span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">Everything that decides what the phone tells you: the always-on notification, which accounts it carries, what a tap opens, which account the status-bar ring shows, and the surviving reset pings per account. Two new rows here, marked. This is the tab that fits one cover screen with two accounts and scrolls with three.</p></div>
+  </div>
+  <div class="row" style="margin-top:26px">
+    <div class="col"><p class="cap ">tab 3 of 4 &#183; appearance</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb">Accounts</div><div class="tb">Alerts</div><div class="tb on">Appearance</div><div class="tb">More</div></div><div class="tabbody"><div class="sm flat"><div class="sr"><span class="n"><span class="nt">Theme</span></span></div><div class="chips"><span class="chip on">System</span><span class="chip">Light</span><span class="chip">Dark</span></div><div class="sr"><span class="n"><span class="nt">Time format</span><span class="d">Times shown like Thu 23:45</span></span></div><div class="chips"><span class="chip">System</span><span class="chip">12-hour</span><span class="chip on">24-hour</span></div><div class="sr"><span class="n"><span class="nt">Usage display</span><span class="d">Bars and colours always show what's spent</span></span></div><div class="chips"><span class="chip on">Used</span><span class="chip">Left</span></div><div class="sr"><span class="n"><span class="nt">Reset time</span><span class="d">Which form leads wherever a reset is shown</span></span></div><div class="chips"><span class="chip on">Countdown</span><span class="chip">Clock time</span></div><div class="sr"><span class="n"><span class="nt">Show red past the pace mark</span><span class="d">Colours the bar past the even-pace tick, in the app and in the notification. Off keeps the tick without the colour</span></span><span class="badge">merged</span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Theme color</span><span class="d">Per provider</span></span></div><div class="swatches"><i style="background:#D97757"></i><i style="background:#10A37F"></i><i style="background:#4285F4"></i><i style="background:#7C6BD9"></i><i style="background:#2F8F6B"></i><i style="background:#C2564B"></i><i style="background:#B8873A"></i><i style="background:#4A7DB5"></i><i style="background:#8C6FA8"></i><i style="background:#5C8A72"></i><i style="background:#A8683F"></i><i style="background:#6E7480"></i></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">Unchanged rows in an unchanged order, with one change: <b>Show red past the pace mark is now a single toggle</b> covering the app and the notification, where it was three. <b>Per provider</b> stays the theme-colour default, which is what tells the Duet's two halves apart by colour as well as by mark.</p></div>
+    <div class="col"><p class="cap ">tab 4 of 4 &#183; more</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb">Accounts</div><div class="tb">Alerts</div><div class="tb">Appearance</div><div class="tb on">More</div></div><div class="tabbody"><div class="sm flat"><div class="sl">Polling</div><div class="sr"><span class="n"><span class="nt">Check usage every</span><span class="d">Battery cost rises as this shortens</span></span><span class="v">15m</span></div><div class="sl">Usage credits <i>(only if an account reports credits)</i></div><div class="sr"><span class="n"><span class="nt">Show for Personal</span><span class="d">Credits card on this account's screen</span></span><span class="sw"></span></div><div class="sl">Updates</div><div class="sr"><span class="n"><span class="nt">Check automatically</span><span class="d">GitHub every 6 hours</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Check for updates</span><span class="d">Last checked 14:02 today</span></span><span class="v">&#8635;</span></div><div class="sl">Diagnostics</div><div class="sr"><span class="n"><span class="nt">Diagnostics log</span><span class="d">Share or clear the rolling log</span></span><span class="v">&#8599;</span></div><div class="sl">About</div><div class="sr"><span class="n"><span class="nt">Cooldown v1.6</span><span class="d">Licences &#183; not affiliated &#183; tap 7&#215; for Debug</span></span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">The set-once and never-again rows. Polling leads it because it is the only one with a cost. Usage credits appears only when an account actually reports a credit budget, so on most installs this tab is five headings, not six.</p></div>
+  </div>
+
+  <h4 class="sh">The same tab at the inner screen's width</h4>
+  <p class="sub">
+    At 750&nbsp;dp the tab bar stays fixed and full width, and the tab's own content goes two
+    column, which is what the Settings screen already does on the inner screen. The split is
+    within one tab now, so a heading can no longer land in a column that makes no sense of it.
+  </p>
+  <div class="scroll"><div class="tabsheet wide"><div class="tabbar"><div class="tb">Accounts</div><div class="tb">Alerts</div><div class="tb on">Appearance</div><div class="tb">More</div></div><div class="tabbody two"><div class="sm flat"><div class="sr"><span class="n"><span class="nt">Theme</span></span></div><div class="chips"><span class="chip on">System</span><span class="chip">Light</span><span class="chip">Dark</span></div><div class="sr"><span class="n"><span class="nt">Time format</span><span class="d">Times shown like Thu 23:45</span></span></div><div class="chips"><span class="chip">System</span><span class="chip">12-hour</span><span class="chip on">24-hour</span></div><div class="sr"><span class="n"><span class="nt">Usage display</span><span class="d">Bars and colours always show what's spent</span></span></div><div class="chips"><span class="chip on">Used</span><span class="chip">Left</span></div></div><div class="sm flat"><div class="sr"><span class="n"><span class="nt">Reset time</span><span class="d">Which form leads wherever a reset is shown</span></span></div><div class="chips"><span class="chip on">Countdown</span><span class="chip">Clock time</span></div><div class="sr"><span class="n"><span class="nt">Show red past the pace mark</span><span class="d">Colours the bar past the even-pace tick, in the app and in the notification. Off keeps the tick without the colour</span></span><span class="badge">merged</span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Theme color</span><span class="d">Per provider</span></span></div><div class="swatches"><i style="background:#D97757"></i><i style="background:#10A37F"></i><i style="background:#4285F4"></i><i style="background:#7C6BD9"></i><i style="background:#2F8F6B"></i><i style="background:#C2564B"></i><i style="background:#B8873A"></i><i style="background:#4A7DB5"></i><i style="background:#8C6FA8"></i><i style="background:#5C8A72"></i><i style="background:#A8683F"></i><i style="background:#6E7480"></i></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div>
+  <p class="note" style="max-width:750px">
+    Appearance at 750&nbsp;dp. The pager still swipes, so the gesture means the same thing at
+    both widths; only the number of columns inside a page changes.
+  </p>
+
+  <h4 class="sh">States</h4>
+  <div class="row">
+    <div class="col"><p class="cap warn">state &#183; no account yet</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb on">Accounts</div><div class="tb">Alerts</div><div class="tb">Appearance</div><div class="tb">More</div></div><div class="tabbody"><div class="sm flat"><div class="sr"><span class="n"><span class="nt">+ Add account</span><span class="d">Claude, ChatGPT or Antigravity</span></span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">One row. The other three tabs still render, and Alerts shows the always-on toggle off with nothing to choose, which is honest: there is nothing to show a percentage for yet.</p></div>
+    <div class="col"><p class="cap ">state &#183; one account</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb">Accounts</div><div class="tb on">Alerts</div><div class="tb">Appearance</div><div class="tb">More</div></div><div class="tabbody"><div class="sm flat"><div class="sl">Always-on notification</div><div class="sr"><span class="n"><span class="nt">Always-on usage notification</span><span class="d">Silent and ongoing, with a status-bar ring</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Show accounts</span></span></div><div class="lbl2">First</div><div class="chips"><span class="chip on"><svg class="mk" width="12" height="12" style="color:var(--accent)" aria-hidden="true"><use href="#mkClaude"/></svg>Personal</span></div><div class="lbl2">Second &#183; optional</div><div class="chips"><span class="chip on">None</span></div><div class="sr"><span class="n"><span class="nt">Tapping a number opens</span></span></div><div class="chips"><span class="chip on">Cooldown</span><span class="chip">That service's app</span></div><div class="sr"><span class="n"><span class="nt">Status-bar ring shows</span><span class="d">One account, so there is nothing to choose</span></span><span class="v">First</span></div><div class="sl">Reset pings</div><div class="lbl2">Personal</div><div class="sr"><span class="n"><span class="nt">5h reset</span></span></div><div class="chips"><span class="chip">Off</span><span class="chip on">If busy</span><span class="chip">Always</span></div><div class="sr"><span class="n"><span class="nt">Weekly reset</span></span></div><div class="chips"><span class="chip on">Off</span><span class="chip">If busy</span><span class="chip">Always</span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">First collapses to a single chip and Second to <b>None</b>, both already selected and both left visible rather than hidden, so the shape of the setting does not change when a second account is added. &quot;Status-bar ring shows&quot; degrades to a read-only value for the same reason.</p></div>
+  </div>
+  <div class="row" style="margin-top:26px">
+    <div class="col"><p class="cap ">state &#183; more, with debug unlocked</p><div class="scroll"><div class="tabsheet"><div class="tabbar"><div class="tb">Accounts</div><div class="tb">Alerts</div><div class="tb">Appearance</div><div class="tb on">More</div></div><div class="tabbody"><div class="sm flat"><div class="sl">Polling</div><div class="sr"><span class="n"><span class="nt">Check usage every</span><span class="d">Battery cost rises as this shortens</span></span><span class="v">15m</span></div><div class="sl">Usage credits <i>(only if an account reports credits)</i></div><div class="sr"><span class="n"><span class="nt">Show for Personal</span><span class="d">Credits card on this account's screen</span></span><span class="sw"></span></div><div class="sl">Updates</div><div class="sr"><span class="n"><span class="nt">Check automatically</span><span class="d">GitHub every 6 hours</span></span><span class="sw"></span></div><div class="sr"><span class="n"><span class="nt">Check for updates</span><span class="d">Last checked 14:02 today</span></span><span class="v">&#8635;</span></div><div class="sl">Diagnostics</div><div class="sr"><span class="n"><span class="nt">Diagnostics log</span><span class="d">Share or clear the rolling log</span></span><span class="v">&#8599;</span></div><div class="sl">About</div><div class="sr"><span class="n"><span class="nt">Cooldown v1.6</span><span class="d">Licences &#183; not affiliated &#183; tap 7&#215; for Debug</span></span></div><div class="sl">Debug</div><div class="sr"><span class="n"><span class="nt">Trend diagnostics</span><span class="d">Projection inputs, per window</span></span><span class="v">&#8599;</span></div><div class="sr"><span class="n"><span class="nt">Debug tools</span><span class="d">Fake data, force a poll, clear the cache</span></span><span class="v">&#8599;</span></div></div></div><div class="swipe">&#9664;&nbsp; swipe or tap &nbsp;&#9654;</div></div></div><p class="note">Debug appends to the bottom of the More tab after the 7-tap unlock on About, exactly where it appends to the bottom of the scroll today. Nothing moves to accommodate it.</p></div>
+  </div>
+
+  <div class="q">
+    <b>The trade-offs, both directions.</b><br>
+    <b>For.</b> Each tab fits one cover screen without scrolling, which no arrangement of a flat
+    list does. The four groups match how often each is touched: Accounts when an account changes,
+    Alerts when the notification changes, Appearance rarely, More almost never. And the tab bar
+    is a standing table of contents, where thirteen headings in a scroll are not.<br>
+    <b>Against.</b> A horizontal swipe inside Settings must not fight horizontally scrolling
+    content. It does not here: the theme colour grid and every chip row are <code>FlowRow</code>s,
+    which wrap rather than scroll, so there is no horizontal scroller anywhere inside a tab to
+    steal the gesture. The real cost is that <b>every setting is one tap further away</b> than in
+    a flat list, and a setting whose tab you have forgotten is worse to find than one you can
+    scroll past. Search would fix that and there is none.<br>
+    <b>Honest caveat.</b> The Alerts tab fits one cover screen <i>with two accounts</i>. A third
+    account adds two more chip-row pairs and it scrolls. Approved in review with that known.
+  </div>
+
+  <p class="cnt">
+    <b>43 rows before, across 13 sections. 24 after, across four tabs.</b>
+    19 rows go, 4 merge down into 3, 1 moves,
+    19 stay as they are, and 1 is new: "Status-bar ring shows".
+    The Duet's Second chip row rides inside Show accounts and adds no row of its own.
+  </p>
+
+  <div class="q bad">
+    <b>The consequence, stated plainly.</b> With the always-on notification switched off, the app
+    posts <b>nothing except the reset pings you have switched on</b>. No sound, no heads-up, no
+    status-bar ring, no sign-in warning. Sign-in trouble shows as the status chip on the Accounts
+    card, and as a strip in the pinned panel when the notification is on. Channels deleted:
+    <code>usage_alerts</code>, <code>auth_alerts</code>, <code>health_alerts</code>,
+    <code>ping_alerts</code>, <code>pace_alerts</code>, <code>update_alerts</code>. Two stay:
+    <code>pinned_usage_v2</code> and <code>reset_alerts</code>.
+  </div>
+
+  <div class="q good">
+    <b>Why reset pings are the exception.</b> Every other alert on that list describes a state,
+    and a state can be read off a panel whenever you next look. "Your window just reset" is
+    momentary: it is true for a minute and then it is not, so there is nothing to fold and nothing
+    to read later. That makes it <b>the one standalone notification left</b>, and it posts even
+    while the always-on notification is on, which is the one exception to the CCRM-44 (One Surface)
+    silence contract. The fold-into-panel machinery for it goes with the other event strips.
+    <code>resetPingMode</code> becomes per account, so one account can ping and the other stay
+    quiet.
+  </div>
+
+  <div class="q">
+    <b>Which strips survive.</b> The <i>event</i> strips, threshold crossings and pace milestones,
+    go with the alerts that produced them: there is no event any more. The reset ping keeps no
+    strip either, because it is a notification again. The three <i>condition</i> strips stay,
+    because a condition is state rather than an alert and the panel is the only place that state
+    is legible: <b>sign-in stopped working</b>, <b>data is stale</b>, <b>update available</b>.
+  </div>
+
+  <div class="q bad">
+    <b>Quick Settings tile: dropped outright.</b> Not just the section, the tile. Android tints
+    tile icons monochrome, so a tile cannot carry the account-identity colour the status-bar ring
+    now depends on, which made it the one surface that could not say whose number it was showing.
+    Four <code>TileService</code> declarations, their shared implementation and their icon-style
+    read all go, and CCRM-11 (Tile Reset Time) is superseded. <b>Tiles already placed on a
+    device disappear when the update installs</b>, the same as the widgets.
+  </div>
+
+  <h3>Row by row</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Section</th><th>Row</th><th>Verdict</th><th>Why</th></tr>
+    <tr><td>Accounts</td><td>Account card, per account: sign-in, status chip, &#8942; rename / remove</td><td class="yes">Keep</td><td>CCRM-6 (Multi-Account) put the accounts here and nothing about this proposal touches them. With the Notifications section gone, the card's status chip becomes the only in-app place a sign-in problem shows.</td></tr><tr><td>Accounts</td><td>+ Add account, with the provider picker</td><td class="yes">Keep</td><td>CCRM-56 (Provider Identity) decision 5. Unchanged.</td></tr><tr><td>Polling</td><td>Check usage every &#183; 5 / 10 / 15 / 30 / 60m chips</td><td class="yes">Keep</td><td>The only knob that costs battery. Unchanged.</td></tr><tr><td>Notifications</td><td>Usage warnings &#183; 5-hour window 80 / 90 / 95%</td><td class="no">Drop</td><td>No standalone notification means no threshold to cross. The severity ladder on the bar and the figure already says 80, 90, 100 in colour.</td></tr><tr><td>Notifications</td><td>Usage warnings &#183; 7-day window 75 / 90%</td><td class="no">Drop</td><td>Same.</td></tr><tr><td>Notifications</td><td>Usage warnings &#183; Per-model caps 75 / 90%</td><td class="no">Drop</td><td>Same.</td></tr><tr><td>Notifications</td><td>Pace alerts, master toggle</td><td class="no">Drop</td><td>CCRM-21 (Pace Alerts) exists to interrupt. With nothing to interrupt with, the pace reading survives as the neutral tick on every bar (CCRM-43 (Bar Pace Marks)) and the red past it.</td></tr><tr><td>Notifications</td><td>Pace milestone &#183; Will run out</td><td class="no">Drop</td><td>Goes with its master toggle.</td></tr><tr><td>Notifications</td><td>Pace milestone &#183; Cutting it close</td><td class="no">Drop</td><td>Goes with its master toggle.</td></tr><tr><td>Notifications</td><td>Pace milestone &#183; Almost out</td><td class="no">Drop</td><td>Goes with its master toggle.</td></tr><tr><td>Notifications</td><td>Reset pings &#183; 5-hour reset mode</td><td class="yes">Keep</td><td><b>Now per account.</b> "You are back" is momentary by nature, so it has no state to fold into a panel and no strip to become. It is the one alert that cannot be replaced by a condition, so it survives as the one standalone notification the app still posts. <code>resetPingMode</code> becomes a per-account setting, and the row group repeats per account.</td></tr><tr><td>Notifications</td><td>Reset pings &#183; 7-day reset mode</td><td class="yes">Keep</td><td>Same, and relabelled <b>Weekly reset</b> to match the notification's own wording.</td></tr><tr><td>Notifications</td><td>"&lt;account&gt; alerts" toggle, one per account</td><td class="no">Drop</td><td>CCRM-5 (Per-Profile Notification) added a per-account mute for alerts that no longer exist. The Duet's Second chip is the replacement: an account is either on the notification or it is not.</td></tr><tr><td>Notifications</td><td>Sign-in alerts</td><td class="no">Drop</td><td>The alert goes; the condition stays. Sign-in trouble shows as the status chip on the Accounts card and as the red strip in the pinned panel, exactly as CCBG-12 (Status Icon Swap) and CCRM-44 (One Surface) already draw it.</td></tr><tr><td>Notifications</td><td>Stale data alerts</td><td class="no">Drop</td><td>Same split: the alert goes, the amber strip and the dimmed bars stay.</td></tr><tr><td>Notifications</td><td>Alert lifetime</td><td class="no">Drop</td><td>It timed strips that came from events. Only condition strips remain, and a condition clears when the condition clears, so there is nothing left to time.</td></tr><tr><td>Notifications</td><td>System notification settings link</td><td class="mid">Move</td><td>Moves under Always-on notification, on the Alerts tab. Two channels are left, <code>pinned_usage_v2</code> and <code>reset_alerts</code>, and this is still the only way to silence or hide either at the OS level.</td></tr><tr><td>Pinned notification</td><td>Always-on usage notification toggle</td><td class="yes">Keep</td><td>Now the app's single switch for posting anything at all. The subtitle has to say so, which is the copy change below.</td></tr><tr><td>Pinned notification</td><td>Show profile chips</td><td class="mid">Merge</td><td>Becomes <b>Show accounts</b> with two chip rows, First and Second. First drives the status-bar glyph; Second may be None.</td></tr><tr><td>Pinned notification</td><td>Notification style &#183; Gauge / Number tile / Progress bar / Huge number</td><td class="no">Drop</td><td>Huge number is the one style run, and it is the only one built from custom RemoteViews, so it is the only one that can hold two accounts at all. The other three are large-icon bitmaps with a single number slot.</td></tr><tr><td>Pinned notification</td><td>Style explainer paragraph</td><td class="no">Drop</td><td>No choice left to explain.</td></tr><tr><td>Pinned notification</td><td>Tapping the notification opens &#183; Cooldown / &lt;provider&gt; app</td><td class="yes">Keep</td><td>CCRM-2 (Notification Tap Target), reworded to "Tapping a number opens": the setting now applies per half, and each half resolves it against its own provider.</td></tr><tr><td>Pinned notification</td><td>Status-bar icon &#183; Ring / Pie / Battery / Number</td><td class="no">Drop</td><td><b>Decided: Ring, and the ring loses its hub dot.</b> CCRM-51 (Rails Gauge) redrew Ring and Pie in one grammar, so the choice was a look rather than a difference in what the glyph tells you. In its place comes one new row, "Status-bar ring shows", because the ring's colour is now the account identity and something has to say whose.</td></tr><tr><td>Pinned notification</td><td>Status-bar icon explainer, 139 words</td><td class="mid">Merge</td><td>Collapses to one sentence: a clean ring that fills as the 5h window burns, with a needle at even pace, in that account's own colour. The dot for the weekly window is gone with it.</td></tr><tr><td>Quick Settings tile</td><td>Explainer text, two paragraphs, no controls</td><td class="no">Drop</td><td>A whole section heading for prose with nothing to set, and now <b>the tile goes with it</b>. Android tints tile icons monochrome, so the tile cannot carry the account-identity colour the ring now depends on, which left it the one surface that could not say whose number it was showing. CCRM-11 (Tile Reset Time) is superseded.</td></tr><tr><td>Usage credits</td><td>Section explainer</td><td class="yes">Keep</td><td>Kept, but the whole section is now conditional: it renders only when at least one account actually reports a credit budget.</td></tr><tr><td>Usage credits</td><td>Show for &lt;account&gt;, one per account</td><td class="yes">Keep</td><td>Unchanged.</td></tr><tr><td>Usage credits</td><td>Show on widgets</td><td class="no">Drop</td><td>There is no tall usage widget to add a credits bar to.</td></tr><tr><td>Appearance</td><td>Theme &#183; System / Light / Dark</td><td class="yes">Keep</td><td>Unchanged.</td></tr><tr><td>Appearance</td><td>Time format &#183; System / 12-hour / 24-hour</td><td class="yes">Keep</td><td>Unchanged.</td></tr><tr><td>Appearance</td><td>Usage display &#183; Used / Left</td><td class="yes">Keep</td><td>CCRM-22 (Used or Left). Unchanged, and it now has one fewer surface to keep consistent.</td></tr><tr><td>Appearance</td><td>Reset time &#183; Countdown / Clock time</td><td class="yes">Keep</td><td>CCRM-23 (Reset Display). Unchanged; the notification is now the main surface it governs.</td></tr><tr><td>Appearance</td><td>Show red past the pace mark &#183; On widgets</td><td class="no">Drop</td><td>No widgets.</td></tr><tr><td>Appearance</td><td>Show red past the pace mark &#183; In-app bars</td><td class="mid">Merge</td><td>The two survivors collapse into <b>one</b> toggle covering the app and the notification. The three-way split existed because three surfaces are read at very different distances; with the widgets gone there are two, both read up close, and the appetite for red is the same on each.</td></tr><tr><td>Appearance</td><td>Show red past the pace mark &#183; Pinned notification</td><td class="mid">Merge</td><td>Same row. Two settings become one, and the neutral even-pace tick still always draws either way (CCRM-43 (Bar Pace Marks) is unchanged in what it draws, only in how many switches gate the colour).</td></tr><tr><td>Appearance</td><td>Theme color grid</td><td class="yes">Keep</td><td>Unchanged, and <b>Per provider</b> stays the default so the Duet's two halves are told apart by colour as well as by mark.</td></tr><tr><td>Widgets</td><td>Add usage widget to home screen</td><td class="no">Drop</td><td>The provider goes.</td></tr><tr><td>Widgets</td><td>Add single-bar widget to home screen</td><td class="no">Drop</td><td>The provider goes.</td></tr><tr><td>Updates</td><td>Check automatically</td><td class="yes">Keep</td><td>The in-app check stays. What goes is the standalone update notification; the update strip inside the pinned panel stays, which is where CCRM-44 (One Surface) put it.</td></tr><tr><td>Updates</td><td>Check for updates, plus the last-checked line</td><td class="yes">Keep</td><td>Unchanged.</td></tr><tr><td>Diagnostics</td><td>Diagnostics log card: share, clear</td><td class="yes">Keep</td><td>Unchanged. For a sideload-only app this is the diagnosis path.</td></tr><tr><td>About</td><td>Version, licences, the not-affiliated notice, the 7-tap Debug unlock</td><td class="yes">Keep</td><td>Unchanged.</td></tr><tr><td>Debug</td><td>Trend diagnostics and the debug tools, hidden until unlocked</td><td class="yes">Keep</td><td>Unchanged.</td></tr>
+  </table>
+  </div>
+
+  <hr class="hr">
+  <h2>2 &#183; The Duet notification (CCRM-62 (Duet Notification))</h2>
+  <p class="sub">
+    The always-on notification carries two accounts instead of one. Everything below is drawn on
+    the dark shade at the Fold 7 cover width: shade content 360&nbsp;dp, notification card
+    360&nbsp;dp wide with the 16&nbsp;dp padding Android applies, corner radius 24&nbsp;dp,
+    1&nbsp;dp drawn as 1&nbsp;px. Only the <b>Huge number</b> style is in play, because it is the
+    only one built from custom RemoteViews and therefore the only one with two number slots to
+    give. The other three styles put their single figure in the system's large-icon slot, which
+    there is exactly one of.
+  </p>
+  <div class="q">
+    <b>The width arithmetic.</b> 360&nbsp;dp card, minus 16&nbsp;dp of padding each side, leaves
+    <b>328&nbsp;dp</b> of drawable width. One 16&nbsp;dp gutter down the middle leaves
+    <b>156&nbsp;dp per half</b>. If a skin gives the custom view the full card width the halves
+    grow to 172&nbsp;dp, so 156 is the number every clamp below is set from: the tight case has to
+    work. Inside a half, a three-character figure at 30&nbsp;sp bold takes about 54&nbsp;dp, plus
+    an 8&nbsp;dp gap. That leaves a 90&nbsp;dp left column, and the 14&nbsp;dp mark plus its
+    4&nbsp;dp gap live inside it too, so the <b>label clamps at about 72&nbsp;dp</b>.
+  </div>
+  <div class="q bad">
+    <b>The height constraint on the collapsed row.</b> A collapsed custom view gets roughly
+    48&nbsp;to&nbsp;64&nbsp;dp depending on the skin. Today's single row already spends about
+    53&nbsp;dp: a 19&nbsp;dp label line, a 13&nbsp;dp bar with its margin, and a 16&nbsp;dp reset
+    sub. <b>Two of those do not fit, at any width.</b> Something has to leave, and the three
+    options below differ only in what.
+  </div>
+
+  <h3>Collapsed row &#183; three options</h3>
+  <div class="row">
+    <div class="col">
+      <p class="cap good">option 1 &#183; duet &#183; chosen</p>
+      <div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div></div></div></div>
+      <p class="note">
+        Two halves of 156&nbsp;dp with a 16&nbsp;dp gutter. Each half: a top line of a 14&nbsp;dp
+        provider mark (CCRM-56 (Provider Identity)) plus the account label at 12&nbsp;sp,
+        ellipsized at about 72&nbsp;dp; an 8&nbsp;dp bar under it with the neutral even-pace tick;
+        and a 30&nbsp;sp bold figure trailing, in that half's severity colour.
+        <b>What leaves is the reset line and the window name.</b> Both move to the expanded view.
+        Measured content height about 40&nbsp;dp, inside the 48&nbsp;dp floor.
+      </p>
+      <p class="note">
+        A condition on one half shows as a 6&nbsp;dp dot after its label, in the condition's hue:
+        red for sign-in or stale, accent for an update. The dot is a pointer, not a message. It
+        says "there is a strip for this account in the expanded panel".
+      </p>
+    </div>
+    <div class="col">
+      <p class="cap">option 2 &#183; lead and tail</p>
+      <div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb" style="margin-bottom:0"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="font-size:13px;max-width:200px">Personal &#183; 5-hour window</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">resets in 2h 10m &#183; <svg class="mk" width="12" height="12" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg> <span style="color:#19C39A;font-weight:650">63%</span></div></div><div class="figwrap"><div class="fig" style="font-size:32px;color:#E59980">42%</div></div></div></div></div></div>
+      <p class="note">
+        Today's row is untouched, 32&nbsp;sp figure and all, and the second account rides the sub
+        line as a tail. Keeps one number genuinely huge and keeps the reset time collapsed, which
+        neither of the other two do. The cost is that the second account is a 12&nbsp;sp
+        afterthought, and a glance cannot tell which of the two is nearly out.
+      </p>
+    </div>
+    <div class="col">
+      <p class="cap">option 3 &#183; stack</p>
+      <div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div style="display:flex;align-items:center;gap:8px;height:22px"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:74px">Personal</span><span style="flex:1"></span><div style="display:flex;gap:2px;width:78px;align-items:center"><span style="flex:1;height:9px;border-radius:2px;background:#E59980"></span><span style="flex:1;height:9px;border-radius:2px;background:#E59980"></span><span style="flex:1;height:9px;border-radius:2px;background:#E59980"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span></div><span class="fig" style="font-size:18px;color:#E59980;width:44px;text-align:right">42%</span></div><div style="display:flex;align-items:center;gap:8px;height:22px"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:74px">ChatGPT</span><span style="flex:1"></span><div style="display:flex;gap:2px;width:78px;align-items:center"><span style="flex:1;height:9px;border-radius:2px;background:#FF5252"></span><span style="flex:1;height:9px;border-radius:2px;background:#FF5252"></span><span style="flex:1;height:9px;border-radius:2px;background:#FF5252"></span><span style="flex:1;height:9px;border-radius:2px;background:#FF5252"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span><span style="flex:1;height:9px;border-radius:2px;background:#3A3A3A"></span></div><span class="fig" style="font-size:18px;color:#19C39A;width:44px;text-align:right">63%</span></div></div></div></div>
+      <p class="note">
+        Two 22&nbsp;dp lines, mark plus label plus a segmented bar plus an 18&nbsp;sp figure. Fits
+        comfortably, reads symmetrically, and keeps the labels at full length. The cost is the
+        whole point of the style: <b>nothing is huge any more.</b> At 18&nbsp;sp this is the Gauge
+        style with extra steps.
+      </p>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>&nbsp;</th><th>1 &#183; Duet</th><th>2 &#183; Lead and tail</th><th>3 &#183; Stack</th></tr>
+    <tr><td>Both accounts readable at a glance</td><td class="yes">Yes, equally</td><td class="no">No, one is subordinate</td><td class="yes">Yes, equally</td></tr>
+    <tr><td>Keeps a big number</td><td class="mid">30&nbsp;sp, twice</td><td class="yes">32&nbsp;sp, once</td><td class="no">18&nbsp;sp</td></tr>
+    <tr><td>Reset time visible collapsed</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+    <tr><td>Full account label</td><td class="mid">Clamped at ~72&nbsp;dp</td><td class="yes">Full</td><td class="mid">Clamped at ~74&nbsp;dp</td></tr>
+    <tr><td>Per-half tap target</td><td class="yes">Natural</td><td class="mid">Awkward, the tail is 12&nbsp;sp tall</td><td class="yes">Natural</td></tr>
+    <tr><td>Content height</td><td>~40&nbsp;dp</td><td>~53&nbsp;dp</td><td>~44&nbsp;dp</td></tr>
+    <tr><td>Degrades to one account</td><td class="yes">Becomes today's row</td><td class="yes">Becomes today's row</td><td class="mid">Needs a separate single-line case</td></tr>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:16px">
+    <b>Decided: option 1.</b> Two accounts on the notification only earns its complexity if
+    both are readable without expanding it, which rules out 2. Between 1 and 3, the reason the
+    Huge number style is the one being run is the size of the number, and 1 keeps 30&nbsp;sp of it
+    where 3 keeps 18. The reset line is the thing worth spending, because it is the one piece of
+    the collapsed row that is still correct one tap later in the expanded view.
+  </p>
+
+  <h3>Expanded &#183; one layout</h3>
+  <p class="sub">
+    Two header blocks stacked, then the panel bitmap under them. Each header block is the mark at
+    14&nbsp;dp, the account and window name at 14&nbsp;sp, a 13&nbsp;dp bar with the tick, the
+    reset sub at 12&nbsp;sp in the CCRM-23 (Reset Display) order, and the figure trailing at
+    <b>36&nbsp;sp</b>, down from today's 44 so that two of them fit. The panel keeps its existing
+    grammar and gains an account prefix on every row, because with two accounts in the header a
+    bare window name no longer says whose.
+  </p>
+  <div class="q good">
+    <b>Wording change, everywhere in the expanded view.</b> "5-hour window" becomes
+    <b>5h</b> and "7-day" becomes <b>Weekly</b>: "Personal &#183; 5h", "ChatGPT &#183; Weekly",
+    panel rows "Personal &#183; Weekly". Two accounts doubled every label in this view, and the
+    prefix has to come from somewhere. "5h" is what the account cards and the reset-ping rows in
+    Settings now say too, so the whole app uses one pair of names for the two windows.
+  </div>
+  <div class="row">
+    <div class="col">
+      <p class="cap good">normal &#183; both accounts headline their 5h window</p>
+      <div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl14">Personal &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 2h 10m &#183; 18:40</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#E59980">42%</div></div></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl14">ChatGPT &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 1h 24m &#183; 17:54</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#19C39A">63%</div></div></div><div class="pnl"><div class="prow"><div class="ph"><span class="pl">Personal &#183; Weekly</span><span class="pv">48%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:48%;background:#E59980"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Tue 09:00 &#183; in 4d 3h</div></div><div class="prow"><div class="ph"><span class="pl">ChatGPT &#183; Weekly</span><span class="pv">71%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:71%;background:#19C39A"></i><o style="left:66%;width:5%;background:#FF5252"></o><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Thu 00:29 &#183; in 6d 6h</div></div></div><div class="acts"><span>Refresh</span></div></div></div></div>
+    </div>
+    <div class="col cwide">
+      <p class="cap">panel rules</p>
+      <p class="note" style="max-width:520px">
+        <b>Weekly rows.</b> An account whose headline is the 5h window gets a
+        <code>&lt;account&gt; &#183; Weekly</code> row in the panel. An account whose headline is
+        <i>already</i> the weekly window gets no second row, which is the existing
+        <code>skipWeeklyBar</code> rule from CCRM-54 (ChatGPT Account) part 2, now applied per
+        account rather than once for the whole panel.
+      </p>
+      <p class="note" style="max-width:520px">
+        <b>Model caps.</b> Same prefix, same shared budget: <code>drawPanel</code> allows four
+        bars minus one for every strip on screen, and the two Weekly rows now take two of those
+        four before any cap is drawn. In practice a Duet panel with one strip shows the two
+        Weekly rows and nothing else.
+      </p>
+      <p class="note" style="max-width:520px">
+        <b>Strips.</b> Unchanged from CCRM-44 (One Surface): label-prefixed with the account,
+        newest first, red conditions above amber, update last, and an overflow line. The cap has
+        to fall from three to two, for the reason in the height budget below.
+      </p>
+      <p class="note" style="max-width:520px">
+        <b>Refresh.</b> The action stays on the notification, one button for both accounts. It
+        already refreshes every account, so there is nothing to split.
+      </p>
+    </div>
+  </div>
+
+  <h4 class="sh">Height budget</h4>
+  <p class="sub">
+    Android caps the expanded custom view at about 256&nbsp;dp. Two header blocks and their gaps
+    spend more than half of it, which is the real constraint on this design and the reason the
+    panel row has to be recut.
+  </p>
+  <div class="tbl-wrap">
+  <table style="max-width:900px">
+    <tr><th>Piece</th><th>dp</th><th>How it is made up</th></tr>
+    <tr><td>Header block, &#215;2</td><td><b>116</b></td><td>58 each: label line 19, bar 13 plus 4&nbsp;dp margin, reset sub 16 plus 4&nbsp;dp margin. The 36&nbsp;sp figure fits inside that height.</td></tr>
+    <tr><td>Gap between the header blocks</td><td>10</td><td>&nbsp;</td></tr>
+    <tr><td>Gap before the panel bitmap</td><td>10</td><td>What <code>notif_big_number_expanded.xml</code> already sets on the panel <code>ImageView</code>.</td></tr>
+    <tr><td><b>Chrome subtotal</b></td><td><b>136</b></td><td>&nbsp;</td></tr>
+    <tr><td>Android cap</td><td>~256</td><td>&nbsp;</td></tr>
+    <tr><td><b>Left for the panel</b></td><td><b>~120</b></td><td>&nbsp;</td></tr>
+    <tr><td>Panel bar row, <i>recut compact</i></td><td class="yes">30</td><td>Label, figure and reset all on one 13.5&nbsp;sp line, 13&nbsp;dp bar under it, 8&nbsp;dp gap.</td></tr>
+    <tr><td>Panel bar row, <i>as <code>drawPanel</code> draws it today</i></td><td class="no">71</td><td>label 19 + 7&nbsp;dp gap + bar 13 + 6&nbsp;dp tick overhang + sub 15 + rowGap 14.</td></tr>
+    <tr><td>Condition strip, title only</td><td>44</td><td>pad 7 + title 19 + pad 7 + gap 12.</td></tr>
+    <tr><td>Condition strip, title and a one-line sub</td><td>59</td><td>as above, plus a 15&nbsp;dp sub.</td></tr>
+    <tr><td>"+ n more" line</td><td>27</td><td>15&nbsp;dp text + 12&nbsp;dp gap.</td></tr>
+  </table>
+  </div>
+  <div class="q bad">
+    <b>Two findings fall straight out of that table.</b><br>
+    <b>(a)</b> At today's 71&nbsp;dp panel row, 120&nbsp;dp holds <i>one</i> row. Both Weekly rows
+    need 142 and overflow. So the panel row has to be recut to about 30&nbsp;dp, with the label,
+    the figure and the reset on one line above the bar, or the Duet's expanded view can only ever
+    show one account's weekly window.<br>
+    <b>(b)</b> Three strips cost 132&nbsp;dp before any bar is drawn, which is already over
+    budget. <b>The CCRM-44 (One Surface) strip cap falls from 3 to 2 whenever the Second account
+    is set</b>, with the third and beyond rolling into "+ n more". At 2 strips plus the overflow
+    line the panel is full: 88 + 27 = 115, and no bar fits.
+  </div>
+
+  <h4 class="sh">Status bar</h4>
+  <div class="q good">
+    <b>The ring loses its hub dot.</b> Until now the ring carried the weekly window as a flag dot
+    in the needle's hub. It goes: the status-bar ring is <b>a clean ring for the 5h window and
+    nothing else</b>, coloured in the shown account's own accent below 80%, then the
+    yellow &#8594; orange &#8594; red severity ladder above it. <b>The colour is now the account
+    identity as well as the severity</b>, which is what makes a single glyph workable for two
+    accounts. CCRM-50 (Weekly Flag) is superseded by this: the dot was the whole of that item.
+  </div>
+  <div class="row">
+    <div class="col"><p class="cap">first = personal (claude) &#183; 42% &#183; account accent</p><div class="statusstrip"><span>18:26</span><svg width="15" height="15" viewBox="0 0 24 24" style="color:#E59980" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.11 50.27" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.99" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></svg><span class="sp"></span><span class="sig">5G 59</span></div></div>
+    <div class="col"><p class="cap">first = chatgpt &#183; 63% &#183; account accent</p><div class="statusstrip"><span>18:26</span><svg width="15" height="15" viewBox="0 0 24 24" style="color:#19C39A" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="31.67 50.27" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.99" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></svg><span class="sp"></span><span class="sig">5G 59</span></div></div>
+    <div class="col"><p class="cap">any account &#183; 92% &#183; severity takes the hue</p><div class="statusstrip"><span>18:26</span><svg width="15" height="15" viewBox="0 0 24 24" style="color:#FFA726" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="46.24 50.27" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.99" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></svg><span class="sp"></span><span class="sig">5G 59</span></div></div>
+  </div>
+  <div class="row" style="margin-top:20px">
+    <div class="col cwide">
+      <p class="cap">what the ring says, and what it stops saying</p>
+      <p class="note" style="max-width:520px">
+        Arc is the 5h spend, needle is even pace, drawn in the CCRM-51 (Rails Gauge) grammar. What
+        is gone is the weekly reading: below 80% the hue is the account, so orange means Claude
+        and green means ChatGPT at a glance. Above 80% severity takes the hue back, and identity
+        is lost for as long as the window is nearly spent, which is the accepted cost. At that
+        point the number matters more than whose it is, and one tap opens the shade where both
+        halves are labelled.
+      </p>
+      <p class="note" style="max-width:520px">
+        This is now the app's only glyph. The Quick Settings tile is dropped, and the reason is
+        exactly this ring: Android tints tile icons monochrome, so a tile could carry the fill but
+        never the colour, and without the colour it cannot say which account it is showing.
+      </p>
+    </div>
+    <div class="col cwide">
+      <p class="cap bad">why not a twin glyph</p>
+      <p class="note" style="max-width:500px">
+        Because it was tried and withdrawn. CCRM-49 (Glyph Legibility) measured a concentric
+        two-ring "Twin" at about 14&nbsp;dp and could not read it, and the status-bar slot is
+        fitted by width at roughly 15&nbsp;dp, so there is no more room to be had. Dropping the
+        hub dot buys back the only interior room the ring had, and it buys it for legibility
+        rather than for a second reading.
+      </p>
+      <p class="note" style="max-width:500px">
+        <b>New Settings row: "Status-bar ring shows"</b>, chips <b>First</b> / <b>Second</b> /
+        <b>Whichever is higher</b>. The third picks the account with the higher 5h percentage and
+        <b>may switch during the day</b>. That is deliberate: the colour change is the tell, so
+        the glyph swapping from orange to green is itself the information that the other account
+        has taken the lead.
+      </p>
+    </div>
+  </div>
+
+  <h4 class="sh">Tap targets</h4>
+  <p class="sub">
+    A custom RemoteViews layout can carry a <code>PendingIntent</code> per view, so each half gets
+    its own click target rather than sharing one content intent. This is the piece the other three
+    styles cannot do at all.
+  </p>
+  <div class="row">
+    <div class="col">
+      <div class="scroll"><div class="shade">
+        <div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div>
+          <div class="duet">
+            <div class="tapbox"><div class="half" style="width:144px"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div></div>
+            <div class="gutter"></div>
+            <div class="tapbox"><div class="half" style="width:144px"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="taplbl">two click targets, 156&nbsp;dp &#215; ~40&nbsp;dp each</p>
+    </div>
+    <div class="col cwide">
+      <p class="note" style="max-width:500px">
+        Tap the Claude half and Cooldown opens on that account's tab, or the Claude app opens if
+        <b>That service's app</b> is chosen. Tap the ChatGPT half and the same rule applies to
+        ChatGPT. CCRM-2 (Notification Tap Target) becomes a per-half resolution of one setting
+        rather than two settings, so there is still one row in Settings.
+      </p>
+      <p class="note" style="max-width:500px">
+        The expanded view resolves the same way: each header block is its own target. Tapping the
+        panel, or anywhere outside a half, falls back to Cooldown on the First account.
+      </p>
+      <p class="note" style="max-width:500px">
+        <b>Refresh</b> stays as the notification's one action.
+      </p>
+    </div>
+  </div>
+
+  <h3>States</h3>
+  <p class="sub">
+    Nine of them, on option 1. Severity is by percent, never by pace: 80 yellow, 90 orange, 100
+    red. Being above pace colours the bar past the tick and nothing else, so a half can carry a
+    healthy green figure over a bar with a red tail, which is state 1's right-hand side.
+  </p>
+
+  <div class="row"><div class="col"><p class="cap good">1 &#183; normal &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div></div></div></div><p class="note">Personal at 42% is below the 55% even-pace tick, so its bar is plain accent. ChatGPT at 63% is above it, so the slice from 55 to 63 goes red (CCRM-43 (Bar Pace Marks), and only if <b>Show red past the pace mark</b> is on). Its figure stays ChatGPT green, because 63% is not a severity level. Two colours, two marks, no legend needed.</p></div><div class="col"><p class="cap good">1 &#183; normal &#183; expanded</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl14">Personal &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 2h 10m &#183; 18:40</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#E59980">42%</div></div></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl14">ChatGPT &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 1h 24m &#183; 17:54</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#19C39A">63%</div></div></div><div class="pnl"><div class="prow"><div class="ph"><span class="pl">Personal &#183; Weekly</span><span class="pv">48%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:48%;background:#E59980"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Tue 09:00 &#183; in 4d 3h</div></div><div class="prow"><div class="ph"><span class="pl">ChatGPT &#183; Weekly</span><span class="pv">71%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:71%;background:#19C39A"></i><o style="left:66%;width:5%;background:#FF5252"></o><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Thu 00:29 &#183; in 6d 6h</div></div></div><div class="acts"><span>Refresh</span></div></div></div></div><p class="note">The window name and the reset line reappear in the headers, as <b>5h</b> and <b>Weekly</b>. Both accounts headline their 5h window, so both get a prefixed Weekly row in the panel. That is the panel full at the recut 30&nbsp;dp row height.</p></div></div>
+  <div class="row" style="margin-top:26px"><div class="col"><p class="cap ">2 &#183; one account, or second = none &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb" style="margin-bottom:0"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="font-size:13px;max-width:210px">Personal &#183; 5-hour window</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 2h 10m &#183; 18:40</div></div><div class="figwrap"><div class="fig" style="font-size:32px;color:#E59980">42%</div></div></div></div></div></div><p class="note">Today's layout, untouched: 32&nbsp;sp figure, the full window name it already uses, reset line in the sub. The Duet is not a new layout so much as a second one that appears when a Second account is chosen. An install that never sets Second never sees any of this, and the expanded view is today's too, one header at 44&nbsp;sp.</p></div><div class="col"><p class="cap warn">3 &#183; second has no 5h window &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:28%;background:#19C39A"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">28%</div></div></div></div></div></div><p class="note">A ChatGPT Plus or Pro account has no session window since OpenAI lifted the 5-hour limit, so its half shows the weekly figure instead. This is the existing headline promotion from CCRM-54 (ChatGPT Account) part 2, unchanged, just applied per half. Collapsed there is nothing to distinguish it, which is fine: the collapsed row never names the window anyway.</p></div></div>
+  <div class="row" style="margin-top:26px"><div class="col"><p class="cap warn">3 &#183; second has no 5h window &#183; expanded</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl14">Personal &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 2h 10m &#183; 18:40</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#E59980">42%</div></div></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl14">ChatGPT &#183; Weekly</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:28%;background:#19C39A"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets Thu 00:29 &#183; in 6d 6h</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#19C39A">28%</div></div></div><div class="pnl"><div class="prow"><div class="ph"><span class="pl">Personal &#183; Weekly</span><span class="pv">48%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:48%;background:#E59980"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Tue 09:00 &#183; in 4d 3h</div></div><div class="prow"><div class="ph"><span class="pl">Personal &#183; Opus 4.6</span><span class="pv">22%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:22%;background:#E59980"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div></div></div><div class="acts"><span>Refresh</span></div></div></div></div><p class="note">Here the promotion is visible: the header reads <b>ChatGPT &#183; Weekly</b>, and the panel has no <code>ChatGPT &#183; Weekly</code> row, because that would print the same number twice. The freed row goes to a model cap. Its tick sits at 66%, the weekly window's own even pace, not the 5h one's.</p></div><div class="col"><p class="cap bad">4 &#183; personal at 100% &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#FF5252" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:56px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:100%;background:#FF5252"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#FF5252">100%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div></div></div></div><p class="note">Bar full, figure red at #FF5252, and the status-bar ring red with it, so identity colour is gone for as long as this lasts. <b>Worth noticing:</b> a four-character figure at 30&nbsp;sp takes about 74&nbsp;dp, so this half's label clamp drops from 72 to roughly 56&nbsp;dp. Short labels are unaffected; a long one loses two characters exactly when the number matters most. Expanded, the reset sub reads <i>Resets in 1h 05m &#183; 19:45</i> and the bar shows the 100% cap mark.</p></div></div>
+  <div class="row" style="margin-top:26px"><div class="col"><p class="cap bad">5 &#183; second account's sign-in stopped working &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:96px">ChatGPT</span><span class="cdot" style="background:#FF5252"></span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"></div></div><div class="fig" style="font-size:30px;color:#9E9E9E">&#8212;</div></div></div></div></div></div><p class="note">A 6&nbsp;dp red dot after the label, an empty track with no tick, and the figure replaced by the app's own placeholder. The Personal half is untouched, which is the point of the dot: it says the problem belongs to <i>that</i> account, in about 6&nbsp;dp.</p></div><div class="col"><p class="cap bad">5 &#183; second account's sign-in stopped working &#183; expanded</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl14">Personal &#183; 5h</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div><div class="hsub">Resets in 2h 10m &#183; 18:40</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#E59980">42%</div></div></div><div class="hb"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl14">ChatGPT &#183; 5h</span><span class="cdot" style="background:#FF5252"></span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"></div><div class="hsub">No reading yet</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:#9E9E9E">&#8212;</div></div></div><div class="pnl"><div class="cstrip err"><span class="cdot" style="background:#FF5252"></span><div class="ct">ChatGPT: Sign-in stopped working<div class="cs">Open Settings to sign in again</div></div></div><div class="prow"><div class="ph"><span class="pl">Personal &#183; Weekly</span><span class="pv">48%</span></div><div class="bar" style="height:13px;border-radius:6px;background:#3A3A3A"><i style="width:48%;background:#E59980"></i><s style="left:66%;background:rgba(236,236,236,.7)"></s></div><div class="psub">Resets Tue 09:00 &#183; in 4d 3h</div></div></div><div class="acts"><span>Refresh</span></div></div></div></div><p class="note">The red strip is the CCRM-44 (One Surface) form, label-prefixed with the account exactly as the approved wireframe already does for the unshown profile. One strip plus one bar row fits the 120&nbsp;dp budget. With the Notifications section reduced to reset pings, this strip and the Accounts card status chip are the <b>only</b> two places this is ever said.</p></div></div>
+  <div class="row" style="margin-top:26px"><div class="col"><p class="cap warn">6 &#183; first account stale &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar dim" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig dim" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div></div></div></div><p class="note">Figure at 50% alpha, bar at 45%, on that half only; the other half stays crisp. Per-half staleness is new: today the whole notification dims because there is only one account on it. Expanded adds the amber <i>Personal: Data is 40 min old</i> strip.</p></div><div class="col"><p class="cap ">7 &#183; left mode (CCRM-22 (Used or Left)) &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">58%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">37%</div></div></div></div></div></div><p class="note">Figures flip to the remainder, 58% and 37%. The bars still draw the spend, 42 and 63, and the red past the tick is unchanged, so a red tail never sits under a comfortable-looking number by accident. The <b>LEFT</b> caption is 10&nbsp;sp under the figure and appears in the expanded headers only: two of them in a 40&nbsp;dp collapsed row would cost more height than the row has.</p></div></div>
+  <div class="row" style="margin-top:26px"><div class="col"><p class="cap warn">8 &#183; long labels &#183; collapsed</p><div class="scroll"><div class="shade"><div class="nc"><div class="apphdr"><svg width="16" height="16" style="color:#E59980" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#E59980" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Product (Teams)</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:42%;background:#E59980"></i><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#E59980">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#19C39A" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#3A3A3A"><i style="width:63%;background:#19C39A"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(236,236,236,.7)"></s></div></div><div class="fig" style="font-size:30px;color:#19C39A">63%</div></div></div></div></div></div><p class="note"><b>Product (Teams)</b> is 15 characters and <b>ChatGPT Personal</b> is 16, both past the ~72&nbsp;dp clamp, so both ellipsize. Truncating to about eight characters is survivable because the mark carries the provider and the accent carries it again, so the label only has to separate two accounts rather than identify one cold. The full label is in the expanded header, which has 14&nbsp;sp across the full 328&nbsp;dp.</p></div><div class="col"><p class="cap ">9 &#183; light shade, state 1 &#183; collapsed</p><div class="scroll"><div class="shade light"><div class="nc light"><div class="apphdr"><svg width="16" height="16" style="color:#D97757" aria-hidden="true"><use href="#ring42"/></svg><span>Cooldown</span><span class="sp">&#183;</span><span>now</span></div><div class="duet"><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#D97757" aria-hidden="true"><use href="#mkClaude"/></svg><span class="lbl" style="max-width:72px">Personal</span></div><div class="bar" style="height:8px;border-radius:4px;background:#D3D3D3"><i style="width:42%;background:#D97757"></i><s style="left:55%;background:rgba(31,31,31,.55)"></s></div></div><div class="fig" style="font-size:30px;color:#D97757">42%</div></div><div class="gutter"></div><div class="half"><div class="lft"><div class="hl"><svg class="mk" width="14" height="14" style="color:#10A37F" aria-hidden="true"><use href="#mkGpt"/></svg><span class="lbl" style="max-width:72px">ChatGPT</span></div><div class="bar" style="height:8px;border-radius:4px;background:#D3D3D3"><i style="width:63%;background:#10A37F"></i><o style="left:55%;width:8%;background:#FF5252"></o><s style="left:55%;background:rgba(31,31,31,.55)"></s></div></div><div class="fig" style="font-size:30px;color:#10A37F">63%</div></div></div></div></div></div><p class="note">Samsung One UI's light shade at #F7F7F7 with #1F1F1F text. Accents switch to their light values, #D97757 and #10A37F, the track goes to #D3D3D3 and the tick to 55% black. The existing layouts already take their text colours from the platform's notification appearances rather than the app theme, which is what keeps this from going dark-on-dark.</p></div></div>
+
+  <hr class="hr">
+  <h2>3 &#183; What leaves with the widgets and the alerts</h2>
+  <p class="sub">
+    Categories, not a file list: the exact inventory is being audited separately. This is here so
+    the size of the deletion is on the table before it is approved, not after.
+  </p>
+  <ul class="inv">
+    <li><b>Five widget providers</b> and everything that registers them: the receivers in the
+      manifest, their <code>xml/</code> provider-info files, and their preview drawables. The
+      tall usage widget, the single-bar widget, CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget)
+      and CCRM-41 (Pace Widget).</li>
+    <li><b>The widget configuration activity</b> and its layout, which is CCRM-4
+      (Widget Quick-Edit).</li>
+    <li><b>The Glance dependency</b> and everything that exists only to satisfy it, including the
+      Compose-for-Glance theming shims.</li>
+    <li><b>The widget redraw worker</b>, and the <code>refreshWidgets()</code> calls threaded
+      through Settings, the repository and the poll path. That is a lot of call sites on surfaces
+      that are staying, so this is the part most likely to leave dead parameters behind.</li>
+    <li><b>The widget-specific settings</b>: "Show on widgets" under Usage credits, "On widgets"
+      under Show red past the pace mark, and the two "Add to home screen" links.</li>
+    <li><b>Most of the standalone alert evaluator</b>, and <b>six of its seven channels</b>:
+      <code>usage_alerts</code>, <code>auth_alerts</code>, <code>health_alerts</code>,
+      <code>ping_alerts</code>, <code>pace_alerts</code>, <code>update_alerts</code>. With them
+      go the group-summary safety net, the alert-lifetime store, the standalone update
+      notification, and CCRM-21 (Pace Alerts) as a notifying feature. The dormant
+      CCRM-17 (Window Pings) code goes with its channel, having never been enabled.
+      <b>What stays</b> is the reset-ping path and its <code>reset_alerts</code> channel, plus the
+      reset scheduler that fires it. That is the one branch of the evaluator with a caller left,
+      so the file shrinks rather than disappearing.</li>
+    <li><b>The fold-into-panel machinery for events</b>: the strip store, the strip-lifetime
+      alarm from CCBG-18 (Strip Lifetime Stamp), and the event side of the strip stack. The three condition strips keep
+      their side of it.</li>
+    <li><b>The Quick Settings tile</b>: <code>UsageTileService</code> and the four thin
+      subclasses that give it four tiles, all <b>four <code>&lt;service&gt;</code> declarations</b>
+      in the manifest with their <code>BIND_QUICK_SETTINGS_TILE</code> permission and
+      <code>QS_TILE</code> intent filters, the tile's read of the status-bar icon style, and its
+      own reset-form read. That retires CCRM-11 (Tile Reset Time), which existed only to give the
+      tile a countdown-or-clock choice before Appearance took the setting over.</li>
+    <li><b>Three retired pinned styles</b>, Gauge, Number tile and Progress bar, with their
+      bitmap drawing and their <code>BigPictureStyle</code> path, and <b>three retired status-bar
+      glyphs</b>, Pie, Battery and Number. <b>Plus the ring's hub dot</b>, which retires
+      CCRM-50 (Weekly Flag) with it.</li>
+    <li><b>Two of the three pace-mark toggles</b>: the widget one goes with the widgets, and the
+      remaining two collapse into one, so <code>paceOverOnWidgets</code> and one of
+      <code>paceOverInApp</code> / <code>paceOverOnNotification</code> go too.</li>
+    <li><b>Docs and images</b>: the README, guide and brochure sections that describe widgets,
+      the widget screenshots in <code>release/docs/</code>, and the chart-widget mention left over
+      from CCRM-13 (Chart Widget). The Settings screenshots all need retaking as four tabs.</li>
+  </ul>
+  <div class="q bad">
+    <b>Say this in the release notes.</b> Widgets already placed on a home screen
+    <b>disappear when the update installs</b>: the provider is gone, so the launcher drops the
+    cell, and some launchers leave a blank gap until they prune it. There is no migration and no
+    warning the app can post, because the app is not running when the install happens.
+    <b>Quick Settings tiles already placed disappear too</b>, now that the tile services go with
+    them: the OS drops a tile whose service no longer exists, and a user who had put one in their
+    shade will simply find it gone. Nothing else the app has ever placed outside itself survives
+    this update, so the release note can say it once and cover both.
+  </div>
+  <div class="q">
+    <b>One migration is needed.</b> <code>resetPingMode</code> is a single global pair of values
+    today and becomes a per-account pair. The honest default is to copy the existing global value
+    onto every account, so a user who had the 5h ping on keeps it on everywhere and can then turn
+    it off per account. The pace-mark collapse needs no migration worth the name: <b>on</b> if
+    either surviving toggle was on is the honest read, since the user asked for red somewhere.
+  </div>
+
+  <hr class="hr">
+  <h2>4 &#183; Decisions</h2>
+  <p class="sub">
+    Everything below the line was settled in review. The design is approved to build on; one
+    question is still outstanding, and it is the only one.
+  </p>
+  <div class="tbl-wrap">
+  <table style="max-width:1020px">
+    <tr><th>&nbsp;</th><th>Decision</th><th>What it means</th><th>What it retires</th></tr>
+    <tr>
+      <td><b>1</b></td>
+      <td class="yes">Collapsed layout: <b>option 1, the Duet</b></td>
+      <td>Two halves of 156&nbsp;dp with a 16&nbsp;dp gutter, 30&nbsp;sp figures, no reset line
+        collapsed. Lead-and-tail and stack are drawn above and not taken.</td>
+      <td>Nothing shipped; both alternatives were wireframe-only.</td>
+    </tr>
+    <tr>
+      <td><b>2</b></td>
+      <td class="yes">Status bar: <b>one clean ring, no hub dot</b></td>
+      <td>Ring only, coloured by the shown account's accent below 80%, by the severity ladder
+        above it. A new "Status-bar ring shows" row picks First, Second or whichever is higher.</td>
+      <td>The four-way glyph chooser, the Pie / Battery / Number glyphs, and
+        <b>CCRM-50 (Weekly Flag)</b>, which was the hub dot and nothing else.</td>
+    </tr>
+    <tr>
+      <td><b>3</b></td>
+      <td class="yes">Reset pings <b>kept, per account</b></td>
+      <td>The rest of the Notifications section goes. Reset pings stay as real notifications,
+        post even while the always-on notification is on, keep <code>reset_alerts</code>, and gain
+        a per-account mode pair. <code>resetPingMode</code> needs a migration.</td>
+      <td>Nothing. This is the one thing on that list that survives.</td>
+    </tr>
+    <tr>
+      <td><b>4</b></td>
+      <td class="yes">Settings: <b>four swipeable tabs</b></td>
+      <td>Accounts, Alerts, Appearance, More, as drawn in section 1: a fixed
+        <code>TabRow</code> over a <code>HorizontalPager</code>, tab padding at 10&nbsp;dp so
+        "Appearance" fits, two-column inside a tab at the inner screen's width.</td>
+      <td>The thirteen-section single scroll, and the by-subject two-column split it used on
+        wide windows.</td>
+    </tr>
+    <tr>
+      <td><b>5</b></td>
+      <td class="yes">Quick Settings tile: <b>dropped entirely</b></td>
+      <td>Not just the section, the tile. Android tints tile icons monochrome, so a tile can
+        carry the fill but never the account-identity colour the ring now depends on. Four
+        <code>TileService</code> declarations and their shared implementation go. Placed tiles
+        disappear when the update installs.</td>
+      <td><b>CCRM-11 (Tile Reset Time)</b>, which existed only to give the tile a
+        countdown-or-clock choice before Appearance took it over.</td>
+    </tr>
+    <tr>
+      <td><b>6</b></td>
+      <td class="yes">Red past the pace mark: <b>one toggle</b></td>
+      <td>One switch under Appearance covering the app and the notification. The three-way split
+        was there because three surfaces are read at very different distances; two remain and both
+        are read up close.</td>
+      <td>Two of the three toggles and their stored flags. CCRM-43 (Bar Pace Marks) is unchanged
+        in what it draws: the neutral even-pace tick always draws either way.</td>
+    </tr>
+  </table>
+  </div>
+
+  <h4 class="sh">Decided 2026-09-09: nothing else on the Notifications list is kept</h4>
+  <div class="q">
+    <b>Asked: is there anything else on the Notifications list you want kept? Answer: no.</b> Reset pings are in.
+    Everything else on that section is marked <b>Drop</b> in the table in section 1: the 5-hour,
+    weekly and per-model threshold chips, the pace master toggle and its three milestones, the
+    per-account alerts toggles, sign-in alerts, stale-data alerts, and alert lifetime. Sign-in and
+    stale data keep their <i>condition strips</i> in the pinned panel, so what would be lost by
+    dropping their toggles is the interruption, not the information. The rest lose both.
+  </div>
+
+</div>

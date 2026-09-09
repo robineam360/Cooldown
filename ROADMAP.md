@@ -749,6 +749,116 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
 
 ---
 
+## Dual identity and diet — the arc after v1.5
+
+Reviewed 2026-09-08/09 from two wireframes kept in `design/`:
+`dual-identity-wireframe.html` (icon, app) and `settings-diet-wireframe.html` (Settings, the
+always-on notification, what leaves). The removal footprint is in
+`design/research/2026-09-08-removal-audit.md`. Decisions below are Robin's, taken one question at
+a time per the design-review workflow; the runbook for building them is not written yet.
+
+### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
+- **Status:** Design approved 2026-09-09 except one open call (which of five ring layouts) ·
+  medium · supersedes CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider
+  Identity) decision 3 · needs a runbook step.
+- **Icon, decided:** launcher tile ground is a plain straight anti-diagonal cut, Claude
+  terracotta `#D97757` top-left, ChatGPT green `#10A37F` bottom-right. On it a full 360° usage
+  ring: cream `#FFF6F1` fill on a 28% black track from 12 o'clock, a warm-ink pace tick at the
+  even-pace position, the fill past the tick in red `#FF5252` (CCRM-43 (Bar Pace Marks) grammar).
+  The tile is static, so the reading is a fixed sample (60% used, 48% elapsed, so the red segment
+  is always present by design). **No provider mark and no mascot on the tile** (rounds 2 and 3
+  tried both; dropped). The old bans on a meter in the tile (CCRM-42 (App Icon)) and a third
+  party's colour scheme are waived by this decision; the OS status-icon swap that motivated the
+  meter ban was fixed by CCBG-12 (Status Icon Swap). **Open:** which of five ring layouts (ring
+  only; ring with a stopwatch dial and hand; ring as a stopwatch bezel with crown and hand; two
+  rings for 5h and Weekly; two rings plus hand and crown). Adaptive layers: foreground, slate
+  background retired for the two-colour ground, monochrome layer with the halves at alpha
+  0.3/0.6, track 0.32, fill solid, red 0.85. `drawable/ic_launcher.xml` redrawn to match.
+- **Top bar, decided:** the word "Cooldown" led by the two provider marks at 20 dp (the app's
+  existing `ProviderMark` drawables), main screen only.
+- **App, decided ("two rooms"):** the selected tab's account already drives the accent (CCRM-56
+  (Provider Identity) decision 1). Now also: Claude tabs get a warm ivory surface (`#F5EFE8`
+  light / `#1B1715` dark) and headline percentages in the system serif (`FontFamily.Serif`);
+  ChatGPT tabs get a neutral surface (`#F7F7F8` / `#0D0D0D`) and the default sans. The tab
+  indicator takes the room accent; tab labels stay neutral ink. **Nothing on any card changes:**
+  same windows, bars, pace tick, trend chart with all its guides, axis and projection, reset
+  rows, credits card, hidden-window rule. Reviewer's rule, recorded: looks never cost function.
+- **Rejected:** the "Duet strip" (a two-up summary above the tabs) — duplicates the notification.
+- **Considered and dropped, for the record:** round 1 twin ice pop / two-sand hourglass / split
+  coin / snowflake / fan; round 2 plush-crab mascots and tracker glyphs; round 3 official marks
+  with meters (the split-tile idea survived, the marks did not); round 4 interlocking-tab seam
+  (straight cut chosen).
+
+### CCRM-61 · Settings Diet — four tabs, and everything that leaves
+- **Status:** Design approved 2026-09-09 · large (mostly deletion) · needs a runbook step ·
+  supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
+  (Widget Quick-Edit), CCRM-13 (Chart Widget), CCRM-21 (Pace Alerts), CCRM-17 (Window Pings),
+  CCRM-44 (One Surface) in part, CCRM-11 (Tile Reset Time), CCRM-3 (Unified Theming) phase 1;
+  resolves CCBG-20 (Pinned Identity Loss) by removal; re-scopes CCRM-5 (Per-Profile
+  Notification) into CCRM-62 (Duet Notification).
+- **Removed:** all five home-screen widgets (providers, config activity, Glance dependency,
+  redraw worker, widget prefs, "Show on widgets", "On widgets"); the Quick Settings tile
+  (service and manifest entries — placed tiles vanish on update, say so in release notes, as do
+  placed widgets); every standalone notification except reset pings (usage thresholds, pace
+  alerts, sign-in and stale alerts, alert lifetime, the update notification and its skip action,
+  the dormant window-ping code) and their channels (`usage_alerts`, `auth_alerts`,
+  `health_alerts`, `ping_alerts`, `pace_alerts`, `update_alerts` — delete them once at start on
+  upgraded installs); the Gauge, Number tile and Progress bar pinned styles (Huge number is the
+  only style); the Pie, Battery and Number status-bar glyphs (Ring only); the fold-into-panel
+  event machinery (strip store, strip rules, expiry alarm; CCBG-16 (Stale Strip Label), CCBG-17
+  (Strip Revocation), CCBG-18 (Strip Lifetime Stamp) moot). **Kept:** the three live condition
+  strips (sign-in stopped working, unconditional now; stale; update available), the in-app update
+  check card, `Alerts.evaluate` as the per-poll pinned re-render, `checkReset` as the history
+  log writer (see the audit: `alerts/Alerts.kt` is an edit, not a delete). `UsageCache` drops
+  the pace ladder in `Projection` with its tests.
+- **Reset pings survive, per account:** for each account a "5h reset" and a "Weekly reset" mode
+  (Off / If busy / Always). They post as real notifications even while the always-on
+  notification is on; the `reset_alerts` channel stays. `resetPingMode` becomes per account.
+- **Settings become four swipeable tabs** (fixed `TabRow` + `HorizontalPager`, the main
+  screen's own pattern): **Accounts** (cards, Add account) · **Alerts** (always-on toggle, Show
+  accounts First/Second, Tapping a number opens, Status-bar ring shows, System notification
+  settings, Reset pings per account) · **Appearance** (Theme, Time format, Usage display, Reset
+  time, one "Show red past the pace mark" toggle for app and notification, Theme colour) ·
+  **More** (Polling, Usage credits only when an account reports credits, Updates, Diagnostics,
+  About, Debug once unlocked). "Alerts" not "Notifications" because four fixed tabs at 410 dp
+  give ~102 dp each and "Notifications" does not fit; tab padding 10 dp a side, scrollable
+  `TabRow` as the fallback. Inner screen: a tab's content goes two-column as Settings does
+  today. 43 rows in 13 sections become 24 rows in four tabs.
+- **Docs:** README, `release/USER-GUIDE.md`, guide/brochure/hero sources and eleven screenshots
+  describe widgets, alerts, tiles and the four styles; all need the same diet. `CLAUDE.md`
+  working agreement 2 still names "both widget providers" and the tile.
+
+### CCRM-62 · Duet Notification — the always-on notification carries two accounts
+- **Status:** Design approved 2026-09-09 · medium · needs a runbook step · Huge number style
+  only (CCRM-61 (Settings Diet) removes the rest) · replaces CCRM-5 (Per-Profile Notification);
+  supersedes CCRM-50 (Weekly Flag) and CCRM-49 (Glyph Legibility)'s chooser.
+- **Collapsed (option 1, "Duet"):** one row, two halves of ~156–172 dp with a 16 dp gutter.
+  Each half: 14 dp provider mark + account label at 12 sp (no window name; clamps at ~72 dp,
+  ~56 dp when the figure is four characters), an 8 dp bar with the neutral pace tick, a 30 sp
+  bold figure trailing in that half's severity colour. No reset line collapsed. A condition on a
+  half shows as a 6 dp dot after its label in the condition's hue. One account, or Second =
+  None, renders today's single layout unchanged.
+- **Expanded:** two header blocks (mark + "Personal · 5h" / "ChatGPT · Weekly" at 14 sp, 13 dp
+  bar, reset sub at 12 sp, 36 sp figure), then the panel: each account's weekly row labelled
+  "Personal · Weekly" (none for an account whose headline is already weekly, the CCRM-54 (ChatGPT
+  Account) promotion), model caps in the shared budget, condition strips label-prefixed. Wording
+  everywhere: **"5h" and "Weekly"**, never "5-hour window" / "7-day". Height budget: the panel
+  bar row is recut to ~30 dp (label, figure and reset on one line over the bar) and the strip
+  cap falls from 3 to 2 when a Second account is set, or two weekly rows do not fit the ~256 dp
+  cap. "LEFT" caption (CCRM-22 (Used or Left)) only in the expanded headers.
+- **Status bar:** the Ring glyph for the 5h window only, **no weekly hub dot**, coloured in the
+  shown account's accent below 80% then the yellow/orange/red ladder, so colour says which
+  account. New setting "Status-bar ring shows": First / Second / Whichever is higher (auto may
+  switch during the day; the colour change is the tell).
+- **Tap:** each half is its own click target (per-view `PendingIntent`): Cooldown on that
+  account's tab, or that service's app when chosen (CCRM-2 (Notification Tap Target) per half).
+  Refresh stays the one action.
+- **Settings rows:** Show accounts as two chip rows (First drives the glyph; Second optional,
+  None). Style and glyph choosers gone.
+- **States drawn and approved:** normal; one account; Second without a 5h window; 100%;
+  Second's sign-in broken (dot, strip, figure "—"); First stale (that half dimmed); Left mode;
+  long labels; light shade.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-39 · Ring Widget — small face, one window as a pace-marked ring

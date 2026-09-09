@@ -8,8 +8,12 @@ import java.io.File
 
 /**
  * The copy-drift half of CCRM-37 (Contract Tests), built to the slice CCRM-57
- * (Provider Plumbing) asks for: **three provider names, three vendors and four
- * trademark lines.** CCRM-37 itself stays Planned — its registry-contract grep and
+ * (Provider Plumbing) asks for: **three provider names, three vendors, and the About
+ * disclaimer's trademark lines** — down to two marks/two owners as of 2026-09-08, when
+ * CCRM-55 (Antigravity Account) was dropped and its Google/Gemini/Antigravity lines came
+ * out of the disclaimer, the Add-account sheet and the "Per provider" swatch. `Provider`
+ * itself still lists all three (dropped IDs are never renumbered), so the first two tests
+ * below are unchanged. CCRM-37 itself stays Planned — its registry-contract grep and
  * visual-parity assertions are not here.
  *
  * Two of the three subjects are ordinary values, so they are asserted directly. The
@@ -34,6 +38,17 @@ class ContractCopyTest {
     }
 
     private val about by lazy { source("src/main/java/com/robin/claudeusage/SettingsScreen.kt") }
+
+    /**
+     * Just the disclaimer's string literal, not the whole file — [about] also contains
+     * doc comments that name Antigravity when explaining why it *isn't* in the
+     * disclaimer any more, which would defeat a plain `about.contains` check.
+     */
+    private val disclaimer by lazy {
+        val start = about.indexOf("\"Unofficial.")
+        val end = about.indexOf("style = MaterialTheme.typography.labelSmall", start)
+        about.substring(start, end)
+    }
 
     // --- the three names ---
 
@@ -71,29 +86,32 @@ class ContractCopyTest {
         }
     }
 
-    // --- the four trademark lines ---
+    // --- the trademark lines: two marks, two owners, since CCRM-55's drop ---
 
     @Test
-    fun `the About disclaimer names all four marks and all three owners`() {
+    fun `the About disclaimer names both marks and both owners`() {
         for (claim in listOf(
-            "Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or ",
+            "Not affiliated with, endorsed by, or supported by Anthropic or OpenAI.",
             "\\\"Claude\\\" is a trademark of Anthropic, PBC.",
-            "\\\"ChatGPT\\\" is a trademark of ",
-            "\\\"Gemini\\\" and \\\"Antigravity\\\" are trademarks of Google LLC.",
+            "\\\"ChatGPT\\\" is a trademark of OpenAI.",
         )) {
             assertTrue("About disclaimer lost: $claim", about.contains(claim))
         }
     }
 
     /**
-     * Four marks, not three: Antigravity is Google's product name and Gemini is the
-     * model, and the disclaimer has to claim neither as ours. It says so before
-     * CCRM-55 (Antigravity Account) is built, because the greyed row in the
-     * Add-account sheet already puts both words on screen.
+     * Google dropped clean: CCRM-55 (Antigravity Account) is dropped, not deferred, so
+     * the disclaimer no longer names a provider the app doesn't track. Guards against
+     * the Google/Gemini/Antigravity line drifting back in during a future copy edit.
      */
     @Test
-    fun `the disclaimer covers Antigravity even though no Gemini account exists yet`() {
-        assertTrue(about.contains("Antigravity"))
+    fun `the disclaimer no longer names Google, Gemini or Antigravity`() {
+        for (dropped in listOf("Google", "Gemini", "Antigravity")) {
+            assertTrue(
+                "disclaimer should not mention $dropped",
+                !disclaimer.contains(dropped),
+            )
+        }
     }
 
     /**

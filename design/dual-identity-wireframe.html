@@ -1,0 +1,750 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cooldown, two ways — CCRM-60 (Dual Identity), proposed</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 96px; line-height: 1.5;
+    overflow-x: hidden;
+  }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 70ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 54px 0 4px; }
+  h2 small { font-weight: 500; font-size: 12.5px; color: var(--muted); letter-spacing: 0; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 80ch; margin: 0 0 18px; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  .cap.bad { color: var(--bad); }
+  .cap.good { color: var(--good); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; }
+  .opt {
+    flex: 1 1 268px; max-width: 300px;
+    border: 1px solid var(--hair); border-radius: 18px; padding: 20px;
+    background: var(--card);
+  }
+  .opt.reject { opacity: .62; }
+  .opt.rec { border-color: color-mix(in srgb, var(--accent) 55%, var(--hair)); }
+  .opt h4 { margin: 0 0 2px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .opt .tag {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  }
+  .opt p { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+  .opt p b { color: var(--ink); }
+
+  .launch {
+    width: 96px; height: 96px; border-radius: 22px; margin: 16px 0 14px;
+    background: #343F50; display: flex; align-items: center; justify-content: center;
+  }
+  .sizes { display: flex; align-items: flex-end; gap: 14px; margin: 12px 0 0; flex-wrap: wrap; }
+  .sizes .z { text-align: center; }
+  .sizes .z span { display: block; font-size: 9.5px; color: var(--muted); margin-top: 4px; }
+
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .yes { color: var(--good); font-weight: 650; }
+  .no { color: var(--bad); font-weight: 650; }
+  .mid { color: var(--warn); font-weight: 650; }
+  .q {
+    border-left: 3px solid var(--accent); padding: 2px 0 2px 14px;
+    margin: 14px 0; font-size: 13.5px; max-width: 78ch;
+  }
+
+  /* ---------- added for CCRM-60 (Dual Identity) ---------- */
+  .scroll { overflow-x: auto; padding-bottom: 6px; }
+  .tile100 { width: 100px; height: 100px; border-radius: 23px; display: block; margin: 14px 0 2px; }
+  .tile48 { width: 48px; height: 48px; border-radius: 11px; display: block; }
+  .sw { padding: 9px; border-radius: 14px; display: inline-flex; }
+  .sw.d { background: #16171A; }
+  .sw.l { background: #F2F2F4; }
+  .sw.m { background: #2A3040; }
+  .why { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+  .why b { color: var(--ink); }
+  .risk, .mono { font-size: 12px; margin: 8px 0 0; color: var(--muted); }
+  .risk b { color: var(--bad); }
+  .mono b { color: var(--ink); }
+
+  .pal { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; margin: 4px 0 6px; }
+  .palrow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  .palname {
+    width: 84px; flex: 0 0 84px; font-size: 12px; font-weight: 650; padding-top: 14px;
+  }
+  .chip { width: 84px; }
+  .chip .box { height: 42px; border-radius: 10px; border: 1px solid var(--hair); }
+  .chip b { display: block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; margin-top: 5px; }
+  .chip span { display: block; font-size: 9.5px; color: var(--muted); line-height: 1.35; }
+  .chip.gone { opacity: .5; }
+
+  /* ---------- phone mocks: 1 px = 1 dp ---------- */
+  .mockrow { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .mock { flex: 0 0 auto; }
+  .mock > .cap { margin-bottom: 6px; }
+  .room {
+    width: 410px; border: 1px solid var(--hair); border-radius: 20px; overflow: hidden;
+    background: var(--surf); color: var(--ink2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .room.wide { width: 750px; }
+  .room .pane { max-width: 600px; margin: 0 auto; }
+  .room.claude.dk  { --surf:#1B1715; --csurf:#241F1C; --ink2:#F2ECE7; --sub2:#A99C93; --acc:#E59980; --red:#FF5252; --warnc:#FDD663; --orangec:#FFA726; }
+  .room.claude.lt  { --surf:#F5EFE8; --csurf:#FFFCF8; --ink2:#26211E; --sub2:#6E6660; --acc:#D97757; --red:#C62828; --warnc:#F9A825; --orangec:#F57C00; }
+  .room.gpt.dk     { --surf:#0D0D0D; --csurf:#191919; --ink2:#ECECF1; --sub2:#9A9AA3; --acc:#19C39A; --red:#FF5252; --warnc:#FDD663; --orangec:#FFA726; }
+  .room.gpt.lt     { --surf:#F7F7F8; --csurf:#FFFFFF; --ink2:#0D0D0D; --sub2:#6B6B72; --acc:#10A37F; --red:#C62828; --warnc:#F9A825; --orangec:#F57C00; }
+  .room .fig { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+  .room.claude .fig { font-family: Georgia, "Noto Serif", "Times New Roman", serif; letter-spacing: 0; }
+  .sbar {
+    height: 24px; display: flex; align-items: center; padding: 0 14px;
+    font-size: 10.5px; font-weight: 600; color: var(--ink2); opacity: .85;
+  }
+  .sbar .sp { flex: 1; }
+  .tbar {
+    height: 56px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 16px;
+    font-size: 20px; font-weight: 500; color: var(--ink2);
+  }
+  .tbar .sp { flex: 1; }
+  .tbar .act { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; opacity: .8; }
+  .tabs { height: 48px; display: flex; align-items: stretch; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink2) 12%, transparent); }
+  .tabs .tb {
+    flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-size: 12.5px; font-weight: 600; color: var(--ink2); opacity: .6; position: relative;
+  }
+  .tabs .tb.on { opacity: 1; }
+  .tabs .tb.on::after {
+    content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 3px;
+    border-radius: 3px 3px 0 0; background: var(--acc);
+  }
+  .tabs .tb svg { width: 20px; height: 20px; flex: 0 0 20px; }
+  .cards { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .kard { background: var(--csurf); border-radius: 16px; padding: 16px; }
+  .kard.dim { opacity: .45; }
+  .krow { display: flex; align-items: flex-end; gap: 10px; }
+  .krow .t { font-size: 13.5px; font-weight: 600; color: var(--ink2); }
+  .krow .sp { flex: 1; }
+  .srow { display: flex; align-items: flex-end; gap: 10px; font-size: 13px; color: var(--sub2); }
+  .srow .sp { flex: 1; }
+  .srow b { font-size: 13px; font-weight: 700; color: var(--ink2); }
+  .bar { height: 10px; border-radius: 5px; margin: 8px 0 0; position: relative;
+         background: color-mix(in srgb, var(--acc) 25%, transparent); }
+  .bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 5px; overflow: hidden;
+               background: var(--acc); }
+  .bar .fill .over { position: absolute; top: 0; bottom: 0; right: 0; background: var(--red); }
+  .bar .fill.at100 { background: var(--red); }
+  .bar .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; border-radius: 2px;
+               background: color-mix(in srgb, var(--ink2) 58%, transparent); }
+  .note { font-size: 11.5px; color: var(--sub2); margin: 6px 0 0; }
+  .note.hot { color: var(--red); font-weight: 700; }
+  .note.warn { color: var(--warnc); font-weight: 700; }
+  .reset { display: flex; font-size: 11.5px; color: var(--sub2); margin: 8px 0 0; }
+  .reset .sp { flex: 1; }
+  .div { height: 1px; background: color-mix(in srgb, var(--ink2) 12%, transparent); margin: 10px 0 0; }
+  .ch { display: block; margin: 12px 0 2px; color: var(--acc); max-width: 100%; }
+  .ch text { font-size: 8.5px; }
+  .ch .t80, .ch .t90, .ch .t100 { font-size: 7.5px; }
+  .ch .gl { fill: none; stroke-width: 1; stroke-dasharray: 1 3; }
+  .ch .y80, .ch .pace { stroke: var(--warnc); }
+  .ch .y90 { stroke: var(--orangec); }
+  .ch .y100 { stroke: var(--red); }
+  .ch .t80, .ch .pacet { fill: var(--warnc); }
+  .ch .t90 { fill: var(--orangec); }
+  .ch .t100 { fill: var(--red); }
+  .ch .pace { fill: none; stroke-width: 1.6; stroke-dasharray: 4 3; }
+  .ch .area { fill: currentColor; opacity: .18; }
+  .ch .ser { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+  .ch .dot { fill: currentColor; }
+  .ch .prj { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-dasharray: 2 2.5; }
+  .ch .hollow { fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .ch .nowl { stroke: currentColor; stroke-width: 1; opacity: .55; }
+  .ch .ax { stroke: var(--ink2); stroke-width: 1; opacity: .3; }
+  .ch .axt { fill: var(--sub2); }
+  .ch .val { fill: var(--ink2); font-weight: 700; font-size: 9.5px; }
+  .ch .wash { fill: var(--red); opacity: .09; }
+  .err { border-radius: 12px; padding: 10px 12px; background: color-mix(in srgb, var(--warnc) 14%, transparent); }
+  .err .h { font-size: 12.5px; font-weight: 600; color: var(--warnc); }
+  .err .d { font-size: 11px; color: var(--sub2); margin-top: 2px; }
+  table.dec { max-width: 900px; }
+  table.dec td:first-child { width: 26px; color: var(--muted); }
+  ol.dec { margin: 8px 0 0; padding-left: 22px; max-width: 80ch; }
+  ol.dec li { font-size: 13.5px; margin: 0 0 10px; }
+  ol.dec li b { font-weight: 650; }
+  ul.tight { margin: 8px 0 0; padding-left: 20px; max-width: 82ch; }
+  ul.tight li { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  ul.tight li b { color: var(--ink); }
+  .mk { width: 20px; height: 20px; }
+  .mk.c { color: var(--acc); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- provider marks, pathData verbatim from app/src/main/res/drawable/ -->
+    <symbol id="mk-claude" viewBox="0 0 24 24"><path d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z" fill="currentColor"/></symbol>
+    <symbol id="mk-gpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z" fill="currentColor"/></g></symbol>
+
+    <!-- chosen icon, round 6: straight-cut ground, full-ring meter, stopwatch parts -->
+    <symbol id="gnd" viewBox="0 0 108 108"><path d="M108,0 L0,108 L108,108 Z" fill="#10A37F"/><path d="M108,0 L0,108 L0,0 Z" fill="#D97757"/></symbol>
+    <symbol id="gndm" viewBox="0 0 108 108"><path d="M108,0 L0,108 L108,108 Z" fill="#DCE3F0" opacity=".6"/><path d="M108,0 L0,108 L0,0 Z" fill="#DCE3F0" opacity=".3"/></symbol>
+    <!-- the ring, drawn once at each radius: track, fill, red segment, pace tick -->
+    <circle id="rc34" cx="54" cy="54" r="34" fill="none"/>
+    <circle id="rc36" cx="54" cy="54" r="36" fill="none"/>
+    <circle id="rc24" cx="54" cy="54" r="24" fill="none"/>
+    <path id="f34" d="M54.0,20.0 A34,34 0 1 1 34.0,81.5" fill="none"/>
+    <path id="f36" d="M54.0,18.0 A36,36 0 1 1 32.8,83.1" fill="none"/>
+    <path id="f24" d="M54.0,30.0 A24,24 0 0 1 68.1,73.4" fill="none"/>
+    <path id="x34" d="M58.3,87.7 A34,34 0 0 1 34.0,81.5" fill="none"/>
+    <path id="x36" d="M58.5,89.7 A36,36 0 0 1 32.8,83.1" fill="none"/>
+    <circle id="cap34" cx="34.0" cy="81.5" r="4.5"/>
+    <circle id="cap36" cx="32.8" cy="83.1" r="4"/>
+    <path id="t34" d="M57.3,80.3 L59.2,95.2" fill="none"/>
+    <path id="t36" d="M57.6,82.8 L59.4,96.7" fill="none"/>
+    <path id="t24" d="M48.4,71.1 L44.7,82.5" fill="none"/>
+    <!-- stopwatch parts: crown, side button, hand and hub, dial -->
+    <g id="crown"><rect x="52.6" y="12" width="2.8" height="4.5"/><rect x="51" y="7.5" width="6" height="5" rx="2"/></g>
+    <g id="sbtn"><rect x="-2" y="-2" width="4" height="4" rx="1.2"/></g>
+    <path id="hand" d="M0,0 L0,-27" fill="none" stroke-width="3.2" stroke-linecap="round"/>
+    <circle id="hub" cx="0" cy="0" r="2.5"/>
+    <g id="dialticks"><path d="M54,33.0 v3" transform="rotate(0 54 54)"/><path d="M54,33.0 v3" transform="rotate(30 54 54)"/><path d="M54,33.0 v3" transform="rotate(60 54 54)"/><path d="M54,33.0 v3" transform="rotate(90 54 54)"/><path d="M54,33.0 v3" transform="rotate(120 54 54)"/><path d="M54,33.0 v3" transform="rotate(150 54 54)"/><path d="M54,33.0 v3" transform="rotate(180 54 54)"/><path d="M54,33.0 v3" transform="rotate(210 54 54)"/><path d="M54,33.0 v3" transform="rotate(240 54 54)"/><path d="M54,33.0 v3" transform="rotate(270 54 54)"/><path d="M54,33.0 v3" transform="rotate(300 54 54)"/><path d="M54,33.0 v3" transform="rotate(330 54 54)"/></g>
+    <symbol id="o1" viewBox="0 0 108 108"><use href="#gnd"/><use href="#rc34" stroke="#000000" stroke-width="9" opacity=".28"/><use href="#f34" stroke="#FFF6F1" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#FF5252" stroke-width="9" stroke-linecap="butt"/><use href="#cap34" fill="#FF5252"/><use href="#t34" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="o1m" viewBox="0 0 108 108"><use href="#gndm"/><use href="#rc34" stroke="#DCE3F0" stroke-width="9" opacity=".32"/><use href="#f34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="butt" opacity=".85"/><use href="#cap34" fill="#DCE3F0" opacity=".85"/><use href="#t34" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="o2" viewBox="0 0 108 108"><use href="#gnd"/><use href="#rc34" stroke="#000000" stroke-width="9" opacity=".28"/><use href="#f34" stroke="#FFF6F1" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#FF5252" stroke-width="9" stroke-linecap="butt"/><use href="#cap34" fill="#FF5252"/><use href="#t34" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/><circle cx="54" cy="54" r="22" fill="#FFF6F1"/><g stroke="#26211E" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"><use href="#dialticks"/></g><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,0.704)"><use href="#hand" stroke="#26211E"/></g></g><use href="#hub" transform="translate(54,54)" fill="#26211E"/><use href="#crown" fill="#FFF6F1"/></symbol>
+    <symbol id="o2m" viewBox="0 0 108 108"><use href="#gndm"/><use href="#rc34" stroke="#DCE3F0" stroke-width="9" opacity=".32"/><use href="#f34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="butt" opacity=".85"/><use href="#cap34" fill="#DCE3F0" opacity=".85"/><use href="#t34" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/><circle cx="54" cy="54" r="22" fill="#DCE3F0" opacity=".45"/><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,0.704)"><use href="#hand" stroke="#DCE3F0"/></g></g><use href="#hub" transform="translate(54,54)" fill="#DCE3F0"/><use href="#crown" fill="#DCE3F0"/></symbol>
+    <symbol id="o3" viewBox="0 0 108 108"><use href="#gnd"/><use href="#rc34" stroke="#000000" stroke-width="9" opacity=".28"/><use href="#f34" stroke="#FFF6F1" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#FF5252" stroke-width="9" stroke-linecap="butt"/><use href="#cap34" fill="#FF5252"/><use href="#t34" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/><use href="#crown" fill="#FFF6F1"/><use href="#sbtn" transform="translate(88.2,34.2) rotate(60)" fill="#FFF6F1"/><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,1.000)"><use href="#hand" stroke="#26211E"/></g></g><use href="#hub" transform="translate(54,54)" fill="#26211E"/></symbol>
+    <symbol id="o3m" viewBox="0 0 108 108"><use href="#gndm"/><use href="#rc34" stroke="#DCE3F0" stroke-width="9" opacity=".32"/><use href="#f34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="round"/><use href="#x34" stroke="#DCE3F0" stroke-width="9" stroke-linecap="butt" opacity=".85"/><use href="#cap34" fill="#DCE3F0" opacity=".85"/><use href="#t34" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/><use href="#crown" fill="#DCE3F0"/><use href="#sbtn" transform="translate(88.2,34.2) rotate(60)" fill="#DCE3F0"/><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,1.000)"><use href="#hand" stroke="#DCE3F0"/></g></g><use href="#hub" transform="translate(54,54)" fill="#DCE3F0"/></symbol>
+    <symbol id="o4" viewBox="0 0 108 108"><use href="#gnd"/><use href="#rc36" stroke="#000000" stroke-width="8" opacity=".28"/><use href="#f36" stroke="#FFF6F1" stroke-width="8" stroke-linecap="round"/><use href="#x36" stroke="#FF5252" stroke-width="8" stroke-linecap="butt"/><use href="#cap36" fill="#FF5252"/><use href="#t36" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/><use href="#rc24" stroke="#000000" stroke-width="6" opacity=".28"/><use href="#f24" stroke="#FFF6F1" stroke-width="6" stroke-linecap="round"/><use href="#t24" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="o4m" viewBox="0 0 108 108"><use href="#gndm"/><use href="#rc36" stroke="#DCE3F0" stroke-width="8" opacity=".32"/><use href="#f36" stroke="#DCE3F0" stroke-width="8" stroke-linecap="round"/><use href="#x36" stroke="#DCE3F0" stroke-width="8" stroke-linecap="butt" opacity=".85"/><use href="#cap36" fill="#DCE3F0" opacity=".85"/><use href="#t36" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/><use href="#rc24" stroke="#DCE3F0" stroke-width="6" opacity=".32"/><use href="#f24" stroke="#DCE3F0" stroke-width="6" stroke-linecap="round" opacity=".7"/><use href="#t24" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="o5" viewBox="0 0 108 108"><use href="#gnd"/><use href="#rc36" stroke="#000000" stroke-width="8" opacity=".28"/><use href="#f36" stroke="#FFF6F1" stroke-width="8" stroke-linecap="round"/><use href="#x36" stroke="#FF5252" stroke-width="8" stroke-linecap="butt"/><use href="#cap36" fill="#FF5252"/><use href="#t36" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/><use href="#rc24" stroke="#000000" stroke-width="6" opacity=".28"/><use href="#f24" stroke="#FFF6F1" stroke-width="6" stroke-linecap="round"/><use href="#t24" stroke="#26211E" stroke-width="2.5" stroke-linecap="round"/><use href="#crown" fill="#FFF6F1"/><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,0.667)"><use href="#hand" stroke="#26211E"/></g></g><use href="#hub" transform="translate(54,54)" fill="#26211E"/></symbol>
+    <symbol id="o5m" viewBox="0 0 108 108"><use href="#gndm"/><use href="#rc36" stroke="#DCE3F0" stroke-width="8" opacity=".32"/><use href="#f36" stroke="#DCE3F0" stroke-width="8" stroke-linecap="round"/><use href="#x36" stroke="#DCE3F0" stroke-width="8" stroke-linecap="butt" opacity=".85"/><use href="#cap36" fill="#DCE3F0" opacity=".85"/><use href="#t36" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/><use href="#rc24" stroke="#DCE3F0" stroke-width="6" opacity=".32"/><use href="#f24" stroke="#DCE3F0" stroke-width="6" stroke-linecap="round" opacity=".7"/><use href="#t24" stroke="#DCE3F0" stroke-width="2.5" stroke-linecap="round"/><use href="#crown" fill="#DCE3F0"/><g transform="translate(54,54) rotate(172.79999999999998)"><g transform="scale(1,0.667)"><use href="#hand" stroke="#DCE3F0"/></g></g><use href="#hub" transform="translate(54,54)" fill="#DCE3F0"/></symbol>
+
+    <!-- top-bar actions -->
+    <symbol id="ic-hist" viewBox="0 0 24 24"><path fill="currentColor" d="M7,2 h2 v2 h6 V2 h2 v2 h2 a2,2 0 0 1 2,2 v13 a2,2 0 0 1 -2,2 H5 a2,2 0 0 1 -2,-2 V6 a2,2 0 0 1 2,-2 h2 z M5,10 v9 h14 v-9 z"/></symbol>
+    <symbol id="ic-set" viewBox="0 0 24 24"><path fill="currentColor" d="M12,8 a4,4 0 1 0 0,8 a4,4 0 0 0 0,-8 z m0,2.2 a1.8,1.8 0 1 1 0,3.6 a1.8,1.8 0 0 1 0,-3.6 z M10.6,2 h2.8 l0.5,2.3 1.6,0.7 2,-1.3 2,2 -1.3,2 0.7,1.6 2.3,0.5 v2.8 l-2.3,0.5 -0.7,1.6 1.3,2 -2,2 -2,-1.3 -1.6,0.7 -0.5,2.3 h-2.8 l-0.5,-2.3 -1.6,-0.7 -2,1.3 -2,-2 1.3,-2 -0.7,-1.6 -2.3,-0.5 v-2.8 l2.3,-0.5 0.7,-1.6 -1.3,-2 2,-2 2,1.3 1.6,-0.7 z" opacity=".9"/></symbol>
+  </defs>
+</svg>
+
+<div class="page">
+
+  <p class="eyebrow">CCRM-60 (Dual Identity) — proposed · revises CCRM-45 (Tracker Icon) and CCRM-56 (Provider Identity) decision 3</p>
+  <h1>Cooldown, two ways — an icon and an app for Claude and ChatGPT</h1>
+  <p class="lede">
+    Google's Antigravity was dropped on 2026-09-08 under CCRM-55 (Antigravity Account), so the third
+    colour leaves the identity and the blue band at the bottom of today's hourglass is now a lie.
+    That leaves a cleaner brief, revised on 2026-09-09: two services, both named on the tile by
+    their own marks, and the usage reading drawn into it, so the icon looks like a tracker issued
+    for the job rather than a picture of one.
+  </p>
+
+  <div class="q">
+    <b>Not in this document.</b> The always-on notification, including its option to show two
+    accounts at once, is designed in <code>design/settings-diet-wireframe.html</code> section 2.
+    This document is the icon and the app screens only.
+  </div>
+
+  <div class="q">
+    <b>What still constrains the icon.</b>
+    <b>1.</b> No readable percentage at 16 px, and nothing that reads as progress:
+    <b>waived 2026-09-09 by decision, see section 2.</b>
+    <b>2.</b> No provider mark on the launcher tile, the settled answer under
+    CCRM-45 (Tracker Icon): <b>waived 2026-09-09 by decision, see section 2.</b>
+    <b>3.</b> Adaptive icon: 108 dp viewport, 66 dp safe circle, plus a themed monochrome layer where
+    the launcher strips colour and keeps alpha. So "two" has to survive as an alpha difference, not
+    only as a hue difference.
+    <b>4.</b> Whichever option wins, the About screen's <code>drawable/ic_launcher.xml</code> is
+    redrawn to match it.
+    <b>5.</b> The status-bar glyph is the live usage gauge, not the logo. It is untouched by all of
+    this (CCRM-49 (Glyph Legibility)).
+  </div>
+
+  <hr class="hr">
+
+  <!-- ======================= 1 · PALETTE ======================= -->
+  <h2>1 · Palette <small>two brands, two houses of colour</small></h2>
+  <p class="sub">The accents are already shipping. What is new here is the supporting colour each
+    brand brings with it, because a room needs more than one hue to feel like a room.</p>
+
+  <div class="palrow">
+    <div class="palname">Claude</div>
+    <div class="chip"><div class="box" style="background:#D97757"></div><b>#D97757</b><span>accent, light</span></div>
+    <div class="chip"><div class="box" style="background:#E59980"></div><b>#E59980</b><span>accent, dark</span></div>
+    <div class="chip"><div class="box" style="background:#FFF6F1"></div><b>#FFF6F1</b><span>cream</span></div>
+    <div class="chip"><div class="box" style="background:#F0EEE6"></div><b>#F0EEE6</b><span>ivory</span></div>
+    <div class="chip"><div class="box" style="background:#D4A27F"></div><b>#D4A27F</b><span>kraft, warm wood</span></div>
+    <div class="chip"><div class="box" style="background:#26211E"></div><b>#26211E</b><span>warm ink</span></div>
+  </div>
+  <p class="sub" style="margin:10px 0 22px">Claude style means warm terracotta on ivory, editorial,
+    with a serif in it somewhere.</p>
+
+  <div class="palrow">
+    <div class="palname">ChatGPT</div>
+    <div class="chip"><div class="box" style="background:#10A37F"></div><b>#10A37F</b><span>accent, light</span></div>
+    <div class="chip"><div class="box" style="background:#19C39A"></div><b>#19C39A</b><span>accent, dark</span></div>
+    <div class="chip"><div class="box" style="background:#0D0D0D"></div><b>#0D0D0D</b><span>near-black</span></div>
+    <div class="chip"><div class="box" style="background:#FFFFFF"></div><b>#FFFFFF</b><span>white</span></div>
+    <div class="chip"><div class="box" style="background:#ECECF1"></div><b>#ECECF1</b><span>cool grey</span></div>
+  </div>
+  <p class="sub" style="margin:10px 0 22px">OpenAI style means monochrome black and white,
+    geometric, sans throughout.</p>
+
+  <div class="palrow">
+    <div class="palname">Shared</div>
+    <div class="chip"><div class="box" style="background:radial-gradient(circle at 30% 25%, #3A4356, #242B38 60%, #12161E)"></div><b>slate</b><span>icon ground, radial</span></div>
+    <div class="chip"><div class="box" style="background:linear-gradient(90deg,#F9A825 50%,#FDD663 50%)"></div><b>#F9A825</b><span>warning · dark #FDD663</span></div>
+    <div class="chip"><div class="box" style="background:linear-gradient(90deg,#F57C00 50%,#FFA726 50%)"></div><b>#F57C00</b><span>orange · dark #FFA726</span></div>
+    <div class="chip"><div class="box" style="background:linear-gradient(90deg,#C62828 50%,#FF5252 50%)"></div><b>#C62828</b><span>red · dark #FF5252</span></div>
+    <div class="chip gone"><div class="box" style="background:#4285F4"></div><b>#4285F4</b><span>Gemini blue, leaving</span></div>
+  </div>
+  <p class="sub" style="margin:10px 0 0">Severity beats brand: a bar past its pace line goes red in
+    both rooms. The pace tick is neutral ink on multi-account faces, per CCRM-56 (Provider Identity)
+    decision 7.</p>
+
+  <hr class="hr">
+
+  <!-- ======================= 2 · ICON, CHOSEN ======================= -->
+  <h2>2 · Icon, chosen <small>full-ring meter · cream fill decided · the stopwatch layout is open</small></h2>
+  <p class="sub">The gauge closes: the 270 degree arc becomes a <b>full 360 degree ring</b>, and the
+    fill colour is settled as variant A, cream <code>#FFF6F1</code> on a black track at 28%, with a
+    warm-ink <code>#26211E</code> pace tick and red <code>#FF5252</code> past it. The ground is
+    unchanged, a straight anti-diagonal cut with terracotta <code>#D97757</code> top-left and
+    ChatGPT green <code>#10A37F</code> bottom-right. What is left to choose is how much
+    <b>stopwatch</b> sits with the ring, so the five options below combine the same ring with an
+    analog stopwatch's parts, from none of them to all of them.</p>
+
+  <p class="sub"><b>The ring, drawn once.</b> Track r 34, stroke 9, a closed circle. The fill grows
+    <b>clockwise from 12 o'clock</b>, which is where every ring in this document starts. The sample
+    reading is 60% of the ring with the pace tick at 48%, so the fill ends at 216 degrees, the tick
+    stands at 172.8 degrees, and the 43.2 degrees between them is red with a round cap on the
+    outer end; the tick is 2.5 units wide and extends 3 units past the track on both sides, r 26.5
+    to r 41.5. Ring outer edge r 38.5 and tick outer r 41.5, both past the 66 dp safe circle in the
+    way the shipped icon already is. The seam now crosses the ring twice, at
+    <b>about 1:30 and 7:30 o'clock</b> (45 and 225 degrees), so the fill starts on the terracotta
+    half, crosses onto the green at 1:30, and the red segment and the tick both land back on the
+    terracotta side near 6 o'clock. Options 4 and 5 use r 36 stroke 8 for the 5-hour ring and r 24
+    stroke 6 for the weekly one; everything else is shared.</p>
+
+  <div class="q">
+    <b>The meter rule.</b> The tile is static, so the fill is a <b>sample reading</b> and never a
+    live one: 60% used with 48% of the window elapsed, which is above pace, so the red segment is
+    on the launcher tile permanently and the fill, the tick and the hand never move. The old
+    objection to a meter in the launcher tile was that the OS swapped the tile in for the
+    status-bar glyph, which CCBG-12 (Status Icon Swap) fixed, so it no longer applies and
+    CCRM-42 (App Icon) is superseded by this decision. The pace tick and the red past it follow
+    CCRM-43 (Bar Pace Marks). No provider mark on the tile, by decision 2026-09-09.
+  </div>
+
+  <div class="grid">
+    <div class="opt rec">
+      <span class="tag">option 1 · baseline, recommended</span>
+      <h4>1 · Ring only</h4>
+      <svg class="tile100" viewBox="0 0 108 108"><use href="#o1"/></svg>
+      <div class="sizes"><div class="z"><span class="sw d"><svg class="tile48" viewBox="0 0 108 108"><use href="#o1"/></svg></span><span>48 dp · dark</span></div><div class="z"><span class="sw l"><svg class="tile48" viewBox="0 0 108 108"><use href="#o1"/></svg></span><span>48 dp · light</span></div><div class="z"><span class="sw m"><svg class="tile48" viewBox="0 0 108 108"><use href="#o1m"/></svg></span><span>48 dp · themed</span></div></div>
+      <p class="why"><b>Why.</b> The meter and nothing else. One closed ring, one reading, an empty centre, and the ground doing the identity work. It is the baseline the other four are measured against, and the only one with no part that can fail at 48 dp.</p>
+      <p class="why">Track r 34 stroke 9, cream fill clockwise from 12 o'clock to 60%, ink pace tick at 48% and the 43.2 degrees between them in red with a round cap. Centre empty from r 29.5 in.</p>
+      <p class="risk"><b>Risk:</b> An empty centre on a two-colour ground reads as a frame around the seam rather than as an instrument, so the stopwatch idea is entirely in the viewer's head.</p>
+      <p class="mono"><b>Monochrome rule:</b> Ground halves at 0.3 and 0.6, track 0.32, cream fill solid, red segment 0.85 so it stays distinct from the fill, tick solid.</p>
+    </div>
+    <div class="opt">
+      <span class="tag">option 2</span>
+      <h4>2 · Ring with a stopwatch face inside</h4>
+      <svg class="tile100" viewBox="0 0 108 108"><use href="#o2"/></svg>
+      <div class="sizes"><div class="z"><span class="sw d"><svg class="tile48" viewBox="0 0 108 108"><use href="#o2"/></svg></span><span>48 dp · dark</span></div><div class="z"><span class="sw l"><svg class="tile48" viewBox="0 0 108 108"><use href="#o2"/></svg></span><span>48 dp · light</span></div><div class="z"><span class="sw m"><svg class="tile48" viewBox="0 0 108 108"><use href="#o2m"/></svg></span><span>48 dp · themed</span></div></div>
+      <p class="why"><b>Why.</b> The full instrument: the ring is the meter and the dial inside it is the clock, with the hand pointing at the same angle as the pace tick, so <b>the hand is the elapsed time</b> and the gap between the hand and the fill's end is the overspend.</p>
+      <p class="why">Ring as option 1. Inside it a cream disc r 22 with twelve ink minute ticks 3 units long at its edge, one ink hand from the hub to r 19 at the pace angle of 172.8 degrees, an ink hub r 2.5, and a cream crown 6 by 5 at radius 2 on the ring's top, on a 2.8 unit stem.</p>
+      <p class="risk"><b>Risk:</b> Twelve 1.4 unit ticks are 0.6 px each at 48 dp: they close into a grey band inside the disc and take the dial's legibility with them. The disc also hides the seam through the middle of the tile, which is where the two colours are most recognisable.</p>
+      <p class="mono"><b>Monochrome rule:</b> Ground halves at 0.3 and 0.6, track 0.32, cream fill solid, red segment 0.85 so it stays distinct from the fill, tick solid. Disc at 0.45, dial ticks dropped, hand and hub solid.</p>
+    </div>
+    <div class="opt">
+      <span class="tag">option 3 · recommended for one window</span>
+      <h4>3 · The ring as a stopwatch bezel</h4>
+      <svg class="tile100" viewBox="0 0 108 108"><use href="#o3"/></svg>
+      <div class="sizes"><div class="z"><span class="sw d"><svg class="tile48" viewBox="0 0 108 108"><use href="#o3"/></svg></span><span>48 dp · dark</span></div><div class="z"><span class="sw l"><svg class="tile48" viewBox="0 0 108 108"><use href="#o3"/></svg></span><span>48 dp · light</span></div><div class="z"><span class="sw m"><svg class="tile48" viewBox="0 0 108 108"><use href="#o3m"/></svg></span><span>48 dp · themed</span></div></div>
+      <p class="why"><b>Why.</b> The stopwatch read for the price of two shapes: the crown and the side button turn the ring into a bezel, and the single hand across the empty centre says elapsed time without a dial to lose. The fill is then unmistakably the bezel filling up.</p>
+      <p class="why">Ring as option 1, plus the cream crown at 12 o'clock and a 4 by 4 cream side button at 2 o'clock, centre (88, 34) rotated 60 degrees. One ink hand from a hub r 2.5 out to r 27 at the pace angle. The button sits at r 39.5, past the safe circle, so a round mask will shave it.</p>
+      <p class="risk"><b>Risk:</b> The side button is the one part small enough to disappear, and losing it leaves the crown looking like a stray tab. The long hand also crosses the tile's centre, so it cuts the seam in two.</p>
+      <p class="mono"><b>Monochrome rule:</b> Ground halves at 0.3 and 0.6, track 0.32, cream fill solid, red segment 0.85 so it stays distinct from the fill, tick solid. Crown, button, hand and hub all solid.</p>
+    </div>
+    <div class="opt">
+      <span class="tag">option 4</span>
+      <h4>4 · Two rings, 5h and Weekly</h4>
+      <svg class="tile100" viewBox="0 0 108 108"><use href="#o4"/></svg>
+      <div class="sizes"><div class="z"><span class="sw d"><svg class="tile48" viewBox="0 0 108 108"><use href="#o4"/></svg></span><span>48 dp · dark</span></div><div class="z"><span class="sw l"><svg class="tile48" viewBox="0 0 108 108"><use href="#o4"/></svg></span><span>48 dp · light</span></div><div class="z"><span class="sw m"><svg class="tile48" viewBox="0 0 108 108"><use href="#o4m"/></svg></span><span>48 dp · themed</span></div></div>
+      <p class="why"><b>Why.</b> Both windows, one ring each, which is the only way this tile can carry what the app actually reports. The outer ring is the 5-hour window and the inner the weekly; the inner one is under pace, so it has a tick and no red, which is exactly what the bars do.</p>
+      <p class="why">Outer track r 36 stroke 8, cream fill to 60%, ink tick at 48%, red between. Inner track r 24 stroke 6, cream fill to 40%, ink tick at 55% and <b>no red</b>, because the fill stops short of the tick. Both start at 12 o'clock; centre empty from r 21 in.</p>
+      <p class="risk"><b>Risk:</b> Two rings 6 units apart merge below about 40 dp, and the inner tick can be misread as a second red segment once the colours flatten.</p>
+      <p class="mono"><b>Monochrome rule:</b> Ground halves at 0.3 and 0.6, track 0.32, cream fill solid, red segment 0.85 so it stays distinct from the fill, tick solid. Inner track 0.32, inner fill 0.7 so the two rings stay apart, inner tick solid.</p>
+    </div>
+    <div class="opt">
+      <span class="tag">option 5 · recommended for both windows</span>
+      <h4>5 · Two rings with the hand</h4>
+      <svg class="tile100" viewBox="0 0 108 108"><use href="#o5"/></svg>
+      <div class="sizes"><div class="z"><span class="sw d"><svg class="tile48" viewBox="0 0 108 108"><use href="#o5"/></svg></span><span>48 dp · dark</span></div><div class="z"><span class="sw l"><svg class="tile48" viewBox="0 0 108 108"><use href="#o5"/></svg></span><span>48 dp · light</span></div><div class="z"><span class="sw m"><svg class="tile48" viewBox="0 0 108 108"><use href="#o5m"/></svg></span><span>48 dp · themed</span></div></div>
+      <p class="why"><b>Why.</b> Option 4 plus the one stopwatch part that costs nothing: the hand. Both windows are on the tile, the hand still reads as elapsed time, and the crown still says stopwatch, with no dial and no ticks to lose.</p>
+      <p class="why">Rings as option 4. Ink hand from the hub out to r 18 at the 5-hour pace angle, hub r 2.5, cream crown at 12 o'clock on the outer ring. The hand stops 3 units short of the inner ring so the two never touch.</p>
+      <p class="risk"><b>Risk:</b> Three concentric things in a 72 unit circle. At 48 dp the hand and the inner ring are 1.4 px apart, which is where a downscale starts inventing a fourth shape.</p>
+      <p class="mono"><b>Monochrome rule:</b> Ground halves at 0.3 and 0.6, track 0.32, cream fill solid, red segment 0.85 so it stays distinct from the fill, tick solid. Inner fill 0.7; hand, hub and crown solid.</p>
+    </div>
+  </div>
+
+  <h3>Comparison</h3>
+  <div class="scroll">
+  <table>
+    <tr><th>&nbsp;</th><th>Reads as a stopwatch</th><th>5h and Weekly both present</th><th>Survives 48 dp</th><th>Survives mono</th><th>Centre stays readable</th></tr>
+    <tr><td><b>1 · ring only</b></td><td>No, in the head</td><td>No, 5h only</td><td>Best</td><td>Best</td><td>Empty, shows the seam</td></tr>
+    <tr><td><b>2 · ring + dial</b></td><td>Yes, fully</td><td>No, 5h only</td><td>Ticks close up</td><td>Ticks dropped</td><td>Disc hides the seam</td></tr>
+    <tr><td><b>3 · ring as bezel</b></td><td>Yes</td><td>No, 5h only</td><td>Button shaves</td><td>Holds</td><td>Hand crosses the seam</td></tr>
+    <tr><td><b>4 · two rings</b></td><td>No, in the head</td><td>Yes, both</td><td>Rings merge</td><td>Holds</td><td>Empty, shows the seam</td></tr>
+    <tr><td><b>5 · two rings + hand</b></td><td>Yes</td><td>Yes, both</td><td>Hand and ring close</td><td>Holds</td><td>Hand crosses the seam</td></tr>
+  </table>
+  </div>
+
+  <h3>Considered and dropped</h3>
+  <ul class="tight">
+    <li><b>Round 1, dropped on review:</b> split coin, snowflake, twin-blade fan.</li>
+    <li><b>Round 2, dropped on review 2026-09-09:</b> the crab options, twin pop, two sands, two
+      hourglasses, the dial and the stopwatch. The brief moved to professional and official.</li>
+    <li><b>Round 3, dropped on review 2026-09-09:</b> the marks leave the tile; the interlock
+      survived as round 4's ground.</li>
+    <li><b>Round 4, dropped on review 2026-09-09:</b> the other nine, the duet ring, the single
+      ring, concentric rings, two small rings, two bars, ring and bar, the segmented dial and both
+      mascot layouts. The gauge arc won and the interlocking tabs went with them.</li>
+    <li><b>Round 5, dropped on review 2026-09-09:</b> the 270 degree open gauge, and fill variants
+      B, slate on a cream track, and C, outlined warm white. The ring closes and A's cream fill is
+      decided.</li>
+    <li><b>The letters C and G.</b> An initial is not an identity, and one of the two letters is
+      the wrong company anyway.</li>
+  </ul>
+
+  <p class="sub" style="margin-top:18px"><b>Recommendation:</b> <b>option 3</b> if one window is
+    enough, <b>option 5</b> if both windows must show. The dividing line is what each stopwatch part
+    costs at 48 dp: <b>the hand costs nothing</b>, because it is one 3.2 unit stroke that scales
+    like the ring does, and the crown costs almost nothing, but <b>the twelve dial ticks in option 2
+    do cost</b>, at 0.6 px each, which is why the dial is the one part not worth its space.</p>
+
+  <hr class="hr">
+
+  <!-- ======================= 3 · TWO ROOMS ======================= -->
+  <h2>3 · The app, two rooms <small>approved 2026-09-09 · same cards, two atmospheres</small></h2>
+  <p class="sub">The shell already themes from the selected tab's account under CCRM-56 (Provider
+    Identity) decision 1, so a ChatGPT tab already turns the bars and the chart green.
+    <b>Approved 2026-09-09:</b> the app takes that one step further, so that a Claude tab and a
+    ChatGPT tab feel like two rooms in one house, <b>serif headline figures on the Claude room
+    included</b>. <b>Nothing about what a card contains changes.</b> Same windows, same pace tick,
+    same reset rows, same trend block, same rules about which cards exist.
+    <b>Nothing on any card is removed or simplified: the chart, its guides, its axis and its
+    projection line are exactly today's.</b></p>
+
+  <ul class="tight">
+    <li><b>Claude room.</b> Surface tint warm ivory, <code>#F5EFE8</code> light and
+      <code>#1B1715</code> dark, card surfaces one step warmer than the surface. Headline
+      percentages in the system serif, Android <code>FontFamily.Serif</code>, which is Noto Serif on
+      the device and is mocked here with Georgia. Bar fill and tab indicator Claude orange.</li>
+    <li><b>ChatGPT room.</b> Surface tint neutral, <code>#F7F7F8</code> light and
+      <code>#0D0D0D</code> dark. Headline percentages in the default sans. Bar fill and tab
+      indicator ChatGPT green.</li>
+    <li><b>Identical in both.</b> The cards, the pace tick in neutral ink, the reset rows, the trend
+      block, the severity reds. Provider marks keep their own colour in both rooms: marks identify,
+      colour themes.</li>
+    <li><b>One thing this changes in shipped code.</b> Today the tab strip's text and indicator are
+      pinned to neutral <code>onSurface</code> on purpose, so hues do not crossfade mid-swipe. The
+      mocks below give the <b>indicator</b> the room accent and leave the labels neutral, which is
+      the narrowest version of that change. If the crossfade is still unacceptable, the indicator
+      stays neutral and the rooms are carried by surface, serif and bars alone.</li>
+  </ul>
+
+  <div class="q">
+    <b>Top bar, two variants.</b> Today it is the word on its own. Variant (ii) puts the two
+    provider marks at 20 dp before it, side by side, drawn by the same
+    <code>ProviderMark</code> composable the tabs and cards already use.
+    <div class="mockrow" style="margin-top:10px">
+      <div class="mock">
+        <p class="cap">i · text only, unchanged</p>
+        <div class="room claude dk" style="width:280px">
+          <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+            <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+            <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+        </div>
+      </div>
+      <div class="mock">
+        <p class="cap">ii · the two marks at 20 dp, then the word · approved</p>
+        <div class="room claude dk" style="width:280px">
+          <div class="tbar" style="padding-left:14px">
+            <svg width="20" height="20" viewBox="0 0 24 24" style="flex:0 0 20px;color:#E59980"><use href="#mk-claude"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" style="flex:0 0 20px;color:#19C39A;margin-left:-2px"><use href="#mk-gpt"/></svg>
+            <span>Cooldown</span><span class="sp"></span>
+            <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+            <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0"><b>Variant (ii) is approved,
+      2026-09-09.</b> It does not use the tile artwork at all: it is the two marks the app already
+      draws through <code>ProviderMark</code>, at the 20 dp the tabs use, each in its own provider
+      colour, so it holds whichever tile wins. The marks stay on in-app surfaces; only the launcher
+      tile loses them.</p>
+  </div>
+
+  <h3>State 1 · Claude room, dark, "Personal" <small>410 dp, Fold 7 cover screen, COMPACT</small></h3>
+  <p class="sub">5-hour at 42% and below pace. 7-day at 63% and above pace, so the part of the bar
+    past the tick is red. The Fable cap sits at 20%.</p>
+  <div class="mockrow">
+  <div class="mock">
+  <div class="room claude dk">
+    <div class="sbar"><span>9:41</span><span class="sp"></span><span>5G&nbsp; 59</span></div>
+    <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+    <div class="tabs">
+      <div class="tb on"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Personal</div>
+      <div class="tb"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Work</div>
+      <div class="tb"><svg class="mk" style="color:#19C39A"><use href="#mk-gpt"/></svg>ChatGPT</div>
+    </div>
+    <div class="cards">
+      <div class="kard">
+        <div class="krow"><span class="t">5-hour window</span><span class="sp"></span><span class="fig">42% used</span></div>
+        <div class="bar"><div class="fill" style="width:42%"></div><div class="tick" style="left:calc(51% - 1.5px)"></div></div>
+        <svg class="ch" width="346" height="132" viewBox="0 0 346 132"><path class="gl y100" d="M0,15.0 H312.0"/><text class="t100" x="315.0" y="17.6">100%</text><path class="gl y90" d="M0,25.1 H312.0"/><text class="t90" x="315.0" y="27.7">90%</text><path class="gl y80" d="M0,35.2 H312.0"/><text class="t80" x="315.0" y="37.8">80%</text><path class="pace" d="M0,116.0 L312.0,15.0"/><path class="pace" d="M3,20.0 H17"/><text class="pacet" x="20" y="23.0">even pace</text><path class="area" d="M0.0,116.0 L17.7,109.5 L33.6,105.1 L51.3,100.6 L70.8,96.0 L92.0,91.2 L113.2,86.6 L138.0,81.4 L159.2,77.1 L176.9,73.6 L176.9,116.0 L0,116.0 Z"/><path class="ser" d="M0.0,116.0 L17.7,109.5 L33.6,105.1 L51.3,100.6 L70.8,96.0 L92.0,91.2 L113.2,86.6 L138.0,81.4 L159.2,77.1 L176.9,73.6"/><circle class="dot" cx="0.0" cy="116.0" r="1.5"/><circle class="dot" cx="17.7" cy="109.5" r="1.5"/><circle class="dot" cx="33.6" cy="105.1" r="1.5"/><circle class="dot" cx="51.3" cy="100.6" r="1.5"/><circle class="dot" cx="70.8" cy="96.0" r="1.5"/><circle class="dot" cx="92.0" cy="91.2" r="1.5"/><circle class="dot" cx="113.2" cy="86.6" r="1.5"/><circle class="dot" cx="138.0" cy="81.4" r="1.5"/><circle class="dot" cx="159.2" cy="77.1" r="1.5"/><path class="nowl" d="M176.9,15.0 V116.0"/><circle class="dot" cx="176.9" cy="73.6" r="3"/><text class="val" x="171.9" y="69.6" text-anchor="end">42%</text><path class="prj" d="M176.9,73.6 L312.0,44.3"/><circle class="hollow" cx="312.0" cy="44.3" r="3"/><text class="val" x="308.0" y="39.3" text-anchor="end">~71%</text><path class="ax" d="M0,116.0 H312.0"/><text class="axt" x="0" y="129">13:40</text><text class="axt" x="176.9" y="129" text-anchor="middle">now</text><text class="axt" x="312.0" y="129" text-anchor="end">18:40</text></svg>
+        <p class="note">9 points below even pace</p>
+        <p class="note">At this pace: ~71% when the window resets · 6.2%/h</p>
+        <div class="reset"><span>Resets in 2h 10m</span><span class="sp"></span><span>Resets at 18:40</span></div>
+      </div>
+      <div class="kard">
+        <div class="krow"><span class="t">7-day window</span></div>
+        <div style="height:10px"></div>
+        <div class="srow"><span>All models</span><span class="sp"></span><b>63% used</b></div>
+        <div class="bar"><div class="fill" style="width:63%"><div class="over" style="width:27%"></div></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div style="height:12px"></div>
+        <div class="srow"><span>Fable</span><span class="sp"></span><b>20% used</b></div>
+        <div class="bar"><div class="fill" style="width:20%"></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <svg class="ch" width="346" height="132" viewBox="0 0 346 132"><rect class="wash" x="0" y="15.0" width="312.0" height="101.0"/><path class="gl y100" d="M0,15.0 H312.0"/><text class="t100" x="315.0" y="17.6">100%</text><path class="gl y90" d="M0,25.1 H312.0"/><text class="t90" x="315.0" y="27.7">90%</text><path class="gl y80" d="M0,35.2 H312.0"/><text class="t80" x="315.0" y="37.8">80%</text><path class="pace" d="M0,116.0 L312.0,15.0"/><path class="pace" d="M3,20.0 H17"/><text class="pacet" x="20" y="23.0">even pace</text><path class="area" d="M0.0,116.0 L14.4,106.4 L27.3,99.7 L41.6,93.0 L57.4,86.0 L74.6,78.7 L91.9,71.9 L111.9,64.1 L129.2,57.6 L143.5,52.4 L143.5,116.0 L0,116.0 Z"/><path class="ser" d="M0.0,116.0 L14.4,106.4 L27.3,99.7 L41.6,93.0 L57.4,86.0 L74.6,78.7 L91.9,71.9 L111.9,64.1 L129.2,57.6 L143.5,52.4"/><circle class="dot" cx="0.0" cy="116.0" r="1.5"/><circle class="dot" cx="14.4" cy="106.4" r="1.5"/><circle class="dot" cx="27.3" cy="99.7" r="1.5"/><circle class="dot" cx="41.6" cy="93.0" r="1.5"/><circle class="dot" cx="57.4" cy="86.0" r="1.5"/><circle class="dot" cx="74.6" cy="78.7" r="1.5"/><circle class="dot" cx="91.9" cy="71.9" r="1.5"/><circle class="dot" cx="111.9" cy="64.1" r="1.5"/><circle class="dot" cx="129.2" cy="57.6" r="1.5"/><path class="nowl" d="M143.5,15.0 V116.0"/><circle class="dot" cx="143.5" cy="52.4" r="3"/><text class="val" x="138.5" y="48.4" text-anchor="end">63%</text><path class="prj" d="M143.5,52.4 L302.6,15.0"/><circle class="hollow" cx="302.6" cy="15.0" r="3"/><text class="val" x="298.6" y="10.0" text-anchor="end">~100%</text><path class="ax" d="M0,116.0 H312.0"/><text class="axt" x="0" y="129">Fri 09:00</text><text class="axt" x="143.5" y="129" text-anchor="middle">now</text><text class="axt" x="312.0" y="129" text-anchor="end">Fri 09:00</text></svg>
+        <p class="note hot">17 points above even pace</p>
+        <p class="note">At this pace: 100% at Thu 21:15 · 1d 12h before the reset · 0.4%/h</p>
+        <div class="div"></div>
+        <div class="reset"><span>Resets in 3d 18h</span><span class="sp"></span><span>Resets Fri 09:00</span></div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <h3>State 2 · ChatGPT room, dark, "ChatGPT" <small>750 dp, inner screen, content capped at 600 dp</small></h3>
+  <p class="sub">No 5-hour card at all: this account has no 5-hour window, and CCRM-56 (Provider
+    Identity) decision 6 says a window the account does not have is not shown, with no placeholder
+    and no dash. Main stays one pane at every width per CCRM-20 (Wide Chart); the extra room becomes
+    margin, not a second column. The tab strip spans the window, the cards sit in the 600 dp cap.</p>
+  <div class="scroll">
+  <div class="mock">
+  <div class="room gpt dk wide">
+    <div class="sbar"><span>9:41</span><span class="sp"></span><span>5G&nbsp; 59</span></div>
+    <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+    <div class="tabs">
+      <div class="tb"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Personal</div>
+      <div class="tb"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Work</div>
+      <div class="tb on"><svg class="mk" style="color:#19C39A"><use href="#mk-gpt"/></svg>ChatGPT</div>
+    </div>
+    <div class="pane">
+    <div class="cards">
+      <div class="kard">
+        <div class="krow"><span class="t">7-day window</span></div>
+        <div style="height:8px"></div>
+        <div class="srow"><span>All models</span><span class="sp"></span><b>63% used</b></div>
+        <div class="bar"><div class="fill" style="width:63%"><div class="over" style="width:27%"></div></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div style="height:12px"></div>
+        <div class="srow"><span>Spark</span><span class="sp"></span><b>31% used</b></div>
+        <div class="bar"><div class="fill" style="width:31%"></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <svg class="ch" width="536" height="132" viewBox="0 0 536 132"><rect class="wash" x="0" y="15.0" width="502.0" height="101.0"/><path class="gl y100" d="M0,15.0 H502.0"/><text class="t100" x="505.0" y="17.6">100%</text><path class="gl y90" d="M0,25.1 H502.0"/><text class="t90" x="505.0" y="27.7">90%</text><path class="gl y80" d="M0,35.2 H502.0"/><text class="t80" x="505.0" y="37.8">80%</text><path class="pace" d="M0,116.0 L502.0,15.0"/><path class="pace" d="M3,20.0 H17"/><text class="pacet" x="20" y="23.0">even pace</text><path class="area" d="M0.0,116.0 L23.1,106.4 L43.9,99.7 L67.0,93.0 L92.4,86.0 L120.1,78.7 L147.8,71.9 L180.1,64.1 L207.8,57.6 L230.9,52.4 L230.9,116.0 L0,116.0 Z"/><path class="ser" d="M0.0,116.0 L23.1,106.4 L43.9,99.7 L67.0,93.0 L92.4,86.0 L120.1,78.7 L147.8,71.9 L180.1,64.1 L207.8,57.6 L230.9,52.4"/><circle class="dot" cx="0.0" cy="116.0" r="1.5"/><circle class="dot" cx="23.1" cy="106.4" r="1.5"/><circle class="dot" cx="43.9" cy="99.7" r="1.5"/><circle class="dot" cx="67.0" cy="93.0" r="1.5"/><circle class="dot" cx="92.4" cy="86.0" r="1.5"/><circle class="dot" cx="120.1" cy="78.7" r="1.5"/><circle class="dot" cx="147.8" cy="71.9" r="1.5"/><circle class="dot" cx="180.1" cy="64.1" r="1.5"/><circle class="dot" cx="207.8" cy="57.6" r="1.5"/><path class="nowl" d="M230.9,15.0 V116.0"/><circle class="dot" cx="230.9" cy="52.4" r="3"/><text class="val" x="225.9" y="48.4" text-anchor="end">63%</text><path class="prj" d="M230.9,52.4 L486.9,15.0"/><circle class="hollow" cx="486.9" cy="15.0" r="3"/><text class="val" x="482.9" y="10.0" text-anchor="end">~100%</text><path class="ax" d="M0,116.0 H502.0"/><text class="axt" x="0" y="129">Fri 09:00</text><text class="axt" x="230.9" y="129" text-anchor="middle">now</text><text class="axt" x="502.0" y="129" text-anchor="end">Fri 09:00</text></svg>
+        <p class="note hot">17 points above even pace</p>
+        <p class="note">At this pace: 100% at Thu 21:15 · 1d 12h before the reset · 0.4%/h</p>
+        <div class="div"></div>
+        <div class="reset"><span>Resets in 3d 18h</span><span class="sp"></span><span>Resets Fri 09:00</span></div>
+      </div>
+      <div class="kard">
+        <div class="krow"><span class="t">Credits</span><span class="sp"></span><span class="fig">$12.40 balance</span></div>
+        <div class="bar"><div class="fill" style="width:31%"></div></div>
+        <div class="reset"><span>$12.40 of $40.00 this month</span><span class="sp"></span><span>Cap resets 1 Oct</span></div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+  </div>
+  <p class="sub" style="margin-top:10px">The 5-hour card's absence is the whole state. There is no
+    gap where it was, because the column simply starts with the next card.</p>
+
+  <h3>State 3 · Claude room, light, 5-hour at 100% <small>410 dp</small></h3>
+  <p class="sub">The figure goes red, the bar is full and red end to end, the projection line stops
+    claiming a future. The serif headline still applies; a serif in red is the loudest this app
+    gets.</p>
+  <div class="mockrow">
+  <div class="mock">
+  <div class="room claude lt">
+    <div class="sbar"><span>9:41</span><span class="sp"></span><span>5G&nbsp; 59</span></div>
+    <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+    <div class="tabs">
+      <div class="tb on"><svg class="mk" style="color:#D97757"><use href="#mk-claude"/></svg>Personal</div>
+      <div class="tb"><svg class="mk" style="color:#D97757"><use href="#mk-claude"/></svg>Work</div>
+      <div class="tb"><svg class="mk" style="color:#10A37F"><use href="#mk-gpt"/></svg>ChatGPT</div>
+    </div>
+    <div class="cards">
+      <div class="kard">
+        <div class="krow"><span class="t">5-hour window</span><span class="sp"></span><span class="fig" style="color:var(--red)">100% used</span></div>
+        <div class="bar"><div class="fill at100" style="width:100%"></div><div class="tick" style="left:calc(79% - 1.5px)"></div></div>
+        <svg class="ch" width="346" height="132" viewBox="0 0 346 132"><rect class="wash" x="0" y="15.0" width="312.0" height="101.0"/><path class="gl y100" d="M0,15.0 H312.0"/><text class="t100" x="315.0" y="17.6">100%</text><path class="gl y90" d="M0,25.1 H312.0"/><text class="t90" x="315.0" y="27.7">90%</text><path class="gl y80" d="M0,35.2 H312.0"/><text class="t80" x="315.0" y="37.8">80%</text><path class="pace" d="M0,116.0 L312.0,15.0"/><path class="pace" d="M3,20.0 H17"/><text class="pacet" x="20" y="23.0">even pace</text><path class="area" d="M0.0,116.0 L24.4,101.9 L46.4,85.7 L70.8,68.5 L97.7,52.4 L127.0,37.2 L156.3,25.1 L190.6,18.0 L219.9,15.0 L244.3,15.0 L244.3,116.0 L0,116.0 Z"/><path class="ser" d="M0.0,116.0 L24.4,101.9 L46.4,85.7 L70.8,68.5 L97.7,52.4 L127.0,37.2 L156.3,25.1 L190.6,18.0 L219.9,15.0 L244.3,15.0"/><circle class="dot" cx="0.0" cy="116.0" r="1.5"/><circle class="dot" cx="24.4" cy="101.9" r="1.5"/><circle class="dot" cx="46.4" cy="85.7" r="1.5"/><circle class="dot" cx="70.8" cy="68.5" r="1.5"/><circle class="dot" cx="97.7" cy="52.4" r="1.5"/><circle class="dot" cx="127.0" cy="37.2" r="1.5"/><circle class="dot" cx="156.3" cy="25.1" r="1.5"/><circle class="dot" cx="190.6" cy="18.0" r="1.5"/><circle class="dot" cx="219.9" cy="15.0" r="1.5"/><path class="nowl" d="M244.3,15.0 V116.0"/><circle class="dot" cx="244.3" cy="15.0" r="3"/><text class="val" x="239.3" y="11.0" text-anchor="end">100%</text><path class="ax" d="M0,116.0 H312.0"/><text class="axt" x="0" y="129">13:40</text><text class="axt" x="244.3" y="129" text-anchor="middle">now</text><text class="axt" x="312.0" y="129" text-anchor="end">18:40</text></svg>
+        <p class="note hot">21 points above even pace</p>
+        <div class="reset"><span>Resets in 1h 05m</span><span class="sp"></span><span>Resets at 18:40</span></div>
+      </div>
+      <div class="kard">
+        <div class="krow"><span class="t">7-day window</span></div>
+        <div style="height:10px"></div>
+        <div class="srow"><span>All models</span><span class="sp"></span><b>78% used</b></div>
+        <div class="bar"><div class="fill" style="width:78%"><div class="over" style="width:41%"></div></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div style="height:12px"></div>
+        <div class="srow"><span>Fable</span><span class="sp"></span><b>34% used</b></div>
+        <div class="bar"><div class="fill" style="width:34%"></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div class="div"></div>
+        <div class="reset"><span>Resets in 3d 18h</span><span class="sp"></span><span>Resets Fri 09:00</span></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="mock">
+    <p class="cap">state 4 · error on the ChatGPT tab · 410 dp</p>
+  <div class="room gpt dk">
+    <div class="sbar"><span>9:41</span><span class="sp"></span><span>5G&nbsp; 59</span></div>
+    <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+    <div class="tabs">
+      <div class="tb"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Personal</div>
+      <div class="tb"><svg class="mk" style="color:#E59980"><use href="#mk-claude"/></svg>Work</div>
+      <div class="tb on"><svg class="mk" style="color:#19C39A"><use href="#mk-gpt"/></svg>ChatGPT</div>
+    </div>
+    <div class="cards">
+      <div class="err">
+        <p class="h">Couldn't reach OpenAI · retrying</p>
+        <p class="d">network · next try ~09:46 · last attempt 09:41, 2m ago</p>
+      </div>
+      <div class="kard dim">
+        <div class="krow"><span class="t">7-day window</span></div>
+        <div style="height:8px"></div>
+        <div class="srow"><span>All models</span><span class="sp"></span><b>63% used</b></div>
+        <div class="bar"><div class="fill" style="width:63%"><div class="over" style="width:27%"></div></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div style="height:12px"></div>
+        <div class="srow"><span>Spark</span><span class="sp"></span><b>31% used</b></div>
+        <div class="bar"><div class="fill" style="width:31%"></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div class="div"></div>
+        <div class="reset"><span>Resets in 3d 18h</span><span class="sp"></span><span>Resets Fri 09:00</span></div>
+      </div>
+      <div class="kard dim">
+        <div class="krow"><span class="t">Credits</span><span class="sp"></span><span class="fig">$12.40 balance</span></div>
+        <div class="bar"><div class="fill" style="width:31%"></div></div>
+        <div class="reset"><span>$12.40 of $40.00 this month</span><span class="sp"></span><span>Cap resets 1 Oct</span></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="mock">
+    <p class="cap">state 5 · one account, so no tab strip · 410 dp</p>
+  <div class="room claude dk">
+    <div class="sbar"><span>9:41</span><span class="sp"></span><span>5G&nbsp; 59</span></div>
+    <div class="tbar"><span>Cooldown</span><span class="sp"></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-hist"/></svg></span>
+      <span class="act"><svg width="21" height="21"><use href="#ic-set"/></svg></span></div>
+    <div class="cards">
+      <div class="kard">
+        <div class="krow"><span class="t">5-hour window</span><span class="sp"></span><span class="fig">42% used</span></div>
+        <div class="bar"><div class="fill" style="width:42%"></div><div class="tick" style="left:calc(51% - 1.5px)"></div></div>
+        <svg class="ch" width="346" height="132" viewBox="0 0 346 132"><path class="gl y100" d="M0,15.0 H312.0"/><text class="t100" x="315.0" y="17.6">100%</text><path class="gl y90" d="M0,25.1 H312.0"/><text class="t90" x="315.0" y="27.7">90%</text><path class="gl y80" d="M0,35.2 H312.0"/><text class="t80" x="315.0" y="37.8">80%</text><path class="pace" d="M0,116.0 L312.0,15.0"/><path class="pace" d="M3,20.0 H17"/><text class="pacet" x="20" y="23.0">even pace</text><path class="area" d="M0.0,116.0 L17.7,109.5 L33.6,105.1 L51.3,100.6 L70.8,96.0 L92.0,91.2 L113.2,86.6 L138.0,81.4 L159.2,77.1 L176.9,73.6 L176.9,116.0 L0,116.0 Z"/><path class="ser" d="M0.0,116.0 L17.7,109.5 L33.6,105.1 L51.3,100.6 L70.8,96.0 L92.0,91.2 L113.2,86.6 L138.0,81.4 L159.2,77.1 L176.9,73.6"/><circle class="dot" cx="0.0" cy="116.0" r="1.5"/><circle class="dot" cx="17.7" cy="109.5" r="1.5"/><circle class="dot" cx="33.6" cy="105.1" r="1.5"/><circle class="dot" cx="51.3" cy="100.6" r="1.5"/><circle class="dot" cx="70.8" cy="96.0" r="1.5"/><circle class="dot" cx="92.0" cy="91.2" r="1.5"/><circle class="dot" cx="113.2" cy="86.6" r="1.5"/><circle class="dot" cx="138.0" cy="81.4" r="1.5"/><circle class="dot" cx="159.2" cy="77.1" r="1.5"/><path class="nowl" d="M176.9,15.0 V116.0"/><circle class="dot" cx="176.9" cy="73.6" r="3"/><text class="val" x="171.9" y="69.6" text-anchor="end">42%</text><path class="prj" d="M176.9,73.6 L312.0,44.3"/><circle class="hollow" cx="312.0" cy="44.3" r="3"/><text class="val" x="308.0" y="39.3" text-anchor="end">~71%</text><path class="ax" d="M0,116.0 H312.0"/><text class="axt" x="0" y="129">13:40</text><text class="axt" x="176.9" y="129" text-anchor="middle">now</text><text class="axt" x="312.0" y="129" text-anchor="end">18:40</text></svg>
+        <p class="note">9 points below even pace</p>
+        <div class="reset"><span>Resets in 2h 10m</span><span class="sp"></span><span>Resets at 18:40</span></div>
+      </div>
+      <div class="kard">
+        <div class="krow"><span class="t">7-day window</span></div>
+        <div style="height:10px"></div>
+        <div class="srow"><span>All models</span><span class="sp"></span><b>63% used</b></div>
+        <div class="bar"><div class="fill" style="width:63%"><div class="over" style="width:27%"></div></div><div class="tick" style="left:calc(46% - 1.5px)"></div></div>
+        <div class="div"></div>
+        <div class="reset"><span>Resets in 3d 18h</span><span class="sp"></span><span>Resets Fri 09:00</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="sub" style="width:410px;margin-top:8px">The strip disappears with a single account and
+    the screen gains its 48 dp, which is existing CCRM-6 (Multi-Account) behaviour. The room still
+    applies: one Claude account still gets ivory surfaces and serif figures.</p>
+  </div>
+  </div>
+
+  <h3>State 6 · narrow check, stated not drawn</h3>
+  <p class="sub">At 410 dp the three tabs above get about 136 dp each and a label of up to sixteen
+    characters needs about 110 dp, so "Personal", "Work" and "ChatGPT" fit in a fixed strip with no
+    truncation. At four accounts each tab would get 102 dp and the strip switches to scrollable,
+    which is the existing rule at every width, so the strip does not change shape when the phone
+    unfolds. Nothing in the two-rooms treatment touches that threshold: the rooms change colour and
+    typeface, never the label or its width.</p>
+
+  <hr class="hr">
+
+  <!-- ======================= 4 · DECISIONS ======================= -->
+  <h2>4 · Decisions <small>five taken on review, one still open</small></h2>
+  <h3>Decisions so far</h3>
+  <table class="dec">
+    <tr><th>#</th><th>Decided 2026-09-09</th></tr>
+    <tr><td>1</td><td><b>Icon: full-ring meter on a straight-cut two-colour ground, cream
+      fill on a 28% black track, warm-ink pace tick with red past it.</b> The 270 degree gauge
+      closes to a ring and fill variant A is chosen; how much stopwatch sits with the ring is the
+      one open question (section 2).</td></tr>
+    <tr><td>2</td><td><b>No logos on the tile</b>, and <b>ChatGPT green replaces the near-black</b>
+      in the bottom-right half, so the ground is terracotta against green.</td></tr>
+    <tr><td>3</td><td><b>The two-mark 20 dp glyph in the top bar is approved</b> (section 3,
+      variant ii), drawn by the existing <code>ProviderMark</code>.</td></tr>
+    <tr><td>4</td><td><b>Two rooms approved, serif headline figures on the Claude room
+      included.</b> Surface tint, card surfaces, bar fill and tab indicator follow the selected
+      tab's account; the cards themselves are unchanged (section 3).</td></tr>
+    <tr><td>5</td><td><b>The Duet strip is rejected.</b> Its section is removed from this
+      document; the pinned pair stays in <code>design/settings-diet-wireframe.html</code>.</td></tr>
+  </table>
+
+  <h3>Still open</h3>
+  <ol class="dec">
+    <li><b>Which of the five?</b> Option 3 if one window is enough, option 5 if both the
+      5-hour and the weekly window must show. Option 1 is the baseline if the stopwatch reading is
+      not worth any extra parts.</li>
+</ol>
+
+</div>
