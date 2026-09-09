@@ -1,629 +1,313 @@
-# Runbook — the multi-provider arc (Cooldown: Claude + ChatGPT + Gemini)
+# Runbook — the dual-identity arc (v1.5 → v1.6)
 
-Ordered, checkable steps to take the app from v1.4 (Claude only) to v1.5 (Claude + ChatGPT,
-Gemini greyed as coming). Every design decision is already taken; nothing here waits on a
-wireframe. **Each step is one fresh Claude Code session**, and each session ends by handing you
-the prompt for the next one — so the runbook drives itself. Work the steps top to bottom.
+Ordered, checkable steps to take Cooldown from v1.5 to v1.6: the settings diet, the two-account
+always-on notification, the new icon and the two-rooms app. Every design decision is taken;
+nothing here waits on a wireframe. The v1.5 runbook (multi-provider arc, all steps ticked) is in
+git history at commit `e18cf32`.
 
-**Where the detail lives.** This file says *what order, which model, and what to paste*. The
-specs are the roadmap items themselves — [ROADMAP.md](ROADMAP.md), section *Multi-provider*
-(CCRM-53 (Provider Model) to CCRM-57 (Provider Plumbing)) — and the approved wireframe
-`design/provider-identity-wireframe.html`. Research behind the specs:
-`design/research/2026-09-06-*.md`. Don't duplicate the specs here; if a spec turns out wrong,
-fix it in ROADMAP.md and note it in the step's *Log* line.
+**How this arc is run.** One **Fable** session is the orchestrator: it holds every decision,
+writes the sub-agent briefs, reviews their output, runs the tests, commits, and ticks this file.
+The labour goes to sub-agents picked by complexity: **Opus** for high (protocol, layout
+constraints, the surgery where a wrong cut silently breaks a feature), **Sonnet** for medium
+(ordinary implementation with tests, mechanical removals with judgement), **Haiku** for low
+(copy sweeps, tracker status edits, screenshot plumbing). The orchestrator may do a piece itself
+when it can do it better than a sub-agent. If the Fable session runs out of context or credits
+mid-arc, a fresh Fable session resumes from this file: paste the *Resume* block of the first
+unticked step.
+
+**Where the detail lives.** This file says *what order, which tier, and what to paste*. The specs
+are the roadmap items — [ROADMAP.md](ROADMAP.md), section *Dual identity and diet*: CCRM-60
+(Dual Identity), CCRM-61 (Settings Diet), CCRM-62 (Duet Notification) — the two approved
+wireframes `design/dual-identity-wireframe.html` and `design/settings-diet-wireframe.html`
+(their *Decisions* tables are binding), and the removal footprint in
+`design/research/2026-09-08-removal-audit.md`. Don't duplicate the specs here; if a spec turns
+out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 
 ## Conventions — every session reads this block first
 
-1. **Start from the paste.** Each step has a fenced *Paste into a fresh session* block. Paste it
-   verbatim into a new session started with the **Model** and **Effort** the step names
-   (`/model` and `/effort` in Claude Code, or the picker in the app). The prompt tells the
-   session what to read; it never needs an earlier conversation.
-2. **Tests:** `./gradlew testDebugUnitTest`. Green before a step closes.
-3. **Commits:** straight to `main`, subject `feat(CCRM-NN): …` / `fix(CCRM-NN): …` /
+1. **Start from the paste.** Each step has a fenced *Resume in a fresh Fable session* block. It
+   tells the session what to read; it never needs an earlier conversation. Within a step the
+   orchestrator briefs sub-agents with the decisions baked in, in parallel where the files don't
+   overlap, and reviews every result before it lands.
+2. **Tests:** `./gradlew testDebugUnitTest`. Green before a step closes. `./gradlew
+   assembleDebug` must also compile; the removals in Step 1 touch the manifest and gradle.
+3. **Commits:** straight to `main`, subject `feat(CCRM-NN): …` / `refactor(CCRM-NN): …` /
    `docs(CCRM-NN): …`, body naming any unrelated work riding along. Never stage
    `ccooldown-release.jks`, `keystore.properties`, `local.properties`.
 4. **Close-out, in this order:** (a) satisfy every item in the step's *Done when* list;
    (b) set the roadmap item's **Status** line; (c) in this file, tick the step's box in the
-   Progress table (☐ → ☑) and write one line after its **Log:**; (d) commit — the tick rides in
-   the same commit as the work.
-5. **Handover — the last thing every session does.** After the commit, the session's **final
-   message** must contain, in this order: what changed in one paragraph; anything Robin has to
-   do himself before the next step (a sign-in, a screenshot to approve, the Mac); then the
-   **next step's complete paste block copied from this file**, headed by its **Model** and
-   **Effort** lines, so it can be pasted straight into a fresh session. If this step's outcome
-   changes the next step (for example the device endpoint returned 404 in Step 2), **edit the
-   next step's prompt in this file first, commit that too, then print the edited prompt.**
-   If the next step is one Robin does alone (a screenshot, a sign-in), say so and print the
-   prompt for the step after it. When every step is ticked, say the arc is complete and print
-   nothing further.
-6. **Wireframe gate.** Working agreement 2 is already satisfied for this arc by the approved
-   rev B. If a session wants to draw something the wireframe doesn't show, it stops and asks
-   Robin first, in one AskUserQuestion, naming the file to open.
-7. **Effort scale used here:** *low* = mechanical, follow the text; *medium* = ordinary
-   implementation with tests; *high* = protocol or research judgment where being wrong is
-   expensive. Robin can raise a level any time; don't lower one.
+   Progress table (☐ → ☑) and write one dated line after its **Log:**; (d) commit and push —
+   the tick rides in the same commit as the work.
+5. **Handover — the last thing every session does.** After the commit, the final message says
+   what changed in one paragraph, anything Robin has to do himself before the next step (phone
+   in hand, a screenshot to approve, the keystore), then the next step's *Resume* block copied
+   from this file. If this step's outcome changes the next step, edit the next step's block in
+   this file first, commit that too, then print the edited block.
+6. **Wireframe gate.** Working agreement 2 is satisfied for this arc by the two approved
+   wireframes. If a session wants to draw something they don't show, it stops and asks Robin
+   first, in one AskUserQuestion, naming the file to open. Mocks of existing elements must keep
+   every function the element has today (the trend chart keeps its guides, axis and projection).
+7. **Removal rule.** Delete the `when`, not its arms; keep what the audit marks *must stay*
+   (`Alerts.evaluate` as the per-poll pinned re-render, `checkReset` as the history writer,
+   `BarRenderer`/`BarGeometry`/`RingGeometry`/`Sparkline`). Where `refreshWidgets()` was the only
+   refresh on a settings chip, add `PinnedNotification.update` in its place (CCBG-14 (Stale
+   Notification Theme)).
+8. **Wording.** On the notification and any tight surface: "5h" and "Weekly". Tracker IDs carry
+   their epic name on first use.
 
 ## Progress
 
-| Step | Item | Model | Effort | Needs Robin | Status |
-|---|---|---|---|---|---|
-| 0 | Commit the current tree | Haiku (or Sonnet) | low | 1 min | ☑ |
-| 1 | CCRM-53 (Provider Model) | Sonnet | medium | no | ☑ |
-| 2 | CCRM-54 (ChatGPT Account) part 1 — source, device flow, payload capture | Opus | high | one sign-in on the phone | ☑ |
-| 3 | CCRM-56 (Provider Identity) — rename, icon, marks, accents, Add-account sheet, hidden windows | Sonnet | medium | approve the icon at 48 dp | ☑ |
-| 4 | CCRM-54 (ChatGPT Account) part 2 + CCRM-57 (Provider Plumbing) — the ChatGPT account on every surface | Sonnet | medium | no | ☑ |
-| 5 | Device pass on the Fold 7 | Sonnet | medium | phone in hand | ☑ |
-| 6 | Release v1.5 — README, guide, brochure, tag | Sonnet | medium | keystore, upload | ☑ |
-| A | *Any time:* CCRM-55 (Antigravity Account) spike — terminal on the Mac | Sonnet | low | Antigravity signed in on the Mac | ☑ |
-| B | ~~*After A, if real data:* CCRM-55 (Antigravity Account) design + wireframe~~ — N/A, CCRM-55 dropped 2026-09-08 | — | — | — | — |
+| Step | Item | Sub-agent tier | Needs Robin | Status |
+|---|---|---|---|---|
+| 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☐ |
+| 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☐ |
+| 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☐ |
+| 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☐ |
+| 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☐ |
+| 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☐ |
 
-Steps 1 and 3 do not depend on each other and can run in parallel sessions. 2 needs 1. 4 needs
-1, 2 and 3. Do A whenever the Mac is free; it does not block 1–6. The handover after Step 1
-prints Step 2; the handover after Step 2 prints Step 3; and so on down the table.
-
----
-
-## Step 0 · Commit the current tree
-
-**Model:** Haiku (Sonnet is fine) · **Effort:** low
-
-The working tree holds the roadmap rewrite, the CLAUDE.md scope change, this runbook, the
-approved wireframe and the research reports — plus Robin's earlier uncommitted CCRM-31 (Combined
-Total) / CCRM-52 (Spend Meter) roadmap edits and `design/combined-total-wireframe.html`.
-
-**Paste into a fresh session:**
-
-```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 0. Do Step 0: confirm with
-`git check-ignore` that ccooldown-release.jks, keystore.properties and local.properties are
-ignored; run git status and list what will be committed; tick Step 0 in the RUNBOOK.md Progress
-table and write its Log line; then `git add -A` and commit with this message exactly:
-
-docs: multi-provider arc — CCRM-53…57, Cooldown identity, runbook
-
-Roadmap section, approved provider-identity wireframe (rev B), research reports,
-CLAUDE.md scope change, RUNBOOK.md. Rides along: CCRM-31 (Combined Total) rev B notes
-and CCRM-52 (Spend Meter) filing, plus design/combined-total-wireframe.html.
-
-Push to main. Then follow the runbook's Handover rule: print Step 1's Model and Effort lines
-and its complete paste block from RUNBOOK.md.
-```
-
-**Done when:** `git status` is clean and `git log -1` shows the commit. **Log:**
-
-2026-09-06 — confirmed `ccooldown-release.jks`, `keystore.properties`, `local.properties` all
-gitignored (`.gitignore` lines 7, 21, 22). Committed CLAUDE.md, ROADMAP.md, RUNBOOK.md, the two
-design wireframes and design/research/. GitHub push protection caught two real Google OAuth
-client secrets quoted verbatim in the research (Antigravity's and Gemini CLI's own public
-installed-app credentials) — redacted the secret portions in
-design/research/2026-09-06-openquota-antigravity.md and
-design/research/2026-09-06-phone-feasibility.md, each pointing to where to read the real value
-(OpenQuota's src-tauri/src/providers/antigravity/client.rs GOOGLE_CLIENT_SECRET_PARTS, or
-google-gemini/gemini-cli's packages/core/src/code_assist/oauth2.ts, or your own Antigravity
-keychain entry). Pushed to main.
+Order matters: 2 needs 1 (the sections it rebuilds are gone), 3 needs 1 (styles and glyphs
+gone), 4 needs nothing but is last so the icon lands on the final app; 5 needs 1–4; 6 needs 5.
+Within Step 1 the three removal areas touch different files except `SettingsScreen.kt`,
+`UsageCache.kt`, `AndroidManifest.xml` and `PinnedNotification.kt`: give those four files to one
+agent at a time.
 
 ---
 
-## Step 1 · CCRM-53 (Provider Model)
+## Step 1 · CCRM-61 (Settings Diet) part 1 — the removals
 
-**Model:** Sonnet · **Effort:** medium
+**Tier:** Opus for `alerts/Alerts.kt`, `notify/Conditions.kt`, `UsageCache.kt`'s alert block and
+the reset-ping per-account rework · Sonnet for the widget package, the Quick Settings tile, the
+three pinned styles and three glyphs · Haiku for tracker status lines.
 
-Pure logic. No UI, no wireframe. Adds `Provider` to `Profile`, the `UsageSource` seam,
-`Credentials.accountId`, the duration-based window classifier, the credits widening, tests.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 1 — then ROADMAP.md section
-"Multi-provider", item CCRM-53 (Provider Model), in full. Build exactly what that item specifies
-and nothing visible: the Provider enum, the provider field on Profile with registry persistence
-("v", absent → CLAUDE), the data/source/ UsageSource seam with ClaudeSource wrapping the existing
-ApiClient/UsageParser code untouched, Credentials.accountId, classifyWindow, the SpendCredits
-`unlimited` widening, the [poll][provider:key] log prefix rule, and every test the item names.
-Sources.of(CHATGPT/ANTIGRAVITY) throw NotImplementedError for now. A Claude account must behave
-byte-identically: do not touch OAuthSignIn, the authorize URL, or the User-Agent rules. Run
-./gradlew testDebugUnitTest until green. Close the step per the runbook's Close-out rule
-(Status line "Done (date)" with a two-line summary, tick, Log, commit as feat(CCRM-53): …), then
-follow the Handover rule and print Step 2.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 1 — then ROADMAP.md item
+CCRM-61 (Settings Diet) in full, then design/research/2026-09-08-removal-audit.md in full (it
+is the map of every touchpoint, with the four things in alerts/Alerts.kt that must stay).
+You are the orchestrator: brief sub-agents, review, test, commit. Three removal areas, in this
+order because they share four files: (A) Sonnet — widgets: the widget/ package,
+ui/RingRenderer.kt, app/src/debug/**, the five res/xml/*_widget_info.xml, the manifest
+receivers and config activity, the Glance lines in app/build.gradle.kts, WidgetRedrawWorker
+and its scheduling in work/Polling.kt, updateAll/updateWidgets in MainActivity and
+UsageRepository, WidgetPrefs and the two widget prefs in UsageCache, the refreshWidgets
+parameter and its nine call sites in SettingsScreen (add PinnedNotification.update where it
+was the only refresh), the eight widget strings, both widget tests; also the Quick Settings
+tile: tile/UsageTileService.kt and its four manifest declarations. (B) Opus — alerts:
+alerts/Alerts.kt edited down, keeping evaluate (ending in PinnedNotification.update),
+checkReset's SessionLog/windowPeak/lastSeenWindowKey bookkeeping AND its reset-ping notify
+branch with a per-account resetPingMode(profile, window), STALE_DATA_MS, notifId/MAX_KIND
+(re-anchored)/cancelAllFor; delete threshold, pace, auth, stale, ping alerts, six channels
+(keep reset_alerts and pinned_usage_v2; delete the six orphaned channels once at startup
+with deleteNotificationChannel), UpdateNotification.maybePost and UpdateSkipReceiver, all of
+ping/ and data/PingSchedule.kt, notif_alert*.xml, the fold machinery (FoldedEvent store,
+StripRules, Conditions.foldedInto/revocable/nextExpiry, PinnedNotification.armExpiry,
+ACTION_EXPIRE), the alert prefs listed in the audit (authAlertsEnabled goes and the re-auth
+strip becomes unconditional), Projection's pace ladder with PaceTest, the exact-alarm and
+boot permissions; the Settings "Notifications" section and its helper composables except
+what Step 2 rebuilds. (C) Sonnet — styles and glyphs: in PinnedNotification delete the
+when(style) wholesale so "big" is the only path, plus bigPicture/drawNumberTile/drawGauge and
+drawStatusIcon's style parameter; in ui/UsageIcon.kt the pie/battery/number arms, clearCircle
+and the PIE constants; pinnedStyle and pinnedIconStyle in UsageCache; the two chooser blocks in
+SettingsScreen. Then Haiku: mark the superseded tracker entries listed in CCRM-61's Status
+(ROADMAP.md and BUGS.md) with one dated line each. ./gradlew assembleDebug and
+testDebugUnitTest green; fix ProfileRegistryTest's MAX_KIND anchor and any test that imported
+a deleted class. Close per the Close-out rule (commit as refactor(CCRM-61): remove widgets,
+tile, alerts, styles), then follow the Handover rule and print Step 2.
 ```
 
 **Done when:**
-- ☐ All existing tests pass unchanged; the new tests named in the item exist and pass.
-- ☐ `profiles` prefs JSON carries `"v":"claude"` after any write (check via a unit test on
-  `encode`).
-- ☐ A release build over the live install still polls all Claude accounts with identical log
-  lines (Robin can defer this check to Step 5 if the phone isn't to hand — note it in the Log).
-- ☐ Status line updated, ticked, committed.
+- ☐ No `androidx.glance` import, no `widget/` package, no tile service, no `ping/` package.
+- ☐ `Alerts.kt` ≈ 130–180 lines: `evaluate`, `checkReset` (with per-account reset ping),
+  `STALE_DATA_MS`, `notifId`, `MAX_KIND`, `cancelAllFor`, nothing else.
+- ☐ `PinnedNotification` has one style path (Huge number) and one glyph (Ring); the panel still
+  re-renders on every poll.
+- ☐ History screen still gains points at a window rollover (read `SessionLog` write path).
+- ☐ Six old channels deleted on first launch after upgrade; `reset_alerts` and
+  `pinned_usage_v2` remain.
+- ☐ Tests green, tracker statuses updated, ticked, committed, pushed.
 
 **Log:**
-
-2026-09-06 — built the `Provider` enum, the `provider` field on `Profile` (registry-persisted
-as `"v"`, absent → `CLAUDE`), the `data/source/` `UsageSource` seam with `ClaudeSource`
-wrapping `ApiClient`/`UsageParser` untouched, `Credentials.accountId`, `classifyWindow`, the
-`SpendCredits.unlimited` widening, and the `[poll][provider:key]` log prefix (computed in
-`AppLog.log`, so `AppLog.formatLine`'s pinned shape and its test are untouched). All named
-tests added and green alongside the full existing suite. The release-build device check is
-deferred to Step 5 — no phone to hand this session.
 
 ---
 
-## Step 2 · CCRM-54 (ChatGPT Account) part 1
+## Step 2 · CCRM-61 (Settings Diet) part 2 — four-tab Settings
 
-**Model:** Opus · **Effort:** high · **needs Robin's phone once**
+**Tier:** Sonnet.
 
-The source, the parser, the device-code flow, and the **payload capture**. Minimal UI: a
-debug-section button is enough to sign in and capture; the real sheet comes in Step 4.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 2 — then ROADMAP.md section
-"Multi-provider": CCRM-53 (Provider Model) for the seam that already exists and CCRM-54
-(ChatGPT Account) in full, plus design/research/2026-09-06-phone-feasibility.md sections 1.A
-and 1.B. Build part 1 only: ChatGptSource (constants, headers, honest User-Agent, refresh,
-parseTokenResponse with id_token claim decoding, isAuthFailure 401||403), ChatGptUsageParser
-with the tests the item lists (synthetic fixture from the documented shape), CodexDeviceSignIn
-(start/pending/poll/exchange, persisted pending state, Unavailable on 404),
-UsageRepository.completeDeviceSignIn, and the ProbeHost.CHATGPT allowlist entry. Two things to
-verify against github.com/openai/codex before writing them, recording in code comments which
-file you read: (1) whether the refresh grant in codex-rs/login/src/auth/manager.rs is
-form-encoded or JSON; (2) which poll statuses in codex-rs/login/src/device_code_auth.rs mean
-pending vs denied. Add a debug-only path: on a ChatGPT-provider account card, "Sign in with a
-code" (plain sheet, no polish) and "Capture ChatGPT payload", which logs the raw usage body at
-DEBUG. Never log tokens, headers or the id_token. Run the unit tests green, build a debug APK,
-then stop and tell me exactly how to do the capture on the phone. When I paste the captured
-body back, make it the fixture app/src/test/resources/chatgpt-usage-2026-09.json, adjust the
-parser and tests to the real shape, set CCRM-54's Status to "In progress — part 1 done (date)",
-and close per the Close-out rule (commit as feat(CCRM-54): part 1). If /usercode returned 404,
-edit Step 4's prompt in RUNBOOK.md to build the loopback fallback first, note it in the Log,
-and say so in the handover. Then follow the Handover rule and print Step 3.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Step 1's Log and Step 2 — then
+ROADMAP.md item CCRM-61 (Settings Diet) "Settings become four swipeable tabs" and "Reset pings
+survive", then open design/settings-diet-wireframe.html section 1 ("After: four swipeable
+tabs", the four 410 dp mocks, the 750 dp Appearance mock, the three states) and its Decisions
+table — approved; build to it. Brief one Sonnet agent to recast SettingsScreen.kt as a fixed
+TabRow of four tabs (Accounts, Alerts, Appearance, More; tab padding 10 dp a side, scrollable
+TabRow fallback noted in code) over a HorizontalPager, the pattern MainActivity.ProfileTabs
+already uses, keeping the existing card composables and moving them into the tabs as drawn:
+Accounts = account cards + Add account; Alerts = Always-on toggle, "Show accounts" as two chip
+rows First and Second (Second has a None chip; drives cache.pinnedProfile and a new
+pinnedSecondProfile), "Tapping a number opens", "Status-bar ring shows" (First / Second /
+Whichever is higher, new pref), System notification settings link, then "Reset pings" per
+account with 5h reset and Weekly reset mode chips (Off / If busy / Always); Appearance =
+Theme, Time format, Usage display, Reset time, ONE "Show red past the pace mark" toggle (one
+pref read by the app bars and the notification; migrate from paceOverInApp), Theme colour;
+More = Polling, Usage credits (rendered only when an account reports credits), Updates,
+Diagnostics, About, Debug once unlocked. Inner screen: a tab's content goes two-column as
+Settings does today. Keep every explainer sentence the wireframe keeps; drop the ones it drops.
+Update the guide screen's back navigation (Settings → Guide → back lands on the Accounts tab).
+Tests green; add a unit test for the pref migration. Close per the Close-out rule (commit as
+feat(CCRM-61): four-tab Settings), then follow the Handover rule and print Step 3.
 ```
-
-**Robin's part, mid-session:** install the debug APK, add a ChatGPT account via the debug path,
-sign in at `auth.openai.com/codex/device` with the code, tap *Capture ChatGPT payload*, export
-the log from Settings → Diagnostics, paste the body into the session.
 
 **Done when:**
-- ☑ Device-code sign-in completed on the phone with Robin's own account.
-- ☑ Real payload captured and committed as the test fixture; parser tests run against it.
-- ☑ The account polls on the normal schedule; `[poll][chatgpt:pN]` lines appear; no token
-  material in the log.
-- ☑ Status line updated, ticked, committed.
+- ☐ Four tabs, swipe and tap, at 410 dp and 750 dp; no horizontal content fights the pager.
+- ☐ New prefs: `pinnedSecondProfile`, `statusRingShows`, per-account `resetPingMode`, one
+  `paceOverEverywhere` (name per the code's convention) with migration.
+- ☐ Alerts tab fits one cover screen with two accounts.
+- ☐ Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
-
-2026-09-06 — built `ChatGptSource` + `ChatGptUsageParser`, `CodexDeviceSignIn`,
-`UsageRepository.completeDeviceSignIn` / `captureUsagePayload`, `ProbeHost.CHATGPT` and a
-`UsageSource.planFrom` hook (null by default, so Claude is untouched). Two facts verified
-against `openai/codex` before writing, recorded in code comments: the refresh grant is
-**JSON**, not form-encoded as `design/research/2026-09-06-phone-feasibility.md` recorded —
-`request_chatgpt_token_refresh` in `login/src/auth/manager.rs`; the code *exchange* at the
-same URL really is form-encoded, so the two differ — and in `poll_for_token`
-(`login/src/device_code_auth.rs`) **403 and 404 both mean pending**, with no distinct
-denied status, so `Poll.Denied` is our name for the single terminal bucket. Note 404 means
-the opposite thing on `/usercode`, where it means the flow is switched off; only `start`
-raises `Unavailable`.
-
-**`/usercode` did not 404** — device sign-in is live for the Codex client id, so Step 4
-stands unedited and the loopback fallback is not needed. Signed in on the Fold 7 over
-wireless adb on a release-signed build (the debug unlock is a runtime 7-tap, so no
-debug-signed APK and no uninstall — the three Claude accounts and their history were
-untouched), captured a real Plus payload, and it is now
-`app/src/test/resources/chatgpt-usage-2026-09.json`. **The body carries `user_id`,
-`account_id` and `email`** — redacted in the fixture, with a test guarding it, since this
-is a public repo. Real-shape surprises: both windows present on Plus (the July 5-hour
-suspension is not universal); `credits.balance` is a JSON *string*; `additional_rate_limits`
-null; five undocumented sibling keys, none of them readings.
-
-The device check found a real defect the unit tests could not: `Snapshot.data` re-parses
-the cached body on read and was hardcoded to Anthropic's `UsageParser`, so the account
-fetched HTTP 200, wrote "Last success", and showed "No data yet" everywhere at once. Fixed
-by giving `Snapshot` a `provider` (default `CLAUDE`) and routing through `Sources.of`;
-`SnapshotTest` is the regression, and CCRM-53 (Provider Model)'s Status carries the
-amendment. Reinstalled and confirmed on the phone: 9% / 79% with correct resets, and
-`[poll][chatgpt:p5] auto → OK` with no token material. 321 tests green.
-
-**Follow-up, same day:** the fixture was redacted but the *log* wasn't — the capture
-button had written the real body, email and all, to `app-log.txt`, whose Share button
-exists to send it to someone else. Added `AppLog.redactPayload`, a recursive scrub of
-identifying keys (plus a free-text email regex for bodies that aren't JSON), applied to
-the capture line, to the `HttpResult` the debug card renders for copying, and to "Show
-last raw response". Shape survives, identity doesn't. The log already on the phone was
-rewritten in place — all 354 lines kept, only the one payload redacted — and a fresh
-capture confirmed `"email":"[redacted]"` on device. `AppLog`'s hard-rule comment now says
-personal data as well as tokens: "carries no token material" was the test that let this
-through, and it was the wrong test.
-
-Two things left on the phone deliberately: the debug-made ChatGPT account (labelled
-"Account 4", key `p5`) which Steps 4 and 5 need, and the app log level on **Debug**.
-Scaffolding added beyond the brief, all debug-gated: a `+ Add ChatGPT account` button —
-there is no other way to make one before CCRM-56 (Provider Identity) builds the real
-Add-account sheet — and the endpoint probe's host button now cycles all three hosts
-instead of flip-flopping two. For part 2: the sheet's "code expires in 14m" is computed
-once and does not tick down; the real sheet needs a live countdown.
 
 ---
 
-## Step 3 · CCRM-56 (Provider Identity)
+## Step 3 · CCRM-62 (Duet Notification)
 
-**Model:** Sonnet · **Effort:** medium · **Robin approves the icon at 48 dp once**
+**Tier:** Opus (RemoteViews height limits and per-view intents are where a wrong guess costs a
+device round-trip).
 
-Everything visible that isn't ChatGPT-specific: the rename to **Cooldown**, the three-sand
-hourglass, the provider marks, the three-level accent with the per-account override, the
-Add-account sheet (Gemini greyed), hidden windows. The wireframe is approved; build to it.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 3 — then ROADMAP.md section
-"Multi-provider", item CCRM-56 (Provider Identity) in full, then open
-design/provider-identity-wireframe.html and read its Decisions and "Rev B review" tables — that
-wireframe is approved; build to it and do not redesign. Work the item's six "Build" steps in
-order: 1 the name (the copy sweep with the line anchors listed); 2 the icon (the three
-vector-drawable edits — render the launcher icon at 48 dp light, dark and monochrome, show me
-the screenshot in one AskUserQuestion, and wait for my approval before continuing); 3 the marks
-(ui/ProviderMark.kt and three hand-traced single-colour vector drawables of the public Claude,
-OpenAI and Gemini marks, with the brand page linked in each file header; sizes 20 / 14 / 28 dp);
-4 the accents (three-level resolution, the "Per provider" swatch, ⋮ → Accent colour…, the eight
-call sites, ink pace ticks on multi-account faces); 5 the Add-account sheet; 6 hidden windows.
-Copy that only Claude's sign-in needs stays as it is. Run ./gradlew testDebugUnitTest green,
-close per the Close-out rule (commit as feat(CCRM-56): …), then follow the Handover rule and
-print Step 4.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–2 Logs and Step 3 — then
+ROADMAP.md item CCRM-62 (Duet Notification) in full, then open
+design/settings-diet-wireframe.html section 2 (collapsed option 1, the expanded layout, the
+height budget, the status bar, the tap targets, the nine states) and its Decisions table —
+approved; build to it, Huge number style only. Brief one Opus agent for
+notify/PinnedNotification.kt and the two RemoteViews layouts: collapsed row with two halves
+(mark 14 dp + label 12 sp clamped, 8 dp bar with tick, 30 sp figure trailing; condition dot;
+today's single layout when Second is None), expanded with two header blocks ("Personal · 5h",
+"ChatGPT · Weekly", 36 sp figures) over the panel; drawPanel's bar row recut to ~30 dp (label,
+figure and reset on one line above the bar) and prefixed with the account label; strip cap 3 →
+2 when a Second account is set; "5h"/"Weekly" wording everywhere on this surface (Fmt helpers
+if needed); per-half setOnClickPendingIntent (Cooldown on that account's tab, or that
+service's app), Refresh action unchanged. Status bar: ui/UsageIcon ring only, no weekly hub dot
+(remove drawFlag and the weekly parameters), coloured by the shown account's accent below 80%
+then the severity ladder; the shown account follows the "Status-bar ring shows" pref (First /
+Second / higher 5h percentage). Alerts.evaluate's re-render must pass both accounts. Unit-test
+the label clamp, the strip cap and the account selection. Install a debug build on the Fold 7
+and show me the collapsed and expanded shade in one AskUserQuestion before closing. Close per
+the Close-out rule (commit as feat(CCRM-62): two-account pinned notification), then follow
+the Handover rule and print Step 4.
 ```
 
 **Done when:**
-- ☑ Robin approved the 48 dp icon screenshot (light, dark, monochrome).
-- ☑ App label reads *Cooldown* on the launcher and top bar; About names four trademarks.
-- ☑ Settings theme grid leads with *Per provider*; ⋮ on an account shows *Accent colour…*.
-- ☑ *+ Add account* opens the three-row sheet with Gemini greyed.
-- ☑ A Claude account still looks pixel-identical with the picker untouched (absent
-  `themeColor` key still resolves through `Palette.accentName` to `Provider.CLAUDE.themeName`
-  = "Claude Orange", byte-identical to the old hardcoded default).
-- ☑ Tests green (333 cases), Status updated, ticked, committed.
+- ☐ Collapsed content ≤ 56 dp with two accounts; expanded within the 256 dp cap with two
+  weekly rows and one strip.
+- ☐ One account or Second = None renders today's layout unchanged.
+- ☐ Ring has no dot; colour follows the shown account; picker works including auto.
+- ☐ Robin saw the shade on the phone. Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
-
-2026-09-06 — built all six steps. **1 name:** the copy sweep, plus the tap-target pair
-generalised from "app"/"claude" to "app"/"provider" (`PinnedNotification.providerLaunchIntent`,
-keyed off the pinned account's own provider — `Provider.appPackage` is new, `CLAUDE_PACKAGE`
-now derives from it). **2 icon:** built exactly to spec, then Robin's live review asked for
-"much bigger, less padding" — the mockup preview also had a rendering bug (an opaque HTML
-backdrop bleeding through the rounded corners on the light tile, an artifact of the preview
-harness, not the real asset). Fixed by moving the backdrop inside the SVG and wrapping the
-real vector's content in a `<group android:scaleX="1.3" android:scaleY="1.3" pivotX/Y="54">` —
-approved on the second render; recorded in ROADMAP.md as "rev C". **3 marks:** could not
-safely recall exact brand path data from memory (one attempt at transcribing the OpenAI knot
-from memory produced garbled, wrong-looking output when caught in review) — switched to
-fetching real reference artwork: Simple Icons' CC0 "Claude" and "Google Gemini" traces
-(v16.30.0, verified against jsdelivr), and Wikimedia Commons'
-`File:OpenAI logo 2025 (symbol).svg` for the OpenAI blossom mark (re-centred into the 24dp
-viewport via a translate group — Android vector drawables have no viewBox offset — path data
-itself untouched). **4 accents:** `Palette.accentName` added as a thin wrapper over a new
-pure `Palette.resolveAccent(override, global, providerTheme)` — this repo has no Robolectric,
-so the pure split is what let `AccentResolutionTest` exist at all. `ChatGPT Green`/`Gemini
-Blue` live in `Palette.options` (so `Provider.themeName` resolves) but are excluded from both
-colour grids via a new `Palette.selectableOptions` — picking a provider's own colour manually
-isn't a choice either grid was meant to offer. Found in passing: CCRM-51 (Rails Gauge) already
-made every ring/bar pace tick neutral ink app-wide, so decision 7 needed no code change on
-Android — `RingRenderer` and the pinned panel's bar ticks were already there. **5 Add-account
-sheet:** wired `repo.addProfile(provider=...)` to a real `ModalBottomSheet`; picking a row now
-auto-starts that provider's sign-in on the freshly minted card via a `LaunchedEffect(Unit)`
-gated on a parent-tracked `autoStartProfileKey`. Un-gated ChatGPT's "Sign in with a code"
-button from `debugUnlocked` and removed the debug-only "+ Add ChatGPT account" button — both
-were explicitly scaffolding "until CCRM-56 builds the real Add-account sheet" per CCRM-54 part
-1's own log; the debug-only *payload capture* button stays, per RUNBOOK Step 4. **6 hidden
-windows:** `ProfileScreen`, `HistoryScreen`'s 5h/7d toggle, and the Pace widget's on-face
-toggle all gained the same `hasSession`/`hasWeekly` gate.
-
-**Deferred, noted in ROADMAP.md rather than guessed:** the provider mark inside the four
-bar-face widgets' own baked-in-string labels, and on the pinned panel's folded condition
-strips (would need `Conditions.Condition` to carry a `Provider` through several construction
-sites) — both are decision-7/build-note details, not numbered Build-step deliverables, and
-neither blocks Step 4.
 
 ---
 
-## Step 4 · CCRM-54 (ChatGPT Account) part 2 + CCRM-57 (Provider Plumbing)
+## Step 4 · CCRM-60 (Dual Identity) — icon, glyph, two rooms
 
-**Model:** Sonnet · **Effort:** medium
+**Tier:** Opus for the three adaptive-icon vectors and the About drawable · Sonnet for the top-bar
+glyph and the two-rooms theming.
 
-The ChatGPT account on every surface, plus the long tail of Claude-only assumptions.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 4 — then ROADMAP.md section
-"Multi-provider": CCRM-54 (ChatGPT Account) "Build — part 2, the surfaces" and CCRM-57
-(Provider Plumbing) in full, and open design/provider-identity-wireframe.html sections 4–6
-(approved). Part 1 of CCRM-54 is built (ChatGptSource, CodexDeviceSignIn, the real fixture) and
-CCRM-56 (Provider Identity) has landed the marks, accents, Add-account sheet and hidden-window
-rule — including ProfileScreen, HistoryScreen's 5h/7d toggle, and **the Pace widget's on-face
-toggle already hides the absent side** (`hasSession`/`hasWeekly` in `PaceWidget.kt`); verify it
-rather than rebuilding it. Two small items CCRM-56 also picked up in passing, worth knowing
-before you touch the same files: `PinnedNotification`'s tap-target is now
-`providerLaunchIntent(context, provider)` (stored value "claude" reads as "provider"), and
-ChatGPT's "Sign in with a code" is no longer `debugUnlocked`-gated — the debug-only *payload
-capture* button is what "remove the debug capture button" below refers to. Build: the real
-device-code sheet with its five states, replacing the debug path; the ChatGPT account card
-(mark, plan chip with no multiplier, no "expires around", Sign in with a code / Refresh /
-Clear, no backup/paste/QR); the main-screen tab (Spark rows as model caps, "$X balance"
-credits copy); Ring/Bar "No 5-hour window on this account"; pinned headline and tile fallback
-to the 7-day window; and every CCRM-57 item (provider-aware ErrorKind copy, the Quick Links
-table, PlanChip tier=null for non-Claude, Window Pings gated to Claude, expiry lines gated on
-refreshExpiresAt > 0, contract-test copy). Remove the debug capture button. Tests green; set
-CCRM-54 and CCRM-57 to Done; close per the Close-out rule (commit as feat(CCRM-54): …), then
-follow the Handover rule and print Step 5.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–3 Logs and Step 4 — then
+ROADMAP.md item CCRM-60 (Dual Identity) in full, then open design/dual-identity-wireframe.html
+section 2 (the chosen icon variant, named in the roadmap item's "Icon, decided" bullet), section
+3 (two rooms, six states) and its Decisions table — approved; build to it. Two agents in
+parallel: (1) Opus — the launcher icon: ic_launcher_foreground.xml, ic_launcher_background.xml
+(the two-colour ground replaces the slate radial), ic_launcher_monochrome.xml per the mono rule,
+and drawable/ic_launcher.xml for About, exactly the chosen variant's geometry; render the tile
+at 48 dp light, dark and themed and show me the screenshot in one AskUserQuestion — wait for
+approval before committing. (2) Sonnet — the app: the top bar's title led by the two
+ProviderMark glyphs at 20 dp on the main screen only; the two rooms: a surface tint per selected
+account's provider (Claude ivory #F5EFE8 light / #1B1715 dark; ChatGPT #F7F7F8 / #0D0D0D),
+headline percentages on the window cards in FontFamily.Serif on Claude tabs and the default
+sans on ChatGPT tabs, the tab indicator in the room accent with labels kept neutral (the
+narrowest change to ProfileTabs' crossfade rule; keep the labels neutral as today). Nothing on
+any card changes. Tests green (add a test for the room tokens). Close per the Close-out rule
+(commit as feat(CCRM-60): new icon, top-bar glyph, two rooms), then follow the Handover rule
+and print Step 5.
 ```
 
 **Done when:**
-- ☑ Device-code sheet shows waiting / expired / denied / unavailable / done correctly.
-- ☑ ChatGPT tab shows real numbers; credits card shows a balance or is hidden.
-- ☑ Errors on a ChatGPT account say "OpenAI", never "Anthropic".
-- ☑ Tests green, both Status lines updated, ticked, committed.
+- ☐ Robin approved the 48 dp icon render (light, dark, themed).
+- ☐ Main top bar shows the two marks then "Cooldown"; Settings, History, Guide keep plain titles.
+- ☐ Claude tab: ivory surface, serif figures; ChatGPT tab: neutral surface, sans; cards
+  otherwise byte-identical in content.
+- ☐ Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
-
-2026-09-06 — built CCRM-54 (ChatGPT Account) part 2 and every CCRM-57 (Provider
-Plumbing) item; 368 tests green (was 333). **Sheet:** `DeviceCodeSheet` is a real
-`ModalBottomSheet` with the five states and a live `m:ss` countdown (`Fmt.mmss` — part
-1's `Fmt.dhm` sat frozen on "14m", exactly as its log predicted). Its copy and state
-table are pure in `ui/DeviceCodeCopy.kt` and pinned by `DeviceCodeCopyTest`, because
-with no Robolectric a five-branch sheet is otherwise only checked by eye — the failure
-CCRM-15 (Above-Pace Verification) exists to remember. A **sixth** stage, `FAILED`
-(couldn't reach OpenAI to *start*), reuses the expired state's layout with the
-network's own sentence rather than inventing a layout the wireframe doesn't show.
-**Card:** `ChatGptAccountBody` rewritten to the wireframe — the shared header's
-`PlanChip` now takes `tier = null` off Claude, so "Plus" never becomes "Plus 5x"; no
-"expires around" line; *Sign in with a code* / *Refresh* / *Clear*; per-provider quick
-links; no backup/paste/QR. The debug capture button is gone and so is
-`UsageRepository.captureUsagePayload` — the button was its only caller, and an
-unreferenced function that writes a usage body to the log is worse left in.
-**Surfaces:** `absentWindowMessage` in `WidgetFace.kt` distinguishes *absent* from *not
-fetched yet* (the Bar drew a fake `0% used` plus "Starts when a message is sent"; the
-Ring drew "—"); pinned headline and the QS tile fall back to the 7-day window, and both
-drop the gauge's weekly flag dot when weekly *is* the headline, so one figure never
-renders as two. The pinned panel skips its 7-day bar in that case for the same reason.
-**Verified, not rebuilt:** `PaceWidget`'s `hasSession`/`hasWeekly` gate — it hides the
-absent chip *and* auto-selects the side that exists.
-
-Rode along, same class of defect, beyond the listed items: `sendWindowPing` and
-`PingScheduler.reschedule` now refuse a non-Claude profile at the data layer (a ping is
-an Anthropic inference request), and the main screen's empty-account card no longer
-tells a ChatGPT account to tap Claude's sign-in button. The browser picker was
-extracted from `TokenCard` into `rememberBrowserOpener` so the device-code sheet's
-"Open in browser" gets the same picker Claude's sign-in uses, as CCRM-54 specifies —
-its dialog copy now names the account's own provider instead of always "Claude".
-
-Two things Step 5 needs to look at rather than assume: **(1)** the provider mark on the
-pinned label line exists only in the *Huge number* (`big`) style — the other three are
-plain `NotificationCompat` slots with no ImageView, so a mark there means custom
-RemoteViews, which the wireframe doesn't show; recorded in CCRM-54's status, not filed
-as a defect. **(2)** the absent-window sentence is 31 characters in an 11 sp single-line
-slot on a 110 dp ring face, so it renders at 10 sp over two lines — worth an eye at the
-smallest placement. Also unchanged and noted: a caps-only account (weekly window absent
-but model caps present) still titles the Pace face "7-day window" with a null window —
-pre-existing, not reachable from the captured fixture, left alone.
-
-CCRM-37 (Contract Tests) is **still Planned**: only its CCRM-57 slice was built, as
-`ContractCopyTest` (three names, three vendors, four trademark lines, drawable
-ownership headers), reading raw source the way CCRM-37 itself describes. The README's
-notice still names Anthropic alone and is not asserted — Step 6 rewrites it.
 
 ---
 
 ## Step 5 · Device pass on the Fold 7
 
-**Model:** Sonnet · **Effort:** medium · **phone in hand**
+**Tier:** Sonnet · **phone in hand**
 
-Run the device-pass lists from CCRM-54 (ChatGPT Account) and CCRM-56 (Provider Identity) on a
-release-signed build over the live install, cover screen, **Huge number** pinned style first.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 5, including Step 4's Log —
-then the "Device pass" bullets of ROADMAP.md items CCRM-54 (ChatGPT Account) and CCRM-56
-(Provider Identity). Build a release-signed APK, install it over the live install on the
-Fold 7 via wireless adb, and walk both lists with me one state at a time, capturing a
-screenshot for each (screencap needs -d; the inner screen captures black while folded). The
-phone already carries a debug-made ChatGPT account labelled "Account 4" (key p5) from Step 2,
-which is what the ChatGPT states are walked on.
-
-Three things Step 4 left for this pass, on top of the two lists — look, don't assume:
-(1) the absent-window sentence "No 5-hour window on this account" renders at 10 sp over two
-lines in a Ring face's countdown slot; check it at the smallest placement (110x110) and on
-the Bar face, and file a CCBG if it truncates or crowds the ring. (2) The provider mark on
-the pinned label line exists only in the Huge number style — confirm that, and confirm the
-other three styles still read correctly without it; it is recorded as a build note in
-CCRM-54's Status, so decide with me whether it becomes a CCBG or stays a note. (3) The
-device-code sheet's five states: waiting and done happen naturally, expired needs a 15-minute
-wait or a clock change, denied and unavailable can't be provoked from the phone — mark those
-two "not seen, because …" rather than leaving them blank.
-
-Record each outcome as a table row at the foot of design/provider-identity-wireframe.html the
-way design/multi-account-wireframe.html does; file any defect as a new CCBG in BUGS.md with
-the next free number; update both items' Status lines. Close per the Close-out rule (commit as
-docs(CCRM-56): device pass), then follow the Handover rule and print Step 6.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–4 Logs and Step 5 — then the
+"States" lists in design/settings-diet-wireframe.html section 2 (nine notification states, the
+Settings states) and design/dual-identity-wireframe.html section 3 (six app states). Build a
+release-signed APK, install it over the live install on the Fold 7 via wireless adb (ports
+rotate: find the port with dns-sd; keep the screen awake for the session and restore auto-off
+before disconnecting; screencap needs -d, and the inner screen captures black while folded),
+and walk every state with me one at a time, capturing a screenshot for each. Also confirm on
+device: placed widgets and the Quick Settings tile are gone; the six old notification channels
+no longer appear in system settings; a reset ping fires for an account with "Always" on its 5h
+reset; the status ring switches account and colour under "Whichever is higher"; Settings tabs
+swipe on both screens. Record each outcome as a table row at the foot of the wireframe it
+belongs to, file defects as new CCBG items in BUGS.md with the next free number, update the
+three items' Status lines. Close per the Close-out rule (commit as docs(CCRM-60/61/62): device
+pass), then follow the Handover rule and print Step 6.
 ```
 
 **Done when:**
-- ☑ Every state in both lists is marked seen or explicitly "not seen, because …".
-- ☑ Defects filed as CCBG items; nothing severe left open.
-- ☑ Ticked, committed.
+- ☐ Every state marked seen or "not seen, because …". Nothing severe open.
+- ☐ Ticked, committed, pushed.
 
 **Log:**
 
-2026-09-06 — walked both device-pass lists on a release-signed build over the live
-install (four accounts: Pro / Teams / Product / ChatGPT `p5`), cover screen, folded.
-Every state is a row in the table at the foot of
-`design/provider-identity-wireframe.html`; settings changed during the run (theme,
-pinned profile, pinned style, screen timeout) were all restored and verified.
-
-**The three things Step 4 left.** **(1)** The absent-window sentence is **not seen, and
-cannot be** — every live account reports both windows, so `absentWindowMessage` never
-fires, and the only other path is `DebugFacesActivity`, which shares `applicationId`
-with the release build and so cannot be installed without destroying the four live
-accounts. Filed as **CCBG-19 (Fixture Unreachable)** — the device-pass bullet in CCRM-56
-(Provider Identity) asks for a fixture this step's own build rule forbids. Read from
-source rather than observed: on the **Bar** face the sentence goes through
-`CenteredMessage` and replaces the whole face, so the cramped-slot risk is **Ring-only**.
-**(2)** The provider mark is confirmed **Huge-number-only** — `bigNumberView` is the only
-setter of `R.id.provider_mark` and only the `"big"` branch calls it — and it **stays a
-build note**, decided with Robin: *Gauge* and *Number tile* lead with `ChatGPT · 5-hour
-window`, so the account is named in words without it. Looking at the fourth style found a
-real defect instead: **CCBG-20 (Pinned Identity Loss)**, the *Progress bar* style names no
-account when collapsed (`9% · resets in 6m`), because the identity sits on the very
-content-text line the shade drops when `setProgress` takes a row. Expanding recovers it.
-Pre-dates this arc. **(3)** Of the sheet's five states, **waiting** and **expired** were
-both seen — waiting with a live `m:ss` countdown ticking 14:56 → 0:40, which confirms
-Step 4's `Fmt.mmss` fix, and expired by waiting the fifteen minutes out rather than moving
-the clock, since this app stores real window history against it. **done**, **denied** and
-**unavailable** are marked *not seen, because …* with their reasons.
-
-Also confirmed, and worth recording because it looked wrong at first: the ChatGPT tab
-rendering in Claude peach is **correct**. The install carries an explicit global
-**Claude Orange**, which by the three-level rule overrides the provider colour for every
-account. Switching the global to **Per provider** turned the ChatGPT tab ChatGPT Green
-while the Claude tabs stayed orange, and the brand marks kept their own colours
-throughout — levels 2 and 3 both confirmed. Level 1, the per-account override, and every
-widget row are **not seen**: widget placement was skipped during the run.
-
 ---
 
-## Step 6 · Release v1.5
+## Step 6 · Release v1.6
 
-**Model:** Sonnet · **Effort:** medium · **Robin signs and uploads**
+**Tier:** Sonnet for the docs rewrite and RELEASING.md flow · Haiku for the copy sweeps · **Robin
+signs and uploads**
 
-Follow [RELEASING.md](RELEASING.md). The docs change is the big one: the README risk box grows
-an OpenAI paragraph, the hero and disclaimer say Cooldown, and the guide and brochure regenerate.
-
-**Paste into a fresh session:**
+**Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — its Conventions block and Step 6 — then
-ROADMAP.md section "Multi-provider" for what shipped (CCRM-53 (Provider Model), CCRM-54
-(ChatGPT Account), CCRM-56 (Provider Identity) and CCRM-57 (Provider Plumbing) Done; CCRM-55
-(Antigravity Account) blocked and greyed in the app). Prepare v1.5: bump versionName and
-versionCode; update README.md (name Cooldown, hero copy, the unofficial notice naming Anthropic,
-OpenAI and Google, a second risk paragraph for the ChatGPT path mirroring the Anthropic one —
-own token, the Codex CLI's client id, an undocumented endpoint, read-only, honest User-Agent);
-regenerate the user guide and brochure from docs/src per RELEASING.md with a ChatGPT sign-in
-section; write the release notes. Stop before signing and uploading — I do those — and tell me
-the exact commands. After I confirm the release is published, close per the Close-out rule
-(commit as "v1.5 — CCRM-53/54/56/57 ship: Cooldown, ChatGPT accounts", tag), then follow the
-Handover rule: if Step A is still unticked print it, otherwise say the arc is complete.
+Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — its Conventions block, Steps 1–5 Logs and Step 6
+— then ROADMAP.md section "Dual identity and diet" for what shipped. Prepare v1.6: bump
+versionName to 1.6 and versionCode to 21; rewrite README.md (no widgets, no tile, no alert
+matrix, no four styles; the always-on notification with two accounts, reset pings, four-tab
+Settings, the new icon; "not affiliated" notice unchanged); regenerate the user guide,
+brochure and hero from release/docs/src per RELEASING.md, removing the widget and alerts pages
+and adding the Duet notification page; replace the retired screenshots with the Step 5
+captures; write the release notes, saying plainly that placed widgets and tiles disappear on
+update. Stop before signing and uploading — I do those — and tell me the exact commands. After I
+confirm the release is published, close per the Close-out rule (commit as "v1.6 — CCRM-60/61/62
+ship: two-account notification, settings diet, new icon", tag), then say the arc is complete.
 ```
 
 **Done when:**
-- ☑ README, guide PDF, brochure PDF regenerated and reviewed.
-- ◑ Signed APK built by Robin (confirmed 2026-09-07) — **GitHub release publication and the
-  update check on a phone are still outstanding**, and happen after this commit is pushed,
-  since `gh release create` needs the tag on the remote. Robin ticks this one.
-- ☑ Ticked, committed and tagged.
-
-**Log:** 2026-09-07 — v1.5 prepared and committed. versionCode 19→20, versionName "1.5".
-Docs regenerated: the guide gained a ChatGPT sign-in page (page 6, inside section 2 so no
-section renumbering) and is now 14 pages; page 3 rewritten as *New in v1.5*; brochure and the
-Slack one-pager rebuilt. **Two real overflows caught by reading the render, both fixed** —
-the version-history table silently lost its last three rows, and the brochure's affiliation
-disclaimer fell off the page; on the brochure, bottom padding is *not* the lever, because once
-content overflows a fixed `.page` it runs straight past it, so the top padding lifts the column
-instead. **Scope added mid-step at Robin's call:** the repo rename `CCooldown` → `Cooldown`,
-filed as CCRM-58 (Repo Rename), which reverses review decision 6 — recorded as reversed rather
-than rewritten. Riding along: Robin's uncommitted neutral tab-strip work in `MainActivity.kt`
-and `HistoryScreen.kt`. **Left open, deliberately:** screenshots still show the old name and
-there are none of the ChatGPT flow, so the new guide page is text-only; `repo-qr.svg` still
-encodes the old URL (it resolves via the rename redirect, and no QR generator is installed
-here). Deviation from the Close-out rule noted above: the Progress box is ticked with Done-when
-item 2 half-open, because publication cannot precede this commit.
-
----
-
-## Step A · CCRM-55 (Antigravity Account) spike — any time, on the Mac
-
-**Model:** Sonnet · **Effort:** low · **Antigravity signed in on the Mac**
-
-No app code. Answers the one question that blocks Gemini: does a token minted outside the
-Antigravity IDE return real quota fractions from Google's cloud endpoint? The exact commands
-are in the item's "The spike" bullet.
-
-**Paste into a fresh session (on the Mac):**
-
-```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step A — then ROADMAP.md item
-CCRM-55 (Antigravity Account), the bullet "The spike", and
-design/research/2026-09-06-openquota-antigravity.md section 1b. Antigravity is signed in on
-this Mac. Walk the four spike steps with me in the terminal: read the refresh token from the
-Keychain item (service gemini, account antigravity), refresh it with curl against
-oauth2.googleapis.com using the client id and secret from the research file, quit Antigravity
-and agy, POST retrieveUserQuotaSummary with no IDE running, and tell me whether the four buckets
-carry real fractions or all 1.0. Redact tokens and save the response bodies to
-design/research/2026-MM-DD-antigravity-spike.md with a one-paragraph verdict. Never paste a
-token into a file or into chat. Update CCRM-55's Status line with the verdict; close per the
-Close-out rule (commit as docs(CCRM-55): spike); then follow the Handover rule — print Step B
-if the fractions were real, otherwise say Step B does not apply and CCRM-55 stays blocked.
-```
-
-**Done when:**
-- ☑ Verdict recorded: real fractions (→ Step B) or placeholders (→ CCRM-55 (Antigravity
-  Account) stays blocked; the Mac-relay route becomes the only option and gets its own roadmap
-  item).
-- ☑ Ticked, committed.
-
-**Log:** 2026-09-08 — placeholders, not real fractions. All four buckets held
-`remainingFraction: 1` both before and after a genuine Gemini prompt sent in the same
-Antigravity session, and every `resetTime` slid forward by exactly the wall-clock time between
-calls rather than holding a fixed window boundary — the tell of an availability-shaped stub for
-tokens used outside a live IDE session, matching CodexBar's warning in the item. Also found and
-fixed along the way: the spike bullet's request body (`{"metadata": {...}}`) is the **local**
-`127.0.0.1` RPC's body, not the remote `cloudcode-pa.googleapis.com` one, which wants `{}`; and
-the Keychain blob's refresh token is nested one level under a `"token"` key, not top-level as
-`design/research/2026-09-06-openquota-antigravity.md` §1b's `token_from_value` guess implied.
-Full response bodies (tokens redacted, never recorded) and verdict in
-`design/research/2026-09-08-antigravity-spike.md`. **Follow-up same day, at Robin's request** —
-a decisive third round: ran a real, expensive Gemini task in Antigravity, confirmed via
-screenshots of its own Models & Usage panel that the local view moved (100%→98%/99%), then
-immediately re-queried the remote endpoint, which still returned all four buckets pinned at
-`remainingFraction: 1`. That rules out a bigger-prompt retest ever changing the answer — the
-remote endpoint is structurally a stub, not slow or threshold-gated. Robin's call: drop
-CCRM-55 (Antigravity Account) rather than chase the Mac-relay route (CCRM-59 (Antigravity Mac
-Relay)), since a Mac-dependent relay would fail this app's own standalone requirement even if
-the data problem had a fix. Both items marked Dropped in ROADMAP.md, IDs retained per
-CLAUDE.md. Step B does not apply, permanently — there is no design to do over stub data, and no
-future retest is expected to change that.
-
----
-
-## Step B · CCRM-55 (Antigravity Account) design — only if Step A found real data
-
-**Does not apply.** Step A found placeholder data, not real fractions, and a decisive follow-up
-the same day (2026-09-08) ruled out a bigger prompt ever changing that — see Step A's Log.
-CCRM-55 (Antigravity Account) is dropped; kept below only as the record of what this step would
-have covered.
-
-**Model:** Opus · **Effort:** high · **wireframe review by Robin**
-
-Pick the auth route (refresh-token paste is the best phone-only option per the item), design
-the four-lane Gemini surface and the new states (not started, unknown, stepped signal, untouched
-pool hidden), extend `UsageData` with `lanes`, wireframe it, and get approval before building —
-working agreement 2 applies in full here.
-
-**Paste into a fresh session:**
-
-```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step B — then ROADMAP.md item
-CCRM-55 (Antigravity Account) and the spike verdict in design/research/. Step A found real
-fractions. Propose the auth route with reasoning, then write design/antigravity-wireframe.html
-mocking the Gemini tab, the Add-account row going live, the refresh-token paste (or chosen)
-sign-in, and every state the item lists — Huge number pinned style first. Do not write app
-code. Ask me the open questions one at a time via AskUserQuestion, each naming the file to open.
-When approved, move CCRM-55 to Planned with the route recorded, append the build steps for it
-to RUNBOOK.md as Steps C onwards in the same format (Model, Effort, paste block, Done when,
-Log), close per the Close-out rule (commit as docs(CCRM-55): design), then follow the Handover
-rule and print Step C.
-```
-
-**Done when:** ☐ Wireframe approved, CCRM-55 (Antigravity Account) Status moved to Planned with
-the route recorded, Steps C+ added below, ticked, committed.
+- ☐ README, guide PDF, brochure PDF regenerated and reviewed; no widget, tile or alert-matrix
+  copy remains anywhere in `release/` or README.
+- ☐ Signed APK built and GitHub release published by Robin; update check confirmed on the phone.
+- ☐ Ticked, committed, tagged, pushed.
 
 **Log:**

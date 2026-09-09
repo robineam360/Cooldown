@@ -758,22 +758,28 @@ always-on notification, what leaves). The removal footprint is in
 a time per the design-review workflow; the runbook for building them is not written yet.
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
-- **Status:** Design approved 2026-09-09 except one open call (which of five ring layouts) ·
-  medium · supersedes CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider
-  Identity) decision 3 · needs a runbook step.
-- **Icon, decided:** launcher tile ground is a plain straight anti-diagonal cut, Claude
-  terracotta `#D97757` top-left, ChatGPT green `#10A37F` bottom-right. On it a full 360° usage
-  ring: cream `#FFF6F1` fill on a 28% black track from 12 o'clock, a warm-ink pace tick at the
-  even-pace position, the fill past the tick in red `#FF5252` (CCRM-43 (Bar Pace Marks) grammar).
-  The tile is static, so the reading is a fixed sample (60% used, 48% elapsed, so the red segment
-  is always present by design). **No provider mark and no mascot on the tile** (rounds 2 and 3
-  tried both; dropped). The old bans on a meter in the tile (CCRM-42 (App Icon)) and a third
-  party's colour scheme are waived by this decision; the OS status-icon swap that motivated the
-  meter ban was fixed by CCBG-12 (Status Icon Swap). **Open:** which of five ring layouts (ring
-  only; ring with a stopwatch dial and hand; ring as a stopwatch bezel with crown and hand; two
-  rings for 5h and Weekly; two rings plus hand and crown). Adaptive layers: foreground, slate
-  background retired for the two-colour ground, monochrome layer with the halves at alpha
-  0.3/0.6, track 0.32, fill solid, red 0.85. `drawable/ic_launcher.xml` redrawn to match.
+- **Status:** Design approved 2026-09-09, nothing open · medium · supersedes CCRM-42 (App Icon)
+  and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity) decision 3 · RUNBOOK.md Step 4.
+- **Icon, final (seven review rounds, recorded in the wireframe's "Considered and dropped"):**
+  the launcher tile is the Claude app tile's top half over the ChatGPT app tile's bottom half,
+  with the app's own usage bar at the seam. Ground: **horizontal split at y 54** of the 108
+  viewport, Claude terracotta `#D97757` above, ChatGPT green `#10A37F` below (green, not the
+  store's black, by decision). Marks: the **top half of the Claude sunburst** on the terracotta
+  and the **bottom half of the OpenAI blossom** on the green, the app's own `ic_provider_*`
+  paths scaled so the full glyph would be 60 units tall and centred on (54, 54), each clipped at
+  the seam, cream/white at **0.45 opacity** ("lightly visible"). Bar: a **thick inset capsule,
+  16 units tall, x 10 to 98**, centred on the seam, drawn with `BarGeometry`/`BarRenderer`'s own
+  ratios: track translucent black 28%, cream `#FFF6F1` fill from the left cap to the pace tick
+  at **45%**, the pace tick in ink `#26211E` at 70% with the app's tick geometry (about 5 units
+  wide, 4.8 overhang above and below), **red `#FF5252` from 45% to 80%** ending in the round cap
+  (the reviewer asked for the red to cover at least a third of the bar). The tile is static, so
+  this is a fixed sample reading, above pace by design. Adaptive layers: foreground carries
+  bar and marks, background the two-colour ground (the slate radial retires), monochrome layer
+  with bands at alpha 0.55/0.3, track 0.32, fill solid, red 0.85, tick solid, marks 0.2.
+  `drawable/ic_launcher.xml` (About) redrawn to match. The old ban on a meter in the tile
+  (CCRM-42 (App Icon)) is waived: the OS status-icon swap that motivated it was fixed by
+  CCBG-12 (Status Icon Swap). The marks on the tile are the reviewer's call for a personal-use
+  app; the About screen's disclaimer stands.
 - **Top bar, decided:** the word "Cooldown" led by the two provider marks at 20 dp (the app's
   existing `ProviderMark` drawables), main screen only.
 - **App, decided ("two rooms"):** the selected tab's account already drives the accent (CCRM-56
@@ -784,10 +790,11 @@ a time per the design-review workflow; the runbook for building them is not writ
   same windows, bars, pace tick, trend chart with all its guides, axis and projection, reset
   rows, credits card, hidden-window rule. Reviewer's rule, recorded: looks never cost function.
 - **Rejected:** the "Duet strip" (a two-up summary above the tabs) — duplicates the notification.
-- **Considered and dropped, for the record:** round 1 twin ice pop / two-sand hourglass / split
-  coin / snowflake / fan; round 2 plush-crab mascots and tracker glyphs; round 3 official marks
-  with meters (the split-tile idea survived, the marks did not); round 4 interlocking-tab seam
-  (straight cut chosen).
+- **Considered and dropped, for the record:** round 1 twin ice pop / two-sand hourglass /
+  split coin / snowflake / fan; round 2 plush-crab mascots and tracker glyphs; round 3 official
+  marks with meters on a diagonal split; round 4 interlocking two-colour seam with rings and
+  bars; round 5 cream rings and stopwatch faces; round 6 the horizontal split with ten bar
+  treatments; round 7 five thick inset bars, variant 5 chosen.
 
 ### CCRM-61 · Settings Diet — four tabs, and everything that leaves
 - **Status:** Design approved 2026-09-09 · large (mostly deletion) · needs a runbook step ·
