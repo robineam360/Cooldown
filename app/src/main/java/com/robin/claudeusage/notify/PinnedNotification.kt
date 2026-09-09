@@ -125,9 +125,10 @@ object PinnedNotification {
         val left = cache.usageLeft()
 
         val fill = Palette.barColor(pct, theme, dark)
-        // CCRM-43 (Bar Pace Marks): this surface's own red toggle. The even-pace tick
-        // draws regardless; only the colour past it is optional.
-        val showOverPace = cache.paceOverOnNotification()
+        // CCRM-43 (Bar Pace Marks): one toggle since CCRM-61 (Settings Diet), shared
+        // with the in-app bars. The even-pace tick draws regardless; only the colour
+        // past it is optional.
+        val showOverPace = cache.showOverPace()
         val sessionElapsed = elapsedPercent(session, headlineWindowMs)
         // CCRM-49 (Glyph Legibility): the status bar keeps colour, so the glyph wears
         // the same severity colour as the gauge below it — one source of truth, and the

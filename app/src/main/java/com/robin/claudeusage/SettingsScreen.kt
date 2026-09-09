@@ -18,11 +18,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -105,11 +108,15 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.notify.UpdateNotification
+import com.robin.claudeusage.ui.ContentColumn
+import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.DeviceCodeCopy
 import com.robin.claudeusage.ui.DeviceCodeStage
 import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.Motion
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProviderMark
+import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.hasTwoColumns
 import com.robin.claudeusage.work.Polling
 import kotlinx.coroutines.delay
@@ -124,6 +131,16 @@ private const val DEBUG_UNLOCK_TAPS = 7
 // com.robin.claudeusage.data.QuickLinks (CCRM-57 (Provider Plumbing)) — the main
 // screen's error notice reads the same table for its "is it them?" button.
 
+/**
+ * CCRM-61 (Settings Diet), built to `design/settings-diet-wireframe.html` section 1:
+ * four swipeable tabs — Accounts, Alerts, Appearance, More — over a
+ * [HorizontalPager], replacing the old thirteen-section single scroll. Copies the
+ * tab/pager wiring [MainActivity]'s `ProfileTabs` already uses: [rememberPagerState],
+ * a coroutine-driven `animateScrollToPage` on tab tap, the indicator following the
+ * pager. Unlike that strip, the four tab labels don't carry a per-account accent
+ * colour, so there's no cross-fade to guard against and the default [TabRow]
+ * indicator is used as-is.
+ */
 @Composable
 fun SettingsScreen(
     repo: UsageRepository,
@@ -141,14 +158,19 @@ fun SettingsScreen(
     /** CCRM-23 (Reset Display) — same hoisting for which reset form leads. */
     resetClock: Boolean,
     onResetClock: (Boolean) -> Unit,
-    /** Hoisted so flipping it recomposes the usage screen's bars behind this one. */
-    paceOverInApp: Boolean,
-    onPaceOverInApp: (Boolean) -> Unit,
+    /**
+     * CCRM-43 (Bar Pace Marks): one toggle since CCRM-61 (Settings Diet) merged the
+     * in-app and notification switches. Hoisted so flipping it recomposes the usage
+     * screen's bars behind this one.
+     */
+    showOverPace: Boolean,
+    onShowOverPace: (Boolean) -> Unit,
     themeName: String,
     onTheme: (String) -> Unit,
     debugUnlocked: Boolean,
     onDebugUnlock: () -> Unit,
     onOpenGuide: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val cacheSettings = repo.cacheSettings()
@@ -163,32 +185,73 @@ fun SettingsScreen(
     var removing by remember { mutableStateOf<Profile?>(null) }
     val accountScope = rememberCoroutineScope()
 
-    // The sections split into two independent groups so a wide window — the
-    // Fold's inner screen, a tablet, a freeform window — can run them as two
-    // columns instead of one very long scroll. The split is by subject rather
-    // than by length: what the accounts are on one side, how this device
-    // surfaces them on the other.
-    val accountSections: @Composable () -> Unit = {
-        var showAddSheet by remember { mutableStateOf(false) }
-        // CCRM-56 (Provider Identity): the account the sheet just minted, so its
-        // card starts sign-in itself the moment it mounts.
-        var autoStartProfileKey by remember { mutableStateOf<String?>(null) }
+    var showAddSheet by remember { mutableStateOf(false) }
+    // CCRM-56 (Provider Identity): the account the sheet just minted, so its
+    // card starts sign-in itself the moment it mounts.
+    var autoStartProfileKey by remember { mutableStateOf<String?>(null) }
+
+    // --- Accounts tab ---
+    val accountsTab: @Composable () -> Unit = {
         SectionLabel("Accounts")
-        for (profile in profiles) {
-            // Keyed on the account, not on its position: removing a card from the middle
-            // would otherwise shift every card below it onto the state of its neighbour —
-            // a signed-in card showing the next account's sign-in step.
-            key(profile.key) {
-                TokenCard(
-                    repo, profile, use24h, onOpenGuide,
-                    label = labels.getValue(profile),
-                    canRemove = profiles.size > 1,
-                    onRename = { renaming = profile },
-                    onRemove = { removing = profile },
-                    autoStartSignIn = profile.key == autoStartProfileKey,
-                )
+        if (hasTwoColumns()) {
+            // At the inner screen's width the cards alternate left/right (1st left,
+            // 2nd right, …) rather than splitting into two independent lists — with
+            // only two or three accounts a subject split would leave one column empty.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    for ((index, profile) in profiles.withIndex()) {
+                        if (index % 2 != 0) continue
+                        key(profile.key) {
+                            TokenCard(
+                                repo, profile, use24h, onOpenGuide,
+                                label = labels.getValue(profile),
+                                canRemove = profiles.size > 1,
+                                onRename = { renaming = profile },
+                                onRemove = { removing = profile },
+                                autoStartSignIn = profile.key == autoStartProfileKey,
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                    }
+                }
+                Column(Modifier.weight(1f)) {
+                    for ((index, profile) in profiles.withIndex()) {
+                        if (index % 2 != 1) continue
+                        key(profile.key) {
+                            TokenCard(
+                                repo, profile, use24h, onOpenGuide,
+                                label = labels.getValue(profile),
+                                canRemove = profiles.size > 1,
+                                onRename = { renaming = profile },
+                                onRemove = { removing = profile },
+                                autoStartSignIn = profile.key == autoStartProfileKey,
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                    }
+                }
             }
-            Spacer(Modifier.height(10.dp))
+        } else {
+            for (profile in profiles) {
+                // Keyed on the account, not on its position: removing a card from the
+                // middle would otherwise shift every card below it onto the state of
+                // its neighbour — a signed-in card showing the next account's sign-in
+                // step.
+                key(profile.key) {
+                    TokenCard(
+                        repo, profile, use24h, onOpenGuide,
+                        label = labels.getValue(profile),
+                        canRemove = profiles.size > 1,
+                        onRename = { renaming = profile },
+                        onRemove = { removing = profile },
+                        autoStartSignIn = profile.key == autoStartProfileKey,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+            }
         }
         // CCRM-6 (Multi-Account): the card appears immediately with a positional default
         // label, in its familiar not-signed-in state — no name-first dialog, because the
@@ -213,54 +276,24 @@ fun SettingsScreen(
         // The old "Profile names" section lived here. Names are registry-owned now and each
         // card renames itself through ⋮ → Rename, so a second editor for the same field
         // would only raise the question of which one is authoritative.
-        Spacer(Modifier.height(24.dp))
-
-        SectionLabel("Polling")
-        PollingSection(repo)
-        Spacer(Modifier.height(24.dp))
-
-        SectionLabel("Notifications")
-        SectionCard {
-            Text("Reset pings", style = MaterialTheme.typography.bodyLarge)
-            Text(
-                "\"If busy\" pings only when that window had reached 80% before it reset.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            // Per account since CCRM-61 (Settings Diet): the reset ping is the only
-            // standalone notification left, so this *is* the "which accounts may
-            // interrupt me" control — there is no separate per-profile alerts toggle
-            // above it any more to mean that.
-            for ((index, profile) in profiles.withIndex()) {
-                if (index > 0) RowDivider()
-                val label = labels.getValue(profile)
-                ResetModeRow("$label · 5h reset", profile, "Session", cacheSettings)
-                Spacer(Modifier.height(8.dp))
-                ResetModeRow("$label · Weekly reset", profile, "Weekly", cacheSettings)
-            }
-            RowDivider()
-            LinkRow("System notification settings") {
-                context.startActivity(
-                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
-                )
-            }
-        }
     }
 
-    val deviceSections: @Composable () -> Unit = {
-        SectionLabel("Pinned notification")
+    // --- Alerts tab ---
+    val alwaysOnCard: @Composable () -> Unit = {
+        SectionLabel("Always-on notification")
         SectionCard {
             var pinned by remember { mutableStateOf(cacheSettings.pinnedEnabled()) }
-            var pinnedProfile by remember { mutableStateOf(cacheSettings.pinnedProfile()) }
+            var first by remember { mutableStateOf(cacheSettings.pinnedProfile()) }
+            var second by remember { mutableStateOf(cacheSettings.pinnedSecondProfile()) }
             var tapTarget by remember { mutableStateOf(cacheSettings.pinnedTapTarget()) }
+            var ringShows by remember { mutableStateOf(cacheSettings.statusRingShows()) }
             fun refreshPinned() {
                 com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
             }
             ToggleRow(
                 title = "Always-on usage notification",
-                subtitle = "A silent, ongoing notification with a status-bar icon that fills as you use your 5-hour window.",
+                subtitle = "Silent and ongoing, with a status-bar ring. Nothing else " +
+                    "posts on its own except the reset pings below.",
                 checked = pinned,
             ) {
                 pinned = it
@@ -269,20 +302,73 @@ fun SettingsScreen(
             }
             if (pinned) {
                 RowDivider()
-                Text("Show profile", style = MaterialTheme.typography.bodyLarge)
+                Text("Show accounts", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(8.dp))
-                // FlowRow, not Row: four 16-character labels do not fit one line at any
-                // phone width, and the old Row clipped the last chip out of reach entirely.
-                // Lists every registered account, signed in or not — this is Settings, where
-                // accounts live, so the setting stays visible while an account is signed out.
+                // FlowRow, not Row: labels do not fit one line at any phone width, and
+                // a plain Row would clip the last chip out of reach entirely. Lists
+                // every registered account, signed in or not — this is Settings,
+                // where accounts live, so the setting stays visible while an account
+                // is signed out.
                 val pinnedPickerDark = appDark()
+                Text(
+                    "First",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (p in profiles) {
                         FilterChip(
-                            selected = pinnedProfile == p,
+                            selected = first == p,
                             onClick = {
-                                pinnedProfile = p
+                                first = p
                                 cacheSettings.setPinnedProfile(p)
+                                // CCRM-62 (Duet Notification): the same account can't
+                                // be both halves — if First just became what Second
+                                // already was, Second collapses back to None.
+                                if (second == p) {
+                                    second = null
+                                    cacheSettings.setPinnedSecondProfile(null)
+                                }
+                                refreshPinned()
+                            },
+                            label = { Text(labels.getValue(p)) },
+                            leadingIcon = {
+                                ProviderMark(
+                                    p.provider,
+                                    size = 14.dp,
+                                    tint = Palette.color(Palette.accentName(cacheSettings, p), pinnedPickerDark),
+                                )
+                            },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "Second · optional",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(4.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = second == null,
+                        onClick = {
+                            second = null
+                            cacheSettings.setPinnedSecondProfile(null)
+                            refreshPinned()
+                        },
+                        label = { Text("None") },
+                    )
+                    for (p in profiles) {
+                        FilterChip(
+                            selected = second == p,
+                            // Picking the same account as First is refused outright —
+                            // a Duet of one account said twice would say nothing.
+                            enabled = p != first,
+                            onClick = {
+                                second = p
+                                cacheSettings.setPinnedSecondProfile(p)
                                 refreshPinned()
                             },
                             label = { Text(labels.getValue(p)) },
@@ -297,17 +383,16 @@ fun SettingsScreen(
                     }
                 }
                 RowDivider()
-                Text("Tapping the notification opens", style = MaterialTheme.typography.bodyLarge)
+                Text("Tapping a number opens", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(8.dp))
-                val pinnedProviderApp = pinnedProfile.provider
-                val providerAppInstalled = remember(pinnedProviderApp) {
-                    com.robin.claudeusage.notify.PinnedNotification.providerLaunchIntent(context, pinnedProviderApp) != null
+                val firstProviderApp = first.provider
+                val providerAppInstalled = remember(firstProviderApp) {
+                    com.robin.claudeusage.notify.PinnedNotification.providerLaunchIntent(context, firstProviderApp) != null
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // The stored value "claude" from pre-multi-provider installs
-                    // is read as "provider" (PinnedNotification.tapIntent), so the
-                    // chip below simply renders under its new name and label.
-                    for ((value, text) in listOf("app" to "Cooldown", "provider" to "${pinnedProviderApp.displayName} app")) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // The stored value "claude" from pre-multi-provider installs is
+                    // read as "provider" (PinnedNotification.tapIntent).
+                    for ((value, text) in listOf("app" to "Cooldown", "provider" to "That service's app")) {
                         FilterChip(
                             selected = tapTarget == value || (value == "provider" && tapTarget == "claude"),
                             onClick = {
@@ -322,231 +407,310 @@ fun SettingsScreen(
                 if ((tapTarget == "provider" || tapTarget == "claude") && !providerAppInstalled) {
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "The ${pinnedProviderApp.displayName} app isn't installed — taps will open Cooldown instead.",
+                        "The ${firstProviderApp.displayName} app isn't installed — taps " +
+                            "open Cooldown instead.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                RowDivider()
+                Text("Status-bar ring shows", style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.height(4.dp))
+                if (second == null) {
+                    Text(
+                        "One account, so there is nothing to choose",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    FilterChip(
+                        selected = true,
+                        enabled = false,
+                        onClick = {},
+                        label = { Text("First") },
+                    )
+                } else {
+                    Spacer(Modifier.height(4.dp))
+                    // FlowRow: three chips wrap rather than clip, and nothing inside a
+                    // page may scroll horizontally against the pager.
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        for ((value, text) in listOf(
+                            UsageCache.RING_FIRST to "First",
+                            UsageCache.RING_SECOND to "Second",
+                            UsageCache.RING_HIGHER to "Whichever is higher",
+                        )) {
+                            FilterChip(
+                                selected = ringShows == value,
+                                onClick = {
+                                    ringShows = value
+                                    cacheSettings.setStatusRingShows(value)
+                                    refreshPinned()
+                                },
+                                label = { Text(text) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "A clean ring for the 5h window, in that account's own colour, " +
+                            "so the colour tells you which account you are looking at.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
+            RowDivider()
+            // Always shown, not gated on the toggle above: two channels are left —
+            // pinned_usage_v2 and reset_alerts — and this is still the only way to
+            // silence or hide either at the OS level.
+            LinkRow("System notification settings", subtitle = "The two channels left") {
+                context.startActivity(
+                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                )
+            }
         }
-        Spacer(Modifier.height(24.dp))
+    }
 
-        SectionLabel("Usage credits")
+    val resetPingsCard: @Composable () -> Unit = {
+        SectionLabel("Reset pings")
         SectionCard {
             Text(
-                "Pay-as-you-go credits that cover you once a plan window runs out. The " +
-                    "section only appears for accounts that actually have a credit budget.",
+                "The one notification that still posts on its own. \"If busy\" pings " +
+                    "only when that window had reached 80% before it reset.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.height(4.dp))
-            for (profile in profiles) {
-                RowDivider()
-                var visible by remember(profile) {
-                    mutableStateOf(cacheSettings.creditsVisible(profile))
-                }
-                ToggleRow(
-                    title = "Show for ${labels.getValue(profile)}",
-                    subtitle = "Credits card on this profile's screen",
-                    checked = visible,
-                ) {
-                    visible = it
-                    cacheSettings.setCreditsVisible(profile, it)
-                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
-                }
+            Spacer(Modifier.height(8.dp))
+            // Per account since CCRM-61 (Settings Diet): the reset ping is the only
+            // standalone notification left, so this *is* the "which accounts may
+            // interrupt me" control — there is no separate per-profile alerts toggle
+            // above it any more to mean that.
+            for ((index, profile) in profiles.withIndex()) {
+                if (index > 0) RowDivider()
+                Text(labels.getValue(profile), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.height(6.dp))
+                ResetModeRow("5h reset", profile, "Session", cacheSettings)
+                Spacer(Modifier.height(8.dp))
+                ResetModeRow("Weekly reset", profile, "Weekly", cacheSettings)
             }
         }
-        Spacer(Modifier.height(24.dp))
+    }
 
-        SectionLabel("Appearance")
-        SectionCard {
-            // CCRM-29 (Display Mode): a forced theme drives the Material scheme, the
-            // chart's per-mode opacities and the status-bar icons together (via
-            // LocalAppDark). The notification keeps following the system — its
-            // backdrop is the shade's, not ours.
-            Text(
-                "Theme",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((value, text) in listOf(
-                    "system" to "System", "light" to "Light", "dark" to "Dark",
-                )) {
-                    FilterChip(
-                        selected = themeMode == value,
-                        onClick = {
-                            onThemeMode(value)
-                            cacheSettings.setThemeMode(value)
-                        },
-                        label = { Text(text) },
-                    )
-                }
-            }
-            RowDivider()
-            // CCRM-29 (Display Mode): grown from the old 24-hour switch. An install
-            // that ever touched that switch keeps its explicit choice (see
-            // UsageCache.timeFormat); only fresh installs land on System.
-            Text(
-                "Time format",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                if (use24h) "Times shown like Thu 23:45" else "Times shown like Thu 11:45 PM",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((value, text) in listOf(
-                    "system" to "System", "12" to "12-hour", "24" to "24-hour",
-                )) {
-                    FilterChip(
-                        selected = timeFormat == value,
-                        onClick = {
-                            onTimeFormat(value)
-                            cacheSettings.setTimeFormat(value)
-                            com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
-                        },
-                        label = { Text(text) },
-                    )
-                }
-            }
-            RowDivider()
-            // CCRM-22 (Used or Left): one global token; every numeric readout follows
-            // it (rev B). Bars, ring fills and the warning colours always show the
-            // spend, so a red bar can't sit beside "8% left" and read as backwards.
-            Text(
-                "Usage display",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "How percentages read on every surface. Bars and colours always show " +
-                    "what's spent.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((value, text) in listOf("used" to "Used", "left" to "Left")) {
-                    FilterChip(
-                        selected = if (value == "left") usageLeft else !usageLeft,
-                        onClick = {
-                            onUsageLeft(value == "left")
-                            cacheSettings.setUsageDisplay(value)
-                            // Re-post so the change lands without waiting for a poll.
-                            com.robin.claudeusage.notify.PinnedNotification
-                                .update(context, cacheSettings)
-                        },
-                        label = { Text(text) },
-                    )
-                }
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                if (usageLeft) "Shows \"53% left\" — what remains of each window."
-                else "Shows \"47% used\" — what each window has consumed.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            RowDivider()
-            // CCRM-23 (Reset Display), Option A: the token decides which reset form
-            // *leads*; surfaces with a second slot keep the other form there. Grown
-            // from the old tile-only countdown/clock choice (CCRM-11), which this
-            // replaced.
-            Text(
-                "Reset time",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "Which form leads wherever a reset is shown. Where there's room, " +
-                    "the other form keeps the second slot.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((value, text) in listOf("countdown" to "Countdown", "clock" to "Clock time")) {
-                    FilterChip(
-                        selected = if (value == "clock") resetClock else !resetClock,
-                        onClick = {
-                            onResetClock(value == "clock")
-                            cacheSettings.setResetDisplay(value)
-                            // Re-post so the change lands without waiting for a poll.
-                            com.robin.claudeusage.notify.PinnedNotification
-                                .update(context, cacheSettings)
-                        },
-                        label = { Text(text) },
-                    )
-                }
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                if (resetClock)
-                    "Leads with \"resets 4:12 PM\". A clock time can't go stale on " +
-                        "surfaces that refresh every 15 minutes."
-                else
-                    "Leads with \"resets in 2h 14m\", collapsing to \"resets soon\" " +
-                        "inside five minutes.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            RowDivider()
-            // CCRM-43 (Bar Pace Marks). One group, two switches: the surfaces are
-            // read at very different distances, so the appetite for red differs. Each
-            // gates *only* the red past the pace mark — the neutral even-pace tick
-            // always draws, and the 80/90/100 severity ladder is untouched.
-            Text(
-                "Show red past the pace mark",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "Off keeps the even-pace tick without the colour.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            ToggleRow(
-                title = "In-app bars",
-                subtitle = "The usage screen's bars",
-                checked = paceOverInApp,
-            ) {
-                onPaceOverInApp(it)
-                cacheSettings.setPaceOverInApp(it)
-            }
-            var paceOverNotif by remember { mutableStateOf(cacheSettings.paceOverOnNotification()) }
-            ToggleRow(
-                title = "Pinned notification",
-                subtitle = "The always-on notification's bars",
-                checked = paceOverNotif,
-            ) {
-                paceOverNotif = it
-                cacheSettings.setPaceOverOnNotification(it)
-                // Re-post so the change lands without waiting for the next refresh.
-                com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
-            }
-            RowDivider()
-            Text("Theme color", style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.height(4.dp))
-            ThemeColorPicker(themeName) {
-                onTheme(it)
-                repo.cacheSettings().setThemeColorName(it)
-                // CCBG-14 (Stale Notification Theme): the pinned notification's gauge
-                // and status-bar glyph wear the theme too — redraw now, not next poll.
-                com.robin.claudeusage.notify.PinnedNotification.update(context, repo.cacheSettings())
+    // --- Appearance tab ---
+    val themeTimeUsageRows: @Composable () -> Unit = {
+        // CCRM-29 (Display Mode): a forced theme drives the Material scheme, the
+        // chart's per-mode opacities and the status-bar icons together (via
+        // LocalAppDark). The notification keeps following the system — its
+        // backdrop is the shade's, not ours.
+        Text(
+            "Theme",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf(
+                "system" to "System", "light" to "Light", "dark" to "Dark",
+            )) {
+                FilterChip(
+                    selected = themeMode == value,
+                    onClick = {
+                        onThemeMode(value)
+                        cacheSettings.setThemeMode(value)
+                    },
+                    label = { Text(text) },
+                )
             }
         }
-        Spacer(Modifier.height(24.dp))
+        RowDivider()
+        // CCRM-29 (Display Mode): grown from the old 24-hour switch. An install
+        // that ever touched that switch keeps its explicit choice (see
+        // UsageCache.timeFormat); only fresh installs land on System.
+        Text(
+            "Time format",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            if (use24h) "Times shown like Thu 23:45" else "Times shown like Thu 11:45 PM",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf(
+                "system" to "System", "12" to "12-hour", "24" to "24-hour",
+            )) {
+                FilterChip(
+                    selected = timeFormat == value,
+                    onClick = {
+                        onTimeFormat(value)
+                        cacheSettings.setTimeFormat(value)
+                        com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
+        RowDivider()
+        // CCRM-22 (Used or Left): one global token; every numeric readout follows
+        // it (rev B). Bars, ring fills and the warning colours always show the
+        // spend, so a red bar can't sit beside "8% left" and read as backwards.
+        Text(
+            "Usage display",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "How percentages read on every surface. Bars and colours always show " +
+                "what's spent.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf("used" to "Used", "left" to "Left")) {
+                FilterChip(
+                    selected = if (value == "left") usageLeft else !usageLeft,
+                    onClick = {
+                        onUsageLeft(value == "left")
+                        cacheSettings.setUsageDisplay(value)
+                        // Re-post so the change lands without waiting for a poll.
+                        com.robin.claudeusage.notify.PinnedNotification
+                            .update(context, cacheSettings)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            if (usageLeft) "Shows \"53% left\" — what remains of each window."
+            else "Shows \"47% used\" — what each window has consumed.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 
+    val resetPaceColorRows: @Composable () -> Unit = {
+        // CCRM-23 (Reset Display), Option A: the token decides which reset form
+        // *leads*; surfaces with a second slot keep the other form there. Grown
+        // from the old tile-only countdown/clock choice (CCRM-11), which this
+        // replaced.
+        Text(
+            "Reset time",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "Which form leads wherever a reset is shown. Where there's room, " +
+                "the other form keeps the second slot.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf("countdown" to "Countdown", "clock" to "Clock time")) {
+                FilterChip(
+                    selected = if (value == "clock") resetClock else !resetClock,
+                    onClick = {
+                        onResetClock(value == "clock")
+                        cacheSettings.setResetDisplay(value)
+                        // Re-post so the change lands without waiting for a poll.
+                        com.robin.claudeusage.notify.PinnedNotification
+                            .update(context, cacheSettings)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            if (resetClock)
+                "Leads with \"resets 4:12 PM\". A clock time can't go stale on " +
+                    "surfaces that refresh every 15 minutes."
+            else
+                "Leads with \"resets in 2h 14m\", collapsing to \"resets soon\" " +
+                    "inside five minutes.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        RowDivider()
+        // CCRM-61 (Settings Diet): the old three-way split (in-app / notification /
+        // widgets) collapses to this one toggle — the widgets it also used to gate
+        // are gone, and the two remaining surfaces are both read up close, so one
+        // switch covers both. It gates only the red past the mark; the neutral
+        // even-pace tick always draws (CCRM-43, Bar Pace Marks).
+        ToggleRow(
+            title = "Show red past the pace mark",
+            subtitle = "Colours the bar past the even-pace tick, in the app and in the " +
+                "notification. Off keeps the tick without the colour.",
+            checked = showOverPace,
+        ) {
+            onShowOverPace(it)
+            cacheSettings.setShowOverPace(it)
+            // Re-post so the change lands without waiting for the next refresh.
+            com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+        }
+        RowDivider()
+        Text("Theme color", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(4.dp))
+        ThemeColorPicker(themeName) {
+            onTheme(it)
+            repo.cacheSettings().setThemeColorName(it)
+            // CCBG-14 (Stale Notification Theme): the pinned notification's gauge
+            // and status-bar glyph wear the theme too — redraw now, not next poll.
+            com.robin.claudeusage.notify.PinnedNotification.update(context, repo.cacheSettings())
+        }
+    }
+
+    // --- More tab ---
+    // CCRM-61 (Settings Diet): the whole Usage credits section is conditional —
+    // it renders only once some registered account's cached snapshot actually
+    // reports a credit budget, so an all-Claude-plan install never sees a header
+    // for a feature that applies to nobody signed in.
+    val showCredits = remember(namesTick) {
+        profiles.any { cacheSettings.snapshot(it).data?.credits?.isReportable == true }
+    }
+    val pollingUpdatesCredits: @Composable () -> Unit = {
+        SectionLabel("Polling")
+        PollingSection(repo)
+        Spacer(Modifier.height(24.dp))
+        if (showCredits) {
+            SectionLabel("Usage credits")
+            SectionCard {
+                Text(
+                    "Pay-as-you-go credits that cover you once a plan window runs out. " +
+                        "The section only appears for accounts that actually have a " +
+                        "credit budget.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(4.dp))
+                for (profile in profiles) {
+                    RowDivider()
+                    var visible by remember(profile) {
+                        mutableStateOf(cacheSettings.creditsVisible(profile))
+                    }
+                    ToggleRow(
+                        title = "Show for ${labels.getValue(profile)}",
+                        subtitle = "Credits card on this profile's screen",
+                        checked = visible,
+                    ) {
+                        visible = it
+                        cacheSettings.setCreditsVisible(profile, it)
+                        com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
         SectionLabel("Updates")
         UpdatesCard(cacheSettings)
-        Spacer(Modifier.height(24.dp))
+    }
 
+    val diagnosticsAboutDebug: @Composable () -> Unit = {
         // CCRM-34 (Diagnostics Log): visible without the debug unlock — for a
         // sideload-only app with an email feedback channel, "share your log" is
         // the diagnosis path, so it can't hide behind a 7-tap ritual.
@@ -566,20 +730,104 @@ fun SettingsScreen(
         }
     }
 
-    if (hasTwoColumns()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            Column(Modifier.weight(1f)) { accountSections() }
-            Column(Modifier.weight(1f)) { deviceSections() }
+    // --- tabs + pager ---
+    // Plain `remember`, not `rememberSaveable`: Settings always reopens on the
+    // Accounts tab, including the Settings → Guide → back trip — that trip leaves
+    // this composable's branch of MainActivity's screen `when` entirely, so its
+    // remembered state (this pager included) is gone by the time it's rebuilt.
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
+    val tabScope = rememberCoroutineScope()
+    // Read inside the click, never captured at composition — see ProfileTabs'
+    // own motionContext for why.
+    val motionContext = LocalContext.current
+    val tabTitles = listOf("Accounts", "Alerts", "Appearance", "More")
+
+    Column(modifier = modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        tabScope.launch {
+                            if (Motion.reduced(Motion.scale(motionContext))) {
+                                pagerState.scrollToPage(index)
+                            } else {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        }
+                    },
+                ) {
+                    // 10 dp a side rather than Material's default 16 dp, so
+                    // "Appearance" fits in the ~102 dp four tabs get at a 410 dp
+                    // width (decision 4 of the approved wireframe). If a larger
+                    // font scale still reads tight on some device, the fallback is
+                    // ScrollableTabRow rather than shrinking this further.
+                    Text(
+                        title,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                    )
+                }
+            }
         }
-    } else {
-        accountSections()
-        Spacer(Modifier.height(24.dp))
-        deviceSections()
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+        ) { page ->
+            ContentColumn(maxWidth = if (hasTwoColumns()) WideMaxWidth else ContentMaxWidth) {
+                Spacer(Modifier.height(8.dp))
+                when (page) {
+                    0 -> accountsTab()
+                    1 -> if (hasTwoColumns()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        ) {
+                            Column(Modifier.weight(1f)) { alwaysOnCard() }
+                            Column(Modifier.weight(1f)) { resetPingsCard() }
+                        }
+                    } else {
+                        alwaysOnCard()
+                        Spacer(Modifier.height(24.dp))
+                        resetPingsCard()
+                    }
+                    2 -> {
+                        SectionLabel("Appearance")
+                        if (hasTwoColumns()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                            ) {
+                                Column(Modifier.weight(1f)) { SectionCard { themeTimeUsageRows() } }
+                                Column(Modifier.weight(1f)) { SectionCard { resetPaceColorRows() } }
+                            }
+                        } else {
+                            SectionCard {
+                                themeTimeUsageRows()
+                                RowDivider()
+                                resetPaceColorRows()
+                            }
+                        }
+                    }
+                    else -> if (hasTwoColumns()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        ) {
+                            Column(Modifier.weight(1f)) { pollingUpdatesCredits() }
+                            Column(Modifier.weight(1f)) { diagnosticsAboutDebug() }
+                        }
+                    } else {
+                        pollingUpdatesCredits()
+                        Spacer(Modifier.height(24.dp))
+                        diagnosticsAboutDebug()
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
+            }
+        }
     }
-    Spacer(Modifier.height(8.dp))
 
     // CCRM-6 (Multi-Account): both live here rather than inside TokenCard so they survive
     // the card recomposing under them, and so the remove path can bump namesTick once.
@@ -2906,7 +3154,7 @@ private fun ToggleRow(
 }
 
 @Composable
-private fun LinkRow(title: String, onClick: () -> Unit) {
+private fun LinkRow(title: String, subtitle: String? = null, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -2915,7 +3163,16 @@ private fun LinkRow(title: String, onClick: () -> Unit) {
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
         Icon(
             Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,

@@ -156,6 +156,10 @@ class UsageRepository(private val context: Context) {
 
         val replacement = registry.first()
         if (cache.pinnedProfile() == profile) cache.setPinnedProfile(replacement)
+        // CCRM-62 (Duet Notification): the optional Second pin repoints to
+        // nothing rather than a stale key — unlike First, there's no
+        // replacement to fall back to, since None is always a valid choice.
+        if (cache.pinnedSecondProfile() == profile) cache.setPinnedSecondProfile(null)
 
         AppLog.log(
             context, AppLog.Level.INFO, "account", profile,

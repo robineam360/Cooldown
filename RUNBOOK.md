@@ -60,7 +60,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 | Step | Item | Sub-agent tier | Needs Robin | Status |
 |---|---|---|---|---|
 | 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☑ |
-| 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☐ |
+| 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☑ |
 | 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☐ |
 | 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☐ |
 | 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☐ |
@@ -183,13 +183,30 @@ feat(CCRM-61): four-tab Settings), then follow the Handover rule and print Step 
 ```
 
 **Done when:**
-- ☐ Four tabs, swipe and tap, at 410 dp and 750 dp; no horizontal content fights the pager.
-- ☐ New prefs: `pinnedSecondProfile`, `statusRingShows`, per-account `resetPingMode`, one
+- ☑ Four tabs, swipe and tap, at 410 dp and 750 dp; no horizontal content fights the pager.
+- ☑ New prefs: `pinnedSecondProfile`, `statusRingShows`, per-account `resetPingMode`, one
   `paceOverEverywhere` (name per the code's convention) with migration.
-- ☐ Alerts tab fits one cover screen with two accounts.
-- ☐ Tests green, Status updated, ticked, committed, pushed.
+- ☑ Alerts tab fits one cover screen with two accounts.
+- ☑ Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
+- 2026-09-09 — Done by one Sonnet agent, reviewed and finished by the orchestrator. Settings is a
+  fixed `TabRow` (10 dp tab padding, `ScrollableTabRow` fallback noted in code) over a
+  `HorizontalPager`; `Screen.SETTINGS` got its own branch in MainActivity because a pager cannot
+  live inside the shared `verticalScroll` ContentColumn — each page is its own ContentColumn.
+  New prefs: `pinnedSecondProfile(): Profile?` (None = absent; cleared on account removal and
+  when First takes its account), `statusRingShows()` with `RING_FIRST/SECOND/HIGHER`, and
+  `showOverPace()` replacing both `paceOverInApp` and `paceOverOnNotification` (migration is the
+  pure `SettingsMigration.showOverPace`, 4 unit tests; the in-app value wins, the notification
+  value is not consulted). Tests 287 → 291. Judgement calls: chip sub-labels "First" /
+  "Second · optional" at labelMedium; the Settings TabRow uses the default indicator (no
+  per-tab accent, so ProfileTabs' crossfade workaround was not copied); Usage credits visibility
+  is recomputed when the account list changes, not on every poll; the account card was left
+  unchanged — the wireframe's After caption says the cards "gained the percentage on their
+  subtitle line" while its Row-by-row table says Keep/unchanged, and the paste said keep the
+  card composables, so the conservative reading won (Robin to confirm at Step 5). Nothing on
+  screen yet: the Alerts tab fit at 410 dp is arithmetic until the device pass. The pinned
+  notification does not read `pinnedSecondProfile` or `statusRingShows` yet — that is Step 3.
 
 ---
 
@@ -217,7 +234,13 @@ service's app), Refresh action unchanged. Status bar: ui/UsageIcon ring only, no
 (remove drawFlag and the weekly parameters), coloured by the shown account's accent below 80%
 then the severity ladder; the shown account follows the "Status-bar ring shows" pref (First /
 Second / higher 5h percentage). Alerts.evaluate's re-render must pass both accounts. Unit-test
-the label clamp, the strip cap and the account selection. Install a debug build on the Fold 7
+the label clamp, the strip cap and the account selection. Steps 1–2 already left: the prefs
+UsageCache.pinnedSecondProfile(): Profile? (null = None), statusRingShows() with
+RING_FIRST/RING_SECOND/RING_HIGHER, showOverPace() (the one red toggle; paceOverOnNotification
+is gone), resetPingMode(profile, window); UsageIcon.draw has no style or mono parameter any
+more and PinnedNotification.drawStatusIcon has no style parameter; Conditions.panelFor has no
+folded events and MAX_STRIPS is still 3; the Alerts tab's "Tapping a number opens" writes
+pinnedTapTarget "app" / "provider" (legacy "claude" reads as "provider"). Install a debug build on the Fold 7
 and show me the collapsed and expanded shade in one AskUserQuestion before closing. Close per
 the Close-out rule (commit as feat(CCRM-62): two-account pinned notification), then follow
 the Handover rule and print Step 4.

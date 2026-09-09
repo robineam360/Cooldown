@@ -797,10 +797,12 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   treatments; round 7 five thick inset bars, variant 5 chosen.
 
 ### CCRM-61 · Settings Diet — four tabs, and everything that leaves
-- **Status:** Part 1 built 2026-09-09 — the removals (widgets, tile, standalone alerts
-  except reset pings, fold machinery, three pinned styles, three glyphs) are in; unit tests
-  368 → 287, `Alerts.kt` 665 → 231 lines, per-account `resetPingMode` with legacy fallback ·
-  part 2 (four-tab Settings) is RUNBOOK.md Step 2 · large (mostly deletion) · supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
+- **Status:** Built 2026-09-09, both parts (RUNBOOK.md Steps 1–2) — part 1 the removals
+  (widgets, tile, standalone alerts except reset pings, fold machinery, three pinned styles,
+  three glyphs; unit tests 368 → 287, `Alerts.kt` 665 → 231 lines, per-account `resetPingMode`
+  with legacy fallback); part 2 the four-tab Settings with the new `pinnedSecondProfile`,
+  `statusRingShows` and merged `showOverPace` prefs (291 tests). **Not yet seen on a device** —
+  Step 5 · large (mostly deletion) · supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
   (Widget Quick-Edit), CCRM-13 (Chart Widget), CCRM-21 (Pace Alerts), CCRM-17 (Window Pings),
   CCRM-44 (One Surface) in part, CCRM-11 (Tile Reset Time), CCRM-3 (Unified Theming) phase 1;
   resolves CCBG-20 (Pinned Identity Loss) by removal; re-scopes CCRM-5 (Per-Profile

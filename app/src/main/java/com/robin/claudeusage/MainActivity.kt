@@ -110,7 +110,6 @@ import com.robin.claudeusage.ui.ProvideWidthClass
 import com.robin.claudeusage.ui.UsageSparkline
 import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.chartHeight
-import com.robin.claudeusage.ui.hasTwoColumns
 import com.robin.claudeusage.ui.PACE_DEAD_ZONE
 import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.Motion
@@ -195,9 +194,9 @@ private fun App(startProfile: Profile) {
     // CCRM-23 (Reset Display): same hoisting for which reset form leads.
     var resetClock by remember { mutableStateOf(cache.resetClock()) }
     // Hoisted like use24h so flipping the toggle in Settings recomposes the bars
-    // behind it — CCRM-43 (Bar Pace Marks) gates the in-app red separately from the
-    // notification's.
-    var paceOverInApp by remember { mutableStateOf(cache.paceOverInApp()) }
+    // behind it — CCRM-43 (Bar Pace Marks)'s one toggle since CCRM-61 (Settings
+    // Diet), shared with the pinned notification's own red.
+    var showOverPace by remember { mutableStateOf(cache.showOverPace()) }
     var tick by remember { mutableIntStateOf(0) }
 
     // Ticks every few seconds so "updated Xm ago" and background results stay fresh.
@@ -308,22 +307,49 @@ private fun App(startProfile: Profile) {
                     )
                 },
             ) { innerPadding ->
-                // Settings and History lay their own content out in columns when
-                // there's room, so they get the wider cap — but only when they'll
-                // actually use it, or the cap would just stretch one column. The
-                // guide is prose and stays at one readable measure at any size.
+                // History lays its own content out in columns when there's room, so
+                // it gets the wider cap — but only when it'll actually use it, or the
+                // cap would just stretch one column. The guide is prose and stays at
+                // one readable measure at any size. Settings computes its own per-tab
+                // width below — a HorizontalPager can't live inside this column at
+                // all, let alone a capped one (see the Screen.SETTINGS branch).
                 val contentWidth = when (screen) {
-                    Screen.SETTINGS -> if (hasTwoColumns()) WideMaxWidth else ContentMaxWidth
                     Screen.HISTORY -> if (LocalWidthClass.current.twoPane) WideMaxWidth else ContentMaxWidth
                     else -> ContentMaxWidth
                 }
                 when (screen) {
                     Screen.MAIN ->
                         ProfileTabs(
-                            repo, use24h, usageLeft, resetClock, paceOverInApp, tick,
+                            repo, use24h, usageLeft, resetClock, showOverPace, tick,
                             startProfile, { screen = Screen.SETTINGS },
                             Modifier.padding(innerPadding),
                             onProfileChange = { selectedProfile = it },
+                        )
+                    // CCRM-61 (Settings Diet): its own branch, not the shared
+                    // ContentColumn below — a HorizontalPager needs a bounded height,
+                    // which a `verticalScroll` column can't give it. SettingsScreen
+                    // fills the size it's handed and lays out its own tab bar and
+                    // per-page columns instead.
+                    Screen.SETTINGS ->
+                        SettingsScreen(
+                            repo = repo,
+                            use24h = use24h,
+                            themeMode = themeMode,
+                            onThemeMode = { themeMode = it },
+                            timeFormat = timeFormat,
+                            onTimeFormat = { timeFormat = it },
+                            usageLeft = usageLeft,
+                            onUsageLeft = { usageLeft = it },
+                            resetClock = resetClock,
+                            onResetClock = { resetClock = it },
+                            showOverPace = showOverPace,
+                            onShowOverPace = { showOverPace = it },
+                            themeName = themeName,
+                            onTheme = { themeName = it },
+                            debugUnlocked = debugUnlocked,
+                            onDebugUnlock = { debugUnlocked = true },
+                            onOpenGuide = { screen = Screen.GUIDE },
+                            modifier = Modifier.padding(innerPadding),
                         )
                     else -> ContentColumn(
                         modifier = Modifier.padding(innerPadding),
@@ -332,26 +358,6 @@ private fun App(startProfile: Profile) {
                         Spacer(Modifier.height(8.dp))
                         if (screen == Screen.HISTORY) {
                             HistoryScreen(repo, tick, onProfileChange = { selectedProfile = it })
-                        } else if (screen == Screen.SETTINGS) {
-                            SettingsScreen(
-                                repo = repo,
-                                use24h = use24h,
-                                themeMode = themeMode,
-                                onThemeMode = { themeMode = it },
-                                timeFormat = timeFormat,
-                                onTimeFormat = { timeFormat = it },
-                                usageLeft = usageLeft,
-                                onUsageLeft = { usageLeft = it },
-                                resetClock = resetClock,
-                                onResetClock = { resetClock = it },
-                                paceOverInApp = paceOverInApp,
-                                onPaceOverInApp = { paceOverInApp = it },
-                                themeName = themeName,
-                                onTheme = { themeName = it },
-                                debugUnlocked = debugUnlocked,
-                                onDebugUnlock = { debugUnlocked = true },
-                                onOpenGuide = { screen = Screen.GUIDE },
-                            )
                         } else {
                             TokenGuideScreen()
                         }

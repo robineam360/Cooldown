@@ -52,6 +52,15 @@ class UsageCache(context: Context) {
         const val RESET_SMART = "smart"
         const val RESET_ALWAYS = "always"
 
+        /**
+         * CCRM-62 (Duet Notification): who the status-bar ring's fill follows when a
+         * second account is pinned — the first account, the second, or whichever of
+         * the two is closer to running out.
+         */
+        const val RING_FIRST = "first"
+        const val RING_SECOND = "second"
+        const val RING_HIGHER = "higher"
+
         /** In smart mode a reset ping fires only if the window had reached this. */
         const val SMART_RESET_MIN_PCT = 80.0
 
@@ -289,6 +298,37 @@ class UsageCache(context: Context) {
     }
 
     /**
+     * CCRM-62 (Duet Notification): the optional second account the pinned
+     * notification carries alongside [pinnedProfile] ("First"). Null means
+     * "None" — absent, an unknown/removed key, or (defensively) the same
+     * account as First, which the Alerts tab's chips already refuse to select
+     * in the first place.
+     */
+    fun pinnedSecondProfile(): Profile? {
+        val key = prefs.getString("pinnedSecondProfile", null) ?: return null
+        val profile = registry.byKey(key) ?: return null
+        return profile.takeIf { it != pinnedProfile() }
+    }
+
+    fun setPinnedSecondProfile(profile: Profile?) {
+        prefs.edit().apply {
+            if (profile == null) remove("pinnedSecondProfile") else putString("pinnedSecondProfile", profile.key)
+        }.apply()
+    }
+
+    /**
+     * CCRM-62 (Duet Notification): which account the status-bar ring's fill
+     * follows — [RING_FIRST] (default), [RING_SECOND], or [RING_HIGHER]. Only
+     * meaningful once a second account is pinned; the Alerts tab shows a
+     * read-only "First" chip otherwise.
+     */
+    fun statusRingShows(): String = prefs.getString("statusRingShows", RING_FIRST) ?: RING_FIRST
+
+    fun setStatusRingShows(value: String) {
+        prefs.edit().putString("statusRingShows", value).apply()
+    }
+
+    /**
      * CCRM-23 (Reset Display): which reset form *leads* on every surface —
      * "countdown" ("resets in 2h 14m", the default) or "clock" ("resets 4:12 PM").
      * Grown from the tile-only `tileSubtitle` pref (CCRM-11), whose stored value is
@@ -333,25 +373,30 @@ class UsageCache(context: Context) {
         prefs.edit().putBoolean(k(profile, "creditsVisible"), visible).apply()
     }
 
-    // --- CCRM-43 (Bar Pace Marks): the red over-pace segment, per surface ---
+    // --- CCRM-43 (Bar Pace Marks): the red over-pace segment ---
     //
-    // Two keys rather than one, by decision of 2026-08-13: the surfaces are read at
-    // very different distances (a long look at the usage screen, a notification you
-    // can't dismiss), so the appetite for red differs per surface. All default ON —
-    // the behaviour approved and shipped — and each gates *only* the segment. The
-    // neutral even-pace tick always draws, and the 80/90/100 severity ladder is
-    // untouched: this is about pace, not severity.
+    // One key as of CCRM-61 (Settings Diet), covering both surfaces: the three-way
+    // split (in-app / notification / widgets) existed because those surfaces were
+    // read at very different distances, and the widgets are gone. It gates *only*
+    // the red segment — the neutral even-pace tick always draws, and the 80/90/100
+    // severity ladder is untouched: this is about pace, not severity.
+    //
+    // Migration lives in [SettingsMigration.showOverPace], pure and unit-tested:
+    // an explicit `showOverPace` always wins; absent that, an upgrading install
+    // carries forward its retired `paceOverInApp` in-app toggle; a fresh install
+    // has neither and lands on the shared default, true. `paceOverOnNotification`
+    // is not consulted — a value that disagreed with `paceOverInApp` had no
+    // principled way to pick a winner, so the in-app half was chosen arbitrarily
+    // as the one to keep.
 
-    fun paceOverInApp(): Boolean = prefs.getBoolean("paceOverInApp", true)
-
-    fun setPaceOverInApp(enabled: Boolean) {
-        prefs.edit().putBoolean("paceOverInApp", enabled).apply()
+    fun showOverPace(): Boolean {
+        val stored = if (prefs.contains("showOverPace")) prefs.getBoolean("showOverPace", true) else null
+        val legacyInApp = if (prefs.contains("paceOverInApp")) prefs.getBoolean("paceOverInApp", true) else null
+        return SettingsMigration.showOverPace(stored, legacyInApp)
     }
 
-    fun paceOverOnNotification(): Boolean = prefs.getBoolean("paceOverOnNotification", true)
-
-    fun setPaceOverOnNotification(enabled: Boolean) {
-        prefs.edit().putBoolean("paceOverOnNotification", enabled).apply()
+    fun setShowOverPace(enabled: Boolean) {
+        prefs.edit().putBoolean("showOverPace", enabled).apply()
     }
 
     // --- CCRM-29 (Display Mode) ---
