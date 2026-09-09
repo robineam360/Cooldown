@@ -92,8 +92,8 @@ class ProfileRegistryTest {
         assertEquals(4, state.nextSlot)
 
         val (after, fresh) = ProfileRegistry.add(state, null)
-        // The retired slot 2 — and its notification IDs, alarm request codes and tile
-        // binding — must never come back, or a stale widget inherits a new account's data.
+        // The retired slot 2 — and its notification IDs and alarm request codes —
+        // must never come back, or a stale surface inherits a new account's data.
         assertEquals("p4", fresh.key)
         assertEquals(4, fresh.slot)
         assertTrue(after.profiles.none { it.slot == 2 })
@@ -257,8 +257,12 @@ class ProfileRegistryTest {
 
     // --- notification IDs ---
 
-    /** Every kind [Alerts] actually posts: 1–8 fixed, 10+n per-model caps, 30/31 pace. */
-    private val kindsInUse: List<Int> = (1..8) + (10..29) + listOf(30, 31)
+    /**
+     * Every kind [Alerts] actually posts. Two, since CCRM-61 (Settings Diet) left the
+     * reset ping as the only standalone notification: 4 (Session) and 5 (Weekly), the
+     * pre-CCRM-61 ids, kept so nothing churns in the shade on upgrade.
+     */
+    private val kindsInUse: List<Int> = listOf(4, 5)
 
     @Test
     fun `notifId reproduces today's ids for slots 0 and 1`() {

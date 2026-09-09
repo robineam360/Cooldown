@@ -7,16 +7,16 @@ import androidx.compose.runtime.staticCompositionLocalOf
 /**
  * CCRM-29 (Display Mode): the app's resolved dark flag.
  *
- * MainActivity and WidgetConfigActivity resolve the `themeMode` pref against the
- * system flag and provide the answer here; every in-app dark read goes through
- * [appDark], so a forced theme drives the chart's per-mode opacities, the bar
- * warning hues and the tick alphas along with the Material scheme — not just the
- * colours (the exact drift the roadmap entry warns about: a light-mode 7% wash
- * over a forced-dark background is invisible).
+ * MainActivity resolves the `themeMode` pref against the system flag and provides
+ * the answer here; every in-app dark read goes through [appDark], so a forced
+ * theme drives the chart's per-mode opacities, the bar warning hues and the tick
+ * alphas along with the Material scheme — not just the colours (the exact drift
+ * the roadmap entry warns about: a light-mode 7% wash over a forced-dark
+ * background is invisible).
  *
- * Unprovided (null) falls back to the system flag. Widgets and the notification
- * render outside the composition and keep following the system deliberately —
- * their backdrop is the launcher's and the shade's, not ours to force.
+ * Unprovided (null) falls back to the system flag. The notification renders
+ * outside the composition and keeps following the system deliberately — its
+ * backdrop is the shade's, not ours to force.
  */
 val LocalAppDark = staticCompositionLocalOf<Boolean?> { null }
 

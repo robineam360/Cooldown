@@ -11,17 +11,16 @@ package com.robin.claudeusage.data
  *   and cache prefixes, the history and session-log filenames, the `"profile"` intent extra.
  *   Never reused, never renumbered.
  * - [slot] is the **integer identity** that Android surfaces need: the notification-ID
- *   offset, PendingIntent request codes, alarm request codes and the Quick Settings tile
- *   binding. Allocated once from a persisted monotonic counter and never reused, so a stale
- *   placed widget or tile can never inherit a *new* account's data. Slots 0 and 1 are pinned
- *   to `personal`/`work`: existing installs have widgets, alarms and posted notifications
- *   keyed off those exact ints.
+ *   offset, PendingIntent request codes and alarm request codes. Allocated once from a
+ *   persisted monotonic counter and never reused, so a stale surface can never inherit
+ *   a *new* account's data. Slots 0 and 1 are pinned to `personal`/`work`: existing
+ *   installs have alarms and posted notifications keyed off those exact ints.
  * - [label] is the **user's name for it**, 16 characters, editable and therefore not identity.
  *
- * Equality is the key alone. A [Profile] gets captured in a composition, an intent extra or a
- * widget's stored prefs and outlives the label it was built with; if equality included the
- * label then a rename would silently turn `pinnedProfile == p` false and the selected chip
- * would jump. Read a live label through [UsageCache.profileLabel], which resolves by key.
+ * Equality is the key alone. A [Profile] gets captured in a composition or an intent extra
+ * and outlives the label it was built with; if equality included the label then a rename
+ * would silently turn `pinnedProfile == p` false and the selected chip would jump. Read a
+ * live label through [UsageCache.profileLabel], which resolves by key.
  */
 data class Profile(
     val key: String,

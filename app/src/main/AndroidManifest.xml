@@ -5,19 +5,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!--
-      Window pings (CCRM-17) need to fire at an exact minute: a window's boundaries
-      follow the message that opens it, so an alarm 3 minutes late costs 3 minutes of
-      every window for the rest of the day. USE_EXACT_ALARM is Play-restricted, which
-      does not apply here — this app is sideload-only. SCHEDULE_EXACT_ALARM is the
-      user-revocable fallback for older releases.
-    -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission
-        android:name="android.permission.SCHEDULE_EXACT_ALARM"
-        android:maxSdkVersion="32" />
-    <!-- Alarms are cleared on reboot, so they have to be re-armed. -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Sideload-only app (never Play Store): allowed to enumerate installed
          browsers so the sign-in "open with" picker can list them reliably,
          including on OEM skins where a scoped <queries> under-reports.
@@ -52,142 +39,9 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".widget.WidgetConfigActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
-        <service
-            android:name=".tile.PersonalTileService"
-            android:label="Cooldown account 1"
-            android:icon="@drawable/ic_stat_bars"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".tile.WorkTileService"
-            android:label="Cooldown account 2"
-            android:icon="@drawable/ic_stat_bars"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
-
-        <!--
-            CCRM-6 (Multi-Account): tiles are statically declared, so the pool is fixed at
-            four and bound to slots rather than to accounts. android:label cannot follow a
-            rename (already true of "Cooldown account 1" above, CCRM-56 (Provider Identity)),
-            so the picker reads "Cooldown account 1-4" while the placed tile shows the live
-            label. A slot with no account reports STATE_UNAVAILABLE.
-        -->
-        <service
-            android:name=".tile.Slot2TileService"
-            android:label="Cooldown account 3"
-            android:icon="@drawable/ic_stat_bars"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".tile.Slot3TileService"
-            android:label="Cooldown account 4"
-            android:icon="@drawable/ic_stat_bars"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
-
-        <receiver
-            android:name=".widget.UsageWidgetReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/usage_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".widget.BarWidgetReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/bar_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".widget.RingWidgetReceiver"
-            android:label="@string/ring_widget_label"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/ring_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".widget.MiniRingsWidgetReceiver"
-            android:label="@string/mini_rings_widget_label"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/mini_rings_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".widget.PaceWidgetReceiver"
-            android:label="@string/pace_widget_label"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/pace_widget_info" />
-        </receiver>
-
         <receiver
             android:name=".notify.PinnedRefreshReceiver"
             android:exported="false" />
-
-        <receiver
-            android:name=".notify.UpdateSkipReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".ping.PingAlarmReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".ping.PingBootReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
 
     </application>
 </manifest>

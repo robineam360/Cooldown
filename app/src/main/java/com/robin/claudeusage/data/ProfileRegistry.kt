@@ -27,8 +27,8 @@ class ProfileRegistry(context: Context) {
     private val prefs: SharedPreferences =
         appContext.getSharedPreferences("profiles", Context.MODE_PRIVATE)
 
-    // Read ~40 times per composition and once per widget draw, so the JSON is parsed only
-    // when something has actually written. The revision int is the cheap validity check.
+    // Read ~40 times per composition, so the JSON is parsed only when something has
+    // actually written. The revision int is the cheap validity check.
     private var memo: State? = null
     private var memoRev: Int = -1
 

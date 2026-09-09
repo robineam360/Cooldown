@@ -7,24 +7,19 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.work.Polling
 
 /**
- * The pinned notification's two broadcasts.
+ * The pinned notification's one broadcast: [PinnedNotification.ACTION_REFRESH], the
+ * user's "Refresh" action — it fetches, on the pinned account.
  *
- * [PinnedNotification.ACTION_REFRESH] is the user's "Refresh" action — it fetches.
- * [PinnedNotification.ACTION_EXPIRE] is CCBG-18 (Strip Lifetime Stamp)'s own alarm and
- * deliberately does **not**: a strip whose lifetime is up should leave on time, and
- * spending a network round-trip to retire a line of text would be the wrong trade.
+ * It had a second, CCBG-18 (Strip Lifetime Stamp)'s expiry alarm, which redrew the panel
+ * when a persisted strip's lifetime was up. CCRM-61 (Settings Diet) removed the persisted
+ * strips: every strip the panel draws is now derived at draw time, so there is nothing
+ * left to retire on a timer.
  */
 class PinnedRefreshReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            PinnedNotification.ACTION_REFRESH -> {
-                val profile = UsageCache(context).pinnedProfile()
-                Polling.refreshOnce(context, manual = true, profile = profile)
-            }
-            // A redraw only. `foldedEvents` prunes on read, so re-rendering is all it
-            // takes; the render also re-arms the alarm for whatever strip is next.
-            PinnedNotification.ACTION_EXPIRE ->
-                PinnedNotification.update(context, UsageCache(context))
+        if (intent.action == PinnedNotification.ACTION_REFRESH) {
+            val profile = UsageCache(context).pinnedProfile()
+            Polling.refreshOnce(context, manual = true, profile = profile)
         }
     }
 }

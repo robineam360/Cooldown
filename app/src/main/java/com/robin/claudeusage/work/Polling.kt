@@ -1,8 +1,6 @@
 package com.robin.claudeusage.work
 
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.updateAll
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -21,9 +19,6 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.notify.UpdateNotification
-import com.robin.claudeusage.widget.MiniRingsWidget
-import com.robin.claudeusage.widget.PaceWidget
-import com.robin.claudeusage.widget.RingWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -56,11 +51,6 @@ class UsagePollWorker(context: Context, params: WorkerParameters) :
         val cache = UsageCache(applicationContext)
         Polling.scheduleResetChecks(applicationContext, cache)
 
-        // Window pings chain off the observed resets_at, which only changes when we
-        // poll — so the alarm has to follow the fresh value rather than the one it was
-        // armed against (CCRM-17).
-        com.robin.claudeusage.ping.PingScheduler.rescheduleAll(applicationContext)
-
         // WorkManager periodic work can't run more often than every 15 min; for
         // shorter user-chosen intervals we self-chain one-shots (periodic stays
         // as a backstop if the chain ever breaks).
@@ -80,70 +70,10 @@ class UsagePollWorker(context: Context, params: WorkerParameters) :
     }
 }
 
-/**
- * Redraw-only tick for the ring/pace faces (CCRM-39/40/41): their countdowns
- * ("2h 14m") would otherwise only move when a poll lands. No network, no cache
- * writes — and it cancels itself once the last of the three faces is removed.
- * Per-minute alarms are deliberately rejected: the faces soften to "soon"
- * inside five minutes, which is what makes a 15-minute cadence honest.
- */
-class WidgetRedrawWorker(context: Context, params: WorkerParameters) :
-    CoroutineWorker(context, params) {
-
-    override suspend fun doWork(): Result {
-        val manager = GlanceAppWidgetManager(applicationContext)
-        val any = manager.getGlanceIds(RingWidget::class.java).isNotEmpty() ||
-            manager.getGlanceIds(MiniRingsWidget::class.java).isNotEmpty() ||
-            manager.getGlanceIds(PaceWidget::class.java).isNotEmpty()
-        if (!any) {
-            Polling.cancelWidgetRedrawTick(applicationContext)
-            return Result.success()
-        }
-        try {
-            RingWidget().updateAll(applicationContext)
-            MiniRingsWidget().updateAll(applicationContext)
-            PaceWidget().updateAll(applicationContext)
-        } catch (_: Exception) {
-            // A single face failing to render shouldn't fail the tick.
-        }
-        return Result.success()
-    }
-}
-
 object Polling {
 
     private const val PERIODIC_NAME = "usage-poll"
     private const val ONESHOT_NAME = "usage-poll-once"
-    private const val REDRAW_NAME = "widget-redraw"
-    private const val REDRAW_RESET_NAME = "widget-redraw-reset"
-
-    /** 15 min is WorkManager's periodic floor; the "soon" softening covers the gap. */
-    fun scheduleWidgetRedrawTick(context: Context) {
-        val request = PeriodicWorkRequestBuilder<WidgetRedrawWorker>(15, TimeUnit.MINUTES).build()
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            REDRAW_NAME, ExistingPeriodicWorkPolicy.KEEP, request
-        )
-    }
-
-    fun cancelWidgetRedrawTick(context: Context) {
-        WorkManager.getInstance(context).cancelUniqueWork(REDRAW_NAME)
-    }
-
-    /**
-     * One self-arming redraw at the reset moment when it's close, so the ring
-     * empties / "soon" clears promptly at rollover instead of lingering for up
-     * to a tick. One-shot, no standing alarm.
-     */
-    fun armResetRedraw(context: Context, resetAtMs: Long) {
-        val delayMs = resetAtMs - System.currentTimeMillis() + 5_000L
-        if (delayMs !in 1..20 * 60_000L) return
-        val request = OneTimeWorkRequestBuilder<WidgetRedrawWorker>()
-            .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-            .build()
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            REDRAW_RESET_NAME, ExistingWorkPolicy.REPLACE, request
-        )
-    }
 
     private val networkConstraint = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -173,7 +103,7 @@ object Polling {
         )
     }
 
-    /** Immediate one-shot fetch (widget tap / app button). Null profile = all configured. */
+    /** Immediate one-shot fetch (pinned notification's Refresh action / app button). Null profile = all configured. */
     fun refreshOnce(context: Context, manual: Boolean = true, profile: Profile? = null) {
         val request = OneTimeWorkRequestBuilder<UsagePollWorker>()
             .setConstraints(networkConstraint)

@@ -52,7 +52,7 @@ class ErrorKindTest {
             for (kind in ErrorKind.entries) {
                 assertTrue(kind.title(provider).isNotBlank())
                 assertTrue(kind.short(provider).isNotBlank())
-                // Short labels fit a widget caption — one line, no punctuation freight.
+                // Short labels fit a condition-strip caption — one line, no punctuation freight.
                 assertTrue(kind.short(provider).length <= 24)
             }
         }

@@ -12,7 +12,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ## Open
 
 ### CCBG-19 · Fixture Unreachable — the debug faces activity cannot coexist with the install it must be compared against
-- **Status:** Open
+- **Status:** Won't fix (2026-09-09) — superseded: CCRM-61 (Settings Diet) deleted the debug faces harness with the widgets.
 - **Severity:** Medium (no wrong number ships, but it guarantees a class of visual state
   is never observed — the exact failure CCRM-15 (Above-Pace Verification) exists to remember)
 - **Symptom:** **Found during the CCRM-56 (Provider Identity) device pass, 2026-09-06.**
@@ -44,7 +44,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   permanently unobservable on the phone the app actually runs on.
 
 ### CCBG-20 · Pinned Identity Loss — the Progress-bar style names no account when collapsed
-- **Status:** Open
+- **Status:** Fixed by removal (2026-09-09) — CCRM-61 (Settings Diet) deleted the Progress-bar style; Huge number is the only style.
 - **Severity:** Medium (the collapsed row is the always-visible one, and with four accounts
   across two providers it does not say which account it is reporting)
 - **Symptom:** **Observed on the Fold 7, 2026-09-06**, during the CCRM-56 (Provider Identity)
@@ -89,6 +89,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   choosing Amber. Not a rider on any current work.
 
 ### CCBG-3 · Credits Visibility — credits card ignores extra-usage being switched off
+- **2026-09-09:** Re-scoped to the in-app credits card — the widget credits bar is removed by CCRM-61 (Settings Diet).
 - **Status:** Open
 - **Severity:** Low (misleading display, no data loss) — and possibly unreachable
 - **Symptom:** Suspected, not observed. The credits card renders whenever
@@ -110,6 +111,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ## Fixed
 
 ### CCBG-16 · Stale Strip Label — a folded event keeps the account name it fired under
+- **2026-09-09:** Moot — the fold machinery this fixed is removed by CCRM-61 (Settings Diet); the fix was never device-verified.
 - **Status:** Fixed (2026-08-27) · unit-tested (`StripRulesTest`, 4 cases; 255 green) ·
   **not yet verified on a device** — confirming it means renaming an account on the Fold 7
   while one of its strips is still in the panel, and watching the strip follow.
@@ -163,6 +165,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   (unprefixed copy, `foldEvent` stores the key).
 
 ### CCBG-18 · Strip Lifetime Stamp — "keep alerts for" is frozen at fire time and never re-read
+- **2026-09-09:** Moot — the fold machinery this fixed is removed by CCRM-61 (Settings Diet); the fix was never device-verified.
 - **Status:** Fixed (2026-08-26) · unit-tested (`StripRulesTest`); **not yet verified on
   a device** — the reported strips were stamped days out under `auto`, so confirming the
   fix means watching a fresh strip leave on time on the Fold 7.
@@ -198,6 +201,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   derivation. Same root as CCBG-16 (Stale Strip Label).
 
 ### CCBG-17 · Strip Revocation — turning an alert off doesn't retract strips already folded
+- **2026-09-09:** Moot — the fold machinery this fixed is removed by CCRM-61 (Settings Diet); the fix was never device-verified.
 - **Status:** Fixed (2026-08-26) · unit-tested (`StripRulesTest`); **not yet verified on
   a device**.
 - **Severity:** Medium (the app shows alerts the user has explicitly switched off)
@@ -283,6 +287,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   theme diverges from the system theme the XML attribute follows.
 
 ### CCBG-12 · Status Icon Swap — a second notification replaces the live meter with the app icon
+- **2026-09-09:** Superseded in part — every standalone alert except the reset ping is removed by CCRM-61 (Settings Diet); a reset ping still posts as a second notification, by decision.
 - **Status:** Fixed (built 2026-08-14 · verified on the Fold 7 by the user, 2026-08-18,
   release-signed build, two-notification state exercised)
 - **Severity:** Medium (misleading display — the status bar shows a percentage that
@@ -367,6 +372,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   path leaves the defect live in exactly those two cases.
 
 ### CCBG-11 · Ring Face Clutter — four stacked lines crowd the small ring's bore
+- **2026-09-09:** Superseded — the Ring widget is removed by CCRM-61 (Settings Diet).
 - **Status:** Fixed (2026-08-13) · verified on the Fold 7, 2026-08-19
 - **Severity:** Low (legibility, no wrong numbers)
 - **Symptom:** Observed on the Fold 7 outer screen, 2026-08-13, by the user: the
@@ -398,6 +404,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `WidgetFaceTest`. Wireframe rev B approved 2026-08-13.
 
 ### CCBG-10 · Mini-Rings Emptiness — two rings marooned in a mostly empty face
+- **2026-09-09:** Superseded — the Mini-rings widget is removed by CCRM-61 (Settings Diet).
 - **Status:** Fixed (2026-08-13) · verified on the Fold 7, 2026-08-19
 - **Severity:** Low (wasted space, no wrong numbers)
 - **Symptom:** Observed on the Fold 7 outer screen, 2026-08-13, by the user: on an
@@ -682,6 +689,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   already uses — would settle it if it ever becomes worth doing.
 
 ### CCBG-5 · Ping Verification — a working ping is reported as a failure
+- **2026-09-09:** Superseded — window pings are removed by CCRM-61 (Settings Diet).
 - **Status:** Fixed (2026-07-31)
 - **Severity:** High (reported the opposite of what happened, and turned one ping into
   several)
@@ -740,6 +748,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Not yet device-verified:** the deferred path has not run on the phone.
 
 ### CCBG-4 · Alert Dedup — threshold alerts re-fired every poll because `resets_at` isn't stable
+- **2026-09-09:** Superseded in part — threshold alerts are removed by CCRM-61 (Settings Diet); the `sameWindow` proximity test survives in `checkReset` for the reset pings.
 - **Status:** Fixed (2026-07-30)
 - **Severity:** High (repeat notifications; the dedup that existed didn't work)
 - **Symptom:** once a window was past its lowest threshold (80% session, 90% weekly),

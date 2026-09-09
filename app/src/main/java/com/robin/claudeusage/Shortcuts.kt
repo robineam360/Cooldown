@@ -12,12 +12,10 @@ import com.robin.claudeusage.data.UsageCache
  * CCRM-33 (App Shortcuts): launcher long-press entries — one per signed-in account,
  * plus "Refresh now", capped at the launcher's own limit (CCRM-6 (Multi-Account)). Dynamic rather than static XML, because the labels follow the
  * user's renamed profile labels (`UsageCache.profileLabel`); republished on
- * every app launch and after a rename. Complements the Quick Settings tile
- * (CCRM-11 (Tile Reset Time)) rather than duplicating it: the tile is for the
- * shade, shortcuts are for the home screen.
+ * every app launch and after a rename.
  *
  * The profile entries reuse the same `"profile"` extra every other entry point
- * (tile, notification, alerts) already sends; "Refresh now" opens the app with
+ * (notification, alerts) already sends; "Refresh now" opens the app with
  * a `refresh` extra that MainActivity turns into a manual poll of every account.
  */
 object Shortcuts {

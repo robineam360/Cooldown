@@ -37,7 +37,7 @@ fun ProviderMark(provider: Provider, size: Dp = 16.dp, tint: Color? = null) {
     )
 }
 
-/** The mark's drawable resource, for surfaces that build RemoteViews/Glance views directly. */
+/** The mark's drawable resource, for surfaces that build RemoteViews directly. */
 @DrawableRes
 fun providerMarkRes(provider: Provider): Int = when (provider) {
     Provider.CLAUDE -> R.drawable.ic_provider_claude

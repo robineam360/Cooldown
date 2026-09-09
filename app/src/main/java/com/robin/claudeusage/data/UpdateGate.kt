@@ -4,9 +4,9 @@ import java.net.URI
 
 /**
  * The pure decisions behind the automatic update check (CCRM-28): when a check is
- * due, whether a found release earns a notification, and how the surfaces render
- * what happened. All I/O — the fetch, the cache writes, the notification post —
- * lives in `notify/UpdateNotification.kt`; everything here is testable in isolation.
+ * due, whether a version has been skipped, and how the surfaces render what happened.
+ * All I/O — the fetch and the cache writes — lives in `notify/UpdateNotification.kt`;
+ * everything here is testable in isolation.
  */
 object UpdateGate {
 
@@ -28,27 +28,6 @@ object UpdateGate {
      */
     fun shouldCheckNow(autoEnabled: Boolean, nowMs: Long, lastSuccessAtMs: Long): Boolean =
         autoEnabled && nowMs - lastSuccessAtMs >= CHECK_INTERVAL_MS
-
-    /**
-     * Whether a fetched release gets the one notification a version is ever allowed.
-     * Newer than installed, not the version already notified (a swipe = seen, no
-     * re-remind), and newer than any skipped version — skip is per-version, so a
-     * release *above* the skipped one notifies normally.
-     */
-    fun shouldNotify(
-        latestVersion: String,
-        currentVersion: String,
-        lastNotifiedVersion: String?,
-        dismissedVersion: String?,
-    ): Boolean {
-        val latest = UpdateCheck.normalize(latestVersion)
-        if (UpdateCheck.compare(latest, UpdateCheck.normalize(currentVersion)) <= 0) return false
-        if (lastNotifiedVersion != null && latest == UpdateCheck.normalize(lastNotifiedVersion)) return false
-        if (dismissedVersion != null &&
-            UpdateCheck.compare(latest, UpdateCheck.normalize(dismissedVersion)) <= 0
-        ) return false
-        return true
-    }
 
     /** The stored outcome half of the settings line: "up to date (v0.14)" / "v0.15 available". */
     fun successOutcome(latestVersion: String, updateAvailable: Boolean): String {

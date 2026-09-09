@@ -59,7 +59,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 
 | Step | Item | Sub-agent tier | Needs Robin | Status |
 |---|---|---|---|---|
-| 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☐ |
+| 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☑ |
 | 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☐ |
 | 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☐ |
 | 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☐ |
@@ -118,17 +118,31 @@ tile, alerts, styles), then follow the Handover rule and print Step 2.
 ```
 
 **Done when:**
-- ☐ No `androidx.glance` import, no `widget/` package, no tile service, no `ping/` package.
-- ☐ `Alerts.kt` ≈ 130–180 lines: `evaluate`, `checkReset` (with per-account reset ping),
+- ☑ No `androidx.glance` import, no `widget/` package, no tile service, no `ping/` package.
+- ☑ `Alerts.kt` ≈ 130–180 lines: `evaluate`, `checkReset` (with per-account reset ping),
   `STALE_DATA_MS`, `notifId`, `MAX_KIND`, `cancelAllFor`, nothing else.
-- ☐ `PinnedNotification` has one style path (Huge number) and one glyph (Ring); the panel still
+- ☑ `PinnedNotification` has one style path (Huge number) and one glyph (Ring); the panel still
   re-renders on every poll.
-- ☐ History screen still gains points at a window rollover (read `SessionLog` write path).
-- ☐ Six old channels deleted on first launch after upgrade; `reset_alerts` and
+- ☑ History screen still gains points at a window rollover (read `SessionLog` write path).
+- ☑ Six old channels deleted on first launch after upgrade; `reset_alerts` and
   `pinned_usage_v2` remain.
-- ☐ Tests green, tracker statuses updated, ticked, committed, pushed.
+- ☑ Tests green, tracker statuses updated, ticked, committed, pushed.
 
 **Log:**
+- 2026-09-09 — Done in one Fable session: Sonnet (widgets + tile), Opus (alerts), Sonnet (styles +
+  glyphs) ran in sequence on the shared files, Haiku did the tracker lines in parallel. 67 files,
+  −7 837 / +456 lines; tests 368 → 287 (the 81 lost are the deleted widget, pace, ping, strip and
+  `UpdateGate.shouldNotify` tests). `Alerts.kt` is 231 lines total, 141 of code — the 130–180
+  target was met on code, the KDoc pushes the total up. Deviations from the paste, all small:
+  the per-account reset-ping key is `resetPing<Window>` (not `resetMode<Window>`, which the
+  legacy unprefixed account would have shared with the global fallback); `ensureChannels` went
+  private; `Conditions.forProfile` and `UsageIcon`'s mono path went too (no callers once the
+  widgets and tile left); the Always-on toggle's subtitle lost its "all alerts fold into this
+  panel" clause and the App log explainer lost "ping alarms" — copy that had become untrue, not
+  design. `UpdateGate.trimNotes` is now uncalled but still tested; left for Step 6's docs diet
+  to decide. The Notifications card now shows per-account 5h / Weekly reset-mode rows and the
+  System settings link only; the Pinned card lost its style and glyph choosers with no
+  replacement copy — Step 2 rebuilds both to the wireframe.
 
 ---
 
@@ -156,7 +170,13 @@ Theme, Time format, Usage display, Reset time, ONE "Show red past the pace mark"
 pref read by the app bars and the notification; migrate from paceOverInApp), Theme colour;
 More = Polling, Usage credits (rendered only when an account reports credits), Updates,
 Diagnostics, About, Debug once unlocked. Inner screen: a tab's content goes two-column as
-Settings does today. Keep every explainer sentence the wireframe keeps; drop the ones it drops.
+Settings does today.
+Step 1 already left, reuse rather than redo: `UsageCache.resetPingMode(profile, window)` /
+`setResetPingMode(profile, window, mode)` (per-account key `resetPing<Window>`, falling back
+to the legacy global key, then Smart/Always defaults) and a per-account `ResetModeRow(label,
+profile, window, cache)` with Off / If busy / Always segmented buttons; `paceOverInApp` and
+`paceOverOnNotification` both still exist and both must migrate into the one new pref; the
+Pinned card has no style or glyph chooser any more and no explainer under "Show profile". Keep every explainer sentence the wireframe keeps; drop the ones it drops.
 Update the guide screen's back navigation (Settings → Guide → back lands on the Accounts tab).
 Tests green; add a unit test for the pref migration. Close per the Close-out rule (commit as
 feat(CCRM-61): four-tab Settings), then follow the Handover rule and print Step 3.

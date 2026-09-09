@@ -8,8 +8,8 @@ import kotlin.math.max
  *
  * Angles are **sweep degrees from 12 o'clock, clockwise** — pass them to
  * `Canvas.drawArc` as `START_ANGLE + sweep`. Kept free of android.graphics like
- * [SparkGeometry], so every number here is JVM-testable; [RingRenderer] is the
- * thin painter on top.
+ * [SparkGeometry], so every number here is JVM-testable; each surface (the
+ * status-bar glyph, the pinned notification's bars) draws its own Canvas on top.
  *
  * Draw order, bottom→top: track · fill · red segment · tick. The tick draws
  * last because it is the only pace signal left when the fill covers it.
@@ -46,9 +46,9 @@ object RingGeometry {
      * the chart wash and the pace sentence make, so ring, sentence and chart
      * can never disagree. A hairline overshoot draws the tick alone.
      *
-     * [enabled] is the widgets' "Show red past the pace mark" toggle (CCRM-43 (Bar
-     * Pace Marks)); it gates the segment only, never the tick. Defaulted, so every
-     * existing call site keeps today's behaviour.
+     * [enabled] is the calling surface's own "Show red past the pace mark" toggle
+     * (CCRM-43 (Bar Pace Marks)); it gates the segment only, never the tick.
+     * Defaulted, so every existing call site keeps today's behaviour.
      */
     /**
      * The weekly flag dot's rungs — an escalation, drawn (CCRM-51 (Rails Gauge)

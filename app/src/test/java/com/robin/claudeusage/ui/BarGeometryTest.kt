@@ -106,7 +106,7 @@ class BarGeometryTest {
         assertNotNull(BarGeometry.redSegment(90.0, 40.0, enabled = true))
         assertTrue(BarGeometry.showTick(90.0, 40.0))
 
-        // The widgets toggle gates the shipped rings by the same rule.
+        // The same toggle gates the shipped rings by the same rule.
         assertNull(RingGeometry.redSegment(90.0, 40.0, enabled = false))
         assertNotNull(RingGeometry.redSegment(90.0, 40.0, enabled = true))
         assertTrue(RingGeometry.showTick(90.0, 40.0))

@@ -84,14 +84,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.glance.appwidget.updateAll
 import android.text.format.DateFormat
+import com.robin.claudeusage.alerts.Alerts
 import com.robin.claudeusage.data.ErrorKind
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.QuickLinks
-import com.robin.claudeusage.ping.PingScheduler
+import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.data.UsageWindow
@@ -119,8 +119,6 @@ import com.robin.claudeusage.ui.appDark
 import com.robin.claudeusage.ui.resolve24h
 import com.robin.claudeusage.ui.resolveDark
 import com.robin.claudeusage.ui.twoPane
-import com.robin.claudeusage.widget.BarWidget
-import com.robin.claudeusage.widget.UsageWidget
 import com.robin.claudeusage.work.Polling
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -131,15 +129,15 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Window pings (CCRM-17) are hard-disabled (ToS — see UsageCache.pingEnabled);
-        // reschedule here so an alarm armed by an older build is cancelled on first
-        // open instead of waiting for the next poll.
-        PingScheduler.rescheduleAll(this)
+        // Retires the notification channels CCRM-61 (Settings Diet) left without a
+        // poster, so an upgraded install stops offering to configure alerts that no
+        // longer exist. One-shot, guarded inside.
+        Alerts.retireOldChannels(this, UsageCache(this))
         val startProfile =
             ProfileRegistry(this).resolve(intent?.getStringExtra("profile"))
         // CCRM-33 (App Shortcuts): the "Refresh now" shortcut opens the app with
         // this extra — a manual poll of every signed-in account, the same path
-        // the widgets' ↻ takes.
+        // the pinned notification's Refresh action takes.
         if (intent?.getBooleanExtra("refresh", false) == true) {
             Polling.refreshOnce(this, manual = true)
         }
@@ -198,7 +196,7 @@ private fun App(startProfile: Profile) {
     var resetClock by remember { mutableStateOf(cache.resetClock()) }
     // Hoisted like use24h so flipping the toggle in Settings recomposes the bars
     // behind it — CCRM-43 (Bar Pace Marks) gates the in-app red separately from the
-    // widgets' and the notification's.
+    // notification's.
     var paceOverInApp by remember { mutableStateOf(cache.paceOverInApp()) }
     var tick by remember { mutableIntStateOf(0) }
 
@@ -353,18 +351,6 @@ private fun App(startProfile: Profile) {
                                 debugUnlocked = debugUnlocked,
                                 onDebugUnlock = { debugUnlocked = true },
                                 onOpenGuide = { screen = Screen.GUIDE },
-                                refreshWidgets = {
-                                    scope.launch {
-                                        try {
-                                            UsageWidget().updateAll(context)
-                                            BarWidget().updateAll(context)
-                                            com.robin.claudeusage.widget.RingWidget().updateAll(context)
-                                            com.robin.claudeusage.widget.MiniRingsWidget().updateAll(context)
-                                            com.robin.claudeusage.widget.PaceWidget().updateAll(context)
-                                        } catch (_: Exception) {
-                                        }
-                                    }
-                                },
                             )
                         } else {
                             TokenGuideScreen()
@@ -401,8 +387,8 @@ private fun ProfileTabs(
     // once was the point — but each pane then drew a chart no wider than the one on the
     // cover screen, so unfolding cost a gesture and bought nothing. The question you
     // open this app with is how much is left on the account you're about to spend, and
-    // both-at-once already has a better home on the home screen: the widgets. See
-    // CCRM-20.
+    // both-at-once already has a better home in the always-on notification, CCRM-62
+    // (Duet Notification).
     val pagerState = rememberPagerState(
         initialPage = profiles.indexOf(startProfile).coerceAtLeast(0),
         pageCount = { profiles.size },

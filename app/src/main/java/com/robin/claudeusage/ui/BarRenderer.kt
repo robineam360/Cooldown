@@ -13,10 +13,9 @@ import androidx.compose.ui.graphics.toArgb
  * segment · even-pace tick, per [BarGeometry] (CCRM-43 (Bar Pace Marks), from the
  * Mac's CCM-50 [Panel]).
  *
- * This is the shared bar surface for everything that can only show an image: the
- * Glance widget faces (which have no drawable that can host a tick) and the pinned
- * notification's RemoteViews. The in-app bars stay Compose and draw the same
- * geometry with a Canvas overlay.
+ * This is the pinned notification's bar: RemoteViews has no drawable that can
+ * host a tick, so the notification draws to a bitmap instead. The in-app bars
+ * stay Compose and draw the same geometry with a Canvas overlay.
  *
  * Text is deliberately NOT baked in, the same rule [RingRenderer] follows — labels
  * and percentages stay real `Text`, so they follow the system font scale.

@@ -257,8 +257,8 @@ object ChatGptUsageParser {
                     WindowKind.SESSION -> session = windowFrom(o, nowMs)
                     WindowKind.WEEKLY -> weekly = windowFrom(o, nowMs)
                     // A window on some other clock has nowhere to go in this shape.
-                    // Dropped rather than forced into a slot whose alerts, pace marks
-                    // and widget rows would then all drift on the wrong clock.
+                    // Dropped rather than forced into a slot whose alerts and pace
+                    // marks would then all drift on the wrong clock.
                     WindowKind.OTHER -> Unit
                 }
             }

@@ -755,7 +755,7 @@ Reviewed 2026-09-08/09 from two wireframes kept in `design/`:
 `dual-identity-wireframe.html` (icon, app) and `settings-diet-wireframe.html` (Settings, the
 always-on notification, what leaves). The removal footprint is in
 `design/research/2026-09-08-removal-audit.md`. Decisions below are Robin's, taken one question at
-a time per the design-review workflow; the runbook for building them is not written yet.
+a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered build plan.
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
 - **Status:** Design approved 2026-09-09, nothing open · medium · supersedes CCRM-42 (App Icon)
@@ -797,8 +797,10 @@ a time per the design-review workflow; the runbook for building them is not writ
   treatments; round 7 five thick inset bars, variant 5 chosen.
 
 ### CCRM-61 · Settings Diet — four tabs, and everything that leaves
-- **Status:** Design approved 2026-09-09 · large (mostly deletion) · needs a runbook step ·
-  supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
+- **Status:** Part 1 built 2026-09-09 — the removals (widgets, tile, standalone alerts
+  except reset pings, fold machinery, three pinned styles, three glyphs) are in; unit tests
+  368 → 287, `Alerts.kt` 665 → 231 lines, per-account `resetPingMode` with legacy fallback ·
+  part 2 (four-tab Settings) is RUNBOOK.md Step 2 · large (mostly deletion) · supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
   (Widget Quick-Edit), CCRM-13 (Chart Widget), CCRM-21 (Pace Alerts), CCRM-17 (Window Pings),
   CCRM-44 (One Surface) in part, CCRM-11 (Tile Reset Time), CCRM-3 (Unified Theming) phase 1;
   resolves CCBG-20 (Pinned Identity Loss) by removal; re-scopes CCRM-5 (Per-Profile
@@ -836,7 +838,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   working agreement 2 still names "both widget providers" and the tile.
 
 ### CCRM-62 · Duet Notification — the always-on notification carries two accounts
-- **Status:** Design approved 2026-09-09 · medium · needs a runbook step · Huge number style
+- **Status:** Design approved 2026-09-09 · medium · RUNBOOK.md Step 3 · Huge number style
   only (CCRM-61 (Settings Diet) removes the rest) · replaces CCRM-5 (Per-Profile Notification);
   supersedes CCRM-50 (Weekly Flag) and CCRM-49 (Glyph Legibility)'s chooser.
 - **Collapsed (option 1, "Duet"):** one row, two halves of ~156–172 dp with a 16 dp gutter.
@@ -869,6 +871,7 @@ a time per the design-review workflow; the runbook for building them is not writ
 ## Next — small, high value, ready to build
 
 ### CCRM-39 · Ring Widget — small face, one window as a pace-marked ring
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) — every home-screen widget leaves in v1.6; placed widgets disappear when the update installs.
 - **Status:** Done (2026-08-13) · verified on the Fold 7, 2026-08-19
 - **Provenance:** the Mac's CCRM-18 [Desktop] small face + CCM-49 [Desktop] pace marks,
   via `ANDROID-WIDGET-HANDOVER.md`; wireframe approved 2026-08-13 (rev 2 — the stale
@@ -891,6 +894,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   process from the same APK, so snapshot-vs-binary skew can't happen here.
 
 ### CCRM-40 · Mini-Rings Widget — medium face, every window as battery-style rings
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) — every home-screen widget leaves in v1.6; placed widgets disappear when the update installs.
 - **Status:** Done (2026-08-13) · verified on the Fold 7, 2026-08-19
 - **Provenance/wireframe:** same record as CCRM-39 (Ring Widget).
 - **What:** 4×2 provider ("Mini-rings"), one profile, ignores the configured window.
@@ -902,6 +906,7 @@ a time per the design-review workflow; the runbook for building them is not writ
 - **Where:** `widget/MiniRingsWidget.kt`, sharing `RingRenderer`/`WidgetFace`.
 
 ### CCRM-41 · Pace Widget — large face, the pace story with an on-face 5h/7d toggle
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) — every home-screen widget leaves in v1.6; placed widgets disappear when the update installs.
 - **Status:** Done (2026-08-13) · verified on the Fold 7, 2026-08-19
 - **Provenance/wireframe:** same record as CCRM-39 (Ring Widget). Supersedes
   CCRM-13 (Chart Widget), which stays as the historical sketch.
@@ -934,6 +939,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   usage gauges, not the logo.
 
 ### CCRM-43 · Bar Pace Marks — pace marks on the bars, and three red toggles
+- **2026-09-09:** Widget arm removed by CCRM-61 (Settings Diet); the in-app and notification red toggles merge into one in RUNBOOK.md Step 2.
 - **Status:** Done and **verified on the Fold 7 outer screen, 2026-08-13**, dark theme,
   both accounts — including the red, which Work's 5-hour window crossed into during the
   pass. What was seen:
@@ -1011,6 +1017,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   `toBitmap()` is not a declared dependency).
 
 ### CCRM-48 · Status-Bar Gauge — both windows, pace-marked, in the small icon
+- **2026-09-09:** Partially superseded by CCRM-61 (Settings Diet) — the Pie half is removed; the Ring rails gauge stays.
 - **Status:** Done and **verified on the Fold 7, 2026-08-21** (release-signed install
   over the live app; both rings, both pace cuts and the min-fill floor observed on the
   status bar and the QS tile, in both tint directions).
@@ -1039,6 +1046,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   revision if wanted), and its "clock hand" variant — illegible at 11–14 dp.
 
 ### CCRM-49 · Glyph Legibility — one ring, in colour, at the size it is really drawn
+- **2026-09-09:** Chooser superseded by CCRM-61 (Settings Diet) — Ring is the only status-bar glyph from v1.6.
 - **Status:** Done and **verified on the Fold 7, 2026-08-21** — dark bar same day,
   light bar in the CCBG-13 (Light Status Bar) verification pass (light accent fill and
   the darker light-mode pace partner sampled exact).
@@ -1083,6 +1091,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   free and is unbuilt — needs a wireframe first.
 
 ### CCRM-50 · Weekly Flag — the 7-day window as a pace-state dot in the ring's hollow
+- **2026-09-09:** Superseded by CCRM-62 (Duet Notification), decided 2026-09-09 — the status-bar ring loses its weekly hub dot and gains a First / Second / higher-of-two account picker (built in RUNBOOK.md Step 3).
 - **Status:** Done and **verified on the Fold 7, 2026-08-21** — with live data doing the
   arguing: the weekly sat at 16% used but "6 points above even pace", and the yellow dot
   was flagging it in the status bar while a level-threshold dot would have stayed silent.
@@ -1343,6 +1352,7 @@ a time per the design-review workflow; the runbook for building them is not writ
   copy-the-desktop-sign-in path (README §"If the phone can't complete the sign-in").
 
 ### CCRM-4 · Widget Quick-Edit — reconfigure a placed widget by long-press
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) together with the widgets it reconfigured.
 - **Status:** Done (2026-08-12) · wireframe approved same day · verified on the
   Fold 7, 2026-08-19 · was the prerequisite for CCRM-3 phase 2, now cleared
 - **Shipped:**
@@ -1409,6 +1419,7 @@ keys) would still make this a different product. Not filed, not an open question
 -->
 
 ### CCRM-21 · Pace Alerts — warn on the projection, not just the absolute percent
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) — pace alerts, their channel and `Projection`'s pace ladder are deleted; the in-app pace sentence (`Projection.estimate`) stays.
 - **Status:** Done (2026-08-07) · wireframe approved same day
 - **Shipped:** ladder and transition rules as pure functions in `data/Projection.kt`
   (`paceSeverity`, `paceSatisfied`, `paceStep`), evaluated per window per profile from
@@ -1621,6 +1632,7 @@ keys) would still make this a different product. Not filed, not an open question
   being wrong.
 
 ### CCRM-28 · Auto Update Check — check in the background, and let a version be dismissed
+- **2026-09-09:** Partially superseded by CCRM-61 (Settings Diet) — the update notification and its "Skip this version" action are removed; the background check, the Updates card and the pinned-panel update strip stay.
 - **Status:** Done (2026-08-13) · wireframe approved same day
 - **Shipped:** the check rides `UsagePollWorker` — no scheduler of its own — behind a
   pure gate in `data/UpdateGate.kt` (`autoCheckUpdates` on and 6h past the last
@@ -2005,6 +2017,7 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-51 · Rails Gauge — the Mac's Rails instrument on the status-bar icon
+- **2026-09-09:** Partially superseded by CCRM-61 (Settings Diet) — the Pie half is removed unverified; the Ring rails gauge stays.
 - **Status:** **Built 2026-08-26. Design fully approved (wireframe rev J), 251 unit tests
   green, debug APK assembles. NOT yet verified on the Fold 7** — no device was reachable
   when it was built, so this is not done until it has been looked at. First states to check:
@@ -2078,6 +2091,7 @@ keys) would still make this a different product. Not filed, not an open question
   unreadable. Findings flowed back to the Mac in `MAC-GAUGE-HANDOVER.md` ("Round two").
 
 ### CCRM-44 · One Surface — every alert folds into the pinned notification
+- **2026-09-09:** Superseded in part by CCRM-61 (Settings Diet) — the folded event strips and their machinery are removed; the live condition strips (sign-in, stale, expiry, update) stay in the pinned panel.
 - **Status:** **Done — built 2026-08-18, verified on the Fold 7 (pass completed
   2026-08-19)** (release-signed build, Huge number style — the user's own): with the
   panel switched to Teams (live re-auth state), the collapsed row showed "● Sign-in
@@ -2161,6 +2175,7 @@ keys) would still make this a different product. Not filed, not an open question
   the launcher identity stayed a tracker (hourglass), the personality goes here.
 
 ### CCRM-17 · Window Pings — start a 5-hour window on a schedule
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) — the dormant ping code, its alarms, permissions and channel are deleted; the ToS posture stands.
 - **Status:** **Disabled in-app** (2026-08-18) — ToS posture (see the Posture paragraph
   below): an automated inference call from a third-party client risks the *user's*
   account, so `UsageCache.pingEnabled` is hard-wired to `false` and the Settings
@@ -2337,6 +2352,7 @@ keys) would still make this a different product. Not filed, not an open question
   **Reserve window**.
 
 ### CCRM-3 · Unified Theming — one theming system for widgets & notifications
+- **2026-09-09:** Phase 1 superseded by CCRM-61 (Settings Diet) — one pinned style (Huge number) and one glyph (Ring) remain; phase 2 is moot with the widgets gone.
 - **Status:** Phase 1 done (2026-07-27) · phase 2 designed (2026-07-30) · phase 3 needs design
 - **Phase 1 shipped — notification styles.** `pinnedStyle` pref, chip selector under
   **Settings → Pinned notification**, four options, default unchanged (`gauge`) so
@@ -2684,6 +2700,7 @@ keys) would still make this a different product. Not filed, not an open question
   half needs the synthetic series, not a fixture.
 
 ### CCRM-13 · Chart Widget — standalone chart widget
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) together with CCRM-41 (Pace Widget), which delivered it.
 - **Status:** Done (2026-08-13) — **delivered as CCRM-41 (Pace Widget)**, which is a
   superset (on-face 5h/7d toggle, pace sentence, state table). The text below stays as
   the historical sketch; the extraction question it raises is answered in CCRM-41's
@@ -2702,6 +2719,7 @@ keys) would still make this a different product. Not filed, not an open question
   extraction properly — one drawing surface both can call — rather than solving it twice.
 
 ### CCRM-11 · Tile Reset Time — Quick Settings tile shows the 5-hour reset
+- **2026-09-09:** Removed by CCRM-61 (Settings Diet) together with the Quick Settings tile.
 - **Status:** Done (2026-07-27)
 - **Why:** The tile spent its one subtitle line on the 7-day percentage. The 5-hour
   reset is the number that changes what you do next.
@@ -2721,6 +2739,7 @@ keys) would still make this a different product. Not filed, not an open question
   with a note rather than removed.
 
 ### CCRM-5 · Per-Profile Notification — Work section as its own pinned notification
+- **2026-09-09:** Re-scoped into CCRM-62 (Duet Notification) — the always-on notification carries two accounts instead of a second notification.
 - **Status:** Planned
 - **Why:** Today only Personal can be pinned. Heavy Work users want both windows live
   at a glance.

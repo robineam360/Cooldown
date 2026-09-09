@@ -4,8 +4,8 @@ package com.robin.claudeusage.data
  * CCRM-27 (Error Taxonomy): the typed failure kinds, each carrying copy that
  * **names the fix** rather than printing the symptom. Produced where the failure
  * happens (`UsageRepository.doFetch` / `authFailure`), persisted beside
- * `lastStatus` so widgets and the notification strip can read it after process
- * death. The raw status string survives as the notice's small detail line —
+ * `lastStatus` so the notification strip can read it after process death. The
+ * raw status string survives as the notice's small detail line —
  * remediation up top, evidence below.
  *
  * [severe] marks the two kinds worth the error colour; the rest render amber —
@@ -45,7 +45,7 @@ enum class ErrorKind(
         INTERNAL -> "Something unexpected went wrong in the app."
     }
 
-    /** The ≤24-character label for a widget pill or a condition strip. */
+    /** The ≤24-character label for a condition strip. */
     fun short(provider: Provider): String = when (this) {
         AUTH -> "re-auth needed"
         RATE_LIMITED -> "rate limited"

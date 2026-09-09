@@ -1,7 +1,5 @@
 package com.robin.claudeusage
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -94,7 +92,6 @@ import com.robin.claudeusage.data.ApiClient
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.CodexDeviceSignIn
 import com.robin.claudeusage.data.OAuthSignIn
-import com.robin.claudeusage.data.PingSchedule
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Projection
@@ -108,16 +105,12 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.notify.UpdateNotification
-import com.robin.claudeusage.ping.PingScheduler
 import com.robin.claudeusage.ui.DeviceCodeCopy
 import com.robin.claudeusage.ui.DeviceCodeStage
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProviderMark
-import com.robin.claudeusage.ui.UsageIcon
 import com.robin.claudeusage.ui.hasTwoColumns
-import com.robin.claudeusage.widget.BarWidgetReceiver
-import com.robin.claudeusage.widget.UsageWidgetReceiver
 import com.robin.claudeusage.work.Polling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
@@ -156,7 +149,6 @@ fun SettingsScreen(
     debugUnlocked: Boolean,
     onDebugUnlock: () -> Unit,
     onOpenGuide: () -> Unit,
-    refreshWidgets: () -> Unit,
 ) {
     val context = LocalContext.current
     val cacheSettings = repo.cacheSettings()
@@ -229,78 +221,6 @@ fun SettingsScreen(
 
         SectionLabel("Notifications")
         SectionCard {
-            Text("Usage warnings", style = MaterialTheme.typography.bodyLarge)
-            Text(
-                "Notify when a window crosses these levels. Nothing selected = silent.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(4.dp))
-            // CCBG-17 (Strip Revocation): every alert control in this card redraws the
-            // pinned panel, because with the pinned notification on that panel *is* where
-            // these alerts appear. Without the redraw a revoked strip stays on screen
-            // until the next poll — the same lag CCBG-14 (Stale Notification Theme) fixed
-            // for the theme swatches, in the same card's sibling section.
-            fun refreshPanel() {
-                com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
-            }
-            ThresholdChipsRow("5-hour window", listOf(80, 90, 95), cacheSettings.sessionAlertThresholds()) {
-                cacheSettings.setSessionAlertThresholds(it)
-                refreshPanel()
-            }
-            ThresholdChipsRow("7-day window", listOf(75, 90), cacheSettings.weeklyAlertThresholds()) {
-                cacheSettings.setWeeklyAlertThresholds(it)
-                refreshPanel()
-            }
-            ThresholdChipsRow("Per-model caps", listOf(75, 90), cacheSettings.modelCapAlertThresholds()) {
-                cacheSettings.setModelCapAlertThresholds(it)
-                refreshPanel()
-            }
-            RowDivider()
-            // Pace alerts (CCRM-21): the projection-based counterpart to the absolute
-            // thresholds above — heading vs position, two deliberate signals.
-            var paceEnabled by remember { mutableStateOf(cacheSettings.paceAlertsEnabled()) }
-            ToggleRow(
-                title = "Pace alerts",
-                subtitle = "Warn on where usage is heading, not just where it is. " +
-                    "First reading of a window never alerts.",
-                checked = paceEnabled,
-            ) {
-                paceEnabled = it
-                cacheSettings.setPaceAlertsEnabled(it)
-                refreshPanel()
-            }
-            Spacer(Modifier.height(4.dp))
-            val milestones = listOf(
-                Triple(
-                    Projection.PaceMilestone.WILL_RUN_OUT.name,
-                    "Will run out",
-                    "Projected past 100% before the reset",
-                ),
-                Triple(
-                    Projection.PaceMilestone.CUTTING_IT_CLOSE.name,
-                    "Cutting it close",
-                    "Projected to land at ${Projection.PACE_CLOSE_AT_RESET.toInt()}% or more",
-                ),
-                Triple(
-                    Projection.PaceMilestone.ALMOST_OUT.name,
-                    "Almost out",
-                    "Under ${100 - Projection.PACE_ALMOST_OUT_USED.toInt()}% of the window left",
-                ),
-            )
-            for ((key, title, subtitle) in milestones) {
-                var on by remember { mutableStateOf(cacheSettings.paceMilestoneEnabled(key)) }
-                ToggleRow(title = title, subtitle = subtitle, checked = on, enabled = paceEnabled) {
-                    on = it
-                    cacheSettings.setPaceMilestoneEnabled(key, it)
-                }
-            }
-            Text(
-                "Applies to the 5-hour and 7-day windows, on profiles with alerts enabled.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            RowDivider()
             Text("Reset pings", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "\"If busy\" pings only when that window had reached 80% before it reset.",
@@ -308,47 +228,17 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(6.dp))
-            ResetModeRow("5-hour reset", "Session", cacheSettings)
-            Spacer(Modifier.height(8.dp))
-            ResetModeRow("7-day reset", "Weekly", cacheSettings)
-            RowDivider()
+            // Per account since CCRM-61 (Settings Diet): the reset ping is the only
+            // standalone notification left, so this *is* the "which accounts may
+            // interrupt me" control — there is no separate per-profile alerts toggle
+            // above it any more to mean that.
             for ((index, profile) in profiles.withIndex()) {
                 if (index > 0) RowDivider()
-                var enabled by remember(profile) {
-                    mutableStateOf(cacheSettings.profileAlertsEnabled(profile))
-                }
-                ToggleRow(
-                    title = "${labels.getValue(profile)} alerts",
-                    subtitle = "Usage warnings and reset pings for this profile",
-                    checked = enabled,
-                ) {
-                    enabled = it
-                    cacheSettings.setProfileAlertsEnabled(profile, it)
-                    refreshPanel()
-                }
+                val label = labels.getValue(profile)
+                ResetModeRow("$label · 5h reset", profile, "Session", cacheSettings)
+                Spacer(Modifier.height(8.dp))
+                ResetModeRow("$label · Weekly reset", profile, "Weekly", cacheSettings)
             }
-            RowDivider()
-            var authAlerts by remember { mutableStateOf(cacheSettings.authAlertsEnabled()) }
-            ToggleRow(
-                title = "Sign-in alerts",
-                subtitle = "Token expiring soon or no longer working",
-                checked = authAlerts,
-            ) {
-                authAlerts = it
-                cacheSettings.setAuthAlertsEnabled(it)
-            }
-            RowDivider()
-            var healthAlerts by remember { mutableStateOf(cacheSettings.healthAlertsEnabled()) }
-            ToggleRow(
-                title = "Stale data alerts",
-                subtitle = "Usage data hasn't refreshed for hours",
-                checked = healthAlerts,
-            ) {
-                healthAlerts = it
-                cacheSettings.setHealthAlertsEnabled(it)
-            }
-            RowDivider()
-            AlertLifetimeRow(cacheSettings)
             RowDivider()
             LinkRow("System notification settings") {
                 context.startActivity(
@@ -364,16 +254,13 @@ fun SettingsScreen(
         SectionCard {
             var pinned by remember { mutableStateOf(cacheSettings.pinnedEnabled()) }
             var pinnedProfile by remember { mutableStateOf(cacheSettings.pinnedProfile()) }
-            var iconStyle by remember { mutableStateOf(cacheSettings.pinnedIconStyle()) }
             var tapTarget by remember { mutableStateOf(cacheSettings.pinnedTapTarget()) }
-            var pinnedStyle by remember { mutableStateOf(cacheSettings.pinnedStyle()) }
             fun refreshPinned() {
                 com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
             }
             ToggleRow(
                 title = "Always-on usage notification",
-                subtitle = "A silent, ongoing notification with a status-bar icon that fills as you use your 5-hour window. " +
-                    "While it's on, all alerts, from every account, fold into this panel instead of posting separately; no sounds, no pop-ups",
+                subtitle = "A silent, ongoing notification with a status-bar icon that fills as you use your 5-hour window.",
                 checked = pinned,
             ) {
                 pinned = it
@@ -410,44 +297,6 @@ fun SettingsScreen(
                     }
                 }
                 RowDivider()
-                Text("Notification style", style = MaterialTheme.typography.bodyLarge)
-                Spacer(Modifier.height(8.dp))
-                val styles = listOf(
-                    "gauge" to "Gauge",
-                    "number" to "Number tile",
-                    "progress" to "Progress bar",
-                    "big" to "Huge number",
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (row in styles.chunked(2)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            for ((value, text) in row) {
-                                FilterChip(
-                                    selected = pinnedStyle == value,
-                                    onClick = {
-                                        pinnedStyle = value
-                                        cacheSettings.setPinnedStyle(value)
-                                        refreshPinned()
-                                    },
-                                    label = { Text(text) },
-                                )
-                            }
-                        }
-                    }
-                }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    when (pinnedStyle) {
-                        "number" -> "The percentage fills the icon slot — about twice the size of the gauge."
-                        "progress" -> "A plain system progress bar with the percentage in the title."
-                        "big" -> "The largest number a collapsed notification allows. Uses a custom " +
-                            "layout, so a few phone skins may style it differently."
-                        else -> "A ring around the percentage, the original look."
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                RowDivider()
                 Text("Tapping the notification opens", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(8.dp))
                 val pinnedProviderApp = pinnedProfile.provider
@@ -478,65 +327,7 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                RowDivider()
-                Text("Status-bar icon", style = MaterialTheme.typography.bodyLarge)
-                Spacer(Modifier.height(8.dp))
-                // CCRM-49 (Glyph Legibility): the concentric two-ring "Twin" style is
-                // withdrawn — measured at ~14 dp it could not be read. FlowRow stays,
-                // so a long chip row wraps rather than overflowing a narrow screen.
-                // CCRM-51 (Rails Gauge) redrew Ring and Pie in one grammar, so the
-                // choice is a look rather than a choice between an informative icon and
-                // an uninformative one — Pie used to carry no pace mark at all.
-                val iconStyles = listOf(
-                    UsageIcon.RING to "Ring",
-                    UsageIcon.PIE to "Pie",
-                    "battery" to "Battery",
-                    "number" to "Number",
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for ((value, text) in iconStyles) {
-                        FilterChip(
-                            selected = iconStyle == value,
-                            onClick = {
-                                iconStyle = value
-                                cacheSettings.setPinnedIconStyle(value)
-                                refreshPinned()
-                            },
-                            label = { Text(text) },
-                        )
-                    }
-                }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "The colored gauge and bars follow your theme and turn orange, then red, near the limit. Ring and Pie both show the 5-hour window with a needle at even pace — like a clock hand — so usage reaching past the needle means you're going faster than even pace, and the part past it turns red. The needle only appears once you've used something. At 100% a mark appears at the top of the gauge. The dot in the middle is the 7-day window: an empty circle when you haven't used any of it, then grey, yellow above pace, and red when it's spent. No dot means there's no weekly reading yet. The Quick Settings tile is monochrome, because Android renders tile icons that way.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
-        }
-        Spacer(Modifier.height(24.dp))
-
-        // Window pings (CCRM-17) section deliberately not rendered: the feature is
-        // hard-disabled over Anthropic ToS risk — see UsageCache.pingEnabled.
-        // WindowPingsSection stays in the file, dormant, for if it's ever sanctioned.
-
-        SectionLabel("Quick Settings tile")
-        SectionCard {
-            Text(
-                "The tile in the notification shade / Control Center. It shows the 5-hour " +
-                    "percentage, with the reset under it — countdown or clock time, " +
-                    "following the Reset time choice under Appearance.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "The tile icon fills as the window burns, following the status-bar icon " +
-                    "style above. Android tints tile icons itself, so it can't carry the " +
-                    "theme or warning colors.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
         Spacer(Modifier.height(24.dp))
 
@@ -561,20 +352,8 @@ fun SettingsScreen(
                 ) {
                     visible = it
                     cacheSettings.setCreditsVisible(profile, it)
-                    refreshWidgets()
+                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
                 }
-            }
-            RowDivider()
-            var creditsOnWidgets by remember { mutableStateOf(cacheSettings.creditsOnWidgets()) }
-            ToggleRow(
-                title = "Show on widgets",
-                subtitle = "Adds a credits bar to the tall usage widget. Needs the room, " +
-                    "so smaller widgets stay as they are.",
-                checked = creditsOnWidgets,
-            ) {
-                creditsOnWidgets = it
-                cacheSettings.setCreditsOnWidgets(it)
-                refreshWidgets()
             }
         }
         Spacer(Modifier.height(24.dp))
@@ -583,8 +362,8 @@ fun SettingsScreen(
         SectionCard {
             // CCRM-29 (Display Mode): a forced theme drives the Material scheme, the
             // chart's per-mode opacities and the status-bar icons together (via
-            // LocalAppDark). Widgets and the notification keep following the system —
-            // their backdrop is the launcher's and the shade's, not ours.
+            // LocalAppDark). The notification keeps following the system — its
+            // backdrop is the shade's, not ours.
             Text(
                 "Theme",
                 style = MaterialTheme.typography.bodyLarge,
@@ -629,7 +408,7 @@ fun SettingsScreen(
                         onClick = {
                             onTimeFormat(value)
                             cacheSettings.setTimeFormat(value)
-                            refreshWidgets()
+                            com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
                         },
                         label = { Text(text) },
                     )
@@ -658,7 +437,6 @@ fun SettingsScreen(
                         onClick = {
                             onUsageLeft(value == "left")
                             cacheSettings.setUsageDisplay(value)
-                            refreshWidgets()
                             // Re-post so the change lands without waiting for a poll.
                             com.robin.claudeusage.notify.PinnedNotification
                                 .update(context, cacheSettings)
@@ -677,8 +455,8 @@ fun SettingsScreen(
             RowDivider()
             // CCRM-23 (Reset Display), Option A: the token decides which reset form
             // *leads*; surfaces with a second slot keep the other form there. Grown
-            // from the tile-only countdown/clock choice (CCRM-11), which this
-            // replaces — the tile now just follows it.
+            // from the old tile-only countdown/clock choice (CCRM-11), which this
+            // replaced.
             Text(
                 "Reset time",
                 style = MaterialTheme.typography.bodyLarge,
@@ -698,7 +476,6 @@ fun SettingsScreen(
                         onClick = {
                             onResetClock(value == "clock")
                             cacheSettings.setResetDisplay(value)
-                            refreshWidgets()
                             // Re-post so the change lands without waiting for a poll.
                             com.robin.claudeusage.notify.PinnedNotification
                                 .update(context, cacheSettings)
@@ -719,7 +496,7 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             RowDivider()
-            // CCRM-43 (Bar Pace Marks). One group, three switches: the surfaces are
+            // CCRM-43 (Bar Pace Marks). One group, two switches: the surfaces are
             // read at very different distances, so the appetite for red differs. Each
             // gates *only* the red past the pace mark — the neutral even-pace tick
             // always draws, and the 80/90/100 severity ladder is untouched.
@@ -734,16 +511,6 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(6.dp))
-            var paceOverWidgets by remember { mutableStateOf(cacheSettings.paceOverOnWidgets()) }
-            ToggleRow(
-                title = "On widgets",
-                subtitle = "Bars and rings on the home screen",
-                checked = paceOverWidgets,
-            ) {
-                paceOverWidgets = it
-                cacheSettings.setPaceOverOnWidgets(it)
-                refreshWidgets()
-            }
             ToggleRow(
                 title = "In-app bars",
                 subtitle = "The usage screen's bars",
@@ -769,29 +536,9 @@ fun SettingsScreen(
             ThemeColorPicker(themeName) {
                 onTheme(it)
                 repo.cacheSettings().setThemeColorName(it)
-                refreshWidgets()
                 // CCBG-14 (Stale Notification Theme): the pinned notification's gauge
                 // and status-bar glyph wear the theme too — redraw now, not next poll.
                 com.robin.claudeusage.notify.PinnedNotification.update(context, repo.cacheSettings())
-            }
-        }
-        Spacer(Modifier.height(24.dp))
-
-        SectionLabel("Widgets")
-        SectionCard {
-            var pinMessage by remember { mutableStateOf<String?>(null) }
-            fun pin(receiver: Class<*>) {
-                val awm = context.getSystemService(AppWidgetManager::class.java)
-                val ok = awm.isRequestPinAppWidgetSupported &&
-                    awm.requestPinAppWidget(ComponentName(context, receiver), null, null)
-                if (!ok) pinMessage = "Your launcher doesn't support pinning — long-press the home screen and add it from the widget list."
-            }
-            LinkRow("Add usage widget to home screen") { pin(UsageWidgetReceiver::class.java) }
-            RowDivider()
-            LinkRow("Add single-bar widget to home screen") { pin(BarWidgetReceiver::class.java) }
-            pinMessage?.let {
-                Spacer(Modifier.height(6.dp))
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(Modifier.height(24.dp))
@@ -845,7 +592,6 @@ fun SettingsScreen(
                 repo.renameProfile(profile, name)
                 renaming = null
                 namesTick++
-                refreshWidgets()
                 // CCRM-33 (App Shortcuts): shortcut labels follow renames.
                 Shortcuts.publish(context)
                 com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
@@ -863,7 +609,7 @@ fun SettingsScreen(
                     repo.removeProfile(profile)
                     removing = null
                     namesTick++
-                    refreshWidgets()
+                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
                 }
             },
         )
@@ -897,7 +643,7 @@ private fun RenameAccountDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Used everywhere — tabs, widgets, notifications and shortcuts. " +
+                    "Used everywhere — tabs, notifications and shortcuts. " +
                         "Clear the field to go back to \"$fallback\".",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -943,11 +689,10 @@ private fun RemoveAccountDialog(
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Its Quick Settings tile goes blank and its launcher shortcut " +
-                        "disappears." +
+                    "Its launcher shortcut disappears." +
                         if (replacement.isNotEmpty()) {
-                            " Any widget showing it switches to $replacement, and so does " +
-                                "the pinned notification."
+                            " The pinned notification switches to $replacement, if it was " +
+                                "showing this account."
                         } else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2038,7 +1783,7 @@ private fun PollingSection(repo: UsageRepository) {
         Spacer(Modifier.height(8.dp))
         Text(
             if (interval < 15) "Short intervals use chained jobs; Android may delay them to save battery."
-            else "Applies to all configured profiles. Widgets update after every check.",
+            else "Applies to all configured profiles.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -2983,95 +2728,10 @@ private fun NoteCard(text: String, positive: Boolean) {
 
 // --- shared bits ---
 
-/** One "window kind" line in Usage warnings: label left, multi-select percent chips right. */
 @Composable
-private fun ThresholdChipsRow(
-    label: String,
-    options: List<Int>,
-    initial: Set<Int>,
-    onChange: (Set<Int>) -> Unit,
-) {
-    var selected by remember { mutableStateOf(initial) }
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        for (pct in options) {
-            Spacer(Modifier.width(6.dp))
-            FilterChip(
-                selected = pct in selected,
-                onClick = {
-                    selected = if (pct in selected) selected - pct else selected + pct
-                    onChange(selected)
-                },
-                label = { Text("$pct%") },
-            )
-        }
-    }
-}
-
-/**
- * CCBG-12 (Status Icon Swap): how long a one-off alert lingers before clearing itself.
- *
- * This is a status-bar fix wearing a shade setting's clothes. While any second
- * notification from this app is posted, Android replaces our live meter in the status
- * bar with the launcher icon, so an alert nobody dismissed keeps the meter off screen
- * for as long as it sits there. Expiring the ones that have stopped being true is what
- * gives it back.
- *
- * Sign-in and stale-data alerts are deliberately absent: they are conditions, not
- * events, and they now live in the pinned notification's panel where they clear
- * themselves when the condition resolves. The update notice is absent too — it posts
- * once per version ever, so expiring it would lose it outright.
- */
-@Composable
-private fun AlertLifetimeRow(cache: UsageCache) {
+private fun ResetModeRow(label: String, profile: Profile, window: String, cache: UsageCache) {
     val context = LocalContext.current
-    var value by remember { mutableStateOf(cache.alertLifetime()) }
-    Column(Modifier.fillMaxWidth()) {
-        Text("Keep alerts in the shade for", style = MaterialTheme.typography.bodyMedium)
-        Text(
-            "Resets, thresholds and pace warnings clear themselves after this",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(6.dp))
-        val options = listOf(
-            "15m" to "15m",
-            "30m" to "30m",
-            "1h" to "1h",
-            "auto" to "Auto",
-        )
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            options.forEachIndexed { index, (stored, text) ->
-                SegmentedButton(
-                    selected = value == stored,
-                    onClick = {
-                        value = stored
-                        cache.setAlertLifetime(stored)
-                        // CCBG-18 (Strip Lifetime Stamp): the lifetime is read at draw
-                        // time now, so a shorter choice retires a strip already on
-                        // screen — but only once something redraws the panel.
-                        com.robin.claudeusage.notify.PinnedNotification.update(context, cache)
-                    },
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                ) { Text(text) }
-            }
-        }
-        if (value == "auto") {
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Auto: until the window the alert is about resets — so an alert never " +
-                    "expires while it's still true.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun ResetModeRow(label: String, window: String, cache: UsageCache) {
-    val context = LocalContext.current
-    var mode by remember { mutableStateOf(cache.resetPingMode(window)) }
+    var mode by remember(profile) { mutableStateOf(cache.resetPingMode(profile, window)) }
     Column(Modifier.fillMaxWidth()) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(6.dp))
@@ -3086,7 +2746,7 @@ private fun ResetModeRow(label: String, window: String, cache: UsageCache) {
                     selected = mode == value,
                     onClick = {
                         mode = value
-                        cache.setResetPingMode(window, value)
+                        cache.setResetPingMode(profile, window, value)
                         com.robin.claudeusage.notify.PinnedNotification.update(context, cache)
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
@@ -3098,7 +2758,7 @@ private fun ResetModeRow(label: String, window: String, cache: UsageCache) {
 
 /**
  * The app log (CCRM-34 (Diagnostics Log)), grown from the window-ping trace:
- * polls, alert posts, token renewals and ping alarms, levelled and categorised.
+ * polls, reset pings and token renewals, levelled and categorised.
  * Shows the tail in-app; Share hands the recent lines to any mail/chat app,
  * which is the whole point — "paste your log" is the only realistic way to
  * diagnose someone else's phone. Never contains tokens, headers, or the
@@ -3125,8 +2785,8 @@ private fun AppLogCard(cache: UsageCache) {
     SectionCard {
         Text("App log", style = MaterialTheme.typography.bodyLarge)
         Text(
-            "What the app does in the background — polls, alerts, sign-in renewals, " +
-                "ping alarms. Share it when reporting a problem; it never contains " +
+            "What the app does in the background — polls, alerts, sign-in renewals. " +
+                "Share it when reporting a problem; it never contains " +
                 "tokens. Pull the full file with:",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3194,315 +2854,6 @@ private fun AppLogCard(cache: UsageCache) {
                 AppLog.clear(context)
                 refreshTick++
             }) { Text("Clear") }
-        }
-    }
-}
-
-/**
- * Window pings (CCRM-17) — schedule the start of your own 5-hour windows.
- *
- * Off by default, per profile. A ping spends the user's subscription quota on an
- * automated request, so the copy says exactly what it sends and on whose account
- * rather than burying it.
- *
- * Currently unreferenced: the feature is hard-disabled over Anthropic ToS risk
- * (see UsageCache.pingEnabled) and the section is not rendered.
- *
- * CCRM-57 (Provider Plumbing): **Claude accounts only.** A ping is an inference
- * request that opens a window; there is no endpoint we would send one to for
- * OpenAI or Google, and inventing one would spend someone else's quota on a guess.
- * With no Claude account signed in the section renders one line and no controls.
- */
-@Suppress("unused")
-@Composable
-private fun WindowPingsSection(
-    repo: UsageRepository,
-    labels: Map<Profile, String>,
-    use24h: Boolean,
-) {
-    val context = LocalContext.current
-    val cacheSettings = repo.cacheSettings()
-    val scope = rememberCoroutineScope()
-    val profiles = remember { repo.profiles().filter { it.provider == Provider.CLAUDE } }
-    if (profiles.isEmpty()) {
-        Text(
-            "Window pings open a 5-hour window by sending a one-word message, which " +
-                "only Claude accounts support. Add a Claude account to use them.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        return
-    }
-    var profile by remember { mutableStateOf(profiles.first()) }
-    var tick by remember { mutableIntStateOf(0) }
-
-    var enabled by remember(profile, tick) { mutableStateOf(cacheSettings.pingEnabled(profile)) }
-    var firstMinute by remember(profile, tick) {
-        mutableIntStateOf(cacheSettings.pingFirstMinuteOfDay(profile))
-    }
-    var renewals by remember(profile, tick) { mutableIntStateOf(cacheSettings.pingRenewals(profile)) }
-    var cutoff by remember(profile, tick) {
-        mutableIntStateOf(cacheSettings.pingCutoffMinuteOfDay(profile))
-    }
-    var testing by remember { mutableStateOf(false) }
-    var exactOk by remember(tick) { mutableStateOf(PingScheduler.canScheduleExact(context)) }
-
-    // The outcome is written by an alarm in another process-entry, so nothing here would
-    // otherwise recompose — the row sat on a day-old result while a ping came and went.
-    // Poll the revision counter while the section is on screen.
-    var outcomeRevision by remember(profile) {
-        mutableIntStateOf(cacheSettings.pingOutcomeRevision(profile))
-    }
-    LaunchedEffect(profile) {
-        while (true) {
-            kotlinx.coroutines.delay(2_000)
-            outcomeRevision = cacheSettings.pingOutcomeRevision(profile)
-        }
-    }
-
-    fun rearm() = PingScheduler.reschedule(context, profile)
-
-    Text(
-        "Starts a 5-hour window when you choose, instead of whenever you happen to send " +
-            "your first message. Sends a one-word message to Claude on the selected " +
-            "account — it spends a token or two of that account's own quota.",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(12.dp))
-
-    Text("Account", style = MaterialTheme.typography.bodyLarge)
-    Spacer(Modifier.height(8.dp))
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (p in profiles) {
-            FilterChip(
-                selected = profile == p,
-                onClick = { profile = p },
-                label = {
-                    val label = labels[p] ?: cacheSettings.profileLabel(p)
-                    Text(if (cacheSettings.pingEnabled(p)) "$label · on" else label)
-                },
-            )
-        }
-    }
-    RowDivider()
-
-    ToggleRow(
-        title = "Schedule window pings",
-        subtitle = "Off unless you turn it on, separately for each account. Turning it on " +
-            "starts a window right away if none is open.",
-        checked = enabled,
-    ) {
-        enabled = it
-        cacheSettings.setPingEnabled(profile, it)
-        rearm()
-    }
-
-    if (!repo.hasCredentials(profile)) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "${labels[profile] ?: cacheSettings.profileLabel(profile)} isn't signed in yet, " +
-                "so pings can't run for it.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.error,
-        )
-    }
-
-    if (enabled) {
-        RowDivider()
-        MinuteOfDayRow("First ping", firstMinute, use24h) {
-            firstMinute = it
-            cacheSettings.setPingFirstMinuteOfDay(profile, it)
-            rearm()
-        }
-
-        RowDivider()
-        Text("Renewals", style = MaterialTheme.typography.bodyLarge)
-        Text(
-            "How many more windows to open after the first, each starting when the last one ends",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for ((value, text) in listOf(0 to "None", 1 to "1", 2 to "2", 3 to "3")) {
-                FilterChip(
-                    selected = renewals == value,
-                    onClick = {
-                        renewals = value
-                        cacheSettings.setPingRenewals(profile, value)
-                        rearm()
-                    },
-                    label = { Text(text) },
-                )
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        Text(
-            plannedWindows(firstMinute, renewals, cutoff, use24h),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        RowDivider()
-        MinuteOfDayRow("Never ping after", cutoff, use24h) {
-            cutoff = it
-            cacheSettings.setPingCutoffMinuteOfDay(profile, it)
-            rearm()
-        }
-        Text(
-            "A hard stop, so a chain that has slipped later in the day can't open a window overnight.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        // The times above are a target, not a promise: a window's boundaries follow the
-        // message that opens it, so the real ones come from the server.
-        val liveReset = repo.snapshot(profile).data?.session?.resetsAt
-        if (liveReset != null) {
-            RowDivider()
-            Text(
-                "Current window really ends ${Fmt.dayTime(liveReset, use24h)} — the app follows " +
-                    "this, not the times above.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        if (!exactOk) {
-            RowDivider()
-            Text(
-                "Exact alarms are off",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.error,
-            )
-            Text(
-                "Pings may fire minutes late. A window starts when the ping lands, so being " +
-                    "late shifts every window for the rest of the day.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = {
-                openExactAlarmSettings(context)
-                exactOk = PingScheduler.canScheduleExact(context)
-            }) { Text("Allow exact alarms") }
-        }
-
-        RowDivider()
-        @Suppress("UNUSED_EXPRESSION") outcomeRevision // read so the row recomposes
-        val lastResult = cacheSettings.pingLastResult(profile)
-        val lastAt = cacheSettings.pingLastAttemptAt(profile)
-        if (lastResult != null && lastAt > 0) {
-            Text(
-                "${Fmt.dayTime(java.time.Instant.ofEpochMilli(lastAt), use24h)} — $lastResult",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (cacheSettings.pingLastFailed(profile)) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-        OutlinedButton(
-            enabled = !testing && repo.hasCredentials(profile),
-            onClick = {
-                testing = true
-                scope.launch {
-                    val result = repo.sendWindowPing(profile)
-                    // The window isn't visible on the usage endpoint for a minute or
-                    // more, so confirmation arrives later on its own alarm (CCBG-5).
-                    if (result.sent) {
-                        PingScheduler.armVerify(
-                            context,
-                            profile,
-                            System.currentTimeMillis() + PingSchedule.VERIFY_DELAY_MS,
-                        )
-                    }
-                    testing = false
-                    tick++
-                    rearm()
-                }
-            },
-        ) { Text(if (testing) "Pinging…" else "Test ping now") }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "Sends one straight away. The window takes a minute or two to show up, so the " +
-                "line above updates again once it's confirmed. If a window is already open " +
-                "it will say so rather than starting another.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** A time-of-day row that opens the platform picker; value is minutes past midnight. */
-@Composable
-private fun MinuteOfDayRow(title: String, minuteOfDay: Int, use24h: Boolean, onChange: (Int) -> Unit) {
-    val context = LocalContext.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable {
-                android.app.TimePickerDialog(
-                    context,
-                    { _, hour, minute -> onChange(hour * 60 + minute) },
-                    minuteOfDay / 60,
-                    minuteOfDay % 60,
-                    use24h,
-                ).show()
-            }
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Text(formatMinuteOfDay(minuteOfDay, use24h), style = MaterialTheme.typography.bodyLarge)
-    }
-}
-
-private fun formatMinuteOfDay(minuteOfDay: Int, use24h: Boolean): String {
-    val h = (minuteOfDay / 60) % 24
-    val m = minuteOfDay % 60
-    if (use24h) return "%02d:%02d".format(h, m)
-    val suffix = if (h < 12) "AM" else "PM"
-    val h12 = when (h % 12) {
-        0 -> 12
-        else -> h % 12
-    }
-    return "%d:%02d %s".format(h12, m, suffix)
-}
-
-/**
- * The slots the current settings would produce on a clean day. Explicitly a plan:
- * real boundaries follow whenever each ping actually lands.
- */
-private fun plannedWindows(firstMinute: Int, renewals: Int, cutoff: Int, use24h: Boolean): String {
-    val cutoffMinutes = if (cutoff <= 0) 1440 else cutoff
-    val slots = mutableListOf<String>()
-    var start = firstMinute
-    for (i in 0..renewals) {
-        val end = start + 300
-        if (start >= cutoffMinutes) break
-        slots += "${formatMinuteOfDay(start, use24h)}–${formatMinuteOfDay(end, use24h)}"
-        start = end
-    }
-    if (slots.isEmpty()) return "Nothing would run — the first ping is after the cutoff."
-    return "On a clean day: " + slots.joinToString(", ") + "."
-}
-
-/** Opens the per-app exact-alarm screen, falling back to app details on odd skins. */
-private fun openExactAlarmSettings(context: android.content.Context) {
-    val intents = listOf(
-        Intent("android.settings.REQUEST_SCHEDULE_EXACT_ALARM")
-            .setData(android.net.Uri.parse("package:${context.packageName}")),
-        Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            .setData(android.net.Uri.parse("package:${context.packageName}")),
-    )
-    for (intent in intents) {
-        try {
-            context.startActivity(intent)
-            return
-        } catch (_: Exception) {
-            // Try the next one; some skins ship neither.
         }
     }
 }

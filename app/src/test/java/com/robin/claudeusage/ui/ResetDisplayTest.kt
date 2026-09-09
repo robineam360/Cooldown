@@ -6,10 +6,9 @@ import java.time.Instant
 
 /**
  * Pins CCRM-23 (Reset Display)'s one behavioural change to the countdown itself:
- * `Fmt.relIn` collapses to "soon" inside five minutes, aligned with the ring
- * faces' `widgetCountdown` — surfaces on a 15-minute refresh have no business
- * printing "in 43s". Everything else about the token is ordering (Option A:
- * the chosen form leads), which lives in the render sites.
+ * `Fmt.relIn` collapses to "soon" inside five minutes — surfaces on a 15-minute
+ * refresh have no business printing "in 43s". Everything else about the token is
+ * ordering (Option A: the chosen form leads), which lives in the render sites.
  */
 class ResetDisplayTest {
 

@@ -39,15 +39,15 @@ import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.providerMarkRes
 
 /**
- * The optional always-on notification: one profile's 5-hour usage as a filled
- * gauge (collapsed) and a full bar panel (expanded). It's silent and ongoing,
- * and re-renders on every poll so the percentage and countdown stay live.
+ * The optional always-on notification: one profile's 5-hour usage as the largest
+ * number the collapsed row can hold, plus a full bar panel (expanded). It's silent
+ * and ongoing, and re-renders on every poll so the percentage and countdown stay
+ * live.
  *
- * The colored surfaces (gauge, panel bars) follow the theme and the warning
- * ladder — and since CCRM-49 (Glyph Legibility) the status-bar icon does too, drawn
- * with the very same [Palette.barColor] value so the glyph and the gauge can never
- * disagree. (The Quick Settings tile still gets the monochrome rendering; it tints
- * whatever it is handed.)
+ * The colored surfaces (the number, the panel bars) follow the theme and the
+ * warning ladder — and since CCRM-49 (Glyph Legibility) the status-bar icon does
+ * too, drawn with the very same [Palette.barColor] value so the glyph and the
+ * number can never disagree.
  */
 object PinnedNotification {
 
@@ -120,11 +120,10 @@ object PinnedNotification {
         val pct = session?.percent
         val use24h = cache.use24hTime()
         // CCRM-22 (Used or Left), rev B: every numeric readout flips — the big
-        // digits, the gauge text, the number plate, the panel rows. The bars,
-        // setProgress() and the status-icon fill keep drawing the spend.
+        // digits and the panel rows. The bars and the status-icon fill keep
+        // drawing the spend.
         val left = cache.usageLeft()
 
-        val style = cache.pinnedStyle()
         val fill = Palette.barColor(pct, theme, dark)
         // CCRM-43 (Bar Pace Marks): this surface's own red toggle. The even-pace tick
         // draws regardless; only the colour past it is optional.
@@ -137,7 +136,7 @@ object PinnedNotification {
         // window still rides along as the flag dot in the needle's hub, and this
         // surface's red toggle now reaches the glyph's over-pace slice too.
         val smallIcon = drawStatusIcon(
-            context, pct, cache.pinnedIconStyle(), left,
+            context, pct, left,
             sessionElapsed = sessionElapsed,
             fillArgb = fill.toArgb(),
             dark = dark,
@@ -150,18 +149,10 @@ object PinnedNotification {
             showOverPace = showOverPace,
         )
         val pctText = if (pct == null) "—" else "${Fmt.usageInt(pct, left)}%"
-        // The worded form for text slots that have room for the word.
-        val pctShort = if (pct == null) "—" else Fmt.usageShort(pct, left)
 
-        // CCRM-23 (Reset Display), Option A: the chosen form leads. The collapsed
-        // line has one slot, so it carries the chosen form only; the expanded line
-        // keeps both, chosen first.
+        // CCRM-23 (Reset Display), Option A: the chosen form leads. The expanded
+        // line keeps both, chosen first.
         val resetClock = cache.resetClock()
-        val resetShort = when {
-            session?.resetsAt == null -> "not started yet"
-            resetClock -> "resets ${Fmt.timeOnly(session.resetsAt, use24h)}"
-            else -> "resets ${Fmt.relIn(session.resetsAt)}"
-        }
         // Collapsed is the 5-hour window and nothing else: percentage, bar, and when
         // it resets. The 7-day window and the model caps live in the expanded panel,
         // so repeating any of it here would just be duplicate info.
@@ -173,19 +164,16 @@ object PinnedNotification {
                 Fmt.timeOnly(session.resetsAt, use24h)
         }
 
-        // "progress" is the odd one out: with setProgress() occupying a row, the
-        // shade drops the content-text line when collapsed, which is where the reset
-        // was. So for that style the title carries the percentage *and* the reset —
-        // the title is the only slot guaranteed to survive — and the text line takes
-        // the profile identity instead. Every other style keeps the percentage in
-        // its own graphic, so the title names the window and the text line resets.
-        val progress = style == "progress"
-        val title = if (progress) "$pctShort · $resetShort" else "$label · $headlineName"
+        // The title names the profile and the headline window; the collapsed text
+        // line carries the reset time (or the highest-priority condition strip, when
+        // one is showing — see collapsedText below).
+        val title = "$label · $headlineName"
 
-        // CCRM-44 (One Surface): with the pinned notification on, this panel carries
-        // *every* alert for its profile — the CCBG-12 (Status Icon Swap) conditions,
-        // plus folded events and the update strip — silent by the user's explicit
-        // choice, readable on demand.
+        // CCRM-44 (One Surface): this panel carries every *condition* for every account
+        // — the CCBG-12 (Status Icon Swap) sign-in and stale-data strips, plus the update
+        // strip — silent by the user's explicit choice, readable on demand. All of them
+        // are derived live at draw time (CCRM-61 (Settings Diet) retired the persisted
+        // event strips), so nothing here can outlive what it describes.
         //
         // The collapsed row gives its one line to the highest-priority strip (the
         // reset time stays in the expanded header, per the approved CCRM-44
@@ -193,7 +181,7 @@ object PinnedNotification {
         // line as a strip, in the strip's own hue.
         val panelState = Conditions.panelFor(context, cache, profile)
         val stale = panelState.stale
-        val baseText = if (progress) "$label · $headlineName" else resetLong
+        val baseText = resetLong
         val collapsedText = panelState.strips.firstOrNull()
             ?.let { withConditionDot(it.short, conditionHue(it, theme, dark)) }
             ?: baseText
@@ -217,8 +205,7 @@ object PinnedNotification {
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
-            // Drives the accent the shade uses for the app name and, crucially, the
-            // tint of setProgress()'s bar — the only way to colour that bar.
+            // Drives the accent the shade uses for the app name.
             .setColor(fill.toArgb())
             .addAction(0, "Refresh", refresh)
 
@@ -233,81 +220,31 @@ object PinnedNotification {
             skipWeeklyBar = headlineWeekly,
         )
 
-        when (style) {
-            // A — the number owns the large-icon slot instead of a ring around it.
-            "number" -> {
-                builder.setLargeIcon(drawNumberTile(context, pct, fill, left))
-                panel?.let { builder.setStyle(bigPicture(it, expandedText)) }
-            }
-            // B — no bitmap at all: the system's own determinate bar, number in the title.
-            "progress" -> {
-                builder.setProgress(100, (pct ?: 0.0).toInt().coerceIn(0, 100), false)
-                panel?.let { builder.setStyle(bigPicture(it, expandedText)) }
-            }
-            // C — custom views: the largest number the collapsed row can hold.
-            "big" -> {
-                builder.setCustomContentView(
-                    bigNumberView(
-                        context, R.layout.notif_big_number, pctText, title, collapsedText,
-                        pct, sessionElapsed, fill, theme, dark, showOverPace, null, stale,
-                        profile.provider,
-                        leftCaption = left && pct != null,
-                    )
-                )
-                builder.setCustomBigContentView(
-                    bigNumberView(
-                        context, R.layout.notif_big_number_expanded,
-                        pctText, title, expandedText,
-                        pct, sessionElapsed, fill, theme, dark, showOverPace, panel, stale,
-                        profile.provider,
-                        leftCaption = left && pct != null,
-                    )
-                )
-                builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            }
-            // "gauge" — the original ring.
-            else -> {
-                drawGauge(context, pct, fill, left)?.let { builder.setLargeIcon(it) }
-                panel?.let { builder.setStyle(bigPicture(it, expandedText)) }
-            }
-        }
+        // Custom views: the largest number the collapsed row can hold.
+        builder.setCustomContentView(
+            bigNumberView(
+                context, R.layout.notif_big_number, pctText, title, collapsedText,
+                pct, sessionElapsed, fill, theme, dark, showOverPace, null, stale,
+                profile.provider,
+                leftCaption = left && pct != null,
+            )
+        )
+        builder.setCustomBigContentView(
+            bigNumberView(
+                context, R.layout.notif_big_number_expanded,
+                pctText, title, expandedText,
+                pct, sessionElapsed, fill, theme, dark, showOverPace, panel, stale,
+                profile.provider,
+                leftCaption = left && pct != null,
+            )
+        )
+        builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
 
         try {
             nm.notify(NOTIF_ID, builder.build())
         } catch (_: SecurityException) {
             // POST_NOTIFICATIONS not granted — nothing to show.
         }
-
-        armExpiry(context, Conditions.nextExpiry(cache, profile))
-    }
-
-    /** The self-redraw that retires an expired strip — see [armExpiry]. */
-    const val ACTION_EXPIRE = "com.robin.claudeusage.PINNED_EXPIRE"
-
-    /**
-     * CCBG-18 (Strip Lifetime Stamp): arms one alarm at [atMs] to redraw this
-     * notification when its soonest strip is due to go.
-     *
-     * The strip store prunes lazily, on read, and the panel only re-renders on a poll, at
-     * the end of `Alerts.evaluate`, or on a Settings change — so without this a 15-minute
-     * strip lingers until the next poll, up to a further poll interval. Inexact by
-     * choice: a strip leaving a minute late is nothing like a window ping landing late
-     * (see `PingScheduler` for why that one is exact), and this must not spend the
-     * exact-alarm budget.
-     *
-     * Always cancels first, so repeated `update` calls replace rather than stack, and a
-     * panel with no strips left is a panel with no alarm.
-     */
-    private fun armExpiry(context: Context, atMs: Long) {
-        val am = context.getSystemService(android.app.AlarmManager::class.java) ?: return
-        val pi = PendingIntent.getBroadcast(
-            context, NOTIF_ID + 2,
-            Intent(context, PinnedRefreshReceiver::class.java).setAction(ACTION_EXPIRE),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
-        am.cancel(pi)
-        if (atMs <= System.currentTimeMillis()) return
-        am.set(android.app.AlarmManager.RTC, atMs, pi)
     }
 
     /**
@@ -334,18 +271,6 @@ object PinnedNotification {
             flags,
         )
     }
-
-    /**
-     * Note there's no `bigLargeIcon(null)` here. Hiding it made the 5-hour
-     * percentage — the whole point of the gauge and number-tile styles — vanish
-     * the moment you expanded the notification. Leaving it unset keeps the large
-     * icon in the expanded header, so the percentage stays put and the panel below
-     * only has to carry the 7-day window.
-     */
-    private fun bigPicture(panel: Bitmap, summary: String) =
-        NotificationCompat.BigPictureStyle()
-            .bigPicture(panel)
-            .setSummaryText(summary)
 
     /**
      * Fills one of the big-number layouts. Text colours come from the layout's
@@ -424,51 +349,6 @@ object PinnedNotification {
         showOverPace = showOverPace,
     )
 
-    /**
-     * Layout A: the large-icon slot as a solid tile with the number filling it.
-     * The ring is gone on purpose — dropping it is what buys the digits their size.
-     */
-    private fun drawNumberTile(context: Context, pct: Double?, fill: Color, left: Boolean): Bitmap {
-        val size = dp(context, 72f).toInt().coerceAtLeast(64)
-        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
-        val plate = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fill.toArgb() }
-        c.drawRoundRect(RectF(0f, 0f, size.toFloat(), size.toFloat()), size * 0.22f, size * 0.22f, plate)
-
-        // CCRM-22 rev B: the plate digits flip too; three digits (Left's possible
-        // 100) already step down below.
-        val label = if (pct == null) "—" else Fmt.usageInt(pct, left).toString()
-        val digits = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = AndroidColor.WHITE
-            textAlign = Paint.Align.LEFT
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            // Three digits (100) need to step down or they'd run past the tile.
-            textSize = size * if (label.length >= 3) 0.46f else 0.60f
-        }
-        // The percent sign rides as a superscript to the right of the digits rather
-        // than sitting under them, which is how a percentage normally reads.
-        val sign = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = AndroidColor.WHITE
-            textAlign = Paint.Align.LEFT
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textSize = digits.textSize * 0.42f
-            alpha = 215
-        }
-
-        val digitsW = digits.measureText(label)
-        val signW = if (pct == null) 0f else sign.measureText("%")
-        val gap = if (pct == null) 0f else size * 0.015f
-        // Centre the digits + sign as one group.
-        val startX = (size - (digitsW + gap + signW)) / 2f
-        val baseline = size * 0.5f - (digits.descent() + digits.ascent()) / 2f
-
-        c.drawText(label, startX, baseline, digits)
-        if (pct != null) {
-            c.drawText("%", startX + digitsW + gap, baseline - digits.textSize * 0.36f, sign)
-        }
-        return bmp
-    }
-
     private fun isNightMode(context: Context): Boolean =
         (context.resources.configuration.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
@@ -479,64 +359,10 @@ object PinnedNotification {
             TypedValue.COMPLEX_UNIT_DIP, value, context.resources.displayMetrics
         )
 
-    /**
-     * Bold, self-contained gauge for the collapsed large-icon slot (layout A):
-     * a faint track ring, a bright usage arc, and a solid filled center disc so
-     * the white percentage always reads — even on OEMs that draw a pale backplate
-     * behind large icons.
-     */
-    private fun drawGauge(context: Context, pct: Double?, fill: Color, left: Boolean): Bitmap? {
-        val size = dp(context, 72f).toInt().coerceAtLeast(64)
-        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
-        val cx = size / 2f
-        val stroke = size * 0.11f
-        val pad = stroke / 2 + size * 0.03f
-        val rect = RectF(pad, pad, size - pad, size - pad)
-        val fillArgb = fill.toArgb()
-
-        val track = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = stroke
-            color = fill.copy(alpha = 0.28f).toArgb()
-        }
-        c.drawArc(rect, 0f, 360f, false, track)
-
-        val fraction = ((pct ?: 0.0) / 100.0).coerceIn(0.0, 1.0).toFloat()
-        if (fraction > 0f) {
-            val arc = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = stroke
-                strokeCap = Paint.Cap.ROUND
-                color = fillArgb
-            }
-            // A hair of sweep so even ~1% shows a visible cap rather than nothing.
-            c.drawArc(rect, -90f, (360f * fraction).coerceAtLeast(4f), false, arc)
-        }
-
-        // No centre disc: it was the same colour as the arc, so the ring read as a
-        // solid blob. The number is drawn in the usage colour on the bare shade
-        // instead, which keeps the ring legible as a ring.
-        // CCRM-22 rev B: the ring's text flips too — the arc still draws the spend.
-        val label = if (pct == null) "—" else "${Fmt.usageInt(pct, left)}%"
-        val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = fillArgb
-            textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            // Slightly larger now that it isn't boxed into the disc; four glyphs
-            // ("100%" either way) step back down.
-            textSize = size * (if (label.length >= 4) 0.26f else 0.30f)
-        }
-        val baseline = cx - (text.descent() + text.ascent()) / 2f
-        c.drawText(label, cx, baseline, text)
-        return bmp
-    }
-
-    /** The status-bar icon; the drawing itself is shared with the QS tile. */
+    /** The status-bar icon: the ring gauge drawn by [UsageIcon]. */
     private fun drawStatusIcon(
         context: Context,
         pct: Double?,
-        iconStyle: String,
         left: Boolean,
         sessionElapsed: Double?,
         fillArgb: Int?,
@@ -546,7 +372,7 @@ object PinnedNotification {
         showOverPace: Boolean,
     ): IconCompat = IconCompat.createWithBitmap(
         UsageIcon.draw(
-            context, pct, iconStyle, left, sessionElapsed, fillArgb, dark,
+            context, pct, left, sessionElapsed, fillArgb, dark,
             weeklyPct, weeklyElapsed, showOverPace,
         )
     )
@@ -555,8 +381,8 @@ object PinnedNotification {
      * The collapsed row's condition marker: a coloured dot ahead of the reset line.
      *
      * A span rather than a second view, because the collapsed layout has no slot to spare and
-     * `setContentText` has to carry the same string for the styles that don't use a custom
-     * view.
+     * `setContentText` has to carry the same string the custom view's `sub` line shows (a
+     * fallback for surfaces that don't render the custom view at all).
      *
      * U+25CF BLACK CIRCLE at full text size, deliberately with no size span. The
      * glyph is drawn centred about 0.3 em above the baseline, so it lines up with the text

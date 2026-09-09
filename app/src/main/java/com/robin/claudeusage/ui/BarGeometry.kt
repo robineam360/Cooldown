@@ -8,8 +8,8 @@ import kotlin.math.max
  *
  * Fractions are 0..1 along the bar; multiply by the bar's pixel width at the call
  * site. Kept free of android.graphics like [RingGeometry], so every number here is
- * JVM-testable and the same values serve the in-app Compose bars, the widget
- * bitmaps and the notification.
+ * JVM-testable and the same values serve the in-app Compose bars and the pinned
+ * notification's bitmap-drawn bars.
  *
  * Draw order, bottom→top: track · fill · red segment · tick. The tick draws last
  * because it is the only pace signal left when the fill covers it.

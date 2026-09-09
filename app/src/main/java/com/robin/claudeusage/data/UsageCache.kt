@@ -41,8 +41,8 @@ data class Snapshot(
 }
 
 /**
- * Plain (non-secret) cache. Per-profile state (payload, status, backoff, alert
- * dedupe) is keyed with the profile prefix; app-wide settings are unprefixed.
+ * Plain (non-secret) cache. Per-profile state (payload, status, backoff, window peaks,
+ * reset-ping mode) is keyed with the profile prefix; app-wide settings are unprefixed.
  * Personal keys carry no prefix so v0.5 data migrates transparently.
  */
 class UsageCache(context: Context) {
@@ -58,22 +58,28 @@ class UsageCache(context: Context) {
         /**
          * Every fixed per-profile entry name, for [clearProfile]'s legacy path. Kept next to
          * the getters that write them: adding a `k(profile, "…")` key without adding it here
-         * leaves residue behind on removal. The runtime-built families (`pace…`, `peak…`,
-         * `seen…Key`, `modelAlert.…`) are handled separately in [clearProfile].
+         * leaves residue behind on removal. The runtime-built families (`peak…`, `seen…Key`,
+         * and the retired `pace…` / `modelAlert.…`) are handled separately in [clearProfile].
          */
         private val LEGACY_PROFILE_KEYS = listOf(
             "rawJson", "fetchedAt", "lastStatus", "lastStatusKind", "lastAttemptAt",
             "authState", "plan", "tier", "signInTokenKeys", "nativeSignIn",
             "refreshExpiresAt", "refreshExpiryEstimated", "lastRenewedAt",
             "firstRefreshFailAt", "backoffUntil", "consecutive429",
+            "creditsVisible", "customLabel", "accent",
+            "resetPingSession", "resetPingWeekly",
+            // retired in v1.6 (CCRM-61 (Settings Diet)); still swept so residue leaves
+            // with the account. They are plain strings, not references to live
+            // accessors — an install upgraded from v1.5 still has them on disk, and
+            // Android Auto Backup carries them to a new device.
             "reauthNotified", "staleNotified", "foldedEvents",
-            "profileAlertsEnabled", "creditsVisible", "customLabel",
+            "profileAlertsEnabled",
             "sessionAlertKey", "sessionAlertThreshold",
             "weeklyAlertKey", "weeklyAlertThreshold",
             "pingEnabled", "pingFirstMinute", "pingCutoffMinute", "pingRenewals",
             "pingDay", "pingWindowsStarted", "pingRetryIndex", "pingLastSentAt",
             "pingLastAttemptAt", "pingLastResult", "pingLastFailed", "pingRevision",
-            "pingPendingBefore", "pingVerifyAttempt", "accent",
+            "pingPendingBefore", "pingVerifyAttempt",
         )
     }
 
@@ -122,7 +128,6 @@ class UsageCache(context: Context) {
             .putString(k(profile, "authState"), AuthState.OK.name)
             .putInt(k(profile, "consecutive429"), 0)
             .putLong(k(profile, "backoffUntil"), 0L)
-            .putBoolean(k(profile, "staleNotified"), false)
             .apply()
     }
 
@@ -168,30 +173,12 @@ class UsageCache(context: Context) {
         prefs.edit().putLong("pollIntervalMin", min.coerceAtLeast(5L)).apply()
     }
 
-    fun alertsEnabled(): Boolean = prefs.getBoolean("alertsEnabled", true)
-
-    fun setAlertsEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("alertsEnabled", enabled).apply()
-    }
-
-    fun resetAlertsEnabled(): Boolean = prefs.getBoolean("resetAlertsEnabled", true)
-
-    fun setResetAlertsEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("resetAlertsEnabled", enabled).apply()
-    }
-
-    fun authAlertsEnabled(): Boolean = prefs.getBoolean("authAlertsEnabled", true)
-
-    fun setAuthAlertsEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("authAlertsEnabled", enabled).apply()
-    }
-
     /**
      * Display name for a profile — the key stays, only the label is editable.
      *
      * Still the read path ~40 sites use, but it resolves through the registry **by key**
      * rather than returning the [Profile]'s own field, so a rename is visible to a
-     * `Profile` captured earlier in a composition, an intent extra or a widget's prefs.
+     * `Profile` captured earlier in a composition or an intent extra.
      * Falls back to the captured label if the account has since been removed.
      */
     fun profileLabel(profile: Profile): String =
@@ -203,27 +190,33 @@ class UsageCache(context: Context) {
 
     /**
      * Forgets every per-profile entry for [profile] — CCRM-6 (Multi-Account) account
-     * removal, step 4 of [UsageRepository.removeProfile]'s ordering.
+     * removal — the cache step of [UsageRepository.removeProfile]'s load-bearing ordering.
      *
      * Two paths, because of the legacy exception in [k]. A prefixed profile can be
      * prefix-scanned, which is exhaustive by construction. The legacy `personal` profile's
      * entries share the bare namespace with every app-wide setting in this file — `snapshot`
      * lives at `"rawJson"`, the app's theme at `"themeMode"` — so a prefix scan there would
      * take the whole app's settings with it. Its names are enumerated instead, including the
-     * three families whose names are built at runtime (per-window and per-model). The
+     * families whose names are built at runtime (per-window and per-model). The
      * `modelAlert.` scan is bounded to the `Key`/`Threshold` suffixes so it can never reach
-     * the app-wide `sessionAlertThresholds`, which is one plural away from a per-profile key.
+     * an app-wide setting that is one plural away from a per-profile key — the retired
+     * `sessionAlertThresholds` was exactly that, and the bound is kept rather than
+     * loosened now that it is gone.
      */
     fun clearProfile(profile: Profile) {
         val e = prefs.edit()
         if (profile.key == Profile.LEGACY_KEY) {
             for (name in LEGACY_PROFILE_KEYS) e.remove(name)
             for (window in listOf("Session", "Weekly")) {
-                e.remove("pace${window}Key")
-                e.remove("pace${window}Mask")
                 e.remove("peak$window")
                 e.remove("seen${window}Key")
+                // retired in v1.6 (CCRM-61 (Settings Diet)); still swept so residue
+                // leaves with the account
+                e.remove("pace${window}Key")
+                e.remove("pace${window}Mask")
             }
+            // retired in v1.6 (CCRM-61 (Settings Diet)); still swept so residue leaves
+            // with the account
             for (name in prefs.all.keys) {
                 if (name.startsWith("modelAlert.") &&
                     (name.endsWith("Key") || name.endsWith("Threshold"))
@@ -236,108 +229,40 @@ class UsageCache(context: Context) {
         e.apply()
     }
 
-    // --- granular alert settings ---
+    /**
+     * Reset-ping behaviour, per account and per window kind ("Session"/"Weekly"): off,
+     * smart, or always.
+     *
+     * Per account since CCRM-61 (Settings Diet) — the reset ping is the one standalone
+     * notification left, so "which accounts may ping me" is now the *only* thing this
+     * setting can mean, and the retired per-profile alerts toggle isn't there to say it.
+     *
+     * Two migration fallbacks, in order: the app-wide `resetMode$window` this grew out of
+     * (so an upgrading install keeps its choice on every account), then the pre-granularity
+     * `resetAlertsEnabled` master switch, honoured only when it was explicitly turned off.
+     */
+    fun resetPingMode(profile: Profile, window: String): String =
+        prefs.getString(k(profile, "resetPing$window"), null)
+            ?: prefs.getString("resetMode$window", null)
+            ?: when {
+                !prefs.getBoolean("resetAlertsEnabled", true) -> RESET_OFF
+                window == "Session" -> RESET_SMART
+                else -> RESET_ALWAYS
+            }
 
-    fun sessionAlertThresholds(): Set<Int> = thresholdSet("sessionAlertThresholds", setOf(80, 95))
-
-    fun setSessionAlertThresholds(values: Set<Int>) = putThresholdSet("sessionAlertThresholds", values)
-
-    fun weeklyAlertThresholds(): Set<Int> = thresholdSet("weeklyAlertThresholds", setOf(90))
-
-    fun setWeeklyAlertThresholds(values: Set<Int>) = putThresholdSet("weeklyAlertThresholds", values)
-
-    fun modelCapAlertThresholds(): Set<Int> = thresholdSet("modelCapAlertThresholds", setOf(90))
-
-    fun setModelCapAlertThresholds(values: Set<Int>) = putThresholdSet("modelCapAlertThresholds", values)
-
-    private fun thresholdSet(name: String, default: Set<Int>): Set<Int> {
-        // Until the chips are touched, the pre-granularity master switch decides.
-        val raw = prefs.getString(name, null)
-            ?: return if (alertsEnabled()) default else emptySet()
-        return raw.split(',').mapNotNull { it.trim().toIntOrNull() }.toSet()
-    }
-
-    private fun putThresholdSet(name: String, values: Set<Int>) {
-        prefs.edit().putString(name, values.sorted().joinToString(",")).apply()
-    }
-
-    /** Reset-ping behavior per window kind ("Session"/"Weekly"): off, smart, or always. */
-    fun resetPingMode(window: String): String =
-        prefs.getString("resetMode$window", null) ?: when {
-            !resetAlertsEnabled() -> RESET_OFF // pre-granularity toggle carries over
-            window == "Session" -> RESET_SMART
-            else -> RESET_ALWAYS
-        }
-
-    fun setResetPingMode(window: String, mode: String) {
-        prefs.edit().putString("resetMode$window", mode).apply()
-    }
-
-    fun profileAlertsEnabled(profile: Profile): Boolean =
-        prefs.getBoolean(k(profile, "profileAlertsEnabled"), true)
-
-    fun setProfileAlertsEnabled(profile: Profile, enabled: Boolean) {
-        prefs.edit().putBoolean(k(profile, "profileAlertsEnabled"), enabled).apply()
-    }
-
-    fun healthAlertsEnabled(): Boolean = prefs.getBoolean("healthAlertsEnabled", authAlertsEnabled())
-
-    fun setHealthAlertsEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("healthAlertsEnabled", enabled).apply()
+    fun setResetPingMode(profile: Profile, window: String, mode: String) {
+        prefs.edit().putString(k(profile, "resetPing$window"), mode).apply()
     }
 
     /**
-     * CCBG-12 (Status Icon Swap): how long a one-off *event* alert — a reset, a
-     * threshold, a pace warning, an update notice — stays in the shade before clearing
-     * itself. One of "15m", "30m", "1h", "auto".
-     *
-     * The point is not tidiness. A second notification from this app makes Android
-     * replace our live status-bar meter with the launcher icon, so an alert nobody
-     * dismissed holds the status bar wrong for as long as it sits there. Expiring the
-     * ones that have stopped being true gives the meter back.
-     *
-     * "auto" — the default — means "until the window this alert is about resets", which
-     * is the only option that never expires an alert while it is still true.
-     * Condition alerts (sign-in, data freshness) are not covered: they fold into the
-     * pinned notification's panel and clear when the condition itself resolves.
+     * One-shot guard for `Alerts.retireOldChannels` — the six notification channels
+     * CCRM-61 (Settings Diet) left without a poster are deleted once per install, not on
+     * every poll.
      */
-    fun alertLifetime(): String = prefs.getString("alertLifetime", "auto") ?: "auto"
+    fun oldChannelsRetired(): Boolean = prefs.getBoolean("oldChannelsRetired", false)
 
-    fun setAlertLifetime(value: String) {
-        prefs.edit().putString("alertLifetime", value).apply()
-    }
-
-    // --- pace alerts (CCRM-21): projection-based milestones -------------------------
-
-    fun paceAlertsEnabled(): Boolean = prefs.getBoolean("paceAlertsEnabled", true)
-
-    fun setPaceAlertsEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean("paceAlertsEnabled", enabled).apply()
-    }
-
-    /** Per-milestone toggle; [milestone] is a [Projection.PaceMilestone] name. */
-    fun paceMilestoneEnabled(milestone: String): Boolean =
-        prefs.getBoolean("paceMilestone.$milestone", true)
-
-    fun setPaceMilestoneEnabled(milestone: String, enabled: Boolean) {
-        prefs.edit().putBoolean("paceMilestone.$milestone", enabled).apply()
-    }
-
-    /**
-     * Pace state per profile+window: the window identity plus which milestones have
-     * fired in it. Null when nothing was recorded yet — the primed guard's signal.
-     */
-    fun paceState(profile: Profile, window: String): Projection.PaceState? {
-        val key = prefs.getLong(k(profile, "pace${window}Key"), 0L)
-        if (key == 0L) return null
-        return Projection.PaceState(key, prefs.getInt(k(profile, "pace${window}Mask"), 0))
-    }
-
-    fun setPaceState(profile: Profile, window: String, state: Projection.PaceState) {
-        prefs.edit()
-            .putLong(k(profile, "pace${window}Key"), state.windowKey)
-            .putInt(k(profile, "pace${window}Mask"), state.firedMask)
-            .apply()
+    fun setOldChannelsRetired() {
+        prefs.edit().putBoolean("oldChannelsRetired", true).apply()
     }
 
     // --- highest percent seen in the current window instance (drives smart reset pings) ---
@@ -363,19 +288,6 @@ class UsageCache(context: Context) {
         prefs.edit().putString("pinnedProfile", profile.key).apply()
     }
 
-    /** Status-bar icon style: "pie", "ring", "battery", or "number". */
-    /**
-     * CCRM-49 (Glyph Legibility) withdrew the concentric "twin" style, so anyone left
-     * holding it lands back on the default rather than on no selection at all.
-     */
-    fun pinnedIconStyle(): String =
-        (prefs.getString("pinnedIconStyle", "ring") ?: "ring")
-            .let { if (it == "twin") "ring" else it }
-
-    fun setPinnedIconStyle(style: String) {
-        prefs.edit().putString("pinnedIconStyle", style).apply()
-    }
-
     /**
      * CCRM-23 (Reset Display): which reset form *leads* on every surface —
      * "countdown" ("resets in 2h 14m", the default) or "clock" ("resets 4:12 PM").
@@ -396,18 +308,6 @@ class UsageCache(context: Context) {
 
     /** The flag render sites actually branch on. */
     fun resetClock(): Boolean = resetDisplay() == "clock"
-
-    /**
-     * How the pinned notification renders the 5-hour percentage (CCRM-3 phase 1):
-     * "gauge" (the original ring, default), "number" (a big number tile in the
-     * large-icon slot), "progress" (system progress bar, percentage in the title),
-     * or "big" (a custom view with the largest number the collapsed row allows).
-     */
-    fun pinnedStyle(): String = prefs.getString("pinnedStyle", "gauge") ?: "gauge"
-
-    fun setPinnedStyle(style: String) {
-        prefs.edit().putString("pinnedStyle", style).apply()
-    }
 
     /**
      * Where tapping the notification body goes: "app" (this app's breakdown, the
@@ -433,32 +333,14 @@ class UsageCache(context: Context) {
         prefs.edit().putBoolean(k(profile, "creditsVisible"), visible).apply()
     }
 
-    /**
-     * Whether widgets carry credits too. Off by default: widget height is scarce and
-     * the existing layouts are already full. Gated by [creditsVisible] as well, so
-     * hiding a profile's credits hides them everywhere.
-     */
-    fun creditsOnWidgets(): Boolean = prefs.getBoolean("creditsOnWidgets", false)
-
-    fun setCreditsOnWidgets(enabled: Boolean) {
-        prefs.edit().putBoolean("creditsOnWidgets", enabled).apply()
-    }
-
     // --- CCRM-43 (Bar Pace Marks): the red over-pace segment, per surface ---
     //
-    // Three keys rather than one, by decision of 2026-08-13: the surfaces are read at
-    // very different distances (a glance at a widget, a long look at the usage screen,
-    // a notification you can't dismiss), so the appetite for red differs per surface.
-    // All default ON — the behaviour approved in CCRM-39 (Ring Widget) and shipped —
-    // and each gates *only* the segment. The neutral even-pace tick always draws, and
-    // the 80/90/100 severity ladder is untouched: this is about pace, not severity.
-
-    /** Bars *and* rings on the home screen: one home screen, one answer. */
-    fun paceOverOnWidgets(): Boolean = prefs.getBoolean("paceOverOnWidgets", true)
-
-    fun setPaceOverOnWidgets(enabled: Boolean) {
-        prefs.edit().putBoolean("paceOverOnWidgets", enabled).apply()
-    }
+    // Two keys rather than one, by decision of 2026-08-13: the surfaces are read at
+    // very different distances (a long look at the usage screen, a notification you
+    // can't dismiss), so the appetite for red differs per surface. All default ON —
+    // the behaviour approved and shipped — and each gates *only* the segment. The
+    // neutral even-pace tick always draws, and the 80/90/100 severity ladder is
+    // untouched: this is about pace, not severity.
 
     fun paceOverInApp(): Boolean = prefs.getBoolean("paceOverInApp", true)
 
@@ -475,8 +357,8 @@ class UsageCache(context: Context) {
     // --- CCRM-29 (Display Mode) ---
 
     /**
-     * "system" (default) / "light" / "dark". In-app screens only — widgets and
-     * the notification follow the system, since their backdrop isn't ours.
+     * "system" (default) / "light" / "dark". In-app screens only — the notification
+     * follows the system, since its backdrop isn't ours.
      */
     fun themeMode(): String = prefs.getString("themeMode", "system") ?: "system"
 
@@ -594,157 +476,11 @@ class UsageCache(context: Context) {
             .apply()
     }
 
-    /** Written only when the notification actually posted — once per version, ever. */
-    fun lastNotifiedVersion(): String? = prefs.getString("lastNotifiedVersion", null)
-
-    fun setLastNotifiedVersion(version: String) {
-        prefs.edit().putString("lastNotifiedVersion", version).apply()
-    }
-
     /** "Skip this version": silences exactly this version; a newer one still notifies. */
     fun dismissedUpdateVersion(): String? = prefs.getString("dismissedUpdateVersion", null)
 
     fun setDismissedUpdateVersion(version: String) {
         prefs.edit().putString("dismissedUpdateVersion", version).apply()
-    }
-
-    // --- folded event strips (CCRM-44): alerts carried by the pinned panel ---
-
-    /**
-     * One alert *event* folded into the pinned notification instead of posted
-     * (CCRM-44 (One Surface)). Conditions are derived live; events are moments, so
-     * they need this small persisted record to outlive the poll that fired them.
-     * [kind] is the alert's dedup key (e.g. "sessionAlert", "pace.Session") — a new
-     * event of the same kind replaces the old one, mirroring how the notification
-     * ids replaced in place.
-     */
-    data class FoldedEvent(
-        val kind: String,
-        /**
-         * Which account this event fired for — CCBG-16 (Stale Strip Label).
-         *
-         * Its presence is also the record's version marker, which is why it has no
-         * default: a record carrying a key holds an **unprefixed** [title], to be labelled
-         * at render time by
-         * [StripRules.stripTitle][com.robin.claudeusage.notify.StripRules.stripTitle]; a
-         * record written before the fix carries `""` and a title with the account name
-         * already frozen into it. There is no migration — the old records are labelled
-         * as they stand and age out through [effectiveExpiry].
-         */
-        val profileKey: String,
-        /**
-         * The alert sentence **without** the account-name prefix (see [profileKey]).
-         * The prefix is composed at render time so it follows a rename.
-         */
-        val title: String,
-        val detail: String,
-        val firedAt: Long,
-        val expiresAt: Long,
-    )
-
-    /**
-     * Current (unexpired) folded events, newest first.
-     *
-     * CCBG-18 (Strip Lifetime Stamp): "keep alerts in the shade for" is applied **here**,
-     * at read time, not only at the moment the event was folded. [FoldedEvent.expiresAt]
-     * is stamped once by `Alerts.eventTimeout`, so before this a strip folded under the
-     * default `auto` carried a multi-day expiry — until its 7-day window reset — that
-     * choosing 15m afterwards could never reach. The chip reads as a display rule; it now
-     * behaves like one.
-     *
-     * It can only ever **shorten**. `auto` keeps the stamped ceiling, and an explicit
-     * choice is capped by it, so a longer chip never *extends* something deliberately
-     * short — `Alerts.RESET_STRIP_MS`'s fixed half hour, in particular.
-     *
-     * Pruning the store still uses the hard stamp, so flipping back to `auto` finds the
-     * events still there rather than deleted by a setting the user has since changed.
-     */
-    fun foldedEvents(profile: Profile): List<FoldedEvent> {
-        val now = System.currentTimeMillis()
-        val stored = readFoldedEvents(profile)
-        val kept = stored.filter { it.expiresAt > now }
-        if (kept.size != stored.size) writeFoldedEvents(profile, kept)
-        return kept.filter { effectiveExpiry(it) > now }.sortedByDescending { it.firedAt }
-    }
-
-    /**
-     * When [event]'s strip should leave the panel, honouring the current
-     * [alertLifetime] — see [foldedEvents]. Never later than the stamped expiry.
-     */
-    fun effectiveExpiry(event: FoldedEvent): Long =
-        com.robin.claudeusage.notify.StripRules.expiry(
-            event.firedAt, event.expiresAt, alertLifetime(),
-        )
-
-    /**
-     * The soonest any of [profile]'s live strips is due to leave, or 0 if none is —
-     * what CCBG-18's expiry alarm is armed for.
-     */
-    fun nextStripExpiry(profile: Profile): Long =
-        foldedEvents(profile).minOfOrNull { effectiveExpiry(it) } ?: 0L
-
-    /** Adds an event, replacing any existing one of the same [FoldedEvent.kind]. */
-    fun addFoldedEvent(profile: Profile, event: FoldedEvent) {
-        val kept = readFoldedEvents(profile).filter {
-            it.kind != event.kind && it.expiresAt > event.firedAt
-        }
-        writeFoldedEvents(profile, kept + event)
-    }
-
-    private fun readFoldedEvents(profile: Profile): List<FoldedEvent> = try {
-        val arr = org.json.JSONArray(prefs.getString(k(profile, "foldedEvents"), "[]") ?: "[]")
-        (0 until arr.length()).mapNotNull { i ->
-            val o = arr.optJSONObject(i) ?: return@mapNotNull null
-            FoldedEvent(
-                kind = o.optString("kind"),
-                // Absent for a record stored before CCBG-16 (Stale Strip Label) — see
-                // [FoldedEvent.profileKey]. Empty means "the title is already finished text".
-                profileKey = o.optString("profileKey"),
-                title = o.optString("title"),
-                detail = o.optString("detail"),
-                firedAt = o.optLong("firedAt"),
-                expiresAt = o.optLong("expiresAt"),
-            )
-        }
-    } catch (_: Exception) {
-        emptyList()
-    }
-
-    private fun writeFoldedEvents(profile: Profile, events: List<FoldedEvent>) {
-        val arr = org.json.JSONArray()
-        for (e in events) {
-            arr.put(
-                org.json.JSONObject()
-                    .put("kind", e.kind)
-                    .put("profileKey", e.profileKey)
-                    .put("title", e.title)
-                    .put("detail", e.detail)
-                    .put("firedAt", e.firedAt)
-                    .put("expiresAt", e.expiresAt)
-            )
-        }
-        prefs.edit().putString(k(profile, "foldedEvents"), arr.toString()).apply()
-    }
-
-    // --- alert dedupe state: one alert per threshold per window instance ---
-
-    fun alertKey(profile: Profile, name: String): Long = prefs.getLong(k(profile, "${name}Key"), 0L)
-
-    fun alertThreshold(profile: Profile, name: String): Int =
-        prefs.getInt(k(profile, "${name}Threshold"), 0)
-
-    fun setAlertState(profile: Profile, name: String, key: Long, threshold: Int) {
-        prefs.edit()
-            .putLong(k(profile, "${name}Key"), key)
-            .putInt(k(profile, "${name}Threshold"), threshold)
-            .apply()
-    }
-
-    fun reauthNotified(profile: Profile): Boolean =
-        prefs.getBoolean(k(profile, "reauthNotified"), false)
-
-    fun setReauthNotified(profile: Profile, notified: Boolean) {
-        prefs.edit().putBoolean(k(profile, "reauthNotified"), notified).apply()
     }
 
     // --- token health metadata (informational fields from the pasted JSON) ---
@@ -818,12 +554,6 @@ class UsageCache(context: Context) {
         prefs.edit().putLong(k(profile, "firstRefreshFailAt"), at).apply()
     }
 
-    fun staleNotified(profile: Profile): Boolean = prefs.getBoolean(k(profile, "staleNotified"), false)
-
-    fun setStaleNotified(profile: Profile, notified: Boolean) {
-        prefs.edit().putBoolean(k(profile, "staleNotified"), notified).apply()
-    }
-
     // --- reset detection: last seen window identity (its resets_at) per window kind ---
 
     fun lastSeenWindowKey(profile: Profile, window: String): Long =
@@ -833,204 +563,4 @@ class UsageCache(context: Context) {
         prefs.edit().putLong(k(profile, "seen${window}Key"), key).apply()
     }
 
-    // --- window pings (CCRM-17): per profile, OFF unless the user turns it on ---
-
-    /**
-     * Hard-disabled since 2026-08-18: an automated inference call from a third-party
-     * client sits on the wrong side of Anthropic's ToS (CCRM-17 (Window Pings), Posture
-     * paragraph in ROADMAP.md), and the downside is the user's account, not ours. The
-     * stored per-profile pref is kept — [setPingEnabled] still writes it — so a user's
-     * choice survives if the feature is ever sanctioned and re-enabled.
-     *
-     * (Original default was **false**, deliberately: a ping spends the user's own
-     * subscription quota on an automated request, per-profile so a Team account stays
-     * out of it by default.)
-     */
-    fun pingEnabled(profile: Profile): Boolean = false
-
-    fun setPingEnabled(profile: Profile, enabled: Boolean) {
-        prefs.edit().putBoolean(k(profile, "pingEnabled"), enabled).apply()
-    }
-
-    /** Minutes past local midnight, default 04:00. */
-    fun pingFirstMinuteOfDay(profile: Profile): Int =
-        prefs.getInt(k(profile, "pingFirstMinute"), 4 * 60)
-
-    fun setPingFirstMinuteOfDay(profile: Profile, minuteOfDay: Int) {
-        prefs.edit().putInt(k(profile, "pingFirstMinute"), minuteOfDay).apply()
-    }
-
-    /** Extra windows after the first, default 3 — the user's 4am/9am/2pm/7pm example. */
-    fun pingRenewals(profile: Profile): Int = prefs.getInt(k(profile, "pingRenewals"), 3)
-
-    fun setPingRenewals(profile: Profile, renewals: Int) {
-        prefs.edit().putInt(k(profile, "pingRenewals"), renewals).apply()
-    }
-
-    /** Minutes past local midnight; 0 means end of day. Default 0 (don't run into tomorrow). */
-    fun pingCutoffMinuteOfDay(profile: Profile): Int = prefs.getInt(k(profile, "pingCutoffMinute"), 0)
-
-    fun setPingCutoffMinuteOfDay(profile: Profile, minuteOfDay: Int) {
-        prefs.edit().putInt(k(profile, "pingCutoffMinute"), minuteOfDay).apply()
-    }
-
-    fun pingConfig(profile: Profile): PingSchedule.Config = PingSchedule.Config(
-        enabled = pingEnabled(profile),
-        firstPingMinuteOfDay = pingFirstMinuteOfDay(profile),
-        renewals = pingRenewals(profile),
-        cutoffMinuteOfDay = pingCutoffMinuteOfDay(profile),
-    )
-
-    /**
-     * Windows opened today, so renewals are bounded. Stored as an ISO date string
-     * rather than millis so a day rollover is unambiguous across time zones.
-     */
-    fun pingDayState(profile: Profile): PingSchedule.DayState = PingSchedule.DayState(
-        day = prefs.getString(k(profile, "pingDay"), null)?.let {
-            try {
-                java.time.LocalDate.parse(it)
-            } catch (_: Exception) {
-                null
-            }
-        },
-        windowsStarted = prefs.getInt(k(profile, "pingWindowsStarted"), 0),
-    )
-
-    fun recordPingWindowStarted(profile: Profile, day: java.time.LocalDate) {
-        val current = pingDayState(profile)
-        val started = if (current.day == day) current.windowsStarted + 1 else 1
-        prefs.edit()
-            .putString(k(profile, "pingDay"), day.toString())
-            .putInt(k(profile, "pingWindowsStarted"), started)
-            .apply()
-    }
-
-    /** Human-readable outcome of the last ping, for the settings status row. */
-    fun pingLastResult(profile: Profile): String? = prefs.getString(k(profile, "pingLastResult"), null)
-
-    fun pingLastAttemptAt(profile: Profile): Long = prefs.getLong(k(profile, "pingLastAttemptAt"), 0L)
-
-    /** True when the last attempt failed, so the row can be styled as a problem. */
-    fun pingLastFailed(profile: Profile): Boolean =
-        prefs.getBoolean(k(profile, "pingLastFailed"), false)
-
-    fun setPingOutcome(profile: Profile, at: Long, result: String, failed: Boolean) {
-        prefs.edit()
-            .putLong(k(profile, "pingLastAttemptAt"), at)
-            .putString(k(profile, "pingLastResult"), result)
-            .putBoolean(k(profile, "pingLastFailed"), failed)
-            .putInt(k(profile, "pingRevision"), prefs.getInt(k(profile, "pingRevision"), 0) + 1)
-            .apply()
-    }
-
-    /** Which **send**-failure retry step the current slot is on; reset once it resolves. */
-    fun pingRetryIndex(profile: Profile): Int = prefs.getInt(k(profile, "pingRetryIndex"), 0)
-
-    fun setPingRetryIndex(profile: Profile, index: Int) {
-        prefs.edit().putInt(k(profile, "pingRetryIndex"), index).apply()
-    }
-
-    // --- deferred verification state (CCBG-5) ---
-
-    /** When we last actually sent a ping. Backs [PingSchedule.tooSoonToSend]. */
-    fun pingLastSentAt(profile: Profile): Long = prefs.getLong(k(profile, "pingLastSentAt"), 0L)
-
-    /**
-     * The `resets_at` observed immediately *before* the pending ping, so the deferred
-     * check knows what "moved" means. -1 means "no window was open", which is distinct
-     * from 0 ("nothing pending").
-     */
-    fun pingPendingBefore(profile: Profile): Long = prefs.getLong(k(profile, "pingPendingBefore"), 0L)
-
-    fun pingVerifyAttempt(profile: Profile): Int = prefs.getInt(k(profile, "pingVerifyAttempt"), 0)
-
-    fun startPingVerification(profile: Profile, sentAt: Long, beforeMs: Long?) {
-        prefs.edit()
-            .putLong(k(profile, "pingLastSentAt"), sentAt)
-            .putLong(k(profile, "pingPendingBefore"), beforeMs ?: -1L)
-            .putInt(k(profile, "pingVerifyAttempt"), 0)
-            .apply()
-    }
-
-    fun setPingVerifyAttempt(profile: Profile, attempt: Int) {
-        prefs.edit().putInt(k(profile, "pingVerifyAttempt"), attempt).apply()
-    }
-
-    fun clearPingVerification(profile: Profile) {
-        prefs.edit()
-            .remove(k(profile, "pingPendingBefore"))
-            .remove(k(profile, "pingVerifyAttempt"))
-            .apply()
-    }
-
-    /** Bumped whenever a ping outcome is written, so the settings row can observe it. */
-    fun pingOutcomeRevision(profile: Profile): Int = prefs.getInt(k(profile, "pingRevision"), 0)
-}
-
-/** Per-widget configuration chosen in the setup screen when a widget is placed. */
-class WidgetPrefs(context: Context) {
-
-    private val appContext = context.applicationContext
-
-    private val prefs: SharedPreferences =
-        appContext.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
-
-    /**
-     * Whether this instance has a stored override. Prefs are only written on the
-     * first confirm, so this is also the add-vs-reconfigure test for the config
-     * screen — the getters below can't tell "unset" from the defaults.
-     */
-    fun has(appWidgetId: Int): Boolean = prefs.contains("w$appWidgetId.profile")
-
-    /**
-     * The account this instance shows. A widget whose account was removed resolves to
-     * [ProfileRegistry.first] — and because slots are never reused it can never resolve to
-     * a *different* new account. Removal repoints the stored key anyway (CCRM-6
-     * (Multi-Account) phase 4); this is the belt to that braces.
-     */
-    fun profileFor(appWidgetId: Int): Profile =
-        ProfileRegistry(appContext).resolve(prefs.getString("w$appWidgetId.profile", null))
-
-    /** Repoints every instance aimed at a removed account. */
-    fun repointFrom(deadKey: String, replacement: Profile) {
-        val e = prefs.edit()
-        for ((name, value) in prefs.all) {
-            if (name.endsWith(".profile") && value == deadKey) {
-                e.putString(name, replacement.key)
-            }
-        }
-        e.apply()
-    }
-
-    fun barFor(appWidgetId: Int): String =
-        prefs.getString("w$appWidgetId.bar", "session") ?: "session"
-
-    /**
-     * Which window a ring/pace face shows: "session" or "weekly". Doubles as the
-     * large face's on-widget 5h/7d toggle state ([saveWindow]) — one key, last
-     * writer wins, so the toggle "beats the configured window" trivially and the
-     * reconfigure screen pre-fills with whatever the face actually shows.
-     */
-    fun windowFor(appWidgetId: Int): String =
-        prefs.getString("w$appWidgetId.window", "session") ?: "session"
-
-    fun save(appWidgetId: Int, profile: Profile, bar: String?, window: String? = null) {
-        val e = prefs.edit().putString("w$appWidgetId.profile", profile.key)
-        if (bar != null) e.putString("w$appWidgetId.bar", bar)
-        if (window != null) e.putString("w$appWidgetId.window", window)
-        e.apply()
-    }
-
-    /** The large face's toggle: flips the window without touching the profile. */
-    fun saveWindow(appWidgetId: Int, window: String) {
-        prefs.edit().putString("w$appWidgetId.window", window).apply()
-    }
-
-    fun remove(appWidgetId: Int) {
-        prefs.edit()
-            .remove("w$appWidgetId.profile")
-            .remove("w$appWidgetId.bar")
-            .remove("w$appWidgetId.window")
-            .apply()
-    }
 }

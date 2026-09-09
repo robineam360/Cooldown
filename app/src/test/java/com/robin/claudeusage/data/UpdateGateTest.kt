@@ -41,40 +41,6 @@ class UpdateGateTest {
         assertTrue(UpdateGate.shouldCheckNow(true, pollAfterFailure, lastSuccess))
     }
 
-    // --- the post-or-not decision table -----------------------------------------------
-
-    @Test
-    fun `a newer version never seen before notifies`() {
-        assertTrue(UpdateGate.shouldNotify("v0.15", "0.14", null, null))
-    }
-
-    @Test
-    fun `up to date never notifies`() {
-        assertFalse(UpdateGate.shouldNotify("v0.14", "0.14", null, null))
-        assertFalse(UpdateGate.shouldNotify("0.13", "0.14", null, null))
-    }
-
-    @Test
-    fun `a version already notified stays silent — once per version, ever`() {
-        assertFalse(UpdateGate.shouldNotify("v0.15", "0.14", "0.15", null))
-    }
-
-    @Test
-    fun `a skipped version stays silent`() {
-        assertFalse(UpdateGate.shouldNotify("v0.15", "0.14", null, "0.15"))
-    }
-
-    @Test
-    fun `a release newer than the skipped one notifies — skip is per-version`() {
-        assertTrue(UpdateGate.shouldNotify("v0.16", "0.14", "0.15", "0.15"))
-    }
-
-    @Test
-    fun `normalisation makes v-prefixed and bare versions the same version`() {
-        assertFalse(UpdateGate.shouldNotify("0.15", "0.14", "v0.15", null))
-        assertFalse(UpdateGate.shouldNotify("v0.15", "0.14", null, "0.15"))
-    }
-
     // --- the settings outcome line ----------------------------------------------------
 
     @Test

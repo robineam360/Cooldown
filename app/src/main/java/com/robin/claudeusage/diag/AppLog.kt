@@ -14,9 +14,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
- * CCRM-34 (Diagnostics Log): the levelled, categorised app log, grown from
- * CCRM-17 (Window Pings)' `PingLog`. Everything the app does in the background —
- * polls, alert posts, token renewals, ping alarms — is invisible unless it's
+ * CCRM-34 (Diagnostics Log): the levelled, categorised app log, grown from the
+ * `PingLog` of the since-dropped CCRM-17 (Window Pings). Everything the app does in
+ * the background — polls, reset pings, token renewals — is invisible unless it's
  * attached to logcat; for a sideload-only app with an email feedback channel,
  * "share your log" is the only realistic way to diagnose someone else's phone.
  *

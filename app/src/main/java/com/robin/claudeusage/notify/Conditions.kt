@@ -9,22 +9,22 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.ui.Fmt
 
 /**
- * CCBG-12 (Status Icon Swap): the two *conditions* — a sign-in nearing expiry, and usage
- * data that has gone stale — as data rather than as notifications.
+ * CCBG-12 (Status Icon Swap): the *conditions* — a sign-in that stopped working or is
+ * nearing expiry, usage data that has gone stale, an update waiting — as data rather than
+ * as notifications.
  *
- * The distinction that matters is lifetime. A reset or a pace warning is an **event**: it
- * happens, it is read, it stops being interesting. These two are **states**: they are true
- * continuously until something fixes them, which meant a notification sitting in the shade
- * for hours or, in the sign-in case, up to seven days. That is precisely what makes Android
- * swap our live status-bar meter for the launcher icon, so the price of saying "your token
- * expires next week" was a status bar that read 72% all week.
+ * The distinction that matters is lifetime. A window reset is an **event**: it happens, it
+ * is read, it stops being interesting, and it still posts (`alerts/Alerts.kt`). These are
+ * **states**: true continuously until something fixes them, which as notifications meant
+ * one sitting in the shade for hours or, in the sign-in case, up to seven days. That is
+ * precisely what makes Android swap our live status-bar meter for the launcher icon, so
+ * the price of saying "your token expires next week" was a status bar that read 72% all
+ * week.
  *
- * Folded, they render inside the pinned notification instead — it is already posted, so it
- * costs no second notification — and they disappear on their own when the condition
- * resolves, with nothing to dismiss.
- *
- * Both [Alerts] and [PinnedNotification] read this same derivation, so the decision to
- * suppress a notification and the decision to draw a strip can never disagree.
+ * As strips they render inside the pinned notification instead — it is already posted, so
+ * they cost no second notification — and they disappear on their own when the condition
+ * resolves, with nothing to dismiss. Nothing else consumes this: it is derived live at
+ * draw time, so a strip and the thing it describes can never disagree.
  */
 object Conditions {
 
@@ -44,30 +44,18 @@ object Conditions {
         val error: Boolean,
     )
 
-    /**
-     * Whether the pinned notification is in a position to carry a profile's alerts.
-     *
-     * Simply "is it on" (CCRM-44 (One Surface), revised 2026-08-18 on user feedback):
-     * the panel carries EVERY profile — the ones it isn't showing get their strips
-     * prefixed with their names — so no profile ever posts a standalone notification
-     * while the panel exists. Off, everything posts exactly as before.
-     */
-    fun foldedInto(cache: UsageCache): Boolean = cache.pinnedEnabled()
-
-    /** Every condition currently true for [profile], faults first. */
-    fun forProfile(cache: UsageCache, profile: Profile): List<Condition> =
-        listOfNotNull(stale(cache, profile), expiry(cache, profile))
-
     /** The expanded panel renders at most this many strips; the rest fold to one line. */
     const val MAX_STRIPS = 3
 
     /**
      * CCRM-44 (One Surface): everything the pinned panel carries for [profile], as one
-     * ordered, capped stack.
+     * ordered, capped stack. Every strip is derived here and now — nothing is persisted,
+     * so nothing can outlive the condition it describes (CCRM-61 (Settings Diet) removed
+     * the folded-event store that could).
      *
-     * @param strips at most [MAX_STRIPS], ordered faults (re-auth, stale) · events
-     *   newest-first · warnings (expiry) · update last — the update strip is the least
-     *   urgent, so it is the first into the overflow.
+     * @param strips at most [MAX_STRIPS], ordered faults (re-auth, stale) · warnings
+     *   (expiry) · update last — the update strip is the least urgent, so it is the
+     *   first into the overflow.
      * @param overflow how many strips did not fit; drawn as a "+ n more" line.
      * @param stale whether the stale fault is among the strips — it alone also dims
      *   the big-number figure, doubt belonging on the number itself.
@@ -76,10 +64,7 @@ object Conditions {
 
     fun panelFor(context: Context, cache: UsageCache, profile: Profile): Panel {
         // The panel carries the other profiles too (revised 2026-08-18): their strips are
-        // prefixed with their names, since the header only names the shown profile. Event
-        // strips are prefixed here as well — CCBG-16 (Stale Strip Label) moved that
-        // composition out of the frozen alert copy and onto [StripRules.stripTitle], so an
-        // event now follows a rename exactly as the live conditions below always did.
+        // prefixed with their names, since the header only names the shown profile.
         //
         // CCRM-6 (Multi-Account) generalised this from exactly one "other" to every other
         // registered account. Ordering is unchanged and deliberate: the *shown* profile's
@@ -88,21 +73,6 @@ object Conditions {
         // however many accounts exist, and "+ n more" is the honest answer.
         val others = cache.registry().all().filter { it != profile }
         val staleCondition = stale(cache, profile)
-        val events = (listOf(profile) + others)
-            .flatMap { p ->
-                // The label is read per owning profile, live, at draw time — the point of
-                // CCBG-16 (Stale Strip Label). Events are stored in their own profile's
-                // namespace, so `p` *is* the owner.
-                val label = cache.profileLabel(p)
-                cache.foldedEvents(p)
-                    .filter { revocable(cache, p, it.kind) }
-                    .map { it to label }
-            }
-            .sortedByDescending { (event, _) -> event.firedAt }
-            .map { (event, label) ->
-                val title = StripRules.stripTitle(event.title, event.profileKey, label)
-                Condition(short = title, title = title, detail = event.detail, error = false)
-            }
         val all = listOfNotNull(reauth(cache, profile), staleCondition) +
             others.flatMap { other ->
                 val label = cache.profileLabel(other)
@@ -110,7 +80,7 @@ object Conditions {
                     reauth(cache, other)?.labelled(label),
                     stale(cache, other)?.labelled(label),
                 )
-            } + events + listOfNotNull(expiry(cache, profile)) +
+            } + listOfNotNull(expiry(cache, profile)) +
             others.mapNotNull { other ->
                 expiry(cache, other)?.labelled(cache.profileLabel(other))
             } + listOfNotNull(update(context, cache))
@@ -122,69 +92,20 @@ object Conditions {
         )
     }
 
-    /**
-     * CCBG-17 (Strip Revocation): whether the toggle that *governs* this event kind is
-     * still on.
-     *
-     * A folded strip is a persisted record of a past alert, not a live one, so switching
-     * its alert off in Settings did nothing to it — the panel kept drawing an alert the
-     * user had explicitly silenced, for as long as CCBG-18 (Strip Lifetime Stamp) let the
-     * record live. The gate belongs here, at draw time, alongside the fire-time gates in
-     * [Alerts.evaluate] rather than instead of them: filtering (rather than clearing the
-     * store on toggle-off) is reversible, so switching a toggle back on brings a strip
-     * that is still within its lifetime back, which is what a toggle should mean.
-     *
-     * Which *threshold* fired isn't recorded on the event, so a threshold strip is only
-     * revoked when the whole set empties — Settings' own "Nothing selected = silent".
-     * The kind-to-toggle mapping itself lives in [StripRules.gateFor]; this does the
-     * preference reads.
-     */
-    private fun revocable(cache: UsageCache, profile: Profile, kind: String): Boolean {
-        if (!cache.profileAlertsEnabled(profile)) return false
-        return when (StripRules.gateFor(kind)) {
-            StripRules.Gate.PROFILE -> true
-            StripRules.Gate.PACE -> cache.paceAlertsEnabled()
-            StripRules.Gate.SESSION_THRESHOLD -> cache.sessionAlertThresholds().isNotEmpty()
-            StripRules.Gate.WEEKLY_THRESHOLD -> cache.weeklyAlertThresholds().isNotEmpty()
-            StripRules.Gate.MODEL_CAP_THRESHOLD -> cache.modelCapAlertThresholds().isNotEmpty()
-            StripRules.Gate.RESET -> {
-                val window = StripRules.resetWindow(kind) ?: return true
-                cache.resetPingMode(window) != UsageCache.RESET_OFF
-            }
-        }
-    }
-
-    /**
-     * CCBG-18 (Strip Lifetime Stamp): the soonest a strip the panel is *currently drawing*
-     * is due to leave, or 0 if none is. What the pinned notification arms its expiry alarm
-     * for — without it a strip survives until the next poll, so a 15-minute lifetime could
-     * mean half an hour on screen.
-     *
-     * Deliberately mirrors [panelFor]'s revocation filter: a strip already revoked by
-     * CCBG-17 (Strip Revocation) isn't drawn, so it needs no alarm to remove it.
-     */
-    fun nextExpiry(cache: UsageCache, profile: Profile): Long {
-        val profiles = listOf(profile) + cache.registry().all().filter { it != profile }
-        return profiles.flatMap { p ->
-            cache.foldedEvents(p)
-                .filter { revocable(cache, p, it.kind) }
-                .map { cache.effectiveExpiry(it) }
-        }.minOrNull() ?: 0L
-    }
-
     private fun Condition.labelled(label: String): Condition =
         copy(short = "$label: $short", title = "$label: $title")
 
     /**
      * Re-auth as a condition (CCRM-44). It is the textbook state — continuously true
      * until the user re-signs in — and was one of CCBG-12 (Status Icon Swap)'s two
-     * deliberate residuals. With every alert folded there is no second notification
-     * left to preserve it, so it rides the panel like the rest; the pinned-off path
-     * still posts it at IMPORTANCE_HIGH exactly as before.
+     * deliberate residuals.
+     *
+     * Unconditional since CCRM-61 (Settings Diet): the panel is the only surface that
+     * says a sign-in has stopped working, and a toggle that hides the one report of a
+     * broken account is not a preference worth keeping.
      */
     private fun reauth(cache: UsageCache, profile: Profile): Condition? {
         if (cache.snapshot(profile).authState != AuthState.REAUTH_NEEDED) return null
-        if (!cache.authAlertsEnabled()) return null
         return Condition(
             short = "Sign-in stopped working",
             title = "Sign-in stopped working",
@@ -196,9 +117,11 @@ object Conditions {
     /**
      * Update-available as a condition (CCRM-44), app-global so it shows whichever
      * profile the panel carries. Persisting while the installed version lags is what
-     * resolves CCBG-12's timeout tension: the standalone notice posts once per
-     * version, ever, so it could never expire — a strip that is simply present while
-     * the version is behind needs no such ceremony. Respects "skip this version".
+     * resolved CCBG-12's timeout tension: the standalone notice it replaced posted once
+     * per version, ever, so it could never be given an expiry — a strip that is simply
+     * present while the version is behind needs no such ceremony. It is the only
+     * update surface in the shade now (CCRM-61 (Settings Diet)). Respects "skip this
+     * version".
      */
     private fun update(context: Context, cache: UsageCache): Condition? {
         val latest = cache.latestKnownVersion() ?: return null
@@ -220,8 +143,8 @@ object Conditions {
 
     /**
      * Data is stale when polls are running but none has succeeded for hours. Reuses
-     * [Alerts.STALE_DATA_MS] so the panel strip, the widget faces' stale treatment and the
-     * old alert can never disagree about what "stale" means.
+     * `Alerts.STALE_DATA_MS`, the one constant left that means "stale", so this strip and
+     * anything that grows beside it can never disagree about what it is.
      */
     private fun stale(cache: UsageCache, profile: Profile): Condition? {
         val snapshot = cache.snapshot(profile)
