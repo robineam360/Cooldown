@@ -1,24 +1,26 @@
 <p align="center">
-  <img src="release/screenshots/hero.png" alt="Cooldown — your AI usage limits, right on your Android home screen" width="100%">
+  <img src="release/screenshots/hero.png" alt="Cooldown — your Claude and ChatGPT usage limits, always in your Android shade" width="100%">
 </p>
 
 # Cooldown
 
-**Cooldown** — an Android home-screen widget and app that shows how much of your **Claude**
-and **ChatGPT** usage limits you've burned through, and when your 5-hour and 7-day windows
-reset. Built for people who live in these tools and keep hitting the wall mid-thought —
-especially in **Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude Code) there's
-no built-in way to see how close you are.
+**Cooldown** — an Android app that shows how much of your **Claude** and **ChatGPT** usage
+limits you've burned through, and when your 5-hour and weekly windows reset. Its home is an
+**always-on notification** that carries **two accounts side by side**, with a **ring in the
+status bar** that fills as your window does, and a **ping the moment a window resets**. Built
+for people who live in these tools and keep hitting the wall mid-thought — especially in
+**Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude Code) there's no built-in way
+to see how close you are.
 
-Every account is a tab, a widget, a tile and its own set of alerts — mix Claude and ChatGPT
-accounts freely, as many as you use. **Gemini (Google Antigravity) is listed but greyed out**:
-its sign-in can't currently be completed on a phone, and the app says so rather than pretending
-otherwise.
+Every account is a tab, a half of the notification, and its own pair of reset pings — mix
+Claude and ChatGPT accounts freely, as many as you use. **Gemini (Google Antigravity) is listed
+but greyed out**: its sign-in can't currently be completed on a phone, and the app says so
+rather than pretending otherwise.
 
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.5.pdf) — the full
-install → sign-in → widgets walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.6.pdf) — the full
+install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
 > ⚠️ **Unofficial.** This is a personal community tool. It is not affiliated with, endorsed
@@ -55,75 +57,89 @@ a 2-page overview.
 
 ## What it does
 
-- **Claude *and* ChatGPT accounts, side by side** 🆕 — pick the service when you add an
-  account; each one carries its provider's mark on every surface and its brand colour as its
-  default accent, which you can override per account. Gemini (Antigravity) is greyed out until
-  its sign-in works on a phone
-- **Sign in to ChatGPT with a short code** 🆕 — no computer, no copied token: the app shows a
+- **Two accounts on one always-on notification** 🆕 — a silent notification that carries a
+  **First** and a **Second** account side by side: each half has its provider's mark, the
+  account's name, a bar with the even-pace tick and a big percentage in that half's warning
+  colour. Expand it for both headers with their reset lines, the **Weekly** rows, per-model
+  caps and a one-tap Refresh. Each half is its own tap target — Cooldown on that account's
+  tab, or the service's own app. One account, or Second set to None, gives the single layout
+- **A status-bar ring that says whose it is** 🆕 — a tiny ring fills with the shown account's
+  5-hour window, drawn in that account's own colour (Claude terracotta, ChatGPT green) until it
+  climbs to yellow, orange and red; at 100% it goes solid red with an ×. Choose **First**,
+  **Second** or **Whichever is higher**
+- **Reset pings, per account** 🆕 — for each account a **5h reset** and a **Weekly reset**
+  ping, each Off / If busy / Always. They post as real notifications even with the always-on
+  one running — and fire for an account left idle across the reset, not just one that kept
+  chatting
+- **Claude *and* ChatGPT accounts, side by side** — pick the service when you add an account;
+  each one carries its provider's mark on every surface and its brand colour as its default
+  accent, which you can override per account. Gemini (Antigravity) is greyed out until its
+  sign-in works on a phone
+- **Two rooms** 🆕 — a Claude tab sits on a warm ivory surface with its headline figures in a
+  serif; a ChatGPT tab is cool and neutral in the default sans. The cards themselves are
+  identical, and the top bar leads with both marks
+- **Sign in to ChatGPT with a short code** — no computer, no copied token: the app shows a
   code, you type it at `auth.openai.com` on any device, and the account appears
-- **Home-screen widgets** (small / medium / large, plus a compact single-bar widget) showing
-  the 5-hour session window, the 7-day all-models window, and per-model 7-day caps —
-  with countdown and exact local reset time. A window your account doesn't have is simply not
-  shown — no placeholder, no dash
-- **Pinned notification** 🆕 — an optional always-on, silent notification with a status-bar
-  gauge icon that fills as you use your 5-hour window; expands to show the 7-day and
-  per-model bars, with a one-tap Refresh
-- **Usage history** 🆕 — a scrollable bar per 5-hour session, week by week (and a per-week
-  view across weeks), so you can see how many sessions you ran and which ones hit 100%
-- **Multi-account with editable names** — Personal and Work to start, "+ Add account" for
-  as many more as you use, on either service; each gets its own swipeable tab, widgets, tiles
-  and alerts, and renames from its account card
-- **Quick Settings tiles** — glance at your 5h/7d percentages from the notification shade
-- **Granular alerts** 🆕 — pick exactly which thresholds warn you per window (5-hour, 7-day,
-  per-model), turn reset pings off / smart / always, and mute a whole profile — no more
-  all-or-nothing
+- **Settings in four swipeable tabs** 🆕 — **Accounts · Alerts · Appearance · More**. 24 rows
+  instead of 43; one "Show red past the pace mark" switch covers the app and the
+  notification; Usage credits appears only for accounts that have a credit budget
 - **Pace chart + burn-rate projection** — every reading plotted with threshold guides and a
   forecast tail, plus a plain-words verdict ("At this pace: 100% at 2:40 PM — 1h 20m before
   the reset"), built from a local history of your own polls
-- **Pay-as-you-go usage credits** — spent, total and what's left, on the main screen and as
-  a widget; hidden for plans without a credit budget. ChatGPT accounts show a plain
+- **An "even pace" line on every chart, a tick on every bar** — the diagonal from 0% at the
+  window's start to 100% at its reset. Stay below it and you'll finish inside your limit;
+  cross it and the overshoot shades red
+- **Usage history** — a scrollable bar per 5-hour session, week by week (and a per-week view
+  across weeks), so you can see how many sessions you ran and which ones hit 100%
+- **Multi-account with editable names** — Personal and Work to start, "+ Add account" for as
+  many more as you use, on either service; each gets its own swipeable tab and renames from
+  its account card. A window your account doesn't have is simply not shown — no placeholder,
+  no dash
+- **Pay-as-you-go usage credits** — spent, total and what's left, as a card on the main
+  screen; hidden for plans without a credit budget. ChatGPT accounts show a plain
   **"$12.40 balance"** instead, and nothing at all on an unlimited plan
-- **An "even pace" line on every chart** — the diagonal from 0% at the window's start to
-  100% at its reset. Stay below it and you'll finish inside your limit; cross it and the
-  overshoot shades amber
-- **15 theme colors** including Material You dynamic color, full light/dark support; usage
-  bars shade amber then a clear warning-red as you approach 100%. New: **Per provider** 🆕,
-  where each account just wears its own service's colour, and a per-account override under
-  the card's ⋮ menu when you'd rather it didn't
+- **15 theme colours** including Material You dynamic colour and **Per provider** (the
+  default — each account wears its own service's colour), full light/dark support; usage bars
+  shade yellow, orange, then a clear warning-red as you approach 100%
+- **The Pulse icon** 🆕 — an ECG beat on charcoal: Claude terracotta in, ChatGPT green out,
+  the red spike crossing a dashed even-pace ceiling. No trademarks on the tile
+
+**Gone in v1.6:** the home-screen widgets, the Quick Settings tile, the standalone threshold
+and pace alerts, and the three other notification styles and status-bar glyphs. The
+notification does their job in one place. **Placed widgets and tiles disappear when you
+update** — nothing else to do.
 
 ## Screenshots
 
 <table>
   <tr>
-    <td align="center"><img src="release/screenshots/history-5h-dark.png" width="240" alt="Usage history, per-session bars"><br><sub><b>Usage history</b> 🆕 — a bar per 5-hour session (red = hit 100%)</sub></td>
-    <td align="center"><img src="release/screenshots/pinned-collapsed.png" width="240" alt="Pinned notification, collapsed"><br><sub><b>Pinned notification</b> 🆕 — always-on gauge in your shade</sub></td>
-    <td align="center"><img src="release/screenshots/settings-alerts.png" width="240" alt="Granular alert settings"><br><sub><b>Granular alerts</b> 🆕 — pick your thresholds per window</sub></td>
+    <td align="center" colspan="2"><img src="release/docs/src/shots/v16-notif-collapsed.png" width="500" alt="Always-on notification, collapsed: two accounts on one row"><br><sub><b>Two accounts on one notification</b> 🆕 — collapsed: mark, name, bar with the pace tick, the 5-hour figure</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-claude-dark.png" width="240" alt="Main screen, a Claude account in its ivory room"><br><sub><b>The app</b> — a Claude account, in its room</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/screenshots/pinned-expanded.png" width="240" alt="Pinned notification, expanded"><br><sub><b>Expanded</b> — 7-day &amp; per-model bars, one-tap Refresh</sub></td>
-    <td align="center"><img src="release/screenshots/profile-names.png" width="240" alt="Editable profile names"><br><sub><b>Rename your profiles</b> 🆕 — not just Personal/Work</sub></td>
-    <td align="center"><img src="release/screenshots/history-7d-dark.png" width="240" alt="Per-week history"><br><sub><b>Per-week view</b> 🆕 — one bar per 7-day window</sub></td>
+    <td align="center" colspan="2"><img src="release/docs/src/shots/v16-notif-expanded.png" width="500" alt="Always-on notification, expanded: both headers, weekly rows, Refresh"><br><sub><b>Expanded</b> 🆕 — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-chatgpt-dark.png" width="240" alt="Main screen, a ChatGPT account in its neutral room"><br><sub><b>Same cards, other room</b> 🆕 — a ChatGPT account</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/screenshots/widget-large-dark.png" width="240" alt="Home-screen widget, dark theme"><br><sub><b>Home-screen widget</b> — 5-hour &amp; 7-day windows at a glance</sub></td>
-    <td align="center"><img src="release/screenshots/widget-theme-blue.png" width="240" alt="Home-screen widgets in a blue theme"><br><sub><b>Themeable</b> — 13 accent colors (here in blue)</sub></td>
-    <td align="center"><img src="release/screenshots/app-tabs-personal.png" width="240" alt="App main screen, Personal profile"><br><sub><b>The app</b> — full breakdown with exact reset times</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-settings-alerts.png" width="240" alt="Settings, Alerts tab"><br><sub><b>Settings · Alerts</b> 🆕 — the notification, the ring, reset pings</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-settings-appearance.png" width="240" alt="Settings, Appearance tab"><br><sub><b>Settings · Appearance</b> 🆕 — theme, formats, one pace switch</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-claude-light.png" width="240" alt="Main screen, light theme"><br><sub><b>Light theme</b> — the ivory room by day</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/screenshots/quick-settings-tiles.png" width="240" alt="Quick Settings tiles"><br><sub><b>Quick Settings tiles</b> — swipe down, see your %</sub></td>
-    <td align="center"><img src="release/screenshots/notifications.png" width="240" alt="Usage alerts"><br><sub><b>Alerts</b> — near-limit warnings and "window has reset"</sub></td>
-    <td align="center"><img src="release/screenshots/app-tabs-work.png" width="240" alt="Work profile tab"><br><sub><b>Two profiles</b> — Personal and Work, side by side</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-icon-drawer.png" width="240" alt="The Pulse icon in the app drawer"><br><sub><b>The Pulse icon</b> 🆕 — in the app drawer</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="240" alt="The status-bar ring"><br><sub><b>The status-bar ring</b> 🆕 — in the account's own colour</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-settings-more.png" width="240" alt="Settings, More tab with About"><br><sub><b>Settings · More</b> — polling, updates, About</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/screenshots/signin-settings.png" width="240" alt="Sign in on this phone"><br><sub><b>Sign in on this phone</b> 🆕 — no computer needed</sub></td>
+    <td align="center"><img src="release/screenshots/signin-settings.png" width="240" alt="Sign in on this phone"><br><sub><b>Sign in on this phone</b> — no computer needed</sub></td>
     <td align="center"><img src="release/screenshots/signin-consent.png" width="240" alt="Authorize in the browser"><br><sub><b>Authorize in your browser</b> — Pro, Max &amp; Team accounts</sub></td>
     <td align="center"><img src="release/screenshots/signin-finish.png" width="240" alt="Paste the code to finish"><br><sub><b>Paste the code, done</b> — self-renews for ~a month</sub></td>
   </tr>
 </table>
 
-More screenshots (settings, themes, widget setup, token guide) in
-[`release/screenshots/`](release/screenshots/). All screenshots are from a real device in dark
-mode; **Usage history** fills in over time as your windows close.
+All screenshots are from a real device (a Galaxy Z Fold 7's cover screen); the sign-in row is
+from an earlier version — the cards and the flow are unchanged. **Usage history** fills in over
+time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
 
@@ -133,16 +149,16 @@ All you need is your Android phone.
 [latest release](../../releases/latest) onto your phone and open it (allow "install
 unknown apps" if your phone asks).
 
-**2a. Sign in to Claude.** In the app: **Settings → tap "Sign in on this phone"** on
-the account card. Your browser opens Claude's sign-in — log in (Pro, Max, and Team
+**2a. Sign in to Claude.** In the app: **Settings → Accounts → tap "Sign in on this phone"**
+on the account card. Your browser opens Claude's sign-in — log in (Pro, Max, and Team
 accounts all work), tap **Authorize**, copy the code the page shows, hop back to the app,
 and tap **Paste → Finish sign-in**. Usage loads immediately.
 
-**2b. Sign in to ChatGPT** 🆕 **.** Tap **"+ Add account" → ChatGPT**. The app shows a short
-code and a countdown. Go to **auth.openai.com/codex/device** — on this phone with the
-**Open in browser** button, or on your laptop, whichever is easier — type the code, and
-approve. The sheet closes by itself and the new tab appears with your numbers. Nothing is
-copied from a computer; the phone mints its own sign-in.
+**2b. Sign in to ChatGPT.** Tap **"+ Add account" → ChatGPT**. The app shows a short code and
+a countdown. Go to **auth.openai.com/codex/device** — on this phone with the **Open in
+browser** button, or on your laptop, whichever is easier — type the code, and approve. The
+sheet closes by itself and the new tab appears with your numbers. Nothing is copied from a
+computer; the phone mints its own sign-in.
 
 Tracking more than one account? Tap **"+ Add account"** as many times as you like and mix
 the two services freely — if you keep each account logged in to claude.ai in a
@@ -152,7 +168,9 @@ different browser, the built-in browser picker lets you route each Claude sign-i
 **Gemini?** The third row in the sheet is greyed out. Google's Antigravity sign-in can't be
 completed on a phone today; the app says so rather than hiding the option.
 
-**3. Add a widget.** Long-press your home screen → **Widgets** → pick a **Cooldown** widget.
+**3. Turn on the notification.** **Settings → Alerts → Always-on notification**, then pick a
+**First** and, if you like, a **Second** account under **Show accounts**. Set each account's
+**5h reset** and **Weekly reset** pings to Off / If busy / Always on the same tab.
 
 A Claude sign-in renews itself for about a month, then the app reminds you before it
 lapses — re-signing in is the same one-minute flow. A ChatGPT sign-in has no fixed expiry we
@@ -236,8 +254,8 @@ through channels you don't trust (email, group chats, cloud notes).
 ## How it works
 
 Each account carries which service it belongs to, and the app swaps in that service's fetcher
-behind one shared interface. Everything above that — tabs, widgets, tiles, alerts, history —
-never learns the difference.
+behind one shared interface. Everything above that — tabs, the notification, reset pings,
+history — never learns the difference.
 
 **Claude.** The app signs in with the **same OAuth client as the Claude Code CLI** — the
 identical client ID and scopes (`org:create_api_key user:profile user:inference
@@ -259,7 +277,9 @@ a desktop `auth.json` — reusing that token family would trip OpenAI's rotation
 sign you out of your own CLI — and it **never** calls the one nearby endpoint that would spend
 a credit.
 
-Both poll on the same battery-friendly interval (15 minutes by default, configurable).
+Both poll on the same battery-friendly interval (15 minutes by default, configurable). Every
+poll re-renders the always-on notification; a reset ping is scheduled at the known reset
+moment, and an idle account's window is rolled over on the first poll after it.
 
 **Privacy:** your tokens stay on your device, encrypted with the Android Keystore
 (EncryptedSharedPreferences, AES-256-GCM). They are sent to Anthropic's and OpenAI's APIs and
@@ -275,8 +295,8 @@ Requirements: JDK 17, Android SDK (compileSdk 36).
 # APK lands in app/build/outputs/apk/debug/
 ```
 
-Stack: Kotlin, Jetpack Compose (Material 3), Glance for widgets, WorkManager for polling,
-OkHttp. No other dependencies.
+Stack: Kotlin, Jetpack Compose (Material 3), WorkManager for polling, OkHttp. The
+notification is plain RemoteViews. No other dependencies.
 
 ## Fair-use notes
 
@@ -303,19 +323,30 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.5.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.6.pdf).
 
+- **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The
+  always-on notification now carries a **First** and a **Second** account side by side, with
+  both headers and the Weekly rows when expanded; the status-bar ring drops its weekly dot and
+  wears the shown account's colour (First / Second / Whichever is higher), solid red with an ×
+  at 100%. **Reset pings** are per account and per window, and fire for an idle account too.
+  Settings shrinks to **four tabs** — Accounts, Alerts, Appearance, More. A new **Pulse**
+  launcher icon, and each tab is a **room**: ivory and serif for Claude, neutral for ChatGPT.
+  **Removed:** the home-screen widgets, the Quick Settings tile, the standalone threshold and
+  pace alerts, three notification styles and three status-bar glyphs — placed widgets and
+  tiles disappear on update. Fixed: the two provider marks in the top bar now render the same
+  size.
 - **1.5** — **ChatGPT accounts.** The app is now just **Cooldown**, and tracks Claude *and*
   ChatGPT side by side — add either from "+ Add account", sign into ChatGPT with a short code
-  at auth.openai.com (no computer, no copied token), and every tab, widget, tile and alert
-  works the same for both. New three-sand hourglass icon; each service's own mark on every
-  surface; a **Per provider** theme where each account wears its own colour, overridable per
-  account. A window an account doesn't have is now hidden rather than drawn as a dash. Gemini
-  (Google Antigravity) is listed but greyed out — its sign-in can't finish on a phone yet.
-- **1.4** — **Multi-account** — "+ Add account" for a third, fourth, or more, each with its own tab, widgets, tiles and alerts. A new clock-hand pace needle on the always-on notification's status-bar icon. Fixed: alerts switched off in Settings now retract their pinned-notification strip instead of leaving it stuck.
+  at auth.openai.com (no computer, no copied token), and every tab and alert works the same
+  for both. Each service's own mark on every surface; a **Per provider** theme where each
+  account wears its own colour, overridable per account. A window an account doesn't have is
+  now hidden rather than drawn as a dash. Gemini (Google Antigravity) is listed but greyed
+  out — its sign-in can't finish on a phone yet.
+- **1.4** — **Multi-account** — "+ Add account" for a third, fourth, or more, each with its own tab and alerts. A new clock-hand pace needle on the always-on notification's status-bar icon. Fixed: alerts switched off in Settings now retract their pinned-notification strip instead of leaving it stuck.
 - **1.3** — The status-bar icon rebuilt around its real size, with a theme-coloured pace ring and a dot for when the 7-day window needs a look; every alert for every profile now folds into one pinned-notification panel; new hourglass launcher icon; Used-or-Left and countdown-or-clock display switches.
-- **1.2** — Three new widget faces (Ring, Mini-Rings, Pace); pace marks on every bar and ring; **pace alerts** on the projection, not just the percent; automatic update checks.
-- **1.1** — **Usage credits**, four pinned-notification styles, and a rebuilt **pace chart** with an even-pace line and threshold guides.
+- **1.2** — Three new widget faces (Ring, Mini-Rings, Pace — since retired); pace marks on every bar and ring; **pace alerts** on the projection, not just the percent (since retired); automatic update checks.
+- **1.1** — **Usage credits**, four pinned-notification styles (three since retired), and a rebuilt **pace chart** with an even-pace line and threshold guides.
 - **1.0** — First official release — everything below, polished into one build and shared with the team.
 - **0.14** — Feedback now opens an email (was WhatsApp); added a **Check for updates** button; the app downloads from GitHub Releases.
 - **0.13** — The big one: **usage history**, an always-on **pinned notification**, and **finer-grained alerts**. Profiles are renameable, and your history & settings now survive a reinstall.
@@ -325,7 +356,7 @@ changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.5.pdf).
 - **0.9** — **Burn-rate forecast** (when you'll hit the limit at your current pace) + sign in by scanning a QR code.
 - **0.8** — Smarter heads-ups when your sign-in is about to expire or the data goes stale.
 - **0.7** — Renamed to **Claude Cooldown**, new icon, tidier Settings, in-app help.
-- **0.6** — Added the **Work** profile alongside Personal, plus **Quick Settings tiles**.
+- **0.6** — Added the **Work** profile alongside Personal, plus Quick Settings tiles (since retired).
 - **0.5** — Big visual refresh — cleaner bars, the pacing indicator, and 13 theme colors.
 - **0.4** — First usage alerts and a Quick Settings tile.
 - **0.3** — Material You theming and dark-mode polish.
@@ -336,7 +367,8 @@ changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.5.pdf).
 
 Made by **Robin Richard Rajan**, built with [Claude Code](https://claude.com/claude-code) 🧡 — the
 app was prototyped and **built in a weekend by Claude Fable 5**, with the native sign-in and the
-docs finished by **Claude Opus 4.8** (Fable declined the OAuth handshake on cybersecurity grounds).
+docs finished by **Claude Opus 4.8** (Fable declined the OAuth handshake on cybersecurity grounds),
+ChatGPT accounts by **Claude Opus 5** and **Sonnet 5**, and the v1.6 arc run by **Claude Fable 5.1**.
 
 Licensed under the [MIT License](LICENSE). See [RELEASING.md](RELEASING.md) for the
 update workflow.

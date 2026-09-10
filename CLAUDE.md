@@ -27,7 +27,7 @@ and never renumbered**, including for dropped or retracted items.
 
 ## 2. Show a wireframe and get approval before building
 
-Anything that changes what the user sees — a new screen, card, widget layout, notification
+Anything that changes what the user sees — a new screen, card, notification layout, notification
 style, chart element, settings section, or a visible change to an existing one — needs a
 **wireframe reviewed and approved before implementation starts**. Not after. Not alongside.
 
@@ -41,8 +41,9 @@ style, chart element, settings section, or a visible change to an existing one �
 - **Wait for an explicit approval.** Silence is not approval. If the answer is "change X",
   show the revised wireframe before building.
 
-**Applies to:** the in-app screens, both widget providers, the pinned notification, the Quick
-Settings tile, and the share card (CCRM-24 (Share Card)). **Does not apply to:** pure logic,
+**Applies to:** the in-app screens, the always-on notification (both halves and the status-bar
+ring), the reset pings, the launcher icon, and the share card (CCRM-24 (Share Card)). (The
+widgets and the Quick Settings tile it used to name left in v1.6, CCRM-61 (Settings Diet).) **Does not apply to:** pure logic,
 parsing, scheduling, tests, docs, or a bug fix that restores an already-approved design.
 
 ## 3. Where things live

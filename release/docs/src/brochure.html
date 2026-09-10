@@ -81,31 +81,38 @@
 <!-- ================= PAGE 1 ================= -->
 <div class="page hero">
   <div class="brandrow">
-    <svg width="46" height="46" viewBox="-50 -50 100 100">
-      <circle r="48" fill="#D2775A"/><circle r="31" fill="#F2EFE6"/><path d="M0 0 L0 -31 A31 31 0 0 0 -27 15.5 Z" fill="#E0A38C"/>
+    <svg width="46" height="46" viewBox="18 18 72 72" style="border-radius:22%;">
+      <defs><clipPath id="sqb"><path d="M54,18 C24.48,18 18,24.48 18,54 C18,83.52 24.48,90 54,90 C83.52,90 90,83.52 90,54 C90,24.48 83.52,18 54,18 Z"/></clipPath></defs>
+      <g clip-path="url(#sqb)">
+        <rect x="0" y="0" width="108" height="108" fill="#1F1B19"/>
+        <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" stroke="#F3EBE3" stroke-width="3.9" stroke-opacity=".72" fill="none"/>
+        <path d="M12,64 L27,64 L34,50 L41,64 L44,64" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M66,64 L71,64 L78,50 L85,64 L96,64" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M44,64 L48,72 L54,20 L60,74 L66,64" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
     </svg>
     <div>
       <div class="name">Cooldown</div>
-      <div class="byline">a home-screen companion for people who live in Claude &amp; ChatGPT</div>
+      <div class="byline">an always-on companion for people who live in Claude &amp; ChatGPT</div>
     </div>
   </div>
 
   <h1>Never get cut off by a<br>usage limit <em>mid-thought</em> again.</h1>
-  <div class="sub">Claude and ChatGPT both meter you on a 5-hour session window and a 7-day weekly one. Cooldown puts every one of them on your Android home screen — for <b style="color:#F5F2EA;">as many accounts as you use, on either service</b> — forecasts when you'll hit the wall at your current pace, and pings you before it happens <i>and</i> the moment you're back.</div>
+  <div class="sub">Claude and ChatGPT both meter you on a 5-hour session window and a 7-day weekly one. Cooldown keeps them in your Android shade — <b style="color:#F5F2EA;">two accounts on one always-on notification, a ring in the status bar</b>, as many accounts as you use on either service — forecasts when you'll hit the wall at your current pace, and pings you the moment you're back.</div>
 
   <div class="shots">
-    <figure><img src="shots/v11-chart-credits.png" width="172"><figcaption>The app — the pace chart<br>and your usage credits</figcaption></figure>
-    <figure><img src="shots/v11-widgets.png" width="172"><figcaption>The widgets — live on your home<br>screen, in your accent color</figcaption></figure>
-    <figure><img src="shots/quick-settings-tiles.png" width="172"><figcaption>The tiles — one per account, in the<br>shade, visible from inside any app</figcaption></figure>
+    <figure><img src="shots/v16-main-claude-dark.png" width="172"><figcaption>The app — a Claude account in its<br>ivory room, pace chart and all</figcaption></figure>
+    <figure><img src="shots/v16-notif-expanded.png" width="172"><figcaption>The notification — two accounts,<br>expanded, visible from inside any app</figcaption></figure>
+    <figure><img src="shots/v16-main-chatgpt-dark.png" width="172"><figcaption>A ChatGPT account — the same<br>cards in its own neutral room</figcaption></figure>
   </div>
 
   <div class="chips">
-    <span class="chip">CLAUDE + CHATGPT</span><span class="chip">LIVE WIDGETS</span><span class="chip">PACE CHART</span><span class="chip">SMART ALERTS</span><span class="chip">MULTI-ACCOUNT</span><span class="chip">NO SERVERS</span>
+    <span class="chip">CLAUDE + CHATGPT</span><span class="chip">ALWAYS-ON NOTIFICATION</span><span class="chip">STATUS-BAR RING</span><span class="chip">PACE CHART</span><span class="chip">RESET PINGS</span><span class="chip">NO SERVERS</span>
   </div>
 
   <div class="claudeband">
     <div class="spark">✳️</div>
-    <p><b>Built with Claude Code — by two Claude models.</b> Prototyped over a week and <span class="o">built in a single weekend by Claude Fable 5</span> (every line of Kotlin, the UI, the widgets). When the sign-in hit a wall Fable wouldn't cross, <span class="o">Claude Opus 4.8</span> stepped in to finish it and write the docs. Directed by Robin Richard Rajan — this brochure too.</p>
+    <p><b>Built with Claude Code — by two Claude models.</b> Prototyped over a week and <span class="o">built in a single weekend by Claude Fable 5</span> (every line of Kotlin, the UI, the notification). When the sign-in hit a wall Fable wouldn't cross, <span class="o">Claude Opus 4.8</span> stepped in to finish it and write the docs. Directed by Robin Richard Rajan — this brochure too.</p>
   </div>
 </div>
 
@@ -113,28 +120,28 @@
 <div class="page p2">
   <h2>What it <span>does</span></h2>
   <div class="grid">
-    <div class="feat"><span class="ic">📅</span><b>Usage history</b><span>A scrollable bar for every 5-hour session, week by week — see how many you ran and which ones hit 100%.</span></div>
-    <div class="feat"><span class="ic">📌</span><b>Pinned notification</b><span>Always-on and silent, with a status-bar gauge that fills — in four styles, including one with the percentage as big as it goes.</span></div>
+    <div class="feat"><span class="ic">📌</span><b>Two accounts, one notification</b><span>Always-on and silent: a First and a Second account side by side, each with its mark, bar and big percentage.</span></div>
+    <div class="feat"><span class="ic">◎</span><b>The status-bar ring</b><span>A tiny ring fills with the 5-hour window, in the account's own colour so you know whose it is.</span></div>
     <div class="feat"><span class="ic">📈</span><b>The pace chart</b><span>Every reading plotted, with a forecast tail: "At this pace: 100% at Thu 2:40 PM — 1h 20m before the reset."</span></div>
-    <div class="feat"><span class="ic">🔔</span><b>Granular alerts</b><span>Per-window threshold chips, reset pings set off / if-busy / always, and a per-profile mute — quiet when you want, loud when it counts.</span></div>
-    <div class="feat"><span class="ic">⏱️</span><b>The even-pace line</b><span>One diagonal across each chart. Below it you'll finish inside your limit; cross it and the overshoot shades amber.</span></div>
-    <div class="feat"><span class="ic">👥</span><b>Claude <i>and</i> ChatGPT</b><span>Pick the service when you add an account, then mix as many as you like — each fully independent, with its own tabs, widgets, tiles and alerts, and its provider's own mark and colour.</span></div>
-    <div class="feat"><span class="ic">🔐</span><b>Sign in on the phone</b><span>Claude uses the same secure OAuth flow Claude Code does; ChatGPT takes a short code you approve at auth.openai.com. Either way: no computer, no copied tokens.</span></div>
+    <div class="feat"><span class="ic">🔔</span><b>Reset pings</b><span>Per account and per window — Off, If busy, or Always — so you know the moment you're back.</span></div>
+    <div class="feat"><span class="ic">⏱️</span><b>The even-pace line</b><span>One diagonal across each chart, one tick on every bar. Below it you'll finish inside your limit.</span></div>
+    <div class="feat"><span class="ic">👥</span><b>Claude <i>and</i> ChatGPT</b><span>Pick the service when you add an account, then mix as many as you like — each in its own room: ivory and serif for Claude, neutral for ChatGPT.</span></div>
+    <div class="feat"><span class="ic">🔐</span><b>Sign in on the phone</b><span>Claude uses the OAuth flow Claude Code does; ChatGPT takes a short code you approve at auth.openai.com. No computer, no copied tokens.</span></div>
     <div class="feat"><span class="ic">💳</span><b>Usage credits</b><span>Pay-as-you-go credits get their own card — spent, total and what's left, or a plain balance on ChatGPT. Plans without them never see it.</span></div>
-    <div class="feat"><span class="ic">💾</span><b>Private &amp; backed up</b><span>No servers or telemetry; the token is Keystore-encrypted. History &amp; settings now survive a reinstall (token excluded).</span></div>
+    <div class="feat"><span class="ic">💾</span><b>Private &amp; backed up</b><span>No servers or telemetry; the token is Keystore-encrypted. History &amp; settings survive a reinstall (token excluded).</span></div>
   </div>
 
   <div class="story">
     <div class="txt">
       <h2 style="margin-bottom:2.5mm;">How it was <span>made</span></h2>
       <p>Cooldown exists because of one recurring pain: deep in a Claude chat, a Cowork run or a ChatGPT session, the dreaded <i>"approaching your limit"</i> — with no idea how close, or when the window resets. Claude Code can tell you; the chat apps can't. The fix: put the answer where your eyes already are.</p>
-      <p><b>Claude Fable 5 built it — in a weekend.</b> After a week of throwaway prototypes, one weekend turned it real: pushed to git, signed, running on a phone. Fable wrote virtually everything — the app, the Glance widgets, the alert logic, the reverse-engineered usage API.</p>
-      <p>Then it hit the one wall Fable wouldn't cross: the OAuth <b>sign-in handshake</b>, which Fable declined on cybersecurity grounds. <b>Claude Opus 4.8</b> stepped in — built the native sign-in the app now uses, and wrote the docs Fable left undone. <b>Claude Opus 5</b> shipped v1.1's pace chart and credits, then v1.5's ChatGPT accounts on the same rails. If you pay for Claude, you already have the engineer… or three.</p>
+      <p><b>Claude Fable 5 built it — in a weekend.</b> After a week of throwaway prototypes, one weekend turned it real: pushed to git, signed, running on a phone. Fable wrote virtually everything — the app, the notification, the alert logic, the reverse-engineered usage API.</p>
+      <p>Then it hit the one wall Fable wouldn't cross: the OAuth <b>sign-in handshake</b>, which Fable declined on cybersecurity grounds. <b>Claude Opus 4.8</b> stepped in — built the native sign-in the app now uses, and wrote the docs Fable left undone. <b>Claude Opus 5</b> shipped v1.1's pace chart and credits, then v1.5's ChatGPT accounts on the same rails; <b>Claude Fable 5.1</b> ran v1.6 — the two-account notification and the Pulse tile. If you pay for Claude, you already have the engineer… or four.</p>
     </div>
     <div class="stats">
-      <div class="stat"><b>v1.5</b><span>ChatGPT accounts<br>alongside Claude</span></div>
+      <div class="stat"><b>v1.6</b><span>two accounts on<br>one notification</span></div>
       <div class="stat"><b>1</b><span>weekend to a working<br>build on a real phone</span></div>
-      <div class="stat"><b>100%</b><span>written by Claude<br>Fable 5 · 4.8 · Opus 5</span></div>
+      <div class="stat"><b>100%</b><span>written by Claude<br>Fable 5 · 4.8 · Opus 5 · 5.1</span></div>
       <div class="stat"><b>0</b><span>servers, trackers<br>or analytics</span></div>
     </div>
   </div>
@@ -143,12 +150,12 @@
     <div class="qr"><img src="repo-qr.svg"></div>
     <div>
       <h3>Want it on your phone?</h3>
-      <p>It's <b>free &amp; open-source</b>. Scan the code (or visit <b>github.com/robineam360/Cooldown</b>), grab the <span class="o">latest APK</span> from the Releases page, and follow the <span class="o">detailed user guide</span> — install → sign-in → widgets in ~3 minutes. <span class="o">Android 12+ today; iOS is on the roadmap.</span></p>
+      <p>It's <b>free &amp; open-source</b>. Scan the code (or visit <b>github.com/robineam360/Cooldown</b>), grab the <span class="o">latest APK</span> from the Releases page, and follow the <span class="o">detailed user guide</span> — install → sign-in → notification in ~3 minutes. <span class="o">Android 12+ today; iOS is on the roadmap.</span></p>
       <p style="margin-top:1.6mm;">And if the "built by Claude" part is what got you curious — even better. Bring an idea of your own; it takes fewer evenings than you'd think.</p>
     </div>
   </div>
 
-  <div class="fine">Sideloaded personal app, not on any store · tokens encrypted on-device · <b>unofficial</b> — uses the Claude Code and Codex CLIs' clients against undocumented usage endpoints · <b>not affiliated with or endorsed by Anthropic, OpenAI or Google</b> · Robin Richard Rajan · v1.5, September 2026</div>
+  <div class="fine">Sideloaded personal app, not on any store · tokens encrypted on-device · <b>unofficial</b> — uses the Claude Code and Codex CLIs' clients against undocumented usage endpoints · <b>not affiliated with or endorsed by Anthropic, OpenAI or Google</b> · Robin Richard Rajan · v1.6, September 2026</div>
 </div>
 
 </body>

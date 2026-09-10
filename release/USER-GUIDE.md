@@ -1,28 +1,25 @@
-# Cooldown — Android Widget
+# Cooldown — Android app
 
-**A personal home-screen widget for your Claude and ChatGPT plan limits — for as many accounts as you use.**
-Shows the 5-hour and 7-day rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, forecasts *when* you'll hit a limit at your current pace, and warns you *before* you hit it — and *when* a window resets.
+**A personal Android app for your Claude and ChatGPT plan limits — for as many accounts as you use.**
+Shows the 5-hour and weekly rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, and forecasts *when* you'll hit a limit at your current pace. Its home is the **always-on notification**: two accounts side by side in the shade, a ring in the status bar, and a ping the moment a window resets.
 
-> Version **1.5** · released September 2026 · sideloaded personal app, not on any store
+> Version **1.6** · released 10 September 2026 · sideloaded personal app, not on any store
 > Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest)
 >
-> **Note:** the screenshots and the walkthrough below still show the v1.3-era single-provider
-> app. They are accurate for Claude accounts; for the ChatGPT flow and everything else new in
-> v1.5, the PDF guide is the current one — see `release/docs/Cooldown-User-Guide-v1.5.pdf`.
+> **Note:** the screenshots and much of the walkthrough below date from the v1.3-era
+> single-provider app. The sign-in flow and the reading of the cards are unchanged; the
+> **v1.6 surfaces — the two-account notification, the four-tab Settings, the Pulse icon — are
+> documented in the PDF guide**, which is the current one: `release/docs/Cooldown-User-Guide-v1.6.pdf`.
+> The home-screen widgets, the Quick Settings tile and the threshold alerts described in older
+> screenshots were **removed in v1.6**.
 
 ---
 
 ## What it looks like
 
-**New in 0.13:**
-
-| Usage history *(illustration)* | Pinned notification | Granular alerts |
+| Usage history *(illustration)* | Editable profile names | Per-week history *(illustration)* |
 |:---:|:---:|:---:|
-| ![Usage history bars](screenshots/history-5h-dark.png) | ![Pinned notification collapsed](screenshots/pinned-collapsed.png) | ![Granular alert settings](screenshots/settings-alerts.png) |
-
-| Pinned (expanded) | Editable profile names | Per-week history *(illustration)* |
-|:---:|:---:|:---:|
-| ![Pinned notification expanded](screenshots/pinned-expanded.png) | ![Profile name fields](screenshots/profile-names.png) | ![Per-week history](screenshots/history-7d-dark.png) |
+| ![Usage history bars](screenshots/history-5h-dark.png) | ![Profile name fields](screenshots/profile-names.png) | ![Per-week history](screenshots/history-7d-dark.png) |
 
 > The two **Usage history** images are **illustrations** showing a full week of data. History
 > is recorded as each window closes, so a fresh install starts nearly empty and fills in over
@@ -32,32 +29,27 @@ Shows the 5-hour and 7-day rolling windows for every signed-in account (includin
 |:---:|:---:|:---:|
 | ![Account cards with Sign in on this phone](screenshots/signin-settings.png) | ![Claude's consent page](screenshots/signin-consent.png) | ![Finish signing in step](screenshots/signin-finish.png) |
 
-| Personal tab | Work tab | Widget (dark) |
-|:---:|:---:|:---:|
-| ![Personal tab](screenshots/app-tabs-personal.png) | ![Work tab](screenshots/app-tabs-work.png) | ![Widget, dark mode](screenshots/widget-large-dark.png) |
-
-| Widget setup (on placement) | Notifications | Two Quick Settings tiles |
-|:---:|:---:|:---:|
-| ![Widget setup screen](screenshots/widget-setup.png) | ![Threshold and reset notifications](screenshots/notifications.png) | ![Personal and Work tiles](screenshots/quick-settings-tiles.png) |
-
-| Settings — accounts | Settings — About | Themeable (13 colors) |
-|:---:|:---:|:---:|
-| ![Accounts and profile names](screenshots/settings-top-dark.png) | ![About, version 1.0](screenshots/settings-bottom-dark.png) | ![Blue-theme widgets](screenshots/widget-theme-blue.png) |
-
-| Granular alerts | In-app token guide |
+| Personal tab | Work tab |
 |:---:|:---:|
-| ![Alert controls](screenshots/settings-alerts.png) | ![Get your token screen](screenshots/token-guide.png) |
+| ![Personal tab](screenshots/app-tabs-personal.png) | ![Work tab](screenshots/app-tabs-work.png) |
+
+| Settings — accounts | Settings — About | In-app token guide |
+|:---:|:---:|:---:|
+| ![Accounts and profile names](screenshots/settings-top-dark.png) | ![About, version 1.0](screenshots/settings-bottom-dark.png) | ![Get your token screen](screenshots/token-guide.png) |
+
+> For the v1.6 surfaces — the two-account notification, the four-tab Settings, the Pulse
+> icon — see the PDF guide, which carries current screenshots.
 
 ---
 
 ## 1 · Install (Galaxy Fold 7)
 
-1. Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest) onto the phone. (In-app, **Settings → About → Check for updates** links you straight there.)
+1. Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest) onto the phone. (In-app, **Settings → More → Check for updates** links you straight there.)
 2. Tap the APK. When Android warns about unknown apps, **allow installs from the app you opened it with**, then tap **Install**.
    *A Play Protect "scan app?" prompt may appear — scan or install anyway; it's your own app.*
-3. Open **Cooldown** and **allow notifications** when asked (needed for usage alerts).
+3. Open **Cooldown** and **allow notifications** when asked (needed for the always-on notification and the reset pings).
 
-**Updating from v0.13 onward:** just install the new APK over it — token, settings, history, and widgets all survive (releases are now signed with a permanent key).
+**Updating from v0.13 onward:** just install the new APK over it — token, settings and history all survive (releases are signed with a permanent key). **Updating to v1.6:** any placed home-screen widgets and the Quick Settings tile disappear — they were removed; the always-on notification replaces them.
 
 **One-time note for the v0.12 → v0.13 update:** v0.13 moves to a permanent signing key, so this single upgrade needs an **uninstall + reinstall** (Android blocks an in-place update when the signature changes). You'll lose the old on-device history and sign-ins once; re-sign in after installing. Every update *after* v0.13 is a normal in-place install.
 
@@ -169,7 +161,7 @@ Afterwards the account card should stay "Active" through refreshes indefinitely.
 
 ## 3 · Reading the screens
 
-The main screen has **two tabs — Personal | Work** — swipe horizontally (or tap the tab) to switch. Both the app and the widgets share the same layout per profile:
+The main screen has **one tab per signed-in account** — swipe horizontally (or tap the tab) to switch. Since v1.6 each tab is a *room*: Claude tabs sit on a warm ivory surface with serif headline figures, ChatGPT tabs on a cool neutral one; the cards are identical. Per account:
 
 - **5-hour window card** — "X% used", the bar, and a split reset line:
   *left* `Resets in 4h 47m` · *right* `Resets at Thu 11:45 PM`
@@ -190,80 +182,48 @@ Tap the **calendar icon** in the top bar to open **Usage history** — a scrolla
 
 History is written as each window **closes**, so it fills in going forward — a fresh install starts nearly empty (just the current "now" session) and builds up over the following days.
 
-### Pinned notification 🆕
+### The always-on notification (v1.6: two accounts)
 
-Optionally keep an **always-on, silent notification** in your shade with a **status-bar gauge icon that fills as you burn your 5-hour window**. Collapsed, it shows the profile, reset countdown, and 7-day %; expanded, it adds the 7-day and per-model bars with a one-tap **Refresh**. It follows your theme and turns orange, then red, near the limit, and refreshes on every poll. Turn it on in **Settings → Pinned notification**, choose which profile it tracks, and pick the status-bar icon style (Ring / Pie / Battery / Number).
+Keep an **always-on, silent notification** in your shade. Turn it on under **Settings → Alerts → Always-on notification** and pick a **First** and, optionally, a **Second** account under **Show accounts**.
 
-**Two widget types** (the moment you drop either one, a **Widget setup** screen appears asking which **profile** it should show):
+- **Collapsed** — one row, two halves: each has its provider's mark, the account name, an 8 dp bar with the even-pace tick, and the 5-hour percentage in that half's colour (the account's own colour until 80%, then yellow / orange / red). An account with no 5-hour window shows its **Weekly** figure. One account, or Second = None, gives the single layout.
+- **Expanded** — two header blocks (*"Personal · 5h"*, *"ChatGPT · Weekly"*) with bigger bars and reset lines, then the panel: each account's **Weekly** row, per-model caps, any condition strips, and one-tap **Refresh**. The wording is always **5h** and **Weekly**.
+- **Tapping a half** opens Cooldown on that account's tab — or that service's own app (**Alerts → Tapping a number opens**).
+- **Status-bar ring** — a small ring fills with the shown account's 5-hour window, drawn in that account's colour; solid red with an × at 100%. **Alerts → Status-bar ring shows** picks First / Second / Whichever is higher.
+- **Conditions** — a broken sign-in, six hours of stale data, or an available update show as a dot after the name (collapsed) and a labelled strip (expanded). Nothing else posts separately.
 
-- **Full widget (4×3 default)** — everything: 5-hour, the 7-day bars, per-model caps, reset times (and usage credits if you opt in)
-- **Single-bar widget (2×1)** — one bar of your choice: 5-hour, 7-day all models, per-model (Fable), or **usage credits**. Place as many as you like, mixing profiles freely.
-
-**Widget specifics:**
-
-- **↻ icon (top right)** = refresh now (rate-limited to once per 3 minutes — the API forbids faster polling)
-- **Tapping anywhere else** opens the app
-- **Footer** shows the weekly reset (left) and "updated Xm ago" (right/below). If it turns **amber**, the last fetch failed or data is >45 min old — the numbers shown are the last known good ones, never blank
-- **Resize it** (long-press → drag handles): small = 5-hour only · medium = 5-hour + 7-day total · large (default) = everything
-
-Data refreshes automatically every **15 minutes** (configurable, minimum 5).
+Data refreshes automatically every **15 minutes** (configurable, minimum 5); every poll re-renders the notification.
 
 ---
 
-## 4 · Usage alerts 🔔
+## 4 · Reset pings 🔔
 
-All alerts are prefixed with the profile ("Personal: …" / "Work: …"):
+The one notification that still posts on its own (the threshold, pace, sign-in and stale-data *alerts* of earlier versions were removed in v1.6 — their information now lives inside the always-on notification as dots and strips).
 
-| Alert | When |
-|---|---|
-| **5-hour window at 80%** | Time to pace yourself |
-| **5-hour window at 95%** | You're about to be cut off |
-| **7-day window at 90%** | Weekly budget nearly spent |
-| **Per-model cap at 90%** 🆕 | A model's own weekly cap (e.g. Fable) is nearly spent — previously these bars could fill up silently |
-| **Window reset** | The 5-hour or 7-day window just reset — Claude is fresh again (the app schedules a check right at the known reset moment, so this lands within ~2 minutes) |
-| **Re-auth needed** | That profile's token stopped working — paste a fresh one. Also fires when renewals have been failing for 6+ hours straight (a dead token can masquerade as a temporary error). |
-| **Sign-in expiring soon** 🆕 | 7 / 3 / 1 days before the known sign-in expiry — re-paste at your convenience instead of getting cut off |
-| **Usage data is stale** 🆕 | Polls have been failing for 6+ hours — the widget numbers are old and nothing else would tell you |
-
-Each alert fires **once per window/episode** and re-arms afterwards. Tapping a notification opens the app **on that alert's profile tab** (a Work alert lands on the Work tab); re-auth and stale alerts dismiss themselves when the problem is fixed.
-
-**Granular controls (Settings → Notifications) 🆕** — no more all-or-nothing:
-
-- **Usage warnings** — tap the percentage **chips** to choose exactly which thresholds warn you, per window: 5-hour (80 / 90 / 95), 7-day (75 / 90), and per-model caps (75 / 90). Deselect them all to silence a window.
-- **Reset pings** — set each window's reset notification to **Off / If busy / Always**. *"If busy"* only pings when that window had actually reached 80% before it reset — which kills most of the reset-notification noise.
-- **Per-profile** — mute all of a profile's usage warnings and reset pings with one switch.
-- **Sign-in alerts** and **Stale data alerts** are separate toggles.
-- Plus a shortcut to Android's per-channel notification settings.
-
-Existing settings carry over: if you'd previously turned the old toggles off, the matching new controls start off too.
+For each account, under **Settings → Alerts → Reset pings**, set the **5h reset** and the **Weekly reset** to **Off / If busy / Always**. *If busy* pings only when that window had reached 80% before it reset — which kills most of the noise. Pings are prefixed with the account name, fire once per reset, and open the app on that account's tab. Since v1.6 an account left idle across the reset pings too (before, only an account that kept chatting did).
 
 ---
 
-## 5 · Quick Settings tiles (one per profile)
+## 5 · Quick Settings tile — removed in v1.6
 
-See usage from inside any app: pull down the shade — **"Personal 94% / 7d 14%"** and **"Work 37% / 7d 62%"** are separate tiles.
-
-**Add them once:** pull the shade fully down → **✏ edit** → drag **Claude Personal** and/or **Claude Work** into your active tiles. Tapping a tile opens the app on that profile's tab; opening the shade also nudges a background refresh (skipped when the data is under 3 minutes old, so shade-flicking doesn't spam the API).
+The per-account Quick Settings tiles and the home-screen widgets were removed in v1.6; any you had placed disappear on update. The always-on notification (§3) does their job from the shade, visible from inside any app.
 
 ---
 
 ## 6 · Settings reference
 
-| Setting | What it does |
+Settings is **four swipeable tabs** since v1.6 — **Accounts · Alerts · Appearance · More**. On the Fold's inner screen each tab lays out in two columns.
+
+| Tab · Setting | What it does |
 |---|---|
-| **Account cards (Personal / Work)** | **"Sign in on this phone"** 🆕 runs the browser sign-in (with a browser picker when you have several — sign each account in via the browser where it's logged in). The old paste/QR path lives under "Use a computer token instead". Once signed in: status chip (Active / Needs re-auth), plan badge (Pro / Max / Team), last-checked time with a ↻ check-now button, auto-renew countdown, last auto-renewed time, "Sign-in expires around <date>" (≈30-day estimate for phone sign-ins; exact date for pasted tokens), added date, token tail, rate-limit backoff status, Re-sign in / Clear. "How do I get my token?" opens the in-app backup-method guide. |
-| **Profile names** 🆕 | Rename the two profiles (default *Personal* / *Work*) to anything you like — the names flow through tabs, widgets, tiles, and notifications. Clear a field to restore the default. |
-| **Check usage every** | Poll cadence presets: 5 / 15 / 30 / 60 min (default 15) — saves on tap |
-| **Usage warnings** 🆕 | Per-window threshold chips (5-hour 80/90/95, 7-day 75/90, per-model 75/90) — pick exactly what warns you |
-| **Reset pings** 🆕 | Per window: Off / If busy (only if it reached 80%) / Always |
-| **Profile alerts** 🆕 | One switch to mute a whole profile's warnings and reset pings |
-| **Sign-in alerts** / **Stale data alerts** | Separate toggles for token expiry/re-auth and long-stale data |
-| **Pinned notification** 🆕 | Turn on the always-on usage notification, choose its profile, and pick the status-bar icon (Ring / Pie / Battery / Number) |
-| **System notification settings** | Opens Android's per-channel controls for the app |
-| **24-hour time** | Off = "Thu 11:45 PM" (default) · On = "Thu 23:45" |
-| **Theme color** | 13 choices: Material You (dynamic, first dot), **Claude Orange** (default), Blue, Indigo, Cyan, Teal, Green, Amber, Deep Orange, Red, Pink, Purple, Brown. Applies to the app and the widget bars. |
-| **Widgets** | "Add widget to home screen" shortcuts for both widget types |
-| **About** | Version, credits, **Share feedback** (emails robin@eam360.com), **Check for updates** (asks GitHub for the latest release and links you to it). Tap the version 7 times to unlock the debug raw-response viewer until the app is closed. |
+| **Accounts** | One card per account: **"Sign in on this phone"** (with a browser picker) or the paste / QR backup for Claude, **"Sign in with a code"** for ChatGPT. Once signed in: status chip, plan badge, last-checked with ↻, renew countdowns, Re-sign in / Clear. The card's ⋮ menu: Rename, Accent colour, Remove account. **"+ Add account"** at the bottom. |
+| **Alerts · Always-on notification** | On/off, then **Show accounts**: a **First** chip row and a **Second · optional** one (None to run single). |
+| **Alerts · Tapping a number opens** | Cooldown on that account's tab, or that service's app. |
+| **Alerts · Status-bar ring shows** | First / Second / Whichever is higher. |
+| **Alerts · System notification settings** | Opens Android's per-channel controls. |
+| **Alerts · Reset pings** | Per account: **5h reset** and **Weekly reset**, each Off / If busy / Always. |
+| **Appearance** | **Theme** System / Light / Dark · **Time format** 12-hour / 24-hour · **Usage display** Used / Left · **Reset time** Countdown / Clock time · **Show red past the pace mark** (one switch for the app and the notification) · **Theme colour**: Per provider (default), Material You, Claude Orange and twelve more. |
+| **More** | **Polling** every 5 / 15 / 30 / 60 min · **Usage credits** per account (only shown for accounts with a credit budget) · **Updates** → **Check for updates** · **Diagnostics** → share your log · **About** (version, credits, **Share feedback** to robin@eam360.com; tap the version 7× to append a **Debug** section). |
 
 Below the Refresh button the app shows **Last success** and **Last attempt** as "Thu 7:46 PM (12m ago)". A red status line appears only when something's wrong.
 
@@ -273,13 +233,13 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 
 | Symptom | Meaning / fix |
 |---|---|
-| Widget footer is **amber** | Data is stale (failed fetch or >45 min old). Usually temporary; self-heals on the next poll. |
+| A notification half is dimmed / "stale" strip | Polls for that account have failed for six hours — the last known numbers stay up, never a blank. Usually temporary; self-heals on the next successful poll. |
 | **"Re-auth needed"** | The token and its refresh both failed. Tap **"Re-sign in"** on that card (§2) — or re-paste from a computer if you use the backup method. |
 | **"Rate limited (429)"** status | The API asked us to back off; automatic retries with increasing delays (5 min → 1 h max). |
 | **"Token refresh failed (HTTP 429)"** status | Usually a *dead* refresh token, not real rate-limiting — the source machine's Claude Code rotated it (Anthropic answers 429 for dead tokens). Fix: **"Sign in on this phone"** (§2), which gives the phone its own sign-in so this can't recur. *(Historical note: through v0.11 the app itself could trigger a deterministic 429 on every renewal — fixed in v0.12, see §9.)* |
-| Widget says **"No data yet"** | No successful fetch so far — tap ↻, or open the app and check the status line. |
-| Alerts never appear | Check notification permission and the **Usage alerts** toggle. |
-| Anything else | Settings → **Show last raw response** + the red status line tell the whole story. |
+| My widgets / tile vanished | Expected on the v1.6 update — they were removed. Turn on the always-on notification (Settings → Alerts). |
+| No reset ping arrived | Check notification permission, that the account's 5h / Weekly reset isn't Off, and that *If busy* isn't hiding a window that never reached 80%. |
+| Anything else | Settings → More → **Diagnostics** shares the app log; the Debug section (7 taps on the version) shows the last raw response. |
 
 ---
 
@@ -294,6 +254,8 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 ---
 
 ## 9 · Version history
+
+- **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The always-on notification carries a **First** and a **Second** account side by side — mark, name, bar with the pace tick and a big figure per half — and, expanded, both headers with reset lines, the **Weekly** rows, per-model caps and Refresh; each half is its own tap target. The status-bar **ring** drops the weekly dot and wears the shown account's colour (**First / Second / Whichever is higher**), solid red with an × at 100%. **Reset pings** are per account and per window (5h / Weekly, Off / If busy / Always) and now fire for an account left idle across the reset (CCBG-25). Settings shrinks from 43 rows in 13 sections to **24 rows in four tabs** — Accounts, Alerts, Appearance, More — with one "Show red past the pace mark" switch for app and notification, and Usage credits only for accounts that have a budget. New **Pulse** launcher icon (an ECG beat on charcoal — Claude terracotta, ChatGPT green, the red spike crossing a dashed even-pace ceiling); each tab is a **room** (ivory and serif for Claude, neutral for ChatGPT); the top bar leads with both marks, now the same size (CCBG-23). **Removed:** all five home-screen widgets, the Quick Settings tile, the standalone threshold / pace / sign-in / stale / update notifications and their six channels, the Gauge / Number tile / Progress bar notification styles and the Pie / Battery / Number status-bar glyphs — placed widgets and tiles disappear on update. Built with **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
 
 - **1.5** — **ChatGPT accounts, and the app becomes just "Cooldown".** The app now tracks **ChatGPT** alongside Claude: pick the service from **"+ Add account"**, sign in with a **short code** at auth.openai.com (on the phone or any other device — no computer token to copy), and the account behaves exactly like a Claude one from there, with its own tab, widgets, tiles, alerts, history and pace chart. The name drops "Claude" and the launcher icon becomes a **three-sand hourglass**, one band per service; every account carries its **provider's own mark** on its card, its tab, the pinned notification and the widget picker. New **"Per provider"** theme, now the default — each account wears its own service's colour — with a per-account override under the card's **⋮ → Accent colour**. **A window an account doesn't have is no longer drawn at all** (no dash, no empty bar) — this applies to Claude accounts too, and a widget configured on a missing window says so in words. **Gemini** (Google Antigravity) is listed in the Add-account sheet but **greyed out**: its sign-in needs a callback only a desktop can answer. ChatGPT accounts show no "expires around" line, because OpenAI publishes no token lifetime and a wrong estimate is worse than none. The repo moved from `CCooldown` to `Cooldown`. Built with **Claude Opus 5** and **Sonnet 5**.
 
@@ -321,9 +283,9 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 ## 10 · For future rebuilds (dev notes)
 
 - Source: this OneDrive folder (`ClaudeUsage/`), single-module Android project
-- Stack: Kotlin · Jetpack Compose · Glance 1.1.1 · WorkManager · OkHttp · AGP 9.2.1 (built-in Kotlin 2.3.10) · min SDK 31, target 36
+- Stack: Kotlin · Jetpack Compose · WorkManager · OkHttp · AGP 9.2.1 (built-in Kotlin 2.3.10) · min SDK 31, target 36. No Glance since v1.6 — the notification is plain RemoteViews.
 - Build on the Mac (signed release): `JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleRelease` → `app/build/outputs/apk/release/app-release.apk`. Signing reads the gitignored `keystore.properties` + `ccooldown-release.jks` at the repo root — **back those up; losing them means no more updates.** See `RELEASING.md`.
-- Glance gotcha: RemoteViews containers max out at 10 children — keep widget blocks wrapped in nested Columns.
+- RemoteViews gotcha: containers max out at 10 children — keep notification blocks wrapped in nested layouts.
 - If Anthropic changes the undocumented response schema, the parser ignores unknown fields; if bars go blank, check the raw JSON in the debug view first.
 
-*Built and verified with Claude Code; v0.13 on 21 Jul 2026.*
+*Built and verified with Claude Code; v1.6 on 10 Sep 2026.*
