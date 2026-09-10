@@ -1,0 +1,1336 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launcher icon, rounds 8&ndash;9 &mdash; CCRM-60 (Dual Identity), 2026-09-10</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 96px; line-height: 1.5;
+    overflow-x: hidden;
+  }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 76ch; margin: 0 0 12px; font-size: 14px; }
+  .lede b { color: var(--ink); }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 54px 0 4px; }
+  h2 small { font-weight: 500; font-size: 12.5px; color: var(--muted); letter-spacing: 0; }
+  h3 { font-size: 15px; font-weight: 700; margin: 0 0 10px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  ul.tight { margin: 8px 0 0; padding-left: 20px; }
+  ul.tight li { font-size: 13px; color: var(--muted); margin: 0 0 6px; max-width: 88ch; }
+  ul.tight li b { color: var(--ink); }
+
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 12.5px; width: 100%; }
+  th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .yes { color: var(--good); font-weight: 650; }
+  .no { color: var(--bad); font-weight: 650; }
+  .mid { color: var(--warn); font-weight: 650; }
+  .q {
+    border-left: 3px solid var(--accent); padding: 2px 0 2px 14px;
+    margin: 16px 0; font-size: 13.5px; max-width: 82ch;
+  }
+  .q b { display: block; margin-bottom: 2px; }
+  .scroll { overflow-x: auto; padding-bottom: 6px; }
+
+  /* ---------- concept cards ---------- */
+  .cc {
+    border: 1px solid var(--hair); border-radius: 18px; padding: 20px 22px;
+    background: var(--card); margin: 18px 0;
+  }
+  .ccwrap { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .ccprose { flex: 1 1 420px; min-width: 300px; }
+  .why, .risk, .mono { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; max-width: 78ch; }
+  .why b, .mono b { color: var(--ink); }
+  .risk b { color: var(--bad); }
+  .why i, .risk i, .mono i { color: var(--ink); font-style: italic; }
+
+  .iconrow { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; flex: 0 0 auto; }
+  .iconrow .z { text-align: center; width: 74px; }
+  .iconrow .z:nth-child(4) { width: 116px; }
+  .lbl { display: block; font-size: 9px; line-height: 1.35; color: var(--muted); margin-top: 6px; }
+  .pad { padding: 11px; border-radius: 16px; display: inline-flex; }
+  .pad.lt { background: #F2F2F2; }
+  .pad.dk { background: #101010; }
+  .pad.none { background: transparent; padding: 0; }
+  .t48 { display: block; }
+  .big { display: block; border-radius: 4px; }
+  .mc { border-radius: 50%; clip-path: circle(50% at 50% 50%); }
+  .ms { border-radius: 26%; clip-path: url(#sqClip); }
+
+  /* ---------- icon colour roles (the mono layer is the same geometry, alpha only) ---------- */
+  .ic { --ground:#1F1B19; --track:#2C2724; --c1:#D97757; --c2:#10A37F;
+        --cream:#F3EBE3; --red:#FF5252; --ink:#26211E; --a1:1; --a2:1; }
+  .ic.slate { --ground:#22303C; --track:#18232C; --ink:#121B22; }
+  .ic.mono { --ground:#1E3A5F; --track:#2E4E78; --c1:#BFD5F5; --c2:#BFD5F5;
+             --cream:#BFD5F5; --red:#BFD5F5; --ink:#1E3A5F; --a1:.82; --a2:.46; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- provider marks, pathData verbatim from app/src/main/res/drawable/ -->
+    <symbol id="mk-claude" viewBox="0 0 24 24"><path d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z" fill="currentColor"/></symbol>
+    <symbol id="mk-gpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z" fill="currentColor"/></g></symbol>
+
+    <!-- ===== today's tile, round-7 winner: copied verbatim from dual-identity-wireframe.html ===== -->
+    <clipPath id="clipT"><rect x="0" y="0" width="108" height="54"/></clipPath>
+    <clipPath id="clipB"><rect x="0" y="54" width="108" height="54"/></clipPath>
+    <rect id="bT" x="0" y="0" width="108" height="54"/>
+    <rect id="bB" x="0" y="54" width="108" height="54"/>
+    <g id="gclaude"><use href="#mk-claude" width="24" height="24" transform="translate(24,24) scale(2.5)"/></g>
+    <g id="ggpt"><use href="#mk-gpt" width="24" height="24" transform="translate(10.38,10.36) scale(3.6364)"/></g>
+    <rect id="trk" x="10" y="46" width="88" height="16" rx="8"/>
+    <rect id="fil" x="10" y="46" width="70.4" height="16" rx="8"/>
+    <rect id="red" x="49.6" y="46" width="30.8" height="16"/>
+    <rect id="tck" x="47.12" y="41.2" width="4.96" height="25.6" rx="2.48"/>
+    <clipPath id="clipFil"><use href="#fil"/></clipPath>
+    <symbol id="ic" viewBox="0 0 108 108"><use href="#bT" fill="#D97757"/><use href="#bB" fill="#10A37F"/><use href="#gclaude" clip-path="url(#clipT)" style="color:#FFF6F1;opacity:.45"/><use href="#ggpt" clip-path="url(#clipB)" style="color:#FFFFFF;opacity:.45"/><use href="#trk" fill="#000000" opacity=".28"/><use href="#fil" fill="#FFF6F1"/><use href="#red" fill="#FF5252" clip-path="url(#clipFil)"/><use href="#tck" fill="#26211E" opacity=".7"/></symbol>
+    <symbol id="icm" viewBox="0 0 108 108"><use href="#bT" fill="#BFD5F5" opacity=".55"/><use href="#bB" fill="#BFD5F5" opacity=".3"/><use href="#gclaude" clip-path="url(#clipT)" style="color:#BFD5F5;opacity:.2"/><use href="#ggpt" clip-path="url(#clipB)" style="color:#BFD5F5;opacity:.2"/><use href="#trk" fill="#BFD5F5" opacity=".32"/><use href="#fil" fill="#BFD5F5"/><use href="#red" fill="#BFD5F5" opacity=".85" clip-path="url(#clipFil)"/><use href="#tck" fill="#1E3A5F"/></symbol>
+
+
+    <!-- ===== round-8 shared clips ===== -->
+    <clipPath id="cpTop"><rect x="0" y="0" width="108" height="54"/></clipPath>
+    <clipPath id="cpBot"><rect x="0" y="54" width="108" height="54"/></clipPath>
+    <clipPath id="cpInner3"><rect x="31.5" y="31.5" width="45" height="45" rx="9.5"/></clipPath>
+    <clipPath id="cpVennA"><circle cx="43" cy="54" r="22"/></clipPath>
+    <clipPath id="cpB5L"><rect x="30" y="28" width="16" height="52" rx="8"/></clipPath>
+    <clipPath id="cpB5R"><rect x="62" y="28" width="16" height="52" rx="8"/></clipPath>
+    <clipPath id="cpBar8"><rect x="22" y="47" width="64" height="14" rx="7"/></clipPath>
+    <clipPath id="cpBar10"><rect x="28" y="40" width="52" height="12" rx="6"/></clipPath>
+    <clipPath id="cpBar12"><rect x="46" y="62" width="26" height="7" rx="3.5"/></clipPath>
+    <clipPath id="cpShield"><path transform="translate(54,54) scale(0.86) translate(-54,-54)" d="M38,28 H70 a5,5 0 0 1 5,5 v22 c0,13 -9,21.5 -21,26.5 c-12,-5 -21,-13.5 -21,-26.5 V33 a5,5 0 0 1 5,-5 z"/></clipPath>
+    <clipPath id="sqClip" clipPathUnits="objectBoundingBox"><path d="M0.5,0 C0.09,0 0,0.09 0,0.5 C0,0.91 0.09,1 0.5,1 C0.91,1 1,0.91 1,0.5 C1,0.09 0.91,0 0.5,0 Z"/></clipPath>
+    <g id="guides" fill="none" stroke="#8A8A8A" stroke-width="1" stroke-dasharray="4 4">
+      <circle cx="54" cy="54" r="36"/><circle cx="54" cy="54" r="33"/>
+    </g>
+
+
+    <!-- ===== 1. Trend tile ===== -->
+    <symbol id="k1" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M34,62 L70,47" fill="none" style="stroke:var(--cream)" stroke-width="2.5" stroke-dasharray="5 4" opacity=".75"/>
+      <polyline points="34,76 48,76 48,71 62,71 62,66 76,66" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="34,70 46,70 46,65 58,65 58,59 66,59 66,40 76,40" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="66,48.7 66,40 76,40" fill="none" style="stroke:var(--red)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- ===== 2. Cooling curve ===== -->
+    <symbol id="k2" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M32,34 C41,34 46,60 58,67" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="9" stroke-linecap="round"/>
+      <path d="M58,67 C66,71 70,71 78,71" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="43.9" cy="47.9" r="8" style="fill:var(--ground)"/>
+      <circle cx="43.9" cy="47.9" r="5.6" style="fill:var(--red)"/>
+    </symbol>
+
+    <!-- ===== 3. Two panes ===== -->
+    <symbol id="k3" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <g clip-path="url(#cpInner3)">
+        <rect x="31.5" y="58.5" width="20.25" height="18" style="fill:var(--c1);opacity:var(--a1)"/>
+        <rect x="56.25" y="45" width="20.25" height="31.5" style="fill:var(--c2);opacity:var(--a2)"/>
+        <rect x="56.25" y="45" width="20.25" height="5.75" style="fill:var(--red)"/>
+        <rect x="56.25" y="50.75" width="20.25" height="2" style="fill:var(--cream)"/>
+      </g>
+      <rect x="51.75" y="31.5" width="4.5" height="45" style="fill:var(--cream)"/>
+      <rect x="29" y="29" width="50" height="50" rx="12" fill="none" style="stroke:var(--cream)" stroke-width="5"/>
+    </symbol>
+
+    <!-- ===== 4. Venn ===== -->
+    <symbol id="k4" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <circle cx="43" cy="54" r="22" style="fill:var(--c1);opacity:var(--a1)"/>
+      <circle cx="65" cy="54" r="22" style="fill:var(--c2);opacity:var(--a2)"/>
+      <circle cx="65" cy="54" r="22" clip-path="url(#cpVennA)" style="fill:var(--cream)"/>
+      <path d="M71.67,35.7 A19.5,19.5 0 0 1 83.8,48.95" fill="none" style="stroke:var(--red)" stroke-width="5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- ===== 5. Pause pair ===== -->
+    <symbol id="k5" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <g clip-path="url(#cpB5L)">
+        <rect x="30" y="28" width="16" height="52" style="fill:var(--track)"/>
+        <rect x="30" y="51.4" width="16" height="28.6" style="fill:var(--c1);opacity:var(--a1)"/>
+      </g>
+      <rect x="30" y="45" width="16" height="2.6" style="fill:var(--cream)"/>
+      <g clip-path="url(#cpB5R)">
+        <rect x="62" y="28" width="16" height="52" style="fill:var(--track)"/>
+        <rect x="62" y="38.4" width="16" height="41.6" style="fill:var(--c2);opacity:var(--a2)"/>
+        <rect x="62" y="38.4" width="16" height="10.4" style="fill:var(--red)"/>
+      </g>
+      <rect x="62" y="47.5" width="16" height="2.6" style="fill:var(--cream)"/>
+    </symbol>
+
+    <!-- ===== 6. Two bubbles ===== -->
+    <symbol id="k6" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M42,26 H61 a11,11 0 0 1 11,11 v8 a11,11 0 0 1 -11,11 H50 l-13,10 3,-10 h-2 a11,11 0 0 1 -11,-11 v-8 a11,11 0 0 1 11,-11 z" style="fill:var(--c1);opacity:var(--a1)"/>
+      <path d="M55,47 H74 a11,11 0 0 1 11,11 v8 a11,11 0 0 1 -11,11 H63 l-13,10 3,-10 h-2 a11,11 0 0 1 -11,-11 v-8 a11,11 0 0 1 11,-11 z" style="fill:var(--c2);opacity:var(--a2)" stroke="none"/>
+      <path d="M55,47 H74 a11,11 0 0 1 11,11 v8 a11,11 0 0 1 -11,11 H63 l-13,10 3,-10 h-2 a11,11 0 0 1 -11,-11 v-8 a11,11 0 0 1 11,-11 z" fill="none" style="stroke:var(--ground)" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M55,47 H74 a11,11 0 0 1 11,11 v8 a11,11 0 0 1 -11,11 H63 l-13,10 3,-10 h-2 a11,11 0 0 1 -11,-11 v-8 a11,11 0 0 1 11,-11 z" style="fill:var(--c2);opacity:var(--a2)"/>
+      <circle cx="76" cy="57" r="4.6" style="fill:var(--red)"/>
+    </symbol>
+
+    <!-- ===== 7. Fused mark ===== -->
+    <symbol id="k7" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <g clip-path="url(#cpTop)"><use href="#mk-claude" width="24" height="24" transform="translate(27,27) scale(2.25)" style="color:var(--c1);opacity:var(--a1)"/></g>
+      <g clip-path="url(#cpBot)"><use href="#mk-gpt" width="24" height="24" transform="translate(14.73,14.73) scale(3.2727)" style="color:var(--c2);opacity:var(--a2)"/></g>
+      <rect x="0" y="53.1" width="108" height="1.8" style="fill:var(--ground)"/>
+      <rect x="60" y="24" width="4" height="10" rx="2" style="fill:var(--red)"/>
+    </symbol>
+
+    <!-- ===== 8. Portrait seam ===== -->
+    <symbol id="k8" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <rect x="0" y="0" width="54" height="108" style="fill:var(--c1);opacity:var(--a1)"/>
+      <rect x="54" y="0" width="54" height="108" style="fill:var(--c2);opacity:var(--a2)"/>
+      <rect x="52.9" y="0" width="2.2" height="108" style="fill:var(--ground)"/>
+      <rect x="22" y="47" width="64" height="14" rx="7" style="fill:var(--ground)"/>
+      <g clip-path="url(#cpBar8)">
+        <rect x="22" y="47" width="49.92" height="14" style="fill:var(--cream)"/>
+        <rect x="59.12" y="47" width="12.8" height="14" style="fill:var(--red)"/>
+      </g>
+      <rect x="57.4" y="42" width="3.4" height="24" rx="1.7" style="fill:var(--ink)"/>
+    </symbol>
+
+    <!-- ===== 9. Pulse ===== -->
+    <symbol id="k9" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M28,44 H84" fill="none" style="stroke:var(--cream)" stroke-width="2.5" stroke-dasharray="5 4" opacity=".7"/>
+      <polyline points="72,62 77,62 80,55 84,62" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="28,62 38,62 43,50 48,62 54,62" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="54,62 58,62 63,32 68,62 72,62" fill="none" style="stroke:var(--red)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- ===== 10. Ice plate ===== -->
+    <symbol id="k10" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <rect x="28" y="40" width="52" height="12" rx="6" style="fill:var(--track)"/>
+      <g clip-path="url(#cpBar10)">
+        <rect x="28" y="40" width="42.1" height="12" style="fill:var(--cream)"/>
+        <rect x="58.16" y="40" width="11.94" height="12" style="fill:var(--red)"/>
+      </g>
+      <rect x="56.56" y="36" width="3.2" height="20" rx="1.6" style="fill:var(--ink)"/>
+      <rect x="36" y="63" width="18" height="18" rx="5" style="fill:var(--c1);opacity:var(--a1)"/>
+      <rect x="58" y="63" width="18" height="18" rx="5" style="fill:var(--c2);opacity:var(--a2)"/>
+    </symbol>
+
+    <!-- ===== 11. Chevron shield ===== -->
+    <symbol id="k11" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M38,28 H70 a5,5 0 0 1 5,5 v22 c0,13 -9,21.5 -21,26.5 c-12,-5 -21,-13.5 -21,-26.5 V33 a5,5 0 0 1 5,-5 z" style="fill:var(--cream)"/>
+      <g clip-path="url(#cpShield)">
+        <rect width="108" height="108" style="fill:var(--c1);opacity:var(--a1)"/>
+        <path d="M24,50 L54,63 L84,50 L84,96 L24,96 Z" style="fill:var(--c2);opacity:var(--a2)"/>
+      </g>
+      <path d="M47.5,58 L60.5,58 L54,70 Z" style="fill:var(--red)"/>
+    </symbol>
+
+    <!-- ===== 12. Stacked cards ===== -->
+    <symbol id="k12" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <rect x="28" y="28" width="42" height="42" rx="10" style="fill:var(--c1);opacity:var(--a1)"/>
+      <rect x="36" y="36" width="46" height="46" rx="12" style="fill:var(--ground)"/>
+      <rect x="38" y="38" width="42" height="42" rx="10" style="fill:var(--c2);opacity:var(--a2)"/>
+      <g clip-path="url(#cpBar12)">
+        <rect x="46" y="62" width="26" height="7" style="fill:var(--cream)"/>
+        <rect x="61" y="62" width="11" height="7" style="fill:var(--red)"/>
+      </g>
+      <rect x="59.4" y="59.5" width="3" height="12" rx="1.5" style="fill:var(--ink)"/>
+    </symbol>
+
+  </defs>
+</svg>
+
+<!-- ===================== round 9 · Pulse family ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="cpR9L"><rect x="-4" y="-4" width="58" height="116"/></clipPath>
+    <clipPath id="cpR9R"><rect x="54" y="-4" width="58" height="116"/></clipPath>
+    <clipPath id="cpR9Up"><rect x="-4" y="-4" width="116" height="48"/></clipPath>
+
+    <!-- home-screen neighbours: stand-ins for the shipped Claude and ChatGPT tiles.
+         Full-bleed ground + the provider's own mark at ~58% of the visible 72 units,
+         mark pathData verbatim from app/src/main/res/drawable/. -->
+    <symbol id="r9nbClaude" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#D97757"/>
+      <use href="#mk-claude" width="24" height="24" transform="translate(33,33) scale(1.75)" style="color:#F3EBE3"/>
+    </symbol>
+    <symbol id="r9nbGpt" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#000000"/>
+      <use href="#mk-gpt" width="24" height="24" transform="translate(24.45,24.45) scale(2.462)" style="color:#FFFFFF"/>
+    </symbol>
+
+    <symbol id="r9a1" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M23,44 H85" fill="none" style="stroke:var(--cream)" stroke-width="3" stroke-dasharray="6 5" opacity=".72"/>
+      <polyline points="21,62 33,62 38.5,50 44,62 48,62" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="60,62 64,62 69.5,52 75,62 87,62" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="48,62 50,62 54,30 58,62 60,62" fill="none" style="stroke:var(--red)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9a2" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M12,44 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.5" stroke-dasharray="7 5.5" opacity=".72"/>
+      <polyline points="12,62 30,62 36,49 42,62 48,62" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="60,62 66,62 72,51 78,62 96,62" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="48,62 50,62 54,29 58,62 60,62" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9a3" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M0,42 H108" fill="none" style="stroke:var(--cream)" stroke-width="4" stroke-dasharray="8 6" opacity=".72"/>
+      <polyline points="0,60 20,60 29,47 38,60 42,60" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="80,60 82,60 88,49 94,60 108,60" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="42,60 46,60 54,21 66,87 76,60 80,60" fill="none" style="stroke:var(--red)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9b1" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M12,44 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.5" stroke-dasharray="7 5.5" opacity=".72"/>
+      <polyline points="12,62 28,62 34,52 40,62 44,62" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="66,62 72,62 78,52 84,62 96,62" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="44,62 48,68 54,28 60,70 66,62" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9b2" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M12,44 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.5" stroke-dasharray="7 5.5" opacity=".72"/>
+      <polyline points="12,64 44,64" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="64,34 64,64 96,64" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="44,64 44,34 64,34" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9b3" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M12,44 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.5" stroke-dasharray="7 5.5" opacity=".72"/>
+      <path d="M12,66 H30 C42,66 42,30 54,30 C66,30 66,66 78,66 H96" fill="none" clip-path="url(#cpR9L)" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M12,66 H30 C42,66 42,30 54,30 C66,30 66,66 78,66 H96" fill="none" clip-path="url(#cpR9R)" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M12,66 H30 C42,66 42,30 54,30 C66,30 66,66 78,66 H96" fill="none" clip-path="url(#cpR9Up)" style="stroke:var(--red)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="r9b4" viewBox="0 0 108 108">
+      <rect width="108" height="108" style="fill:var(--ground)"/>
+      <path d="M12,44 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.5" stroke-dasharray="7 5.5" opacity=".72"/>
+      <polyline points="12,62 30,62 39,47 48,62 51,62" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="51,62 57,62 66,30 75,62 96,62" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="51,62 57,62 66,30 75,62 96,62" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#cpR9Up)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<style>
+  /* round 9 only — the home-screen strip; everything else reuses the round-8 style block */
+  .iconrow .z.strip { width: auto; }
+  .hs {
+    background: #101010; border-radius: 16px; padding: 15px 20px 11px;
+    display: inline-flex; gap: 20px; align-items: flex-start;
+  }
+  .hs .hsi { width: 62px; text-align: center; }
+  .hs .hsl {
+    display: block; margin-top: 7px; font-size: 10.5px; line-height: 1.2;
+    color: #EFEFEF; white-space: nowrap; letter-spacing: .005em;
+  }
+  .hs .hsl.me { font-weight: 600; }
+  .grp {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); margin: 40px 0 2px;
+  }
+  .geom { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; max-width: 78ch; }
+  .geom b { color: var(--ink); }
+  .geom code { font-size: 11.5px; }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">CCRM-60 (Dual Identity) &middot; launcher icon, round 8 &middot; 2026-09-10 &middot; twelve concepts, no recommendation</p>
+  <h1>Launcher icon, round 8 &mdash; twelve ways out of the flag</h1>
+
+  <p class="lede">
+    Today's tile, the round-7 winner approved on 2026-09-09 and built, is a horizontal tricolour.
+    <b>Saffron-ish terracotta across the top third, a cream band across the middle, green across the
+    bottom third</b> &mdash; and centred on the cream band, the faint half-sunburst, whose radial spokes
+    sit exactly where the Ashoka Chakra sits. Every ingredient of the Indian flag is present in the
+    right order and the right place, and once a viewer has seen it they cannot unsee it. The
+    individual decisions were all defensible: terracotta above green because Claude is the primary
+    account, a light bar at the seam because the bar is the app's own geometry, half-marks faint
+    because the marks identify the services. Together they made a flag. So the split, the band and
+    the wheel are all back on the table.
+  </p>
+
+  <p class="lede">
+    Everything below is judged against one rule set, applied identically to all twelve.
+  </p>
+
+  <h2>Rules <small>&mdash; every concept below is drawn to these; state any deviation</small></h2>
+  <ul class="tight">
+    <li><b>Adaptive icon geometry.</b> <code>108 &times; 108</code> viewport, foreground and background
+      layers. Only the central <code>72</code> units are ever visible and all essential content sits
+      inside the <b>66-unit safe circle</b> (centre <code>54,54</code>, r&nbsp;<code>33</code>). The
+      112&nbsp;px view below draws both guides.</li>
+    <li><b>Survives every mask.</b> Circle, squircle and rounded square, on a light launcher and a dark
+      one. Nothing may depend on a corner.</li>
+    <li><b>One focal shape, strong silhouette, no text.</b> Two to three colours, <b>no gradients</b>
+      (Material 3), no shadows, no filters &mdash; every shape here is a flat fill or a flat stroke.</li>
+    <li><b>Readable at 48&nbsp;dp</b> and in the <b>monochrome (themed) layer</b>, where Android keeps
+      only alpha and tints it. Anything the design says with colour alone disappears there, so "two
+      accounts" has to survive as a difference of <i>shape</i> or <i>alpha</i>.</li>
+    <li><b>Must not read as a national flag.</b> No horizontal or vertical tricolour with a light band,
+      checked against <b>India, Ireland, Italy, Hungary, Niger, Ivory Coast and Mexico</b> &mdash; the
+      seven that pair a warm field, a light field and a green field.</li>
+    <li><b>Every concept shows over-pace somewhere.</b> Red is <code>#FF5252</code>; the idea that the
+      user is spending faster than even pace is the app's one alarming state and the icon should
+      admit it exists.</li>
+    <li><b>Provider marks are optional and costly.</b> CCRM-56 (Provider Identity) keeps the Claude
+      sunburst and the OpenAI blossom on in-app surfaces and off the launcher tile. Only concept 7
+      puts them back, and it is labelled accordingly.</li>
+  </ul>
+
+  <h2>Today, for comparison <small>&mdash; round-7 variant 5, as built</small></h2>
+  <p class="sub">
+    Same five views as every concept below, so the comparison is like for like. Note how the circle
+    mask, which crops the corners, <i>strengthens</i> the flag reading rather than weakening it: it
+    trims the fields to three clean bands with the wheel in the middle.
+  </p>
+  <div class="cc">
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#ic" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#ic" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#ic" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#ic" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#icm" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>The three bands.</b> Terracotta <code>#D97757</code> over y&nbsp;0&ndash;54,
+          green <code>#10A37F</code> over y&nbsp;54&ndash;108, and a 16-unit cream capsule spanning
+          x&nbsp;10&ndash;98 straight across the seam. Cropped to the visible 72 units the cream bar is
+          roughly a fifth of the height, centred &mdash; a middle band in all but name.</p>
+        <p class="why"><b>The wheel.</b> The Claude sunburst's upper half is centred on
+          <code>54,54</code> at 60 units tall, so its spokes radiate from behind the middle of the cream
+          band. That is the chakra's position and, at 48&nbsp;dp, roughly its apparent texture.</p>
+        <p class="risk"><b>Verdict already reached.</b> Not shippable as an identity, so round 8 exists.
+          Nothing else about CCRM-60 (Dual Identity) is reopened &mdash; the two rooms, the four-tab
+          Settings and the two-account notification all stand.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Twelve concepts <small>&mdash; five views each: circle on light, circle on dark, squircle, uncropped, themed</small></h2>
+  <p class="sub">
+    Each concept is drawn once and rendered five ways from the same 108-unit source, so the themed
+    layer really is the same geometry with colour removed &mdash; where two shapes collapse into one
+    tone there, that is a genuine finding and not a drawing shortcut. Read the 48&nbsp;dp views first;
+    the 112&nbsp;px view is for checking the safe circle, not for judging the icon.
+  </p>
+
+  <section class="cc" id="c1">
+    <h3>1. Trend tile</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k1" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The product itself as the mark: two stepped usage lines climbing a charcoal plate, with the dashed even-pace diagonal cutting across them and the run above it turning red.</p>
+        <p class="why"><b>What the shapes mean.</b> Terracotta staircase = the Claude account's spend over the window; green staircase = the ChatGPT account's; dashed cream diagonal = even pace; the red run = the terracotta line past the pace line; the plate = the app's charcoal surface.</p>
+        <p class="why"><b>Pros.</b> Says what the app does with no metaphor at all, and it is the only concept whose silhouette is unique to this app. The steps are literally the bar segments the app already draws. Reads as a category-mate of Stocks and Analytics without copying either, because no other analytics icon carries a pace diagonal.</p>
+        <p class="why"><b>Cons.</b> Four strokes in a 66-unit circle is the busiest thing here. At 48&nbsp;dp the green line and the dashed diagonal both come close to reading as texture rather than lines, and the stepped corners round off.</p>
+        <p class="risk"><b>Flag / trademark check.</b> No bands, no field of colour, no wheel &mdash; nothing flag-like. No provider mark, so no trademark exposure at all: the two colours alone carry the identification, exactly as CCRM-56 (Provider Identity) allows on the launcher tile.</p>
+        <p class="mono"><b>Over pace.</b> Explicit and central: the terracotta line crosses the pace diagonal and everything past the crossing is red. This is the only concept where over-pace is the composition rather than a garnish.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c2">
+    <h3>2. Cooling curve</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k2" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Newton's law of cooling as one bold stroke: a steep decay from the top-left that settles onto a flat line at the right, terracotta on the fall and green on the flat, with a red dot on the steep part.</p>
+        <p class="why"><b>What the shapes mean.</b> The curve = a window draining and then resetting &mdash; the app's whole subject in one gesture; terracotta the first half and green the second = the two accounts sharing one curve; the red dot = the moment spend went faster than even pace.</p>
+        <p class="why"><b>Pros.</b> Strongest silhouette of the twelve and the only one that says the app's name out loud. Survives to 24&nbsp;dp. One shape, three colours, nothing to crop.</p>
+        <p class="why"><b>Cons.</b> It does not say <i>two providers</i> &mdash; the colour change reads as a gradient-by-halves, not as two accounts, and a viewer who does not know the palette sees one curve. The red dot has to be big enough to see and then it competes with the curve.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Nothing flag-like. No mark, no trademark exposure. Closest neighbour in the wild is a generic &ldquo;temperature&rdquo; or &ldquo;performance&rdquo; icon, which is a crowding risk rather than a legal one.</p>
+        <p class="mono"><b>Over pace.</b> The red knee dot. Weakest over-pace statement here: it is a garnish, not a structure, and at 48&nbsp;dp it can read as a bullet or a defect marker.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c3">
+    <h3>3. Two panes</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k3" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The word &ldquo;window&rdquo; taken literally: a cream window frame with two panes, each filled from the bottom to its own level, the right one already past its tick.</p>
+        <p class="why"><b>What the shapes mean.</b> The frame = a usage window; left pane at 40&nbsp;% = the Claude account; right pane at 70&nbsp;% = the ChatGPT account; the cream tick across the right pane = even pace; the red cap above it = the amount spent past pace.</p>
+        <p class="why"><b>Pros.</b> The only concept that draws the app's actual noun. Two panes is an unmistakable &ldquo;two of something&rdquo;. Both fills, the tick and the red cap are the same geometry the app's bars already use, so the icon and the app agree.</p>
+        <p class="why"><b>Cons.</b> A cream frame plus a cream mullion is a lot of light structure &mdash; it eats the colour area, and the two fills end up small. At 48&nbsp;dp the 2-unit tick line is at the edge of visibility, and the frame's stroke thins under a circle mask.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag: the light structure is a cross, not a band, and there is no third field. Closest confusion is a generic &ldquo;window&rdquo; or spreadsheet icon. No mark, no trademark exposure.</p>
+        <p class="mono"><b>Over pace.</b> Structural: the red cap sits above the cream tick in the right pane, so the icon permanently shows one account under pace and one over it &mdash; the app's two states side by side.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c4">
+    <h3>4. Venn</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k4" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Two filled discs overlapping, terracotta and green, the lens between them cream; a short red arc on the rim of the green disc.</p>
+        <p class="why"><b>What the shapes mean.</b> Two discs = two accounts; the cream lens = the one place they are added together, which is the app's combined view; the red rim arc = the slice of the green account's window spent past even pace.</p>
+        <p class="why"><b>Pros.</b> The clearest &ldquo;two&rdquo; of the twelve and the strongest silhouette after the cooling curve. Fills the safe circle edge to edge, so a circle mask costs nothing. Trivially legible at 24&nbsp;dp.</p>
+        <p class="why"><b>Cons.</b> It is Mastercard's composition, and after Mastercard it is every &ldquo;merge&rdquo;, &ldquo;sync&rdquo; and &ldquo;VPN&rdquo; icon on the store. It says nothing about time, windows or usage. The red arc is the only product content and it is small.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag. Trademark exposure is the interesting one here: no provider mark, but two overlapping brand-coloured discs in terracotta and green is close enough to a payments mark to invite a second look &mdash; the risk is confusion with Mastercard, not with Anthropic or OpenAI.</p>
+        <p class="mono"><b>Over pace.</b> The red rim arc on the green disc. Weak: it is a decoration on the edge, and a circle mask sits right on top of it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c5">
+    <h3>5. Pause pair</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k5" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k5" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k5" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k5" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k5" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Two upright rounded bars, bottom-aligned in their own tracks, filled to different heights &mdash; a pause glyph that happens to be two meters.</p>
+        <p class="why"><b>What the shapes mean.</b> Left bar at 55&nbsp;% = the Claude account's window; right bar at 80&nbsp;% = the ChatGPT account's; each cream line = that account's even-pace tick; the red above the right tick = spend past pace. The pause reading is the pun: a cooldown is a pause.</p>
+        <p class="why"><b>Pros.</b> Two meters and a pause glyph in one shape, which is a rare double reading that both happen to be true. Very strong silhouette, survives to 24&nbsp;dp, and the mono layer keeps the two heights.</p>
+        <p class="why"><b>Cons.</b> Pause is an overloaded glyph &mdash; on a launcher it invites a tap expecting media. The two heights are the only thing distinguishing it from an actual pause button, and a launcher's rounded mask crops the bar tops slightly.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag: vertical, but two fields with a dark gap, no light band, no third colour. No mark, no trademark exposure. <b>Not the dropped &ldquo;two bars&rdquo;:</b> the dropped pair were <i>horizontal</i> progress bars stacked on a plain ground, reading as a list row; these are vertical, bottom-filled, in tracks, and the pair forms one recognisable glyph rather than two rows of a list.</p>
+        <p class="mono"><b>Over pace.</b> Structural and legible: the right bar's fill runs past its cream tick and that overshoot is red, at meter scale rather than dot scale.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c6">
+    <h3>6. Two bubbles</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k6" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k6" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k6" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k6" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k6" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Two speech bubbles overlapping, terracotta behind at the upper-left and green in front at the lower-right, with a red dot in the front bubble.</p>
+        <p class="why"><b>What the shapes mean.</b> Two bubbles = two assistant conversations, which is what the accounts are; the overlap and the knock-out outline = they are separate accounts, not one; the red dot = an account over pace, borrowed from the unread-badge idiom.</p>
+        <p class="why"><b>Pros.</b> Instantly legible as the AI-assistant category, so it sits naturally beside Claude and ChatGPT in the drawer. Excellent silhouette, excellent mono, no cropping problems.</p>
+        <p class="why"><b>Cons.</b> It looks like a chat app, and Cooldown is not one &mdash; it never shows a message. Nothing in it says usage, window, budget or pace. Also the most generic composition of the twelve: two bubbles is the single most used icon in the category.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag. No mark, so no trademark exposure &mdash; but the strongest <i>brand-confusion</i> risk here, because a bubble pair in green next to the real ChatGPT icon reads as an unofficial ChatGPT client.</p>
+        <p class="mono"><b>Over pace.</b> A red badge dot only. The weakest over-pace of the twelve: it carries no magnitude and reads as &ldquo;you have a notification&rdquo;.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c7">
+    <h3>7. Fused mark</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k7" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k7" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k7" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k7" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k7" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> No colour fields at all: the top half of the Claude sunburst in terracotta above a hairline seam, the bottom half of the OpenAI blossom in green below it, both at full strength on charcoal.</p>
+        <p class="why"><b>What the shapes mean.</b> Each half-mark = the service it belongs to, unambiguously; the shared centre line = the app is one surface over both; the small red pip above the seam = an account over pace.</p>
+        <p class="why"><b>Pros.</b> Zero ambiguity about what the app tracks &mdash; it names both services with their own marks. Removing today's cream capsule removes the light band that is doing most of the flag work. Two colours on a dark plate, clean at 48&nbsp;dp.</p>
+        <p class="why"><b>Cons.</b> Two half-glyphs of two different marks do not fuse into one shape; they read as two fragments stacked. The sunburst's spokes are exactly the wheel-like detail that got today's tile into trouble, so this keeps the riskiest element and only removes the band around it.</p>
+        <p class="risk"><b>Flag / trademark check.</b> No bands, so no flag &mdash; but the wheel association survives on its own in the upper half. <b>Trademark, plainly:</b> this puts two other companies' registered marks on the launcher icon of a third-party app. That is the one place a mark is most likely to be read as endorsement or as an official client, it is the case both brand guidelines call out, and it is the reason CCRM-56 (Provider Identity) already kept marks off the launcher tile. Shipping this would reverse that decision knowingly.</p>
+        <p class="mono"><b>Over pace.</b> A small red pip above the seam. Vestigial &mdash; there is no room for a meter once both marks are at full strength.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c8">
+    <h3>8. Portrait seam</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k8" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k8" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k8" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k8" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k8" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Today's tile rotated 90&deg;: terracotta on the left, green on the right, a hairline charcoal seam between them, and the bar crossing horizontally at the centre on a charcoal track instead of as a cream band.</p>
+        <p class="why"><b>What the shapes mean.</b> Left and right fields = the two accounts as equals rather than one above the other; the charcoal track = the bar's ground, so the bar no longer spans as a light band; the cream fill and its red run past the ink tick = spend and over-pace, at the app's own bar geometry.</p>
+        <p class="why"><b>Pros.</b> The smallest possible change from an approved, already-built tile: same palette, same bar, same numbers, and the About screen's drawable follows for free. Vertical division also makes the two accounts read as peers, which matches the two-room model of CCRM-60 (Dual Identity).</p>
+        <p class="why"><b>Cons.</b> A vertical bicolour is still a bicolour, and the horizontal bar reintroduces a light element across the middle. It solves the specific flag while staying in the family of designs that produced it. The two flat fields also make the tile feel like a settings swatch rather than a mark.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Better, not clear. A vertical <i>two</i>-colour split is not any of the flags checked, since every one of those is a tricolour with a light band (India, Ireland, Italy, Hungary, Niger, Ivory Coast, Mexico). But terracotta-and-green side by side, with a light bar through the middle, is one design revision away from Ivory Coast/Ireland territory, and the cream fill is that revision. No mark, no trademark exposure.</p>
+        <p class="mono"><b>Over pace.</b> Full strength: the app's own bar, with the fill running past an ink tick and the overshoot in red. Identical semantics to the shipped bar.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c9">
+    <h3>9. Pulse</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k9" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k9" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k9" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k9" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k9" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> A monitoring trace across the plate: a small terracotta beat on the left, a green beat on the right, and one red spike in the middle that breaks a dashed cream ceiling.</p>
+        <p class="why"><b>What the shapes mean.</b> The trace = continuous monitoring, which is what the foreground service does; terracotta run and green run = the two accounts on one trace; the dashed cream line = the even-pace ceiling; the red spike above it = spending faster than pace.</p>
+        <p class="why"><b>Pros.</b> Immediately legible as &ldquo;this app watches something for you&rdquo;. The one spike gives the icon a focal point and a memorable silhouette. Mono works well because the ceiling and the spike differ by shape, not colour.</p>
+        <p class="why"><b>Cons.</b> Heartbeat is a health-app cliché, and a spike says &ldquo;event&rdquo; rather than &ldquo;budget&rdquo; &mdash; the app tracks a level over a window, not an incident. The two provider runs are short and, at 48&nbsp;dp, read as one line changing colour.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag. No mark, no trademark exposure. Category collision with health, uptime and network monitors is the real cost.</p>
+        <p class="mono"><b>Over pace.</b> Strong and central: the spike is red exactly and only where it exceeds the dashed ceiling, which is a fair picture of the app's rule.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c10">
+    <h3>10. Ice plate</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic slate mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k10" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic slate mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k10" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic slate ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k10" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic slate big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k10" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic slate mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k10" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> A cool-toned plate that belongs to the app rather than to either provider: a wide cream bar with its red tail above two small terracotta and green chips.</p>
+        <p class="why"><b>What the shapes mean.</b> The slate ground = Cooldown's own colour, neither provider's; the wide bar with its ink tick and red tail = the window and the over-pace run; the two chips = the two accounts, present but subordinate.</p>
+        <p class="why"><b>Pros.</b> The cleanest fix for the flag problem, because it removes the two-field ground entirely &mdash; the provider colours become small accents on a neutral. The bar is big enough to read at 48&nbsp;dp and matches the app's bar exactly. The slate also gives the brand a third colour it currently lacks.</p>
+        <p class="why"><b>Cons.</b> Introduces a new brand colour that appears nowhere else in the app yet, so either the icon is an outlier or CCRM-60 (Dual Identity) grows a palette change. The chips are small &mdash; at 48&nbsp;dp they are two coloured dots, which is close to the &ldquo;dots, not logos&rdquo; idea already rejected for in-app surfaces.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag, and the furthest from one of the twelve: a cool ground with one light bar and two small chips matches no national arrangement. No mark, no trademark exposure.</p>
+        <p class="mono"><b>Over pace.</b> Full strength on the main element: the wide bar shows fill, ink tick and red tail at the app's own proportions.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c11">
+    <h3>11. Chevron shield</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k11" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k11" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k11" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k11" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k11" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> A cream shield on charcoal, its interior split by a downward chevron &mdash; terracotta above, green below &mdash; with a red wedge at the chevron's point.</p>
+        <p class="why"><b>What the shapes mean.</b> The shield = the app watching the limit on your behalf; the chevron = the split between the two accounts, angled so neither is simply &ldquo;on top&rdquo;; the red wedge = the over-pace warning at the point where the two meet.</p>
+        <p class="why"><b>Pros.</b> Strong, closed, instantly recognisable silhouette that masks beautifully to a circle or a squircle. The chevron gives the bicolour a diagonal energy the horizontal split never had, and the point gives the red somewhere logical to live.</p>
+        <p class="why"><b>Cons.</b> <b>A shield says security</b> &mdash; antivirus, VPN, password manager, parental controls. Cooldown does none of that, and an icon that promises protection and delivers a usage meter is a misread that lasts past the install. The shield also spends a lot of area on cream, which is the element implicated in the flag reading. And it is the <b>worst mono layer of the twelve</b>: because every element sits inside the silhouette with no ground showing between them, the themed render collapses to one flat shield &mdash; the chevron, both colours and the red notch all disappear. Check the fifth view above; that is not a drawing error.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag, since the colour is inside a contained silhouette rather than banded across the tile. No mark, no trademark exposure. The misleading-category risk is the real objection, not the flag.</p>
+        <p class="mono"><b>Over pace.</b> The red wedge at the chevron point. Symbolic rather than quantitative &mdash; it marks &ldquo;over&rdquo; but shows no amount.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="c12">
+    <h3>12. Stacked cards</h3>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k12" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k12" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k12" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#k12" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#k12" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Two rounded cards offset on the diagonal, terracotta behind at the upper-left and green in front at the lower-right, the front card carrying a short cream bar with a red tail.</p>
+        <p class="why"><b>What the shapes mean.</b> Two cards = the two account cards the app's rooms already show; the offset = a stack you can flip through, which is the two-room navigation; the bar on the front card = that account's window, with the red past its tick.</p>
+        <p class="why"><b>Pros.</b> It is a picture of the app's own home screen, so the icon and the first screen agree. &ldquo;Two accounts, one wallet&rdquo; is a familiar and correct reading. Excellent mono, no crop problems, and a strong diagonal silhouette.</p>
+        <p class="why"><b>Cons.</b> Card stacks are wallet, banking and password-manager iconography, so the category read is money rather than usage. The back card contributes only a corner of colour, so the terracotta is a sliver &mdash; the two providers are not equal here, which is exactly what CCRM-60 (Dual Identity) is trying to avoid.</p>
+        <p class="risk"><b>Flag / trademark check.</b> Not a flag. No mark, no trademark exposure. <b>Against the dropped &ldquo;interlocking tabs&rdquo;:</b> those were two shapes notched into each other on one plane, reading as a puzzle or a merge; these are two whole, separate cards stacked in depth, and the front one carries real product content (a bar with a tick and a red tail) rather than being a bare colour field.</p>
+        <p class="mono"><b>Over pace.</b> On the front card only: a real bar with fill, tick and red tail, at small scale. Honest but half the story, since the back card's account shows no state.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <h2>Comparison</h2>
+  <p class="sub">
+    Descriptive only &mdash; no winner is picked here. "Distinct at 48&nbsp;dp" asks whether the
+    silhouette is recognisable and unlike its neighbours in a drawer, not merely whether it is visible.
+    "Survives mono" asks whether the concept still says the same thing once Android strips the colour.
+  </p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Concept</th><th>Reads as a flag?</th><th>Distinct at 48&nbsp;dp</th><th>Survives mono</th>
+      <th>Says "two providers"</th><th>Says "over pace"</th><th>Trademark exposure</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><b>1. Trend tile</b></td><td class="yes">no</td><td class="mid">so-so</td><td class="mid">so-so</td><td class="yes">yes</td><td class="yes">yes</td><td>none</td><td>Only concept whose silhouette is unique to this app; also the busiest. Green line is the first thing to lose.</td></tr>
+      <tr><td><b>2. Cooling curve</b></td><td class="yes">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="mid">token</td><td>none</td><td>Best silhouette, says the app's name; says nothing about two accounts.</td></tr>
+      <tr><td><b>3. Two panes</b></td><td class="yes">no</td><td class="mid">so-so</td><td class="mid">so-so</td><td class="yes">yes</td><td class="yes">yes</td><td>none</td><td>Draws the app's actual noun. Cream frame plus mullion is a lot of light structure.</td></tr>
+      <tr><td><b>4. Venn</b></td><td class="yes">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">barely</td><td>Mastercard-adjacent</td><td>Clearest 'two'; says nothing about time or usage; composition is heavily used.</td></tr>
+      <tr><td><b>5. Pause pair</b></td><td class="yes">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td>none</td><td>Double reading (pause + two meters) that is true both ways; pause glyph invites a media expectation.</td></tr>
+      <tr><td><b>6. Two bubbles</b></td><td class="yes">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">barely</td><td>reads as an unofficial client</td><td>Right category, wrong product: nothing says usage or window.</td></tr>
+      <tr><td><b>7. Fused mark</b></td><td class="yes">no</td><td class="mid">so-so</td><td class="no">no</td><td class="yes">yes</td><td class="no">barely</td><td>high &mdash; two live marks on the launcher</td><td>Keeps the wheel-ish sunburst that started this; reverses CCRM-56 (Provider Identity) on the launcher.</td></tr>
+      <tr><td><b>8. Portrait seam</b></td><td class="mid">nearly</td><td class="yes">yes</td><td class="mid">so-so</td><td class="yes">yes</td><td class="yes">yes</td><td>none</td><td>Smallest delta from the built tile; still a bicolour field with a light bar through it.</td></tr>
+      <tr><td><b>9. Pulse</b></td><td class="yes">no</td><td class="mid">so-so</td><td class="yes">yes</td><td class="mid">weakly</td><td class="yes">yes</td><td>none</td><td>Says 'monitoring' well; heartbeat cliché, and 'spike' is the wrong mental model for a budget.</td></tr>
+      <tr><td><b>10. Ice plate</b></td><td class="yes">no</td><td class="mid">so-so</td><td class="mid">so-so</td><td class="mid">weakly</td><td class="yes">yes</td><td>none</td><td>Furthest from a flag; costs a new brand colour and shrinks the providers to chips.</td></tr>
+      <tr><td><b>11. Chevron shield</b></td><td class="yes">no</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="mid">token</td><td>none</td><td>Beautiful silhouette, wrong promise &mdash; shield reads as security software. Themed layer collapses to one flat shield: no split, no red.</td></tr>
+      <tr><td><b>12. Stacked cards</b></td><td class="yes">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="mid">weakly</td><td class="mid">token</td><td>none</td><td>Mirrors the app's own cards; wallet/banking category read, and the two accounts are not equals.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <hr class="hr">
+
+  <h2>Needs deciding <small>&mdash; one at a time, in this order</small></h2>
+
+  <p class="q" style="border-left-color:var(--good)"><b>Answered on 2026-09-10 &mdash; by picking 9 outright.</b>
+    Robin chose <span style="font-weight:650">concept 9, Pulse</span> from the twelve rather than answering the four questions below, so
+    <i>questions 1&ndash;4 are moot for round 8</i> and are kept only as the record of what round 8 asked.
+    The choice settles them implicitly: abstract launcher, no provider marks (question&nbsp;1); the charcoal
+    plate <code>#1F1B19</code> (question&nbsp;2); a real meter with a pace ceiling and a red run over it,
+    not a symbol (question&nbsp;3); and one concept to round 9, not two (question&nbsp;4). Round 9 is below.</p>
+
+  <p class="q"><b>1. Marks or abstract?</b>
+    Concept 7 is the only one that puts the Claude sunburst and the OpenAI blossom on the launcher, and
+    it carries a real trademark cost and reverses CCRM-56 (Provider Identity) for that surface. Every
+    other concept identifies the two services by colour alone. Do we keep the launcher abstract &mdash;
+    in which case 7 is out now and the round narrows to eleven &mdash; or is a marked launcher back in
+    scope?</p>
+
+  <p class="q"><b>2. Charcoal plate, or a cool ground of our own?</b>
+    Ten concepts sit on the app's charcoal <code>#1F1B19</code>; concept 10 introduces a cool slate
+    <code>#22303C</code> that belongs to Cooldown rather than to either provider, and concept 8 keeps
+    the two provider colours as the ground itself. This choice decides how much of the tile the provider
+    colours own, and whether CCRM-60 (Dual Identity) also adds a brand colour. Charcoal, slate, or
+    provider fields?</p>
+
+  <p class="q"><b>3. Must the icon draw the product, or may it be a symbol?</b>
+    Concepts 1, 3, 5, 9, 10 and 12 all contain a real meter with a pace tick and a red run; concepts 2,
+    4, 6 and 11 are symbols with a token of red. The first group is truer and busier, the second is
+    stronger at 24&nbsp;dp and quieter about what the app does. Which failure would we rather have &mdash;
+    an icon that is hard to read, or an icon that is easy to read and says the wrong thing?</p>
+
+  <p class="q"><b>4. Which two go to round 9?</b>
+    Round 9 should be two concepts at full fidelity &mdash; drawer, taskbar, About screen, themed layer,
+    and a side-by-side against the real Claude and ChatGPT icons on a home screen &mdash; rather than
+    twelve at sketch fidelity. Name two, and name what changes about each before they are redrawn.</p>
+
+  <p class="sub" style="margin-top:26px">
+    Nothing here is approved and nothing here is built. Per working agreement&nbsp;2, implementation
+    starts only after an explicit approval of a specific wireframe; the answers to the four questions
+    above become round 9, not code.
+  </p>
+
+
+
+  <hr class="hr">
+
+  <p class="eyebrow">CCRM-60 (Dual Identity) &middot; launcher icon, round 9 &middot; 2026-09-10 &middot; concept 9 chosen, six ways to draw it</p>
+  <h2 style="margin-top:14px;font-size:26px;font-weight:700;letter-spacing:-.02em">Round 9 &mdash; Pulse, decided 2026-09-10</h2>
+
+  <p class="lede">
+    Robin reviewed the twelve above on 2026-09-10 and chose <b>concept 9, Pulse</b>, outright. His
+    instruction, verbatim: <i>&ldquo;Go with Option 9: Pulse, just make that icon bigger by removing
+    padding from all 4 sides (show me 3 variations of the size and another 3 variations by the type of
+    pulse if possible)&rdquo;</i>. So round 9 is not a shortlist &mdash; the concept is settled and the
+    only open questions are <b>how big</b> and <b>which shape of pulse</b>.
+  </p>
+
+  <p class="lede">
+    Two groups, seven tiles. <b>Group&nbsp;A</b> holds the trace shape fixed and removes padding
+    progressively, so the three tiles differ only in how much of the 108-unit layer the trace occupies
+    and how thick it is. <b>Group&nbsp;B</b> holds the size fixed at A2's and changes the <i>kind</i> of
+    pulse. Every tile keeps the three colour roles &mdash; terracotta <code>#D97757</code> for the Claude
+    account, green <code>#10A37F</code> for the ChatGPT one, red <code>#FF5252</code> for the run past
+    pace &mdash; on the charcoal plate <code>#1F1B19</code>, with the cream <code>#F3EBE3</code> dashed
+    ceiling as the even-pace line. Flat strokes only, no gradients and no filters, round caps and joins
+    throughout.
+  </p>
+
+  <p class="lede">
+    One change from round&nbsp;8's sketch of concept&nbsp;9, and it is worth naming: there, the red
+    polyline carried the flat runs on either side of the spike, so charcoal-level flat line was drawn red.
+    Here <b>red is only ever the beat</b> &mdash; in A1&ndash;A3 and B1&ndash;B2 the spike or plateau
+    itself, and in B3 and B4 <i>exactly</i> the ink above the ceiling, clipped to
+    <code>y&nbsp;&lt;&nbsp;44</code>. That makes the icon's colour rule the same rule the bars in the app
+    use.
+  </p>
+
+  <p class="lede">
+    Each tile is shown in round&nbsp;8's five views plus a sixth that is the point of this round: a
+    <b>home-screen strip</b> &mdash; the tile at 48&nbsp;dp on a dark wallpaper, under the same squircle
+    mask, sitting between stand-ins for the two real app icons it will actually live beside. The
+    neighbours are drawn from the app's own <code>ic_provider_claude.xml</code> and
+    <code>ic_provider_chatgpt.xml</code> pathData, on terracotta and on black, with their marks at about
+    58&nbsp;% of the visible 72 units, which is roughly where the shipped tiles put them. Labels are at
+    launcher label size. The question that strip answers is not &ldquo;is this pretty&rdquo; but
+    &ldquo;does this hold its own between those two without imitating either&rdquo;.
+  </p>
+
+  <p class="grp">Group A &mdash; size</p>
+  <p class="sub">
+    Same ECG-style trace in all three: a small terracotta beat on the left, a green beat on the right, one
+    tall red spike breaking the dashed cream ceiling, on the charcoal plate. Only the span, the stroke and
+    the baseline move.
+  </p>
+
+  <section class="cc" id="r9a1">
+    <h3>A1 &mdash; Safe</h3>
+    <p class="geom"><b>Trace span x&nbsp;21&nbsp;&rarr;&nbsp;87</b> (66 units, the safe-circle width). Stroke <b>7</b>, round caps and joins. Baseline y&nbsp;62, apex y&nbsp;30, dashed ceiling y&nbsp;44 over x&nbsp;23&nbsp;&rarr;&nbsp;85, stroke 3, dash <code>6 5</code>. Beat centred on x&nbsp;54.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9a1" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a1" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Round 8's concept 9 with the padding taken down to the safe circle and nothing more &mdash; the conservative end of the size range, kept so there is something to compare the bolder two against.</p>
+        <p class="why"><b>What crops.</b> Nothing structural, on any mask. The two end caps reach a radius of about <code>36.5</code> from centre, so a circle mask shaves a sliver under half a unit off each cap tip &mdash; well under a pixel at 48&nbsp;dp. The apex sits 24 units from centre and the ceiling's own ends sit 32.6, both inside the 66-unit safe circle.</p>
+        <p class="why"><b>Reads.</b> Clean, but it still reads as a <i>picture of a trace on a plate</i> rather than as a mark: there is a visible ring of empty charcoal all the way round, which is exactly the padding Robin asked to lose. The two provider bumps are the smallest of the three sizes and are the first thing to go at 24&nbsp;dp.</p>
+        <p class="mono"><b>Mono.</b> Holds. Ceiling dashed at 0.72 alpha, trace solid; terracotta run at 0.82 and green at 0.46, so the two accounts still differ by tone as well as by bump height, and the red apex is the only full-alpha ink.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="r9a2">
+    <h3>A2 &mdash; Bleed</h3>
+    <p class="geom"><b>Trace span x&nbsp;12&nbsp;&rarr;&nbsp;96</b>, of which the visible 72 units (x&nbsp;18&nbsp;&rarr;&nbsp;90) are all trace &mdash; the flat runs carry on 6 units past the visible edge on both sides. Stroke <b>8</b>. Baseline y&nbsp;62, apex y&nbsp;29, ceiling y&nbsp;44 over the same x&nbsp;12&nbsp;&rarr;&nbsp;96, stroke 3.5, dash <code>7 5.5</code>.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9a2" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a2" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> Padding removed on the left and right only. Because the line and the ceiling both run off the layer, every mask cuts them at its own edge, and the cut reads as a trace that continues rather than as a drawing that stopped. The spike stays inside the safe circle vertically, so the focal shape is never at risk.</p>
+        <p class="why"><b>What crops.</b> The <b>circle</b> mask cuts the baseline where the circle leaves it, at about x&nbsp;20 and x&nbsp;88, and cuts the ceiling at about x&nbsp;19 and x&nbsp;89. The <b>squircle</b> cuts both a little further out; the <b>rounded square</b> cuts them at x&nbsp;18 and x&nbsp;90. All three cuts are on flat line, never on a bump or the apex &mdash; which is the whole design of this size.</p>
+        <p class="why"><b>Reads.</b> Noticeably more present than A1 at the same 48&nbsp;dp: the ink now touches the mask on both sides, so the tile reads as a mark and not as a framed illustration. The trade is that the leading and trailing flats lose their round caps, so the trace has no visible start or end.</p>
+        <p class="mono"><b>Mono.</b> Same as A1, one grade stronger because the ink area is larger. The bleed helps here &mdash; a themed tile is one flat tint, and a shape that reaches the mask edge survives that flattening better than a shape floating in the middle.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="r9a3">
+    <h3>A3 &mdash; Edge</h3>
+    <p class="geom"><b>Trace span x&nbsp;0&nbsp;&rarr;&nbsp;108</b>, the whole layer. Stroke <b>9</b>. Baseline dropped to y&nbsp;60 (6 below centre) to give the beat room; apex y&nbsp;21 and trough y&nbsp;87, which are the top and bottom of the 66-unit safe circle. Ceiling y&nbsp;42 over x&nbsp;0&nbsp;&rarr;&nbsp;108, stroke 4, dash <code>8 6</code>.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9a3" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9a3" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The boldest reading available: nothing anywhere is padding, and the beat is deepened with a trough below the baseline because at this stroke a single up-spike leaves the bottom half of the tile empty. This is the one size where the icon is a single gesture rather than a scene.</p>
+        <p class="why"><b>What crops, plainly.</b> <b>Circle mask:</b> both flat runs are cut where the circle leaves them, at about x&nbsp;20 and x&nbsp;88; the apex cap loses about 1.5 units off its tip (the circle's edge sits at y&nbsp;18 at x&nbsp;54 and the apex ink reaches y&nbsp;16.5); the trough cap loses about 3.5 units the same way; and the <b>green bump is reduced to a rising sliver</b> at the right edge &mdash; its peak at x&nbsp;88 sits right on the mask and its return to baseline is gone entirely, so at 48&nbsp;dp the green account is a crescent, not a beat. <b>Squircle:</b> the same cuts, each about 2 units further out, so the green bump reads a little more complete. <b>Rounded square:</b> flats cut at x&nbsp;18 and x&nbsp;90, apex and trough both fully inside. So the circle is the worst case and it costs the green account's bump, not the red spike.</p>
+        <p class="risk"><b>Cost.</b> Two real ones. First, at stroke 9 the spike's rising and falling limbs merge above about y&nbsp;45, so the top third of the beat reads as a solid red wedge rather than as a line &mdash; sharp, but closer to an arrow than to a trace. Second, the beat eats so much width that the two provider bumps are pushed to x&nbsp;29 and x&nbsp;88, right onto the masks, which is the opposite of what the two-account reading needs.</p>
+        <p class="mono"><b>Mono.</b> Strongest of the three by ink area, weakest by meaning: the green bump is the piece the mask takes, and green is already the faintest tone at 0.46 alpha, so the themed tile can end up looking like one account rather than two.</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <p class="grp">Group B &mdash; type of pulse</p>
+  <p class="sub">
+    All four are drawn at <b>A2's size</b> &mdash; span x&nbsp;12&nbsp;&rarr;&nbsp;96, stroke 8 &mdash;
+    because A2 is the size that actually answers the instruction (no padding on any side, the line cut by
+    the mask rather than floating inside it) without asking the apex or the trough to fight the circle
+    mask the way A3 does. B4 is the optional fourth; it works at 48&nbsp;dp, with a caveat stated on its
+    tile.
+  </p>
+
+  <section class="cc" id="r9b1">
+    <h3>B1 &mdash; ECG</h3>
+    <p class="geom">A2's size and stroke (span x&nbsp;12&nbsp;&rarr;&nbsp;96, stroke 8, baseline y&nbsp;62, ceiling y&nbsp;44). Classic <b>P&ndash;QRS&ndash;T</b>: terracotta P bump peaking y&nbsp;52; a red Q dip to y&nbsp;68, R apex y&nbsp;28, S dip to y&nbsp;70; green T bump peaking y&nbsp;52.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9b1" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The medical shape, drawn properly &mdash; the dips before and after the spike are what make an ECG read as an ECG rather than as a chart with one tall bar. Sharpest of the three types and the one with the most recognisable rhythm.</p>
+        <p class="why"><b>What crops.</b> As A2: flat runs and ceiling cut at the mask edge, bumps and beat untouched. The S dip bottoms at y&nbsp;70, ink to y&nbsp;74, comfortably inside the circle at that x.</p>
+        <p class="why"><b>Reads.</b> Unmistakable at 48&nbsp;dp, and the dips give the tile an asymmetry that helps it stand out in a drawer. The cost is the one round&nbsp;8 already named: this is a health-app silhouette, and it says <i>incident</i> where the app means <i>level over a window</i>. It also sits in the same visual family as every uptime and network monitor on the store.</p>
+        <p class="mono"><b>Mono.</b> Best of the three. The dips survive flattening because they are shape, not colour, and the ceiling stays legible as the only dashed thing on the tile.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="r9b2">
+    <h3>B2 &mdash; Stepped</h3>
+    <p class="geom">A2's size and stroke, baseline dropped to y&nbsp;64 to make room. Flat terracotta run x&nbsp;12&nbsp;&rarr;&nbsp;44; a red right-angled climb at x&nbsp;44 to a <b>plateau at y&nbsp;34</b>, ten units clear above the ceiling, running to x&nbsp;64; a green right-angled drop at x&nbsp;64 back to the baseline and out to x&nbsp;96. Round joins put a 4-unit radius on each corner.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9b2" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b2" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The same trace, drawn the way the app itself draws usage &mdash; stepped, not smooth. It swaps the heartbeat reading for a digital one: a signal that went high and stayed high, which is much closer to what a usage window actually does than a single beat is. The descending edge is green on purpose: the second account is the one coming back down, which is the app's name.</p>
+        <p class="why"><b>What crops.</b> As A2: the two flats and the ceiling are cut at the mask edge. The plateau's ink top is y&nbsp;30, 24 units from centre &mdash; nothing near any mask. This is the safest of all six for cropping because the only thing at the edges is flat line.</p>
+        <p class="why"><b>Reads.</b> Boldest silhouette here after A3, and the only one of the three types that does not borrow a medical or scientific cliché. It matches the app's stepped usage line and the bar segments the cards already draw, so the icon and the app agree. The risk is the opposite of B1's: a plateau is a calm shape, and a viewer may read it as a level rather than as an alarm.</p>
+        <p class="mono"><b>Mono.</b> Holds well, and it is the clearest case of alpha doing the work: terracotta run at 0.82, plateau at full, green drop at 0.46, so the themed tile still shows a rise, a peak and a fall in three grades. Ceiling dashed against three solid runs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="r9b3">
+    <h3>B3 &mdash; Wave</h3>
+    <p class="geom">A2's size, stroke <b>8</b>, baseline y&nbsp;66. One continuous cubic &mdash; <code>M12,66 H30 C42,66 42,30 54,30 C66,30 66,66 78,66 H96</code> &mdash; drawn three times and split by clip, so the joins are exact: terracotta for x&nbsp;&lt;&nbsp;54, green for x&nbsp;&ge;&nbsp;54, and red for <b>y&nbsp;&lt;&nbsp;44</b>, which puts red exactly and only where the trace is above the ceiling &mdash; about x&nbsp;43.6&nbsp;&rarr;&nbsp;64.4. Crest y&nbsp;30, ceiling y&nbsp;44.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9b3" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b3" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The calmest of the three, and the only one whose colour rule is the app's rule rather than an approximation of it: because red is clipped to the region above the ceiling, the red ink is literally the overshoot. Terracotta rises, green falls, and the crest between them is the moment the pace line was crossed.</p>
+        <p class="why"><b>What crops.</b> The circle mask cuts the flat runs at about x&nbsp;22 and x&nbsp;86 &mdash; earlier than in A2, because the baseline sits 12 units below centre here rather than 8. Crest and both limbs are untouched. Squircle and rounded square cut further out, as usual.</p>
+        <p class="why"><b>Reads.</b> Most on-message of the six &mdash; a wave says cooldown, and the smooth fall on the green side says recovery. It is also the weakest at saying <i>alarm</i>: a rounded crest that happens to be red is a much softer statement than a spike, and at 48&nbsp;dp the red band is the only thing separating this from a generic wave or audio icon.</p>
+        <p class="mono"><b>Mono.</b> Weakest of the three, and worth looking at closely. Colour is what makes the two halves read as two accounts; once flattened, the tone step from 0.82 to 0.46 lands mid-curve with nothing structural to mark it, so the wave can read as one stroke that fades. The ceiling and the crest still differ by shape.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cc" id="r9b4">
+    <h3>B4 &mdash; Twin beat</h3>
+    <p class="geom">A2's size and stroke. Terracotta bump peaking y&nbsp;47 &mdash; <b>3 units under the ceiling</b>, so it stays below pace; green spike peaking y&nbsp;30, well over it. The red is the green spike redrawn and clipped to y&nbsp;&lt;&nbsp;44, so red is exactly the part above the ceiling (about x&nbsp;62&nbsp;&rarr;&nbsp;70). Peaks at x&nbsp;39 and x&nbsp;66, whose midpoint is x&nbsp;52.5, so the pair is centred.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad lt"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>light launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>dark launcher</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp<br>squircle</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9b4" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b4" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed<br>monochrome layer</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b4" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle mask on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Idea.</b> The one variant that draws <i>two accounts in two different states</i> rather than two colours on one trace: one beat under the pace line, one over it and red where it is over. It is the same picture the notification draws &mdash; one account fine, one account over &mdash; and no other tile in either round says that.</p>
+        <p class="why"><b>What crops.</b> As A2, flats and ceiling only. Both peaks sit inside the safe circle (the terracotta bump 17 units from centre, the green apex 25).</p>
+        <p class="why"><b>Does it hold at 48&nbsp;dp?</b> <b>Yes, just.</b> The bump limbs are 9 units of run for 15 of rise, which at stroke 8 leaves about 8.4 units between the limb centrelines at half height &mdash; enough to read as a bump rather than as a blob, but that is the margin, not a comfortable one. Two beats also means neither is the focal point, so the tile is busier than B1 or B2 and it is the one most likely to turn to texture at 24&nbsp;dp in a folder or on the taskbar. Include it in the choice; do not choose it on the 112&nbsp;px view alone.</p>
+        <p class="mono"><b>Mono.</b> Good, and structurally honest: the terracotta beat at 0.82 stops under the dashed ceiling and the green beat at 0.46 crosses it with a full-alpha cap, so even flattened the tile shows one beat contained and one beat breaking out.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <hr class="hr">
+
+  <h2>Comparison &mdash; round 9 <small>&mdash; descriptive; no winner picked here</small></h2>
+  <p class="sub">
+    &ldquo;Neighbour test&rdquo; is read off the sixth view only: does the tile hold its own between the
+    Claude and the ChatGPT icon without borrowing from either? Both neighbours are a single centred glyph
+    on a solid field, so a tile that is also a single centred glyph competes with them, and a tile that is
+    a line running edge to edge does not. One thing the strip makes obvious for every tile at once: on a dark
+    wallpaper the charcoal plate <code>#1F1B19</code> is barely a shade off <code>#101010</code>, so the tile has
+    no visible edge and the trace alone has to carry it &mdash; an argument for ink that reaches the mask, and
+    against A1.
+  </p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Tile</th><th>Reads at 48&nbsp;dp</th><th>Mono</th><th>What the circle mask crops</th>
+      <th>Says &ldquo;over pace&rdquo;</th><th>Neighbour test</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><b>A1 Safe</b></td><td class="mid">clean but small</td><td class="yes">holds</td>
+        <td>nothing structural &mdash; under half a unit off each end cap</td><td class="yes">yes, red apex over a dashed line</td>
+        <td class="no">loses &mdash; a ring of empty charcoal reads as a third-party tile next to two edge-to-edge ones</td></tr>
+      <tr><td><b>A2 Bleed</b></td><td class="yes">yes</td><td class="yes">holds, one grade stronger</td>
+        <td>flat runs and ceiling, at about x&nbsp;20 / 88; never a bump or the apex</td><td class="yes">yes</td>
+        <td class="yes">holds &mdash; the only tile of the three whose ink meets the mask on both sides, as both neighbours' fields do</td></tr>
+      <tr><td><b>A3 Edge</b></td><td class="mid">bold, but the apex thickens to a wedge</td><td class="mid">can read as one account</td>
+        <td>flats, about 1.5 units off the apex cap, 3.5 off the trough, and <b>all but a sliver of the green bump</b></td><td class="yes">yes, loudest</td>
+        <td class="mid">holds on weight, overreaches &mdash; louder than either neighbour, which reads as an ad rather than a peer</td></tr>
+      <tr><td><b>B1 ECG</b></td><td class="yes">yes, sharpest</td><td class="yes">best of the three</td>
+        <td>flats and ceiling only</td><td class="yes">yes</td>
+        <td class="mid">holds, but borrows &mdash; the health-app silhouette is a category the neighbours are not in</td></tr>
+      <tr><td><b>B2 Stepped</b></td><td class="yes">yes, boldest silhouette</td><td class="yes">holds; three clear alpha grades</td>
+        <td>flats and ceiling only &mdash; safest of the six</td><td class="mid">yes, but calmly &mdash; a plateau is a level, not an alarm</td>
+        <td class="yes">holds best &mdash; a shape neither neighbour has, matching the app's own stepped line rather than any brand's mark</td></tr>
+      <tr><td><b>B3 Wave</b></td><td class="mid">yes, but soft</td><td class="no">weakest &mdash; the two halves can read as one fading stroke</td>
+        <td>flats, earlier than A2 (about x&nbsp;22 / 86); crest untouched</td><td class="mid">exactly right by rule, soft by look</td>
+        <td class="mid">holds quietly &mdash; risks reading as an audio or weather tile beside two identity marks</td></tr>
+      <tr><td><b>B4 Twin beat</b></td><td class="mid">yes, just &mdash; 8.4 units between bump limbs</td><td class="yes">holds, and structurally honest</td>
+        <td>flats and ceiling only</td><td class="yes">strongest &mdash; one account contained, one breaking out</td>
+        <td class="mid">holds, but busiest &mdash; two focal points beside two single-glyph neighbours</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <hr class="hr">
+
+  <h2>Needs deciding &mdash; round 9 <small>&mdash; two questions, and the pair becomes code</small></h2>
+
+  <p class="q"><b>1. Which size &mdash; A1, A2 or A3?</b>
+    This is the answer to &ldquo;remove padding from all 4 sides&rdquo;, and the three tiles bracket it: A1 stops at the safe circle and keeps a visible margin, A2 runs the trace and the ceiling off the layer so every mask cuts them, A3 uses the whole 108 and lets the beat touch the safe circle top and bottom. The cost of going further is stated on each tile &mdash; A3 buys its boldness with half the green bump under a circle mask and a spike apex that thickens into a wedge.</p>
+
+
+  <p class="q"><b>2. Which type of pulse &mdash; B1, B2, B3 or B4?</b>
+    B1 is the medical ECG and the sharpest; B2 is the stepped digital pulse and the closest to the app's own usage line; B3 is the smooth wave and the calmest, most literally &ldquo;cooldown&rdquo;; B4 is the twin beat and the only one that draws the two accounts in two different states. Round&nbsp;8's recorded objection to concept&nbsp;9 was the heartbeat cliché and the &ldquo;spike says event, not budget&rdquo; mismatch &mdash; B2 and B3 are the two that answer it, B1 is the one that accepts it.</p>
+
+
+  <p class="sub">
+    <b>What the pair becomes.</b> The chosen size and type are one family, and that family is drawn four
+    times in Step&nbsp;6's release: <code>ic_launcher_foreground.xml</code>,
+    <code>ic_launcher_background.xml</code>, <code>ic_launcher_monochrome.xml</code> and
+    <code>drawable/ic_launcher.xml</code> for the About screen. Nothing else about CCRM-60 (Dual Identity)
+    is reopened by this round &mdash; the two rooms, the four-tab Settings and the two-account notification
+    all stand, as do CCRM-61 (Settings Diet) and CCRM-62 (Duet Notification).
+  </p>
+
+  <h2>Geometry the implementer will need <small>&mdash; once the pair is chosen</small></h2>
+  <p class="geom">
+    All four vectors are <code>108 &times; 108</code> viewports. <b>Background:</b>
+    <code>ic_launcher_background.xml</code> is one flat <code>108 &times; 108</code> path filled charcoal
+    <code>#1F1B19</code> &mdash; no gradient, no radial, nothing else in that layer. <b>Foreground:</b> the
+    whole trace lives in <code>ic_launcher_foreground.xml</code> &mdash; the dashed cream ceiling and the
+    terracotta, green and red runs, each as a stroked path with
+    <code>android:fillColor="@android:color/transparent"</code>,
+    <code>android:strokeLineCap="round"</code> and <code>android:strokeLineJoin="round"</code>, at the
+    stroke width stated on the chosen tile. Two Android traps to plan for: vector drawables have <b>no
+    stroke-dash support</b>, so the ceiling must be drawn as a run of short separate subpaths
+    (<code>M x,y h w</code> repeated) at the dash pitch given on the tile, not as one path with a dash
+    array; and where a tile clips red to the region above the ceiling (B3, B4) there is no
+    <code>clip-path</code> either, so that red run must be emitted as its own explicit path ending at the
+    ceiling crossings, which are given in the tile's geometry line. <b>Monochrome:</b>
+    <code>ic_launcher_monochrome.xml</code> keeps the same geometry with colour removed, drawn as exactly
+    <b>two</b> paths so that alpha separates them &mdash; the <b>whole trace as one path</b> (the
+    terracotta, red and green runs joined into a single polyline, since there is nothing left to
+    distinguish them) at full <code>strokeAlpha</code>, and the <b>ceiling as a second path</b> at about
+    <code>0.55</code>. Do not try to carry the two accounts into the monochrome layer with three alpha
+    grades: Android tints that layer as one colour and the grades stop reading, which is why the round-8
+    mono view above uses shape, not tone, as the thing that has to survive. <b>Legacy:</b>
+    <code>drawable/ic_launcher.xml</code> is the background path and the foreground paths in one file, same
+    coordinates, so the About screen, the share card and the Play listing all pull from the same geometry.
+  </p>
+
+  <h3>Decided 2026-09-10 &mdash; A2 + B1, charcoal plate</h3>
+  <table class="dec">
+    <tr><th>#</th><th>Decision</th></tr>
+    <tr><td>1</td><td><b>Size A2, Bleed.</b> Trace span x 12 &rarr; 96 at stroke 8, baseline y 62, the flat runs and the ceiling cut by every mask at its own edge; the beat stays inside the 66-unit safe circle. Robin: the renderer's pick, taken.</td></tr>
+    <tr><td>2</td><td><b>Pulse B1, ECG.</b> Terracotta P bump peaking y 52, red Q&ndash;R&ndash;S (dip y 68, apex y 28, dip y 70), green T bump peaking y 52; red is only ever the beat. Chosen over B2 Stepped (renderer's pick) for its sharper, more recognisable rhythm; the health-app read is accepted.</td></tr>
+    <tr><td>3</td><td><b>Plate stays charcoal <code>#1F1B19</code>.</b> Edge-less against a dark wallpaper by choice: the trace is the mark. Slate and a lifted ink were offered and declined.</td></tr>
+    <tr><td>4</td><td><b>Monochrome layer is two paths</b>, per the implementer paragraph: the whole trace at full alpha, the ceiling at 0.55. The three-grade mono described on the A1 tile and previewed in the round-9 mono column was not built; Android tints that layer as one colour and the grades stop reading.</td></tr>
+    <tr><td>5</td><td><b>Round 8's four questions are moot</b>; the launcher is abstract (no provider marks), colour carries the two identities, the product is drawn as a symbol rather than as its own chart.</td></tr>
+  </table>
+  <p class="sub">Built the same day into the four vectors (<code>ic_launcher_foreground/background/monochrome.xml</code>, <code>drawable/ic_launcher.xml</code>) per the implementer paragraph above; the 48 dp render sits in <code>design/research/2026-09-10-icon-render/pulse-48dp.png</code> and its approval is recorded in ROADMAP.md CCRM-60 (Dual Identity). This supersedes the round-7 horizontal split approved 2026-09-09 in <code>design/dual-identity-wireframe.html</code> section 2.</p>
+
+
+  <!-- ===================== round 10 · square first ===================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- S2 · Tall: stroke 9, baseline y 64, apex y 20, Q y 72, S y 74, P/T peaks y 50,
+           ceiling y 42 (weight 3.9, dash 7 / 5.5, butt caps). P and T bumps widened by
+           one unit each side: 27-41 and 71-85. -->
+      <symbol id="r10s2" viewBox="0 0 108 108">
+        <rect width="108" height="108" style="fill:var(--ground)"/>
+        <path d="M12,42 H96" fill="none" style="stroke:var(--cream)" stroke-width="3.9" stroke-dasharray="7 5.5" opacity=".72"/>
+        <polyline points="12,64 27,64 34,50 41,64 44,64" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="66,64 71,64 78,50 85,64 96,64" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="44,64 48,72 54,20 60,74 66,64" fill="none" style="stroke:var(--red)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+      </symbol>
+      <!-- S3 · Full: stroke 10, baseline y 66, apex y 18, Q y 76, S y 78, P/T peaks y 48,
+           ceiling y 40 (weight 4.4). P and T bumps widened by two units each side:
+           26-42 and 70-86. -->
+      <symbol id="r10s3" viewBox="0 0 108 108">
+        <rect width="108" height="108" style="fill:var(--ground)"/>
+        <path d="M12,40 H96" fill="none" style="stroke:var(--cream)" stroke-width="4.4" stroke-dasharray="7 5.5" opacity=".72"/>
+        <polyline points="12,66 26,66 34,48 42,66 44,66" fill="none" style="stroke:var(--c1);opacity:var(--a1)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="66,66 70,66 78,48 86,66 96,66" fill="none" style="stroke:var(--c2);opacity:var(--a2)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="44,66 48,76 54,18 60,78 66,66" fill="none" style="stroke:var(--red)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <style>
+    /* round 10 only */
+    .mq { clip-path: inset(0 round 16.7%); }          /* rounded-square mask, r 12 of the 72 units */
+    /* the themed layer AS BUILT (round-9 decision 4): one tint, the whole trace at full
+       alpha - not the three alpha grades the round-9 mono column previewed */
+    .ic.mono.built { --a1: 1; --a2: 1; }
+    .shot { display: block; width: 340px; max-width: 100%; border-radius: 10px; border: 1px solid var(--hair); margin: 14px 0 4px; }
+    .maskrow { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; margin: 16px 0 0; }
+    .maskrow .mk { text-align: center; }
+    .maskrow .mk .lbl { max-width: 150px; margin-left: auto; margin-right: auto; }
+    table.dec td b { color: var(--ink); }
+  </style>
+
+  <hr class="hr">
+
+  <p class="eyebrow">CCRM-60 (Dual Identity) &middot; launcher icon, round 10 &middot; square first &middot; three vertical sizes of the same B1 trace</p>
+  <h2 style="margin-top:14px">Round 10 &mdash; square first, decided 2026-09-10</h2>
+
+  <p class="q" style="border-left-color:var(--muted)"><b>Robin, verbatim</b>
+    &ldquo;why is everything a circle? Can you draw it as a square and then crop to other shapes
+    (circle or squircle) as needed? This will give you more space to render the icon bigger and give
+    as minimal space as possible for padding (namesake padding than actual space)&rdquo;</p>
+
+  <h3 style="margin-top:26px">How an Android adaptive icon actually works &mdash; because it answers the question</h3>
+  <p class="sub" style="max-width:88ch">
+    <b>It already is a square, and the crop already happens.</b> The two layers we ship,
+    <code>ic_launcher_background.xml</code> and <code>ic_launcher_foreground.xml</code>, are each a flat
+    <code>108 &times; 108</code> <i>square</i> &mdash; no circle anywhere in the files. The app does not
+    choose the shape. <b>The launcher does</b>, at draw time, by putting its own mask over that square:
+    Samsung One&nbsp;UI's default is a <b>squircle</b>, Pixel's is a <b>circle</b>, several third-party
+    launchers use a <b>rounded square</b>, and the user can usually change it. That is why the round-8 and
+    round-9 pages led with the circle view: <b>the circle is the worst-case crop</b>, so a tile that holds
+    under it holds under all of them. It was never a statement that the art should be round.
+    On Robin's own Fold&nbsp;7 the mask is the squircle &mdash; the drawer screenshot from the
+    2026-09-10 device pass shows it, Cooldown squircled next to Zoom, Pluxee and Pregnancy+:
+  </p>
+  <img class="shot" src="research/2026-09-10-device-pass/launcher-icon-drawer.png" alt="Fold 7 app drawer: the Cooldown tile under One UI's squircle mask, beside Zoom, Pluxee India and Pregnancy+">
+  <p class="cap">design/research/2026-09-10-device-pass/launcher-icon-drawer.png &mdash; One UI squircle, not a circle</p>
+
+  <ul class="tight" style="max-width:90ch">
+    <li><b>Only the central 72 units are ever visible.</b> Of the 108-unit square, the outer
+      <code>18</code> on every side exist so the launcher can slide the two layers against each other for
+      the parallax wobble. <b>No mask ever shows them.</b> So the real canvas is the square
+      <code>x&nbsp;18&nbsp;&rarr;&nbsp;90</code>, <code>y&nbsp;18&nbsp;&rarr;&nbsp;90</code>.</li>
+    <li><b>The 66-unit &ldquo;safe circle&rdquo; is a guarantee, not a boundary.</b> Google's promise is
+      that anything inside <code>r&nbsp;33</code> of centre survives <i>every</i> mask. It is not a
+      requirement that the art be round, and content outside it is fine &mdash; it just means some masks
+      will trim it. Our trace deliberately runs outside it left and right; that is what A2's size bought.</li>
+    <li><b>Every mask is tangent to the visible square at the four mid-edges.</b> At the centre column
+      <code>x&nbsp;54</code>, the circle's top is <code>y&nbsp;18</code>; the squircle's top is
+      <code>y&nbsp;18</code>; the rounded square's top is <code>y&nbsp;18</code>. So the vertical budget
+      for a centred spike is <b>72 units under any mask</b> &mdash; squaring the art buys no extra height
+      at the centre. The masks only differ <i>away</i> from the middle, which is where our flat runs and
+      the ceiling live.</li>
+    <li><b>So the only real lever is how much of the 72 the trace uses vertically.</b> The shipped
+      round-9 A2&nbsp;+&nbsp;B1 trace uses <b>42 of the 72</b> vertex to vertex (apex
+      <code>y&nbsp;28</code> to trough <code>y&nbsp;70</code>), or <b>50 of 72</b> counting the round
+      caps' ink (<code>y&nbsp;24</code> to <code>y&nbsp;74</code>). That leaves <b>6 units of charcoal
+      above the apex</b> and 16 below the trough. That headroom is the &ldquo;padding&rdquo; the question
+      is really about, and it is the one thing worth moving.</li>
+  </ul>
+  <p class="sub" style="max-width:88ch">
+    The three variants below are the <b>same B1 (ECG) trace, same x geometry</b> (span
+    <code>12&nbsp;&rarr;&nbsp;96</code>, P bump about <code>x&nbsp;28&ndash;40</code>, Q&ndash;R&ndash;S
+    <code>x&nbsp;44&ndash;66</code>, T bump about <code>x&nbsp;72&ndash;84</code>, red only ever the
+    Q&ndash;R&ndash;S, charcoal plate <code>#1F1B19</code>, cream ceiling dashed
+    <code>7&nbsp;/&nbsp;5.5</code> butt caps) with only the <b>vertical</b> numbers and the stroke
+    changing. Six views each: the raw 72-unit square under a rounded-square mask, the Samsung squircle,
+    the circle, the 112&nbsp;px uncropped layer with the 72 and 66 guides, the themed mono layer <i>as
+    actually built</i> (one tint, the whole trace solid &mdash; round 9's decision 4, not the three alpha
+    grades that round's mono column previewed), and the home-screen strip under the squircle, which is Samsung's default and therefore what Robin will
+    actually see.
+  </p>
+
+  <p class="grp">S1 &mdash; Today (A2), as shipped</p>
+  <section class="cc" id="r10s1sec">
+    <h3>S1 &mdash; Today</h3>
+    <p class="geom">Stroke <b>8</b>, baseline <b>y&nbsp;62</b>, apex <b>y&nbsp;28</b>, Q <b>y&nbsp;68</b>, S <b>y&nbsp;70</b>, P/T peaks <b>y&nbsp;52</b>, ceiling <b>y&nbsp;44</b> at weight 3.5. Bumps <code>x&nbsp;28&ndash;40</code> and <code>x&nbsp;72&ndash;84</code>. This is <code>#r9b1</code> reused unchanged &mdash; coordinate for coordinate what <code>ic_launcher_foreground.xml</code> ships today.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad dk"><svg class="ic mq t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp &mdash; the 72-unit<br>square, rounded r&nbsp;12</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp squircle<br>Samsung One&nbsp;UI</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>Pixel, worst case</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r9b1" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono built ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed &mdash; one<br>tint, as built</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9b1" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Ink in the 72 window.</b> <code>y&nbsp;24&nbsp;&rarr;&nbsp;74</code> = <b>50 of 72</b> (69&nbsp;%). Six units of charcoal above the apex cap, sixteen below the trough cap &mdash; the beat sits slightly high of centre, which is why the empty band reads as bottom padding.</p>
+        <p class="why"><b>Squircle crops.</b> Flats and the outer ceiling dashes only. At the baseline <code>y&nbsp;62</code> the squircle's edge is <code>x&nbsp;18.2&nbsp;/&nbsp;89.8</code> &mdash; within a fifth of a unit of the square, so the line bleeds off both sides exactly as intended. Nothing touches the beat.</p>
+        <p class="why"><b>Circle crops.</b> Flats and ceiling, and it <i>tapers</i> rather than cuts them: the flat's ink band <code>y&nbsp;58&ndash;66</code> meets the circle between <code>x&nbsp;18.2</code> and <code>x&nbsp;20.1</code>, so the run ends in a 1.9-unit wedge at about <code>x&nbsp;88</code>. The apex cap tops out at <code>y&nbsp;24</code>, a full 5.8 units clear of the circle at that x &mdash; untouched.</p>
+        <p class="why"><b>At 48&nbsp;dp.</b> Stroke 8 is 5.3&nbsp;px. The spike's two limbs are separate below <code>y&nbsp;55</code> and merge above it, so the top 27 units read as a solid triangle with an open notch beneath &mdash; the reading round&nbsp;9 accepted.</p>
+        <p class="mono"><b>Mono.</b> Unchanged from round 9: shape carries it, the dashed ceiling is the only dashed thing on the tile.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="grp">S2 &mdash; Tall</p>
+  <section class="cc" id="r10s2sec">
+    <h3>S2 &mdash; Tall</h3>
+    <p class="geom">Stroke <b>9</b>, baseline <b>y&nbsp;64</b>, apex <b>y&nbsp;20</b>, Q <b>y&nbsp;72</b>, S <b>y&nbsp;74</b>, P/T peaks <b>y&nbsp;50</b>, ceiling <b>y&nbsp;42</b> at weight 3.9. <b>Bumps widened one unit each side</b> &mdash; P <code>x&nbsp;27&ndash;41</code>, T <code>x&nbsp;71&ndash;85</code> &mdash; because at 14 units tall in the old 12-unit width their flanks were steeper than the beat wanted; slope goes 1.67 &rarr; 2.0. Q&ndash;R&ndash;S stays <code>x&nbsp;44&ndash;66</code>.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad dk"><svg class="ic mq t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp &mdash; the 72-unit<br>square, rounded r&nbsp;12</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp squircle<br>Samsung One&nbsp;UI</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>Pixel, worst case</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r10s2" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono built ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s2" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed &mdash; one<br>tint, as built</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s2" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Ink in the 72 window.</b> Vertex to vertex <code>20&nbsp;&rarr;&nbsp;74</code> = <b>54</b>; ink <code>15.5&nbsp;&rarr;&nbsp;78.5</code> = 63, of which <b>60.5 falls inside the window</b> (84&nbsp;%). The trough cap now sits 11.5 units off the bottom instead of 16, so the beat is close to optically centred.</p>
+        <p class="why"><b>What the circle crops &mdash; computed, and it is not what you would guess.</b> The apex vertex is <code>y&nbsp;20</code> and the round join puts a 4.5-unit cap on it, so the topmost ink is <code>(54,&nbsp;15.5)</code>, which is <b>r&nbsp;38.5</b> from centre &mdash; outside <code>r&nbsp;36</code>. But so is the visible square: the top edge is <code>y&nbsp;18</code>. So <b>2.5 units of the tip cap are cut by <i>every</i> mask</b>, leaving a 7.5-unit-wide flat where the spike meets the top edge, and the circle takes only 0.2 units more than the squircle does off-centre. The S dip is nowhere near the danger zone: its lowest ink <code>(60,&nbsp;78.5)</code> is <b>r&nbsp;25.2</b>, comfortably inside <code>r&nbsp;36</code>. The circle's real cost is again the flats: ink band <code>y&nbsp;59.5&ndash;68.5</code> meets it between <code>x&nbsp;18.4</code> and <code>x&nbsp;21.1</code>, so the run tapers over 2.6 units and its centreline stops near <code>x&nbsp;88.6</code>, against <code>x&nbsp;89.7</code> under the squircle.</p>
+        <p class="why"><b>Reads.</b> The spike touching the top edge is not a defect here &mdash; it is the same move A2 already makes horizontally, and on a dark wallpaper, where the charcoal plate has no visible edge at all, ink reaching the mask is the only thing that gives the tile a size. The cost is the wedge: limbs merge above <code>y&nbsp;60</code>, so the solid triangle grows from 27 units to 40.</p>
+        <p class="mono"><b>Mono.</b> Same or better than S1 &mdash; stroke 9 survives the tint and downscale, and the deeper Q and S dips keep the notch legible.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="grp">S3 &mdash; Full</p>
+  <section class="cc" id="r10s3sec">
+    <h3>S3 &mdash; Full</h3>
+    <p class="geom">Stroke <b>10</b>, baseline <b>y&nbsp;66</b>, apex <b>y&nbsp;18</b> (the visible square's top edge, so the cap's ink reaches <code>y&nbsp;13</code>), Q <b>y&nbsp;76</b>, S <b>y&nbsp;78</b>, P/T peaks <b>y&nbsp;48</b>, ceiling <b>y&nbsp;40</b> at weight 4.4. <b>Bumps widened two units each side</b> &mdash; P <code>x&nbsp;26&ndash;42</code>, T <code>x&nbsp;70&ndash;86</code>, slope 2.25; the P bump now leaves only two units of flat before the Q dip begins.</p>
+    <div class="ccwrap">
+      <div class="iconrow">
+        <div class="z"><span class="pad dk"><svg class="ic mq t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp &mdash; the 72-unit<br>square, rounded r&nbsp;12</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp squircle<br>Samsung One&nbsp;UI</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mc t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp circle<br>Pixel, worst case</span></div>
+        <div class="z"><span class="pad none"><svg class="ic big" viewBox="0 0 108 108" width="112" height="112" aria-hidden="true"><use href="#r10s3" width="108" height="108"/><use href="#guides"/></svg></span><span class="lbl">112&nbsp;px uncropped<br>72 / 66 guides</span></div>
+        <div class="z"><span class="pad dk"><svg class="ic mono built ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s3" width="108" height="108"/></svg></span><span class="lbl">48&nbsp;dp themed &mdash; one<br>tint, as built</span></div>
+        <div class="z strip"><span class="hs"><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbClaude" width="108" height="108"/></svg><span class="hsl">Claude</span></span><span class="hsi"><svg class="ic ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r10s3" width="108" height="108"/></svg><span class="hsl me">Cooldown</span></span><span class="hsi"><svg class="ms t48" viewBox="18 18 72 72" width="48" height="48" aria-hidden="true"><use href="#r9nbGpt" width="108" height="108"/></svg><span class="hsl">ChatGPT</span></span></span><span class="lbl">home screen &mdash; squircle on a dark wallpaper,<br>between the two real tiles at launcher label size</span></div>
+      </div>
+      <div class="ccprose">
+        <p class="why"><b>Ink in the 72 window.</b> Vertex to vertex <code>18&nbsp;&rarr;&nbsp;78</code> = <b>60</b>; ink <code>13&nbsp;&rarr;&nbsp;83</code> = 70, of which <b>65 falls inside</b> (90&nbsp;%). Nothing is left above the apex and 7 units below the trough.</p>
+        <p class="why"><b>What each mask crops.</b> <i>Rounded square:</i> the whole 5-unit apex cap, because the vertex is <i>on</i> the top edge. <i>Squircle:</i> the same &mdash; its top edge is flat to within 0.05 units across <code>x&nbsp;50&ndash;58</code>. <i>Circle:</i> the same cap plus a fraction more off-centre (at <code>x&nbsp;49</code> its edge is <code>y&nbsp;18.35</code>), and, worse, more of the flats: the ink band <code>y&nbsp;61&ndash;71</code> meets the circle between <code>x&nbsp;18.7</code> and <code>x&nbsp;22.3</code>, so each flat ends in a 3.6-unit wedge whose centreline stops at <code>x&nbsp;87.9</code> &mdash; nearly two units short of the mask, which reads as the line being <i>pinched off</i> rather than bleeding out. The trough is safe under all three (<code>y&nbsp;83</code> against the circle's <code>y&nbsp;89.5</code> at that x).</p>
+        <p class="risk"><b>Does the apex read as cut off? Yes.</b> With the vertex on the edge, what survives is a chord of ink about <b>10 units wide and flat</b> along <code>y&nbsp;18</code> &mdash; not a point that happens to touch the frame but a mesa. And because the limbs merge above <code>y&nbsp;67</code>, 49 of the spike's 60 units are a solid triangle: at 48&nbsp;dp this stops reading as a trace with a beat and starts reading as a filled arrowhead. This is round&nbsp;9's A3 objection returning at the vertical axis.</p>
+        <p class="mono"><b>Mono.</b> Boldest and the least articulate &mdash; with the tip flat and the limbs fused, the tinted layer is close to a triangle over a dashed line.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <h2>Comparison &mdash; round 10 <small>&mdash; descriptive; no winner picked here</small></h2>
+  <p class="sub">
+    &ldquo;Ink height&rdquo; is ink actually inside the visible 72 window, cap to cap, so a variant is not
+    credited for ink the mask throws away. Every figure below is computed off the geometry in the
+    <code>geom</code> line above each tile, not eyeballed.
+  </p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Variant</th><th>Ink height in the 72 window</th><th>What the squircle crops</th>
+      <th>What the circle crops</th><th>Reads at 48&nbsp;dp</th><th>Mono</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><b>S1 Today</b><br><span style="color:var(--muted)">stroke 8, apex 28</span></td>
+        <td class="mid">50 of 72 (69&nbsp;%)<br>6 units of charcoal above the apex, 16 below the trough</td>
+        <td>flats to <code>x&nbsp;18.2&nbsp;/&nbsp;89.8</code> and the two outer ceiling dashes; nothing on the beat</td>
+        <td>same, plus a 1.9-unit taper on each flat; apex clear by 5.8 units</td>
+        <td class="yes">clean; solid wedge is the top 27 units of the spike</td>
+        <td class="yes">holds &mdash; as shipped</td></tr>
+      <tr><td><b>S2 Tall</b><br><span style="color:var(--muted)">stroke 9, apex 20</span></td>
+        <td class="yes">60.5 of 72 (84&nbsp;%)<br>tip cap trimmed 2.5 units, 11.5 below the trough</td>
+        <td>flats to <code>x&nbsp;18.3&nbsp;/&nbsp;89.7</code>, the outer dashes, and <b>2.5 units of the apex cap</b> &mdash; a 7.5-unit flat where the spike meets the top edge</td>
+        <td>the same apex trim within 0.2 units, plus a 2.6-unit taper on each flat</td>
+        <td class="yes">strongest of the three; wedge grows to 40 units, notch still open</td>
+        <td class="yes">best &mdash; stroke 9 and deeper dips</td></tr>
+      <tr><td><b>S3 Full</b><br><span style="color:var(--muted)">stroke 10, apex 18</span></td>
+        <td class="mid">65 of 72 (90&nbsp;%)<br>whole 5-unit apex cap outside the window, 7 below the trough</td>
+        <td><b>the entire apex cap</b>, leaving a 10-unit flat mesa on <code>y&nbsp;18</code>; flats to <code>x&nbsp;18.4&nbsp;/&nbsp;89.6</code></td>
+        <td class="no">the apex cap and a 3.6-unit wedge on each flat, centreline stopping at <code>x&nbsp;87.9</code> &mdash; the line looks pinched off, not bled off</td>
+        <td class="no">bold but blunt &mdash; 49 of 60 spike units are solid, reads as a filled arrowhead</td>
+        <td class="mid">boldest, least articulate</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <hr class="hr">
+
+  <h2>Needs deciding &mdash; round 10 <small>&mdash; one question</small></h2>
+
+  <p class="q"><b>1. Which vertical size &mdash; S1, S2 or S3?</b>
+    The premise of the question is answered: the layer is already a square and the launcher already does
+    the cropping, so there is no hidden space to reclaim &mdash; the visible window is 72 units under
+    every mask and the only free variable is how much of it the beat uses. S1 uses 50, S2 uses 60.5 and
+    lets the tip touch the top edge, S3 uses 65 and pays for it with a flat mesa where the apex should be.
+    Judge it on the <strong>squircle</strong> view and the <strong>strip</strong>: One UI's squircle is what Robin's Fold&nbsp;7
+    draws, and the <strong>circle</strong> is the fallback that must merely not look broken on a Pixel or a
+    third-party launcher. If S2's 2.5-unit tip trim is unwelcome, the zero-crop version of exactly the
+    same tile is <strong>apex <code>y&nbsp;22.5</code></strong> instead of 20 &mdash; the cap then lands precisely
+    on <code>y&nbsp;18</code> and touches the edge without losing anything; say so and that is what gets
+    built.</p>
+
+  <p class="sub" style="max-width:88ch">
+    <b>Part of the same decision &mdash; the About screen.</b> <code>drawable/ic_launcher.xml</code>
+    currently clips the same geometry to a <b>disc of r&nbsp;50</b> on the 108 grid, which is far more
+    generous than any launcher mask and shows the trace's two end caps that the launcher always cuts. If
+    the squircle is the shape we now design to, About should wear <b>the same squircle as the launcher</b>
+    &mdash; the One UI curve inscribed in the visible 72 square, i.e. the &ldquo;r&nbsp;36&rdquo;
+    equivalent, so the in-app icon and the home-screen tile are the same picture. As a VectorDrawable
+    clip-path that is
+    <code>M54,18 C24.48,18 18,24.48 18,54 C18,83.52 24.48,90 54,90 C83.52,90 90,83.52 90,54 C90,24.48 83.52,18 54,18 Z</code>.
+    The cost is that About also loses the end caps and the outer ceiling dashes; the gain is that one
+    picture is the icon everywhere. <b>Yes to matching, or keep the generous r&nbsp;50 disc?</b>
+  </p>
+
+  <h3>Decided 2026-09-10 &mdash; S2 Tall, About matches the squircle</h3>
+  <table class="dec">
+    <tr><th>#</th><th>Decision</th></tr>
+    <tr><td>1</td><td><b>S2 Tall.</b> Stroke 9, baseline y 64, apex y 20, Q y 72, S y 74, P/T peaks y 50 with the bumps at x 27&ndash;41 and 71&ndash;85, ceiling y 42 at stroke 3.9, dash 7/5.5 butt-capped. The 2.5-unit tip trim under every mask is accepted as the vertical twin of the horizontal bleed; the circle fallback costs 0.2 units more. Robin took the renderer's pick over the zero-crop apex.</td></tr>
+    <tr><td>2</td><td><b>About wears the launcher squircle.</b> <code>drawable/ic_launcher.xml</code> clips to the One UI curve above instead of the r&nbsp;50 disc, so the in-app icon and the home-screen tile are one picture.</td></tr>
+    <tr><td>3</td><td><b>The premise stands answered:</b> the layers are square already; the mask is the launcher's. Nothing else in round 9 changes: B1 ECG, charcoal plate, two-path mono.</td></tr>
+  </table>
+  <p class="sub">Rebuilt the same day into the four vectors; render in <code>design/research/2026-09-10-icon-render/pulse-48dp.png</code>. Supersedes round 9 decision 1 (size A2 stays horizontally; the vertical use grows from 50 to 60.5 of the 72 visible units).</p>
+
+</div>

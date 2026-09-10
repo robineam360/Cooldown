@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CCRM-60 (Dual Identity): the adaptive icon's background layer is the two-colour
-     ground of the chosen tile - Claude terracotta #D97757 over y 0 to 54, ChatGPT
-     green #10A37F over y 54 to 108, a horizontal split with the seam across the
-     middle. The CCRM-56 (Provider Identity) slate radial retires with the
-     hourglass. Approved 2026-09-09, round 7 variant 5; geometry per
-     design/dual-identity-wireframe.html section 2 ("Icon, chosen"). -->
+<!-- CCRM-60 (Dual Identity): the adaptive icon's background layer. Pulse, variant S2
+     (Tall) on the charcoal plate - chosen 2026-09-10, round 10 of
+     design/app-icon-v2-wireframe.html. The plate is one flat 108 x 108 path filled
+     charcoal #1F1B19: no gradient, no radial, nothing else in this layer. The
+     round-7 two-colour ground (terracotta over green) and the CCRM-56 (Provider
+     Identity) slate radial both retire here; the two accounts are now carried by
+     the trace's own colour roles in ic_launcher_foreground.xml. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Claude terracotta, top half -->
     <path
-        android:pathData="M0,0 H108 V54 H0 Z"
-        android:fillColor="#D97757" />
-    <!-- ChatGPT green, bottom half - green, not the store tile's near-black, by
-         decision: under terracotta the black reads as a shadow, not a service. -->
-    <path
-        android:pathData="M0,54 H108 V108 H0 Z"
-        android:fillColor="#10A37F" />
+        android:pathData="M0,0 H108 V108 H0 Z"
+        android:fillColor="#1F1B19" />
 </vector>

@@ -759,9 +759,12 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
 - **Status:** Built 2026-09-10 (RUNBOOK.md Step 4), **seen on the Fold 7 2026-09-10** (Step 5) —
-  the four icon vectors redrawn to the chosen geometry and **approved by Robin from the 48 dp
-  render** (`design/research/2026-09-10-icon-render/icon-48dp.png`), then seen live in the app
-  drawer, the taskbar and About; top bar leads with the two 20 dp marks on the main screen; two
+  the round-7 icon was approved from its 48 dp render, seen live in the drawer, taskbar and About,
+  and **withdrawn the same day: it reads as the Indian flag**. Replaced by the Pulse tile (A2 +
+  B1 ECG, charcoal), decided 2026-09-10 in `design/app-icon-v2-wireframe.html` rounds 8–9 and
+  rebuilt into the four vectors; Robin approved the tile from the round-9/10 wireframe views, and the shipped vectors render
+  pixel-identical to the wireframe symbol (`design/research/2026-09-10-icon-render/pulse-48dp.png`);
+  the drawer check on the phone rides in Step 6; top bar leads with the two 20 dp marks on the main screen; two
   rooms via `ui/Rooms.kt` (surface and card tints on Main and History, serif headline figures on
   Claude tabs, tab indicator in the room accent, labels neutral); 297 tests. Device pass: app
   states 1, 2, 5 (as a strip with four accounts) and 6 seen at 410 and 750 dp, dark and light;
@@ -771,7 +774,28 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   Chart)'s 760 dp column. Captures in `design/research/2026-09-10-device-pass/` · medium ·
   supersedes CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity)
   decision 3.
-- **Icon, final (seven review rounds, recorded in the wireframe's "Considered and dropped"):**
+- **Icon, decided 2026-09-10 (rounds 8–9, `design/app-icon-v2-wireframe.html`), replaces the
+  horizontal split below:** the round-7 tile shipped to the Fold 7 at Step 5 and read as the
+  Indian flag (saffron / cream band / green, sunburst where the wheel sits), so Robin reopened
+  the icon the same day. Twelve abstract concepts were drawn; Robin chose **Pulse**, then from
+  seven size/shape variants **A2 (Bleed) + B1 (ECG)** on a **charcoal `#1F1B19` plate**, then in
+  round 10 (Robin: "draw it square and let the launcher crop") the taller **S2** cut of the same
+  trace. Geometry in the 108 viewport: an ECG trace at stroke 9, round caps and joins, spanning
+  x 12 → 96 so every mask cuts the flat runs at its edge; baseline y 64; terracotta `#D97757` P
+  bump x 27–41 peaking y 50, red `#FF5252` Q–R–S (dip y 72, apex y 20 — its cap runs 2.5 units
+  off the visible top under every mask, by choice — dip y 74), green `#10A37F` T bump x 71–85
+  peaking y 50; a cream `#F3EBE3` even-pace ceiling at y 42, stroke 3.9, dashed 7/5.5 with butt
+  caps (short subpaths, since VectorDrawable has no dash), the beat crossing it is the over-pace
+  statement. The beat uses 60.5 of the 72 visible units. About (`drawable/ic_launcher.xml`) clips
+  to the One UI squircle inscribed in the visible 72 square, not a disc, so it is the same
+  picture as the tile. No provider marks
+  on the tile (colour carries identity; no trademark exposure). Monochrome layer: two paths, the
+  whole trace at full alpha and the ceiling at ~0.55. `drawable/ic_launcher.xml` (About) is the
+  same geometry in one file. Considered and dropped in round 8: trend tile, cooling curve, two
+  panes, Venn, pause pair, two bubbles, fused marks, portrait seam, ice plate, chevron shield,
+  stacked cards; in round 9: sizes A1/A3, pulses B2 stepped, B3 wave, B4 twin beat; in round 10:
+  S1 (the A2 height, 50 units) and S3 (apex on the edge, a mesa tip and a fused wedge).
+- **Icon, round 7 (superseded 2026-09-10; kept for the record):**
   the launcher tile is the Claude app tile's top half over the ChatGPT app tile's bottom half,
   with the app's own usage bar at the seam. Ground: **horizontal split at y 54** of the 108
   viewport, Claude terracotta `#D97757` above, ChatGPT green `#10A37F` below (green, not the

@@ -370,40 +370,88 @@ pass), then follow the Handover rule and print Step 6.
   the 760 dp column). Captures in `design/research/2026-09-10-device-pass/` (30 files, ~7.6 MB;
   shade crops quantised). Outcome tables sit at the foot of the three wireframes. The phone was
   left with dark mode on and its own 1-minute screen timeout.
+- 2026-09-10, later — Robin reopened the icon before Step 6: on the phone the round-7 tile reads as
+  the Indian flag. Round 8 (twelve abstract concepts) and round 9 (Pulse in seven size/shape
+  variants, each between stand-ins for the real Claude and ChatGPT tiles) are in
+  `design/app-icon-v2-wireframe.html`; decided **A2 Bleed + B1 ECG on charcoal**, then round 10 (square-first) raised it to
+  **S2 Tall** with About on the launcher squircle; built into the four vectors the same afternoon
+  (Opus, zero-pixel diff against the wireframe symbol). Also fixed and committed before Step 6, `5b10673`:
+  CCBG-25 (Idle Reset Silence) via the pure `alerts/ResetRollover` (11 tests, 308 green; device
+  verification pending) and CCBG-23 (Mark Size Mismatch), the blossom scaled 1.35× — Robin approved
+  the before/after render. BUGS.md Open list is now Low-only.
 
 ---
 
 ## Step 6 · Release v1.6
 
-**Tier:** Sonnet for the docs rewrite and RELEASING.md flow · Haiku for the copy sweeps · **Robin
-signs and uploads**
+**Tier:** Sonnet for the docs rewrite and the screenshot run · Haiku for the copy sweeps · **no
+Robin in the loop** — the session signs and publishes itself. Robin's only act is to plug the
+Fold 7 in over USB (USB debugging on, screen unlocked) before pasting.
+
+**Preconditions the session checks first and stops on if missing** (one message saying which,
+nothing else done): `adb devices -l` lists `RZCY70YN0LJ … usb:` (wireless is not accepted for
+this step); `ccooldown-release.jks` and `keystore.properties` are present at the repo root
+(gradle signs `assembleRelease` with them; never stage them); `gh auth status` is logged in as
+robineam360 for `robineam360/Cooldown`; headless Chrome exists at
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (the docs build and the PDF
+page check need it).
 
 **Resume in a fresh Fable session:**
 
 ```
 Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — its Conventions block, Steps 1–5 Logs and Step 6
-— then ROADMAP.md section "Dual identity and diet" for what shipped. Prepare v1.6: bump
-versionName to 1.6 and versionCode to 21; rewrite README.md (no widgets, no tile, no alert
-matrix, no four styles; the always-on notification with two accounts, reset pings, four-tab
-Settings, the new icon; "not affiliated" notice unchanged); regenerate the user guide,
-brochure and hero from release/docs/src per RELEASING.md, removing the widget and alerts pages
-and adding the Duet notification page; replace the retired screenshots with the Step 5
-captures in design/research/2026-09-10-device-pass/ (app-*, settings-*, notif-* and
-launcher-icon-drawer.png; the notif-* files are shade crops, the app-* files are 640 px wide);
-write the release notes, saying plainly that placed widgets and tiles disappear on update, and
-listing the defects Step 5 left open as known issues: CCBG-25 (Idle Reset Silence, Medium —
-the reset ping stays silent for an account that is idle across the reset; if Robin wants it
-fixed before shipping, do that first as fix(CCBG-25) with a unit test, it is ~15 lines in
-alerts/Alerts.kt), and the four Low ones, CCBG-21 (Zero-Point Shading), CCBG-22 (Credits Rows
-For All), CCBG-23 (Mark Size Mismatch), CCBG-24 (Duet Label Clamp). Stop before signing and uploading — I do those — and tell me the exact commands. After I
-confirm the release is published, close per the Close-out rule (commit as "v1.6 — CCRM-60/61/62
-ship: two-account notification, settings diet, new icon", tag), then say the arc is complete.
+(its preconditions and this block) — then ROADMAP.md section "Dual identity and diet" for what
+shipped. Run the whole v1.6 release end to end with no questions to Robin: every decision below
+is taken, and the only reason to stop is a failed precondition or a red test, in which case say
+exactly what failed and stop. Phone work goes over USB adb (screencap -d 4630946872173396372
+for the cover screen, screencap -p to /sdcard then adb pull; keep the screen awake with
+settings put system screen_off_timeout 1800000 and restore the value you read first before
+you finish; if the phone locks, stop and ask Robin to unlock — the bouncer cannot be driven).
+(1) Version: versionName "1.6", versionCode 21 in app/build.gradle.kts. (2) Green:
+./gradlew testDebugUnitTest (308 tests or more) and assembleRelease; verify the APK's signer
+with apksigner --print-certs matches the installed app's (SHA-256
+8bc21a2aca81e5a09b239d1847822549f10775d76849f0e1948980ecd044f64f). (3) Install it over the
+live install (adb install -r) and take the release screenshots yourself into
+release/docs/src/shots/, replacing every retired one (widgets, tile, alert matrix, four
+styles): the Pulse icon in the app drawer and on the About card; Main on the Pro tab (Claude
+room) and on the ChatGPT tab (ChatGPT room), dark and light (cmd uimode night no / yes, restore
+yes); Settings' four tabs at 410 dp; the pinned notification collapsed and expanded (cmd
+statusbar expand-notifications, tap the chevron at 975,406, cmd statusbar collapse); the
+status-bar ring. Confirm on those captures that the Pulse tile is what the drawer shows and
+that the two provider marks in the top bar now read the same size (CCBG-23 (Mark Size
+Mismatch)); if either is wrong, that is a stop. Reuse the Step 5 captures in
+design/research/2026-09-10-device-pass/ only where a fresh one is impossible (the four-account
+notification states). (4) Docs: rewrite README.md (no widgets, tile, alert matrix or four
+styles; the always-on notification with two accounts, reset pings, four-tab Settings, the Pulse
+icon; "not affiliated" notice unchanged; both PDF links to the v1.6 filenames); update
+release/USER-GUIDE.md (version header + changelog); edit release/docs/src/guide.html and
+brochure.html — remove the widget and alerts pages, add the Duet notification page and the
+new icon, swap the screenshots — then ./release/docs/build.sh and render every changed PDF page
+to PNG (headless Chrome or pdftoppm) and look at each for clipping, since .page boxes clip
+silently. Docs are exempt from the wireframe gate (working agreement 2). (5) Release notes
+(release/docs/src or the gh --notes-file, per RELEASING.md): what shipped (CCRM-60 (Dual
+Identity), CCRM-61 (Settings Diet), CCRM-62 (Duet Notification)), that placed widgets and
+Quick Settings tiles disappear on update, the fixes since the device pass (CCBG-25 (Idle
+Reset Silence), CCBG-23), and the known issues CCBG-21 (Zero-Point Shading), CCBG-22 (Credits
+Rows For All), CCBG-24 (Duet Label Clamp). (6) Ship: git add -A (the APK, keystore and
+local.properties are gitignored — check git status shows none of them), commit "v1.6 —
+CCRM-60/61/62 ship: two-account notification, settings diet, new icon", git tag v1.6, git push
+&& git push --tags, then gh release create v1.6 app/build/outputs/apk/release/app-release.apk
+--title "Cooldown v1.6" --notes-file <the notes>; verify with gh release view v1.6 that the
+asset is attached. (7) On the phone open Settings → More → Check for updates and screenshot
+the result: an installed v1.6 must report itself current against releases/latest. Then close
+per the Close-out rule (set the three items' Status lines to Shipped v1.6 2026-09-xx, tick
+Step 6, write its Log, commit that as docs(CCRM-60/61/62): v1.6 shipped, push), restore the
+screen timeout, and say the arc is complete with the release URL.
 ```
 
 **Done when:**
-- ☐ README, guide PDF, brochure PDF regenerated and reviewed; no widget, tile or alert-matrix
-  copy remains anywhere in `release/` or README.
-- ☐ Signed APK built and GitHub release published by Robin; update check confirmed on the phone.
+- ☐ README, USER-GUIDE.md, guide PDF, brochure PDF regenerated and every changed page eyeballed;
+  no widget, tile or alert-matrix copy remains anywhere in `release/` or README.
+- ☐ Fresh screenshots from the phone in `release/docs/src/shots/`, Pulse icon confirmed in the
+  drawer, marks confirmed equal.
+- ☐ Signed APK built, tag `v1.6` pushed, GitHub release published with the APK attached, update
+  check on the phone confirmed; all by the session.
 - ☐ Ticked, committed, tagged, pushed.
 
 **Log:**
