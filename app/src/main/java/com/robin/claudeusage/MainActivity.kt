@@ -105,8 +105,10 @@ import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.LocalWidthClass
 import com.robin.claudeusage.ui.LocalWindowHeight
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.ProviderTabLabel
 import com.robin.claudeusage.ui.ProvideWidthClass
+import com.robin.claudeusage.ui.Rooms
 import com.robin.claudeusage.ui.UsageSparkline
 import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.chartHeight
@@ -258,7 +260,7 @@ private fun App(startProfile: Profile) {
         Screen.MAIN, Screen.HISTORY -> Palette.accentName(cache, selectedProfile)
         else -> themeName.takeIf { it != Palette.PER_PROVIDER } ?: Palette.DEFAULT
     }
-    val scheme = when {
+    val baseScheme = when {
         effectiveAccent == Palette.DYNAMIC && dark -> dynamicDarkColorScheme(context)
         effectiveAccent == Palette.DYNAMIC -> dynamicLightColorScheme(context)
         dark -> darkColorScheme(
@@ -270,6 +272,30 @@ private fun App(startProfile: Profile) {
             onPrimary = Color.White,
         )
     }
+    // CCRM-60 (Dual Identity), decision 4: "two rooms" — Main and History, the same
+    // two screens that already follow the selected tab's accent (CCRM-56 (Provider
+    // Identity) decision 1), also take that account's surface tint and card tint.
+    // Settings and the Guide keep Material's defaults, so this is scoped to those
+    // two screens only. Applied as a `copy()` on top of whichever branch above ran
+    // — the DYNAMIC branch's own scheme is otherwise untouched — so every branch
+    // gets the room's tokens the same way instead of threading them through three
+    // different constructor calls.
+    val scheme = if (screen == Screen.MAIN || screen == Screen.HISTORY) {
+        val room = Rooms.forProvider(selectedProfile.provider)
+        val roomSurface = Color(if (dark) room.surfaceDark else room.surfaceLight)
+        val roomCard = Color(if (dark) room.cardDark else room.cardLight)
+        baseScheme.copy(
+            surface = roomSurface,
+            background = roomSurface,
+            surfaceContainer = roomCard,
+            surfaceContainerLow = roomCard,
+            surfaceContainerHigh = roomCard,
+            surfaceContainerHighest = roomCard,
+            surfaceVariant = roomCard,
+        )
+    } else {
+        baseScheme
+    }
 
     CompositionLocalProvider(LocalAppDark provides dark) {
     MaterialTheme(colorScheme = scheme) {
@@ -278,14 +304,34 @@ private fun App(startProfile: Profile) {
                 topBar = {
                     TopAppBar(
                         title = {
-                            Text(
-                                when (screen) {
-                                    Screen.SETTINGS -> "Settings"
-                                    Screen.GUIDE -> "Get your token"
-                                    Screen.HISTORY -> "Usage history"
-                                    Screen.MAIN -> "Cooldown"
+                            // CCRM-60 (Dual Identity), decision 3: the main screen only —
+                            // Settings, History and the Guide keep a plain text title.
+                            if (screen == Screen.MAIN) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    ProviderMark(
+                                        Provider.CLAUDE,
+                                        size = 20.dp,
+                                        tint = Palette.color(Provider.CLAUDE.themeName, dark),
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    ProviderMark(
+                                        Provider.CHATGPT,
+                                        size = 20.dp,
+                                        tint = Palette.color(Provider.CHATGPT.themeName, dark),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Cooldown")
                                 }
-                            )
+                            } else {
+                                Text(
+                                    when (screen) {
+                                        Screen.SETTINGS -> "Settings"
+                                        Screen.GUIDE -> "Get your token"
+                                        Screen.HISTORY -> "Usage history"
+                                        Screen.MAIN -> "Cooldown"
+                                    }
+                                )
+                            }
                         },
                         navigationIcon = {
                             if (screen != Screen.MAIN) {
@@ -459,14 +505,15 @@ private fun ProfileTabs(
             // label needs ~110, so it fits; four would get 82 dp on the cover screen and
             // every label — including the selected one — would truncate. One rule at both
             // widths deliberately, so the strip doesn't change shape when the phone unfolds.
-            // The default indicator ignores contentColor — Material3 hardcodes it to
-            // colorScheme.primary via the active-indicator token — so it still tracked
-            // the swiped-to profile's accent unless drawn explicitly in our neutral colour.
+            // The labels stay neutral to avoid the mid-swipe crossfade (see
+            // tabContentColor above); the indicator now follows the accent by
+            // decision, CCRM-60 (Dual Identity) — one of the two rooms' tells,
+            // alongside the surface tint and the serif headline.
             val tabIndicator: @Composable (List<TabPosition>) -> Unit = { tabPositions ->
                 TabRowDefaults.run {
                     SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selected]),
-                        color = tabContentColor,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
@@ -637,6 +684,10 @@ private fun ProfileScreen(
     val data = snapshot.data
     // Re-read the history file only when a new fetch lands, not on every tick.
     val history = remember(profile, snapshot.fetchedAt) { repo.history().points(profile) }
+    // CCRM-60 (Dual Identity), decision 4: the Claude room's headline percentages
+    // set in the system serif; every other room's stay the default sans. Nothing
+    // else on the card changes.
+    val serifHeadline = Rooms.forProvider(profile.provider).serifHeadline
 
     if (!repo.hasCredentials(profile)) {
         val label = repo.cacheSettings().profileLabel(profile)
@@ -686,6 +737,7 @@ private fun ProfileScreen(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
+                            fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
                         )
                     }
                     Spacer(Modifier.height(8.dp))
@@ -718,9 +770,9 @@ private fun ProfileScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("7-day window", style = MaterialTheme.typography.titleSmall)
                     Spacer(Modifier.height(10.dp))
-                    SubBar("All models", data.weekly, usageLeft, showOverPace)
+                    SubBar("All models", data.weekly, usageLeft, showOverPace, serifHeadline)
                     for (cap in data.modelCaps) {
-                        SubBar(cap.modelName, cap.window, usageLeft, showOverPace)
+                        SubBar(cap.modelName, cap.window, usageLeft, showOverPace, serifHeadline)
                     }
                     data.weekly?.let { w ->
                         TrendBlock(
@@ -1081,6 +1133,9 @@ private fun SubBar(
     window: UsageWindow?,
     usageLeft: Boolean,
     showOverPace: Boolean = true,
+    // CCRM-60 (Dual Identity), decision 4: the Claude room's serif headline,
+    // threaded down from ProfileScreen — every "· 7-day" row shares the style.
+    serifHeadline: Boolean = false,
 ) {
     val percent = window?.percent
     Row(verticalAlignment = Alignment.Bottom) {
@@ -1095,6 +1150,7 @@ private fun SubBar(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
+            fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
         )
     }
     Spacer(Modifier.height(4.dp))

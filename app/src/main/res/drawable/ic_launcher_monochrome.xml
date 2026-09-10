@@ -1,33 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CCRM-45 (Tracker Icon): themed-icon layer. The launcher strips colour and tints
-     this, so the hourglass ships mostly as solid silhouette — no strokes to thin
-     out under tint + downscale.
-     CCRM-56 (Provider Identity): the lower bulb splits into three fillAlpha bands
-     (orange 1.0, green 0.65, blue 0.35, top to bottom) so "three" survives
-     tinting, which strips colour but keeps alpha — the upper bulb + cap stay one
-     solid alpha-1.0 fill so the split doesn't double-fill the lower bulb. Per
-     design/provider-identity-wireframe.html section 3. Glyph scaled 1.3x from
-     centre, matching ic_launcher_foreground.xml's icon-review bump. -->
+<!-- CCRM-60 (Dual Identity): themed-icon layer. The launcher strips colour and tints
+     this, so the whole tile is one colour separated by alpha only - the Monochrome
+     rule in design/dual-identity-wireframe.html section 2: top band 0.55, bottom
+     band 0.3, marks 0.2, track 0.32, cream fill solid, red segment 0.85, tick solid.
+     The tick goes solid because a partial ink tick has nothing to be partial against
+     once the layer has one colour; its overhangs above and below the bar do the
+     separating. No gradients and no strokes, so nothing thins out under tint and
+     downscale. Same geometry as ic_launcher_background.xml plus
+     ic_launcher_foreground.xml.
+     The two marks are the app's own ic_provider_claude.xml / ic_provider_chatgpt.xml
+     paths, unmodified in shape. "Claude" is a trademark of Anthropic, PBC and
+     "ChatGPT" a trademark of OpenAI; used here only to identify the services this
+     app tracks, alongside the app's "not affiliated" notice (ROADMAP.md CCRM-56
+     (Provider Identity)). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:pivotX="54"
-        android:pivotY="54"
-        android:scaleX="1.3"
-        android:scaleY="1.3">
-        <!-- top cap + upper bulb, down to the neck pinch -->
-        <path
-            android:pathData="M38,32 h32 v3 c0,10 -9,13 -12,19 h-8 c-3,-6 -12,-9 -12,-19 v-3 z"
-            android:fillColor="#FFFFFF" />
-        <!-- lower bulb + bottom cap: three alpha bands, clipped to the bulb's silhouette -->
-        <group>
-            <clip-path android:pathData="M58,54 c3,6 12,9 12,19 v3 h-32 v-3 c0,-10 9,-13 12,-19 z" />
-            <path android:pathData="M34,55 h40 v7 h-40 z" android:fillColor="#FFFFFF" android:fillAlpha="1.0" />
-            <path android:pathData="M34,62 h40 v7 h-40 z" android:fillColor="#FFFFFF" android:fillAlpha="0.65" />
-            <path android:pathData="M34,69 h40 v7 h-40 z" android:fillColor="#FFFFFF" android:fillAlpha="0.35" />
+    <!-- the two grounds, as alpha bands -->
+    <path
+        android:pathData="M0,0 H108 V54 H0 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.55" />
+    <path
+        android:pathData="M0,54 H108 V108 H0 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3" />
+    <!-- top half of the Claude sunburst: full glyph 60 units tall, glyph centre on
+         (54,54), clipped at the seam. Outer group carries the clip in the 108
+         viewport, inner group the placement. -->
+    <group>
+        <clip-path android:pathData="M0,0 H108 V54 H0 Z" />
+        <group
+            android:translateX="24"
+            android:translateY="24"
+            android:scaleX="2.5"
+            android:scaleY="2.5">
+            <path
+                android:pathData="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"
+                android:fillColor="#FFFFFF"
+                android:fillAlpha="0.2" />
         </group>
     </group>
+    <!-- bottom half of the OpenAI blossom: same 60-unit glyph on (54,54). The inner
+         translate(1.995,2) is the mark file's own re-centring of its 16.5-unit glyph
+         into a 24 box, kept as shipped. -->
+    <group>
+        <clip-path android:pathData="M0,54 H108 V108 H0 Z" />
+        <group
+            android:translateX="10.38"
+            android:translateY="10.36"
+            android:scaleX="3.6364"
+            android:scaleY="3.6364">
+            <group
+                android:translateX="1.995"
+                android:translateY="2.0">
+                <path
+                    android:pathData="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"
+                    android:fillColor="#FFFFFF"
+                    android:fillAlpha="0.2" />
+            </group>
+        </group>
+    </group>
+    <!-- bar: capsule x 10 to 98, y 46 to 62, radius 8, centred on the seam.
+         Draw order track, fill, red, tick. Sample reading: 80% used, tick at 45%. -->
+    <path
+        android:pathData="M18,46 H90 A8,8 0 0 1 90,62 H18 A8,8 0 0 1 18,46 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.32" />
+    <path
+        android:pathData="M18,46 H72.4 A8,8 0 0 1 72.4,62 H18 A8,8 0 0 1 18,46 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="1.0" />
+    <!-- red from the tick at x 49.6 to the fill's end at x 80.4, clipped to the
+         fill's capsule so it takes the fill's round right cap. -->
+    <group>
+        <clip-path android:pathData="M18,46 H72.4 A8,8 0 0 1 72.4,62 H18 A8,8 0 0 1 18,46 Z" />
+        <path
+            android:pathData="M49.6,46 H80.4 V62 H49.6 Z"
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.85" />
+    </group>
+    <!-- pace tick, drawn last: 4.96 wide, 25.6 tall, 4.8 of overhang each side -->
+    <path
+        android:pathData="M52.08,43.68 V64.32 A2.48,2.48 0 0 1 47.12,64.32 V43.68 A2.48,2.48 0 0 1 52.08,43.68 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="1.0" />
 </vector>

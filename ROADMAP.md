@@ -758,8 +758,13 @@ always-on notification, what leaves). The removal footprint is in
 a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered build plan.
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
-- **Status:** Design approved 2026-09-09, nothing open · medium · supersedes CCRM-42 (App Icon)
-  and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity) decision 3 · RUNBOOK.md Step 4.
+- **Status:** Built 2026-09-10 (RUNBOOK.md Step 4) — the four icon vectors redrawn to the chosen
+  geometry and **approved by Robin from the 48 dp render**
+  (`design/research/2026-09-10-icon-render/icon-48dp.png`: circle light/dark, squircle, themed);
+  top bar leads with the two 20 dp marks on the main screen; two rooms via `ui/Rooms.kt` (surface
+  and card tints on Main and History, serif headline figures on Claude tabs, tab indicator in the
+  room accent, labels neutral); 297 tests. Not yet seen on the phone — Step 5 · medium · supersedes
+  CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity) decision 3.
 - **Icon, final (seven review rounds, recorded in the wireframe's "Considered and dropped"):**
   the launcher tile is the Claude app tile's top half over the ChatGPT app tile's bottom half,
   with the app's own usage bar at the seam. Ground: **horizontal split at y 54** of the 108

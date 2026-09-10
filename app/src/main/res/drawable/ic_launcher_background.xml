@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CCRM-56 (Provider Identity): slate radial ground, light top-left, so all three
-     provider colours (the lower-bulb sands in ic_launcher_foreground.xml) sit on a
-     neutral base instead of the old Claude-orange ground. Replaces the CCRM-45
-     (Tracker Icon) warm radial. Per design/provider-identity-wireframe.html section 3. -->
+<!-- CCRM-60 (Dual Identity): the adaptive icon's background layer is the two-colour
+     ground of the chosen tile - Claude terracotta #D97757 over y 0 to 54, ChatGPT
+     green #10A37F over y 54 to 108, a horizontal split with the seam across the
+     middle. The CCRM-56 (Provider Identity) slate radial retires with the
+     hourglass. Approved 2026-09-09, round 7 variant 5; geometry per
+     design/dual-identity-wireframe.html section 2 ("Icon, chosen"). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M0,0 H108 V108 H0 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="radial"
-                android:centerX="32"
-                android:centerY="27"
-                android:gradientRadius="103">
-                <item android:offset="0" android:color="#3A4356" />
-                <item android:offset="0.6" android:color="#242B38" />
-                <item android:offset="1" android:color="#12161E" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    <!-- Claude terracotta, top half -->
+    <path
+        android:pathData="M0,0 H108 V54 H0 Z"
+        android:fillColor="#D97757" />
+    <!-- ChatGPT green, bottom half - green, not the store tile's near-black, by
+         decision: under terracotta the black reads as a shadow, not a service. -->
+    <path
+        android:pathData="M0,54 H108 V108 H0 Z"
+        android:fillColor="#10A37F" />
 </vector>

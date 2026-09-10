@@ -62,7 +62,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 | 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☑ |
 | 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☑ |
 | 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☑ |
-| 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☐ |
+| 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☑ |
 | 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☐ |
 | 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☐ |
 
@@ -301,13 +301,25 @@ and print Step 5.
 ```
 
 **Done when:**
-- ☐ Robin approved the 48 dp icon render (light, dark, themed).
-- ☐ Main top bar shows the two marks then "Cooldown"; Settings, History, Guide keep plain titles.
-- ☐ Claude tab: ivory surface, serif figures; ChatGPT tab: neutral surface, sans; cards
+- ☑ Robin approved the 48 dp icon render (light, dark, themed).
+- ☑ Main top bar shows the two marks then "Cooldown"; Settings, History, Guide keep plain titles.
+- ☑ Claude tab: ivory surface, serif figures; ChatGPT tab: neutral surface, sans; cards
   otherwise byte-identical in content.
-- ☐ Tests green, Status updated, ticked, committed, pushed.
+- ☑ Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
+- 2026-09-10 — Opus (icon) and Sonnet (rooms) ran in parallel; the icon agent did not run gradle,
+  the orchestrator compiled the merged tree (297 tests). Icon: the four vectors follow the
+  wireframe's numbers literally (the agent diffed its SVG mirror against the wireframe's own tile
+  symbol: 2 antialiasing pixels of 46 656); one idiom fix — the vertical tick capsule needs its arc
+  sweeps written the other way round or the caps bulge inward and the 4.8-unit overhangs vanish.
+  Robin approved the 48 dp render (light, dark, squircle, themed). Rooms: `Rooms.forProvider` is
+  pure and tested; Material 3's plain `Card` reads `surfaceContainerHighest`, so the room's card
+  tint is applied to every surfaceContainer token plus surfaceVariant on Main and History only;
+  Claude serif reaches the 5-hour headline and every `SubBar` row (All models, per-model caps),
+  not the credits card; the tab indicator now follows `colorScheme.primary`, labels neutral.
+  The tabContentColor comment above the indicator still says only the mark keeps its tint —
+  slightly stale, left alone. Nothing seen on the phone yet: Step 5 covers the six app states.
 
 ---
 
