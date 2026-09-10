@@ -64,7 +64,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 | 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☑ |
 | 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☑ |
 | 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☑ |
-| 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☐ |
+| 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☑ |
 
 Order matters: 2 needs 1 (the sections it rebuilds are gone), 3 needs 1 (styles and glyphs
 gone), 4 needs nothing but is last so the icon lands on the final app; 5 needs 1–4; 6 needs 5.
@@ -446,12 +446,39 @@ screen timeout, and say the arc is complete with the release URL.
 ```
 
 **Done when:**
-- ☐ README, USER-GUIDE.md, guide PDF, brochure PDF regenerated and every changed page eyeballed;
+- ☑ README, USER-GUIDE.md, guide PDF, brochure PDF regenerated and every changed page eyeballed;
   no widget, tile or alert-matrix copy remains anywhere in `release/` or README.
-- ☐ Fresh screenshots from the phone in `release/docs/src/shots/`, Pulse icon confirmed in the
+- ☑ Fresh screenshots from the phone in `release/docs/src/shots/`, Pulse icon confirmed in the
   drawer, marks confirmed equal.
-- ☐ Signed APK built, tag `v1.6` pushed, GitHub release published with the APK attached, update
+- ☑ Signed APK built, tag `v1.6` pushed, GitHub release published with the APK attached, update
   check on the phone confirmed; all by the session.
-- ☐ Ticked, committed, tagged, pushed.
+- ☑ Ticked, committed, tagged, pushed.
 
 **Log:**
+- 2026-09-10 — Run by the orchestrator itself in one Fable session, no sub-agents (the labour was
+  adb driving and doc surgery, both faster in hand). Preconditions all green; 308 tests; the
+  release APK's signer matched the installed app's SHA-256. One pause: the Fold 7 had locked
+  before the paste, so every phone-independent piece (docs, notes, image retirement) was done
+  first and Robin unlocked it once. Installed v1.6 (code 21) over the live v1.5; thirteen
+  `v16-*` captures from the cover screen (1080×2520): the two rooms dark and light, the four
+  Settings tabs, About, the drawer row, the ring in the status bar, and the notification
+  collapsed and expanded, cropped out of a shade full of other apps' notifications (the shade
+  itself is never published). The chevron position in the paste (975,406) was wrong — the
+  shade order changes with every incoming notification — so the row was located by the Pulse
+  icon's three colours and the chevron tapped at its y. Confirmed: the drawer shows the Pulse
+  tile; the top-bar marks measure 53 vs 49 px tall at 420 dpi and read the same size (CCBG-23
+  (Mark Size Mismatch) closed on device). Docs: guide 14 → 13 pages (widgets and alerts pages
+  out, "The always-on notification" in, Pulse SVG on the cover and the last page), brochure and
+  hero rewritten, USER-GUIDE.md §3–§6 rewritten around the notification; two clips caught and
+  fixed on the rendered PNGs — guide page 8's closing paragraph ran into the footer, and the
+  brochure's page-2 disclaimer fell off the page until the feature blurbs were shortened.
+  Twenty-seven retired images removed from `release/docs/src/shots/`, ten from
+  `release/screenshots/`; the hero's third phone is the Alerts tab (a full-screen shade shot
+  would publish other apps' notifications). Release `v1.6` published with the APK (28.75 MB)
+  and `release/docs/release-notes-v1.6.md`; `releases/latest` resolves to v1.6 and the phone's
+  Check for updates answered "You're up to date — v1.6"
+  (`design/research/2026-09-10-v16-release/`). Nothing else on the device changed except this
+  session's screen timeout, restored to 60 s; dark mode restored after the light captures.
+  Still unverified on a device: the CCBG-25 (Idle Reset Silence) ping itself. Open Low items
+  carried into the notes: CCBG-21 (Zero-Point Shading) — visible on the ChatGPT tab captures
+  as the shaded 0% chart — CCBG-22 (Credits Rows For All), CCBG-24 (Duet Label Clamp).

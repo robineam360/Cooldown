@@ -758,7 +758,7 @@ always-on notification, what leaves). The removal footprint is in
 a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered build plan.
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
-- **Status:** Built 2026-09-10 (RUNBOOK.md Step 4), **seen on the Fold 7 2026-09-10** (Step 5) —
+- **Status:** **Shipped v1.6 2026-09-10** (RUNBOOK.md Step 6; the Pulse tile confirmed in the Fold 7 drawer and on About, the two top-bar marks confirmed equal) · previously: Built 2026-09-10 (RUNBOOK.md Step 4), **seen on the Fold 7 2026-09-10** (Step 5) —
   the round-7 icon was approved from its 48 dp render, seen live in the drawer, taskbar and About,
   and **withdrawn the same day: it reads as the Indian flag**. Replaced by the Pulse tile (A2 +
   B1 ECG, charcoal), decided 2026-09-10 in `design/app-icon-v2-wireframe.html` rounds 8–9 and
@@ -832,7 +832,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   treatments; round 7 five thick inset bars, variant 5 chosen.
 
 ### CCRM-61 · Settings Diet — four tabs, and everything that leaves
-- **Status:** Built 2026-09-09, both parts (RUNBOOK.md Steps 1–2) — part 1 the removals
+- **Status:** **Shipped v1.6 2026-09-10** (RUNBOOK.md Step 6; docs diet done — README, USER-GUIDE.md, guide, brochure and hero carry no widget, tile or alert-matrix copy) · previously: Built 2026-09-09, both parts (RUNBOOK.md Steps 1–2) — part 1 the removals
   (widgets, tile, standalone alerts except reset pings, fold machinery, three pinned styles,
   three glyphs; unit tests 368 → 287, `Alerts.kt` 665 → 231 lines, per-account `resetPingMode`
   with legacy fallback); part 2 the four-tab Settings with the new `pinnedSecondProfile`,
@@ -884,7 +884,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   working agreement 2 still names "both widget providers" and the tile.
 
 ### CCRM-62 · Duet Notification — the always-on notification carries two accounts
-- **Status:** Built 2026-09-10 (RUNBOOK.md Step 3), seen on the Fold 7 — collapsed Duet, expanded
+- **Status:** **Shipped v1.6 2026-09-10** (RUNBOOK.md Step 6; the release captures are the two-account collapsed and expanded states with ChatGPT · Pro) · previously: Built 2026-09-10 (RUNBOOK.md Step 3), seen on the Fold 7 — collapsed Duet, expanded
   two-header view with compact "· Weekly" rows, ring following First / Second / higher; Robin
   approved the shade and asked for one change, taken the same day: at 100% the ring is smooth
   and carries an × in the hollow instead of the 12 o'clock post (`design/spent-ring-wireframe.html`,
