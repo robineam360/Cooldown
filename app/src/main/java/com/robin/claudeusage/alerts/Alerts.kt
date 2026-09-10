@@ -102,6 +102,12 @@ object Alerts {
     /**
      * Reset detection for one account's window. Runs whatever the ping mode is — it also
      * tracks window identity and peak, and records the closed window in [SessionLog].
+     *
+     * The decision itself lives in [ResetRollover] so it can be unit-tested without a
+     * `Context`; this is only the plumbing that reads the prefs, writes them back, and
+     * posts. `window` may be **null** — an idle Claude account reports no session window
+     * once its 5 hours are up, and that is precisely the rollover CCBG-25 (Idle Reset
+     * Silence) was about, so it must reach [ResetRollover.decide] rather than return here.
      */
     private fun checkReset(
         context: Context,
@@ -112,47 +118,41 @@ object Alerts {
         window: UsageWindow?,
         windowLengthMs: Long,
     ) {
-        val key = window?.resetsAt?.toEpochMilli() ?: return
-        val pct = window.percent ?: 0.0
-        val lastSeen = cache.lastSeenWindowKey(profile, windowName)
-        // Proximity, not equality (CCBG-4 (Alert Dedup)). Exact comparison also made this
-        // fire spuriously when a poll landed within ~1s of the boundary and drift pushed
-        // lastSeen just into the past.
-        if (lastSeen != 0L && !Projection.sameWindow(lastSeen, key, windowLengthMs) &&
-            Instant.ofEpochMilli(lastSeen).isBefore(Instant.now())
-        ) {
-            // The window rolled over. Log the window that just closed to the
-            // long-term session log (its identity is lastSeen, its peak is what
-            // we accumulated while it was open) for the history bars.
-            val peak = cache.windowPeak(profile, windowName)
+        val outcome = ResetRollover.decide(
+            windowLabel = windowLabel,
+            windowKey = window?.resetsAt?.toEpochMilli(),
+            pct = window?.percent,
+            lastSeenKey = cache.lastSeenWindowKey(profile, windowName),
+            storedPeak = cache.windowPeak(profile, windowName),
+            mode = cache.resetPingMode(profile, windowName),
+            windowLengthMs = windowLengthMs,
+            nowMs = System.currentTimeMillis(),
+            nextResetPhrase = window?.resetsAt?.let { Fmt.relIn(it) },
+        )
+        outcome.log?.let { entry ->
+            // The window that just closed goes to the long-term session log (its identity
+            // is the key we had stored, its peak is what we accumulated while it was open)
+            // for the history bars.
             SessionLog(context).record(
                 profile,
                 if (windowName == "Session") SessionLog.SESSION else SessionLog.WEEKLY,
-                lastSeen, peak, peak >= 99.5,
+                entry.resetAt, entry.peakPct, entry.hitLimit,
             )
-            // Smart mode only pings when the finished window had actually been
-            // running hot — a reset nobody was waiting for is just noise.
-            val mode = cache.resetPingMode(profile, windowName)
-            val wanted = mode == UsageCache.RESET_ALWAYS ||
-                (mode == UsageCache.RESET_SMART && peak >= UsageCache.SMART_RESET_MIN_PCT)
-            if (wanted) {
-                notify(
-                    context, cache, profile,
-                    notifId(
-                        profile,
-                        if (windowName == "Session") RESET_SESSION_KIND else RESET_WEEKLY_KIND,
-                    ),
-                    // Tight-surface wording: "5h" / "Weekly", never "5-hour window".
-                    "$windowLabel reset",
-                    "Usage is back at ${pct.toInt()}%. Next reset ${Fmt.relIn(window.resetsAt)}.",
-                    timeoutMs = resetTimeout(window.resetsAt),
-                )
-            }
-            cache.setWindowPeak(profile, windowName, pct)
-        } else {
-            cache.setWindowPeak(profile, windowName, maxOf(cache.windowPeak(profile, windowName), pct))
         }
-        cache.setLastSeenWindowKey(profile, windowName, key)
+        outcome.ping?.let { ping ->
+            notify(
+                context, cache, profile,
+                notifId(
+                    profile,
+                    if (windowName == "Session") RESET_SESSION_KIND else RESET_WEEKLY_KIND,
+                ),
+                ping.title,
+                ping.body,
+                timeoutMs = resetTimeout(window?.resetsAt),
+            )
+        }
+        cache.setWindowPeak(profile, windowName, outcome.storePeak)
+        cache.setLastSeenWindowKey(profile, windowName, outcome.storeWindowKey)
     }
 
     /**

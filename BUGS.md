@@ -11,31 +11,6 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
-### CCBG-25 · Idle Reset Silence — a reset ping never fires while the account is idle across the reset
-- **Status:** Open (2026-09-10)
-- **Severity:** Medium (the reset ping is the one standalone notification left after CCRM-61
-  (Settings Diet), and its headline case — you hit the limit, stop, and wait for the window to
-  come back — is exactly the case that stays silent)
-- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass
-  (RUNBOOK.md Step 5). Pro's 5h reset ping was set to **Always** at 08:20; its 5-hour window
-  reset at 10:00; polls ran every 15 minutes on mobile data through 11:30. No notification was
-  posted on `reset_alerts` (`dumpsys notification` lists only the pinned one; the channel exists
-  and is enabled). At 11:31 the Pro card read `0% used · Starts when a message is sent`.
-- **Cause:** `Alerts.checkReset` opens with `val key = window?.resetsAt?.toEpochMilli() ?: return`.
-  After a 5-hour window expires with no new message, the Claude usage payload reports **no active
-  session window**, so `resetsAt` is null and the function returns before the rollover test
-  (`lastSeen != 0 && !sameWindow(lastSeen, key)`). The rollover is only noticed on the first poll
-  of the *next* window — i.e. after the user has already sent a message — and the ping then says
-  "Usage is back at 3%", late and pointless. There is no alarm-based scheduler; the ping rides on
-  the poll. Pre-dates this arc (the guard is from the CCBG-4 (Alert Dedup) era) but was masked
-  while threshold and pace alerts existed.
-- **Where:** `alerts/Alerts.kt`, `checkReset` (≈ line 115); `UsageCache.lastSeenWindowKey`.
-- **Fix:** when `window` is null (or has no `resetsAt`) but `lastSeen != 0` and `lastSeen` is in
-  the past, treat it as the rollover: record the `SessionLog` entry with the stored peak, fire the
-  ping under the same Always / If busy rule with "Usage is back at 0%", and clear `lastSeen` so it
-  fires once. Pure logic plus a unit test; no wireframe needed. Weekly windows are unaffected
-  (they always carry a `resetsAt`).
-
 ### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
 - **Status:** Open (2026-09-10)
 - **Severity:** Low (the mark and the accent still identify the provider; the label only has to
@@ -56,25 +31,6 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   whatever is left, instead of a two-step table; or drop the figure to 28 sp for three
   characters. Either is a visible change to an approved layout, so the fix goes through the
   Duet wireframe first.
-
-### CCBG-23 · Mark Size Mismatch — the Claude mark renders larger than the ChatGPT mark
-- **Status:** Open (2026-09-10) — **attack after the v1.6 release**, per Robin
-- **Severity:** Low (cosmetic, but it is on every surface: top bar, tab strip, Settings chips,
-  notification halves and headers)
-- **Symptom:** **Noticed by Robin on the Fold 7, 2026-09-10**, during the Step 5 device pass,
-  first on the pinned notification and then everywhere the two `ProviderMark`s sit side by side:
-  the Claude sunburst reads visibly bigger than the OpenAI blossom at the same nominal size.
-  `uiautomator` confirms both marks occupy identical 53 px boxes (20 dp) in the top bar, so the
-  difference is inside the vectors, not the layout.
-- **Cause:** `ic_provider_claude.xml` fills its viewport to the edge while
-  `ic_provider_chatgpt.xml` carries internal padding (the blossom's bounding box is smaller than
-  its viewport), so at equal box sizes the Claude glyph has more ink. Pre-dates this arc; CCRM-56
-  (Provider Identity) introduced both vectors.
-- **Where:** `res/drawable/ic_provider_claude.xml`, `res/drawable/ic_provider_chatgpt.xml`,
-  `ui/ProviderMark.kt`; the notification's `notif_duet*.xml` use the same drawables.
-- **Fix options:** optically balance the two vectors (scale the blossom up ~10–12 % inside its
-  viewport, or inset the sunburst), checked at 14, 16 and 20 dp; the launcher icon is unaffected
-  because it uses its own half-mark geometry.
 
 ### CCBG-22 · Credits Rows For All — "Usage credits" lists a toggle for every account, not only those with credits
 - **Status:** Open (2026-09-10)
@@ -116,68 +72,6 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** require strictly above pace, or above pace by ≥ 1 point, or a non-zero observed
   value, before drawing the wash. Pure logic; restores the approved design, so no wireframe.
 
-### CCBG-19 · Fixture Unreachable — the debug faces activity cannot coexist with the install it must be compared against
-- **Status:** Won't fix (2026-09-09) — superseded: CCRM-61 (Settings Diet) deleted the debug faces harness with the widgets.
-- **Severity:** Medium (no wrong number ships, but it guarantees a class of visual state
-  is never observed — the exact failure CCRM-15 (Above-Pace Verification) exists to remember)
-- **Symptom:** **Found during the CCRM-56 (Provider Identity) device pass, 2026-09-06.**
-  CCRM-56's own device-pass bullet asks for "a Claude account with the 7-day card hidden
-  (simulate with a fixture in the debug faces activity)", and CCRM-54 (ChatGPT Account) asks
-  for "a Ring widget on the absent window". Both are reachable only through
-  `DebugFacesActivity`. RUNBOOK.md Step 5 mandates the opposite build: release-signed,
-  installed **over the live install**. The two cannot both be satisfied on one phone, so
-  both states went unobserved.
-- **Cause:** `DebugFacesActivity` lives in the `debug` source set
-  (`app/src/debug/java/com/robin/claudeusage/debug/DebugFacesActivity.kt`) and
-  `app/build.gradle.kts` declares **no `applicationIdSuffix`** for the debug build type —
-  its `buildTypes` block configures `release` only. Debug and release therefore share
-  `applicationId com.robin.claudeusage` while being signed by different keys, so installing
-  one uninstalls the other. On this device that would destroy four live accounts, their
-  tokens, a year of history, the placed tiles and the widget bindings.
-- **Second half:** the absent-window states are not reachable from live data either. The
-  sentence only renders when a payload arrived and omitted that window
-  (`absentWindowMessage`, `WidgetFace.kt:166`), and all four accounts on the device — the
-  three Claude ones and ChatGPT `p5` — report both windows. The fixture is the only path.
-- **Where:** `app/build.gradle.kts` `buildTypes` (no debug suffix);
-  `app/src/debug/AndroidManifest.xml`; the device-pass bullets of CCRM-56 (Provider
-  Identity) and CCRM-54 (ChatGPT Account).
-- **Fix options, undecided:** add `debug { applicationIdSuffix = ".debug" }` so the harness
-  installs alongside the real app (widget/tile component names shift for debug only; the
-  release `applicationId` is untouched, so CLAUDE.md's package rule is not engaged) — or
-  move the faces harness behind a hidden gesture in the release build, or accept a
-  second device. Until one lands, every widget face state that needs a fixture is
-  permanently unobservable on the phone the app actually runs on.
-
-### CCBG-20 · Pinned Identity Loss — the Progress-bar style names no account when collapsed
-- **Status:** Fixed by removal (2026-09-09) — CCRM-61 (Settings Diet) deleted the Progress-bar style; Huge number is the only style.
-- **Severity:** Medium (the collapsed row is the always-visible one, and with four accounts
-  across two providers it does not say which account it is reporting)
-- **Symptom:** **Observed on the Fold 7, 2026-09-06**, during the CCRM-56 (Provider Identity)
-  device pass, with the pinned notification pointed at the ChatGPT account. Under the
-  **Progress bar** style the collapsed row reads only `9% · resets in 6m` — neither the
-  account label nor the window name appears. The other three styles all lead with
-  `ChatGPT · 5-hour window`. Expanding the notification recovers the identity, so the loss is
-  collapsed-only.
-- **Cause:** in `PinnedNotification`, `title` is `"$pctShort · $resetShort"` for this style
-  alone, because `setProgress()` occupies a row and the shade drops the content-text line
-  when collapsed — so the title is made to carry the number *and* the reset. The identity is
-  then put on `baseText` (`"$label · $headlineName"`), which is exactly the line the same
-  comment acknowledges the shade drops. The identity therefore has no collapsed slot at all.
-  A second path makes it worse: `collapsedText` gives its one line to the highest-priority
-  strip when one exists and only falls back to `baseText` otherwise, so even where the line
-  does survive, any live alert displaces the identity.
-- **Why it did not show before:** with a single Claude account `9% · resets in 6m` was
-  unambiguous. It became a defect when accounts multiplied (CCRM-6 (Multi-Account)) and again
-  when providers did (CCRM-53 (Provider Model)). Pre-dates this arc; the provider-mark
-  question in CCRM-54 (ChatGPT Account) surfaced it.
-- **Where:** `notify/PinnedNotification.kt` — the `title` / `baseText` / `collapsedText` block
-  (the `progress` branch), and the `"progress"` arm of the style `when`.
-- **Fix options, undecided:** shorten the title to `"$label · $pctShort"` and let the reset go
-  to the dropped line (the reset is also in the expanded panel); or give this style a custom
-  RemoteViews row like `big` has, which would also give it the provider mark and close the
-  build note in CCRM-54's status at the same time. Either is a visible change and needs a
-  wireframe per working agreement 2.
-
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
 - **Status:** Open
 - **Severity:** Low (one theme, and the orange/red rungs still land)
@@ -214,6 +108,150 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ---
 
 ## Fixed
+
+### CCBG-20 · Pinned Identity Loss — the Progress-bar style names no account when collapsed
+- **Status:** Fixed by removal (2026-09-09) — CCRM-61 (Settings Diet) deleted the Progress-bar style; Huge number is the only style.
+- **Severity:** Medium (the collapsed row is the always-visible one, and with four accounts
+  across two providers it does not say which account it is reporting)
+- **Symptom:** **Observed on the Fold 7, 2026-09-06**, during the CCRM-56 (Provider Identity)
+  device pass, with the pinned notification pointed at the ChatGPT account. Under the
+  **Progress bar** style the collapsed row reads only `9% · resets in 6m` — neither the
+  account label nor the window name appears. The other three styles all lead with
+  `ChatGPT · 5-hour window`. Expanding the notification recovers the identity, so the loss is
+  collapsed-only.
+- **Cause:** in `PinnedNotification`, `title` is `"$pctShort · $resetShort"` for this style
+  alone, because `setProgress()` occupies a row and the shade drops the content-text line
+  when collapsed — so the title is made to carry the number *and* the reset. The identity is
+  then put on `baseText` (`"$label · $headlineName"`), which is exactly the line the same
+  comment acknowledges the shade drops. The identity therefore has no collapsed slot at all.
+  A second path makes it worse: `collapsedText` gives its one line to the highest-priority
+  strip when one exists and only falls back to `baseText` otherwise, so even where the line
+  does survive, any live alert displaces the identity.
+- **Why it did not show before:** with a single Claude account `9% · resets in 6m` was
+  unambiguous. It became a defect when accounts multiplied (CCRM-6 (Multi-Account)) and again
+  when providers did (CCRM-53 (Provider Model)). Pre-dates this arc; the provider-mark
+  question in CCRM-54 (ChatGPT Account) surfaced it.
+- **Where:** `notify/PinnedNotification.kt` — the `title` / `baseText` / `collapsedText` block
+  (the `progress` branch), and the `"progress"` arm of the style `when`.
+- **Fix options, undecided:** shorten the title to `"$label · $pctShort"` and let the reset go
+  to the dropped line (the reset is also in the expanded panel); or give this style a custom
+  RemoteViews row like `big` has, which would also give it the provider mark and close the
+  build note in CCRM-54's status at the same time. Either is a visible change and needs a
+  wireframe per working agreement 2.
+
+### CCBG-19 · Fixture Unreachable — the debug faces activity cannot coexist with the install it must be compared against
+- **Status:** Won't fix (2026-09-09) — superseded: CCRM-61 (Settings Diet) deleted the debug faces harness with the widgets.
+- **Severity:** Medium (no wrong number ships, but it guarantees a class of visual state
+  is never observed — the exact failure CCRM-15 (Above-Pace Verification) exists to remember)
+- **Symptom:** **Found during the CCRM-56 (Provider Identity) device pass, 2026-09-06.**
+  CCRM-56's own device-pass bullet asks for "a Claude account with the 7-day card hidden
+  (simulate with a fixture in the debug faces activity)", and CCRM-54 (ChatGPT Account) asks
+  for "a Ring widget on the absent window". Both are reachable only through
+  `DebugFacesActivity`. RUNBOOK.md Step 5 mandates the opposite build: release-signed,
+  installed **over the live install**. The two cannot both be satisfied on one phone, so
+  both states went unobserved.
+- **Cause:** `DebugFacesActivity` lives in the `debug` source set
+  (`app/src/debug/java/com/robin/claudeusage/debug/DebugFacesActivity.kt`) and
+  `app/build.gradle.kts` declares **no `applicationIdSuffix`** for the debug build type —
+  its `buildTypes` block configures `release` only. Debug and release therefore share
+  `applicationId com.robin.claudeusage` while being signed by different keys, so installing
+  one uninstalls the other. On this device that would destroy four live accounts, their
+  tokens, a year of history, the placed tiles and the widget bindings.
+- **Second half:** the absent-window states are not reachable from live data either. The
+  sentence only renders when a payload arrived and omitted that window
+  (`absentWindowMessage`, `WidgetFace.kt:166`), and all four accounts on the device — the
+  three Claude ones and ChatGPT `p5` — report both windows. The fixture is the only path.
+- **Where:** `app/build.gradle.kts` `buildTypes` (no debug suffix);
+  `app/src/debug/AndroidManifest.xml`; the device-pass bullets of CCRM-56 (Provider
+  Identity) and CCRM-54 (ChatGPT Account).
+- **Fix options, undecided:** add `debug { applicationIdSuffix = ".debug" }` so the harness
+  installs alongside the real app (widget/tile component names shift for debug only; the
+  release `applicationId` is untouched, so CLAUDE.md's package rule is not engaged) — or
+  move the faces harness behind a hidden gesture in the release build, or accept a
+  second device. Until one lands, every widget face state that needs a fixture is
+  permanently unobservable on the phone the app actually runs on.
+
+### CCBG-23 · Mark Size Mismatch — the Claude mark renders larger than the ChatGPT mark
+- **Status:** Fixed (2026-09-10) — scaled the ChatGPT blossom 1.35x about its own centre inside
+  the shared 24x24 viewport so its ink extent optically matches the Claude sunburst's.
+- **Severity:** Low (cosmetic, but it is on every surface: top bar, tab strip, Settings chips,
+  notification halves and headers)
+- **Symptom:** **Noticed by Robin on the Fold 7, 2026-09-10**, during the Step 5 device pass,
+  first on the pinned notification and then everywhere the two `ProviderMark`s sit side by side:
+  the Claude sunburst reads visibly bigger than the OpenAI blossom at the same nominal size.
+  `uiautomator` confirms both marks occupy identical 53 px boxes (20 dp) in the top bar, so the
+  difference is inside the vectors, not the layout.
+- **Cause:** `ic_provider_claude.xml` fills its viewport to the edge while
+  `ic_provider_chatgpt.xml` carries internal padding (the blossom's bounding box is smaller than
+  its viewport), so at equal box sizes the Claude glyph has more ink. Pre-dates this arc; CCRM-56
+  (Provider Identity) introduced both vectors.
+- **Measured:** rasterised both vectors (Chrome headless, 1000 px per 24-unit viewport) and took
+  the ink bounding box. The sunburst's spikes touch all four edges — 100% x 100% of the
+  viewport. The blossom's ink filled only 69.4% x 68.8%.
+- **Fixed by** scaling only `ic_provider_chatgpt.xml`: added `android:scaleX`/`scaleY="1.35"`
+  with `android:pivotX="10.005"` `android:pivotY="10.0"` (the original artwork's own centre) to
+  the vector's existing `<group>`, leaving `translateX`/`translateY` and the path data verbatim.
+  1.35x lands the blossom's ink at 93.8% x 92.8% of its viewport — inside a deliberately-chosen
+  92-95% target band rather than 100%, because a solid blossom reads *larger* than a spiky
+  sunburst at an equal bounding box (the spikes are mostly negative space), so equal optical
+  weight needs a slightly smaller box than the sunburst's. The vector's `android:width`/`height`
+  and `viewportWidth`/`viewportHeight` are unchanged, so intrinsic size — and every consumer that
+  sizes off it — is unaffected.
+- **Checked:** `ui/ProviderMark.kt` (Compose `Image` with an explicit `Modifier.size`),
+  `notify/PinnedNotification.kt` (`RemoteViews.setImageViewResource` into a fixed 14dp `ImageView`
+  in `notif_duet.xml`/`notif_duet_expanded.xml`/`notif_big_number.xml`/`notif_big_number_expanded.xml`)
+  — both size the drawable to a fixed box regardless of intrinsic size, so nothing else needed to
+  change. `ui/UsageIcon.kt` does not reference either provider mark. `ic_provider_gemini.xml` (the
+  Gemini spark) fills 99.8% x 99.9% of its viewport already — left alone, per the fix options.
+  The launcher icon vectors (`ic_launcher_*`) were not touched; they have their own geometry.
+- **Where:** `res/drawable/ic_provider_chatgpt.xml` (only file changed);
+  comparison render at `design/research/2026-09-10-device-pass/mark-balance-before-after.png`.
+
+### CCBG-25 · Idle Reset Silence — a reset ping never fires while the account is idle across the reset
+- **Status:** Fixed (2026-09-10) — an idle poll with no window now rolls the window over on
+  the stored key, pings once, and clears it · unit-tested (`ResetRolloverTest`, 11 cases; 308
+  green) · **not yet verified on a device** — confirming it means letting a 5h window expire
+  unused on the Fold 7 with the ping set to Always and watching `reset_alerts` fire.
+- **Severity:** Medium (the reset ping is the one standalone notification left after CCRM-61
+  (Settings Diet), and its headline case — you hit the limit, stop, and wait for the window to
+  come back — is exactly the case that stays silent)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass
+  (RUNBOOK.md Step 5). Pro's 5h reset ping was set to **Always** at 08:20; its 5-hour window
+  reset at 10:00; polls ran every 15 minutes on mobile data through 11:30. No notification was
+  posted on `reset_alerts` (`dumpsys notification` lists only the pinned one; the channel exists
+  and is enabled). At 11:31 the Pro card read `0% used · Starts when a message is sent`.
+- **Cause:** `Alerts.checkReset` opens with `val key = window?.resetsAt?.toEpochMilli() ?: return`.
+  After a 5-hour window expires with no new message, the Claude usage payload reports **no active
+  session window**, so `resetsAt` is null and the function returns before the rollover test
+  (`lastSeen != 0 && !sameWindow(lastSeen, key)`). The rollover is only noticed on the first poll
+  of the *next* window — i.e. after the user has already sent a message — and the ping then says
+  "Usage is back at 3%", late and pointless. There is no alarm-based scheduler; the ping rides on
+  the poll. Pre-dates this arc (the guard is from the CCBG-4 (Alert Dedup) era) but was masked
+  while threshold and pace alerts existed.
+- **Fixed by** the plan the entry already named, with the decision lifted out of Android so it
+  can be tested: `ResetRollover.decide(...)` is a pure function — the pattern `notify/Duet.kt`
+  already uses — and `Alerts.checkReset` is now only the plumbing that reads the prefs, writes
+  back what the decision returns, and posts.
+  - The **idle arm**: `windowKey == null` with a stored `lastSeenKey` whose instant has passed
+    is the rollover. It records the closed window to `SessionLog` with the stored peak exactly
+    as the live arm does, pings under the same Always / If busy rule, and then **clears** the
+    stored key and peak — so it fires once and the next real window starts clean.
+  - The idle ping's body is **"Usage is back at 0%."** with **no "Next reset …" clause**: with
+    no window there is no instant to name (the next one starts when a message is sent), and a
+    guess would be a lie. The title keeps the tight-surface `"5h reset"` / `"Weekly reset"`.
+  - **Silent cases kept silent:** a fresh install (`lastSeenKey == 0`) and a stored key still in
+    the future — a payload that drops the window transiently before the reset — return no ping,
+    no log, and write nothing back, so neither the key nor the peak is disturbed.
+  - The **live-window arm is unchanged** byte for byte, including the CCBG-4 (Alert Dedup)
+    proximity test, the peak accumulation, and the "Next reset …" clause. Weekly is unaffected
+    in practice — it always carries a `resets_at` — but it goes through the same code and has
+    its own test.
+  - `evaluate` already passed a null window straight through, and `resetTimeout(null)` already
+    fell back to its 60-minute floor, so neither needed changing.
+- **Where:** [ResetRollover.kt](app/src/main/java/com/robin/claudeusage/alerts/ResetRollover.kt)
+  (new — the whole decision),
+  [Alerts.kt](app/src/main/java/com/robin/claudeusage/alerts/Alerts.kt) (`checkReset`, now thin),
+  [ResetRolloverTest.kt](app/src/test/java/com/robin/claudeusage/alerts/ResetRolloverTest.kt).
 
 ### CCBG-16 · Stale Strip Label — a folded event keeps the account name it fired under
 - **2026-09-09:** Moot — the fold machinery this fixed is removed by CCRM-61 (Settings Diet); the fix was never device-verified.
