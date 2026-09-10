@@ -840,7 +840,12 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   working agreement 2 still names "both widget providers" and the tile.
 
 ### CCRM-62 · Duet Notification — the always-on notification carries two accounts
-- **Status:** Design approved 2026-09-09 · medium · RUNBOOK.md Step 3 · Huge number style
+- **Status:** Built 2026-09-10 (RUNBOOK.md Step 3), seen on the Fold 7 — collapsed Duet, expanded
+  two-header view with compact "· Weekly" rows, ring following First / Second / higher; Robin
+  approved the shade and asked for one change, taken the same day: at 100% the ring is smooth
+  and carries an × in the hollow instead of the 12 o'clock post (`design/spent-ring-wireframe.html`,
+  option A; the cross itself is not yet seen live, no window was full). Device shots in
+  `design/research/2026-09-09-duet-device/` · medium · Huge number style
   only (CCRM-61 (Settings Diet) removes the rest) · replaces CCRM-5 (Per-Profile Notification);
   supersedes CCRM-50 (Weekly Flag) and CCRM-49 (Glyph Legibility)'s chooser.
 - **Collapsed (option 1, "Duet"):** one row, two halves of ~156–172 dp with a 16 dp gutter.

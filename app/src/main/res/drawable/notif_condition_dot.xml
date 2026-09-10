@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The 6 dp condition dot on a Duet half's label line (CCRM-62 (Duet Notification)).
+
+    Drawn solid white so the only thing that colours it is the ImageView's colour
+    filter, which is what RemoteViews can actually set at runtime
+    (setInt(id, "setColorFilter", argb) — SRC_ATOP over opaque pixels). A tinted
+    drawable per hue would need three drawables and a res id per condition kind.
+
+    The dot is a pointer, not a message: it says "there is a strip for this account
+    in the expanded panel", in about 6 dp.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+</shape>

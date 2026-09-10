@@ -70,61 +70,6 @@ class RingGeometryTest {
         assertEquals(360f, RingGeometry.fillSweep(120.0), 0f) // over-100 payloads clamp
     }
 
-    // --- CCRM-51 (Rails Gauge): the dot's four rungs, revising CCRM-50 (Weekly Flag) ---
-
-    @Test
-    fun `weekly flag splits WITHIN from ABOVE on the pace sentence's own gate`() {
-        // The gate must be PACE_DEAD_ZONE itself, not a copy that can drift — the dot
-        // goes yellow at the exact poll the sentence flips to "above".
-        assertEquals(
-            RingGeometry.WeeklyFlag.WITHIN,
-            RingGeometry.weeklyFlag(50.0 + PACE_DEAD_ZONE, 50.0),
-        )
-        assertEquals(
-            RingGeometry.WeeklyFlag.ABOVE,
-            RingGeometry.weeklyFlag(50.0 + PACE_DEAD_ZONE + 0.01, 50.0),
-        )
-    }
-
-    @Test
-    fun `WITHIN covers below pace as well as on it`() {
-        // CCRM-51 widened the quiet rung. CCRM-50 drew *nothing* below pace, which made
-        // "no dot" mean either "healthy" or "no reading"; the EMPTY rung needs that
-        // ambiguity gone, so the quiet rung now says "nothing to flag" for both.
-        assertEquals(RingGeometry.WeeklyFlag.WITHIN, RingGeometry.weeklyFlag(30.0, 60.0))
-        assertEquals(RingGeometry.WeeklyFlag.WITHIN, RingGeometry.weeklyFlag(1.0, 99.0))
-        assertEquals(RingGeometry.WeeklyFlag.WITHIN, RingGeometry.weeklyFlag(55.0, 57.0))
-        assertEquals(
-            RingGeometry.WeeklyFlag.WITHIN,
-            RingGeometry.weeklyFlag(50.0 - PACE_DEAD_ZONE - 0.01, 50.0),
-        )
-    }
-
-    @Test
-    fun `EMPTY and SPENT key on the truncated level and need no clock`() {
-        // Both ends of the ladder are absolute, so neither waits on a reset clock.
-        assertEquals(RingGeometry.WeeklyFlag.EMPTY, RingGeometry.weeklyFlag(0.0, 30.0))
-        assertEquals(RingGeometry.WeeklyFlag.EMPTY, RingGeometry.weeklyFlag(0.0, null))
-        // 99.7 truncates to 99 — not spent, and against a pace it is merely above.
-        assertEquals(RingGeometry.WeeklyFlag.ABOVE, RingGeometry.weeklyFlag(99.7, 80.0))
-        assertEquals(RingGeometry.WeeklyFlag.SPENT, RingGeometry.weeklyFlag(100.0, 80.0))
-        // Spent even when elapsed says the window is nearly over…
-        assertEquals(RingGeometry.WeeklyFlag.SPENT, RingGeometry.weeklyFlag(100.0, 99.0))
-        // …and even with no reset clock at all.
-        assertEquals(RingGeometry.WeeklyFlag.SPENT, RingGeometry.weeklyFlag(100.0, null))
-    }
-
-    @Test
-    fun `the only no-dot case is no weekly reading`() {
-        // "No dot" now means exactly one thing, which is what lets EMPTY mean the other.
-        assertNull(RingGeometry.weeklyFlag(null, 50.0))
-        assertNull(RingGeometry.weeklyFlag(null, null))
-        // Usage with no clock used to draw nothing — which under this ladder would have
-        // falsely claimed "no reading". It rests on the quiet rung instead: there IS
-        // usage, so not EMPTY; pace cannot be judged, so never ABOVE.
-        assertEquals(RingGeometry.WeeklyFlag.WITHIN, RingGeometry.weeklyFlag(62.0, null))
-    }
-
     @Test
     fun `no usage means no pace mark, exactly as no clock does`() {
         // CCRM-51's honesty rule, and the reason the two states render byte-identically:

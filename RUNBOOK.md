@@ -61,7 +61,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 |---|---|---|---|---|
 | 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☑ |
 | 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☑ |
-| 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☐ |
+| 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☑ |
 | 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☐ |
 | 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☐ |
 | 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☐ |
@@ -247,13 +247,29 @@ the Handover rule and print Step 4.
 ```
 
 **Done when:**
-- ☐ Collapsed content ≤ 56 dp with two accounts; expanded within the 256 dp cap with two
+- ☑ Collapsed content ≤ 56 dp with two accounts; expanded within the 256 dp cap with two
   weekly rows and one strip.
-- ☐ One account or Second = None renders today's layout unchanged.
-- ☐ Ring has no dot; colour follows the shown account; picker works including auto.
-- ☐ Robin saw the shade on the phone. Tests green, Status updated, ticked, committed, pushed.
+- ☑ One account or Second = None renders today's layout unchanged.
+- ☑ Ring has no dot; colour follows the shown account; picker works including auto.
+- ☑ Robin saw the shade on the phone. Tests green, Status updated, ticked, committed, pushed.
 
 **Log:**
+- 2026-09-10 — Built by one Opus agent 2026-09-09 evening, reviewed by the orchestrator, seen by Robin
+  on the Fold 7 the same night (release-signed build over the live v1.4 install, Second = ChatGPT
+  set by adb through the Alerts tab). `notify/Duet.kt` holds the pure rules (label clamp 72/56 dp,
+  strip cap 3/2, ring account), 7 tests; `PinnedNotification` split into single / duet paths over
+  one builder — the single layout is unchanged, including its "5-hour window" wording, per the
+  wireframe's state 2. Two new layouts `notif_duet*.xml`, a 6 dp condition-dot drawable;
+  `Conditions.panelFor(…, second)` prefixes every strip and caps at 2 in Duet mode; the ring lost
+  `drawFlag`/`weeklyFlag` and their tests (294 tests). Findings from the device: everything as
+  drawn; the compact panel row measures ≈45 dp not the table's 30 (the 13.5 sp line needs 16 dp
+  and the tick overhangs), still inside the budget with two Weekly rows; collapsed bars are
+  drawn at 156 dp nominal so the tick keeps its shape; tap request codes are per half
+  (`NOTIF_ID+10/20+slot`). Robin's one change, decided on `design/spent-ring-wireframe.html`
+  the next morning: at 100% the ring is smooth and carries an × in the hollow; the 12 o'clock
+  post and `POST_*` are gone. Installed, but no window was at 100% by then — Step 5 must catch
+  the cross live. Also noticed: the ring at 0% is the hairline alone (the existing no-usage
+  rule), so a Second account that has not started shows no identity colour yet; accepted.
 
 ---
 
@@ -311,7 +327,8 @@ before disconnecting; screencap needs -d, and the inner screen captures black wh
 and walk every state with me one at a time, capturing a screenshot for each. Also confirm on
 device: placed widgets and the Quick Settings tile are gone; the six old notification channels
 no longer appear in system settings; a reset ping fires for an account with "Always" on its 5h
-reset; the status ring switches account and colour under "Whichever is higher"; Settings tabs
+reset; the status ring switches account and colour under "Whichever is higher"; the ring at 100%
+shows the smooth red ring with the × (design/spent-ring-wireframe.html); Settings tabs
 swipe on both screens. Record each outcome as a table row at the foot of the wireframe it
 belongs to, file defects as new CCBG items in BUGS.md with the next free number, update the
 three items' Status lines. Close per the Close-out rule (commit as docs(CCRM-60/61/62): device

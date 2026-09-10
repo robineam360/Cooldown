@@ -44,7 +44,10 @@ object Conditions {
         val error: Boolean,
     )
 
-    /** The expanded panel renders at most this many strips; the rest fold to one line. */
+    /**
+     * The expanded panel renders at most this many strips; the rest fold to one line.
+     * The Duet's own cap is lower — see [Duet.maxStrips].
+     */
     const val MAX_STRIPS = 3
 
     /**
@@ -53,44 +56,90 @@ object Conditions {
      * so nothing can outlive the condition it describes (CCRM-61 (Settings Diet) removed
      * the folded-event store that could).
      *
-     * @param strips at most [MAX_STRIPS], ordered faults (re-auth, stale) · warnings
-     *   (expiry) · update last — the update strip is the least urgent, so it is the
-     *   first into the overflow.
+     * @param strips at most [MAX_STRIPS] (or [Duet.maxStrips] with a Second account),
+     *   ordered faults (re-auth, stale) · warnings (expiry) · update last — the update
+     *   strip is the least urgent, so it is the first into the overflow.
      * @param overflow how many strips did not fit; drawn as a "+ n more" line.
      * @param stale whether the stale fault is among the strips — it alone also dims
      *   the big-number figure, doubt belonging on the number itself.
      */
     data class Panel(val strips: List<Condition>, val overflow: Int, val stale: Boolean)
 
-    fun panelFor(context: Context, cache: UsageCache, profile: Profile): Panel {
-        // The panel carries the other profiles too (revised 2026-08-18): their strips are
-        // prefixed with their names, since the header only names the shown profile.
+    /**
+     * @param second CCRM-62 (Duet Notification): the Second account when the notification
+     *   is carrying two, else null for today's single layout. It is the one switch for
+     *   Duet mode, and both differences fall out of it rather than out of two flags that
+     *   could be set inconsistently: **every** strip gains its account prefix (with two
+     *   accounts in the header a bare "Sign-in stopped working" no longer says whose), and
+     *   the cap drops to [Duet.maxStrips]`(true)` because two header blocks leave the
+     *   panel about 120 dp and three strips cost 132.
+     */
+    fun panelFor(
+        context: Context,
+        cache: UsageCache,
+        profile: Profile,
+        second: Profile? = null,
+    ): Panel {
+        // The panel carries the accounts the header does *not* show too (revised
+        // 2026-08-18): their strips are prefixed with their names, since a bare strip
+        // would otherwise read as the shown account's.
         //
         // CCRM-6 (Multi-Account) generalised this from exactly one "other" to every other
-        // registered account. Ordering is unchanged and deliberate: the *shown* profile's
-        // faults come first, so it can never be crowded out of its own panel, then the
-        // others in registry order. MAX_STRIPS stays 3 — the panel's height is finite
+        // registered account. Ordering is unchanged and deliberate: the *shown* profiles'
+        // faults come first — First, then Second, then everyone else in registry order —
+        // so a shown account can never be crowded out of its own panel. The cap is finite
         // however many accounts exist, and "+ n more" is the honest answer.
-        val others = cache.registry().all().filter { it != profile }
-        val staleCondition = stale(cache, profile)
-        val all = listOfNotNull(reauth(cache, profile), staleCondition) +
-            others.flatMap { other ->
-                val label = cache.profileLabel(other)
-                listOfNotNull(
-                    reauth(cache, other)?.labelled(label),
-                    stale(cache, other)?.labelled(label),
-                )
-            } + listOfNotNull(expiry(cache, profile)) +
-            others.mapNotNull { other ->
-                expiry(cache, other)?.labelled(cache.profileLabel(other))
-            } + listOfNotNull(update(context, cache))
+        val shown = listOfNotNull(profile, second)
+        val ordered = shown + cache.registry().all().filter { it !in shown }
+        // One evaluation per account per condition: these read the clock, so calling
+        // them twice could in principle disagree with itself across a poll boundary.
+        val faults = ordered.associateWith { reauth(cache, it) to stale(cache, it) }
+        // In Duet mode every strip is prefixed, including the shown accounts'.
+        fun Condition?.prefixed(owner: Profile): Condition? = when {
+            this == null -> null
+            second == null && owner == profile -> this
+            else -> labelled(cache.profileLabel(owner))
+        }
+        val all = ordered.flatMap { owner ->
+            val (reauth, stale) = faults.getValue(owner)
+            listOfNotNull(reauth.prefixed(owner), stale.prefixed(owner))
+        } + ordered.mapNotNull { owner ->
+            expiry(cache, owner).prefixed(owner)
+        } + listOfNotNull(update(context, cache))
+        val cap = Duet.maxStrips(hasSecond = second != null)
         return Panel(
-            strips = all.take(MAX_STRIPS),
-            overflow = (all.size - MAX_STRIPS).coerceAtLeast(0),
-            // Only the shown profile's staleness dims the shown number.
-            stale = staleCondition != null,
+            strips = all.take(cap),
+            overflow = (all.size - cap).coerceAtLeast(0),
+            // Only the shown profile's staleness dims the shown number. A Duet dims per
+            // half instead, from [isStale] — the whole notification going grey because
+            // one of two accounts is stale is what CCBG-12 (Status Icon Swap) was
+            // fighting, in reverse.
+            stale = faults.getValue(profile).second != null,
         )
     }
+
+    /**
+     * Whether [profile]'s reading is stale — the per-half dimming on a Duet collapsed row
+     * (CCRM-62 (Duet Notification)), where [Panel.stale] would dim both halves at once.
+     */
+    fun isStale(cache: UsageCache, profile: Profile): Boolean = stale(cache, profile) != null
+
+    /**
+     * Whether [profile] has a fault worth a condition dot on its Duet half: a sign-in that
+     * stopped working, or a stale reading. The dot is a pointer, not a message — it says
+     * "there is a strip for this account in the expanded panel" — so it deliberately keys
+     * on the red conditions only. The expiry warning is not one: it is a week of notice,
+     * and it does not belong in 6 dp on a row with no room to explain it.
+     */
+    fun hasFault(cache: UsageCache, profile: Profile): Boolean =
+        reauth(cache, profile) != null || stale(cache, profile) != null
+
+    /**
+     * Whether an update strip is showing. App-global, not per account, so on a Duet it
+     * marks the First half only — the dot has to hang somewhere, and First is the half
+     * that also owns the notification's content intent.
+     */
+    fun hasUpdate(context: Context, cache: UsageCache): Boolean = update(context, cache) != null
 
     private fun Condition.labelled(label: String): Condition =
         copy(short = "$label: $short", title = "$label: $title")

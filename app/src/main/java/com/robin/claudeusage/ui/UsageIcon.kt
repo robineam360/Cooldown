@@ -20,6 +20,11 @@ import kotlin.math.sin
  * measured against it, and a **clock-hand needle** at the pace position. The eye
  * reads "how much" and "how far ahead" as lengths rather than as a filled band.
  *
+ * It shows **one window — the 5h one — and nothing else** (CCRM-62 (Duet Notification)).
+ * Which account's 5h window is the "Status-bar ring shows" setting's answer, resolved by
+ * [com.robin.claudeusage.notify.Duet.ringAccount]; the *colour* is how the glyph says
+ * whose it is, so identity and severity share one hue and identity yields above 80%.
+ *
  * The status bar reproduces a bitmap's colours exactly, so [draw]'s `fillArgb`
  * carries the resolved severity colour straight through — pass
  * `Palette.barColor(...)` so the glyph and the notification's own number can
@@ -45,21 +50,18 @@ object UsageIcon {
     private const val BAND_W = 4f            // band / usage-arc stroke
     private const val RIM = 11.2f            // the needle's outer edge
     private const val HAIR_W = 1.493f        // 1/15 of Ø
-    private const val POST_W = 1.493f
-    private const val POST_IN = 6.72f        // BAND_R - BAND_W/2 - 0.12*BAND_W
-    private const val POST_OUT = 11.68f
+    private const val CROSS_ARM = 4.2f       // half-extent of the spent ×, inside the 7.2 hollow
+    private const val CROSS_W = 2.0f
     private const val NEEDLE_W = 1.792f      // Mac J2: 1.2 pt
     private const val NEEDLE_HALO = 4.48f    // Mac J2: 3 pt cleared
-    private const val HUB_R = 3.75f          // the weekly dot — the needle's pin
-    private const val HUB_FALLBACK_R = 1.344f // Mac J2's own hub, when there is no dot
-    private const val EMPTY_RING_R = 3.10f   // the "nothing used" rung, drawn open
-    private const val EMPTY_RING_W = 1.3f
+    // The one hub there is since CCRM-62 (Duet Notification) dropped the weekly dot;
+    // the name is Mac J2's, whose own hub this was, and which the dot used to displace.
+    private const val HUB_FALLBACK_R = 1.344f
 
     // ---- Alphas. Time is neutral; only usage carries colour. --------------------
     private const val HAIR_A = 0.50f         // lifted from the Mac's 35% for 37 px
-    private const val POST_A = 0.70f
+    private const val CROSS_A = 0.90f
     private const val NEEDLE_A = 0.85f       // Mac J2
-    private const val EMPTY_A = 0.65f
 
     /** Below this, a non-zero fill would vanish; 1% still has to read as "started". */
     private const val MIN_SWEEP = 0.09f
@@ -67,9 +69,18 @@ object UsageIcon {
     /**
      * [sessionElapsed] positions the needle. [fillArgb] is the resolved severity
      * colour — pass `Palette.barColor(...)` so the glyph and the notification's own
-     * number can never disagree. [weeklyPct]/[weeklyElapsed] drive the 7-day flag dot in
-     * the hub ([RingGeometry.weeklyFlag]). [showOverPace] is the surface's "show red
-     * past the pace mark" toggle; it gates the red slice only, never the needle.
+     * number can never disagree. Since CCRM-62 (Duet Notification) that colour is the
+     * *account's* identity too: below 80% it is the shown account's own accent, and only
+     * above it does the severity ladder take the hue back. [showOverPace] is the
+     * surface's "show red past the pace mark" toggle; it gates the red slice only, never
+     * the needle.
+     *
+     * There is no weekly reading on this glyph any more. The 7-day window used to ride
+     * in the needle's hub as a flag dot; CCRM-62 dropped it, because with two accounts
+     * the hue had to become the account identity and the hollow was the only interior
+     * room the ring had left (CCRM-49 (Glyph Legibility) measured a two-ring "Twin" at
+     * this size and could not read it). What that buys is legibility, not a second
+     * reading. CCRM-50 (Weekly Flag) was the dot and nothing else, so it goes with it.
      */
     fun draw(
         context: Context,
@@ -78,14 +89,12 @@ object UsageIcon {
         sessionElapsed: Double? = null,
         fillArgb: Int? = null,
         dark: Boolean = true,
-        weeklyPct: Double? = null,
-        weeklyElapsed: Double? = null,
         showOverPace: Boolean = true,
     ): Bitmap {
         val size = dp(context, 24f).toInt().coerceAtLeast(24)
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
-        railsGauge(c, size, pct, sessionElapsed, fillArgb, dark, weeklyPct, weeklyElapsed, showOverPace)
+        railsGauge(c, size, pct, sessionElapsed, fillArgb, dark, showOverPace)
         return bmp
     }
 
@@ -93,11 +102,9 @@ object UsageIcon {
      * The rails gauge — a ring band with a hairline track.
      *
      * Draw order matters and is the whole contract: **extent · usage · red slice ·
-     * hub · needle · spent post**. The needle goes near-last so it survives whatever
-     * it crosses, and the spent post goes *last* so that when the needle happens to
-     * land at 12 o'clock (a window burned almost instantly, or one about to reset)
-     * the "spent" cue still wins the overlap. At 100% used the pace verdict is moot
-     * anyway.
+     * hub · needle · spent cross**. The needle goes near-last so it survives whatever
+     * it crosses, and the spent cross goes *last*, in the hollow, where nothing else
+     * draws once the ring is closed. At 100% used the pace verdict is moot anyway.
      *
      * The honesty gates, all shared with every other pace surface:
      *  - no reading → the extent alone. **Never 0%.**
@@ -113,8 +120,6 @@ object UsageIcon {
         elapsed: Double?,
         fillArgb: Int?,
         dark: Boolean,
-        weeklyPct: Double?,
-        weeklyElapsed: Double?,
         showOverPace: Boolean,
     ) {
         val u = size / 24f
@@ -168,83 +173,52 @@ object UsageIcon {
             }
         }
 
-        // 4 · the hub. The 7-day window rides here as a state, not a level — a second
-        // level was measured unreadable at this size (CCRM-49), and the ring's hollow is
-        // empty space already paid for.
+        // 4 · the hub — Mac J2's own small pin, and since CCRM-62 (Duet Notification)
+        // that is all it ever is. It exists so the needle turns on something rather than
+        // floating, which is why it is drawn on exactly the needle's own condition: with
+        // no needle the ring is the extent alone, and "no reading", "no usage" and "no
+        // clock" all render byte-identically. A pin with nothing pinned to it would be
+        // the one mark that broke that.
         //
         // The needle draws only with a reading, a clock, AND usage actually started —
-        // the last gate is CCRM-51's honesty rule, and it is what makes "no usage" and
-        // "no clock" render byte-identically.
+        // the last gate is CCRM-51's honesty rule.
         val needleDraws = RingGeometry.showTick(pct, elapsed) && (pct ?: 0.0) > 0.0
-        val flag = RingGeometry.weeklyFlag(weeklyPct, weeklyElapsed)
-        if (flag != null) {
-            drawFlag(c, cx, u, flag, dark)
-        } else if (needleDraws) {
-            // No weekly reading, but the needle still draws — so it keeps Mac J2's own
-            // small hub and does not float.
+        if (needleDraws) {
             c.drawCircle(cx, cx, HUB_FALLBACK_R * u, Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = ink(dark, NEEDLE_A)
             })
         }
-        val hubEdge = if (flag != null) HUB_R else HUB_FALLBACK_R
 
-        // 5 · the needle: a clock hand pinned to whatever hub is there. The gauge starts
+        // 5 · the needle: a clock hand pinned to that hub. The gauge starts
         // at 12 o'clock and sweeps clockwise, so a hand *is* the window's clock — which
         // is why this replaced the Mac's radial band tick, at 7.6 px the weakest mark on
         // the glyph.
         if (needleDraws) {
             radialMark(
                 c, cx, u, RingGeometry.tickSweep(elapsed!!),
-                rIn = hubEdge, rOut = RIM,
+                rIn = HUB_FALLBACK_R, rOut = RIM,
                 // The halo starts clear of the hub: erasing there would bite a notch
                 // out of the very dot the needle turns on.
-                haloFrom = hubEdge + 0.7f, haloW = NEEDLE_HALO,
+                haloFrom = HUB_FALLBACK_R + 0.7f, haloW = NEEDLE_HALO,
                 lineW = NEEDLE_W, lineColor = ink(dark, NEEDLE_A), round = true,
             )
         }
 
-        // 6 · the spent post. The 12 o'clock post exists *only* at a truncated 100 —
-        // it is the "spent" marker and nothing else. Below 100 the gauge stays clean.
-        // A post is a cleared halo *with* an ink line inside it, so both the gap and
-        // the mark read clearly against any fill colour.
+        // 6 · the spent cross. At a truncated 100 the hollow carries an × in neutral
+        // ink and nothing else changes: the ring is already closed and red. Decided
+        // 2026-09-10 on the Fold 7 (design/spent-ring-wireframe.html, option A) —
+        // the old 12 o'clock post in a cleared notch could not be told from "nearly
+        // full" at 37 px, and it broke the ring's outline exactly when the ring was
+        // the whole message. Below 100 the gauge stays clean.
         if (pct != null && pct.toInt() >= 100) {
-            radialMark(
-                c, cx, u, 0f,
-                rIn = POST_IN, rOut = POST_OUT,
-                haloFrom = POST_IN, haloW = NEEDLE_HALO,
-                lineW = POST_W, lineColor = ink(dark, POST_A), round = false,
-            )
-        }
-    }
-
-    /**
-     * The 7-day rung, drawn. An escalation in one shape step then three colour steps:
-     * **empty → grey → yellow → red**.
-     *
-     * `EMPTY` is an *outlined* dot, and that is load-bearing rather than decorative. A
-     * filled black dot — the first proposal — fails: on a dark bar it reads as a hole
-     * punched in the glyph. "You have used nothing" would render as "your week is
-     * gone". An outline survives because it is a shape, not an alpha.
-     */
-    private fun drawFlag(
-        c: Canvas, cx: Float, u: Float, flag: RingGeometry.WeeklyFlag, dark: Boolean,
-    ) {
-        if (flag == RingGeometry.WeeklyFlag.EMPTY) {
-            c.drawCircle(cx, cx, EMPTY_RING_R * u, Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.STROKE; strokeWidth = EMPTY_RING_W * u
-                color = ink(dark, EMPTY_A)
-            })
-            return
-        }
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = when (flag) {
-                RingGeometry.WeeklyFlag.SPENT -> if (dark) OVER_DARK else OVER_LIGHT
-                RingGeometry.WeeklyFlag.ABOVE -> if (dark) 0xFFFDD663.toInt() else 0xFFF9A825.toInt()
-                // A step brighter than the hairline, so it reads as a mark not an artifact.
-                else -> if (dark) 0xFFBDBDBD.toInt() else 0xFF757575.toInt()
+            val arm = CROSS_ARM * u
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = ink(dark, CROSS_A); strokeWidth = CROSS_W * u
+                strokeCap = Paint.Cap.ROUND
             }
+            c.drawLine(cx - arm, cx - arm, cx + arm, cx + arm, paint)
+            c.drawLine(cx + arm, cx - arm, cx - arm, cx + arm, paint)
         }
-        c.drawCircle(cx, cx, HUB_R * u, paint)
     }
 
     /** The severity ladder's top rung, shared with `Palette.barColor` and the slice. */
@@ -253,7 +227,7 @@ object UsageIcon {
 
     /**
      * Neutral ink at [alpha]. **Time has no severity** — the hairline, the needle and
-     * the spent post are always the foreground colour at an alpha, never a ladder hue;
+     * the spent cross are always the foreground colour at an alpha, never a ladder hue;
      * only usage carries colour. Keyed to the *bar's* theme rather than the app's, per
      * CCBG-13 (Light Status Bar).
      */

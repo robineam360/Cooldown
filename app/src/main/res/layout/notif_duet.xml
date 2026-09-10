@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Collapsed row for the Duet — the always-on notification carrying two accounts
+    (CCRM-62 (Duet Notification), collapsed option 1 in
+    design/settings-diet-wireframe.html section 2). Only rendered when a Second
+    account is set; with Second = None the notification keeps notif_big_number.xml
+    byte for byte, 32 sp figure, full window name, reset line and all.
+
+    The height constraint is the whole design. A collapsed custom view gets roughly
+    48 to 64 dp depending on the skin, and today's single row already spends about
+    53 dp, so two of those do not fit at any width. What leaves is the reset line
+    and the window name; both reappear in the expanded view. Measured content
+    height here is about 40 dp: the 30 sp figure with includeFontPadding="false"
+    is the tallest thing in the row (~35 dp of Roboto ascent + descent) and the
+    left column's 19 + 3 + 8 dp comes in under it, plus 2 dp of padding a side.
+
+    Two halves of 156 dp at the Fold 7's cover width (360 dp card, 16 dp of system
+    padding a side, one 16 dp gutter). The gutter is a start margin on the second
+    half rather than a spacer View: LinearLayout takes margins out of the space it
+    shares by weight, so the halves stay equal, and RemoteViews inflates one view
+    fewer on every poll.
+
+    Text colours come from the platform's own notification appearances, never from
+    ?android:attr/textColorPrimary: that resolves against Theme.ClaudeUsage (light
+    in values/, dark in values-night/), not against the shade, which produced dark
+    text on a dark shade.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <!-- First. Each half is its own click target (CCRM-2 (Notification Tap Target),
+         now resolved per half against that account's own provider), which is the one
+         thing a custom RemoteViews layout can do and the other pinned styles could
+         not: a PendingIntent per view rather than one content intent for the row. -->
+    <LinearLayout
+        android:id="@+id/duet_half_first"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- CCRM-56 (Provider Identity): the mark rides the label line,
+                     tinted with the account's own resolved accent. -->
+                <ImageView
+                    android:id="@+id/duet_mark_first"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="4dp"
+                    android:importantForAccessibility="no" />
+
+                <!-- maxWidth is set at runtime (Duet.labelClampDp): 72 dp normally,
+                     56 dp when this half's figure is four characters wide. -->
+                <TextView
+                    android:id="@+id/duet_label_first"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <ImageView
+                    android:id="@+id/duet_dot_first"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="5dp"
+                    android:src="@drawable/notif_condition_dot"
+                    android:visibility="gone"
+                    android:importantForAccessibility="no" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/duet_bar_first"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="3dp"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no" />
+        </LinearLayout>
+
+        <!-- No "LEFT" caption here (CCRM-22 (Used or Left)): two of them in a 40 dp
+             row cost more height than the row has, so the caption appears in the
+             expanded headers only. -->
+        <TextView
+            android:id="@+id/duet_pct_first"
+            style="@android:style/TextAppearance.Material.Notification.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <!-- Second, with the 16 dp gutter as its start margin. -->
+    <LinearLayout
+        android:id="@+id/duet_half_second"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/duet_mark_second"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="4dp"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/duet_label_second"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <ImageView
+                    android:id="@+id/duet_dot_second"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="5dp"
+                    android:src="@drawable/notif_condition_dot"
+                    android:visibility="gone"
+                    android:importantForAccessibility="no" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/duet_bar_second"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="3dp"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/duet_pct_second"
+            style="@android:style/TextAppearance.Material.Notification.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false"
+            android:maxLines="1" />
+    </LinearLayout>
+</LinearLayout>
