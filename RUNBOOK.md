@@ -63,7 +63,7 @@ out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
 | 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☑ |
 | 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☑ |
 | 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☑ |
-| 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☐ |
+| 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☑ |
 | 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☐ |
 
 Order matters: 2 needs 1 (the sections it rebuilds are gone), 3 needs 1 (styles and glyphs
@@ -348,10 +348,28 @@ pass), then follow the Handover rule and print Step 6.
 ```
 
 **Done when:**
-- ☐ Every state marked seen or "not seen, because …". Nothing severe open.
-- ☐ Ticked, committed, pushed.
+- ☑ Every state marked seen or "not seen, because …". Nothing severe open (one Medium, CCBG-25).
+- ☑ Ticked, committed, pushed.
 
 **Log:**
+- 2026-09-10 — Run by the orchestrator itself, no sub-agent (the labour was adb driving, not
+  rendering). Release-signed v1.6 build installed over the live v1.5 install (four accounts kept);
+  wireless adb in the morning, then the phone left the Wi-Fi and the pass finished over **USB
+  debugging** from the office. Seen and passed by Robin: app states 1, 2 (410 and 750 dp), 3 in
+  light without the 100%, 6; notification states 1, 2, 5 (for real — Product was in re-auth), 7,
+  8, 9; Settings four tabs at both widths with swipe, More with Debug unlocked; launcher icon;
+  widgets and tile gone; six channels deleted; ring switching under Whichever is higher. Not seen:
+  app 4 (radios off severs adb; Robin skipped the manual variant), app 5 and the two thin Settings
+  states (four live accounts), notification 3 (this ChatGPT account has a 5h window), 4 and the
+  100% cross (no window filled), 6 (six-hour stale). Filed: CCBG-21 (Zero-Point Shading),
+  CCBG-22 (Credits Rows For All), CCBG-23 (Mark Size Mismatch — Robin: after the release),
+  CCBG-24 (Duet Label Clamp), all Low; **CCBG-25 (Idle Reset Silence), Medium** — the reset ping
+  did not fire for an idle account because `checkReset` returns on a null `resetsAt`; fix it in
+  v1.6.1 or before Step 6 if Robin prefers. Decisions taken at the phone: account cards stay
+  without the percentage; the dual-identity wireframe's "600 dp cap" caption is stale (Main keeps
+  the 760 dp column). Captures in `design/research/2026-09-10-device-pass/` (30 files, ~7.6 MB;
+  shade crops quantised). Outcome tables sit at the foot of the three wireframes. The phone was
+  left with dark mode on and its own 1-minute screen timeout.
 
 ---
 
@@ -370,8 +388,14 @@ matrix, no four styles; the always-on notification with two accounts, reset ping
 Settings, the new icon; "not affiliated" notice unchanged); regenerate the user guide,
 brochure and hero from release/docs/src per RELEASING.md, removing the widget and alerts pages
 and adding the Duet notification page; replace the retired screenshots with the Step 5
-captures; write the release notes, saying plainly that placed widgets and tiles disappear on
-update. Stop before signing and uploading — I do those — and tell me the exact commands. After I
+captures in design/research/2026-09-10-device-pass/ (app-*, settings-*, notif-* and
+launcher-icon-drawer.png; the notif-* files are shade crops, the app-* files are 640 px wide);
+write the release notes, saying plainly that placed widgets and tiles disappear on update, and
+listing the defects Step 5 left open as known issues: CCBG-25 (Idle Reset Silence, Medium —
+the reset ping stays silent for an account that is idle across the reset; if Robin wants it
+fixed before shipping, do that first as fix(CCBG-25) with a unit test, it is ~15 lines in
+alerts/Alerts.kt), and the four Low ones, CCBG-21 (Zero-Point Shading), CCBG-22 (Credits Rows
+For All), CCBG-23 (Mark Size Mismatch), CCBG-24 (Duet Label Clamp). Stop before signing and uploading — I do those — and tell me the exact commands. After I
 confirm the release is published, close per the Close-out rule (commit as "v1.6 — CCRM-60/61/62
 ship: two-account notification, settings diet, new icon", tag), then say the arc is complete.
 ```

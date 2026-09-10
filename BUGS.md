@@ -11,6 +11,111 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-25 · Idle Reset Silence — a reset ping never fires while the account is idle across the reset
+- **Status:** Open (2026-09-10)
+- **Severity:** Medium (the reset ping is the one standalone notification left after CCRM-61
+  (Settings Diet), and its headline case — you hit the limit, stop, and wait for the window to
+  come back — is exactly the case that stays silent)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass
+  (RUNBOOK.md Step 5). Pro's 5h reset ping was set to **Always** at 08:20; its 5-hour window
+  reset at 10:00; polls ran every 15 minutes on mobile data through 11:30. No notification was
+  posted on `reset_alerts` (`dumpsys notification` lists only the pinned one; the channel exists
+  and is enabled). At 11:31 the Pro card read `0% used · Starts when a message is sent`.
+- **Cause:** `Alerts.checkReset` opens with `val key = window?.resetsAt?.toEpochMilli() ?: return`.
+  After a 5-hour window expires with no new message, the Claude usage payload reports **no active
+  session window**, so `resetsAt` is null and the function returns before the rollover test
+  (`lastSeen != 0 && !sameWindow(lastSeen, key)`). The rollover is only noticed on the first poll
+  of the *next* window — i.e. after the user has already sent a message — and the ping then says
+  "Usage is back at 3%", late and pointless. There is no alarm-based scheduler; the ping rides on
+  the poll. Pre-dates this arc (the guard is from the CCBG-4 (Alert Dedup) era) but was masked
+  while threshold and pace alerts existed.
+- **Where:** `alerts/Alerts.kt`, `checkReset` (≈ line 115); `UsageCache.lastSeenWindowKey`.
+- **Fix:** when `window` is null (or has no `resetsAt`) but `lastSeen != 0` and `lastSeen` is in
+  the past, treat it as the rollover: record the `SessionLog` entry with the stored peak, fire the
+  ping under the same Always / If busy rule with "Usage is back at 0%", and clear `lastSeen` so it
+  fires once. Pure logic plus a unit test; no wireframe needed. Weekly windows are unaffected
+  (they always carry a `resetsAt`).
+
+### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
+- **Status:** Open (2026-09-10)
+- **Severity:** Low (the mark and the accent still identify the provider; the label only has to
+  tell two accounts apart)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass
+  (RUNBOOK.md Step 5), on the CCRM-62 (Duet Notification) collapsed row. With the figure at
+  `2%` the first half reads `ChatGPT 2%` in full. Switch Usage display to Left and the same
+  half reads `ChatG… 98%`: the label lost two characters to a one-character-wider figure. The
+  wireframe's state 1 shows `ChatGPT 63%` fitting, so a three-character figure was meant to
+  leave the 72 dp clamp intact. Capture: `design/research/2026-09-10-device-pass/notif-7-left-collapsed.png`.
+- **Cause, probable:** `Duet.labelClampDp` only steps down (72 → 56 dp) at four characters;
+  the row itself is `wrap_content` figure trailing a `0dp`-weight label, so on this device the
+  30 sp bold `98%` in Samsung's font is wider than the ~50 dp the arithmetic in `Duet.kt`
+  allows for, and the label column absorbs the difference and ellipsizes early.
+- **Where:** `notify/Duet.kt` (`labelClampDp` and the width comment above it),
+  `res/layout/notif_duet.xml` (the half's label / figure widths).
+- **Fix options:** measure the figure with `Paint.measureText` at 30 sp and clamp the label to
+  whatever is left, instead of a two-step table; or drop the figure to 28 sp for three
+  characters. Either is a visible change to an approved layout, so the fix goes through the
+  Duet wireframe first.
+
+### CCBG-23 · Mark Size Mismatch — the Claude mark renders larger than the ChatGPT mark
+- **Status:** Open (2026-09-10) — **attack after the v1.6 release**, per Robin
+- **Severity:** Low (cosmetic, but it is on every surface: top bar, tab strip, Settings chips,
+  notification halves and headers)
+- **Symptom:** **Noticed by Robin on the Fold 7, 2026-09-10**, during the Step 5 device pass,
+  first on the pinned notification and then everywhere the two `ProviderMark`s sit side by side:
+  the Claude sunburst reads visibly bigger than the OpenAI blossom at the same nominal size.
+  `uiautomator` confirms both marks occupy identical 53 px boxes (20 dp) in the top bar, so the
+  difference is inside the vectors, not the layout.
+- **Cause:** `ic_provider_claude.xml` fills its viewport to the edge while
+  `ic_provider_chatgpt.xml` carries internal padding (the blossom's bounding box is smaller than
+  its viewport), so at equal box sizes the Claude glyph has more ink. Pre-dates this arc; CCRM-56
+  (Provider Identity) introduced both vectors.
+- **Where:** `res/drawable/ic_provider_claude.xml`, `res/drawable/ic_provider_chatgpt.xml`,
+  `ui/ProviderMark.kt`; the notification's `notif_duet*.xml` use the same drawables.
+- **Fix options:** optically balance the two vectors (scale the blossom up ~10–12 % inside its
+  viewport, or inset the sunburst), checked at 14, 16 and 20 dp; the launcher icon is unaffected
+  because it uses its own half-mark geometry.
+
+### CCBG-22 · Credits Rows For All — "Usage credits" lists a toggle for every account, not only those with credits
+- **Status:** Open (2026-09-10)
+- **Severity:** Low (a row too many; nothing wrong is shown on a card)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, Settings →
+  More. The Usage credits card's own explainer says the section "only appears for accounts that
+  actually have a credit budget", yet it lists **Show for Pro, Teams, Product and ChatGPT** — all
+  four accounts, including the ChatGPT Plus account, which has no credit budget. The
+  settings-diet wireframe draws one row, "Show for Personal", with the note "(only if an account
+  reports credits)". Capture: `design/research/2026-09-10-device-pass/settings-more-410.png`.
+- **Cause:** `SettingsScreen.kt` gates the **section** on
+  `profiles.any { credits?.isReportable == true }` and then loops `for (profile in profiles)`
+  regardless. CCRM-61 (Settings Diet) Step 2 moved the card into the More tab and made the
+  section conditional but kept the unconditional loop.
+- **Where:** `SettingsScreen.kt`, the `showCredits` / `pollingUpdatesCredits` block (≈ lines
+  669–705).
+- **Fix:** filter the loop to profiles whose snapshot reports credits; when that leaves one
+  account, the row still needs its label (two Claude plans can both report credits). Copy is
+  already right; no wireframe needed.
+
+### CCBG-21 · Zero-Point Shading — a 5-hour chart at 0% paints the whole above-pace region red
+- **Status:** Open (2026-09-10)
+- **Severity:** Low (a wash, not a wrong number; but it is the exact state the code comment says
+  the wash must not appear in)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, on the
+  ChatGPT tab (cover and inner screen). The 5-hour window at **0%** with a single sample at the
+  start of the window draws the full triangle above the even-pace line in the red wash, with the
+  caption reading "5 points below even pace" and later "On even pace". The Pro tab's 5-hour chart
+  at 11% below pace shows no wash. Robin asked for it filed. Captures:
+  `design/research/2026-09-10-device-pass/app-2b-chatgpt-room-dark-410.png` and
+  `app-2-chatgpt-room-dark-750.png`.
+- **Cause, probable:** `Sparkline.kt` draws the wash when `atOrAbovePace`; at the first sample
+  of a fresh window the observed 0% equals the even-pace 0%, so "at pace" is true and the wash
+  arrives on the safest state there is — the case the comment above the `if` says it was made
+  to avoid. Pre-dates this arc (CCRM-43 (Bar Pace Marks) / CCRM-20 (Wide Chart) era); the
+  ChatGPT account's fresh window made it visible.
+- **Where:** `ui/Sparkline.kt`, the `abovePace` / `atOrAbovePace` block (≈ lines 311–324) and
+  wherever `atOrAbovePace` is computed.
+- **Fix:** require strictly above pace, or above pace by ≥ 1 point, or a non-zero observed
+  value, before drawing the wash. Pure logic; restores the approved design, so no wireframe.
+
 ### CCBG-19 · Fixture Unreachable — the debug faces activity cannot coexist with the install it must be compared against
 - **Status:** Won't fix (2026-09-09) — superseded: CCRM-61 (Settings Diet) deleted the debug faces harness with the widgets.
 - **Severity:** Medium (no wrong number ships, but it guarantees a class of visual state

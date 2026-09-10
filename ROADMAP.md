@@ -758,13 +758,19 @@ always-on notification, what leaves). The removal footprint is in
 a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered build plan.
 
 ### CCRM-60 · Dual Identity — the icon and the app, for Claude and ChatGPT
-- **Status:** Built 2026-09-10 (RUNBOOK.md Step 4) — the four icon vectors redrawn to the chosen
-  geometry and **approved by Robin from the 48 dp render**
-  (`design/research/2026-09-10-icon-render/icon-48dp.png`: circle light/dark, squircle, themed);
-  top bar leads with the two 20 dp marks on the main screen; two rooms via `ui/Rooms.kt` (surface
-  and card tints on Main and History, serif headline figures on Claude tabs, tab indicator in the
-  room accent, labels neutral); 297 tests. Not yet seen on the phone — Step 5 · medium · supersedes
-  CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity) decision 3.
+- **Status:** Built 2026-09-10 (RUNBOOK.md Step 4), **seen on the Fold 7 2026-09-10** (Step 5) —
+  the four icon vectors redrawn to the chosen geometry and **approved by Robin from the 48 dp
+  render** (`design/research/2026-09-10-icon-render/icon-48dp.png`), then seen live in the app
+  drawer, the taskbar and About; top bar leads with the two 20 dp marks on the main screen; two
+  rooms via `ui/Rooms.kt` (surface and card tints on Main and History, serif headline figures on
+  Claude tabs, tab indicator in the room accent, labels neutral); 297 tests. Device pass: app
+  states 1, 2, 5 (as a strip with four accounts) and 6 seen at 410 and 750 dp, dark and light;
+  state 3 seen in light but not at 100% (no window was full); state 4 (error) not seen (needs the
+  radios off, which severs wireless adb). Findings: CCBG-23 (Mark Size Mismatch), to fix after
+  v1.6; the wireframe's "600 dp cap" caption for state 2 is stale — Main keeps CCRM-20 (Wide
+  Chart)'s 760 dp column. Captures in `design/research/2026-09-10-device-pass/` · medium ·
+  supersedes CCRM-42 (App Icon) and CCRM-45 (Tracker Icon); revises CCRM-56 (Provider Identity)
+  decision 3.
 - **Icon, final (seven review rounds, recorded in the wireframe's "Considered and dropped"):**
   the launcher tile is the Claude app tile's top half over the ChatGPT app tile's bottom half,
   with the app's own usage bar at the seam. Ground: **horizontal split at y 54** of the 108
@@ -806,8 +812,17 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   (widgets, tile, standalone alerts except reset pings, fold machinery, three pinned styles,
   three glyphs; unit tests 368 → 287, `Alerts.kt` 665 → 231 lines, per-account `resetPingMode`
   with legacy fallback); part 2 the four-tab Settings with the new `pinnedSecondProfile`,
-  `statusRingShows` and merged `showOverPace` prefs (291 tests). **Not yet seen on a device** —
-  Step 5 · large (mostly deletion) · supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
+  `statusRingShows` and merged `showOverPace` prefs (291 tests). **Seen on the Fold 7
+  2026-09-10** (RUNBOOK.md Step 5): four tabs swipe and tap on both screens, Appearance two-column
+  at 750 dp, Debug appends under About after the 7-tap unlock; placed widgets and the Quick
+  Settings tile are gone from the device, the six old channels are deleted (`dumpsys
+  notification` shows them `mDeleted=true`, only `reset_alerts` and `pinned_usage_v2` live), and
+  the account cards stay without a percentage (Robin's call at Step 5). Not seen: the "no account"
+  and "one account" Settings states (the live install has four accounts). Findings: CCBG-22
+  (Credits Rows For All), CCBG-21 (Zero-Point Shading, pre-existing), and the one that matters:
+  CCBG-25 (Idle Reset Silence) — "Reset pings survive" is true only for an account that keeps
+  chatting across the reset; an idle account gets no ping. Captures in
+  `design/research/2026-09-10-device-pass/` · large (mostly deletion) · supersedes CCRM-39 (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget), CCRM-4
   (Widget Quick-Edit), CCRM-13 (Chart Widget), CCRM-21 (Pace Alerts), CCRM-17 (Window Pings),
   CCRM-44 (One Surface) in part, CCRM-11 (Tile Reset Time), CCRM-3 (Unified Theming) phase 1;
   resolves CCBG-20 (Pinned Identity Loss) by removal; re-scopes CCRM-5 (Per-Profile
@@ -849,8 +864,14 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   two-header view with compact "· Weekly" rows, ring following First / Second / higher; Robin
   approved the shade and asked for one change, taken the same day: at 100% the ring is smooth
   and carries an × in the hollow instead of the 12 o'clock post (`design/spent-ring-wireframe.html`,
-  option A; the cross itself is not yet seen live, no window was full). Device shots in
-  `design/research/2026-09-09-duet-device/` · medium · Huge number style
+  option A). **Device pass 2026-09-10** (RUNBOOK.md Step 5): notification states 1, 2, 5, 7, 8
+  and 9 seen and passed on the Fold 7 (state 5 for real — the Product account was in re-auth);
+  the ring switched green → terracotta → terracotta under First / Second / Whichever is higher;
+  the reset ping did **not** fire for Pro (Always on its 5h reset, window reset at 10:00, polls through 11:30): with no new message the payload has no session window, `checkReset` returns on the null `resetsAt`, and the ping waits for the next window to start — CCBG-25 (Idle Reset Silence), Medium, filed for the v1.6.1 fix. Not seen: state 3 (this ChatGPT account has a 5h window), state 4 and
+  the 100% cross (no window was full), state 6 (stale needs six hours). Findings: CCBG-24 (Duet
+  Label Clamp), CCBG-23 (Mark Size Mismatch). Device shots in
+  `design/research/2026-09-09-duet-device/` and `design/research/2026-09-10-device-pass/` ·
+  medium · Huge number style
   only (CCRM-61 (Settings Diet) removes the rest) · replaces CCRM-5 (Per-Profile Notification);
   supersedes CCRM-50 (Weekly Flag) and CCRM-49 (Glyph Legibility)'s chooser.
 - **Collapsed (option 1, "Duet"):** one row, two halves of ~156–172 dp with a 16 dp gutter.

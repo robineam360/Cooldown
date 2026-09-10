@@ -724,4 +724,19 @@
   <p class="sub">No open questions; every decision is in the table above and in ROADMAP.md
     CCRM-60 (Dual Identity).</p>
 
+
+  <h2>Device pass — Fold 7, 2026-09-10 <small>RUNBOOK.md Step 5 · release-signed v1.6 build over the live install · four accounts (Pro, Teams, Product, ChatGPT) · First = ChatGPT, Second = Pro</small></h2>
+  <p class="sub">One row per state in section 3, plus the icon. "Seen" means Robin looked at it on the phone and passed it; the
+    capture is in <code>design/research/2026-09-10-device-pass/</code>. Defects filed as CCBG items in BUGS.md.</p>
+  <table class="dec">
+    <tr><th>State</th><th>Outcome</th><th>Notes</th><th>Capture</th></tr>
+    <tr><td>State 1 · Claude room, dark, 410 dp</td><td><b>Seen, pass</b></td><td>Pro tab on the cover screen: two marks then "Cooldown", terracotta indicator with neutral labels, brown-ivory surface and cards, serif "11% used" / "82% used", status ring terracotta. Four accounts make the strip scrollable so "ChatGPT" clips at the edge — the existing rule.</td><td><code>app-1-claude-room-dark-410.png</code></td></tr>
+    <tr><td>State 2 · ChatGPT room, dark, 750 dp</td><td><b>Seen, pass; caption corrected</b></td><td>Inner screen, ChatGPT tab: neutral #0D0D0D surface, sans figures, green indicator and bars, fixed strip spanning the window. The caption's "content capped at 600 dp" is wrong: Main draws at <code>ChartColumnMaxWidth</code> = 760 dp per CCRM-20 (Wide Chart), so the cards run nearly edge to edge. Robin: pass, the caption is stale. Also seen at 410 dp. Finding: CCBG-21 (Zero-Point Shading) — the 5-hour chart at 0% paints the above-pace wash.</td><td><code>app-2-chatgpt-room-dark-750.png · app-2b-chatgpt-room-dark-410.png</code></td></tr>
+    <tr><td>State 3 · Claude room, light, 5-hour at 100%</td><td><b>Seen in light, not at 100%</b></td><td>System switched to light: ivory #F5EFE8 surface, serif figures, terracotta bars; the ChatGPT room in light captured alongside. No window was at 100%, so the red serif figure and full red bar remain unobserved.</td><td><code>app-3-claude-room-light-410.png · app-3b-chatgpt-room-light-410.png</code></td></tr>
+    <tr><td>State 4 · error on the ChatGPT tab</td><td><b>Not seen</b></td><td>Needs the radios off, which severs wireless adb; Robin chose to skip the manual variant.</td><td>—</td></tr>
+    <tr><td>State 5 · one account, so no tab strip</td><td><b>Not seen</b></td><td>Four live accounts; removing three is not a device-pass action. The room rule itself (ivory + serif with a single Claude account) is covered by the room tests.</td><td>—</td></tr>
+    <tr><td>State 6 · narrow check</td><td><b>Seen, pass</b></td><td>At 410 dp with four accounts the strip is scrollable (the existing rule at four); at 750 dp it is fixed. Labels and widths unchanged by the rooms.</td><td><code>app-1-claude-room-dark-410.png · app-2-chatgpt-room-dark-750.png</code></td></tr>
+    <tr><td>Launcher icon (section 2)</td><td><b>Seen, pass</b></td><td>App drawer, taskbar and About: terracotta over green, capsule bar with the red run past the tick, half-marks faint. Finding, unrelated to the icon: CCBG-23 (Mark Size Mismatch) — the Claude <code>ProviderMark</code> reads larger than the ChatGPT one everywhere; to fix after v1.6.</td><td><code>launcher-icon-drawer.png</code></td></tr>
+  </table>
+
 </div>
