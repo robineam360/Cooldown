@@ -736,9 +736,15 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   older install, with no error the user would recognise. **Never re-create that name.** The
   rule is repeated as a comment above the URL in `UpdateCheck.kt`, which is where someone
   would actually be standing when it mattered.
-- **Local working copy:** the folder is still `~/Projects/CCooldown` and the git remote is
-  rewritten in place with `git remote set-url`. Renaming the folder is optional and cosmetic;
-  nothing in the build reads it.
+- **Local working copy:** the git remote was rewritten in place with `git remote set-url` at
+  v1.5, and the folder was renamed `~/Projects/CCooldown` → `~/Projects/Cooldown` on
+  2026-09-10. Nothing in the build, the app or any tracked file reads the folder path — every
+  absolute path in the tree is gitignored generated output (`app/build/`, `.gradle/`), cleared
+  before the move. The one thing that *is* keyed to the path is Claude Code's per-project state
+  directory, `~/.claude/projects/-Users-robinrichardrajan-Projects-CCooldown`, which holds the
+  session transcripts *and* the `memory/` folder; it was renamed to match, or a session opened
+  at the new path would have come up with no memory and no resumable history. The Mac repo's
+  folder `~/Projects/CCooldownMac` is deliberately untouched — a different repo's business.
 - **Open follow-up: the brochure QR.** `release/docs/src/repo-qr.svg` encodes the **old** repo
   URL. It still resolves, through the same redirect the update check relies on, so the
   brochure is not wrong — but it should be regenerated to point at `Cooldown` directly.

@@ -23,7 +23,6 @@ keystore.properties
 *.keystore
 
 # Built APK — distributed via GitHub Releases, not committed to the repo
-Release/CCooldown.apk
 *.apk
 
 # Private handover notes — never commit
