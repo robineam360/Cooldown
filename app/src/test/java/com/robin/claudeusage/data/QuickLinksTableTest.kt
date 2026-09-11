@@ -9,7 +9,9 @@ import org.junit.Test
  * CCRM-26 (Quick Links) per provider (CCRM-57 (Provider Plumbing)). The scheme
  * guard itself lives in `QuickLinksTest`; this pins the **table** — that every
  * provider has links, that they are the right company's, and that each one is a URL
- * `openInBrowser` will actually launch rather than silently drop.
+ * `openInBrowser` will actually launch rather than silently drop. `accountUrl`
+ * is the link below an account card's divider — its own action cell (CCRM-65
+ * (Accounts Redesign)) — rather than the error notice's status link.
  */
 class QuickLinksTableTest {
 
@@ -82,6 +84,12 @@ class QuickLinksTableTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `accountUrl is the card's own action-cell link`() {
+        assertEquals("https://claude.ai/settings/usage", QuickLinks.accountUrl(Provider.CLAUDE))
+        assertEquals("https://chatgpt.com/#settings", QuickLinks.accountUrl(Provider.CHATGPT))
     }
 
     @Test

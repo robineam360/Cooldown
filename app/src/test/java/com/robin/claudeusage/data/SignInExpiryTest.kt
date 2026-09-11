@@ -107,6 +107,67 @@ class SignInExpiryTest {
         assertEquals(SignInExpiry.Line.Exact(estimate), result)
     }
 
+    // --- CCRM-65 (Accounts Redesign): expiresSoon ---
+
+    @Test
+    fun `estimated expiry within the soon window warns`() {
+        val now = 1_000_000_000_000L
+        val soon = now + 2 * day + 14 * 60 * 60_000L // 2d14h out
+        assertTrue(SignInExpiry.expiresSoon(SignInExpiry.Line.Estimated(soon), now))
+    }
+
+    @Test
+    fun `estimated expiry at exactly the soon threshold warns`() {
+        val now = 1_000_000_000_000L
+        assertTrue(
+            SignInExpiry.expiresSoon(SignInExpiry.Line.Estimated(now + SignInExpiry.SOON_MS), now),
+        )
+    }
+
+    @Test
+    fun `estimated expiry just past the soon threshold does not warn`() {
+        val now = 1_000_000_000_000L
+        assertFalse(
+            SignInExpiry.expiresSoon(
+                SignInExpiry.Line.Estimated(now + SignInExpiry.SOON_MS + 60_000L),
+                now,
+            ),
+        )
+    }
+
+    @Test
+    fun `exact expiry within the soon window warns`() {
+        val now = 1_000_000_000_000L
+        val soon = now + 2 * day + 14 * 60 * 60_000L
+        assertTrue(SignInExpiry.expiresSoon(SignInExpiry.Line.Exact(soon), now))
+    }
+
+    @Test
+    fun `exact expiry at exactly the soon threshold warns`() {
+        val now = 1_000_000_000_000L
+        assertTrue(
+            SignInExpiry.expiresSoon(SignInExpiry.Line.Exact(now + SignInExpiry.SOON_MS), now),
+        )
+    }
+
+    @Test
+    fun `exact expiry just past the soon threshold does not warn`() {
+        val now = 1_000_000_000_000L
+        assertFalse(
+            SignInExpiry.expiresSoon(
+                SignInExpiry.Line.Exact(now + SignInExpiry.SOON_MS + 60_000L),
+                now,
+            ),
+        )
+    }
+
+    @Test
+    fun `renewal-dead and none never warn`() {
+        val now = 1_000_000_000_000L
+        assertFalse(SignInExpiry.expiresSoon(SignInExpiry.Line.RenewalDead(9L, true), now))
+        assertFalse(SignInExpiry.expiresSoon(SignInExpiry.Line.None, now))
+    }
+
     /**
      * CCRM-57 (Provider Plumbing): the ~30-day family life is Anthropic's, inferred
      * and never verified. A ChatGPT sign-in leaves `refreshExpiresAt` at 0 and

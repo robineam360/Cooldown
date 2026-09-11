@@ -128,6 +128,12 @@ object Palette {
         byName(name).let { if (dark) it.paceDark else it.paceLight }
 
     /**
+     * Amber for a warning that is not yet a failure — the account card's expiry-soon
+     * line (CCRM-65 (Accounts Redesign)) and the More tab's NoteCard.
+     */
+    fun warn(dark: Boolean): Color = if (dark) Color(0xFFFDD663) else Color(0xFF9A6700)
+
+    /**
      * Bars only: theme color normally, yellow above 80%, orange above 90%, red
      * at 100%. The warning hues are deliberately vivid (saturated orange, true
      * red) so they never blend into the muted Claude Orange terracotta theme.
@@ -328,8 +334,8 @@ object Fmt {
     }
 
     /** Countdown to a future moment: "25d 2h 4m" / "2h 4m" / "4m" / "now" */
-    fun dhm(untilEpochMs: Long): String {
-        val mins = (untilEpochMs - System.currentTimeMillis()) / 60_000
+    fun dhm(untilEpochMs: Long, nowMs: Long = System.currentTimeMillis()): String {
+        val mins = (untilEpochMs - nowMs) / 60_000
         if (mins <= 0) return "now"
         val d = mins / (24 * 60)
         val h = (mins / 60) % 24
@@ -367,9 +373,9 @@ object Fmt {
     }
 
     /** "12m ago" / "2h 10m ago" / "never" */
-    fun ago(epochMs: Long): String {
+    fun ago(epochMs: Long, nowMs: Long = System.currentTimeMillis()): String {
         if (epochMs <= 0) return "never"
-        val mins = (System.currentTimeMillis() - epochMs) / 60_000
+        val mins = (nowMs - epochMs) / 60_000
         return when {
             mins < 1 -> "just now"
             mins < 60 -> "${mins}m ago"

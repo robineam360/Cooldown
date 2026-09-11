@@ -2121,8 +2121,30 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-65 · Accounts Redesign — a shorter, cleaner account card
-- **Status:** Needs design (filed 2026-09-11, Robin's brief) — **for the update after this one**, by
-  his decision; wireframe first (CLAUDE.md rule 2).
+- **Status:** Approved (rev D, 2026-09-11) — **building**; Fold 7 device pass pending. Wireframe
+  `design/accounts-redesign-wireframe.html`, drafted and revised the same day the brief was filed,
+  after Robin pulled the work forward from "the update after this one".
+- **Decided 2026-09-11, one question at a time:**
+  - **Header:** mark · label · 8dp status dot (green = active, red = renewal stopped; TalkBack reads
+    "Active" / "Needs re-auth") · plan chip · ⋮. The "Active" pill goes; the token tail moves to
+    Details. Dot sits right after the label (rev D — rev C had it right-aligned and was rejected).
+  - **Status line, relative only:** "Checked just now · renews in 1h 9m"; no renews clause when
+    renewal has stopped. The clock time lives in Details.
+  - **Conditional line** only when something is wrong: the CCBG-27 (Free Plan 403) plan notice
+    ("Free plan: Claude doesn't report usage — upgrade to Pro, Max or Team to see numbers."),
+    renewal stopped, rate-limited, and a new amber "Sign-in expires in 2d 14h — re-sign in to keep
+    polling going." at **≤ 3 days** (Robin picked 3 over the notification's 7).
+  - **Actions:** three equal cells, 20dp stroke icon over an 11sp label — Re-sign in · Clear ·
+    Dashboard (ChatGPT: Sign in with a code · Clear · Settings). Icon-only and outlined-pill
+    variants rejected. ChatGPT's Refresh button folds into the ↻ on the status line.
+  - **Details** is the first item of the ⋮ menu (chosen over a status-line chevron), opening a
+    dialog: last checked, last auto-renewed, expiry estimate with the provenance note, added, token
+    tail.
+  - **Removed:** Anthropic status / OpenAI status links (the main-screen error notice keeps them),
+    the divider, the four always-on lines.
+  - Measured 161dp per collapsed card, down from ~330; four accounts ≈ 1.1 screens from 2.5.
+  - Rode along: the ChatGPT mark in the wireframe scaled 1.35x to match Claude's, as CCBG-23 (Mark
+    Size Mismatch) already does in the app.
 - **Brief, in Robin's words (2026-09-11):** "The Accounts tab in settings is just too long. Remove the
   Anthropic status link as well (along with the computer token option — done in CCRM-63 (Token
   Import Removal)) and put the usage dashboard on the same line as the Re-sign in / Clear buttons.

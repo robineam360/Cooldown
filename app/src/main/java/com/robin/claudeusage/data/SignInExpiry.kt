@@ -26,6 +26,21 @@ object SignInExpiry {
      */
     const val MATERIALLY_EARLY_MS = 48 * 60 * 60_000L
 
+    /**
+     * How close to expiry counts as "soon" for the account card's amber warning
+     * line (CCRM-65 (Accounts Redesign)) — three days out, before it's urgent
+     * enough to be a failure.
+     */
+    const val SOON_MS = 3 * DAY_MS
+
+    /** True for a [Line.Estimated] or [Line.Exact] within [SOON_MS] of expiring. */
+    fun expiresSoon(line: Line, now: Long): Boolean = when (line) {
+        is Line.Estimated -> line.expiresAt - now <= SOON_MS
+        is Line.Exact -> line.expiresAt - now <= SOON_MS
+        is Line.RenewalDead -> false
+        Line.None -> false
+    }
+
     sealed interface Line {
         /** Native sign-in, renewal healthy: "expires around <date>". */
         data class Estimated(val expiresAt: Long) : Line

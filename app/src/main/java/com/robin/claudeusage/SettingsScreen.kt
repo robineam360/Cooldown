@@ -10,17 +10,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import com.robin.claudeusage.ui.EstimateLine
 import com.robin.claudeusage.ui.appDark
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
@@ -73,6 +75,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -81,9 +84,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
@@ -107,6 +114,7 @@ import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.notify.UpdateNotification
+import com.robin.claudeusage.ui.AccountStatusLine
 import com.robin.claudeusage.ui.ContentColumn
 import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.DeviceCodeCopy
@@ -114,6 +122,7 @@ import com.robin.claudeusage.ui.DeviceCodeStage
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.Motion
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.ProvenanceNote
 import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.hasTwoColumns
@@ -128,7 +137,10 @@ private const val DEBUG_UNLOCK_TAPS = 7
 
 // CCRM-26 (Quick Links) destinations now live in the per-provider table
 // com.robin.claudeusage.data.QuickLinks (CCRM-57 (Provider Plumbing)) — the main
-// screen's error notice reads the same table for its "is it them?" button.
+// screen's error notice reads the same table for its "is it them?" button, and
+// CCRM-65 (Accounts Redesign)'s Dashboard/Settings action cell reads
+// QuickLinks.accountUrl directly. The status link no longer lives on the card at
+// all: it only ever surfaces from MainActivity's error notice now.
 
 /**
  * CCRM-61 (Settings Diet), built to `design/settings-diet-wireframe.html` section 1:
@@ -181,6 +193,9 @@ fun SettingsScreen(
     // Which account's ⋮ sheet or dialog is open, and which kind.
     var renaming by remember { mutableStateOf<Profile?>(null) }
     var removing by remember { mutableStateOf<Profile?>(null) }
+    // CCRM-65 (Accounts Redesign): Details… lives here too, for the same reason —
+    // it should survive the card recomposing under it.
+    var detailing by remember { mutableStateOf<Profile?>(null) }
     val accountScope = rememberCoroutineScope()
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -209,6 +224,7 @@ fun SettingsScreen(
                                 canRemove = profiles.size > 1,
                                 onRename = { renaming = profile },
                                 onRemove = { removing = profile },
+                                onDetails = { detailing = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
                             )
                         }
@@ -225,6 +241,7 @@ fun SettingsScreen(
                                 canRemove = profiles.size > 1,
                                 onRename = { renaming = profile },
                                 onRemove = { removing = profile },
+                                onDetails = { detailing = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
                             )
                         }
@@ -245,6 +262,7 @@ fun SettingsScreen(
                         canRemove = profiles.size > 1,
                         onRename = { renaming = profile },
                         onRemove = { removing = profile },
+                        onDetails = { detailing = profile },
                         autoStartSignIn = profile.key == autoStartProfileKey,
                     )
                 }
@@ -866,6 +884,17 @@ fun SettingsScreen(
             },
         )
     }
+    // CCRM-65 (Accounts Redesign): the ⋮ menu's first item, opening what the card
+    // used to say all the time as a dialog instead.
+    detailing?.let { profile ->
+        AccountDetailsDialog(
+            repo = repo,
+            profile = profile,
+            label = labels[profile] ?: cacheSettings.profileLabel(profile),
+            use24h = use24h,
+            onDismiss = { detailing = null },
+        )
+    }
 }
 
 /**
@@ -963,6 +992,130 @@ private fun RemoveAccountDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+/**
+ * CCRM-65 (Accounts Redesign): the ⋮ menu's "Details…" — every line the card body
+ * used to show all the time, gathered behind one tap instead. Reads the repo the
+ * same way [TokenCard] does; there is no stateKey here because the dialog only
+ * exists while it's open, so a stale read isn't a concern the way it is on a card
+ * that stays mounted.
+ */
+@Composable
+private fun AccountDetailsDialog(
+    repo: UsageRepository,
+    profile: Profile,
+    label: String,
+    use24h: Boolean,
+    onDismiss: () -> Unit,
+) {
+    val snapshot = repo.snapshot(profile)
+    val addedAt = repo.tokenAddedAt(profile)
+    val tail = repo.tokenTail(profile)
+    val now = System.currentTimeMillis()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(label) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    if (snapshot.lastAttemptAt > 0) {
+                        "Last checked: ${Fmt.dayTimeWithAgo(snapshot.lastAttemptAt, use24h)}"
+                    } else {
+                        "Last checked: never"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (profile.provider == Provider.CLAUDE) {
+                    val lastRenewedAt = repo.lastRenewedAt(profile)
+                    if (lastRenewedAt > 0) {
+                        Text(
+                            "Last auto-renewed: ${Fmt.dayTimeWithAgo(lastRenewedAt, use24h)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                    val refreshExpiresAt = repo.refreshExpiresAt(profile)
+                    val refreshEstimated = repo.refreshExpiryEstimated(profile)
+                    val firstRefreshFailAt = repo.cacheSettings().firstRefreshFailAt(profile)
+                    // CCRM-16: same fallback TokenCard uses — the fail-streak start is
+                    // the best fix on when renewal died.
+                    val deadAt = when {
+                        firstRefreshFailAt > 0 -> firstRefreshFailAt
+                        snapshot.lastAttemptAt > 0 -> snapshot.lastAttemptAt
+                        else -> now
+                    }
+                    when (
+                        val expiry = SignInExpiry.line(
+                            snapshot.authState, refreshEstimated, refreshExpiresAt, addedAt, deadAt, now,
+                        )
+                    ) {
+                        is SignInExpiry.Line.Estimated -> {
+                            Text(
+                                "Sign-in expires around ${Fmt.dateTime(expiry.expiresAt, use24h)} · " +
+                                    "~${Fmt.dhm(expiry.expiresAt)} left",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            ProvenanceNote(
+                                "Anthropic doesn't report the real expiry — this is " +
+                                    "a flat ~30-day estimate from sign-in, corrected if renewal " +
+                                    "stops working earlier.",
+                            )
+                        }
+                        is SignInExpiry.Line.Exact -> Text(
+                            "Sign-in valid until ${Fmt.dateTime(expiry.expiresAt, use24h)} · ${Fmt.dhm(expiry.expiresAt)} to go",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        is SignInExpiry.Line.RenewalDead -> Text(
+                            renewalDeadText(expiry),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        SignInExpiry.Line.None -> {}
+                    }
+                }
+                Text(
+                    "Added: " + if (profile.provider == Provider.CLAUDE) {
+                        if (addedAt > 0) Fmt.date(addedAt) else "before v0.7"
+                    } else {
+                        if (addedAt > 0) Fmt.date(addedAt) else "—"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (tail != null) {
+                    Text(
+                        "Token …$tail",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace,
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+    )
+}
+
+/**
+ * CCRM-16 (Sign-in Expiry Accuracy): the four-branch "renewal stopped working"
+ * message, shared between the card's own status line and [AccountDetailsDialog]
+ * so both say the same thing about the same failure.
+ */
+private fun renewalDeadText(expiry: SignInExpiry.Line.RenewalDead): String {
+    val estDays = OAuthSignIn.ESTIMATED_FAMILY_MS / SignInExpiry.DAY_MS
+    val days = expiry.daysObserved
+    return when {
+        days == null ->
+            "Renewal has stopped working — re-sign in below."
+        expiry.earlierThanEstimate && days == 0L ->
+            "Renewal stopped working within a day of sign-in — " +
+                "earlier than the ~$estDays-day estimate. Re-sign in below."
+        expiry.earlierThanEstimate ->
+            "Renewal stopped working $days day${if (days == 1L) "" else "s"} after sign-in — " +
+                "earlier than the ~$estDays-day estimate. Re-sign in below."
+        else ->
+            "Renewal stopped working ~$days days after sign-in — " +
+                "the sign-in likely reached its age limit. Re-sign in below."
+    }
 }
 
 private data class BrowserChoice(
@@ -1064,6 +1217,8 @@ private fun TokenCard(
     canRemove: Boolean,
     onRename: () -> Unit,
     onRemove: () -> Unit,
+    /** CCRM-65 (Accounts Redesign): the ⋮ menu's "Details…", first item, Claude-or-not. */
+    onDetails: () -> Unit,
     /** CCRM-56 (Provider Identity): the Add-account sheet starts sign-in at once. */
     autoStartSignIn: Boolean = false,
 ) {
@@ -1084,13 +1239,11 @@ private fun TokenCard(
     val hasToken = remember(stateKey) { repo.hasCredentials(profile) }
     val snapshot = remember(stateKey) { repo.snapshot(profile) }
     val addedAt = remember(stateKey) { repo.tokenAddedAt(profile) }
-    val tail = remember(stateKey) { repo.tokenTail(profile) }
     val plan = remember(stateKey) { repo.plan(profile) }
     val tier = remember(stateKey) { repo.tier(profile) }
     val tokenExpiresAt = remember(stateKey) { repo.tokenExpiresAt(profile) }
     val refreshExpiresAt = remember(stateKey) { repo.refreshExpiresAt(profile) }
     val refreshEstimated = remember(stateKey) { repo.refreshExpiryEstimated(profile) }
-    val lastRenewedAt = remember(stateKey) { repo.lastRenewedAt(profile) }
     val backoffUntil = remember(stateKey) { repo.cacheSettings().backoffUntil(profile) }
     val firstRefreshFailAt = remember(stateKey) { repo.cacheSettings().firstRefreshFailAt(profile) }
 
@@ -1134,9 +1287,20 @@ private fun TokenCard(
                 }
                 ProviderMark(profile.provider, size = 20.dp, tint = cardAccent)
                 Spacer(Modifier.width(6.dp))
-                Text(label, style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.width(10.dp))
-                if (hasToken) StatusChip(snapshot.authState)
+                // CCRM-65 (Accounts Redesign): the label shrinks only when it must —
+                // weight(fill = false) rather than a plain weight(1f), so a short
+                // label like "Free" doesn't push the dot/chip/kebab to the far edge.
+                Text(
+                    label,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (hasToken) {
+                    Spacer(Modifier.width(8.dp))
+                    StatusDot(snapshot.authState)
+                }
                 if (hasToken && plan != null) {
                     Spacer(Modifier.width(6.dp))
                     // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
@@ -1151,14 +1315,6 @@ private fun TokenCard(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                if (hasToken && tail != null) {
-                    Text(
-                        "…$tail",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
                 if (busy) {
                     Spacer(Modifier.width(8.dp))
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -1178,6 +1334,14 @@ private fun TokenCard(
                         )
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        // CCRM-65 (Accounts Redesign): first item, and only when there's
+                        // something to show — an unsigned-in card has no history yet.
+                        if (hasToken) {
+                            DropdownMenuItem(
+                                text = { Text("Details…") },
+                                onClick = { menuOpen = false; onDetails() },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("Rename…") },
                             onClick = { menuOpen = false; onRename() },
@@ -1273,14 +1437,15 @@ private fun TokenCard(
                 )
             } else {
                 Spacer(Modifier.height(8.dp))
+                val now = System.currentTimeMillis()
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "Last checked: ${Fmt.dayTimeWithAgo(snapshot.lastAttemptAt, use24h)}",
+                        AccountStatusLine.claude(snapshot.lastAttemptAt, tokenExpiresAt, snapshot.authState, busy, now),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f),
                     )
-                    IconButton(
+                    RefreshIconButton(
                         enabled = !busy,
                         onClick = {
                             scope.launch {
@@ -1292,40 +1457,6 @@ private fun TokenCard(
                                 stateKey++
                             }
                         },
-                        modifier = Modifier.size(28.dp),
-                    ) {
-                        Icon(
-                            Icons.Filled.Refresh,
-                            contentDescription = "Check token now",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-                val now = System.currentTimeMillis()
-                // CCBG-27 (Free Plan 403): the sign-in works, the plan does not — said
-                // on the card, under a plan chip that now reads "Free".
-                if (snapshot.lastStatusKind == ErrorKind.PLAN.key) {
-                    Text(
-                        "Claude doesn't report usage for the ${plan ?: "Free"} plan — " +
-                            "upgrade to Pro, Max or Team to see numbers here.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                if (tokenExpiresAt > 0) {
-                    Text(
-                        if (tokenExpiresAt > now) "Auto-renews in ${Fmt.dhm(tokenExpiresAt)}"
-                        else "Renewal due at the next check",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (lastRenewedAt > 0) {
-                    Text(
-                        "Last auto-renewed: ${Fmt.dayTimeWithAgo(lastRenewedAt, use24h)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 // CCRM-16: once renewal is dead the ~30-day estimate must stop
@@ -1336,55 +1467,29 @@ private fun TokenCard(
                     snapshot.lastAttemptAt > 0 -> snapshot.lastAttemptAt
                     else -> now
                 }
-                when (
-                    val expiry = SignInExpiry.line(
-                        snapshot.authState, refreshEstimated, refreshExpiresAt, addedAt, deadAt, now,
-                    )
-                ) {
-                    is SignInExpiry.Line.RenewalDead -> {
-                        val estDays = OAuthSignIn.ESTIMATED_FAMILY_MS / SignInExpiry.DAY_MS
-                        val days = expiry.daysObserved
-                        Text(
-                            when {
-                                days == null ->
-                                    "Renewal has stopped working — re-sign in below."
-                                expiry.earlierThanEstimate && days == 0L ->
-                                    "Renewal stopped working within a day of sign-in — " +
-                                        "earlier than the ~$estDays-day estimate. Re-sign in below."
-                                expiry.earlierThanEstimate ->
-                                    "Renewal stopped working $days day${if (days == 1L) "" else "s"} after sign-in — " +
-                                        "earlier than the ~$estDays-day estimate. Re-sign in below."
-                                else ->
-                                    "Renewal stopped working ~$days days after sign-in — " +
-                                        "the sign-in likely reached its age limit. Re-sign in below."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                    // CCRM-30 (Estimate Honesty): the ~30-day figure is inferred and
-                    // has never been observed, so it carries the marker; the Exact
-                    // line below is server-reported and stays plain — marking a
-                    // measurement would hedge it.
-                    is SignInExpiry.Line.Estimated -> EstimateLine(
-                        text = "Sign-in expires around ${Fmt.dateTime(expiry.expiresAt, use24h)} · ~${Fmt.dhm(expiry.expiresAt)} left",
-                        provenance = "Anthropic doesn't report the real expiry — this is " +
-                            "a flat ~30-day estimate from sign-in, corrected if renewal " +
-                            "stops working earlier.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    is SignInExpiry.Line.Exact -> Text(
-                        "Sign-in valid until ${Fmt.dateTime(expiry.expiresAt, use24h)} · ${Fmt.dhm(expiry.expiresAt)} to go",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    SignInExpiry.Line.None -> {}
-                }
-                Text(
-                    "Added: ${if (addedAt > 0) Fmt.date(addedAt) else "before v0.7"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                val expiry = SignInExpiry.line(
+                    snapshot.authState, refreshEstimated, refreshExpiresAt, addedAt, deadAt, now,
                 )
+                // CCBG-27 (Free Plan 403): the sign-in works, the plan does not — said
+                // on the card, under a plan chip that now reads "Free".
+                if (snapshot.lastStatusKind == ErrorKind.PLAN.key) {
+                    Text(
+                        AccountStatusLine.freePlan(plan),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                if (expiry is SignInExpiry.Line.RenewalDead) {
+                    Text(
+                        renewalDeadText(expiry),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                // CCRM-65 (Accounts Redesign): now fires at ≤3 days, not ≤7.
+                AccountStatusLine.expirySoon(expiry, now)?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = Palette.warn(appDark()))
+                }
                 if (backoffUntil > now) {
                     Text(
                         "Rate-limited — next try in ${Fmt.dhm(backoffUntil)}",
@@ -1392,25 +1497,36 @@ private fun TokenCard(
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
-                Spacer(Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedButton(enabled = !busy, onClick = { beginSignIn() }) { Text("Re-sign in") }
-                    Spacer(Modifier.width(8.dp))
-                    TextButton(
+                RowDivider()
+                val reauthNeeded = snapshot.authState == AuthState.REAUTH_NEEDED
+                Row(Modifier.fillMaxWidth()) {
+                    ActionCell(
+                        icon = R.drawable.ic_action_key,
+                        label = "Re-sign in",
+                        tint = if (reauthNeeded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        enabled = !busy,
+                        emphasized = reauthNeeded,
+                        onClick = { beginSignIn() },
+                    )
+                    ActionCell(
+                        icon = R.drawable.ic_action_sign_out,
+                        label = "Clear",
+                        tint = MaterialTheme.colorScheme.error,
                         enabled = !busy,
                         onClick = {
                             repo.clearCredentials(profile)
                             message = "$label signed out."
                             stateKey++
                         },
-                    ) { Text("Clear", color = MaterialTheme.colorScheme.error) }
+                    )
+                    ActionCell(
+                        icon = R.drawable.ic_action_open_new,
+                        label = "Dashboard",
+                        tint = MaterialTheme.colorScheme.primary,
+                        enabled = !busy,
+                        onClick = { openWithPicker(QuickLinks.accountUrl(profile.provider)) },
+                    )
                 }
-                RowDivider()
-                QuickLinksRow(
-                    provider = profile.provider,
-                    onOpenDefault = { openInBrowser(context, it, null) },
-                    onOpenWithPicker = { openWithPicker(it) },
-                )
             }
 
             message?.let {
@@ -1418,6 +1534,94 @@ private fun TokenCard(
                 Text(it, style = MaterialTheme.typography.bodySmall)
             }
         }
+    }
+}
+
+/**
+ * CCRM-65 (Accounts Redesign): the header's active-indicator, replacing the old
+ * "Active" [PlanChip]-style pill — an 8dp dot carries the same two states with far
+ * less width. Decorative to a sighted user, not to TalkBack: since the word
+ * "Active" is no longer painted anywhere, the dot's own contentDescription says it,
+ * read out with the account name and plan the same way the pill's text used to be.
+ */
+@Composable
+private fun StatusDot(authState: AuthState) {
+    val dark = appDark()
+    val (color, description) = when (authState) {
+        AuthState.REAUTH_NEEDED -> MaterialTheme.colorScheme.error to "Needs re-auth"
+        else -> (if (dark) Color(0xFF81C995) else Color(0xFF188038)) to "Active"
+    }
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .clip(CircleShape)
+            .background(color)
+            .semantics { contentDescription = description },
+    )
+}
+
+/**
+ * The status line's ⟳, shared between [TokenCard] and [ChatGptAccountBody]
+ * (CCRM-65 (Accounts Redesign)) — ChatGPT used to have its own "Refresh" button
+ * down in the button row; now it's the same control Claude uses, in the same spot.
+ */
+@Composable
+private fun RefreshIconButton(enabled: Boolean, onClick: () -> Unit) {
+    IconButton(enabled = enabled, onClick = onClick, modifier = Modifier.size(28.dp)) {
+        Icon(
+            Icons.Filled.Refresh,
+            contentDescription = "Check token now",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+/**
+ * One of the account card's three icon-over-label actions (CCRM-65 (Accounts
+ * Redesign)), built to `design/accounts-redesign-wireframe.html` section 1/3 — icon
+ * + label beneath, evenly split across the row (rev A's shape; the icon-only and
+ * outlined-pill variants were dropped in review). [emphasized] draws the 1dp
+ * primary border rev D's state *c* puts around "Re-sign in" when the account needs
+ * re-auth — not in the wireframe's listed [ActionCell] signature, but there's no
+ * other way to carry that border without one.
+ */
+@Composable
+private fun RowScope.ActionCell(
+    @DrawableRes icon: Int,
+    label: String,
+    tint: Color,
+    enabled: Boolean,
+    emphasized: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .heightIn(min = 44.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .then(
+                if (emphasized) {
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
+                } else {
+                    Modifier
+                },
+            )
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.38f)
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(painterResource(icon), null, tint = tint, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.height(4.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = tint,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+        )
     }
 }
 
@@ -1489,12 +1693,14 @@ private fun rememberBrowserOpener(label: String, provider: Provider): (String) -
 
 /**
  * A ChatGPT account's card body (CCRM-54 (ChatGPT Account) part 2), built to
- * `design/provider-identity-wireframe.html` section 4. It shares the card header
- * above it — mark, label, [StatusChip], [PlanChip] — and replaces everything else,
- * because a non-Claude account has none of that machinery: no authorize URL, no
- * pasted `code#state`, no QR or desktop-JSON backup, and no ~30-day family estimate
- * to draw an "expires around" line from (CCRM-16 (Sign-in Expiry Accuracy)'s rule
- * that no estimate beats a wrong one — `refreshExpiresAt` stays 0 here).
+ * `design/provider-identity-wireframe.html` section 4 and, for the status line and
+ * action row, `design/accounts-redesign-wireframe.html` rev D (CCRM-65 (Accounts
+ * Redesign)). It shares the card header above it — mark, label, [StatusDot],
+ * [PlanChip] — and replaces everything else, because a non-Claude account has none
+ * of that machinery: no authorize URL, no pasted `code#state`, no QR or
+ * desktop-JSON backup, and no ~30-day family estimate to draw an "expires around"
+ * line from (CCRM-16 (Sign-in Expiry Accuracy)'s rule that no estimate beats a
+ * wrong one — `refreshExpiresAt` stays 0 here).
  *
  * Sign-in opens the [DeviceCodeSheet]; the poll runs while the sheet is open and
  * resumes from [UsageRepository.pendingDeviceSignIn] after process death — fifteen
@@ -1516,7 +1722,6 @@ private fun ChatGptAccountBody(
     var tick by remember { mutableIntStateOf(0) }
     val hasToken = remember(tick) { repo.hasCredentials(profile) }
     val snapshot = remember(tick) { repo.snapshot(profile) }
-    val addedAt = remember(tick) { repo.tokenAddedAt(profile) }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
 
@@ -1628,26 +1833,16 @@ private fun ChatGptAccountBody(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     } else {
-        Text(
-            "Last checked: ${Fmt.dayTimeWithAgo(snapshot.lastAttemptAt, use24h)}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            "Added: ${if (addedAt > 0) Fmt.date(addedAt) else "—"}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        // No "expires around" line, deliberately (CCRM-57 (Provider Plumbing)): the
-        // ~30-day family estimate is Anthropic's, and OpenAI's token family has no
-        // fixed life we know of. `refreshExpiresAt` stays 0, which is what every
-        // expiry surface — this line, the panel strip, the alert — is gated on.
-        Spacer(Modifier.height(10.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(enabled = !busy, onClick = { beginDeviceSignIn() }) {
-                Text("Sign in with a code")
-            }
-            OutlinedButton(
+        val now = System.currentTimeMillis()
+        val backoffUntil = remember(tick) { repo.cacheSettings().backoffUntil(profile) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                AccountStatusLine.chatGpt(snapshot.lastAttemptAt, busy, now),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            RefreshIconButton(
                 enabled = !busy,
                 onClick = {
                     scope.launch {
@@ -1658,22 +1853,55 @@ private fun ChatGptAccountBody(
                         bump()
                     }
                 },
-            ) { Text("Refresh") }
-            TextButton(
+            )
+        }
+        if (snapshot.authState == AuthState.REAUTH_NEEDED) {
+            Text(
+                "Sign-in stopped working — sign in with a code below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        if (backoffUntil > now) {
+            Text(
+                "Rate-limited — next try in ${Fmt.dhm(backoffUntil)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        // No "expires around" line, deliberately (CCRM-57 (Provider Plumbing)): the
+        // ~30-day family estimate is Anthropic's, and OpenAI's token family has no
+        // fixed life we know of. `refreshExpiresAt` stays 0, which is what every
+        // expiry surface — this line, the panel strip, the alert — is gated on.
+        // "Added" moved into the ⋮ menu's Details… dialog (CCRM-65 (Accounts Redesign)).
+        RowDivider()
+        Row(Modifier.fillMaxWidth()) {
+            ActionCell(
+                icon = R.drawable.ic_action_key,
+                label = "Sign in with a code",
+                tint = MaterialTheme.colorScheme.onSurface,
+                enabled = !busy,
+                onClick = { beginDeviceSignIn() },
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_sign_out,
+                label = "Clear",
+                tint = MaterialTheme.colorScheme.error,
                 enabled = !busy,
                 onClick = {
                     repo.clearCredentials(profile)
                     message = "$label signed out."
                     bump()
                 },
-            ) { Text("Clear", color = MaterialTheme.colorScheme.error) }
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_open_new,
+                label = "Settings",
+                tint = MaterialTheme.colorScheme.primary,
+                enabled = !busy,
+                onClick = { openWithPicker(QuickLinks.accountUrl(profile.provider)) },
+            )
         }
-        RowDivider()
-        QuickLinksRow(
-            provider = profile.provider,
-            onOpenDefault = { openInBrowser(context, it, null) },
-            onOpenWithPicker = openWithPicker,
-        )
         // No Backup method, paste or QR: those move a *desktop* Claude Code token onto
         // the phone. OpenAI's refresh tokens rotate, and redeeming an imported one
         // invalidates the whole family (`refresh_token_reused`) — the phone mints its
@@ -1871,31 +2099,6 @@ private fun SignInCompletion(
     }
 }
 
-/**
- * CCRM-26 (Quick Links), per provider (CCRM-57 (Provider Plumbing)): the two
- * escapes below an account card's divider — quick escapes, not account actions.
- *
- * The status page goes to the default browser (it is account-independent); the
- * dashboard reuses the sign-in picker, because which browser holds *this
- * profile's* session is the same question either way. A FlowRow rather than a Row
- * so the second label drops to its own line at large font scales instead of
- * wrapping mid-label.
- */
-@Composable
-private fun QuickLinksRow(
-    provider: Provider,
-    onOpenDefault: (String) -> Unit,
-    onOpenWithPicker: (String) -> Unit,
-) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (link in QuickLinks.forProvider(provider)) {
-            TextButton(onClick = {
-                if (link.usePicker) onOpenWithPicker(link.url) else onOpenDefault(link.url)
-            }) { Text(link.label) }
-        }
-    }
-}
-
 @Composable
 private fun PlanChip(plan: String, tier: String?) {
     val color = MaterialTheme.colorScheme.primary
@@ -1904,24 +2107,6 @@ private fun PlanChip(plan: String, tier: String?) {
     val multiplier = Fmt.tierMultiplier(tier)
     Text(
         plan.replaceFirstChar { it.uppercase() } + (multiplier?.let { " $it" } ?: ""),
-        style = MaterialTheme.typography.labelSmall,
-        color = color,
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(color.copy(alpha = 0.14f))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
-    )
-}
-
-@Composable
-private fun StatusChip(authState: AuthState) {
-    val dark = appDark()
-    val (label, color) = when (authState) {
-        AuthState.REAUTH_NEEDED -> "Needs re-auth" to MaterialTheme.colorScheme.error
-        else -> "Active" to if (dark) Color(0xFF81C995) else Color(0xFF188038)
-    }
-    Text(
-        label,
         style = MaterialTheme.typography.labelSmall,
         color = color,
         modifier = Modifier
@@ -2723,7 +2908,7 @@ private fun NoteCard(text: String, positive: Boolean) {
     val tint = if (positive) {
         if (dark) Color(0xFF81C995) else Color(0xFF188038)
     } else {
-        if (dark) Color(0xFFFDD663) else Color(0xFF9A6700)
+        Palette.warn(dark)
     }
     Surface(
         shape = RoundedCornerShape(12.dp),

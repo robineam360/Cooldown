@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCRM-65 (Accounts Redesign)</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 96px; line-height: 1.5;
+  }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 74ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 54px 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 8px 0 0;
+  }
+  .cap.good { color: var(--good); }
+  .cap.bad { color: var(--bad); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+  .opt {
+    flex: 1 1 268px; max-width: 300px;
+    border: 1px solid var(--hair); border-radius: 18px; padding: 20px;
+    background: var(--card);
+  }
+  .opt.acctopt { flex: 0 0 328px; max-width: 328px; padding: 0; background: transparent; border: 0; }
+  .opt h4 { margin: 0 0 2px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .cols { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .col { flex: 1 1 300px; max-width: 460px; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 84ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 8px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 84ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 10px; }
+  ol.dec li b { font-weight: 650; }
+  .q { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0; font-size: 13.5px; max-width: 78ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+
+  /* ================= device mocks (fixed dark palette — mocks the phone, not the page theme) ================= */
+  .dev {
+    --dbg: #131316; --dcard: #1F1F23; --dink: #E4E2E6; --dmuted: rgba(199,196,207,.8);
+    --dacc: #E7A08A; --dgood: #81C995; --derr: #F2B8B5; --dwarn: #D8AC63; --dhair: #2C2C31;
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+    line-height: 1.3;
+  }
+  .phone {
+    width: 360px; background: var(--dbg); border-radius: 28px;
+    border: 6px solid #000; overflow: hidden; position: relative;
+  }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 10px; font-size: 16px; font-weight: 500; color: var(--dink); }
+  .tabs { display: flex; padding: 0 8px; border-bottom: 1px solid var(--dhair); }
+  .tab { flex: 1; text-align: center; font-size: 14px; font-weight: 500; padding: 10px 4px 11px; color: var(--dmuted); position: relative; }
+  .tab.on { color: var(--dacc); }
+  .tab.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--dacc); border-radius: 2px 2px 0 0; }
+  .seclabel { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dmuted); font-weight: 500; padding: 14px 16px 6px; }
+  .acctlist { padding: 0 16px 16px; }
+
+  .acard { background: var(--dcard); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+  .arow1 { display: flex; align-items: center; gap: 6px; min-height: 28px; }
+  .arow1 .lbl { flex: 0 1 auto; margin-right: 0; }
+  .mk { width: 20px; height: 20px; color: var(--dacc); flex: 0 0 auto; }
+  .mk.gpt { color: #74AA9C; }
+  .lbl { font-size: 16px; font-weight: 500; color: var(--dink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%; min-width: 20px; margin-right: 2px; }
+  .chip { font-size: 11.5px; font-weight: 500; padding: 2px 6px; border-radius: 8px; white-space: nowrap; flex: 0 0 auto; }
+  .chip.active { background: rgba(129,201,149,.14); color: var(--dgood); }
+  .chip.plan { background: rgba(231,160,138,.14); color: var(--dacc); }
+  .chip.err { background: rgba(242,184,181,.14); color: var(--derr); }
+  .arow1 .sp { flex: 1 1 auto; min-width: 4px; }
+  .kebab { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--dmuted); flex: 0 0 auto; }
+  .spin { width: 18px; height: 18px; color: var(--dmuted); flex: 0 0 auto; margin-right: 2px; }
+
+  .arow2 { display: flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 12px; color: var(--dmuted); }
+  .arow2 .txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .refresh { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--dmuted); flex: 0 0 auto; }
+
+  .arow3 { margin-top: 4px; font-size: 12px; color: var(--derr); }
+  .arow3.warn { color: var(--dwarn); }
+
+  .details { margin-top: 8px; background: rgba(255,255,255,.06); border-radius: 8px; padding: 10px 12px; }
+  .details .dl { font-size: 12px; color: var(--dmuted); margin-bottom: 4px; }
+  .details .dl:last-child { margin-bottom: 0; }
+  .details .dl.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .prov { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--dhair); font-size: 11px; color: rgba(199,196,207,.65); }
+  .provpanel { background: rgba(255,255,255,.06); border-radius: 8px; padding: 8px 10px; font-size: 11px; color: rgba(199,196,207,.65); margin: 8px 0; }
+
+  /* rev B/C: kebab menu + Details AlertDialog */
+  .menuwrap { display: flex; justify-content: flex-end; margin-top: -4px; }
+  .menuD { background: var(--dcard); border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.5); overflow: hidden; }
+  .menuD .mi { padding: 11px 16px; font-size: 13.5px; color: var(--dink); border-bottom: 1px solid var(--dhair); }
+  .menuD .mi:first-child { color: var(--dacc); font-weight: 600; }
+  .menuD .mi:last-child { border-bottom: 0; color: var(--derr); }
+  .dialog { width: 296px; background: var(--dcard); border-radius: 28px; padding: 22px 22px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.55); }
+  .dialog .dtitle { font-size: 18px; font-weight: 600; color: var(--dink); margin-bottom: 14px; }
+  .dialog .dl { font-size: 13px; color: var(--dmuted); margin-bottom: 8px; line-height: 1.4; }
+  .dialog .dl.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .dialog .dclose { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .dialog .dclose span { font-size: 13px; font-weight: 600; color: var(--dacc); padding: 8px 10px; }
+
+  /* rev B/C: active-indicator variants (section 5) */
+  .hdrow { display: inline-flex; align-items: center; gap: 5px; }
+  .gdot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--dgood); }
+  .gdot.bad { background: var(--derr); }
+  .gdot.hdr { margin-left: 2px; }
+  .gicon { width: 16px; height: 16px; flex: 0 0 auto; color: var(--dgood); }
+  .gicon.bad { color: var(--derr); }
+
+  .actrow { display: flex; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--dhair); }
+  .actrow.dim { opacity: .38; }
+  .acell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 44px; color: var(--dink); border-radius: 10px; }
+  .acell svg { width: 20px; height: 20px; }
+  .acell .lb { font-size: 11px; font-weight: 500; text-align: center; line-height: 1.15; }
+  .acell.err { color: var(--derr); }
+  .acell.acc { color: var(--dacc); }
+  .acell.emph { color: var(--dacc); box-shadow: inset 0 0 0 1px var(--dacc); }
+
+  .fbtn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 20px; border-radius: 20px; font-size: 14px; font-weight: 500; background: var(--dacc); color: #131316; width: 100%; margin-top: 10px; }
+  .obtn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 18px; font-size: 13px; font-weight: 500; border: 1px solid rgba(228,226,230,.32); color: var(--dink); }
+  .tbtn { font-size: 13px; font-weight: 500; color: var(--derr); }
+  .tbtn.plain { color: var(--dink); }
+  .helper { font-size: 12px; color: var(--dmuted); margin-top: 8px; }
+
+  /* today (reference) card */
+  .todaycard { background: var(--dcard); border-radius: 12px; padding: 16px; width: 328px; }
+  .trow { display: flex; align-items: center; gap: 4px; }
+  .trow .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; color: var(--dmuted); flex: 0 0 auto; }
+  .trow .sp { flex: 0 0 auto; min-width: 2px; }
+  .tline { display: flex; align-items: center; font-size: 12px; color: var(--dmuted); margin-top: 10px; }
+  .tline .txt { flex: 1; }
+  .tmeta { font-size: 12px; color: var(--dmuted); margin-top: 8px; line-height: 1.6; }
+  .tmeta .i { color: var(--dmuted); font-size: 11px; }
+  .tbtns { display: flex; gap: 10px; margin-top: 14px; }
+  .tdiv { height: 1px; background: var(--dhair); margin: 14px 0; }
+  .tlinks { display: flex; gap: 18px; font-size: 12.5px; color: var(--dacc); font-weight: 500; }
+
+  /* two-column inner-screen frame */
+  .innerframe { width: 760px; max-width: 100%; background: var(--dbg); border-radius: 20px; border: 6px solid #000; padding: 0 0 20px; }
+  .innergrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; padding: 0 20px; }
+
+  /* section 5: alt action rows */
+  .altcard { width: 328px; background: var(--dcard); border-radius: 12px; padding: 16px; }
+  .icobtn { width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.06); color: var(--dink); }
+  .icobtn svg { width: 20px; height: 20px; }
+  .altrowB { display: flex; justify-content: space-around; }
+  .altrowC { display: flex; gap: 6px; }
+  .pillC { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; height: 36px; border-radius: 18px; border: 1px solid rgba(228,226,230,.32); font-size: 10.5px; font-weight: 500; color: var(--dink); padding: 0 4px; white-space: nowrap; overflow: hidden; }
+  .pillC svg { width: 14px; height: 14px; flex: 0 0 auto; }
+  .menuD { background: var(--dcard); border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.5); overflow: hidden; }
+  .menuD .mi { padding: 11px 16px; font-size: 13.5px; color: var(--dink); border-bottom: 1px solid var(--dhair); }
+  .menuD .mi:last-child { border-bottom: 0; color: var(--derr); }
+
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; text-align: left; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+    <symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/></symbol>
+    <symbol id="icoKey" viewBox="0 0 24 24">
+      <circle cx="7.2" cy="9" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="9.6" y1="11.4" x2="19.4" y2="21.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <line x1="15.1" y1="16.9" x2="17.4" y2="14.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <line x1="17.4" y1="19.2" x2="19.6" y2="17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icoLogout" viewBox="0 0 24 24">
+      <path d="M9,4.5 H7 a2,2 0 0 0 -2,2 v11 a2,2 0 0 0 2,2 h2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <line x1="9.5" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <polyline points="16,8 20,12 16,16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icoOpenNew" viewBox="0 0 24 24">
+      <path d="M15,4.5 H20 v5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="20" y1="4.5" x2="11" y2="13.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M17.5,13.5 V18 a1.7,1.7 0 0 1 -1.7,1.7 H6.7 A1.7,1.7 0 0 1 5,18 V8.7 A1.7,1.7 0 0 1 6.7,7 H11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icoCheckCircle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <polyline points="7.5,12.5 10.3,15.3 16.5,9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icoErrorCircle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <line x1="12" y1="7.5" x2="12" y2="13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="12" cy="16.3" r="1" fill="currentColor" stroke="none"/>
+    </symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCRM-65 · Accounts Redesign · rev D · 2026-09-11</p>
+  <h1>A shorter, cleaner account card</h1>
+  <p class="lede">Robin's brief: <em>"The Accounts tab in settings is just too long&hellip; put the usage dashboard on the
+    same line as the Re-sign in / Clear buttons. Make all these three actions clear with an icon."</em></p>
+
+  <p class="sub"><b style="color:var(--ink);">Decisions from rev A review (2026-09-11):</b></p>
+  <ul class="inv" style="margin-bottom:22px;">
+    <li>Details moves off the status line entirely &mdash; no chevron. It's the first item ("Details&hellip;") in the &#8942; menu, and opens as a dialog.</li>
+    <li>Action row stays icon + label beneath (rev A shape); variants B (icon-only) and C (outlined pills) are dropped.</li>
+    <li>Token tail stays out of the header, in Details, as drawn.</li>
+    <li>The amber "expires soon" line now fires at &le;3 days, not &le;7.</li>
+    <li>ChatGPT's third cell keeps the "Settings" label; the status line stays relative-only.</li>
+    <li>Fix: the ChatGPT mark now matches the Claude mark's optical size (CCBG-23 (Mark Size Mismatch)).</li>
+    <li>Active indicator: B green dot (decided 2026-09-11).</li>
+    <li>Dot placement: immediately after the label, 8px gap; the plan chip follows the dot; the flexible spacer moves after the chip (decided 2026-09-11).</li>
+  </ul>
+
+  <!-- ============================================================ -->
+  <h2>1. Today vs rev D</h2>
+  <p class="sub">Same account (Teams, Team Standard, Active), two treatments. Today's card carries four always-on
+    metadata lines, a divider, and two link rows below the buttons — all of it visible whether or not you care right
+    now. Rev D folds everything but the checked-time and a conditional warning into the &#8942; menu's Details dialog.</p>
+  <div class="row dev">
+    <div>
+      <div class="todaycard">
+        <div class="trow">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl">Teams</span>
+          <span class="chip active">Active</span>
+          <span class="chip plan">Team Standard</span>
+          <span class="sp"></span>
+          <span class="mono">&hellip;HAAA</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+        <div class="tline"><span class="txt">Last checked: Fri 12:52&nbsp;pm (just now)</span><span class="refresh">&#8635;</span></div>
+        <div class="tmeta">
+          Auto-renews in 2h 13m<br>
+          Last auto-renewed: Fri 7:06&nbsp;am (5h 46m ago)<br>
+          Sign-in expires around Sept 20, 6:45&nbsp;pm &middot; ~9d 5h 52m left <span class="i">&#9432;</span><br>
+          Added: Aug 21, 2026
+        </div>
+        <div class="tbtns">
+          <span class="obtn">Re-sign in</span>
+          <span class="tbtn">Clear</span>
+        </div>
+        <div class="tdiv"></div>
+        <div class="tlinks"><span>Anthropic status</span><span>Usage dashboard</span></div>
+      </div>
+      <p class="devcap">Today &middot; ~330dp per card &middot; four accounts &asymp; 2.5 screens</p>
+    </div>
+
+    <div>
+      <div class="acard" id="s1card" style="width:328px;">
+        <div class="arow1">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl">Teams</span>
+          <span class="gdot hdr"></span>
+          <span class="chip plan">Team Standard</span>
+          <span class="sp"></span>
+          <span class="kebab">&#8942;</span>
+        </div>
+        <div class="arow2"><span class="txt">Checked just now &middot; renews in 1h 9m</span><span class="refresh">&#8635;</span></div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap" id="s1cap">Rev D &middot; measuring&hellip;</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>2. The full tab at four accounts, rev D</h2>
+  <p class="sub">Free (usage not reported), Teams, Product (a second Claude account), and ChatGPT — the four
+    real accounts on Robin's phone today — stacked in one 360&times;800dp frame with the "+ Add account" row.
+    The caption below is computed from the rendered mock, not typed in.</p>
+  <div class="dev">
+    <div class="phone" id="s2phone" style="height:800px;">
+      <div class="topbar">&larr; Settings</div>
+      <div class="tabs">
+        <div class="tab on">Accounts</div>
+        <div class="tab">Alerts</div>
+        <div class="tab">Appearance</div>
+        <div class="tab">More</div>
+      </div>
+      <div class="seclabel">ACCOUNTS</div>
+      <div class="acctlist" id="s2list">
+
+        <div class="acard">
+          <div class="arow1">
+            <svg class="mk"><use href="#mkClaude"/></svg>
+            <span class="lbl">Free</span>
+            <span class="gdot hdr"></span>
+            <span class="chip plan">Free</span>
+            <span class="sp"></span>
+            <span class="kebab">&#8942;</span>
+          </div>
+          <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+          <div class="arow3">Free plan: Claude doesn't report usage &mdash; upgrade to Pro, Max or Team to see numbers.</div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+
+        <div class="acard">
+          <div class="arow1">
+            <svg class="mk"><use href="#mkClaude"/></svg>
+            <span class="lbl">Teams</span>
+            <span class="gdot hdr"></span>
+            <span class="chip plan">Team Standard</span>
+            <span class="sp"></span>
+            <span class="kebab">&#8942;</span>
+          </div>
+          <div class="arow2"><span class="txt">Checked just now &middot; renews in 1h 9m</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+
+        <div class="acard">
+          <div class="arow1">
+            <svg class="mk"><use href="#mkClaude"/></svg>
+            <span class="lbl">Product</span>
+            <span class="gdot hdr"></span>
+            <span class="chip plan">Team Premium</span>
+            <span class="sp"></span>
+            <span class="kebab">&#8942;</span>
+          </div>
+          <div class="arow2"><span class="txt">Checked 1m ago &middot; renews in 3h 40m</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+
+        <div class="acard">
+          <div class="arow1">
+            <svg class="mk gpt"><use href="#mkGpt"/></svg>
+            <span class="lbl">ChatGPT</span>
+            <span class="gdot hdr"></span>
+            <span class="chip plan">Plus</span>
+            <span class="sp"></span>
+            <span class="kebab">&#8942;</span>
+          </div>
+          <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Sign in with a code</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Settings</span></div>
+          </div>
+        </div>
+
+        <div class="fbtn">+ Add account</div>
+      </div>
+    </div>
+  </div>
+  <p class="cap" id="s2cap">computing stack height&hellip;</p>
+
+  <!-- ============================================================ -->
+  <h2>3. States</h2>
+  <p class="sub">Every state the card can be in, rendered at the same 328px inner card width. Nothing here is
+    simplified from what's on the phone today — the collapsed defaults are shorter, the expanded and edge states
+    still carry every line.</p>
+  <div class="grid dev">
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Teams</span><span class="gdot hdr"></span><span class="chip plan">Team Standard</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now &middot; renews in 1h 9m</span><span class="refresh">&#8635;</span></div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">a &middot; Healthy Claude, collapsed (Teams)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Free</span><span class="gdot hdr"></span><span class="chip plan">Free</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+        <div class="arow3">Free plan: Claude doesn't report usage &mdash; upgrade to Pro, Max or Team to see numbers.</div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+        <div class="menuwrap">
+          <div class="menuD" style="width:186px;">
+            <div class="mi">Details&hellip;</div>
+            <div class="mi">Rename&hellip;</div>
+            <div class="mi">Accent colour&hellip;</div>
+            <div class="mi">Remove account</div>
+          </div>
+        </div>
+      </div>
+      <p class="devcap">b1 &middot; &#8942; menu open (Free) &mdash; Details&hellip; is the first item</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="dialog">
+        <div class="dtitle">Free</div>
+        <div class="dl">Last checked: Fri 12:52&nbsp;pm (just now)</div>
+        <div class="dl">Last auto-renewed: Fri 6:01&nbsp;am (6h 50m ago)</div>
+        <div class="dl">Sign-in expires around Oct 5, 7:05&nbsp;pm &middot; ~24d 6h left</div>
+        <div class="provpanel">Anthropic doesn't report the real expiry &mdash; this is a flat ~30-day estimate from sign-in, corrected if renewal stops working earlier.</div>
+        <div class="dl">Added: Sept 5, 2026</div>
+        <div class="dl mono">Token &hellip;KwAA</div>
+        <div class="dclose"><span>Close</span></div>
+      </div>
+      <p class="devcap">b2 &middot; Details&hellip; opens this AlertDialog (Claude)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="dialog">
+        <div class="dtitle">ChatGPT</div>
+        <div class="dl">Last checked: Fri 12:52&nbsp;pm (just now)</div>
+        <div class="dl">Added: Aug 30, 2026</div>
+        <div class="dl mono">Token &hellip;9dCQ</div>
+        <div class="dclose"><span>Close</span></div>
+      </div>
+      <p class="devcap">b3 &middot; same dialog for ChatGPT &mdash; no renewal/expiry fields</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Product</span><span class="gdot hdr bad"></span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked 3h 38m ago</span><span class="refresh">&#8635;</span></div>
+        <div class="arow3">Renewal has stopped working &mdash; re-sign in below.</div>
+        <div class="actrow">
+          <div class="acell emph"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">c &middot; Needs re-auth (Product)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Teams</span><span class="gdot hdr"></span><span class="chip plan">Team Standard</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+        <div class="arow3 warn">Sign-in expires in 2d 14h &mdash; re-sign in to keep polling going.</div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">d &middot; Expiry soon (&le;3d, amber)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Teams</span><span class="gdot hdr"></span><span class="chip plan">Team Standard</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now &middot; renews in 1h 9m</span><span class="refresh">&#8635;</span></div>
+        <div class="arow3">Rate-limited &mdash; next try in 4m</div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">e &middot; Rate-limited</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Free</span><span class="gdot hdr"></span><span class="chip plan">Free</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+        <div class="arow3">Free plan: Claude doesn't report usage &mdash; upgrade to Pro, Max or Team to see numbers.</div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">f &middot; Free plan (collapsed)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Claude</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div style="font-size:12px;color:var(--dmuted);margin-top:8px;">Not signed in</div>
+        <div class="fbtn">Sign in on this phone</div>
+        <div class="helper">Opens Claude's sign-in in your browser &mdash; no computer needed. Needs a paid plan: Claude reports no usage for Free accounts.</div>
+      </div>
+      <p class="devcap">g &middot; Not signed in</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Claude</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div style="font-size:14px;font-weight:600;color:var(--dink);margin-top:10px;">Finish signing in</div>
+        <div style="font-size:12px;color:var(--dmuted);margin-top:4px;">Sign in on the page that opened, then copy the code it shows and paste it here.</div>
+        <div style="display:flex;align-items:center;height:40px;border:1px solid rgba(228,226,230,.32);border-radius:8px;padding:0 12px;margin-top:10px;font-size:13px;color:var(--dmuted);">
+          <span style="flex:1;">Paste the sign-in code</span><span style="color:var(--dacc);font-weight:500;">Paste</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
+          <span class="obtn" style="background:var(--dacc);color:#131316;border:0;">Finish sign-in</span>
+          <span class="tbtn plain">Reopen page</span>
+          <span class="sp" style="flex:1;"></span>
+          <span class="tbtn plain">Cancel</span>
+        </div>
+      </div>
+      <p class="devcap">h &middot; Finishing sign-in &mdash; unchanged from today</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk gpt"><use href="#mkGpt"/></svg><span class="lbl">ChatGPT</span><span class="gdot hdr"></span><span class="chip plan">Plus</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+        <div class="actrow">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Sign in with a code</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Settings</span></div>
+        </div>
+      </div>
+      <p class="devcap">i &middot; ChatGPT signed in</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk gpt"><use href="#mkGpt"/></svg><span class="lbl">ChatGPT</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+        <div style="font-size:12px;color:var(--dmuted);margin-top:8px;">Not signed in</div>
+        <div class="fbtn">Sign in with a code</div>
+        <div class="helper">Shows a short code to type at auth.openai.com &mdash; on this phone or any other device.</div>
+      </div>
+      <p class="devcap">j &middot; ChatGPT not signed in</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1">
+          <svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Teams</span><span class="gdot hdr"></span><span class="chip plan">Team Standard</span><span class="sp"></span>
+          <svg class="spin"><use href="#ring42"/></svg>
+          <span class="kebab">&#8942;</span>
+        </div>
+        <div class="arow2"><span class="txt">Checking&hellip;</span><span class="refresh">&#8635;</span></div>
+        <div class="actrow dim">
+          <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+          <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+          <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+        </div>
+      </div>
+      <p class="devcap">k &middot; Busy (spinner, actions dimmed 38%)</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard">
+        <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl" id="s3llbl">Robin's Anthropic Team Premium</span><span class="gdot hdr"></span><span class="chip plan">Team Premium</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+      </div>
+      <p class="devcap" id="s3lcap">l &middot; Long label, ellipsized, dot + chip intact</p>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>4. Inner screen &middot; two columns</h2>
+  <p class="sub">Fold 7 inner screen is &asymp;750dp wide; Compose's <code>TwoColumnMinWidth</code> is 700dp. Frame
+    below is 760px with 20px gutters and a 20px column gap, page max width 1100. Cards alternate left/right so
+    scanning top-to-bottom still reads account-by-account; both shown collapsed.</p>
+  <div class="dev">
+    <div class="innerframe">
+      <div class="topbar">&larr; Settings</div>
+      <div class="tabs" style="padding:0 20px;">
+        <div class="tab on">Accounts</div><div class="tab">Alerts</div><div class="tab">Appearance</div><div class="tab">More</div>
+      </div>
+      <div class="seclabel" style="padding-left:20px;">ACCOUNTS</div>
+      <div class="innergrid">
+        <div class="acard">
+          <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Free</span><span class="gdot hdr"></span><span class="chip plan">Free</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+          <div class="arow3">Free plan: Claude doesn't report usage &mdash; upgrade to Pro, Max or Team to see numbers.</div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+        <div class="acard">
+          <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Teams</span><span class="gdot hdr"></span><span class="chip plan">Team Standard</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span class="txt">Checked just now &middot; renews in 1h 9m</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+        <div class="acard">
+          <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Product</span><span class="gdot hdr"></span><span class="chip plan">Team Premium</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span class="txt">Checked 1m ago &middot; renews in 3h 40m</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Re-sign in</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Dashboard</span></div>
+          </div>
+        </div>
+        <div class="acard">
+          <div class="arow1"><svg class="mk gpt"><use href="#mkGpt"/></svg><span class="lbl">ChatGPT</span><span class="gdot hdr"></span><span class="chip plan">Plus</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span class="txt">Checked just now</span><span class="refresh">&#8635;</span></div>
+          <div class="actrow">
+            <div class="acell"><svg><use href="#icoKey"/></svg><span class="lb">Sign in with a code</span></div>
+            <div class="acell err"><svg><use href="#icoLogout"/></svg><span class="lb">Clear</span></div>
+            <div class="acell acc"><svg><use href="#icoOpenNew"/></svg><span class="lb">Settings</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 20px 0;"><div class="fbtn" style="margin-top:0;">+ Add account</div></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>5. Active indicator variants &mdash; B chosen</h2>
+  <p class="sub">Kept as the record of what was considered. Robin chose B (green dot) on 2026-09-11; A, C and D are
+    shown for reference only and are not built. Header rows are Teams &middot; Team Standard. Captions are measured
+    live from the rendered header row, not typed in.</p>
+  <div class="grid dev">
+
+    <div class="opt acctopt">
+      <div class="acard" style="width:fit-content;">
+        <div class="hdrow" id="indA">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="chip active">Active</span>
+          <span class="chip plan">Team Standard</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <div class="acard" style="width:fit-content;margin-top:8px;">
+        <div class="hdrow">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="chip err">Needs re-auth</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <p class="devcap" id="s5capA">A &middot; measuring&hellip;</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard" style="width:fit-content;">
+        <div class="hdrow" id="indB">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="gdot"></span>
+          <span class="chip plan">Team Standard</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <div class="acard" style="margin-top:8px;">
+        <div class="hdrow">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="gdot bad"></span>
+          <span class="kebab">&#8942;</span>
+        </div>
+        <div class="arow3" style="margin-top:8px;">Renewal has stopped working &mdash; re-sign in below.</div>
+      </div>
+      <p class="devcap" id="s5capB" style="color:var(--dgood);font-weight:700;">B &middot; measuring&hellip;</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard" style="width:fit-content;">
+        <div class="hdrow" id="indC">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <svg class="gicon"><use href="#icoCheckCircle"/></svg>
+          <span class="chip plan">Team Standard</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <div class="acard" style="margin-top:8px;">
+        <div class="hdrow">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <svg class="gicon bad"><use href="#icoErrorCircle"/></svg>
+          <span class="kebab">&#8942;</span>
+        </div>
+        <div class="arow3" style="margin-top:8px;">Renewal has stopped working &mdash; re-sign in below.</div>
+      </div>
+      <p class="devcap" id="s5capC">C &middot; measuring&hellip;</p>
+    </div>
+
+    <div class="opt acctopt">
+      <div class="acard" style="width:fit-content;">
+        <div class="hdrow" id="indD">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="chip plan">Team Standard</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <div class="acard" style="width:fit-content;margin-top:8px;">
+        <div class="hdrow">
+          <svg class="mk"><use href="#mkClaude"/></svg>
+          <span class="lbl" style="flex:0 0 auto;">Teams</span>
+          <span class="chip err">Needs re-auth</span>
+          <span class="kebab">&#8942;</span>
+        </div>
+      </div>
+      <p class="devcap" id="s5capD">D &middot; measuring&hellip;</p>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>6. What changes, what doesn't</h2>
+  <div class="cols">
+    <div class="col">
+      <h4 class="sh" style="margin:0 0 8px;font-size:13px;font-weight:700;">Removed from the card</h4>
+      <ul class="inv">
+        <li><b>Anthropic status / OpenAI status links</b> &mdash; become an error-notice-only surfaced via MainActivity, not a permanent link on every card.</li>
+        <li><b>The divider</b> between the buttons and the links.</li>
+        <li><b>Four always-on lines</b> (auto-renews-in, last-auto-renewed, expiry, added) &mdash; move into the &#8942; menu's Details dialog.</li>
+        <li><b>The token tail from the header</b> &mdash; moves into the Details dialog.</li>
+        <li><b>ChatGPT's own Refresh button</b> &mdash; replaced by the shared &#8635; on the status line, same control Claude uses.</li>
+        <li><b>The absolute clock time on the status line</b> &mdash; status line is relative-only; the clock time is the dialog's first line.</li>
+        <li><b>The status-line chevron</b> &mdash; Details is now the first item ("Details&hellip;") in the &#8942; menu, opened as a dialog, instead of an inline expand.</li>
+        <li><b>The "Active" pill</b> &mdash; replaced by an 8dp green dot after the label (and a red dot in the same slot for "Needs re-auth"); no chip, no visible word.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4 class="sh" style="margin:0 0 8px;font-size:13px;font-weight:700;">Unchanged</h4>
+      <ul class="inv">
+        <li>The &#8942; menu's other items (Rename&hellip;, Accent colour&hellip;, Remove account) and their dialogs.</li>
+        <li>Sign-in flows (browser sign-in, device-code sheet for ChatGPT).</li>
+        <li>The Add account sheet.</li>
+        <li>The two-column switch at 700dp.</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="q" style="margin-top:20px;"><b>Accessibility:</b> the dot is decorative to a sighted user but not to
+    TalkBack &mdash; since the word "Active" is no longer on screen, the dot's view carries
+    <code>contentDescription</code> "Active" (green) or "Needs re-auth" (red), read out with the account name and
+    plan the same way the pill's text used to be.</p>
+
+  <!-- ============================================================ -->
+  <h2>7. Open questions</h2>
+  <p class="sub">No open questions &mdash; rev D is the build candidate, awaiting Robin's explicit approval.</p>
+
+</div>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    var topbar = document.querySelector('#s2phone .topbar').offsetHeight;
+    var tabs = document.querySelector('#s2phone .tabs').offsetHeight;
+    var seclabel = document.querySelector('#s2phone .seclabel').offsetHeight;
+    var list = document.getElementById('s2list').scrollHeight;
+    var total = topbar + tabs + seclabel + list;
+    var fits = total <= 800;
+    var screens = (total / 800).toFixed(1);
+    var cardH = document.getElementById('s1card').offsetHeight;
+    document.getElementById('s2cap').textContent =
+      'Computed stack: top bar ' + topbar + 'px + tabs ' + tabs + 'px + section label ' + seclabel +
+      'px + account list (4 cards + add button) ' + list + 'px = ' + total + 'px total — ' +
+      (fits ? 'fits an 800dp screen with ' + (800 - total) + 'px to spare.'
+            : 'overflows an 800dp screen by ' + (total - 800) + 'px.') +
+      ' (~' + cardH + 'px measured per collapsed card.)';
+
+    document.getElementById('s1cap').textContent =
+      'Rev D · ' + cardH + 'px measured per collapsed card · four accounts ≈ ' + screens +
+      ' screens, down from ~2.5';
+
+    var avail = 296; // 328px card − 16px padding × 2
+    var wA = document.getElementById('indA').offsetWidth;
+    var wB = document.getElementById('indB').offsetWidth;
+    var wC = document.getElementById('indC').offsetWidth;
+    var wD = document.getElementById('indD').offsetWidth;
+    document.getElementById('s5capA').textContent =
+      'A · today’s Active pill — ' + wA + 'px of ' + avail + 'px available (baseline)';
+    document.getElementById('s5capB').textContent =
+      'B · green dot — CHOSEN — ' + wB + 'px of ' + avail + 'px available, saves ' + (wA - wB) + 'px vs A';
+    document.getElementById('s5capC').textContent =
+      'C · green tick — ' + wC + 'px of ' + avail + 'px available, saves ' + (wA - wC) + 'px vs A';
+    document.getElementById('s5capD').textContent =
+      'D · no healthy indicator — ' + wD + 'px of ' + avail + 'px available, saves ' + (wA - wD) + 'px vs A';
+
+    var lblW = document.getElementById('s3llbl').offsetWidth;
+    document.getElementById('s3lcap').textContent =
+      'l · Long label, ellipsized at ' + lblW + 'px available — dot + chip stay visible';
+  });
+</script>
+</body>
+</html>

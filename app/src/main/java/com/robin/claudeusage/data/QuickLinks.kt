@@ -4,11 +4,13 @@ package com.robin.claudeusage.data
  * CCRM-26 (Quick Links) per provider, the table CCRM-57 (Provider Plumbing) asks
  * for. Two escapes per account, always in the same order and with the same jobs:
  *
- * 1. **Status** — "is it me or is it them", the one the error notice links to.
- *    Opened in the default browser: a status page is account-independent.
- * 2. **Dashboard** — the provider's own usage or settings page. Opened through the
- *    browser picker, because *which* browser holds this profile's session is the
- *    same question the sign-in asks.
+ * 1. **Status** — "is it me or is it them". Used only by MainActivity's NETWORK/
+ *    SERVER error notice, never by the account card itself. Opened in the default
+ *    browser: a status page is account-independent.
+ * 2. **Dashboard** — the provider's own usage or settings page. This is the
+ *    account card's third action cell (CCRM-65 (Accounts Redesign)), reached via
+ *    [accountUrl]. Opened through the browser picker, because *which* browser
+ *    holds this profile's session is the same question the sign-in asks.
  *
  * Every URL here is a compile-time constant and https, so `allowedLinkUrl` never
  * has anything to reject; the guard stays in front of the launch regardless.
@@ -41,6 +43,9 @@ object QuickLinks {
 
     /** The "is it them?" destination — what the main screen's error notice opens. */
     fun statusUrl(provider: Provider): String = forProvider(provider).first().url
+
+    /** The account-scoped link — the card's Dashboard / Settings action cell (CCRM-65 (Accounts Redesign)). */
+    fun accountUrl(provider: Provider): String = forProvider(provider)[1].url
 
     /** "Check Anthropic status" / "Check OpenAI status" — the notice's button. */
     fun statusLabel(provider: Provider): String = "Check ${provider.vendor} status"
