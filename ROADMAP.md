@@ -933,6 +933,48 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
 
 ## Next — small, high value, ready to build
 
+### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
+- **Status:** Planned (filed 2026-09-11) · **runbook:** [RUNBOOK.md](RUNBOOK.md) — ten steps,
+  Step 1 (asking Anthropic and OpenAI whether they object) starts first because it runs on
+  their clock, not ours.
+- **Why:** sideloading reaches colleagues; a listing reaches everyone else, and it is the
+  precondition for deciding CCRM-7 (iOS) on evidence rather than guesswork. The app is MIT
+  and already carries the "Unofficial" notice, but open source settles neither of the two
+  things that decide whether a listing survives: trademark (marks stay inside the app as
+  nominative identifiers, never in the icon, title or feature graphic) and **authorisation**
+  — the app signs in with Anthropic's Claude Code OAuth client id and OpenAI's Codex CLI
+  client id, copied from their open-source CLIs. A public listing makes that visible, so we
+  ask first and keep the record; a written objection removes that provider from the Play
+  flavor or stops the arc (runbook Convention 7).
+- **What changes in the code** (assessment 2026-09-11, from the manifest, gradle and README):
+  1. `QUERY_ALL_PACKAGES` goes; a scoped `<queries>` for https `ACTION_VIEW` replaces it (the
+     manifest comment already predicted this; Play rejects the permission without an approved
+     use case). The browser picker (CCRM-46 (Picker Icons)) may under-report on some skins.
+  2. Two product flavors, `github` and `play`, same `applicationId`. The Play flavor has no
+     "Check for updates" row and no `releases/latest` link (Play forbids out-of-store update
+     paths; the app never downloads an APK, but the row should not exist there). Visible
+     Settings change → wireframe.
+  3. The About card carries the Unofficial disclaimer in-app, both flavors → wireframe.
+  4. `bundlePlayRelease` produces an AAB; `assembleGithubRelease` keeps producing the APK.
+  5. **Signing:** the existing `ccooldown-release.jks` key is uploaded as the Play app-signing
+     key (PEPK, "use an existing key"), so one signer covers both channels and users can move
+     between them without losing accounts or history. A Play-generated key would make the two
+     channels mutually non-updatable. One-way choice at the console.
+  6. A privacy policy URL (GitHub Pages) and a Data safety form: tokens on-device in the
+     Keystore, traffic only to the signed-in provider's endpoints, nothing to us, no SDKs.
+  7. Package name `com.robin.claudeusage` stays — it shows in the store URL and cannot change
+     without a new listing and broken updates.
+- **Already fine:** targetSdk 36, minSdk 31, INTERNET + POST_NOTIFICATIONS only, no foreground
+  service, WorkManager polling, encrypted credential storage, no analytics.
+- **Console facts to plan around:** personal developer accounts must run a closed test with 20
+  opted-in testers for 14 continuous days before production; the developer name and country
+  are public on the listing; the title "Cooldown" has to be checked for availability.
+- **Sequencing:** v1.7 (CCRM-65 (Accounts Redesign) and the open fixes) ships as the last
+  GitHub-only release first, so the flavor work is the only thing in the next diff.
+- **Where it lands:** `AndroidManifest.xml`, `app/build.gradle.kts`, `data/UpdateGate.kt`,
+  `data/UpdateCheck.kt`, `SettingsScreen.kt` (`AboutCard`, the More tab), `RELEASING.md`
+  (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
+
 ### CCRM-63 · Token Import Removal — one way to sign in to Claude, on the phone
 - **Status:** Done (2026-09-11) — asked for by Robin the same day ("like ChatGPT, one way to sign
   in and that's on device"); seen on the Fold 7: the "Use a computer token instead" link is gone

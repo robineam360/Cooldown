@@ -54,7 +54,7 @@ parsing, scheduling, tests, docs, or a bug fix that restores an already-approved
 - [BUGS.md](BUGS.md) — defects, `CCBG-N`, with a status and a severity.
 - [RELEASING.md](RELEASING.md) — the release process.
 - [RUNBOOK.md](RUNBOOK.md) — the ordered, checkable execution plan for a multi-session arc
-  (currently the multi-provider arc, CCRM-53 (Provider Model) onwards): one step per fresh
+  (currently the Play Store arc, CCRM-66 (Play Store Launch); earlier arcs are in git history at the commits the file names): one step per fresh
   session, the prompt to paste, and what "done" means. Tick steps off there; statuses still
   live in the tracker files.
 - `release/docs/` — the user-facing guide and brochure (HTML → headless Chrome; sources in

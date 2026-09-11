@@ -1,484 +1,410 @@
-# Runbook — the dual-identity arc (v1.5 → v1.6)
+# Runbook — the Play Store arc (v1.7 → Play)
 
-Ordered, checkable steps to take Cooldown from v1.5 to v1.6: the settings diet, the two-account
-always-on notification, the new icon and the two-rooms app. Every design decision is taken;
-nothing here waits on a wireframe. The v1.5 runbook (multi-provider arc, all steps ticked) is in
-git history at commit `e18cf32`.
+Ordered, checkable steps to take Cooldown from a GitHub-releases sideload to a public Google
+Play listing, and to decide afterwards whether an iPhone version follows. Roadmap item:
+CCRM-66 (Play Store Launch). The v1.6 runbook (dual-identity arc, all steps ticked) is in git
+history at commit `a7dba1b`; the v1.5 one (multi-provider arc) at `e18cf32`.
 
-**How this arc is run.** One **Fable** session is the orchestrator: it holds every decision,
-writes the sub-agent briefs, reviews their output, runs the tests, commits, and ticks this file.
-The labour goes to sub-agents picked by complexity: **Opus** for high (protocol, layout
-constraints, the surgery where a wrong cut silently breaks a feature), **Sonnet** for medium
-(ordinary implementation with tests, mechanical removals with judgement), **Haiku** for low
-(copy sweeps, tracker status edits, screenshot plumbing). The orchestrator may do a piece itself
-when it can do it better than a sub-agent. If the Fable session runs out of context or credits
-mid-arc, a fresh Fable session resumes from this file: paste the *Resume* block of the first
-unticked step.
+**What is different about this arc.** Most of it is not code. The steps that decide whether the
+listing survives — asking Anthropic and OpenAI whether they object, and the Play console's
+14-day closed test — are Robin's to run and are gated on other people's clocks. So the order
+below starts the slow, external clocks first and does the code while they run. Nothing here
+is a wireframe decision yet; the two visible changes (Step 4) go through working agreement 2
+before they are built.
 
-**Where the detail lives.** This file says *what order, which tier, and what to paste*. The specs
-are the roadmap items — [ROADMAP.md](ROADMAP.md), section *Dual identity and diet*: CCRM-60
-(Dual Identity), CCRM-61 (Settings Diet), CCRM-62 (Duet Notification) — the two approved
-wireframes `design/dual-identity-wireframe.html` and `design/settings-diet-wireframe.html`
-(their *Decisions* tables are binding), and the removal footprint in
-`design/research/2026-09-08-removal-audit.md`. Don't duplicate the specs here; if a spec turns
-out wrong, fix it in ROADMAP.md and note it in the step's *Log* line.
+**How this arc is run.** One **Fable** session orchestrates: drafts, briefs sub-agents, reviews,
+tests, commits and ticks this file. **Sonnet** for the manifest/flavor work and the privacy
+page; **Haiku** for copy sweeps and tracker edits; the orchestrator itself for anything that
+touches signing or the console, because a wrong move there is not undoable. If a session runs
+out mid-arc, a fresh Fable session resumes from the *Resume* block of the first unticked step.
+
+**Where the detail lives.** The reasoning behind each change is in ROADMAP.md item CCRM-66 (Play
+Store Launch). This file says what order, what to paste, and what "done" means. The release
+mechanics for the GitHub channel stay in [RELEASING.md](RELEASING.md); Step 8 extends that file
+for the second channel rather than duplicating it here.
 
 ## Conventions — every session reads this block first
 
-1. **Start from the paste.** Each step has a fenced *Resume in a fresh Fable session* block. It
-   tells the session what to read; it never needs an earlier conversation. Within a step the
-   orchestrator briefs sub-agents with the decisions baked in, in parallel where the files don't
-   overlap, and reviews every result before it lands.
-2. **Tests:** `./gradlew testDebugUnitTest`. Green before a step closes. `./gradlew
-   assembleDebug` must also compile; the removals in Step 1 touch the manifest and gradle.
-3. **Commits:** straight to `main`, subject `feat(CCRM-NN): …` / `refactor(CCRM-NN): …` /
-   `docs(CCRM-NN): …`, body naming any unrelated work riding along. Never stage
-   `ccooldown-release.jks`, `keystore.properties`, `local.properties`.
-4. **Close-out, in this order:** (a) satisfy every item in the step's *Done when* list;
-   (b) set the roadmap item's **Status** line; (c) in this file, tick the step's box in the
-   Progress table (☐ → ☑) and write one dated line after its **Log:**; (d) commit and push —
-   the tick rides in the same commit as the work.
-5. **Handover — the last thing every session does.** After the commit, the final message says
-   what changed in one paragraph, anything Robin has to do himself before the next step (phone
-   in hand, a screenshot to approve, the keystore), then the next step's *Resume* block copied
-   from this file. If this step's outcome changes the next step, edit the next step's block in
-   this file first, commit that too, then print the edited block.
-6. **Wireframe gate.** Working agreement 2 is satisfied for this arc by the two approved
-   wireframes. If a session wants to draw something they don't show, it stops and asks Robin
-   first, in one AskUserQuestion, naming the file to open. Mocks of existing elements must keep
-   every function the element has today (the trend chart keeps its guides, axis and projection).
-7. **Removal rule.** Delete the `when`, not its arms; keep what the audit marks *must stay*
-   (`Alerts.evaluate` as the per-poll pinned re-render, `checkReset` as the history writer,
-   `BarRenderer`/`BarGeometry`/`RingGeometry`/`Sparkline`). Where `refreshWidgets()` was the only
-   refresh on a settings chip, add `PinnedNotification.update` in its place (CCBG-14 (Stale
-   Notification Theme)).
-8. **Wording.** On the notification and any tight surface: "5h" and "Weekly". Tracker IDs carry
-   their epic name on first use.
+1. **Start from the paste.** Each step has a fenced *Resume in a fresh Fable session* block that
+   names what to read. It never needs an earlier conversation.
+2. **Tests:** `./gradlew testDebugUnitTest` green and `./gradlew assembleDebug` compiling before
+   a step closes. From Step 5 on, `./gradlew bundlePlayRelease` must also succeed.
+3. **Commits:** straight to `main`, subject `feat(CCRM-66): …` / `docs(CCRM-66): …`, body naming
+   anything unrelated riding along. Never stage `ccooldown-release.jks`, `keystore.properties`,
+   `local.properties`, or any PEPK output / upload-key export produced in Step 6.
+4. **Close-out, in this order:** (a) every item in the step's *Done when* list; (b) the roadmap
+   item's Status line; (c) tick the step in the Progress table (☐ → ☑) and write one dated line
+   after its **Log:**; (d) commit and push, the tick in the same commit as the work.
+5. **Handover.** The session's last message: what changed in one paragraph, what Robin has to
+   do himself before the next step, then the next step's *Resume* block copied from this file.
+6. **Wireframe gate.** Step 4 draws the About disclaimer and the Play-flavor Settings before
+   Step 5 builds them. A session that wants to change anything else the user sees stops and asks
+   Robin first, in one AskUserQuestion naming the file to open.
+7. **The permission answer is binding.** If Anthropic or OpenAI say no in Step 1, the arc stops
+   for that provider: the Play flavor ships without that provider, or not at all. Robin decides;
+   a session never argues past a written no.
+8. **Nothing about the store may imply affiliation.** No provider name in the title, no provider
+   mark in the icon, feature graphic or screenshots' framing. Provider marks stay inside the app,
+   beside the account they identify, with the disclaimer. Tracker IDs carry their epic name on
+   first use.
 
 ## Progress
 
-| Step | Item | Sub-agent tier | Needs Robin | Status |
+| Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
-| 1 | CCRM-61 (Settings Diet) part 1 — the removals | Opus (alerts surgery) · Sonnet (widgets, tile, styles, glyphs) · Haiku (tracker statuses) | no | ☑ |
-| 2 | CCRM-61 (Settings Diet) part 2 — four-tab Settings and the new rows | Sonnet | no | ☑ |
-| 3 | CCRM-62 (Duet Notification) — two accounts, 5h/Weekly, clean ring with picker | Opus | one look at the shade | ☑ |
-| 4 | CCRM-60 (Dual Identity) — icon, top-bar glyph, two rooms | Sonnet (rooms) · Opus (icon vectors) | approve the 48 dp icon render | ☑ |
-| 5 | Device pass on the Fold 7 | Sonnet | phone in hand | ☑ |
-| 6 | Release v1.6 — docs diet, screenshots, tag | Sonnet · Haiku (copy sweeps) | keystore, upload | ☑ |
+| 1 | Ask Anthropic and OpenAI whether they object | Robin sends · session drafts | — | ☐ |
+| 2 | Play console account, title check, tester recruitment | Robin | — | ☐ |
+| 3 | v1.7 out the door first (CCRM-65 device pass, open fixes) | session | — | ☐ |
+| 4 | Wireframes: About disclaimer · Play-flavor Settings · store graphics | session drafts · Robin approves | — | ☐ |
+| 5 | Code: scoped queries, `github`/`play` flavors, AAB | Sonnet · orchestrator reviews | 4 | ☐ |
+| 6 | Signing: existing key into Play App Signing, internal track, update-over-sideload check | orchestrator · Robin at the console | 5 | ☐ |
+| 7 | Privacy policy page, Data safety form, listing | Sonnet drafts · Robin submits | 5 | ☐ |
+| 8 | Closed test: 20 testers, 14 days; RELEASING.md for two channels | Robin · session | 6, 7 | ☐ |
+| 9 | Production release | Robin · session | 1 answered or 30 days silent, 8 | ☐ |
+| 10 | Decision: iPhone (CCRM-7 (iOS)) | Robin | 9 live ≥ 4 weeks | ☐ |
 
-Order matters: 2 needs 1 (the sections it rebuilds are gone), 3 needs 1 (styles and glyphs
-gone), 4 needs nothing but is last so the icon lands on the final app; 5 needs 1–4; 6 needs 5.
-Within Step 1 the three removal areas touch different files except `SettingsScreen.kt`,
-`UsageCache.kt`, `AndroidManifest.xml` and `PinnedNotification.kt`: give those four files to one
-agent at a time.
+Steps 1 and 2 start on day one and run in the background of everything else. 3 is independent
+and should ship before any Play code lands, so v1.7 is the last GitHub-only release. 4 → 5 → 6
+→ 7 → 8 → 9 in order. 10 is a decision, not work.
 
 ---
 
-## Step 1 · CCRM-61 (Settings Diet) part 1 — the removals
+## Step 1 · Ask Anthropic and OpenAI whether they object
 
-**Tier:** Opus for `alerts/Alerts.kt`, `notify/Conditions.kt`, `UsageCache.kt`'s alert block and
-the reset-ping per-account rework · Sonnet for the widget package, the Quick Settings tile, the
-three pinned styles and three glyphs · Haiku for tracker status lines.
+**Who:** the session drafts two emails; Robin sends them from his own address and records the
+dates. No sub-agents.
+
+**Why first:** the app signs in with Anthropic's Claude Code OAuth client and OpenAI's Codex CLI
+client, both copied from their open-source CLIs. A Play listing makes that visible. The
+question is theirs to answer, and their answer (or their silence) decides Step 9. Nothing
+technical in the arc depends on this, which is why it runs in parallel, but nothing goes to
+production before it is resolved.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 1 — then ROADMAP.md item
-CCRM-61 (Settings Diet) in full, then design/research/2026-09-08-removal-audit.md in full (it
-is the map of every touchpoint, with the four things in alerts/Alerts.kt that must stay).
-You are the orchestrator: brief sub-agents, review, test, commit. Three removal areas, in this
-order because they share four files: (A) Sonnet — widgets: the widget/ package,
-ui/RingRenderer.kt, app/src/debug/**, the five res/xml/*_widget_info.xml, the manifest
-receivers and config activity, the Glance lines in app/build.gradle.kts, WidgetRedrawWorker
-and its scheduling in work/Polling.kt, updateAll/updateWidgets in MainActivity and
-UsageRepository, WidgetPrefs and the two widget prefs in UsageCache, the refreshWidgets
-parameter and its nine call sites in SettingsScreen (add PinnedNotification.update where it
-was the only refresh), the eight widget strings, both widget tests; also the Quick Settings
-tile: tile/UsageTileService.kt and its four manifest declarations. (B) Opus — alerts:
-alerts/Alerts.kt edited down, keeping evaluate (ending in PinnedNotification.update),
-checkReset's SessionLog/windowPeak/lastSeenWindowKey bookkeeping AND its reset-ping notify
-branch with a per-account resetPingMode(profile, window), STALE_DATA_MS, notifId/MAX_KIND
-(re-anchored)/cancelAllFor; delete threshold, pace, auth, stale, ping alerts, six channels
-(keep reset_alerts and pinned_usage_v2; delete the six orphaned channels once at startup
-with deleteNotificationChannel), UpdateNotification.maybePost and UpdateSkipReceiver, all of
-ping/ and data/PingSchedule.kt, notif_alert*.xml, the fold machinery (FoldedEvent store,
-StripRules, Conditions.foldedInto/revocable/nextExpiry, PinnedNotification.armExpiry,
-ACTION_EXPIRE), the alert prefs listed in the audit (authAlertsEnabled goes and the re-auth
-strip becomes unconditional), Projection's pace ladder with PaceTest, the exact-alarm and
-boot permissions; the Settings "Notifications" section and its helper composables except
-what Step 2 rebuilds. (C) Sonnet — styles and glyphs: in PinnedNotification delete the
-when(style) wholesale so "big" is the only path, plus bigPicture/drawNumberTile/drawGauge and
-drawStatusIcon's style parameter; in ui/UsageIcon.kt the pie/battery/number arms, clearCircle
-and the PIE constants; pinnedStyle and pinnedIconStyle in UsageCache; the two chooser blocks in
-SettingsScreen. Then Haiku: mark the superseded tracker entries listed in CCRM-61's Status
-(ROADMAP.md and BUGS.md) with one dated line each. ./gradlew assembleDebug and
-testDebugUnitTest green; fix ProfileRegistryTest's MAX_KIND anchor and any test that imported
-a deleted class. Close per the Close-out rule (commit as refactor(CCRM-61): remove widgets,
-tile, alerts, styles), then follow the Handover rule and print Step 2.
+Read CLAUDE.md, then RUNBOOK.md — its Conventions block and Step 1 — then README.md's
+"Unofficial" notice and ROADMAP.md item CCRM-66 (Play Store Launch). Draft two short emails
+for Robin to send from his own address, one to Anthropic and one to OpenAI, and put them in
+design/research/2026-09-xx-permission-emails.md with the recipient address each was sent to
+left as a field Robin fills in (find the current developer-relations / trust-and-safety
+contact route on anthropic.com and openai.com the day you draft; do not guess an address).
+Each email, in Robin's voice, plain and under 200 words: who he is; what Cooldown is (an
+open-source Android app, MIT, that shows the user's own Claude / ChatGPT 5-hour and weekly
+usage windows on the phone; link to the repo); exactly how it authenticates (the user signs
+in themselves on the phone through the provider's own OAuth flow, using the same public
+client id the provider's CLI ships with; the token never leaves the device except to the
+provider's own endpoints; no server of ours, no analytics); that it is clearly marked
+unofficial and shows the provider's mark only beside the account it identifies; that he
+intends to publish it on Google Play under the name Cooldown with his own icon; and one
+question — do they object, or want anything changed? Offer to register a client of our own
+if they have a route for that. Then tell Robin the two things he does: send, and write the
+sent dates into the Log line below. Do not send anything yourself.
 ```
 
 **Done when:**
-- ☑ No `androidx.glance` import, no `widget/` package, no tile service, no `ping/` package.
-- ☑ `Alerts.kt` ≈ 130–180 lines: `evaluate`, `checkReset` (with per-account reset ping),
-  `STALE_DATA_MS`, `notifId`, `MAX_KIND`, `cancelAllFor`, nothing else.
-- ☑ `PinnedNotification` has one style path (Huge number) and one glyph (Ring); the panel still
-  re-renders on every poll.
-- ☑ History screen still gains points at a window rollover (read `SessionLog` write path).
-- ☑ Six old channels deleted on first launch after upgrade; `reset_alerts` and
-  `pinned_usage_v2` remain.
-- ☑ Tests green, tracker statuses updated, ticked, committed, pushed.
+- ☐ Both emails sent; dates and recipient routes recorded in the Log.
+- ☐ A 30-day silence window is noted (send date + 30) — after it, Step 9 may proceed on
+  silence, with the emails kept as the record of good faith.
+- ☐ Any reply is quoted verbatim in `design/research/2026-09-xx-permission-emails.md` and its
+  consequence written into Convention 7's terms: proceed, proceed without that provider, or stop.
 
 **Log:**
-- 2026-09-09 — Done in one Fable session: Sonnet (widgets + tile), Opus (alerts), Sonnet (styles +
-  glyphs) ran in sequence on the shared files, Haiku did the tracker lines in parallel. 67 files,
-  −7 837 / +456 lines; tests 368 → 287 (the 81 lost are the deleted widget, pace, ping, strip and
-  `UpdateGate.shouldNotify` tests). `Alerts.kt` is 231 lines total, 141 of code — the 130–180
-  target was met on code, the KDoc pushes the total up. Deviations from the paste, all small:
-  the per-account reset-ping key is `resetPing<Window>` (not `resetMode<Window>`, which the
-  legacy unprefixed account would have shared with the global fallback); `ensureChannels` went
-  private; `Conditions.forProfile` and `UsageIcon`'s mono path went too (no callers once the
-  widgets and tile left); the Always-on toggle's subtitle lost its "all alerts fold into this
-  panel" clause and the App log explainer lost "ping alarms" — copy that had become untrue, not
-  design. `UpdateGate.trimNotes` is now uncalled but still tested; left for Step 6's docs diet
-  to decide. The Notifications card now shows per-account 5h / Weekly reset-mode rows and the
-  System settings link only; the Pinned card lost its style and glyph choosers with no
-  replacement copy — Step 2 rebuilds both to the wireframe.
+-
 
 ---
 
-## Step 2 · CCRM-61 (Settings Diet) part 2 — four-tab Settings
+## Step 2 · Play console account, title check, tester recruitment
 
-**Tier:** Sonnet.
+**Who:** Robin, at the console. The session only checks the title and writes the tester note.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Step 1's Log and Step 2 — then
-ROADMAP.md item CCRM-61 (Settings Diet) "Settings become four swipeable tabs" and "Reset pings
-survive", then open design/settings-diet-wireframe.html section 1 ("After: four swipeable
-tabs", the four 410 dp mocks, the 750 dp Appearance mock, the three states) and its Decisions
-table — approved; build to it. Brief one Sonnet agent to recast SettingsScreen.kt as a fixed
-TabRow of four tabs (Accounts, Alerts, Appearance, More; tab padding 10 dp a side, scrollable
-TabRow fallback noted in code) over a HorizontalPager, the pattern MainActivity.ProfileTabs
-already uses, keeping the existing card composables and moving them into the tabs as drawn:
-Accounts = account cards + Add account; Alerts = Always-on toggle, "Show accounts" as two chip
-rows First and Second (Second has a None chip; drives cache.pinnedProfile and a new
-pinnedSecondProfile), "Tapping a number opens", "Status-bar ring shows" (First / Second /
-Whichever is higher, new pref), System notification settings link, then "Reset pings" per
-account with 5h reset and Weekly reset mode chips (Off / If busy / Always); Appearance =
-Theme, Time format, Usage display, Reset time, ONE "Show red past the pace mark" toggle (one
-pref read by the app bars and the notification; migrate from paceOverInApp), Theme colour;
-More = Polling, Usage credits (rendered only when an account reports credits), Updates,
-Diagnostics, About, Debug once unlocked. Inner screen: a tab's content goes two-column as
-Settings does today.
-Step 1 already left, reuse rather than redo: `UsageCache.resetPingMode(profile, window)` /
-`setResetPingMode(profile, window, mode)` (per-account key `resetPing<Window>`, falling back
-to the legacy global key, then Smart/Always defaults) and a per-account `ResetModeRow(label,
-profile, window, cache)` with Off / If busy / Always segmented buttons; `paceOverInApp` and
-`paceOverOnNotification` both still exist and both must migrate into the one new pref; the
-Pinned card has no style or glyph chooser any more and no explainer under "Show profile". Keep every explainer sentence the wireframe keeps; drop the ones it drops.
-Update the guide screen's back navigation (Settings → Guide → back lands on the Accounts tab).
-Tests green; add a unit test for the pref migration. Close per the Close-out rule (commit as
-feat(CCRM-61): four-tab Settings), then follow the Handover rule and print Step 3.
+Read CLAUDE.md, then RUNBOOK.md — Conventions and Step 2. Two small things, then a checklist
+for Robin. (1) Search Google Play (web) for apps titled "Cooldown" and near variants; report
+whether the bare title is free and propose two fallbacks that carry no provider name (Play
+titles are 30 characters). (2) Write a five-line note Robin can paste to colleagues asking
+them to join the closed test — what it is, that they need a Google account on an Android 12+
+phone, that they must stay opted in for two weeks, and that nothing they do is reported
+back. Then list for Robin, without doing them: create the developer account (personal;
+one-time fee; identity verification; his name and country appear on the listing); confirm
+the developer-account requirement that a personal account runs a closed test with 20
+testers for 14 continuous days before production; create the app entry with the chosen
+title, "free", "app" (not game); note the console's current requirements for a privacy
+policy URL and the Data safety form so Step 7 has the exact questions.
 ```
 
 **Done when:**
-- ☑ Four tabs, swipe and tap, at 410 dp and 750 dp; no horizontal content fights the pager.
-- ☑ New prefs: `pinnedSecondProfile`, `statusRingShows`, per-account `resetPingMode`, one
-  `paceOverEverywhere` (name per the code's convention) with migration.
-- ☑ Alerts tab fits one cover screen with two accounts.
-- ☑ Tests green, Status updated, ticked, committed, pushed.
+- ☐ Developer account verified; app entry created; title chosen and recorded here.
+- ☐ At least 20 colleagues have said yes to testing (names not recorded in the repo; a count is).
+- ☐ The console's exact Data safety questions and any new 2026 requirements pasted into
+  `design/research/2026-09-xx-play-console-requirements.md` for Step 7.
 
 **Log:**
-- 2026-09-09 — Done by one Sonnet agent, reviewed and finished by the orchestrator. Settings is a
-  fixed `TabRow` (10 dp tab padding, `ScrollableTabRow` fallback noted in code) over a
-  `HorizontalPager`; `Screen.SETTINGS` got its own branch in MainActivity because a pager cannot
-  live inside the shared `verticalScroll` ContentColumn — each page is its own ContentColumn.
-  New prefs: `pinnedSecondProfile(): Profile?` (None = absent; cleared on account removal and
-  when First takes its account), `statusRingShows()` with `RING_FIRST/SECOND/HIGHER`, and
-  `showOverPace()` replacing both `paceOverInApp` and `paceOverOnNotification` (migration is the
-  pure `SettingsMigration.showOverPace`, 4 unit tests; the in-app value wins, the notification
-  value is not consulted). Tests 287 → 291. Judgement calls: chip sub-labels "First" /
-  "Second · optional" at labelMedium; the Settings TabRow uses the default indicator (no
-  per-tab accent, so ProfileTabs' crossfade workaround was not copied); Usage credits visibility
-  is recomputed when the account list changes, not on every poll; the account card was left
-  unchanged — the wireframe's After caption says the cards "gained the percentage on their
-  subtitle line" while its Row-by-row table says Keep/unchanged, and the paste said keep the
-  card composables, so the conservative reading won (Robin to confirm at Step 5). Nothing on
-  screen yet: the Alerts tab fit at 410 dp is arithmetic until the device pass. The pinned
-  notification does not read `pinnedSecondProfile` or `statusRingShows` yet — that is Step 3.
+-
 
 ---
 
-## Step 3 · CCRM-62 (Duet Notification)
+## Step 3 · v1.7 out the door first
 
-**Tier:** Opus (RemoteViews height limits and per-view intents are where a wrong guess costs a
-device round-trip).
+**Who:** the session, with the Fold 7 over USB for the device pass. Follows RELEASING.md.
+
+**Why here:** CCRM-65 (Accounts Redesign) and the CCBG-21 (Zero-Point Shading) / CCBG-22
+(Credits Rows For All) fixes are already on `main`, unreleased. They should ship as a normal
+GitHub release before the Play flavors exist, so the last GitHub-only build is a clean
+baseline and the flavor work is the only thing in v1.8's diff.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–2 Logs and Step 3 — then
-ROADMAP.md item CCRM-62 (Duet Notification) in full, then open
-design/settings-diet-wireframe.html section 2 (collapsed option 1, the expanded layout, the
-height budget, the status bar, the tap targets, the nine states) and its Decisions table —
-approved; build to it, Huge number style only. Brief one Opus agent for
-notify/PinnedNotification.kt and the two RemoteViews layouts: collapsed row with two halves
-(mark 14 dp + label 12 sp clamped, 8 dp bar with tick, 30 sp figure trailing; condition dot;
-today's single layout when Second is None), expanded with two header blocks ("Personal · 5h",
-"ChatGPT · Weekly", 36 sp figures) over the panel; drawPanel's bar row recut to ~30 dp (label,
-figure and reset on one line above the bar) and prefixed with the account label; strip cap 3 →
-2 when a Second account is set; "5h"/"Weekly" wording everywhere on this surface (Fmt helpers
-if needed); per-half setOnClickPendingIntent (Cooldown on that account's tab, or that
-service's app), Refresh action unchanged. Status bar: ui/UsageIcon ring only, no weekly hub dot
-(remove drawFlag and the weekly parameters), coloured by the shown account's accent below 80%
-then the severity ladder; the shown account follows the "Status-bar ring shows" pref (First /
-Second / higher 5h percentage). Alerts.evaluate's re-render must pass both accounts. Unit-test
-the label clamp, the strip cap and the account selection. Steps 1–2 already left: the prefs
-UsageCache.pinnedSecondProfile(): Profile? (null = None), statusRingShows() with
-RING_FIRST/RING_SECOND/RING_HIGHER, showOverPace() (the one red toggle; paceOverOnNotification
-is gone), resetPingMode(profile, window); UsageIcon.draw has no style or mono parameter any
-more and PinnedNotification.drawStatusIcon has no style parameter; Conditions.panelFor has no
-folded events and MAX_STRIPS is still 3; the Alerts tab's "Tapping a number opens" writes
-pinnedTapTarget "app" / "provider" (legacy "claude" reads as "provider"). Install a debug build on the Fold 7
-and show me the collapsed and expanded shade in one AskUserQuestion before closing. Close per
-the Close-out rule (commit as feat(CCRM-62): two-account pinned notification), then follow
-the Handover rule and print Step 4.
+Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — Conventions and Step 3 — then ROADMAP.md
+item CCRM-65 (Accounts Redesign) and BUGS.md entries CCBG-21, CCBG-22, CCBG-25. Phone over
+USB adb. (1) Device pass for CCRM-65 on the Fold 7 cover screen and inner screen: the Free
+plan notice, renewal stopped, the amber ≤3-day expiry line if reachable, the ChatGPT card,
+the two-column inner layout; capture into design/research/2026-09-xx-v17-device-pass/.
+Confirm CCBG-21 (a 0% chart no longer washes red) and CCBG-22 (credits rows only where
+credits exist) on the same pass. (2) If anything is wrong, fix it and re-run; if a fix
+changes an approved layout, stop and show the wireframe change first. (3) Release v1.7:
+versionCode 23, versionName "1.7"; tests green; signed APK; fresh Accounts-tab screenshot in
+release/docs/src/shots/ and the guide's Accounts page updated; USER-GUIDE changelog; release
+notes naming CCRM-65 and the fixes, with CCBG-24 (Duet Label Clamp) as known; tag, push,
+gh release; Check for updates on the phone reports v1.7. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ Collapsed content ≤ 56 dp with two accounts; expanded within the 256 dp cap with two
-  weekly rows and one strip.
-- ☑ One account or Second = None renders today's layout unchanged.
-- ☑ Ring has no dot; colour follows the shown account; picker works including auto.
-- ☑ Robin saw the shade on the phone. Tests green, Status updated, ticked, committed, pushed.
+- ☐ CCRM-65 (Accounts Redesign) Status set to Shipped v1.7 with the device pass recorded.
+- ☐ v1.7 published on GitHub, `releases/latest` resolves to it, the phone agrees.
 
 **Log:**
-- 2026-09-10 — Built by one Opus agent 2026-09-09 evening, reviewed by the orchestrator, seen by Robin
-  on the Fold 7 the same night (release-signed build over the live v1.4 install, Second = ChatGPT
-  set by adb through the Alerts tab). `notify/Duet.kt` holds the pure rules (label clamp 72/56 dp,
-  strip cap 3/2, ring account), 7 tests; `PinnedNotification` split into single / duet paths over
-  one builder — the single layout is unchanged, including its "5-hour window" wording, per the
-  wireframe's state 2. Two new layouts `notif_duet*.xml`, a 6 dp condition-dot drawable;
-  `Conditions.panelFor(…, second)` prefixes every strip and caps at 2 in Duet mode; the ring lost
-  `drawFlag`/`weeklyFlag` and their tests (294 tests). Findings from the device: everything as
-  drawn; the compact panel row measures ≈45 dp not the table's 30 (the 13.5 sp line needs 16 dp
-  and the tick overhangs), still inside the budget with two Weekly rows; collapsed bars are
-  drawn at 156 dp nominal so the tick keeps its shape; tap request codes are per half
-  (`NOTIF_ID+10/20+slot`). Robin's one change, decided on `design/spent-ring-wireframe.html`
-  the next morning: at 100% the ring is smooth and carries an × in the hollow; the 12 o'clock
-  post and `POST_*` are gone. Installed, but no window was at 100% by then — Step 5 must catch
-  the cross live. Also noticed: the ring at 0% is the hairline alone (the existing no-usage
-  rule), so a Second account that has not started shows no identity colour yet; accepted.
+-
 
 ---
 
-## Step 4 · CCRM-60 (Dual Identity) — icon, glyph, two rooms
+## Step 4 · Wireframes — About disclaimer, Play-flavor Settings, store graphics
 
-**Tier:** Opus for the three adaptive-icon vectors and the About drawable · Sonnet for the top-bar
-glyph and the two-rooms theming.
+**Who:** the session drafts one review HTML in `design/`; Robin approves, one question at a time.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–3 Logs and Step 4 — then
-ROADMAP.md item CCRM-60 (Dual Identity) in full, then open design/dual-identity-wireframe.html
-section 2 (the chosen icon variant, named in the roadmap item's "Icon, decided" bullet), section
-3 (two rooms, six states) and its Decisions table — approved; build to it. Two agents in
-parallel: (1) Opus — the launcher icon: ic_launcher_foreground.xml, ic_launcher_background.xml
-(the two-colour ground replaces the slate radial), ic_launcher_monochrome.xml per the mono rule,
-and drawable/ic_launcher.xml for About, exactly the chosen variant's geometry; render the tile
-at 48 dp light, dark and themed and show me the screenshot in one AskUserQuestion — wait for
-approval before committing. (2) Sonnet — the app: the top bar's title led by the two
-ProviderMark glyphs at 20 dp on the main screen only; the two rooms: a surface tint per selected
-account's provider (Claude ivory #F5EFE8 light / #1B1715 dark; ChatGPT #F7F7F8 / #0D0D0D),
-headline percentages on the window cards in FontFamily.Serif on Claude tabs and the default
-sans on ChatGPT tabs, the tab indicator in the room accent with labels kept neutral (the
-narrowest change to ProfileTabs' crossfade rule; keep the labels neutral as today). Nothing on
-any card changes. Tests green (add a test for the room tokens). Close per the Close-out rule
-(commit as feat(CCRM-60): new icon, top-bar glyph, two rooms), then follow the Handover rule
-and print Step 5.
+Read CLAUDE.md (working agreement 2), then RUNBOOK.md — Conventions and Step 4 — then
+ROADMAP.md item CCRM-66 (Play Store Launch), then SettingsScreen.kt's AboutCard and the
+"Check for updates" row, and design/settings-diet-wireframe.html for the approved four-tab
+Settings. Draft design/play-store-wireframe.html with three sections, each with states.
+(A) The About card carrying the "Unofficial" disclaimer in-app: the README wording
+condensed, where it sits relative to the version line, at 410 dp and the inner-screen
+two-column width, dark and light; also the Play flavor's About without "Check for updates"
+and without the GitHub release link, and the GitHub flavor's About unchanged. (B) The
+Settings → More tab in the Play flavor: exactly which rows leave (Check for updates and
+anything pointing at releases/latest) and what fills the gap, if anything. (C) The store
+listing graphics: the 512 px icon (the Pulse tile as-is, confirm), a 1024×500 feature
+graphic with no provider mark and no provider name, and the framing for phone screenshots
+(which of the existing 1080×2371 captures, in what order, with what captions). Mocks keep
+every function the real element has. Put a Decisions table at the top with every choice as
+an open row; ask Robin the questions one at a time in chat, record each answer in the table,
+and stop when he has approved every row. Nothing is built in this step.
 ```
 
 **Done when:**
-- ☑ Robin approved the 48 dp icon render (light, dark, themed).
-- ☑ Main top bar shows the two marks then "Cooldown"; Settings, History, Guide keep plain titles.
-- ☑ Claude tab: ivory surface, serif figures; ChatGPT tab: neutral surface, sans; cards
-  otherwise byte-identical in content.
-- ☑ Tests green, Status updated, ticked, committed, pushed.
+- ☐ `design/play-store-wireframe.html` exists; its Decisions table has no open rows; the Log
+  names the approved rev.
 
 **Log:**
-- 2026-09-10 — Opus (icon) and Sonnet (rooms) ran in parallel; the icon agent did not run gradle,
-  the orchestrator compiled the merged tree (297 tests). Icon: the four vectors follow the
-  wireframe's numbers literally (the agent diffed its SVG mirror against the wireframe's own tile
-  symbol: 2 antialiasing pixels of 46 656); one idiom fix — the vertical tick capsule needs its arc
-  sweeps written the other way round or the caps bulge inward and the 4.8-unit overhangs vanish.
-  Robin approved the 48 dp render (light, dark, squircle, themed). Rooms: `Rooms.forProvider` is
-  pure and tested; Material 3's plain `Card` reads `surfaceContainerHighest`, so the room's card
-  tint is applied to every surfaceContainer token plus surfaceVariant on Main and History only;
-  Claude serif reaches the 5-hour headline and every `SubBar` row (All models, per-model caps),
-  not the credits card; the tab indicator now follows `colorScheme.primary`, labels neutral.
-  The tabContentColor comment above the indicator still says only the mark keeps its tint —
-  slightly stale, left alone. Nothing seen on the phone yet: Step 5 covers the six app states.
+-
 
 ---
 
-## Step 5 · Device pass on the Fold 7
+## Step 5 · Code — scoped queries, `github` / `play` flavors, the AAB
 
-**Tier:** Sonnet · **phone in hand**
+**Who:** Sonnet builds, orchestrator reviews and tests; no phone needed until the last check.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, then RUNBOOK.md — its Conventions block, Steps 1–4 Logs and Step 5 — then the
-"States" lists in design/settings-diet-wireframe.html section 2 (nine notification states, the
-Settings states) and design/dual-identity-wireframe.html section 3 (six app states). Build a
-release-signed APK, install it over the live install on the Fold 7 via wireless adb (ports
-rotate: find the port with dns-sd; keep the screen awake for the session and restore auto-off
-before disconnecting; screencap needs -d, and the inner screen captures black while folded),
-and walk every state with me one at a time, capturing a screenshot for each. Also confirm on
-device: placed widgets and the Quick Settings tile are gone; the six old notification channels
-no longer appear in system settings; a reset ping fires for an account with "Always" on its 5h
-reset; the status ring switches account and colour under "Whichever is higher"; the ring at 100%
-shows the smooth red ring with the × (design/spent-ring-wireframe.html); Settings tabs
-swipe on both screens. Record each outcome as a table row at the foot of the wireframe it
-belongs to, file defects as new CCBG items in BUGS.md with the next free number, update the
-three items' Status lines. Close per the Close-out rule (commit as docs(CCRM-60/61/62): device
-pass), then follow the Handover rule and print Step 6.
+Read CLAUDE.md, then RUNBOOK.md — Conventions and Step 5 — then ROADMAP.md item CCRM-66
+(Play Store Launch) and design/play-store-wireframe.html's Decisions table (binding). Brief
+Sonnet with the decisions baked in: (1) AndroidManifest.xml — remove QUERY_ALL_PACKAGES and
+its tools:ignore; add a <queries> block with an <intent> for ACTION_VIEW on https so the
+browser picker still lists browsers; check every call site that enumerated packages
+(the sign-in "Open with" picker, CCRM-46 (Picker Icons)) still compiles and degrades to
+the system chooser when the list is short. (2) app/build.gradle.kts — a flavorDimension
+"channel" with flavors github and play sharing applicationId; a BuildConfig boolean
+CHANNEL_PLAY; the Play flavor hides the Check for updates row, the releases/latest link on
+About and any UpdateCheck scheduling (UpdateGate.kt, UpdateCheck.kt), per the wireframe;
+the GitHub flavor is byte-for-byte the current behaviour. (3) The About disclaimer as drawn,
+in both flavors. (4) ./gradlew bundlePlayRelease produces a signed AAB with the existing
+signing config; assembleGithubRelease still produces the APK RELEASING.md expects; both
+install over the current v1.7 on the Fold 7 (same signer) with sign-ins and history intact.
+Unit tests: one for the flavor gate (UpdateGate never schedules under CHANNEL_PLAY), and
+lint clean on the manifest with no suppressions. Update RELEASING.md's build command names.
 ```
 
 **Done when:**
-- ☑ Every state marked seen or "not seen, because …". Nothing severe open (one Medium, CCBG-25).
-- ☑ Ticked, committed, pushed.
+- ☐ No `QUERY_ALL_PACKAGES` anywhere; lint passes without the suppression.
+- ☐ `bundlePlayRelease` and `assembleGithubRelease` both green; both installed over v1.7 on
+  the Fold 7 without losing accounts or history; the picker verified on the Fold 7's One UI.
+- ☐ About shows the disclaimer as approved; Play flavor has no update row or GitHub link.
 
 **Log:**
-- 2026-09-10 — Run by the orchestrator itself, no sub-agent (the labour was adb driving, not
-  rendering). Release-signed v1.6 build installed over the live v1.5 install (four accounts kept);
-  wireless adb in the morning, then the phone left the Wi-Fi and the pass finished over **USB
-  debugging** from the office. Seen and passed by Robin: app states 1, 2 (410 and 750 dp), 3 in
-  light without the 100%, 6; notification states 1, 2, 5 (for real — Product was in re-auth), 7,
-  8, 9; Settings four tabs at both widths with swipe, More with Debug unlocked; launcher icon;
-  widgets and tile gone; six channels deleted; ring switching under Whichever is higher. Not seen:
-  app 4 (radios off severs adb; Robin skipped the manual variant), app 5 and the two thin Settings
-  states (four live accounts), notification 3 (this ChatGPT account has a 5h window), 4 and the
-  100% cross (no window filled), 6 (six-hour stale). Filed: CCBG-21 (Zero-Point Shading),
-  CCBG-22 (Credits Rows For All), CCBG-23 (Mark Size Mismatch — Robin: after the release),
-  CCBG-24 (Duet Label Clamp), all Low; **CCBG-25 (Idle Reset Silence), Medium** — the reset ping
-  did not fire for an idle account because `checkReset` returns on a null `resetsAt`; fix it in
-  v1.6.1 or before Step 6 if Robin prefers. Decisions taken at the phone: account cards stay
-  without the percentage; the dual-identity wireframe's "600 dp cap" caption is stale (Main keeps
-  the 760 dp column). Captures in `design/research/2026-09-10-device-pass/` (30 files, ~7.6 MB;
-  shade crops quantised). Outcome tables sit at the foot of the three wireframes. The phone was
-  left with dark mode on and its own 1-minute screen timeout.
-- 2026-09-10, later — Robin reopened the icon before Step 6: on the phone the round-7 tile reads as
-  the Indian flag. Round 8 (twelve abstract concepts) and round 9 (Pulse in seven size/shape
-  variants, each between stand-ins for the real Claude and ChatGPT tiles) are in
-  `design/app-icon-v2-wireframe.html`; decided **A2 Bleed + B1 ECG on charcoal**, then round 10 (square-first) raised it to
-  **S2 Tall** with About on the launcher squircle; built into the four vectors the same afternoon
-  (Opus, zero-pixel diff against the wireframe symbol). Also fixed and committed before Step 6, `5b10673`:
-  CCBG-25 (Idle Reset Silence) via the pure `alerts/ResetRollover` (11 tests, 308 green; device
-  verification pending) and CCBG-23 (Mark Size Mismatch), the blossom scaled 1.35× — Robin approved
-  the before/after render. BUGS.md Open list is now Low-only.
+-
 
 ---
 
-## Step 6 · Release v1.6
+## Step 6 · Signing — the existing key becomes the Play app-signing key
 
-**Tier:** Sonnet for the docs rewrite and the screenshot run · Haiku for the copy sweeps · **no
-Robin in the loop** — the session signs and publishes itself. Robin's only act is to plug the
-Fold 7 in over USB (USB debugging on, screen unlocked) before pasting.
+**Who:** the orchestrator, with Robin at the console. **No sub-agents touch this step.**
 
-**Preconditions the session checks first and stops on if missing** (one message saying which,
-nothing else done): `adb devices -l` lists `RZCY70YN0LJ … usb:` (wireless is not accepted for
-this step); `ccooldown-release.jks` and `keystore.properties` are present at the repo root
-(gradle signs `assembleRelease` with them; never stage them); `gh auth status` is logged in as
-robineam360 for `robineam360/Cooldown`; headless Chrome exists at
-`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (the docs build and the PDF
-page check need it).
+**Why it matters:** if Play generates its own signing key, a Play install has a different signer
+from every GitHub APK, so nobody can move between channels without uninstalling, and
+uninstalling loses sign-ins and history (see CCBG-1 (History Retention)). Uploading the
+existing `ccooldown-release.jks` key as the app-signing key keeps one signer across both
+channels. This is a one-way choice at the console; it cannot be changed after the first upload.
 
 **Resume in a fresh Fable session:**
 
 ```
-Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — its Conventions block, Steps 1–5 Logs and Step 6
-(its preconditions and this block) — then ROADMAP.md section "Dual identity and diet" for what
-shipped. Run the whole v1.6 release end to end with no questions to Robin: every decision below
-is taken, and the only reason to stop is a failed precondition or a red test, in which case say
-exactly what failed and stop. Phone work goes over USB adb (screencap -d 4630946872173396372
-for the cover screen, screencap -p to /sdcard then adb pull; keep the screen awake with
-settings put system screen_off_timeout 1800000 and restore the value you read first before
-you finish; if the phone locks, stop and ask Robin to unlock — the bouncer cannot be driven).
-(1) Version: versionName "1.6", versionCode 21 in app/build.gradle.kts. (2) Green:
-./gradlew testDebugUnitTest (308 tests or more) and assembleRelease; verify the APK's signer
-with apksigner --print-certs matches the installed app's (SHA-256
-8bc21a2aca81e5a09b239d1847822549f10775d76849f0e1948980ecd044f64f). (3) Install it over the
-live install (adb install -r) and take the release screenshots yourself into
-release/docs/src/shots/, replacing every retired one (widgets, tile, alert matrix, four
-styles): the Pulse icon in the app drawer and on the About card; Main on the Pro tab (Claude
-room) and on the ChatGPT tab (ChatGPT room), dark and light (cmd uimode night no / yes, restore
-yes); Settings' four tabs at 410 dp; the pinned notification collapsed and expanded (cmd
-statusbar expand-notifications, tap the chevron at 975,406, cmd statusbar collapse); the
-status-bar ring. Confirm on those captures that the Pulse tile is what the drawer shows and
-that the two provider marks in the top bar now read the same size (CCBG-23 (Mark Size
-Mismatch)); if either is wrong, that is a stop. Reuse the Step 5 captures in
-design/research/2026-09-10-device-pass/ only where a fresh one is impossible (the four-account
-notification states). (4) Docs: rewrite README.md (no widgets, tile, alert matrix or four
-styles; the always-on notification with two accounts, reset pings, four-tab Settings, the Pulse
-icon; "not affiliated" notice unchanged; both PDF links to the v1.6 filenames); update
-release/USER-GUIDE.md (version header + changelog); edit release/docs/src/guide.html and
-brochure.html — remove the widget and alerts pages, add the Duet notification page and the
-new icon, swap the screenshots — then ./release/docs/build.sh and render every changed PDF page
-to PNG (headless Chrome or pdftoppm) and look at each for clipping, since .page boxes clip
-silently. Docs are exempt from the wireframe gate (working agreement 2). (5) Release notes
-(release/docs/src or the gh --notes-file, per RELEASING.md): what shipped (CCRM-60 (Dual
-Identity), CCRM-61 (Settings Diet), CCRM-62 (Duet Notification)), that placed widgets and
-Quick Settings tiles disappear on update, the fixes since the device pass (CCBG-25 (Idle
-Reset Silence), CCBG-23), and the known issues CCBG-21 (Zero-Point Shading), CCBG-22 (Credits
-Rows For All), CCBG-24 (Duet Label Clamp). (6) Ship: git add -A (the APK, keystore and
-local.properties are gitignored — check git status shows none of them), commit "v1.6 —
-CCRM-60/61/62 ship: two-account notification, settings diet, new icon", git tag v1.6, git push
-&& git push --tags, then gh release create v1.6 app/build/outputs/apk/release/app-release.apk
---title "Cooldown v1.6" --notes-file <the notes>; verify with gh release view v1.6 that the
-asset is attached. (7) On the phone open Settings → More → Check for updates and screenshot
-the result: an installed v1.6 must report itself current against releases/latest. Then close
-per the Close-out rule (set the three items' Status lines to Shipped v1.6 2026-09-xx, tick
-Step 6, write its Log, commit that as docs(CCRM-60/61/62): v1.6 shipped, push), restore the
-screen timeout, and say the arc is complete with the release URL.
+Read CLAUDE.md, RELEASING.md, then RUNBOOK.md — Conventions and Step 6. Confirm first that
+ccooldown-release.jks and keystore.properties are at the repo root and that the memory note
+about the OneDrive keystore backup still holds (ask Robin to confirm the backup exists
+before anything else — this step must not be the day we find out it doesn't). Then, in the
+console's App integrity → App signing, Robin chooses "Use an existing key" — NOT "Let Google
+generate". Walk him through Google's PEPK tool with the exact command, run in the scratchpad
+directory, exporting the release key encrypted with Google's public key; the output file is
+uploaded once and then deleted locally — never committed, never left in the repo. Verify
+after upload that the console's app-signing certificate SHA-256 equals
+8bc21a2aca81e5a09b239d1847822549f10775d76849f0e1948980ecd044f64f (the installed app's
+signer, from RELEASING.md). Upload the Step 5 AAB to the Internal testing track with Robin
+as the only tester; install it from Play onto the Fold 7 OVER the v1.7 sideload and confirm
+accounts and history survive; then install the GitHub v1.7 APK over the Play install and
+confirm the same in reverse. Record both directions in the Log. Also decide and record
+whether the same keystore continues as the upload key (simplest) or a separate upload key is
+generated; default is the same key.
 ```
 
 **Done when:**
-- ☑ README, USER-GUIDE.md, guide PDF, brochure PDF regenerated and every changed page eyeballed;
-  no widget, tile or alert-matrix copy remains anywhere in `release/` or README.
-- ☑ Fresh screenshots from the phone in `release/docs/src/shots/`, Pulse icon confirmed in the
-  drawer, marks confirmed equal.
-- ☑ Signed APK built, tag `v1.6` pushed, GitHub release published with the APK attached, update
-  check on the phone confirmed; all by the session.
-- ☑ Ticked, committed, tagged, pushed.
+- ☐ Console shows the existing certificate as the app-signing certificate; SHA-256 matches.
+- ☐ Internal-track install verified in both directions over the sideload without data loss.
+- ☐ No key material in the working tree (`git status` clean of `.jks`, `.pem`, `.zip` exports).
 
 **Log:**
-- 2026-09-10 — Run by the orchestrator itself in one Fable session, no sub-agents (the labour was
-  adb driving and doc surgery, both faster in hand). Preconditions all green; 308 tests; the
-  release APK's signer matched the installed app's SHA-256. One pause: the Fold 7 had locked
-  before the paste, so every phone-independent piece (docs, notes, image retirement) was done
-  first and Robin unlocked it once. Installed v1.6 (code 21) over the live v1.5; thirteen
-  `v16-*` captures from the cover screen (1080×2520): the two rooms dark and light, the four
-  Settings tabs, About, the drawer row, the ring in the status bar, and the notification
-  collapsed and expanded, cropped out of a shade full of other apps' notifications (the shade
-  itself is never published). The chevron position in the paste (975,406) was wrong — the
-  shade order changes with every incoming notification — so the row was located by the Pulse
-  icon's three colours and the chevron tapped at its y. Confirmed: the drawer shows the Pulse
-  tile; the top-bar marks measure 53 vs 49 px tall at 420 dpi and read the same size (CCBG-23
-  (Mark Size Mismatch) closed on device). Docs: guide 14 → 13 pages (widgets and alerts pages
-  out, "The always-on notification" in, Pulse SVG on the cover and the last page), brochure and
-  hero rewritten, USER-GUIDE.md §3–§6 rewritten around the notification; two clips caught and
-  fixed on the rendered PNGs — guide page 8's closing paragraph ran into the footer, and the
-  brochure's page-2 disclaimer fell off the page until the feature blurbs were shortened.
-  Twenty-seven retired images removed from `release/docs/src/shots/`, ten from
-  `release/screenshots/`; the hero's third phone is the Alerts tab (a full-screen shade shot
-  would publish other apps' notifications). Release `v1.6` published with the APK (28.75 MB)
-  and `release/docs/release-notes-v1.6.md`; `releases/latest` resolves to v1.6 and the phone's
-  Check for updates answered "You're up to date — v1.6"
-  (`design/research/2026-09-10-v16-release/`). Nothing else on the device changed except this
-  session's screen timeout, restored to 60 s; dark mode restored after the light captures.
-  Still unverified on a device: the CCBG-25 (Idle Reset Silence) ping itself. Open Low items
-  carried into the notes: CCBG-21 (Zero-Point Shading) — visible on the ChatGPT tab captures
-  as the shaded 0% chart — CCBG-22 (Credits Rows For All), CCBG-24 (Duet Label Clamp).
+-
+
+---
+
+## Step 7 · Privacy policy, Data safety, the listing
+
+**Who:** Sonnet drafts; Robin pastes into the console and submits. Haiku for the copy sweep.
+
+**Resume in a fresh Fable session:**
+
+```
+Read CLAUDE.md, README.md (the Unofficial notice and the Privacy paragraph), RUNBOOK.md —
+Conventions and Step 7 — design/research/2026-09-xx-play-console-requirements.md from Step
+2, and design/play-store-wireframe.html's section C. (1) Privacy policy: write
+docs/privacy.md (or the path GitHub Pages serves for this repo — check settings; enable
+Pages on main if needed) in plain language: what the app stores (OAuth tokens, encrypted
+with the Android Keystore; usage samples; account labels), where it sends anything (only to
+the signed-in provider's own endpoints — name them; and, in the GitHub flavor only, one
+unauthenticated call to api.github.com for the version check), what it never does (no
+server of ours, no analytics, no ads, no SDKs beyond AndroidX and OkHttp), how to delete
+everything (Clear on the account card; uninstall), contact email, date. (2) Data safety
+answers, drafted as a table matching the console's questions from Step 2; the defensible
+position is "no data collected or shared" with the provider traffic explained in the policy
+— flag any question where that is arguable so Robin decides. (3) Listing copy: title per
+Step 2; short description (80 chars) and full description (4000) with no provider name in
+the title, nominative use only in the body, the Unofficial disclaimer paragraph verbatim
+near the top; content-rating questionnaire answers (utility, no user content, no ads);
+target audience 18+. (4) Assets from the wireframe: 512 icon, 1024×500 feature graphic
+(render from an SVG in design/, check with a PNG), the screenshot set with captions. Put
+everything under release/play/ and tell Robin what to paste where.
+```
+
+**Done when:**
+- ☐ Privacy policy live at a public URL and that URL entered in the console.
+- ☐ Data safety form submitted; content rating received; listing saved with all assets.
+- ☐ `release/play/` holds the copy and assets as the record of what was submitted.
+
+**Log:**
+-
+
+---
+
+## Step 8 · Closed test — 20 testers, 14 days — and RELEASING.md for two channels
+
+**Who:** Robin runs the track; the session extends RELEASING.md and watches the tracker.
+
+**Resume in a fresh Fable session:**
+
+```
+Read CLAUDE.md, RELEASING.md, RUNBOOK.md — Conventions and Step 8. (1) Promote the Step 6
+AAB to a Closed testing track, tester list from Step 2; Robin sends the join link with the
+Step 2 note. Record the start date; the 14 days run from when 20 are opted in, not from
+sending. (2) Extend RELEASING.md with a second channel section: bundlePlayRelease alongside
+assembleGithubRelease from the same commit and version; the AAB goes to the Play track, the
+APK to the GitHub release, same tag; the Play rollout waits for GitHub so releases/latest is
+never ahead of Play by more than a day; versionCode increments once per release, never per
+channel. (3) During the two weeks, any tester report is filed in BUGS.md as a CCBG with
+"Play closed test" in its symptom line. Do not ship a new build mid-test unless a High is
+filed; a new build does not reset the 14-day clock but the tester count must stay ≥ 20.
+```
+
+**Done when:**
+- ☐ Console confirms the closed-test requirement is met and production access is unlocked.
+- ☐ RELEASING.md describes both channels; a dry run of both build commands is green.
+- ☐ Every tester-filed CCBG is triaged (fixed, scheduled or Won't fix with a reason).
+
+**Log:**
+-
+
+---
+
+## Step 9 · Production
+
+**Who:** Robin presses the button; the session prepares and verifies.
+
+**Gate, per Convention 7:** Step 1 answered without objection for each provider shipped, or 30
+days of silence with the sent emails on record. A written objection removes that provider from
+the Play flavor before this step, or stops the arc — Robin's call, recorded in the Log.
+
+**Resume in a fresh Fable session:**
+
+```
+Read CLAUDE.md, RELEASING.md, RUNBOOK.md — Conventions, Step 1's Log (the gate) and Step 9.
+Confirm the gate in one sentence before doing anything. Then run a normal two-channel release
+per the extended RELEASING.md: the version that goes to production is the same commit and
+versionCode as the current GitHub release (cut a fresh one if anything changed since); staged
+rollout 20% → 100% over a week; README gains a "Get it on Google Play" link beside the
+GitHub-release link with the disclaimer unchanged; USER-GUIDE.md and the brochure mention
+both install routes. After the listing is live, install from Play onto a phone that has never
+had the sideload, sign in, and confirm the always-on notification works end to end. Close out:
+CCRM-66 (Play Store Launch) Status → Live on Play <date>; tick; commit; push.
+```
+
+**Done when:**
+- ☐ Listing public; a clean-phone install works end to end.
+- ☐ README and docs carry both routes; CCRM-66 marked live.
+
+**Log:**
+-
+
+---
+
+## Step 10 · Decision — iPhone
+
+**Who:** Robin. Not a build step; a recorded decision after Play has been live at least four weeks.
+
+**What to weigh, from the 2026-09-11 assessment:** iOS has no always-on notification, so the
+app's main surface becomes widgets and Live Activities — a redesign, not a port; background
+refresh runs when iOS decides, so figures will be staler; Apple review enforces guideline 5.2.2
+(third-party services without permission) more actively than Play does, so the Step 1 answers
+matter more there; the Developer Program is a yearly fee; and per CLAUDE.md it is a separate
+repo that copies the shared contract in. What ports cleanly: the OAuth flows
+(ASWebAuthenticationSession), Keychain storage, the parsers, pace logic and their tests.
+
+**Done when:**
+- ☐ Robin writes one paragraph into CCRM-7 (iOS)'s Status line: go, with a start date and the
+  repo name; or hold, with what would change the answer.
+
+**Log:**
+-
