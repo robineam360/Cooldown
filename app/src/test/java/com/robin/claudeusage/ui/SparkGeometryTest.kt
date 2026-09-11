@@ -107,4 +107,27 @@ class SparkGeometryTest {
         assertEquals(0f, g.x(start), 0.01f)
         assertEquals(0.0, g.paceAt(start), 0.001)
     }
+
+    // --- CCBG-21 (Zero-Point Shading) ---
+
+    @Test
+    fun `a fresh window at zero percent draws no wash`() {
+        // The reported defect: one sample at the start of the window, observed 0%,
+        // pace 0% — the caption says "On even pace" and the wash must agree.
+        assertFalse(abovePaceWash(0.0, 0.0))
+    }
+
+    @Test
+    fun `the wash gate is the dead zone itself, strictly past it`() {
+        // Asserted through PACE_DEAD_ZONE rather than a literal, the way
+        // BarGeometryTest and RingGeometryTest do, so the three surfaces cannot drift.
+        assertFalse(abovePaceWash(70.0 + PACE_DEAD_ZONE, 70.0))
+        assertTrue(abovePaceWash(70.0 + PACE_DEAD_ZONE + 0.01, 70.0))
+    }
+
+    @Test
+    fun `below the line never washes`() {
+        assertFalse(abovePaceWash(40.0, 70.0))
+        assertFalse(abovePaceWash(70.0 - PACE_DEAD_ZONE, 70.0))
+    }
 }

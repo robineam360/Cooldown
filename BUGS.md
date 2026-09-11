@@ -113,46 +113,6 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   characters. Either is a visible change to an approved layout, so the fix goes through the
   Duet wireframe first.
 
-### CCBG-22 · Credits Rows For All — "Usage credits" lists a toggle for every account, not only those with credits
-- **Status:** Open (2026-09-10)
-- **Severity:** Low (a row too many; nothing wrong is shown on a card)
-- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, Settings →
-  More. The Usage credits card's own explainer says the section "only appears for accounts that
-  actually have a credit budget", yet it lists **Show for Pro, Teams, Product and ChatGPT** — all
-  four accounts, including the ChatGPT Plus account, which has no credit budget. The
-  settings-diet wireframe draws one row, "Show for Personal", with the note "(only if an account
-  reports credits)". Capture: `design/research/2026-09-10-device-pass/settings-more-410.png`.
-- **Cause:** `SettingsScreen.kt` gates the **section** on
-  `profiles.any { credits?.isReportable == true }` and then loops `for (profile in profiles)`
-  regardless. CCRM-61 (Settings Diet) Step 2 moved the card into the More tab and made the
-  section conditional but kept the unconditional loop.
-- **Where:** `SettingsScreen.kt`, the `showCredits` / `pollingUpdatesCredits` block (≈ lines
-  669–705).
-- **Fix:** filter the loop to profiles whose snapshot reports credits; when that leaves one
-  account, the row still needs its label (two Claude plans can both report credits). Copy is
-  already right; no wireframe needed.
-
-### CCBG-21 · Zero-Point Shading — a 5-hour chart at 0% paints the whole above-pace region red
-- **Status:** Open (2026-09-10)
-- **Severity:** Low (a wash, not a wrong number; but it is the exact state the code comment says
-  the wash must not appear in)
-- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, on the
-  ChatGPT tab (cover and inner screen). The 5-hour window at **0%** with a single sample at the
-  start of the window draws the full triangle above the even-pace line in the red wash, with the
-  caption reading "5 points below even pace" and later "On even pace". The Pro tab's 5-hour chart
-  at 11% below pace shows no wash. Robin asked for it filed. Captures:
-  `design/research/2026-09-10-device-pass/app-2b-chatgpt-room-dark-410.png` and
-  `app-2-chatgpt-room-dark-750.png`.
-- **Cause, probable:** `Sparkline.kt` draws the wash when `atOrAbovePace`; at the first sample
-  of a fresh window the observed 0% equals the even-pace 0%, so "at pace" is true and the wash
-  arrives on the safest state there is — the case the comment above the `if` says it was made
-  to avoid. Pre-dates this arc (CCRM-43 (Bar Pace Marks) / CCRM-20 (Wide Chart) era); the
-  ChatGPT account's fresh window made it visible.
-- **Where:** `ui/Sparkline.kt`, the `abovePace` / `atOrAbovePace` block (≈ lines 311–324) and
-  wherever `atOrAbovePace` is computed.
-- **Fix:** require strictly above pace, or above pace by ≥ 1 point, or a non-zero observed
-  value, before drawing the wash. Pure logic; restores the approved design, so no wireframe.
-
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
 - **Status:** Open
 - **Severity:** Low (one theme, and the orange/red rungs still land)
@@ -189,6 +149,69 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ---
 
 ## Fixed
+
+### CCBG-22 · Credits Rows For All — "Usage credits" lists a toggle for every account, not only those with credits
+- **Status:** Fixed (2026-09-11) · unit tests unchanged (the fix is one `filter` inside a
+  composable; the predicate it filters on is the same `isReportable` read the section gate
+  already used, so a test would only restate the line) — **not yet seen on a device**:
+  confirming it means opening Settings → More on the Fold 7 and finding no "Show for ChatGPT"
+  row under Usage credits.
+- **Severity:** Low (a row too many; nothing wrong is shown on a card)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, Settings →
+  More. The Usage credits card's own explainer says the section "only appears for accounts that
+  actually have a credit budget", yet it lists **Show for Pro, Teams, Product and ChatGPT** — all
+  four accounts, including the ChatGPT Plus account, which has no credit budget. The
+  settings-diet wireframe draws one row, "Show for Personal", with the note "(only if an account
+  reports credits)". Capture: `design/research/2026-09-10-device-pass/settings-more-410.png`.
+- **Cause:** `SettingsScreen.kt` gates the **section** on
+  `profiles.any { credits?.isReportable == true }` and then loops `for (profile in profiles)`
+  regardless. CCRM-61 (Settings Diet) Step 2 moved the card into the More tab and made the
+  section conditional but kept the unconditional loop.
+- **Where:** [SettingsScreen.kt](app/src/main/java/com/robin/claudeusage/SettingsScreen.kt),
+  the `creditProfiles` / `pollingUpdatesCredits` block (the old `showCredits` flag).
+- **Fixed by** deriving the list once and letting it drive both halves: `showCredits` (a
+  `Boolean` from `profiles.any { … }`) becomes `creditProfiles` (a `List<Profile>` from
+  `profiles.filter { … }`), remembered on the same `namesTick` key; the section renders when it
+  is non-empty and the row loop runs over it. One list means the gate and the rows can no longer
+  disagree, which is what the defect was.
+- **Deliberately unchanged:** the row keeps its label — `"Show for ${labels.getValue(profile)}"` —
+  even when one account is left, because two Claude plans can both report credits and the header
+  alone would not say which. The explainer copy was already correct and is untouched.
+
+### CCBG-21 · Zero-Point Shading — a 5-hour chart at 0% paints the whole above-pace region red
+- **Status:** Fixed (2026-09-11) · unit-tested (three cases in `SparkGeometryTest`; 313 → 316
+  green) — **not yet seen on a device**: confirming it means the ChatGPT tab's 5-hour chart at
+  0% on the Fold 7, which is where it was found.
+- **Severity:** Low (a wash, not a wrong number; but it is the exact state the code comment says
+  the wash must not appear in)
+- **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the Step 5 device pass, on the
+  ChatGPT tab (cover and inner screen). The 5-hour window at **0%** with a single sample at the
+  start of the window draws the full triangle above the even-pace line in the red wash, with the
+  caption reading "5 points below even pace" and later "On even pace". The Pro tab's 5-hour chart
+  at 11% below pace shows no wash. Robin asked for it filed. Captures:
+  `design/research/2026-09-10-device-pass/app-2b-chatgpt-room-dark-410.png` and
+  `app-2-chatgpt-room-dark-750.png`.
+- **Cause, probable:** `Sparkline.kt` draws the wash when `atOrAbovePace`; at the first sample
+  of a fresh window the observed 0% equals the even-pace 0%, so "at pace" is true and the wash
+  arrives on the safest state there is — the case the comment above the `if` says it was made
+  to avoid. Pre-dates this arc (CCRM-43 (Bar Pace Marks) / CCRM-20 (Wide Chart) era); the
+  ChatGPT account's fresh window made it visible.
+- **Where:** [Sparkline.kt](app/src/main/java/com/robin/claudeusage/ui/Sparkline.kt)
+  (`abovePaceWash`, and `showPaceWash` — the renamed `atOrAbovePace`, whose "at or" no longer
+  applies — where the wash is drawn),
+  [SparkGeometryTest.kt](app/src/test/java/com/robin/claudeusage/ui/SparkGeometryTest.kt).
+- **Fixed by** making the gate strict and expressing it through `PACE_DEAD_ZONE` itself, in a
+  new pure `abovePaceWash(percent, pacePercent)` beside `evenPacePercent` — `percent >
+  pacePercent + PACE_DEAD_ZONE`, which is the *identical* comparison `BarGeometry.redSegment`
+  and `RingGeometry.redSegment` make. Both of those document themselves as "the identical
+  comparison the chart wash makes"; they were wrong by two dead-zone widths, and the wash is now
+  what they say it is. It also agrees with the caption ladder directly beneath the chart
+  (`pacePhrase`, same constant), so "On even pace" can no longer come with a red field behind it.
+  The `clipPath(abovePace)` area fill is geometry rather than the wash and is untouched.
+- **Tested through the constant, not a literal** (the `BarGeometryTest` / `RingGeometryTest`
+  pattern, so the three surfaces cannot drift apart): 0% at pace 0 → no wash; exactly
+  `+PACE_DEAD_ZONE` → no wash; `+PACE_DEAD_ZONE + 0.01` → wash; below the line → no wash.
+
 
 ### CCBG-20 · Pinned Identity Loss — the Progress-bar style names no account when collapsed
 - **Status:** Fixed by removal (2026-09-09) — CCRM-61 (Settings Diet) deleted the Progress-bar style; Huge number is the only style.

@@ -50,6 +50,19 @@ fun evenPacePercent(t: Long, windowStartMs: Long, windowEndMs: Long): Double {
 }
 
 /**
+ * Is [percent] far enough past the even-pace line to earn the chart's red wash?
+ *
+ * CCBG-21 (Zero-Point Shading): strict, and expressed through [PACE_DEAD_ZONE] itself,
+ * so it is the *same* comparison `BarGeometry.redSegment` and `RingGeometry.redSegment`
+ * make — both of which document themselves as "the identical comparison the chart wash
+ * makes". It wasn't. The wash ran from `-PACE_DEAD_ZONE`, two dead-zone widths early, so
+ * a fresh window at 0% — the safest state there is, and one whose own caption reads "On
+ * even pace" — came up with the whole above-pace triangle in red.
+ */
+fun abovePaceWash(percent: Double, pacePercent: Double): Boolean =
+    percent > pacePercent + PACE_DEAD_ZONE
+
+/**
  * The plot's coordinate system, lifted out of the draw pass.
  *
  * It used to live entirely inside the `Canvas` lambda, which was fine while the chart
@@ -163,10 +176,11 @@ fun UsageSparkline(
     val warn90 = Palette.barColor(95.0, color, dark)
     val warn100 = Palette.barColor(100.0, color, dark)
 
-    // Is the newest reading at or past the pace line? Drives the wash below.
+    // Is the newest reading past the pace line by more than the dead zone? Drives the
+    // wash below, and says the same thing the caption under the chart says.
     val lastSample = samples.last()
     val paceAtNow = evenPacePercent(lastSample.first, windowStartMs, windowEndMs)
-    val atOrAbovePace = lastSample.second - paceAtNow > -PACE_DEAD_ZONE
+    val showPaceWash = abovePaceWash(lastSample.second, paceAtNow)
 
     // Clock time for a window measured in hours; a date for one measured in days,
     // where the weekday repeats at both ends and reads as a duplicate label.
@@ -314,12 +328,12 @@ fun UsageSparkline(
         val belowPace = Path().apply {
             moveTo(0f, y(0.0)); lineTo(plotRight, y(100.0)); lineTo(plotRight, y(0.0)); close()
         }
-        // The wash only appears once usage has actually reached the line, so its
-        // arrival is the signal. Drawn permanently it did the opposite: a window at
+        // The wash only appears once usage has actually pulled clear of the line, so
+        // its arrival is the signal. Drawn permanently it did the opposite: a window at
         // 0% — the safest state there is — came up two-thirds shaded red, and a
         // region that's always there can't warn about anything. It also goes first,
         // under the guides, so it can't dim them.
-        if (atOrAbovePace) {
+        if (showPaceWash) {
             drawPath(abovePace, warn100.copy(alpha = if (dark) 0.10f else 0.07f))
         }
 

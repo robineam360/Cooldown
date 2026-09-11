@@ -668,14 +668,18 @@ fun SettingsScreen(
     // it renders only once some registered account's cached snapshot actually
     // reports a credit budget, so an all-Claude-plan install never sees a header
     // for a feature that applies to nobody signed in.
-    val showCredits = remember(namesTick) {
-        profiles.any { cacheSettings.snapshot(it).data?.credits?.isReportable == true }
+    // CCBG-22 (Credits Rows For All): one list drives both the section and its rows.
+    // The section was gated on "some account reports credits" and then looped over
+    // every registered account regardless, so a ChatGPT Plus account — which has no
+    // credit budget at all — got a toggle under an explainer promising the opposite.
+    val creditProfiles = remember(namesTick) {
+        profiles.filter { cacheSettings.snapshot(it).data?.credits?.isReportable == true }
     }
     val pollingUpdatesCredits: @Composable () -> Unit = {
         SectionLabel("Polling")
         PollingSection(repo)
         Spacer(Modifier.height(24.dp))
-        if (showCredits) {
+        if (creditProfiles.isNotEmpty()) {
             SectionLabel("Usage credits")
             SectionCard {
                 Text(
@@ -686,7 +690,9 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(4.dp))
-                for (profile in profiles) {
+                // The label stays even at one account: two Claude plans can both
+                // report credits, so "Show for Pro" is not redundant with the header.
+                for (profile in creditProfiles) {
                     RowDivider()
                     var visible by remember(profile) {
                         mutableStateOf(cacheSettings.creditsVisible(profile))
