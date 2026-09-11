@@ -40,13 +40,16 @@ object Duet {
     /**
      * How many condition strips the expanded panel may draw.
      *
-     * Android caps the expanded custom view at about 256 dp. Two Duet header blocks and
-     * their gaps spend 136 dp of that, leaving ~120 dp for the panel — and three strips
-     * cost 132 dp before a single bar is drawn. So the CCRM-44 (One Surface) cap of
-     * [Conditions.MAX_STRIPS] falls to 2 whenever a Second account is set; the rest roll
-     * into the existing "+ n more" line.
+     * Android caps the expanded custom view; two Duet header blocks and their gaps spend
+     * 136 dp of it, leaving ~120 dp for the panel. The two Weekly rows the panel exists
+     * for take 78 of that as native rows (CCBG-26 (Panel Scaling)), which leaves room for
+     * exactly **one** one-line strip (38 dp). So the CCRM-44 (One Surface) cap of
+     * [Conditions.MAX_STRIPS] falls to 1 whenever a Second account is set; the rest fold
+     * into a "+ n more" tail on that one line. (It was 2 before CCBG-26, priced against
+     * strips the bitmap then drew taller than the table said, which is what made the
+     * whole panel shrink.)
      */
-    fun maxStrips(hasSecond: Boolean): Int = if (hasSecond) 2 else Conditions.MAX_STRIPS
+    fun maxStrips(hasSecond: Boolean): Int = if (hasSecond) 1 else Conditions.MAX_STRIPS
 
     /**
      * Which account the status-bar ring shows, from the "Status-bar ring shows" setting

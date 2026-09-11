@@ -933,6 +933,47 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
 
 ## Next — small, high value, ready to build
 
+### CCRM-63 · Token Import Removal — one way to sign in to Claude, on the phone
+- **Status:** Done (2026-09-11) — asked for by Robin the same day ("like ChatGPT, one way to sign
+  in and that's on device"); seen on the Fold 7: the "Use a computer token instead" link is gone
+  from every Claude card, signed-in and not.
+- **What left:** the collapsible paste / Scan QR section under each Claude card and its "How do I
+  get my token?" link; the in-app token guide screen (`TokenGuideScreen`, `Screen.GUIDE`, macOS /
+  Windows / Linux tabs and QR one-liners); `UsageRepository.validateAndSave`,
+  `CredentialStore.parsePasted` / `PastedToken` and the clipboard sanitiser; the ZXing barcode
+  dependency (`com.journeyapps:zxing-android-embedded`, and with it the camera permission it
+  merged in — the release APK is ~550 KB smaller). Docs: the three README backup `<details>`,
+  the User Guide's section 3 (its page) and the token screenshots it used.
+- **Why now:** "Sign in on this phone" has carried every account since v0.12 and CCRM-56 (Provider
+  Identity) made it the front door; the paste path was the only place a desktop token — and the
+  desktop's rotation problems (the "Token refresh failed (HTTP 429)" row in Troubleshooting) —
+  could enter. It was also the only source of the Claude plan chip, which is why CCRM-64 (Claude
+  Plan Tag) lands with it.
+- **Kept:** the debug tail's Endpoint probe and raw-response viewer; `nativeSignIn` /
+  `refreshExpiryEstimated` flags (existing installs that pasted a token years ago still read them).
+- **Where:** `SettingsScreen.kt`, `MainActivity.kt`, `data/UsageRepository.kt`,
+  `data/CredentialStore.kt`, `app/build.gradle.kts`, `README.md`, `release/USER-GUIDE.md`,
+  `release/docs/src/guide.html`.
+
+### CCRM-64 · Claude Plan Tag — Free / Pro / Max / Team Standard / Team Premium on the card
+- **Status:** Done (2026-09-11) — seen on the Fold 7: "Free", "Team Standard", "Team Premium" beside
+  the three Claude cards' Active chips, "Plus" on ChatGPT as before.
+- **Why:** Robin asked why the ChatGPT card carries a Plus tag and the Claude cards nothing. The
+  Claude plan used to come from a pasted desktop token's `subscriptionType`; a phone sign-in's
+  token response has no plan field at all, so every account signed in since v0.12 had none.
+- **What:** `ApiClient.fetchProfile` reads `/api/oauth/profile` (same headers as the usage call;
+  probed 2026-09-11 for a Free, a Team Standard and a Team premium seat) and `ClaudePlan` (pure,
+  `ClaudePlanTest`) reduces it: `organization_type` claude_free → **Free**, claude_pro → **Pro**,
+  claude_max → **Max** (with the `rate_limit_tier` multiplier, "Max 5x"), claude_team → **Team
+  Standard** for `seat_tier` team_standard, **Team Premium** for any other named seat (`team_tier_1`
+  is what the premium seat reported), claude_enterprise → **Enterprise**; an unknown type shows its
+  own name. `UsageRepository.refreshClaudePlan` runs after a successful fetch when the plan is
+  unknown or a day old, and on the CCBG-27 (Free Plan 403) path. The multiplier is shown for Max
+  only — a Team premium seat also reports a `_5x` tier and "Team Premium 5x" would read as a third
+  plan.
+- **Where:** `data/source/ClaudePlan.kt` (new), `data/ApiClient.kt`, `data/UsageRepository.kt`,
+  `data/UsageCache.kt` (`planCheckedAt`), `SettingsScreen.kt` (`PlanChip` call).
+
 ### CCRM-39 · Ring Widget — small face, one window as a pace-marked ring
 - **2026-09-09:** Removed by CCRM-61 (Settings Diet) — every home-screen widget leaves in v1.6; placed widgets disappear when the update installs.
 - **Status:** Done (2026-08-13) · verified on the Fold 7, 2026-08-19
@@ -2078,6 +2119,27 @@ keys) would still make this a different product. Not filed, not an open question
 ---
 
 ## Needs design — decide the shape before building
+
+### CCRM-65 · Accounts Redesign — a shorter, cleaner account card
+- **Status:** Needs design (filed 2026-09-11, Robin's brief) — **for the update after this one**, by
+  his decision; wireframe first (CLAUDE.md rule 2).
+- **Brief, in Robin's words (2026-09-11):** "The Accounts tab in settings is just too long. Remove the
+  Anthropic status link as well (along with the computer token option — done in CCRM-63 (Token
+  Import Removal)) and put the usage dashboard on the same line as the Re-sign in / Clear buttons.
+  Make all these three actions clear with an icon. See how else you can make this page look neat,
+  clean and compact while still giving the info we need — a redesign of this page."
+- **What the card carries today** (Fold 7 capture 2026-09-11, `design/research/2026-09-11-free-plan/accounts-tab.png`):
+  mark · label · Active chip · plan chip · token tail · ⋮; "Last checked" + refresh icon; up to five
+  status lines (plan notice, auto-renews, last auto-renewed, sign-in expires around, added); Re-sign
+  in / Clear; a divider; Anthropic status / Usage dashboard. Four accounts run to about 2.5 screens.
+- **Design questions for the wireframe:** which of the five status lines survive (the expiry
+  estimate and "Added" are the candidates to fold behind a tap); whether Re-sign in / Clear /
+  Dashboard become three icon buttons on one row with labels beneath, or a row of icon-only
+  buttons with the label in a tooltip; where the CCBG-27 (Free Plan 403) plan line sits; the
+  two-column inner-screen layout; ChatGPT's card (three actions today: Sign in with a code /
+  Refresh / Clear, plus OpenAI status / ChatGPT settings) follows the same grammar.
+- **Where it will land:** `SettingsScreen.kt` (`TokenCard`, `ChatGptAccountBody`, `QuickLinksRow`),
+  `data/QuickLinks.kt` (status link becomes error-notice-only, per provider).
 
 ### CCRM-51 · Rails Gauge — the Mac's Rails instrument on the status-bar icon
 - **2026-09-09:** Partially superseded by CCRM-61 (Settings Diet) — the Pie half is removed unverified; the Ring rails gauge stays.

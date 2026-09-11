@@ -29,6 +29,9 @@ class ErrorKindTest {
         assertEquals(ErrorKind.AUTH, ErrorKind.fromStatus("Re-auth needed — renewal kept failing"))
         assertEquals(ErrorKind.RATE_LIMITED, ErrorKind.fromStatus("Rate limited (429)"))
         assertEquals(ErrorKind.SERVER, ErrorKind.fromStatus("HTTP 529"))
+        // CCBG-27 (Free Plan 403): the plan refusal is written with the plan in the string.
+        assertEquals(ErrorKind.PLAN, ErrorKind.fromStatus("HTTP 403 · free plan"))
+        assertEquals(ErrorKind.SERVER, ErrorKind.fromStatus("HTTP 403"))
         assertEquals(ErrorKind.NETWORK, ErrorKind.fromStatus("Network: Unable to resolve host"))
         assertEquals(
             ErrorKind.NETWORK,
@@ -39,9 +42,11 @@ class ErrorKindTest {
     }
 
     @Test
-    fun `only auth and internal are severe`() {
+    fun `only auth, internal and plan are severe`() {
+        // CCBG-27 (Free Plan 403): PLAN is severe because the number it replaces is gone
+        // for good, not paused — nothing transient about a plan that reports no usage.
         assertEquals(
-            setOf(ErrorKind.AUTH, ErrorKind.INTERNAL),
+            setOf(ErrorKind.AUTH, ErrorKind.INTERNAL, ErrorKind.PLAN),
             ErrorKind.entries.filter { it.severe }.toSet(),
         )
     }
@@ -114,7 +119,7 @@ class ErrorKindTest {
     @Test
     fun `keys are unchanged by the provider split`() {
         assertEquals(
-            listOf("auth", "rateLimited", "network", "server", "invalidResponse", "internal"),
+            listOf("auth", "rateLimited", "network", "server", "invalidResponse", "internal", "plan"),
             ErrorKind.entries.map { it.key },
         )
     }

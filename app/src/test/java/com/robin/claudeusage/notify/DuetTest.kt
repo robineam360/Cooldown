@@ -34,9 +34,11 @@ class DuetTest {
     // --- the strip cap: ~120 dp of panel left under two header blocks -----------------
 
     @Test
-    fun `the strip cap falls from three to two once a Second account is set`() {
+    fun `the strip cap falls from three to one once a Second account is set`() {
         assertEquals(3, Duet.maxStrips(false))
-        assertEquals(2, Duet.maxStrips(true))
+        // CCBG-26 (Panel Scaling): one one-line strip is what ~120 dp holds beside the
+        // two Weekly rows; anything more folds into the "+ n more" tail.
+        assertEquals(1, Duet.maxStrips(true))
         // The single-account cap must stay the CCRM-44 (One Surface) constant itself,
         // not a copy of it that can drift.
         assertEquals(Conditions.MAX_STRIPS, Duet.maxStrips(false))

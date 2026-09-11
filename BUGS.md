@@ -11,6 +11,87 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-27 · Free Plan 403 — a Free Claude account reads as "Anthropic's server errored"
+- **Status:** Fixed (2026-09-11) — built, unit-tested (`ClaudePlanTest`, 5 cases; `ErrorKindTest`
+  extended; 313 green) and **seen on the Fold 7 the same day**: the Free card wears a red "Free"
+  chip and the line "Claude doesn't report usage for the Free plan — upgrade to Pro, Max or Team to
+  see numbers here."; the Free tab shows no cards, the notice *"Claude doesn't report usage on this
+  plan — it needs a paid plan (Pro, Max or Team). HTTP 403 · free plan"* with **See Claude plans**;
+  the expanded notification carries the red `Free: No usage on the Free plan` strip at full width
+  (`design/research/2026-09-11-free-plan/`). Seen along the way: Anthropic answered the account's
+  usage polls with **429** for ten minutes after the first 403, which is why the poll gate keys on
+  the stored plan and not only on the last failure kind.
+- **Severity:** Medium (wrong diagnosis on the main screen — "usually theirs, usually brief" for a
+  permanent condition — and yesterday's numbers drawn crisply as if live; also the state every
+  new Free sign-in lands in)
+- **Symptom:** **Reported by Robin, 2026-09-11.** His personal Pro plan lapsed to Free (the login
+  is fine). Every poll since reads `Error: HTTP 403` in Diagnostics; the Free tab kept showing the
+  last Pro reading (38% / 88%) with "Resets any moment", and the error notice said *"Anthropic's
+  server errored — usually theirs, usually brief. HTTP 403 · Check Anthropic status"*.
+- **Cause, confirmed by probe:** `/api/oauth/usage` answers **403** for a Free organisation with
+  `{"error":{"type":"permission_error","message":"OAuth authentication is currently not allowed for
+  this organization.","details":{"error_code":"oauth_not_allowed_for_organization"}}}`, while
+  `/api/oauth/profile` answers 200 with `organization.organization_type: "claude_free"`,
+  `subscription_status: "canceled"`. `ClaudeSource.isAuthFailure` is 401-only (right — the token is
+  valid), so the 403 fell through to the generic `HTTP 403` → `ErrorKind.SERVER` branch. The retained
+  last-good snapshot, correct for every transient failure, is wrong here: an account with no windows
+  has no number to be stale *from*.
+- **Fixed by:** a new `ErrorKind.PLAN` (severe; title "Claude doesn't report usage on this plan — it
+  needs a paid plan (Pro, Max or Team)", short "no usage on this plan"). `doFetch`: a Claude 403 whose
+  body carries `oauth_not_allowed_for_organization` — or whose profile reads Free — reads the profile
+  to name the plan, **clears the cached usage** (`UsageCache.clearUsage`, history untouched), stores
+  `HTTP 403 · free plan` with kind PLAN, and returns "Signed in, but Claude doesn't report usage on the
+  Free plan — Pro, Max or Team is needed." (which is also what a fresh Free sign-in shows on its card).
+  While an account is in that state polls read the **profile instead of usage** — no 403/429 churn,
+  and an upgrade is noticed the moment the profile stops saying Free. Surfaces: the main-screen notice
+  offers "See Claude plans" (claude.ai/upgrade) instead of the status page and drops "try Refresh now";
+  the account card says it under the chip; the notification carries a red `No usage on the Free plan`
+  strip in place of the stale one (`Conditions.plan`), and the half's dot keys on it.
+- **Where:** `data/ErrorKind.kt`, `data/source/ClaudePlan.kt` (new, with `isPlanRefusal`),
+  `data/UsageRepository.kt` (`doFetch`, `refreshClaudePlan`), `data/UsageCache.kt` (`clearUsage`,
+  `planCheckedAt`), `data/QuickLinks.kt` (`plansUrl`), `notify/Conditions.kt`, `MainActivity.kt`
+  (`ErrorNotice`), `SettingsScreen.kt` (account card). Probe captures (they carry the account e-mail,
+  so **not** committed): scratchpad only; the anonymised shapes are in `ClaudePlanTest`.
+
+### CCBG-26 · Panel Scaling — a condition strip shrinks the whole expanded Duet panel, Weekly meters included
+- **Status:** Fixed (2026-09-10) — option A of `design/duet-panel-fit-wireframe.html`, approved by
+  Robin the same day: the panel is native RemoteViews rows (`notif_panel_duet.xml` /
+  `notif_panel_single.xml`, filled by `fillPanel`), so it can only ever be full width; on the Duet a
+  strip is one line of its `short` text, the cap is 1 with a "+ n more" tail, and model caps leave the
+  Duet panel. `DuetTest` updated (308 green) · **verified on the Fold 7, 2026-09-11**: with the
+  `Free: Stale — nothing since 4:39 pm` strip up, the strip and both Weekly rows drew at the header
+  bars' full width (`design/research/2026-09-11-free-plan/notif-strip-full-width.png`).
+- **Severity:** Medium (the Weekly meters — the panel's reason to exist — become ~60% size and
+  narrower than the header bars whenever a strip is up; it is also the state in the README's,
+  the User Guide's and the brochure's expanded-notification screenshot)
+- **Symptom:** **Reported by Robin, 2026-09-10**, from the shipped v1.6 screenshot
+  `release/docs/src/shots/v16-notif-expanded.png`: with two strips up (Product: Sign-in stopped
+  working · Product: Usage data is stale) the strips and both Weekly rows are drawn at about 85%
+  of the header bars' width, with correspondingly smaller text. Without a strip the same rows are
+  full width. The device pass already had it unnoticed: `notif-5-second-signin-expanded.png`
+  (one strip, three rows) is at 0.89×.
+- **Cause:** `drawPanel` renders the strips and rows as one bitmap at a nominal 340 dp width and
+  whatever height the content needs; `notif_duet_expanded.xml` shows it in an `ImageView` with
+  `adjustViewBounds` + `fitStart`. Android caps the expanded custom view, so when the bitmap is
+  taller than the room left under the two header blocks (~136 dp on the Fold 7, ~120 on stock)
+  the `ImageView` scales it down uniformly to fit the height and the width follows. Two things
+  compound it: the CCRM-62 (Duet Notification) height table priced a strip at 44–59 dp (title
+  only / one-line sub) but `drawPanel` wraps the detail to two lines, so a real strip is 75 dp;
+  and the bar budget (`4 − strips`) still draws both Weekly rows beside two strips although the
+  same table said "at 2 strips the panel is full, no bar fits". Nothing measures the height, so
+  nothing gives way. The single layout (`notif_big_number_expanded.xml`) has the same bitmap and
+  the same `fitStart`, and overflows at two two-line strips plus its 71 dp Weekly row.
+- **Where:** `notify/PinnedNotification.kt` (`drawPanel`, `PANEL_WIDTH_DP`, the Duet
+  `barBudget`), `res/layout/notif_duet_expanded.xml` and `notif_big_number_expanded.xml` (the
+  panel `ImageView`), `notify/Duet.kt` (`maxStrips`), `notify/Conditions.kt` (`MAX_STRIPS`).
+- **Fix, proposed:** render the panel as native RemoteViews rows (TextViews at true sp, bar
+  bitmaps in `fitXY` ImageViews — the technique the header blocks already use) so it can only
+  ever be full width, and cut content to a fixed ~120 dp budget instead of scaling. What is cut
+  is the decision the wireframe asks: option A keeps both Weekly rows and reduces a Duet strip to
+  one line using its existing `short` text (cap 1, "+ n more" inline); option B keeps the
+  two-line strip and drops Weekly rows. Model caps leave the Duet panel under either. Visible
+  change to an approved layout, so it waits for the wireframe's approval.
+
 ### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
 - **Status:** Open (2026-09-10)
 - **Severity:** Low (the mark and the accent still identify the provider; the label only has to

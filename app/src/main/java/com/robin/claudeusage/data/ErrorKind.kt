@@ -27,7 +27,15 @@ enum class ErrorKind(
     NETWORK("network", severe = false),
     SERVER("server", severe = false),
     INVALID_RESPONSE("invalidResponse", severe = false),
-    INTERNAL("internal", severe = true);
+    INTERNAL("internal", severe = true),
+
+    /**
+     * CCBG-27 (Free Plan 403): the account's plan does not report usage at all. Claude's
+     * `/api/oauth/usage` answers **403 `oauth_not_allowed_for_organization`** for a Free
+     * organisation (a lapsed Pro lands here too), and nothing the app can do fixes it — so
+     * severe, with copy that names the plan rather than a server that "errored".
+     */
+    PLAN("plan", severe = true);
 
     /**
      * The remediation line. Only the two kinds that are *about* the other end name
@@ -43,6 +51,7 @@ enum class ErrorKind(
         INVALID_RESPONSE ->
             "The server answered in a shape this app doesn't know — an app update may be needed."
         INTERNAL -> "Something unexpected went wrong in the app."
+        PLAN -> "${provider.displayName} doesn't report usage on this plan — it needs a paid plan (Pro, Max or Team)."
     }
 
     /** The ≤24-character label for a condition strip. */
@@ -53,6 +62,7 @@ enum class ErrorKind(
         SERVER -> "server error"
         INVALID_RESPONSE -> "unrecognised response"
         INTERNAL -> "app error"
+        PLAN -> "no usage on this plan"
     }
 
     companion object {
@@ -68,6 +78,7 @@ enum class ErrorKind(
         fun fromStatus(status: String): ErrorKind = when {
             status.startsWith("Network:") -> NETWORK
             status.contains("429") -> RATE_LIMITED
+            status.contains("plan") -> PLAN
             status.startsWith("HTTP ") -> SERVER
             status.contains("Re-auth") || status == "No token set" -> AUTH
             status.contains("refresh failed") -> NETWORK

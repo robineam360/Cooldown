@@ -6,12 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color as AndroidColor
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.Typeface
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -238,8 +233,7 @@ object PinnedNotification {
 
         // Not gated on data any more: a condition is worth showing even before the first
         // successful fetch, which is exactly when a sign-in problem is most likely.
-        val panel = drawPanel(
-            context,
+        val panel = PanelSpec(
             // CCRM-54 (ChatGPT Account) part 2: once the 7-day window has been
             // promoted to the headline, the panel's 7-day bar would print the same
             // number twice. Model caps still belong here.
@@ -326,11 +320,10 @@ object PinnedNotification {
         // Panel order: each account's Weekly row (skipped for an account whose headline
         // *is* the weekly window — the CCRM-54 (ChatGPT Account) promotion, now per
         // account, because printing the same number twice is what the rule exists to
-        // stop), then the model caps. The 4-minus-strips budget is unchanged, so in
-        // practice a Duet panel with one strip shows the two Weekly rows and nothing
-        // else.
-        val panel = drawPanel(
-            context,
+        // stop). No model caps on a Duet (CCBG-26 (Panel Scaling)): two header blocks
+        // leave the panel ~120 dp, which the two Weekly rows and one strip fill, and the
+        // caps only ever appeared here shrunk. They stay in the app and the single layout.
+        val panel = PanelSpec(
             bars = buildList {
                 if (!first.headlineWeekly) {
                     weeklyRow(first.data, first.label, first.accent, resetClock, use24h)
@@ -340,8 +333,6 @@ object PinnedNotification {
                     weeklyRow(second.data, second.label, second.accent, resetClock, use24h)
                         ?.let { add(it) }
                 }
-                addAll(capRows(first.data, first.label, first.accent))
-                addAll(capRows(second.data, second.label, second.accent))
             },
             theme = first.accent, dark = dark, usageLeft = left, showOverPace = showOverPace,
             conditions = panelState.strips, overflow = panelState.overflow,
@@ -521,7 +512,7 @@ object PinnedNotification {
         theme: Color,
         dark: Boolean,
         showOverPace: Boolean,
-        panel: Bitmap?,
+        panel: PanelSpec?,
         stale: Boolean,
         provider: Provider,
         /** CCRM-22: the small "LEFT" caption under the number in Left mode. */
@@ -540,7 +531,7 @@ object PinnedNotification {
         setImageViewBitmap(
             R.id.bar, drawBarBitmap(context, pct, elapsed, theme, dark, showOverPace),
         )
-        if (panel != null) setImageViewBitmap(R.id.panel, panel)
+        if (panel != null) fillPanel(context, panel)
         // CCBG-12 (Status Icon Swap): a stale reading drawn as crisply as a live one is the
         // actual hazard — the old separate alert said "stale" somewhere else in the shade
         // while the number here still looked authoritative. Fading the number and its bar
@@ -580,7 +571,7 @@ object PinnedNotification {
     /**
      * Fills either Duet layout: [expanded] false is the collapsed row (label, bar,
      * figure), true the two header blocks (window name, reset sub, "LEFT" caption) plus
-     * the panel bitmap. One function for both, so the two views cannot disagree about a
+     * the panel. One function for both, so the two views cannot disagree about a
      * half's number, colour, dot or tap target.
      */
     private fun duetView(
@@ -593,7 +584,7 @@ object PinnedNotification {
         showOverPace: Boolean,
         /** App-global (CCRM-44), so it dots the First half only. */
         updateAvailable: Boolean,
-        panel: Bitmap?,
+        panel: PanelSpec?,
         expanded: Boolean,
         firstTap: PendingIntent,
         secondTap: PendingIntent,
@@ -617,7 +608,7 @@ object PinnedNotification {
                 null
             },
         )
-        if (panel != null) setImageViewBitmap(R.id.duet_panel, panel)
+        if (panel != null) fillPanel(context, panel)
     }
 
     private fun RemoteViews.fillHalf(
@@ -773,36 +764,6 @@ object PinnedNotification {
     }
 
     /**
-     * Greedy word wrap for the condition detail. Bounded at three lines because the strip's
-     * height is what displaces a model-cap bar — an unbounded sentence could push every bar
-     * out of the panel. The last line is ellipsised rather than dropped silently; the full
-     * text is one tap away in the app.
-     */
-    private fun wrapText(text: String, paint: Paint, maxWidth: Float): List<String> {
-        if (maxWidth <= 0f) return listOf(text)
-        if (paint.measureText(text) <= maxWidth) return listOf(text)
-        val lines = mutableListOf<String>()
-        var line = ""
-        for (word in text.split(' ')) {
-            val candidate = if (line.isEmpty()) word else "$line $word"
-            if (paint.measureText(candidate) <= maxWidth) {
-                line = candidate
-            } else {
-                if (line.isNotEmpty()) lines.add(line)
-                line = word
-                if (lines.size == 3) break
-            }
-        }
-        if (lines.size < 3 && line.isNotEmpty()) lines.add(line)
-        return if (lines.size < 3) lines else lines.take(2) + listOf(
-            android.text.TextUtils.ellipsize(
-                lines[2], android.text.TextPaint(paint), maxWidth,
-                android.text.TextUtils.TruncateAt.END,
-            ).toString()
-        )
-    }
-
-    /**
      * One bar row of the expanded panel.
      *
      * [accent] is per row, not per panel: a Duet's two Weekly rows belong to different
@@ -856,246 +817,136 @@ object PinnedNotification {
         } ?: emptyList()
 
     /**
-     * The expanded panel: the weekly windows and any per-model caps, each drawn the
-     * same way the header draws the headline window — name on the left, bold
-     * percentage on the right, full-width bar underneath, reset time below it.
+     * What the expanded panel shows: the bar rows (weekly windows, per-model caps) and
+     * the condition strips, plus the settings that decide how they draw. Resolved once
+     * per render and handed to [fillPanel], which fills whichever panel layout the
+     * expanded view carries.
      *
      * Each account's headline window is deliberately absent: it's the figure plus the
      * title in the header above, and repeating it here would be duplicate info. There's
      * no profile header either, for the same reason — the title already names it, and on
      * a Duet every row carries its own account prefix.
      *
-     * [compact] is the Duet's row (CCRM-62 (Duet Notification)): label, figure and reset
-     * on **one** line above the bar instead of three stacked pieces. Two header blocks
-     * leave the panel only about 120 dp, and at the full row height that holds one row —
-     * so two accounts' Weekly rows would not both fit, which is the whole reason the row
-     * was recut. The full row is untouched for the single layout.
+     * [compact] is the Duet (CCRM-62 (Duet Notification)): `notif_panel_duet.xml`, where
+     * a row puts label, figure and reset on **one** line above the bar, and a strip is one
+     * line of its [Conditions.Condition.short] text with any overflow folded into a
+     * "+ n more" tail. The single layout keeps its full rows and two-line strips in
+     * `notif_panel_single.xml`.
      */
-    private fun drawPanel(
-        context: Context,
-        bars: List<PanelBar>,
+    private class PanelSpec(
+        val bars: List<PanelBar>,
         /** The condition strips' warning hue; each bar row carries its own accent. */
-        theme: Color,
-        dark: Boolean,
+        val theme: Color,
+        val dark: Boolean,
         /** CCRM-22 (Used or Left) — flips the row readouts; the bars draw the spend. */
-        usageLeft: Boolean,
-        showOverPace: Boolean,
-        conditions: List<Conditions.Condition>,
-        overflow: Int = 0,
-        compact: Boolean = false,
-    ): Bitmap? {
-        val width = dp(context, PANEL_WIDTH_DP).toInt()
-        val left = dp(context, 2f)
-        val right = width - dp(context, 2f)
-        val barThick = dp(context, if (compact) 13f else 10f)
-        val labelH = dp(context, 19f)
-        val subH = dp(context, 15f)
-        val rowGap = dp(context, 14f)
-        // The compact row's own three pieces. 16 dp is what a 13.5 dp line needs for its
-        // descenders — "Weekly" has one, and it is in every Duet row label.
-        val compactLineH = dp(context, 16f)
-        val compactGap = dp(context, 8f)
+        val usageLeft: Boolean,
+        val showOverPace: Boolean,
+        val conditions: List<Conditions.Condition>,
+        val overflow: Int = 0,
+        val compact: Boolean = false,
+    )
 
-        val onSurface = if (dark) AndroidColor.parseColor("#ECECEC") else AndroidColor.parseColor("#1F1F1F")
-        val muted = if (dark) AndroidColor.parseColor("#9E9E9E") else AndroidColor.parseColor("#6B6B6B")
+    private class StripIds(val slot: Int, val bg: Int, val dot: Int, val title: Int, val detail: Int, val more: Int)
+    private class RowIds(val slot: Int, val label: Int, val sub: Int, val value: Int, val bar: Int, val below: Int)
 
-        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = onSurface; textSize = dp(context, 13.5f)
-        }
-        val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = muted; textSize = dp(context, 12f)
-        }
-        // Compact puts the reset text on the label's own line, so it takes the label's
-        // size and keeps only the muted colour to stay subordinate to it.
-        val compactSubPaint = Paint(subPaint).apply { textSize = dp(context, 13.5f) }
+    private val STRIP_IDS = listOf(
+        StripIds(R.id.panel_strip_1, R.id.panel_strip_bg_1, R.id.panel_strip_dot_1, R.id.panel_strip_title_1, R.id.panel_strip_detail_1, R.id.panel_strip_more_1),
+        StripIds(R.id.panel_strip_2, R.id.panel_strip_bg_2, R.id.panel_strip_dot_2, R.id.panel_strip_title_2, R.id.panel_strip_detail_2, R.id.panel_strip_more_2),
+        StripIds(R.id.panel_strip_3, R.id.panel_strip_bg_3, R.id.panel_strip_dot_3, R.id.panel_strip_title_3, R.id.panel_strip_detail_3, R.id.panel_strip_more_3),
+    )
+    private val ROW_IDS = listOf(
+        RowIds(R.id.panel_row_1, R.id.panel_row_label_1, R.id.panel_row_sub_1, R.id.panel_row_value_1, R.id.panel_row_bar_1, R.id.panel_row_below_1),
+        RowIds(R.id.panel_row_2, R.id.panel_row_label_2, R.id.panel_row_sub_2, R.id.panel_row_value_2, R.id.panel_row_bar_2, R.id.panel_row_below_2),
+        RowIds(R.id.panel_row_3, R.id.panel_row_label_3, R.id.panel_row_sub_3, R.id.panel_row_value_3, R.id.panel_row_bar_3, R.id.panel_row_below_3),
+        RowIds(R.id.panel_row_4, R.id.panel_row_label_4, R.id.panel_row_sub_4, R.id.panel_row_value_4, R.id.panel_row_bar_4, R.id.panel_row_below_4),
+    )
 
-        // CCBG-12 (Status Icon Swap): condition strips borrow the bar rows' own two type
-        // sizes rather than bringing a third — labelPaint for the title, subPaint for the
-        // detail — so the panel reads as one thing. Separation comes from a tint, not a
-        // rule: a rule made the strip look heavier than the bars it introduces.
-        val condPadH = dp(context, 9f)
-        val condPadV = dp(context, 7f)
-        val condRadius = dp(context, 8f)
-        val condDot = dp(context, 6f)
-        val condTextLeft = left + condPadH + condDot + dp(context, 7f)
-        val condTextWidth = right - condPadH - condTextLeft
-        val condTitlePaint = Paint(labelPaint).apply {
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    /** The strip tint: 13% of its hue, what the old bitmap painted. */
+    private const val STRIP_TINT_ALPHA = 0x21
+
+    /**
+     * Fills the expanded panel — the `notif_panel_*.xml` slots — from a [PanelSpec].
+     *
+     * CCBG-26 (Panel Scaling): this used to be a bitmap. RemoteViews never learns the
+     * card's width or the height Android leaves under the header blocks, so a bitmap
+     * taller than that room was scaled down uniformly by its `ImageView` — strips and
+     * Weekly rows shrinking together to about 60% — while the same rows drew at full
+     * width whenever no strip was up. Native views cannot be scaled: a `TextView` is as
+     * tall as its sp and as wide as the card, and the bars are `fitXY` bitmaps exactly as
+     * the header bars are. What no longer fits is *cut*, by the rules below, never shrunk.
+     *
+     * Rows on the Duet: only what the caller passes (the two Weekly rows — model caps
+     * leave the Duet panel, they never fit unshrunk). Rows on the single layout: the
+     * CCRM-44 (One Surface) budget of four minus one per strip, weekly first, as before.
+     * Strips: on the Duet one, as [Conditions.Condition.short], with the overflow as a
+     * "+ n more" tail on that line; on the single layout up to [Conditions.MAX_STRIPS] with
+     * title and detail, and the overflow as its own line. Both come pre-capped from
+     * [Conditions.panelFor]; the slot count here is the ceiling, not the rule.
+     */
+    private fun RemoteViews.fillPanel(context: Context, s: PanelSpec) {
+        val gone = android.view.View.GONE
+        val visible = android.view.View.VISIBLE
+
+        val strips = s.conditions.take(STRIP_IDS.size)
+        STRIP_IDS.forEachIndexed { i, ids ->
+            val c = strips.getOrNull(i)
+            setViewVisibility(ids.slot, if (c == null) gone else visible)
+            if (c == null) return@forEachIndexed
+            val hue = conditionHue(c, s.theme, s.dark)
+            setInt(ids.bg, "setColorFilter", hue)
+            setInt(ids.bg, "setImageAlpha", STRIP_TINT_ALPHA)
+            setInt(ids.dot, "setColorFilter", hue)
+            setTextViewText(ids.title, if (s.compact) c.short else c.title)
+            setTextViewText(ids.detail, c.detail)
+            // The Duet folds the overflow into its one strip's tail rather than spending a
+            // line on it — a separate line is what would push the second Weekly row out.
+            val tail = if (s.compact && i == 0 && s.overflow > 0) "+${s.overflow} more" else null
+            setViewVisibility(ids.more, if (tail == null) gone else visible)
+            if (tail != null) setTextViewText(ids.more, tail)
         }
-        val wrapped = conditions.map { wrapText(it.detail, subPaint, condTextWidth) }
-        val condHeights = wrapped.map { condPadV * 2f + labelH + it.size * subH }
+
+        // CCRM-44 (One Surface): the "+ n more" line when strips overflowed the cap.
+        val moreLine = !s.compact && s.overflow > 0
+        setViewVisibility(R.id.panel_more, if (moreLine) visible else gone)
+        if (moreLine) {
+            setTextViewText(R.id.panel_more, "+ ${s.overflow} more — open the app for the rest")
+        }
 
         // Conditions displace model caps, never a weekly window — it is the only bar the
         // expanded panel exists to carry, so it holds its place however many strips
-        // appear. On a Duet the two weekly rows take two of the four before any cap is
-        // drawn, which is why a Duet panel with one strip shows them and nothing else.
-        val barBudget = (4 - conditions.size).coerceAtLeast(1)
-        val shown = bars.take(barBudget)
-        if (shown.isEmpty() && conditions.isEmpty() && overflow == 0) return null
-
-        // Every row grows by the tick's overhang above and below, so a mark at the
-        // top or bottom edge of the bar can't collide with the label or be cut off.
-        // The 2 dp side inset is already wider than half a tick (1.55 dp at this
-        // thickness), so a tick at 0% or 100% stays inside the bitmap horizontally.
-        val over = BarGeometry.tickOverhang(barThick)
-
-        var height = condHeights.sum() + condHeights.size * dp(context, 12f)
-        // CCRM-44 (One Surface): the "+ n more" line when strips overflowed the cap.
-        if (overflow > 0) height += subH + dp(context, 12f)
-        for (b in shown) {
-            if (compact) {
-                height += compactLineH + over + barThick + over + compactGap
-            } else {
-                height += labelH + dp(context, 7f) + 2f * over + barThick
-                if (b.sub.isNotEmpty()) height += subH
-                height += rowGap
-            }
-        }
-
-        val bmp = Bitmap.createBitmap(width, height.toInt().coerceAtLeast(1), Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
-
-        // Bold and larger, mirroring the collapsed row's headline percentage. Compact
-        // drops to the label's size, because it shares the label's line.
-        val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = onSurface
-            textSize = dp(context, if (compact) 13.5f else 16f)
-            textAlign = Paint.Align.RIGHT
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        }
-
-        var y = 0f
-        conditions.forEachIndexed { index, condition ->
-            val hue = conditionHue(condition, theme, dark)
-            val stripHeight = condHeights[index]
-            val tint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = (hue and 0x00FFFFFF) or (0x21 shl 24) // 13% alpha
-            }
-            c.drawRoundRect(
-                RectF(left, y, right, y + stripHeight), condRadius, condRadius, tint,
-            )
-            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = hue }
-            c.drawCircle(
-                left + condPadH + condDot / 2f,
-                y + condPadV + labelH / 2f,
-                condDot / 2f,
-                dotPaint,
-            )
-            c.drawText(
-                condition.title, condTextLeft, y + condPadV + labelH - dp(context, 5f),
-                condTitlePaint,
-            )
-            var lineY = y + condPadV + labelH
-            for (line in wrapped[index]) {
-                c.drawText(line, condTextLeft, lineY + subH - dp(context, 4f), subPaint)
-                lineY += subH
-            }
-            y += stripHeight + dp(context, 12f)
-        }
-
-        if (overflow > 0) {
-            c.drawText(
-                "+ $overflow more — open the app for the rest",
-                left + condPadH, y + subH - dp(context, 4f), subPaint,
-            )
-            y += subH + dp(context, 12f)
-        }
-
-        for (bar in shown) {
-            val figure = bar.window?.percent?.let { "${Fmt.usageInt(it, usageLeft)}%" } ?: "—"
-            if (compact) {
-                val baseline = y + compactLineH - dp(context, 4f)
-                c.drawText(bar.label, left, baseline, labelPaint)
-                c.drawText(figure, right, baseline, valuePaint)
-                // The reset text sits right after the label and gives way first: it is
-                // the piece the header above already implies, and the only one on this
-                // line that can be shortened without losing a number.
-                val subX = left + labelPaint.measureText(bar.label) + dp(context, 6f)
-                val subRoom = right - valuePaint.measureText(figure) - dp(context, 8f) - subX
-                if (bar.sub.isNotEmpty() && subRoom > dp(context, 24f)) {
-                    c.drawText(
-                        android.text.TextUtils.ellipsize(
-                            bar.sub, android.text.TextPaint(compactSubPaint), subRoom,
-                            android.text.TextUtils.TruncateAt.END,
-                        ).toString(),
-                        subX, baseline, compactSubPaint,
-                    )
-                }
-                y += compactLineH + over
-            } else {
-                val baseline = y + labelH - dp(context, 4f)
-                c.drawText(bar.label, left, baseline, labelPaint)
-                c.drawText(figure, right, baseline, valuePaint)
-                y += labelH + dp(context, 7f) + over
-            }
-
+        // appear. The Duet's caller already passes only its Weekly rows.
+        val budget = if (s.compact) ROW_IDS.size else (4 - strips.size).coerceAtLeast(1)
+        val shown = s.bars.take(budget)
+        ROW_IDS.forEachIndexed { i, ids ->
+            val bar = shown.getOrNull(i)
+            setViewVisibility(ids.slot, if (bar == null) gone else visible)
+            if (bar == null) return@forEachIndexed
             val pct = bar.window?.percent
+            setTextViewText(ids.label, bar.label)
+            setTextViewText(ids.value, pct?.let { "${Fmt.usageInt(it, s.usageLeft)}%" } ?: "—")
+            // The layout decides which of the two sub slots is visible (inline on the
+            // Duet, under the bar on the single layout); both get the text, and an empty
+            // sub — a model cap — hides whichever is in use.
+            setTextViewText(ids.sub, bar.sub)
+            setTextViewText(ids.below, bar.sub)
+            if (bar.sub.isEmpty()) {
+                setViewVisibility(ids.sub, gone)
+                setViewVisibility(ids.below, gone)
+            }
             // Every row in this panel is a 7-day surface — the weekly windows and the
             // per-model caps alike — so they all measure their pace against 7 days.
-            val elapsed = elapsedPercent(bar.window, Projection.WEEKLY_MS)
-            val fill = Palette.barColor(pct, bar.accent, dark)
-            val radius = barThick / 2f
-            val track = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fill.copy(alpha = 0.25f).toArgb() }
-            c.drawRoundRect(RectF(left, y, right, y + barThick), radius, radius, track)
-
-            var fillEnd: Float? = null
-            if (pct != null) {
-                val end = left + (right - left) * BarGeometry.fillFraction(pct)
-                if (end > left) {
-                    fillEnd = end.coerceAtLeast(left + barThick).coerceAtMost(right)
-                    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fill.toArgb() }
-                    c.drawRoundRect(RectF(left, y, fillEnd, y + barThick), radius, radius, paint)
-                }
-            }
-
-            // The red rides inside a clip of the fill's own rounded rect: straight
-            // vertical boundary where the colours meet, and the red covers the fill's
-            // rounded tip rather than stopping short of it.
-            val segment = BarGeometry.redSegment(pct, elapsed, showOverPace)
-            if (segment != null && fillEnd != null) {
-                val segLeft = left + (right - left) * segment.first
-                if (fillEnd > segLeft) {
-                    val clip = Path().apply {
-                        addRoundRect(
-                            RectF(left, y, fillEnd, y + barThick), radius, radius, Path.Direction.CW,
-                        )
-                    }
-                    c.save()
-                    c.clipPath(clip)
-                    c.drawRect(
-                        RectF(segLeft, y, fillEnd, y + barThick),
-                        Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                            color = Palette.barColor(100.0, bar.accent, dark).toArgb()
-                        },
-                    )
-                    c.restore()
-                }
-            }
-
-            if (BarGeometry.showTick(pct, elapsed)) {
-                val tickW = BarGeometry.tickWidth(barThick)
-                val cx = left + (right - left) * BarGeometry.tickFraction(elapsed!!)
-                val tickPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = (if (dark) Color(0xFFF2F2F4) else Color(0xFF1D1D1F))
-                        .copy(alpha = if (dark) 0.60f else 0.48f).toArgb()
-                }
-                c.drawRoundRect(
-                    RectF(cx - tickW / 2f, y - over, cx + tickW / 2f, y + barThick + over),
-                    tickW / 2f, tickW / 2f, tickPaint,
-                )
-            }
-            y += barThick + over
-
-            if (compact) {
-                y += compactGap
-            } else {
-                if (bar.sub.isNotEmpty()) {
-                    c.drawText(bar.sub, left, y + subH - dp(context, 3f), subPaint)
-                    y += subH
-                }
-                y += rowGap
-            }
+            setImageViewBitmap(
+                ids.bar,
+                drawBarBitmap(
+                    context, pct, elapsedPercent(bar.window, Projection.WEEKLY_MS),
+                    bar.accent, s.dark, s.showOverPace,
+                ),
+            )
         }
-        return bmp
+
+        setViewVisibility(
+            R.id.panel_root,
+            if (shown.isEmpty() && strips.isEmpty() && !moreLine) gone else visible,
+        )
     }
 }

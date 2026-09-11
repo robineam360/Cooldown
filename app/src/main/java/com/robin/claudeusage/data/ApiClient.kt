@@ -25,6 +25,15 @@ object ApiClient {
 
     private const val USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 
+    /**
+     * CCRM-64 (Claude Plan Tag): the account and organisation behind the token —
+     * `organization.organization_type` ("claude_free" / "claude_pro" / "claude_max" /
+     * "claude_team"), `rate_limit_tier`, `seat_tier`. Same headers as the usage call;
+     * probed on the Fold 7, 2026-09-11, for a Free, a Team Standard and a Team premium
+     * seat. Parsed by `ClaudePlan`.
+     */
+    private const val PROFILE_URL = "https://api.anthropic.com/api/oauth/profile"
+
     // 2026 migration: authorize + token endpoints moved to the claude.com /
     // platform.claude.com family (verified against Claude Code 2.1.214's binary).
     // Claude's own SDK posts JSON (application/json) to this endpoint.
@@ -40,9 +49,13 @@ object ApiClient {
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
 
-    fun fetchUsage(accessToken: String): HttpResult {
+    fun fetchUsage(accessToken: String): HttpResult = getWithToken(USAGE_URL, accessToken)
+
+    fun fetchProfile(accessToken: String): HttpResult = getWithToken(PROFILE_URL, accessToken)
+
+    private fun getWithToken(url: String, accessToken: String): HttpResult {
         val request = Request.Builder()
-            .url(USAGE_URL)
+            .url(url)
             .get()
             .header("Authorization", "Bearer $accessToken")
             .header("anthropic-beta", "oauth-2025-04-20")

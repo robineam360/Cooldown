@@ -1,11 +1,13 @@
-# Dependabot — keep Gradle dependencies and any GitHub Actions current.
+# Dependabot — keep Gradle dependencies current.
+#
+# No github-actions ecosystem entry: this repo has no .github/workflows/, and Dependabot
+# fails its weekly run ("file-path: /action.yml or /.github/workflows/<anything>.yml")
+# when asked to update an ecosystem that has no files — which showed up as a red
+# "Dependabot Updates" run every week from 2026-08-27 on. Add the entry back the day a
+# workflow lands.
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"

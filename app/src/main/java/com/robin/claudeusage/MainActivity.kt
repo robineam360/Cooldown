@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen { MAIN, SETTINGS, GUIDE, HISTORY }
+private enum class Screen { MAIN, SETTINGS, HISTORY }
 
 /**
  * CCRM-6 (Multi-Account): profile tab strips stay a fixed [TabRow] up to this many accounts
@@ -233,7 +233,7 @@ private fun App(startProfile: Profile) {
     }
 
     fun goBack() {
-        screen = if (screen == Screen.GUIDE) Screen.SETTINGS else Screen.MAIN
+        screen = Screen.MAIN
     }
 
     // System back walks the screen stack instead of exiting the app.
@@ -326,7 +326,6 @@ private fun App(startProfile: Profile) {
                                 Text(
                                     when (screen) {
                                         Screen.SETTINGS -> "Settings"
-                                        Screen.GUIDE -> "Get your token"
                                         Screen.HISTORY -> "Usage history"
                                         Screen.MAIN -> "Cooldown"
                                     }
@@ -394,7 +393,6 @@ private fun App(startProfile: Profile) {
                             onTheme = { themeName = it },
                             debugUnlocked = debugUnlocked,
                             onDebugUnlock = { debugUnlocked = true },
-                            onOpenGuide = { screen = Screen.GUIDE },
                             modifier = Modifier.padding(innerPadding),
                         )
                     else -> ContentColumn(
@@ -402,11 +400,7 @@ private fun App(startProfile: Profile) {
                         maxWidth = contentWidth,
                     ) {
                         Spacer(Modifier.height(8.dp))
-                        if (screen == Screen.HISTORY) {
-                            HistoryScreen(repo, tick, onProfileChange = { selectedProfile = it })
-                        } else {
-                            TokenGuideScreen()
-                        }
+                        HistoryScreen(repo, tick, onProfileChange = { selectedProfile = it })
                         Spacer(Modifier.height(24.dp))
                     }
                 }
@@ -715,8 +709,12 @@ private fun ProfileScreen(
     }
 
     if (data == null) {
-        Text("No data yet — try Refresh now.", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(12.dp))
+        // CCBG-27 (Free Plan 403): a plan that reports no usage has nothing to refresh
+        // for; the notice below the fold says why, so no "try Refresh" here.
+        if (snapshot.lastStatusKind != ErrorKind.PLAN.key) {
+            Text("No data yet — try Refresh now.", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(12.dp))
+        }
     } else {
         // CCRM-56 (Provider Identity), decision 6: a window the account does not
         // have is not shown at all — no placeholder card, no dash — on any
@@ -1020,6 +1018,14 @@ private fun ErrorNotice(
                     TextButton(onClick = onOpenSettings) { Text("Open Settings") }
                 ErrorKind.INVALID_RESPONSE ->
                     TextButton(onClick = onOpenSettings) { Text("Check for updates") }
+                // CCBG-27 (Free Plan 403): the only fix is a plan change, so that is the
+                // one link offered.
+                ErrorKind.PLAN ->
+                    TextButton(onClick = {
+                        openInBrowser(context, QuickLinks.plansUrl(provider), null)
+                    }) {
+                        Text(QuickLinks.plansLabel(provider))
+                    }
                 else -> {}
             }
         }

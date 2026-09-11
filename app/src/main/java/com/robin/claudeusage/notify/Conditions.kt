@@ -72,7 +72,8 @@ object Conditions {
      *   could be set inconsistently: **every** strip gains its account prefix (with two
      *   accounts in the header a bare "Sign-in stopped working" no longer says whose), and
      *   the cap drops to [Duet.maxStrips]`(true)` because two header blocks leave the
-     *   panel about 120 dp and three strips cost 132.
+     *   panel about 120 dp, which the two Weekly rows and one one-line strip fill
+     *   (CCBG-26 (Panel Scaling)).
      */
     fun panelFor(
         context: Context,
@@ -93,7 +94,7 @@ object Conditions {
         val ordered = shown + cache.registry().all().filter { it !in shown }
         // One evaluation per account per condition: these read the clock, so calling
         // them twice could in principle disagree with itself across a poll boundary.
-        val faults = ordered.associateWith { reauth(cache, it) to stale(cache, it) }
+        val faults = ordered.associateWith { reauth(cache, it) to (plan(cache, it) ?: stale(cache, it)) }
         // In Duet mode every strip is prefixed, including the shown accounts'.
         fun Condition?.prefixed(owner: Profile): Condition? = when {
             this == null -> null
@@ -132,7 +133,7 @@ object Conditions {
      * and it does not belong in 6 dp on a row with no room to explain it.
      */
     fun hasFault(cache: UsageCache, profile: Profile): Boolean =
-        reauth(cache, profile) != null || stale(cache, profile) != null
+        reauth(cache, profile) != null || plan(cache, profile) != null || stale(cache, profile) != null
 
     /**
      * Whether an update strip is showing. App-global, not per account, so on a Duet it
@@ -187,6 +188,25 @@ object Conditions {
             title = "Update available — v$normalized",
             detail = "You have v$installed. Tap to open the app; nothing installs by itself.",
             error = false,
+        )
+    }
+
+    /**
+     * CCBG-27 (Free Plan 403): the plan does not report usage. Persistent until the plan
+     * changes or the account is removed, red because the number it replaces is gone for
+     * good, and it takes the slot [stale] would otherwise fill for the same account — the
+     * staleness is a consequence, and saying both would say the cause twice.
+     */
+    private fun plan(cache: UsageCache, profile: Profile): Condition? {
+        val snapshot = cache.snapshot(profile)
+        if (snapshot.lastStatusKind != com.robin.claudeusage.data.ErrorKind.PLAN.key) return null
+        val plan = cache.plan(profile) ?: "Free"
+        return Condition(
+            short = "No usage on the $plan plan",
+            title = "Usage isn't available on the $plan plan",
+            detail = "${profile.provider.displayName} only reports usage for Pro, Max and Team. " +
+                "Upgrade the plan, or remove this account.",
+            error = true,
         )
     }
 

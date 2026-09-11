@@ -17,6 +17,10 @@ Claude and ChatGPT accounts freely, as many as you use. **Gemini (Google Antigra
 but greyed out**: its sign-in can't currently be completed on a phone, and the app says so
 rather than pretending otherwise.
 
+**Claude accounts need a paid plan — Pro, Max or Team.** A Free account can sign in, but
+Anthropic's usage endpoint refuses it (HTTP 403), so the app says so on the account card instead of
+showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …) alongside.
+
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
 📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.6.pdf) — the full
@@ -78,8 +82,12 @@ a 2-page overview.
 - **Two rooms** 🆕 — a Claude tab sits on a warm ivory surface with its headline figures in a
   serif; a ChatGPT tab is cool and neutral in the default sans. The cards themselves are
   identical, and the top bar leads with both marks
-- **Sign in to ChatGPT with a short code** — no computer, no copied token: the app shows a
-  code, you type it at `auth.openai.com` on any device, and the account appears
+- **One way to sign in, on the phone** 🆕 — a Claude account signs in through its browser
+  sign-in page and a ChatGPT account with a **short code** you type at `auth.openai.com` on any
+  device. No computer, no copied token — the paste / QR backup method is gone
+- **A plan tag on every card** 🆕 — **Free, Pro, Max, Team Standard** or **Team Premium** beside
+  a Claude account, **Plus / Pro** beside ChatGPT. A Free Claude account is told plainly that
+  Claude reports no usage for it, in the app and as a strip on the notification
 - **Settings in four swipeable tabs** 🆕 — **Accounts · Alerts · Appearance · More**. 24 rows
   instead of 43; one "Show red past the pace mark" switch covers the app and the
   notification; Usage credits appears only for accounts that have a credit budget
@@ -113,32 +121,31 @@ update** — nothing else to do.
 
 <table>
   <tr>
-    <td align="center" colspan="2"><img src="release/docs/src/shots/v16-notif-collapsed.png" width="500" alt="Always-on notification, collapsed: two accounts on one row"><br><sub><b>Two accounts on one notification</b> 🆕 — collapsed: mark, name, bar with the pace tick, the 5-hour figure</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-main-claude-dark.png" width="240" alt="Main screen, a Claude account in its ivory room"><br><sub><b>The app</b> — a Claude account, in its room</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>Two accounts on one notification</b> 🆕 — collapsed: mark, name, bar with the pace tick, the 5-hour figure</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> 🆕 — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v16-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account: 5-hour and 7-day windows with pace charts"><br><sub><b>The app</b> — a Claude account in its room: bars, the even-pace line, the burn-rate projection</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="release/docs/src/shots/v16-notif-expanded.png" width="500" alt="Always-on notification, expanded: both headers, weekly rows, Refresh"><br><sub><b>Expanded</b> 🆕 — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-main-chatgpt-dark.png" width="240" alt="Main screen, a ChatGPT account in its neutral room"><br><sub><b>Same cards, other room</b> 🆕 — a ChatGPT account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account"><br><sub><b>Same cards, other room</b> 🆕 — a ChatGPT account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-teams-credits.jpg" width="300" alt="Main screen, a Team account with the usage-credits card"><br><sub><b>Usage credits</b> — a Team account with a credit budget</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-main-claude-light.jpg" width="300" alt="Main screen, light theme"><br><sub><b>Light theme</b> — the ivory room by day</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v16-settings-alerts.png" width="240" alt="Settings, Alerts tab"><br><sub><b>Settings · Alerts</b> 🆕 — the notification, the ring, reset pings</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-settings-appearance.png" width="240" alt="Settings, Appearance tab"><br><sub><b>Settings · Appearance</b> 🆕 — theme, formats, one pace switch</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-main-claude-light.png" width="240" alt="Main screen, light theme"><br><sub><b>Light theme</b> — the ivory room by day</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-history-5h.jpg" width="300" alt="Usage history, one bar per 5-hour session"><br><sub><b>Usage history</b> — a bar per 5-hour session, week by week</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-history-7d.jpg" width="300" alt="Usage history, one bar per week"><br><sub><b>Week by week</b> — the 7-day window's peaks</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-accounts.jpg" width="300" alt="Settings, Accounts tab with Free, Team Standard and Team Premium plan tags"><br><sub><b>Settings · Accounts</b> 🆕 — a plan tag per card: Team Standard, Team Premium, Plus</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v16-icon-drawer.png" width="240" alt="The Pulse icon in the app drawer"><br><sub><b>The Pulse icon</b> 🆕 — in the app drawer</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="240" alt="The status-bar ring"><br><sub><b>The status-bar ring</b> 🆕 — in the account's own colour</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-settings-more.png" width="240" alt="Settings, More tab with About"><br><sub><b>Settings · More</b> — polling, updates, About</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="release/screenshots/signin-settings.png" width="240" alt="Sign in on this phone"><br><sub><b>Sign in on this phone</b> — no computer needed</sub></td>
-    <td align="center"><img src="release/screenshots/signin-consent.png" width="240" alt="Authorize in the browser"><br><sub><b>Authorize in your browser</b> — Pro, Max &amp; Team accounts</sub></td>
-    <td align="center"><img src="release/screenshots/signin-finish.png" width="240" alt="Paste the code to finish"><br><sub><b>Paste the code, done</b> — self-renews for ~a month</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-chatgpt-code.jpg" width="300" alt="ChatGPT sign-in sheet with a device code"><br><sub><b>Sign in to ChatGPT</b> — a short code, typed on this phone or any other device</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-settings-alerts.jpg" width="300" alt="Settings, Alerts tab"><br><sub><b>Settings · Alerts</b> 🆕 — the notification's two accounts, the ring, reset pings</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v16-about-icon.jpg" width="300" alt="About, with the Pulse icon"><br><sub><b>The Pulse icon</b> 🆕 — in About</sub></td>
   </tr>
 </table>
 
-All screenshots are from a real device (a Galaxy Z Fold 7's cover screen); the sign-in row is
-from an earlier version — the cards and the flow are unchanged. **Usage history** fills in over
+<p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> 🆕 — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
+
+All screenshots are from a real device (a Galaxy Z Fold 7's cover screen) on the current build; the
+two notification shots are the lock screen, which is where it lives. **Usage history** fills in over
 time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
@@ -152,7 +159,8 @@ unknown apps" if your phone asks).
 **2a. Sign in to Claude.** In the app: **Settings → Accounts → tap "Sign in on this phone"**
 on the account card. Your browser opens Claude's sign-in — log in (Pro, Max, and Team
 accounts all work), tap **Authorize**, copy the code the page shows, hop back to the app,
-and tap **Paste → Finish sign-in**. Usage loads immediately.
+and tap **Paste → Finish sign-in**. Usage loads immediately — on a **Pro, Max or Team** plan. A Free
+account signs in but gets no numbers: Anthropic's usage endpoint refuses it, and the card says so.
 
 **2b. Sign in to ChatGPT.** Tap **"+ Add account" → ChatGPT**. The app shows a short code and
 a countdown. Go to **auth.openai.com/codex/device** — on this phone with the **Open in
@@ -176,81 +184,6 @@ A Claude sign-in renews itself for about a month, then the app reminds you befor
 lapses — re-signing in is the same one-minute flow. A ChatGPT sign-in has no fixed expiry we
 can predict, so the app doesn't guess one; it tells you if a refresh ever fails.
 
-<details>
-<summary><b>Backup method (Claude accounts only): import a token from a computer (QR / paste)</b></summary>
-
-<br>
-
-If the phone can't complete the browser sign-in, you can copy the sign-in that the
-Claude Code CLI holds on your computer. Each account card keeps these options under
-**"Use a computer token instead"**.
-
-**Put your Claude sign-in on the screen as a QR code.** On a Mac, paste this one line
-into Terminal and press Enter:
-
-```bash
-npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credentials' -w)"
-```
-
-A big QR square appears right in the terminal. Then in the app: **Settings → "Use a
-computer token instead" → Scan QR**, and point your phone at the screen.
-
-> 🔑 That QR code carries your Claude sign-in — it's a password in picture form. Show it
-> to your own phone, not to a screenshot, a screen-share, or a colleague.
-
-</details>
-
-<details>
-<summary><b>Windows / Linux QR one-liners</b></summary>
-
-<br>
-
-Both need Node.js installed (and `jq` on Linux).
-
-**Windows (PowerShell):**
-
-```powershell
-(Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw | ConvertFrom-Json).claudeAiOauth | ConvertTo-Json -Compress | npx -y qrcode-terminal
-```
-
-**Linux:**
-
-```bash
-jq -c .claudeAiOauth ~/.claude/.credentials.json | npx -y qrcode-terminal
-```
-
-**Troubleshooting:** if you see `code length overflow`, the credentials file is carrying
-extra logins (e.g. MCP servers) — filter it down to just the Claude part. On macOS:
-
-```bash
-security find-generic-password -s 'Claude Code-credentials' -w | jq -c .claudeAiOauth | npx -y qrcode-terminal
-```
-
-If the QR square doesn't fit on screen, shrink the terminal font until it does.
-
-</details>
-
-<details>
-<summary><b>No Node.js? Copy-paste method</b></summary>
-
-<br>
-
-You can also move the sign-in as plain text. First, get the JSON on your computer:
-
-- **macOS** — in Terminal: `security find-generic-password -s "Claude Code-credentials" -w`
-- **Windows** — open the file `%USERPROFILE%\.claude\.credentials.json` and copy its contents
-- **Linux** — open the file `~/.claude/.credentials.json` and copy its contents
-
-Then get that text onto your phone any way you trust — Samsung Link to Windows clipboard
-sync, Quick Share, KDE Connect — and paste it into the app's **Settings**. The app accepts
-either the whole file or just the inner `claudeAiOauth` object, and refreshes the token
-automatically when it expires.
-
-Treat this token like a password — it grants access to your Claude account. Don't send it
-through channels you don't trust (email, group chats, cloud notes).
-
-</details>
-
 ## How it works
 
 Each account carries which service it belongs to, and the app swaps in that service's fetcher
@@ -263,7 +196,11 @@ user:sessions:claude_code user:mcp_servers user:file_upload`) — via browser-ba
 against `claude.com` / `platform.claude.com`. To read usage it calls an **undocumented**
 endpoint (`api.anthropic.com/api/oauth/usage`) and sends `User-Agent: claude-code/<version>`
 on that call, because without the CLI's identity the request is routed to an aggressively
-rate-limited bucket. In short, it presents itself to Anthropic as the official CLI — see the
+rate-limited bucket. Once a day it also reads `api/oauth/profile` on the same host, which names
+the organisation's plan — that is where the card's **Free / Pro / Max / Team** tag comes from, and
+how a Free account is recognised: the usage endpoint answers it with **403
+`oauth_not_allowed_for_organization`**, so the app stops polling usage for that account and
+re-reads the profile instead until the plan changes. In short, it presents itself to Anthropic as the official CLI — see the
 ⚠️ install warning near the top for what that means for your account.
 
 **ChatGPT.** Sign-in is OpenAI's **device-code flow**, the one the Codex CLI uses: the app
@@ -300,8 +237,11 @@ notification is plain RemoteViews. No other dependencies.
 
 ## Fair-use notes
 
-- **Both** usage endpoints are undocumented; the parsers are deliberately lenient and this app
-  may break without notice if Anthropic or OpenAI changes a payload.
+- **Both** usage endpoints are undocumented (so is Anthropic's `oauth/profile`, read for the plan
+  tag); the parsers are deliberately lenient and this app may break without notice if Anthropic or
+  OpenAI changes a payload.
+- **Free Claude plans are refused** by Anthropic's usage endpoint. The app doesn't work around
+  that — it names the plan and waits for it to change.
 - The app only **reads** usage data — it never sends prompts or consumes your quota
   (checking your usage does not count as usage). On the ChatGPT side it deliberately declines
   two things the endpoint would allow: the header that reserves capacity, and the call that
@@ -327,15 +267,22 @@ changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.6.pdf).
 
 - **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The
   always-on notification now carries a **First** and a **Second** account side by side, with
-  both headers and the Weekly rows when expanded; the status-bar ring drops its weekly dot and
-  wears the shown account's colour (First / Second / Whichever is higher), solid red with an ×
-  at 100%. **Reset pings** are per account and per window, and fire for an idle account too.
-  Settings shrinks to **four tabs** — Accounts, Alerts, Appearance, More. A new **Pulse**
-  launcher icon, and each tab is a **room**: ivory and serif for Claude, neutral for ChatGPT.
-  **Removed:** the home-screen widgets, the Quick Settings tile, the standalone threshold and
-  pace alerts, three notification styles and three status-bar glyphs — placed widgets and
-  tiles disappear on update. Fixed: the two provider marks in the top bar now render the same
-  size.
+  both headers and the Weekly rows when expanded — the expanded panel now draws at full width
+  whatever it holds, so a warning strip can no longer scale the Weekly meters down with it
+  (CCBG-26 (Panel Scaling)); the status-bar ring drops its weekly dot and wears the shown
+  account's colour (First / Second / Whichever is higher), solid red with an × at 100%.
+  **Reset pings** are per account and per window, and fire for an idle account too.
+  Settings shrinks to **four tabs** — Accounts, Alerts, Appearance, More. Every Claude card
+  wears its plan — **Free, Pro, Max, Team Standard, Team Premium** — read from Anthropic's
+  profile endpoint (CCRM-64 (Claude Plan Tag)), and a **Free** account is told plainly that
+  Claude reports no usage for it, instead of "Anthropic's server errored" (CCBG-27 (Free Plan
+  403)). The **computer-token backup** (paste / Scan QR and the in-app token guide) is
+  removed: signing in happens on the phone, for both services (CCRM-63 (Token Import
+  Removal)). A new **Pulse** launcher icon, and each tab is a **room**: ivory and serif for
+  Claude, neutral for ChatGPT. **Removed:** the home-screen widgets, the Quick Settings tile,
+  the standalone threshold and pace alerts, three notification styles and three status-bar
+  glyphs — placed widgets and tiles disappear on update. Fixed: the two provider marks in the
+  top bar now render the same size.
 - **1.5** — **ChatGPT accounts.** The app is now just **Cooldown**, and tracks Claude *and*
   ChatGPT side by side — add either from "+ Add account", sign into ChatGPT with a short code
   at auth.openai.com (no computer, no copied token), and every tab and alert works the same

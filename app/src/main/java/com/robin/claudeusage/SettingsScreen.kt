@@ -89,8 +89,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.browser.customtabs.CustomTabsIntent
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
 import com.robin.claudeusage.data.ApiClient
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.CodexDeviceSignIn
@@ -98,6 +96,7 @@ import com.robin.claudeusage.data.OAuthSignIn
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Projection
+import com.robin.claudeusage.data.ErrorKind
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.SignInExpiry
@@ -169,7 +168,6 @@ fun SettingsScreen(
     onTheme: (String) -> Unit,
     debugUnlocked: Boolean,
     onDebugUnlock: () -> Unit,
-    onOpenGuide: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -206,7 +204,7 @@ fun SettingsScreen(
                         if (index % 2 != 0) continue
                         key(profile.key) {
                             TokenCard(
-                                repo, profile, use24h, onOpenGuide,
+                                repo, profile, use24h,
                                 label = labels.getValue(profile),
                                 canRemove = profiles.size > 1,
                                 onRename = { renaming = profile },
@@ -222,7 +220,7 @@ fun SettingsScreen(
                         if (index % 2 != 1) continue
                         key(profile.key) {
                             TokenCard(
-                                repo, profile, use24h, onOpenGuide,
+                                repo, profile, use24h,
                                 label = labels.getValue(profile),
                                 canRemove = profiles.size > 1,
                                 onRename = { renaming = profile },
@@ -242,7 +240,7 @@ fun SettingsScreen(
                 // step.
                 key(profile.key) {
                     TokenCard(
-                        repo, profile, use24h, onOpenGuide,
+                        repo, profile, use24h,
                         label = labels.getValue(profile),
                         canRemove = profiles.size > 1,
                         onRename = { renaming = profile },
@@ -1056,7 +1054,6 @@ private fun TokenCard(
     repo: UsageRepository,
     profile: Profile,
     use24h: Boolean,
-    onOpenGuide: () -> Unit,
     label: String,
     canRemove: Boolean,
     onRename: () -> Unit,
@@ -1077,7 +1074,6 @@ private fun TokenCard(
     var awaitingCode by remember { mutableStateOf(repo.hasPendingSignIn(profile)) }
     var codeInput by remember { mutableStateOf("") }
     var authUrl by remember { mutableStateOf<String?>(null) }
-    var showBackup by remember { mutableStateOf(false) }
 
     val hasToken = remember(stateKey) { repo.hasCredentials(profile) }
     val snapshot = remember(stateKey) { repo.snapshot(profile) }
@@ -1113,54 +1109,12 @@ private fun TokenCard(
                 message = "$label signed in — usage fetched, polling started."
                 awaitingCode = false
                 codeInput = ""
-                showBackup = false
             } else {
                 message = result.message
             }
             busy = false
             stateKey++
         }
-    }
-
-    fun saveToken(text: String) {
-        scope.launch {
-            busy = true
-            message = null
-            val result = repo.validateAndSave(profile, text)
-            message = if (result.message == "OK") {
-                Polling.schedulePeriodic(context, repo.cacheSettings().pollIntervalMinutes())
-                showBackup = false
-                "$label token added — usage fetched, polling started."
-            } else {
-                result.message
-            }
-            busy = false
-            stateKey++
-        }
-    }
-
-    fun pasteAndSave() {
-        val text = clipboard.getText()?.text
-        if (text.isNullOrBlank()) {
-            message = "Clipboard is empty — copy the token JSON first, then tap again."
-            return
-        }
-        saveToken(text)
-    }
-
-    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
-        // Null contents = the user backed out of the scanner.
-        result.contents?.let { saveToken(it) }
-    }
-
-    fun scanAndSave() {
-        scanLauncher.launch(
-            ScanOptions()
-                .setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                .setPrompt("Scan the QR code shown on your computer")
-                .setBeepEnabled(false)
-                .setOrientationLocked(true)
-        )
     }
 
     Card {
@@ -1182,7 +1136,13 @@ private fun TokenCard(
                     // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
                     // grammar. No multiplier is invented for OpenAI or Google, so a
                     // non-Claude account passes null and renders the bare plan.
-                    PlanChip(plan, tier.takeIf { profile.provider == Provider.CLAUDE })
+                    // CCRM-64 (Claude Plan Tag): the multiplier is only meaningful on
+                    // Max ("Max 5x"); a Team premium seat also reports a `_5x` tier,
+                    // and "Team Premium 5x" would read as a third plan.
+                    PlanChip(
+                        plan,
+                        tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") },
+                    )
                 }
                 Spacer(Modifier.weight(1f))
                 if (hasToken && tail != null) {
@@ -1300,17 +1260,10 @@ private fun TokenCard(
                 }
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Opens Claude's sign-in in your browser — no computer needed.",
+                    "Opens Claude's sign-in in your browser — no computer needed. " +
+                        "Needs a paid plan: Claude reports no usage for Free accounts.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                BackupOptions(
-                    expanded = showBackup,
-                    onToggle = { showBackup = !showBackup },
-                    busy = busy,
-                    onPaste = { pasteAndSave() },
-                    onScan = { scanAndSave() },
-                    onOpenGuide = onOpenGuide,
                 )
             } else {
                 Spacer(Modifier.height(8.dp))
@@ -1344,6 +1297,16 @@ private fun TokenCard(
                     }
                 }
                 val now = System.currentTimeMillis()
+                // CCBG-27 (Free Plan 403): the sign-in works, the plan does not — said
+                // on the card, under a plan chip that now reads "Free".
+                if (snapshot.lastStatusKind == ErrorKind.PLAN.key) {
+                    Text(
+                        "Claude doesn't report usage for the ${plan ?: "Free"} plan — " +
+                            "upgrade to Pro, Max or Team to see numbers here.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
                 if (tokenExpiresAt > 0) {
                     Text(
                         if (tokenExpiresAt > now) "Auto-renews in ${Fmt.dhm(tokenExpiresAt)}"
@@ -1432,7 +1395,6 @@ private fun TokenCard(
                         onClick = {
                             repo.clearCredentials(profile)
                             message = "$label signed out."
-                            showBackup = false
                             stateKey++
                         },
                     ) { Text("Clear", color = MaterialTheme.colorScheme.error) }
@@ -1442,15 +1404,6 @@ private fun TokenCard(
                     provider = profile.provider,
                     onOpenDefault = { openInBrowser(context, it, null) },
                     onOpenWithPicker = { openWithPicker(it) },
-                )
-                BackupOptions(
-                    expanded = showBackup,
-                    onToggle = { showBackup = !showBackup },
-                    busy = busy,
-                    onPaste = { pasteAndSave() },
-                    onScan = { scanAndSave() },
-                    onOpenGuide = onOpenGuide,
-                    replaceLabels = true,
                 )
             }
 
@@ -1909,40 +1862,6 @@ private fun SignInCompletion(
         TextButton(enabled = !busy, onClick = onReopen) { Text("Reopen page") }
         Spacer(Modifier.weight(1f))
         TextButton(enabled = !busy, onClick = onCancel) { Text("Cancel") }
-    }
-}
-
-/** Collapsible "use a computer token instead" section holding the paste/QR path. */
-@Composable
-private fun BackupOptions(
-    expanded: Boolean,
-    onToggle: () -> Unit,
-    busy: Boolean,
-    onPaste: () -> Unit,
-    onScan: () -> Unit,
-    onOpenGuide: () -> Unit,
-    replaceLabels: Boolean = false,
-) {
-    Spacer(Modifier.height(4.dp))
-    TextButton(onClick = onToggle) {
-        Text(if (expanded) "Hide computer-token options" else "Use a computer token instead")
-    }
-    if (expanded) {
-        Text(
-            "Backup method: copy the sign-in Claude Code uses on your computer. " +
-                "Handy if this phone can't open the sign-in page.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(8.dp))
-        Row {
-            OutlinedButton(enabled = !busy, onClick = onPaste) {
-                Text(if (replaceLabels) "Replace by paste" else "Paste from clipboard")
-            }
-            Spacer(Modifier.width(8.dp))
-            OutlinedButton(enabled = !busy, onClick = onScan) { Text("Scan QR") }
-        }
-        TextButton(onClick = onOpenGuide) { Text("How do I get my token?") }
     }
 }
 
@@ -2789,166 +2708,6 @@ private fun EndpointProbe(repo: UsageRepository) {
                 )
             }
         }
-    }
-}
-
-// --- Token guide screen ---
-
-@Composable
-fun TokenGuideScreen() {
-    NoteCard(
-        "Easiest way: on the account card, tap \"Sign in on this phone\". It opens " +
-            "Claude's sign-in in your browser and needs no computer. This page is the " +
-            "backup method — copying a token from a computer — for when that isn't handy.",
-        positive = true,
-    )
-    Spacer(Modifier.height(16.dp))
-    Text(
-        "The backup method reads your usage with the same sign-in Claude Code uses, " +
-            "so you need Claude Code installed and signed in on your computer.",
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    Spacer(Modifier.height(16.dp))
-
-    var tab by rememberSaveable { mutableIntStateOf(0) }
-    val tabs = listOf("macOS", "Windows", "Linux")
-    TabRow(selectedTabIndex = tab) {
-        tabs.forEachIndexed { index, label ->
-            Tab(selected = tab == index, onClick = { tab = index }, text = { Text(label) })
-        }
-    }
-    Spacer(Modifier.height(16.dp))
-
-    when (tab) {
-        0 -> {
-            GuideStep(1, "Open Terminal and run:")
-            CodeBlock("security find-generic-password -s \"Claude Code-credentials\" -w")
-            GuideStep(2, "Copy the JSON it prints (starts with {\"claudeAiOauth\": …).")
-        }
-        1 -> {
-            GuideStep(1, "Press Win+R, paste this path, and press Enter:")
-            CodeBlock("%USERPROFILE%\\.claude\\.credentials.json")
-            GuideStep(2, "The file opens (pick Notepad if asked). Select all and copy.")
-        }
-        else -> {
-            GuideStep(1, "Open a terminal and run:")
-            CodeBlock("cat ~/.claude/.credentials.json")
-            GuideStep(2, "Copy the JSON it prints.")
-        }
-    }
-    GuideStep(3, "Get it to this phone — Link to Windows clipboard sync, Quick Share, KDE Connect, or any channel you trust.")
-    GuideStep(4, "Come back to Settings and tap \"Paste from clipboard\" on the account you're setting up.")
-
-    Spacer(Modifier.height(20.dp))
-    Text("Faster: scan a QR code", style = MaterialTheme.typography.titleMedium)
-    Spacer(Modifier.height(6.dp))
-    Text(
-        "If the computer has Node.js, skip the copying entirely: show the token as a " +
-            "QR code in the terminal and tap \"Scan QR\" on the account card. The token " +
-            "goes straight from the screen to this phone — it never touches a clipboard " +
-            "or a chat app.",
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    Spacer(Modifier.height(8.dp))
-    // Windows/Linux read .credentials.json, which can hold other logins too
-    // (MCP tokens etc.) and outgrow a QR code's ~2.9 KB capacity — so those
-    // commands extract just the claudeAiOauth object. Piping to stdin also
-    // dodges PowerShell 5.1 mangling quotes in native-command arguments.
-    CodeBlock(
-        when (tab) {
-            0 -> "npx -y qrcode-terminal \"$(security find-generic-password -s 'Claude Code-credentials' -w)\""
-            1 -> "(Get-Content \"\$env:USERPROFILE\\.claude\\.credentials.json\" -Raw | ConvertFrom-Json).claudeAiOauth | ConvertTo-Json -Compress | npx -y qrcode-terminal"
-            else -> "jq -c .claudeAiOauth ~/.claude/.credentials.json | npx -y qrcode-terminal"
-        }
-    )
-    Text(
-        when (tab) {
-            1 -> "Run it in PowerShell. If the square is too big for the window, shrink the font (Ctrl+minus) until it all fits, then scan."
-            2 -> "Needs jq (usually preinstalled). If the square is too big for the window, shrink the terminal font (Ctrl+minus) until it all fits, then scan."
-            else -> "If the square is too big for the window, shrink the terminal font (Cmd+minus) until it all fits, then scan. " +
-                "If you see \"code length overflow\", filter it through jq -c .claudeAiOauth first."
-        },
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 32.dp),
-    )
-
-    Spacer(Modifier.height(20.dp))
-    Text("When tokens expire", style = MaterialTheme.typography.titleMedium)
-    Spacer(Modifier.height(6.dp))
-    Text(
-        "The access token only lasts hours, but the app renews it automatically in the " +
-            "background — the account card shows the countdown and when it last renewed.",
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    Spacer(Modifier.height(10.dp))
-    Text(
-        "If you signed in on the phone, that sign-in is yours alone — nothing on a " +
-            "computer can rotate it away. It lasts about a month, then the card shows " +
-            "\"Needs re-auth\"; just tap \"Re-sign in\" and sign in again. A one-minute, " +
-            "phone-only refresh.",
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    Spacer(Modifier.height(10.dp))
-    Text(
-        "The backup (computer-token) method has a catch: the phone holds a copy of the " +
-            "computer's sign-in, and when Claude Code on the computer renews itself, " +
-            "Anthropic can rotate the tokens so the phone's copy stops working. If that " +
-            "keeps happening, switch to \"Sign in on this phone\" — it avoids the problem " +
-            "entirely.",
-        style = MaterialTheme.typography.bodyMedium,
-    )
-
-    Spacer(Modifier.height(20.dp))
-    NoteCard(
-        "Your token stays on this device, encrypted with the Android Keystore. " +
-            "It's sent only to Anthropic's API — there are no other servers.",
-        positive = true,
-    )
-    Spacer(Modifier.height(8.dp))
-    NoteCard(
-        "Treat the token like a password — it grants access to your Claude account.",
-        positive = false,
-    )
-    Spacer(Modifier.height(8.dp))
-}
-
-@Composable
-private fun GuideStep(number: Int, text: String) {
-    Row(Modifier.padding(vertical = 6.dp)) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                "$number",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-        Spacer(Modifier.width(10.dp))
-        Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun CodeBlock(code: String) {
-    SelectionContainer {
-        Text(
-            code,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            lineHeight = 17.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 32.dp, top = 2.dp, bottom = 4.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                .padding(10.dp),
-        )
     }
 }
 

@@ -57,105 +57,27 @@ Shows the 5-hour and weekly rolling windows for every signed-in account (includi
 
 ## 2 · Connect your accounts
 
-The app has two independent slots — **Personal** and **Work**. Since v0.12 each one signs in **right on the phone — no computer needed**:
+Every account signs in **on the phone** — there is exactly one way per service, and neither needs a computer.
 
-### Sign in on this phone (the normal way) 🆕
+### Claude: sign in on this phone
 
-1. Open **⚙ Settings** and tap **"Sign in on this phone"** on the profile's card.
+1. Open **⚙ Settings → Accounts** and tap **"Sign in on this phone"** on the account's card.
 2. If you have more than one browser, a picker appears — **choose the browser where that account is already logged in to claude.ai** (e.g. Work in Chrome, Personal in Brave). That's how you control *which* account gets connected.
 3. The browser opens Claude's sign-in. Log in if needed, then tap **Authorize**.
 4. The page shows a **code** — tap **Copy**, switch back to the app, tap **Paste**, then **Finish sign-in**.
-5. The card turns **Active** and usage loads: *"signed in — usage fetched, polling started."*
+5. The card turns **Active**, gains its **plan tag** — Pro, Max, Team Standard or Team Premium — and usage loads.
 
-Works for **Personal (Pro / Max)** and **Work (Team)** accounts alike. The sign-in is minted on the phone and is yours alone — no computer shares it, so nothing can rotate it away. It self-renews for about **a month** (the card shows *"Sign-in expires around …"*); when it runs out you'll get 7/3/1-day warnings, and re-signing in is the same one-minute flow via **"Re-sign in"**.
+**Paid plans only.** A **Free** account signs in fine, but Anthropic's usage endpoint refuses it (HTTP 403 `oauth_not_allowed_for_organization`). The card then reads *"Claude doesn't report usage for the Free plan — upgrade to Pro, Max or Team to see numbers here"*, the main screen offers **See Claude plans**, and the notification carries a red *No usage on the Free plan* strip. The app stops polling usage for that account and re-checks the plan instead, so an upgrade is picked up on its own. A Pro plan that lapses to Free lands in the same state.
 
-### Backup: use a computer token instead
+The sign-in is minted on the phone and is yours alone — no computer shares it, so nothing can rotate it away. It self-renews for about **a month** (the card shows *"Sign-in expires around …"*); re-signing in is the same one-minute flow via **"Re-sign in"**.
 
-If the phone can't open the sign-in page, each card also keeps the old method under **"Use a computer token instead"** — copying the token that the **Claude Code CLI** holds on the machine where that account is signed in. Getting the token depends on the machine's OS, not on which profile it's for:
+### ChatGPT: sign in with a code
 
-### Getting the token on Windows
+Tap **"+ Add account" → ChatGPT** (or **"Sign in with a code"** on an existing ChatGPT card). The sheet shows a short code and a countdown. Go to **auth.openai.com/codex/device** — with **Open in browser** on this phone, or on any other device — enter the code and approve. The sheet closes by itself and the card turns Active with its **Plus / Pro** tag. Nothing is copied from a computer, deliberately: reusing a desktop Codex token would sign that CLI out.
 
-1. Press the Windows key, type `notepad C:\Users\<you>\.claude\.credentials.json` — or just open that file in Notepad (it's a hidden-ish folder; paste the path into Notepad's File ▸ Open box).
-2. Select **all** the text (Ctrl+A), copy (Ctrl+C). That whole file is what you paste into the app.
+### Removed in the next update: the computer-token backup
 
-### Getting the token on a Mac
-
-The Mac CLI keeps it in the Keychain, not a file. Open **Terminal** (Cmd+Space → "Terminal") and run:
-
-```bash
-security find-generic-password -s "Claude Code-credentials" -w
-```
-
-It prints one line of JSON — that's what you paste into the app. (macOS may ask for your Mac login password to allow Keychain access — that prompt is from macOS itself, not the app.)
-
-### If either command finds nothing
-
-Then the Claude Code **CLI** isn't installed or isn't logged in on that machine (the Claude **desktop app** stores its login separately in an unusable encrypted form — only the CLI's token works). Fix:
-
-1. Install the CLI — Mac/Linux: `curl -fsSL https://claude.ai/install.sh | bash` · Windows (PowerShell): `irm https://claude.ai/install.ps1 | iex`
-2. Open a new terminal, run `claude`, choose **"Claude account with subscription"**, and sign in in the browser **with the right account for that profile**.
-3. Retry the step above — the file/Keychain entry now exists.
-
-### Putting it into the phone
-
-**Easiest way — scan a QR code 🆕:** if the computer has Node.js, you can skip the clipboard entirely. Show the token as a QR code in the terminal, then tap **"Scan QR"** on that profile's card and point the camera at the screen:
-
-```bash
-# Mac
-npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credentials' -w)"
-# Windows (PowerShell)
-(Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw | ConvertFrom-Json).claudeAiOauth | ConvertTo-Json -Compress | npx -y qrcode-terminal
-```
-
-The Windows command extracts just the sign-in part first — the full credentials file can hold other logins too and outgrow what a QR code can physically carry (you'd see `Error: code length overflow`). If the Mac command ever hits that error, filter it the same way: `security … -w | jq -c .claudeAiOauth | npx -y qrcode-terminal` (needs `brew install jq`).
-
-If the QR square doesn't fit on screen, shrink the terminal font (Cmd/Ctrl+minus) until it does. The token goes straight from the screen to the phone — it never touches a clipboard, chat app, or synced note.
-
-**Or the clipboard way:** get the copied JSON onto your phone's **clipboard** privately (Link to Windows clipboard sync, Quick Share, a synced note — **delete it afterwards**), open **⚙ Settings**, and tap **"Paste from clipboard"** on that profile's card.
-
-Either way, the app validates the token with a live call and starts polling — you should see *"token added — usage fetched, polling started."* You can set up one profile or both — polling, alerts, widgets, and tiles all work per profile.
-
-All of these steps are also inside the app: tap **"How do I get my token?"** on any account card for a step-by-step guide (macOS / Windows / Linux), including what to do when a token expires.
-
-Tokens are stored **encrypted on the phone only** (Android Keystore) and are never sent anywhere except Anthropic's own API.
-
-> **If a machine's Claude Code ever re-logs-in**, that profile's token may stop working (refresh tokens rotate — the phone and that machine share the token). The app notifies you with a "re-auth needed" alert — just re-copy from that machine and re-paste that one profile. **Or simply switch to "Sign in on this phone" (above), which avoids the problem entirely.**
-
-### Legacy: give the phone its own sign-in *via a computer* (superseded by v0.12)
-
-*You no longer need this — "Sign in on this phone" gives the phone its own independent sign-in with zero computer steps.* It's kept for the rare case where the phone can't complete the browser flow. The idea: **park the computer's sign-in → sign in fresh (that sign-in becomes the phone's) → scan it → give the computer its original back.** The phone then renews independently. Don't run `claude` between the scan and the restore.
-
-**Windows (PowerShell)** — close every Claude Code terminal first:
-
-```powershell
-# 1. Park the computer's sign-in
-Rename-Item "$env:USERPROFILE\.claude\.credentials.json" ".credentials.backup.json"
-# 2. Sign in fresh: run claude → "Claude account with subscription" → browser sign-in → exit
-claude
-# 3. Show the phone's new token as a QR → app → that profile's card → Scan QR
-(Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw | ConvertFrom-Json).claudeAiOauth | ConvertTo-Json -Compress | npx -y qrcode-terminal
-# 4. Hand the computer its own sign-in back
-Remove-Item "$env:USERPROFILE\.claude\.credentials.json"
-Rename-Item "$env:USERPROFILE\.claude\.credentials.backup.json" ".credentials.json"
-```
-
-**Mac (Terminal)** — the Mac stores credentials in the Keychain, so "parking" is backup-and-delete (macOS will ask to allow Keychain access — that prompt is macOS itself). Quit every Claude Code session first:
-
-```bash
-# 1. Park the Mac's sign-in
-security find-generic-password -s "Claude Code-credentials" -w > ~/cc-backup.json
-security delete-generic-password -s "Claude Code-credentials"
-# 2. Sign in fresh: run claude → "Claude account with subscription" → browser sign-in → exit
-claude
-# 3. Show the phone's new token as a QR → app → that profile's card → Scan QR
-npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credentials' -w)"
-# 4. Hand the Mac its own sign-in back, and delete the temp backup
-security delete-generic-password -s "Claude Code-credentials"
-security add-generic-password -a "$USER" -s "Claude Code-credentials" -w "$(cat ~/cc-backup.json)"
-rm ~/cc-backup.json
-```
-
-Afterwards the account card should stay "Active" through refreshes indefinitely. The phone's own sign-in still has a hard expiry — the app's 7/3/1-day "sign-in expiring soon" warnings will tell you when to renew (and the easiest renewal is just **"Sign in on this phone"**).
+Earlier versions kept a **"Use a computer token instead"** section under each Claude card (paste from clipboard, Scan QR, the in-app "How do I get my token?" guide). It is gone. Phone sign-in has carried every account since v0.12, and a pasted desktop token was the only way the desktop's token rotation could break the app.
 
 ---
 
@@ -234,9 +156,10 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 | Symptom | Meaning / fix |
 |---|---|
 | A notification half is dimmed / "stale" strip | Polls for that account have failed for six hours — the last known numbers stay up, never a blank. Usually temporary; self-heals on the next successful poll. |
-| **"Re-auth needed"** | The token and its refresh both failed. Tap **"Re-sign in"** on that card (§2) — or re-paste from a computer if you use the backup method. |
+| **"Re-auth needed"** | The token and its refresh both failed. Tap **"Re-sign in"** on that card (§2). |
+| **"Claude doesn't report usage for the Free plan"** | The account is on Claude's Free plan (or a Pro plan that lapsed). Anthropic's usage endpoint refuses Free organisations; the app names the plan and re-checks it on every poll. Upgrade to Pro, Max or Team, or remove the account. |
 | **"Rate limited (429)"** status | The API asked us to back off; automatic retries with increasing delays (5 min → 1 h max). |
-| **"Token refresh failed (HTTP 429)"** status | Usually a *dead* refresh token, not real rate-limiting — the source machine's Claude Code rotated it (Anthropic answers 429 for dead tokens). Fix: **"Sign in on this phone"** (§2), which gives the phone its own sign-in so this can't recur. *(Historical note: through v0.11 the app itself could trigger a deterministic 429 on every renewal — fixed in v0.12, see §9.)* |
+| **"Token refresh failed (HTTP 429)"** status | A *dead* refresh token, not real rate-limiting (Anthropic answers 429 for dead tokens). Fix: **"Re-sign in"** (§2). *(Historical note: through v0.11 the app itself could trigger a deterministic 429 on every renewal — fixed in v0.12, see §9.)* |
 | My widgets / tile vanished | Expected on the v1.6 update — they were removed. Turn on the always-on notification (Settings → Alerts). |
 | No reset ping arrived | Check notification permission, that the account's 5h / Weekly reset isn't Off, and that *If busy* isn't hiding a window that never reached 80%. |
 | Anything else | Settings → More → **Diagnostics** shares the app log; the Debug section (7 taps on the version) shows the last raw response. |
@@ -245,17 +168,17 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 
 ## 8 · Privacy & good-to-know
 
-- **No servers, no telemetry, no analytics.** The app talks only to `api.anthropic.com` (usage), `platform.claude.com` (sign-in code exchange + token refresh), and `claude.com` (the sign-in page in your browser) — the same endpoints Claude Code uses.
+- **No servers, no telemetry, no analytics.** The app talks only to `api.anthropic.com` (usage, and once a day the profile that names the plan), `platform.claude.com` (sign-in code exchange + token refresh), `claude.com` (the sign-in page in your browser), `auth.openai.com` (the ChatGPT device-code sign-in) and `chatgpt.com` (ChatGPT usage) — plus `api.github.com` only when you tap Check for updates.
 - Token lives in **Android-Keystore-encrypted storage**; cached usage numbers contain nothing sensitive.
 - **Backup (since v0.13):** Android Auto Backup now preserves your usage history and settings across a reinstall or a new phone. The **encrypted sign-in token is deliberately excluded** from backup (it's sealed to this device's Keystore and can't be restored anyway) — after a restore you simply sign in again.
 - Polling is deliberately gentle (15-min default, 3-min manual floor, exponential backoff on 429s).
-- Heads-up: reading the usage API with a Pro token outside Claude Code/claude.ai is not covered by Anthropic's consumer ToS. Personal-use risk was accepted when this was built.
+- Heads-up: reading either usage API with a consumer token outside the official clients is not covered by Anthropic's or OpenAI's consumer terms. Personal-use risk was accepted when this was built.
 
 ---
 
 ## 9 · Version history
 
-- **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The always-on notification carries a **First** and a **Second** account side by side — mark, name, bar with the pace tick and a big figure per half — and, expanded, both headers with reset lines, the **Weekly** rows, per-model caps and Refresh; each half is its own tap target. The status-bar **ring** drops the weekly dot and wears the shown account's colour (**First / Second / Whichever is higher**), solid red with an × at 100%. **Reset pings** are per account and per window (5h / Weekly, Off / If busy / Always) and now fire for an account left idle across the reset (CCBG-25). Settings shrinks from 43 rows in 13 sections to **24 rows in four tabs** — Accounts, Alerts, Appearance, More — with one "Show red past the pace mark" switch for app and notification, and Usage credits only for accounts that have a budget. New **Pulse** launcher icon (an ECG beat on charcoal — Claude terracotta, ChatGPT green, the red spike crossing a dashed even-pace ceiling); each tab is a **room** (ivory and serif for Claude, neutral for ChatGPT); the top bar leads with both marks, now the same size (CCBG-23). **Removed:** all five home-screen widgets, the Quick Settings tile, the standalone threshold / pace / sign-in / stale / update notifications and their six channels, the Gauge / Number tile / Progress bar notification styles and the Pie / Battery / Number status-bar glyphs — placed widgets and tiles disappear on update. Built with **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
+- **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The always-on notification carries a **First** and a **Second** account side by side — mark, name, bar with the pace tick and a big figure per half — and, expanded, both headers with reset lines, the **Weekly** rows, per-model caps and Refresh; each half is its own tap target, and the expanded panel now draws at full width whatever it holds, so a warning strip can no longer scale the Weekly meters down with it (CCBG-26 (Panel Scaling)). The status-bar **ring** drops the weekly dot and wears the shown account's colour (**First / Second / Whichever is higher**), solid red with an × at 100%. **Reset pings** are per account and per window (5h / Weekly, Off / If busy / Always) and now fire for an account left idle across the reset (CCBG-25 (Idle Reset Silence)). Settings shrinks from 43 rows in 13 sections to **24 rows in four tabs** — Accounts, Alerts, Appearance, More — with one "Show red past the pace mark" switch for app and notification, and Usage credits only for accounts that have a budget. Every Claude card wears its plan — **Free, Pro, Max, Team Standard, Team Premium** — read from Anthropic's profile endpoint (CCRM-64 (Claude Plan Tag)), and a **Free** Claude account is told plainly that Claude reports no usage for it, on the card, the main screen and the notification, instead of "Anthropic's server errored" (CCBG-27 (Free Plan 403)). The **computer-token backup** — paste, Scan QR, the in-app token guide — is removed; signing in happens on the phone for both services (CCRM-63 (Token Import Removal)). New **Pulse** launcher icon (an ECG beat on charcoal — Claude terracotta, ChatGPT green, the red spike crossing a dashed even-pace ceiling); each tab is a **room** (ivory and serif for Claude, neutral for ChatGPT); the top bar leads with both marks, now the same size (CCBG-23 (Mark Size Mismatch)). **Removed:** all five home-screen widgets, the Quick Settings tile, the standalone threshold / pace / sign-in / stale / update notifications and their six channels, the Gauge / Number tile / Progress bar notification styles and the Pie / Battery / Number status-bar glyphs — placed widgets and tiles disappear on update. Built with **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
 
 - **1.5** — **ChatGPT accounts, and the app becomes just "Cooldown".** The app now tracks **ChatGPT** alongside Claude: pick the service from **"+ Add account"**, sign in with a **short code** at auth.openai.com (on the phone or any other device — no computer token to copy), and the account behaves exactly like a Claude one from there, with its own tab, widgets, tiles, alerts, history and pace chart. The name drops "Claude" and the launcher icon becomes a **three-sand hourglass**, one band per service; every account carries its **provider's own mark** on its card, its tab, the pinned notification and the widget picker. New **"Per provider"** theme, now the default — each account wears its own service's colour — with a per-account override under the card's **⋮ → Accent colour**. **A window an account doesn't have is no longer drawn at all** (no dash, no empty bar) — this applies to Claude accounts too, and a widget configured on a missing window says so in words. **Gemini** (Google Antigravity) is listed in the Add-account sheet but **greyed out**: its sign-in needs a callback only a desktop can answer. ChatGPT accounts show no "expires around" line, because OpenAI publishes no token lifetime and a wrong estimate is worse than none. The repo moved from `CCooldown` to `Cooldown`. Built with **Claude Opus 5** and **Sonnet 5**.
 
@@ -282,10 +205,10 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 
 ## 10 · For future rebuilds (dev notes)
 
-- Source: this OneDrive folder (`ClaudeUsage/`), single-module Android project
+- Source: the git working copy at `~/Projects/Cooldown`, pushed to GitHub `robineam360/Cooldown`; single-module Android project
 - Stack: Kotlin · Jetpack Compose · WorkManager · OkHttp · AGP 9.2.1 (built-in Kotlin 2.3.10) · min SDK 31, target 36. No Glance since v1.6 — the notification is plain RemoteViews.
 - Build on the Mac (signed release): `JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleRelease` → `app/build/outputs/apk/release/app-release.apk`. Signing reads the gitignored `keystore.properties` + `ccooldown-release.jks` at the repo root — **back those up; losing them means no more updates.** See `RELEASING.md`.
 - RemoteViews gotcha: containers max out at 10 children — keep notification blocks wrapped in nested layouts.
 - If Anthropic changes the undocumented response schema, the parser ignores unknown fields; if bars go blank, check the raw JSON in the debug view first.
 
-*Built and verified with Claude Code; v1.6 on 10 Sep 2026.*
+*Built and verified with Claude Code; v1.6 on 11 Sep 2026.*

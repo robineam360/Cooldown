@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Expanded view for the Duet (CCRM-62 (Duet Notification)): two header blocks
-    stacked, then the panel bitmap under them. Only rendered when a Second account
+    stacked, then the panel under them (native rows since CCBG-26 (Panel Scaling)). Only rendered when a Second account
     is set; with Second = None the notification keeps
     notif_big_number_expanded.xml unchanged, one header at 44 sp.
 
@@ -240,12 +240,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/duet_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitStart"
-        android:importantForAccessibility="no" />
+    <!-- CCBG-26 (Panel Scaling): the panel is native rows, not a bitmap, so it can never
+         be scaled to fit the height cap. Same view ids in both panel layouts. -->
+    <include layout="@layout/notif_panel_duet" />
 </LinearLayout>

@@ -181,12 +181,11 @@
     <div class="row"><span class="n">★</span><span class="t">New in v1.6</span><span class="d">the two-account notification, four-tab Settings, the Pulse icon — and what left · page 3</span></div>
     <div class="row"><span class="n">1</span><span class="t">Install</span><span class="d">sideload the APK · page 4</span></div>
     <div class="row"><span class="n">2</span><span class="t">Connect your accounts</span><span class="d">Claude on the phone · page 4–5 · ChatGPT by code · page 6</span></div>
-    <div class="row"><span class="n">3</span><span class="t">Backup: computer token</span><span class="d">paste / QR from Claude Code · page 7</span></div>
-    <div class="row"><span class="n">4</span><span class="t">Reading the screens</span><span class="d">bars, pace chart, credits, the two rooms · page 8</span></div>
-    <div class="row"><span class="n">5</span><span class="t">The always-on notification</span><span class="d">two accounts, the ring, reset pings · page 9</span></div>
-    <div class="row"><span class="n">6</span><span class="t">Settings reference</span><span class="d">four tabs · page 10</span></div>
-    <div class="row"><span class="n">7</span><span class="t">Troubleshooting · Privacy</span><span class="d">page 11</span></div>
-    <div class="row"><span class="n">8</span><span class="t">Version history &amp; dev notes</span><span class="d">page 12</span></div>
+    <div class="row"><span class="n">3</span><span class="t">Reading the screens</span><span class="d">bars, pace chart, credits, the two rooms · page 7</span></div>
+    <div class="row"><span class="n">4</span><span class="t">The always-on notification</span><span class="d">two accounts, the ring, reset pings · page 8</span></div>
+    <div class="row"><span class="n">5</span><span class="t">Settings reference</span><span class="d">four tabs · page 9</span></div>
+    <div class="row"><span class="n">6</span><span class="t">Troubleshooting · Privacy</span><span class="d">page 10</span></div>
+    <div class="row"><span class="n">7</span><span class="t">Version history &amp; dev notes</span><span class="d">page 11</span></div>
   </div>
   <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>2</span></div>
 </div>
@@ -197,7 +196,7 @@
   <div class="cols" style="margin-top:2mm;">
     <div>
       <h3 style="margin-top:0;">📌 Two accounts on one notification</h3>
-      <p style="font-size:8.8pt;">The always-on notification now carries a <b>First</b> and a <b>Second</b> account side by side — each with its provider's mark, its bar with the pace tick, and a big percentage in that half's warning colour. Expand it for both accounts' headers, the <b>Weekly</b> rows and any per-model caps. Each half is its own tap target. Pick the pair under <b>Settings → Alerts → Show accounts</b>. Full page on <b>page 9</b>.</p>
+      <p style="font-size:8.8pt;">The always-on notification now carries a <b>First</b> and a <b>Second</b> account side by side — each with its provider's mark, its bar with the pace tick, and a big percentage in that half's warning colour. Expand it for both accounts' headers, the <b>Weekly</b> rows and any per-model caps. Each half is its own tap target. Pick the pair under <b>Settings → Alerts → Show accounts</b>. Full page on <b>page 8</b>. The expanded panel now draws at full width whatever it holds, so a warning strip can't shrink the Weekly meters (CCBG-26 (Panel Scaling)). Every Claude card also shows its plan — Free, Pro, Max, Team Standard, Team Premium (CCRM-64 (Claude Plan Tag)) — and a Free account is told plainly it has no usage to report, not a server error (CCBG-27 (Free Plan 403)).</p>
       <h3>◎ A ring that says whose it is</h3>
       <p style="font-size:8.8pt;">The status-bar icon is now one clean <b>ring</b> for the 5-hour window, drawn in the shown account's <b>own colour</b> — Claude terracotta, ChatGPT green — until it climbs to yellow, orange and red. At 100% the ring goes solid red with an <b>×</b>. A new setting chooses which account it follows: First, Second, or <b>whichever is higher</b>.</p>
       <h3>🔔 Reset pings, per account</h3>
@@ -209,7 +208,7 @@
       <h3>💓 The Pulse icon, and two rooms</h3>
       <p style="font-size:8.8pt;">A new launcher tile: an <b>ECG beat</b> on charcoal — Claude terracotta in, ChatGPT green out, the red spike crossing a dashed even-pace ceiling. No trademarks on the tile; colour carries identity. Inside, each tab is a <b>room</b>: Claude tabs get a warm ivory surface and serif figures, ChatGPT tabs a cool neutral one — the cards themselves are identical. The top bar leads with both marks, now the same size.</p>
       <h3>🧹 What left, and why</h3>
-      <p style="font-size:8.8pt;">The <b>home-screen widgets</b>, the <b>Quick Settings tile</b>, the standalone <b>threshold and pace alerts</b>, and the three other notification styles and status-bar glyphs are gone. The notification does their job better and in one place. <b>Placed widgets and tiles disappear when you update</b> — nothing else to do. Sign-in, stale-data and update-available notices still appear as strips inside the notification's panel.</p>
+      <p style="font-size:8.8pt;">The <b>home-screen widgets</b>, the <b>Quick Settings tile</b>, the standalone <b>threshold and pace alerts</b>, and the three other notification styles and status-bar glyphs are gone. The notification does their job better and in one place. <b>Placed widgets and tiles disappear when you update</b> — nothing else to do. Sign-in, stale-data and update-available notices still appear as strips inside the notification's panel. The computer-token backup (paste / Scan QR and the in-app guide) is also gone — sign in on the phone for both services (CCRM-63 (Token Import Removal)).</p>
     </div>
   </div>
   <div class="shots" style="margin-top:3mm;">
@@ -240,7 +239,7 @@
     <li>The page shows a <b>code</b> — tap <b>Copy</b>, switch back to the app, tap <b>Paste</b>, then <b>Finish sign-in</b>.</li>
     <li>The card turns <b>Active</b> and usage loads: <i>"signed in — usage fetched, polling started."</i></li>
   </ol>
-  <p>Works for <b>Pro / Max</b> and <b>Team</b> accounts alike, on any card. The sign-in is minted on the phone and is yours alone — no computer shares it, so nothing can rotate it away. It self-renews for about <b>a month</b> (the card shows <i>"Sign-in expires around …"</i>), and renewing is the same one-minute flow via <b>"Re-sign in"</b>. An account with no token yet carries no tab — it appears the moment it's signed in.</p>
+  <p>Works for <b>Pro / Max</b> and <b>Team</b> accounts alike, on any card — <b>not Free</b>: a Free account signs in, but Anthropic's usage endpoint refuses it (HTTP 403), so the card says <i>"Claude doesn't report usage for the Free plan"</i> and shows no numbers until the plan changes. The card also wears the plan — <b>Pro, Max, Team Standard, Team Premium</b> — read from the account's profile. The sign-in is minted on the phone and is yours alone — no computer shares it, so nothing can rotate it away. It self-renews for about <b>a month</b> (the card shows <i>"Sign-in expires around …"</i>), and renewing is the same one-minute flow via <b>"Re-sign in"</b>. An account with no token yet carries no tab — it appears the moment it's signed in.</p>
   <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>4</span></div>
 </div>
 
@@ -264,7 +263,7 @@
         <li>Auto-renew countdown &amp; last auto-renewed time</li>
         <li>"Sign-in expires around …" (≈30-day estimate)</li>
       </ul>
-      <p class="muted" style="font-size:8.4pt; margin-top:3mm;">The screens above are from an earlier version — the cards and the sign-in flow are unchanged, the Settings screen around them now has four tabs (page 10).</p>
+      <p class="muted" style="font-size:8.4pt; margin-top:3mm;">The screens above are from an earlier version — the cards and the sign-in flow are unchanged, the Settings screen around them now has four tabs (page 9).</p>
     </div>
   </div>
   <div class="callout" style="margin-top:5mm;"><b>Token safety:</b> the sign-in is stored <b>encrypted on the phone only</b> (Android Keystore) and is never sent anywhere except Anthropic's own API. No servers, no telemetry, no analytics — nothing else ever sees it.</div>
@@ -317,37 +316,9 @@
 </div>
 
 <!-- ================= PAGE 7 · BACKUP TOKEN METHOD ================= -->
-<div class="page">
-  <div class="sechead"><div class="secnum">3</div><div><h2>Backup: use a computer token</h2><div class="sub">Claude accounts only — and only if the phone can't run the browser sign-in</div></div></div>
-  <div class="cols">
-    <div style="flex:1.35;">
-      <p>Each <b>Claude</b> card keeps the old method under <b>"Use a computer token instead"</b>: copying the token that the <b>Claude Code CLI</b> holds on the machine where that account is signed in. <span class="muted">ChatGPT cards don't offer it — see page 6 for why.</span></p>
-      <h3>Windows</h3>
-      <p style="font-size:8.6pt;">Open <code class="inline">C:\Users\&lt;you&gt;\.claude\.credentials.json</code> in Notepad, select all, copy.</p>
-      <h3>macOS</h3>
-      <p style="font-size:8.6pt;">The CLI keeps it in the Keychain. In Terminal:</p>
-      <pre class="cmd">security find-generic-password -s "Claude Code-credentials" -w</pre>
-      <h3>Fastest transfer: QR code <span class="tag">NO CLIPBOARD</span></h3>
-      <p style="font-size:8.6pt;">If the computer has Node.js, show the token as a QR in the terminal, then tap <b>"Scan QR"</b> on the profile's card:</p>
-      <pre class="cmd"><span class="c"># Mac</span>
-npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credentials' -w)"
-<span class="c"># Windows (PowerShell)</span>
-(Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw | ConvertFrom-Json).claudeAiOauth | ConvertTo-Json -Compress | npx -y qrcode-terminal</pre>
-      <p style="font-size:8.6pt;">Or the clipboard way: get the JSON onto the phone's clipboard privately (Link to Windows, Quick Share, a synced note — <b>delete it afterwards</b>) and tap <b>"Paste from clipboard"</b>. Either way the app validates the token with a live call and starts polling.</p>
-      <div class="callout" style="font-size:8.2pt;"><b>If the command finds nothing:</b> the Claude Code CLI isn't installed or signed in on that machine (the desktop app's login is stored separately and can't be used). Install the CLI, run <code class="inline">claude</code>, sign in with the right account, retry.</div>
-      <div class="callout dark" style="font-size:8.2pt;"><b>Why phone sign-in is better:</b> a pasted token is <i>shared</i> with that computer — if its Claude Code re-logs-in, the token rotates and the app asks for a re-paste. "Sign in on this phone" gives the phone its own token, so that can't happen.</div>
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:5mm; align-items:center;">
-      <figure><img src="shots/personal-expanded.png" width="152"><figcaption>"Use a computer token instead" reveals<br>Paste from clipboard &amp; Scan QR</figcaption></figure>
-      <figure><img src="shots/token-guide-light.png" width="152"><figcaption>The full walkthrough also lives in-app:<br>"How do I get my token?" (macOS / Windows / Linux)</figcaption></figure>
-    </div>
-  </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>7</span></div>
-</div>
-
 <!-- ================= PAGE 8 · READING THE SCREENS ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">4</div><div><h2>Reading the screens</h2><div class="sub">One tab per signed-in account — swipe or tap to switch</div></div></div>
+  <div class="sechead"><div class="secnum">3</div><div><h2>Reading the screens</h2><div class="sub">One tab per signed-in account — swipe or tap to switch</div></div></div>
   <div class="cols">
     <div style="flex:1.3;">
       <h3 style="margin-top:0;">Two rooms <span class="tag">v1.6</span></h3>
@@ -374,12 +345,12 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
       <figure><img src="shots/v16-main-chatgpt-light.png" width="152"><figcaption>A ChatGPT account — neutral room,<br>same cards, its own green</figcaption></figure>
     </div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>8</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>7</span></div>
 </div>
 
 <!-- ================= PAGE 9 · THE ALWAYS-ON NOTIFICATION ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">5</div><div><h2>The always-on notification</h2><div class="sub">Two accounts in the shade, a ring in the status bar — usage without opening anything</div></div></div>
+  <div class="sechead"><div class="secnum">4</div><div><h2>The always-on notification</h2><div class="sub">Two accounts in the shade, a ring in the status bar — usage without opening anything</div></div></div>
   <div class="shots">
     <figure><img src="shots/v16-notif-collapsed.png" width="330"><figcaption>Collapsed — First and Second side by side: mark, name, bar with the pace tick, and the 5-hour figure</figcaption></figure>
     <figure><img src="shots/v16-notif-expanded.png" width="330"><figcaption>Expanded — both headers with their reset lines, then the Weekly rows and one-tap Refresh</figcaption></figure>
@@ -389,7 +360,7 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
       <h3 style="margin-top:0;">Two accounts, one row</h3>
       <p style="font-size:8.8pt;">Turn it on under <b>Settings → Alerts → Always-on notification</b> and pick a <b>First</b> and, optionally, a <b>Second</b> account under <b>Show accounts</b>. Collapsed, each half shows the provider's mark, the account name, an 8 dp bar with the neutral pace tick, and the 5-hour percentage in that half's colour — your account's own until 80%, then yellow, orange, red. An account with no 5-hour window shows its <b>Weekly</b> figure instead. With one account, or Second set to None, you get the single layout.</p>
       <h3>Expanded</h3>
-      <p style="font-size:8.8pt;">Two header blocks — <i>"Personal · 5h"</i>, <i>"ChatGPT · Weekly"</i> — each with a bigger bar, the reset line and a 36 sp figure; then the panel: each account's <b>Weekly</b> row, per-model caps, and any condition strips. <b>Refresh</b> is the one action. The wording is always <b>5h</b> and <b>Weekly</b>.</p>
+      <p style="font-size:8.8pt;">Two header blocks — <i>"Personal · 5h"</i>, <i>"ChatGPT · Weekly"</i> — each with a bigger bar, the reset line and a 36 sp figure; then the panel: each account's <b>Weekly</b> row and, when something needs saying, one condition strip (per-model caps stay in the app). The panel is drawn at full width whatever it holds. <b>Refresh</b> is the one action. The wording is always <b>5h</b> and <b>Weekly</b>.</p>
       <h3>Tapping it</h3>
       <p style="font-size:8.8pt;">Each half is its own target: it opens Cooldown on that account's tab — or, if you choose so under <b>Tapping a number opens</b>, that service's own app.</p>
     </div>
@@ -403,12 +374,12 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
       <p style="font-size:8.8pt;">If an account's sign-in stops working, its data has gone stale for six hours, or an update is available, a small <b>dot</b> appears after its name collapsed and a labelled <b>strip</b> in the expanded panel. Nothing else posts separately.</p>
     </div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>9</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>8</span></div>
 </div>
 
 <!-- ================= PAGE 10 · SETTINGS ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">6</div><div><h2>Settings reference</h2><div class="sub">Four swipeable tabs — Accounts · Alerts · Appearance · More</div></div></div>
+  <div class="sechead"><div class="secnum">5</div><div><h2>Settings reference</h2><div class="sub">Four swipeable tabs — Accounts · Alerts · Appearance · More</div></div></div>
   <div class="shots">
     <figure><img src="shots/v16-settings-accounts.png" width="140"><figcaption><b>Accounts</b> — cards, Add account</figcaption></figure>
     <figure><img src="shots/v16-settings-alerts.png" width="140"><figcaption><b>Alerts</b> — the notification, the ring, reset pings</figcaption></figure>
@@ -417,7 +388,7 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
   </div>
   <table style="margin-top:4mm;">
     <tr><th style="width:24mm;">Tab · Setting</th><th>What it does</th></tr>
-    <tr><td>Accounts</td><td>One card per account: "Sign in on this phone" (with browser picker) or the paste / QR backup for Claude, "Sign in with a code" for ChatGPT. Once signed in: status chip, plan badge, last-checked, renew countdowns, Re-sign in / Clear. The card's ⋮ menu: Rename, Accent colour, Remove account. <b>"+ Add account"</b> at the bottom.</td></tr>
+    <tr><td>Accounts</td><td>One card per account: "Sign in on this phone" (with browser picker) for Claude, "Sign in with a code" for ChatGPT. Once signed in: status chip, plan tag (Free / Pro / Max / Team Standard / Team Premium, Plus / Pro for ChatGPT), last-checked, renew countdowns, Re-sign in / Clear. The card's ⋮ menu: Rename, Accent colour, Remove account. <b>"+ Add account"</b> at the bottom.</td></tr>
     <tr><td>Alerts · Always-on</td><td>The always-on notification on/off, and <b>Show accounts</b>: a <b>First</b> chip row and a <b>Second · optional</b> one (None to run single).</td></tr>
     <tr><td>Alerts · Tapping</td><td><b>Tapping a number opens</b> Cooldown on that account's tab, or that service's app.</td></tr>
     <tr><td>Alerts · Ring</td><td><b>Status-bar ring shows</b> First / Second / Whichever is higher. <b>System notification settings</b> opens Android's per-channel controls.</td></tr>
@@ -426,18 +397,19 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
     <tr><td>More</td><td><b>Polling</b> every 5 / 15 / 30 / 60 min · <b>Usage credits</b>, a card switch per account — the section only appears for accounts that have a credit budget · <b>Updates</b> with <b>Check for updates</b> (asks GitHub for the latest release) · <b>Diagnostics</b>: share your log · <b>About</b>: version, credits, Share feedback. Tap the version 7× and a <b>Debug</b> section appends below.</td></tr>
   </table>
   <p class="muted" style="font-size:8.4pt; margin-top:2mm;">On the Fold's inner screen each tab lays its cards out in two columns. Swipe between tabs or tap their names.</p>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>10</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>9</span></div>
 </div>
 
 <!-- ================= PAGE 11 · TROUBLESHOOTING + PRIVACY ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">7</div><div><h2>Troubleshooting &amp; privacy</h2></div></div>
+  <div class="sechead"><div class="secnum">6</div><div><h2>Troubleshooting &amp; privacy</h2></div></div>
   <table>
     <tr><th>Symptom</th><th>Meaning / fix</th></tr>
     <tr><td>A half is dimmed, "stale" strip</td><td>Polls for that account have failed for six hours — you're seeing the last known numbers, never a blank. Usually temporary; self-heals on the next successful poll.</td></tr>
-    <tr><td>"Re-auth needed"</td><td>The token and its refresh both failed. Tap <b>"Re-sign in"</b> on that card — or re-paste from a computer if you use the backup method. The notification shows a dot and a strip until it's fixed.</td></tr>
+    <tr><td>"Re-auth needed"</td><td>The token and its refresh both failed. Tap <b>"Re-sign in"</b> on that card. The notification shows a dot and a strip until it's fixed.</td></tr>
+    <tr><td>"Claude doesn't report usage for the Free plan"</td><td>The account is on Claude's Free plan, or a Pro plan that lapsed. Anthropic refuses Free organisations at the usage endpoint; the app names the plan and re-checks it every poll. Upgrade to Pro, Max or Team, or remove the account.</td></tr>
     <tr><td>"Rate limited (429)"</td><td>The API asked us to back off; automatic retries with increasing delays (5 min → 1 h max).</td></tr>
-    <tr><td>"Token refresh failed (HTTP 429)"</td><td>Usually a <i>dead</i> refresh token, not real rate-limiting — the source machine's Claude Code rotated it. Fix: <b>"Sign in on this phone"</b>, which gives the phone its own sign-in so this can't recur.</td></tr>
+    <tr><td>"Token refresh failed (HTTP 429)"</td><td>A <i>dead</i> refresh token, not real rate-limiting — Anthropic answers 429 for one. Fix: <b>"Re-sign in"</b> on that card.</td></tr>
     <tr><td>My widgets / tile vanished</td><td>Expected on the v1.6 update — they were removed. Turn on the <b>always-on notification</b> (Settings → Alerts); it does the same job from the shade.</td></tr>
     <tr><td>No reset ping arrived</td><td>Check notification permission, that the account's <b>5h</b> / <b>Weekly</b> reset isn't Off, and that <i>If busy</i> isn't hiding a window that never reached 80%.</td></tr>
     <tr><td>Anything else</td><td>Settings → More → <b>Diagnostics</b> shares the app log; the Debug section (7 taps on the version) shows the last raw response.</td></tr>
@@ -450,15 +422,15 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
     <li>Reading either usage API with a consumer token outside the official clients is not covered by Anthropic's or OpenAI's consumer terms; personal-use risk was accepted when this was built.</li>
     <li>Not affiliated with or endorsed by Anthropic, OpenAI or Google. Sideload-only, free, no accounts, no strings.</li>
   </ul>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>11</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>10</span></div>
 </div>
 
 <!-- ================= PAGE 12 · HISTORY ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">8</div><div><h2>Version history &amp; dev notes</h2></div></div>
+  <div class="sechead"><div class="secnum">7</div><div><h2>Version history &amp; dev notes</h2></div></div>
   <table>
     <tr><th style="width:14mm;">Ver.</th><th>Highlights</th></tr>
-    <tr><td><b>1.6</b></td><td><b>Two accounts on one notification, Settings on a diet, the Pulse icon.</b> The always-on notification carries a First and a Second account side by side, with the Weekly rows expanded; the status-bar ring drops its weekly dot and wears the shown account's colour (First / Second / Whichever is higher), solid red with an × at 100%. Reset pings are per account and per window, and now fire for an idle account too. Settings shrinks to four tabs — Accounts, Alerts, Appearance, More. New Pulse launcher tile; each tab is a room (ivory and serif for Claude, neutral for ChatGPT). <b>Removed:</b> the home-screen widgets, the Quick Settings tile, the standalone threshold and pace alerts, three notification styles and three status-bar glyphs — placed widgets and tiles disappear on update. Fixed: the two provider marks now render the same size. Built with <b>Claude Fable 5.1</b>, <b>Opus 5</b> and <b>Sonnet 5</b>.</td></tr>
+    <tr><td><b>1.6</b></td><td><b>Two accounts on one notification, Settings on a diet, the Pulse icon.</b> The always-on notification carries a First and a Second account side by side, with the Weekly rows expanded — the panel now draws at full width whatever it holds, so a warning strip can't shrink the Weekly meters (CCBG-26 (Panel Scaling)). The status-bar ring drops its weekly dot and wears the shown account's colour (First / Second / Whichever is higher), solid red with an × at 100%. Reset pings are per account and per window, and now fire for an idle account too. Settings shrinks to four tabs — Accounts, Alerts, Appearance, More. Every Claude card shows its plan — Free, Pro, Max, Team Standard, Team Premium (CCRM-64 (Claude Plan Tag)) — and a Free account is told plainly it has no usage, not a server error (CCBG-27 (Free Plan 403)). New Pulse launcher tile; each tab is a room (ivory and serif for Claude, neutral for ChatGPT). <b>Removed:</b> the home-screen widgets, the Quick Settings tile, the standalone threshold and pace alerts, three notification styles and three status-bar glyphs, and the computer-token backup — sign in on the phone for both services (CCRM-63 (Token Import Removal)) — placed widgets and tiles disappear on update. Fixed: the two provider marks now render the same size. Built with <b>Claude Fable 5.1</b>, <b>Opus 5</b> and <b>Sonnet 5</b>.</td></tr>
     <tr><td><b>1.5</b></td><td><b>ChatGPT accounts, and the app becomes just "Cooldown".</b> A ChatGPT account is added from "+ Add account" and signed in with a <b>short code</b> at auth.openai.com — no computer, no copied token — then behaves exactly like a Claude one. Each account carries its provider's mark and, by default, its provider's colour, overridable globally or per account. A window an account doesn't have is hidden rather than drawn as a dash. Gemini (Google Antigravity) is listed but greyed out. Built with <b>Claude Opus 5</b> and <b>Sonnet 5</b>.</td></tr>
     <tr><td><b>1.4</b></td><td><b>As many accounts as you use.</b> Accounts moved to a proper registry — "+ Add account" for a third, fourth, or more, each with its own tab, renamed from its card's ⋮ menu. A clock-hand pace needle on the status-bar gauge. Fixed: alerts switched off in Settings left their strip stuck on screen. Built with <b>Claude Sonnet 5</b>.</td></tr>
     <tr><td><b>1.3</b></td><td><b>A status-bar meter you can read, one alert surface.</b> The tiny status-bar icon rebuilt around its real rendered size, with a theme-coloured 5-hour ring and a pace line; every alert for every profile folds into the pinned notification's one panel; a new hourglass launcher icon; Used-or-Left and countdown-or-clock display switches; typed error messages and a shareable app log.</td></tr>
@@ -467,7 +439,7 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
     <tr><td>0.12–0.14</td><td><b>Native sign-in, history, distribution.</b> "Sign in on this phone" — the PKCE flow Claude Code uses, browser picker included (0.12); usage history, the always-on notification, granular alerts, editable profile names, a permanent signing key (0.13); feedback by email and <b>Check for updates</b> against GitHub Releases (0.14).</td></tr>
     <tr><td>0.1–0.11</td><td>The beta — first widget and app, Material You polish, usage alerts, the 0.5 redesign, two profiles, on-phone poll history with a burn-rate forecast, QR token import, plan badges and sign-in expiry warnings, the <b>Claude Cooldown</b> rename.</td></tr>
   </table>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>12</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>11</span></div>
 </div>
 
 <!-- ================= PAGE 13 · DEV NOTES + CREDITS ================= -->
@@ -496,7 +468,7 @@ npx -y qrcode-terminal "$(security find-generic-password -s 'Claude Code-credent
       <p class="muted" style="font-size:8.6pt; margin-top:1mm;">Prototyped and built in a weekend by <b>Claude Fable 5</b> — the app and this guide's first drafts. When the OAuth sign-in tripped Fable's cybersecurity guardrails, <b>Claude Opus 4.8</b> built that handshake and finished the docs. <b>Opus 5</b> and <b>Sonnet 5</b> brought ChatGPT aboard; <b>Fable 5.1</b> ran the v1.6 arc — the two-account notification, the diet and the Pulse tile. If you'd like the APK or want to build something like this, just ask.</p>
     </div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>13</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.6 (September 2026)</span><span>12</span></div>
 </div>
 
 </body>

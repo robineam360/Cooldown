@@ -546,6 +546,26 @@ class UsageCache(context: Context) {
             .apply()
     }
 
+    /** CCRM-64 (Claude Plan Tag): when the profile endpoint was last read for the plan. */
+    fun planCheckedAt(profile: Profile): Long = prefs.getLong(k(profile, "planCheckedAt"), 0L)
+
+    fun setPlanCheckedAt(profile: Profile, at: Long) {
+        prefs.edit().putLong(k(profile, "planCheckedAt"), at).apply()
+    }
+
+    /**
+     * CCBG-27 (Free Plan 403): forgets the last good reading but nothing else. A plan
+     * that no longer reports usage has no windows, so yesterday's 38% drawn crisply is
+     * a wrong number, not a stale one — the retained-snapshot rule that serves every
+     * transient failure does not serve this one. History and settings are untouched.
+     */
+    fun clearUsage(profile: Profile) {
+        prefs.edit()
+            .remove(k(profile, "rawJson"))
+            .putLong(k(profile, "fetchedAt"), 0L)
+            .apply()
+    }
+
     /**
      * Key names (never values) of the last sign-in's token response — a
      * debug-only instrument so whether `rate_limit_tier` actually appears in

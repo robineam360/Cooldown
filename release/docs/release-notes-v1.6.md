@@ -46,6 +46,20 @@ in this version.** The always-on notification is their replacement.
 - **CCBG-24 (Duet Label Clamp)** — on the collapsed notification a seven-character account
   name can ellipsize next to a three-character figure.
 
+### Re-published 11 September 2026
+
+Same versionName (1.6), with four additions folded in since the first publish:
+
+- **CCBG-26 (Panel Scaling)** — the expanded notification's panel now draws at full width
+  whatever it holds, so a warning strip can no longer scale the Weekly meters down with it.
+- **CCBG-27 (Free Plan 403)** — a Free Claude account is told that Claude reports no usage for
+  it, on the card, the main screen and the notification, instead of "Anthropic's server
+  errored".
+- **CCRM-63 (Token Import Removal)** — the computer-token backup (paste, Scan QR, the in-app
+  token guide) is removed; signing in happens on the phone for both services.
+- **CCRM-64 (Claude Plan Tag)** — every Claude card wears its plan — Free, Pro, Max, Team
+  Standard, Team Premium — read from Anthropic's profile endpoint.
+
 Docs: the [User Guide (PDF)](https://github.com/robineam360/Cooldown/blob/main/release/docs/Cooldown-User-Guide-v1.6.pdf)
 and the [Brochure (PDF)](https://github.com/robineam360/Cooldown/blob/main/release/docs/Cooldown-Brochure.pdf).
 Unofficial personal tool — not affiliated with Anthropic, OpenAI or Google.

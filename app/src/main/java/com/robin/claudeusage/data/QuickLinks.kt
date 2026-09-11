@@ -44,4 +44,16 @@ object QuickLinks {
 
     /** "Check Anthropic status" / "Check OpenAI status" — the notice's button. */
     fun statusLabel(provider: Provider): String = "Check ${provider.vendor} status"
+
+    /**
+     * CCBG-27 (Free Plan 403): where the plan-blocked notice sends you. Compile-time
+     * constants like everything else here, so the link allowlist holds.
+     */
+    fun plansUrl(provider: Provider): String = when (provider) {
+        Provider.CLAUDE -> "https://claude.ai/upgrade"
+        Provider.CHATGPT -> "https://chatgpt.com/#pricing"
+        Provider.ANTIGRAVITY -> "https://antigravity.google"
+    }
+
+    fun plansLabel(provider: Provider): String = "See ${provider.displayName} plans"
 }

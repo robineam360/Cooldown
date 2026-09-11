@@ -3,6 +3,7 @@ package com.robin.claudeusage.data
 import android.content.Context
 import com.robin.claudeusage.alerts.Alerts
 import com.robin.claudeusage.data.source.ChatGptSource
+import com.robin.claudeusage.data.source.ClaudePlan
 import com.robin.claudeusage.data.source.Sources
 import com.robin.claudeusage.diag.AppLog
 import kotlinx.coroutines.Dispatchers
@@ -215,31 +216,6 @@ class UsageRepository(private val context: Context) {
         results
     }
 
-    /** Validates pasted credentials with a live call; persists them on success. */
-    suspend fun validateAndSave(profile: Profile, pastedText: String): FetchResult =
-        withContext(Dispatchers.IO) {
-            val result = mutex.withLock {
-                val pasted = CredentialStore.parsePasted(pastedText)
-                    ?: return@withLock FetchResult.Error(
-                        "Couldn't read that as a token — copy the whole claudeAiOauth JSON " +
-                            "in one go and try again"
-                    )
-                credStore.save(profile, pasted.creds, stampAdded = true)
-                cache.setAuthState(profile, AuthState.OK)
-                cache.setTokenMeta(profile, pasted.refreshExpiresAt, pasted.plan, pasted.tier)
-                // Desktop copy: exact expiry from the JSON, and rotation means the
-                // family may have moved — keep the legacy (non-native) semantics.
-                cache.setRefreshExpiryEstimated(profile, false)
-                cache.setNativeSignIn(profile, false)
-                cache.setLastRenewedAt(profile, 0L)
-                cache.setFirstRefreshFailAt(profile, 0L)
-                OAuthSignIn.clearPending(context)
-                doFetch(profile, manual = false, ignoreGates = true)
-            }
-            Alerts.evaluate(context, cache)
-            result
-        }
-
     /**
      * Completes native sign-in: parses the pasted `code#state` from the callback
      * page, verifies state, exchanges the code for a phone-owned token family, and
@@ -431,6 +407,34 @@ class UsageRepository(private val context: Context) {
             token = refreshAccessToken(profile, creds) ?: return authFailure(profile, now)
         }
 
+        // CCBG-27 (Free Plan 403): an account already known to be on a plan that reports
+        // no usage is not polled for usage again — the endpoint would only answer 403 (and,
+        // on the Fold 7, 429s for a while after) every 15 minutes. The profile endpoint is
+        // read instead, which is how an upgrade is noticed: the moment it stops saying
+        // Free, the usage fetch below runs as normal. Keyed on the stored plan as well as
+        // the last failure kind, so a 429 that lands between two 403s cannot talk the
+        // account back into hammering the endpoint. A profile read that fails keeps the
+        // known state rather than inventing a new one.
+        if (profile.provider == Provider.CLAUDE &&
+            (cache.snapshot(profile).lastStatusKind == ErrorKind.PLAN.key ||
+                ClaudePlan.isBlockedPlan(cache.plan(profile)))
+        ) {
+            val info = try {
+                refreshClaudePlan(profile, token, now, force = true)
+            } catch (_: IOException) {
+                null
+            }
+            if (info == null || info.usageBlocked) {
+                val plan = cache.plan(profile) ?: "Free"
+                cache.saveFailure(
+                    profile, "HTTP 403 · ${plan.lowercase()} plan", now, kind = ErrorKind.PLAN,
+                )
+                return FetchResult.Error(
+                    "Claude doesn't report usage on the $plan plan — Pro, Max or Team is needed.",
+                )
+            }
+        }
+
         return try {
             var resp = source.fetchUsage(creds.copy(accessToken = token))
             if (source.isAuthFailure(resp.code)) {
@@ -444,6 +448,7 @@ class UsageRepository(private val context: Context) {
                     val at = System.currentTimeMillis()
                     cache.saveSuccess(profile, resp.body, at)
                     historyStore.record(profile, parsed, at)
+                    refreshClaudePlan(profile, token, now, force = false)
                     // Providers that name the plan in the usage payload correct it here;
                     // Claude's default returns null and writes nothing (CCRM-54).
                     source.planFrom(resp.body)?.let { plan ->
@@ -468,6 +473,30 @@ class UsageRepository(private val context: Context) {
                     FetchResult.RateLimited()
                 }
                 source.isAuthFailure(resp.code) -> authFailure(profile, now)
+                // CCBG-27 (Free Plan 403): Claude's usage endpoint refuses a Free
+                // organisation with 403 `oauth_not_allowed_for_organization` — a lapsed
+                // Pro lands here the day its plan ends. The sign-in itself is fine, so
+                // this is neither AUTH nor "their server errored": it is the plan. The
+                // profile endpoint is read to name it, and the last reading is dropped
+                // because an account with no windows has no number to be stale *from*.
+                profile.provider == Provider.CLAUDE && resp.code == 403 &&
+                    (ClaudePlan.isPlanRefusal(resp.body) ||
+                        refreshClaudePlan(profile, token, now, force = true)?.usageBlocked == true) -> {
+                    refreshClaudePlan(profile, token, now, force = cache.plan(profile) == null)
+                    val plan = cache.plan(profile) ?: "Free"
+                    cache.clearUsage(profile)
+                    cache.saveFailure(
+                        profile, "HTTP 403 · ${plan.lowercase()} plan", now, kind = ErrorKind.PLAN,
+                    )
+                    AppLog.log(
+                        context, AppLog.Level.WARN, "poll", profile,
+                        "usage refused for the $plan plan (HTTP 403)",
+                    )
+                    FetchResult.Error(
+                        "Signed in, but Claude doesn't report usage on the $plan plan — " +
+                            "Pro, Max or Team is needed.",
+                    )
+                }
                 else -> {
                     cache.saveFailure(profile, "HTTP ${resp.code}", now, kind = ErrorKind.SERVER)
                     FetchResult.Error("HTTP ${resp.code}")
@@ -476,6 +505,41 @@ class UsageRepository(private val context: Context) {
         } catch (e: IOException) {
             cache.saveFailure(profile, "Network: ${e.message ?: "offline"}", now, kind = ErrorKind.NETWORK)
             FetchResult.Error(e.message ?: "network error")
+        }
+    }
+
+    /** Re-read the plan this often when nothing forces it; a plan changes rarely. */
+    private val PLAN_RECHECK_MS = 24 * 3_600_000L
+
+    /**
+     * CCRM-64 (Claude Plan Tag): reads `/api/oauth/profile` and stores the plan label
+     * and rate-limit tier the account card shows. Claude only — ChatGPT's plan rides its
+     * usage payload (`planFrom`). Runs on the first fetch after a sign-in (plan unknown),
+     * then once a day, and whenever a caller [force]s it (the 403 path). Never throws:
+     * the plan is decoration, and a failure here must not turn a good usage fetch into a
+     * bad one. Returns what it learned, or null.
+     */
+    private fun refreshClaudePlan(
+        profile: Profile,
+        token: String,
+        now: Long,
+        force: Boolean,
+    ): ClaudePlan.Info? {
+        if (profile.provider != Provider.CLAUDE) return null
+        val due = force || cache.plan(profile) == null ||
+            now - cache.planCheckedAt(profile) > PLAN_RECHECK_MS
+        if (!due) return null
+        return try {
+            val resp = ApiClient.fetchProfile(token)
+            if (resp.code != 200) return null
+            val info = ClaudePlan.parse(resp.body) ?: return null
+            cache.setPlanCheckedAt(profile, now)
+            if (info.plan != cache.plan(profile) || info.tier != cache.tier(profile)) {
+                cache.setTokenMeta(profile, cache.refreshExpiresAt(profile), info.plan, info.tier)
+            }
+            info
+        } catch (_: Exception) {
+            null
         }
     }
 

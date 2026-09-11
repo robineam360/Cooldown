@@ -22,7 +22,7 @@ android {
         applicationId = "com.robin.claudeusage"
         minSdk = 31
         targetSdk = 36
-        versionCode = 21
+        versionCode = 22
         versionName = "1.6"
     }
 
@@ -70,7 +70,6 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
     // QR token import (bundles the camera capture activity + permission flow).
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     // Custom Tabs for the in-app OAuth sign-in browser trip.
     implementation("androidx.browser:browser:1.8.0")
 

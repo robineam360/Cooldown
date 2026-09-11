@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The tinted rounded background of a condition strip in the expanded panel
+    (CCBG-26 (Panel Scaling)): the panel is native views now, not a bitmap, so the
+    13%-alpha hue the bitmap painted is done by an ImageView behind the text.
+
+    Solid white for the same reason notif_condition_dot.xml is: RemoteViews can set a
+    colour filter (setInt(id, "setColorFilter", argb)) and an image alpha
+    (setInt(id, "setImageAlpha", 33)) at runtime, but cannot recolour a shape, so
+    one drawable serves the red, amber and accent strips alike.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:radius="8dp" />
+</shape>
