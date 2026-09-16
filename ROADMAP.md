@@ -994,6 +994,38 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   `data/UpdateCheck.kt`, `SettingsScreen.kt` (`AboutCard`, the More tab), `RELEASING.md`
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
+### CCRM-69 · Window Dollars — read the dollar fields Anthropic already sends
+- **Status:** Blocked on one measurement, 2026-09-16. **Probe first, design second.**
+- **Why this exists:** Robin asked for a spend meter showing what his plan usage would have cost
+  on the API, having seen dollar figures in Claude Code. The CLI can do that because it *made*
+  the requests — it holds the token counts and prices them locally. A phone never sees a request,
+  only a percentage, so a priced estimate would have to multiply a published hours-per-week
+  anchor by an invented tokens-per-hour constant: roughly ±2x, three guesses deep. He was right to
+  baulk at that.
+- **The lead:** Anthropic's own payload already carries `limit_dollars`, `used_dollars` and
+  `remaining_dollars` on both `five_hour` and `seven_day`. They are **not read anywhere** in this
+  app, and they were `null` in the only captured payload we have — `UsageParserTest.realPayload`,
+  **captured 2026-07-27**. Anthropic built those fields for something. If they are populated now,
+  this feature is a parser change and a card, with no estimate, no anchor table, no per-hour rate
+  and no appendix reversal — the real figure, the way Claude Code shows it.
+- **The measurement, before any wireframe:** Settings → Diagnostics → Endpoint probe, host
+  `api.anthropic.com`, path `/api/oauth/usage`, on a paid account. Read whether `used_dollars` is
+  still null. Record the result and the date here.
+- **If populated:** parse the three fields in `Models.kt` `windowFrom()` (which currently pulls
+  only `utilization` and `resets_at`), carry them on the window model, and design a card around a
+  fact. `HistoryStore` should start persisting them so a dollars-over-time view becomes possible.
+- **If still null:** the priced estimate is not built. Fall back to CCRM-70 (Plan Value) —
+  arithmetic on `SessionLog`'s year of weekly peaks against the plan price — or to nothing. The
+  appendix ruling at the end of this file stands unreversed, and the hours-vs-messages problem
+  that made Robin baulk disappears with it.
+- **Scope, decided 2026-09-16:** **Claude only for now.** ChatGPT is looked at later, based on how
+  this goes. OpenAI publishes its limits in messages rather than hours and its payload has no
+  per-window dollar field at all, so it would need a second anchor and a second rate — exactly the
+  complexity that made this feel not worth building.
+- **Where:** `data/Models.kt` (`windowFrom`, the `Window` model), `data/HistoryStore.kt`,
+  `SettingsScreen.kt` if a card follows. Design argument and the estimate fallback:
+  `design/research/2026-09-16-spend-meter-ideation.md`.
+
 ### CCRM-68 · Honest Agent — stop borrowing the Claude Code User-Agent
 - **Status:** Planned — agreed 2026-09-16, to ship before any permission email goes out.
 - **Why:** `ApiClient.USER_AGENT` is `claude-code/2.1.214`, sent on every call to

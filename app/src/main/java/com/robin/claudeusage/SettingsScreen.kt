@@ -2819,7 +2819,9 @@ private fun EndpointProbe(repo: UsageRepository) {
     val scope = rememberCoroutineScope()
     val profiles = remember { repo.profiles() }
     var profile by remember { mutableStateOf(profiles.first()) }
-    var host by remember { mutableStateOf(ApiClient.ProbeHost.CLAUDE_AI) }
+    // ANTHROPIC, not CLAUDE_AI: every preset path below lives on api.anthropic.com, so the
+    // default pairing used to 404 on the first Probe tap until you noticed the host button.
+    var host by remember { mutableStateOf(ApiClient.ProbeHost.ANTHROPIC) }
     var path by remember { mutableStateOf(PROBE_PRESETS.first()) }
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<String?>(null) }
