@@ -3396,6 +3396,22 @@ no logs, so all of this is structurally unavailable, not merely unbuilt:
   daily, with a compact codec and defaulting rules (cache-write defaults to the input rate,
   cache-read to a tenth of it). Impressive and irrelevant to us.
 
+*Re-crawled 2026-09-16, because the question came round a third time — this is the short answer
+to "but how does OpenQuota show a cost donut?".* Its cost for Claude and Codex is
+`tokens × price-per-million` in `src-tauri/src/pricing/rates.rs`, over token counts walked out of
+`~/.claude/projects/**/*.jsonl` and `~/.codex/sessions/`, priced from LiteLLM, models.dev and its
+own hand-maintained supplement. Three things worth remembering: even **Cursor's** remote CSV export
+returns *token counts*, not dollars, so that figure is estimated too; the `costUSD` already present
+in some Claude Code log lines was computed by the CLI's own bundled table when it wrote the line,
+never billed by Anthropic; and OpenQuota labels the lot honestly — the tooltip under the donut says
+*"Estimated locally, so it may be off"*. **Two providers really do hand it billing-true dollars:**
+GitHub Copilot org billing (`/orgs/{org}/settings/billing/usage/summary`, but the token comes from
+the local `gh` config — desktop-only) and **OpenRouter** (`/api/v1/key` returns real
+`usage_daily`/`weekly`/`monthly`, authenticated by a static API key a phone *could* hold). That
+OpenRouter case is the single genuine counterexample to "a phone can never show real spend" — and
+it is ruled out permanently by CLAUDE.md anyway. **None of Claude, ChatGPT or Antigravity has such
+a path.** See also CCRM-69 (Window Dollars).
+
 Our history is percent-over-time from polling (`HistoryStore`, `SessionLog`), which answers a
 different question and is the only question a phone client *can* answer. **Do not read
 "estimated spend" in their README as something we're missing** — the one money figure we can
