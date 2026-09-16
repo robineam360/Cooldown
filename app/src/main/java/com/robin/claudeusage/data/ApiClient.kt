@@ -1,5 +1,6 @@
 package com.robin.claudeusage.data
 
+import com.robin.claudeusage.BuildConfig
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -10,18 +11,27 @@ import java.util.concurrent.TimeUnit
 data class HttpResult(val code: Int, val body: String)
 
 /**
- * Raw HTTP for the endpoints we use. NOTE the two endpoints want OPPOSITE
- * User-Agents:
- *  - usage endpoint (api.anthropic.com): send the claude-code User-Agent (USER_AGENT)
- *    — without it the request routes to an aggressively rate-limited bucket.
- *  - token endpoint (platform.claude.com): must NOT send a claude-code User-Agent —
- *    its WAF 429-blocks it. See postToken().
+ * Raw HTTP for the endpoints we use.
+ *
+ * CCRM-68 (Honest Agent), 2026-09-16: every request now names this app honestly.
+ * The usage endpoint used to be sent `claude-code/<version>` on the belief that
+ * without the CLI's identity it routed to an aggressively rate-limited bucket —
+ * a claim that arrived in the initial commit and was **never tested on that
+ * endpoint**. (What *was* measured is different endpoints: the token endpoint's
+ * WAF really does gate on User-Agent shape, in the opposite direction — see
+ * postToken() — and `/v1/messages` showed no gate at all across four probes.)
+ * Borrowing the CLI's name was the hardest thing in the repo to defend, so it is
+ * gone; if throttling does appear, the revert is one line and we will finally
+ * have the measurement.
+ *
+ * The token endpoint (platform.claude.com) still must NOT be sent a claude-code
+ * User-Agent — its WAF 429-blocks that shape. See postToken().
  */
 object ApiClient {
 
-    // Bump occasionally to a recent real Claude Code release. USAGE ENDPOINT ONLY —
-    // do not use on the token endpoint (see postToken).
-    const val USER_AGENT = "claude-code/2.1.214"
+    // Who we actually are. Matches ChatGptSource.USER_AGENT — one honest identity
+    // for every host. Do not use on the token endpoint (see postToken).
+    val USER_AGENT = "Cooldown/${BuildConfig.VERSION_NAME} (Android)"
 
     private const val USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 
@@ -127,9 +137,8 @@ object ApiClient {
      * to a billing API could change a spend limit or buy credits, so no other method is
      * reachable from here.
      *
-     * Sends the same headers as [fetchUsage] on the Anthropic hosts, including the
-     * claude-code User-Agent that keeps `api.anthropic.com` out of the aggressive
-     * rate-limit bucket; [ProbeHost.CHATGPT] gets OpenAI's headers instead. Results are
+     * Sends the same headers as [fetchUsage] on the Anthropic hosts;
+     * [ProbeHost.CHATGPT] gets OpenAI's headers instead. Results are
      * returned raw and are never parsed or cached — see `UsageRepository.probeEndpoint`.
      */
     fun probe(accessToken: String, host: ProbeHost, path: String): HttpResult {
@@ -138,9 +147,9 @@ object ApiClient {
             .get()
             .header("Authorization", "Bearer $accessToken")
         if (host == ProbeHost.CHATGPT) {
-            // OpenAI's hosts get OpenAI's headers and our honest User-Agent — sending
-            // a claude-code UA to chatgpt.com would be a lie, and anthropic-beta there
-            // is noise (CCRM-54 (ChatGPT Account)).
+            // OpenAI's hosts get OpenAI's headers; anthropic-beta there is noise
+            // (CCRM-54 (ChatGPT Account)). The User-Agent is the same honest string
+            // either way since CCRM-68 (Honest Agent).
             builder.header("Accept", "application/json")
                 .header("User-Agent", com.robin.claudeusage.data.source.ChatGptSource.USER_AGENT)
         } else {

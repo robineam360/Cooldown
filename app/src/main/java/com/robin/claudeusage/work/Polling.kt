@@ -103,7 +103,16 @@ object Polling {
         )
     }
 
-    /** Immediate one-shot fetch (pinned notification's Refresh action / app button). Null profile = all configured. */
+    /**
+     * Immediate one-shot fetch (pinned notification's Refresh action / app button).
+     * Null profile = all configured.
+     *
+     * CCBG-29 (Refresh Swallowed): a user's tap REPLACEs whatever is already queued
+     * under this name. With no connectivity the CONNECTED constraint keeps the worker
+     * ENQUEUED forever, and KEEP silently discarded every later tap — a button that
+     * visibly did nothing. The periodic auto-poll keeps KEEP so background refreshes
+     * don't stack.
+     */
     fun refreshOnce(context: Context, manual: Boolean = true, profile: Profile? = null) {
         val request = OneTimeWorkRequestBuilder<UsagePollWorker>()
             .setConstraints(networkConstraint)
@@ -111,7 +120,7 @@ object Polling {
             .build()
         WorkManager.getInstance(context).enqueueUniqueWork(
             if (profile == null) ONESHOT_NAME else "$ONESHOT_NAME-${profile.key}",
-            ExistingWorkPolicy.KEEP, request
+            if (manual) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP, request
         )
     }
 

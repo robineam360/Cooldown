@@ -35,14 +35,18 @@ a 2-page overview.
 > 🚩 **Please read before you install — this is unofficial and carries some account risk.**
 >
 > **Claude.** To read your usage, Cooldown signs in with the **same OAuth client as the Claude
-> Code CLI** (identical client ID and scopes) and, when it fetches usage, identifies itself as
-> `claude-code/<version>` against an **undocumented** endpoint
-> (`api.anthropic.com/api/oauth/usage`) — deliberately, because without the CLI's identity
-> the request is routed to an aggressively rate-limited bucket. In other words, it
-> **impersonates the official CLI**. This is **not sanctioned by Anthropic**, and their
-> consumer terms restrict using consumer OAuth tokens in third-party tools. Installing means
-> accepting that Anthropic could **revoke your token or flag your account** for an unusual
-> traffic pattern.
+> Code CLI** (identical client ID and scopes) and reads an **undocumented** endpoint
+> (`api.anthropic.com/api/oauth/usage`). It identifies itself honestly as
+> `Cooldown/<version> (Android)` — earlier versions borrowed the CLI's own User-Agent, which was
+> indefensible, and that is gone as of v1.7 (CCRM-68 (Honest Agent)).
+>
+> This is still **not sanctioned by Anthropic**. Their Claude Code
+> [legal and compliance page](https://code.claude.com/docs/en/legal-and-compliance) states
+> plainly that *"Anthropic does not permit third-party developers to offer Claude.ai login into
+> their own applications"* and that *"developers may not collect, store, or intermediate
+> Claude.ai credentials or session tokens"*, with no carve-out for reading only. Cooldown does
+> exactly that, so installing means accepting that Anthropic could **revoke your token or flag
+> your account**, and may do so without notice. Use it with your eyes open.
 >
 > **ChatGPT.** The same posture, with one honest difference. Cooldown mints **its own token**
 > through OpenAI's device-code sign-in — you type a short code at `auth.openai.com`, and the
@@ -194,9 +198,13 @@ history — never learns the difference.
 identical client ID and scopes (`org:create_api_key user:profile user:inference
 user:sessions:claude_code user:mcp_servers user:file_upload`) — via browser-based PKCE
 against `claude.com` / `platform.claude.com`. To read usage it calls an **undocumented**
-endpoint (`api.anthropic.com/api/oauth/usage`) and sends `User-Agent: claude-code/<version>`
-on that call, because without the CLI's identity the request is routed to an aggressively
-rate-limited bucket. Once a day it also reads `api/oauth/profile` on the same host, which names
+endpoint (`api.anthropic.com/api/oauth/usage`), sending `User-Agent: Cooldown/<version>
+(Android)` — its own name, on every host. (Through v1.6 this call borrowed the CLI's
+`claude-code/<version>` on the belief that an unfamiliar client is throttled harder; that claim
+was never actually tested on this endpoint, and CCRM-68 (Honest Agent) dropped it in v1.7.) The
+token endpoint is the one place with a measured User-Agent rule, in the opposite direction: its
+WAF 429-blocks a `claude-code` shape, so that call sends a plain library agent. Once a day it
+also reads `api/oauth/profile` on the same host, which names
 the organisation's plan — that is where the card's **Free / Pro / Max / Team** tag comes from, and
 how a Free account is recognised: the usage endpoint answers it with **403
 `oauth_not_allowed_for_organization`**, so the app stops polling usage for that account and
