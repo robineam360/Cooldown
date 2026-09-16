@@ -934,9 +934,28 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
-- **Status:** Planned (filed 2026-09-11) · **runbook:** [RUNBOOK.md](RUNBOOK.md) — ten steps,
-  Step 1 (asking Anthropic and OpenAI whether they object) starts first because it runs on
-  their clock, not ours.
+- **Status:** **Dropped 2026-09-16, by Robin.** Not deferred — dropped. The ID stays filed and
+  is never reused, per CLAUDE.md.
+- **Why it was dropped:** Step 1's research (`design/research/2026-09-16-permission-emails.md`)
+  established that Anthropic's own
+  [legal and compliance page](https://code.claude.com/docs/en/legal-and-compliance) already
+  prohibits what Cooldown's Claude path does — third-party apps may not offer Claude.ai login,
+  and developers may not collect or store Claude.ai session tokens, with no read-only carve-out
+  — and that Anthropic has enforced this server-side since April 2026. A Play listing would put
+  the app in front of exactly the people who enforce it, and Convention 7 would have made a
+  written refusal binding on the Claude side.
+  Robin's judgement, stated 2026-09-16: **the app existing on GitHub is what matters; Play was a
+  convenience, not a requirement.** Asking for permission would have converted today's ambiguity
+  into a documented refusal while protecting nothing — a refusal creates no takedown right over
+  the repo, and technical enforcement is available to Anthropic whether or not anyone asks. So
+  the permission emails were never sent and the listing is off the table.
+- **What was kept from the arc:** CCRM-68 (Honest Agent) — dropping the borrowed
+  `claude-code/<version>` User-Agent, which was worth doing on its own merits and shipped in
+  v1.7. The drafted emails stay in `design/research/2026-09-16-permission-emails.md` as the
+  record of the reasoning, unsent.
+- **What would reopen this:** Anthropic publishing a sanctioned route for a user reading their
+  own usage (a registerable client, or a documented endpoint). Not a change of mind about the
+  risk — a change in the facts.
 - **Why:** sideloading reaches colleagues; a listing reaches everyone else, and it is the
   precondition for deciding CCRM-7 (iOS) on evidence rather than guesswork. The app is MIT
   and already carries the "Unofficial" notice, but open source settles neither of the two

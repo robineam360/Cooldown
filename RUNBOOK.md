@@ -1,4 +1,19 @@
-# Runbook — the Play Store arc (v1.7 → Play)
+# Runbook — SUPERSEDED (the Play Store arc was dropped)
+
+> ⛔ **This arc was dropped on 2026-09-16 and none of it should be executed.** CCRM-66 (Play
+> Store Launch) is Dropped in [ROADMAP.md](ROADMAP.md) with the reasoning; the permission emails
+> in `design/research/2026-09-16-permission-emails.md` were **never sent** and must not be.
+> Step 1's research is the reason the arc ended: Anthropic's published policy already prohibits
+> what the Claude path does, and Robin judged the GitHub repo worth more than a listing.
+>
+> The only step that survived is Step 3's release, now the **v1.7 arc** (CCRM-68 (Honest Agent),
+> CCBG-29 (Refresh Swallowed), the pending device passes, and the two new features Robin asked
+> for on 2026-09-16 — a notional-API-cost spend meter and account reordering). This file is
+> replaced by that arc's runbook once its design questions are settled.
+>
+> Kept below only until then, for the release checklist in Step 3. Everything about the console,
+> flavors, signing upload, listing assets, privacy policy, Data safety and the closed test is
+> dead.
 
 Ordered, checkable steps to take Cooldown from a GitHub-releases sideload to a public Google
 Play listing, and to decide afterwards whether an iPhone version follows. Roadmap item:
