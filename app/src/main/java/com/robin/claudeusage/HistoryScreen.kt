@@ -64,13 +64,17 @@ import java.time.format.DateTimeFormatter
 fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -> Unit = {}) {
     // CCRM-6 (Multi-Account): configured accounts only, same rule as the main tab strip.
     val profiles = repo.configuredProfiles().ifEmpty { listOf(repo.registry().first()) }
-    var tab by rememberSaveable { mutableIntStateOf(0) }
+    // CCRM-71 (Account Order): keyed on the account's stable `profile.key`, not on its
+    // position in the list — matching Main's ProfileTabs. A remembered *index* would
+    // silently point at a different account the moment accounts are reordered in the
+    // sheet. Falls back to the first profile (the same fallback `profiles` itself already
+    // falls back to, `registry().first()`) when the key hasn't been set yet or has been
+    // removed since.
+    var selectedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val tab = profiles.indexOfFirst { it.key == selectedKey }.let { if (it >= 0) it else 0 }
     var weekly by rememberSaveable { mutableStateOf(false) }
     var weekIndex by rememberSaveable { mutableIntStateOf(0) }
-    // The remembered index outlives a shrinking list — sign out of the selected account and
-    // an unclamped read walks off the end. Falls back to the first tab rather than trying to
-    // follow the account that vanished.
-    val profile = profiles[tab.coerceIn(0, profiles.lastIndex)]
+    val profile = profiles[tab]
     // CCRM-56 (Provider Identity): reports the visible tab's account up so the app
     // shell can theme from it, matching Main's ProfileTabs.
     LaunchedEffect(profile) { onProfileChange(profile) }
@@ -103,7 +107,7 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
     // Same strip rule as the main screen (CCRM-6 (Multi-Account)): hidden at one account,
     // fixed up to three, scrollable at four or more.
     if (profiles.size > 1) {
-        val selected = tab.coerceIn(0, profiles.lastIndex)
+        val selected = tab
         // Neutral strip colour, matching Main's ProfileTabs — the label/indicator hue
         // must not follow the account's own accent, only the mark icon does.
         val tabContentColor = MaterialTheme.colorScheme.onSurface
@@ -111,7 +115,7 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
             profiles.forEachIndexed { index, p ->
                 Tab(
                     selected = selected == index,
-                    onClick = { tab = index },
+                    onClick = { selectedKey = p.key },
                     text = { ProviderTabLabel(repo.cacheSettings(), p) },
                     selectedContentColor = tabContentColor,
                     unselectedContentColor = tabContentColor.copy(alpha = 0.6f),

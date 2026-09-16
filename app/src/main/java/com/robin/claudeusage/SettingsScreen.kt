@@ -5,7 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
@@ -22,8 +26,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -66,33 +72,45 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.compose.foundation.Image
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.browser.customtabs.CustomTabsIntent
@@ -127,6 +145,7 @@ import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.hasTwoColumns
 import com.robin.claudeusage.work.Polling
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -202,6 +221,9 @@ fun SettingsScreen(
     // CCRM-56 (Provider Identity): the account the sheet just minted, so its
     // card starts sign-in itself the moment it mounts.
     var autoStartProfileKey by remember { mutableStateOf<String?>(null) }
+    // CCRM-71 (Account Order): the reorder sheet, entered from the button beside
+    // "+ Add account" — see the accountsTab block below.
+    var showReorderSheet by remember { mutableStateOf(false) }
 
     // --- Accounts tab ---
     val accountsTab: @Composable () -> Unit = {
@@ -273,10 +295,25 @@ fun SettingsScreen(
         // label, in its familiar not-signed-in state — no name-first dialog, because the
         // next tap the user wants is "Sign in on this phone". Renaming is a later thought.
         // CCRM-56 (Provider Identity), decision 5: the sheet picks the provider now too.
-        OutlinedButton(
-            onClick = { showAddSheet = true },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("+ Add account") }
+        // CCRM-71 (Account Order): "Reorder" rides beside it, list-level actions kept
+        // together — hidden outright with one account, since there's nothing to order.
+        if (profiles.size > 1) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { showAddSheet = true },
+                    modifier = Modifier.weight(1f),
+                ) { Text("+ Add account") }
+                TextButton(onClick = { showReorderSheet = true }) { Text("Reorder") }
+            }
+        } else {
+            OutlinedButton(
+                onClick = { showAddSheet = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("+ Add account") }
+        }
         if (showAddSheet) {
             AddAccountSheet(
                 onDismiss = { showAddSheet = false },
@@ -287,6 +324,22 @@ fun SettingsScreen(
                     autoStartProfileKey = newProfile.key
                     showAddSheet = false
                 },
+            )
+        }
+        if (showReorderSheet) {
+            ReorderAccountsSheet(
+                repo = repo,
+                profiles = profiles,
+                labels = labels,
+                onMoved = {
+                    namesTick++
+                    // CCRM-71 (Account Order): the same fan-out as a rename — the
+                    // account order shows up in the shortcuts and the pinned
+                    // notification too, not only the tab strips.
+                    Shortcuts.publish(context)
+                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                },
+                onDismiss = { showReorderSheet = false },
             )
         }
         // The old "Profile names" section lived here. Names are registry-owned now and each
@@ -2286,6 +2339,250 @@ private fun AddAccountRow(provider: Provider, subtitle: String, onClick: () -> U
                 subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * CCRM-71 (Account Order): the `Reorder` sheet — one column, live drag, no confirm.
+ * `profiles` is the caller's own registry-order list (already `remember(namesTick)`-
+ * gated there), so a move made in here recomposes the caller, which hands a freshly
+ * ordered list straight back down — that's what makes the cards behind the scrim
+ * reorder as their own confirmation, per the roadmap entry's design.
+ *
+ * Dragging is deliberately not a third-party "reorderable list" dependency (there
+ * isn't one in this project, and CCRM-71 says not to add one): a plain
+ * [pointerInput]/[detectDragGestures] on the 48dp handle only, converting the
+ * accumulated vertical drag into a row-height-quantised index shift, applied to the
+ * registry the moment it crosses a row boundary — not just on release — so the other
+ * rows visibly part around the gap while dragging, the way §7 of the wireframe shows
+ * it. The handle is the only pointerInput on the row: the row body itself carries none,
+ * so a swipe anywhere else falls straight through to the sheet's own swipe-to-dismiss.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReorderAccountsSheet(
+    repo: UsageRepository,
+    profiles: List<Profile>,
+    labels: Map<Profile, String>,
+    onMoved: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Column(Modifier.widthIn(max = ContentMaxWidth).fillMaxWidth()) {
+                Text(
+                    "Account order",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Sets the tab order everywhere.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(Modifier.height(8.dp))
+
+                val rowHeightPx = with(LocalDensity.current) { 56.dp.toPx() }
+                // Which row the finger is on, and how far it has strayed (px) from that
+                // row's resting slot since the drag started — reset to zero every time
+                // a boundary crossing applies a move, so it always reads relative to
+                // the row's *current* slot rather than its very first one.
+                var draggingKey by remember { mutableStateOf<String?>(null) }
+                var dragOffsetPx by remember { mutableFloatStateOf(0f) }
+                // Read fresh inside the drag callback without restarting it: profiles
+                // gets a new List instance every time a mid-drag move recomposes the
+                // caller, and keying pointerInput on it would cancel the gesture
+                // mid-drag the very first time a row crossed a boundary.
+                val liveProfiles by rememberUpdatedState(profiles)
+                val dark = appDark()
+
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(profiles, key = { it.key }) { profile ->
+                        val idx = profiles.indexOfFirst { it.key == profile.key }
+                        val signedIn = repo.hasCredentials(profile)
+                        val plan = repo.plan(profile)
+                        val tier = repo.tier(profile)
+                        val accent = Palette.color(Palette.accentName(repo.cacheSettings(), profile), dark)
+                        ReorderRow(
+                            modifier = Modifier.animateItem(),
+                            profile = profile,
+                            label = labels[profile] ?: profile.label,
+                            signedIn = signedIn,
+                            plan = plan,
+                            tier = tier,
+                            accent = accent,
+                            isDragging = draggingKey == profile.key,
+                            dragOffsetPx = if (draggingKey == profile.key) dragOffsetPx else 0f,
+                            canMoveUp = idx > 0,
+                            canMoveDown = idx in 0 until profiles.lastIndex,
+                            onMoveUp = {
+                                repo.registry().move(profile.key, idx - 1)
+                                onMoved()
+                            },
+                            onMoveDown = {
+                                repo.registry().move(profile.key, idx + 1)
+                                onMoved()
+                            },
+                            onDragStart = {
+                                draggingKey = profile.key
+                                dragOffsetPx = 0f
+                            },
+                            onDragBy = { deltaY ->
+                                dragOffsetPx += deltaY
+                                val from = liveProfiles.indexOfFirst { it.key == profile.key }
+                                if (from >= 0) {
+                                    val shift = (dragOffsetPx / rowHeightPx).roundToInt()
+                                    if (shift != 0) {
+                                        val to = (from + shift).coerceIn(0, liveProfiles.lastIndex)
+                                        if (to != from) {
+                                            repo.registry().move(profile.key, to)
+                                            onMoved()
+                                            // Compensate by exactly the rows-worth just
+                                            // applied, so the row keeps tracking the
+                                            // finger smoothly relative to its new slot
+                                            // instead of jumping.
+                                            dragOffsetPx -= shift * rowHeightPx
+                                        }
+                                    }
+                                }
+                            },
+                            onDragEnd = {
+                                draggingKey = null
+                                dragOffsetPx = 0f
+                            },
+                        )
+                    }
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(end = 12.dp, top = 4.dp, bottom = 6.dp),
+                ) { Text("Done") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReorderRow(
+    profile: Profile,
+    label: String,
+    signedIn: Boolean,
+    plan: String?,
+    tier: String?,
+    accent: Color,
+    isDragging: Boolean,
+    dragOffsetPx: Float,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onDragStart: () -> Unit,
+    onDragBy: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dark = appDark()
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .zIndex(if (isDragging) 1f else 0f)
+            .then(
+                if (isDragging) {
+                    Modifier
+                        .offset { IntOffset(0, dragOffsetPx.roundToInt()) }
+                        .scale(1.02f)
+                        .shadow(2.dp, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                } else {
+                    Modifier
+                }
+            )
+            .height(56.dp)
+            .padding(horizontal = 16.dp)
+            // The whole row is one TalkBack stop with `Move up`/`Move down` custom
+            // actions — correct here, per the roadmap entry, because the sheet is
+            // genuinely a single column, not a 2D grid like the alternating cards
+            // behind it.
+            .semantics(mergeDescendants = true) {
+                customActions = listOfNotNull(
+                    if (canMoveUp) CustomAccessibilityAction("Move up") { onMoveUp(); true } else null,
+                    if (canMoveDown) CustomAccessibilityAction("Move down") { onMoveDown(); true } else null,
+                )
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .then(
+                    if (signedIn) {
+                        Modifier.background(if (dark) Color(0xFF81C995) else Color(0xFF188038))
+                    } else {
+                        Modifier.border(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant, CircleShape)
+                    }
+                ),
+        )
+        Spacer(Modifier.width(10.dp))
+        ProviderMark(profile.provider, size = 24.dp, tint = accent)
+        Spacer(Modifier.width(10.dp))
+        Text(
+            label,
+            fontSize = 16.sp,
+            color = if (signedIn) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        // Absent when not signed in — nothing to show a plan for yet.
+        if (signedIn && plan != null) {
+            Spacer(Modifier.width(8.dp))
+            PlanChip(plan, tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") })
+        }
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .pointerInput(profile.key) {
+                    detectDragGestures(
+                        onDragStart = { onDragStart() },
+                        onDragEnd = { onDragEnd() },
+                        onDragCancel = { onDragEnd() },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            onDragBy(dragAmount.y)
+                        },
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            DragHandleIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** The reorder sheet's own drag glyph — three short horizontal bars, drawn rather
+ * than pulled from an icon set, since `material-icons-core` (this app's only icon
+ * dependency) doesn't carry one. */
+@Composable
+private fun DragHandleIcon(tint: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(24.dp)) {
+        val strokeWidth = 1.8.dp.toPx()
+        val left = size.width * 0.2f
+        val right = size.width * 0.8f
+        for (fraction in listOf(0.3125f, 0.5f, 0.6875f)) {
+            val y = size.height * fraction
+            drawLine(
+                color = tint,
+                start = Offset(left, y),
+                end = Offset(right, y),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round,
             )
         }
     }

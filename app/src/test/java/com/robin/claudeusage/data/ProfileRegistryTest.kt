@@ -123,6 +123,83 @@ class ProfileRegistryTest {
         assertEquals(3, state.nextSlot)
     }
 
+    // --- move (CCRM-71 Account Order) ---
+
+    @Test
+    fun `move up brings a later account earlier`() {
+        var state = ProfileRegistry.add(seeded(), "Teams").first  // personal, work, p2
+        state = ProfileRegistry.move(state, "p2", 0)
+        assertEquals(listOf("p2", "personal", "work"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move down sends an earlier account later`() {
+        val state = ProfileRegistry.move(seeded(), "personal", 1)
+        assertEquals(listOf("work", "personal"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move to index 0 goes to the very front`() {
+        var state = ProfileRegistry.add(seeded(), "Teams").first  // personal, work, p2
+        state = ProfileRegistry.move(state, "work", 0)
+        assertEquals(listOf("work", "personal", "p2"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move to the last index goes to the very end`() {
+        var state = ProfileRegistry.add(seeded(), "Teams").first  // personal, work, p2
+        state = ProfileRegistry.move(state, "personal", state.profiles.lastIndex)
+        assertEquals(listOf("work", "p2", "personal"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move to the index it's already at is a no-op, same instance back`() {
+        val state = seeded()
+        val result = ProfileRegistry.move(state, "work", 1)
+        assertTrue(result === state)
+    }
+
+    @Test
+    fun `move ignores an unknown key, same instance back`() {
+        val state = seeded()
+        val result = ProfileRegistry.move(state, "p9", 0)
+        assertTrue(result === state)
+    }
+
+    @Test
+    fun `move clamps a negative index to the front`() {
+        val state = ProfileRegistry.move(seeded(), "work", -5)
+        assertEquals(listOf("work", "personal"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move clamps an index past the end to the last slot`() {
+        val state = ProfileRegistry.move(seeded(), "personal", 99)
+        assertEquals(listOf("work", "personal"), state.profiles.map { it.key })
+    }
+
+    @Test
+    fun `move never touches nextSlot or the defaults map`() {
+        var state = ProfileRegistry.add(seeded(), "Teams").first
+        val before = state.nextSlot
+        state = ProfileRegistry.move(state, "p2", 0)
+        assertEquals(before, state.nextSlot)
+        assertEquals("Account 3", state.defaultLabel("p2"))
+    }
+
+    @Test
+    fun `a real move advances the list to a genuinely different order`() {
+        // The pure function carries no "rev" of its own — that counter lives in
+        // ProfileRegistry's SharedPreferences, bumped by write(), untestable without
+        // an Android runtime, same as every other mutator's rev in this suite. What's
+        // checkable here is the state-level equivalent: an actual move produces a
+        // state unequal to the one it started from, unlike the no-op cases above.
+        val state = seeded()
+        val moved = ProfileRegistry.move(state, "work", 0)
+        assertNotEquals(state, moved)
+        assertNotEquals(state.profiles, moved.profiles)
+    }
+
     // --- rename, lookup, fallback ---
 
     @Test

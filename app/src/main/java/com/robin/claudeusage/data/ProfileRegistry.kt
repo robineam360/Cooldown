@@ -75,6 +75,18 @@ class ProfileRegistry(context: Context) {
     }
 
     /**
+     * Reorders [key] to [toIndex] — CCRM-71 (Account Order). Guarded like [remove]: a
+     * genuine no-op (unknown key, or [toIndex] the key is already at) skips [write]
+     * entirely, so a drag that lands back where it started doesn't burn a revision.
+     */
+    fun move(key: String, toIndex: Int) {
+        val current = state()
+        val next = move(current, key, toIndex)
+        if (next === current) return
+        write(next)
+    }
+
+    /**
      * Drops [key] from the list. Deletes nothing else — the caller
      * ([UsageRepository.removeProfile]) owns the destructive ordering, and this has to run
      * in the middle of it, once nothing else needs to resolve the key.
@@ -202,6 +214,26 @@ class ProfileRegistry(context: Context) {
                 else it.copy(label = clean(label) ?: state.defaultLabel(key))
             }
         )
+
+        /**
+         * Moves [key] to [toIndex] in [state]'s list — CCRM-71 (Account Order), the pure
+         * half of the reorder sheet's live drag. [toIndex] clamps to the list's valid
+         * range rather than throwing, since a drop can overshoot either end of the sheet.
+         * Returns [state] itself — the identical instance, so a caller can tell a no-op
+         * apart with `===` — when [key] isn't in the list, or is already at [toIndex].
+         * [nextSlot] and [defaults] are untouched: reordering never mints, retires or
+         * renames a slot.
+         */
+        fun move(state: State, key: String, toIndex: Int): State {
+            val from = state.profiles.indexOfFirst { it.key == key }
+            if (from < 0) return state
+            val target = toIndex.coerceIn(0, state.profiles.lastIndex)
+            if (target == from) return state
+            val reordered = state.profiles.toMutableList()
+            val profile = reordered.removeAt(from)
+            reordered.add(target, profile)
+            return state.copy(profiles = reordered)
+        }
 
         /** No-op for an unknown key, and for the last account left — see [first]. */
         fun remove(state: State, key: String): State {

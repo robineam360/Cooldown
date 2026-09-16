@@ -428,6 +428,17 @@ private fun ProfileTabs(
     // its token lands. Signing in stays in Settings, so a tab is never the route to it.
     // At zero we fall back to the registry's first account, which shows its own empty state.
     val profiles = repo.configuredProfiles().ifEmpty { listOf(repo.registry().first()) }
+    // CCRM-71 (Account Order): the selected tab is keyed on the account's stable
+    // `profile.key`, never on its position — a HorizontalPager only understands page
+    // *indices*, so the index the key currently resolves to is recomputed on every
+    // render and the pager is nudged onto it, rather than trusting whatever index it
+    // was last sitting on. Without this, reordering accounts in the sheet would leave
+    // the pager on the same raw index and silently swap which account is on screen.
+    var selectedKey by rememberSaveable { mutableStateOf(startProfile.key) }
+    // Falls back to the first configured profile — the same fallback `profiles` itself
+    // already falls back to (`registry().first()`) when nothing else resolves — when the
+    // selected key has been removed or hasn't been assigned yet.
+    val selectedIndex = profiles.indexOfFirst { it.key == selectedKey }.let { if (it >= 0) it else 0 }
     // One profile at a time at every width, tabs and swipe included. A wide window used
     // to split into two side-by-side profile panes, on the theory that both accounts at
     // once was the point — but each pane then drew a chart no wider than the one on the
@@ -436,20 +447,28 @@ private fun ProfileTabs(
     // both-at-once already has a better home in the always-on notification, CCRM-62
     // (Duet Notification).
     val pagerState = rememberPagerState(
-        initialPage = profiles.indexOf(startProfile).coerceAtLeast(0),
+        initialPage = selectedIndex,
         pageCount = { profiles.size },
     )
-    // The list shrinks when an account is signed out or removed, and the pager's remembered
-    // page outlives it. Clamp rather than index past the end.
-    LaunchedEffect(profiles.size) {
-        if (pagerState.currentPage > profiles.lastIndex) {
-            pagerState.scrollToPage(profiles.lastIndex.coerceAtLeast(0))
+    // Keeps the pager's raw page index honest whenever the *key's* resolved index moves
+    // out from under it — a reorder, an account signing out, or the list shrinking —
+    // without waiting for a swipe. A no-op whenever the pager is already there, which is
+    // the case for every tap/swipe-driven change (those update selectedKey below, which
+    // recomputes selectedIndex right back to pagerState.currentPage).
+    LaunchedEffect(selectedIndex) {
+        if (pagerState.currentPage != selectedIndex) {
+            pagerState.scrollToPage(selectedIndex)
         }
     }
     // CCRM-56 (Provider Identity): reports the visible tab's account up so the app
-    // shell can theme from it — a swipe counts the same as a tab tap.
+    // shell can theme from it — a swipe counts the same as a tab tap. Also the other
+    // direction of the key/index sync above: this is what turns a user-driven page
+    // change into the new selectedKey.
     LaunchedEffect(pagerState.currentPage, profiles) {
-        profiles.getOrNull(pagerState.currentPage.coerceIn(0, profiles.lastIndex))?.let(onProfileChange)
+        profiles.getOrNull(pagerState.currentPage.coerceIn(0, profiles.lastIndex))?.let {
+            selectedKey = it.key
+            onProfileChange(it)
+        }
     }
     val scope = rememberCoroutineScope()
     // Read inside the click, never captured at composition: the user can flip the

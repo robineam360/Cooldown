@@ -1012,9 +1012,13 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   anything; a week the phone slept through is absent and the copy says "recorded". Bands per week:
   *capped* = `hitLimit` or peak ≥ 100 on the pool **or any per-model weekly cap**; *heavy* 75–99;
   *middle* 25–74; *light* < 25. First matching rule wins — capped ≥ ⌈N/3⌉ or capped+heavy ≥ ⌈2N/3⌉
-  → "This plan runs out on you."; light ≥ ⌈3N/4⌉ and capped = 0 → "You use a small part of this
-  plan."; all peaks 0 → "No use recorded on this account."; otherwise → "This plan fits how you use
-  it." A third line reports 5h cap hits when the account has a 5h window and the count is non-zero:
+  → "This plan runs out on you."; **all peaks 0 → "No use recorded on this account."**; light ≥
+  ⌈3N/4⌉ and capped = 0 → "You use a small part of this plan."; otherwise → "This plan fits how you
+  use it." (**Order corrected 2026-09-16 during implementation.** The design listed the "small
+  part" rule ahead of the idle one, which makes idle unreachable: a 0% week is always in the LIGHT
+  band, so an all-idle account trivially clears light ≥ ⌈3N/4⌉ with capped = 0 and would have read
+  "You use a small part of this plan". The idle test is the more specific condition and now runs
+  first. Nothing else changes, and it is what the approved wireframe already drew.) A third line reports 5h cap hits when the account has a 5h window and the count is non-zero:
   someone at 40% weekly who hits the session throttle twice a day is under-tiered in a way the
   weekly figure hides.
 - **Two forward-only `SessionLog.record` tags, to be added regardless of the UI decision** — cheap
