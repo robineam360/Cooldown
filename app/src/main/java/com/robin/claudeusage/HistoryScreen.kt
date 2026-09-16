@@ -40,8 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.robin.claudeusage.data.ErrorKind
 import com.robin.claudeusage.data.HistoryStats
+import com.robin.claudeusage.data.PlanFit
 import com.robin.claudeusage.data.Profile
+import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.SessionLog
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.ui.Fmt
@@ -85,6 +88,23 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
     val fetchedAt = remember(tick, profile) { repo.snapshot(profile).fetchedAt }
     val records = remember(profile, fetchedAt) { repo.sessionLog().records(profile) }
     val data = remember(profile, fetchedAt) { repo.snapshot(profile).data }
+    // CCRM-70 (Plan Fit): same gate SettingsScreen already uses for the Free-plan notice
+    // (CCBG-27 (Free Plan 403)) — there's no weekly percentage to read a fit from at all,
+    // so the block never renders (wireframe state m), not collapsed, not greyed out.
+    val planBlocked = remember(profile, fetchedAt) {
+        repo.snapshot(profile).lastStatusKind == ErrorKind.PLAN.key
+    }
+    val planFitReading = remember(records) { PlanFit.compute(records, records) }
+    // The account's already-known live plan (e.g. "Max 5x") — used only as the header's
+    // fallback for a brand-new account with zero closed weeks, see PlanFitCopy.build.
+    val planFitFallback = remember(profile, fetchedAt) {
+        repo.plan(profile)?.let { plan ->
+            val multiplier = if (profile.provider == Provider.CLAUDE && plan.startsWith("Max")) {
+                Fmt.tierMultiplier(repo.tier(profile))
+            } else null
+            plan + (multiplier?.let { " $it" } ?: "")
+        }
+    }
 
     fun openBar(kind: String): HistoryStats.Bar? {
         val window = if (kind == SessionLog.WEEKLY) data?.weekly else data?.session
@@ -177,6 +197,10 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
         SessionWeekView(HistoryStats.weeks(bars, zone), weekIndex, zone, use24h) { weekIndex = it }
     }
     val weeks: @Composable () -> Unit = {
+        if (!planBlocked) {
+            PlanFitBlock(planFitReading, planFitFallback, compact = !sideBySide)
+            Spacer(Modifier.height(12.dp))
+        }
         WeeklyView(HistoryStats.bars(records, SessionLog.WEEKLY, openBar(SessionLog.WEEKLY)), zone, use24h)
     }
 
