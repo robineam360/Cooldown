@@ -995,7 +995,28 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
 ### CCRM-69 · Window Dollars — read the dollar fields Anthropic already sends
-- **Status:** Blocked on one measurement, 2026-09-16. **Probe first, design second.**
+- **Status:** **Not viable, 2026-09-16.** The lead below was researched the same day it was filed
+  and did not survive. Kept filed, per CLAUDE.md, because the ID is never reused and the negative
+  result is worth more than the idea was.
+- **The finding that closed it:** `limit_dollars` / `used_dollars` / `remaining_dollars` have
+  **never been observed non-null by anyone, on any plan.** Five independent open-source clients
+  that parse this exact endpoint — `jens-duttke/usage-monitor-for-claude`, `cortexkit/anthropic-auth`,
+  `2lab-ai/llmux`, `uwuclxdy/clauth`, `CrocSwap/claude-meter` — show null across captures from
+  April to September 2026 and at least nine distinct real accounts, **including a Team seat with
+  extra usage enabled and exhausted**. `clauth`'s source states it plainly: *"The wire shape is
+  undetermined (Claude Code's own client ignores these) … Empty on every current account."*
+  `claude-meter` dates the fields' appearance to around 2026-04-30 and records them as "null for
+  subscription users". Anthropic has never documented them. Robin's own hypothesis — that they are
+  the credits spent above the plan limit — is also ruled out, structurally: that money is already
+  reported in the same payload under `spend` and `extra_usage`, which do populate. These three are
+  a schema slot Anthropic has not wired up.
+- **Also checked, and decisive for the wider goal:** ClaudeCodeUsage/ClaudeCodeUsage (a VS Code
+  extension, MIT, actively maintained) is where Robin saw dollar figures. It computes them in
+  `src/pricing.ts` from a hardcoded per-token rate table multiplied by token counts read out of
+  `~/.claude/projects/**/*.jsonl` — Claude Code's own local conversation logs. Its own README calls
+  them estimates. It calls this same OAuth usage endpoint for the percentages, exactly as we do,
+  and its response types do not model the three dollar fields at all. So the dollars in that tool
+  are local-log arithmetic, not an Anthropic figure, and they cannot be reproduced on a phone.
 - **Why this exists:** Robin asked for a spend meter showing what his plan usage would have cost
   on the API, having seen dollar figures in Claude Code. The CLI can do that because it *made*
   the requests — it holds the token counts and prices them locally. A phone never sees a request,
@@ -1008,9 +1029,10 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   **captured 2026-07-27**. Anthropic built those fields for something. If they are populated now,
   this feature is a parser change and a card, with no estimate, no anchor table, no per-hour rate
   and no appendix reversal — the real figure, the way Claude Code shows it.
-- **The measurement, before any wireframe:** Settings → Diagnostics → Endpoint probe, host
-  `api.anthropic.com`, path `/api/oauth/usage`, on a paid account. Read whether `used_dollars` is
-  still null. Record the result and the date here.
+- **The measurement, still worth 30 seconds:** Settings → More → About → tap the version line seven
+  times → Debug → Endpoint probe, host `api.anthropic.com`, path `/api/oauth/usage`, on a paid
+  account. The public record says it will be null; only Robin's own account settles his own account.
+  Record the result and the date here.
 - **If populated:** parse the three fields in `Models.kt` `windowFrom()` (which currently pulls
   only `utilization` and `resets_at`), carry them on the window model, and design a card around a
   fact. `HistoryStore` should start persisting them so a dollars-over-time view becomes possible.
