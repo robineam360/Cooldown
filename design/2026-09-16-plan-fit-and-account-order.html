@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCRM-70/71 (Plan Fit &amp; Account Order)</title>
+<style>
+
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 96px; line-height: 1.5;
+  }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 76ch; margin: 0 0 12px; font-size: 14px; }
+  .review {
+    display: inline-block; font-size: 12.5px; color: var(--warn); border: 1px solid var(--warn);
+    border-radius: 6px; padding: 4px 10px; margin: 4px 0 4px;
+  }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 22px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 8px 0 0;
+  }
+  .cap.good { color: var(--good); } .cap.bad { color: var(--bad); } .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+  .opt { flex: 1 1 268px; max-width: 300px; border: 1px solid var(--hair); border-radius: 18px; padding: 20px; background: var(--card); }
+  .opt.acctopt { flex: 0 0 328px; max-width: 328px; padding: 0; background: transparent; border: 0; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .cols { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .col { flex: 1 1 300px; max-width: 460px; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 88ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 10px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 84ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 10px; }
+  .q { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0; font-size: 13.5px; max-width: 78ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .tbl-wrap { overflow-x: auto; }
+  .scroll { overflow-x: auto; padding-bottom: 6px; }
+
+  /* ================= device mocks (fixed dark palette) ================= */
+  .dev {
+    --dbg: #131316; --dcard: #1F1F23; --dink: #E4E2E6; --dmuted: rgba(199,196,207,.8);
+    --dacc: #E7A08A; --dgpt: #74AA9C; --dgood: #81C995; --derr: #F2B8B5; --dwarn: #D8AC63; --dhair: #2C2C31;
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+    line-height: 1.3;
+  }
+  .phone { width: 360px; background: var(--dbg); border-radius: 28px; border: 6px solid #000; overflow: hidden; position: relative; }
+  .cover { width: 410px; background: var(--dbg); border-radius: 20px; border: 1px solid var(--dhair); overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 10px; font-size: 16px; font-weight: 500; color: var(--dink); }
+  .fchips { display: flex; gap: 8px; padding: 0 16px 12px; }
+  .fchip { height: 32px; padding: 0 14px; border-radius: 16px; display: flex; align-items: center; font-size: 13px; font-weight: 500; border: 1px solid rgba(228,226,230,.32); color: var(--dink); white-space: nowrap; }
+  .fchip.sel { background: rgba(231,160,138,.16); border-color: transparent; color: var(--dacc); font-weight: 700; }
+  .panebody { padding: 0 16px 16px; }
+  .paneside { padding: 0 0 16px; }
+  .panelabel { font-size: 14px; font-weight: 600; color: var(--dacc); padding: 0 0 8px 4px; }
+
+  .histpane { width: 328px; }
+  .mockwrap { width: 328px; background: var(--dbg); border-radius: 16px; padding: 12px 12px 4px; }
+  .pfblock { background: #2A2A2E; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  .pf-h { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dmuted); margin-bottom: 6px; }
+  .pf-r { font-size: 14px; font-weight: 700; color: var(--dink); margin-bottom: 4px; line-height: 1.25; }
+  .pf-e { font-size: 12px; color: var(--dmuted); line-height: 1.35; }
+  .pf-5h { font-size: 12px; color: var(--dmuted); margin-top: 2px; }
+  .freenote { font-size: 12px; color: var(--dmuted); line-height: 1.4; padding: 2px 0; }
+
+  .wkcard { background: var(--dcard); border-radius: 12px; padding: 12px 16px; }
+  .wkrow { display: flex; align-items: center; padding: 6px 0; }
+  .wklbl { width: 76px; flex: 0 0 auto; }
+  .wklbl .d { font-size: 12px; color: var(--dink); }
+  .wknow { display: block; font-size: 11px; font-weight: 600; color: var(--dacc); }
+  .wkbartrack { flex: 1; height: 16px; border-radius: 5px; margin: 0 10px; position: relative; overflow: hidden; }
+  .wkbarfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+  .wkval { width: 40px; text-align: right; font-size: 12px; font-weight: 500; flex: 0 0 auto; }
+  .wktag { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--dmuted); margin: -2px 0 4px 86px; }
+  .wktagdot { width: 5px; height: 5px; border-radius: 50%; flex: 0 0 auto; }
+
+  /* 5-hour pane (SessionWeekView) mock, for the inner-screen side-by-side shot only */
+  .wknav { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .wknav .arrow { width: 24px; height: 24px; color: var(--dmuted); flex: 0 0 auto; display:flex; align-items:center; justify-content:center; }
+  .wknav .mid { flex: 1; text-align: center; }
+  .wknav .mid .t { font-size: 14px; font-weight: 600; color: var(--dink); }
+  .wknav .mid .r { font-size: 11px; color: var(--dmuted); }
+  .wksummary { font-size: 11px; color: var(--dmuted); text-align: center; margin-bottom: 8px; }
+
+  .mk { width: 20px; height: 20px; color: var(--dacc); flex: 0 0 auto; }
+  .mk.gpt { color: var(--dgpt); }
+
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; text-align: left; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 328px; margin: 6px 0 0; }
+
+  /* ---------------- Settings · Accounts list end ---------------- */
+  .acard { background: var(--dcard); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+  .arow1 { display: flex; align-items: center; gap: 6px; min-height: 28px; }
+  .lbl { font-size: 16px; font-weight: 500; color: var(--dink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%; min-width: 20px; }
+  .gdot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--dgood); }
+  .chip { font-size: 11.5px; font-weight: 500; padding: 2px 6px; border-radius: 8px; white-space: nowrap; flex: 0 0 auto; background: rgba(231,160,138,.14); color: var(--dacc); }
+  .sp { flex: 1 1 auto; min-width: 4px; }
+  .kebab { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--dmuted); flex: 0 0 auto; }
+  .arow2 { display: flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 12px; color: var(--dmuted); }
+  .listend { display: flex; gap: 10px; padding: 4px 0 0; }
+  .obtn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 18px; border-radius: 20px; font-size: 14px; font-weight: 500; border: 1px solid rgba(228,226,230,.32); color: var(--dink); flex: 1; white-space: nowrap; }
+  .tbtn2 { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 18px; font-size: 14px; font-weight: 600; color: var(--dacc); flex: 0 0 auto; }
+
+  /* ---------------- Bottom sheet (Account order) ---------------- */
+  .scrimwrap { background: rgba(0,0,0,.55); border-radius: 28px; display: flex; align-items: flex-end; justify-content: center; padding: 40px 10px 0; }
+  .sheet { background: var(--dcard); border-radius: 28px 28px 0 0; width: 328px; padding-bottom: 10px; }
+  .sheet.wide { width: 640px; border-radius: 28px; }
+  .pill { width: 32px; height: 4px; border-radius: 2px; background: rgba(228,226,230,.3); margin: 10px auto 6px; }
+  .sheettitle { font-size: 16px; font-weight: 600; color: var(--dink); padding: 0 16px 2px; }
+  .sheetsub { font-size: 12px; color: var(--dmuted); padding: 0 16px 10px; }
+  .srow { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; transition: none; }
+  .srow.lift { background: #26262B; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,.5); transform: scale(1.02); position: relative; z-index: 2; }
+  .sdot { width: 8px; height: 8px; border-radius: 50%; background: var(--dgood); flex: 0 0 auto; }
+  .sdot.hollow { background: transparent; border: 1.5px solid var(--dmuted); }
+  .smk { width: 24px; height: 24px; flex: 0 0 auto; color: var(--dacc); }
+  .smk.gpt { color: var(--dgpt); }
+  .slabel { flex: 1; font-size: 16px; color: var(--dink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .slabel.muted { color: var(--dmuted); font-size: 13px; }
+  .schip { font-size: 11.5px; font-weight: 500; padding: 2px 6px; border-radius: 8px; background: rgba(231,160,138,.14); color: var(--dacc); white-space: nowrap; flex: 0 0 auto; }
+  .schip.gpt { background: rgba(116,170,156,.16); color: var(--dgpt); }
+  .shandle { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: var(--dmuted); flex: 0 0 auto; }
+  .shandle svg { width: 24px; height: 24px; }
+  .sgap { height: 8px; margin: 0 16px; border: 1.5px dashed rgba(228,226,230,.28); border-radius: 6px; }
+  .sdone { text-align: right; padding: 6px 16px 4px; font-size: 14px; font-weight: 600; color: var(--dacc); }
+
+  .innerframe { width: 760px; max-width: 100%; background: var(--dbg); border-radius: 20px; border: 6px solid #000; padding: 0 0 20px; }
+  .innergrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; padding: 0 20px; align-items: start; }
+
+  .strip { display: flex; gap: 0; align-items: center; }
+  .stab { flex: 1; text-align: center; font-size: 13px; font-weight: 500; padding: 10px 4px; color: var(--dmuted); border-bottom: 2px solid var(--dhair); }
+  .stab.on { color: var(--dacc); border-bottom-color: var(--dacc); font-weight: 700; }
+
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+    <symbol id="icoDrag" viewBox="0 0 24 24">
+      <line x1="5" y1="7.5" x2="19" y2="7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="5" y1="16.5" x2="19" y2="16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icoArrowLeft" viewBox="0 0 24 24"><polyline points="14.5,6 8,12 14.5,18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icoArrowRight" viewBox="0 0 24 24"><polyline points="9.5,6 16,12 9.5,18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCRM-70 (Plan Fit) &amp; CCRM-71 (Account Order) &middot; 2026-09-16</p>
+  <h1>Two History &amp; Settings changes: a plan-fit reading, and dragging accounts into order</h1>
+  <p class="lede">
+    <b>CCRM-70 (Plan Fit)</b> adds a tonal block above the weekly bars on the History screen's
+    7-day pane &mdash; a reading of whether the plan you're on fits eight weeks of your own usage,
+    with no dollar figure and no red. <b>CCRM-71 (Account Order)</b> adds a drag-to-reorder sheet
+    for the Accounts list in Settings, reached from a new <code>Reorder</code> button, because the
+    account order now drives three surfaces (the tab strip, app shortcuts, the notification's
+    overflow strip) with no way to change it today.
+  </p>
+  <p class="review">For review before any code is written &mdash; working agreement 2 (wireframe first). Not yet approved.</p>
+
+  <hr class="hr">
+  <h2>1 &middot; Plan Fit &mdash; anatomy</h2>
+  <p class="sub">
+    A tonal block (Material3 <code>surfaceVariant</code>, never an accent or warning colour) inserted
+    directly above <code>WeeklyView</code> in the 7-day pane. It displaces nothing &mdash; the weekly
+    bars simply move down by the block's own height, <b>~104&nbsp;dp</b> including the gap beneath it.
+    Four possible text lines, all left-aligned, none of them ever red.
+  </p>
+  <div class="row">
+    <div>
+      <div class="dev"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">This plan runs out on you.</div><div class="pf-e">Hit the cap in 3 of 8 weeks</div><div class="pf-5h">5h cap hit 14 times</div></div></div></div>
+      <p class="devcap">Every line this block can carry, at once</p>
+    </div>
+    <div class="col" style="max-width:560px;">
+      <div class="tbl-wrap">
+      <table>
+        <tr><th>Line</th><th>Style</th><th>Colour</th><th>Present when</th></tr>
+        <tr><td>Block</td><td>12dp padding, 12dp corner radius</td><td><code>surfaceVariant</code> background &mdash; never accent, never a warning hue</td><td>Always, except Free plan (absent) and side-by-side on the 5h pane (never drawn there)</td></tr>
+        <tr><td>1 &middot; Header</td><td>labelSmall, 11sp, ALL CAPS</td><td><code>onSurfaceVariant</code></td><td>Always &mdash; plan token and period drop independently (see &sect;2)</td></tr>
+        <tr><td>2 &middot; Reading</td><td>titleSmall, 14sp, <b>bold</b></td><td><code>onSurface</code></td><td>Always &mdash; exactly one of the reading sentences</td></tr>
+        <tr><td>3 &middot; Evidence</td><td>bodySmall, 12sp</td><td><code>onSurfaceVariant</code></td><td>Always &mdash; the fact the reading is built on</td></tr>
+        <tr><td>4 &middot; 5h line</td><td>bodySmall, 12sp</td><td><code>onSurfaceVariant</code></td><td>Only when the account has a 5h window <i>and</i> its cap-hit count &gt; 0</td></tr>
+        <tr><td>Height, 3 lines</td><td colspan="3">~88&ndash;92dp with padding &mdash; most states (no 5h line)</td></tr>
+        <tr><td>Height, 4 lines</td><td colspan="3">~96&ndash;104dp with padding &mdash; only when the 5h line fires (state a below)</td></tr>
+      </table>
+      </div>
+    </div>
+  </div>
+  <p class="q"><b>Why never red, ever &mdash; not even for "runs out" or "capped every week".</b>
+    This block is a reading, not an alarm: it fires once a week at most and answers a question the
+    user asked by opening History, not one the phone is interrupting them to raise. "This plan runs
+    out on you" rendered in red would read as an accusation aimed at how the person works, not a
+    system state to react to &mdash; and there is no action to take from this screen anyway (CCRM-70
+    (Plan Fit) is explicit that it never names another tier to move to). The weekly bars directly
+    below keep their existing red/orange/yellow severity colouring unchanged &mdash; that convention
+    already existed for a different purpose (a single window that is close to or at its cap) and
+    this block doesn't touch it.</p>
+
+  <hr class="hr">
+  <h2>2 &middot; All states, 7-day pane</h2>
+  <p class="sub">
+    Every row from the spec table, each with its weekly bars drawn in full underneath &mdash; the
+    same per-week percentage bars, colours and the open "now" week the real <code>WeeklyView</code>
+    draws today (<code>HistoryScreen.kt</code>), just with the block riding above them. Card width is
+    328px, the same content width as the 360dp phone frames below (360 &minus; 16dp padding &times; 2).
+  </p>
+  <div class="grid dev">
+<div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">This plan runs out on you.</div><div class="pf-e">Hit the cap in 3 of 8 weeks</div><div class="pf-5h">5h cap hit 14 times</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:62%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">62%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:68%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">68%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#FDD66322"><div class="wkbarfill" style="width:82%;background:#FDD663"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">82%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:55%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">55%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#FDD66322"><div class="wkbarfill" style="width:90%;background:#FDD663"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">90%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:40%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">40%</div></div></div></div><p class="devcap">a &middot; Runs out — Max 5x, capped 3 of 8</p><p class="note">3 of the 8 closed weeks hit the pool cap (100%, red) &mdash; over the &lceil;8/3&rceil;=3 threshold, so the first matching rule fires. The 5h line adds what the weekly figure alone hides: the session throttle was hit 14 times across the same period.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; PRO &middot; LAST 8 WEEKS</div><div class="pf-r">This plan fits how you use it.</div><div class="pf-e">Between 25% and 75% most weeks &middot; capped once</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:38%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">38%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:55%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">55%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:62%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">62%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:48%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">48%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:70%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">70%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:33%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">33%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:58%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">58%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:45%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">45%</div></div></div></div><p class="devcap">b &middot; Fits — Pro, capped once</p><p class="note">7 of 8 closed weeks land in the 25–74% middle band; one capped week isn't enough to trip the ⌈N/3⌉ rule, so the default reading holds. No 5h line: Pro's session throttle wasn't hit in this window.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">You use a small part of this plan.</div><div class="pf-e">Under 25% in 6 of 8 weeks &middot; never capped</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:10%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">10%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:12%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">12%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:8%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">8%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:30%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">30%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:18%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">18%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:22%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">22%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:35%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">35%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:15%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">15%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:9%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">9%</div></div></div></div><p class="devcap">c &middot; Small part — Max 5x, under-used</p><p class="note">6 of 8 closed weeks are under 25% (light band) and none ever capped &mdash; clears the ⌈3N/4⌉ light-weeks threshold with capped = 0.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X</div><div class="pf-r">First week in progress.</div><div class="pf-e">The reading starts after four weeks.</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:22%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">22%</div></div></div></div><p class="devcap">d &middot; First run — 0 closed weeks</p><p class="note">No period token in the header at all &mdash; there's nothing to summarise yet, so the header just names the plan. Only the open week's bar exists.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; 2 WEEKS</div><div class="pf-r">2 of 4 weeks recorded.</div><div class="pf-e">The reading starts after four weeks.</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:45%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">45%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:30%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">30%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:18%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">18%</div></div></div></div><p class="devcap">e &middot; 1–3 closed weeks — 2 recorded</p><p class="note">The header counts what exists (2 closed weeks), the reading counts against the 4-week minimum. Below 4 closed weeks the block only ever says this &mdash; no early guess at a verdict.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; 3 WEEKS</div><div class="pf-r">Changed from Max 20x 3 weeks ago.</div><div class="pf-e">The reading restarts after four weeks on the new plan.</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:18%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">18%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:25%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">25%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:15%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">15%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:20%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">20%</div></div></div></div><p class="devcap">f &middot; Plan changed — 3 weeks on Max 5x</p><p class="note">Weeks from before the downgrade exist in <code>SessionLog</code> but are excluded here &mdash; the <code>pl</code> tag (plan label at record time) is what makes the cutover detectable instead of guessed from a jump in usage.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; LAST 8 WEEKS</div><div class="pf-r">This plan fits how you use it.</div><div class="pf-e">Between 25% and 75% most weeks &middot; capped once</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:40%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">40%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:54%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">54%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:62%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">62%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:48%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">48%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:70%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">70%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:33%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">33%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:58%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">58%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:45%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">45%</div></div></div></div><p class="devcap">g &middot; Plan unknown — no plan token</p><p class="note">An account whose plan never resolved (API refusal, or records from before the <code>pl</code> tag existed) still gets a reading &mdash; it just can't name the plan in the header.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; PRO &middot; LAST 8 WEEKS</div><div class="pf-r">No use recorded on this account.</div><div class="pf-e">8 idle weeks.</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:0%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">0%</div></div></div></div><p class="devcap">h &middot; Idle account — no use recorded</p><p class="note">Every peak is 0 &mdash; the all-zero rule fires before the light/middle/heavy bands are even considered, so it doesn't read as "a small part of this plan" (which implies some use).</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">This plan runs out on you.</div><div class="pf-e">Hit the cap in 8 of 8 weeks</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#FDD66322"><div class="wkbarfill" style="width:88%;background:#FDD663"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">88%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div></div></div><p class="devcap">i &middot; Capped every week — worst case</p><p class="note">All 8 closed weeks capped. Still tonal, still no red text or icon on the block itself &mdash; the red is confined to the bars below, which already used it for capped weeks before this feature existed.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 20X &middot; LAST 8 WEEKS</div><div class="pf-r">This plan runs out on you.</div><div class="pf-e">Hit the Opus cap in 5 of 8 weeks</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:54%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">54%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:62%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">62%</div></div><div class="wktag"><span class="wktagdot" style="background:#E7A08A"></span>Opus capped</div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:48%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">48%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:58%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">58%</div></div><div class="wktag"><span class="wktagdot" style="background:#E7A08A"></span>Opus capped</div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:45%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">45%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:66%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">66%</div></div><div class="wktag"><span class="wktagdot" style="background:#E7A08A"></span>Opus capped</div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:50%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">50%</div></div><div class="wktag"><span class="wktagdot" style="background:#E7A08A"></span>Opus capped</div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:40%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">40%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:52%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">52%</div></div><div class="wktag"><span class="wktagdot" style="background:#E7A08A"></span>Opus capped</div></div></div><p class="devcap">j &middot; Opus-bound Max — pool reads moderate</p><p class="note">This is the case the <code>mc</code> tag exists for: the pool bars sit in the calm 40–66% band &mdash; nothing here would trip "runs out" on pool percentage alone &mdash; but 5 of those 8 weeks hit the separate Opus weekly cap. Reading the pool number only would have called this account under-tiered instead of locked out.</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">You use a small part of this plan.</div><div class="pf-e">Under 25% in 5 of 6 recorded weeks &middot; never capped</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:14%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">14%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:12%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">12%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:8%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">8%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:30%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">30%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:15%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">15%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:9%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">9%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:18%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">18%</div></div></div></div><p class="devcap">k &middot; Gaps — only 6 of 8 weeks recorded</p><p class="note">24–30 Aug and 3–9 Aug have no <code>SessionLog</code> record at all (phone off, or CCRM-14 (Clear History)) &mdash; they're missing rows, not zero-value placeholders, exactly like the existing weekly bars already do. The header still says "LAST 8 WEEKS" (that's the span looked at); the evidence line is the one that says "6 recorded".</p></div><div class="opt pfopt"><div class="mockwrap"><div class="pfblock"><div class="pf-h">PLAN FIT &middot; PLUS &middot; LAST 8 WEEKS</div><div class="pf-r">This plan fits how you use it.</div><div class="pf-e">Between 25% and 75% most weeks &middot; capped once</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:44%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">44%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:58%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">58%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:64%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">64%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:50%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">50%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:72%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">72%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:35%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">35%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:60%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">60%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#74AA9C22"><div class="wkbarfill" style="width:42%;background:#74AA9C"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">42%</div></div></div></div><p class="devcap">l &middot; ChatGPT Plus — weekly-only, no 5h line</p><p class="note">Same logic, ChatGPT's own weekly window. <b>No 5h line, ever</b> &mdash; ChatGPT Plus has no 5-hour window to report, so the fourth line never renders for this account, not even as "0 times".</p></div><div class="opt pfopt"><div class="mockwrap"><div class="wkcard"><div class="freenote">Free plan: Claude doesn&rsquo;t report usage &mdash; upgrade to Pro, Max or Team to see numbers.</div></div></div><p class="devcap">m &middot; Free plan — block absent entirely</p><p class="note">There's nothing to read a plan fit from &mdash; a Free account has no weekly percentage at all, only this existing notice (the same one already on the Accounts card, CCRM-65 (Accounts Redesign)). The block isn't collapsed or greyed out; it simply never renders, so the pane starts exactly where it does today.</p></div>
+  </div>
+
+  <hr class="hr">
+  <h2>3 &middot; Fold 7 cover screen &mdash; COMPACT, ~410dp</h2>
+  <p class="sub">
+    Below the two-pane width, History keeps its existing <code>FilterChip</code> toggle between
+    5-hour and 7-day (unchanged by this feature). At this width the header can't fit a plan token
+    <i>and</i> a period alongside "PLAN FIT" without wrapping, so <b>the period drops off the header
+    and rides on the evidence line instead</b> &mdash; "Under 25% in 6 of <i>the last 8 weeks</i>"
+    says the same thing the wide header would have said with "&middot; LAST 8 WEEKS".
+  </p>
+  <div class="dev"><div class="scroll">
+    <div class="cover">
+      <div class="topbar">History</div>
+      <div class="fchips">
+        <div class="fchip">5-hour</div>
+        <div class="fchip sel">7-day</div>
+      </div>
+      <div class="panebody">
+        <div class="histpane" style="width:100%;box-sizing:border-box;">
+          <div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X</div><div class="pf-r">You use a small part of this plan.</div><div class="pf-e">Under 25% in 6 of the last 8 weeks &middot; never capped</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:10%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">10%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:12%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">12%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:8%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">8%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:30%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">30%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:18%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">18%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:22%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">22%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:35%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">35%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:15%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">15%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:9%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">9%</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <p class="cap">410dp, Fold 7 cover screen, COMPACT</p>
+
+  <hr class="hr">
+  <h2>4 &middot; Inner screen &mdash; 5-hour and 7-day panes side by side</h2>
+  <p class="sub">
+    Above the two-pane width threshold (CCRM-56 (Provider Identity)'s <code>twoPane</code>), History
+    drops the chip toggle and shows both windows at once. The block sits <b>only</b> over the 7-day
+    pane on the right &mdash; the 5-hour pane on the left is completely unchanged, still its own
+    per-session bars with the week-by-week nav arrows.
+  </p>
+  <div class="dev"><div class="scroll">
+    <div class="innerframe">
+      <div class="topbar">History</div>
+      <div class="innergrid">
+        <div class="paneside">
+          <div class="panelabel">5-hour windows</div>
+          <div class="wkcard">
+            <div class="wknav">
+              <div class="arrow"><svg width="18" height="18"><use href="#icoArrowLeft"/></svg></div>
+              <div class="mid"><div class="t">This week</div><div class="r">14&ndash;20 Sep</div></div>
+              <div class="arrow"><svg width="18" height="18"><use href="#icoArrowRight"/></svg></div>
+            </div>
+            <div class="wksummary">4 sessions &middot; 1 maxed out</div>
+            <div class="wkrow"><div class="wklbl"><div class="d">Mon 9:14 am</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">Tue 8:52 am</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:54%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">54%</div></div><div class="wkrow"><div class="wklbl"><div class="d">Wed 7:40 am</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:63%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">63%</div></div>
+          </div>
+        </div>
+        <div class="paneside">
+          <div class="panelabel">7-day windows</div>
+          <div class="histpane" style="width:100%;box-sizing:border-box;">
+            <div class="pfblock"><div class="pf-h">PLAN FIT &middot; MAX 5X &middot; LAST 8 WEEKS</div><div class="pf-r">This plan runs out on you.</div><div class="pf-e">Hit the cap in 3 of 8 weeks</div><div class="pf-5h">5h cap hit 14 times</div></div><div class="wkcard"><div class="wkrow"><div class="wklbl"><div class="d">14–20 Sep</div><span class="wknow">now</span></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:62%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">62%</div></div><div class="wkrow"><div class="wklbl"><div class="d">7–13 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">31 Aug–6 Sep</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">24–30 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:68%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">68%</div></div><div class="wkrow"><div class="wklbl"><div class="d">17–23 Aug</div></div><div class="wkbartrack" style="background:#FF525222"><div class="wkbarfill" style="width:100%;background:#FF5252"></div></div><div class="wkval" style="color:#FF5252">100%</div></div><div class="wkrow"><div class="wklbl"><div class="d">10–16 Aug</div></div><div class="wkbartrack" style="background:#FDD66322"><div class="wkbarfill" style="width:82%;background:#FDD663"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">82%</div></div><div class="wkrow"><div class="wklbl"><div class="d">3–9 Aug</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:55%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">55%</div></div><div class="wkrow"><div class="wklbl"><div class="d">27 Jul–2 Aug</div></div><div class="wkbartrack" style="background:#FDD66322"><div class="wkbarfill" style="width:90%;background:#FDD663"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">90%</div></div><div class="wkrow"><div class="wklbl"><div class="d">20–26 Jul</div></div><div class="wkbartrack" style="background:#E7A08A22"><div class="wkbarfill" style="width:40%;background:#E7A08A"></div></div><div class="wkval" style="color:rgba(199,196,207,.8)">40%</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <p class="cap">760dp inner-screen frame &middot; same "Runs out" reading as state a, in place</p>
+
+  <hr class="hr">
+  <h2>5 &middot; Account reorder &mdash; the entry point</h2>
+  <p class="sub">
+    A <code>Reorder</code> text button beside the existing <code>+ Add account</code> button, at the
+    very end of the Accounts list &mdash; list-level actions kept together, in thumb reach. Hidden
+    entirely with one account, since there is nothing to reorder.
+  </p>
+  <div class="dev"><div class="scroll">
+    <div class="phone" style="height:auto;">
+      <div class="topbar">&larr; Settings</div>
+      <div class="strip" style="padding:0 8px;">
+        <div class="stab on">Accounts</div><div class="stab">Alerts</div><div class="stab">Appearance</div><div class="stab">More</div>
+      </div>
+      <div style="padding:12px 16px 16px;">
+        <div class="acard">
+          <div class="arow1"><svg class="mk"><use href="#mkClaude"/></svg><span class="lbl">Work</span><span class="gdot"></span><span class="chip">Team Standard</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span>Checked just now &middot; renews in 1h 9m</span></div>
+        </div>
+        <div class="acard">
+          <div class="arow1"><svg class="mk gpt"><use href="#mkGpt"/></svg><span class="lbl">ChatGPT</span><span class="gdot"></span><span class="chip">Plus</span><span class="sp"></span><span class="kebab">&#8942;</span></div>
+          <div class="arow2"><span>Checked just now</span></div>
+        </div>
+        <div class="listend">
+          <div class="obtn">+ Add account</div>
+          <div class="tbtn2">Reorder</div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <p class="cap">List end, Accounts tab &middot; 360dp &middot; three accounts, so Reorder is showing</p>
+
+  <hr class="hr">
+  <h2>6 &middot; The sheet &mdash; anatomy</h2>
+  <p class="sub">
+    A <code>ModalBottomSheet</code>, one column, width capped at 640dp on the inner screen (below).
+    Every row is 56dp: an 8dp status dot, a 24dp provider mark, the label at 16sp, a plan chip, and a
+    24dp drag handle glyph sitting inside a 48dp touch target &mdash; the target is bigger than the
+    glyph so the drag is easy to grab without the row itself needing to be draggable.
+  </p>
+  <div class="row">
+    <div class="dev"><div class="scrimwrap"><div class="sheet"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot hollow"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel muted">Side</span><span class="slabel muted" style="flex:0 0 auto;font-size:12px;"></span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div></div>
+      <p class="devcap" style="text-align:center;">a &middot; Resting, 3 accounts</p>
+    </div>
+    <div class="col" style="max-width:600px;">
+      <div class="tbl-wrap">
+      <table>
+        <tr><th>Piece</th><th>dp/sp</th><th>Notes</th></tr>
+        <tr><td>Drag pill</td><td>32&times;4dp</td><td>Decorative, top-centred, 10dp from the sheet's top edge &mdash; standard M3 sheet handle</td></tr>
+        <tr><td>Title</td><td>16sp titleMedium</td><td>"Account order", 16dp side padding</td></tr>
+        <tr><td>Subtitle</td><td>12sp bodySmall</td><td>"Sets the tab order everywhere.", <code>onSurfaceVariant</code>, 16dp side padding, 8dp gap before the rows start</td></tr>
+        <tr><td>Row height</td><td>56dp</td><td>Whole row is the drag-recognition width, but the gesture only starts on the handle (see &sect;7 &mdash; "no long-press on the row body")</td></tr>
+        <tr><td>Status dot</td><td>8dp</td><td>Filled green = signed in; hollow (outline only, no fill) = not signed in</td></tr>
+        <tr><td>Provider mark</td><td>24dp</td><td>Real Claude/ChatGPT mark, per CCRM-56 (Provider Identity)</td></tr>
+        <tr><td>Label</td><td>16sp</td><td>Muted colour when the account isn't signed in</td></tr>
+        <tr><td>Plan chip</td><td>11.5sp, pill</td><td>Absent when not signed in &mdash; nothing to show a plan for yet</td></tr>
+        <tr><td>Drag handle</td><td>24dp glyph in a 48dp target</td><td>The only place a drag can start</td></tr>
+        <tr><td>Done</td><td>14sp text button</td><td>Bottom-right, dismisses only &mdash; it never has anything to confirm, since every drop already applied</td></tr>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>7 &middot; Sheet states</h2>
+  <p class="sub">
+    Live reorder: every drop applies immediately, the cards behind the (dimmed) scrim reorder as
+    confirmation, and <code>Done</code> only dismisses &mdash; no confirm dialog, no undo toast.
+    Dragging a row back is the only undo.
+  </p>
+  <div class="grid dev">
+    <div class="opt acctopt"><div class="scrimwrap"><div class="sheet"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sgap"></div><div class="srow lift"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot hollow"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel muted">Side</span><span class="slabel muted" style="flex:0 0 auto;font-size:12px;"></span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div></div>
+      <p class="devcap">b &middot; Mid-drag &mdash; Work lifted, 2dp elevation + 1.02 scale, Personal and Side parted around the drop gap</p>
+    </div>
+    <div class="opt acctopt"><div class="sheet"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div>
+      <p class="devcap">c &middot; 2 accounts &mdash; the minimum where Reorder is even shown</p>
+    </div>
+    <div class="opt acctopt"><div class="sheet"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Side</span><span class="schip">Pro</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Team</span><span class="schip">Team Standard</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Test</span><span class="schip gpt">Free</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div>
+      <p class="devcap">d &middot; 5 accounts &mdash; the sheet scrolls, rows don't shrink</p>
+    </div>
+    <div class="opt acctopt"><div class="sheet"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot hollow"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel muted">Side &middot; signing in&hellip;</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div>
+      <p class="devcap">e &middot; Side mid-sign-in &mdash; unsigned styling, no chip, until it resolves</p>
+    </div>
+  </div>
+  <div class="row" style="margin-top:18px;">
+    <div class="dev"><div class="scroll"><div class="sheet wide"><div class="pill"></div><div class="sheettitle">Account order</div><div class="sheetsub">Sets the tab order everywhere.</div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Personal</span><span class="schip">Max 5x</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Side</span><span class="schip">Pro</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Team</span><span class="schip">Team Standard</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="sdone">Done</div></div></div>
+      <p class="devcap" style="text-align:center;">f &middot; Inner screen, 640dp cap &mdash; wider rows, same 56dp height</p>
+    </div>
+    <div class="dev"><div class="scroll">
+      <div class="sheet" style="width:410px;">
+        <div class="pill"></div>
+        <div class="sheettitle">Account order</div>
+        <div class="sheetsub">Sets the tab order everywhere.</div>
+        <div class="srow"><span class="sdot"></span><svg class="smk"><use href="#mkClaude"/></svg><span class="slabel">Robin&rsquo;s Anthropic Team Premium</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div><div class="srow"><span class="sdot"></span><svg class="smk gpt"><use href="#mkGpt"/></svg><span class="slabel">Work</span><span class="schip gpt">Plus</span><span class="shandle"><svg><use href="#icoDrag"/></svg></span></div>
+        <div class="sdone">Done</div>
+      </div></div>
+      <p class="devcap" style="text-align:center;">g &middot; Cover screen, 410dp &mdash; the plan chip drops (Robin's long label) before the label itself would truncate</p>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>8 &middot; What the sheet's subtitle means &mdash; the tab strip, before and after</h2>
+  <p class="sub">
+    "Sets the tab order everywhere" made concrete: dragging Side to the top in the sheet reorders
+    Main's and History's account tabs the same way, live.
+  </p>
+  <div class="row">
+    <div class="dev" style="width:328px;">
+      <div class="strip"><div class="stab on">Personal</div><div class="stab">Work</div><div class="stab">Side</div></div>
+      <p class="devcap">Before &mdash; today's insertion order</p>
+    </div>
+    <div style="display:flex;align-items:center;font-size:20px;color:var(--muted);">&rarr;</div>
+    <div class="dev" style="width:328px;">
+      <div class="strip"><div class="stab on">Side</div><div class="stab">Personal</div><div class="stab">Work</div></div>
+      <p class="devcap">After dragging Side to the top in the sheet</p>
+    </div>
+  </div>
+  <p class="note" style="max-width:80ch;">The selected tab was Personal (index 0) in both. If tab
+    selection is stored as an index rather than <code>profile.key</code>, this exact reorder would
+    silently swap the visible account to Side without anyone touching a tab &mdash; see &sect;9.</p>
+
+  <hr class="hr">
+  <h2>9 &middot; Annotations</h2>
+  <ul class="inv">
+    <li><b>The Plan Fit block never uses red or any warning colour, anywhere, in any state &mdash;
+      including "This plan runs out on you" and "Hit the cap in 8 of 8 weeks."</b> It's a reading
+      the user opened History to see, not an interruption; it names no action and no other tier to
+      move to. Elaborated in &sect;1. The weekly bars directly beneath it keep their existing
+      severity colours (yellow/orange/red as a window nears its own cap) unchanged &mdash; that's a
+      different, pre-existing convention this feature doesn't touch.</li>
+    <li><b>Reordering accounts also changes app-shortcut order and the notification panel's overflow
+      fault-strip order</b> (<code>notify/Conditions.kt:80-94</code> reads registry order), and
+      <code>registry.first()</code> stays the fallback for a key that no longer resolves. Both were
+      judged too minor to surface as their own row in the sheet or Settings &mdash; disclosed here
+      instead, per CCRM-71 (Account Order)'s own roadmap entry.</li>
+    <li><b>Main and History must key the selected tab on the account's stable <code>profile.key</code>,
+      never on its position in the list.</b> Demonstrated in &sect;8: the same drag that makes the
+      sheet feel obviously correct (Side is now first) silently changes which account's numbers are
+      on screen if selection ever falls back to an index. <code>Profile.slot</code> (notification IDs,
+      alarm request codes) and per-account accents are already keyed this way; tab selection is the
+      one place that has to join them.</li>
+  </ul>
+
+</div>
+</body>
+</html>

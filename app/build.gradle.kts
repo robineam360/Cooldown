@@ -22,8 +22,8 @@ android {
         applicationId = "com.robin.claudeusage"
         minSdk = 31
         targetSdk = 36
-        versionCode = 22
-        versionName = "1.6"
+        versionCode = 23
+        versionName = "1.7"
     }
 
     signingConfigs {

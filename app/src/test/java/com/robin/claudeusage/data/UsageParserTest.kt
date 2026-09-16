@@ -285,4 +285,28 @@ class UsageParserTest {
         // remainingMinor keeps its meaning — the monthly remainder, untouched.
         assertEquals(9703L, credits.remainingMinor)
     }
+
+    /**
+     * Captured from Robin's live Team Standard account on 2026-09-16 (CCRM-69 (Window Dollars)
+     * probe). Anthropic's payload has grown a lot since the 2026-07-27 capture above: every
+     * window gained `locked_reason`, a `seven_day_breakdown` key appeared (null, but named),
+     * and a row of codenamed slots arrived — `seven_day_oauth_apps`, `seven_day_cowork`,
+     * `nimbus_quill`, `cinder_cove`, `copper_kite`, `harbor_lantern`, `amber_ladder`,
+     * `juniper_tide`, `cedar_ember`. This test exists so that growth cannot silently derail
+     * the parse: unknown keys must be ignored, and the windows we do read must still read.
+     */
+    @Test
+    fun `the 2026-09 payload parses despite a dozen new and codenamed keys`() {
+        val raw = javaClass.classLoader!!
+            .getResourceAsStream("claude-usage-2026-09.json")!!
+            .bufferedReader().readText()
+        val data = UsageParser.parse(raw)!!
+        assertEquals(4.0, data.session!!.percent!!, 0.001)
+        assertEquals(42.0, data.weekly!!.percent!!, 0.001)
+        assertNotNull(data.session!!.resetsAt)
+        assertNotNull(data.weekly!!.resetsAt)
+        // The money that IS real: $123.68 of $400.00 in pay-as-you-go credits.
+        assertEquals(12368L, data.credits!!.usedMinor)
+        assertEquals(40000L, data.credits!!.limitMinor)
+    }
 }

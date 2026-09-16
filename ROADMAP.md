@@ -1062,8 +1062,17 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   and the History screen (tab selection by key).
 
 ### CCRM-69 · Window Dollars — read the dollar fields Anthropic already sends
-- **Status:** **Not viable, 2026-09-16.** The lead below was researched the same day it was filed
-  and did not survive. Kept filed, per CLAUDE.md, because the ID is never reused and the negative
+- **Status:** **Closed, not viable — confirmed on Robin's own account 2026-09-16.** The probe was
+  run on his live Team Standard account and both windows answered
+  `"limit_dollars":null,"used_dollars":null,"remaining_dollars":null`, exactly as the public record
+  predicted. The lead below was researched the same day it was filed and did not survive.
+- **Worth more than the dead fields — the payload has grown since 2026-07-27.** The same probe
+  captured `locked_reason` on every window, a **`seven_day_breakdown`** key (null, but *named* — a
+  per-model breakdown may be coming), and a row of codenamed slots: `seven_day_oauth_apps`,
+  `seven_day_cowork`, `seven_day_omelette`, `nimbus_quill` (which carries a real window shape),
+  `cinder_cove`, `copper_kite`, `harbor_lantern`, `amber_ladder`, `juniper_tide`, `cedar_ember`.
+  Saved as `app/src/test/resources/claude-usage-2026-09.json` with a parser test, so this growth
+  cannot silently derail the parse. **`seven_day_breakdown` is the one to watch.** Kept filed, per CLAUDE.md, because the ID is never reused and the negative
   result is worth more than the idea was.
 - **The finding that closed it:** `limit_dollars` / `used_dollars` / `remaining_dollars` have
   **never been observed non-null by anyone, on any plan.** Five independent open-source clients
@@ -1116,7 +1125,12 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   `design/research/2026-09-16-spend-meter-ideation.md`.
 
 ### CCRM-68 · Honest Agent — stop borrowing the Claude Code User-Agent
-- **Status:** Planned — agreed 2026-09-16, to ship before any permission email goes out.
+- **Status:** **Shipped and verified on the Fold 7, 2026-09-16.** With the honest
+  `Cooldown/<version> (Android)` User-Agent the Claude accounts polled normally — live 4% session
+  and 42% weekly readings, charts populated, no 429 and no throttling of any kind. **The
+  "aggressively rate-limited bucket" claim is now not merely untested but contradicted**: the
+  request is served fine without the CLI's name. The permission emails it was meant to precede were
+  never sent, since CCRM-66 (Play Store Launch) was dropped — but the change stands on its own.
 - **Why:** `ApiClient.USER_AGENT` is `claude-code/2.1.214`, sent on every call to
   `api.anthropic.com/api/oauth/usage`. README.md:37-45 calls this impersonating the official CLI,
   and it is the single hardest thing in the repo to defend to Anthropic or to a store reviewer.
@@ -1140,7 +1154,9 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   the claim), `data/source/ClaudeSource.kt:13`, README.md.
 
 ### CCRM-67 · Pin Service — the always-on notification becomes a foreground service
-- **Status:** Built 2026-09-16 — compiles, 350 unit tests green. **Not yet seen on the Fold 7**, and not yet released; the device pass rides with Step 3 of the Play Store runbook (v1.7).
+- **Status:** **Built and verified on the Fold 7, 2026-09-16.** `dumpsys` reports `PinnedService`
+  `isForeground=true`, `types=0x40000000` (SPECIAL_USE), `startForegroundCount=1`, and the pin posts
+  with `NO_CLEAR|FOREGROUND_SERVICE`. It stayed alive across an airplane-mode cycle. Ships in v1.7.
 - **Why:** Fixes CCBG-28 (Pin Sinks) — the pin is currently user-dismissible (setOngoing ignored on targetSdk 34+), ranked below silent notifications, and stops refreshing when backgrounded because refreshes depend on WorkManager surviving Doze and OEM sleep. A foreground service earns a guaranteed shade position (foreground section, top), is genuinely persistent, and keeps a live process so refreshes no longer depend on WorkManager.
 - **The service runs if and only if the pin is enabled,** and owns the poll cadence while it runs. WorkManager periodic polling stays as the backstop for when the pin is off, since alerts and reset pings still need polling then.
 - **No visual change:** The notification layout — both the single and the CCRM-62 (Duet Notification) layouts — is untouched. This is why the change needed no wireframe under working-agreement rule 2.

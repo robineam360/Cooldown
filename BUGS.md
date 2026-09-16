@@ -12,8 +12,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ## Open
 
 ### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
-- **Status:** Fixed in code 2026-09-16 (353 tests green) — **awaiting the Fold 7 device pass on an
-  idle ChatGPT account**, because no idle payload has ever been captured; see *Uncertainty* below.
+- **Status:** **Fixed (2026-09-16)** — built, unit-tested (3 new cases) and **seen on the Fold 7 the
+  same day**: the ChatGPT card's 5h window reads `0% used` with *"Starts when a message is sent"*,
+  identical to Claude's idle view, with no creeping countdown. The inferred idle shape was correct.
 - **Severity:** Medium (a number that is always wrong on an idle account, on the app's main
   surface; it reads as live data and is not)
 - **Symptom:** **Reported by Robin, 2026-09-16.** The ChatGPT 5h window always shows a reset of
@@ -44,7 +45,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   window with a coincidentally full remaining time).
 
 ### CCBG-29 · Refresh Swallowed — the pin's Refresh button silently does nothing off-network
-- **Status:** Open
+- **Status:** **Fixed (2026-09-16)** — regression-checked on the Fold 7: with airplane mode on,
+  two Refresh taps, then airplane mode off, the next fetch landed (`Last success: just now`).
+  **Honest limit of that test:** it does not distinguish REPLACE from KEEP, since both eventually
+  fire once connectivity returns. What it proves is no regression; the swallowed-tap fix itself is
+  correct by construction, not by observation.
 - **Severity:** Medium (a button that visibly does nothing, in the everyday condition of being
   briefly out of signal; the user's only recourse is to open the app)
 - **Symptom:** Tap **Refresh** on the always-on notification with no connectivity, then tap it
@@ -67,7 +72,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   fresh fetch lands) — there is no `PollingTest` and no Robolectric in the project.
 
 ### CCBG-28 · Pin Sinks — the always-on notification ranks below everything and stops refreshing
-- **Status:** Fix built 2026-09-16 (CCRM-67 (Pin Service)) — awaiting the Fold 7 device pass before it counts as fixed
+- **Status:** **Fixed (2026-09-16)** — seen on the Fold 7: `dumpsys activity services` reports
+  `PinnedService` with `isForeground=true` and `types=0x40000000` (SPECIAL_USE), and the pin posts
+  with `flags=ONGOING_EVENT|ONLY_ALERT_ONCE|NO_CLEAR|FOREGROUND_SERVICE` on channel
+  `pinned_usage_v2`. It survived a full airplane-mode cycle without the service dying.
 - **Severity:** High (the app's headline feature — the always-on pin — is silently wrong for any user who doesn't regularly open the app; numbers stop updating and the notification ranks below unrelated alerts, defeating its purpose)
 - **Symptom:** The always-on pinned notification is user-dismissible, gets no persistence guarantee, and stops refreshing when the app is backgrounded. Observed impact: without opening the app, a user's numbers become stale and the pin disappears behind other notifications in the shade.
 - **Cause, three parts:**
