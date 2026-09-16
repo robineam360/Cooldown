@@ -11,6 +11,38 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
+- **Status:** Fixed in code 2026-09-16 (353 tests green) — **awaiting the Fold 7 device pass on an
+  idle ChatGPT account**, because no idle payload has ever been captured; see *Uncertainty* below.
+- **Severity:** Medium (a number that is always wrong on an idle account, on the app's main
+  surface; it reads as live data and is not)
+- **Symptom:** **Reported by Robin, 2026-09-16.** The ChatGPT 5h window always shows a reset of
+  *now + 5h*, creeping forward all day, even when no message has been sent and the window has not
+  started. Claude in the same state says *"Starts when a message is sent"*.
+- **Cause:** the two providers answer an untouched window differently. Claude **omits** `resets_at`,
+  and `ResetRow` in `MainActivity.kt:630` already keys on exactly that — *"A window with no reset
+  time hasn't started yet (0% and idle)."* OpenAI always answers with a reset: an untouched 5h
+  window reports a full `reset_after_seconds` (18000 of 18000), so `resetFrom` faithfully computes
+  `now + 5h` and the countdown is recomputed on every poll. The "not started" view was never
+  reachable for ChatGPT.
+- **Fix:** `ChatGptUsageParser.notStarted` — when `used_percent` is 0 **and** `reset_after_seconds`
+  is the window's whole `limit_window_seconds` (one second of slack), the window parses with a null
+  `resetsAt`, which is the shape Claude already produces and every surface already renders. Both
+  conditions are required: a window one message in can still round to 0% and that window really has
+  started, so percent alone would hide a real reset.
+- **Knock-on, deliberate:** with a null window the 5h reset ping no longer fires for an idle
+  ChatGPT account. That is the same behaviour Claude has had since `ResetRollover`'s idle arm, and
+  it is correct — there is no reset to announce for a window that never ran.
+- **Uncertainty to settle on the device:** no idle ChatGPT payload has ever been captured, so the
+  exact idle shape is inferred from the observed one (`reset_after_seconds` 8798 of 18000 at 9%).
+  If OpenAI instead reports something other than a full remaining time when idle, the guard will
+  not fire and the symptom stays. **Capture an idle payload during the pass** (Diagnostics → Show
+  last raw response) and add it as a fixture.
+- **Where:** `data/source/ChatGptSource.kt` (`windowFrom`, new `notStarted`); the rendering it
+  unlocks is already in `MainActivity.kt` (`ResetRow`) and the notification. Tests:
+  `ChatGptUsageParserTest` — three new cases (untouched, one-message-in rounding to 0, and a used
+  window with a coincidentally full remaining time).
+
 ### CCBG-29 · Refresh Swallowed — the pin's Refresh button silently does nothing off-network
 - **Status:** Open
 - **Severity:** Medium (a button that visibly does nothing, in the everyday condition of being

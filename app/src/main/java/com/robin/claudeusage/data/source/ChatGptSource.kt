@@ -322,12 +322,36 @@ object ChatGptUsageParser {
 
     private fun windowFrom(o: JSONObject?, nowMs: Long): UsageWindow? {
         if (o == null) return null
+        val percent = if (o.isNull("used_percent")) null else o.optDouble("used_percent")
         return UsageWindow(
-            percent = if (o.isNull("used_percent")) null else o.optDouble("used_percent"),
-            resetsAt = resetFrom(o, nowMs),
+            percent = percent,
+            resetsAt = if (notStarted(o, percent)) null else resetFrom(o, nowMs),
             // OpenAI reports no severity of its own; ours comes from the percent.
             serverSeverity = null,
         )
+    }
+
+    /**
+     * CCBG-30 (Phantom Window): has this window not started yet?
+     *
+     * Claude simply omits `resets_at` for an untouched window, which is why the main screen
+     * and the notification already say "Starts when a message is sent" for an idle account.
+     * OpenAI always answers with a reset — an untouched 5h window reports a full
+     * `reset_after_seconds`, so `reset_at` is just *now + 5h* and the countdown creeps
+     * forward all day without a message ever being sent.
+     *
+     * Both conditions are required. Percent alone is not enough: a window one message into
+     * its life can still round to 0, and that window really has started. A window whose
+     * remaining time is its whole length has not.
+     */
+    private fun notStarted(o: JSONObject, percent: Double?): Boolean {
+        if (percent == null || percent > 0.0) return false
+        val length = lengthSeconds(o) ?: return false
+        if (o.isNull("reset_after_seconds")) return false
+        val remaining = o.optLong("reset_after_seconds", -1L)
+        // A second of slack: the value is computed server-side and can arrive a tick short
+        // of the full length without the window having started.
+        return remaining >= length - 1L
     }
 
     /** `reset_at` is epoch **seconds**; some builds send `reset_after_seconds` instead. */

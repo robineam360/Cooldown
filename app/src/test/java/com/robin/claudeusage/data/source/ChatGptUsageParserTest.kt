@@ -130,6 +130,42 @@ class ChatGptUsageParserTest {
     }
 
     @Test
+    fun `an untouched 5h window reports no reset, so the UI says it has not started`() {
+        // CCBG-30 (Phantom Window): OpenAI answers an idle window with a full
+        // reset_after_seconds, so reset_at is just now + 5h and the countdown creeps
+        // forward all day. Claude omits the reset entirely; this makes ChatGPT match.
+        val now = 1_788_000_000_000L
+        val body = """{"rate_limit":{"primary_window":{"used_percent":0,
+            "limit_window_seconds":18000,"reset_after_seconds":18000,
+            "reset_at":1788018000}}}""".trimIndent().replace("\n", "")
+        val session = ChatGptUsageParser.parse(body, nowMs = now)!!.session!!
+        assertEquals(0.0, session.percent!!, 0.001)
+        assertNull(session.resetsAt)
+    }
+
+    @Test
+    fun `a window one message in still reports its reset, even when the percent rounds to zero`() {
+        // The guard needs both conditions: a window that has genuinely started but rounds
+        // to 0% must keep its countdown, or a real reset would be hidden.
+        val now = 1_788_000_000_000L
+        val body = """{"rate_limit":{"primary_window":{"used_percent":0,
+            "limit_window_seconds":18000,"reset_after_seconds":17400,
+            "reset_at":1788017400}}}""".trimIndent().replace("\n", "")
+        val session = ChatGptUsageParser.parse(body, nowMs = now)!!.session!!
+        assertNotNull(session.resetsAt)
+    }
+
+    @Test
+    fun `a used window is never mistaken for one that has not started`() {
+        val now = 1_788_000_000_000L
+        val body = """{"rate_limit":{"primary_window":{"used_percent":9,
+            "limit_window_seconds":18000,"reset_after_seconds":18000,
+            "reset_at":1788018000}}}""".trimIndent().replace("\n", "")
+        val session = ChatGptUsageParser.parse(body, nowMs = now)!!.session!!
+        assertNotNull(session.resetsAt)
+    }
+
+    @Test
     fun `positional fallback applies only when neither window declares a duration`() {
         val body = """
             {"rate_limit":{"primary_window":{"used_percent":9,"reset_at":1788240000},
