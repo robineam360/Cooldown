@@ -11,6 +11,29 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-29 · Refresh Swallowed — the pin's Refresh button silently does nothing off-network
+- **Status:** Open
+- **Severity:** Medium (a button that visibly does nothing, in the everyday condition of being
+  briefly out of signal; the user's only recourse is to open the app)
+- **Symptom:** Tap **Refresh** on the always-on notification with no connectivity, then tap it
+  again — and every tap until connectivity returns is discarded with no error, no toast and no
+  visible change. When the network does come back, what fires is the *first* stuck request, so the
+  reading can be older than the last tap suggests.
+- **Cause:** `Polling.refreshOnce` (app/src/main/java/com/robin/claudeusage/work/Polling.kt:107-116)
+  enqueues under a unique work name with `ExistingWorkPolicy.KEEP` and a `NetworkType.CONNECTED`
+  constraint. With no network the worker never reaches RUNNING, so it sits ENQUEUED and `KEEP`
+  drops every later request for that name on the floor. Both Refresh paths reach this —
+  `notify/PinnedRefreshReceiver.kt` and `MainActivity.kt:143`.
+- **Not fixed by CCRM-67 (Pin Service):** that fixes process survival, which is a different half
+  of CCBG-28 (Pin Sinks). This was recorded as cause item 4 there with no ID of its own; filed
+  here 2026-09-16 so it is not lost.
+- **Fix:** key the policy off the `manual` flag `refreshOnce` already takes — `REPLACE` for a
+  user's tap ("cancel whatever is stuck and try again now"), `KEEP` for the periodic auto-poll so
+  background refreshes don't stack. Optionally surface a transient "No connection — will refresh
+  when back online" line; that part is a visible string and wants a wireframe first.
+- **Verifying:** a device pass (airplane mode on, tap Refresh twice, airplane mode off, confirm a
+  fresh fetch lands) — there is no `PollingTest` and no Robolectric in the project.
+
 ### CCBG-28 · Pin Sinks — the always-on notification ranks below everything and stops refreshing
 - **Status:** Fix built 2026-09-16 (CCRM-67 (Pin Service)) — awaiting the Fold 7 device pass before it counts as fixed
 - **Severity:** High (the app's headline feature — the always-on pin — is silently wrong for any user who doesn't regularly open the app; numbers stop updating and the notification ranks below unrelated alerts, defeating its purpose)

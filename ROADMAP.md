@@ -975,6 +975,30 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   `data/UpdateCheck.kt`, `SettingsScreen.kt` (`AboutCard`, the More tab), `RELEASING.md`
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
+### CCRM-68 · Honest Agent — stop borrowing the Claude Code User-Agent
+- **Status:** Planned — agreed 2026-09-16, to ship before any permission email goes out.
+- **Why:** `ApiClient.USER_AGENT` is `claude-code/2.1.214`, sent on every call to
+  `api.anthropic.com/api/oauth/usage`. README.md:37-45 calls this impersonating the official CLI,
+  and it is the single hardest thing in the repo to defend to Anthropic or to a store reviewer.
+  It is also a one-line change. See `design/research/2026-09-16-permission-emails.md`.
+- **The stated justification has never been tested.** README.md claims that without the CLI's
+  identity "the request is routed to an aggressively rate-limited bucket". That sentence entered
+  the repo in the initial commit as received wisdom; no alternate-User-Agent probe against
+  `/api/oauth/usage` exists anywhere in git history, ROADMAP.md, BUGS.md or `design/research/`.
+  What *was* measured is two **different** endpoints: the token endpoint at `platform.claude.com`
+  (a real WAF gate, in the opposite direction — `ApiClient.kt:180-188`, verified 2026-07-20) and
+  `/v1/messages` (probed across four User-Agents, no gate at all — ROADMAP.md CCRM-17 (Window
+  Pings)). So the change costs an unverified assumption, not a proven mitigation.
+- **How:** swap `USER_AGENT` to the honest `Cooldown/<version> (Android)` string the ChatGPT path
+  already sends, then **watch real polls for a day or two** — error rate, 429s, latency — before
+  concluding anything. Either outcome is a win: no throttling and the last indefensible thing is
+  gone, or throttling appears and we finally have the measurement that has been missing since the
+  first commit, plus the option to revert knowingly.
+- **Also:** correct README.md:37-45, which states the rate-limit claim with more confidence than
+  the evidence supports, and drop "shared privately, not on any store" if that stops being true.
+- **Where:** `data/ApiClient.kt` (`USER_AGENT`, and the comments at :14-17 and :131 that repeat
+  the claim), `data/source/ClaudeSource.kt:13`, README.md.
+
 ### CCRM-67 · Pin Service — the always-on notification becomes a foreground service
 - **Status:** Built 2026-09-16 — compiles, 350 unit tests green. **Not yet seen on the Fold 7**, and not yet released; the device pass rides with Step 3 of the Play Store runbook (v1.7).
 - **Why:** Fixes CCBG-28 (Pin Sinks) — the pin is currently user-dismissible (setOngoing ignored on targetSdk 34+), ranked below silent notifications, and stops refreshing when backgrounded because refreshes depend on WorkManager surviving Doze and OEM sleep. A foreground service earns a guaranteed shade position (foreground section, top), is genuinely persistent, and keeps a live process so refreshes no longer depend on WorkManager.

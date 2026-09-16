@@ -1,8 +1,14 @@
 # Permission emails — Anthropic and OpenAI
 
-RUNBOOK.md Step 1 of CCRM-66 (Play Store Launch). Drafted 2026-09-16. **Robin sends these from
-his own address; nothing here is sent by a session.** Fill in the recipient field on each, send,
-then write the dates into Step 1's Log line and the 30-day silence window (send date + 30).
+RUNBOOK.md Step 1 of CCRM-66 (Play Store Launch). Drafted 2026-09-16, revised the same day.
+**Robin sends these from his own address; nothing here is sent by a session.**
+
+**Send order, decided 2026-09-16:** the honest User-Agent (CCRM-68 (Honest Agent)) ships *before*
+either email goes out, so each email describes what the app does today rather than promising a
+change. Nothing here is sent until that is on `main`.
+
+**Whether to send the Anthropic one at all is an open decision — read "Does a refusal cost us
+GitHub?" below before sending it.**
 
 ---
 
@@ -55,23 +61,44 @@ endpoint.
 ### What this means for the arc, before you send
 
 RUNBOOK.md Convention 7 says a written no stops the arc for that provider. Given the page above,
-**asking Anthropic is more likely to produce a written no than silence.** That is a real cost and
-you should choose it deliberately:
+**asking Anthropic is more likely to produce a written no than silence.**
 
-- **Send anyway** (recommended). The repo is public, the README already says the app impersonates
-  the CLI, and a Play listing puts it in front of exactly the people who enforce this. Asking is
-  the honest move and it is also the safer one — being told no privately is better than being
-  enforced against publicly, and the reply is the record of good faith the runbook wants.
-- **Ship Play with ChatGPT only**, and keep Claude in the GitHub build. Clean, and it respects the
-  published rule without needing anyone's permission.
-- **Don't ask.** Not recommended. It doesn't make the rule go away, and it forfeits the chance
-  that they say "use this instead."
+### Does a refusal cost us GitHub?
 
-There is also a smaller, separate thing to fix regardless of the answer: Cooldown sends
-`User-Agent: claude-code/<version>` to Anthropic's undocumented `/api/oauth/usage`, which
-README.md:37-45 already calls impersonating the CLI. **Whatever else is decided, stop sending a
-false User-Agent before the app goes on a store.** It is the single hardest fact to defend, it
-is trivially fixable, and the email says it will stop.
+This is the question that decides whether the Anthropic email is worth sending at all, because
+Robin's stated priority (2026-09-16) is the opposite of the runbook's assumption: **the app
+existing on GitHub matters; the Play listing is a convenience he is willing to drop.**
+
+Not legal advice — a lawyer is the right answer if certainty is needed. But the shape:
+
+- **Anthropic's terms bind Robin as a user of the service.** They govern access to Claude, not
+  the existence of a repository. A "no" to a permission question does not itself create a
+  takedown right over the repo.
+- **GitHub removes repositories on DMCA (copyright) or its Acceptable Use Policy.** The code is
+  Robin's own; no Anthropic source is copied, and a client id is a short identifier, not a
+  copyrightable work. There is no obvious hook.
+- **Real enforcement here is technical, not legal:** block the client id, gate on User-Agent,
+  flag or revoke accounts. That breaks the app whether or not the repo exists — and it is
+  already live, since Anthropic has enforced server-side since April 2026.
+- **What a written no does change:** continued public distribution stops being ambiguous and
+  becomes knowing. That matters if anything ever escalates, and it matters for Robin's own
+  account.
+
+**Consequence: asking Anthropic is net negative for the goal Robin actually has.** Silence today
+is ambiguity that costs nothing. The email converts it into a documented refusal that protects
+nothing — it neither secures the repo nor prevents technical enforcement.
+
+**Recommendation, revised 2026-09-16:**
+
+1. **Ship the honest User-Agent regardless** (CCRM-68 (Honest Agent)). It is the least defensible
+   thing in the repo and plausibly the most likely to trip enforcement.
+2. **Do not send the Anthropic email** while the GitHub repo is the thing being protected. Keep
+   README.md's disclosure honest so anyone installing chooses knowingly.
+3. **Decide Play separately.** If Robin still wants a listing, a **ChatGPT-only Play build** needs
+   only the OpenAI email — low risk, since OpenAI has drawn no line — and Claude stays on GitHub.
+
+The Anthropic draft below is kept, finished and ready, for the case where Robin decides he wants
+the answer on the record anyway. It is not the default path.
 
 ### OpenAI is a genuinely weaker case against us, but not a permission
 
@@ -112,12 +139,14 @@ I want to be straightforward about how it works, because I think it conflicts wi
 compliance page. The user signs in on their phone through your OAuth flow using the same public
 client id the Claude Code CLI ships with; the token is stored in Android Keystore-backed storage
 on the device and sent only to your endpoints. There is no server of mine, no analytics, and the
-app never sends prompts or spends quota — it only reads `/api/oauth/usage`. It also currently
-identifies itself as `claude-code/<version>`, which I should not have done; I'm changing it to an
-honest Cooldown User-Agent regardless of your answer.
+app never sends prompts or spends quota — it only reads `/api/oauth/usage`. It identifies itself
+honestly as `Cooldown/<version> (Android)`; an earlier version borrowed the CLI's User-Agent, and
+I've removed that.
 
-I built it because I run separate work and personal Claude accounts and kept hitting limits
-mid-task with no warning. It's marked clearly as unofficial and unaffiliated.
+I built it because I run separate work and personal Claude accounts. Both Claude and the CLI do
+warn me, but only once I'm nearly at the limit — by then the useful decisions are gone. Seeing the
+curve on my phone through the day lets me plan which account to use for what, and stop losing an
+afternoon to a limit I could have worked around. It's marked clearly as unofficial and unaffiliated.
 
 I'd like to list it on Google Play. Do you object? If there's a way to register a client of my
 own, or a supported endpoint for a user reading their own usage, I'd far rather do that. If the
@@ -147,9 +176,10 @@ only to your endpoints — there's no server of mine and no analytics. The app s
 endpoint that would spend a credit. It reads an internal usage endpoint
 (`chatgpt.com/backend-api/wham/usage`), which I know isn't documented for this.
 
-I built it because I run separate work and personal accounts and kept hitting limits mid-task
-with no warning. It's marked clearly as unofficial and unaffiliated, and it shows the ChatGPT
-mark only next to the account it identifies.
+I built it because I run separate work and personal accounts. ChatGPT does warn me, but only
+once I'm nearly at the limit — by then the useful decisions are gone. Seeing the curve on my phone
+through the day lets me plan which account to use for what. It's marked clearly as unofficial and
+unaffiliated, and it shows the ChatGPT mark only next to the account it identifies.
 
 I'd like to list it on Google Play. Do you object, or would you want anything changed? If there's
 a route to register a client of my own, I'd prefer that.
