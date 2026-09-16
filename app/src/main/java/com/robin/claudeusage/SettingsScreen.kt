@@ -733,18 +733,22 @@ fun SettingsScreen(
     }
 
     val diagnosticsAboutDebug: @Composable () -> Unit = {
-        // CCRM-34 (Diagnostics Log): visible without the debug unlock — for a
-        // sideload-only app with an email feedback channel, "share your log" is
-        // the diagnosis path, so it can't hide behind a 7-tap ritual.
-        SectionLabel("Diagnostics")
-        AppLogCard(cacheSettings)
-        Spacer(Modifier.height(24.dp))
-
+        // About leads now. CCRM-34 (Diagnostics Log) originally kept the log visible
+        // without the debug unlock, reasoning that for a sideload-only app "share your
+        // log" is the diagnosis path and shouldn't hide behind a 7-tap ritual. Reversed
+        // by Robin 2026-09-16: the More tab opens on the app's own identity rather than
+        // on a wall of log lines, and everything diagnostic now sits behind the same
+        // unlock. The cost is real and accepted — helping someone debug starts with
+        // "tap the version seven times".
         SectionLabel("About")
         AboutCard(debugUnlocked, onDebugUnlock)
 
         if (debugUnlocked) {
             Spacer(Modifier.height(24.dp))
+            SectionLabel("Diagnostics")
+            AppLogCard(cacheSettings)
+            Spacer(Modifier.height(24.dp))
+
             SectionLabel("Debug")
             TrendDiagnostics(repo, use24h)
             Spacer(Modifier.height(10.dp))

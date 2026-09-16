@@ -2115,6 +2115,12 @@ keys) would still make this a different product. Not filed, not an open question
   (`UsageCache.profileLabel`), which means they're dynamic shortcuts, not static XML.
 
 ### CCRM-34 · Diagnostics Log — widen the ping log into a general app log
+- **Reversed 2026-09-16, by Robin:** the Diagnostics section (the app log) now sits **behind the
+  same 7-tap version unlock as Debug**, so the More tab opens on About rather than on a wall of log
+  lines. The original reasoning — that for a sideload-only app with an email feedback channel
+  "share your log" is the diagnosis path and must not hide behind a ritual — was sound and is
+  simply outweighed by not wanting the log as the first thing on the tab. **The cost is accepted
+  and worth remembering: helping someone debug now starts with "tap the version seven times".**
 - **Status:** Done (2026-08-19) · design record
   `design/diagnostics-shortcuts-wireframe.html`, built under the same-day
   "finish this" blanket instruction · needs on-device verification
