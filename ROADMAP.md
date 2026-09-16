@@ -994,6 +994,73 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   `data/UpdateCheck.kt`, `SettingsScreen.kt` (`AboutCard`, the More tab), `RELEASING.md`
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
+### CCRM-70 · Plan Fit — is this plan the right size, read off eight weeks of facts
+- **Status:** Designed 2026-09-16, **wireframe out for review** (`design/2026-09-16-plan-fit-and-account-order.html`). No code until Robin approves it, per working agreement 2.
+- **Why:** what survived of the spend meter after every route to a dollar figure closed (CCRM-69
+  (Window Dollars)). The useful question was never "how much of my plan did I use" — the main
+  screen already shows the current window, so a second percentage is decoration. It is **"is this
+  plan the right size"**, judged over weeks, which nothing else on the phone answers and which
+  claude.ai and the ChatGPT app do not show at all: they report the current window only. The phone
+  is the sole holder of the history.
+- **No estimate anywhere.** No price table, no per-token rate, no hours anchor, no money line. The
+  ROADMAP appendix ruling stands unreversed.
+- **It never names a tier to move to.** Translating a percentage onto another tier needs a cap
+  ratio Anthropic does not publish — the 5x/20x multipliers describe the session throttle, not the
+  weekly cap, and Opus caps move differently again. So the block reads the plan the user is *on*;
+  the user makes the tier call with the reading in hand.
+- **Logic:** last **8 closed weekly windows** on the current plan, minimum **4** before it says
+  anything; a week the phone slept through is absent and the copy says "recorded". Bands per week:
+  *capped* = `hitLimit` or peak ≥ 100 on the pool **or any per-model weekly cap**; *heavy* 75–99;
+  *middle* 25–74; *light* < 25. First matching rule wins — capped ≥ ⌈N/3⌉ or capped+heavy ≥ ⌈2N/3⌉
+  → "This plan runs out on you."; light ≥ ⌈3N/4⌉ and capped = 0 → "You use a small part of this
+  plan."; all peaks 0 → "No use recorded on this account."; otherwise → "This plan fits how you use
+  it." A third line reports 5h cap hits when the account has a 5h window and the count is non-zero:
+  someone at 40% weekly who hits the session throttle twice a day is under-tiered in a way the
+  weekly figure hides.
+- **Two forward-only `SessionLog.record` tags, to be added regardless of the UI decision** — cheap
+  now, impossible to backfill: `pl`, the plan label and tier at the time of the record, so a plan
+  change is visible in the data rather than guessed; and `mc`, the name of any per-model weekly cap
+  that hit 100 in that window — without it a Max user whose pool reads 40% while Opus is capped is
+  told he is under-using a plan he is locked out of. Untagged existing records are treated as the
+  plan first observed after the update.
+- **Never red.** The block uses no warning colour: it is a reading, not an alarm, and "runs out on
+  you" in red is an accusation.
+- **Where:** History screen only, in the 7-day pane above `WeeklyView` (~104dp). Not the main
+  screen — the reading changes once a week and informs a decision made twice a year, so above the
+  fold it would be decoration on a screen CCRM-25 (Card Layout) already calls too long.
+- **Failure modes covered:** holiday fortnight, single crunch week, plan change mid-history, account
+  added days ago, phone off for a week, CCRM-14 (Clear History) wiping the log, Free plan (no
+  weekly pane, block absent), plan unknown, ChatGPT's weekly-only shape (no 5h line ever).
+
+### CCRM-71 · Account Order — drag accounts into the order you want
+- **Status:** Designed 2026-09-16, **wireframe out for review** (same file as CCRM-70 (Plan Fit)).
+- **Why:** Robin asked to move accounts up and down. Order today is insertion order with no way to
+  change it, and it drives the tab strip on Main and History plus the Accounts card in Settings.
+- **A bottom sheet, not per-card menu items — a reversal, and the Fold 7 is the reason.** The first
+  design put `Move up` / `Move down` in each card's ⋮ menu. On the inner screen `SettingsScreen`
+  lays the cards out alternating left/right by index, so "move up" on card 2 sends it to the
+  *top-right*: every move is a diagonal hop and "up" is a lie. The account order is **linear** — it
+  is the tab order — and a single-column sheet shows that truth directly on both screens. The ⋮
+  menu was the best *cheap* interaction, not the best one.
+- **Interaction:** a `Reorder` text button beside `+ Add account` at the end of the list (list-level
+  actions together, in thumb territory), hidden with one account. The sheet has 56dp rows —
+  status dot, provider mark, label, plan chip, drag handle in a 48dp target — dragged **from the
+  handle only**, so swiping the sheet shut cannot lift a row. Live: every drop applies immediately
+  and the cards behind the scrim reorder as confirmation; `Done` only dismisses. No confirm, no
+  undo toast; dragging back is the undo. TalkBack gets `Move up` / `Move down` custom actions,
+  which are correct here because the sheet genuinely is one column.
+- **Safe by construction:** everything else keys off stable identity, not position — the pinned
+  First/Second halves and the status-ring choice resolve by key, notification IDs and alarm request
+  codes use `Profile.slot` (allocated once, never reused), accents are keyed per account.
+- **The one real trap:** Main and History must key the selected tab on `profile.key`, **not on an
+  index**, or a reorder silently changes which account the user is looking at.
+- **Side-effects, judged too minor to surface in the UI and recorded here instead:** the
+  notification panel's overflow fault-strips follow registry order (`notify/Conditions.kt:80-94`),
+  as does app-shortcut order, and `registry.first()` is the fallback for an unresolved key.
+- **Where:** `data/ProfileRegistry.kt` (a pure `Companion.move(state, key, toIndex)` beside
+  `rename`/`remove`, bumping `rev`), `SettingsScreen.kt` (the button and the sheet), `MainActivity.kt`
+  and the History screen (tab selection by key).
+
 ### CCRM-69 · Window Dollars — read the dollar fields Anthropic already sends
 - **Status:** **Not viable, 2026-09-16.** The lead below was researched the same day it was filed
   and did not survive. Kept filed, per CLAUDE.md, because the ID is never reused and the negative
@@ -3296,6 +3363,12 @@ of what looks enviable in it depends on that, and no amount of Android work reco
 no logs, so all of this is structurally unavailable, not merely unbuilt:
 - Today / Yesterday / Last-30-days **token counts**, and the daily series behind them.
 - **Estimated spend in dollars** for a subscription account — their headline number.
+  *Re-examined 2026-09-16 and the ruling holds, so the next person who admires a desktop tool
+  finds the answer already written: `limit_dollars`/`used_dollars`/`remaining_dollars` on the
+  window objects are null across five independent clients and nine accounts (April–September
+  2026), Claude Code's own client ignores them, and ClaudeCodeUsage — the VS Code extension whose
+  dollar figures prompted the question — computes them from a hardcoded per-token table times
+  token counts read out of `~/.claude/projects/**/*.jsonl`. See CCRM-69 (Window Dollars).*
 - The **per-model token breakdown** with variants, and its `unknownModels` reporting.
 - The whole **`pricing/`** subsystem: bundled LiteLLM and models.dev snapshots, refetched
   daily, with a compact codec and defaulting rules (cache-write defaults to the input rate,
