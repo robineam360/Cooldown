@@ -975,6 +975,14 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   `data/UpdateCheck.kt`, `SettingsScreen.kt` (`AboutCard`, the More tab), `RELEASING.md`
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
+### CCRM-67 · Pin Service — the always-on notification becomes a foreground service
+- **Status:** Built 2026-09-16 — compiles, 350 unit tests green. **Not yet seen on the Fold 7**, and not yet released; the device pass rides with Step 3 of the Play Store runbook (v1.7).
+- **Why:** Fixes CCBG-28 (Pin Sinks) — the pin is currently user-dismissible (setOngoing ignored on targetSdk 34+), ranked below silent notifications, and stops refreshing when backgrounded because refreshes depend on WorkManager surviving Doze and OEM sleep. A foreground service earns a guaranteed shade position (foreground section, top), is genuinely persistent, and keeps a live process so refreshes no longer depend on WorkManager.
+- **The service runs if and only if the pin is enabled,** and owns the poll cadence while it runs. WorkManager periodic polling stays as the backstop for when the pin is off, since alerts and reset pings still need polling then.
+- **No visual change:** The notification layout — both the single and the CCRM-62 (Duet Notification) layouts — is untouched. This is why the change needed no wireframe under working-agreement rule 2.
+- **FGS type decision, recorded as risk:** The foreground service type is `specialUse`, chosen over `dataSync`. `dataSync` is pre-approved at Play review but Android 15+ caps it at 6 hours per 24, after which the system kills the service and the pin dies until the app is reopened — which is the very bug being fixed, on a slower clock. `specialUse` has no runtime cap but requires a written justification in the Play Console that reviewers actually read. **Open risk against CCRM-66 (Play Store Launch):** if Play review pushes back, the plan is to fall back to `dataSync` plus a restart-on-cap watchdog. Record this decision here because it is a launch-blocking unknown.
+- **Where:** `notify/PinnedService.kt` (new), `notify/PinnedBootReceiver.kt` (new — the boot restart, which hands off to a WorkManager one-shot because Android 15 bars a `specialUse` FGS from starting directly in a `BOOT_COMPLETED` receiver), `notify/PinnedNotification.kt` (the drawing split out into a `buildNotification` the service and `update` share; `update` keeps its signature, so its existing call sites are untouched), `AndroidManifest.xml` (the FGS permissions, the service declaration with `android:foregroundServiceType` and its `PROPERTY_SPECIAL_USE_FGS_SUBTYPE`, and the boot receiver).
+
 ### CCRM-63 · Token Import Removal — one way to sign in to Claude, on the phone
 - **Status:** Done (2026-09-11) — asked for by Robin the same day ("like ChatGPT, one way to sign
   in and that's on device"); seen on the Fold 7: the "Use a computer token instead" link is gone

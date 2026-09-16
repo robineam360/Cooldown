@@ -5,6 +5,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- CCRM-67 (Pin Service): the always-on notification's foreground service.
+         FOREGROUND_SERVICE is the general grant every FGS needs since API 28;
+         FOREGROUND_SERVICE_SPECIAL_USE is the type-specific grant API 34 added on
+         top of it, required because the service declares
+         foregroundServiceType="specialUse" below — none of the typed categories
+         (location, media, health, …) describe a pinned usage readout. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- So the pin can restart itself after a reboot without the user having to
+         reopen the app first. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <!-- Sideload-only app (never Play Store): allowed to enumerate installed
          browsers so the sign-in "open with" picker can list them reliably,
          including on OEM skins where a scoped <queries> under-reports.
@@ -42,6 +55,39 @@
         <receiver
             android:name=".notify.PinnedRefreshReceiver"
             android:exported="false" />
+
+        <!-- CCRM-67 (Pin Service): restarts the pin after a reboot, when it was on
+             before the reboot. android:exported="true" because BOOT_COMPLETED is a
+             protected broadcast — it's on the platform's protected-broadcast list,
+             so no app but the system can ever send it — and an unexported receiver
+             risks the system's own broadcast not being delivered at all. Exporting
+             it isn't handing anything to other apps: there's nothing for a
+             third-party BOOT_COMPLETED to spoof that the system doesn't already
+             send for free on every boot. -->
+        <receiver
+            android:name=".notify.PinnedBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- CCRM-67 (Pin Service): the always-on notification's foreground service.
+             specialUse (API 34+) is the FGS type — see the permission comment
+             above for why — and PROPERTY_SPECIAL_USE_FGS_SUBTYPE is the short,
+             honest description Play/Settings surfaces for it; there is no user
+             flow through this app that isn't the one the subtype names.
+             exported="false": nothing outside this app ever has a reason to bind
+             to or start it directly, only PinnedNotification.update and the boot
+             receiver, both in-process. -->
+        <service
+            android:name=".notify.PinnedService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Persistent usage-window readout the user turned on in Settings" />
+        </service>
 
     </application>
 </manifest>

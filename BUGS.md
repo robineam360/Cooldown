@@ -11,6 +11,18 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+### CCBG-28 · Pin Sinks — the always-on notification ranks below everything and stops refreshing
+- **Status:** Fix built 2026-09-16 (CCRM-67 (Pin Service)) — awaiting the Fold 7 device pass before it counts as fixed
+- **Severity:** High (the app's headline feature — the always-on pin — is silently wrong for any user who doesn't regularly open the app; numbers stop updating and the notification ranks below unrelated alerts, defeating its purpose)
+- **Symptom:** The always-on pinned notification is user-dismissible, gets no persistence guarantee, and stops refreshing when the app is backgrounded. Observed impact: without opening the app, a user's numbers become stale and the pin disappears behind other notifications in the shade.
+- **Cause, three parts:**
+  1. **Dismissibility.** The pin is posted via `NotificationManagerCompat.notify` from `PinnedNotification.update()` with `setOngoing(true)`. On targetSdk 34+, `setOngoing(true)` from a non-foreground-service app is silently ignored. The app targets SDK 36, so the "always-on" guarantee never existed.
+  2. **Ranking.** Its channel is `IMPORTANCE_LOW`, which places it in the shade's "Silent" section — structurally below every alerting notification. On Samsung One UI it occupies a separate lower group. The low importance is correct and deliberate (keeps the status-bar icon while staying silent per the comment in `PinnedNotification.kt`); the consequence is the visual ranking.
+  3. **Refresh failures.** Refreshes depend entirely on WorkManager (app/src/main/java/com/robin/claudeusage/work/Polling.kt). With no foreground process, Doze, app-standby buckets and OEM sleep (Samsung force-stops unused apps) defer or destroy the work. Observed symptom: numbers only updated when `MainActivity` launched, because it re-enqueues the work and fires an immediate refresh. For poll intervals under 15 minutes, the real cadence is a self-chained one-shot enqueued at the **end** of `doWork` — a single killed process breaks the chain permanently.
+  4. **Related observation, not yet fixed:** `Polling.refreshOnce` enqueues with `ExistingWorkPolicy.KEEP` under a CONNECTED constraint. If an earlier one-shot is sitting enqueued-but-blocked, the notification's Refresh button silently does nothing with no feedback.
+- **Where:** `notify/PinnedNotification.kt` (`update()`, `setOngoing` call), channel definition in `notify/Conditions.kt` (`IMPORTANCE_LOW`), `work/Polling.kt` (the refresh logic and the self-chained one-shot), `MainActivity.kt` (re-enqueueing on launch).
+- **Fixed by:** CCRM-67 (Pin Service) — promote the pin to a foreground service, which earns a guaranteed shade position (foreground section, top, above silent notifications) and keeps a live process so refreshes no longer depend on WorkManager surviving backgrounding.
+
 ### CCBG-27 · Free Plan 403 — a Free Claude account reads as "Anthropic's server errored"
 - **Status:** Fixed (2026-09-11) — built, unit-tested (`ClaudePlanTest`, 5 cases; `ErrorKindTest`
   extended; 313 green) and **seen on the Fold 7 the same day**: the Free card wears a red "Free"

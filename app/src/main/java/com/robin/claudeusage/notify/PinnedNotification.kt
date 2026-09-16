@@ -1,5 +1,6 @@
 package com.robin.claudeusage.notify
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -40,6 +41,16 @@ import com.robin.claudeusage.ui.providerMarkRes
  * and ongoing, and re-renders on every poll so the percentage and countdown stay
  * live.
  *
+ * Since CCRM-67 (Pin Service) the drawing here is only half the story: [update] no
+ * longer just posts a notification, it also keeps [PinnedService] running for as
+ * long as the pin is on. `setOngoing(true)` from a plain, non-foreground-service
+ * notification stopped being honoured by the platform at our targetSdk — the row
+ * became swipe-dismissible and fell into the shade's low-priority pile — so the
+ * FGS is what actually keeps this pinned and near the top, not the flag on the
+ * builder (which stays set anyway, for the pre-FGS-enforcement OEM skins). The
+ * drawing logic below is unchanged; only who calls it and when the result gets
+ * posted is new. See [PinnedService] for the poll loop this unlocks.
+ *
  * Since CCRM-62 (Duet Notification) it can carry **two** accounts. Which layout it
  * renders is decided by one setting and nothing else: with no Second account
  * ([UsageCache.pinnedSecondProfile] null, "None") it is today's single layout, down
@@ -58,7 +69,10 @@ object PinnedNotification {
 
     // v2: LOW (not MIN) so the status-bar icon actually shows. Channel importance
     // is locked after creation, so the level change needs a fresh channel id.
-    private const val CHANNEL = "pinned_usage_v2"
+    // Not private any more (CCRM-67 (Pin Service)): [PinnedService] posts its own
+    // throwaway placeholder on this channel for the one race where it has to call
+    // startForeground before it has a real notification to show.
+    const val CHANNEL = "pinned_usage_v2"
 
     /**
      * The nominal width every bitmap in this notification is drawn at. RemoteViews
@@ -76,7 +90,10 @@ object PinnedNotification {
      */
     private const val HALF_WIDTH_DP = 156f
 
-    private const val NOTIF_ID = 9100
+    // Not private any more (CCRM-67 (Pin Service)): [PinnedService] posts and
+    // cancels under this same id so the notification it's bound to via
+    // startForeground survives our own nm.notify() re-renders.
+    const val NOTIF_ID = 9100
     const val ACTION_REFRESH = "com.robin.claudeusage.PINNED_REFRESH"
 
     /** The official Claude Android app — the optional tap target (CCRM-2). */
@@ -108,13 +125,44 @@ object PinnedNotification {
         )
     }
 
-    /** Renders or removes the notification to match current settings + data. */
+    /**
+     * Renders or removes the notification to match current settings + data, and
+     * — since CCRM-67 (Pin Service) — keeps [PinnedService] alive for exactly as
+     * long as the pin is on. This is the entry point every call site outside this
+     * package still uses; its signature and its "on means shown, off means gone"
+     * contract are unchanged. What's new is *how* it stays shown: disabled stops
+     * the service and cancels the notification (in that order — cancelling first
+     * would let the FGS contract's own notification linger a frame); enabled
+     * makes sure the service is running, then posts through `nm.notify` under the
+     * same [NOTIF_ID] the service's own `startForeground` used, which is what
+     * keeps the two from fighting over the notification's identity.
+     */
     fun update(context: Context, cache: UsageCache) {
         val nm = NotificationManagerCompat.from(context)
         if (!cache.pinnedEnabled()) {
+            PinnedService.stop(context)
             nm.cancel(NOTIF_ID)
             return
         }
+        PinnedService.ensureRunning(context)
+        val notification = buildNotification(context, cache) ?: return
+        try {
+            nm.notify(NOTIF_ID, notification)
+        } catch (_: SecurityException) {
+            // POST_NOTIFICATIONS not granted — nothing to show.
+        }
+    }
+
+    /**
+     * Draws the notification for the current settings + data — every pixel [update]
+     * used to draw, extracted so [PinnedService] can call it too. Returns null only
+     * when the pin is off; [PinnedService]'s own start path (a cold boot restart is
+     * the case that matters — it never goes through [update]) needs that same
+     * null-means-off answer to decide whether to actually run or just satisfy the
+     * foreground-service contract and stop itself.
+     */
+    fun buildNotification(context: Context, cache: UsageCache): Notification? {
+        if (!cache.pinnedEnabled()) return null
         ensureChannel(context)
 
         val dark = isNightMode(context)
@@ -147,11 +195,7 @@ object PinnedNotification {
                 )
             }
 
-        try {
-            nm.notify(NOTIF_ID, builder.build())
-        } catch (_: SecurityException) {
-            // POST_NOTIFICATIONS not granted — nothing to show.
-        }
+        return builder.build()
     }
 
     /** Everything both layouts set on the builder: silence, ongoing, and Refresh. */
