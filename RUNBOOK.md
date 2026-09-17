@@ -2,8 +2,10 @@
 
 Ordered, checkable steps to take Cooldown from `main` as of 2026-09-17 to a released v1.7 that
 carries the main-screen redesign. Roadmap items: CCRM-72 (Main Screen Redesign) — under which
-CCRM-25 (Card Layout) and CCRM-35 (Layout Reset) are built — and CCRM-73 (Model Cap Chart),
-plus the device passes v1.7 already owes: CCRM-65 (Accounts Redesign), CCRM-70 (Plan Fit),
+CCRM-25 (Card Layout) and CCRM-35 (Layout Reset) are built — CCRM-73 (Model Cap Chart), and the
+four filed from Robin's rev C review: CCRM-74 (Chart Polish), CCRM-75 (Chart Height), CCRM-76
+(Black Room) and CCRM-77 (Transposed Chart, painted to decide). Plus the device passes v1.7
+already owes: CCRM-65 (Accounts Redesign), CCRM-70 (Plan Fit),
 CCRM-71 (Account Order), CCRM-51 (Rails Gauge) and CCRM-6 (Multi-Account)'s four-account strip.
 
 Earlier arcs are in git history: the Play Store runbook (dropped, CCRM-66 (Play Store Launch)) at
@@ -46,8 +48,11 @@ file says what order, what to paste, and what "done" means. Release mechanics st
    stops and asks Robin first, naming the file to open.
 7. **Mocks keep full functionality.** A wireframe never draws an existing element simplified: the
    trend chart keeps its guides, axis, pace line and projection in every state it appears in.
-8. **Comfortable is v1.6.** Density = Comfortable must render exactly today's cards; only the
-   status line changes. Anyone who never opens Appearance sees the same screen.
+8. **Comfortable is v1.6's layout.** Density = Comfortable keeps today's card layout and chart
+   size; what changes for everyone, in both densities, is exactly the list Robin asked for on
+   2026-09-17 — the status line (CCRM-72), the black room (CCRM-76), headlines without "used",
+   "%" for "points", one row style for both cards and the guide labels inside the plot
+   (CCRM-74). Nothing else moves under a user who never opens Appearance.
 9. Tracker IDs carry their epic name on first use (CLAUDE.md §1).
 
 ## Progress
@@ -113,7 +118,10 @@ revision letter and date in CCRM-72's and CCRM-73's Status lines and close out p
   "Decided" style of CCRM-65 (Accounts Redesign).
 
 **Log:**
-- 2026-09-17 — rev A drafted by a sub-agent in the planning session; not yet reviewed by Robin.
+- 2026-09-17 — rev A drafted by a sub-agent, reviewed by the orchestrator (seven fixes → rev B).
+  Robin reviewed rev B: "All" not "All models", the two-column inner 7-day card, Free plan bare
+  → rev C. Robin reviewed rev C: seven more asks and the transposed-chart idea, filed as
+  CCRM-74–77 → rev D, drawn the same day.
 
 ---
 
@@ -170,14 +178,21 @@ selected series via Projection.capSamples, the cap's SubBar unchanged; (4) the l
 from the top-bar ⋮ — extract the drag mechanics from ReorderAccountsSheet into a shared helper
 rather than copying them — with show/hide switches, the Behind-More divider, the disabled switch
 when the invariant would break, Reset layout with its confirm, and the More disclosure on Main;
-cards keyed by CardId so a reorder never changes which account tab is showing. Tests and
-assembleDebug green after each commit. Anything the wireframe did not draw: stop and ask Robin,
+cards keyed by CardId so a reorder never changes which account tab is showing; (5) CCRM-74
+(Chart Polish): guide labels inside the plot and the plot at full card width so the now divider
+sits under the bar's pace mark, Fmt.usageShort headlines, the 5-hour row as a SubBar, "%" for
+"points" everywhere including Sparkline's paceLabel/pacePhrase; (6) CCRM-76 (Black Room): the
+Claude room's dark surfaces become the neutral room's; (7) CCRM-75 (Chart Height): the
+Small/Medium/Large chips, chartHeight taking the size, Sparkline's detail level dropping labels
+at Small; (8) CCRM-77 (Transposed Chart) only if its ROADMAP Status says Robin chose it, as the
+orientation it names. Tests and assembleDebug green after each commit. Anything the wireframe did not draw: stop and ask Robin,
 naming the state. Close out per Convention 4.
 ```
 
 **Done when:**
 - ☐ Every wireframe state is reachable in a debug build; Comfortable + no layout changes = v1.6.
-- ☐ CCRM-72 / CCRM-73 / CCRM-25 / CCRM-35 statuses read Built, Fold 7 pass pending.
+- ☐ CCRM-72 / CCRM-73 / CCRM-74 / CCRM-75 / CCRM-76 / CCRM-25 / CCRM-35 (and CCRM-77 if chosen)
+  statuses read Built, Fold 7 pass pending.
 
 **Log:**
 -

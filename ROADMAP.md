@@ -823,6 +823,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   app; the About screen's disclaimer stands.
 - **Top bar, decided:** the word "Cooldown" led by the two provider marks at 20 dp (the app's
   existing `ProviderMark` drawables), main screen only.
+- *2026-09-17: the dark half of the Claude room is reversed by CCRM-76 (Black Room) — Claude's dark surfaces go black like ChatGPT's; light room and serif headline stand.*
 - **App, decided ("two rooms"):** the selected tab's account already drives the accent (CCRM-56
   (Provider Identity) decision 1). Now also: Claude tabs get a warm ivory surface (`#F5EFE8`
   light / `#1B1715` dark) and headline percentages in the system serif (`FontFamily.Serif`);
@@ -1065,6 +1066,79 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   expanded card only.
 - **Where:** `data/HistoryStore.kt`, `data/Projection.kt` (done); `MainActivity.kt` (`WeeklyCard`),
   `data/UsageCache.kt`.
+
+### CCRM-74 · Chart Polish — the chart lines up with the bar, and the numbers lose their words
+- **Status:** Filed 2026-09-17 from Robin's rev C review · **in the CCRM-72 (Main Screen Redesign)
+  wireframe, rev D** · builds in RUNBOOK.md Step 4 alongside CCRM-72.
+- **Why:** four things Robin saw on the rev C frames that are true of the live app too:
+  1. **The chart's "now" divider does not sit under the bar's pace mark.** The plot stops short of
+     the card's right edge to leave a gutter for the 80/90/100% labels, so the two elapsed
+     fractions are drawn against different widths. **Fix:** the guide labels move *inside* the
+     plot, right-aligned and sitting just above their dotted line, and the plot spans the full
+     card width — the same width as the bar — so the divider and the pace mark share an x.
+     The value callouts near the right edge yield to the labels, not the other way round.
+  2. **"14% used" becomes "14%"**, as the always-on notification already does: the headline uses
+     `Fmt.usageShort`, which reads "14%" under *Used* and "86% left" under *Left* — the word
+     survives only where it carries the flipped meaning.
+  3. **The 5-hour headline was a size larger than the 7-day rows.** Both now use the 7-day row's
+     style (`bodyMedium` bold, serif on Claude): the 5-hour card's top row becomes a `SubBar`
+     like the rest.
+  4. **"points" → "%"** in every pace phrase — "12% above even pace", "32% below pace" on the
+     compact line; the chart's own short label ("+12 vs pace") gains the sign too: "+12% vs pace".
+     `TrendBlock`, `Sparkline.pacePhrase`/`paceLabel`, the compact line.
+- Also: the 100% guide label clipped in the rev C mock. The live app fits it; the inside-the-plot
+  labels above make the question moot, and the device pass checks it.
+- **Where:** `ui/Sparkline.kt` (guide-label placement, `plotRight`, callout avoidance),
+  `MainActivity.kt` (`SubBar` for the 5-hour row, `Fmt.usageShort`), `ui/Palette.kt` if a helper
+  is wanted, `BEHAVIOR-SPEC` copy pins if any test asserts the old phrases.
+
+### CCRM-75 · Chart Height — Small / Medium / Large, like a widget size
+- **Status:** Filed 2026-09-17 · **in the CCRM-72 (Main Screen Redesign) wireframe, rev D** · one
+  open question, the default.
+- **Why:** Robin, 2026-09-17: "give me a setting in the app to control the chart height
+  (Small/Med/Large) like the widget size option on the Mac. The current one can be Large. For
+  Small, focus on the chart lines and hide things that can't fit." Density (CCRM-72) folds the
+  chart away; this sizes it when it is showing. Orthogonal, and both live in Appearance.
+- **Sizes:** **Large** = today, `chartHeight(width)` = width × 0.35 clamped 180–300dp.
+  **Medium** = 120dp: everything Large draws, the guide labels and the value callouts included.
+  **Small** = 72dp: the three guides, the even-pace diagonal, the curve with its fill, the now
+  divider and the projection dot and dash — **no guide labels, no x-axis dates, no value
+  callouts, no legend**; the pace readout and estimate lines under the chart carry the numbers.
+  A global chip row *Chart height · Small / Medium / Large* in Appearance under Density.
+- **Default:** Large, so nobody's screen changes — **unless Robin says Medium**; asked with rev D.
+- **Where:** `ui/Adaptive.kt` (`chartHeight` takes the size), `ui/Sparkline.kt` (a `detail`
+  level that drops labels), `SettingsScreen.kt`, `data/UsageCache.kt` (`chartSize`).
+
+### CCRM-76 · Black Room — Claude's dark room goes black like ChatGPT's
+- **Status:** Filed 2026-09-17 · **in the CCRM-72 (Main Screen Redesign) wireframe, rev D**.
+- **Why:** Robin: "ChatGPT accounts show the green theme on a black background, but Claude
+  accounts show orange on a dark-orange background which doesn't stand out. Can Claude also have
+  a black background?" CCRM-60 (Dual Identity) gave Claude a warm room (`surfaceDark` #1B1715,
+  `cardDark` #26201C); against it the orange accent and the amber pace line lose contrast.
+- **Decision:** the Claude room's **dark** surfaces adopt the neutral room's — surface #0D0D0D,
+  card #1A1A1A. The light room (#F5EFE8 / #FCF8F4) and the serif headline are unchanged; the
+  room still exists as a concept, it just stops tinting the dark theme. Partially reverses
+  CCRM-60's "two rooms" decision, recorded there.
+- **Where:** `ui/Rooms.kt` (`CLAUDE_ROOM.surfaceDark`, `cardDark`); the History screen follows
+  automatically since it reads the same room.
+
+### CCRM-77 · Transposed Chart — time runs down, usage runs across
+- **Status:** Filed 2026-09-17 · **painted in the CCRM-72 (Main Screen Redesign) wireframe, rev D,
+  to decide** · if it reads well, a global *Chart orientation* toggle in Appearance.
+- **Why:** Robin, thinking aloud: instead of forcing the chart's now-divider to line up with the
+  bar's pace mark (CCRM-74 (Chart Polish) item 1), **transpose the chart** — usage % across the
+  x axis, time down the y axis (window start at the top, reset at the bottom), so the even-pace
+  line runs top-left to bottom-right. Then the bar above and the chart below **share the x axis
+  outright**: the curve's current point sits directly under the bar's fill end, the pace line's
+  current point directly under the bar's pace mark, and the 80/90/100 guides become vertical
+  lines under the bar's own colour rungs. The bar becomes the chart's header row.
+- **What to paint:** the 5-hour and 7-day cards in both orientations side by side, Large and
+  Small heights, with the projection continuing downward to the reset row; the above-pace state
+  (curve right of the diagonal, amber wash to its right); the inner-screen two-column 7-day card.
+- **Decide after painting:** whether it ships at all, and if so whether as the default or a
+  toggle. Not before.
+- **Where (if it proceeds):** `ui/Sparkline.kt` (a second geometry, sharing `SparkGeometry`'s
+  bindings), `SettingsScreen.kt`, `data/UsageCache.kt`.
 
 ## Next — small, high value, ready to build
 
