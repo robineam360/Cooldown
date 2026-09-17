@@ -120,7 +120,10 @@ import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.notify.UpdateNotification
 import com.robin.claudeusage.ui.AccountStatusLine
+import com.robin.claudeusage.ui.ChartOrientation
+import com.robin.claudeusage.ui.ChartSize
 import com.robin.claudeusage.ui.ContentColumn
+import com.robin.claudeusage.ui.Density
 import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.DeviceCodeCopy
 import com.robin.claudeusage.ui.DeviceCodeStage
@@ -185,6 +188,18 @@ fun SettingsScreen(
      */
     showOverPace: Boolean,
     onShowOverPace: (Boolean) -> Unit,
+    /**
+     * CCRM-72 (Main Screen Redesign): *Comfortable* / *Compact*, global and hoisted to
+     * the App root like [showOverPace] — the main screen's cards redraw behind this one.
+     */
+    density: Density,
+    onDensity: (Density) -> Unit,
+    /** CCRM-75 (Chart Height): *Small* / *Medium* / *Large*, hoisted the same way. */
+    chartSize: ChartSize,
+    onChartSize: (ChartSize) -> Unit,
+    /** CCRM-77 (Transposed Chart): *Time across* / *Time down*, hoisted the same way. */
+    chartOrientation: ChartOrientation,
+    onChartOrientation: (ChartOrientation) -> Unit,
     themeName: String,
     onTheme: (String) -> Unit,
     debugUnlocked: Boolean,
@@ -650,6 +665,93 @@ fun SettingsScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        RowDivider()
+        // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
+        // Comfortable stays the default — Compact is opt-in, so nobody's screen changes
+        // under them. No PinnedNotification.update: these three are in-app only.
+        Text(
+            "Density",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "Comfortable keeps every chart open. Compact folds each card to a title, " +
+                "bar and one line — tap it to open the chart in place.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf(
+                Density.COMFORTABLE to "Comfortable", Density.COMPACT to "Compact",
+            )) {
+                FilterChip(
+                    selected = density == value,
+                    onClick = {
+                        onDensity(value)
+                        cacheSettings.setDensity(value)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
+        RowDivider()
+        // CCRM-75 (Chart Height): orthogonal to Density — that folds the chart away,
+        // this sizes it once it's showing. Default Medium (Robin's call, 2026-09-17).
+        Text(
+            "Chart height",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "How tall the trend charts draw. Small keeps only the lines.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf(
+                ChartSize.SMALL to "Small", ChartSize.MEDIUM to "Medium",
+                ChartSize.LARGE to "Large",
+            )) {
+                FilterChip(
+                    selected = chartSize == value,
+                    onClick = {
+                        onChartSize(value)
+                        cacheSettings.setChartSize(value)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
+        RowDivider()
+        // CCRM-77 (Transposed Chart): ships as a toggle, not the default — Time across
+        // is today's geometry.
+        Text(
+            "Chart orientation",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "Time down puts usage on the same axis as the bar above it.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((value, text) in listOf(
+                ChartOrientation.ACROSS to "Time across", ChartOrientation.DOWN to "Time down",
+            )) {
+                FilterChip(
+                    selected = chartOrientation == value,
+                    onClick = {
+                        onChartOrientation(value)
+                        cacheSettings.setChartOrientation(value)
+                    },
+                    label = { Text(text) },
+                )
+            }
+        }
     }
 
     val resetPaceColorRows: @Composable () -> Unit = {

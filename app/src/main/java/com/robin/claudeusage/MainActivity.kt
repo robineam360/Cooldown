@@ -9,16 +9,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,13 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,20 +60,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import android.text.format.DateFormat
@@ -92,40 +75,34 @@ import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.UsageCache
-import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.UsageRepository
-import com.robin.claudeusage.data.UsageWindow
-import com.robin.claudeusage.ui.BarGeometry
 import com.robin.claudeusage.ui.ChartColumnMaxWidth
 import com.robin.claudeusage.ui.ContentColumn
 import com.robin.claudeusage.ui.ContentMaxWidth
-import com.robin.claudeusage.ui.EstimateLine
-import com.robin.claudeusage.ui.ProvenanceNote
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.LocalWidthClass
-import com.robin.claudeusage.ui.LocalWindowHeight
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.ProviderTabLabel
 import com.robin.claudeusage.ui.ProvideWidthClass
 import com.robin.claudeusage.ui.Rooms
-import com.robin.claudeusage.ui.UsageSparkline
 import com.robin.claudeusage.ui.WideMaxWidth
-import com.robin.claudeusage.ui.chartHeight
-import com.robin.claudeusage.ui.PACE_DEAD_ZONE
-import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.Motion
 import com.robin.claudeusage.ui.LocalAppDark
-import com.robin.claudeusage.ui.appDark
 import com.robin.claudeusage.ui.resolve24h
 import com.robin.claudeusage.ui.resolveDark
 import com.robin.claudeusage.ui.twoPane
 import com.robin.claudeusage.work.Polling
-import java.util.Locale
-import kotlin.math.roundToInt
 import java.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import com.robin.claudeusage.data.CardId
+import com.robin.claudeusage.ui.ChartOrientation
+import com.robin.claudeusage.ui.ChartSize
+import com.robin.claudeusage.ui.Density
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,14 +138,6 @@ private enum class Screen { MAIN, SETTINGS, HISTORY }
  */
 internal const val FIXED_TAB_LIMIT = 3
 
-/**
- * Window lengths, used both to scale the chart's x axis and to bind history to it.
- * Aliased from [Projection] so the lengths the drift tolerance derives from (CCBG-4)
- * have a single definition.
- */
-private const val SESSION_MS: Long = Projection.SESSION_MS
-private const val WEEKLY_MS: Long = Projection.WEEKLY_MS
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun App(startProfile: Profile) {
@@ -199,6 +168,17 @@ private fun App(startProfile: Profile) {
     // behind it — CCRM-43 (Bar Pace Marks)'s one toggle since CCRM-61 (Settings
     // Diet), shared with the pinned notification's own red.
     var showOverPace by remember { mutableStateOf(cache.showOverPace()) }
+    // CCRM-72 (Main Screen Redesign) / CCRM-75 (Chart Height) / CCRM-77 (Transposed
+    // Chart): the three global Appearance chips, hoisted exactly like showOverPace so
+    // flipping one in Settings redraws every card behind it.
+    var density by remember { mutableStateOf(cache.density()) }
+    var chartSize by remember { mutableStateOf(cache.chartSize()) }
+    var chartOrientation by remember { mutableStateOf(cache.chartOrientation()) }
+    // CCRM-25 (Card Layout): bumped by the layout sheet so the main screen re-reads the
+    // account's card order the moment it changes, without waiting for a poll.
+    var layoutTick by remember { mutableIntStateOf(0) }
+    var layoutMenuOpen by remember { mutableStateOf(false) }
+    var showLayoutSheet by remember { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
 
     // Ticks every few seconds so "updated Xm ago" and background results stay fresh.
@@ -347,6 +327,38 @@ private fun App(startProfile: Profile) {
                                 IconButton(onClick = { screen = Screen.SETTINGS }) {
                                     Icon(Icons.Filled.Settings, contentDescription = "Settings")
                                 }
+                                // CCRM-25 (Card Layout), wireframe §9: the entry point
+                                // shows only once the selected account has two or more
+                                // cards to arrange — with one, the never-blank invariant
+                                // leaves nothing to hide or fold.
+                                val arrangeable = remember(selectedProfile, tick) {
+                                    dataCards(
+                                        repo.snapshot(selectedProfile).data,
+                                        cache.creditsVisible(selectedProfile),
+                                    ).size
+                                }
+                                if (arrangeable >= 2) {
+                                    Box {
+                                        IconButton(onClick = { layoutMenuOpen = true }) {
+                                            Icon(
+                                                Icons.Filled.MoreVert,
+                                                contentDescription = "More options",
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = layoutMenuOpen,
+                                            onDismissRequest = { layoutMenuOpen = false },
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Main screen layout") },
+                                                onClick = {
+                                                    layoutMenuOpen = false
+                                                    showLayoutSheet = true
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         },
                     )
@@ -365,7 +377,8 @@ private fun App(startProfile: Profile) {
                 when (screen) {
                     Screen.MAIN ->
                         ProfileTabs(
-                            repo, use24h, usageLeft, resetClock, showOverPace, tick,
+                            repo, use24h, usageLeft, resetClock, showOverPace,
+                            density, chartSize, chartOrientation, layoutTick, tick,
                             startProfile, { screen = Screen.SETTINGS },
                             Modifier.padding(innerPadding),
                             onProfileChange = { selectedProfile = it },
@@ -389,6 +402,12 @@ private fun App(startProfile: Profile) {
                             onResetClock = { resetClock = it },
                             showOverPace = showOverPace,
                             onShowOverPace = { showOverPace = it },
+                            density = density,
+                            onDensity = { density = it },
+                            chartSize = chartSize,
+                            onChartSize = { chartSize = it },
+                            chartOrientation = chartOrientation,
+                            onChartOrientation = { chartOrientation = it },
                             themeName = themeName,
                             onTheme = { themeName = it },
                             debugUnlocked = debugUnlocked,
@@ -405,6 +424,16 @@ private fun App(startProfile: Profile) {
                     }
                 }
             }
+            // CCRM-25 (Card Layout) + CCRM-35 (Layout Reset): the sheet the top bar's ⋮
+            // opens, for the account whose tab is showing.
+            if (showLayoutSheet) {
+                LayoutSheet(
+                    profile = selectedProfile,
+                    cache = cache,
+                    onChanged = { layoutTick++ },
+                    onDismiss = { showLayoutSheet = false },
+                )
+            }
         }
     }
     }
@@ -417,6 +446,10 @@ private fun ProfileTabs(
     usageLeft: Boolean,
     resetClock: Boolean,
     showOverPace: Boolean,
+    density: Density,
+    chartSize: ChartSize,
+    chartOrientation: ChartOrientation,
+    layoutTick: Int,
     tick: Int,
     startProfile: Profile,
     onOpenSettings: () -> Unit,
@@ -554,129 +587,13 @@ private fun ProfileTabs(
                 Spacer(Modifier.height(16.dp))
                 ProfileScreen(
                     repo, profiles[page], use24h, usageLeft, resetClock, showOverPace,
-                    tick, onOpenSettings,
+                    density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
                 )
                 Spacer(Modifier.height(24.dp))
             }
         }
     }
 }
-
-/**
- * Claude-style bar: light tint track, solid fill, fully rounded — plus the pace
- * marks (CCRM-43 (Bar Pace Marks)): the neutral even-pace tick and, past the dead
- * zone, the red over-pace segment.
- *
- * [elapsedPercent] null → no marks at all: either there is no reset clock to derive
- * even pace from, or this is a credits row, which has no clock by definition.
- * [showOverPace] is the Settings toggle and gates only the red; the tick always
- * draws.
- *
- * The outer Box is deliberately *not* clipped and is taller than the bar: the tick
- * overhangs the bar by 0.3h top and bottom, so a clip here would shear it off. The
- * track and fill carry their own rounded clips instead.
- */
-@Composable
-private fun UsageBarLine(
-    percent: Double?,
-    fillColor: Color,
-    height: androidx.compose.ui.unit.Dp = 12.dp,
-    elapsedPercent: Double? = null,
-    showOverPace: Boolean = true,
-) {
-    val fraction = ((percent ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
-    val overhang = height * 0.3f
-    val segment = BarGeometry.redSegment(percent, elapsedPercent, showOverPace)
-    val tick = BarGeometry.showTick(percent, elapsedPercent)
-    val tickColor = MaterialTheme.colorScheme.onSurface.copy(
-        alpha = if (appDark()) 0.60f else 0.48f,
-    )
-    val redColor = Palette.barColor(100.0, fillColor, appDark())
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height + overhang * 2),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(height)
-                .clip(RoundedCornerShape(height / 2))
-                .background(fillColor.copy(alpha = 0.25f)),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(height / 2))
-                    .background(fillColor),
-            ) {
-                // The red rides *inside* the fill's clip, which is what makes the
-                // boundary between the two colours a straight vertical edge and lets
-                // the red cover the fill's rounded tip (wireframe rev B). Offsetting
-                // by the segment's start keeps it beginning exactly on the pace line.
-                if (segment != null) {
-                    val (start, end) = segment
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(if (end > 0f) 1f - start / end else 0f)
-                            .fillMaxHeight()
-                            .align(Alignment.CenterEnd)
-                            .background(redColor),
-                    )
-                }
-            }
-        }
-        if (tick) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = BarGeometry.tickWidth(height.toPx())
-                val cx = size.width * BarGeometry.tickFraction(elapsedPercent!!)
-                drawRoundRect(
-                    color = tickColor,
-                    topLeft = Offset(cx - w / 2f, 0f),
-                    size = Size(w, size.height),
-                    cornerRadius = CornerRadius(w / 2f),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ResetRow(window: UsageWindow?, use24h: Boolean, resetClock: Boolean) {
-    // A window with no reset time hasn't started yet (0% and idle).
-    if (window?.resetsAt == null) {
-        Text(
-            "Starts when a message is sent",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        return
-    }
-    // CCRM-23 (Reset Display), Option A: the chosen form leads, the other keeps
-    // the second slot — the token decides order here, never presence.
-    val countdown = "Resets ${Fmt.relIn(window.resetsAt)}"
-    val clock = "Resets at ${Fmt.dayTime(window.resetsAt, use24h)}"
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            if (resetClock) clock else countdown,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.weight(1f))
-        Text(
-            if (resetClock) countdown else clock,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun barFill(percent: Double?): Color =
-    Palette.barColor(percent, MaterialTheme.colorScheme.primary, appDark())
 
 @Composable
 private fun ProfileScreen(
@@ -686,10 +603,18 @@ private fun ProfileScreen(
     usageLeft: Boolean,
     resetClock: Boolean,
     showOverPace: Boolean,
+    /** CCRM-72 (Main Screen Redesign): Comfortable / Compact, hoisted like [usageLeft]. */
+    density: Density,
+    /** CCRM-75 (Chart Height) and CCRM-77 (Transposed Chart), hoisted the same way. */
+    chartSize: ChartSize,
+    chartOrientation: ChartOrientation,
+    /** Bumped by the layout sheet (CCRM-25 (Card Layout)) so the order re-reads. */
+    layoutTick: Int,
     tick: Int,
     onOpenSettings: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val cache = remember { repo.cacheSettings() }
     var refreshing by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var snapshot by remember(profile) { mutableStateOf(repo.snapshot(profile)) }
@@ -701,9 +626,10 @@ private fun ProfileScreen(
     // set in the system serif; every other room's stay the default sans. Nothing
     // else on the card changes.
     val serifHeadline = Rooms.forProvider(profile.provider).serifHeadline
+    val compact = density == Density.COMPACT
 
     if (!repo.hasCredentials(profile)) {
-        val label = repo.cacheSettings().profileLabel(profile)
+        val label = cache.profileLabel(profile)
         Card {
             Column(Modifier.padding(16.dp)) {
                 Text("No $label account yet", fontWeight = FontWeight.Bold)
@@ -735,193 +661,109 @@ private fun ProfileScreen(
             Spacer(Modifier.height(12.dp))
         }
     } else {
-        // CCRM-56 (Provider Identity), decision 6: a window the account does not
-        // have is not shown at all — no placeholder card, no dash — on any
-        // surface, Claude included (today it draws "—"). ChatGPT's Plus/Pro
-        // accounts lack a 5-hour window since OpenAI lifted it 2026-07-12; the
-        // rule applies uniformly rather than special-casing the provider.
-        val hasSession = data.session != null
-        val hasWeekly = data.weekly != null || data.modelCaps.isNotEmpty()
-
-        if (hasSession) {
-            Card {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text("5-hour window", style = MaterialTheme.typography.titleSmall)
-                        Spacer(Modifier.weight(1f))
-                        Text(
-                            Fmt.usageWorded(data.session?.percent, usageLeft),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    UsageBarLine(
-                        percent = data.session?.percent,
-                        fillColor = barFill(data.session?.percent),
-                        elapsedPercent = elapsedPercent(data.session, SESSION_MS),
-                        showOverPace = showOverPace,
-                    )
-                    data.session?.let { w ->
-                        TrendBlock(
-                            window = w,
-                            samples = w.resetsAt?.let {
-                                Projection.sessionSamples(history, it.toEpochMilli(), SESSION_MS)
-                            } ?: emptyList(),
-                            windowLengthMs = SESSION_MS,
-                            use24h = use24h,
-                            usageLeft = usageLeft,
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    ResetRow(data.session, use24h, resetClock)
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-        }
-
-        if (hasWeekly) {
-            Card {
-                Column(Modifier.padding(16.dp)) {
-                    Text("7-day window", style = MaterialTheme.typography.titleSmall)
-                    Spacer(Modifier.height(10.dp))
-                    SubBar("All models", data.weekly, usageLeft, showOverPace, serifHeadline)
-                    for (cap in data.modelCaps) {
-                        SubBar(cap.modelName, cap.window, usageLeft, showOverPace, serifHeadline)
-                    }
-                    data.weekly?.let { w ->
-                        TrendBlock(
-                            window = w,
-                            samples = w.resetsAt?.let {
-                                Projection.weeklySamples(history, it.toEpochMilli(), WEEKLY_MS)
-                            } ?: emptyList(),
-                            windowLengthMs = WEEKLY_MS,
-                            use24h = use24h,
-                            usageLeft = usageLeft,
-                        )
-                    }
-                    Spacer(Modifier.height(2.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(8.dp))
-                    ResetRow(data.weekly, use24h, resetClock)
-                }
-            }
-        }
-
         // Pay-as-you-go credits. Shown once there is either a cap or real spend to
         // report — an account with neither has no credit budget, and "$0.00 of $0.00"
         // tells nobody anything. The *limit* is not the existence test: switching the
         // monthly cap off leaves real spend with no ceiling (CCBG-9).
-        val credits = data.credits
-            ?.takeIf { it.isReportable && repo.cacheSettings().creditsVisible(profile) }
-        if (credits != null) {
-            val pct = credits.percent
-            // The binding constraint, not the monthly remainder: identical while the
-            // server reports no balance, but the day it does, "left" must mean the
-            // smaller of the two ceilings (CCBG-6).
-            val remaining = credits.bindingRemainingMinor
-            Spacer(Modifier.height(12.dp))
-            Card {
-                Column(Modifier.padding(16.dp)) {
-                    var creditsProv by remember { mutableStateOf(false) }
-                    // Same shape as the 5-hour card: name on the left, the headline
-                    // percentage on the right, bar underneath. With no cap there is no
-                    // percentage and no bar — just what has been spent.
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text("Usage credits", style = MaterialTheme.typography.titleSmall)
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            when {
-                                credits.limitMinor != null ->
-                                    "${Fmt.money(credits.usedMinor, credits.exponent, credits.currency)} / " +
-                                        Fmt.money(credits.limitMinor, credits.exponent, credits.currency)
-                                // CCRM-54 (ChatGPT Account) part 2: OpenAI reports a
-                                // pot, not a meter — nothing has been "spent" from it
-                                // and there is no cap to spend against, so the balance
-                                // is the whole story. "$0.00 spent" would say nothing.
-                                credits.usedMinor == 0L && credits.balanceMinor != null ->
-                                    "${Fmt.money(credits.balanceMinor, credits.exponent, credits.currency)} balance"
-                                else ->
-                                    "${Fmt.money(credits.usedMinor, credits.exponent, credits.currency)} spent"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
-                        // CCRM-30 (Estimate Honesty): the percentage is computed
-                        // locally, so it carries the marker — with a note that says
-                        // it's *finer* than the server's figure, not a hedge.
-                        Text(
-                            // The rounded display percent, not the exact one — credits
-                            // round where windows truncate (CCRM-3, deliberate).
-                            if (pct != null) buildAnnotatedString {
-                                append(Fmt.usageWorded(credits.percentDisplay?.toDouble(), usageLeft))
-                                withStyle(
-                                    SpanStyle(
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            .copy(alpha = 0.7f),
-                                    )
-                                ) { append(" ⓘ") }
-                            } else AnnotatedString("No cap"),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.clickable(enabled = pct != null) {
-                                creditsProv = !creditsProv
-                            },
-                        )
-                    }
-                    if (pct != null) {
-                        Spacer(Modifier.height(8.dp))
-                        // No elapsed, so no pace mark: credits are money, and money
-                        // has no clock. Spending them faster than the month isn't a
-                        // thing to be behind or ahead of.
-                        UsageBarLine(pct, barFill(pct))
-                    }
-                    if (creditsProv) {
-                        Spacer(Modifier.height(6.dp))
-                        ProvenanceNote(
-                            "Computed from the exact amounts — finer than the " +
-                                "server's rounded figure, not an estimate.",
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        when {
-                            remaining == null ->
-                                "No monthly spend limit — credits cover you when you hit your plan limits"
-                            // The balance branch above already prints the amount; saying
-                            // "$12.40 left" under "$12.40 balance" is the same fact twice.
-                            credits.usedMinor == 0L && credits.limitMinor == null &&
-                                credits.balanceMinor != null ->
-                                "Covers you when you hit your plan limits"
-                            remaining > 0L ->
-                                "${Fmt.money(remaining, credits.exponent, credits.currency)} left · " +
-                                    if (credits.limitMinor != null) {
-                                        "covers you when you hit your plan limits"
-                                    } else {
-                                        // Only reachable once the server reports a balance
-                                        // for an uncapped account — the balance is then the
-                                        // one ceiling that exists.
-                                        "no monthly spend limit"
-                                    }
-                            else -> "All credits spent — nothing left to cover plan overruns"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (remaining == null || remaining > 0L) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.error,
+        val creditsVisible = cache.creditsVisible(profile)
+        val credits = data.credits?.takeIf { it.isReportable && creditsVisible }
+        // CCRM-56 (Provider Identity), decision 6: a window the account does not
+        // have is not shown at all — no placeholder card, no dash — on any
+        // surface, Claude included. ChatGPT's Plus/Pro accounts lack a 5-hour
+        // window since OpenAI lifted it 2026-07-12; the rule applies uniformly
+        // rather than special-casing the provider.
+        val present = dataCards(data, creditsVisible)
+
+        // CCRM-25 (Card Layout): order, visibility and the fold, per account. Cards with
+        // no data drop out here exactly as they always did — the layout only ever
+        // arranges what the account actually reports.
+        val layout = remember(profile, layoutTick) { cache.layout(profile) }
+        val shown = layout.order.filter { it in present && it !in layout.hidden }
+        val mainCards = shown.filter { it !in layout.more }
+        val foldedCards = shown.filter { it in layout.more }
+        // Session-only, collapsed by default (wireframe §7e): folding a card is the
+        // persistent decision, peeking under the disclosure is not.
+        var moreOpen by remember(profile) { mutableStateOf(false) }
+
+        // CCRM-72 (Main Screen Redesign): the open/folded state of each Compact card,
+        // remembered per card per account.
+        var expandedCards by remember(profile) {
+            mutableStateOf(CardId.entries.filterTo(mutableSetOf()) { cache.expanded(profile, it) })
+        }
+        val toggle: (CardId) -> Unit = { id ->
+            val next = expandedCards.toMutableSet()
+            if (!next.remove(id)) next.add(id)
+            expandedCards = next
+            cache.setExpanded(profile, id, id in next)
+        }
+
+        // CCRM-73 (Model Cap Chart): which series the 7-day chart draws, per account and
+        // persisted — collapsing or expanding the card never changes it.
+        var storedCap by remember(profile) { mutableStateOf(cache.weeklyChart(profile)) }
+        val selectedCap = weeklyChartSelection(storedCap, data.modelCaps.map { it.modelName })
+
+        val cardBody: @Composable (CardId, Boolean) -> Unit = { id, folded ->
+            // A card under "More" draws in its Compact form whatever the density —
+            // the disclosure is a peek, not a second full screen (wireframe §7f).
+            val cardCompact = compact || folded
+            when (id) {
+                CardId.SESSION -> data.session?.let { w ->
+                    SessionCard(
+                        window = w,
+                        history = history,
+                        compact = cardCompact,
+                        expanded = id in expandedCards,
+                        onToggle = { toggle(id) },
+                        use24h = use24h,
+                        usageLeft = usageLeft,
+                        resetClock = resetClock,
+                        showOverPace = showOverPace,
+                        serifHeadline = serifHeadline,
+                        chartSize = chartSize,
+                        chartOrientation = chartOrientation,
                     )
+                }
+                CardId.WEEKLY -> WeeklyCard(
+                    data = data,
+                    history = history,
+                    compact = cardCompact,
+                    expanded = id in expandedCards,
+                    onToggle = { toggle(id) },
+                    selectedCap = selectedCap,
+                    onSelectCap = { name ->
+                        storedCap = name
+                        cache.setWeeklyChart(profile, name)
+                    },
+                    use24h = use24h,
+                    usageLeft = usageLeft,
+                    resetClock = resetClock,
+                    showOverPace = showOverPace,
+                    serifHeadline = serifHeadline,
+                    chartSize = chartSize,
+                    chartOrientation = chartOrientation,
+                )
+                CardId.CREDITS -> credits?.let { CreditsCard(it, usageLeft) }
+            }
+        }
+
+        mainCards.forEachIndexed { index, id ->
+            if (index > 0) Spacer(Modifier.height(12.dp))
+            cardBody(id, false)
+        }
+        if (foldedCards.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            MoreDisclosure(moreOpen, foldedCards.size) { moreOpen = !moreOpen }
+            if (moreOpen) {
+                foldedCards.forEach { id ->
+                    Spacer(Modifier.height(8.dp))
+                    cardBody(id, true)
                 }
             }
         }
 
         // CCRM-56 (Provider Identity), decision 6: with no window and no credits,
         // one honest line rather than three empty cards.
-        if (!hasSession && !hasWeekly && credits == null) {
+        if (present.isEmpty()) {
             Text(
                 "This account reports no usage windows right now.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -931,50 +773,35 @@ private fun ProfileScreen(
         Spacer(Modifier.height(16.dp))
     }
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Button(
-            enabled = !refreshing,
-            onClick = {
-                scope.launch {
-                    refreshing = true
-                    message = null
-                    val result = repo.refreshNow(profile, manual = true)
-                    message = if (result.message == "OK") null else result.message
-                    refreshing = false
-                    snapshot = repo.snapshot(profile)
-                }
-            },
-        ) {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Refresh now")
-        }
-        if (refreshing) {
-            Spacer(Modifier.width(12.dp))
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+    // CCRM-72 (Main Screen Redesign), wireframe §2: one status line in place of the
+    // Refresh button and the "Last success / Last attempt" pair.
+    StatusLine(
+        fetchedAt = snapshot.fetchedAt,
+        lastAttemptAt = snapshot.lastAttemptAt,
+        lastOk = snapshot.lastStatus == "OK",
+        refreshing = refreshing,
+        // Recomputed every tick so "Checked 14m ago" ages without a new fetch.
+        now = remember(tick) { System.currentTimeMillis() },
+    ) {
+        scope.launch {
+            refreshing = true
+            message = null
+            val result = repo.refreshNow(profile, manual = true)
+            message = if (result.message == "OK") null else result.message
+            refreshing = false
+            snapshot = repo.snapshot(profile)
         }
     }
     message?.let {
         Spacer(Modifier.height(8.dp))
         Text(it, style = MaterialTheme.typography.bodyMedium)
     }
-    Spacer(Modifier.height(12.dp))
-    Text(
-        "Last success: ${Fmt.dayTimeWithAgo(snapshot.fetchedAt, use24h)}",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Text(
-        "Last attempt: ${Fmt.dayTimeWithAgo(snapshot.lastAttemptAt, use24h)}",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
     if (snapshot.lastStatus != "OK") {
         Spacer(Modifier.height(6.dp))
         ErrorNotice(
             snapshot = snapshot,
             provider = profile.provider,
-            backoffUntil = repo.cacheSettings().backoffUntil(profile),
+            backoffUntil = cache.backoffUntil(profile),
             use24h = use24h,
             onOpenSettings = onOpenSettings,
         )
@@ -1049,141 +876,4 @@ private fun ErrorNotice(
             }
         }
     }
-}
-
-/**
- * The burn-rate view for one window: a sparkline of this window instance's
- * fetches (dashed tail = extrapolation) and a plain-words projection line.
- *
- * When there isn't enough signal to project honestly, it says so rather than
- * rendering nothing — a silently missing chart is indistinguishable from a broken
- * one, which is exactly how it read before.
- */
-@Composable
-private fun TrendBlock(
-    window: UsageWindow,
-    samples: List<Pair<Long, Double>>,
-    windowLengthMs: Long,
-    use24h: Boolean,
-    usageLeft: Boolean,
-) {
-    val resetMs = window.resetsAt?.toEpochMilli() ?: return
-    if (samples.size < 2) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Not enough history in this window yet to chart a pace",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        return
-    }
-    val est = Projection.estimate(samples, resetMs)
-    val atLimit = (window.percent ?: 0.0) >= 100.0
-
-    Spacer(Modifier.height(10.dp))
-    // Measured here rather than derived from the window width: the chart sits inside a
-    // card inside a capped column, so only this box knows what it actually got.
-    val windowHeight = LocalWindowHeight.current
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        UsageSparkline(
-            samples = samples,
-            windowStartMs = resetMs - windowLengthMs,
-            windowEndMs = resetMs,
-            projectedEnd = est?.let { e ->
-                if (e.hitsLimitAtMs != null) e.hitsLimitAtMs to 100.0 else resetMs to e.pctAtReset
-            },
-            color = barFill(window.percent),
-            use24h = use24h,
-            usageLeft = usageLeft,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(chartHeight(maxWidth, windowHeight)),
-        )
-    }
-    // The pace readout: what the retired "Days elapsed" bar used to say, as a
-    // number rather than a row. A ±3 point dead zone around the line stops it
-    // flapping between above and below — with its colour — on every poll.
-    elapsedPercent(window, windowLengthMs)?.let { elapsed ->
-        val delta = (window.percent ?: 0.0) - elapsed
-        val above = delta > PACE_DEAD_ZONE
-        Spacer(Modifier.height(6.dp))
-        Text(
-            when {
-                delta > PACE_DEAD_ZONE -> "${delta.roundToInt()} points above even pace"
-                delta < -PACE_DEAD_ZONE -> "${(-delta).roundToInt()} points below even pace"
-                else -> "On even pace"
-            },
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = if (above) FontWeight.Bold else FontWeight.Normal,
-            color = if (above) barFill(95.0) else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-    if (est == null && !atLimit) {
-        Spacer(Modifier.height(2.dp))
-        Text(
-            "Usage hasn't moved enough yet to project a pace",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-    if (est != null && !atLimit) {
-        Spacer(Modifier.height(2.dp))
-        val hits = est.hitsLimitAtMs
-        val rate = " · ${String.format(Locale.US, "%.1f", est.ratePctPerHour)}%/h"
-        // CCRM-30 (Estimate Honesty): the projection is inferred, so it carries
-        // the marker and a tap-to-reveal provenance line.
-        EstimateLine(
-            text = (if (hits != null)
-                "At this pace: 100% at ${Fmt.dayTime(Instant.ofEpochMilli(hits), use24h)} — " +
-                    "${Fmt.span(resetMs - hits)} before the reset"
-            else
-                "At this pace: ~${est.pctAtReset.toInt()}% when the window resets") + rate,
-            provenance = "Projected from this window's samples — a least-squares fit " +
-                "anchored on the latest reading. It shifts as new polls land.",
-            color = if (hits != null) MaterialTheme.colorScheme.error
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/**
- * One 7-day row: All models, or a per-model cap. Takes the whole [window] rather
- * than a bare percent because the pace mark needs its reset time — and every row
- * under the 7-day card measures against 7 days, model caps included (they are
- * "· 7-day" surfaces).
- */
-@Composable
-private fun SubBar(
-    label: String,
-    window: UsageWindow?,
-    usageLeft: Boolean,
-    showOverPace: Boolean = true,
-    // CCRM-60 (Dual Identity), decision 4: the Claude room's serif headline,
-    // threaded down from ProfileScreen — every "· 7-day" row shares the style.
-    serifHeadline: Boolean = false,
-) {
-    val percent = window?.percent
-    Row(verticalAlignment = Alignment.Bottom) {
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.weight(1f))
-        Text(
-            Fmt.usageWorded(percent, usageLeft),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
-        )
-    }
-    Spacer(Modifier.height(4.dp))
-    UsageBarLine(
-        percent = percent,
-        fillColor = barFill(percent),
-        elapsedPercent = elapsedPercent(window, WEEKLY_MS),
-        showOverPace = showOverPace,
-    )
-    Spacer(Modifier.height(10.dp))
 }
