@@ -931,6 +931,111 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   Second's sign-in broken (dot, strip, figure "—"); First stale (that half dimmed); Left mode;
   long labels; light shade.
 
+## v1.7 — the main-screen redesign · **the next thing we build**
+
+**Decided 2026-09-17.** Robin asked for one big item before v1.7 ships and chose the main screen:
+the one surface never redesigned, and the one everybody looks at. The Accounts tab got this
+treatment in CCRM-65 (Accounts Redesign); the main screen is ~2.5 screens per account — two
+charts of 180–300dp between the 5-hour bar and the credits card, a Refresh button and two
+timestamp lines. Three decisions, taken one at a time:
+1. **Compact cards *and* per-account customisation** — CCRM-25 (Card Layout) and CCRM-35 (Layout
+   Reset) are built under CCRM-72 (Main Screen Redesign) rather than reopened separately.
+2. **Charts stay open by default; Compact is opt-in** via a Density chip in Appearance, so nobody's
+   screen changes under them.
+3. **One status line** replaces the Refresh button and the "Last success / Last attempt" pair, in
+   the CCRM-65 (Accounts Redesign) grammar.
+And one new ask, filed as CCRM-73 (Model Cap Chart): the 7-day chart draws the pool only; the
+per-model cap (Fable) has a bar and no curve. A toggle — All models by default, the cap on demand.
+
+**The CCRM-3 (Unified Theming) in-app ruling is reversed.** "The in-app screen gets tokens only —
+no per-card configuration" (2026-07-30) existed so the screen stayed the reference rendering for
+the widgets. The widgets left in v1.6 with CCRM-61 (Settings Diet); the reference has nothing left
+to be a reference for, and CCRM-25 (Card Layout)'s argument — visibility and order are not
+styling — stands unopposed.
+
+The execution order lives in [RUNBOOK.md](RUNBOOK.md).
+
+### CCRM-72 · Main Screen Redesign — compact cards, a layout of your own, one status line
+- **Status:** Filed 2026-09-17 · **wireframe in preparation**
+  (`design/2026-09-17-main-screen-redesign.html`). No UI code until Robin approves it, per
+  working agreement 2. The forward-only history fields for CCRM-73 (Model Cap Chart) are the only
+  code that lands ahead of the wireframe.
+- **Why:** length. `ProfileScreen` in `MainActivity.kt` is a fixed sequence — 5-hour card,
+  7-day card, credits card, Refresh, two timestamps, error notice — and the two `TrendBlock`
+  charts (`chartHeight`: 180–300dp each) push everything below the first bar off the screen. The
+  fix CCRM-3 (Unified Theming) deferred ("one chip: trend charts always / when they project / off")
+  and the general one CCRM-25 (Card Layout) argued for are built together here.
+- **Three parts, one wireframe:**
+  1. **Density** — a global `Comfortable` / `Compact` chip row in Settings → Appearance, after
+     Usage display, hoisted in `App` like `showOverPace`. *Comfortable* is today's layout
+     (plus the status line below). *Compact* redraws each card: title row with the headline
+     percentage, the bar with its pace mark, and one line — "Resets in 2h 41m · 32 pts below
+     pace" — with a trailing chevron; **tap the card to expand the chart in place**, the
+     existing `TrendBlock` unchanged (mocks and builds keep full functionality). The expanded
+     state is remembered per card per account. Target 96–110dp per collapsed card. The 7-day
+     card keeps its All-models and per-cap `SubBar`s in both densities.
+  2. **Card Layout (CCRM-25 (Card Layout)) + Layout Reset (CCRM-35 (Layout Reset))** — an
+     overflow ⋮ in the Main top bar → *Main screen layout* opens a bottom sheet in the
+     CCRM-71 (Account Order) idiom (`ReorderAccountsSheet` / `ReorderRow` / `DragHandleIcon`,
+     the drag mechanics extracted into a shared helper rather than copied): one row per card —
+     5-hour window · 7-day window · Usage credits — each with a show/hide switch and a drag
+     handle, a *Behind "More"* divider rows can be dragged under, and a *Reset layout* text
+     button confirmed in the `RemoveAccountDialog` shape. **Invariant, enforced in the model:**
+     at least one card stays shown above More; the sheet disables the switch that would break
+     it. Cards behind More render collapsed under a "More ▾" disclosure at the foot of the
+     list. Per account, keyed by `profile.key`.
+  3. **Status line** — one row under the cards: "Checked just now · ↻" (`AccountStatusLine`
+     reused; spinner replaces ↻ while refreshing). "Tried 2m ago" appears only when the last
+     attempt failed after the last success. `ErrorNotice` stays beneath it, unchanged.
+- **Model (pure, Android-free, tested):** `data/CardLayout.kt` — `CardLayout(order, hidden, more)`
+  over a `CardId` enum, with `Companion.move / hide / show / toMore / toMain / normalize /
+  default`; `normalize` enforces the never-blank invariant and drops unknown IDs. Persisted as
+  JSON in `UsageCache` under the per-account key `layout` (added to `LEGACY_PROFILE_KEYS`);
+  `density()` global; `expanded(profile, card)` per card. Tests modelled on the `move` block of
+  `ProfileRegistryTest`.
+- **States the wireframe draws:** comfortable and compact; chart folded and expanded; credits
+  card compact; no data; Free plan (CCBG-27 (Free Plan 403)); error notice under the status
+  line; 100% and above-pace in compact; cover screen (~360dp) and inner screen (~750dp); the
+  layout sheet with a card hidden, a card behind More, and the invariant blocking the last
+  switch; the Reset confirm; Appearance with the Density chips; dark and light. Plus every
+  CCRM-73 (Model Cap Chart) state, since they share the 7-day card.
+- **Not in scope:** the pinned notification and its panel (CCRM-62 (Duet Notification) stands),
+  the History screen, any change to the charts themselves.
+- **Where:** `MainActivity.kt` (`ProfileScreen` split into `SessionCard`, `WeeklyCard`,
+  `CreditsCard`, `MoreDisclosure`, `StatusLine`; the top-bar ⋮), `SettingsScreen.kt` (Density
+  chips; the layout sheet), `data/UsageCache.kt`, new `data/CardLayout.kt`.
+
+### CCRM-73 · Model Cap Chart — the 7-day chart for Fable, not just the pool
+- **Status:** Filed 2026-09-17 · **data half landed the same day** (forward-only, ahead of the
+  wireframe; 421 tests green) · **UI half waits on the CCRM-72 (Main Screen Redesign) wireframe**,
+  which draws its states.
+- **Why:** Robin, 2026-09-17: "The chart is there for the 5h window and the 7d window for all
+  models but no visibility for the 7d Fable window." A Max or Team account is often capped on
+  Fable while the pool reads 40% — CCRM-70 (Plan Fit) already records exactly that case as a
+  `mc` tag — and the only view of it today is a bar with no history and no projection.
+- **Data half (landed 2026-09-17):** `HistoryStore.record` writes two name-keyed maps per line,
+  `mc` = `{capName: percent}` and `mr` = `{capName: resetsAt}`, omitted entirely when there are
+  no caps so old and new lines are indistinguishable; `HistoryPoint` gains `capPcts` /
+  `capResets` (empty for old lines, every existing reader untouched);
+  `Projection.capSamples(history, capName, resetAt, len)` binds through the same `bind` as the
+  pool series. The line format moved into pure companion functions (`HistoryStore.encode` /
+  `parsePoint`) so `HistoryStoreTest` can round-trip it without a Context. **Landed first for the
+  same reason CCRM-70's tags did:** it cannot be backfilled, and every day the phone polls after
+  this is a day of Fable history the chart will have on the day it ships.
+- **UI half (wireframe, then build):** segmented chips inside the 7-day card, above the chart —
+  `All models` plus one chip per `data.modelCaps` entry (`Fable`; `Sonnet` + `Opus` on older
+  payloads). Absent when the account has no caps (ChatGPT, Free): the card looks exactly as it
+  does today. Default All models; the choice is remembered per account (`UsageCache.weeklyChart`).
+  The chart, the pace readout and the estimate line all follow the selected series; until the
+  cap has enough samples the existing "Not enough history in this window yet to chart a pace"
+  guard shows. The cap's `SubBar` stays in the card whichever series is charted — the toggle
+  changes the chart, never the bars.
+- **States:** one cap, two caps, no caps; the cap chart with no history yet; the cap at 100%
+  while the pool is under; compact (CCRM-72 (Main Screen Redesign)) with the toggle inside the
+  expanded card only.
+- **Where:** `data/HistoryStore.kt`, `data/Projection.kt` (done); `MainActivity.kt` (`WeeklyCard`),
+  `data/UsageCache.kt`.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
@@ -995,7 +1100,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   (second channel), `release/play/` (listing copy and assets), `docs/privacy.md`.
 
 ### CCRM-70 · Plan Fit — is this plan the right size, read off eight weeks of facts
-- **Status:** Designed 2026-09-16, **wireframe out for review** (`design/2026-09-16-plan-fit-and-account-order.html`). No code until Robin approves it, per working agreement 2.
+- **Status:** **Built 2026-09-16** (wireframe `design/2026-09-16-plan-fit-and-account-order.html` approved the same day; logic in `b6d592a`, the History-screen block in `b827dc5`; 413 tests) · **Fold 7 pass pending**, scheduled with the v1.7 device pass in [RUNBOOK.md](RUNBOOK.md).
 - **Why:** what survived of the spend meter after every route to a dollar figure closed (CCRM-69
   (Window Dollars)). The useful question was never "how much of my plan did I use" — the main
   screen already shows the current window, so a second percentage is decoration. It is **"is this
@@ -1037,7 +1142,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   weekly pane, block absent), plan unknown, ChatGPT's weekly-only shape (no 5h line ever).
 
 ### CCRM-71 · Account Order — drag accounts into the order you want
-- **Status:** Designed 2026-09-16, **wireframe out for review** (same file as CCRM-70 (Plan Fit)).
+- **Status:** **Built 2026-09-16** (same wireframe as CCRM-70 (Plan Fit), approved the same day; `b6d592a`) · **Fold 7 pass pending**, scheduled with the v1.7 device pass in [RUNBOOK.md](RUNBOOK.md). The index-keyed tab trap named below was real and is fixed: Main and History now store `profile.key`.
 - **Why:** Robin asked to move accounts up and down. Order today is insertion order with no way to
   change it, and it drives the tab strip on Main and History plus the Accounts card in Settings.
 - **A bottom sheet, not per-card menu items — a reversal, and the Fold 7 is the reason.** The first
@@ -2772,6 +2877,7 @@ keys) would still make this a different product. Not filed, not an open question
     legitimately differ — a transparent number on one page, solid bars on another),
     **fixed** for the in-app screen.
 - **The in-app screen gets tokens only — no per-card configuration.** Decided 2026-07-30.
+  ***Reversed 2026-09-17*** by CCRM-72 (Main Screen Redesign): the widgets this screen was the reference rendering for left in v1.6, and per-account card order, visibility and a density token are now built there.
   It is the one surface with the room and the full context, so it should be the *reference*
   rendering of the token set rather than another thing to style. Its real complaint is
   length, not looks — two 192dp charts stand between the 5-hour bar and the credits card —
@@ -2844,7 +2950,7 @@ keys) would still make this a different product. Not filed, not an open question
   enough" — the four-control cap above.)*
 
 ### CCRM-25 · Card Layout — reorder cards, hide rows, and move the rest behind "more"
-- **Status:** Needs design · medium · **needs a call on CCRM-3's in-app decision first**
+- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the CCRM-3 (Unified Theming) in-app ruling it waited on is reversed there; the layout sheet, the never-blank invariant and the per-account store are specified in that entry.
 - **Why:** The main screen is a fixed vertical list and its real complaint is length — CCRM-3
   says so directly: "Its real complaint is length, not looks — two 192dp charts stand between
   the 5-hour bar and the credits card — and that is density, not theming." That entry then
@@ -3190,7 +3296,7 @@ keys) would still make this a different product. Not filed, not an open question
   parser drift between clients impossible to miss".
 
 ### CCRM-35 · Layout Reset — undo a customization mistake
-- **Status:** Planned · small · **gated on CCRM-25** (nothing to reset before then)
+- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the *Reset layout* button on the layout sheet, confirmed in the `RemoveAccountDialog` shape.
 - **Why:** Any reorder/hide UI needs a way back, and "put it back how it was" is not something
   a user can reconstruct by hand once they've dragged six things.
 - **Approach:** OpenQuota's `reset_provider()` restores one account's layout to defaults while

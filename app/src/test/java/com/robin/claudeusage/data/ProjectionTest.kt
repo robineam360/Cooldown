@@ -218,4 +218,44 @@ class ProjectionTest {
         assertEquals(5 * 60 * 60_000L, Projection.SESSION_MS)
         assertEquals(7 * 24 * 60 * 60_000L, Projection.WEEKLY_MS)
     }
+
+    // --- cap samples (CCRM-73 Model Cap Chart) ---
+
+    @Test
+    fun `cap samples bind by the cap's own reset and ignore other caps`() {
+        val window = 200 * hour
+        val history = listOf(
+            HistoryPoint(at = 1, sessionPct = null, sessionResetAt = 0, weeklyPct = 10.0, weeklyResetAt = window,
+                capPcts = mapOf("Fable" to 30.0, "Opus" to 2.0),
+                capResets = mapOf("Fable" to window - 60_000L, "Opus" to window)),
+            HistoryPoint(at = 2, sessionPct = null, sessionResetAt = 0, weeklyPct = 12.0, weeklyResetAt = window,
+                capPcts = mapOf("Fable" to 35.0),
+                capResets = mapOf("Fable" to window)),
+        )
+        assertEquals(listOf(1L to 30.0, 2L to 35.0), Projection.capSamples(history, "Fable", window, weeklyLen))
+        assertEquals(listOf(1L to 2.0), Projection.capSamples(history, "Opus", window, weeklyLen))
+    }
+
+    @Test
+    fun `points recorded before the cap fields existed drop out of a cap series`() {
+        val window = 200 * hour
+        val history = listOf(
+            HistoryPoint(at = 1, sessionPct = null, sessionResetAt = 0, weeklyPct = 10.0, weeklyResetAt = window),
+            HistoryPoint(at = 2, sessionPct = null, sessionResetAt = 0, weeklyPct = 12.0, weeklyResetAt = window,
+                capPcts = mapOf("Fable" to 35.0), capResets = mapOf("Fable" to window)),
+        )
+        assertEquals(listOf(2L to 35.0), Projection.capSamples(history, "Fable", window, weeklyLen))
+        // The pool series is unaffected by the new fields.
+        assertEquals(listOf(1L to 10.0, 2L to 12.0), Projection.weeklySamples(history, window, weeklyLen))
+    }
+
+    @Test
+    fun `a cap percent with no recorded reset never binds`() {
+        val window = 200 * hour
+        val history = listOf(
+            HistoryPoint(at = 1, sessionPct = null, sessionResetAt = 0, weeklyPct = null, weeklyResetAt = 0,
+                capPcts = mapOf("Fable" to 35.0)),
+        )
+        assertTrue(Projection.capSamples(history, "Fable", window, weeklyLen).isEmpty())
+    }
 }

@@ -117,6 +117,20 @@ object Projection {
     ): List<Pair<Long, Double>> = bind(history, resetAtMs, windowLengthMs,
         pct = { it.weeklyPct }, reset = { it.weeklyResetAt })
 
+    /**
+     * CCRM-73 (Model Cap Chart): samples of the per-model weekly cap named [capName]
+     * (its `ModelCap.modelName`, e.g. "Fable") belonging to the window that resets
+     * around [resetAtMs]. Points recorded before the cap fields existed carry no entry
+     * and drop out, so the curve simply starts the day the app began recording it.
+     */
+    fun capSamples(
+        history: List<HistoryPoint>,
+        capName: String,
+        resetAtMs: Long,
+        windowLengthMs: Long,
+    ): List<Pair<Long, Double>> = bind(history, resetAtMs, windowLengthMs,
+        pct = { it.capPcts[capName] }, reset = { it.capResets[capName] ?: 0L })
+
     private fun bind(
         history: List<HistoryPoint>,
         resetAtMs: Long,

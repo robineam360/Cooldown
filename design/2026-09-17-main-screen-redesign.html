@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCRM-72/73 (Main Screen Redesign &amp; Model Cap Chart) — rev B</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 120px; line-height: 1.5;
+  }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 29px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 78ch; margin: 0 0 12px; font-size: 14px; }
+  .review {
+    display: inline-block; font-size: 12.5px; color: var(--warn); border: 1px solid var(--warn);
+    border-radius: 6px; padding: 4px 10px; margin: 4px 0 4px;
+  }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 56px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 22px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 86ch; margin: 0 0 18px; }
+  .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 48px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 8px 0 0;
+  }
+  .cap.good { color: var(--good); } .cap.bad { color: var(--bad); } .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .cols { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .col { flex: 1 1 300px; max-width: 460px; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 90ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 10px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 86ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 10px; }
+  .q { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0; font-size: 13.5px; max-width: 80ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1040px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .tbl-wrap { overflow-x: auto; }
+  .scroll { overflow-x: auto; padding-bottom: 6px; }
+  .opt { flex: 1 1 268px; max-width: 300px; border: 1px solid var(--hair); border-radius: 18px; padding: 20px; background: var(--card); }
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; text-align: left; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 328px; margin: 6px 0 0; }
+  .note.wide { max-width: 640px; }
+
+  /* ================= device mocks ================= */
+  .dev { font-family: Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.3; }
+  .phone { width: 360px; border-radius: 28px; border: 6px solid #000; overflow: hidden; position: relative; }
+  .cover { width: 410px; border-radius: 20px; border: 1px solid #0003; overflow: hidden; }
+  .innerframe { width: 760px; max-width: 100%; border-radius: 20px; border: 6px solid #000; padding: 0 0 20px; }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 14px 14px 8px; font-size: 16px; font-weight: 500; }
+  .topbar .sp { flex: 1; }
+  .topbar .tico { width: 22px; height: 22px; flex: 0 0 auto; }
+  .strip { display: flex; gap: 0; align-items: center; border-bottom: 1px solid #0002; }
+  .stab { flex: 1; text-align: center; font-size: 13px; font-weight: 500; padding: 10px 4px; opacity: .62; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .stab.on { opacity: 1; font-weight: 700; }
+  .mk { width: 20px; height: 20px; flex: 0 0 auto; }
+
+  /* provider "room" tokens live on .room, consumed by everything inside */
+  .room {
+    --rsurface:#000; --rcard:#000; --rink:#000; --rmuted:#0009; --raccent:#000;
+    --rg100:#000; --rg90:#000; --rg80:#000; --rpace:#000; --rfont: Roboto, Arial, sans-serif;
+    background: var(--rsurface); color: var(--rink);
+  }
+  .acard { background: var(--rcard); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .acard.tight { margin-bottom: 0; }
+  .a-top { display: flex; align-items: flex-end; gap: 6px; }
+  .a-title { font-size: 13.5px; opacity: .88; }
+  .a-val { font-size: 19px; font-weight: 700; margin-left: auto; font-family: var(--rfont); }
+  .a-sub { display: flex; align-items: flex-end; gap: 6px; margin: 10px 0 4px; }
+  .a-sub .lbl { font-size: 13.5px; opacity: .78; }
+  .a-sub .val { font-size: 14.5px; font-weight: 700; margin-left: auto; font-family: var(--rfont); }
+  .barbox { position: relative; height: 19px; display: flex; align-items: center; margin: 6px 0; }
+  .bartrack { width: 100%; height: 12px; border-radius: 6px; position: relative; overflow: visible; }
+  .barfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
+  .bartick { position: absolute; top: -3.5px; bottom: -3.5px; width: 2px; border-radius: 1px; background: var(--rink); opacity: .5; }
+  .resetrow { display: flex; justify-content: space-between; font-size: 12px; opacity: .78; margin-top: 8px; }
+  .pacetext { font-size: 12.5px; margin-top: 6px; }
+  .pacetext.above { font-weight: 700; }
+  .esttext { font-size: 12.5px; opacity: .78; margin-top: 2px; }
+  .chartcap { font-size: 12.5px; opacity: .78; margin-top: 8px; }
+  .chevron { width: 16px; height: 16px; flex: 0 0 auto; opacity: .7; margin-left: 6px; transition: transform .15s; }
+  .chevron.up { transform: rotate(180deg); }
+  .cc-status { display: flex; align-items: center; font-size: 12.5px; opacity: .82; margin-top: 8px; gap: 4px; }
+  .cc-status .txt { flex: 1; }
+  .cc-status.above { font-weight: 700; opacity: 1; }
+  .subrow + .subrow { margin-top: 0; }
+  .freenote { font-size: 12.5px; opacity: .82; line-height: 1.4; padding: 2px 0; }
+  .statusline { display: flex; align-items: center; gap: 6px; font-size: 12.5px; opacity: .8; padding: 10px 0 2px; }
+  .statusline .refresh { width: 15px; height: 15px; opacity: .8; }
+  .statusline .spin { animation: spin 1.1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .errnotice { border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+  .errnotice .t1 { font-size: 13px; font-weight: 600; }
+  .errnotice .t2 { font-size: 11.5px; font-family: ui-monospace, monospace; opacity: .82; margin-top: 2px; }
+  .refreshbtn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .morehead { display: flex; align-items: center; gap: 6px; font-size: 13px; opacity: .75; padding: 8px 2px; font-weight: 500; }
+
+  .chartbox { width: 100%; display: block; }
+  .chartbox svg { width: 100%; display: block; }
+
+  .kebab { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+
+  /* ---------------- switch ---------------- */
+  .swrap { width: 40px; height: 24px; border-radius: 12px; position: relative; flex: 0 0 auto; }
+  .swrap .kn { position: absolute; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px #0004; transition: left .15s; }
+  .swrap.on { }
+  .swrap.on .kn { left: 18px; }
+  .swrap.off .kn { left: 2px; }
+  .swrap.dis { opacity: .4; }
+
+  /* ---------------- bottom sheet ---------------- */
+  .scrimwrap { background: rgba(0,0,0,.55); border-radius: 28px; display: flex; align-items: flex-end; justify-content: center; padding: 60px 10px 0; }
+  .sheet { border-radius: 28px 28px 0 0; width: 328px; padding-bottom: 10px; }
+  .pill { width: 32px; height: 4px; border-radius: 2px; background: currentColor; opacity: .28; margin: 10px auto 6px; }
+  .sheettitle { font-size: 16px; font-weight: 600; padding: 0 16px 2px; }
+  .sheetsub { font-size: 12px; opacity: .75; padding: 0 16px 10px; }
+  .srow { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; }
+  .sicon { width: 22px; height: 22px; flex: 0 0 auto; opacity: .85; }
+  .slabel { flex: 1; font-size: 15.5px; }
+  .shelper { font-size: 11px; opacity: .7; padding: 0 16px 6px 48px; margin-top: -4px; }
+  .shandle { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; opacity: .75; flex: 0 0 auto; }
+  .shandle svg { width: 22px; height: 22px; }
+  .sdivider { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 16px; }
+  .sdivider .ln { flex: 1; height: 1px; border-top: 1.5px dashed currentColor; opacity: .3; }
+  .sdivider .dt { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; opacity: .65; white-space: nowrap; }
+  .sfoot { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 4px; }
+  .stextbtn { font-size: 14px; font-weight: 600; }
+
+  /* ---------------- alert dialog ---------------- */
+  .dlgwrap { background: rgba(0,0,0,.55); border-radius: 28px; display: flex; align-items: center; justify-content: center; padding: 30px; }
+  .dlg { width: 300px; border-radius: 20px; padding: 20px; }
+  .dlg .dt { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .dlg .db { font-size: 12.5px; opacity: .85; line-height: 1.5; }
+  .dlg .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px; }
+  .dlgbtn { font-size: 13.5px; font-weight: 600; padding: 6px 10px; }
+
+  /* ---------------- Appearance density chips ---------------- */
+  .chiprow { display: flex; gap: 8px; margin: 6px 0; }
+  .fchip2 { height: 32px; padding: 0 14px; border-radius: 16px; display: flex; align-items: center; font-size: 13px; font-weight: 500; border: 1px solid #0003; }
+  .fchip2.sel { border-color: transparent; font-weight: 700; }
+
+  .roomlabel { font-size: 11px; font-family: ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 6px; opacity: .7; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+    <symbol id="icoDrag" viewBox="0 0 24 24">
+      <line x1="5" y1="7.5" x2="19" y2="7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="5" y1="16.5" x2="19" y2="16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icoChevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icoMore" viewBox="0 0 24 24">
+      <circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/>
+    </symbol>
+    <symbol id="icoGear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.1 5.9l-1.7 1.7M7.6 16.4l-1.7 1.7M18.1 18.1l-1.7-1.7M7.6 7.6 5.9 5.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="icoCal" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="4" y1="9.5" x2="20" y2="9.5" stroke="currentColor" stroke-width="1.7"/><line x1="8" y1="3.5" x2="8" y2="7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="16" y1="3.5" x2="16" y2="7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="icoBack" viewBox="0 0 24 24"><polyline points="15,5 8,12 15,19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icoRefresh" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 .79-.15 1.55-.42 2.24l1.47 1.47C19.65 15.6 20 13.85 20 12c0-4.42-3.58-8-8-8zm-6.24 1.29L4.29 4.82C4.35 8.4 4 10.15 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6 0-.79.15-1.55.42-2.24z"/></symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCRM-72 (Main Screen Redesign) &amp; CCRM-73 (Model Cap Chart) &middot; 2026-09-17 &middot; rev B</p>
+  <h1>The main screen: compact cards, a layout you can rearrange, one status line — and a chart for the Fable cap</h1>
+  <p class="lede">
+    <b>CCRM-72 (Main Screen Redesign)</b> is three changes to <code>ProfileScreen</code>: a global
+    <code>Comfortable</code>/<code>Compact</code> density chip (Compact folds each card to a title,
+    bar and one line, tap to expand the chart in place); per-account card visibility and order via a
+    new layout sheet (CCRM-25 (Card Layout) + CCRM-35 (Layout Reset)); and one status line replacing
+    the Refresh button plus the "Last success/Last attempt" pair. <b>CCRM-73 (Model Cap Chart)</b>
+    rides in the same 7-day card: a toggle between the pool ("All models") and any per-model cap
+    (Fable today) so the chart, pace readout and estimate follow whichever series is selected — the
+    data half already landed (forward-only history tags, 421 tests green); this wireframe draws the
+    UI half.
+  </p>
+  <p class="review">Rev B — for review before any code is written — working agreement 2 (wireframe first). Not yet approved. Rev B fixes: light-theme frames added (&sect;3/&sect;4), the real top bar drawn with the &#8942;'s visibility rule (&sect;8/&sect;9), the credits card corrected to one shape in both densities (&sect;6/&sect;7/&sect;11), "behind More" copy corrected from "hidden" to "card" (&sect;7), chart x-axis label collision fixed (all 7-day charts), the above-pace collapsed line's colour matched to <code>TrendBlock</code> (&sect;7a), and four of the five open questions resolved into decisions (&sect;11).</p>
+
+  <hr class="hr">
+  <h2>1 &middot; Today vs Comfortable</h2>
+  <p class="sub">
+    <b>Comfortable is pixel-identical to today's cards.</b> The only thing that changes is what sits
+    <i>below</i> them: today's Refresh button and two "Last success / Last attempt" lines are replaced
+    by one status line. Both columns below are the same Pro-tab account, same live numbers (5h 14%
+    used, resets in 2h 41m, 32&nbsp;pts below pace; 7d All models 84%, resets in 10h&nbsp;1m,
+    projection ~90%) rendered at 360dp, dark theme, matching <code>v16-main-claude-dark.png</code>.
+  </p>
+  <div class="grid dev">
+    <div>
+      <div class="room" id="t1-today" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">Today &middot; Refresh button + 2 timestamp lines</p>
+    </div>
+    <div>
+      <div class="room" id="t1-comf" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap good">Comfortable &middot; same two cards, one status line</p>
+    </div>
+  </div>
+  <p class="note wide">
+    Measured: the 5-hour card is <b>~345dp</b> tall (16dp padding &times;2, 20dp title row, 8dp gap,
+    19dp bar, 10dp gap into the chart, <b>180dp chart</b> on a 360dp phone — <code>chartHeight</code>
+    floors at 180dp below ~515dp of chart width — 6dp gap + 20dp pace line, 2dp gap + 20dp estimate
+    line, 8dp gap, 20dp reset row). The 7-day card is the same shape plus one <code>SubBar</code> per
+    row (20dp label row + 4dp gap + 19dp bar + 10dp gap = 53dp each) before its own chart: with one
+    row (All models only, Pro tab) it's <b>~403dp</b>; Teams' account below adds a second row per cap.
+    Stacking 5h (345) + 12dp gap + 7d (403) + 12dp gap + credits (107, &sect;1 table below) + 12dp gap
+    + refresh row (40) + 12dp gap + 2 timestamp lines (40) &asymp; <b>1,051dp</b> of card content on
+    today's layout, against a Fold-cover viewport of roughly 420dp after the status bar, app bar and
+    tab strip — about <b>2.5 screens</b>, which is the roadmap's own framing and what the scroll
+    thumbs in the real screenshots corroborate (Pro tab's screenshot ends mid-way down the 7-day
+    card's chart, credits not yet visible).
+  </p>
+
+  <hr class="hr">
+  <h2>2 &middot; The status line — anatomy</h2>
+  <p class="sub">
+    One row, directly under the last visible card — the last one shown above "More", if any are
+    folded behind it (&sect;9); the invariant there guarantees at least one always is. Reuses <code>AccountStatusLine</code>'s wording, not a new grammar: <code>Checked
+    &lt;ago&gt;</code> from the last <i>success</i>, a spinner in place of the &#8635; glyph while a
+    refresh is in flight, and a second clause — <code>&middot; Tried &lt;ago&gt;</code> — only when
+    the last <i>attempt</i> failed and happened after the last success (so a healthy account never
+    shows two timestamps for one fact). <code>ErrorNotice</code> renders exactly as it does today,
+    directly beneath.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="room" id="t2-idle" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">a &middot; healthy &mdash; "Checked just now"</p>
+    </div>
+    <div>
+      <div class="room" id="t2-refresh" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">b &middot; refreshing &mdash; spinner replaces &#8635;</p>
+    </div>
+    <div>
+      <div class="room" id="t2-fail" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap warn">c &middot; last attempt failed &mdash; second clause + ErrorNotice</p>
+    </div>
+  </div>
+  <p class="note wide">
+    <b>Decision:</b> the status line is 12.5sp, <code>onSurfaceVariant</code>, 15dp tall glyph
+    left-aligned before the text (the reference wireframes put the account's status text alone;
+    here it doubles as the refresh affordance, so tapping the row itself triggers
+    <code>refreshNow</code> — no separate button chrome, which is most of what CCRM-72 (Main Screen
+    Redesign) claws back from today's 40dp Button row).
+  </p>
+
+  <hr class="hr">
+  <h2>3 &middot; Compact &mdash; the 5-hour card, collapsed and expanded</h2>
+  <p class="sub">
+    Collapsed: title row (headline % and a trailing chevron), the bar with its pace mark unchanged,
+    one line &mdash; <code>Resets in 2h 41m &middot; 32 pts below pace</code>. Tapping anywhere on the
+    card flips the chevron and swaps the one-liner for the existing chart block
+    (<code>TrendBlock</code>, unchanged &mdash; same 180dp chart, same pace/estimate lines, same
+    <code>ResetRow</code>). <b>Decision:</b> the chevron lives in the title row, not on the
+    collapsed-only reset/pace line, so it has one stable home in both states rather than jumping
+    position when the card opens. Dark and light shown side by side &mdash; same account, same
+    numbers, theme only.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="room" id="t3-collapsed" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Collapsed, dark &middot; <b>107dp</b> (16+16 padding, 20 title, 8 gap, 19 bar, 8 gap, 20 status)</p>
+    </div>
+    <div>
+      <div class="room" data-theme="light" id="t3-collapsed-light" style="--rsurface:#F5EFE8;--rcard:#FCF8F4;--rink:#26211E;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Collapsed, light &middot; <b>107dp</b> &mdash; same shape, Claude room light tokens</p>
+    </div>
+  </div>
+  <div class="row dev" style="margin-top:20px;">
+    <div>
+      <div class="room" id="t3-expanded" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Expanded, dark &middot; <b>345dp</b> &mdash; identical to the Comfortable card, chevron up</p>
+    </div>
+    <div>
+      <div class="room" data-theme="light" id="t3-expanded-light" style="--rsurface:#F5EFE8;--rcard:#FCF8F4;--rink:#26211E;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Expanded, light &middot; <b>345dp</b></p>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>4 &middot; Compact &mdash; the 7-day card, collapsed and expanded</h2>
+  <p class="sub">
+    The 7-day card keeps its <code>SubBar</code>s in <i>both</i> densities per the roadmap
+    (<code>All models</code> plus one row per cap) &mdash; so the 96&ndash;110dp collapsed-card
+    target in &sect;3 is a single-bar-card number and does not apply here: a second bar is a real
+    53dp, not something to hide. Expanded adds the CCRM-73 (Model Cap Chart) toggle chips directly
+    above the chart, selected series following through to the chart, the pace readout and the
+    estimate line. Dark and light shown side by side, same as &sect;3.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="room" id="t4-collapsed" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Collapsed, 1 cap, dark &middot; <b>196dp</b> (32 padding + 20 title + 10 gap + 2&times;53 SubBars + 8 gap + 20 status)</p>
+    </div>
+    <div>
+      <div class="room" data-theme="light" id="t4-collapsed-light" style="--rsurface:#F5EFE8;--rcard:#FCF8F4;--rink:#26211E;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Collapsed, 1 cap, light &middot; <b>196dp</b></p>
+    </div>
+  </div>
+  <div class="row dev" style="margin-top:20px;">
+    <div>
+      <div class="room" id="t4-expanded" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Expanded, dark &middot; chips above the chart, All models selected &middot; <b>~470dp</b></p>
+    </div>
+    <div>
+      <div class="room" data-theme="light" id="t4-expanded-light" style="--rsurface:#F5EFE8;--rcard:#FCF8F4;--rink:#26211E;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">Expanded, light &middot; toggle chips in the Claude light accent &middot; <b>~470dp</b></p>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>5 &middot; The 7-day chart toggle &mdash; every state</h2>
+  <p class="sub">
+    Segmented chips, <code>All models</code> first then one per <code>data.modelCaps</code> entry,
+    absent entirely when the account has none (the card then looks exactly as it does today &mdash;
+    state e). Default All models, remembered per account. The <code>SubBar</code>s above the chart
+    never change with the toggle &mdash; only the chart, the pace line and the estimate line follow
+    the selection.
+  </p>
+  <div class="grid dev">
+    <div>
+      <div class="room" id="t5-all" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">a &middot; All models selected &mdash; 84%, projected ~90%</p>
+    </div>
+    <div>
+      <div class="room" id="t5-fable" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">b &middot; Fable selected &mdash; 61%, chart/pace/estimate follow Fable</p>
+    </div>
+    <div>
+      <div class="room" id="t5-nohist" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">c &middot; Fable selected, &lt;2 samples &mdash; the existing guard text, no chart</p>
+    </div>
+    <div>
+      <div class="room" id="t5-twocaps" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">d &middot; two caps (Sonnet + Opus) &mdash; three chips, Sonnet selected</p>
+    </div>
+    <div>
+      <div class="room" id="t5-nocaps" style="--rsurface:#0D0D0D;--rink:#E4E2E6;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">e &middot; no caps (ChatGPT) &mdash; no chips, card unchanged from today</p>
+    </div>
+    <div>
+      <div class="room" id="t5-ceiling" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap bad">f &middot; Fable at 100% while All models reads 61% &mdash; bar and chart both pinned red</p>
+    </div>
+  </div>
+  <p class="note wide">
+    State (c) is the guard <code>TrendBlock</code> already has for <code>samples.size &lt; 2</code>:
+    no chart, no pace line, nothing but "Not enough history in this window yet to chart a pace" &mdash;
+    reused verbatim rather than invented, since a brand-new cap (Fable added to a plan today) will hit
+    it on day one and the copy already exists for the pool series in the same situation. State (f) is
+    the case CCRM-73 (Model Cap Chart) exists for: at 61% the pool bar and pool chart are calm, but the
+    cap the user is actually gated by is maxed &mdash; without the toggle there was no way to see it.
+  </p>
+
+  <hr class="hr">
+  <h2>6 &middot; Compact full screen at 360dp</h2>
+  <p class="sub">
+    Every card collapsed: the whole Teams account (5h, 7d with two caps, credits, status line) fits
+    on one screen without scrolling on a typical ~420dp cover-screen viewport &mdash; the point of
+    Compact. Second frame: same account, the 5-hour card tapped open; the 7-day and credits cards
+    stay collapsed below it.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="room" id="t6-all" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">All collapsed &middot; 107 + 12 + 196 + 12 + 107 + 12 + statusline &asymp; <b>458dp</b></p>
+    </div>
+    <div>
+      <div class="room" id="t6-oneopen" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">5h expanded, rest collapsed &middot; &asymp; <b>696dp</b></p>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>7 &middot; Compact edge states</h2>
+  <div class="grid dev">
+    <div>
+      <div class="room" id="t7-abovepace" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap bad">a &middot; 100% used, above pace &mdash; bar red, only the pace clause bold amber</p>
+    </div>
+    <div>
+      <div class="room" id="t7-nodata" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap">b &middot; no data yet &mdash; plain text, unaffected by density</p>
+    </div>
+    <div>
+      <div class="room" id="t7-free" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
+      <p class="devcap warn">c &middot; Free plan &mdash; 5h and 7d cards absent (CCBG-27), today's bare behaviour</p>
+    </div>
+    <div>
+      <div class="room" id="t7-hiddencredits" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">d &middot; credits card hidden via the layout sheet</p>
+    </div>
+    <div>
+      <div class="room" id="t7-moreclosed" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">e &middot; credits behind "More" &mdash; disclosure closed</p>
+    </div>
+    <div>
+      <div class="room" id="t7-moreopen" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
+      <p class="devcap">f &middot; "More" open &mdash; the card folded behind it renders collapsed</p>
+    </div>
+  </div>
+  <p class="note wide">
+    State (c): today's code takes the <code>lastStatusKind == ErrorKind.PLAN.key</code> branch and
+    renders <i>nothing</i> above the status line &mdash; not even "No data yet" (CCBG-27 (Free Plan
+    403) is deliberate: there is nothing to retry). This wireframe draws that faithfully rather than
+    inventing new copy; see &sect;11's open question on whether Free deserves the Accounts screen's
+    "Claude doesn't report usage" notice now that the card stack around it has changed shape.
+  </p>
+
+  <hr class="hr">
+  <h2>8 &middot; Inner screen ~750dp</h2>
+  <p class="sub">
+    Above the two-pane width the Main screen still shows <b>one account per page</b> (unchanged from
+    today &mdash; this is not the History screen's two-column split). The only change with width is
+    the chart itself: <code>ContentColumn(maxWidth = ChartColumnMaxWidth)</code> caps the column at
+    760dp, so on a 750dp inner display the card content is ~678dp wide and
+    <code>chartHeight(678dp)</code> lands at <b>~237dp</b> (678 &times; 0.35, inside the 180&ndash;300
+    clamp) rather than the 180dp floor a phone hits.
+  </p>
+  <div class="dev"><div class="scroll">
+    <div class="innerframe room" id="t8-inner" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;"></div>
+  </div></div>
+  <p class="cap">760dp inner-screen frame &middot; 5-hour card expanded &middot; 237dp chart</p>
+
+  <hr class="hr">
+  <h2>9 &middot; The layout sheet (CCRM-25 (Card Layout))</h2>
+  <p class="sub">
+    Entry point: a new &#8942; in the Main top bar, after the history and settings icons, opening
+    "Main screen layout" &mdash; drawn here as the bar really is today: the two provider marks and
+    "Cooldown" on the left (no back chevron; the Main screen is the root destination, per
+    <code>MainActivity</code>'s <code>navigationIcon</code>, which only appears on Settings/History),
+    the history (calendar) and settings icons on the right. <b>The &#8942; itself is conditional</b>:
+    it shows only when the <i>selected account</i> has two or more cards to arrange. A one-card
+    account (a plan with neither a 5-hour window nor credits, say) has nothing the sheet could hide
+    or fold under the never-blank invariant &mdash; opening it would offer a single row with its
+    switch already disabled, which is not a sheet worth having an entry point for. The sheet is the
+    CCRM-71 (Account Order) idiom &mdash; <code>ReorderAccountsSheet</code>/<code>ReorderRow</code>'s
+    56dp rows and 48dp drag-handle target, reused rather than redrawn &mdash; one row per card
+    (5-hour window, 7-day window, Usage credits), each with a show/hide switch and a drag handle; a
+    dashed "Behind More" divider a card can be dragged under; a "Reset layout" text button in the
+    <code>RemoveAccountDialog</code> shape.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="scroll">
+        <div class="phone room" style="height:auto;--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;">
+          <div class="topbar">
+            <svg class="mk" style="color:#D97757"><use href="#mkClaude"/></svg>
+            <svg class="mk" style="color:#10A37F;margin-left:-4px"><use href="#mkGpt"/></svg>
+            <span style="margin-left:4px;">Cooldown</span>
+            <span class="sp"></span>
+            <svg class="tico"><use href="#icoCal"/></svg>
+            <svg class="tico"><use href="#icoGear"/></svg>
+            <svg class="tico" style="color:#E59980"><use href="#icoMore"/></svg>
+          </div>
+          <p style="font-size:11px;opacity:.6;text-align:center;margin:4px 0 8px;">&uarr; the new &#8942; &mdash; "Main screen layout"</p>
+        </div>
+      </div>
+      <p class="devcap">2+ cards (Pro: 5-hour, 7-day, credits) &mdash; &#8942; shown</p>
+    </div>
+    <div>
+      <div class="scroll">
+        <div class="phone room" style="height:auto;--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;">
+          <div class="topbar">
+            <svg class="mk" style="color:#D97757"><use href="#mkClaude"/></svg>
+            <svg class="mk" style="color:#10A37F;margin-left:-4px"><use href="#mkGpt"/></svg>
+            <span style="margin-left:4px;">Cooldown</span>
+            <span class="sp"></span>
+            <svg class="tico"><use href="#icoCal"/></svg>
+            <svg class="tico"><use href="#icoGear"/></svg>
+          </div>
+          <p style="font-size:11px;opacity:.6;text-align:center;margin:4px 0 8px;">no &#8942; &mdash; this account has one card</p>
+        </div>
+      </div>
+      <p class="devcap">1 card only &mdash; &#8942; absent, nothing to arrange</p>
+    </div>
+  </div>
+  <p class="cap">Entry point &middot; top bar, Main screen only</p>
+  <div class="row" style="margin-top:20px;">
+    <div class="dev">
+      <div class="scrimwrap"><div class="sheet room" id="t9-default" style="--rsurface:#201D1B;--rink:#EDE8E4;"></div></div>
+      <p class="devcap">a &middot; default &mdash; all three shown, in order</p>
+    </div>
+    <div class="dev">
+      <div class="scrimwrap"><div class="sheet room" id="t9-hidden" style="--rsurface:#201D1B;--rink:#EDE8E4;"></div></div>
+      <p class="devcap">b &middot; credits hidden</p>
+    </div>
+    <div class="dev">
+      <div class="scrimwrap"><div class="sheet room" id="t9-behind" style="--rsurface:#201D1B;--rink:#EDE8E4;"></div></div>
+      <p class="devcap">c &middot; 7-day dragged behind More</p>
+    </div>
+    <div class="dev">
+      <div class="scrimwrap"><div class="sheet room" id="t9-invariant" style="--rsurface:#201D1B;--rink:#EDE8E4;"></div></div>
+      <p class="devcap warn">d &middot; invariant &mdash; two of three off, the last switch disabled</p>
+    </div>
+  </div>
+  <p class="note wide">
+    <b>Invariant, enforced in the model</b> (per <code>CardLayout.normalize</code>): at least one card
+    stays shown above More. State (d) shows the disabled switch with helper text directly under it
+    rather than a toast/snackbar on attempted tap &mdash; visible at rest, no failed gesture needed to
+    discover the rule.
+  </p>
+  <div class="row" style="margin-top:20px;">
+    <div class="dev">
+      <div class="dlgwrap"><div class="dlg room" id="t9-reset" style="--rsurface:#201D1B;--rink:#EDE8E4;"></div></div>
+      <p class="devcap">e &middot; Reset confirm &mdash; RemoveAccountDialog shape</p>
+    </div>
+  </div>
+
+  <hr class="hr">
+  <h2>10 &middot; Appearance &mdash; the Density chips</h2>
+  <p class="sub">
+    A new chip row after Usage display (Settings &rarr; Appearance), the same <code>FilterChip</code>
+    pattern as Theme/Time format/Usage display above it, one explainer line below matching that
+    section's existing voice. Hoisted in <code>App</code> like <code>showOverPace</code>: global, not
+    per-account &mdash; Compact is opt-in, so <b>Comfortable stays selected by default and nobody's
+    screen changes under them</b>.
+  </p>
+  <div class="dev"><div class="scroll">
+    <div class="phone room" style="height:auto;--rsurface:#171513;--rink:#EDE8E4;">
+      <div class="topbar"><svg class="tico" fill="none" stroke="currentColor"><use href="#icoBack"/></svg>Settings</div>
+      <div class="strip" style="padding:0 8px;">
+        <div class="stab">Accounts</div><div class="stab">Alerts</div><div class="stab on">Appearance</div><div class="stab">More</div>
+      </div>
+      <div style="padding:14px 16px 20px;">
+        <div style="font-size:15px;font-weight:600;">Usage display</div>
+        <div style="font-size:11.5px;opacity:.75;margin:2px 0 6px;">How percentages read on every surface. Bars and colours always show what's spent.</div>
+        <div class="chiprow"><div class="fchip2 sel" style="border-color:transparent;background:color-mix(in srgb, #E59980 22%, transparent);color:#E59980;">Used</div><div class="fchip2">Left</div></div>
+        <div style="font-size:11.5px;opacity:.75;margin:2px 0 18px;">Shows "47% used" — what each window has consumed.</div>
+        <div style="height:1px;background:#fff2;margin:0 0 16px;"></div>
+        <div style="font-size:15px;font-weight:600;">Density</div>
+        <div style="font-size:11.5px;opacity:.75;margin:2px 0 6px;">How much each card shows at once.</div>
+        <div class="chiprow">
+          <div class="fchip2 sel" style="border-color:transparent;background:color-mix(in srgb, #E59980 22%, transparent);color:#E59980;">Comfortable</div>
+          <div class="fchip2">Compact</div>
+        </div>
+        <div style="font-size:11.5px;opacity:.75;margin:2px 0;">Comfortable keeps every chart open, exactly as today. Compact folds each card to a title, bar and one line — tap it to open the chart in place.</div>
+      </div>
+    </div>
+  </div></div>
+  <p class="cap">Appearance tab &middot; Density row placed directly after Usage display</p>
+
+  <hr class="hr">
+  <h2>11 &middot; Annotations</h2>
+
+  <h3>Heights settled</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Card &middot; state</th><th>Height</th><th>Built from</th></tr>
+    <tr><td>5-hour, Comfortable (= today)</td><td>~345dp</td><td>32 padding + 20 title + 8 + 19 bar + 10 + 180 chart + 6 + 20 pace + 2 + 20 estimate + 8 + 20 reset row</td></tr>
+    <tr><td>7-day, Comfortable, 1 row (All models)</td><td>~403dp</td><td>same shape, one 53dp <code>SubBar</code> instead of the 19dp bare bar</td></tr>
+    <tr><td>7-day, Comfortable, +1 cap</td><td>+53dp per extra <code>SubBar</code></td><td>20 label row + 4 + 19 bar + 10</td></tr>
+    <tr><td>Usage credits, Comfortable (= today)</td><td>~107dp</td><td>32 padding + 20 row1 + 8 + 19 bar + 8 + 20 line — no chart, never had one</td></tr>
+    <tr><td>5-hour, Compact collapsed</td><td>107dp</td><td>32 padding + 20 title(+chevron) + 8 + 19 bar + 8 + 20 status line &mdash; inside the 96&ndash;110dp target</td></tr>
+    <tr><td>5-hour, Compact expanded</td><td>345dp</td><td>identical to Comfortable, chevron up</td></tr>
+    <tr><td>Usage credits, Compact</td><td>107dp &mdash; same both densities</td><td>identical markup to Comfortable: no chart, so nothing for Compact to fold and no chevron (&sect;6/&sect;7 fix)</td></tr>
+    <tr><td>7-day, Compact collapsed, 1 cap</td><td>196dp</td><td>32 + 20 title + 10 + 2&times;53 SubBars + 8 + 20 status &mdash; outside the single-bar target on purpose (&sect;4)</td></tr>
+    <tr><td>7-day, Compact collapsed, no caps</td><td>143dp</td><td>same minus one 53dp SubBar</td></tr>
+    <tr><td>7-day, Compact collapsed, 2 caps</td><td>249dp</td><td>same plus one more 53dp SubBar</td></tr>
+    <tr><td>7-day, Compact expanded</td><td>~470dp (1 cap)</td><td>collapsed shape minus status line, plus 32dp chip row + 10 + chart block (as 5h's 180&ndash;278) + reset row</td></tr>
+    <tr><td>Inner-screen (~750dp) chart</td><td>237dp</td><td><code>chartHeight(678dp)</code> = 678 &times; 0.35, inside the 180&ndash;300 clamp</td></tr>
+    <tr><td>Layout-sheet row</td><td>56dp</td><td>matches <code>ReorderRow</code> exactly, per instruction</td></tr>
+    <tr><td>Layout-sheet drag target</td><td>48dp</td><td>matches <code>ReorderRow</code>'s <code>.shandle</code> exactly</td></tr>
+  </table></div>
+
+  <h3>Decisions this wireframe takes</h3>
+  <ol class="dec">
+    <li><b>Comfortable is a strict no-op on the cards.</b> Only the footer changes (status line
+      replaces Refresh + two timestamps) &mdash; &sect;1 proves it side by side rather than asserting it.</li>
+    <li><b>The chevron lives in the title row, in both densities</b>, not on the collapsed-only
+      reset/pace line — that line disappears entirely when expanded, so the chevron needed a home
+      that survives both states.</li>
+    <li><b>The 96&ndash;110dp collapsed-card target is a single-bar number.</b> The 7-day card is
+      explicitly exempted by the roadmap's own next sentence ("keeps its SubBars in both
+      densities") — &sect;4/&sect;11's table gives its real heights (143/196/249dp) rather than
+      forcing SubBars to fit a budget sized for one bar.</li>
+    <li><b>The whole card is the tap target</b> for expand/collapse — no separate disclosure icon
+      button, so the hit area is the full 107dp row rather than a 24dp glyph.</li>
+    <li><b>Free plan draws today's bare behaviour</b> (nothing above the status line, per CCBG-27
+      (Free Plan 403)) rather than inventing new copy the roadmap didn't ask for — flagged as an open
+      question below instead of decided silently.</li>
+    <li><b>The invariant surfaces as a disabled switch + static helper text</b>, not a toast on a
+      blocked tap — visible before the user tries the thing that would break it.</li>
+    <li><b>Reset layout uses <code>RemoveAccountDialog</code>'s shape but not its error-red confirm
+      button</b> — resetting layout is reversible (drag it back) where removing an account destroys
+      a year of history; the confirm button stays the accent colour.</li>
+    <li><b>Usage credits is one shape in both densities</b> — it never had a chart, so Compact has
+      nothing to fold: no chevron, no collapsed/expanded distinction, header + bar +
+      "$380.28 left &middot; covers you when you hit your plan limits" always (&sect;6/&sect;7).</li>
+    <li><b>The 7-day chart toggle is per account and persisted</b>
+      (<code>UsageCache.weeklyChart</code>), not per card-open-state — collapsing or expanding the
+      7-day card never changes which series (All models vs a cap) is selected; only tapping a chip
+      does.</li>
+    <li><b>The "Behind More" divider needs no explainer line</b> — the sheet's own subtitle,
+      "Show, hide and reorder the cards on this account's screen," already says what dragging a row
+      past it does; a second line would repeat it.</li>
+    <li><b>No inner fold for a third+ <code>SubBar</code></b> (the 249dp two-cap collapsed height
+      stands). Caps are real data, not decoration to hide, and two caps in one account only happens
+      on older payloads (CCRM-73 (Model Cap Chart)'s own UI-half note: "Fable; Sonnet + Opus on
+      older payloads") — folding a rare case inside an already-collapsed card would add a control
+      for something that almost never occurs.</li>
+    <li><b>The top-bar &#8942; only shows once an account has two or more cards</b> to arrange
+      (&sect;2/&sect;9) — a single-card account can't hide or fold anything under the never-blank
+      invariant, so the sheet behind it would be a single disabled row.</li>
+  </ol>
+
+  <h3>Open questions for Robin</h3>
+  <ol class="dec">
+    <li>Free plan (&sect;7c): leave it bare as today, or give it the Accounts screen's
+      "Claude doesn't report usage — upgrade to Pro, Max or Team" notice now that a status line
+      sits right below it anyway?</li>
+  </ol>
+
+</div>
+
+<script>
+const CLAUDE_DARK  = {accent:'#E59980', g100:'#FF5252', g90:'#FFA726', g80:'#FDD663', pace:'#FFDD55', ink:'#EDE8E4', muted:'rgba(237,232,228,.72)', card:'#26201C', font:'Georgia, "Times New Roman", serif', good:'#7FC08F'};
+const CLAUDE_LIGHT = {accent:'#D97757', g100:'#C62828', g90:'#F57C00', g80:'#F9A825', pace:'#FFC107', ink:'#26211E', muted:'rgba(38,33,30,.68)',  card:'#FCF8F4', font:'Georgia, "Times New Roman", serif', good:'#188038'};
+const GPT_DARK      = {accent:'#19C39A', g100:'#FF5252', g90:'#FFA726', g80:'#FDD663', pace:'#FFDD55', ink:'#E4E2E6', muted:'rgba(228,226,230,.72)', card:'#1A1A1A', font:'Roboto, Arial, sans-serif', good:'#81C995'};
+const GPT_LIGHT     = {accent:'#10A37F', g100:'#C62828', g90:'#F57C00', g80:'#F9A825', pace:'#FFC107', ink:'#1A1A1A', muted:'rgba(26,26,26,.65)', card:'#FFFFFF', font:'Roboto, Arial, sans-serif', good:'#188038'};
+const TEAMS_ACCENT  = '#E7A08A'; // Teams tab in the real screenshots reads a touch lighter than Pro's
+
+function paintRoom(el, r) {
+  el.style.setProperty('--rsurface', r.surface);
+  el.style.setProperty('--rcard', r.card);
+  el.style.setProperty('--rink', r.ink);
+  el.style.setProperty('--rmuted', r.muted);
+  el.style.setProperty('--raccent', r.accent);
+  el.style.setProperty('--rg100', r.g100);
+  el.style.setProperty('--rg90', r.g90);
+  el.style.setProperty('--rg80', r.g80);
+  el.style.setProperty('--rpace', r.pace);
+  el.style.setProperty('--rfont', r.font);
+}
+
+function barColor(pct, theme) {
+  if (pct >= 100) return theme.g100;
+  if (pct > 90) return theme.g90;
+  if (pct > 80) return theme.g80;
+  return theme.accent;
+}
+
+/** Full-functionality trend chart: dotted 80/90/100 guides, dashed even-pace diagonal,
+ *  filled curve, "now" divider, x-axis labels, projection dot. Mirrors UsageSparkline. */
+function chartSVG(cfg) {
+  const W = 300, H = cfg.h;
+  const padR = 34, padB = 16;
+  const plotW = W - padR, plotH = H - padB;
+  const X = t => t * plotW;
+  const Y = v => plotH - (v / 100) * plotH;
+  const t = cfg.theme;
+  let s = '';
+  // 80/90/100 dotted guides
+  [[100, t.g100, '100%'], [90, t.g90, '90%'], [80, t.g80, '80%']].forEach(([pct, col, lbl]) => {
+    const y = Y(pct);
+    s += `<line x1="0" y1="${y}" x2="${plotW}" y2="${y}" stroke="${col}" stroke-width="1" stroke-dasharray="2,3" opacity=".85"/>`;
+    s += `<text x="${plotW + 4}" y="${y + 3}" font-size="8.5" fill="${col}">${lbl}</text>`;
+  });
+  // even-pace diagonal + legend
+  s += `<line x1="0" y1="${plotH}" x2="${plotW}" y2="0" stroke="${t.pace}" stroke-width="2" stroke-dasharray="4,3"/>`;
+  s += `<line x1="2" y1="9" x2="15" y2="9" stroke="${t.pace}" stroke-width="2" stroke-dasharray="3,2"/>`;
+  s += `<text x="19" y="12" font-size="8.5" fill="${t.pace}">even pace</text>`;
+  // filled curve
+  const pts = cfg.points.map(([pt, pv]) => [X(pt), Y(pv)]);
+  const area = `M${pts[0][0]},${plotH} ` + pts.map(p => `L${p[0]},${p[1]}`).join(' ') + ` L${pts[pts.length - 1][0]},${plotH} Z`;
+  s += `<path d="${area}" fill="${cfg.curveColor || t.accent}" opacity=".16"/>`;
+  s += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${cfg.curveColor || t.accent}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // now divider
+  const nowX = X(cfg.elapsed);
+  s += `<line x1="${nowX}" y1="0" x2="${nowX}" y2="${plotH}" stroke="${t.ink}" stroke-width="1" opacity=".22"/>`;
+  // current dot + value label — when a projection follows close behind (small
+  // gap in both elapsed-time and value), the two bold labels crowd each other
+  // at the top of the plot, so the current-value label drops below-left of its
+  // dot instead of sitting above it.
+  const last = pts[pts.length - 1];
+  const crowds = cfg.proj && (cfg.proj[0] - cfg.elapsed) < 0.22 && Math.abs(cfg.proj[1] - cfg.points[cfg.points.length - 1][1]) < 12;
+  s += `<circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${cfg.curveColor || t.accent}"/>`;
+  if (crowds) {
+    s += `<text x="${last[0] - 7}" y="${last[1] + 15}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="end">${cfg.valueLabel}</text>`;
+  } else {
+    s += `<text x="${last[0]}" y="${last[1] - 9}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="${cfg.elapsed > 0.85 ? 'end' : 'middle'}">${cfg.valueLabel}</text>`;
+  }
+  // projection — the label sits above the hollow dot unless that would clip
+  // the top of the chart (a projection near 100%), in which case it moves to
+  // the right, into the margin the guide labels already reserve.
+  if (cfg.proj) {
+    const px = X(cfg.proj[0]), py = Y(cfg.proj[1]);
+    s += `<line x1="${last[0]}" y1="${last[1]}" x2="${px}" y2="${py}" stroke="${cfg.curveColor || t.accent}" stroke-width="1.8" stroke-dasharray="3,3" opacity=".6"/>`;
+    s += `<circle cx="${px}" cy="${py}" r="4" fill="${t.card}" stroke="${cfg.curveColor || t.accent}" stroke-width="1.8"/>`;
+    if (py < 16) {
+      s += `<text x="${px + 6}" y="${py + 10}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="start">${cfg.projLabel}</text>`;
+    } else {
+      s += `<text x="${px - 6}" y="${py - 8}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="end">${cfg.projLabel}</text>`;
+    }
+  }
+  // x-axis labels — the end date is right-aligned against the plot edge and
+  // "now" sits at the divider it already draws; when the divider is close
+  // enough to either edge label that the text would collide (routine once
+  // elapsed gets past ~80%, since "now" then sits right under a 7-day
+  // window's end date), "now" is the one that drops — the vertical line
+  // still marks the position, same as the app would rely on the divider
+  // alone rather than overlap two labels.
+  const nowLbl = cfg.xNow || 'now';
+  const estW = str => (str || '').length * 4.6;
+  const collideRight = (nowX + estW(nowLbl) / 2 + 6) > (plotW - estW(cfg.xRight));
+  const collideLeft = (nowX - estW(nowLbl) / 2 - 6) < estW(cfg.xLeft);
+  s += `<text x="2" y="${H - 4}" font-size="9" fill="${t.muted}">${cfg.xLeft}</text>`;
+  if (!collideRight && !collideLeft) {
+    s += `<text x="${nowX}" y="${H - 4}" font-size="9" fill="${t.muted}" text-anchor="middle">${nowLbl}</text>`;
+  }
+  s += `<text x="${plotW - 2}" y="${H - 4}" font-size="9" fill="${t.muted}" text-anchor="end">${cfg.xRight}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">${s}</svg>`;
+}
+
+function bar(pct, theme, elapsed) {
+  const col = barColor(pct, theme);
+  const tick = elapsed != null ? `<div class="bartick" style="left:${elapsed}%"></div>` : '';
+  return `<div class="barbox"><div class="bartrack" style="background:${col}40">
+    <div class="barfill" style="width:${Math.min(pct,100)}%;background:${col}"></div>${tick}
+  </div></div>`;
+}
+
+function paceLine(delta, theme) {
+  const above = delta > 3;
+  const below = delta < -3;
+  const txt = above ? `${Math.round(delta)} points above even pace` : below ? `${Math.round(-delta)} points below even pace` : 'On even pace';
+  return `<div class="pacetext${above ? ' above' : ''}" style="color:${above ? theme.g90 : theme.muted}">${txt}</div>`;
+}
+
+function resetRow(inTxt, atTxt) {
+  return `<div class="resetrow"><span>Resets ${inTxt}</span><span>Resets at ${atTxt}</span></div>`;
+}
+
+function chevSvg(up) {
+  return `<svg class="chevron${up ? ' up' : ''}" fill="none" stroke="currentColor"><use href="#icoChevron"/></svg>`;
+}
+
+/* ---- Section 1: today vs comfortable ---- */
+function sessionCardFull(theme, opts) {
+  return `<div class="acard">
+    <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">${opts.pct}% used</span></div>
+    ${bar(opts.pct, theme, opts.elapsed*100)}
+    <div class="chartbox">${chartSVG({theme, h:180, points: opts.points, elapsed: opts.elapsed, proj: opts.proj, projLabel: opts.projLabel, valueLabel: opts.pct+'%', xLeft: opts.xLeft, xRight: opts.xRight})}</div>
+    ${paceLine(opts.delta, theme)}
+    <div class="esttext">${opts.est}</div>
+    ${resetRow(opts.resetIn, opts.resetAt)}
+  </div>`;
+}
+function weeklyCardFull(theme, opts) {
+  let subs = opts.subs.map(s => `<div class="subrow"><div class="a-sub"><span class="lbl">${s.label}</span><span class="val" style="font-family:${theme.font}">${s.pct}% used</span></div>${bar(s.pct, theme, opts.elapsed*100)}</div>`).join('');
+  return `<div class="acard">
+    <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+    ${subs}
+    <div class="chartbox">${chartSVG({theme, h:180, points: opts.points, elapsed: opts.elapsed, proj: opts.proj, projLabel: opts.projLabel, valueLabel: opts.chartLabel, xLeft: opts.xLeft, xRight: opts.xRight, curveColor: opts.curveColor})}</div>
+    ${paceLine(opts.delta, theme)}
+    <div class="esttext">${opts.est}</div>
+    <div style="height:1px;background:${theme.ink}22;margin:8px 0;"></div>
+    ${resetRow(opts.resetIn, opts.resetAt)}
+  </div>`;
+}
+function creditsCardFull(theme, opts) {
+  return `<div class="acard">
+    <div class="a-top"><span class="a-title">Usage credits&nbsp; ${opts.spend}</span><span class="a-val">${opts.pct}% used &#9432;</span></div>
+    ${bar(opts.pct, theme)}
+    <div class="esttext">${opts.left}</div>
+  </div>`;
+}
+function statusLine(txt, spin) {
+  return `<div class="statusline">${txt} <svg class="refresh${spin?' spin':''}" fill="currentColor"><use href="#icoRefresh"/></svg></div>`;
+}
+
+document.getElementById('t1-today').innerHTML =
+  sessionCardFull(CLAUDE_DARK, {pct:14, elapsed:.45, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], proj:null, delta:-32, est:"Usage hasn't moved enough yet to project a pace", resetIn:'in 2h 41m', resetAt:'Thu 5:09 pm', xLeft:'12:09 pm', xRight:'5:09 pm'}) +
+  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All models', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
+  `<div class="refreshbtn" style="background:${CLAUDE_DARK.accent};color:#26201C;"><svg width="16" height="16" fill="currentColor"><use href="#icoRefresh"/></svg>Refresh now</div>
+   <div style="font-size:12px;opacity:.78;margin-top:12px;">Last success: Thu 7:09 pm (just now)</div>
+   <div style="font-size:12px;opacity:.78;">Last attempt: Thu 7:09 pm (just now)</div>`;
+
+document.getElementById('t1-comf').innerHTML =
+  sessionCardFull(CLAUDE_DARK, {pct:14, elapsed:.45, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], proj:null, delta:-32, est:"Usage hasn't moved enough yet to project a pace", resetIn:'in 2h 41m', resetAt:'Thu 5:09 pm', xLeft:'12:09 pm', xRight:'5:09 pm'}) +
+  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All models', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
+  statusLine('Checked just now', false);
+
+/* ---- Section 2: status line anatomy ---- */
+document.getElementById('t2-idle').innerHTML = statusLine('Checked just now', false);
+document.getElementById('t2-refresh').innerHTML = statusLine('Checked 2m ago', true);
+document.getElementById('t2-fail').innerHTML = statusLine('Checked 14m ago &middot; Tried 2m ago', false) +
+  `<div class="errnotice" style="background:${CLAUDE_DARK.g90}1c;">
+     <div class="t1" style="color:${CLAUDE_DARK.g90}">Claude didn't answer in time</div>
+     <div class="t2" style="color:${CLAUDE_DARK.g90}CC">Timeout · next try ~7:32 pm</div>
+   </div>`;
+
+/* ---- Section 3: 5h compact (dark + light, fix 1) ---- */
+function sessionCompactCollapsed(theme) {
+  return `<div class="acard">
+  <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">14% used</span>${chevSvg(false)}</div>
+  ${bar(14, theme, 45)}
+  <div class="cc-status"><span class="txt">Resets in 2h 41m &middot; 32 pts below pace</span></div>
+</div>`;
+}
+function sessionCompactExpanded(theme) {
+  return `<div class="acard">
+  <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">14% used</span>${chevSvg(true)}</div>
+  ${bar(14, theme, 45)}
+  <div class="chartbox">${chartSVG({theme, h:180, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], elapsed:.45, valueLabel:'14%', xLeft:'12:09 pm', xRight:'5:09 pm'})}</div>
+  ${paceLine(-32, theme)}
+  <div class="esttext">Usage hasn't moved enough yet to project a pace</div>
+  ${resetRow('in 2h 41m', 'Thu 5:09 pm')}
+</div>`;
+}
+document.getElementById('t3-collapsed').innerHTML = sessionCompactCollapsed(CLAUDE_DARK);
+document.getElementById('t3-collapsed-light').innerHTML = sessionCompactCollapsed(CLAUDE_LIGHT);
+document.getElementById('t3-expanded').innerHTML = sessionCompactExpanded(CLAUDE_DARK);
+document.getElementById('t3-expanded-light').innerHTML = sessionCompactExpanded(CLAUDE_LIGHT);
+
+/* ---- Section 4: 7d compact (dark + light, fix 1) ---- */
+function subrowCompact(label, pct, theme, elapsed) {
+  return `<div class="subrow"><div class="a-sub"><span class="lbl">${label}</span><span class="val" style="font-family:${theme.font}">${pct}% used</span></div>${bar(pct, theme, elapsed)}</div>`;
+}
+function weeklyCompactCollapsed(theme) {
+  return `<div class="acard">
+  <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
+  ${subrowCompact('All models', 84, theme, 85)}
+  ${subrowCompact('Fable', 61, theme, 85)}
+  <div class="cc-status"><span class="txt">Resets in 10h 1m &middot; 10 pts below pace</span></div>
+</div>`;
+}
+function weeklyCompactExpanded(theme) {
+  return `<div class="acard">
+  <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(true)}</div>
+  ${subrowCompact('All models', 84, theme, 85)}
+  ${subrowCompact('Fable', 61, theme, 85)}
+  <div class="chiprow" style="margin:6px 0 8px;">
+    <div class="fchip2 sel" style="border-color:transparent;background:${theme.accent}38;color:${theme.accent};">All models</div>
+    <div class="fchip2" style="border-color:${theme.ink}44;">Fable</div>
+  </div>
+  <div class="chartbox">${chartSVG({theme, h:180, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], elapsed:.85, proj:[1,90], projLabel:'~90%', valueLabel:'84%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
+  ${paceLine(-10, theme)}
+  <div class="esttext">At this pace: ~90% when the window resets · 0.6%/h &#9432;</div>
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+}
+document.getElementById('t4-collapsed').innerHTML = weeklyCompactCollapsed(CLAUDE_DARK);
+document.getElementById('t4-collapsed-light').innerHTML = weeklyCompactCollapsed(CLAUDE_LIGHT);
+document.getElementById('t4-expanded').innerHTML = weeklyCompactExpanded(CLAUDE_DARK);
+document.getElementById('t4-expanded-light').innerHTML = weeklyCompactExpanded(CLAUDE_LIGHT);
+
+/* ---- Section 5: toggle states ---- */
+function chips(list, sel) {
+  return `<div class="chiprow" style="margin:6px 0 8px;">` + list.map(l =>
+    `<div class="fchip2${l===sel?' sel':''}" style="${l===sel?`border-color:transparent;background:${CLAUDE_DARK.accent}38;color:${CLAUDE_DARK.accent};`:`border-color:${CLAUDE_DARK.ink}44;`}">${l}</div>`
+  ).join('') + `</div>`;
+}
+document.getElementById('t5-all').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('Fable', 61, CLAUDE_DARK, 85)}
+  ${chips(['All models','Fable'],'All models')}
+  <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], elapsed:.85, proj:[1,90], projLabel:'~90%', valueLabel:'84%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
+  ${paceLine(-10, CLAUDE_DARK)}
+  <div class="esttext">At this pace: ~90% when the window resets · 0.6%/h &#9432;</div>
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+document.getElementById('t5-fable').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('Fable', 61, CLAUDE_DARK, 85)}
+  ${chips(['All models','Fable'],'Fable')}
+  <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.08,2],[.2,6],[.4,15],[.6,30],[.75,44],[.85,61]], elapsed:.85, proj:[1,66], projLabel:'~66%', valueLabel:'61%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
+  ${paceLine(-24, CLAUDE_DARK)}
+  <div class="esttext">At this pace: ~66% when the window resets · 0.4%/h &#9432;</div>
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+document.getElementById('t5-nohist').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('Fable', 3, CLAUDE_DARK, 85)}
+  ${chips(['All models','Fable'],'Fable')}
+  <div class="esttext" style="margin-top:10px;">Not enough history in this window yet to chart a pace</div>
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+document.getElementById('t5-twocaps').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 58, CLAUDE_DARK, 85)}
+  ${subrowCompact('Sonnet', 45, CLAUDE_DARK, 85)}
+  ${subrowCompact('Opus', 92, CLAUDE_DARK, 85)}
+  ${chips(['All models','Sonnet','Opus'],'Sonnet')}
+  <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.15,4],[.3,10],[.5,20],[.7,32],[.85,45]], elapsed:.85, proj:[1,52], projLabel:'~52%', valueLabel:'45%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
+  ${paceLine(-27, CLAUDE_DARK)}
+  <div class="esttext">At this pace: ~52% when the window resets · 0.3%/h &#9432;</div>
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+document.getElementById('t5-nocaps').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 6, GPT_DARK, 27)}
+  <div class="chartbox">${chartSVG({theme:GPT_DARK, h:180, points:[[0,0],[.05,1],[.1,2],[.15,3],[.2,4],[.27,6]], elapsed:.27, proj:[1,24], projLabel:'~24%', valueLabel:'6%', xLeft:'8 Sept', xRight:'15 Sept'})}</div>
+  ${paceLine(-18, GPT_DARK)}
+  <div class="esttext">At this pace: ~24% when the window resets · 0.1%/h &#9432;</div>
+  ${resetRow('in 5d 7h', 'Tue 10:18 pm')}
+</div>`;
+document.getElementById('t5-ceiling').innerHTML = `<div class="acard">
+  <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+  ${subrowCompact('All models', 61, CLAUDE_DARK, 85)}
+  ${subrowCompact('Fable', 100, CLAUDE_DARK, 85)}
+  ${chips(['All models','Fable'],'Fable')}
+  <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.15,10],[.3,35],[.45,68],[.6,94],[.7,100],[.85,100]], elapsed:.85, proj:null, valueLabel:'100%', xLeft:'4 Sept', xRight:'11 Sept', curveColor: CLAUDE_DARK.g100})}</div>
+  ${paceLine(15, CLAUDE_DARK)}
+  ${resetRow('in 10h 1m', 'Fri 12:29 am')}
+</div>`;
+
+/* ---- Section 6: full compact screen ---- */
+function statuslineBlock(theme, txt) { return `<div class="statusline" style="color:${theme.muted}">${txt} <svg class="refresh" fill="currentColor"><use href="#icoRefresh"/></svg></div>`; }
+const teamsCollapsed5h = `<div class="acard">
+  <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">0% used</span>${chevSvg(false)}</div>
+  ${bar(0, CLAUDE_DARK)}
+  <div class="cc-status"><span class="txt">Starts when a message is sent</span></div>
+</div>`;
+const teamsCollapsed7d = `<div class="acard">
+  <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
+  ${subrowCompact('All models', 38, CLAUDE_DARK, 50)}
+  <div class="cc-status"><span class="txt">Resets in 3d 2h &middot; 18 pts below pace</span></div>
+</div>`;
+// Usage credits never had a chart, so it has nothing for Compact to fold —
+// one shape, identical in both densities: header, bar, the "left" line. No
+// chevron (fix 7, item 3).
+const teamsCollapsedCredits = creditsCardFull(CLAUDE_DARK, {
+  spend: '$19.72 / $400.00', pct: 5,
+  left: '$380.28 left &middot; covers you when you hit your plan limits',
+});
+document.getElementById('t6-all').innerHTML = teamsCollapsed5h + teamsCollapsed7d + teamsCollapsedCredits + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+document.getElementById('t6-oneopen').innerHTML = `<div class="acard">
+  <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">0% used</span>${chevSvg(true)}</div>
+  ${bar(0, CLAUDE_DARK)}
+  <div class="esttext">Starts when a message is sent</div>
+</div>` + teamsCollapsed7d + teamsCollapsedCredits + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+
+/* ---- Section 7: edge states ---- */
+// TrendBlock: only the pace clause is bold, in barFill(95.0) — the >90
+// amber/orange rung, never red — while the reset clause stays normal weight,
+// onSurfaceVariant. The bar itself is red at 100% (barColor's >=100 rung);
+// the two colours are independent, per the real component.
+document.getElementById('t7-abovepace').innerHTML = `<div class="acard">
+  <div class="a-top"><span class="a-title">7-day window</span></div>
+  ${subrowCompact('All models', 100, CLAUDE_DARK, 88)}
+  <div class="cc-status" style="opacity:1;"><span class="txt" style="color:${CLAUDE_DARK.muted}">Resets in 3d 2h &middot; <span style="color:${CLAUDE_DARK.g90};font-weight:700;">12 points above even pace</span></span></div>
+</div>`;
+document.getElementById('t7-nodata').innerHTML = `<div style="font-size:14px;opacity:.85;padding:4px 2px 12px;">No data yet — try Refresh now.</div>` + statuslineBlock(CLAUDE_DARK, 'Not checked yet');
+document.getElementById('t7-free').innerHTML = `<div style="height:4px;"></div>` + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+document.getElementById('t7-hiddencredits').innerHTML = teamsCollapsed5h + teamsCollapsed7d + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+document.getElementById('t7-moreclosed').innerHTML = teamsCollapsed5h + teamsCollapsed7d +
+  `<div class="morehead">More &#9662; &middot; 1 card</div>` + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+document.getElementById('t7-moreopen').innerHTML = teamsCollapsed5h + teamsCollapsed7d +
+  `<div class="morehead">More &#9652; &middot; 1 card</div>` + teamsCollapsedCredits + statuslineBlock(CLAUDE_DARK, 'Checked just now');
+
+/* ---- Section 8: inner screen ---- */
+document.getElementById('t8-inner').innerHTML = `
+  <div class="topbar">
+    <svg class="mk" style="color:#D97757"><use href="#mkClaude"/></svg>
+    <svg class="mk" style="color:#10A37F;margin-left:-4px"><use href="#mkGpt"/></svg>
+    <span style="margin-left:4px;">Cooldown</span>
+    <span class="sp"></span>
+    <svg class="tico"><use href="#icoCal"/></svg>
+    <svg class="tico"><use href="#icoGear"/></svg>
+    <svg class="tico" style="color:#E59980"><use href="#icoMore"/></svg>
+  </div>
+  <div class="strip" style="padding:0 20px;"><div class="stab on">Pro</div><div class="stab">Teams</div><div class="stab">Product</div><div class="stab">ChatGPT</div></div>
+  <div style="max-width:678px;margin:0 auto;padding:16px 20px;">
+    <div class="acard">
+      <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">14% used</span>${chevSvg(true)}</div>
+      ${bar(14, CLAUDE_DARK, 45)}
+      <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:237, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], elapsed:.45, valueLabel:'14%', xLeft:'12:09 pm', xRight:'5:09 pm'})}</div>
+      ${paceLine(-32, CLAUDE_DARK)}
+      <div class="esttext">Usage hasn't moved enough yet to project a pace</div>
+      ${resetRow('in 2h 41m', 'Thu 5:09 pm')}
+    </div>
+    <div class="acard">
+      <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
+      ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+      <div class="cc-status"><span class="txt">Resets in 10h 1m &middot; 10 pts below pace</span></div>
+    </div>
+    ${statuslineBlock(CLAUDE_DARK, 'Checked just now')}
+  </div>`;
+
+/* ---- Section 9: layout sheet ---- */
+function sheetRow(icon, label, chip, on, disabled) {
+  return `<div class="srow">
+    <svg class="sicon" fill="none" stroke="currentColor"><use href="#${icon}"/></svg>
+    <div class="slabel">${label}</div>
+    <div class="swrap ${on?'on':'off'}${disabled?' dis':''}" style="background:${on?CLAUDE_DARK.accent+'99':'#8884'}"><div class="kn"></div></div>
+    <div class="shandle"><svg fill="none" stroke="currentColor"><use href="#icoDrag"/></svg></div>
+  </div>`;
+}
+function dividerRow() { return `<div class="sdivider"><div class="ln"></div><div class="dt">Behind More</div><div class="ln"></div></div>`; }
+function sheetShell(rowsHtml) {
+  return `<div class="pill"></div>
+  <div class="sheettitle">Main screen layout</div>
+  <div class="sheetsub">Show, hide and reorder the cards on this account's screen.</div>
+  ${rowsHtml}
+  <div class="sfoot"><div class="stextbtn" style="color:${CLAUDE_DARK.accent}">Reset layout</div><div class="stextbtn" style="color:${CLAUDE_DARK.accent}">Done</div></div>`;
+}
+document.getElementById('t9-default').innerHTML = sheetShell(
+  sheetRow('icoCal','5-hour window', null, true, false) +
+  sheetRow('icoCal','7-day window', null, true, false) +
+  sheetRow('icoGear','Usage credits', null, true, false) +
+  dividerRow()
+);
+document.getElementById('t9-hidden').innerHTML = sheetShell(
+  sheetRow('icoCal','5-hour window', null, true, false) +
+  sheetRow('icoCal','7-day window', null, true, false) +
+  dividerRow() +
+  sheetRow('icoGear','Usage credits', null, false, false)
+);
+document.getElementById('t9-behind').innerHTML = sheetShell(
+  sheetRow('icoCal','5-hour window', null, true, false) +
+  sheetRow('icoGear','Usage credits', null, true, false) +
+  dividerRow() +
+  sheetRow('icoCal','7-day window', null, false, false)
+);
+document.getElementById('t9-invariant').innerHTML = sheetShell(
+  sheetRow('icoCal','5-hour window', null, true, true) +
+  `<div class="shelper" style="color:${CLAUDE_DARK.g90}">At least one card must stay visible above More.</div>` +
+  dividerRow() +
+  sheetRow('icoCal','7-day window', null, false, false) +
+  sheetRow('icoGear','Usage credits', null, false, false)
+);
+document.getElementById('t9-reset').innerHTML = `
+  <div class="dt">Reset layout?</div>
+  <div class="db">Shows every card again, in the default order (5-hour, 7-day, Usage credits), for this account only. Doesn't touch its history or settings.</div>
+  <div class="btns"><div class="dlgbtn">Cancel</div><div class="dlgbtn" style="color:${CLAUDE_DARK.accent}">Reset layout</div></div>`;
+</script>
+</body>
+</html>
