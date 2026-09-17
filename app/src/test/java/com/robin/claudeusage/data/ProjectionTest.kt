@@ -219,7 +219,7 @@ class ProjectionTest {
         assertEquals(7 * 24 * 60 * 60_000L, Projection.WEEKLY_MS)
     }
 
-    // --- cap samples (CCRM-73 Model Cap Chart) ---
+    // --- cap samples (CCRM-73 (Model Cap Chart)) ---
 
     @Test
     fun `cap samples bind by the cap's own reset and ignore other caps`() {

@@ -65,7 +65,6 @@ import com.robin.claudeusage.ui.CompactLine
 import com.robin.claudeusage.ui.EstimateLine
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.LocalWindowHeight
-import com.robin.claudeusage.ui.LocalWidthClass
 import com.robin.claudeusage.ui.PACE_DEAD_ZONE
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProvenanceNote
@@ -74,9 +73,9 @@ import com.robin.claudeusage.ui.appDark
 import com.robin.claudeusage.ui.chartHeight
 import com.robin.claudeusage.ui.compactLine
 import com.robin.claudeusage.ui.elapsedPercent
+import com.robin.claudeusage.ui.hasTwoColumns
 import com.robin.claudeusage.ui.pacePhrase
 import com.robin.claudeusage.ui.statusLine
-import com.robin.claudeusage.ui.twoPane
 import java.time.Instant
 import java.util.Locale
 
@@ -202,10 +201,12 @@ internal fun UsageBarLine(
                 }
             }
         }
-        if (tick) {
+        // `tick` already means elapsedPercent is non-null; saying so again here is what
+        // lets the Canvas read it without a `!!`.
+        if (tick && elapsedPercent != null) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = BarGeometry.tickWidth(height.toPx())
-                val cx = size.width * BarGeometry.tickFraction(elapsedPercent!!)
+                val cx = size.width * BarGeometry.tickFraction(elapsedPercent)
                 drawRoundRect(
                     color = tickColor,
                     topLeft = Offset(cx - w / 2f, 0f),
@@ -555,7 +556,12 @@ internal fun WeeklyCard(
 ) {
     val open = !compact || expanded
     val caps = data.modelCaps
-    val twoColumns = open && caps.isNotEmpty() && LocalWidthClass.current.twoPane
+    // The card splits its *own* content, so the threshold is the one Adaptive keeps for
+    // exactly that (700dp, [hasTwoColumns]) rather than the 600dp two-pane breakpoint:
+    // between the two, each column would be ~260dp and the pace and estimate lines under
+    // it start wrapping — the case TwoColumnMinWidth is documented to prevent. A Fold's
+    // ~750dp inner screen is on the two-column side of both, so wireframe §8 is unchanged.
+    val twoColumns = open && caps.isNotEmpty() && hasTwoColumns()
     CardShell(onToggle.takeIf { compact }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("7-day window", style = MaterialTheme.typography.titleSmall)
@@ -729,9 +735,14 @@ private fun CapChips(
 /**
  * Pay-as-you-go credits — identical in both densities (wireframe decision 8): it never
  * had a chart, so Compact has nothing to fold, and it takes no chevron and no tap.
+ *
+ * [serifHeadline] is CCRM-60 (Dual Identity)'s Claude serif, threaded here for the same
+ * reason [SubRow] takes it: CCRM-74 (Chart Polish) item 3 gives every card **one** row
+ * style, so this card's headline percentage is the 5-hour and 7-day rows' `bodyMedium`
+ * bold rather than a `titleMedium` a size larger (wireframe §6).
  */
 @Composable
-internal fun CreditsCard(credits: SpendCredits, usageLeft: Boolean) {
+internal fun CreditsCard(credits: SpendCredits, usageLeft: Boolean, serifHeadline: Boolean = false) {
     val pct = credits.percent
     // The binding constraint, not the monthly remainder: identical while the
     // server reports no balance, but the day it does, "left" must mean the
@@ -780,9 +791,11 @@ internal fun CreditsCard(credits: SpendCredits, usageLeft: Boolean) {
                         )
                     ) { append(" ⓘ") }
                 } else AnnotatedString("No cap"),
-                style = MaterialTheme.typography.titleMedium,
+                // One row style everywhere (CCRM-74 (Chart Polish) item 3, §6).
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
+                fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
                 modifier = Modifier.clickable(enabled = pct != null) {
                     creditsProv = !creditsProv
                 },

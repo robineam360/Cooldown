@@ -9,7 +9,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -144,7 +143,6 @@ private fun App(startProfile: Profile) {
     val context = LocalContext.current
     val repo = remember { UsageRepository(context) }
     val cache = remember { repo.cacheSettings() }
-    val scope = rememberCoroutineScope()
     var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
     // Deliberately not persisted: the debug easter egg re-locks on every launch.
     var debugUnlocked by remember { mutableStateOf(false) }
@@ -218,6 +216,14 @@ private fun App(startProfile: Profile) {
 
     // System back walks the screen stack instead of exiting the app.
     BackHandler(enabled = screen != Screen.MAIN) { goBack() }
+
+    // CCRM-25 (Card Layout), wireframe §9: the cards the selected account actually
+    // reports — the ⋮'s own gate, and the set the layout sheet arranges (and holds its
+    // never-blank invariant) over. Read here rather than in the two places that need it
+    // so they can't disagree about what the account has.
+    val presentCards = remember(selectedProfile, tick) {
+        dataCards(repo.snapshot(selectedProfile).data, cache.creditsVisible(selectedProfile))
+    }
 
     val dark = resolveDark(themeMode, isSystemInDarkTheme())
     // A forced theme diverges from the system theme that the manifest's
@@ -331,13 +337,7 @@ private fun App(startProfile: Profile) {
                                 // shows only once the selected account has two or more
                                 // cards to arrange — with one, the never-blank invariant
                                 // leaves nothing to hide or fold.
-                                val arrangeable = remember(selectedProfile, tick) {
-                                    dataCards(
-                                        repo.snapshot(selectedProfile).data,
-                                        cache.creditsVisible(selectedProfile),
-                                    ).size
-                                }
-                                if (arrangeable >= 2) {
+                                if (presentCards.size >= 2) {
                                     Box {
                                         IconButton(onClick = { layoutMenuOpen = true }) {
                                             Icon(
@@ -430,6 +430,7 @@ private fun App(startProfile: Profile) {
                 LayoutSheet(
                     profile = selectedProfile,
                     cache = cache,
+                    present = presentCards,
                     onChanged = { layoutTick++ },
                     onDismiss = { showLayoutSheet = false },
                 )
@@ -686,15 +687,28 @@ private fun ProfileScreen(
         var moreOpen by remember(profile) { mutableStateOf(false) }
 
         // CCRM-72 (Main Screen Redesign): the open/folded state of each Compact card,
-        // remembered per card per account.
+        // remembered per card per account. Held as an immutable Set and replaced whole
+        // on every toggle — a MutableSet in a MutableState would let a mutation land
+        // without a recomposition (lint's MutableCollectionMutableState).
         var expandedCards by remember(profile) {
-            mutableStateOf(CardId.entries.filterTo(mutableSetOf()) { cache.expanded(profile, it) })
+            mutableStateOf(CardId.entries.filter { cache.expanded(profile, it) }.toSet())
         }
-        val toggle: (CardId) -> Unit = { id ->
-            val next = expandedCards.toMutableSet()
-            if (!next.remove(id)) next.add(id)
-            expandedCards = next
-            cache.setExpanded(profile, id, id in next)
+        // CCRM-25 (Card Layout), wireframe §7f: a card behind More always renders
+        // collapsed to begin with — the disclosure is a peek, not a second screen — so
+        // its open state is session-only and deliberately never reads or writes the
+        // persisted per-card flag above.
+        var foldedOpen by remember(profile) { mutableStateOf(emptySet<CardId>()) }
+        val isOpen: (CardId, Boolean) -> Boolean = { id, folded ->
+            if (folded) id in foldedOpen else id in expandedCards
+        }
+        val toggle: (CardId, Boolean) -> Unit = { id, folded ->
+            if (folded) {
+                foldedOpen = if (id in foldedOpen) foldedOpen - id else foldedOpen + id
+            } else {
+                val open = id !in expandedCards
+                expandedCards = if (open) expandedCards + id else expandedCards - id
+                cache.setExpanded(profile, id, open)
+            }
         }
 
         // CCRM-73 (Model Cap Chart): which series the 7-day chart draws, per account and
@@ -712,8 +726,8 @@ private fun ProfileScreen(
                         window = w,
                         history = history,
                         compact = cardCompact,
-                        expanded = id in expandedCards,
-                        onToggle = { toggle(id) },
+                        expanded = isOpen(id, folded),
+                        onToggle = { toggle(id, folded) },
                         use24h = use24h,
                         usageLeft = usageLeft,
                         resetClock = resetClock,
@@ -727,8 +741,8 @@ private fun ProfileScreen(
                     data = data,
                     history = history,
                     compact = cardCompact,
-                    expanded = id in expandedCards,
-                    onToggle = { toggle(id) },
+                    expanded = isOpen(id, folded),
+                    onToggle = { toggle(id, folded) },
                     selectedCap = selectedCap,
                     onSelectCap = { name ->
                         storedCap = name
@@ -742,7 +756,7 @@ private fun ProfileScreen(
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
                 )
-                CardId.CREDITS -> credits?.let { CreditsCard(it, usageLeft) }
+                CardId.CREDITS -> credits?.let { CreditsCard(it, usageLeft, serifHeadline) }
             }
         }
 

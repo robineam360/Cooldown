@@ -32,7 +32,7 @@ data class CompactLine(
  *
  * [resetCountdown] is `Fmt.relIn(window.resetsAt)` — "in 2h 41m" — or null when the
  * window has no reset time at all, which is the idle case `ResetRow` already words as
- * "Starts when a message is sent" (CCBG-30). [delta] is the window's percent minus its
+ * "Starts when a message is sent" (CCBG-30 (Phantom Window)). [delta] is the window's percent minus its
  * even-pace percent, or null when there is no clock to measure pace against.
  */
 fun compactLine(resetCountdown: String?, delta: Double?): CompactLine {
@@ -43,10 +43,10 @@ fun compactLine(resetCountdown: String?, delta: Double?): CompactLine {
     return CompactLine("$reset · $pace", if (above) pace else null)
 }
 
-/** "12% above even pace" / "32% below pace" / "on even pace"; null with no pace to read. */
+/** "12% above pace" / "32% below pace" / "on pace"; null with no pace to read. */
 fun compactPaceClause(delta: Double?): String? = when {
     delta == null -> null
-    delta > PACE_DEAD_ZONE -> "${delta.roundToInt()}% above even pace"
+    delta > PACE_DEAD_ZONE -> "${delta.roundToInt()}% above pace"
     delta < -PACE_DEAD_ZONE -> "${(-delta).roundToInt()}% below pace"
-    else -> "on even pace"
+    else -> "on pace"
 }

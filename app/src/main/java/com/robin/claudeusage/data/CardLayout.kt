@@ -124,21 +124,39 @@ data class CardLayout(
          * True when hiding [id] would still leave a card shown above More — the layout
          * sheet disables the hide switch otherwise, rather than letting [hide] silently
          * restore a different card via [normalize]'s rescue.
+         *
+         * [present] is the set of cards the account actually reports right now
+         * (`dataCards`), because the invariant the user feels is "the screen is never
+         * blank", and a card the account has no data for is never drawn whatever the
+         * layout says. On a ChatGPT-shaped account — no 5-hour window since 2026-07-12,
+         * so only the 7-day card and credits exist — counting `SESSION` as "still shown"
+         * let both real cards be hidden and left the screen as nothing but the status
+         * line. Defaults to every card, which is what a Claude account with all three
+         * reports and what the wireframe §9 frames draw.
          */
-        fun canHide(l: CardLayout, id: CardId): Boolean {
+        fun canHide(
+            l: CardLayout,
+            id: CardId,
+            present: Set<CardId> = CardId.entries.toSet(),
+        ): Boolean {
             val n = normalize(l)
             val hidden = n.hidden + id
-            return n.order.any { it !in hidden && it !in n.more }
+            return n.order.any { it in present && it !in hidden && it !in n.more }
         }
 
         /**
          * True when folding [id] behind More would still leave a card shown above More —
-         * the layout sheet disables the fold switch otherwise.
+         * the layout sheet disables the fold switch otherwise. [present] carries the same
+         * meaning it does in [canHide].
          */
-        fun canFold(l: CardLayout, id: CardId): Boolean {
+        fun canFold(
+            l: CardLayout,
+            id: CardId,
+            present: Set<CardId> = CardId.entries.toSet(),
+        ): Boolean {
             val n = normalize(l)
             val more = n.more + id
-            return n.order.any { it !in n.hidden && it !in more }
+            return n.order.any { it in present && it !in n.hidden && it !in more }
         }
 
         /** `{"o":["session","weekly","credits"],"h":[],"m":["credits"]}` */

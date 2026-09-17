@@ -71,6 +71,12 @@ import com.robin.claudeusage.ui.rememberReorderDragState
  * reorder — and the switch, which is a plain [CardLayout.hide]/[CardLayout.show]
  * gated on [CardLayout.canHide], independent of a card's position or fold state.
  *
+ * [present] is the cards the account actually reports right now (`dataCards`): only
+ * those get a row, and the never-blank invariant is evaluated over them, so a card the
+ * account has no data for can neither take a row nor be the card the invariant thinks
+ * is holding the screen open. The wireframe §9 frames draw a Claude account with all
+ * three, which is what the defaults still give.
+ *
  * Every change (switch, drag, or Reset) applies immediately via
  * [UsageCache.setLayout] and calls [onChanged] — there is no confirm besides
  * Reset's own.
@@ -80,6 +86,7 @@ import com.robin.claudeusage.ui.rememberReorderDragState
 fun LayoutSheet(
     profile: Profile,
     cache: UsageCache,
+    present: Set<CardId>,
     onChanged: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -117,14 +124,15 @@ fun LayoutSheet(
                 val dragState = rememberReorderDragState()
                 val liveLayout by rememberUpdatedState(layout)
 
-                val mainIds = layout.order.filter { it !in layout.more }
-                val moreIds = layout.order.filter { it in layout.more }
+                val mainIds = layout.order.filter { it in present && it !in layout.more }
+                val moreIds = layout.order.filter { it in present && it in layout.more }
 
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                     items(mainIds, key = { it.key }) { id ->
                         CardLayoutRow(
                             id = id,
                             layout = layout,
+                            present = present,
                             dragState = dragState,
                             rowHeightPx = rowHeightPx,
                             liveLayout = { liveLayout },
@@ -139,6 +147,7 @@ fun LayoutSheet(
                         CardLayoutRow(
                             id = id,
                             layout = layout,
+                            present = present,
                             dragState = dragState,
                             rowHeightPx = rowHeightPx,
                             liveLayout = { liveLayout },
@@ -184,6 +193,7 @@ fun LayoutSheet(
 private fun CardLayoutRow(
     id: CardId,
     layout: CardLayout,
+    present: Set<CardId>,
     dragState: ReorderDragState,
     rowHeightPx: Float,
     liveLayout: () -> CardLayout,
@@ -192,10 +202,10 @@ private fun CardLayoutRow(
 ) {
     val hidden = id in layout.hidden
     val checked = !hidden
-    val switchEnabled = if (checked) CardLayout.canHide(layout, id) else true
+    val switchEnabled = if (checked) CardLayout.canHide(layout, id, present) else true
     val isDragging = dragState.isDragging(id)
     val tint = MaterialTheme.colorScheme.onSurfaceVariant
-    val row = cardRowIndex(layout, id)
+    val row = cardRowIndex(layout, id, present)
 
     Column(modifier = modifier.reorderRowTransform(isDragging, dragState.offsetFor(id))) {
         Row(
@@ -206,9 +216,9 @@ private fun CardLayoutRow(
                 .padding(horizontal = 16.dp)
                 .reorderAccessibility(
                     canMoveUp = row > 0,
-                    canMoveDown = row < cardRowCount(layout) - 1,
-                    onMoveUp = { onApply(applyCardDrag(layout, id, row - 1)) },
-                    onMoveDown = { onApply(applyCardDrag(layout, id, row + 1)) },
+                    canMoveDown = row < cardRowCount(layout, present) - 1,
+                    onMoveUp = { onApply(applyCardDrag(layout, id, row - 1, present)) },
+                    onMoveDown = { onApply(applyCardDrag(layout, id, row + 1, present)) },
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -233,8 +243,9 @@ private fun CardLayoutRow(
                 onDragBy = { deltaY ->
                     dragState.dragBy(deltaY, rowHeightPx) { shift ->
                         val current = liveLayout()
-                        val from = cardRowIndex(current, id)
-                        val next = if (from < 0) current else applyCardDrag(current, id, from + shift)
+                        val from = cardRowIndex(current, id, present)
+                        val next =
+                            if (from < 0) current else applyCardDrag(current, id, from + shift, present)
                         if (next !== current) {
                             onApply(next)
                             true
@@ -350,8 +361,8 @@ private fun ResetLayoutDialog(
         title = { Text("Reset layout?") },
         text = {
             Text(
-                "Shows every card again, in the default order (5-hour, 7-day, Usage " +
-                    "credits), for this account only. Doesn't touch its history or settings.",
+                "Shows every card again, in the default order, for this account only. " +
+                    "Doesn't touch its history or settings.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

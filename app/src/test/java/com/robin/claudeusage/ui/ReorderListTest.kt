@@ -4,6 +4,7 @@ import com.robin.claudeusage.data.CardId
 import com.robin.claudeusage.data.CardLayout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,6 +37,21 @@ class ReorderListTest {
     }
 
     @Test
+    fun `row index follows the groups the sheet draws, not the raw order`() {
+        // A folded card ahead of a shown one in `order` — not something a drag can
+        // leave behind, but nothing in the model forbids it, and the sheet draws
+        // [5-hour, Usage credits, divider, 7-day] whatever `order` says.
+        val odd = CardLayout(
+            order = listOf(CardId.SESSION, CardId.WEEKLY, CardId.CREDITS),
+            hidden = emptySet(),
+            more = setOf(CardId.WEEKLY),
+        )
+        assertEquals(0, cardRowIndex(odd, CardId.SESSION))
+        assertEquals(1, cardRowIndex(odd, CardId.CREDITS))
+        assertEquals(3, cardRowIndex(odd, CardId.WEEKLY))
+    }
+
+    @Test
     fun `row index is -1 for a card not in the layout`() {
         val trimmed = default.copy(order = listOf(CardId.SESSION, CardId.WEEKLY))
         assertEquals(-1, cardRowIndex(trimmed, CardId.CREDITS))
@@ -44,6 +60,56 @@ class ReorderListTest {
     @Test
     fun `row count is every card plus one divider row`() {
         assertEquals(4, cardRowCount(default))
+    }
+
+    // --- present: the cards the account actually reports (ChatGPT has no 5-hour window) ---
+
+    /** A ChatGPT-shaped account: a 7-day window and credits, no 5-hour window. */
+    private val chatgpt = setOf(CardId.WEEKLY, CardId.CREDITS)
+
+    @Test
+    fun `a card the account doesn't report takes no row`() {
+        assertEquals(-1, cardRowIndex(default, CardId.SESSION, chatgpt))
+        assertEquals(0, cardRowIndex(default, CardId.WEEKLY, chatgpt))
+        assertEquals(1, cardRowIndex(default, CardId.CREDITS, chatgpt))
+        assertEquals(3, cardRowCount(default, chatgpt))
+    }
+
+    @Test
+    fun `an absent card can't be the one holding the screen open`() {
+        // CCBG territory: with SESSION counted, hiding both real cards was allowed and
+        // left the main screen as nothing but the status line.
+        val creditsHidden = CardLayout.hide(default, CardId.CREDITS)
+        assertFalse(CardLayout.canHide(creditsHidden, CardId.WEEKLY, chatgpt))
+        assertFalse(CardLayout.canFold(creditsHidden, CardId.WEEKLY, chatgpt))
+        // The same layout on a Claude account, where the 5-hour card is real, is fine.
+        assertTrue(CardLayout.canHide(creditsHidden, CardId.WEEKLY))
+        assertTrue(CardLayout.canFold(creditsHidden, CardId.WEEKLY))
+    }
+
+    @Test
+    fun `folding the last present card is a no-op, same instance back`() {
+        val creditsFolded = CardLayout.toMore(default, CardId.CREDITS)
+        // Rows for ChatGPT: [7-day, divider, Usage credits] — dragging the 7-day card
+        // onto the divider would leave nothing above it.
+        assertSame(creditsFolded, applyCardDrag(creditsFolded, CardId.WEEKLY, 1, chatgpt))
+    }
+
+    @Test
+    fun `a present card folds past a card the account doesn't report`() {
+        val folded = applyCardDrag(default, CardId.CREDITS, 2, chatgpt)
+        assertEquals(setOf(CardId.CREDITS), folded.more)
+        // SESSION isn't drawn, so it keeps its stored slot rather than being shuffled.
+        assertEquals(CardId.SESSION, folded.order.first())
+        // Rows are now [7-day, divider, Usage credits].
+        assertEquals(0, cardRowIndex(folded, CardId.WEEKLY, chatgpt))
+        assertEquals(2, cardRowIndex(folded, CardId.CREDITS, chatgpt))
+    }
+
+    @Test
+    fun `reordering two present cards leaves an absent one where it was`() {
+        val moved = applyCardDrag(default, CardId.CREDITS, 0, chatgpt)
+        assertEquals(listOf(CardId.SESSION, CardId.CREDITS, CardId.WEEKLY), moved.order)
     }
 
     // --- applyCardDrag: within-group reorder ---

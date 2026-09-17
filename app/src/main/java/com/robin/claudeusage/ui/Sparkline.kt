@@ -368,7 +368,7 @@ fun UsageSparkline(
         }
 
         // --- the guide labels, measured and placed before anything else is drawn ---
-        // CCRM-74 item 1: they live inside the plot now, so everything else has to know
+        // CCRM-74 (Chart Polish) item 1: they live inside the plot now, so everything else has to know
         // where they are in order to keep off them. Drawn late (below), on a halo, so the
         // curve passing behind can't make them unreadable.
         val guides = listOf(100.0 to warn100, 90.0 to warn90, 80.0 to warn80)
@@ -411,7 +411,7 @@ fun UsageSparkline(
         /**
          * Where a value label may go, best first: the preferred side, then the other
          * one. The caller takes the first candidate that clears the guide labels —
-         * CCRM-74 item 1, the callouts yield, never the labels.
+         * CCRM-74 (Chart Polish) item 1, the callouts yield, never the labels.
          */
         fun valueLabelSpots(p: Offset, w: Int, h: Int): List<Rect> {
             val size = Size(w.toFloat(), h.toFloat())
@@ -600,7 +600,7 @@ fun UsageSparkline(
             // and the two value labels collide. The caption below spells this number
             // out ("At this pace: ~75% when the window resets"), so the marker keeps
             // its label and this one yields — as it also does to the callout and, since
-            // CCRM-74 item 1, to the guide labels.
+            // CCRM-74 (Chart Polish) item 1, to the guide labels.
             val spots = valueLabelSpots(end, l.size.width, l.size.height)
             val standing = nowLabelRect
             val rect = spots.firstOrNull { r ->

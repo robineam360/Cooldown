@@ -675,8 +675,7 @@ fun SettingsScreen(
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            "Comfortable keeps every chart open. Compact folds each card to a title, " +
-                "bar and one line — tap it to open the chart in place.",
+            "How much each card shows at once.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -695,6 +694,15 @@ fun SettingsScreen(
                 )
             }
         }
+        Spacer(Modifier.height(6.dp))
+        // The line below the chips, in Usage display's voice — wireframe §10 draws both:
+        // the short "what this setting is" above, the longer "what each chip does" below.
+        Text(
+            "Comfortable keeps every chart open, exactly as today. Compact folds each " +
+                "card to a title, bar and one line — tap it to open the chart in place.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         RowDivider()
         // CCRM-75 (Chart Height): orthogonal to Density — that folds the chart away,
         // this sizes it once it's showing. Default Medium (Robin's call, 2026-09-17).
@@ -704,7 +712,7 @@ fun SettingsScreen(
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            "How tall the trend charts draw. Small keeps only the lines.",
+            "How tall an open chart draws.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -724,6 +732,14 @@ fun SettingsScreen(
                 )
             }
         }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Large draws everything. Small keeps just the lines — guides, pace, curve — " +
+                "and drops every label; the pace and estimate text below the chart still " +
+                "say the numbers.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         RowDivider()
         // CCRM-77 (Transposed Chart): ships as a toggle, not the default — Time across
         // is today's geometry.

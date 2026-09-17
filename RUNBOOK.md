@@ -63,7 +63,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
 | 1 | File CCRM-72/73, reverse the CCRM-3 ruling, land the cap history fields | session | — | ☑ |
 | 2 | Wireframe: every CCRM-72 and CCRM-73 state, reviewed to approval | sub-agent draws · Robin approves | — | ☑ |
 | 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☑ |
-| 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☐ |
+| 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☑ |
 | 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☐ |
 | 6 | Release v1.7 | session · Robin at the phone | 5 | ☐ |
 
@@ -191,12 +191,16 @@ naming the state. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Every wireframe state is reachable in a debug build; Comfortable + no layout changes = v1.6.
-- ☐ CCRM-72 / CCRM-73 / CCRM-74 / CCRM-75 / CCRM-76 / CCRM-25 / CCRM-35 and CCRM-77
+- ☑ Every wireframe state is reachable in a debug build; Comfortable + no layout changes = v1.6.
+- ☑ CCRM-72 / CCRM-73 / CCRM-74 / CCRM-75 / CCRM-76 / CCRM-25 / CCRM-35 and CCRM-77
   statuses read Built, Fold 7 pass pending.
 
 **Log:**
--
+- 2026-09-17 — four work packages (Sonnet: models, layout sheet; Opus: Sparkline, main screen)
+  plus an Opus adversarial review that fixed eight findings and surfaced three design calls,
+  all taken: the layout sheet lists only the cards the account has and the invariant counts
+  those; folded cards start collapsed, session-only; Reset copy names no cards. 528 tests,
+  assembleDebug and the signed assembleRelease green. Not yet on a device.
 
 ---
 

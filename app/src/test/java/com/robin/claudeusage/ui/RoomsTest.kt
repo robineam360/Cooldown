@@ -39,7 +39,7 @@ class RoomsTest {
 
     @Test
     fun `the two rooms still differ in the light theme`() {
-        // The room is still a room: CCRM-76 stops it tinting the *dark* theme only, and
+        // The room is still a room: CCRM-76 (Black Room) stops it tinting the *dark* theme only, and
         // a change that flattened the light half too would be the decision it isn't.
         val claude = Rooms.forProvider(Provider.CLAUDE)
         val neutral = Rooms.forProvider(Provider.CHATGPT)

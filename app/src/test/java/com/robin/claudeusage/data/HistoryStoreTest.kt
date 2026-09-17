@@ -42,7 +42,7 @@ class HistoryStoreTest {
         assertNull(HistoryStore.parsePoint("""{"sp":1.0}"""))
     }
 
-    // --- round trip (CCRM-73 Model Cap Chart) ---
+    // --- round trip (CCRM-73 (Model Cap Chart)) ---
 
     @Test
     fun `every cap with a percent round-trips by name`() {

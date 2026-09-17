@@ -202,61 +202,92 @@ fun DragHandleIcon(tint: Color, modifier: Modifier = Modifier) {
 
 // --- CCRM-72 (Main Screen Redesign): the layout sheet's drag-to-model resolution ---
 //
-// The layout sheet's row list is `CardLayout.order` split into two groups — cards
-// not behind More, then a non-draggable divider slot, then cards behind More —
-// which is also exactly how `CardLayout.order` is maintained in practice (nothing
-// else interleaves it). [cardRowIndex]/[cardRowCount] number that three-part list;
-// [applyCardDrag] resolves a drag within it to the [CardLayout] mutation implied,
-// reusing [CardLayout]'s own primitives rather than reimplementing their
-// invariants.
+// The layout sheet's row list is the cards the account actually reports ([present],
+// i.e. `dataCards`) split into two groups — those not behind More, then a
+// non-draggable divider slot, then those behind More. [cardRowIndex]/[cardRowCount]
+// number that three-part list; [applyCardDrag] resolves a drag within it to the
+// [CardLayout] mutation implied, reusing [CardLayout]'s own primitives rather than
+// reimplementing their invariants.
+//
+// [present] defaults to every card — the Claude account the wireframe §9 frames draw.
+// It matters for an account that doesn't report one of them (ChatGPT has no 5-hour
+// window): that card gets no row, so it must not occupy one, and it cannot be the
+// card the never-blank invariant is holding open (see [CardLayout.canFold]).
 
 /**
- * [id]'s index in the layout sheet's row list (cards not behind More, the divider
- * slot, then cards behind More) — -1 if [id] isn't in [layout] at all.
+ * [id]'s index in the layout sheet's row list ([present] cards not behind More, the
+ * divider slot, then [present] cards behind More) — -1 if [id] isn't drawn at all.
+ *
+ * Counted off the two groups the sheet actually draws rather than off
+ * [CardLayout.order] plus one for the divider: those agree only while every folded
+ * card sits at the tail of `order` and every card is present, neither of which the
+ * model enforces — and numbering two rows the same would give the sheet's drag and
+ * its TalkBack actions the wrong row.
  */
-fun cardRowIndex(layout: CardLayout, id: CardId): Int {
-    val absolute = layout.order.indexOf(id)
-    if (absolute < 0) return -1
-    return if (id in layout.more) absolute + 1 else absolute
+fun cardRowIndex(
+    layout: CardLayout,
+    id: CardId,
+    present: Set<CardId> = CardId.entries.toSet(),
+): Int {
+    if (id !in present) return -1
+    val main = layout.order.filter { it in present && it !in layout.more }
+    val inMain = main.indexOf(id)
+    if (inMain >= 0) return inMain
+    val inMore = layout.order.filter { it in present && it in layout.more }.indexOf(id)
+    return if (inMore < 0) -1 else main.size + 1 + inMore
 }
 
-/** How many rows the layout sheet draws for [layout]: every card, plus the divider. */
-fun cardRowCount(layout: CardLayout): Int = layout.order.size + 1
+/** How many rows the layout sheet draws for [layout]: every [present] card, plus the divider. */
+fun cardRowCount(layout: CardLayout, present: Set<CardId> = CardId.entries.toSet()): Int =
+    layout.order.count { it in present } + 1
 
 /**
  * Resolves a drag that has moved [id] to row [toRow] of [layout]'s row list (see
- * [cardRowIndex]) to the [CardLayout] it implies. Landing on the divider's own row
- * keeps going the direction the drag came from, so a card dragged straight at the
- * divider from either side crosses it rather than stalling. Landing on the same
- * side [id] started on only reorders ([CardLayout.move]); crossing sides folds or
- * unfolds first ([CardLayout.toMore]/[CardLayout.toMain]) so the group changes
- * before the order within it does. A fold that would break the never-blank
- * invariant ([CardLayout.canFold] false) is a no-op — [layout] itself comes back
- * unchanged, the drop snapping back exactly where the disabled-switch state
- * documents the same rule. Also a no-op, same instance back, when [id] isn't in
- * [layout] or the row doesn't move.
+ * [cardRowIndex]) to the [CardLayout] it implies.
+ *
+ * Worked on the row list itself — the dragged row is lifted out and put back at
+ * [toRow], and the groups are read off where it landed relative to the divider — so
+ * landing on the divider's own row keeps going the direction the drag came from, and
+ * a card dropped past a card already behind More lands after it. A fold that would
+ * break the never-blank invariant ([CardLayout.canFold] over [present]) is a no-op:
+ * [layout] itself comes back unchanged, the drop snapping back exactly where the
+ * disabled-switch state documents the same rule. Also a no-op, same instance back,
+ * when [id] isn't drawn or the row doesn't move.
+ *
+ * Cards outside [present] have no row, so they keep their stored place: the present
+ * cards are permuted among the slots present cards already occupy in
+ * [CardLayout.order].
  */
-fun applyCardDrag(layout: CardLayout, id: CardId, toRow: Int): CardLayout {
-    val from = cardRowIndex(layout, id)
+fun applyCardDrag(
+    layout: CardLayout,
+    id: CardId,
+    toRow: Int,
+    present: Set<CardId> = CardId.entries.toSet(),
+): CardLayout {
+    val from = cardRowIndex(layout, id, present)
     if (from < 0) return layout
-    val mainCount = layout.order.count { it !in layout.more }
-    val target = toRow.coerceIn(0, cardRowCount(layout) - 1)
+    val target = toRow.coerceIn(0, cardRowCount(layout, present) - 1)
     if (target == from) return layout
 
-    val wasInMore = id in layout.more
-    val willBeInMore = when {
-        target > mainCount -> true
-        target < mainCount -> false
-        else -> target >= from // hit the divider itself: keep the drag's own direction
+    // null is the "Behind More" divider — a real slot in the list, which is what makes
+    // dragging *onto* it mean "cross it", not "stall on it".
+    val rows: List<CardId?> = buildList {
+        addAll(layout.order.filter { it in present && it !in layout.more })
+        add(null)
+        addAll(layout.order.filter { it in present && it in layout.more })
     }
-    if (willBeInMore && !wasInMore && !CardLayout.canFold(layout, id)) return layout
+    val lifted = rows.filterNot { it == id }
+    val landed = lifted.toMutableList().apply { add(target.coerceAtMost(size), id) }
+    val willBeInMore = landed.indexOf(id) > landed.indexOf(null)
+    if (willBeInMore && id !in layout.more && !CardLayout.canFold(layout, id, present)) return layout
 
-    var next = layout
-    if (willBeInMore && !wasInMore) next = CardLayout.toMore(next, id)
-    else if (!willBeInMore && wasInMore) next = CardLayout.toMain(next, id)
+    val more = if (willBeInMore) layout.more + id else layout.more - id
+    val ordered = landed.filterNotNull()
+    val order = layout.order.toMutableList()
+    layout.order.withIndex()
+        .filter { (_, card) -> card in present }
+        .forEachIndexed { i, (slot, _) -> order[slot] = ordered[i] }
 
-    // toMore/toMain never touch `order`, so it's still in the original numbering
-    // `target` was computed against — just skip the one divider slot.
-    val absoluteIndex = target - (if (willBeInMore) 1 else 0)
-    return CardLayout.move(next, id, absoluteIndex)
+    val next = CardLayout.normalize(layout.copy(order = order, more = more))
+    return if (next == layout) layout else next
 }

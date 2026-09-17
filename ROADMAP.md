@@ -957,7 +957,7 @@ styling — stands unopposed.
 The execution order lives in [RUNBOOK.md](RUNBOOK.md).
 
 ### CCRM-72 · Main Screen Redesign — compact cards, a layout of your own, one status line
-- **Status:** **Approved — wireframe rev E, 2026-09-17** (`design/2026-09-17-main-screen-redesign.html`, five review rounds A–E in one day) · **building** per RUNBOOK.md Steps 3–4 · Fold 7 pass pending.
+- **Status:** **Built 2026-09-17** to wireframe rev E (`design/2026-09-17-main-screen-redesign.html`, five review rounds in one day; sub-agents built, an Opus review fixed eight findings) · 528 tests · **Fold 7 pass pending** (RUNBOOK.md Step 5). Three calls taken on review: the layout sheet lists only the cards the account has and the never-blank invariant counts those, so a ChatGPT account cannot hide its last real card; a card behind More always starts collapsed and opens for the session only; the Reset copy names no cards.
 - **Why:** length. `ProfileScreen` in `MainActivity.kt` is a fixed sequence — 5-hour card,
   7-day card, credits card, Refresh, two timestamps, error notice — and the two `TrendBlock`
   charts (`chartHeight`: 180–300dp each) push everything below the first bar off the screen. The
@@ -1032,7 +1032,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   chips; the layout sheet), `data/UsageCache.kt`, new `data/CardLayout.kt`.
 
 ### CCRM-73 · Model Cap Chart — the 7-day chart for Fable, not just the pool
-- **Status:** **Approved — wireframe rev E, 2026-09-17** · data half landed 2026-09-17 (421 tests) · UI half **building** per RUNBOOK.md Step 4.
+- **Status:** **Built 2026-09-17** — data half and UI half (the All / cap chips, the persisted selection with fallback to All, the two-column inner card) · **Fold 7 pass pending** (RUNBOOK.md Step 5).
 - **Why:** Robin, 2026-09-17: "The chart is there for the 5h window and the 7d window for all
   models but no visibility for the 7d Fable window." A Max or Team account is often capped on
   Fable while the pool reads 40% — CCRM-70 (Plan Fit) already records exactly that case as a
@@ -1063,7 +1063,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   `data/UsageCache.kt`.
 
 ### CCRM-74 · Chart Polish — the chart lines up with the bar, and the numbers lose their words
-- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4.
+- **Status:** **Built 2026-09-17** · **Fold 7 pass pending** (RUNBOOK.md Step 5). The compact line's pace clause is the short symmetric form ("12% above pace"); the credits headline takes the same row style as the windows.
 - **Why:** four things Robin saw on the rev C frames that are true of the live app too:
   1. **The chart's "now" divider does not sit under the bar's pace mark.** The plot stops short of
      the card's right edge to leave a gutter for the 80/90/100% labels, so the two elapsed
@@ -1087,7 +1087,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   is wanted, `BEHAVIOR-SPEC` copy pins if any test asserts the old phrases.
 
 ### CCRM-75 · Chart Height — Small / Medium / Large, like a widget size
-- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4. **Default decided by Robin: Medium** (120dp); Large and Small are the options. This is the one visible change a user who never opens Appearance will notice — the chart is shorter — and Robin chose it knowingly.
+- **Status:** **Built 2026-09-17** · **Fold 7 pass pending** (RUNBOOK.md Step 5). **Default decided by Robin: Medium** (120dp); Large and Small are the options. This is the one visible change a user who never opens Appearance will notice — the chart is shorter — and Robin chose it knowingly.
 - **Why:** Robin, 2026-09-17: "give me a setting in the app to control the chart height
   (Small/Med/Large) like the widget size option on the Mac. The current one can be Large. For
   Small, focus on the chart lines and hide things that can't fit." Density (CCRM-72) folds the
@@ -1103,7 +1103,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   level that drops labels), `SettingsScreen.kt`, `data/UsageCache.kt` (`chartSize`).
 
 ### CCRM-76 · Black Room — Claude's dark room goes black like ChatGPT's
-- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4.
+- **Status:** **Built 2026-09-17** · **Fold 7 pass pending** (RUNBOOK.md Step 5).
 - **Why:** Robin: "ChatGPT accounts show the green theme on a black background, but Claude
   accounts show orange on a dark-orange background which doesn't stand out. Can Claude also have
   a black background?" CCRM-60 (Dual Identity) gave Claude a warm room (`surfaceDark` #1B1715,
@@ -1116,7 +1116,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   automatically since it reads the same room.
 
 ### CCRM-77 · Transposed Chart — time runs down, usage runs across
-- **Status:** **Approved as a toggle — 2026-09-17, Robin's call on rev E.** Ships as a global *Chart orientation · Time across / Time down* chip row in Appearance under Chart height; default *Time across* (today's chart). **Building** per RUNBOOK.md Step 4.
+- **Status:** **Approved as a toggle — 2026-09-17, Robin's call on rev E.** Ships as a global *Chart orientation · Time across / Time down* chip row in Appearance under Chart height; default *Time across* (today's chart). **Built 2026-09-17** · **Fold 7 pass pending** (RUNBOOK.md Step 5).
 - **Why:** Robin, thinking aloud: instead of forcing the chart's now-divider to line up with the
   bar's pace mark (CCRM-74 (Chart Polish) item 1), **transpose the chart** — usage % across the
   x axis, time down the y axis (window start at the top, reset at the bottom), so the even-pace
