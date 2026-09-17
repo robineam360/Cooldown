@@ -999,6 +999,34 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   layout sheet with a card hidden, a card behind More, and the invariant blocking the last
   switch; the Reset confirm; Appearance with the Density chips; dark and light. Plus every
   CCRM-73 (Model Cap Chart) state, since they share the 7-day card.
+- **Decided on review, 2026-09-17** (rev A reviewed by the orchestrator, rev B and C by Robin):
+  - **"All", not "All models"** — the 7-day card's top row and the new chip. The only place the
+    old label lived in the app was that row.
+  - **Inner screen: the 7-day card is two chart columns** when the account has a cap — *All* on
+    the left, the cap on the right, each with its own row, bar, chart, pace line, estimate line
+    and reset row; 16dp gutter, ~331dp per column, so the chart sits at the 180dp floor. With
+    two caps the right column carries a small chip pair; with no caps the card is single column,
+    full width, as today. Applies in Comfortable too — **the one deliberate place Comfortable
+    differs from v1.6**, at Robin's request. Compact-collapsed on the inner screen stays the
+    stacked rows.
+  - **Free plan stays bare** — nothing above the status line, as today (CCBG-27 (Free Plan 403)).
+  - **Credits card has no chevron** and is identical in both densities: it has no chart, so
+    there is nothing to fold.
+  - **The ⋮ layout entry shows only when the selected account has two or more cards**; with one
+    card the invariant leaves nothing to hide or fold.
+  - **The chevron lives in the title row** in both states, and the whole card is the tap target.
+  - **The 7-day chart choice is per account and persisted** (`UsageCache.weeklyChart`);
+    collapsing or expanding the card never changes it.
+  - **No explainer under the "Behind More" divider**; the sheet subtitle already says show, hide
+    and reorder. **No inner fold for a third row** — caps are real data.
+  - **"More ▾ · 1 card"**, not "hidden": a card behind More is folded, a hidden card is not shown
+    at all.
+  - **The invariant surfaces as a disabled switch with static helper text**, not a toast.
+  - **Reset layout uses the `RemoveAccountDialog` shape but the accent-coloured confirm**, since
+    a layout reset is reversible where removing an account is not.
+  - **Measured:** 5-hour collapsed 107dp (expanded 345dp, same as Comfortable); 7-day collapsed
+    143 / 196 / 249dp for 0 / 1 / 2 caps; credits 107dp; the whole Teams account collapsed
+    ≈ 458dp, one cover-screen viewport.
 - **Not in scope:** the pinned notification and its panel (CCRM-62 (Duet Notification) stands),
   the History screen, any change to the charts themselves.
 - **Where:** `MainActivity.kt` (`ProfileScreen` split into `SessionCard`, `WeeklyCard`,
@@ -1023,8 +1051,10 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   same reason CCRM-70's tags did:** it cannot be backfilled, and every day the phone polls after
   this is a day of Fable history the chart will have on the day it ships.
 - **UI half (wireframe, then build):** segmented chips inside the 7-day card, above the chart —
-  `All models` plus one chip per `data.modelCaps` entry (`Fable`; `Sonnet` + `Opus` on older
-  payloads). Absent when the account has no caps (ChatGPT, Free): the card looks exactly as it
+  `All` plus one chip per `data.modelCaps` entry (`Fable`; `Sonnet` + `Opus` on older
+  payloads). *(Robin, 2026-09-17: "All", not "All models" — the row label changes too.)* On the
+  inner screen the toggle gives way to two chart columns, All beside the cap — see the "Decided on
+  review" list under CCRM-72 (Main Screen Redesign). Absent when the account has no caps (ChatGPT, Free): the card looks exactly as it
   does today. Default All models; the choice is remembered per account (`UsageCache.weeklyChart`).
   The chart, the pace readout and the estimate line all follow the selected series; until the
   cap has enough samples the existing "Not enough history in this window yet to chart a pace"

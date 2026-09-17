@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCRM-72/73 (Main Screen Redesign &amp; Model Cap Chart) — rev B</title>
+<title>CCRM-72/73 (Main Screen Redesign &amp; Model Cap Chart) — rev C</title>
 <style>
   :root {
     --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
@@ -195,7 +195,7 @@
 <body>
 <div class="page">
 
-  <p class="eyebrow">CCRM-72 (Main Screen Redesign) &amp; CCRM-73 (Model Cap Chart) &middot; 2026-09-17 &middot; rev B</p>
+  <p class="eyebrow">CCRM-72 (Main Screen Redesign) &amp; CCRM-73 (Model Cap Chart) &middot; 2026-09-17 &middot; rev C</p>
   <h1>The main screen: compact cards, a layout you can rearrange, one status line — and a chart for the Fable cap</h1>
   <p class="lede">
     <b>CCRM-72 (Main Screen Redesign)</b> is three changes to <code>ProfileScreen</code>: a global
@@ -203,12 +203,12 @@
     bar and one line, tap to expand the chart in place); per-account card visibility and order via a
     new layout sheet (CCRM-25 (Card Layout) + CCRM-35 (Layout Reset)); and one status line replacing
     the Refresh button plus the "Last success/Last attempt" pair. <b>CCRM-73 (Model Cap Chart)</b>
-    rides in the same 7-day card: a toggle between the pool ("All models") and any per-model cap
+    rides in the same 7-day card: a toggle between the pool ("All") and any per-model cap
     (Fable today) so the chart, pace readout and estimate follow whichever series is selected — the
     data half already landed (forward-only history tags, 421 tests green); this wireframe draws the
     UI half.
   </p>
-  <p class="review">Rev B — for review before any code is written — working agreement 2 (wireframe first). Not yet approved. Rev B fixes: light-theme frames added (&sect;3/&sect;4), the real top bar drawn with the &#8942;'s visibility rule (&sect;8/&sect;9), the credits card corrected to one shape in both densities (&sect;6/&sect;7/&sect;11), "behind More" copy corrected from "hidden" to "card" (&sect;7), chart x-axis label collision fixed (all 7-day charts), the above-pace collapsed line's colour matched to <code>TrendBlock</code> (&sect;7a), and four of the five open questions resolved into decisions (&sect;11).</p>
+  <p class="review">Rev C — for review before any code is written — working agreement 2 (wireframe first). Not yet approved. Rev C is Robin's rev B review, applied: "All models" renamed to "All" everywhere (&sect;4/&sect;5/&sect;11); the inner-screen 7-day card redrawn as two chart columns when the account has a cap &mdash; the one place Comfortable deliberately differs from v1.6 (&sect;8/&sect;11); and the Free plan question decided &mdash; stays bare (&sect;7/&sect;11). No open questions remain.</p>
 
   <hr class="hr">
   <h2>1 &middot; Today vs Comfortable</h2>
@@ -216,7 +216,7 @@
     <b>Comfortable is pixel-identical to today's cards.</b> The only thing that changes is what sits
     <i>below</i> them: today's Refresh button and two "Last success / Last attempt" lines are replaced
     by one status line. Both columns below are the same Pro-tab account, same live numbers (5h 14%
-    used, resets in 2h 41m, 32&nbsp;pts below pace; 7d All models 84%, resets in 10h&nbsp;1m,
+    used, resets in 2h 41m, 32&nbsp;pts below pace; 7d All 84%, resets in 10h&nbsp;1m,
     projection ~90%) rendered at 360dp, dark theme, matching <code>v16-main-claude-dark.png</code>.
   </p>
   <div class="grid dev">
@@ -235,7 +235,7 @@
     floors at 180dp below ~515dp of chart width — 6dp gap + 20dp pace line, 2dp gap + 20dp estimate
     line, 8dp gap, 20dp reset row). The 7-day card is the same shape plus one <code>SubBar</code> per
     row (20dp label row + 4dp gap + 19dp bar + 10dp gap = 53dp each) before its own chart: with one
-    row (All models only, Pro tab) it's <b>~403dp</b>; Teams' account below adds a second row per cap.
+    row (All only, Pro tab) it's <b>~403dp</b>; Teams' account below adds a second row per cap.
     Stacking 5h (345) + 12dp gap + 7d (403) + 12dp gap + credits (107, &sect;1 table below) + 12dp gap
     + refresh row (40) + 12dp gap + 2 timestamp lines (40) &asymp; <b>1,051dp</b> of card content on
     today's layout, against a Fold-cover viewport of roughly 420dp after the status bar, app bar and
@@ -314,7 +314,7 @@
   <h2>4 &middot; Compact &mdash; the 7-day card, collapsed and expanded</h2>
   <p class="sub">
     The 7-day card keeps its <code>SubBar</code>s in <i>both</i> densities per the roadmap
-    (<code>All models</code> plus one row per cap) &mdash; so the 96&ndash;110dp collapsed-card
+    (<code>All</code> plus one row per cap) &mdash; so the 96&ndash;110dp collapsed-card
     target in &sect;3 is a single-bar-card number and does not apply here: a second bar is a real
     53dp, not something to hide. Expanded adds the CCRM-73 (Model Cap Chart) toggle chips directly
     above the chart, selected series following through to the chart, the pace readout and the
@@ -333,7 +333,7 @@
   <div class="row dev" style="margin-top:20px;">
     <div>
       <div class="room" id="t4-expanded" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
-      <p class="devcap">Expanded, dark &middot; chips above the chart, All models selected &middot; <b>~470dp</b></p>
+      <p class="devcap">Expanded, dark &middot; chips above the chart, All selected &middot; <b>~470dp</b></p>
     </div>
     <div>
       <div class="room" data-theme="light" id="t4-expanded-light" style="--rsurface:#F5EFE8;--rcard:#FCF8F4;--rink:#26211E;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
@@ -344,16 +344,16 @@
   <hr class="hr">
   <h2>5 &middot; The 7-day chart toggle &mdash; every state</h2>
   <p class="sub">
-    Segmented chips, <code>All models</code> first then one per <code>data.modelCaps</code> entry,
+    Segmented chips, <code>All</code> first then one per <code>data.modelCaps</code> entry,
     absent entirely when the account has none (the card then looks exactly as it does today &mdash;
-    state e). Default All models, remembered per account. The <code>SubBar</code>s above the chart
+    state e). Default All, remembered per account. The <code>SubBar</code>s above the chart
     never change with the toggle &mdash; only the chart, the pace line and the estimate line follow
     the selection.
   </p>
   <div class="grid dev">
     <div>
       <div class="room" id="t5-all" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
-      <p class="devcap">a &middot; All models selected &mdash; 84%, projected ~90%</p>
+      <p class="devcap">a &middot; All selected &mdash; 84%, projected ~90%</p>
     </div>
     <div>
       <div class="room" id="t5-fable" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
@@ -373,7 +373,7 @@
     </div>
     <div>
       <div class="room" id="t5-ceiling" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
-      <p class="devcap bad">f &middot; Fable at 100% while All models reads 61% &mdash; bar and chart both pinned red</p>
+      <p class="devcap bad">f &middot; Fable at 100% while All reads 61% &mdash; bar and chart both pinned red</p>
     </div>
   </div>
   <p class="note wide">
@@ -417,7 +417,7 @@
     </div>
     <div>
       <div class="room" id="t7-free" style="--rsurface:#171513;--rink:#EDE8E4;width:328px;padding:12px 12px 4px;border-radius:16px;"></div>
-      <p class="devcap warn">c &middot; Free plan &mdash; 5h and 7d cards absent (CCBG-27), today's bare behaviour</p>
+      <p class="devcap">c &middot; Free plan &mdash; 5h and 7d cards absent (CCBG-27) &mdash; decided 2026-09-17: bare</p>
     </div>
     <div>
       <div class="room" id="t7-hiddencredits" style="--rsurface:#171513;--rink:#EDE8E4;"></div>
@@ -435,25 +435,68 @@
   <p class="note wide">
     State (c): today's code takes the <code>lastStatusKind == ErrorKind.PLAN.key</code> branch and
     renders <i>nothing</i> above the status line &mdash; not even "No data yet" (CCBG-27 (Free Plan
-    403) is deliberate: there is nothing to retry). This wireframe draws that faithfully rather than
-    inventing new copy; see &sect;11's open question on whether Free deserves the Accounts screen's
-    "Claude doesn't report usage" notice now that the card stack around it has changed shape.
+    403) is deliberate: there is nothing to retry). <b>Decided on review, 2026-09-17: stays bare.</b>
+    Robin considered the Accounts screen's "Claude doesn't report usage" notice and kept today's
+    behaviour instead &mdash; the card stack around it changed shape, but the fact it's reporting
+    didn't.
   </p>
 
   <hr class="hr">
   <h2>8 &middot; Inner screen ~750dp</h2>
   <p class="sub">
     Above the two-pane width the Main screen still shows <b>one account per page</b> (unchanged from
-    today &mdash; this is not the History screen's two-column split). The only change with width is
-    the chart itself: <code>ContentColumn(maxWidth = ChartColumnMaxWidth)</code> caps the column at
-    760dp, so on a 750dp inner display the card content is ~678dp wide and
-    <code>chartHeight(678dp)</code> lands at <b>~237dp</b> (678 &times; 0.35, inside the 180&ndash;300
+    today &mdash; this is not the History screen's two-column split). The 5-hour card only ever has
+    one series, so it just gets a taller chart: <code>ContentColumn(maxWidth = ChartColumnMaxWidth)</code>
+    caps the column at 760dp, so on a 750dp inner display the card content is ~678dp wide and
+    <code>chartHeight(678dp)</code> lands at <b>237dp</b> (678 &times; 0.35, inside the 180&ndash;300
     clamp) rather than the 180dp floor a phone hits.
   </p>
-  <div class="dev"><div class="scroll">
-    <div class="innerframe room" id="t8-inner" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;"></div>
-  </div></div>
-  <p class="cap">760dp inner-screen frame &middot; 5-hour card expanded &middot; 237dp chart</p>
+  <p class="sub">
+    <b>The 7-day card runs two chart columns when the account has a cap</b> &mdash; the width the
+    5-hour card just spends on a taller chart, the 7-day card spends on a second one, since it
+    already has a second series to show. A 16dp gutter splits the ~678dp card content into two
+    ~331dp columns, each a full stack: <code>SubBar</code> row, bar, chart, pace line, estimate
+    line, reset row. Left column is All; right is the cap. A column this narrow floors its own
+    chart back at 180dp &mdash; <code>chartHeight(331dp)</code> = 331 &times; 0.35 &asymp; 116,
+    clamped to 180 &mdash; the same floor a phone hits, so nothing here is stretched thin to fill
+    the width. <b>Two caps</b> keep it at two columns, not three: the right column carries a small
+    chip pair (Sonnet | Opus) above its chart, and the selected cap's full stack follows it &mdash;
+    no toggle chips at all in the one-cap case, since both columns are already visible side by
+    side. <b>No caps</b> (ChatGPT, Free) keeps the single full-width column at 237dp, exactly as
+    today. This applies in Comfortable and in Compact-expanded; Compact-collapsed on the inner
+    screen stays the same stacked <code>SubBar</code>s + one line it is on the phone (&sect;4) &mdash;
+    width doesn't change a collapsed card's shape, only an open one's.
+  </p>
+  <p class="sub">
+    <b>This is the one place Comfortable deliberately differs from v1.6</b>, at Robin's request,
+    2026-09-17 &mdash; every other Comfortable card is pixel-identical to today's (&sect;1). A
+    single 331dp-floored column reading half as wide as the 5-hour card above it, with a second
+    series and nothing drawn for it, was the case that didn't survive review.
+  </p>
+  <div class="row dev">
+    <div>
+      <div class="scroll">
+        <div class="innerframe room" id="t8-a" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;"></div>
+      </div>
+      <p class="devcap">a &middot; Pro, Comfortable &mdash; both columns (All 84%, Fable 61%)</p>
+    </div>
+  </div>
+  <div class="row dev" style="margin-top:20px;">
+    <div>
+      <div class="scroll">
+        <div class="room" id="t8-b" style="width:678px;max-width:100%;--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;"></div>
+      </div>
+      <p class="devcap">b &middot; two caps (Sonnet + Opus) &mdash; chips in the right column, Sonnet selected</p>
+    </div>
+  </div>
+  <div class="row dev" style="margin-top:20px;">
+    <div>
+      <div class="scroll">
+        <div class="innerframe room" id="t8-c" style="--rsurface:#171513;--rcard:#26201C;--rink:#EDE8E4;"></div>
+      </div>
+      <p class="devcap">c &middot; ChatGPT, Comfortable &mdash; no caps, single column, exactly as today</p>
+    </div>
+  </div>
 
   <hr class="hr">
   <h2>9 &middot; The layout sheet (CCRM-25 (Card Layout))</h2>
@@ -580,7 +623,7 @@
   <div class="tbl-wrap"><table>
     <tr><th>Card &middot; state</th><th>Height</th><th>Built from</th></tr>
     <tr><td>5-hour, Comfortable (= today)</td><td>~345dp</td><td>32 padding + 20 title + 8 + 19 bar + 10 + 180 chart + 6 + 20 pace + 2 + 20 estimate + 8 + 20 reset row</td></tr>
-    <tr><td>7-day, Comfortable, 1 row (All models)</td><td>~403dp</td><td>same shape, one 53dp <code>SubBar</code> instead of the 19dp bare bar</td></tr>
+    <tr><td>7-day, Comfortable, 1 row (All)</td><td>~403dp</td><td>same shape, one 53dp <code>SubBar</code> instead of the 19dp bare bar</td></tr>
     <tr><td>7-day, Comfortable, +1 cap</td><td>+53dp per extra <code>SubBar</code></td><td>20 label row + 4 + 19 bar + 10</td></tr>
     <tr><td>Usage credits, Comfortable (= today)</td><td>~107dp</td><td>32 padding + 20 row1 + 8 + 19 bar + 8 + 20 line — no chart, never had one</td></tr>
     <tr><td>5-hour, Compact collapsed</td><td>107dp</td><td>32 padding + 20 title(+chevron) + 8 + 19 bar + 8 + 20 status line &mdash; inside the 96&ndash;110dp target</td></tr>
@@ -590,7 +633,9 @@
     <tr><td>7-day, Compact collapsed, no caps</td><td>143dp</td><td>same minus one 53dp SubBar</td></tr>
     <tr><td>7-day, Compact collapsed, 2 caps</td><td>249dp</td><td>same plus one more 53dp SubBar</td></tr>
     <tr><td>7-day, Compact expanded</td><td>~470dp (1 cap)</td><td>collapsed shape minus status line, plus 32dp chip row + 10 + chart block (as 5h's 180&ndash;278) + reset row</td></tr>
-    <tr><td>Inner-screen (~750dp) chart</td><td>237dp</td><td><code>chartHeight(678dp)</code> = 678 &times; 0.35, inside the 180&ndash;300 clamp</td></tr>
+    <tr><td>Inner-screen (~750dp), 5-hour card</td><td>402dp</td><td>same shape as the phone's 345dp, chart term swapped 180&rarr;237: <code>chartHeight(678dp)</code> = 678 &times; 0.35, inside the 180&ndash;300 clamp</td></tr>
+    <tr><td>Inner-screen, 7-day card, no caps (1 column)</td><td>429dp</td><td>32 padding + 22 title + column stack (53 SubBar + 237 chart + 26 pace + 22 estimate + 17 divider + 20 reset row) &mdash; full 678dp width, "exactly as today"</td></tr>
+    <tr><td>Inner-screen, 7-day card, 1 or 2 caps (2 columns)</td><td>372dp</td><td>same shape, but each ~331dp column (678 &minus; 16dp gutter, &divide; 2) floors its own chart at 180dp: 32 + 22 + (53 + 180 + 26 + 22 + 17 + 20) &mdash; two columns cost width, not height</td></tr>
     <tr><td>Layout-sheet row</td><td>56dp</td><td>matches <code>ReorderRow</code> exactly, per instruction</td></tr>
     <tr><td>Layout-sheet drag target</td><td>48dp</td><td>matches <code>ReorderRow</code>'s <code>.shandle</code> exactly</td></tr>
   </table></div>
@@ -609,8 +654,8 @@
     <li><b>The whole card is the tap target</b> for expand/collapse — no separate disclosure icon
       button, so the hit area is the full 107dp row rather than a 24dp glyph.</li>
     <li><b>Free plan draws today's bare behaviour</b> (nothing above the status line, per CCBG-27
-      (Free Plan 403)) rather than inventing new copy the roadmap didn't ask for — flagged as an open
-      question below instead of decided silently.</li>
+      (Free Plan 403)) rather than inventing new copy the roadmap didn't ask for — decided on review,
+      2026-09-17 (below).</li>
     <li><b>The invariant surfaces as a disabled switch + static helper text</b>, not a toast on a
       blocked tap — visible before the user tries the thing that would break it.</li>
     <li><b>Reset layout uses <code>RemoveAccountDialog</code>'s shape but not its error-red confirm
@@ -621,7 +666,7 @@
       "$380.28 left &middot; covers you when you hit your plan limits" always (&sect;6/&sect;7).</li>
     <li><b>The 7-day chart toggle is per account and persisted</b>
       (<code>UsageCache.weeklyChart</code>), not per card-open-state — collapsing or expanding the
-      7-day card never changes which series (All models vs a cap) is selected; only tapping a chip
+      7-day card never changes which series (All vs a cap) is selected; only tapping a chip
       does.</li>
     <li><b>The "Behind More" divider needs no explainer line</b> — the sheet's own subtitle,
       "Show, hide and reorder the cards on this account's screen," already says what dragging a row
@@ -636,11 +681,18 @@
       invariant, so the sheet behind it would be a single disabled row.</li>
   </ol>
 
-  <h3>Open questions for Robin</h3>
+  <h3>Decided on review, 2026-09-17</h3>
   <ol class="dec">
-    <li>Free plan (&sect;7c): leave it bare as today, or give it the Accounts screen's
-      "Claude doesn't report usage — upgrade to Pro, Max or Team" notice now that a status line
-      sits right below it anyway?</li>
+    <li><b>Free plan (&sect;7c) stays bare</b>, as today &mdash; no Accounts-screen-style notice
+      added under the status line.</li>
+    <li><b>"All", not "All models"</b> &mdash; the 7-day card's top <code>SubBar</code> row and the
+      CCRM-73 (Model Cap Chart) toggle chip both read "All" everywhere in the wireframe (&sect;4,
+      &sect;5, &sect;8).</li>
+    <li><b>The inner-screen 7-day card runs two chart columns</b> when the account has a cap: All on
+      the left, the cap on the right, each with its own full stack (SubBar, bar, chart, pace,
+      estimate, reset row). Two caps put a small chip pair (e.g. Sonnet | Opus) above the right
+      column's chart; no caps keeps one full-width column, exactly as today (&sect;8). This is the
+      one place Comfortable deliberately differs from v1.6.</li>
   </ol>
 
 </div>
@@ -710,7 +762,11 @@ function chartSVG(cfg) {
   if (crowds) {
     s += `<text x="${last[0] - 7}" y="${last[1] + 15}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="end">${cfg.valueLabel}</text>`;
   } else {
-    s += `<text x="${last[0]}" y="${last[1] - 9}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="${cfg.elapsed > 0.85 ? 'end' : 'middle'}">${cfg.valueLabel}</text>`;
+    // Anchor "start" near the left edge and "end" near the right, so a
+    // centred label never runs off the plot at either extreme (a very
+    // fresh window, elapsed near 0, clipped its "0%" here otherwise).
+    const valueAnchor = cfg.elapsed > 0.85 ? 'end' : (cfg.elapsed < 0.06 ? 'start' : 'middle');
+    s += `<text x="${last[0]}" y="${last[1] - 9}" font-size="11" font-weight="700" fill="${t.ink}" text-anchor="${valueAnchor}">${cfg.valueLabel}</text>`;
   }
   // projection — the label sits above the hollow dot unless that would clip
   // the top of the chart (a projection near 100%), in which case it moves to
@@ -783,7 +839,7 @@ function weeklyCardFull(theme, opts) {
   return `<div class="acard">
     <div class="a-title" style="margin-bottom:2px;">7-day window</div>
     ${subs}
-    <div class="chartbox">${chartSVG({theme, h:180, points: opts.points, elapsed: opts.elapsed, proj: opts.proj, projLabel: opts.projLabel, valueLabel: opts.chartLabel, xLeft: opts.xLeft, xRight: opts.xRight, curveColor: opts.curveColor})}</div>
+    <div class="chartbox">${chartSVG({theme, h:opts.h||180, points: opts.points, elapsed: opts.elapsed, proj: opts.proj, projLabel: opts.projLabel, valueLabel: opts.chartLabel, xLeft: opts.xLeft, xRight: opts.xRight, curveColor: opts.curveColor})}</div>
     ${paceLine(opts.delta, theme)}
     <div class="esttext">${opts.est}</div>
     <div style="height:1px;background:${theme.ink}22;margin:8px 0;"></div>
@@ -803,14 +859,14 @@ function statusLine(txt, spin) {
 
 document.getElementById('t1-today').innerHTML =
   sessionCardFull(CLAUDE_DARK, {pct:14, elapsed:.45, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], proj:null, delta:-32, est:"Usage hasn't moved enough yet to project a pace", resetIn:'in 2h 41m', resetAt:'Thu 5:09 pm', xLeft:'12:09 pm', xRight:'5:09 pm'}) +
-  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All models', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
+  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
   `<div class="refreshbtn" style="background:${CLAUDE_DARK.accent};color:#26201C;"><svg width="16" height="16" fill="currentColor"><use href="#icoRefresh"/></svg>Refresh now</div>
    <div style="font-size:12px;opacity:.78;margin-top:12px;">Last success: Thu 7:09 pm (just now)</div>
    <div style="font-size:12px;opacity:.78;">Last attempt: Thu 7:09 pm (just now)</div>`;
 
 document.getElementById('t1-comf').innerHTML =
   sessionCardFull(CLAUDE_DARK, {pct:14, elapsed:.45, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], proj:null, delta:-32, est:"Usage hasn't moved enough yet to project a pace", resetIn:'in 2h 41m', resetAt:'Thu 5:09 pm', xLeft:'12:09 pm', xRight:'5:09 pm'}) +
-  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All models', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
+  weeklyCardFull(CLAUDE_DARK, {subs:[{label:'All', pct:84}], elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', chartLabel:'84%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}) +
   statusLine('Checked just now', false);
 
 /* ---- Section 2: status line anatomy ---- */
@@ -852,7 +908,7 @@ function subrowCompact(label, pct, theme, elapsed) {
 function weeklyCompactCollapsed(theme) {
   return `<div class="acard">
   <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
-  ${subrowCompact('All models', 84, theme, 85)}
+  ${subrowCompact('All', 84, theme, 85)}
   ${subrowCompact('Fable', 61, theme, 85)}
   <div class="cc-status"><span class="txt">Resets in 10h 1m &middot; 10 pts below pace</span></div>
 </div>`;
@@ -860,10 +916,10 @@ function weeklyCompactCollapsed(theme) {
 function weeklyCompactExpanded(theme) {
   return `<div class="acard">
   <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(true)}</div>
-  ${subrowCompact('All models', 84, theme, 85)}
+  ${subrowCompact('All', 84, theme, 85)}
   ${subrowCompact('Fable', 61, theme, 85)}
   <div class="chiprow" style="margin:6px 0 8px;">
-    <div class="fchip2 sel" style="border-color:transparent;background:${theme.accent}38;color:${theme.accent};">All models</div>
+    <div class="fchip2 sel" style="border-color:transparent;background:${theme.accent}38;color:${theme.accent};">All</div>
     <div class="fchip2" style="border-color:${theme.ink}44;">Fable</div>
   </div>
   <div class="chartbox">${chartSVG({theme, h:180, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], elapsed:.85, proj:[1,90], projLabel:'~90%', valueLabel:'84%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
@@ -885,9 +941,9 @@ function chips(list, sel) {
 }
 document.getElementById('t5-all').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('All', 84, CLAUDE_DARK, 85)}
   ${subrowCompact('Fable', 61, CLAUDE_DARK, 85)}
-  ${chips(['All models','Fable'],'All models')}
+  ${chips(['All','Fable'],'All')}
   <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], elapsed:.85, proj:[1,90], projLabel:'~90%', valueLabel:'84%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
   ${paceLine(-10, CLAUDE_DARK)}
   <div class="esttext">At this pace: ~90% when the window resets · 0.6%/h &#9432;</div>
@@ -895,9 +951,9 @@ document.getElementById('t5-all').innerHTML = `<div class="acard">
 </div>`;
 document.getElementById('t5-fable').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('All', 84, CLAUDE_DARK, 85)}
   ${subrowCompact('Fable', 61, CLAUDE_DARK, 85)}
-  ${chips(['All models','Fable'],'Fable')}
+  ${chips(['All','Fable'],'Fable')}
   <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.08,2],[.2,6],[.4,15],[.6,30],[.75,44],[.85,61]], elapsed:.85, proj:[1,66], projLabel:'~66%', valueLabel:'61%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
   ${paceLine(-24, CLAUDE_DARK)}
   <div class="esttext">At this pace: ~66% when the window resets · 0.4%/h &#9432;</div>
@@ -905,18 +961,18 @@ document.getElementById('t5-fable').innerHTML = `<div class="acard">
 </div>`;
 document.getElementById('t5-nohist').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
+  ${subrowCompact('All', 84, CLAUDE_DARK, 85)}
   ${subrowCompact('Fable', 3, CLAUDE_DARK, 85)}
-  ${chips(['All models','Fable'],'Fable')}
+  ${chips(['All','Fable'],'Fable')}
   <div class="esttext" style="margin-top:10px;">Not enough history in this window yet to chart a pace</div>
   ${resetRow('in 10h 1m', 'Fri 12:29 am')}
 </div>`;
 document.getElementById('t5-twocaps').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 58, CLAUDE_DARK, 85)}
+  ${subrowCompact('All', 58, CLAUDE_DARK, 85)}
   ${subrowCompact('Sonnet', 45, CLAUDE_DARK, 85)}
   ${subrowCompact('Opus', 92, CLAUDE_DARK, 85)}
-  ${chips(['All models','Sonnet','Opus'],'Sonnet')}
+  ${chips(['All','Sonnet','Opus'],'Sonnet')}
   <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.15,4],[.3,10],[.5,20],[.7,32],[.85,45]], elapsed:.85, proj:[1,52], projLabel:'~52%', valueLabel:'45%', xLeft:'4 Sept', xRight:'11 Sept'})}</div>
   ${paceLine(-27, CLAUDE_DARK)}
   <div class="esttext">At this pace: ~52% when the window resets · 0.3%/h &#9432;</div>
@@ -924,7 +980,7 @@ document.getElementById('t5-twocaps').innerHTML = `<div class="acard">
 </div>`;
 document.getElementById('t5-nocaps').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 6, GPT_DARK, 27)}
+  ${subrowCompact('All', 6, GPT_DARK, 27)}
   <div class="chartbox">${chartSVG({theme:GPT_DARK, h:180, points:[[0,0],[.05,1],[.1,2],[.15,3],[.2,4],[.27,6]], elapsed:.27, proj:[1,24], projLabel:'~24%', valueLabel:'6%', xLeft:'8 Sept', xRight:'15 Sept'})}</div>
   ${paceLine(-18, GPT_DARK)}
   <div class="esttext">At this pace: ~24% when the window resets · 0.1%/h &#9432;</div>
@@ -932,9 +988,9 @@ document.getElementById('t5-nocaps').innerHTML = `<div class="acard">
 </div>`;
 document.getElementById('t5-ceiling').innerHTML = `<div class="acard">
   <div class="a-title" style="margin-bottom:2px;">7-day window</div>
-  ${subrowCompact('All models', 61, CLAUDE_DARK, 85)}
+  ${subrowCompact('All', 61, CLAUDE_DARK, 85)}
   ${subrowCompact('Fable', 100, CLAUDE_DARK, 85)}
-  ${chips(['All models','Fable'],'Fable')}
+  ${chips(['All','Fable'],'Fable')}
   <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:180, points:[[0,0],[.15,10],[.3,35],[.45,68],[.6,94],[.7,100],[.85,100]], elapsed:.85, proj:null, valueLabel:'100%', xLeft:'4 Sept', xRight:'11 Sept', curveColor: CLAUDE_DARK.g100})}</div>
   ${paceLine(15, CLAUDE_DARK)}
   ${resetRow('in 10h 1m', 'Fri 12:29 am')}
@@ -949,7 +1005,7 @@ const teamsCollapsed5h = `<div class="acard">
 </div>`;
 const teamsCollapsed7d = `<div class="acard">
   <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
-  ${subrowCompact('All models', 38, CLAUDE_DARK, 50)}
+  ${subrowCompact('All', 38, CLAUDE_DARK, 50)}
   <div class="cc-status"><span class="txt">Resets in 3d 2h &middot; 18 pts below pace</span></div>
 </div>`;
 // Usage credits never had a chart, so it has nothing for Compact to fold —
@@ -973,7 +1029,7 @@ document.getElementById('t6-oneopen').innerHTML = `<div class="acard">
 // the two colours are independent, per the real component.
 document.getElementById('t7-abovepace').innerHTML = `<div class="acard">
   <div class="a-top"><span class="a-title">7-day window</span></div>
-  ${subrowCompact('All models', 100, CLAUDE_DARK, 88)}
+  ${subrowCompact('All', 100, CLAUDE_DARK, 88)}
   <div class="cc-status" style="opacity:1;"><span class="txt" style="color:${CLAUDE_DARK.muted}">Resets in 3d 2h &middot; <span style="color:${CLAUDE_DARK.g90};font-weight:700;">12 points above even pace</span></span></div>
 </div>`;
 document.getElementById('t7-nodata').innerHTML = `<div style="font-size:14px;opacity:.85;padding:4px 2px 12px;">No data yet — try Refresh now.</div>` + statuslineBlock(CLAUDE_DARK, 'Not checked yet');
@@ -984,8 +1040,9 @@ document.getElementById('t7-moreclosed').innerHTML = teamsCollapsed5h + teamsCol
 document.getElementById('t7-moreopen').innerHTML = teamsCollapsed5h + teamsCollapsed7d +
   `<div class="morehead">More &#9652; &middot; 1 card</div>` + teamsCollapsedCredits + statuslineBlock(CLAUDE_DARK, 'Checked just now');
 
-/* ---- Section 8: inner screen ---- */
-document.getElementById('t8-inner').innerHTML = `
+/* ---- Section 8: inner screen — the 7-day card runs two chart columns
+   when the account has a cap (rev C, decided on review 2026-09-17) ---- */
+const innerTopbar = `
   <div class="topbar">
     <svg class="mk" style="color:#D97757"><use href="#mkClaude"/></svg>
     <svg class="mk" style="color:#10A37F;margin-left:-4px"><use href="#mkGpt"/></svg>
@@ -994,23 +1051,72 @@ document.getElementById('t8-inner').innerHTML = `
     <svg class="tico"><use href="#icoCal"/></svg>
     <svg class="tico"><use href="#icoGear"/></svg>
     <svg class="tico" style="color:#E59980"><use href="#icoMore"/></svg>
-  </div>
+  </div>`;
+
+// One column of the two-column 7-day card: its own SubBar row, an optional
+// chip pair (two-cap case), then its own chart + pace + estimate + reset row.
+function weeklyColumn(theme, opts) {
+  return `<div style="flex:1 1 0;min-width:0;">
+    ${subrowCompact(opts.label, opts.pct, theme, opts.elapsedPct)}
+    ${opts.chipsHtml || ''}
+    <div class="chartbox">${chartSVG({theme, h:180, points:opts.points, elapsed:opts.elapsed, proj:opts.proj, projLabel:opts.projLabel, valueLabel:opts.pct+'%', xLeft:opts.xLeft, xRight:opts.xRight, curveColor:opts.curveColor})}</div>
+    ${paceLine(opts.delta, theme)}
+    <div class="esttext">${opts.est}</div>
+    <div style="height:1px;background:${theme.ink}22;margin:8px 0;"></div>
+    ${resetRow(opts.resetIn, opts.resetAt)}
+  </div>`;
+}
+function weeklyTwoColumnCard(theme, leftOpts, rightOpts) {
+  return `<div class="acard">
+    <div class="a-title" style="margin-bottom:2px;">7-day window</div>
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      ${weeklyColumn(theme, leftOpts)}
+      ${weeklyColumn(theme, rightOpts)}
+    </div>
+  </div>`;
+}
+
+// (a) Pro, Comfortable — one cap (Fable), both columns.
+document.getElementById('t8-a').innerHTML = `
+  ${innerTopbar}
   <div class="strip" style="padding:0 20px;"><div class="stab on">Pro</div><div class="stab">Teams</div><div class="stab">Product</div><div class="stab">ChatGPT</div></div>
   <div style="max-width:678px;margin:0 auto;padding:16px 20px;">
     <div class="acard">
-      <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">14% used</span>${chevSvg(true)}</div>
+      <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">14% used</span></div>
       ${bar(14, CLAUDE_DARK, 45)}
       <div class="chartbox">${chartSVG({theme:CLAUDE_DARK, h:237, points:[[0,0],[.05,2],[.15,5],[.28,8],[.45,14]], elapsed:.45, valueLabel:'14%', xLeft:'12:09 pm', xRight:'5:09 pm'})}</div>
       ${paceLine(-32, CLAUDE_DARK)}
       <div class="esttext">Usage hasn't moved enough yet to project a pace</div>
       ${resetRow('in 2h 41m', 'Thu 5:09 pm')}
     </div>
-    <div class="acard">
-      <div class="a-title" style="display:flex;align-items:center;">7-day window ${chevSvg(false)}</div>
-      ${subrowCompact('All models', 84, CLAUDE_DARK, 85)}
-      <div class="cc-status"><span class="txt">Resets in 10h 1m &middot; 10 pts below pace</span></div>
-    </div>
+    ${weeklyTwoColumnCard(CLAUDE_DARK,
+      {label:'All', pct:84, elapsedPct:85, elapsed:.85, points:[[0,0],[.1,3],[.2,8],[.35,20],[.5,35],[.65,52],[.78,68],[.85,84]], proj:[1,90], projLabel:'~90%', delta:-10, est:'At this pace: ~90% when the window resets · 0.6%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'},
+      {label:'Fable', pct:61, elapsedPct:85, elapsed:.85, points:[[0,0],[.08,2],[.2,6],[.4,15],[.6,30],[.75,44],[.85,61]], proj:[1,66], projLabel:'~66%', delta:-24, est:'At this pace: ~66% when the window resets · 0.4%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'}
+    )}
     ${statuslineBlock(CLAUDE_DARK, 'Checked just now')}
+  </div>`;
+
+// (b) Two caps (Sonnet + Opus) — standalone card, chips in the right column.
+document.getElementById('t8-b').innerHTML = weeklyTwoColumnCard(CLAUDE_DARK,
+  {label:'All', pct:58, elapsedPct:85, elapsed:.85, points:[[0,0],[.15,6],[.3,14],[.5,26],[.7,40],[.85,58]], proj:[1,66], projLabel:'~66%', delta:-8, est:'At this pace: ~66% when the window resets · 0.4%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept'},
+  {label:'Sonnet', pct:45, elapsedPct:85, elapsed:.85, points:[[0,0],[.15,4],[.3,10],[.5,20],[.7,32],[.85,45]], proj:[1,52], projLabel:'~52%', delta:-27, est:'At this pace: ~52% when the window resets · 0.3%/h &#9432;', resetIn:'in 10h 1m', resetAt:'Fri 12:29 am', xLeft:'4 Sept', xRight:'11 Sept', chipsHtml: chips(['Sonnet','Opus'],'Sonnet')}
+);
+
+// (c) ChatGPT, Comfortable — no caps, single full-width column, exactly as today.
+document.getElementById('t8-c').innerHTML = `
+  ${innerTopbar}
+  <div class="strip" style="padding:0 20px;"><div class="stab">Pro</div><div class="stab">Teams</div><div class="stab">Product</div><div class="stab on">ChatGPT</div></div>
+  <div style="max-width:678px;margin:0 auto;padding:16px 20px;">
+    <div class="acard">
+      <div class="a-top"><span class="a-title">5-hour window</span><span class="a-val">0% used</span></div>
+      ${bar(0, GPT_DARK)}
+      <div class="chartbox">${chartSVG({theme:GPT_DARK, h:237, points:[[0,0],[.02,0]], elapsed:.02, valueLabel:'0%', xLeft:'2:28 pm', xRight:'7:28 pm'})}</div>
+      ${paceLine(0, GPT_DARK)}
+      <div class="esttext">Usage hasn't moved enough yet to project a pace</div>
+      ${resetRow('in 4h 59m', 'Thu 7:28 pm')}
+    </div>
+    ${weeklyCardFull(GPT_DARK, {h:237, subs:[{label:'All', pct:6}], elapsed:.27, points:[[0,0],[.05,1],[.1,2],[.15,3],[.2,4],[.27,6]], proj:[1,24], projLabel:'~24%', chartLabel:'6%', delta:-18, est:'At this pace: ~24% when the window resets · 0.1%/h &#9432;', resetIn:'in 5d 7h', resetAt:'Tue 10:18 pm', xLeft:'8 Sept', xRight:'15 Sept'})}
+    ${statuslineBlock(GPT_DARK, 'Checked just now')}
   </div>`;
 
 /* ---- Section 9: layout sheet ---- */
