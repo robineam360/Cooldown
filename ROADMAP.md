@@ -957,10 +957,7 @@ styling — stands unopposed.
 The execution order lives in [RUNBOOK.md](RUNBOOK.md).
 
 ### CCRM-72 · Main Screen Redesign — compact cards, a layout of your own, one status line
-- **Status:** Filed 2026-09-17 · **wireframe in preparation**
-  (`design/2026-09-17-main-screen-redesign.html`). No UI code until Robin approves it, per
-  working agreement 2. The forward-only history fields for CCRM-73 (Model Cap Chart) are the only
-  code that lands ahead of the wireframe.
+- **Status:** **Approved — wireframe rev E, 2026-09-17** (`design/2026-09-17-main-screen-redesign.html`, five review rounds A–E in one day) · **building** per RUNBOOK.md Steps 3–4 · Fold 7 pass pending.
 - **Why:** length. `ProfileScreen` in `MainActivity.kt` is a fixed sequence — 5-hour card,
   7-day card, credits card, Refresh, two timestamps, error notice — and the two `TrendBlock`
   charts (`chartHeight`: 180–300dp each) push everything below the first bar off the screen. The
@@ -1035,9 +1032,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   chips; the layout sheet), `data/UsageCache.kt`, new `data/CardLayout.kt`.
 
 ### CCRM-73 · Model Cap Chart — the 7-day chart for Fable, not just the pool
-- **Status:** Filed 2026-09-17 · **data half landed the same day** (forward-only, ahead of the
-  wireframe; 421 tests green) · **UI half waits on the CCRM-72 (Main Screen Redesign) wireframe**,
-  which draws its states.
+- **Status:** **Approved — wireframe rev E, 2026-09-17** · data half landed 2026-09-17 (421 tests) · UI half **building** per RUNBOOK.md Step 4.
 - **Why:** Robin, 2026-09-17: "The chart is there for the 5h window and the 7d window for all
   models but no visibility for the 7d Fable window." A Max or Team account is often capped on
   Fable while the pool reads 40% — CCRM-70 (Plan Fit) already records exactly that case as a
@@ -1068,8 +1063,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   `data/UsageCache.kt`.
 
 ### CCRM-74 · Chart Polish — the chart lines up with the bar, and the numbers lose their words
-- **Status:** Filed 2026-09-17 from Robin's rev C review · **in the CCRM-72 (Main Screen Redesign)
-  wireframe, rev D** · builds in RUNBOOK.md Step 4 alongside CCRM-72.
+- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4.
 - **Why:** four things Robin saw on the rev C frames that are true of the live app too:
   1. **The chart's "now" divider does not sit under the bar's pace mark.** The plot stops short of
      the card's right edge to leave a gutter for the 80/90/100% labels, so the two elapsed
@@ -1093,8 +1087,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   is wanted, `BEHAVIOR-SPEC` copy pins if any test asserts the old phrases.
 
 ### CCRM-75 · Chart Height — Small / Medium / Large, like a widget size
-- **Status:** Filed 2026-09-17 · **in the CCRM-72 (Main Screen Redesign) wireframe, rev D** · one
-  open question, the default.
+- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4. **Default decided by Robin: Medium** (120dp); Large and Small are the options. This is the one visible change a user who never opens Appearance will notice — the chart is shorter — and Robin chose it knowingly.
 - **Why:** Robin, 2026-09-17: "give me a setting in the app to control the chart height
   (Small/Med/Large) like the widget size option on the Mac. The current one can be Large. For
   Small, focus on the chart lines and hide things that can't fit." Density (CCRM-72) folds the
@@ -1105,12 +1098,12 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   divider and the projection dot and dash — **no guide labels, no x-axis dates, no value
   callouts, no legend**; the pace readout and estimate lines under the chart carry the numbers.
   A global chip row *Chart height · Small / Medium / Large* in Appearance under Density.
-- **Default:** Large, so nobody's screen changes — **unless Robin says Medium**; asked with rev D.
+- **Default:** **Medium**, decided 2026-09-17. Large restores today's height.
 - **Where:** `ui/Adaptive.kt` (`chartHeight` takes the size), `ui/Sparkline.kt` (a `detail`
   level that drops labels), `SettingsScreen.kt`, `data/UsageCache.kt` (`chartSize`).
 
 ### CCRM-76 · Black Room — Claude's dark room goes black like ChatGPT's
-- **Status:** Filed 2026-09-17 · **in the CCRM-72 (Main Screen Redesign) wireframe, rev D**.
+- **Status:** **Approved — wireframe rev E, 2026-09-17** · **building** per RUNBOOK.md Step 4.
 - **Why:** Robin: "ChatGPT accounts show the green theme on a black background, but Claude
   accounts show orange on a dark-orange background which doesn't stand out. Can Claude also have
   a black background?" CCRM-60 (Dual Identity) gave Claude a warm room (`surfaceDark` #1B1715,
@@ -1123,8 +1116,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
   automatically since it reads the same room.
 
 ### CCRM-77 · Transposed Chart — time runs down, usage runs across
-- **Status:** Filed 2026-09-17 · **painted in the CCRM-72 (Main Screen Redesign) wireframe, rev D,
-  to decide** · if it reads well, a global *Chart orientation* toggle in Appearance.
+- **Status:** **Approved as a toggle — 2026-09-17, Robin's call on rev E.** Ships as a global *Chart orientation · Time across / Time down* chip row in Appearance under Chart height; default *Time across* (today's chart). **Building** per RUNBOOK.md Step 4.
 - **Why:** Robin, thinking aloud: instead of forcing the chart's now-divider to line up with the
   bar's pace mark (CCRM-74 (Chart Polish) item 1), **transpose the chart** — usage % across the
   x axis, time down the y axis (window start at the top, reset at the bottom), so the even-pace
@@ -1135,8 +1127,7 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
 - **What to paint:** the 5-hour and 7-day cards in both orientations side by side, Large and
   Small heights, with the projection continuing downward to the reset row; the above-pace state
   (curve right of the diagonal, amber wash to its right); the inner-screen two-column 7-day card.
-- **Decide after painting:** whether it ships at all, and if so whether as the default or a
-  toggle. Not before.
+- **Decided 2026-09-17:** ships as a toggle, not the default. Stored as `UsageCache.chartOrientation` ("across" | "down").
 - **Where (if it proceeds):** `ui/Sparkline.kt` (a second geometry, sharing `SparkGeometry`'s
   bindings), `SettingsScreen.kt`, `data/UsageCache.kt`.
 
@@ -3054,7 +3045,7 @@ keys) would still make this a different product. Not filed, not an open question
   enough" — the four-control cap above.)*
 
 ### CCRM-25 · Card Layout — reorder cards, hide rows, and move the rest behind "more"
-- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the CCRM-3 (Unified Theming) in-app ruling it waited on is reversed there; the layout sheet, the never-blank invariant and the per-account store are specified in that entry.
+- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the CCRM-3 (Unified Theming) in-app ruling it waited on is reversed there; the layout sheet, the never-blank invariant and the per-account store are specified in that entry. Wireframe rev E approved 2026-09-17.
 - **Why:** The main screen is a fixed vertical list and its real complaint is length — CCRM-3
   says so directly: "Its real complaint is length, not looks — two 192dp charts stand between
   the 5-hour bar and the credits card — and that is density, not theming." That entry then
@@ -3400,7 +3391,7 @@ keys) would still make this a different product. Not filed, not an open question
   parser drift between clients impossible to miss".
 
 ### CCRM-35 · Layout Reset — undo a customization mistake
-- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the *Reset layout* button on the layout sheet, confirmed in the `RemoveAccountDialog` shape.
+- **Status:** **Building under CCRM-72 (Main Screen Redesign), 2026-09-17** — the *Reset layout* button on the layout sheet, confirmed in the `RemoveAccountDialog` shape. Wireframe rev E approved 2026-09-17.
 - **Why:** Any reorder/hide UI needs a way back, and "put it back how it was" is not something
   a user can reconstruct by hand once they've dragged six things.
 - **Approach:** OpenQuota's `reset_provider()` restores one account's layout to defaults while

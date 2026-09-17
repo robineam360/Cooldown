@@ -72,3 +72,25 @@ ones, each with its own colour. Cursor, Copilot, OpenRouter and the rest are out
 permanently, not deferred. Nothing here may read a local file or a local process to get usage —
 a phone has neither — so a provider only qualifies if its usage is a plain HTTPS call with a
 token the phone can mint itself.
+
+## 4. Fable or Opus orchestrates; sub-agents do the work
+
+Standing rule from Robin, 2026-09-17. When the session model is **Fable or Opus**, that session
+is the **project manager, design owner and decision maker** — it clears questions with Robin,
+takes every design decision, writes the briefs, sequences the work, reviews what comes back,
+commits and keeps the trackers. It does **not** do the labour itself. Building, reviewing,
+auditing, wireframe drawing and doc sweeps go to sub-agents, picked by complexity:
+
+| Complexity | Model | Typical work |
+|---|---|---|
+| High | **Opus** | drawing/geometry code, concurrency, anything touching signing or release, adversarial review of a finished step |
+| Medium | **Sonnet** | UI build against an approved wireframe, pure models with tests, wireframe HTML |
+| Low | **Haiku** | tracker/status edits, copy sweeps, log lines, mechanical renames |
+
+Rules of engagement: one brief per work package, naming the files it may touch and the files
+it must not; sub-agents **never commit** — the orchestrator reviews the diff and commits with
+the tracker update in the same commit; two sub-agents never edit the same file at once; a
+sub-agent that wants to change anything the user sees beyond the approved wireframe stops and
+reports instead of improvising. The orchestrator reads every result before relaying it and
+never repeats a sub-agent's claim of success it has not checked (tests run, build compiled,
+render inspected).

@@ -54,13 +54,14 @@ file says what order, what to paste, and what "done" means. Release mechanics st
    "%" for "points", one row style for both cards and the guide labels inside the plot
    (CCRM-74). Nothing else moves under a user who never opens Appearance.
 9. Tracker IDs carry their epic name on first use (CLAUDE.md §1).
+10. **Sub-agents do the work; the orchestrator decides.** See CLAUDE.md §4. Building, reviewing and drawing go to sub-agents chosen by complexity — Opus for high, Sonnet for medium, Haiku for low — and the Fable/Opus session keeps design ownership, decisions, sequencing, commits and the tracker.
 
 ## Progress
 
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
 | 1 | File CCRM-72/73, reverse the CCRM-3 ruling, land the cap history fields | session | — | ☑ |
-| 2 | Wireframe: every CCRM-72 and CCRM-73 state, reviewed to approval | sub-agent draws · Robin approves | — | ☐ |
+| 2 | Wireframe: every CCRM-72 and CCRM-73 state, reviewed to approval | sub-agent draws · Robin approves | — | ☑ |
 | 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☐ |
 | 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☐ |
 | 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☐ |
@@ -113,8 +114,8 @@ revision letter and date in CCRM-72's and CCRM-73's Status lines and close out p
 ```
 
 **Done when:**
-- ☐ Robin has said "approved" to a named revision of the wireframe.
-- ☐ Every decision taken during review is written into CCRM-72 / CCRM-73 in ROADMAP.md, in the
+- ☑ Robin has said "approved" to a named revision of the wireframe.
+- ☑ Every decision taken during review is written into CCRM-72 / CCRM-73 in ROADMAP.md, in the
   "Decided" style of CCRM-65 (Accounts Redesign).
 
 **Log:**
@@ -122,6 +123,7 @@ revision letter and date in CCRM-72's and CCRM-73's Status lines and close out p
   Robin reviewed rev B: "All" not "All models", the two-column inner 7-day card, Free plan bare
   → rev C. Robin reviewed rev C: seven more asks and the transposed-chart idea, filed as
   CCRM-74–77 → rev D, drawn the same day.
+- 2026-09-17 — Robin approved rev E: chart height default Medium, transposed chart as a toggle; everything else as drawn. Decisions recorded in CCRM-72–77.
 
 ---
 
@@ -140,7 +142,7 @@ app/src/test/.../ProfileRegistryTest.kt. Build, Android-free: data/CardLayout.kt
 enum (SESSION, WEEKLY, CREDITS), data class CardLayout(order, hidden, more), Companion
 move/hide/show/toMore/toMain/normalize/default and JSON encode/decode; normalize drops unknown
 ids, restores missing ones at the end, and enforces that at least one card is shown and not
-behind More. UsageCache: density()/setDensity ("comfortable" default), layout(profile)/
+behind More. UsageCache: density()/setDensity ("comfortable" default), chartSize()/setChartSize (ui.ChartSize, default MEDIUM), chartOrientation()/setChartOrientation (ui.ChartOrientation, default ACROSS), layout(profile)/
 setLayout, weeklyChart(profile)/setWeeklyChart (cap name or null), expanded(profile, card)/
 setExpanded; add every new per-account key to LEGACY_PROFILE_KEYS. Tests: CardLayoutTest in the
 style of ProfileRegistryTest's move block (moves, clamps, no-op returns the same instance,
@@ -184,14 +186,13 @@ sits under the bar's pace mark, Fmt.usageShort headlines, the 5-hour row as a Su
 "points" everywhere including Sparkline's paceLabel/pacePhrase; (6) CCRM-76 (Black Room): the
 Claude room's dark surfaces become the neutral room's; (7) CCRM-75 (Chart Height): the
 Small/Medium/Large chips, chartHeight taking the size, Sparkline's detail level dropping labels
-at Small; (8) CCRM-77 (Transposed Chart) only if its ROADMAP Status says Robin chose it, as the
-orientation it names. Tests and assembleDebug green after each commit. Anything the wireframe did not draw: stop and ask Robin,
+at Small; (8) CCRM-77 (Transposed Chart) as a global Chart orientation chip row (Time across / Time down) under Chart height, default Time across; the Sparkline gains the transposed geometry drawn in wireframe §8½. Tests and assembleDebug green after each commit. Anything the wireframe did not draw: stop and ask Robin,
 naming the state. Close out per Convention 4.
 ```
 
 **Done when:**
 - ☐ Every wireframe state is reachable in a debug build; Comfortable + no layout changes = v1.6.
-- ☐ CCRM-72 / CCRM-73 / CCRM-74 / CCRM-75 / CCRM-76 / CCRM-25 / CCRM-35 (and CCRM-77 if chosen)
+- ☐ CCRM-72 / CCRM-73 / CCRM-74 / CCRM-75 / CCRM-76 / CCRM-25 / CCRM-35 and CCRM-77
   statuses read Built, Fold 7 pass pending.
 
 **Log:**
