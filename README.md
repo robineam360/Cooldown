@@ -5,12 +5,14 @@
 # Cooldown
 
 **Cooldown** — an Android app that shows how much of your **Claude** and **ChatGPT** usage
-limits you've burned through, and when your 5-hour and weekly windows reset. Its home is an
-**always-on notification** that carries **two accounts side by side**, with a **ring in the
-status bar** that fills as your window does, and a **ping the moment a window resets**. Built
-for people who live in these tools and keep hitting the wall mid-thought — especially in
-**Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude Code) there's no built-in way
-to see how close you are.
+limits you've burned through, and when your 5-hour and weekly windows reset. The main screen
+folds to one line per card in **Compact** density or opens every chart in **Comfortable** — your
+call — and its home is an **always-on notification** that carries **two accounts side by side**,
+with a **ring in the status bar** that fills as your window does, and a **ping the moment a
+window resets**, now running as a real foreground service so it doesn't go stale in the
+background. Built for people who live in these tools and keep hitting the wall mid-thought —
+especially in **Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude Code) there's
+no built-in way to see how close you are.
 
 Every account is a tab, a half of the notification, and its own pair of reset pings — mix
 Claude and ChatGPT accounts freely, as many as you use. **Gemini (Google Antigravity) is listed
@@ -23,7 +25,7 @@ showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …
 
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.6.pdf) — the full
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.7.pdf) — the full
 install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
@@ -65,6 +67,25 @@ a 2-page overview.
 
 ## What it does
 
+- **The main screen, as open or as compact as you want** 🆕 — a **Density** switch in
+  Settings → Appearance folds every card to a title, a bar and one line (tap to open its chart
+  in place) or keeps today's fully-open **Comfortable** layout; a ⋮ → **Main screen layout**
+  sheet reorders, hides or tucks cards behind "More", per account, with one always left in view
+- **Chart height and orientation, your call** 🆕 — Small, Medium (the new default) or Large
+  chart height, and a **Time down** option that turns the chart on its side so its curve lines
+  up directly under the bar's pace mark
+- **The 7-day chart reads a model cap, not just the pool** 🆕 — chips above the chart switch it
+  between **All** and a per-model cap like Fable, so a Max or Team account capped on one model
+  but fine on the pool can finally see why
+- **A shorter Accounts tab, and drag to reorder** 🆕 — every account card is now a compact
+  status line, a plan chip and three actions (Re-sign in / Clear / Dashboard); a new **Reorder**
+  sheet lets you drag accounts into the order you want
+- **Plan Fit, on History** 🆕 — the 7-day pane on the History screen reads your last several
+  closed weeks and says plainly whether your current plan fits how you use it — no dollar
+  estimate, just the pattern
+- **The notification stays alive** 🆕 — the always-on notification now runs as a real
+  foreground service, so it keeps its place in the shade and keeps refreshing instead of
+  sinking and going stale when the app is backgrounded
 - **Two accounts on one always-on notification** 🆕 — a silent notification that carries a
   **First** and a **Second** account side by side: each half has its provider's mark, the
   account's name, a bar with the even-pace tick and a big percentage in that half's warning
@@ -125,32 +146,35 @@ update** — nothing else to do.
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>Two accounts on one notification</b> 🆕 — collapsed: mark, name, bar with the pace tick, the 5-hour figure</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> 🆕 — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v16-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account: 5-hour and 7-day windows with pace charts"><br><sub><b>The app</b> — a Claude account in its room: bars, the even-pace line, the burn-rate projection</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>The always-on notification</b> — unchanged in v1.7, now backed by a foreground service so it doesn't go stale</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v17-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account in Comfortable density, dark theme"><br><sub><b>The redesigned main screen</b> 🆕 — Comfortable density; Claude's room now goes black in dark theme</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v16-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account"><br><sub><b>Same cards, other room</b> 🆕 — a ChatGPT account</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-main-teams-credits.jpg" width="300" alt="Main screen, a Team account with the usage-credits card"><br><sub><b>Usage credits</b> — a Team account with a credit budget</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-main-claude-light.jpg" width="300" alt="Main screen, light theme"><br><sub><b>Light theme</b> — the ivory room by day</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-claude-light.jpg" width="300" alt="Main screen, a Claude account, light theme"><br><sub><b>Light theme</b> — the ivory room keeps its warmth; only dark went black</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-compact.jpg" width="300" alt="Main screen in Compact density, each card folded to a title, bar and one line"><br><sub><b>Compact density</b> 🆕 — every card folds to a title, a bar and one line; tap to open the chart in place</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-compact-7d-fable.jpg" width="300" alt="7-day card with the All and Fable chips, Fable selected"><br><sub><b>All, or a model cap</b> 🆕 — the 7-day chart switches to Fable's own curve on a chip tap</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v16-history-5h.jpg" width="300" alt="Usage history, one bar per 5-hour session"><br><sub><b>Usage history</b> — a bar per 5-hour session, week by week</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-history-7d.jpg" width="300" alt="Usage history, one bar per week"><br><sub><b>Week by week</b> — the 7-day window's peaks</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-accounts.jpg" width="300" alt="Settings, Accounts tab with Free, Team Standard and Team Premium plan tags"><br><sub><b>Settings · Accounts</b> 🆕 — a plan tag per card: Team Standard, Team Premium, Plus</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account, dark theme"><br><sub><b>Same cards, other room</b> — a ChatGPT account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-layout-sheet.jpg" width="300" alt="The Main screen layout sheet, reordering and hiding cards"><br><sub><b>Main screen layout</b> 🆕 — reorder, hide or fold cards behind "More", per account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-settings-appearance.jpg" width="300" alt="Settings, Appearance tab with Density, Chart height and Chart orientation chips"><br><sub><b>Settings · Appearance</b> 🆕 — Density, Chart height and Chart orientation</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v16-chatgpt-code.jpg" width="300" alt="ChatGPT sign-in sheet with a device code"><br><sub><b>Sign in to ChatGPT</b> — a short code, typed on this phone or any other device</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-settings-alerts.jpg" width="300" alt="Settings, Alerts tab"><br><sub><b>Settings · Alerts</b> 🆕 — the notification's two accounts, the ring, reset pings</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v16-about-icon.jpg" width="300" alt="About, with the Pulse icon"><br><sub><b>The Pulse icon</b> 🆕 — in About</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-chart-transposed.jpg" width="300" alt="A chart in Time down orientation, usage across and time down the axis"><br><sub><b>Time down</b> 🆕 — the chart transposed so its curve sits directly under the bar's pace mark</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-accounts.jpg" width="300" alt="Settings, Accounts tab with the redesigned compact cards"><br><sub><b>Settings · Accounts</b> 🆕 — compact cards, a status line, three actions, and Reorder</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-history-7d.jpg" width="300" alt="Usage history, 7-day pane with the Plan Fit block"><br><sub><b>Plan Fit</b> 🆕 — is this plan the right size, read off your closed weeks</sub></td>
   </tr>
 </table>
 
-<p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> 🆕 — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
+<p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
 
-All screenshots are from a real device (a Galaxy Z Fold 7's cover screen) on the current build; the
-two notification shots are the lock screen, which is where it lives. **Usage history** fills in over
-time as your windows close.
+All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.7
+build — the redesigned main screen, Compact density, the layout sheet, the transposed chart, the
+redesigned Accounts tab and Plan Fit are shown above and walked through in the
+[PDF guide](release/docs/Cooldown-User-Guide-v1.7.pdf); the two notification shots are kept from
+v1.6, since the notification itself didn't change, and are the lock screen, which is where it
+lives. **Usage history** fills in over time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
 
@@ -254,10 +278,11 @@ notification is plain RemoteViews. No other dependencies.
   (checking your usage does not count as usage). On the ChatGPT side it deliberately declines
   two things the endpoint would allow: the header that reserves capacity, and the call that
   spends a credit.
-- The app presents the Claude Code CLI's OAuth client identity **and User-Agent** to reach
-  Anthropic's usage endpoint (see [How it works](#how-it-works)); this is not sanctioned by
-  Anthropic. On OpenAI's side it uses the Codex CLI's client ID but identifies itself honestly
-  as Cooldown; this is not sanctioned by OpenAI either.
+- The app presents the Claude Code CLI's OAuth client identity to reach Anthropic's usage
+  endpoint (see [How it works](#how-it-works)); this is not sanctioned by Anthropic. Since v1.7
+  it no longer borrows the CLI's User-Agent on that call (CCRM-68 (Honest Agent)). On OpenAI's
+  side it uses the Codex CLI's client ID but identifies itself honestly as Cooldown; this is not
+  sanctioned by OpenAI either.
 - Anthropic's and OpenAI's consumer terms restrict the use of consumer OAuth tokens in
   third-party tools. Installing accepts some risk of token revocation or account flagging.
   This project exists for personal/educational use — use it at your own discretion.
@@ -271,7 +296,28 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.6.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.7.pdf).
+
+- **1.7** — **The main screen redesigned, the Accounts tab to match, and a notification that
+  stays alive.** The main screen (CCRM-72 (Main Screen Redesign)) gets a **Compact** density
+  that folds each card to a title, a bar and one line — tap to open the chart in place — plus a
+  **Main screen layout** sheet to reorder, hide or fold cards behind "More" (CCRM-25 (Card
+  Layout), CCRM-35 (Layout Reset)), one status line in place of the old Refresh button, a
+  **Chart height** setting (Small/Medium/Large, default Medium) and a **Chart orientation**
+  toggle that lines the chart's now-line up under the bar's pace mark (CCRM-75 (Chart Height),
+  CCRM-77 (Transposed Chart)), the 7-day chart's own **All / per-model** chips (CCRM-73 (Model
+  Cap Chart)), and Claude's dark theme going black like ChatGPT's (CCRM-76 (Black Room)). The
+  **Accounts** tab is compact too — status dot, plan chip, three action cells — with
+  **drag-to-reorder** accounts (CCRM-65 (Accounts Redesign), CCRM-71 (Account Order)). History's
+  7-day pane gains **Plan Fit**: is this plan the right size, read off your last several closed
+  weeks (CCRM-70 (Plan Fit)). The always-on notification runs as a real **foreground service**
+  now, so it stops sinking below other notifications and going stale (CCRM-67 (Pin Service));
+  ChatGPT's idle 5-hour window no longer counts down before it's started (CCBG-30 (Phantom
+  Window)); and the app finally identifies itself honestly to Anthropic instead of borrowing the
+  Claude Code CLI's name (CCRM-68 (Honest Agent)). Diagnostics moves behind the version-tap
+  unlock (CCRM-34 (Diagnostics Log)). **Known issue:** CCBG-24 (Duet Label Clamp) — a long
+  notification label can still clip beside a three-character figure under Left. Built with
+  **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
 
 - **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The
   always-on notification now carries a **First** and a **Second** account side by side, with

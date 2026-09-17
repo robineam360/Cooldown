@@ -3,13 +3,14 @@
 **A personal Android app for your Claude and ChatGPT plan limits — for as many accounts as you use.**
 Shows the 5-hour and weekly rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, and forecasts *when* you'll hit a limit at your current pace. Its home is the **always-on notification**: two accounts side by side in the shade, a ring in the status bar, and a ping the moment a window resets.
 
-> Version **1.6** · released 10 September 2026 · sideloaded personal app, not on any store
+> Version **1.7** · prepared 17 September 2026 · sideloaded personal app, not on any store
 > Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest)
 >
 > **Note:** the screenshots and much of the walkthrough below date from the v1.3-era
 > single-provider app. The sign-in flow and the reading of the cards are unchanged; the
-> **v1.6 surfaces — the two-account notification, the four-tab Settings, the Pulse icon — are
-> documented in the PDF guide**, which is the current one: `release/docs/Cooldown-User-Guide-v1.6.pdf`.
+> **v1.7 surfaces — the redesigned main screen (density, the layout sheet, chart height and
+> orientation), the redesigned Accounts tab, and Plan Fit on History — are documented in the
+> PDF guide**, which is the current one: `release/docs/Cooldown-User-Guide-v1.7.pdf`.
 > The home-screen widgets, the Quick Settings tile and the threshold alerts described in older
 > screenshots were **removed in v1.6**.
 
@@ -83,17 +84,38 @@ Earlier versions kept a **"Use a computer token instead"** section under each Cl
 
 ## 3 · Reading the screens
 
-The main screen has **one tab per signed-in account** — swipe horizontally (or tap the tab) to switch. Since v1.6 each tab is a *room*: Claude tabs sit on a warm ivory surface with serif headline figures, ChatGPT tabs on a cool neutral one; the cards are identical. Per account:
+The main screen has **one tab per signed-in account** — swipe horizontally (or tap the tab) to switch. Since v1.6 each tab is a *room*: Claude tabs sit on a warm ivory surface with serif headline figures, ChatGPT tabs on a cool neutral one; the cards are identical. Since v1.7 the Claude room's **dark** theme goes black like ChatGPT's — the orange accent and pace line were getting lost against the old dark-ivory tint — so only the *light* room keeps its warm tone and serif headline.
 
-- **5-hour window card** — "X% used", the bar, and a split reset line:
-  *left* `Resets in 4h 47m` · *right* `Resets at Thu 11:45 PM`
-- **7-day window card** — three bars sharing one reset footer (they all reset together):
-  - **All models** — your total weekly usage
-  - **Fable** (and any other per-model cap the API reports)
-- **The even-pace line** *(v1.1)*: each chart carries a diagonal from 0% at the window's start to 100% at its reset. **Below it** → you'll finish inside your limit. **Above it** → you're on course to run out early, and the overshoot shades amber. The readout says it in words too: *"33 points below even pace"*.
-- **Burn-rate forecast:** once a window has ~20 minutes of history, each card grows a **sparkline** of that window's usage curve (solid = what actually happened, dashed = where it's heading) and a plain-words projection: *"At this pace: 100% at Thu 2:40 PM — 1h 20m before the reset"* in red when you're on course to hit the wall, or *"At this pace: ~62% when the window resets"* in grey when you're safe. The history is collected from the app's own polls and stays on the phone.
+### Density: Comfortable or Compact 🆕
+
+**Settings → Appearance → Density** picks how much each card shows, one setting for the whole phone:
+
+- **Comfortable** (default) — today's layout: every card open, its chart drawn, all the way down.
+- **Compact** — each card folds to three lines: a title row with the headline percentage, the bar with its pace mark, and one summary line — *"Resets in 2h 41m · 32% below pace"*. **Tap the card** to expand its chart in place; which cards you had open is remembered, per card, per account.
+
+Per account, in either density:
+
+- **5-hour window card** — the headline is just the number, e.g. **"14%"** (the word "used" is gone — it only comes back under *Left*, where it carries the flipped meaning: "86% left"), the bar, and a split reset line: *left* `Resets in 4h 47m` · *right* `Resets at Thu 11:45 PM`.
+- **7-day window card** — chips above the chart pick what it draws: **All** (your total weekly usage) or a per-model cap such as **Fable**, when the account has one. The cap's own bar stays on the card either way — the chip only changes which curve the chart plots, and your choice is remembered per account. On the inner screen of a folding phone, an account with a cap draws **two chart columns side by side** — All on the left, the cap on the right — in both densities.
+- **The even-pace line** *(v1.1)*: each chart carries a diagonal from 0% at the window's start to 100% at its reset. **Below it** → you'll finish inside your limit. **Above it** → you're on course to run out early, and the overshoot shades amber. The readout says it in words too, now in percent: *"33% below even pace"*.
+- **Burn-rate forecast:** once a window has ~20 minutes of history, each card grows a **sparkline** of that window's usage curve (solid = what actually happened, dashed = where it's heading) and a plain-words projection: *"At this pace: 100% at Thu 2:40 PM — 1h 20m before the reset"* in red when you're on course to hit the wall, or *"At this pace: ~62% when the window resets"* in grey when you're safe. Since v1.7 the chart's guide labels sit **inside the plot**, so the chart spans the bar's full width and its "now" line lines up directly under the bar's pace mark instead of stopping short of the edge. The history is collected from the app's own polls and stays on the phone.
+
+### Chart height and orientation 🆕
+
+Two more Appearance chips, under Density:
+
+- **Chart height · Small / Medium / Large** — **Medium** (120dp) is the default; **Large** is today's taller chart (up to 300dp); **Small** (72dp) keeps only the guides, the even-pace diagonal, the curve and the now-line — no axis labels or callouts, since the pace readout and estimate lines under the chart already carry the numbers in words.
+- **Chart orientation · Time across / Time down** — **Time across** (default) is today's chart. **Time down** transposes it: usage runs left to right, time runs top to bottom (window start at the top, reset at the bottom), so the bar above and the chart below share one x-axis outright — the curve's current point sits directly under the bar's fill end, and the 80/90/100% guides become vertical lines under the bar's own colour rungs.
 
 **Bar colors:** your chosen theme color normally → **yellow** above 80% → **orange** above 90% → a clear **warning-red** at 100%. The warning hues are deliberately vivid so they never blend into the muted Claude Orange theme. Only the bars shift color; text stays neutral.
+
+### Main screen layout 🆕
+
+Tap **⋮ → Main screen layout** in the top bar (it shows once an account has two or more cards) to reorder, hide or fold cards behind "More" — **per account**. The sheet lists one row per card the account has — 5-hour window, 7-day window, Usage credits — each with a show/hide switch and a drag handle, a "Behind More" divider you can drag cards under, and a **Reset layout** button. A card behind More still renders, folded under a **"More ▾"** disclosure at the foot of the screen, and reopens for that session only. **At least one card always stays shown above More** — the sheet won't let you hide or fold the last one.
+
+### One status line 🆕
+
+Below the cards, one line replaces the old Refresh button and the two "Last success / Last attempt" rows: **"Checked 4m ago ↻"** (a spinner stands in for the ↻ while refreshing; tap the line to refresh by hand). If the attempt after that failed, a second clause appears — *"Tried 2m ago"* — otherwise nothing does. Anything actually wrong still shows as its own notice underneath, unchanged.
 
 ### Usage history 🆕
 
@@ -103,6 +125,8 @@ Tap the **calendar icon** in the top bar to open **Usage history** — a scrolla
 - **7-day mode** — one bar per weekly window, so you can see how each week compared.
 
 History is written as each window **closes**, so it fills in going forward — a fresh install starts nearly empty (just the current "now" session) and builds up over the following days.
+
+**Plan Fit** 🆕 sits above the 7-day pane: a plain-words read of your last several closed weeks — *"This plan fits how you use it. Between 25% and 75% most weeks · 5h cap hit 12 times"* — that answers whether your current plan is the right size, without a dollar estimate or a "move to this tier" suggestion (Anthropic doesn't publish the ratio that would make one honest). It needs at least four recorded weeks before it says anything, and it's absent on the Free plan, where there's no weekly pane to sit above.
 
 ### The always-on notification (v1.6: two accounts)
 
@@ -138,16 +162,16 @@ Settings is **four swipeable tabs** since v1.6 — **Accounts · Alerts · Appea
 
 | Tab · Setting | What it does |
 |---|---|
-| **Accounts** | One card per account: **"Sign in on this phone"** (with a browser picker) or the paste / QR backup for Claude, **"Sign in with a code"** for ChatGPT. Once signed in: status chip, plan badge, last-checked with ↻, renew countdowns, Re-sign in / Clear. The card's ⋮ menu: Rename, Accent colour, Remove account. **"+ Add account"** at the bottom. |
+| **Accounts** | One compact card per account 🆕: mark · label · a status dot (green = active, red = needs re-auth) · plan chip · ⋮. A status line gives the essentials — *"Checked just now · renews in 1h 9m"* — and a second line appears only when something needs attention (a Free-plan notice, a stopped renewal, a rate limit, or a new amber *"Sign-in expires in 2d 14h"* inside the last 3 days). Three action cells: **Re-sign in · Clear · Dashboard** (ChatGPT: **Sign in with a code · Clear · Settings**). The card's ⋮ menu opens **Details** (last checked, last auto-renewed, expiry estimate, added, token tail) first, then Rename, Accent colour, Remove account. **"+ Add account"** and a **Reorder** button (drag accounts into the order you want) sit at the bottom. |
 | **Alerts · Always-on notification** | On/off, then **Show accounts**: a **First** chip row and a **Second · optional** one (None to run single). |
 | **Alerts · Tapping a number opens** | Cooldown on that account's tab, or that service's app. |
 | **Alerts · Status-bar ring shows** | First / Second / Whichever is higher. |
 | **Alerts · System notification settings** | Opens Android's per-channel controls. |
 | **Alerts · Reset pings** | Per account: **5h reset** and **Weekly reset**, each Off / If busy / Always. |
-| **Appearance** | **Theme** System / Light / Dark · **Time format** 12-hour / 24-hour · **Usage display** Used / Left · **Reset time** Countdown / Clock time · **Show red past the pace mark** (one switch for the app and the notification) · **Theme colour**: Per provider (default), Material You, Claude Orange and twelve more. |
-| **More** | **Polling** every 5 / 15 / 30 / 60 min · **Usage credits** per account (only shown for accounts with a credit budget) · **Updates** → **Check for updates** · **Diagnostics** → share your log · **About** (version, credits, **Share feedback** to robin@eam360.com; tap the version 7× to append a **Debug** section). |
+| **Appearance** | **Theme** System / Light / Dark · **Time format** 12-hour / 24-hour · **Usage display** Used / Left · **Density** 🆕 Comfortable / Compact — Compact folds every card to a title, a bar and one line · **Chart height** 🆕 Small / Medium / Large, default Medium · **Chart orientation** 🆕 Time across / Time down · **Reset time** Countdown / Clock time · **Show red past the pace mark** (one switch for the app and the notification) · **Theme colour**: Per provider (default), Material You, Claude Orange and twelve more. |
+| **More** | **Polling** every 5 / 15 / 30 / 60 min · **Usage credits** per account (only shown for accounts with a credit budget) · **Updates** → **Check for updates** · **About** (version, credits, **Share feedback** to robin@eam360.com; tap the version 7× to reveal **Diagnostics** — share your log — and a **Debug** section 🆕). |
 
-Below the Refresh button the app shows **Last success** and **Last attempt** as "Thu 7:46 PM (12m ago)". A red status line appears only when something's wrong.
+Below the main screen's cards, one status line — *"Checked 4m ago ↻"* — has replaced the old Refresh button and the "Last success / Last attempt" pair (§3). A red notice appears only when something's wrong.
 
 ---
 
@@ -162,7 +186,7 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 | **"Token refresh failed (HTTP 429)"** status | A *dead* refresh token, not real rate-limiting (Anthropic answers 429 for dead tokens). Fix: **"Re-sign in"** (§2). *(Historical note: through v0.11 the app itself could trigger a deterministic 429 on every renewal — fixed in v0.12, see §9.)* |
 | My widgets / tile vanished | Expected on the v1.6 update — they were removed. Turn on the always-on notification (Settings → Alerts). |
 | No reset ping arrived | Check notification permission, that the account's 5h / Weekly reset isn't Off, and that *If busy* isn't hiding a window that never reached 80%. |
-| Anything else | Settings → More → **Diagnostics** shares the app log; the Debug section (7 taps on the version) shows the last raw response. |
+| Anything else | Settings → More → About → tap the version 7× to reveal **Diagnostics** (shares the app log) and the **Debug** section (last raw response). |
 
 ---
 
@@ -177,6 +201,8 @@ Below the Refresh button the app shows **Last success** and **Last attempt** as 
 ---
 
 ## 9 · Version history
+
+- **1.7** — **The main screen redesigned, an Accounts tab to match, and the notification stays alive.** The main screen (CCRM-72 (Main Screen Redesign)) gains a global **Density** chip in Settings → Appearance: **Comfortable** is today's layout, **Compact** folds every card to a title row, its bar and one summary line, with a tap expanding the chart in place, remembered per card per account. A new **⋮ → Main screen layout** sheet reorders, hides or folds cards behind "More" per account, with at least one card always left showing (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)); one status line — *"Checked 4m ago ↻"* — replaces the old Refresh button and its two timestamp rows. The 7-day card gains **All / per-model** chips (Fable and any others the API reports) that pick what the chart draws, while the cap's own bar stays put either way (CCRM-73 (Model Cap Chart)); on a folding phone's inner screen a capped account draws two chart columns side by side. **Chart height** (Small / Medium / Large, default **Medium**) and **chart orientation** (Time across / **Time down**, which transposes the axes so the chart's now-line sits directly under the bar's pace mark) join Density in Appearance (CCRM-75 (Chart Height), CCRM-77 (Transposed Chart)); headlines drop "used" ("14%", not "14% used"), pace phrases read in **%** rather than "points", and the chart's guide labels move inside the plot so the chart spans the bar's full width (CCRM-74 (Chart Polish)). **Claude's dark room goes black** like ChatGPT's — only the light room keeps its warm ivory tint and serif headline (CCRM-76 (Black Room)). The **Accounts** tab is rebuilt the same way (CCRM-65 (Accounts Redesign)): a compact card per account — mark, label, a status dot, plan chip — one relative status line, a conditional second line only when something needs attention (including a new amber sign-in-expiry warning inside 3 days), and three action cells (Re-sign in / Clear / Dashboard, or ChatGPT's Sign in with a code / Clear / Settings); Details moves into the ⋮ menu. A new **Reorder** sheet lets you drag accounts into the order you want (CCRM-71 (Account Order)). The History screen's 7-day pane gains **Plan Fit** — a read, over your last several closed weeks, of whether your current plan is the right size, worded as a fact with no dollar estimate (CCRM-70 (Plan Fit)). The always-on notification is now backed by a **foreground service**, so it keeps its shade position and keeps refreshing in the background instead of sinking below other notifications and going stale (CCRM-67 (Pin Service), closing CCBG-28 (Pin Sinks) and CCBG-29 (Refresh Swallowed)). ChatGPT's idle 5-hour window no longer shows a countdown it hasn't started (CCBG-30 (Phantom Window)). The app now identifies itself honestly to Anthropic as `Cooldown/<version> (Android)` instead of borrowing the Claude Code CLI's User-Agent — real accounts polled normally under the honest name, so the "aggressively rate-limited" claim behind the old disguise didn't hold up (CCRM-68 (Honest Agent)). **Diagnostics** moves behind the same 7-tap version unlock as Debug (CCRM-34 (Diagnostics Log)). **Known issue carried over:** CCBG-24 (Duet Label Clamp) — a seven-character notification label can still ellipsize beside a three-character figure under the Left setting. Built with **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
 
 - **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The always-on notification carries a **First** and a **Second** account side by side — mark, name, bar with the pace tick and a big figure per half — and, expanded, both headers with reset lines, the **Weekly** rows, per-model caps and Refresh; each half is its own tap target, and the expanded panel now draws at full width whatever it holds, so a warning strip can no longer scale the Weekly meters down with it (CCBG-26 (Panel Scaling)). The status-bar **ring** drops the weekly dot and wears the shown account's colour (**First / Second / Whichever is higher**), solid red with an × at 100%. **Reset pings** are per account and per window (5h / Weekly, Off / If busy / Always) and now fire for an account left idle across the reset (CCBG-25 (Idle Reset Silence)). Settings shrinks from 43 rows in 13 sections to **24 rows in four tabs** — Accounts, Alerts, Appearance, More — with one "Show red past the pace mark" switch for app and notification, and Usage credits only for accounts that have a budget. Every Claude card wears its plan — **Free, Pro, Max, Team Standard, Team Premium** — read from Anthropic's profile endpoint (CCRM-64 (Claude Plan Tag)), and a **Free** Claude account is told plainly that Claude reports no usage for it, on the card, the main screen and the notification, instead of "Anthropic's server errored" (CCBG-27 (Free Plan 403)). The **computer-token backup** — paste, Scan QR, the in-app token guide — is removed; signing in happens on the phone for both services (CCRM-63 (Token Import Removal)). New **Pulse** launcher icon (an ECG beat on charcoal — Claude terracotta, ChatGPT green, the red spike crossing a dashed even-pace ceiling); each tab is a **room** (ivory and serif for Claude, neutral for ChatGPT); the top bar leads with both marks, now the same size (CCBG-23 (Mark Size Mismatch)). **Removed:** all five home-screen widgets, the Quick Settings tile, the standalone threshold / pace / sign-in / stale / update notifications and their six channels, the Gauge / Number tile / Progress bar notification styles and the Pie / Battery / Number status-bar glyphs — placed widgets and tiles disappear on update. Built with **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
 

@@ -263,5 +263,30 @@ item's Status to Shipped v1.7; close out per Convention 4.
 - ☐ v1.7 published on GitHub, `releases/latest` resolves to it, the phone agrees.
 - ☐ Every item in this arc reads Shipped v1.7 in ROADMAP.md.
 
+**Prepared 2026-09-17, release held.** Robin is daily-driving the 2026-09-17 build for a day
+and gives the go-ahead on 2026-09-18 or later. Everything but the last mile is done and
+committed: ten `v17-*` screenshots (PNG for the guide, JPG for the README) in
+`release/docs/src/shots/`; `release/docs/Cooldown-User-Guide-v1.7.pdf`, `Cooldown-Brochure.pdf`
+and `Cooldown-whats-new-v1.7.png` rebuilt and every changed page render-checked; `README.md` and
+`release/USER-GUIDE.md` updated (the guide header says *prepared 17 September 2026*);
+`release/RELEASE-NOTES-v1.7.md` drafted for `gh release create --notes-file`.
+
+**The last mile, on the go-ahead** (paste into a fresh Fable session):
+
+```
+Read CLAUDE.md, RELEASING.md and RUNBOOK.md Step 6. Robin has given the go-ahead for v1.7.
+(1) If Robin reports a bug from his day of use, fix it first through a sub-agent, test, and
+re-run the affected device check. (2) In release/USER-GUIDE.md change "prepared 17 September
+2026" to "released <today>"; if the guide.html footer or cover carries a date, match it and
+rebuild with ./release/docs/build.sh (check page 1 and 3 renders). (3) ./gradlew
+testDebugUnitTest assembleRelease — green, signed APK at app/build/outputs/apk/release/.
+(4) Commit "v1.7 — the main screen redesigned", tag v1.7, push with tags. (5) gh release
+create v1.7 app/build/outputs/apk/release/app-release.apk --title "Cooldown v1.7"
+--notes-file release/RELEASE-NOTES-v1.7.md. (6) On the phone: Settings → More → Check for
+updates reports v1.7; install it over the build from 2026-09-17. (7) Set every item in this
+arc to Shipped v1.7 in ROADMAP.md, tick this step, log, commit, push.
+```
+
 **Log:**
--
+- 2026-09-17 — prep complete (shots, PDFs, README, USER-GUIDE, release notes) via Sonnet and
+  Haiku sub-agents, reviewed here; release deliberately not cut.
