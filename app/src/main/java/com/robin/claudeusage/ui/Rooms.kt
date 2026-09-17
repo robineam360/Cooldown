@@ -24,11 +24,18 @@ object Rooms {
         val serifHeadline: Boolean,
     )
 
+    /**
+     * CCRM-76 (Black Room) partially reverses CCRM-60's two rooms: the *dark* half is the
+     * neutral room's black (#0D0D0D / #1A1A1A), because against the warm #1B1715 it used
+     * to carry, Claude's orange accent and the amber pace line had no contrast to spend.
+     * The light half and the serif headline stand — the room is still a room, it just
+     * stops tinting the dark theme.
+     */
     private val CLAUDE_ROOM = Room(
         surfaceLight = 0xFFF5EFE8,
-        surfaceDark = 0xFF1B1715,
+        surfaceDark = 0xFF0D0D0D,
         cardLight = 0xFFFCF8F4,
-        cardDark = 0xFF26201C,
+        cardDark = 0xFF1A1A1A,
         serifHeadline = true,
     )
 

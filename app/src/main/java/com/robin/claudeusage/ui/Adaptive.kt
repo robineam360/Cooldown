@@ -93,12 +93,19 @@ val WideMaxWidth: Dp = 1100.dp
 val ChartColumnMaxWidth: Dp = 760.dp
 
 /**
- * Height for a chart that should grow with the room it's given. Keyed off the chart's
- * own width so the aspect ratio stays sane — a 678dp-wide plot at the old fixed 192dp
- * reads as letterboxed — then clamped against the window so a short landscape window
- * doesn't get a chart taller than itself.
+ * Height for a chart, at the [ChartSize] the user picked in Appearance (CCRM-75 (Chart
+ * Height)).
+ *
+ * [ChartSize.LARGE] is the original behaviour and the only size that measures anything:
+ * it grows with the room it's given, keyed off the chart's own width so the aspect ratio
+ * stays sane — a 678dp-wide plot at the old fixed 192dp reads as letterboxed — then
+ * clamped against the window so a short landscape window doesn't get a chart taller than
+ * itself. Small and Medium are flat numbers: the point of picking one is that the chart
+ * is the same modest height everywhere, and a 72dp chart on a Fold's inner screen is the
+ * setting doing what it was asked to.
  */
-fun chartHeight(width: Dp, windowHeight: Dp): Dp {
+fun chartHeight(width: Dp, windowHeight: Dp, size: ChartSize = ChartSize.DEFAULT): Dp {
+    size.heightDp?.let { return it.dp }
     val fromWidth = (width * 0.35f).coerceIn(180.dp, 300.dp)
     // A zero window height means nothing has measured yet; trust the width instead of
     // collapsing the chart to nothing.
