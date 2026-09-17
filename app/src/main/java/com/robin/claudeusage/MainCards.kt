@@ -394,6 +394,12 @@ internal fun TrendBlock(
             samples = samples,
             windowStartMs = resetMs - windowLengthMs,
             windowEndMs = resetMs,
+            // Read here, in composition, exactly as `elapsedPercent` below reads
+            // `Instant.now()` for the bar's pace mark: ProfileScreen's 5-second tick
+            // recomposes this block, so both fractions are taken from the same clock at
+            // the same moment and the divider walks with the mark instead of waiting for
+            // the next poll (CCRM-74 (Chart Polish) item 1).
+            nowMs = System.currentTimeMillis(),
             projectedEnd = est?.let { e ->
                 if (e.hitsLimitAtMs != null) e.hitsLimitAtMs to 100.0 else resetMs to e.pctAtReset
             },

@@ -62,6 +62,10 @@ class ReorderDragState {
 
     fun isDragging(key: Any): Boolean = draggingKey == key
 
+    /** Whether *any* row is mid-drag — for a caller that needs to react to a drag in
+     * progress without caring which row (the layout sheet's own-gesture lockout, below). */
+    fun isDraggingAny(): Boolean = draggingKey != null
+
     /** The live pixel offset for [key]'s row — zero for every row not being dragged. */
     fun offsetFor(key: Any): Float = if (draggingKey == key) dragOffsetPx else 0f
 
@@ -73,6 +77,17 @@ class ReorderDragState {
     fun end() {
         draggingKey = null
         dragOffsetPx = 0f
+    }
+
+    /**
+     * A one-off correction to the live offset, on top of whatever [dragBy] has
+     * already accumulated — for a caller whose rows aren't all [dragBy]'s uniform
+     * `rowHeightPx` tall (the layout sheet's "Behind More" divider row is shorter
+     * than a card row), to apply right after a shift whose crossed boundary wasn't
+     * that height. A no-op call (delta 0) is always safe.
+     */
+    fun adjustOffset(deltaPx: Float) {
+        dragOffsetPx += deltaPx
     }
 
     /**

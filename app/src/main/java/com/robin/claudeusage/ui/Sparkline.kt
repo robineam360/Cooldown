@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import java.time.Instant
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /** Percent along the even-pace diagonal at [t] — 0% at the window start, 100% at reset. */
@@ -60,6 +61,35 @@ fun evenPacePercent(t: Long, windowStartMs: Long, windowEndMs: Long): Double {
  */
 fun abovePaceWash(percent: Double, pacePercent: Double): Boolean =
     percent > pacePercent + PACE_DEAD_ZONE
+
+/**
+ * The instant the chart calls "now" — the wall clock, not the newest poll.
+ *
+ * CCRM-74 (Chart Polish) item 1 promised the chart's now divider and the usage bar's
+ * pace mark always share an x. They did, but only at the instant a poll landed: the bar
+ * takes its fraction from `elapsedPercent`, which reads the real clock, while the chart
+ * took its divider from the last sample's timestamp. So the two walked apart between
+ * polls — 34px on the Fold 7 fifteen minutes after a fetch — and snapped back together
+ * when the next one arrived. Feeding the real `nowMs` through the same mapping closes it:
+ * `SparkGeometry.x(chartNowMs(...))` is `BarGeometry.tickFraction(elapsed) × width`,
+ * because the plot and the bar now span the same width.
+ *
+ * Two guards, because a timestamp arriving from outside is never trusted here:
+ *  - **clamped to the window**, so a clock that has run past the reset — or a stale
+ *    window still on screen — draws the divider on the edge rather than off the plot;
+ *  - **never left of [lastSampleMs]**, so a backwards clock step (NTP, a timezone
+ *    change, a device whose clock was wrong when the sample was recorded) cannot put
+ *    "now" behind a reading the app has already taken. The divider stops rather than
+ *    reversing: the curve is evidence, the clock is only a claim.
+ */
+fun chartNowMs(
+    nowMs: Long,
+    windowStartMs: Long,
+    windowEndMs: Long,
+    lastSampleMs: Long,
+): Long = max(nowMs, lastSampleMs)
+    .coerceAtLeast(windowStartMs)
+    .coerceAtMost(max(windowStartMs, windowEndMs))
 
 /**
  * The plot's coordinate system, lifted out of the draw pass.
@@ -183,6 +213,8 @@ class SparkGeometry(
  *  - the observed fetches as a filled area + line with a dot on every real
  *    sample, so gaps in polling are visible rather than smoothed away;
  *  - a marker on the latest sample, labelled, so the present is locatable;
+ *  - a "now" divider at the wall clock — [nowMs], not the last sample, so it stays under
+ *    the usage bar's pace mark between polls instead of lagging it (see [chartNowMs]);
  *  - the burn-rate extrapolation as a dashed tail to a hollow, labelled endpoint.
  *
  * One series, so there's no legend beyond the pace swatch: the guides carry their own
@@ -201,6 +233,14 @@ fun UsageSparkline(
     samples: List<Pair<Long, Double>>, // (epochMillis, percent), ascending
     windowStartMs: Long,
     windowEndMs: Long,
+    /**
+     * The wall clock, recomputed on the caller's 5-second tick so the now divider walks
+     * between polls instead of standing on the newest sample — see [chartNowMs], which
+     * clamps it. Only the divider, the "now" axis label and the pace verdict move with
+     * it: the curve still ends on the last real fetch, and so do its marker and the
+     * projection's origin.
+     */
+    nowMs: Long,
     projectedEnd: Pair<Long, Double>?,
     color: Color,
     use24h: Boolean,
@@ -244,9 +284,13 @@ fun UsageSparkline(
     val warn100 = Palette.barColor(100.0, color, dark)
 
     // Is the newest reading past the pace line by more than the dead zone? Drives the
-    // wash below, and says the same thing the caption under the chart says.
+    // wash below, and says the same thing the caption under the chart says — which it
+    // can only do if both read the pace at the same instant. The caption's
+    // `elapsedPercent` reads the clock, so the wash reads [nowMs] too, taken at the
+    // point on the diagonal the divider crosses rather than at the last poll.
     val lastSample = samples.last()
-    val paceAtNow = evenPacePercent(lastSample.first, windowStartMs, windowEndMs)
+    val nowAt = chartNowMs(nowMs, windowStartMs, windowEndMs, lastSample.first)
+    val paceAtNow = evenPacePercent(nowAt, windowStartMs, windowEndMs)
     val showPaceWash = abovePaceWash(lastSample.second, paceAtNow)
 
     // Clock time for a window measured in hours; a date for one measured in days,
@@ -543,9 +587,15 @@ fun UsageSparkline(
         }
 
         // --- now marker ---
-        val (nowT, nowPct) = samples.last()
-        val nowPoint = pt(nowT, nowPct)
-        val (nowFrom, nowTo) = geo.timeLine(nowT)
+        // Two different "nows", deliberately: the divider is the clock ([nowAt]), the
+        // dot is the last thing actually observed. Moving the dot to the clock would
+        // invent a reading for a moment nobody polled; leaving the divider on the last
+        // sample was the bug — it fell behind the bar's pace mark between polls, which
+        // is the one thing CCRM-74 (Chart Polish) item 1 said could never happen.
+        val (lastT, lastPct) = lastSample
+        val nowPoint = pt(lastT, lastPct)
+        val nowX = geo.x(nowAt)
+        val (nowFrom, nowTo) = geo.timeLine(nowAt)
         drawLine(
             color = muted.copy(alpha = 0.28f),
             start = nowFrom,
@@ -558,7 +608,7 @@ fun UsageSparkline(
         var nowLabelRect: Rect? = null
         if (!linesOnly) {
             val nowLabel = measurer.measure(
-                "${nowPct.toInt()}%",
+                "${lastPct.toInt()}%",
                 TextStyle(fontSize = 11.sp, color = onSurface, fontWeight = FontWeight.Bold),
             )
             val spots = valueLabelSpots(nowPoint, nowLabel.size.width, nowLabel.size.height)
@@ -575,7 +625,7 @@ fun UsageSparkline(
 
         // --- projection tail ---
         projectedEnd?.let { (t, pct) ->
-            if (t <= nowT) return@let
+            if (t <= lastT) return@let
             val end = pt(t, pct)
             drawLine(
                 color = color.copy(alpha = 0.65f),
@@ -686,9 +736,11 @@ fun UsageSparkline(
                 drawText(startLabel, topLeft = Offset(0f, axisY))
                 drawText(endLabel, topLeft = Offset(plotRight - endLabel.size.width, axisY))
 
-                // "now" only when it won't collide with either end label.
+                // "now" only when it won't collide with either end label. Centred on the
+                // divider, not on the last sample's dot — the two parted company the
+                // moment the divider started following the clock.
                 val nowText = measurer.measure("now", tiny)
-                val nowLeft = nowPoint.x - nowText.size.width / 2f
+                val nowLeft = nowX - nowText.size.width / 2f
                 val clearOfStart = nowLeft > startLabel.size.width + 6.dp.toPx()
                 val clearOfEnd =
                     nowLeft + nowText.size.width < plotRight - endLabel.size.width - 6.dp.toPx()

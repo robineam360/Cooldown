@@ -237,4 +237,62 @@ class ReorderListTest {
         state.dragBy(60f, rowHeightPx = 56f) { true }
         assertEquals(0f, state.offsetFor("other"))
     }
+
+    // --- isDraggingAny / adjustOffset (LayoutSheet's divider-height correction) ---
+
+    @Test
+    fun `isDraggingAny is false until a row starts and false again once it ends`() {
+        val state = ReorderDragState()
+        assertFalse(state.isDraggingAny())
+        state.start("row")
+        assertTrue(state.isDraggingAny())
+        state.end()
+        assertFalse(state.isDraggingAny())
+    }
+
+    @Test
+    fun `adjustOffset is additive on top of whatever dragBy already accumulated`() {
+        val state = ReorderDragState()
+        state.start("row")
+        state.dragBy(60f, rowHeightPx = 56f) { true } // leaves ~4px residual, per the test above
+        state.adjustOffset(22f)
+        assertEquals(26f, state.offsetFor("row"), 0.01f)
+        state.adjustOffset(-22f)
+        assertEquals(4f, state.offsetFor("row"), 0.01f)
+    }
+
+    @Test
+    fun `adjustOffset only affects the currently dragging row's key`() {
+        val state = ReorderDragState()
+        state.start("row")
+        state.adjustOffset(22f)
+        assertEquals(22f, state.offsetFor("row"), 0.01f)
+        assertEquals(0f, state.offsetFor("other"))
+    }
+
+    // --- the layout sheet's divider-crossing correction, worked out by hand: a card
+    // dragged from the last main slot onto the divider (56px per dragBy's uniform
+    // rowHeightPx) actually only moves the real, measured 34dp divider's worth on
+    // screen — the residual 22px belongs back on the offset, signed with the drag.
+
+    @Test
+    fun `a downward divider crossing adds back the rowHeight-minus-divider gap`() {
+        val state = ReorderDragState()
+        state.start("row")
+        // One row's worth of drag (56px) triggers the shift; dragBy leaves ~0px
+        // residual (56 consumed exactly). The divider crossing then adds back the
+        // 22px the real 34dp divider didn't consume, signed positive (downward).
+        state.dragBy(56f, rowHeightPx = 56f) { true }
+        state.adjustOffset((56f - 34f) * 1)
+        assertEquals(22f, state.offsetFor("row"), 0.01f)
+    }
+
+    @Test
+    fun `an upward divider crossing subtracts the same gap`() {
+        val state = ReorderDragState()
+        state.start("row")
+        state.dragBy(-56f, rowHeightPx = 56f) { true }
+        state.adjustOffset((56f - 34f) * -1)
+        assertEquals(-22f, state.offsetFor("row"), 0.01f)
+    }
 }

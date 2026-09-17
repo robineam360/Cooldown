@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -38,6 +39,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -104,7 +109,34 @@ fun LayoutSheet(
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        // CCBG-territory fix (device pass, Fold 7): a row dragged down across the
+        // divider used to leave the whole sheet dismissed. Root cause was the row
+        // list being three separate `items()`/`item()` registrations (main cards,
+        // divider, more cards) — a card crossing the divider moved from one
+        // registration's content lambda to another's, which tore down and rebuilt
+        // its composition mid-gesture, cancelling `DragHandle`'s in-flight
+        // `detectDragGestures` coroutine. The next pointer-move events for that same
+        // touch, no longer consumed there, reached `ModalBottomSheet`'s own swipe
+        // gesture — which only *dismisses* on a downward drag (an upward leak is
+        // silently absorbed), exactly matching the reported down-only asymmetry.
+        // `ReorderAccountsSheet` never split its rows this way and never dismisses.
+        //
+        // Fixed by drawing one flat, single-`items()` row list ([layoutRows]) so a
+        // card crossing the divider is always the *same* call site's content moving
+        // to a new index — the ordinary, safe case `animateItem()` already handles
+        // for same-group reorders — plus a `nestedScroll` connection that swallows
+        // vertical scroll for the duration of any drag, as a second line of defence.
+        val dragState = rememberReorderDragState()
+        val dragLockout = remember(dragState) {
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
+                    if (dragState.isDraggingAny()) available else Offset.Zero
+            }
+        }
+        Box(
+            Modifier.fillMaxWidth().nestedScroll(dragLockout),
+            contentAlignment = Alignment.TopCenter,
+        ) {
             Column(Modifier.widthIn(max = ContentMaxWidth).fillMaxWidth()) {
                 Text(
                     "Main screen layout",
@@ -120,40 +152,40 @@ fun LayoutSheet(
                 )
                 Spacer(Modifier.height(8.dp))
 
-                val rowHeightPx = with(LocalDensity.current) { 56.dp.toPx() }
-                val dragState = rememberReorderDragState()
+                val density = LocalDensity.current
+                val rowHeightPx = with(density) { 56.dp.toPx() }
+                // The divider is 34dp, not a card row's 56dp — measured rather than
+                // assumed, so the drag offset compensation is exact when a shift
+                // crosses it (see [CardLayoutRow]'s onDragBy and [BehindMoreDivider]).
+                // The remembered starting value is only a pre-layout estimate; the
+                // real number lands via onSizeChanged below, before any drag can
+                // reach the divider.
+                var dividerHeightPx by remember { mutableFloatStateOf(with(density) { 34.dp.toPx() }) }
                 val liveLayout by rememberUpdatedState(layout)
+                val liveDividerHeightPx by rememberUpdatedState(dividerHeightPx)
 
-                val mainIds = layout.order.filter { it in present && it !in layout.more }
-                val moreIds = layout.order.filter { it in present && it in layout.more }
+                val rows = layoutRows(layout, present)
 
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                    items(mainIds, key = { it.key }) { id ->
-                        CardLayoutRow(
-                            id = id,
-                            layout = layout,
-                            present = present,
-                            dragState = dragState,
-                            rowHeightPx = rowHeightPx,
-                            liveLayout = { liveLayout },
-                            onApply = ::apply,
-                            modifier = Modifier.animateItem(),
-                        )
-                    }
-                    item(key = "__divider__") {
-                        BehindMoreDivider(Modifier.animateItem())
-                    }
-                    items(moreIds, key = { it.key }) { id ->
-                        CardLayoutRow(
-                            id = id,
-                            layout = layout,
-                            present = present,
-                            dragState = dragState,
-                            rowHeightPx = rowHeightPx,
-                            liveLayout = { liveLayout },
-                            onApply = ::apply,
-                            modifier = Modifier.animateItem(),
-                        )
+                    items(rows, key = { it.key }) { row ->
+                        when (row) {
+                            is LayoutRow.Card -> CardLayoutRow(
+                                id = row.id,
+                                layout = layout,
+                                present = present,
+                                dragState = dragState,
+                                rowHeightPx = rowHeightPx,
+                                liveLayout = { liveLayout },
+                                dividerHeightPx = { liveDividerHeightPx },
+                                onApply = ::apply,
+                                modifier = Modifier.animateItem(),
+                            )
+                            LayoutRow.Divider -> BehindMoreDivider(
+                                Modifier
+                                    .animateItem()
+                                    .onSizeChanged { dividerHeightPx = it.height.toFloat() },
+                            )
+                        }
                     }
                 }
 
@@ -185,6 +217,39 @@ fun LayoutSheet(
 }
 
 /**
+ * One entry in the layout sheet's single, flat [LazyColumn] — a card row or the
+ * "Behind More" divider — each with its own stable, group-independent [key].
+ *
+ * Deliberately one list drawn by one `items()` call rather than the previous
+ * `items(main) / item(divider) / items(more)` split: a card dragged across the
+ * divider used to move from one `items()` call's content lambda to another's,
+ * which is what tore its composition down mid-gesture and dismissed the sheet
+ * (see the note above [LayoutSheet]'s `ModalBottomSheet`). Keeping every row,
+ * whichever group it's in, behind the *same* content lambda makes a divider
+ * crossing exactly the same kind of move as an ordinary same-group reorder —
+ * which `animateItem()` already handles safely.
+ */
+private sealed interface LayoutRow {
+    val key: String
+
+    data class Card(val id: CardId) : LayoutRow {
+        override val key get() = id.key
+    }
+
+    data object Divider : LayoutRow {
+        override val key = "__divider__"
+    }
+}
+
+/** [layout]'s row list, per [cardRowIndex]/[cardRowCount]: [present] cards not
+ * behind More, then the divider, then [present] cards behind More. */
+private fun layoutRows(layout: CardLayout, present: Set<CardId>): List<LayoutRow> = buildList {
+    layout.order.filter { it in present && it !in layout.more }.forEach { add(LayoutRow.Card(it)) }
+    add(LayoutRow.Divider)
+    layout.order.filter { it in present && it in layout.more }.forEach { add(LayoutRow.Card(it)) }
+}
+
+/**
  * One row: leading glyph, label, the show/hide switch ([CardLayout.hide]/[show],
  * gated on [CardLayout.canHide]) and the drag handle ([applyCardDrag]). Hidden
  * cards render at 0.6 alpha but keep their handle — they can still be reordered.
@@ -197,6 +262,7 @@ private fun CardLayoutRow(
     dragState: ReorderDragState,
     rowHeightPx: Float,
     liveLayout: () -> CardLayout,
+    dividerHeightPx: () -> Float,
     onApply: (CardLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -247,7 +313,17 @@ private fun CardLayoutRow(
                         val next =
                             if (from < 0) current else applyCardDrag(current, id, from + shift, present)
                         if (next !== current) {
+                            // dragBy's compensation assumes every row crossed was
+                            // rowHeightPx tall; when this shift crossed the divider
+                            // (group membership flipped) it wasn't — correct the
+                            // residual offset by the real difference so the row
+                            // doesn't visibly jump under the finger.
+                            val crossedDivider = (id in current.more) != (id in next.more)
                             onApply(next)
+                            if (crossedDivider) {
+                                val sign = if (shift > 0) 1 else -1
+                                dragState.adjustOffset((rowHeightPx - dividerHeightPx()) * sign)
+                            }
                             true
                         } else {
                             false

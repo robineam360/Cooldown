@@ -206,6 +206,78 @@ class SparkGeometryTest {
         assertEquals(50.0, g.paceAt(start + (end - start) / 2), 0.001)
     }
 
+    // --- CCRM-74 (Chart Polish) item 1, second half: "now" is the clock, not the poll ---
+
+    /**
+     * What the bar above the chart puts into `BarGeometry.tickFraction` — the same
+     * arithmetic `Palette.elapsedPercent` does against `Instant.now()`, written out here
+     * because that function reads the clock itself and can't be handed a fixed instant.
+     */
+    private fun barElapsedPercent(nowMs: Long): Double {
+        val total = (end - start).toDouble()
+        val remaining = (end - nowMs).toDouble()
+        return ((total - remaining) / total * 100.0).coerceIn(0.0, 100.0)
+    }
+
+    @Test
+    fun `the now divider lands exactly where the bar draws its pace mark`() {
+        // The defect: the divider was drawn at the last sample's time while the bar's
+        // mark tracked the clock, so fifteen quiet minutes put 34px between two things
+        // that are supposed to be one vertical line down the card.
+        val width = 700f
+        val g = geo(width)
+        val lastPoll = start + 60L * 60_000L        // newest fetch: one hour in
+        val now = lastPoll + 15L * 60_000L          // ...then fifteen minutes of silence
+        val markX = BarGeometry.tickFraction(barElapsedPercent(now)) * width
+
+        assertEquals(markX, g.x(chartNowMs(now, start, end, lastPoll)), 0.01f)
+        // And the divider is that x across the whole plot, not just a point on it.
+        val (a, b) = g.timeLine(chartNowMs(now, start, end, lastPoll))
+        assertEquals(markX, a.x, 0.01f)
+        assertEquals(markX, b.x, 0.01f)
+        // The old behaviour, kept here as the thing that must stay false: drawing at
+        // the last sample would have missed the mark by a visible margin.
+        assertTrue(markX - g.x(lastPoll) > 20f)
+    }
+
+    @Test
+    fun `a clock behind the newest sample never drags the divider left of it`() {
+        // Clock skew — NTP stepping back, or a sample recorded while the clock was
+        // wrong. The curve is evidence and the clock is a claim, so the divider stops
+        // on the last reading rather than reversing past it.
+        val lastPoll = start + 3 * 60L * 60_000L
+        val skewed = lastPoll - 20L * 60_000L
+        val g = geo()
+        assertEquals(lastPoll, chartNowMs(skewed, start, end, lastPoll))
+        assertEquals(g.x(lastPoll), g.x(chartNowMs(skewed, start, end, lastPoll)), 0.01f)
+    }
+
+    @Test
+    fun `now is clamped to the window at both ends`() {
+        val lastPoll = start + 60L * 60_000L
+        // A window left on screen past its own reset draws the divider on the edge,
+        // not off the plot.
+        val late = chartNowMs(end + 90L * 60_000L, start, end, lastPoll)
+        assertEquals(end, late)
+        assertEquals(geo().plotRight, geo().x(late), 0.01f)
+        // And a clock behind the window start, with nothing newer to hold it, pins to
+        // the start rather than to a negative fraction.
+        assertEquals(start, chartNowMs(start - 60_000L, start, end, start))
+    }
+
+    @Test
+    fun `transposed, the divider follows the same clock a quarter turn round`() {
+        val g = down()
+        val lastPoll = start + 60L * 60_000L
+        val nowAt = chartNowMs(lastPoll + 15L * 60_000L, start, end, lastPoll)
+        val (a, b) = g.timeLine(nowAt)
+        // Horizontal rule, at the time axis' own coordinate — and below the last
+        // sample, since time runs down.
+        assertEquals(g.x(nowAt), a.y, 0.01f)
+        assertEquals(a.y, b.y, 0.01f)
+        assertTrue(a.y > g.x(lastPoll))
+    }
+
     @Test
     fun `a zero-length window does not divide by zero`() {
         val g = SparkGeometry(700f, 400f, density, start, start)
