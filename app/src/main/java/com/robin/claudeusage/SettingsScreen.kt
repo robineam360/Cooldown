@@ -5,9 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -26,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -72,7 +69,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -85,32 +81,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.compose.foundation.Image
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.browser.customtabs.CustomTabsIntent
@@ -137,6 +124,7 @@ import com.robin.claudeusage.ui.ContentColumn
 import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.DeviceCodeCopy
 import com.robin.claudeusage.ui.DeviceCodeStage
+import com.robin.claudeusage.ui.DragHandle
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.Motion
 import com.robin.claudeusage.ui.Palette
@@ -144,8 +132,10 @@ import com.robin.claudeusage.ui.ProvenanceNote
 import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.WideMaxWidth
 import com.robin.claudeusage.ui.hasTwoColumns
+import com.robin.claudeusage.ui.reorderAccessibility
+import com.robin.claudeusage.ui.reorderRowTransform
+import com.robin.claudeusage.ui.rememberReorderDragState
 import com.robin.claudeusage.work.Polling
-import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -2351,14 +2341,11 @@ private fun AddAccountRow(provider: Provider, subtitle: String, onClick: () -> U
  * ordered list straight back down — that's what makes the cards behind the scrim
  * reorder as their own confirmation, per the roadmap entry's design.
  *
- * Dragging is deliberately not a third-party "reorderable list" dependency (there
- * isn't one in this project, and CCRM-71 says not to add one): a plain
- * [pointerInput]/[detectDragGestures] on the 48dp handle only, converting the
- * accumulated vertical drag into a row-height-quantised index shift, applied to the
- * registry the moment it crosses a row boundary — not just on release — so the other
- * rows visibly part around the gap while dragging, the way §7 of the wireframe shows
- * it. The handle is the only pointerInput on the row: the row body itself carries none,
- * so a swipe anywhere else falls straight through to the sheet's own swipe-to-dismiss.
+ * The drag mechanics — the offset state, the row-height quantisation, the 48dp
+ * handle, the dragging-row visuals, the TalkBack actions — live in
+ * `ui/ReorderList.kt`, shared with CCRM-72 (Main Screen Redesign)'s `LayoutSheet`
+ * rather than copied a second time. What stays here is what's specific to
+ * reordering *accounts*: a boundary crossing means `ProfileRegistry.move`.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2387,12 +2374,7 @@ private fun ReorderAccountsSheet(
                 Spacer(Modifier.height(8.dp))
 
                 val rowHeightPx = with(LocalDensity.current) { 56.dp.toPx() }
-                // Which row the finger is on, and how far it has strayed (px) from that
-                // row's resting slot since the drag started — reset to zero every time
-                // a boundary crossing applies a move, so it always reads relative to
-                // the row's *current* slot rather than its very first one.
-                var draggingKey by remember { mutableStateOf<String?>(null) }
-                var dragOffsetPx by remember { mutableFloatStateOf(0f) }
+                val dragState = rememberReorderDragState()
                 // Read fresh inside the drag callback without restarting it: profiles
                 // gets a new List instance every time a mid-drag move recomposes the
                 // caller, and keying pointerInput on it would cancel the gesture
@@ -2415,8 +2397,8 @@ private fun ReorderAccountsSheet(
                             plan = plan,
                             tier = tier,
                             accent = accent,
-                            isDragging = draggingKey == profile.key,
-                            dragOffsetPx = if (draggingKey == profile.key) dragOffsetPx else 0f,
+                            isDragging = dragState.isDragging(profile.key),
+                            dragOffsetPx = dragState.offsetFor(profile.key),
                             canMoveUp = idx > 0,
                             canMoveDown = idx in 0 until profiles.lastIndex,
                             onMoveUp = {
@@ -2427,33 +2409,25 @@ private fun ReorderAccountsSheet(
                                 repo.registry().move(profile.key, idx + 1)
                                 onMoved()
                             },
-                            onDragStart = {
-                                draggingKey = profile.key
-                                dragOffsetPx = 0f
-                            },
+                            onDragStart = { dragState.start(profile.key) },
                             onDragBy = { deltaY ->
-                                dragOffsetPx += deltaY
-                                val from = liveProfiles.indexOfFirst { it.key == profile.key }
-                                if (from >= 0) {
-                                    val shift = (dragOffsetPx / rowHeightPx).roundToInt()
-                                    if (shift != 0) {
+                                dragState.dragBy(deltaY, rowHeightPx) { shift ->
+                                    val from = liveProfiles.indexOfFirst { it.key == profile.key }
+                                    if (from < 0) {
+                                        false
+                                    } else {
                                         val to = (from + shift).coerceIn(0, liveProfiles.lastIndex)
                                         if (to != from) {
                                             repo.registry().move(profile.key, to)
                                             onMoved()
-                                            // Compensate by exactly the rows-worth just
-                                            // applied, so the row keeps tracking the
-                                            // finger smoothly relative to its new slot
-                                            // instead of jumping.
-                                            dragOffsetPx -= shift * rowHeightPx
+                                            true
+                                        } else {
+                                            false
                                         }
                                     }
                                 }
                             },
-                            onDragEnd = {
-                                draggingKey = null
-                                dragOffsetPx = 0f
-                            },
+                            onDragEnd = { dragState.end() },
                         )
                     }
                 }
@@ -2491,30 +2465,14 @@ private fun ReorderRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .zIndex(if (isDragging) 1f else 0f)
-            .then(
-                if (isDragging) {
-                    Modifier
-                        .offset { IntOffset(0, dragOffsetPx.roundToInt()) }
-                        .scale(1.02f)
-                        .shadow(2.dp, RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                } else {
-                    Modifier
-                }
-            )
+            .reorderRowTransform(isDragging, dragOffsetPx)
             .height(56.dp)
             .padding(horizontal = 16.dp)
             // The whole row is one TalkBack stop with `Move up`/`Move down` custom
             // actions — correct here, per the roadmap entry, because the sheet is
             // genuinely a single column, not a 2D grid like the alternating cards
             // behind it.
-            .semantics(mergeDescendants = true) {
-                customActions = listOfNotNull(
-                    if (canMoveUp) CustomAccessibilityAction("Move up") { onMoveUp(); true } else null,
-                    if (canMoveDown) CustomAccessibilityAction("Move down") { onMoveDown(); true } else null,
-                )
-            },
+            .reorderAccessibility(canMoveUp, canMoveDown, onMoveUp, onMoveDown),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -2545,46 +2503,13 @@ private fun ReorderRow(
             Spacer(Modifier.width(8.dp))
             PlanChip(plan, tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") })
         }
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .pointerInput(profile.key) {
-                    detectDragGestures(
-                        onDragStart = { onDragStart() },
-                        onDragEnd = { onDragEnd() },
-                        onDragCancel = { onDragEnd() },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            onDragBy(dragAmount.y)
-                        },
-                    )
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            DragHandleIcon(tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-/** The reorder sheet's own drag glyph — three short horizontal bars, drawn rather
- * than pulled from an icon set, since `material-icons-core` (this app's only icon
- * dependency) doesn't carry one. */
-@Composable
-private fun DragHandleIcon(tint: Color, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.size(24.dp)) {
-        val strokeWidth = 1.8.dp.toPx()
-        val left = size.width * 0.2f
-        val right = size.width * 0.8f
-        for (fraction in listOf(0.3125f, 0.5f, 0.6875f)) {
-            val y = size.height * fraction
-            drawLine(
-                color = tint,
-                start = Offset(left, y),
-                end = Offset(right, y),
-                strokeWidth = strokeWidth,
-                cap = StrokeCap.Round,
-            )
-        }
+        DragHandle(
+            dragKey = profile.key,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            onDragStart = onDragStart,
+            onDragBy = onDragBy,
+            onDragEnd = onDragEnd,
+        )
     }
 }
 
