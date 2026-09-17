@@ -64,7 +64,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
 | 2 | Wireframe: every CCRM-72 and CCRM-73 state, reviewed to approval | sub-agent draws · Robin approves | — | ☑ |
 | 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☑ |
 | 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☑ |
-| 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☐ |
+| 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☑ |
 | 6 | Release v1.7 | session · Robin at the phone | 5 | ☐ |
 
 ---
@@ -228,10 +228,15 @@ Status to Verified on the Fold 7 with the date; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Every item above is Verified or has a filed CCBG with a severity.
+- ☑ Every item above is Verified or has a filed CCBG with a severity.
 
 **Log:**
--
+- 2026-09-17 — run by the orchestrator over USB, cover then inner screen, dark and light, on the
+  Team Premium and ChatGPT accounts. Verified: CCRM-72, 73, 74, 75, 76, 77, 25, 35, 65, 70, 71
+  and 51. Two bugs found, fixed by sub-agents and re-verified the same evening (`9947b3d`): the
+  chart's now divider followed the last poll, not the clock; a downward drag across the layout
+  sheet's divider dismissed the sheet. Not observable: CCRM-6's four-account strip (three
+  accounts on the phone). Captures in `design/research/2026-09-17-v17-device-pass/`.
 
 ---
 
