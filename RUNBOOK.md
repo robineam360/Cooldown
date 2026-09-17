@@ -62,7 +62,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
 |---|---|---|---|---|
 | 1 | File CCRM-72/73, reverse the CCRM-3 ruling, land the cap history fields | session | — | ☑ |
 | 2 | Wireframe: every CCRM-72 and CCRM-73 state, reviewed to approval | sub-agent draws · Robin approves | — | ☑ |
-| 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☐ |
+| 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☑ |
 | 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☐ |
 | 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☐ |
 | 6 | Release v1.7 | session · Robin at the phone | 5 | ☐ |
@@ -151,10 +151,10 @@ and assembleDebug green; commit feat(CCRM-72): …; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ `CardLayout` and the `UsageCache` accessors exist with tests; nothing visible changed.
+- ☑ `CardLayout` and the `UsageCache` accessors exist with tests; nothing visible changed.
 
 **Log:**
--
+- 2026-09-17 — built by a Sonnet sub-agent, reviewed and committed by the orchestrator: `CardLayout` (32 tests), `DisplayPrefs` enums (11), `UsageCache` keys; 464 green.
 
 ---
 

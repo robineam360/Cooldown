@@ -3,6 +3,9 @@ package com.robin.claudeusage.data
 import android.content.Context
 import android.content.SharedPreferences
 import com.robin.claudeusage.data.source.Sources
+import com.robin.claudeusage.ui.ChartOrientation
+import com.robin.claudeusage.ui.ChartSize
+import com.robin.claudeusage.ui.Density
 import com.robin.claudeusage.ui.Palette
 
 enum class AuthState { NO_CREDENTIALS, OK, REAUTH_NEEDED }
@@ -89,6 +92,10 @@ class UsageCache(context: Context) {
             "pingDay", "pingWindowsStarted", "pingRetryIndex", "pingLastSentAt",
             "pingLastAttemptAt", "pingLastResult", "pingLastFailed", "pingRevision",
             "pingPendingBefore", "pingVerifyAttempt",
+            // CCRM-72 (Main Screen Redesign) / CCRM-73 (Model Cap Chart): per-account
+            // layout, weekly-chart choice and per-card expanded state.
+            "layout", "weeklyChart",
+            "expanded.session", "expanded.weekly", "expanded.credits",
         )
     }
 
@@ -373,6 +380,40 @@ class UsageCache(context: Context) {
         prefs.edit().putBoolean(k(profile, "creditsVisible"), visible).apply()
     }
 
+    // --- CCRM-25 (Card Layout) / CCRM-35 (Layout Reset), built under CCRM-72
+    // (Main Screen Redesign): per-account card order, visibility and fold state ---
+
+    /** This account's card order/hidden/more state — [CardLayout.DEFAULT] until set. */
+    fun layout(profile: Profile): CardLayout = CardLayout.decode(prefs.getString(k(profile, "layout"), null))
+
+    fun setLayout(profile: Profile, layout: CardLayout) {
+        prefs.edit().putString(k(profile, "layout"), CardLayout.encode(layout)).apply()
+    }
+
+    /**
+     * CCRM-73 (Model Cap Chart): which series the 7-day card charts for this account —
+     * the model-cap name (e.g. "Fable"), or null for *All*, the default. Persisted
+     * independently of the card's expanded/folded state.
+     */
+    fun weeklyChart(profile: Profile): String? = prefs.getString(k(profile, "weeklyChart"), null)
+
+    fun setWeeklyChart(profile: Profile, capName: String?) {
+        prefs.edit().apply {
+            if (capName == null) remove(k(profile, "weeklyChart")) else putString(k(profile, "weeklyChart"), capName)
+        }.apply()
+    }
+
+    /**
+     * CCRM-72 (Main Screen Redesign): whether [card] is expanded in Compact density, for
+     * this account — remembered per card per account. Defaults to false (folded).
+     */
+    fun expanded(profile: Profile, card: CardId): Boolean =
+        prefs.getBoolean(k(profile, "expanded.${card.key}"), false)
+
+    fun setExpanded(profile: Profile, card: CardId, expanded: Boolean) {
+        prefs.edit().putBoolean(k(profile, "expanded.${card.key}"), expanded).apply()
+    }
+
     // --- CCRM-43 (Bar Pace Marks): the red over-pace segment ---
     //
     // One key as of CCRM-61 (Settings Diet), covering both surfaces: the three-way
@@ -397,6 +438,37 @@ class UsageCache(context: Context) {
 
     fun setShowOverPace(enabled: Boolean) {
         prefs.edit().putBoolean("showOverPace", enabled).apply()
+    }
+
+    // --- CCRM-72 (Main Screen Redesign): global display prefs ---
+
+    /** *Comfortable* (default) / *Compact* — the Settings → Appearance chip. */
+    fun density(): Density = Density.fromKey(prefs.getString("density", null))
+
+    fun setDensity(density: Density) {
+        prefs.edit().putString("density", density.key).apply()
+    }
+
+    /**
+     * CCRM-75 (Chart Height): *Small* / *Medium* (default) / *Large* — the Settings →
+     * Appearance chip under Density.
+     */
+    fun chartSize(): ChartSize = ChartSize.fromKey(prefs.getString("chartSize", null))
+
+    fun setChartSize(size: ChartSize) {
+        prefs.edit().putString("chartSize", size.key).apply()
+    }
+
+    /**
+     * CCRM-77 (Transposed Chart): *Across* (default, today's geometry) / *Down* — the
+     * Settings → Appearance toggle, painted for decision in the CCRM-72 (Main Screen
+     * Redesign) wireframe.
+     */
+    fun chartOrientation(): ChartOrientation =
+        ChartOrientation.fromKey(prefs.getString("chartOrientation", null))
+
+    fun setChartOrientation(orientation: ChartOrientation) {
+        prefs.edit().putString("chartOrientation", orientation.key).apply()
     }
 
     // --- CCRM-29 (Display Mode) ---
