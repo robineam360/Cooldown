@@ -319,7 +319,9 @@ file, identical, propagated the way the durable-memory block is; the `brain` ski
 
 **Per machine (the reviewer):** `bash ~/.claude/skills/model-mesh/install.sh` — idempotent. Installs the
 wrapper to `~/.local/bin`, the prompts to `~/.local/share/model-mesh/`, the agents at user scope too
-(`~/.claude/agents/` and `~/.codex/agents/`, for repos that are not vaults), then runs
+(`~/.claude/agents/` and `~/.codex/agents/`, for repos that are not vaults) — and shares both the skills and the
+agents with **every other Claude Code account on the machine** (any `~/.claude-*` config dir, e.g. `~/.claude-product`):
+a missing `agents`/`skills` entry becomes a symlink to `~/.claude`'s, an existing folder gets a copy (2026-09-23) — then runs
 `model-mesh-review --check` (prerequisites + fence boundary, no quota). Prerequisites: a `codex` binary
 (laptop: bundled with the apt `chatgpt` package; elsewhere `install.sh` puts the npm build under
 `~/.local/opt/codex`, no root, ~313 MB), a ChatGPT login (`~/.codex/auth.json`, Robin runs `codex login`
