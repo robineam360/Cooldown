@@ -370,15 +370,18 @@ per repo, and a colleague's copy starts OFF (see *Sharing* below). Names in this
 edits §5's lab list and nothing else.
 
 **Sharing — the office edition (2026-09-23, Robin).** Colleagues get a sanitised copy, not this file:
-`share/SKILL.md` (a second, hand-maintained source — **update it whenever §1–§5 change**) plus
-`share/README.md`, packed by `install.sh --export-share <out.skill>`, which swaps personal names out of
+`share/SKILL.md` (a second, hand-maintained source — **update it whenever §1–§5 change**), packed by
+`install.sh --export-share <out.skill>`, plus a one-file PDF guide rendered from `share/guide.html` (headless
+Chrome `--print-to-pdf`; re-render after any matrix change). Recommended install for colleagues: the Claude
+desktop app's **Settings → Skills → Upload skill** (syncs into `~/.claude/skills/synced/…`, so the office
+SKILL.md never hardcodes its own path); terminal-only users ask Claude to unzip it from Downloads. The export is which swaps personal names out of
 the agents, prompts and contract block, sets the block's review switch **OFF**, strips the decision log
 from `models.env`, and **refuses** (exit 1) if any personal marker (name, labs, Pi address, drive remote,
 employer) survives. On first use the office edition installs only the agents (`install.sh --agents`: no
 wrapper, no codex, no network) and asks the user **once** whether they want ChatGPT review; yes → it checks
 codex (the ChatGPT desktop app's copy counts), `codex login`, and a fence, then runs the full install and
 a Luna probe; anything missing → OFF, recorded in `~/.local/share/model-mesh/review`. The current export
-lives in the MacAdmin OneDrive folder `transfer/model-mesh-office.skill`; re-export after any edit.
+lives in the MacAdmin OneDrive folder `transfer/model-mesh-office.skill` + `model-mesh-guide.pdf`; re-export both after any edit.
 
 **Republish rule (from the `brain` skill):** any edit to this skill is re-zipped to the skills
 distribution folder on the drive in the same session, re-copied to the Pi, and re-propagated to every
