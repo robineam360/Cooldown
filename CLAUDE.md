@@ -73,44 +73,28 @@ permanently, not deferred. Nothing here may read a local file or a local process
 a phone has neither — so a provider only qualifies if its usage is a plain HTTPS call with a
 token the phone can mint itself.
 
-## 4. Fable or Opus orchestrates; sub-agents do the work
+## 4. Delegation & review — the `model-mesh` skill
 
-Standing rule from Robin, 2026-09-17. When the session model is **Fable or Opus**, that session
-is the **project manager, design owner and decision maker** — it clears questions with Robin,
-takes every design decision, writes the briefs, sequences the work, reviews what comes back,
-commits and keeps the trackers. It does **not** do the labour itself. Building, reviewing,
-auditing, wireframe drawing and doc sweeps go to sub-agents, picked by complexity:
-
-| Complexity | Model | Typical work |
-|---|---|---|
-| High | **Opus** | drawing/geometry code, concurrency, anything touching signing or release, adversarial review of a finished step |
-| Medium | **Sonnet** | UI build against an approved wireframe, pure models with tests, wireframe HTML |
-| Low | **Haiku** | tracker/status edits, copy sweeps, log lines, mechanical renames |
-
-Rules of engagement: one brief per work package, naming the files it may touch and the files
-it must not; sub-agents **never commit** — the orchestrator reviews the diff and commits with
-the tracker update in the same commit; two sub-agents never edit the same file at once; a
-sub-agent that wants to change anything the user sees beyond the approved wireframe stops and
-reports instead of improvising. The orchestrator reads every result before relaying it and
-never repeats a sub-agent's claim of success it has not checked (tests run, build compiled,
-render inspected).
-
-## 5. Delegation & review — the `model-mesh` skill
-
-*Where this file's own delegation or commit rules differ from the block below (§4: sub-agents never commit; the orchestrator commits), **this file wins** — the block covers everything else. Added 2026-09-23, model-mesh v2.1.*
-
-<!-- model-mesh contract block v2.1 (2026-09-23) -->
+<!-- model-mesh contract block v2.2 (2026-09-23) -->
 **Delegation & review — the `model-mesh` skill applies here.** Load it at session start. Whatever model
 holds the session seat (Sonnet, effort high, by default) settles the skill's three gates first (reserved?
 new? state-changing with a reversal of more than one command, or irreversible?) and then routes by cost of
-error (skill §2): quick jobs itself, **down** to Haiku for lookups and volume, **sideways** to Sonnet
-builders for specified work, **up** to Opus for the verdict a gate demands and for review, **once to
-Opus at effort max** to plan something with no precedent here. If Robin seats Opus or Fable himself the topic is
-important: the seat thinks, plans and coordinates itself, Sonnet only builds, Haiku only for trivia,
-review still a fresh agent (§2a). **Cross-family (GPT) review: OFF** (Robin, 23 Sep 2026 — off in work repos until he decides which ChatGPT account may receive their plans). — when ON, an Astra review is
+error (skill §2): quick jobs itself, **down** to a Sonnet reader for lookups and volume, **sideways** to
+Sonnet builders for specified work, **up** to Opus for the verdict a gate demands and for review, and for
+something with no precedent here **once** to the planner (Opus, xhigh) when its goal fits in a paragraph or
+to the expert (Fable, xhigh) when it does not. If Robin seats Opus or Fable himself the topic is important:
+the seat thinks, plans and coordinates itself, Sonnet only builds and reads, review still a fresh agent
+(§2a). **Cross-family (GPT) review: ON.** — when ON, an Astra review is
 **mandatory** before executing or freezing any plan whose steps change machine, money or data state with
 a reversal of more than one command or none (waivable only by Robin, explicitly, on the record), and the
 discretionary triggers, disposition rules and secret floor in skill §5–§6 bind; OFF means no GPT call
 from this vault and such a plan gets an Opus review instead. Sub-agents follow this contract like any
 session: a writing sub-agent runs the git gate first and commits and pushes before returning, read-only
-tiers return `no HEAD (read-only)`, reserved gates stay Robin's (§4).
+tiers return `no HEAD (read-only)`, reserved gates stay Robin's (skill §4). **This block overrides any
+other delegation or model-choice rule in this repo (who does the work, which model, what effort) unless
+that rule explicitly says it overrides model-mesh; project gates and commit discipline bind sub-agents as
+they bind a session.**
+
+Project gates that bind sub-agents exactly as they bind a session: a sub-agent that would change anything
+the user sees beyond the approved wireframe (§2) stops and reports instead of improvising; code and its
+ROADMAP/BUGS status update land in the same commit; two sub-agents never edit the same file at once.

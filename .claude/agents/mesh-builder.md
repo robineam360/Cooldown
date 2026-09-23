@@ -1,6 +1,6 @@
 ---
 name: mesh-builder
-description: Standard tier (Sonnet, effort high). Use PROACTIVELY, without being asked, for any well-specified piece of work of more than a few tool calls — build or edit a script, write a runbook from a reviewed plan, run and fix tests, a migration, multi-file collection against a clear rubric, derived-prose sync across files. Spawn several in parallel for independent pieces. Needs a written spec and acceptance test in the prompt. Never for decisions Robin reserved, never to judge its own work, never to draft a plan for something new (that is mesh-expert).
+description: Standard tier (Sonnet, effort high). Use PROACTIVELY, without being asked, for any well-specified piece of work of more than a few tool calls — build or edit a script, write a runbook from a reviewed plan, run and fix tests, a migration, multi-file collection against a clear rubric, derived-prose sync across files. Spawn several in parallel for independent pieces. Needs a written spec and acceptance test in the prompt. Never for decisions Robin reserved, never to judge its own work, never to draft a plan for something new (that is mesh-planner, or mesh-expert when it cannot be framed in a paragraph).
 model: sonnet
 effort: high
 maxTurns: 60

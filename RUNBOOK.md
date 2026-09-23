@@ -17,12 +17,11 @@ middle. Step 1 lands the only code allowed before the gate — forward-only hist
 cannot be backfilled. Step 2 is the gate. Nothing in Steps 3–4 starts until Robin has said "approved"
 to a wireframe revision in `design/`.
 
-**How this arc is run.** One **Fable** session orchestrates: briefs sub-agents, reviews, tests,
-commits and ticks this file. Sub-agents do the labour — the wireframe HTML, the mechanical UI
-build — and the orchestrator owns every decision. **Sonnet** for the pure models and the UI build
-against an approved wireframe; **Haiku** for copy sweeps and tracker edits; the orchestrator itself
-for the device pass and anything touching signing. If a session runs out mid-arc, a fresh Fable
-session resumes from the *Resume* block of the first unticked step.
+**How this arc is run.** Delegation follows the `model-mesh` skill (CLAUDE.md §4) — which model does
+what is its call, not this file's. The session owns every decision, reviews, tests, commits and ticks
+this file; the device pass and anything touching signing stay with the session itself, never a
+sub-agent. If a session runs out mid-arc, a fresh session resumes from the *Resume* block of the first
+unticked step.
 
 **Where the detail lives.** The design reasoning is in ROADMAP.md items CCRM-72 and CCRM-73. This
 file says what order, what to paste, and what "done" means. Release mechanics stay in
@@ -30,7 +29,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
 
 ## Conventions — every session reads this block first
 
-1. **Start from the paste.** Each step has a fenced *Resume in a fresh Fable session* block that
+1. **Start from the paste.** Each step has a fenced *Resume in a fresh session* block that
    names what to read. It never needs an earlier conversation.
 2. **Tests:** `./gradlew testDebugUnitTest` green and `./gradlew assembleDebug` compiling before a
    step closes.
@@ -54,7 +53,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
    "%" for "points", one row style for both cards and the guide labels inside the plot
    (CCRM-74). Nothing else moves under a user who never opens Appearance.
 9. Tracker IDs carry their epic name on first use (CLAUDE.md §1).
-10. **Sub-agents do the work; the orchestrator decides.** See CLAUDE.md §4. Building, reviewing and drawing go to sub-agents chosen by complexity — Opus for high, Sonnet for medium, Haiku for low — and the Fable/Opus session keeps design ownership, decisions, sequencing, commits and the tracker.
+10. **Delegation follows model-mesh (CLAUDE.md §4).** Design decisions and sequencing stay with the session and Robin; the §4 project gates bind every sub-agent.
 
 ## Progress
 
@@ -95,7 +94,7 @@ Same lesson as CCRM-70 (Plan Fit)'s `pl`/`mc` tags: land the write path the mome
 **Who:** a sub-agent draws `design/2026-09-17-main-screen-redesign.html`; the orchestrator reviews
 it against ROADMAP.md before Robin sees it; Robin approves, one question at a time.
 
-**Resume in a fresh Fable session:**
+**Resume in a fresh session:**
 
 ```
 Read CLAUDE.md, then RUNBOOK.md — Conventions and Step 2 — then ROADMAP.md items CCRM-72 (Main
@@ -131,7 +130,7 @@ revision letter and date in CCRM-72's and CCRM-73's Status lines and close out p
 
 **Who:** Sonnet builds; the orchestrator reviews the diff and runs the tests.
 
-**Resume in a fresh Fable session:**
+**Resume in a fresh session:**
 
 ```
 Read CLAUDE.md, RUNBOOK.md (Conventions, Step 3), ROADMAP.md item CCRM-72 (Main Screen
@@ -163,7 +162,7 @@ and assembleDebug green; commit feat(CCRM-72): …; close out per Convention 4.
 **Who:** Sonnet builds to the approved wireframe; the orchestrator reviews against it, state by
 state, before the commit.
 
-**Resume in a fresh Fable session:**
+**Resume in a fresh session:**
 
 ```
 Read CLAUDE.md, RUNBOOK.md (Conventions, Step 4), ROADMAP.md items CCRM-72 (Main Screen
@@ -209,7 +208,7 @@ naming the state. Close out per Convention 4.
 **Who:** the orchestrator, with the phone over USB adb. Robin unlocks the phone; nobody stores the
 pattern.
 
-**Resume in a fresh Fable session:**
+**Resume in a fresh session:**
 
 ```
 Read CLAUDE.md, RUNBOOK.md (Conventions, Step 5), then the Status lines of CCRM-72, CCRM-73,
@@ -244,7 +243,7 @@ Status to Verified on the Fold 7 with the date; close out per Convention 4.
 
 **Who:** the session, following RELEASING.md; Robin confirms "Check for updates" on the phone.
 
-**Resume in a fresh Fable session:**
+**Resume in a fresh session:**
 
 ```
 Read CLAUDE.md, RELEASING.md, RUNBOOK.md (Conventions, Step 6), and the Status lines of every
@@ -271,7 +270,7 @@ and `Cooldown-whats-new-v1.7.png` rebuilt and every changed page render-checked;
 `release/USER-GUIDE.md` updated (the guide header says *prepared 17 September 2026*);
 `release/RELEASE-NOTES-v1.7.md` drafted for `gh release create --notes-file`.
 
-**The last mile, on the go-ahead** (paste into a fresh Fable session):
+**The last mile, on the go-ahead** (paste into a fresh session):
 
 ```
 Read CLAUDE.md, RELEASING.md and RUNBOOK.md Step 6. Robin has given the go-ahead for v1.7.

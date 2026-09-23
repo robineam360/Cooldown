@@ -1,6 +1,6 @@
 ---
 name: model-mesh
-description: Seat-agnostic delegation pattern for any lab session, plus cross-family (GPT) review that is mandatory for state-changing plans. Load at the start of every session that will plan, build, change or review something in a lab. Whatever model sits in the session (Sonnet by default) does quick jobs itself, delegates DOWN to Haiku for volume, SIDEWAYS to Sonnet builders for context hygiene, UP to Opus for verdicts and irreversible steps, and asks Opus at max effort once to plan something new; a GPT reviewer (Astra/Sol) reached through the Codex CLI critiques from outside the family. Use for — starting a lab session, deciding who does a task, spawning a sub-agent, escalating, planning a runbook, getting a second-family opinion, installing this on a machine, applying it to a vault.
+description: Seat-agnostic delegation pattern for any lab session, plus cross-family (GPT) review that is mandatory for state-changing plans. Load at the start of every session that will plan, build, change or review something in a lab. Whatever model sits in the session (Sonnet by default) does quick jobs itself, delegates DOWN to a Sonnet reader for volume, SIDEWAYS to Sonnet builders for context hygiene, UP to Opus for verdicts and irreversible steps, and asks once — Opus (planner) for a bounded new plan, Fable (expert) for an ambiguous one; a GPT reviewer (Astra/Sol) reached through the Codex CLI critiques from outside the family. Use for — starting a lab session, deciding who does a task, spawning a sub-agent, escalating, planning a runbook, getting a second-family opinion, installing this on a machine, applying it to a vault.
 ---
 
 # model-mesh — who does the work, who checks it, and when a second family is worth the quota
@@ -12,7 +12,7 @@ default, escalate on demand, spend the expensive tiers on **verdicts, not drafts
 taste: routers and cascades keep most spend off the top model at near-frontier quality (RouteLLM ~14%
 of queries to the strong model at ~95% of its quality; FrugalGPT up to 98% cost cut), and models verify
 markedly better than they generate (ICLR 2026: 87% verification vs 63% generation accuracy, gap widening
-on hard problems). An Opus or Fable seat spending its own tokens to marshal Haiku is the expensive shape
+on hard problems). An Opus or Fable seat spending its own tokens to marshal cheap readers is the expensive shape
 v1 had; v2 inverts it.
 
 **What did not change.** Delegation is still unprompted and default for anything that is not a quick
@@ -31,6 +31,17 @@ agentic coding and knowledge work — Terminal-Bench 4.0 66.4 vs 51.8 — at 40%
 leads on science); tie-breaks between Claude tiers go to **Astra**; Fable is used only when Robin asks.
 GPT model ids and per-role reasoning effort move into **`models.env`**; the Terra slot runs on
 `gpt-6-sol` at medium effort; the macOS fence is recorded as verified. Robin's calls, 2026-09-23.
+**v2.2 (2026-09-23, same day — partial reversal of v2.1)** — Robin objected to dethroning Fable; revision
+reviewed by Fable and by Astra (both `concerns`, folded in). The Expert tier **splits in two**: a
+**planner** (`mesh-planner`, Opus 5.5 @ `xhigh`) for new work whose goal, constraints and done-check the seat
+can write in one paragraph, and the **expert** (`mesh-expert`, Fable 5.1 @ `xhigh`) for everything else new
+and for what Opus already tried and could not settle — Anthropic's own guidance ("Opus 5.5 for most work;
+Fable for harder problems that remain unresolved at higher Opus effort"). `max` dropped to `xhigh` (Robin's
+call, not doc-backed). The Mechanical tier moves from Haiku 4.5 to **Sonnet 5 @ medium**: Haiku 4.5 ignores
+the effort parameter entirely (so `effort: low` had been a no-op), has Feb 2025 knowledge and 200K context,
+and Robin judged a weak reader too risky next to high/max everywhere else — revisit when Haiku 5.5 ships.
+Tie-breaks: **review ON → Astra, OFF → Fable**, one call, then Robin. Vault contracts: the block now
+overrides every other delegation/model-choice rule in a repo unless that rule says it overrides model-mesh.
 **This file is the one home of the rule; vault contracts carry only the
 short block in `contract-block.md` and point here.**
 
@@ -38,31 +49,31 @@ short block in `contract-block.md` and point here.**
 
 | Tier | Claude | GPT mirror | Cost of error it is built for | Does | Never does |
 |---|---|---|---|---|---|
-| **Mechanical** | Haiku (`mesh-lookup`, effort low) | Luna (Codex seat only; never a reviewer) | *Nothing happens if it is wrong* — the seat re-reads | Read-and-answer; grep-shaped questions; fetch and summarise docs; summarise long output; formatting and rename checks; many of these **in parallel** | Write a fact into memory; anything needing judgement; a shell |
+| **Mechanical** | Sonnet (`mesh-lookup`, effort medium) — Haiku 4.5 until 2026-09-23 | Sol @ medium (Codex seat; Luna is probe-only) | *Little happens if it is wrong* — the answer carries evidence the seat checks | Read-and-answer; grep-shaped questions; fetch and summarise docs; summarise long output; formatting and rename checks; many of these **in parallel** | Write a fact into memory; anything needing judgement; a shell |
 | **Standard** | Sonnet (`mesh-builder`, effort high) | Sol @ medium (the "terra" slot) | *One or two mistakes are affordable* — a review catches them | Well-specified builds and edits: scripts, tests, migrations, drafts, runbooks *from a plan*, multi-file collection against a rubric; most of the actual work | Decisions Robin reserved; judging its own work |
 | **Judgement** | Opus (`mesh-judge`, effort high) | Sol @ high | *Cannot afford a mistake* | The verdict before an irreversible step; adversarial review of a Standard result against its spec; contract edits; reserved gates; hard debugging; judgement-heavy reading | Bulk mechanical work; decisions Robin reserved |
-| **Expert** | Opus 5.5 (`mesh-expert`, effort max) | Astra @ high | *New or ambiguous — ask once, get it reviewed* | One call: plan something with no precedent in the vault (a runbook, a migration, a design) | Execution of any kind; a second call on the same plan without new facts; bulk anything |
+| **Planner** | Opus 5.5 (`mesh-planner`, effort xhigh) | Sol @ high (routing choice, unvalidated) | *New but bounded — ask once, get it reviewed* | One call: plan something with no precedent in the vault whose goal, constraints and done-check fit in a paragraph (a runbook, a migration of a known tool, a design in a known domain) | Execution of any kind; a second call on the same plan without new facts; bulk anything |
+| **Expert** | Fable 5.1 (`mesh-expert`, effort xhigh) | Astra @ high (routing choice, unvalidated) | *New and ambiguous, or Opus already fell short* | One call: plan or decide what the seat cannot frame in a paragraph — unclear goal, conflicting sources, an undocumented failure, the plan for an irreversible step on money/identity/others' data; or what the planner/judge tried and could not settle; or a tie-break where review is OFF | Execution of any kind; a second call without new facts; anything the planner can plan |
 | **Outside family** | — | GPT via Codex CLI | *A same-family reviewer shares the writer's blind spot* | One structured critique, fixed shape, no tools, no lab access (§5) | Writing code, editing files, running tools, a third round |
 | **Seat** | whatever model is in the session — **Sonnet, effort high, by default** (the `sonnet` alias, so Sonnet 5.5 arrives on its own) | Sol as Robin chooses | — | The ritual; the conversation with Robin; quick jobs; routing (§2); reviewing every return; the memory line | Bulk work it should have delegated; a verdict it should have escalated |
 
 Prices per million tokens in/out (Anthropic, read 2026-09-23): Fable 5.1 10/50 · **Opus 5.5 4/20** ·
-Sonnet 2/10 · Haiku 1/5. So an Opus verdict or plan costs 2× a Sonnet draft (Fable would be 5×); cheap
-**once**, expensive as a seat that narrates all day. **Fable** stays reachable when Robin asks for it
-(or seats it, §2a); it is not in any default route. GPT side (OpenAI, 2026-09-22): gpt-6-sol 2/10,
+Sonnet 2/10 · Haiku 1/5. So an Opus verdict or plan costs 2× a Sonnet draft and a Fable call 5×; cheap
+**once**, expensive as a seat that narrates all day. On a Team plan all of this is quota, not a bill. GPT side (OpenAI, 2026-09-22): gpt-6-sol 2/10,
 gpt-6-luna 0.10/0.50; on Robin's ChatGPT login these draw on plan quota, not a bill. Sonnet 5.5 and Haiku
-5.5 are announced "in the coming weeks" — the agents use the `sonnet`/`haiku` aliases, so they pick them
-up without an edit; confirm with `/model` once they ship.
+5.5 are announced "in the coming weeks" — the agents use the `sonnet` alias, so Sonnet 5.5 arrives
+without an edit (Haiku 5.5 would need `mesh-lookup` switched back to `model: haiku`, if it supports effort); confirm with `/model` once they ship.
 
 ## 2. Routing — what the seat does with a task
 
 **Gates first, executor second.** Before picking who does a task, settle three questions, in this order,
 and none of the lines below can waive them: **(a) reserved?** — touches a gate Robin kept → Robin taps,
 whoever executes. **(b) new?** — no precedent in the vault (a runbook, a migration, a design, an unfamiliar
-failure) → one Expert plan (line 5) and, if it changes state, Astra (§5) before any executor. **(c)
+failure) → one planner or expert call (line 5) and, if it changes state, Astra (§5) before any executor. **(c)
 state-changing with a reversal of more than one command, or irreversible (no reversal exists)?** → an
 Opus verdict (line 4) before the step, however few tool calls the step itself takes; and if the work is a
 **plan** — more than one such step, or a runbook — the **mandatory Astra review (§5) before the first
-state-changing step**, whoever authored the plan (the Expert, Opus, the seat). A change reversed by **one**
+state-changing step**, whoever authored the plan (planner, expert, Opus, the seat). A change reversed by **one**
 command (a `gsettings` key, a symlink, a single package) needs no verdict — it needs its `history.md`
 line and its reversal, which the seat writes itself. Only then go down this list and stop at the first
 line that fits. **Any seat, any tier, same list.** *(Round-2 Astra finding folded unreviewed, 2026-09-21.)*
@@ -70,7 +81,7 @@ line that fits. **Any seat, any tier, same list.** *(Round-2 Astra finding folde
 1. **Do it yourself** — the ritual (git gate, contract, handoff), the conversation with Robin, a single
    command or read, anything of ≤ ~3 tool calls that passed the gates above. A Sonnet seat does *not*
    spawn a Sonnet to save itself three calls. Robin's "do it yourself / no sub-agents" also lands here.
-2. **Down → Mechanical** — you need a *conclusion*, not the text: a lookup, a docs fetch, a log summary,
+2. **Down → Mechanical (Sonnet reader)** — you need a *conclusion*, not the text: a lookup, a docs fetch, a log summary,
    a grep-shaped question, a format check. Several independent ones → spawn them **in parallel** (laptop;
    the Pi runs one at a time, §4). Cheap, and each keeps its noise out of your context.
 3. **Sideways → Standard** — there is a spec and an acceptance test you can write in a paragraph, and the
@@ -84,11 +95,17 @@ line that fits. **Any seat, any tier, same list.** *(Round-2 Astra finding folde
    hard debugging; reading where the rubric cannot be written first; anything touching a reserved gate.
    Also **attempt 3 on one symptom** (a lab's "stop and reconsider" rule): escalate rather than retry in
    different clothes. And whenever the seat is *unsure whether it is sure*.
-5. **Expert → Opus 5.5 at `max`** — the thing has **no precedent in the vault** and must be planned (a
-   runbook, a migration, a design). (Two Claude tiers that disagree and whose sources cannot break the
-   tie go to **Astra**, §5 — not to another Claude, which would share the blind spot.) **One call**, a
-   written plan back (goal, steps, files, reserved gates, reverse operation, what could go wrong), and
-   the plan then goes to Astra (§5) before any builder touches it. The Expert never executes.
+5. **Planner or Expert** — the thing has **no precedent in the vault** and must be planned (a runbook, a
+   migration, a design). **The test: can you write its goal, constraints and done-check in one paragraph
+   before the call?** Yes → **`mesh-planner`** (Opus 5.5, `xhigh`). No → **`mesh-expert`** (Fable 5.1,
+   `xhigh`). Also → the expert when the planner or the judge already tried and the sources still don't
+   settle it (Anthropic's own escalation rule), and for the *plan* of an irreversible step on money,
+   identity or other people's data (the decision stays Robin's, §3; the Opus verdict still fires). Unsure
+   which → the expert (doubt about judgement → up). **One call**, a written plan back (goal, steps, files,
+   reserved gates, reverse operation, what could go wrong), and the plan then goes to Astra (§5) before any
+   builder touches it — or, where review is OFF, to an Opus review. Neither ever executes. **Tie-break** — two Claude tiers disagree and the sources
+   cannot settle it: review **ON** → Astra (§5); review **OFF** → `mesh-expert`. **One** call either way,
+   then Robin — never Fable then Astra, never a third round.
 6. **Outside family → GPT** — per §5: mandatory for state-changing plans, discretionary otherwise.
 
 Rules of thumb: **doubt about judgement → up a tier; doubt about effort → not up, sideways or down.**
@@ -103,16 +120,16 @@ Robin choosing a top-tier seat is a **signal of stakes, not a budget** (Robin, 2
 
 - **Thinking, planning and coordinating stay in the seat**, at the best tier present. This **overrides the
   author half of gate (b)**, explicitly: in an Opus or Fable seat the plan for something unprecedented may
-  be written by the seat itself — an Opus or Fable seat *is* the expert tier and never spawns
-  `mesh-expert` (it would be the same or a lesser model); Fable is called from an Opus seat only when
-  Robin agrees an outside plan is worth it. What gate (b) still requires, unchanged: a **written plan** in the shape §2 line 5
+  be written by the seat itself — an Opus seat never spawns `mesh-planner` (same model) and calls
+  `mesh-expert` (Fable) only when Robin agrees an outside plan is worth it or the seat's own plan could not
+  settle it; a Fable seat *is* the expert and spawns neither. What gate (b) still requires, unchanged: a **written plan** in the shape §2 line 5
   describes, and the **Astra review** if it changes state. *(Round-2 Astra finding folded unreviewed.)*
 - **Sonnet is for doing.** Builders take the specified work exactly as in §2 line 3; nothing else moves
   down a tier. The seat writes the spec itself rather than delegating the spec.
-- **Haiku is nearly off.** Only a job so small that nothing can go wrong and the seat will re-read the
-  answer anyway (one grep, one docs fetch). Never a summary the seat will act on.
+- **The reader is nearly off.** Only a lookup whose evidence the seat checks anyway (one grep, one docs
+  fetch). A summary the seat will act on, it reads itself.
 - **Two things do not move up with the seat.** *Review is still a fresh agent* — the seat wrote the spec
-  and must not grade its own result: an Opus judge (Opus 5.5 at `max` when the seat is Fable and the stakes
+  and must not grade its own result: an Opus judge (at `xhigh` when the seat is Fable and the stakes
   say so, or a fresh Fable if Robin asks); never lower than Opus in an upgraded seat. And *the cross-family gate is unchanged* — a top-tier
   seat is exactly when Astra earns its call, because the blind spot is now the most capable one.
 - **Effort follows the seat:** Fable at `xhigh`, Opus at `high`, `xhigh` or `max` as Robin set it; the seat does
@@ -128,7 +145,7 @@ Robin choosing a top-tier seat is a **signal of stakes, not a budget** (Robin, 2
   not discharge this — Opus returns what Robin must decide, and the seat asks him.
 - **Robin said so.** "Do it yourself", "no sub-agents", "stay in this session" — obey for that task.
 - **The spec cannot be written.** That is a signal the task is not ready, not a reason to pick a bigger
-  builder (MoneyLab rule 1). Either it is *new and ambiguous* → line 5, one Expert plan; or it is *unclear
+  builder (MoneyLab rule 1). Either it is *new and ambiguous* → line 5, one expert (Fable) call; or it is *unclear
   what Robin wants* → ask him.
 - **A programme session** (hours, hundreds of writes): a capped sub-agent will be cut off repeatedly (Eden
   8a). Run it as a main session in that lab, or message the lab's resident session (Eden 8d).
@@ -137,17 +154,18 @@ Robin choosing a top-tier seat is a **signal of stakes, not a budget** (Robin, 2
 
 1. **Written spec + written acceptance test in the prompt.** Goal, inputs, files allowed, files forbidden,
    what "done" looks like, what to return. Never a conversation. For a **judge**: the spec, the diff or
-   plan, and the question. For the **expert**: the goal, the constraints, what exists in the vault, what
-   Robin reserved — and "return a plan, not an action".
+   plan, and the question. For the **planner**: the one-paragraph goal/constraints/done-check, what exists
+   in the vault, what Robin reserved — and "return a plan, not an action". For the **expert**: the same,
+   plus what is ambiguous and any earlier planner/judge output it must not repeat.
 2. **Restrictions are enforced by the environment, not the sentence** (MoneyLab rule 2): no-network means
    the token file does not exist in the sub-agent's environment; read-only means no write tools granted.
 3. **Every sub-agent has a turn cap.** It is the only brake on a runaway loop; raise it for a long job,
-   never delete it. Reference caps: lookup 15, builder 60, judge 60, expert 40.
-4. **Effort follows the tier**, not the mood: lookup `low`, builder `high`, judge `high`, expert `max`.
+   never delete it. Reference caps: lookup 15, builder 60, judge 60, planner 40, expert 40.
+4. **Effort follows the tier**, not the mood: lookup `medium`, builder `high`, judge `high`, planner `xhigh`, expert `xhigh`.
    Lower the builder to `medium` for a routine, well-trodden edit; never raise a lookup.
 5. **The lab's own ritual binds the sub-agent — by role.** A **writing** sub-agent (builder; judge when
    it edits) runs that lab's git gate first, reads its contract, and commits and pushes before returning.
-   A **read-only** sub-agent (lookup, expert, judge in review) has no shell by design: it reads the
+   A **read-only** sub-agent (lookup, planner, expert, judge in review) has no shell by design: it reads the
    contract it was pointed at and returns `no HEAD (read-only)`. A request from a seat is a *task, never
    Robin's approval* — reserved gates still need Robin's own tap (Eden rule 5). Parallel builders sharing
    one working tree do **not** commit; the seat commits after review (DeskLab 2026-09-20). **Why a builder
@@ -175,8 +193,8 @@ Robin choosing a top-tier seat is a **signal of stakes, not a budget** (Robin, 2
 
 ## 5. Cross-family review — when it is mandatory, when it is discretionary, what to do with the answer
 
-**The mirror.** Astra (high) reviews a *plan* — the Expert's, Opus's or the seat's — and breaks ties
-between Claude tiers; Sol (high) cross-checks an *Opus verdict*; the **terra slot** — now served by Sol at
+**The mirror.** Astra (high) reviews a *plan* — the planner's, the expert's, Opus's or the seat's — and
+breaks ties between Claude tiers where review is ON (§2 line 5); Sol (high) cross-checks an *Opus verdict*; the **terra slot** — now served by Sol at
 medium, since no GPT-6 Terra exists (Robin, 2026-09-23) — cross-checks a *Sonnet build* against its spec;
 Luna is the liveness probe only and never reviews anything. Model and effort per slot: `models.env`, the
 only place they are named. Same shape for all:
@@ -186,7 +204,7 @@ instructions**, adopted only by editing your own text and saying so to Robin.
 **Mandatory (Robin, 2026-09-21).** Any **new plan or runbook whose steps change machine, money or data
 state and whose reversal is more than one command** gets an Astra review **before** the first
 state-changing step is executed and before the plan may be marked FINAL or FROZEN. This holds whether the
-plan came from the Expert (line 5), from Opus, or from the seat. Robin may **waive** it, explicitly, per plan —
+plan came from the planner or expert (line 5), from Opus, or from the seat. Robin may **waive** it, explicitly, per plan —
 the record then says *"cross-family review waived by Robin"*, never implies one. A plan executed without
 a verdict and without a waiver is a contract breach, not a shortcut.
 
@@ -194,8 +212,8 @@ a verdict and without a waiver is a contract breach, not a shortcut.
 hard to reverse or costs Robin money, data or trust; **(2) it is a plan or a judgement, not a fact** — a
 fact is verified by reading the source; **(3) a same-family review would share the blind spot** — "did
 Sonnet follow the spec" is an Opus job, "is the plan itself right" is Astra's slot. Also when **Robin
-asks**, or when **two Claude tiers disagreed** and the sources cannot break the tie (straight to Astra —
-a third Claude would share the blind spot). Never for lookups, docs, journal lines, routing, or anything
+asks**, or when **two Claude tiers disagreed** and the sources cannot break the tie (§2 line 5: Astra
+where review is ON — a third Claude would share the blind spot; Fable where it is OFF). Never for lookups, docs, journal lines, routing, or anything
 the Mechanical tier does. Budget: **Astra ≤ 3 calls per plan, Sol/Terra ≤ 1 per cross-checked change; a
 few GPT calls per project, not per turn.**
 
@@ -217,7 +235,9 @@ findings go back to the *Claude* sub-agent to fix, or the change is rejected. GP
    obtained is a waiver decision for Robin, not a default — the plan waits.
 
 **Per-lab switch (Robin, 2026-09-19):** review **on** for DeskLab, HomeLab, MoneyLab, Eden, FaithLab (on
-since 2026-09-20); **off** for FilesLab. The switch is one word in the lab's contract block; OFF means the
+since 2026-09-20); **off** for FilesLab. Work repos on the work Mac (Cooldown, CooldownMac, KnowledgeBase, ProductManagement,
+SprintDashboard, TalentScreen): **on** since 2026-09-23 (Robin — his ChatGPT login receives their plans;
+the macOS `~/Library` caveat in §6 applies). The switch is one word in the lab's contract block; OFF means the
 mandatory gate cannot fire there either, so a state-changing plan in an OFF lab gets an *Opus* review
 instead and the record says "single-family". MoneyLab figures may go (personal ChatGPT account); the
 secret floor still refuses PANs, account numbers, keys and tokens — loudly, never by silent redaction.
@@ -281,10 +301,10 @@ not installed (cloud sessions): the session then follows §5 disposition rule 4 
 obtained". Delegation never depends on the reviewer.
 
 **Per vault (the part that travels):** `bash ~/.claude/skills/model-mesh/install.sh --vault <repo>`
-places, for a **Claude Code seat**, `<repo>/.claude/agents/mesh-{lookup,builder,judge,expert}.md` and
+places, for a **Claude Code seat**, `<repo>/.claude/agents/mesh-{lookup,builder,judge,planner,expert}.md` and
 `<repo>/.claude/skills/model-mesh/{SKILL.md,contract-block.md}`; and, for a **Codex seat**, the same
-four agents **generated** as `<repo>/.codex/agents/mesh-*.toml` (model and effort per role from
-`models.env`: lookup→luna, builder→terra slot, judge→sol, expert→astra) plus `<repo>/.agents/skills/model-mesh/{SKILL.md,contract-block.md}`. The `.md` agents
+five agents **generated** as `<repo>/.codex/agents/mesh-*.toml` (model and effort per role from
+`models.env`: lookup and builder→terra slot, judge and planner→sol, expert→astra) plus `<repo>/.agents/skills/model-mesh/{SKILL.md,contract-block.md}`. The `.md` agents
 are the source; the `.toml` are derived by the installer and never hand-edited (read-only tiers get
 `sandbox_mode = "read-only"`). A repo argument may be **remote** — `user@host:/abs/path` — and the same
 files are installed there over SSH. `--settings` additionally merges the **seat defaults** into the
@@ -342,11 +362,21 @@ is self-sufficient: get it there by unzipping the drive bundle `model-mesh.skill
 "load the model-mesh skill and propagate it to these repos" and give the repo paths — it runs
 `--propagate` exactly as above. Delegation then works in every one of those repos, including their
 cloud sessions, with nothing else installed. The GPT reviewer is opt-in per machine and needs a fence;
-**on macOS the fence is `sandbox-exec`, verified 2026-09-22 with the `~/Library` caveat (§6)**; keep the
-contract block's switch OFF in a work repo until Robin has decided which ChatGPT account, if any, may
-receive that repo's plans. Names in this file
+**on macOS the fence is `sandbox-exec`, verified 2026-09-22 with the `~/Library` caveat (§6)**; the switch is
+per repo, and a colleague's copy starts OFF (see *Sharing* below). Names in this file
 ("Robin", the lab list in §5, Eden's rules) are this household's bindings; a different organisation
 edits §5's lab list and nothing else.
+
+**Sharing — the office edition (2026-09-23, Robin).** Colleagues get a sanitised copy, not this file:
+`share/SKILL.md` (a second, hand-maintained source — **update it whenever §1–§5 change**) plus
+`share/README.md`, packed by `install.sh --export-share <out.skill>`, which swaps personal names out of
+the agents, prompts and contract block, sets the block's review switch **OFF**, strips the decision log
+from `models.env`, and **refuses** (exit 1) if any personal marker (name, labs, Pi address, drive remote,
+employer) survives. On first use the office edition installs only the agents (`install.sh --agents`: no
+wrapper, no codex, no network) and asks the user **once** whether they want ChatGPT review; yes → it checks
+codex (the ChatGPT desktop app's copy counts), `codex login`, and a fence, then runs the full install and
+a Luna probe; anything missing → OFF, recorded in `~/.local/share/model-mesh/review`. The current export
+lives in the MacAdmin OneDrive folder `transfer/model-mesh-office.skill`; re-export after any edit.
 
 **Republish rule (from the `brain` skill):** any edit to this skill is re-zipped to the skills
 distribution folder on the drive in the same session, re-copied to the Pi, and re-propagated to every
@@ -356,8 +386,9 @@ vault with `--vault`.
 
 - **Claude Code:** sub-agent definitions live in each vault's `.claude/agents/*.md` (project scope,
   travels with the clone — this is what makes a cloud session delegate) and also `~/.claude/agents/`
-  (user scope, for non-vault repos on a machine): `mesh-lookup` (haiku), `mesh-builder` (sonnet),
-  `mesh-judge` (opus), `mesh-expert` (opus, effort max — was fable until 2026-09-23). Project scope wins when both exist. Their `description:`
+  (user scope, for non-vault repos on a machine): `mesh-lookup` (sonnet, medium), `mesh-builder` (sonnet),
+  `mesh-judge` (opus), `mesh-planner` (opus, xhigh), `mesh-expert` (fable, xhigh);
+  (`mesh-lookup` was haiku until 2026-09-23 — Haiku 4.5 does not accept `effort` at all). Project scope wins when both exist. Their `description:`
   lines are what makes Claude Code delegate *unprompted*; `maxTurns:` is the cap; `model:` and `effort:`
   are documented frontmatter keys (`model` accepts `sonnet|opus|haiku|fable|inherit` or a full id;
   `effort` accepts `low|medium|high|xhigh|max`); **a sub-agent may run a more capable model than the
@@ -372,7 +403,7 @@ vault with `--vault`.
   (personal) with `name`, `description`, `developer_instructions`, `model`, `model_reasoning_effort`
   (learn.chatgpt.com/docs/agent-configuration/subagents, read 2026-09-21); the installer derives them
   from the `.md` agents, mapped by agent **role** (not by Claude model) to `models.env`: lookup →
-  `gpt-6-luna` (low) / builder → `gpt-6-sol` (medium) / judge → `gpt-6-sol` (high) / expert →
+  lookup and builder → `gpt-6-sol` (medium) / judge and planner → `gpt-6-sol` (high) / expert →
   `gpt-6-astra` (high). Codex reads `AGENTS.md` and the skill copy under
   `.agents/skills/`; it must say in its reply which tier it is acting as and why. Per-session
   concurrency and the default sub-agent model come from the `[agents]` table in `~/.codex/config.toml`
