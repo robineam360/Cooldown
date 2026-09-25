@@ -311,11 +311,7 @@ object FaceStates {
         val hasSession = data?.session != null
         val hasWeekly = data?.weekly != null
         val weeklyOnly = data != null && !hasSession && hasWeekly
-        val window = when {
-            weeklyOnly -> FaceWindow.WEEKLY
-            asked == FaceWindow.WEEKLY && !hasWeekly && hasSession -> FaceWindow.SESSION
-            else -> asked
-        }
+        val window = shownWindow(data, asked)
         if (weeklyOnly) states += StateId.S4
         val w: UsageWindow? = if (window == FaceWindow.WEEKLY) data?.weekly else data?.session
         val resetsAt = w?.resetsAt
@@ -379,6 +375,22 @@ object FaceStates {
             fillArgb = barColor(pct, a.accentArgb, input.dark), resetsAt = resetsAt,
             sub = sub, shortReset = shortReset, countForm = countForm, estimate = estimate,
         )
+    }
+
+    /**
+     * The window a face actually shows for [asked]: Weekly on a weekly-only account (S4,
+     * the notification's CCRM-54 (ChatGPT Account) headline rule), 5h when Weekly was
+     * asked of an account that has only 5h. [Transitions] resolves windows through this
+     * too, so the alarm and the face never disagree.
+     */
+    fun shownWindow(data: UsageData?, asked: FaceWindow): FaceWindow {
+        val hasSession = data?.session != null
+        val hasWeekly = data?.weekly != null
+        return when {
+            data != null && !hasSession && hasWeekly -> FaceWindow.WEEKLY
+            asked == FaceWindow.WEEKLY && !hasWeekly && hasSession -> FaceWindow.SESSION
+            else -> asked
+        }
     }
 
     /** The states that describe the reading itself; S1 is "none of these". */
