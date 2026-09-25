@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-78 (Widgets Reborn): a static picker-preview ring (wireframe rev D §7), the rails
+     gauge at 38% with the pace tick at 52%. Preview only — every placed
+     face draws its ring through RingRenderer at bucket size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp" android:height="110dp"
+    android:viewportWidth="110" android:viewportHeight="110">
+    <path android:strokeColor="#38EDE8E4" android:strokeWidth="1"
+        android:pathData="M55.00,10.28 A44.72,44.72 0 1,1 54.99,10.28" />
+    <path android:strokeColor="#FFE59980" android:strokeWidth="9" android:strokeLineCap="round"
+        android:pathData="M55.00,10.28 A44.72,44.72 0 0,1 85.61,87.60" />
+    <path android:strokeColor="#FF1A1A1A" android:strokeWidth="5.51" android:strokeLineCap="round"
+        android:pathData="M50.29,92.30 L48.50,106.44" />
+    <path android:strokeColor="#E6EDE8E4" android:strokeWidth="3.51" android:strokeLineCap="round"
+        android:pathData="M50.29,92.30 L48.50,106.44" />
+</vector>

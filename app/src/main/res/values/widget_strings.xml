@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-78 (Widgets Reborn): the picker's names and descriptions (wireframe rev D §7). Free
+     to change after release (R9). -->
+<resources>
+    <string name="widget_ring_label">Ring</string>
+    <string name="widget_ring_description">One account’s usage as a small gauge.</string>
+</resources>

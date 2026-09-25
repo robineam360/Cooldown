@@ -1326,7 +1326,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   2×2 as on 1×1; the needle and hub replaced by a pace tick on every ring with a figure in its bore
   (3.5 dp on the 9 dp stroke, never under 2.5 dp, round caps, 90% ink, 1 dp halo in the face colour,
   overhanging the stroke equally inside and out); the usage band has round ends; S5 labels "Pro · not
-  started", S7's red dot sits at 1×1's top-right inset, S11 adds " · left" on 2×2.
+  started", S7's red dot sits at 1×1's top-right inset, S11 adds " · left" on 2×2. · **Provider in (Step 4, 2026-09-25):** `widgets.RingWidgetProvider` (R9), 1×1 and 2×2 in its size map, `ring_widget_info.xml` (default 2×2, `updatePeriodMillis` 0, a static `previewLayout`), picker name "Ring".
 - **What:** the rails gauge from `UsageIcon.railsGauge` (hairline extent, usage band, red slice, spent
   ×, with the pace tick in place of the hub and needle — rev D) for one account's 5h window, or its headline window when it has no 5h. It bears no
   time; at S6 it draws the extent alone.
