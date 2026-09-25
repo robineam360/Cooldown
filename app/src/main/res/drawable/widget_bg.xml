@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A v1.8 widget face's Solid card (CCRM-78 (Widgets Reborn) §Config). White so the
+    ImageView's colour filter is the only thing that colours it — the account's Room card,
+    or the Strip's neutral card — set at render time by RemoteViews.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:radius="@android:dimen/system_app_widget_background_radius" />
+</shape>

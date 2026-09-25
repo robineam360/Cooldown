@@ -1276,7 +1276,7 @@ unavailable (R9) · and each narrow size, with what drops out. The wireframe dra
 face; `WidgetFaceTest` covers every state × bucket.
 
 ### CCRM-78 · Widgets Reborn — the suite, its config, and one refresh seam
-- **Status:** Planned · large · **wireframe rev D approved by Robin 2026-09-25** (`design/2026-09-25-widgets-reborn.html`; RUNBOOK.md Step 2) · Step 3 under way: `notify/Surfaces.refresh` replaces all 13 `PinnedNotification.update` call sites (widget half and `arm` no-ops until Step 4; `SurfacesSeamTest` keeps it that way) · reopens the widget half of
+- **Status:** Planned · large · **wireframe rev D approved by Robin 2026-09-25** (`design/2026-09-25-widgets-reborn.html`; RUNBOOK.md Step 2) · Step 3 under way: `notify/Surfaces.refresh` replaces all 13 `PinnedNotification.update` call sites (widget half and `arm` no-ops until Step 4; `SurfacesSeamTest` keeps it that way); `widgets/WidgetFace.kt` built — the pure S1–S14 table (`FaceStates`), nine cover-sized buckets, `render(face, bucket, state)` → one single-size RemoteViews on generated layouts (`tools/widget_layouts.py`), `bitmapBytes` — with `WidgetFaceTest` over every state × bucket × background × theme and R10 at 420 dpi; `Fmt.widgetClock` is R2's one formatter; no provider, manifest entry or reachable layout yet · reopens the widget half of
   CCRM-61 (Settings Diet); supersedes CCRM-4 (Widget Quick-Edit) and closes the history of CCRM-39
   (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget) and CCRM-13 (Chart Widget).
 - **Faces (Robin, Q1): four.** CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face)

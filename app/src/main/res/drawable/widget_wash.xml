@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Gradient background's wash (rev C): transparent at the top-left, opaque at the
+    bottom-right. Tinted with the account's accent (or neutral ink on the Strip) and faded
+    with setImageAlpha, over the Solid card, so it reads as a light wash of that hue.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:centerColor="#73FFFFFF"
+        android:endColor="#FFFFFFFF"
+        android:startColor="#00FFFFFF" />
+    <corners android:radius="@android:dimen/system_app_widget_background_radius" />
+</shape>

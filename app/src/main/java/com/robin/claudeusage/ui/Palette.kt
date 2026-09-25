@@ -277,6 +277,23 @@ object Fmt {
     }
 
     /**
+     * Every clock time on a widget face (CCRM-78 (Widgets Reborn), R2): **12-hour
+     * always**, whatever the Time format chip says — "9:10 PM" — with the weekday added
+     * only when [instant] is more than 24 h from [nowMs] ("Sat 9:10 PM"). [amPm] false
+     * drops the AM/PM for the one place it does not fit.
+     */
+    fun widgetClock(
+        instant: Instant,
+        nowMs: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+        amPm: Boolean = true,
+    ): String {
+        val far = kotlin.math.abs(instant.toEpochMilli() - nowMs) > 24 * 60 * 60_000L
+        val pattern = (if (far) "EEE " else "") + (if (amPm) "h:mm a" else "h:mm")
+        return DateTimeFormatter.ofPattern(pattern, Locale.US).withZone(zone).format(instant)
+    }
+
+    /**
      * "23 Jul" — for chart axes spanning days, where a weekday name alone is
      * ambiguous (a 7-day window starts and ends on the same weekday).
      */

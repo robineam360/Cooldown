@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Text on the v1.8 widget faces (CCRM-78 (Widgets Reborn)). Colours are set at
+        render time; these carry only what RemoteViews cannot set: the Transparent
+        background's soft shadow in the opposite tone (rev D) — dark under the dark
+        theme's light text, light under the light theme's dark text.
+    -->
+    <style name="WFace">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="WFace.ShadowDark">
+        <item name="android:shadowColor">#A6000000</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:shadowDy">1</item>
+    </style>
+
+    <style name="WFace.ShadowLight">
+        <item name="android:shadowColor">#CCFFFFFF</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:shadowDy">1</item>
+    </style>
+</resources>

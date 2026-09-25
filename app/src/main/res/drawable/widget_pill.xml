@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Number 2×1's "UNASSIGNED" pill (Fable review, rev D): 55% ink behind the card colour's text. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#8C888888" />
+    <corners android:radius="4dp" />
+</shape>
