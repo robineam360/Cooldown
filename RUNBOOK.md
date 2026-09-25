@@ -64,7 +64,7 @@ file says what order, what to paste, and what "done" means. Release mechanics st
 | 3 | Pure models: `CardLayout`, `UsageCache` keys, tests | Sonnet · orchestrator reviews | 2 | ☑ |
 | 4 | UI build: compact cards, status line, 7d toggle, layout sheet, Density chips | Sonnet · orchestrator reviews | 2, 3 | ☑ |
 | 5 | Fold 7 device pass: CCRM-72/73 + the passes v1.7 owes | orchestrator · phone over USB | 4 | ☑ |
-| 6 | Release v1.7 | session · Robin at the phone | 5 | ☐ |
+| 6 | Release v1.7 | session · Robin at the phone | 5 | ☑ |
 
 ---
 
@@ -259,8 +259,8 @@ item's Status to Shipped v1.7; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ v1.7 published on GitHub, `releases/latest` resolves to it, the phone agrees.
-- ☐ Every item in this arc reads Shipped v1.7 in ROADMAP.md.
+- ☑ v1.7 published on GitHub, `releases/latest` resolves to it, the phone agrees.
+- ☑ Every item in this arc reads Shipped v1.7 in ROADMAP.md.
 
 **Prepared 2026-09-17, release held.** Robin is daily-driving the 2026-09-17 build for a day
 and gives the go-ahead on 2026-09-18 or later. Everything but the last mile is done and
@@ -289,3 +289,8 @@ arc to Shipped v1.7 in ROADMAP.md, tick this step, log, commit, push.
 **Log:**
 - 2026-09-17 — prep complete (shots, PDFs, README, USER-GUIDE, release notes) via Sonnet and
   Haiku sub-agents, reviewed here; release deliberately not cut.
+- 2026-09-25 — released. Robin reported no bugs from daily driving; guide header set to
+  "released 25 September 2026", CCBG-29 (Refresh Swallowed) note reworded. Tests green, APK
+  signed with the v1.6 certificate (SHA-256 8bc21a2a…), tag v1.7 at `f1c7789`, published via a
+  draft so the asset was verified before it went latest (Astra: concerns, adopted).
+  `releases/latest` → v1.7. Arc items set to Shipped v1.7.
