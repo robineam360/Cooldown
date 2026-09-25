@@ -3,7 +3,7 @@
 **A personal Android app for your Claude and ChatGPT plan limits — for as many accounts as you use.**
 Shows the 5-hour and weekly rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, and forecasts *when* you'll hit a limit at your current pace. Its home is the **always-on notification**: two accounts side by side in the shade, a ring in the status bar, and a ping the moment a window resets.
 
-> Version **1.7** · prepared 17 September 2026 · sideloaded personal app, not on any store
+> Version **1.7** · released 25 September 2026 · sideloaded personal app, not on any store
 > Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest)
 >
 > **Note:** the screenshots and much of the walkthrough below date from the v1.3-era

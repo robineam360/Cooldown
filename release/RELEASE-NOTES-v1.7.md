@@ -30,7 +30,7 @@ The main screen is redesigned with compact cards and a customizable layout, and 
 ## Fixed
 
 - CCBG-28 (Pin Sinks) — always-on notification now guaranteed persistent and always visible in shade
-- CCBG-29 (Refresh Swallowed) — Refresh button works when tapped offline; syncs when connectivity returns
+- CCBG-29 (Refresh Swallowed) — tapping refresh while offline is no longer lost; it syncs when connectivity returns
 - CCBG-30 (Phantom Window) — ChatGPT's 5h window no longer counts down if unused
 
 ## Known
