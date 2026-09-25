@@ -1343,7 +1343,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   full-width bar under both — a deliberate departure from the notification's geometry. 4×2 grows to a
   44 sp figure over a 10 dp bar, centred above the control row. S5's sub-line reads "Starts when a
   message is sent". At 2×1 a weekly-only account shows the name with "Weekly" as a 10 sp second line;
-  an unassigned one shows an 8 sp "UNASSIGNED" pill above the name (Fable review, rev D).
+  an unassigned one shows an 8 sp "UNASSIGNED" pill above the name (Fable review, rev D). · **Provider in (Step 4, 2026-09-25):** `widgets.NumberWidgetProvider` (R9), 2×1/4×1/4×2, default 4×1, picker name "Number"; the 4×2 chips and cycler go to `WidgetActionReceiver` with `cooldown-widget://<id>/<action>` identities; `WidgetAlarmTest` proves a tap on one of two Number widgets moves only it and re-arms the one alarm; the figure keeps the severity colour (R3, Robin 2026-09-25).
 - **What:** the Huge-number parts — 14 dp mark, 13 sp label, 8 dp bar with the pace tick, 32 sp bold
   figure — laid out as above.
 - **2×1:** mark + label and the figure on one row, the bar under. The label is clamped to what the

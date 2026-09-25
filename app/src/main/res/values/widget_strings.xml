@@ -4,4 +4,6 @@
 <resources>
     <string name="widget_ring_label">Ring</string>
     <string name="widget_ring_description">One account’s usage as a small gauge.</string>
+    <string name="widget_number_label">Number</string>
+    <string name="widget_number_description">One account, the big percentage — like the pinned notification.</string>
 </resources>
