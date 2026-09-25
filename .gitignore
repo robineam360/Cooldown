@@ -25,8 +25,6 @@ keystore.properties
 # Built APK — distributed via GitHub Releases, not committed to the repo
 *.apk
 
-# Private handover notes — never commit
-HANDOVER.md
 
 # Claude Code app worktree sessions (see WORKTREE.md)
 /.claude/worktrees/
