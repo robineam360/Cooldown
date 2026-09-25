@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -36,6 +38,18 @@ object BarRenderer {
     /** Horizontal padding at each end, so a tick at 0% / 100% isn't clipped. */
     fun sidePadding(heightPx: Float): Float = BarGeometry.tickWidth(heightPx) / 2f
 
+    /** The same for a bar drawn with [tick]: its width and halo, not the ratio. */
+    fun sidePadding(heightPx: Float, tick: Tick?): Float =
+        if (tick == null) sidePadding(heightPx) else tick.widthPx / 2f + tick.haloPx
+
+    /**
+     * The widgets' pace tick (wireframe rev D, Robin 2026-09-25 at RUNBOOK.md Step 4):
+     * a fixed [widthPx] (3 dp) at 90% ink, in a [haloPx] (1 dp) halo drawn in the face
+     * colour — or cleared, on a Transparent face ([haloArgb] null). Absent, the bar
+     * draws the notification's own tick and is pixel-identical to before.
+     */
+    data class Tick(val widthPx: Float, val haloPx: Float, val inkArgb: Int, val haloArgb: Int?)
+
     /**
      * @param widthPx the *track's* width; the bitmap is wider by [sidePadding] at
      *   each end.
@@ -53,8 +67,9 @@ object BarRenderer {
         accent: Color,
         dark: Boolean,
         showOverPace: Boolean = true,
+        tick: Tick? = null,
     ): Bitmap {
-        val padX = sidePadding(heightPx)
+        val padX = sidePadding(heightPx, tick)
         val over = BarGeometry.tickOverhang(heightPx)
         val w = (widthPx + 2f * padX).toInt().coerceAtLeast(1)
         val h = bitmapHeight(heightPx)
@@ -109,7 +124,22 @@ object BarRenderer {
 
         // 4 · tick — drawn last so it survives everything under it, and centred on
         // the pace line, so it straddles the boundary it marks
-        if (BarGeometry.showTick(percent, elapsedPercent)) {
+        if (BarGeometry.showTick(percent, elapsedPercent) && tick != null) {
+            val cx = left + widthPx * BarGeometry.tickFraction(elapsedPercent!!)
+            val hw = tick.widthPx / 2f + tick.haloPx
+            canvas.drawRoundRect(
+                RectF(cx - hw, 0f, cx + hw, h.toFloat()), hw, hw,
+                Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    if (tick.haloArgb != null) color = tick.haloArgb
+                    else xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                },
+            )
+            val tw = tick.widthPx / 2f
+            paint.color = tick.inkArgb
+            canvas.drawRoundRect(
+                RectF(cx - tw, tick.haloPx, cx + tw, h - tick.haloPx), tw, tw, paint,
+            )
+        } else if (BarGeometry.showTick(percent, elapsedPercent)) {
             val tickW = BarGeometry.tickWidth(heightPx)
             val cx = left + widthPx * BarGeometry.tickFraction(elapsedPercent!!)
             val fg = if (dark) Color(0xFFF2F2F4) else Color(0xFF1D1D1F)

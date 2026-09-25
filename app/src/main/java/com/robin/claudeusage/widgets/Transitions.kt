@@ -11,7 +11,10 @@ import com.robin.claudeusage.data.UsageData
  * future instant, over every placed widget's shown account and window, of
  *  (a) `resetsAt` — the reset-passed state S6;
  *  (b) `fetchedAt + STALE_DATA_MS` — the stale dim (R6);
- *  (c) for a Countdown on Weekly, `resetsAt − 24 h` — live ticking begins.
+ *  (c) for a Countdown on Weekly, `resetsAt − 24 h` — live ticking begins;
+ *  (d) `fetchedAt + 24 h` (one ms past it, since `Fmt.widgetClock` adds the day only
+ *      beyond 24 h) — the "as of" stamp gains its weekday (R2), so a face last fed
+ *      yesterday never reads as today. Every placed account, whatever its bucket.
  * Null when nothing is placed, or nothing placed has anything left to change into.
  * `Surfaces.arm` sets or cancels the one alarm from it; Step 4 wires that.
  */
@@ -50,7 +53,10 @@ object Transitions {
                 }
             }
             for ((s, asked) in shown) {
-                if (s.fetchedAt > 0) candidates += s.fetchedAt + Alerts.STALE_DATA_MS
+                if (s.fetchedAt > 0) {
+                    candidates += s.fetchedAt + Alerts.STALE_DATA_MS
+                    candidates += s.fetchedAt + DAY_MS + 1
+                }
                 val window = FaceStates.shownWindow(s.data, asked)
                 val resetsAt = when (window) {
                     FaceWindow.WEEKLY -> s.data?.weekly?.resetsAt

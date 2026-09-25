@@ -354,6 +354,9 @@ object FaceStates {
             StateId.S8 in states -> "Stale"
             resetPassed -> "Reset $clock"
             notStarted -> "Not started"
+            // A signed-in account with no payload yet (Fable call, Step 4): the ring would
+            // otherwise be the only one on the Strip with an empty line.
+            data == null -> "No reading"
             else -> clock
         }
         val countForm = when {
@@ -496,13 +499,18 @@ object WidgetFace {
      * padding at each end — exactly the bucket's inner width, so it is shown 1:1.
      */
     private fun barTrackPx(b: BarDp, density: Float): Float =
-        b.width * density - 2f * BarRenderer.sidePadding(b.height * density)
+        b.width * density - 2f * BarRenderer.sidePadding(b.height * density, barTick(density, true, null))
 
     private fun barBytes(b: BarDp, density: Float): Long {
         val h = b.height * density
-        val w = (barTrackPx(b, density) + 2f * BarRenderer.sidePadding(h)).toInt().coerceAtLeast(1)
+        val pad = BarRenderer.sidePadding(h, barTick(density, true, null))
+        val w = (barTrackPx(b, density) + 2f * pad).toInt().coerceAtLeast(1)
         return w.toLong() * BarRenderer.bitmapHeight(h) * 4L
     }
+
+    /** The bars' pace tick (rev D): 3 dp at 90% ink, a 1 dp halo in the face colour. */
+    private fun barTick(density: Float, dark: Boolean, haloArgb: Int?) =
+        BarRenderer.Tick(widthPx = 3f * density, haloPx = 1f * density, inkArgb = ink(dark, 0.9f), haloArgb = haloArgb)
 
     /** The largest bitmap set one bucket draws, over every state and account count. */
     fun bucketBytes(bucket: Bucket, density: Float): Long {
@@ -978,6 +986,7 @@ object WidgetFace {
         val bmp = BarRenderer.draw(
             barTrackPx(b, d), h, c.pct, c.elapsed, androidx.compose.ui.graphics.Color(c.accentArgb),
             s.dark, s.showOverPace,
+            tick = barTick(d, s.dark, if (s.background == FaceBackground.TRANSPARENT) null else s.cardArgb),
         )
         rv.setImageViewBitmap(id, bmp)
         // Sized to the bitmap, never stretched to the cell (R10).

@@ -47,6 +47,14 @@ class TransitionsTest {
     }
 
     @Test
+    fun kindD_theStampGainsItsWeekdayADayAfterTheFetch() {
+        // Stale already passed and both resets are past: the next change is the "as of"
+        // stamp crossing 24 h, one ms past it because widgetClock adds the day beyond 24 h.
+        val s = Snapshot("pro", data(now - h, now - h), fetchedAt = now - 20 * h)
+        assertEquals(now + 4 * h + 1, next(listOf(Placed(Face.NUMBER, "pro", FaceWindow.SESSION)), s))
+    }
+
+    @Test
     fun earliestWins_acrossWidgetsAndKinds() {
         val pro = Snapshot("pro", data(now + 4 * h, now + 90 * h), fetchedAt = now)
         val gpt = Snapshot("gpt", data(null, now + 26 * h), fetchedAt = now - 3 * h)
@@ -62,8 +70,8 @@ class TransitionsTest {
         // The reset already passed (S6 is drawn now); the next thing is the stale dim.
         val s = Snapshot("pro", data(now - 10 * 60_000L, now + 60 * h), fetchedAt = now - h)
         assertEquals(now - h + Alerts.STALE_DATA_MS, next(listOf(Placed(Face.NUMBER, "pro", FaceWindow.SESSION)), s))
-        // Everything in the past → nothing to arm.
-        val old = Snapshot("pro", data(now - h, now - h), fetchedAt = now - 10 * h)
+        // Everything in the past — the stamp's weekday included (d) → nothing to arm.
+        val old = Snapshot("pro", data(now - h, now - h), fetchedAt = now - 25 * h)
         assertNull(next(listOf(Placed(Face.COUNTDOWN, "pro", FaceWindow.WEEKLY)), old))
     }
 

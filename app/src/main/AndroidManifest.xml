@@ -89,5 +89,44 @@
                 android:value="Persistent usage-window readout the user turned on in Settings" />
         </service>
 
+        <!-- CCRM-78 (Widgets Reborn) §Config: placing and reconfiguring any of the four
+             faces. Exported with the APPWIDGET_CONFIGURE filter because the launcher
+             starts it; it finishes at once on an invalid id or one whose provider is not
+             this package's, so no other app can use it to write a widget's prefs. -->
+        <activity
+            android:name=".widgets.WidgetConfigActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.ClaudeUsage">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- CCRM-78 §On-face controls and R7: Number 4×2's chips and cycler, and the one
+             transition alarm. Not exported: the provider is exported for the launcher, so
+             a custom action sent to it could come from any app. -->
+        <receiver
+            android:name=".widgets.WidgetActionReceiver"
+            android:exported="false" />
+
+        <!-- R7: redraw and re-arm on boot, update, clock and zone change. Exported so the
+             system's own broadcasts reach it; BOOT_COMPLETED is protected, MY_PACKAGE_REPLACED
+             is addressed to this package, and TIME_SET / TIMEZONE_CHANGED are on the
+             implicit-broadcast exemption list — nothing another app can spoof. -->
+        <receiver
+            android:name=".widgets.WidgetSystemReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- @widgets:providers -->
+
     </application>
 </manifest>
