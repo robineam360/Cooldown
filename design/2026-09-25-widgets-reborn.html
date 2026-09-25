@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCRM-78 (Widgets Reborn) — rev A, for review</title>
+<title>CCRM-78 (Widgets Reborn) — rev B, for review</title>
 <style>
   :root {
     --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
@@ -122,7 +122,7 @@
 <body>
 <div class="page">
 
-  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev A</p>
+  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev B</p>
   <h1>Four home-screen faces, none of them a clone of the app</h1>
   <p class="lede">
     A status-bar-style <b>Ring</b> (CCRM-79 (Ring Face)) at two sizes; a <b>Number</b> face
@@ -136,7 +136,21 @@
     synthetic-series override (CCRM-15 (Above-Pace Verification)), the Faces gallery
     (CCRM-84 (Faces Gallery)) and the Share Card (CCRM-24 (Share Card)).
   </p>
-  <p class="review">Rev A &mdash; for review. Nothing is approved yet.</p>
+  <p class="review">Rev B &mdash; for review. Nothing is approved yet.</p>
+  <div class="rules-box" style="border-color:var(--accent)">
+    <b>Changes since rev A</b>
+    <ul>
+      <li>"Weekly" spelled in full everywhere, no abbreviation; the Strip carries it as a small tag under the figure in the bore instead of lengthening the label &mdash; &sect;2, &sect;6, &sect;7, &sect;9d, &sect;10.</li>
+      <li>Countdown S4/S5/S6 no longer show a false chronometer: S4 (weekly, outside 24h) is absolute "Resets Sat 9:10 PM" with no ticking; S5 shows no count or clock at all; S6 reads "Reset 9:10 PM", past tense, no count &mdash; &sect;2, &sect;4, &sect;6.</li>
+      <li>The "~ runs out" estimate line no longer copy-pastes onto S3/S4/S5/S6; it now appears only where an estimate is meaningful, dimmed at S7/S8 &mdash; &sect;2, &sect;4.</li>
+      <li>Ring 2&times;2's label dropped the "&middot; 5h" suffix (CCRM-79 omits the window name); S7 gets its dot, S11 gets " &middot; left"; the needle no longer runs through the bore figure &mdash; &sect;1, &sect;2, &sect;3, &sect;7, &sect;8, &sect;9d, &sect;10.</li>
+      <li>The Accounts Strip now applies a state to one ring at a time (Teams, by default) with the other three at their own distinct baseline figures, per CCRM-82; S9 drops the removed ring instead of showing a placeholder; added the &gt;4-accounts and 1-account edge cases &mdash; &sect;2.</li>
+      <li>Number S7 keeps its reset sub-line (dimmed) instead of replacing it; the 4&times;2 single-window tag now reads "Weekly" and looks like a tag, not a chip; S10 at 2&times;1 no longer overflows &mdash; &sect;2, &sect;5.</li>
+      <li>&sect;9c's Main and notification mocks are drawn faithfully instead of as a single bar; &sect;9e's share card drops its on-card privacy caption (now an annotation) and gains per-window bars and a trend sparkline.</li>
+      <li>Tile captions in &sect;1 no longer bleed into their neighbours; the &sect;4 caption no longer claims anything has shipped; &sect;2's S13 marker no longer collides with sub-lines, and &sect;2 now opens with a three-option S13 panel.</li>
+      <li>&sect;10 rewritten to match &mdash; resolved questions dropped, the needle treatment and the share card's account scope added.</li>
+    </ul>
+  </div>
   <div class="rules-box">
     <b>Rules on every tile</b>
     <ul>
@@ -178,6 +192,8 @@
       { key: 'product', label: 'Product', provider: 'claude', override: PRODUCT_OVERRIDE },
       { key: 'chatgpt', label: 'ChatGPT', provider: 'gpt',    override: null, weeklyOnly: true },
     ];
+    // A fifth account, Strip-demo only, for the ">4 accounts" edge case (§2).
+    const RESEARCH_DEMO = { key: 'research', label: 'Research', provider: 'claude', override: { dark: '#4DD0E1', light: '#00ACC1' } };
     function acc(key) { return ACCOUNTS.find(a => a.key === key); }
     function accentFor(a, dark) {
       if (a.override) return dark ? a.override.dark : a.override.light;
@@ -229,12 +245,19 @@
       });
     }
 
-    // ---- S13 synthetic marker (R8) — recommended form: a violet 7dp dot, always,
-    // plus a "SYNTHETIC" micro-tag where the face has 120dp+ to spend on it. See §2/§10. ----
-    function synthOverlay(w) {
-      const dot = `<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#B388FF;box-shadow:0 0 0 1.5px rgba(0,0,0,.28);z-index:4"></div>`;
-      const tag = w >= 120 ? `<div style="position:absolute;left:5px;bottom:5px;font-size:7.5px;font-weight:700;letter-spacing:.06em;color:#fff;background:#7C4DFF;padding:1px 5px;border-radius:4px;z-index:4">SYNTHETIC</div>` : '';
-      return dot + tag;
+    // ---- S13 synthetic marker (R8), recommended form, rev B: a violet 7dp corner
+    // dot always; on tiles tall enough (>=160px, the 2×2/4×2 buckets) a full-width
+    // in-flow ribbon reading "SYNTHETIC" at the very top, which — because it takes
+    // real layout space rather than overlaying — never collides with a sub-line or
+    // control row. See §2's options panel and §10. ----
+    function synthDot() {
+      return `<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#B388FF;box-shadow:0 0 0 1.5px rgba(0,0,0,.28);z-index:4"></div>`;
+    }
+    function synthRibbon() {
+      return `<div style="height:12px;flex:0 0 auto;background:#7C4DFF;display:flex;align-items:center;justify-content:center;gap:4px">
+        <span style="width:5px;height:5px;border-radius:50%;background:#fff"></span>
+        <span style="font-size:6.5px;font-weight:700;letter-spacing:.06em;color:#fff">SYNTHETIC</span>
+      </div>`;
     }
 
     // ---- provider mark ----
@@ -271,14 +294,33 @@
             pathLength="100" stroke-dasharray="0 ${e} ${Math.max(0, v - e)} 100" stroke-linecap="butt"
             transform="rotate(-90 ${cx} ${cy})"/>`;
         }
+        // The pace mark (rev B, Robin's call): every ring WITH A FIGURE IN THE
+        // BORE drops the clock-hand needle and its hub entirely and draws the
+        // pace position the way the app's own bars do — `.bartick` in
+        // design/2026-09-17-main-screen-redesign.html: a short straight radial
+        // tick across the stroke, overhanging the same amount inside and out,
+        // ink at 50% opacity, never a hand. The 12dp bar's tick overhangs 3.5dp
+        // past each edge (2dp wide) — scaled here to this ring's own stroke.
+        // `needleStyle:'hub'` reproduces the old hub-pinned clock hand, kept only
+        // for the §1 before/after and the 24dp status-bar icon, which has no bore
+        // text to protect and must stay pixel-equivalent to UsageIcon.railsGauge
+        // (CCRM-83 (Ring Renderer)) — so it keeps the needle and hub unchanged.
         const needleDraws = o.elapsed != null && v > 0;
         if (needleDraws) {
           const a = (Math.min(100, o.elapsed) / 100) * 2 * Math.PI - Math.PI / 2;
-          const hubR = Math.max(1.2, stroke * 0.30);
-          const rim = r + stroke / 2 + 1.5;
-          s += `<circle cx="${cx}" cy="${cy}" r="${hubR}" fill="${ink(dark, .85)}"/>`;
-          s += `<line x1="${cx + hubR * Math.cos(a)}" y1="${cy + hubR * Math.sin(a)}" x2="${cx + rim * Math.cos(a)}" y2="${cy + rim * Math.sin(a)}"
-            stroke="${ink(dark, .85)}" stroke-width="${Math.max(1, stroke * 0.20)}" stroke-linecap="round"/>`;
+          if (o.needleStyle === 'hub') {
+            const hubR = Math.max(1.2, stroke * 0.30);
+            const rim = r + stroke / 2 + 1.5;
+            s += `<circle cx="${cx}" cy="${cy}" r="${hubR}" fill="${ink(dark, .85)}"/>`;
+            s += `<line x1="${cx + hubR * Math.cos(a)}" y1="${cy + hubR * Math.sin(a)}" x2="${cx + rim * Math.cos(a)}" y2="${cy + rim * Math.sin(a)}"
+              stroke="${ink(dark, .85)}" stroke-width="${Math.max(1, stroke * 0.20)}" stroke-linecap="round"/>`;
+          } else {
+            const overhang = stroke * (3.5 / 12);
+            const tickHalf = stroke / 2 + overhang;
+            const tickW = Math.max(1.2, stroke * 0.19);
+            s += `<line x1="${cx + (r - tickHalf) * Math.cos(a)}" y1="${cy + (r - tickHalf) * Math.sin(a)}" x2="${cx + (r + tickHalf) * Math.cos(a)}" y2="${cy + (r + tickHalf) * Math.sin(a)}"
+              stroke="${ink(dark, .5)}" stroke-width="${tickW}" stroke-linecap="round"/>`;
+          }
         }
         if (v >= 100 && o.spentX) {
           const arm = r * 0.32, c2 = dark ? '#fff' : '#111';
@@ -293,15 +335,19 @@
       o = o || {};
       const dark = o.dark !== false;
       const showX = o.pct != null && o.pct >= 100 && o.spentX !== false && !o.forcePercentAt100;
-      const svg = ringSVG(d, stroke, { pct: o.pct, elapsed: o.elapsed, dark, accent: o.accent, showRed: o.showRed, noReading: o.noReading, spentX: showX });
-      let center = '';
+      const svg = ringSVG(d, stroke, { pct: o.pct, elapsed: o.elapsed, dark, accent: o.accent, showRed: o.showRed, noReading: o.noReading, spentX: showX, needleStyle: o.needleStyle });
+      let figureHtml = '';
       if (!o.noFigureSlot) {
         if (o.pct != null && o.pct >= 100 && o.forcePercentAt100) {
-          center = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">100%</div>`;
+          figureHtml = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">100%</div>`;
         } else if (!showX && o.figure != null) {
-          center = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">${o.figure}</div>`;
+          figureHtml = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">${o.figure}</div>`;
         }
       }
+      // A small "Weekly" tag under the figure, in the bore — the Strip's chosen way
+      // to mark a weekly-only ring without lengthening its label (item 1, §10).
+      const tagHtml = (o.subTag && figureHtml) ? `<div style="font-size:${o.subTagSize || 7}px;font-weight:700;letter-spacing:.02em;opacity:${o.dimFig ? .45 : .78};margin-top:-1px">${o.subTag}</div>` : '';
+      const center = figureHtml ? `<div style="display:flex;flex-direction:column;align-items:center;line-height:1.05">${figureHtml}${tagHtml}</div>` : '';
       return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dimRing ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}</div>`;
     }
 
@@ -343,13 +389,16 @@
       else bg = o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4');
       const textColor = o.dark ? '#EDE8E4' : '#26211E';
       const border = o.bg === 'transparent' ? '' : `border:1px solid ${o.dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'};`;
-      return `<div class="tile" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">
-        <div style="position:absolute;inset:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box">${o.content}</div>
-        ${o.synthetic ? synthOverlay(o.w) : ''}
-      </div>`;
+      const shellOpen = `<div class="tile" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">`;
+      if (o.synthetic && o.h >= 160) {
+        // Tall enough for the in-flow ribbon (never overlaps content — see synthRibbon).
+        return `${shellOpen}<div style="position:absolute;inset:0;display:flex;flex-direction:column">${synthRibbon()}<div style="flex:1;min-height:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box;overflow:hidden">${o.content}</div></div></div>`;
+      }
+      return `${shellOpen}<div style="position:absolute;inset:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box">${o.content}</div>${o.synthetic ? synthDot() : ''}</div>`;
     }
     function tf(tileHtml, caption, w) {
-      return `<figure class="tf" style="margin:0 16px 18px 0;max-width:${w ? w + 40 : 400}px"><div>${tileHtml}</div><figcaption class="devcap">${caption}</figcaption></figure>`;
+      const capW = w || 240;
+      return `<figure class="tf" style="margin:0 16px 20px 0;max-width:${w ? w + 40 : 400}px"><div>${tileHtml}</div><figcaption class="devcap" style="max-width:${capW}px;white-space:normal">${caption}</figcaption></figure>`;
     }
   </script>
 
@@ -424,24 +473,31 @@
       if (stateKey === 'S12') return msgBody('No usage<br>on this plan', isSmall ? 9 : 11.5, dark);
       if (stateKey === 'S14') return msgBody(isSmall ? 'Update<br>Cooldown' : 'Unavailable in this version<br>update Cooldown', isSmall ? 9.5 : 11, dark);
 
-      let effA = a, label = a.label, sub = st.sub, dimAll = false, dot = false;
+      let effA = a, label = a.label, dimAll = false, dot = false;
       if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
-      if (stateKey === 'S7') dot = true;
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
       if (stateKey === 'S8') dimAll = true;
       const effColor = accentFor(effA, dark);
       const pctText = fmtPct(st, stateKey === 'S11');
-      const windowTag = st.weeklyOnly ? 'Weekly' : '5h';
 
       const ringHtml = ringWithFigure(d, stroke, {
         pct: st.pct, elapsed: st.elapsed, dark, accent: effColor, showRed: true,
         noReading: st.noReading, spentX: !opts.forcePercent, forcePercentAt100: !!opts.forcePercent,
-        figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll,
+        figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll, needleStyle: opts.needleStyle,
       });
 
       if (isSmall) {
-        return `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`;
+        // CCRM-79: the 1×1 bore holds only the figure — no room for a label line,
+        // so S7's dot goes in the face's own top-right inset instead (item 8, §2).
+        const dotHtml = (stateKey === 'S7') ? `<div style="position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></div>` : '';
+        return `<div style="height:100%;position:relative;display:flex;align-items:center;justify-content:center">${ringHtml}${dotHtml}</div>`;
       }
-      const labelText = st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`;
+      // CCRM-79: the Ring omits the window name — the label is the account name
+      // alone. It's tagged only when the ring isn't on 5h ("ChatGPT · Weekly", S4),
+      // and Left mode adds " · left" since the bore has no other room to say so.
+      let labelText = label;
+      if (st.weeklyOnly) labelText += ' · Weekly';
+      if (stateKey === 'S11') labelText += ' · left';
       return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
         ${ringHtml}
         ${labelRow(effA, effColor, labelText, 12, 12, dark, { dim: dimAll, dot, weight: 500 })}
@@ -462,15 +518,21 @@
         return msgBody(text, 11.5, dark);
       }
 
-      let effA = a, label = a.label, dimAll = false, dot = false;
-      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
-      if (stateKey === 'S7') dot = true;
+      let effA = a, label = a.label, dimAll = false, dot = false, isUnassigned = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = ACCOUNTS[0].label; isUnassigned = true; }
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
       if (stateKey === 'S8') dimAll = true;
       const color = accentFor(effA, dark);
       const pctText = fmtPct(st, stateKey === 'S11') ?? '—';
       const paceTick = st.elapsed;
-      const labelText = st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`;
+      // item 12: "Pro (unassigned) · 5h" overflows 90dp at 2×1 — drop the window
+      // suffix there and mark unassigned with a small corner tag instead; from
+      // 4×1 up (260dp) there's room to say it inline.
+      const compact2x1 = isUnassigned && bucket === '2x1';
+      let labelText = compact2x1 ? label : (st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`);
+      if (isUnassigned && !compact2x1) labelText = `${label} (unassigned)${st.weeklyOnly ? ' · Weekly' : ' · 5h'}`;
       const availLabel = bucket === '2x1' ? 90 : bucket === '4x1' ? 260 : 260;
+      const unassignedTag = compact2x1 ? `<div style="position:absolute;top:4px;right:4px;font-size:7px;font-weight:700;letter-spacing:.04em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;z-index:3">UNASSIGNED</div>` : '';
 
       const row1 = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         ${labelRow(effA, color, labelText, 14, 13, dark, { dim: dimAll, dot, fit: availLabel, weight: 500 })}
@@ -482,9 +544,14 @@
       </div>`;
 
       if (bucket === '2x1') {
-        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}</div>`;
+        return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:center;gap:2px">${unassignedTag}${row1}${bar}${figRow}</div>`;
       }
-      const subText = st.sub || `Resets ${RESET_5H_LABEL}`;
+      // The sub-line is always the absolute reset (R4) — S7 keeps it too (item 11):
+      // a broken sign-in dims the last snapshot, it doesn't hide when it resets.
+      let subText;
+      if (stateKey === 'S8') subText = 'Stale';
+      else if (stateKey === 'S6') subText = `Reset ${RESET_5H_LABEL}`;
+      else subText = st.weeklyOnly ? `Resets ${RESET_WEEKLY_LABEL}` : `Resets ${RESET_5H_LABEL}`;
       const subLine = `<div style="font-size:12px;opacity:.78;margin-top:4px;${dimAll ? 'opacity:.5' : ''}">${fitSpan(subText, 12, 400, w - 14)}</div>`;
 
       if (bucket === '4x1') {
@@ -498,7 +565,7 @@
              <span style="height:20px;padding:0 9px;border-radius:10px;background:${color};color:${dark ? '#1A1A1A' : '#fff'};font-size:10.5px;font-weight:700;display:flex;align-items:center">5h</span>
              <span style="height:20px;padding:0 9px;border-radius:10px;border:1px solid ${ink(dark, .3)};font-size:10.5px;display:flex;align-items:center;opacity:.8">Weekly</span>
            </div>`
-        : `<span style="height:20px;padding:0 9px;border-radius:10px;background:${ink(dark, .12)};font-size:10.5px;display:flex;align-items:center;opacity:.85">Weekly · fixed</span>`;
+        : `<span style="height:20px;padding:0 8px;border-radius:4px;border:1px dashed ${ink(dark, .35)};font-size:10.5px;display:flex;align-items:center;opacity:.8;font-style:italic">Weekly</span>`;
       const cycler = `<div style="font-size:11px;font-weight:600;opacity:.9;display:flex;align-items:center;gap:3px">${label} <span style="opacity:.6">⇄</span></div>`;
       const ctrl = `<div style="height:28px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid ${ink(dark, .1)};padding-top:6px">${chips}${cycler}</div>`;
       return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}${subLine}${ctrl}</div>`;
@@ -516,35 +583,79 @@
 
       let effA = a, label = a.label, dimAll = false, dot = false;
       if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
-      if (stateKey === 'S7') dot = true;
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
       if (stateKey === 'S8') dimAll = true;
       const color = accentFor(effA, dark);
       const windowWord = st.weeklyOnly ? 'Weekly' : '5h';
       const resetLabel = st.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL;
-      const countText = stateKey === 'S6' ? '—' : opts.countText || '2:41:07';
-      const caption = `${windowWord} reset`;
+      const isLeft = stateKey === 'S11';
+      const bottomText = `${label} · ${windowWord}${isLeft ? ' · left' : ''}`;
+      const bottom = labelRow(effA, color, bottomText, 11, 11, dark, { dim: dimAll, dot, weight: 500 });
 
-      const capLine = `<div style="font-size:11px;opacity:.75;${dimAll ? 'opacity:.5' : ''}">${caption}</div>`;
-      const countRow = `<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;${dimAll ? 'opacity:.5' : ''}">
-        <span class="liv" style="opacity:.8">${stateKey === 'S6' ? '' : '● live'}</span>
-        <span style="font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${countText}</span>
-        ${fitSpan(`at ${resetLabel}`, 11, 400, w - 100, 'opacity:.78')}
-      </div>`;
-      const bottom = labelRow(effA, color, `${label} · ${windowWord}`, 11, 11, dark, { dim: dimAll, dot, weight: 500 });
+      // S5 — not started: CCRM-81 has no reset time to show yet, so there is no
+      // count and no clock; just the caption, the message, and the account line.
+      if (stateKey === 'S5') {
+        const cap = `<div style="font-size:11px;opacity:.75">${windowWord} reset</div>`;
+        const msg = `<div style="font-size:13.5px;font-weight:600;line-height:1.3;margin:2px 0">Starts when a message is sent</div>`;
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${cap}${msg}${bottom}</div>`;
+      }
+
+      const capText = stateKey === 'S8' ? 'Stale' : `${windowWord} reset`;
+      const capLine = `<div style="font-size:11px;opacity:.75;${dimAll ? 'opacity:.5' : ''}">${capText}</div>`;
+
+      // Weekly outside the last 24h (the default S4) is absolute, no chronometer —
+      // and S6 (reset passed) is the past-tense absolute "Reset 9:10 PM", no count
+      // either. `opts.forceLive` is only used by §4's "inside 24h" illustration.
+      const weeklyAbsolute = st.weeklyOnly && !opts.forceLive;
+      let mainRow;
+      if (stateKey === 'S6') {
+        mainRow = `<div style="font-size:24px;font-weight:700;line-height:1;${dimAll ? 'opacity:.5' : ''}">Reset ${RESET_5H_LABEL}</div>`;
+      } else if (weeklyAbsolute) {
+        mainRow = `<div style="font-weight:700;line-height:1.15;${dimAll ? 'opacity:.5' : ''}">${fitSpan(`Resets ${resetLabel}`, opts.weeklyFontSize || 24, 700, w - 14)}</div>`;
+      } else {
+        const countText = opts.countText || '2:41:07';
+        mainRow = `<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;${dimAll ? 'opacity:.5' : ''}">
+          <span class="liv" style="opacity:.8">● live</span>
+          <span style="font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${countText}</span>
+          ${fitSpan(`at ${resetLabel}`, 11, 400, w - 100, 'opacity:.78')}
+        </div>`;
+      }
 
       if (bucket === '2x1') {
-        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${capLine}${countRow}${bottom}</div>`;
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${capLine}${mainRow}${bottom}</div>`;
       }
-      // 2x2: adds an 18sp figure over a 6dp bar and, if estimate present, "~ runs out …"
-      const pctText = fmtPct(st, false) ?? '—';
-      const fig = `<div style="font-size:18px;font-weight:700;${dimAll ? 'opacity:.5' : ''}">${pctText}</div>`;
-      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick: st.elapsed })}</div>`;
-      const estLine = opts.showEstimate === false ? '' :
-        `<div style="font-size:11px;opacity:.75;margin-top:2px;${dimAll ? 'opacity:.5' : ''}">~ runs out ${opts.estimateAt || '8:52 PM'}</div>`;
-      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:3px">${capLine}${countRow}${fig}${bar}${estLine}${bottom}</div>`;
+      // 2×2: an 18sp figure over a 6dp bar and, only where an estimate is
+      // meaningful, "~ runs out …" (item 5) — never at 100% (S3), S4, S5 or S6;
+      // dimmed (not hidden) at S7/S8's last-known snapshot; kept at S1/S2/S11/S13.
+      const pctText = fmtPct(st, isLeft) ?? '—';
+      const figLine = stateKey === 'S6'
+        ? `<div style="font-size:18px;font-weight:700;opacity:.5">—</div>`
+        : `<div style="display:flex;align-items:baseline;gap:4px;${dimAll ? 'opacity:.5' : ''}"><span style="font-size:18px;font-weight:700;line-height:1">${pctText}</span>${isLeft ? '<span style="font-size:8.5px;letter-spacing:.08em;opacity:.8">LEFT</span>' : ''}</div>`;
+      const barLine = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading || stateKey === 'S6', paceTick: st.elapsed })}</div>`;
+      const NO_ESTIMATE = ['S3', 'S4', 'S5', 'S6'];
+      const showEst = opts.showEstimate != null ? opts.showEstimate : !NO_ESTIMATE.includes(stateKey);
+      const estimateAt = opts.estimateAt || (stateKey === 'S2' ? '8:10 PM' : '8:52 PM');
+      const estLine = showEst ? `<div style="font-size:11px;opacity:${dimAll ? .5 : .75};margin-top:2px">~ runs out ${estimateAt}</div>` : '';
+      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:3px">${capLine}${mainRow}${figLine}${barLine}${estLine}${bottom}</div>`;
     }
 
     // ------------------------------------------------------------------ Strip (CCRM-82)
+    // Rev B: a state applies to ONE ring (the target, Teams by default) — every
+    // other account keeps its own distinct baseline reading. S9/S10n/S13/S14 are
+    // the face-wide exceptions (CCRM-82's own text); everything else (S1–S8,
+    // S11, S12) is "per ring". Weekly is a small tag under the figure in the
+    // bore (ringWithFigure's subTag), not a label suffix — see item 1, §10.
+    const STRIP_BASE = {
+      pro: { pct: 62, elapsed: 45 }, teams: { pct: 24, elapsed: 20 },
+      product: { pct: 8, elapsed: 12 }, chatgpt: { pct: 31, elapsed: 40 },
+      research: { pct: 15, elapsed: 18 },
+    };
+    const STRIP_PER_RING_OVERRIDE = {
+      S2: { pct: 55, elapsed: 38 }, S3: { pct: 100, elapsed: 70 },
+      S5: { noReading: true, notStarted: true }, S6: { noReading: true },
+      S7: { dim: true, dot: true }, S8: { dim: true, stale: true },
+      S11: { left: true }, S12: { free: true },
+    };
     function stripFace(bucket, accountsList, stateKey, dark, opts) {
       opts = opts || {};
       const [w] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
@@ -555,31 +666,65 @@
       const stroke = isBig ? 6 : 5;
       const figSize = isBig ? 18 : 13;
       const labelSize = isBig ? 11 : 9.5;
-      const list = accountsList.length > 4 ? accountsList.slice(0, 4) : accountsList;
+      const subTagSize = isBig ? 7.5 : 6;
+      const targetKey = opts.target || 'teams';
+      const centered = stateKey === 'S9' || accountsList.length <= 1;
+
+      let list = accountsList.length > 4 ? accountsList.slice(0, 4) : accountsList.slice();
       const overflowCount = accountsList.length > 4 ? accountsList.length - 4 : 0;
-      const cellW = Math.floor((w - 8) / Math.max(1, list.length + (overflowCount ? 1 : 0)));
+      if (stateKey === 'S9') list = list.filter(x => x.key !== targetKey);
+      const cellCount = list.length + (overflowCount ? 1 : 0);
+      const cellW = Math.floor((w - 8) / Math.max(1, cellCount));
+      const faceWideNormal = ['S1', 'S4', 'S13'].includes(stateKey);
 
       const cells = list.map(a => {
-        const st = ST[stateKey] || ST.S1;
-        let effA = a, label = a.label, dimAll = false, dot = false;
-        if (stateKey === 'S9') return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:${labelSize}px;text-align:center;opacity:.75">Removed<br>tap to choose</div>`;
-        if (stateKey === 'S7') dot = true;
-        if (stateKey === 'S8') dimAll = true;
-        if (stateKey === 'S12') return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">${ringWithFigure(d, stroke, { pct: null, dark, accent: accentFor(a, dark), noFigureSlot: true })}<div style="font-size:${labelSize}px;text-align:center">${label}<br><span style="opacity:.7">Free</span></div></div>`;
-        const color = accentFor(effA, dark);
-        const isWeekly = a.weeklyOnly;
-        const pctText = fmtPct(st, false) ?? '—';
-        const ring = ringWithFigure(d, stroke, { pct: st.pct, elapsed: st.elapsed, dark, accent: color, showRed: true, noReading: st.noReading, spentX: true, figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll });
-        const resetTxt = isBig ? `<div style="font-size:10px;opacity:.72;${dimAll ? 'opacity:.5' : ''}">${isWeekly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>` : '';
-        const labelHtml = fitSpan(label + (isWeekly ? ' · Wkly' : ''), labelSize, 500, cellW - 4, dimAll ? 'opacity:.5' : '');
+        const isTarget = a.key === targetKey && !faceWideNormal;
+        const ov = isTarget ? STRIP_PER_RING_OVERRIDE[stateKey] : null;
+        const base = STRIP_BASE[a.key] || { pct: 47, elapsed: 38 };
+        let pct = base.pct, elapsed = base.elapsed, dim = false, dot = false, isLeft = false, isFree = false, stale = false, noReading = false, notStarted = false;
+        if (ov) {
+          if (ov.pct !== undefined) pct = ov.pct;
+          if (ov.elapsed !== undefined) elapsed = ov.elapsed;
+          if (ov.noReading) { noReading = true; pct = null; elapsed = null; }
+          if (ov.dim) dim = true;
+          if (ov.dot) dot = true;
+          if (ov.left) isLeft = true;
+          if (ov.free) isFree = true;
+          if (ov.stale) stale = true;
+          if (ov.notStarted) notStarted = true;
+        }
+        const color = accentFor(a, dark);
+        if (isFree) {
+          return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
+            ${ringWithFigure(d, stroke, { pct: null, dark, accent: color, noFigureSlot: true })}
+            <div style="font-size:${labelSize}px;text-align:center">${a.label}<br><span style="opacity:.7">Free</span></div>
+          </div>`;
+        }
+        const pctText = pct == null ? '—' : fmtPct({ pct }, isLeft);
+        const ring = ringWithFigure(d, stroke, {
+          pct, elapsed, dark, accent: color, showRed: true, noReading, spentX: true,
+          figure: pctText, figSize, dimRing: dim, dimFig: dim,
+          subTag: a.weeklyOnly ? 'Weekly' : null, subTagSize,
+        });
+        let resetTxt = '';
+        if (isBig) {
+          if (stale) resetTxt = `<div style="font-size:10px;opacity:.55">Stale</div>`;
+          else if (notStarted) resetTxt = `<div style="font-size:10px;opacity:.72">Not started</div>`;
+          else if (noReading) resetTxt = `<div style="font-size:10px;opacity:.72;${dim ? 'opacity:.5' : ''}">Reset ${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>`;
+          else resetTxt = `<div style="font-size:10px;opacity:.72;${dim ? 'opacity:.5' : ''}">${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>`;
+        }
+        const labelSuffix = isLeft ? ' · left' : '';
+        const labelHtml = fitSpan(a.label + labelSuffix, labelSize, 500, cellW - 17, dim ? 'opacity:.5' : '');
         return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
           ${ring}
-          <div style="display:flex;align-items:center;gap:3px;max-width:100%">${mark(effA.provider, 10, color)}${labelHtml}${dot ? `<span style="width:5px;height:5px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></span>` : ''}</div>
+          <div style="display:flex;align-items:center;gap:3px;max-width:100%">${mark(a.provider, 10, color)}${labelHtml}${dot ? `<span style="width:5px;height:5px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></span>` : ''}</div>
           ${resetTxt}
         </div>`;
       }).join('');
       const plusCell = overflowCount ? `<div style="flex:0 0 ${d}px;display:flex;align-items:center;justify-content:center;font-size:${figSize}px;font-weight:700;opacity:.7">+${overflowCount}</div>` : '';
-      return `<div style="height:100%;display:flex;align-items:center;justify-content:space-around;gap:4px">${cells}${plusCell}</div>`;
+      const justify = centered ? 'center' : 'space-around';
+      const gap = centered ? '18px' : '4px';
+      return `<div style="height:100%;display:flex;align-items:center;justify-content:${justify};gap:${gap}">${cells}${plusCell}</div>`;
     }
   </script>
 
@@ -642,15 +787,52 @@
     &sect;10.
   </p>
 
+  <h4>The pace mark, before and after (decided in review)</h4>
+  <p class="sub">Every ring that carries a figure in its bore had a clock-hand needle pinned to a
+    centre hub, running straight through that text. Robin's call: drop the needle and hub on every
+    such ring and draw the pace position the way the app's own bars already do &mdash;
+    <code>.bartick</code> in <code>design/2026-09-17-main-screen-redesign.html</code>, a short
+    straight tick across the stroke, overhanging equally inside and out, ink at 50% opacity. It
+    never reaches the bore and never reads as a hand. <b>The 24 dp status-bar icon is the one
+    exception</b> &mdash; it has no text in its bore to protect, and CCRM-83 (Ring Renderer)
+    requires it to stay pixel-equivalent to <code>UsageIcon.railsGauge</code>, so it keeps the
+    needle and hub unchanged; the widgets use a pace-tick variant of the same renderer.</p>
+  <div id="s1-needle-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s1-needle-root');
+      const cc = roomCard(acc('pro'), true);
+      let html = '<div class="row">';
+      [['2x2', 110, 168], ['1x1', 64, 84]].forEach(([bucket, d, boxH]) => {
+        const [w] = COVER[bucket];
+        const figSize = bucket === '1x1' ? 16 : 26;
+        const stroke = bucket === '1x1' ? 6 : 9;
+        const before = ringWithFigure(d, stroke, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, showRed: true, spentX: true, figure: '62%', figSize, needleStyle: 'hub' });
+        const after = ringWithFigure(d, stroke, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, showRed: true, spentX: true, figure: '62%', figSize, needleStyle: 'tick' });
+        const wrap = (inner) => `<div style="height:100%;display:flex;align-items:center;justify-content:center">${inner}</div>`;
+        html += tf(tile({ w, h: boxH, bg: 'solid', dark: true, cardColor: cc, content: wrap(before) }), `Ring ${bucket.replace('x', '×')} &mdash; rev A: hub-pinned needle runs through "62%"`, w);
+        html += tf(tile({ w, h: boxH, bg: 'solid', dark: true, cardColor: cc, content: wrap(after) }), `Ring ${bucket.replace('x', '×')} &mdash; rev B, Robin's choice: a straight pace tick on the stroke, clear of the figure`, w);
+      });
+      html += '</div>';
+      root.innerHTML = html;
+    })();
+  </script>
+
   <hr class="hr">
   <h2>2 &middot; Every state, on every face, at every size</h2>
   <p class="sub">
     Dark Solid unless the state needs another background to make its point. Cover dimensions.
-    <b>S4</b> uses ChatGPT (weekly-only); every other row uses Pro. <b>S10</b> shows both
-    variants &mdash; unassigned (first account in registry order, labelled) and no accounts.
-    <b>S13</b> carries the proposed synthetic marker (a violet dot, always; a "SYNTHETIC"
-    micro-tag where the face has room) &mdash; see &sect;10 for the three options considered.
+    <b>S4</b> uses ChatGPT (weekly-only); every other row uses Pro, except the Strip, where every
+    row uses all four accounts and the state applies to Teams only (S6&ndash;S8, S11, S12) while
+    Pro, Product and ChatGPT stay at their own baseline reading &mdash; CCRM-82's own rule. <b>S10</b>
+    shows both variants &mdash; unassigned (first account in registry order, labelled) and no
+    accounts. <b>S13</b> carries the recommended synthetic marker: a violet dot, always; on tiles
+    tall enough to spend the height on it (2&times;2, 4&times;2), a full-width "SYNTHETIC" ribbon
+    in flow at the top, which cannot collide with anything below it since it isn't an overlay.
   </p>
+
+  <h3>S13's marker &mdash; three options, before the recommendation below</h3>
+  <div id="s13-options-root"></div>
   <div id="s2-root"></div>
 
   <script>
@@ -660,6 +842,32 @@
       if (face === 'countdown') return countdownFace(bucket, subject, stateKey, dark, opts);
       return stripFace(bucket, subject, stateKey, dark, opts);
     }
+    (function buildS13Options() {
+      const root = document.getElementById('s13-options-root');
+      const sizes = [['ring', '1x1'], ['number', '2x1'], ['number', '4x2']];
+      function optionTile(kind, face, bucket) {
+        const [w, h] = COVER[bucket];
+        const subj = acc('pro');
+        const content = faceContentFn(face, bucket, subj, 'S1', true, {});
+        const cc = roomCard(subj, true);
+        if (kind === 'dot') return tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content: content + synthDot() });
+        if (kind === 'dashed') {
+          return `<div style="width:${w}px;height:${h}px;border-radius:24px;box-sizing:border-box;border:2px dashed #B388FF;overflow:hidden;position:relative;background:${cc};color:#EDE8E4;font-family:Roboto,Arial,sans-serif"><div style="position:absolute;inset:0;padding:7px;box-sizing:border-box">${content}</div></div>`;
+        }
+        return tile({ w, h, bg: 'solid', dark: true, cardColor: cc, synthetic: true, content });
+      }
+      let html = '';
+      ['dot', 'dashed', 'ribbon'].forEach(kind => {
+        const label = { dot: 'A — corner dot only', dashed: 'B — dashed outline', ribbon: 'C — in-flow "SYNTHETIC" ribbon (recommended)' }[kind];
+        html += `<div class="row" style="margin-bottom:2px">`;
+        sizes.forEach(([face, bucket]) => {
+          const [w] = COVER[bucket];
+          html += tf(optionTile(kind, face, bucket), faceLabel(face, bucket), w);
+        });
+        html += `</div><p class="cap" style="max-width:600px;margin:-4px 0 14px">${label}</p>`;
+      });
+      root.innerHTML = html;
+    })();
     function buildStateMatrix(face, sizes, opts) {
       const isStrip = face === 'strip';
       let html = `<h3>${{ ring: 'Ring', number: 'Number', countdown: 'Countdown', strip: 'Accounts Strip' }[face]}</h3><div class="scroll"><table><thead><tr><th>State</th>`;
@@ -698,13 +906,28 @@
     }
     document.getElementById('s2-root').innerHTML =
       buildStateMatrix('ring', ['1x1', '2x2'], {}) +
-      `<p class="note wide"><b>What drops out, narrow → wide (Ring):</b> at 1×1 there is no label at all &mdash; the bore holds only the figure (or the ×); the account/window line appears starting at 2×2. The ring itself never shrinks below its declared diameter or gives way to text (CCBG-11's rule).</p>` +
+      `<p class="note wide"><b>What drops out, narrow → wide (Ring):</b> at 1×1 there is no label at all &mdash; the bore holds only the figure (or the ×), so S11's Left mode has no " &middot; left" marker there, just the flipped number, and S4's Weekly tag has nowhere to sit either; the account/window line, and both those markers, appear starting at 2×2. The ring itself never shrinks below its declared diameter or gives way to text (CCBG-11's rule).</p>` +
       buildStateMatrix('number', ['2x1', '4x1', '4x2'], {}) +
       `<p class="note wide"><b>What drops out, narrow → wide (Number):</b> below 4×1 the LEFT caption is dropped and the bare figure alone is shown (still correct in Left mode, just unlabelled); the absolute sub-line only exists from 4×1 up; the control row (chips + cycler) only exists at 4×2. The bar and figure never drop.</p>` +
       buildStateMatrix('countdown', ['2x1', '2x2'], {}) +
       `<p class="note wide"><b>What drops out, narrow → wide (Countdown):</b> at 2×1 there is no figure/bar and no estimate line &mdash; caption, count and clock time only. Both appear at 2×2. The absolute clock time never drops (R4) even when the count is live.</p>` +
       buildStateMatrix('strip', ['4x1', '4x2'], {}) +
-      `<p class="note wide"><b>What drops out, narrow → wide (Strip):</b> the absolute reset line drops first (present only at 4×2), then the label truncates (see the fit flags below), and the ring itself never gives way (CCBG-10's rule) &mdash; it stays Ø56/Ø88 dp regardless of how many accounts share the row.</p>`;
+      `<p class="note wide"><b>What drops out, narrow → wide (Strip):</b> the absolute reset line drops first (present only at 4×2), then the label truncates (see the fit flags below), and the ring itself never gives way (CCBG-10's rule) &mdash; it stays Ø56/Ø88 dp regardless of how many accounts share the row. A weekly-only account's tag lives under its figure in the bore, not the label, so it never contests that truncation.</p>` +
+      buildStripEdgeCases();
+    function buildStripEdgeCases() {
+      const overList = ACCOUNTS.concat([RESEARCH_DEMO]);
+      const oneList = [acc('pro')];
+      let html = '<h4>Strip edge cases</h4><div class="row">';
+      ['4x1', '4x2'].forEach(b => {
+        const [w, h] = COVER[b];
+        const overContent = stripFace(b, overList, 'S1', true, {});
+        const oneContent = stripFace(b, oneList, 'S1', true, {});
+        html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: overContent }), `${faceLabel('strip', b)} — 5 accounts: the first four in registry order, then a "+1" cell`, w);
+        html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: oneContent }), `${faceLabel('strip', b)} — 1 account: centred`, w);
+      });
+      html += '</div>';
+      return html;
+    }
   </script>
 
   <hr class="hr">
@@ -753,35 +976,38 @@
         const content = countdownFace('2x1', acc('pro'), 'S1', true, Object.assign({ countText }, extra || {}));
         return tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content });
       }
+      function wtile(opts2) {
+        opts2 = opts2 || {};
+        const content = countdownFace('2x1', acc('chatgpt'), 'S4', true, opts2);
+        return tile({ w, h, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content, id: opts2.id });
+      }
       let html = '<div class="row">';
       html += tf(ctile('2:41'), 'Live H:MM &mdash; tried first; likely not achievable with a stock Chronometer (see caption below)', w);
-      html += tf(ctile('2:41:07'), 'Live H:MM:SS &mdash; the fallback that shipped (setChronometerCountDown)', w);
+      html += tf(ctile('2:41:07'), 'Live H:MM:SS &mdash; the expected fallback (setChronometerCountDown)', w);
       html += tf(ctile('41:23'), 'Under one hour: MM:SS ("41:23")', w);
       html += tf(ctile('−0:05:12', { }), 'Past zero: the negative count ("−0:05:12"), true clock time beside it &mdash; illustrative: now 9:15:12 PM, window reset 9:10 PM', w);
       html += '</div><div class="row">';
-      html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content: weeklyAbsoluteTile(true, 24) }), `Weekly, outside the last 24h: absolute form only &mdash; "Resets ${RESET_WEEKLY_LABEL}"`, w);
-      html += tf(ctile('19:03:44'), 'Weekly, inside the last 24h: the transition alarm has switched it to live ticking (same H:MM:SS face)', w);
+      html += tf(wtile({}), `S4, outside the last 24h (the default): absolute only, no chronometer &mdash; "Resets ${RESET_WEEKLY_LABEL}"`, w);
+      html += tf(wtile({ forceLive: true, countText: '19:03:44' }), 'S4, inside the last 24h: the transition alarm has switched it to live ticking (same H:MM:SS face) &mdash; caption and account line read Weekly, not 5h', w);
       html += '</div><div class="row">';
-      html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content: weeklyAbsoluteTile(true, 17), id: 'q4-weekly-fallback' }), '⚠ at 24sp "Resets Sat 9:10 PM" ellipsizes (flagged above) &mdash; proposed fallback: drop to 17sp for the Weekly-outside-24h case only, everything else stays 24sp', w);
+      html += tf(wtile({ weeklyFontSize: 17, id: 'q4-weekly-fallback' }), '⚠ at 24sp "Resets Sat 9:10 PM" ellipsizes (flagged above) &mdash; proposed fallback: drop to 17sp for the Weekly-outside-24h case only, everything else stays 24sp', w);
       html += '</div>';
       const [w2, h2] = COVER['2x2'];
       const withEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: true, estimateAt: '8:52 PM' });
       const noEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: false });
+      const at100 = countdownFace('2x2', acc('pro'), 'S3', true, { countText: '2:41:07' });
+      const notStarted = countdownFace('2x2', acc('pro'), 'S5', true, {});
+      const resetPassed = countdownFace('2x2', acc('pro'), 'S6', true, {});
       html += '<div class="row">';
-      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: withEst }), '2×2 with the estimate line &mdash; only when Projection.estimate is non-null ("~" is CCRM-30 (Estimate Honesty)\'s marker)', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: withEst }), '2×2 with the estimate line &mdash; only when Projection.estimate is non-null ("~" is CCRM-30 (Estimate Honesty)\'s marker); kept at S1/S2', w2);
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: noEst }), '2×2 with no estimate &mdash; most days: the line is simply absent, no placeholder', w2);
+      html += '</div><div class="row">';
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: at100 }), 'S3, 100%: the count keeps ticking to the real reset, but never an estimate &mdash; there is nothing left to run out', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: notStarted }), 'S5, not started: no count, no clock, no estimate &mdash; just the message', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: resetPassed }), 'S6, reset passed: "Reset 9:10 PM", past tense, no count, no estimate', w2);
       html += '</div>';
       root.innerHTML = html;
     })();
-    function weeklyAbsoluteTile(dark, fontSize) {
-      const color = accentFor(acc('pro'), dark);
-      const w = COVER['2x1'][0] - 14;
-      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px;overflow:visible">
-        <div style="font-size:11px;opacity:.75">Weekly reset</div>
-        <div style="font-weight:700;line-height:1.15">${fitSpan(`Resets ${RESET_WEEKLY_LABEL}`, fontSize, 700, w)}</div>
-        ${labelRow(acc('pro'), color, 'Pro · Weekly', 11, 11, dark, { weight: 500 })}
-      </div>`;
-    }
   </script>
 
   <h2>5 &middot; Number 4&times;1 and 4&times;2 detail</h2>
@@ -815,7 +1041,7 @@
       const both = numberFace('4x2', acc('pro'), 'S1', true, {});
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: both }), 'Pro has 5h + Weekly → both chips, 5h selected', w2);
       const single = numberFace('4x2', acc('chatgpt'), 'S4', true, {});
-      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: single }), 'ChatGPT is weekly-only → a fixed "Weekly · fixed" tag, no chips to tap', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: single }), 'ChatGPT is weekly-only → a fixed, non-interactive "Weekly" tag (dashed border, no fill — visibly not a chip), no chips to tap', w2);
       const beforeContent = numberFace('4x2', acc('pro'), 'S1', true, {});
       const afterContent = numberFace('4x2', acc('teams'), 'S1', true, {});
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: beforeContent }), 'Cycler before: showing Pro', w2);
@@ -1007,20 +1233,40 @@
         <div class="chiprow2">${chips}</div>
       </div>`;
       const banner = `<div style="height:34px;background:#9A6B1E;color:#1A1400;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;letter-spacing:.03em;border-radius:10px 10px 0 0">SYNTHETIC DATA · tap to turn off</div>`;
-      const mainMock = `<div style="width:328px;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif">
-        ${banner}
-        <div style="background:#0D0D0D;color:#EDE8E4;padding:14px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">${mark('claude', 18, CLAUDE_DARK.accent)}<b>Pro</b><span style="margin-left:auto;font-size:19px;font-weight:700">62%</span></div>
-          ${barHTML(296, 12, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
-        </div>
+      // Main, drawn faithfully — top bar, account tabs, and the v1.7 compact 5h /
+      // Weekly cards (bars, pace ticks, reset rows, status line) as in
+      // design/2026-09-17-main-screen-redesign.html §3–6, not a single bar.
+      const topBar = `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px"><b style="font-size:15px;flex:1">Cooldown</b><svg width="20" height="20" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>`;
+      const tabs = `<div style="display:flex;border-bottom:1px solid rgba(255,255,255,.12);margin:0 14px 10px">${ACCOUNTS.map((a, i) => `<div style="flex:1;text-align:center;font-size:12px;font-weight:${i === 0 ? 700 : 500};opacity:${i === 0 ? 1 : .6};padding:8px 2px;border-bottom:2px solid ${i === 0 ? CLAUDE_DARK.accent : 'transparent'}">${a.label}</div>`).join('')}</div>`;
+      function miniCard(title, pct, elapsed, resetLine) {
+        return `<div style="background:#1A1A1A;border-radius:14px;padding:12px;margin:0 14px 8px">
+          <div style="display:flex;align-items:baseline"><span style="font-size:12.5px;opacity:.85">${title}</span><span style="margin-left:auto;font-size:17px;font-weight:700">${pct}%</span></div>
+          ${barHTML(268, 10, { pct, elapsed, dark: true, accent: CLAUDE_DARK.accent, paceTick: elapsed })}
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.7;margin-top:6px"><span style="font-weight:700;color:#D8AC63">8 points above even pace</span><span>${resetLine}</span></div>
+        </div>`;
+      }
+      const statusLine = `<div style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.7;margin:2px 14px 12px">Synced 6:29 PM</div>`;
+      const mainMock = `<div style="width:328px;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif;background:#0D0D0D;color:#EDE8E4">
+        ${banner}${topBar}${tabs}
+        ${miniCard('5h', 62, 45, `Resets ${RESET_5H_LABEL}`)}
+        ${miniCard('Weekly', 31, 22, `Resets ${RESET_WEEKLY_LABEL}`)}
+        ${statusLine}
       </div>`;
-      const notifStrip = tile({ w: 328, h: 62, bg: 'solid', dark: true, cardColor: '#1A1A1A', synthetic: true, radius: 16, content: `
-        <div style="display:flex;align-items:center;gap:4px">${mark('claude', 14, CLAUDE_DARK.accent)}<span style="font-size:13px">Pro · 5h</span></div>
-        ${barHTML(300, 8, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
-        <div style="text-align:right;font-size:24px;font-weight:700;margin-top:-4px">62%</div>` });
+      // The always-on notification, faithful to notif_big_number.xml (mark, label,
+      // bar, 32sp trailing figure) inside a shade card with its own header row, and
+      // the synthetic strip proposed as a full-width band above the row — not only
+      // the widgets' small violet pill, since the notification has the width to say
+      // it in words.
+      const shadeHeader = `<div style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.6;padding:8px 12px 0">${mark('claude', 12, ink(true, .7))}<span>Cooldown</span><span style="margin-left:auto">now</span></div>`;
+      const synthLine = `<div style="background:#7C4DFF;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-align:center;padding:3px 0;margin:6px 12px 4px;border-radius:4px">SYNTHETIC DATA</div>`;
+      const notifRow = `<div style="padding:0 12px 10px">
+        <div style="display:flex;align-items:center;gap:4px">${mark('claude', 14, CLAUDE_DARK.accent)}<span style="font-size:13px;flex:1">Pro · 5h</span><span style="font-size:32px;font-weight:700;line-height:1">62%</span></div>
+        ${barHTML(280, 8, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
+      </div>`;
+      const notifCard = `<div style="width:328px;background:#141210;color:#EDE8E4;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif">${shadeHeader}${synthLine}${notifRow}</div>`;
       root.innerHTML = '<div class="row">' + tf(debugRow, 'Debug-section chip row, release build, behind the 7-tap unlock', 328) +
         tf(mainMock, 'Main, drawn faithfully under the banner — the banner is also the off switch', 328) +
-        tf(notifStrip, 'The always-on notification (Huge-number base) while synthetic is on — same violet marker as the widgets', 328) + '</div>';
+        tf(notifCard, 'The always-on notification (Huge-number base) while synthetic is on, in its shade card — a full-width "SYNTHETIC DATA" band above the row', 328) + '</div>';
     })();
   </script>
 
@@ -1060,46 +1306,115 @@
       const bar = `<div style="position:relative;width:328px;background:#0D0D0D;color:#EDE8E4;border-radius:16px;padding:14px 16px;font-family:Roboto,Arial,sans-serif">
         <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">Cooldown</b><svg width="22" height="22" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>${menu}
       </div>`;
+      // Rev B: built from RingRenderer, BarRenderer AND a trend chart — one ring
+      // plus 5h/Weekly bars (with pace ticks) per account, and one sparkline for
+      // the account that was open when Share was tapped (Pro here; §10 asks
+      // whether every account or only the open one belongs on the card at all).
+      // The privacy line is an annotation beside the card now, never printed on it.
+      function sparkline(dark) {
+        const pts = [8, 11, 9, 14, 19, 17, 23, 28, 25, 31, 36, 33, 40, 47, 44, 52, 58, 55, 62];
+        const W = 280, H = 46, max = 70;
+        const step = W / (pts.length - 1);
+        const xy = pts.map((v, i) => [i * step, H - (v / max) * H]);
+        const path = xy.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+        const area = path + ` L${W},${H} L0,${H} Z`;
+        const col = accentFor(acc('pro'), dark);
+        return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+          <path d="${area}" fill="${col}" opacity="${dark ? .22 : .18}"/>
+          <path d="${path}" fill="none" stroke="${col}" stroke-width="1.6"/>
+        </svg>`;
+      }
       function cardBody(dark) {
         const rows = ACCOUNTS.map(a => {
           const color = accentFor(a, dark);
           const pct = a.key === 'chatgpt' ? 31 : (a.key === 'pro' ? 62 : a.key === 'teams' ? 24 : 8);
-          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-            ${ringWithFigure(40, 5, { pct, elapsed: 40, dark, accent: color, spentX: true, figure: pct + '%', figSize: 11 })}
-            <div style="flex:1"><div style="font-size:13px;font-weight:600">${a.label}</div><div style="font-size:10.5px;opacity:.65">${a.weeklyOnly ? 'Weekly' : '5h'} · resets ${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div></div>
+          const weeklyPct = a.key === 'chatgpt' ? 31 : (a.key === 'pro' ? 22 : a.key === 'teams' ? 15 : 4);
+          const bars = a.weeklyOnly
+            ? `<div style="margin-top:2px"><div style="font-size:9.5px;opacity:.6;margin-bottom:2px">Weekly &middot; resets ${RESET_WEEKLY_LABEL}</div>${barHTML(190, 6, { pct, elapsed: 40, dark, accent: color, paceTick: 40 })}</div>`
+            : `<div style="margin-top:2px"><div style="font-size:9.5px;opacity:.6;margin-bottom:2px">5h &middot; resets ${RESET_5H_LABEL}</div>${barHTML(190, 6, { pct, elapsed: 38, dark, accent: color, paceTick: 38 })}
+               <div style="font-size:9.5px;opacity:.6;margin:5px 0 2px">Weekly &middot; resets ${RESET_WEEKLY_LABEL}</div>${barHTML(190, 6, { pct: weeklyPct, elapsed: 30, dark, accent: color, paceTick: 30 })}</div>`;
+          return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid ${ink(dark, .08)}">
+            ${ringWithFigure(38, 5, { pct, elapsed: 38, dark, accent: color, spentX: true, figure: pct + '%', figSize: 10.5 })}
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;margin-bottom:2px">${a.label}</div>${bars}</div>
           </div>`;
         }).join('');
         return `<div style="width:328px;background:${dark ? '#0D0D0D' : '#F5EFE8'};color:${dark ? '#EDE8E4' : '#26211E'};border-radius:20px;padding:18px;font-family:Roboto,Arial,sans-serif">
-          <div style="font-size:11px;letter-spacing:.05em;opacity:.6;margin-bottom:6px">COOLDOWN · SNAPSHOT</div>
+          <div style="font-size:11px;letter-spacing:.05em;opacity:.6;margin-bottom:2px">COOLDOWN &middot; SNAPSHOT</div>
           ${rows}
-          <div style="font-size:9.5px;opacity:.45;margin-top:6px">No email or plan shown — label only</div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${ink(dark, .08)}">
+            <div style="font-size:9.5px;opacity:.6;margin-bottom:4px">Pro &middot; 5h trend</div>
+            ${sparkline(dark)}
+          </div>
         </div>`;
       }
       const preview = `<div class="dlgwrap" style="width:328px;border-radius:16px;padding:20px"><div class="dlg" style="background:#201D1B;color:#EDE8E4;width:100%">
         <div class="dt">Share snapshot</div>
-        <div style="transform:scale(.82);transform-origin:top left;margin-bottom:-40px">${cardBody(true)}</div>
+        <div style="transform:scale(.82);transform-origin:top left;margin-bottom:-70px">${cardBody(true)}</div>
         <div class="btns"><span class="dlgbtn" style="color:#9B928B">Cancel</span><span class="dlgbtn" style="color:#E59980;font-weight:700">Share</span></div>
       </div></div>`;
       root.innerHTML = '<div class="row">' + tf(bar, 'Main · menu, "Share snapshot" added under "Main screen layout"', 328) +
         tf(preview, 'Render-then-preview dialog — nothing leaves without being seen', 328) + '</div>' +
-        '<div class="row">' + tf(cardBody(true), 'The card, dark, drawn at 360dp here (rendered at 4× = 1440px for the real share) — rings from the same renderer as every other face', 328) +
+        '<div class="row">' +
+        `<div>${tf(cardBody(true), 'The card, dark, drawn at 360dp here (rendered at 4× = 1440px for the real share) — rings, bars and the sparkline from the same renderers as every other face', 328)}
+          <p class="note" style="max-width:328px">No email or plan tier anywhere on the card — only each profile's own label. (Moved off the card itself; it printed there in rev A.)</p></div>` +
         tf(cardBody(false), 'Light', 328) + '</div>';
     })();
   </script>
 
   <hr class="hr">
   <h2>10 &middot; Questions for Robin</h2>
+
+  <h4>Decided in review</h4>
+  <p class="sub">
+    <b>The pace mark</b> (item 9, &sect;1): every ring with a figure in its bore drops the
+    clock-hand needle and hub and draws a straight pace tick across the stroke instead, matching
+    the app's own <code>.bartick</code> &mdash; Robin's choice, drawn before/after in &sect;1 and
+    applied everywhere a Ring or Strip ring appears. The 24 dp status-bar icon is unaffected: no
+    bore text to protect, and CCRM-83 (Ring Renderer) holds it pixel-equivalent to
+    <code>UsageIcon.railsGauge</code>, so it keeps the needle and hub.
+  </p>
+
   <ol class="dec">
-    <li><b>Q10 &mdash; Ring 2&times;2 at 100%:</b> spent &times; or "100%" text (&sect;3)? <b>Recommend the &times;</b> &mdash; it's what 1&times;1 already uses (so the face is consistent with itself), and it matches the app's own spent-ring decision (CCRM-51).</li>
-    <li><b>Q11 &mdash; the "as of" stamp</b> (&sect;8): keep or drop, and on which faces? <b>Recommend keep</b>, only where drawn above (Number 4&times;1/4&times;2, Countdown 2&times;2, Ring 2&times;2, Strip 4&times;2), at 8.5 sp so it never competes with the primary reading.</li>
-    <li><b>S13's marker form</b> (&sect;2, &sect;9c): the violet-dot-always + "SYNTHETIC" tag-where-there's-room hybrid. It visibly collides with the sub-line/control row on a few Number tiles in &sect;2 &mdash; acceptable, or should the tag move to the top edge instead of the bottom?</li>
-    <li><b>S14's wording per size:</b> "Update Cooldown" at every size below 4&times;1/2&times;2, the full "Unavailable in this version &middot; update Cooldown" from there up (drawn throughout &sect;2). Confirm the shortened wording reads clearly enough with no other context.</li>
-    <li><b>Transparent legibility</b> (&sect;1): the mismatched cases are illegible as drawn. Recommend a soft text shadow / scrim keyed to the <em>system</em> dark-mode flag. Approve the direction so it can be specced at Step 3?</li>
-    <li><b>Share card:</b> build in this arc, or defer past v1.8 (RUNBOOK.md Step 6 says "the release does not wait")? The mock in &sect;9e is low-risk since it shares every renderer already built for the other faces.</li>
-    <li><b>Countdown ignoring the Reset time chip</b> (&sect;4): confirmed already in ROADMAP.md's text, changed from an earlier draft's Clock-mode variant. Flagging for acknowledgement, not a new decision.</li>
-    <li><b>Weekly-outside-24h text at Countdown 2&times;1</b> (&sect;4): "Resets Sat 9:10 PM" at 24 sp ellipsizes. Proposed fallback: 17 sp for that one case. Approve?</li>
-    <li><b>"ChatGPT &middot; Weekly" overflow at Number 2&times;1</b> (&sect;2, S4 row, flagged): the label+window suffix doesn't fit 90 dp. Proposed fallback: drop the " &middot; Weekly" suffix from the label at 2&times;1 specifically, since the bare figure and bar already carry the reading and the suffix is decorative at this width. Approve?</li>
-    <li><b>Strip's Solid colour</b> (&sect;1): no single account owns it. Recommend the neutral Claude-room card tint used throughout this file, unless Robin prefers a plain system surface colour instead.</li>
+    <li><b>Q10 &mdash; Ring 2&times;2 at 100%</b> (&sect;3): spent &times; or "100%" text?
+      <b>Recommend the &times;</b> &mdash; it's what 1&times;1 already uses (so the face is
+      consistent with itself), and it matches the app's own spent-ring decision (CCRM-51).</li>
+    <li><b>Q11 &mdash; the "as of" stamp</b> (&sect;8): keep or drop, and on which faces?
+      <b>Recommend keep</b>, only where drawn above (Number 4&times;1/4&times;2, Countdown
+      2&times;2, Ring 2&times;2, Strip 4&times;2), at 8.5 sp so it never competes with the
+      primary reading.</li>
+    <li><b>S13's marker form</b> (&sect;2's options panel): corner dot only, a dashed outline, or
+      the in-flow "SYNTHETIC" ribbon. <b>Recommend the ribbon</b> (option C) &mdash; it's the only
+      one of the three that cannot collide with a sub-line or control row, because it takes real
+      layout space instead of overlaying.</li>
+    <li><b>S14's wording per size</b> (&sect;2): "Update Cooldown" below 4&times;1/2&times;2/Strip
+      4&times;2, the full "Unavailable in this version &middot; update Cooldown" from there up.
+      Confirm the shortened wording reads clearly enough with no other context.</li>
+    <li><b>Transparent legibility</b> (&sect;1): the mismatched cases are illegible as drawn.
+      Recommend a soft text shadow / scrim keyed to the <em>system</em> dark-mode flag. Approve the
+      direction so it can be specced at Step 3?</li>
+    <li><b>Share card &mdash; build or defer</b> (&sect;9e): RUNBOOK.md Step 6 says "the release
+      does not wait." The mock is low-risk since it shares every renderer already built for the
+      other faces, now including the bars and the sparkline.</li>
+    <li><b>Share card &mdash; which accounts</b> (&sect;9e, new): every account on one card, as
+      drawn, or only the one that was open when Share was tapped? Recommend keeping all of
+      them &mdash; a snapshot of one account is just a screenshot with extra steps, and "every
+      account, one card" is closer to what makes this worth building at all.</li>
+    <li><b>Countdown ignoring the Reset time chip</b> (&sect;4): confirmed already in ROADMAP.md's
+      text, changed from an earlier draft's Clock-mode variant. Flagging for acknowledgement, not
+      a new decision.</li>
+    <li><b>Weekly-outside-24h text at Countdown 2&times;1</b> (&sect;4): "Resets Sat 9:10 PM" at
+      24 sp ellipsizes. Proposed fallback: 17 sp for that one case. Approve?</li>
+    <li><b>The Strip's weekly tag</b> (&sect;2, item 1): "ChatGPT &middot; Weekly" doesn't
+      reliably fit the label at 4&times;1's cell width, so the Strip carries "Weekly" as a small
+      tag under the figure in the bore instead &mdash; the Ring keeps it in the label line, since
+      that has room. Approve the split, or should the Strip try the inline label anyway and take
+      whatever the fit check flags?</li>
+    <li><b>Number S10 at 2&times;1</b> (&sect;2, item 12): "Pro (unassigned) &middot; 5h"
+      overflowed 90 dp; the fallback drops the window suffix and marks it with a small
+      "UNASSIGNED" corner tag instead. Approve?</li>
+    <li><b>Strip's Solid colour</b> (&sect;1): no single account owns it. Recommend the neutral
+      Claude-room card tint used throughout this file, unless Robin prefers a plain system surface
+      colour instead.</li>
   </ol>
 
   <hr class="hr">
