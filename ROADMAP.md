@@ -1409,6 +1409,8 @@ face; `WidgetFaceTest` covers every state × bucket.
 - More than four accounts: the first four and a "+N" cell. One account: centred. No accounts: S10.
   S6–S8 and S12 apply per ring. Narrow: the reset drops first, then the label; the ring never gives
   way (CCBG-10's rule).
+- **Provider in (Step 4, 2026-09-25):** `widgets.StripWidgetProvider` (R9), 4×1/4×2, default
+  4×1, picker name "All accounts"; its tap opens Cooldown as it was (no one account to open).
 
 ### CCRM-83 · Ring Renderer — one ring painter for the status bar, the widgets and the share card
 - **Status:** **Built 2026-09-25** (RUNBOOK.md Step 3a): `ui/RingRenderer.kt` with a NEEDLE mark (the status bar, `UsageIcon.draw` now a 24 dp call into it) and the rev D TICK mark (halo in the face colour, or cleared on Transparent; an optional soft shadow); `RingRendererTest` proves the icon byte-identical to the frozen pre-extraction copy over 16 states × both themes × mdpi/420dpi/xxhdpi. Robolectric 4.17 added as a test-only dependency for it. The Fold 7 comparison stays at Step 7 · small · **no visible change** · closes the ring half of

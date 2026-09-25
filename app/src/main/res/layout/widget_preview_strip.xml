@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-78 (Widgets Reborn): the Accounts Strip face's picker preview (previewLayout, wireframe
+     rev D §7) — a static Solid, dark, S1 face. Free to change later (R9); never inflated
+     for a placed widget, which always draws through WidgetFace.render. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg"
+        android:tint="#FF1A1A1A" />
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:src="@drawable/widget_preview_strip_a" android:importantForAccessibility="no" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="38%" android:textSize="13sp" android:textColor="#FFE59980" android:textStyle="bold" android:layout_gravity="center" />
+            </FrameLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="3dp">
+                <ImageView android:layout_width="11dp" android:layout_height="11dp" android:src="@drawable/ic_provider_claude" android:tint="#FFE59980" android:importantForAccessibility="no" android:layout_marginEnd="3dp" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="Pro" android:textSize="9.5sp" android:textColor="#FFEDE8E4" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:src="@drawable/widget_preview_strip_b" android:importantForAccessibility="no" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="62%" android:textSize="13sp" android:textColor="#FFE59980" android:textStyle="bold" android:layout_gravity="center" />
+            </FrameLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="3dp">
+                <ImageView android:layout_width="11dp" android:layout_height="11dp" android:src="@drawable/ic_provider_claude" android:tint="#FFE59980" android:importantForAccessibility="no" android:layout_marginEnd="3dp" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="Work" android:textSize="9.5sp" android:textColor="#FFEDE8E4" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:src="@drawable/widget_preview_strip_c" android:importantForAccessibility="no" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="20%" android:textSize="13sp" android:textColor="#FF19C39A" android:textStyle="bold" android:layout_gravity="center" />
+            </FrameLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="3dp">
+                <ImageView android:layout_width="11dp" android:layout_height="11dp" android:src="@drawable/ic_provider_chatgpt" android:tint="#FF19C39A" android:importantForAccessibility="no" android:layout_marginEnd="3dp" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="ChatGPT" android:textSize="9.5sp" android:textColor="#FFEDE8E4" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
