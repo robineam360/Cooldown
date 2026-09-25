@@ -113,6 +113,7 @@ object WidgetHost {
                 planUnsupported = s.lastStatusKind == ErrorKind.PLAN.key,
                 sessionRunsOutAtMs = sessionOut,
                 weeklyRunsOutAtMs = weeklyOut,
+                synthetic = s.synthetic,
             )
         }
     }

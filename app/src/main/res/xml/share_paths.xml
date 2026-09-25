@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-24 (Share Card): the one directory the share card's FileProvider may serve —
+     cacheDir/share/, which holds at most the one snapshot being shared. -->
+<paths>
+    <cache-path name="share" path="share/" />
+</paths>

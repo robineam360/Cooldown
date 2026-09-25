@@ -98,6 +98,8 @@ object RingRenderer {
      *   Null clears it to real transparency instead (a Transparent face has no colour).
      * @param shadowArgb [PaceMark.TICK] only: a soft shadow under everything drawn, for
      *   a Transparent face over a wallpaper it does not match. Null → none.
+     * @param density [PaceMark.TICK] only: px per dp for the tick's dp floors. Null → the
+     *   display's; the share card passes 4 (CCRM-24 (Share Card)'s 4× render).
      */
     fun draw(
         context: Context,
@@ -112,13 +114,14 @@ object RingRenderer {
         mark: PaceMark = PaceMark.NEEDLE,
         haloArgb: Int? = null,
         shadowArgb: Int? = null,
+        density: Float? = null,
     ): Bitmap {
         val bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         when (mark) {
             PaceMark.NEEDLE ->
                 needleGauge(Canvas(bmp), sizePx, strokePx, pct, elapsed, fillArgb, dark, showOverPace, spentCross)
             PaceMark.TICK -> {
-                val density = context.resources.displayMetrics.density
+                val density = density ?: context.resources.displayMetrics.density
                 tickGauge(
                     Canvas(bmp), sizePx, strokePx, density, pct, elapsed, fillArgb, dark,
                     showOverPace, spentCross, haloArgb,

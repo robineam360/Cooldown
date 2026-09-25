@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share Card Renders</title>
+<style>
+  :root { --bg: #F4F1EE; --ink: #1F1B18; --muted: #6B625B; --card: #FFFFFF; --line: #E2DCD6; --accent: #C8643F; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121110; --ink: #EDE8E4; --muted: #9B928B; --card: #1C1A18; --line: #2E2A27; --accent: #E59980; }
+  }
+  :root[data-theme="dark"] { --bg: #121110; --ink: #EDE8E4; --muted: #9B928B; --card: #1C1A18; --line: #2E2A27; --accent: #E59980; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; line-height: 1.5; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 32px 0 8px; }
+  p, li { color: var(--muted); max-width: 72ch; }
+  b { color: var(--ink); }
+  .q { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px 16px; margin: 16px 0; }
+  .q p { margin: 6px 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-top: 12px; }
+  figure { margin: 0; width: 320px; max-width: 100%; }
+  figure img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--line); }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>CCRM-24 (Share Card) — the real renders</h1>
+  <p>Drawn by the app's own <code>ShareCard.render</code> at 4× (1440 px wide), shown scaled down. Fixture time 6:29 PM Thu; the card is the account open on Main when Share is tapped. Everything here matches wireframe rev D §9e except the trend, which is the one open question below.</p>
+
+  <div class="q">
+    <p><b>Question — the trend block.</b> Rev D §9e drew a plain 64 dp area sparkline. The build uses the full chart instead — 80/90/100% guides with labels, the even-pace diagonal, the axis times, one dot per reading, the now line, and the dashed projection with its "~100%" — at 120 dp, because your standing rule is that an existing element is never drawn simplified, and 120 dp is the app's floor for a labelled chart. The card grows by about 50 dp.</p>
+    <p>Fable judged this a fidelity call (keep the full chart); Astra judged it a visible change to the approved card that you should see. That disagreement is why it is here.</p>
+    <p><b>A</b> — keep the full chart as rendered below (built, tests green). &nbsp; <b>B</b> — go back to rev D's plain sparkline, 64 dp, no guides or labels.</p>
+    <p><b>Answered 2026-09-25: A, the full chart — Robin.</b></p>
+  </div>
+
+  <h2>Above pace, dark and light</h2>
+  <div class="row">
+    <figure><img src="research/2026-09-25-share-card/above-pace-dark.png" alt="Share card, dark, 62% above pace"><figcaption>Dark · 62%, 16% above even pace · projection reaches 100% before reset</figcaption></figure>
+    <figure><img src="research/2026-09-25-share-card/above-pace-light.png" alt="Share card, light, 62% above pace"><figcaption>Light · same reading</figcaption></figure>
+  </div>
+
+  <h2>States</h2>
+  <div class="row">
+    <figure><img src="research/2026-09-25-share-card/full-dark.png" alt="Share card at 100%"><figcaption>At 100% the × replaces the figure, as on the Ring widget</figcaption></figure>
+    <figure><img src="research/2026-09-25-share-card/weekly-only-dark.png" alt="Weekly-only account"><figcaption>Weekly-only (ChatGPT) with no history yet: one row, the chart says so in words</figcaption></figure>
+    <figure><img src="research/2026-09-25-share-card/synthetic-dark.png" alt="Synthetic data ribbon"><figcaption>Synthetic mode: the widgets' violet ribbon, in flow at the top (Fable + Astra agreed)</figcaption></figure>
+  </div>
+
+  <h2>Calls already settled (Fable, checked by Astra)</h2>
+  <ul>
+    <li>Share works in synthetic mode and the card is always marked; the ribbon follows where the drawn numbers came from, not a mode read at another moment.</li>
+    <li>The ⋮ now shows whenever the open account has a reading; "Main screen layout" still needs two or more cards; "Share snapshot" is always enabled inside it.</li>
+    <li>The PNG is square and full-bleed (chat apps turn transparent corners black); the preview dialog rounds it.</li>
+    <li>What is shared is exactly the bitmap in the preview; nothing is written until Share is tapped, and only to the app's cache.</li>
+  </ul>
+</main>
+</body>
+</html>

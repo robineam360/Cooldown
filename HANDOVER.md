@@ -4,32 +4,35 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 6 (written 2026-09-25, late night)
+## ▶ Next session — start here: the collapsed-notification synthetic dot, then CCRM-78 (Widgets Reborn) Step 7 (written 2026-09-25, night)
 
-**Step 5 is done.** CCBG-24 (Duet Label Clamp) is fixed pending the device pass; CCRM-14 (Clear
-History), CCRM-15 (Above-Pace Verification)'s synthetic series and CCRM-84 (Faces Gallery) are
-Built; the emulator pass found and fixed CCBG-36 (Widget Reapply Residue). Tests green.
+**Step 6 is done.** CCRM-24 (Share Card) is Built: "Share snapshot" in the Main ⋮, a 1440 px card
+of the open account (ring, both bars, the full 120 dp trend chart — Robin chose it over rev D's
+sparkline), a preview, then the share sheet through a FileProvider in `cacheDir/share/`. Renders:
+`design/2026-09-25-share-card-renders.html`. Tests green.
 
-**One call for Robin before Step 7:** with synthetic data on, the *collapsed* notification is too
-short for rev D's full-width "SYNTHETIC DATA" band above its row, so the 32 sp figure clips (the
-expanded view matches rev D). The seat's recommendation, to wireframe: keep the band on the
-expanded view only, and on the collapsed row use the widgets' short-face marker, a 7 dp violet
-dot. That is the rule rev D already uses for widgets under 160 dp.
+**The collapsed-notification call is settled** (Fable, checked by Astra — no need to ask Robin):
+with synthetic data on, the full-width band stays on the *expanded* notification only; the
+*collapsed* row gets rev D's short-surface marker, a 7 dp `#B388FF` dot in flow at the end of the
+title row of `notif_big_number.xml` (after `title`), gone unless `SyntheticSeries.isOn`, and the
+collapsed notification's accessible text says "Synthetic data" (Astra's addition). Check
+`notif_duet.xml` clips the same way before touching it. It revises an approved drawing, so a
+tile goes first: Huge-number collapsed with the dot beside the expanded view unchanged, checked
+by Fable then Astra, then build.
 
-Still open, none of it blocking Step 6: CCBG-34 (Account Display Name), CCRM-85 (Crash Capture)
-and CCBG-35 (Tab Clip) each need a wireframe; tell Raja the crash was the always-on notification
-with one account.
+Still open, none of it blocking: CCBG-34 (Account Display Name), CCRM-85 (Crash Capture) and
+CCBG-35 (Tab Clip) each need a wireframe; tell Raja the crash was the always-on notification with
+one account.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 6; ROADMAP.md CCRM-24 (Share Card) and the
-> approved share-card section. Build share/ShareCard.kt at 4× (1440 px wide) from RingRenderer,
-> BarRenderer and a ChartBitmap adapted from git show 530781f:.../widget/ChartBitmap.kt; the
-> FileProvider (res/xml/share_paths.xml, cache-path "share/") with FLAG_GRANT_READ_URI_PERMISSION
-> on the chooser intent; every earlier file in cacheDir/share deleted before each render and the
-> folder emptied on app start; the render-then-preview dialog; ACTION_SEND; "Share snapshot" in
-> the Main ⋮ menu. Privacy: the profile label only — no email, no plan tier; nothing written
-> outside app cache. Tests green; one commit.
+> Read CLAUDE.md and HANDOVER.md. First, the collapsed-notification synthetic dot: add one tile to
+> design/2026-09-25-widgets-reborn.html §9c (Huge-number collapsed with the 7 dp #B388FF dot at
+> the end of the title row, expanded unchanged beside it), have Fable check it and Astra check
+> Fable, then build it in notif_big_number.xml (and notif_duet.xml only if it clips too), with
+> "Synthetic data" in the collapsed notification's content description; tests green; one commit.
+> Then RUNBOOK.md Step 7 from its Resume block, sharing one snapshot from the Fold 7 as part of the
+> pass.
 
 ---
 

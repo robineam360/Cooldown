@@ -71,8 +71,8 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☑ |
 | 3 | Pure layer: RingRenderer, Surfaces, WidgetFace, Transitions, WidgetPrefs — no visible change | builder · session reviews | 2 | ☑ |
 | 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☑ |
-| 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☐☑ |
-| 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☐ |
+| 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☑ |
+| 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☑ |
 | 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☐ |
 | 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☐ |
 
@@ -317,11 +317,17 @@ outside app cache. Tests green; one commit.
 ```
 
 **Done when:**
-- ☐ Built and matching the wireframe, or recorded as deferred to v1.8.1 without blocking Step 7.
+- ☑ Built and matching the wireframe, or recorded as deferred to v1.8.1 without blocking Step 7.
 
 **Reversal:** `git revert`.
 
 **Log:**
+- 2026-09-25 — Built by the seat (one piece, rung 1): `share/ShareCard.kt` + `share/ChartBitmap.kt`,
+  the FileProvider, the preview dialog and the ⋮ entry; `ShareCardTest` renders nine states at
+  1440 px. Five calls to Fable, checked by Astra (`concerns`, adopted: the synthetic ribbon keys to
+  the snapshot's provenance; the preview's bitmap is the one shared). They split on the trend
+  block — Robin chose the full 120 dp chart over rev D's sparkline. Fable also settled HANDOVER's
+  collapsed-notification call (see HANDOVER.md): Astra agreed, adding screen-reader text.
 
 ---
 

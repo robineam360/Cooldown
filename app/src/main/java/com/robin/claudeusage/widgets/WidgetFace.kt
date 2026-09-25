@@ -115,6 +115,8 @@ data class AccountInput(
     /** `Projection.estimate(...).hitsLimitAtMs` per window, when non-null (Countdown 2×2). */
     val sessionRunsOutAtMs: Long? = null,
     val weeklyRunsOutAtMs: Long? = null,
+    /** R8: [data] is [com.robin.claudeusage.data.SyntheticSeries]' numbers (the snapshot's own flag). */
+    val synthetic: Boolean = false,
 )
 
 /** What one placed widget is asked to draw. */

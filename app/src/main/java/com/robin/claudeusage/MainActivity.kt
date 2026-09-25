@@ -19,6 +19,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.sp
 import com.robin.claudeusage.data.SyntheticSeries
+import com.robin.claudeusage.data.HistoryStore
+import com.robin.claudeusage.share.ShareCard
+import com.robin.claudeusage.widgets.WidgetHost
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -119,6 +130,8 @@ class MainActivity : ComponentActivity() {
         // poster, so an upgraded install stops offering to configure alerts that no
         // longer exist. One-shot, guarded inside.
         Alerts.retireOldChannels(this, UsageCache(this))
+        // CCRM-24 (Share Card): the last share's snapshot never outlives the process.
+        ShareCard.Files.clear(this)
         val startProfile =
             ProfileRegistry(this).resolve(intent?.getStringExtra("profile"))
         // CCRM-33 (App Shortcuts): the "Refresh now" shortcut opens the app with
@@ -186,6 +199,10 @@ private fun App(startProfile: Profile) {
     var layoutTick by remember { mutableIntStateOf(0) }
     var layoutMenuOpen by remember { mutableStateOf(false) }
     var showLayoutSheet by remember { mutableStateOf(false) }
+    // CCRM-24 (Share Card): the rendered card while its preview is up; nothing is on disk
+    // until Share is tapped.
+    var shareCard by remember { mutableStateOf<Bitmap?>(null) }
+    val scope = rememberCoroutineScope()
     var tick by remember { mutableIntStateOf(0) }
     // R8 (CCRM-15 (Above-Pace Verification)): a mode change redraws Main at once rather
     // than on the next 5-second tick.
@@ -237,6 +254,10 @@ private fun App(startProfile: Profile) {
     val presentCards = remember(selectedProfile, tick) {
         dataCards(repo.snapshot(selectedProfile).data, cache.creditsVisible(selectedProfile))
     }
+
+    // CCRM-24 (Share Card): a card needs a reading to show. Every account with two cards
+    // has one, so the ⋮ shows exactly when this is true and Share is never disabled.
+    val canShare = remember(selectedProfile, tick) { repo.snapshot(selectedProfile).data != null }
 
     val dark = resolveDark(themeMode, isSystemInDarkTheme())
     // A forced theme diverges from the system theme that the manifest's
@@ -374,11 +395,13 @@ private fun App(startProfile: Profile) {
                                 IconButton(onClick = { screen = Screen.SETTINGS }) {
                                     Icon(Icons.Filled.Settings, contentDescription = "Settings")
                                 }
-                                // CCRM-25 (Card Layout), wireframe §9: the entry point
+                                // CCRM-25 (Card Layout), wireframe §9: the layout entry
                                 // shows only once the selected account has two or more
                                 // cards to arrange — with one, the never-blank invariant
-                                // leaves nothing to hide or fold.
-                                if (presentCards.size >= 2) {
+                                // leaves nothing to hide or fold. CCRM-24 (Share Card)
+                                // puts "Share snapshot" under it, so the ⋮ itself now
+                                // shows whenever the account has a reading (Fable, Step 6).
+                                if (canShare) {
                                     Box {
                                         IconButton(onClick = { layoutMenuOpen = true }) {
                                             Icon(
@@ -390,11 +413,25 @@ private fun App(startProfile: Profile) {
                                             expanded = layoutMenuOpen,
                                             onDismissRequest = { layoutMenuOpen = false },
                                         ) {
+                                            if (presentCards.size >= 2) {
+                                                DropdownMenuItem(
+                                                    text = { Text("Main screen layout") },
+                                                    onClick = {
+                                                        layoutMenuOpen = false
+                                                        showLayoutSheet = true
+                                                    },
+                                                )
+                                            }
                                             DropdownMenuItem(
-                                                text = { Text("Main screen layout") },
+                                                text = { Text("Share snapshot") },
                                                 onClick = {
                                                     layoutMenuOpen = false
-                                                    showLayoutSheet = true
+                                                    val profile = selectedProfile
+                                                    scope.launch {
+                                                        shareCard = withContext(Dispatchers.Default) {
+                                                            renderShareCard(context, cache, profile, dark, usageLeft, showOverPace)
+                                                        }
+                                                    }
                                                 },
                                             )
                                         }
@@ -475,6 +512,19 @@ private fun App(startProfile: Profile) {
                     present = presentCards,
                     onChanged = { layoutTick++ },
                     onDismiss = { showLayoutSheet = false },
+                )
+            }
+            // CCRM-24 (Share Card), wireframe rev D §9e: render, then preview — nothing
+            // leaves without being seen.
+            shareCard?.let { bmp ->
+                SharePreview(
+                    bmp,
+                    onShare = {
+                        shareCard = null
+                        val uri = ShareCard.Files.write(context, bmp)
+                        context.startActivity(ShareCard.Files.chooser(uri))
+                    },
+                    onDismiss = { shareCard = null },
                 )
             }
         }
@@ -932,4 +982,52 @@ private fun ErrorNotice(
             }
         }
     }
+}
+
+/**
+ * CCRM-24 (Share Card): the open account's card, rendered off the main thread. Every
+ * earlier snapshot in `cacheDir/share` is deleted first.
+ */
+private fun renderShareCard(
+    context: android.content.Context,
+    cache: UsageCache,
+    profile: Profile,
+    dark: Boolean,
+    usageLeft: Boolean,
+    showOverPace: Boolean,
+): Bitmap? {
+    ShareCard.Files.clear(context)
+    // The ribbon follows the provenance of what is actually drawn — the snapshot's own
+    // flag, or a synthetic history — never a mode read at some other moment (Astra, Step 6).
+    val historySynthetic = SyntheticSeries.isOn
+    val history = HistoryStore(context).points(profile)
+    val account = WidgetHost.accounts(context, cache, dark, withEstimates = false)
+        .firstOrNull { it.key == profile.key } ?: return null
+    val model = ShareCard.model(
+        account, history, dark, usageLeft, showOverPace,
+        synthetic = account.synthetic || historySynthetic,
+    )
+    return ShareCard.render(context, model)
+}
+
+/** The render-then-preview dialog: the card as it will be sent, then Cancel or Share. */
+@Composable
+private fun SharePreview(bmp: Bitmap, onShare: () -> Unit, onDismiss: () -> Unit) {
+    val image = remember(bmp) { bmp.asImageBitmap() }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Share snapshot") },
+        text = {
+            Image(
+                image,
+                contentDescription = "The snapshot that will be shared",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(bmp.width.toFloat() / bmp.height)
+                    .clip(RoundedCornerShape(16.dp)),
+            )
+        },
+        confirmButton = { TextButton(onClick = onShare) { Text("Share") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
