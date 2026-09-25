@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCRM-78 (Widgets Reborn) — rev B, for review</title>
+<title>CCRM-78 (Widgets Reborn) — rev C, for review</title>
 <style>
   :root {
     --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
@@ -122,7 +122,7 @@
 <body>
 <div class="page">
 
-  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev B</p>
+  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev C</p>
   <h1>Four home-screen faces, none of them a clone of the app</h1>
   <p class="lede">
     A status-bar-style <b>Ring</b> (CCRM-79 (Ring Face)) at two sizes; a <b>Number</b> face
@@ -136,8 +136,16 @@
     synthetic-series override (CCRM-15 (Above-Pace Verification)), the Faces gallery
     (CCRM-84 (Faces Gallery)) and the Share Card (CCRM-24 (Share Card)).
   </p>
-  <p class="review">Rev B &mdash; for review. Nothing is approved yet.</p>
+  <p class="review">Rev C &mdash; for review. Four of Robin's calls are in (below); nothing is approved yet.</p>
   <div class="rules-box" style="border-color:var(--accent)">
+    <b>Changes since rev B &mdash; Robin's calls</b>
+    <ul>
+      <li><b>Pace tick, more visible</b>: 3.5 dp on the 9 dp stroke (never under 2.5 dp), round caps, 90% ink with a 1 dp halo in the face colour, overhanging the stroke equally inside and out; the widget bars' tick matches (3 dp) &mdash; every ring and bar.</li>
+      <li><b>Round ends on the usage arc</b>, the red slice included &mdash; no sawn-off ends.</li>
+      <li><b>Background: Solid / Gradient / Transparent</b>. Solid is the account's room card colour; Gradient is a light wash of the account's accent over it; the Strip's Gradient is a neutral wash &mdash; &sect;1, &sect;6.</li>
+      <li><b>Number face: label and figure on one row, the bar underneath</b> (a deliberate departure from the notification's geometry); the label is clamped to what the measured figure leaves (CCBG-24's measure); 4&times;2's control row is pinned to the bottom edge &mdash; &sect;1, &sect;2, &sect;5.</li>
+      <li><b>Layout pass</b>: one padding rule (12 dp cover, 8 dp top/bottom on 84 dp faces, 14 dp inner); Strip rings sized to fit (the spec's Ø88/Ø56 is a ceiling: Ø78 / Ø50 on the cover with four accounts).</li>
+    </ul>
     <b>Changes since rev A</b>
     <ul>
       <li>"Weekly" spelled in full everywhere, no abbreviation; the Strip carries it as a small tag under the figure in the bore instead of lengthening the label &mdash; &sect;2, &sect;6, &sect;7, &sect;9d, &sect;10.</li>
@@ -285,13 +293,15 @@
           s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"/>`;
         } else if (v > 0) {
           s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"
-            stroke-dasharray="${v} 100" pathLength="100" stroke-linecap="${over ? 'butt' : 'round'}"
+            stroke-dasharray="${v} 100" pathLength="100" stroke-linecap="round"
             transform="rotate(-90 ${cx} ${cy})"/>`;
         }
         if (over) {
+          // rev C, Robin: smooth rounded ends on the usage band — the red slice keeps a
+          // round leading end so the arc finishes as one soft cap, not a sawn-off block.
           const e = Math.min(100, o.elapsed);
           s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${dark ? '#FF5252' : '#C62828'}" stroke-width="${stroke}"
-            pathLength="100" stroke-dasharray="0 ${e} ${Math.max(0, v - e)} 100" stroke-linecap="butt"
+            pathLength="100" stroke-dasharray="${Math.max(0, v - e)} 100" stroke-dashoffset="${-e}" stroke-linecap="round"
             transform="rotate(-90 ${cx} ${cy})"/>`;
         }
         // The pace mark (rev B, Robin's call): every ring WITH A FIGURE IN THE
@@ -315,11 +325,17 @@
             s += `<line x1="${cx + hubR * Math.cos(a)}" y1="${cy + hubR * Math.sin(a)}" x2="${cx + rim * Math.cos(a)}" y2="${cy + rim * Math.sin(a)}"
               stroke="${ink(dark, .85)}" stroke-width="${Math.max(1, stroke * 0.20)}" stroke-linecap="round"/>`;
           } else {
-            const overhang = stroke * (3.5 / 12);
+            // rev C, Robin: "more visible than just a thin line" — ~3.5 dp on a 9 dp
+            // stroke (scaled, never under 2.5 dp), round caps, ink at 90%, and a 1 dp
+            // halo in the face's own background colour so it reads on the arc and the track.
+            const overhang = Math.max(2.5, stroke * (3.5 / 12));
             const tickHalf = stroke / 2 + overhang;
-            const tickW = Math.max(1.2, stroke * 0.19);
-            s += `<line x1="${cx + (r - tickHalf) * Math.cos(a)}" y1="${cy + (r - tickHalf) * Math.sin(a)}" x2="${cx + (r + tickHalf) * Math.cos(a)}" y2="${cy + (r + tickHalf) * Math.sin(a)}"
-              stroke="${ink(dark, .5)}" stroke-width="${tickW}" stroke-linecap="round"/>`;
+            const tickW = Math.max(2.5, stroke * 0.39);
+            const halo = o.halo || (dark ? '#141414' : '#FFFFFF');
+            const x1 = cx + (r - tickHalf) * Math.cos(a), y1 = cy + (r - tickHalf) * Math.sin(a);
+            const x2 = cx + (r + tickHalf) * Math.cos(a), y2 = cy + (r + tickHalf) * Math.sin(a);
+            s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${halo}" stroke-width="${tickW + 2}" stroke-linecap="round"/>`;
+            s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${dark ? '#FFFFFF' : '#161618'}" stroke-opacity=".9" stroke-width="${tickW}" stroke-linecap="round"/>`;
           }
         }
         if (v >= 100 && o.spentX) {
@@ -329,7 +345,7 @@
           s += `<line x1="${cx + arm}" y1="${cy - arm}" x2="${cx - arm}" y2="${cy + arm}" stroke="${c2}" stroke-width="${w2}" stroke-linecap="round"/>`;
         }
       }
-      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block">${s}</svg>`;
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;overflow:visible">${s}</svg>`;
     }
     function ringWithFigure(d, stroke, o) {
       o = o || {};
@@ -364,7 +380,7 @@
       }
       let tick = '';
       if (o.paceTick != null) {
-        tick = `<div style="position:absolute;left:${o.paceTick}%;top:-${h * 0.4}px;bottom:-${h * 0.4}px;width:2px;background:${ink(dark, .55)};border-radius:1px"></div>`;
+        tick = `<div style="position:absolute;left:calc(${o.paceTick}% - 1.5px);top:-${h * 0.4}px;bottom:-${h * 0.4}px;width:3px;background:${dark ? '#FFFFFF' : '#161618'};opacity:.9;border-radius:1.5px;box-shadow:0 0 0 1px ${dark ? '#141414' : '#FFFFFF'}"></div>`; // rev C: the widget bar's pace tick matches the ring's — 3 dp, 90% ink, 1 dp halo
       }
       return `<div style="position:relative;width:${w}px;height:${h}px;border-radius:${h / 2}px;background:${track};overflow:visible;margin-top:${h * 0.4 + 1}px">${fill}${tick}</div>`;
     }
@@ -382,19 +398,44 @@
     // ---- tile wrapper: fixed dp box, Solid room card or Transparent over wallpaper ----
     const WALL_LIGHT = 'linear-gradient(135deg,#cfe3f7 0%,#f3ddc8 55%,#eef2f8 100%)';
     const WALL_DARK  = 'linear-gradient(135deg,#141826 0%,#241f3a 55%,#171a22 100%)';
+    // rev C: one padding rule per frame — 12 dp on the cover (8 dp top/bottom on the
+    // one-row 84 dp faces, which cannot spare 24 dp of height), 14 dp on the inner grid.
+    const INNER_WIDTHS = [118, 236, 472];
+    function padFor(w, h) {
+      if (INNER_WIDTHS.includes(w)) return { x: 14, y: 14 };
+      return { x: 12, y: h <= 84 ? 8 : 12 };
+    }
+    function innerW(w, h) { return w - 2 * padFor(w, h).x; }
+    function hexRgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); }
+    function mixHex(a, b, t) { // t of a into b
+      const A = hexRgb(a), B = hexRgb(b);
+      return '#' + A.map((v, i) => Math.round(v * t + B[i] * (1 - t)).toString(16).padStart(2, '0')).join('');
+    }
+    // rev C, Robin: Background is Solid / Gradient / Transparent. Solid is the account's
+    // room card colour (the Black Room stays black, CCRM-76); Gradient is a light wash of
+    // the account's accent over that same card, top-left to bottom-right. The Strip, which
+    // no single account owns, passes no accent and gets a neutral wash.
+    function gradientFor(card, accent, dark) {
+      const to = accent ? mixHex(accent, card, dark ? 0.15 : 0.16) : mixHex(dark ? '#FFFFFF' : '#000000', card, 0.06);
+      const mid = accent ? mixHex(accent, card, dark ? 0.07 : 0.05) : card;
+      return `linear-gradient(135deg,${card} 0%,${mid} 45%,${to} 100%)`;
+    }
     function tile(o) {
       const radius = o.radius != null ? o.radius : 24;
       let bg;
       if (o.bg === 'transparent') bg = o.wallpaper === 'dark' ? WALL_DARK : WALL_LIGHT;
+      else if (o.bg === 'gradient') bg = gradientFor(o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4'), o.accent, o.dark);
       else bg = o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4');
+      const P = padFor(o.w, o.h);
+      const padCss = o.pad != null ? `${o.pad}px` : `${P.y}px ${P.x}px`;
       const textColor = o.dark ? '#EDE8E4' : '#26211E';
       const border = o.bg === 'transparent' ? '' : `border:1px solid ${o.dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'};`;
       const shellOpen = `<div class="tile" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">`;
       if (o.synthetic && o.h >= 160) {
         // Tall enough for the in-flow ribbon (never overlaps content — see synthRibbon).
-        return `${shellOpen}<div style="position:absolute;inset:0;display:flex;flex-direction:column">${synthRibbon()}<div style="flex:1;min-height:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box;overflow:hidden">${o.content}</div></div></div>`;
+        return `${shellOpen}<div style="position:absolute;inset:0;display:flex;flex-direction:column">${synthRibbon()}<div style="flex:1;min-height:0;padding:${padCss};box-sizing:border-box;overflow:hidden">${o.content}</div></div></div>`;
       }
-      return `${shellOpen}<div style="position:absolute;inset:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box">${o.content}</div>${o.synthetic ? synthDot() : ''}</div>`;
+      return `${shellOpen}<div style="position:absolute;inset:0;padding:${padCss};box-sizing:border-box">${o.content}</div>${o.synthetic ? synthDot() : ''}</div>`;
     }
     function tf(tileHtml, caption, w) {
       const capW = w || 240;
@@ -403,11 +444,14 @@
   </script>
 
   <hr class="hr">
-  <h2>1 &middot; Each face at each size &mdash; four backgrounds</h2>
+  <h2>1 &middot; Each face at each size &mdash; Solid, Gradient, Transparent</h2>
   <p class="sub">
-    S1 (normal), dark and light Solid (the account's Room card colour, radius = the system
-    <code>system_app_widget_background_radius</code>, drawn at 24 dp), and Transparent over a
-    light and a dark wallpaper &mdash; including the <b>mismatched</b> case, drawn honestly.
+    S1 (normal) in the three backgrounds Robin asked for (rev C): <b>Solid</b> &mdash; opaque, the
+    account's room card colour; <b>Gradient</b> &mdash; a light wash of the account's accent over
+    that card, top-left to bottom-right; <b>Transparent</b> &mdash; over a light and a dark
+    wallpaper, including the <b>mismatched</b> case, drawn honestly. Corner radius is the system
+    <code>system_app_widget_background_radius</code>, drawn at 24 dp. Padding: 12 dp on the cover
+    (8 dp top and bottom on the one-row 84 dp faces), 14 dp on the inner grid.
     Cover sizes shown; the Fold 7 cover cell is 90.75&times;84 dp (4&times;2 = 363&times;168 dp).
   </p>
   <div id="s1-root"></div>
@@ -421,20 +465,20 @@
 
     // ---- state fixtures, keyed S1..S14 (a face picks what it needs from these) ----
     const ST = {
-      S1: { pct: 47, elapsed: 38, sub: `Resets ${RESET_5H_LABEL}` },
-      S2: { pct: 62, elapsed: 45, sub: `Resets ${RESET_5H_LABEL}` }, // above pace: pct - elapsed > 3
+      S1: { pct: 38, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` },
+      S2: { pct: 62, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` }, // above pace: pct - elapsed > 3
       S3: { pct: 100, elapsed: 70, sub: `Resets ${RESET_5H_LABEL}` },
       S4: { pct: 31, elapsed: 52, sub: `Resets ${RESET_WEEKLY_LABEL}`, weeklyOnly: true },
       S5: { pct: null, elapsed: null, sub: 'Starts when a message is sent' },
       S6: { pct: null, elapsed: null, sub: `Reset ${RESET_5H_LABEL}`, noReading: true },
-      S7: { pct: 47, elapsed: 38, sub: 'Sign-in needed', broken: true },
-      S8: { pct: 47, elapsed: 38, sub: 'Stale', stale: true },
+      S7: { pct: 38, elapsed: 46, sub: 'Sign-in needed', broken: true },
+      S8: { pct: 38, elapsed: 46, sub: 'Stale', stale: true },
       S9: { removed: true },
-      S10u: { unassigned: true, pct: 47, elapsed: 38, sub: `Resets ${RESET_5H_LABEL}` },
+      S10u: { unassigned: true, pct: 38, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` },
       S10n: { noAccounts: true },
-      S11: { pct: 47, elapsed: 38, left: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S11: { pct: 38, elapsed: 46, left: true, sub: `Resets ${RESET_5H_LABEL}` },
       S12: { free: true },
-      S13: { pct: 47, elapsed: 38, synthetic: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S13: { pct: 38, elapsed: 46, synthetic: true, sub: `Resets ${RESET_5H_LABEL}` },
       S14: { unavailable: true },
     };
     const STATE_ORDER = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14'];
@@ -498,9 +542,14 @@
       let labelText = label;
       if (st.weeklyOnly) labelText += ' · Weekly';
       if (stateKey === 'S11') labelText += ' · left';
-      return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+      // rev C: an empty extent means two different things; the Ring bears no time, so
+      // S5 says so in words on the label line (as the Strip does), S6 stays bare.
+      if (stateKey === 'S5') labelText += ' · not started';
+      // Q11 (rev C): the Ring's corners are too small for the stamp, so it trails the label.
+      const ringStamp = '';
+      return `<div style="height:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">${ringStamp}
         ${ringHtml}
-        ${labelRow(effA, effColor, labelText, 12, 12, dark, { dim: dimAll, dot, weight: 500 })}
+        <div style="display:flex;align-items:center;gap:6px">${labelRow(effA, effColor, labelText, 12, 12, dark, { dim: dimAll, dot, weight: 500 })}${opts.asOf ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">· as of ${NOW_LABEL}</span>` : ''}</div>
       </div>`;
     }
 
@@ -529,53 +578,76 @@
       // suffix there and mark unassigned with a small corner tag instead; from
       // 4×1 up (260dp) there's room to say it inline.
       const compact2x1 = isUnassigned && bucket === '2x1';
-      let labelText = compact2x1 ? label : (st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`);
+      // rev C: at 2×1 a weekly-only account's label is the name alone, with "Weekly" as a
+      // small second line in the label column (the 32 sp row has the height for it), so
+      // the tag survives where "ChatGPT · Weekly" on one line would ellipsize.
+      const weekly2x1 = st.weeklyOnly && bucket === '2x1';
+      let labelText = (compact2x1 || weekly2x1) ? label : (st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`);
       if (isUnassigned && !compact2x1) labelText = `${label} (unassigned)${st.weeklyOnly ? ' · Weekly' : ' · 5h'}`;
-      const availLabel = bucket === '2x1' ? 90 : bucket === '4x1' ? 260 : 260;
-      const unassignedTag = compact2x1 ? `<div style="position:absolute;top:4px;right:4px;font-size:7px;font-weight:700;letter-spacing:.04em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;z-index:3">UNASSIGNED</div>` : '';
+      // rev C, Robin: the label and the figure share ONE row — label on the left,
+      // baseline-aligned to the 32 sp figure on the right — with the full-width 8 dp
+      // bar underneath. A deliberate departure from the notification's collapsed
+      // geometry. The label gets exactly what the measured figure leaves, which is
+      // CCBG-24 (Duet Label Clamp)'s measure-and-clamp applied here too.
+      const IW = innerW(w, h);
+      // rev C layout pass: 4×2 has 144–172 dp of height for one reading, so its figure
+      // grows to 44 sp over a 10 dp bar and the reading is centred above the control row,
+      // instead of 32 sp stranded at the top with a dead band under it.
+      const big = bucket === '4x2';
+      const figPx = big ? 44 : 32, barH = big ? 10 : 8, lblPx = big ? 14 : 13;
+      const showLeftCap = stateKey === 'S11' && bucket !== '2x1'; // below 4×1 the LEFT caption drops
+      const figW = textPx(pctText, figPx, 700) + (showLeftCap ? textPx('LEFT', 10, 400) + 4 : 0);
+      const availLabel = Math.floor(IW - figW - 10 - 14 - 4 - (dot ? 10 : 0));
+      const unassignedTag = compact2x1 ? `<span style="font-size:7.5px;font-weight:700;letter-spacing:.05em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;margin-left:18px;align-self:flex-start">UNASSIGNED</span>` : '';
 
-      const row1 = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        ${labelRow(effA, color, labelText, 14, 13, dark, { dim: dimAll, dot, fit: availLabel, weight: 500 })}
+      const figGroup = `<div style="display:flex;align-items:baseline;gap:4px;flex:0 0 auto;${dimAll ? 'opacity:.5' : ''}">
+        <span style="font-size:${figPx}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em">${pctText}</span>
+        ${showLeftCap ? '<span style="font-size:10px;font-weight:600;letter-spacing:.08em;opacity:.75">LEFT</span>' : ''}
       </div>`;
-      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 8, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick })}</div>`;
-      const figRow = `<div style="display:flex;align-items:baseline;justify-content:flex-end;gap:4px;${dimAll ? 'opacity:.5' : ''}">
-        <span style="font-size:32px;font-weight:700;line-height:1">${pctText}</span>
-        ${stateKey === 'S11' ? '<span style="font-size:10px;letter-spacing:.08em;opacity:.75">LEFT</span>' : ''}
+      const row1 = `<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+        <div style="min-width:0;display:flex;flex-direction:column;gap:2px;padding-bottom:3px">${unassignedTag}${labelRow(effA, color, labelText, 14, lblPx, dark, { dim: dimAll, dot, fit: availLabel, weight: 500 })}${weekly2x1 ? `<span style="font-size:10px;font-weight:600;opacity:.75;margin-left:18px">Weekly</span>` : ''}</div>
+        ${figGroup}
       </div>`;
+      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(IW, barH, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick })}</div>`;
 
       if (bucket === '2x1') {
-        return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:center;gap:2px">${unassignedTag}${row1}${bar}${figRow}</div>`;
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${row1}${bar}</div>`;
       }
       // The sub-line is always the absolute reset (R4) — S7 keeps it too (item 11):
       // a broken sign-in dims the last snapshot, it doesn't hide when it resets.
       let subText;
       if (stateKey === 'S8') subText = 'Stale';
+      else if (stateKey === 'S5') subText = 'Starts when a message is sent';
       else if (stateKey === 'S6') subText = `Reset ${RESET_5H_LABEL}`;
       else subText = st.weeklyOnly ? `Resets ${RESET_WEEKLY_LABEL}` : `Resets ${RESET_5H_LABEL}`;
-      const subLine = `<div style="font-size:12px;opacity:.78;margin-top:4px;${dimAll ? 'opacity:.5' : ''}">${fitSpan(subText, 12, 400, w - 14)}</div>`;
+      // Q11 (rev C): the "as of" stamp, when kept, sits at the right end of the sub-line.
+      const stampHtml = opts.asOf ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>` : '';
+      const subLine = `<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:5px"><span style="font-size:12px;line-height:1.2;opacity:${dimAll ? .5 : .78}">${fitSpan(subText, 12, 400, IW - (opts.asOf ? 80 : 0))}</span>${stampHtml}</div>`;
 
       if (bucket === '4x1') {
-        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}${subLine}</div>`;
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${row1}${bar}${subLine}</div>`;
       }
-      // 4x2: control row — [5h|Weekly] chips (only the windows the account has) + cycler
+      // 4x2: the reading on top, the 28 dp control row pinned to the bottom edge —
+      // [5h|Weekly] chips (only the windows the account has) + the account cycler.
       const hasBoth = !effA.weeklyOnly;
-      const nextIdx = (ACCOUNTS.findIndex(x => x.key === effA.key) + 1) % ACCOUNTS.length;
       const chips = hasBoth
         ? `<div style="display:flex;gap:6px">
-             <span style="height:20px;padding:0 9px;border-radius:10px;background:${color};color:${dark ? '#1A1A1A' : '#fff'};font-size:10.5px;font-weight:700;display:flex;align-items:center">5h</span>
-             <span style="height:20px;padding:0 9px;border-radius:10px;border:1px solid ${ink(dark, .3)};font-size:10.5px;display:flex;align-items:center;opacity:.8">Weekly</span>
+             <span style="height:24px;padding:0 11px;border-radius:12px;background:${color};color:${dark ? '#1A1A1A' : '#fff'};font-size:11px;font-weight:700;display:flex;align-items:center">5h</span>
+             <span style="height:24px;padding:0 11px;border-radius:12px;border:1px solid ${ink(dark, .28)};font-size:11px;display:flex;align-items:center;opacity:.85">Weekly</span>
            </div>`
-        : `<span style="height:20px;padding:0 8px;border-radius:4px;border:1px dashed ${ink(dark, .35)};font-size:10.5px;display:flex;align-items:center;opacity:.8;font-style:italic">Weekly</span>`;
-      const cycler = `<div style="font-size:11px;font-weight:600;opacity:.9;display:flex;align-items:center;gap:3px">${label} <span style="opacity:.6">⇄</span></div>`;
-      const ctrl = `<div style="height:28px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid ${ink(dark, .1)};padding-top:6px">${chips}${cycler}</div>`;
-      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}${subLine}${ctrl}</div>`;
+        : `<span style="height:24px;padding:0 8px;border-radius:6px;background:${ink(dark, .08)};font-size:11px;display:flex;align-items:center;opacity:.8">Weekly</span>`;
+      const cycler = `<div style="height:24px;padding:0 10px;border-radius:12px;background:${ink(dark, .08)};font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px">${mark(effA.provider, 12, color)}${label} <span style="opacity:.6">⇄</span></div>`;
+      const ctrl = `<div style="height:28px;display:flex;align-items:center;justify-content:space-between">${chips}${cycler}</div>`;
+      return `<div style="height:100%;display:flex;flex-direction:column">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px">${row1}${bar}${subLine}</div>${ctrl}</div>`;
     }
 
     // ------------------------------------------------------------ Countdown (CCRM-81)
     function countdownFace(bucket, a, stateKey, dark, opts) {
       opts = opts || {};
       const st = ST[stateKey] || ST.S1;
-      const [w] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      const [w, h] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      const IW = innerW(w, h);
       if (stateKey === 'S9') return msgBody('Account removed · tap to choose', 11, dark);
       if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
       if (stateKey === 'S12') return msgBody('No usage on this plan', 11, dark);
@@ -587,7 +659,9 @@
       if (stateKey === 'S8') dimAll = true;
       const color = accentFor(effA, dark);
       const windowWord = st.weeklyOnly ? 'Weekly' : '5h';
-      const resetLabel = st.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL;
+      // R2: the day is added only when the reset is more than 24 h away — inside the last
+      // 24 h (forceLive) the Weekly clock time drops its day.
+      const resetLabel = (st.weeklyOnly && !opts.forceLive) ? RESET_WEEKLY_LABEL : RESET_5H_LABEL;
       const isLeft = stateKey === 'S11';
       const bottomText = `${label} · ${windowWord}${isLeft ? ' · left' : ''}`;
       const bottom = labelRow(effA, color, bottomText, 11, 11, dark, { dim: dimAll, dot, weight: 500 });
@@ -606,37 +680,52 @@
       // Weekly outside the last 24h (the default S4) is absolute, no chronometer —
       // and S6 (reset passed) is the past-tense absolute "Reset 9:10 PM", no count
       // either. `opts.forceLive` is only used by §4's "inside 24h" illustration.
+      // rev C layout pass: the "● live" wireframe note moves out of the layout into the
+      // tile's top-right corner, so the count sits flush left like the real face will.
+      const big = bucket === '2x2';
+      const countPx = big ? 28 : 24;
       const weeklyAbsolute = st.weeklyOnly && !opts.forceLive;
-      let mainRow;
+      const isLive = !(stateKey === 'S6' || weeklyAbsolute);
+      const liveNote = isLive ? `<span class="liv" style="position:absolute;top:0;right:0;opacity:.85">● live</span>` : '';
+      const dimCss = dimAll ? 'opacity:.5;' : '';
+      let countBlock;
       if (stateKey === 'S6') {
-        mainRow = `<div style="font-size:24px;font-weight:700;line-height:1;${dimAll ? 'opacity:.5' : ''}">Reset ${RESET_5H_LABEL}</div>`;
+        countBlock = `<div style="font-weight:700;line-height:1.1;${dimCss}">${fitSpan(`Reset ${RESET_5H_LABEL}`, big ? 22 : 20, 700, IW)}</div>`;
       } else if (weeklyAbsolute) {
-        mainRow = `<div style="font-weight:700;line-height:1.15;${dimAll ? 'opacity:.5' : ''}">${fitSpan(`Resets ${resetLabel}`, opts.weeklyFontSize || 24, 700, w - 14)}</div>`;
+        // rev C: the caption already says "Weekly reset", so the absolute form is the clock
+        // time alone at the count's size — "Sat 9:10 PM" fits 2×1 where "Resets Sat 9:10 PM" did not.
+        countBlock = `<div style="font-weight:700;line-height:1.1;${dimCss}">${fitSpan(resetLabel, opts.weeklyFontSize || 24, 700, IW)}</div>`;
       } else {
         const countText = opts.countText || '2:41:07';
-        mainRow = `<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;${dimAll ? 'opacity:.5' : ''}">
-          <span class="liv" style="opacity:.8">● live</span>
-          <span style="font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${countText}</span>
-          ${fitSpan(`at ${resetLabel}`, 11, 400, w - 100, 'opacity:.78')}
-        </div>`;
+        const count = `<span style="font-size:${countPx}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em">${countText}</span>`;
+        const atTxt = `at ${resetLabel}`;
+        countBlock = big
+          ? `<div style="${dimCss}">${count}<div style="font-size:12px;opacity:.78;margin-top:3px">${fitSpan(atTxt, 12, 400, IW)}</div></div>`
+          : `<div style="display:flex;align-items:baseline;gap:6px;${dimCss}">${count}${fitSpan(atTxt, 11, 400, Math.max(40, IW - textPx(countText, countPx, 700) - 6), 'opacity:.78')}</div>`;
       }
 
       if (bucket === '2x1') {
-        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${capLine}${mainRow}${bottom}</div>`;
+        return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px">${liveNote}${capLine}${countBlock}${bottom}</div>`;
       }
-      // 2×2: an 18sp figure over a 6dp bar and, only where an estimate is
-      // meaningful, "~ runs out …" (item 5) — never at 100% (S3), S4, S5 or S6;
-      // dimmed (not hidden) at S7/S8's last-known snapshot; kept at S1/S2/S11/S13.
+      // 2×2: the count on top; then the 18 sp figure on the left with, only where the
+      // projection says the window runs dry before it resets, "~ runs out …" on the
+      // right (CCRM-30 (Estimate Honesty)'s "~"); the 6 dp bar under both; the account
+      // line pinned to the bottom. Most days there is no estimate and the row holds
+      // the figure alone.
       const pctText = fmtPct(st, isLeft) ?? '—';
-      const figLine = stateKey === 'S6'
-        ? `<div style="font-size:18px;font-weight:700;opacity:.5">—</div>`
-        : `<div style="display:flex;align-items:baseline;gap:4px;${dimAll ? 'opacity:.5' : ''}"><span style="font-size:18px;font-weight:700;line-height:1">${pctText}</span>${isLeft ? '<span style="font-size:8.5px;letter-spacing:.08em;opacity:.8">LEFT</span>' : ''}</div>`;
-      const barLine = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading || stateKey === 'S6', paceTick: st.elapsed })}</div>`;
-      const NO_ESTIMATE = ['S3', 'S4', 'S5', 'S6'];
-      const showEst = opts.showEstimate != null ? opts.showEstimate : !NO_ESTIMATE.includes(stateKey);
-      const estimateAt = opts.estimateAt || (stateKey === 'S2' ? '8:10 PM' : '8:52 PM');
-      const estLine = showEst ? `<div style="font-size:11px;opacity:${dimAll ? .5 : .75};margin-top:2px">~ runs out ${estimateAt}</div>` : '';
-      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:3px">${capLine}${mainRow}${figLine}${barLine}${estLine}${bottom}</div>`;
+      const fig = stateKey === 'S6'
+        ? `<span style="font-size:18px;font-weight:700;opacity:.5">—</span>`
+        : `<span style="display:flex;align-items:baseline;gap:4px;${dimCss}"><span style="font-size:18px;font-weight:700;line-height:1">${pctText}</span>${isLeft ? '<span style="font-size:8.5px;font-weight:600;letter-spacing:.08em;opacity:.8">LEFT</span>' : ''}</span>`;
+      const EST_STATES = ['S2'];
+      const showEst = opts.showEstimate != null ? opts.showEstimate : EST_STATES.includes(stateKey);
+      const estimateAt = opts.estimateAt || '7:54 PM';
+      const est = showEst ? `<span style="font-size:11px;opacity:${dimAll ? .5 : .78}">~ runs out ${estimateAt}</span>` : '';
+      const figRow = `<div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px">${fig}${est}</div>`;
+      const barLine = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(IW, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading || stateKey === 'S6', paceTick: st.elapsed })}</div>`;
+      return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:space-between">${liveNote}
+        <div style="display:flex;flex-direction:column;gap:3px">${capLine}${countBlock}</div>
+        <div style="display:flex;flex-direction:column;gap:2px">${figRow}${barLine}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">${bottom}${opts.asOf ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>` : ''}</div></div>`;
     }
 
     // ------------------------------------------------------------------ Strip (CCRM-82)
@@ -646,7 +735,7 @@
     // S11, S12) is "per ring". Weekly is a small tag under the figure in the
     // bore (ringWithFigure's subTag), not a label suffix — see item 1, §10.
     const STRIP_BASE = {
-      pro: { pct: 62, elapsed: 45 }, teams: { pct: 24, elapsed: 20 },
+      pro: { pct: 62, elapsed: 66 }, teams: { pct: 24, elapsed: 30 },
       product: { pct: 8, elapsed: 12 }, chatgpt: { pct: 31, elapsed: 40 },
       research: { pct: 15, elapsed: 18 },
     };
@@ -662,11 +751,19 @@
       if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
       if (stateKey === 'S14') return msgBody(bucket === '4x1' ? 'Update Cooldown' : 'Unavailable in this version · update Cooldown', 11, dark);
       const isBig = bucket === '4x2';
-      const d = isBig ? 88 : 56;
+      const [, hh] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      const IW = innerW(w, hh), IH = hh - 2 * padFor(w, hh).y;
+      // rev C fit: the spec's Ø88 / Ø56 is a ceiling. Four rings share the inner width
+      // with 6 dp gaps, and the ring + label (+ reset) must fit the inner height —
+      // on the cover that is Ø78 at 4×2 and Ø50 at 4×1 (see the note under §1).
+      const nCells = Math.min(4, accountsList.length) + (accountsList.length > 4 ? 1 : 0);
+      const byW = Math.floor((IW - 6 * (nCells - 1)) / Math.max(1, nCells));
+      const byH = Math.floor(IH - (isBig ? 14 + 13 + 6 : 12 + 3));
+      const d = Math.min(isBig ? 88 : 56, byW, byH);
       const stroke = isBig ? 6 : 5;
       const figSize = isBig ? 18 : 13;
       const labelSize = isBig ? 11 : 9.5;
-      const subTagSize = isBig ? 7.5 : 6;
+      const subTagSize = isBig ? 9 : 8; // rev C: 8 sp is the floor for legible text on a phone
       const targetKey = opts.target || 'teams';
       const centered = stateKey === 'S9' || accountsList.length <= 1;
 
@@ -674,7 +771,7 @@
       const overflowCount = accountsList.length > 4 ? accountsList.length - 4 : 0;
       if (stateKey === 'S9') list = list.filter(x => x.key !== targetKey);
       const cellCount = list.length + (overflowCount ? 1 : 0);
-      const cellW = Math.floor((w - 8) / Math.max(1, cellCount));
+      const cellW = Math.floor((IW - 6 * (cellCount - 1)) / Math.max(1, cellCount));
       const faceWideNormal = ['S1', 'S4', 'S13'].includes(stateKey);
 
       const cells = list.map(a => {
@@ -722,8 +819,10 @@
         </div>`;
       }).join('');
       const plusCell = overflowCount ? `<div style="flex:0 0 ${d}px;display:flex;align-items:center;justify-content:center;font-size:${figSize}px;font-weight:700;opacity:.7">+${overflowCount}</div>` : '';
-      const justify = centered ? 'center' : 'space-around';
-      const gap = centered ? '18px' : '4px';
+      const justify = centered ? 'center' : 'space-between';
+      const gap = centered ? '18px' : '6px';
+      const row = `<div style="display:flex;align-items:center;justify-content:${justify};gap:${gap};width:100%">${cells}${plusCell}</div>`;
+      if (opts.asOf) return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px">${row}<div style="text-align:right">${`<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>`}</div></div>`;
       return `<div style="height:100%;display:flex;align-items:center;justify-content:${justify};gap:${gap}">${cells}${plusCell}</div>`;
     }
   </script>
@@ -753,9 +852,13 @@
             };
             const ccDark = e.face === 'strip' ? CLAUDE_DARK.card : roomCard(acc('pro'), true);
             const ccLight = e.face === 'strip' ? CLAUDE_LIGHT.card : roomCard(acc('pro'), false);
+            const accDark = e.face === 'strip' ? null : accentFor(acc('pro'), true); // the Strip's wash is neutral
+            const accLight = e.face === 'strip' ? null : accentFor(acc('pro'), false);
             const variants = [
               { bg: 'solid', dark: true, cc: ccDark, label: 'Solid · dark' },
               { bg: 'solid', dark: false, cc: ccLight, label: 'Solid · light' },
+              { bg: 'gradient', dark: true, cc: ccDark, accent: accDark, label: 'Gradient · dark' },
+              { bg: 'gradient', dark: false, cc: ccLight, accent: accLight, label: 'Gradient · light' },
               { bg: 'transparent', dark: true, wallpaper: 'dark', label: 'Transparent · dark theme on dark wallpaper' },
               { bg: 'transparent', dark: false, wallpaper: 'light', label: 'Transparent · light theme on light wallpaper' },
               { bg: 'transparent', dark: true, wallpaper: 'light', label: 'Transparent · dark theme, LIGHT wallpaper — mismatched' },
@@ -763,7 +866,7 @@
             ];
             const row = variants.map(v => {
               const content = renderFn(v.dark);
-              const t = tile({ w, h, bg: v.bg, dark: v.dark, wallpaper: v.wallpaper, cardColor: v.cc, content });
+              const t = tile({ w, h, bg: v.bg, dark: v.dark, wallpaper: v.wallpaper, cardColor: v.cc, accent: v.accent, content });
               return tf(t, v.label, w);
             }).join('');
             html += `<h4>${faceLabel(e.face, bucket)} · ${frame} ${w}×${h} dp${frame === 'inner' ? ' <span class="unver">unverified until Step 7</span>' : ''}</h4><div class="scroll" style="white-space:nowrap">${row}</div>`;
@@ -775,9 +878,11 @@
     section1();
   </script>
   <p class="note wide">
-    <b>Strip's Solid colour</b>: the Strip has no single account, so "Solid" here uses a neutral
-    card tint (the Claude room's own card colour) rather than any one account's accent &mdash; open
-    for Robin, see Q in &sect;10.
+    <b>Strip's Solid and Gradient</b>: the Strip has no single account, so Solid uses the neutral
+    card (#1A1A1A / #FCF8F4) and Gradient a neutral wash, rather than any one account's accent
+    &mdash; open for Robin, see &sect;10. <b>Strip ring size</b>: the spec's Ø88 / Ø56 are ceilings;
+    on the cover four rings take Ø78 at 4&times;2 and Ø50 at 4&times;1, which is what fits the
+    inner box with 6 dp gaps and the label (&sect;10).
   </p>
   <p class="note wide">
     <b>Mismatched Transparent is drawn honestly above</b> and it is not legible: the dark theme's
@@ -792,8 +897,9 @@
     centre hub, running straight through that text. Robin's call: drop the needle and hub on every
     such ring and draw the pace position the way the app's own bars already do &mdash;
     <code>.bartick</code> in <code>design/2026-09-17-main-screen-redesign.html</code>, a short
-    straight tick across the stroke, overhanging equally inside and out, ink at 50% opacity. It
-    never reaches the bore and never reads as a hand. <b>The 24 dp status-bar icon is the one
+    straight tick across the stroke, overhanging equally inside and out. Rev C, Robin again: "more
+    visible than just a thin line" &mdash; 3.5 dp on the 9 dp stroke, round caps, 90% ink, a 1 dp
+    halo in the face colour. It never reaches the bore and never reads as a hand. <b>The 24 dp status-bar icon is the one
     exception</b> &mdash; it has no text in its bore to protect, and CCRM-83 (Ring Renderer)
     requires it to stay pixel-equivalent to <code>UsageIcon.railsGauge</code>, so it keeps the
     needle and hub unchanged; the widgets use a pace-tick variant of the same renderer.</p>
@@ -811,7 +917,7 @@
         const after = ringWithFigure(d, stroke, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, showRed: true, spentX: true, figure: '62%', figSize, needleStyle: 'tick' });
         const wrap = (inner) => `<div style="height:100%;display:flex;align-items:center;justify-content:center">${inner}</div>`;
         html += tf(tile({ w, h: boxH, bg: 'solid', dark: true, cardColor: cc, content: wrap(before) }), `Ring ${bucket.replace('x', '×')} &mdash; rev A: hub-pinned needle runs through "62%"`, w);
-        html += tf(tile({ w, h: boxH, bg: 'solid', dark: true, cardColor: cc, content: wrap(after) }), `Ring ${bucket.replace('x', '×')} &mdash; rev B, Robin's choice: a straight pace tick on the stroke, clear of the figure`, w);
+        html += tf(tile({ w, h: boxH, bg: 'solid', dark: true, cardColor: cc, content: wrap(after) }), `Ring ${bucket.replace('x', '×')} &mdash; Robin's choice (rev C weight): a bold pace tick on the stroke, clear of the figure`, w);
       });
       html += '</div>';
       root.innerHTML = html;
@@ -987,19 +1093,17 @@
       html += tf(ctile('41:23'), 'Under one hour: MM:SS ("41:23")', w);
       html += tf(ctile('−0:05:12', { }), 'Past zero: the negative count ("−0:05:12"), true clock time beside it &mdash; illustrative: now 9:15:12 PM, window reset 9:10 PM', w);
       html += '</div><div class="row">';
-      html += tf(wtile({}), `S4, outside the last 24h (the default): absolute only, no chronometer &mdash; "Resets ${RESET_WEEKLY_LABEL}"`, w);
-      html += tf(wtile({ forceLive: true, countText: '19:03:44' }), 'S4, inside the last 24h: the transition alarm has switched it to live ticking (same H:MM:SS face) &mdash; caption and account line read Weekly, not 5h', w);
-      html += '</div><div class="row">';
-      html += tf(wtile({ weeklyFontSize: 17, id: 'q4-weekly-fallback' }), '⚠ at 24sp "Resets Sat 9:10 PM" ellipsizes (flagged above) &mdash; proposed fallback: drop to 17sp for the Weekly-outside-24h case only, everything else stays 24sp', w);
+      html += tf(wtile({}), `S4, outside the last 24h (the default): absolute only, no chronometer &mdash; the caption says "Weekly reset", the face says "${RESET_WEEKLY_LABEL}" at the count's 24 sp (rev C: fits, where "Resets Sat 9:10 PM" did not)`, w);
+      html += tf(wtile({ forceLive: true, countText: '19:03:44' }), 'S4, inside the last 24h: the transition alarm has switched it to live ticking (same H:MM:SS face) &mdash; caption and account line read Weekly, and the clock time drops its day because it is under 24 h away (R2)', w);
       html += '</div>';
       const [w2, h2] = COVER['2x2'];
-      const withEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: true, estimateAt: '8:52 PM' });
+      const withEst = countdownFace('2x2', acc('pro'), 'S2', true, { countText: '2:41:07', showEstimate: true });
       const noEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: false });
       const at100 = countdownFace('2x2', acc('pro'), 'S3', true, { countText: '2:41:07' });
       const notStarted = countdownFace('2x2', acc('pro'), 'S5', true, {});
       const resetPassed = countdownFace('2x2', acc('pro'), 'S6', true, {});
       html += '<div class="row">';
-      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: withEst }), '2×2 with the estimate line &mdash; only when Projection.estimate is non-null ("~" is CCRM-30 (Estimate Honesty)\'s marker); kept at S1/S2', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: withEst }), '2×2 with the estimate line &mdash; only when Projection.estimate is non-null ("~" is CCRM-30 (Estimate Honesty)\'s marker) &mdash; at S2 here: 62% at 46% of the window runs dry at 7:54 PM, before the 9:10 PM reset; S1 at 38% never does', w2);
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: noEst }), '2×2 with no estimate &mdash; most days: the line is simply absent, no placeholder', w2);
       html += '</div><div class="row">';
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: at100 }), 'S3, 100%: the count keeps ticking to the real reset, but never an estimate &mdash; there is nothing left to run out', w2);
@@ -1041,7 +1145,7 @@
       const both = numberFace('4x2', acc('pro'), 'S1', true, {});
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: both }), 'Pro has 5h + Weekly → both chips, 5h selected', w2);
       const single = numberFace('4x2', acc('chatgpt'), 'S4', true, {});
-      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: single }), 'ChatGPT is weekly-only → a fixed, non-interactive "Weekly" tag (dashed border, no fill — visibly not a chip), no chips to tap', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: single }), 'ChatGPT is weekly-only → a fixed, non-interactive "Weekly" tag (a flat tinted label, no outline — visibly not a chip), no chips to tap', w2);
       const beforeContent = numberFace('4x2', acc('pro'), 'S1', true, {});
       const afterContent = numberFace('4x2', acc('teams'), 'S1', true, {});
       html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: beforeContent }), 'Cycler before: showing Pro', w2);
@@ -1057,7 +1161,7 @@
     <code>WidgetConfigActivity</code>, 360 dp wide, light and dark. Controls: Account (chips with
     provider marks &mdash; absent for the Strip, which shows every account by design), Window
     (5h / Weekly &mdash; hidden when the account has one window; absent on the Strip, which is
-    fixed to each account's headline window) and Background (Solid / Transparent, default Solid).
+    fixed to each account's headline window) and Background (Solid / Gradient / Transparent, default Solid).
     A live preview sits at top. Reconfigure (long-press &rarr; "Widget settings") is the same
     screen with "Save changes" instead of "Add widget".
   </p>
@@ -1069,22 +1173,24 @@
         const dark = o.dark;
         const surf = dark ? '#0D0D0D' : '#F5EFE8';
         const cardInk = dark ? '#EDE8E4' : '#26211E';
+        const chipBorder = dark ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.16)'; // rev C: same outline in both themes
         const accChips = ACCOUNTS.map(a => {
           const sel = a.key === o.account.key;
           const color = accentFor(a, dark);
-          return `<div class="fchip3${sel ? ' sel' : ''}" style="background:${sel ? color : 'transparent'};color:${sel ? (dark ? '#1A1A1A' : '#fff') : cardInk}">${mark(a.provider, 14, sel ? (dark ? '#1A1A1A' : '#fff') : color)}${a.label}</div>`;
+          return `<div class="fchip3${sel ? ' sel' : ''}" style="border:1px solid ${chipBorder};background:${sel ? color : 'transparent'};color:${sel ? (dark ? '#1A1A1A' : '#fff') : cardInk}">${mark(a.provider, 14, sel ? (dark ? '#1A1A1A' : '#fff') : color)}${a.label}</div>`;
         }).join('');
         const winRow = o.face === 'strip' ? `<div class="note" style="margin:0">Fixed to each account's headline window &mdash; no control here.</div>`
           : (o.showWindow === false ? `<div class="note" style="margin:0">${o.account.label} has one window &mdash; no control needed.</div>`
-            : `<div class="chiprow2"><div class="fchip3${o.window === '5h' ? ' sel' : ''}" style="background:${o.window === '5h' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === '5h' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">5h</div><div class="fchip3${o.window === 'Weekly' ? ' sel' : ''}" style="background:${o.window === 'Weekly' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === 'Weekly' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Weekly</div></div>`);
-        const bgRow = `<div class="chiprow2"><div class="fchip3${o.bg === 'Solid' ? ' sel' : ''}" style="background:${o.bg === 'Solid' ? accentFor(o.account, dark) : 'transparent'};color:${o.bg === 'Solid' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Solid</div><div class="fchip3${o.bg === 'Transparent' ? ' sel' : ''}" style="background:${o.bg === 'Transparent' ? accentFor(o.account, dark) : 'transparent'};color:${o.bg === 'Transparent' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Transparent</div></div>`;
-        return `<div class="phone room" style="background:${surf};color:${cardInk}">
+            : `<div class="chiprow2"><div class="fchip3${o.window === '5h' ? ' sel' : ''}" style="border:1px solid ${chipBorder};background:${o.window === '5h' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === '5h' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">5h</div><div class="fchip3${o.window === 'Weekly' ? ' sel' : ''}" style="border:1px solid ${chipBorder};background:${o.window === 'Weekly' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === 'Weekly' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Weekly</div></div>`);
+        const bgChip = (name) => `<div class="fchip3${o.bg === name ? ' sel' : ''}" style="border:1px solid ${chipBorder};background:${o.bg === name ? accentFor(o.account, dark) : 'transparent'};color:${o.bg === name ? (dark ? '#1A1A1A' : '#fff') : cardInk}">${name}</div>`;
+        const bgRow = `<div class="chiprow2">${bgChip('Solid')}${bgChip('Gradient')}${bgChip('Transparent')}</div>`;
+        return `<div class="phone room" style="border:1px solid ${chipBorder};background:${surf};color:${cardInk}">
           <div class="topbar"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#icoBack"/></svg><span>${o.title || 'Add widget'}</span></div>
           <div style="padding:8px 16px 16px;display:flex;justify-content:center">${o.previewHtml}</div>
           <div class="cfgrow"><div class="cfglabel">Account${o.face === 'strip' ? ' — not shown, the Strip carries every account' : ''}</div>${o.face === 'strip' ? '' : `<div class="chiprow2">${accChips}</div>`}</div>
           <div class="cfgrow"><div class="cfglabel">Window</div>${winRow}</div>
           <div class="cfgrow"><div class="cfglabel">Background</div>${bgRow}</div>
-          <div class="primbtn" style="background:${accentFor(o.account, dark)};color:${dark ? '#1A1A1A' : '#fff'}">${o.save ? 'Save changes' : 'Add widget'}</div>
+          <div class="primbtn" style="border:1px solid ${chipBorder};background:${accentFor(o.account, dark)};color:${dark ? '#1A1A1A' : '#fff'}">${o.save ? 'Save changes' : 'Add widget'}</div>
         </div>`;
       }
       const numPreview = numberFace('2x1', acc('pro'), 'S1', true, {});
@@ -1095,7 +1201,7 @@
       html += tf(cfgScreen({ dark: true, face: 'number', account: acc('pro'), window: '5h', bg: 'Solid', showWindow: true, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: numPreview }) }), 'Number, add flow, dark — Pro has both windows', 360);
       html += tf(cfgScreen({ dark: false, face: 'number', account: acc('pro'), window: '5h', bg: 'Solid', showWindow: true, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: false, cardColor: roomCard(acc('pro'), false), content: numberFace('2x1', acc('pro'), 'S1', false, {}) }) }), 'Number, add flow, light', 360);
       html += '</div><div class="row">';
-      html += tf(cfgScreen({ dark: true, face: 'countdown', account: acc('chatgpt'), window: 'Weekly', bg: 'Solid', showWindow: false, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: cdPreview }) }), 'Countdown, single-window account (ChatGPT, weekly-only) — Window control hidden', 360);
+      html += tf(cfgScreen({ dark: true, face: 'countdown', account: acc('chatgpt'), window: 'Weekly', bg: 'Gradient', showWindow: false, previewHtml: tile({ w: 181, h: 84, bg: 'gradient', dark: true, cardColor: roomCard(acc('chatgpt'), true), accent: accentFor(acc('chatgpt'), true), content: cdPreview }) }), 'Countdown, single-window account (ChatGPT, weekly-only) — Window control hidden', 360);
       html += tf(cfgScreen({ dark: true, face: 'strip', account: acc('pro'), window: '5h', bg: 'Transparent', showWindow: true, title: 'Widget settings', save: true, previewHtml: tile({ w: 363, h: 84, bg: 'transparent', dark: true, wallpaper: 'dark', content: stripPreview }) }), 'Accounts Strip — no Account, no Window; reconfigure via long-press ("Widget settings" / "Save changes")', 360);
       html += '</div>';
       root.innerHTML = html;
@@ -1108,13 +1214,13 @@
   <script>
     (function () {
       const items = [
-        { name: 'Ring', desc: 'One account’s usage as a small gauge.', size: '2×2 (also 1×1)', prev: () => tile({ w: 130, h: 130, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: ringFace('2x2', acc('pro'), 'S1', true, {}), radius: 18 }) },
-        { name: 'Number', desc: 'One account, the big percentage — like the pinned notification.', size: '4×1 (also 2×1, 4×2)', prev: () => tile({ w: 260, h: 60, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: numberFace('4x1', acc('pro'), 'S1', true, {}), radius: 14 }) },
-        { name: 'Countdown', desc: 'When one account’s window comes back.', size: '2×1 (also 2×2)', prev: () => tile({ w: 130, h: 60, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: countdownFace('2x1', acc('pro'), 'S1', true, {}), radius: 14 }) },
-        { name: 'All accounts', desc: 'Every account as its own ring, side by side.', size: '4×1 (also 4×2)', prev: () => tile({ w: 260, h: 60, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: stripFace('4x1', ACCOUNTS, 'S1', true, {}), radius: 14 }) },
+        { name: 'Ring', desc: 'One account’s usage as a small gauge.', size: '2×2 (also 1×1)', prev: () => tile({ w: 181, h: 168, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: ringFace('2x2', acc('pro'), 'S1', true, {}) }) },
+        { name: 'Number', desc: 'One account, the big percentage — like the pinned notification.', size: '4×1 (also 2×1, 4×2)', prev: () => tile({ w: 363, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: numberFace('4x1', acc('pro'), 'S1', true, {}) }) },
+        { name: 'Countdown', desc: 'When one account’s window comes back.', size: '2×1 (also 2×2)', prev: () => tile({ w: 181, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: countdownFace('2x1', acc('pro'), 'S1', true, {}) }) },
+        { name: 'All accounts', desc: 'Every account as its own ring, side by side.', size: '4×1 (also 4×2)', prev: () => tile({ w: 363, h: 84, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: stripFace('4x1', ACCOUNTS, 'S1', true, {}) }) },
       ];
       document.getElementById('s7-root').innerHTML = '<div class="row">' + items.map(it =>
-        `<div class="opt" style="border:1px solid var(--hair);border-radius:16px;padding:16px;max-width:300px">
+        `<div class="opt" style="border:1px solid var(--hair);border-radius:16px;padding:16px;max-width:400px;flex:0 1 auto">
           <div style="font-weight:700;font-size:15px;margin-bottom:2px">${it.name}</div>
           <div class="note" style="margin:0 0 10px">${it.desc}</div>
           ${it.prev()}
@@ -1134,18 +1240,18 @@
   <script>
     (function () {
       function withStamp(html, show) {
-        return show ? `<div style="position:relative;height:100%">${html}<div style="position:absolute;left:7px;bottom:6px;font-size:8.5px;opacity:.55">as of 6:29 PM</div></div>` : html;
+        return html; // rev C: the stamp is drawn in-flow by each face (opts.asOf), never overlaid
       }
       const root = document.getElementById('s8-root');
       const rows = [
-        { label: 'Number 4×2', w: 363, h: 168, cc: roomCard(acc('pro'), true), content: numberFace('4x2', acc('pro'), 'S1', true, {}) },
-        { label: 'Countdown 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07' }) },
-        { label: 'Ring 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: ringFace('2x2', acc('pro'), 'S1', true, {}) },
-        { label: 'Strip 4×2', w: 363, h: 168, cc: CLAUDE_DARK.card, content: stripFace('4x2', ACCOUNTS, 'S1', true, {}) },
+        { label: 'Number 4×2', w: 363, h: 168, cc: roomCard(acc('pro'), true), make: (on) => numberFace('4x2', acc('pro'), 'S1', true, { asOf: on }) },
+        { label: 'Countdown 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: null, make: (on) => countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', asOf: on }) },
+        { label: 'Ring 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: null, make: (on) => ringFace('2x2', acc('pro'), 'S1', true, { asOf: on }) },
+        { label: 'Strip 4×2', w: 363, h: 168, cc: CLAUDE_DARK.card, content: null, make: (on) => stripFace('4x2', ACCOUNTS, 'S1', true, { asOf: on }) },
       ];
       let html = '';
       rows.forEach(r => {
-        html += `<div class="row">${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: withStamp(r.content, true) }), `${r.label} — present`, r.w)}${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: withStamp(r.content, false) }), `${r.label} — absent`, r.w)}</div>`;
+        html += `<div class="row">${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: r.make(true) }), `${r.label} — present`, r.w)}${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: r.make(false) }), `${r.label} — absent`, r.w)}</div>`;
       });
       root.innerHTML = html;
     })();
@@ -1169,8 +1275,9 @@
         </div>`;
       }
       function half(label, figure, availPx, id) {
+        const claude = ['Pro', 'Teams', 'Product', 'Anthropic Enterprise'].includes(label);
         return `<div id="${id}" style="flex:1;min-width:0;display:flex;align-items:center;gap:4px">
-          ${mark('gpt', 14, GPT_DARK.accent)}${fitSpan(label, 12, 500, availPx)}
+          ${claude ? mark('claude', 14, CLAUDE_DARK.accent) : mark('gpt', 14, GPT_DARK.accent)}${fitSpan(label, 12, 500, availPx)}
           <span style="margin-left:auto;font-size:30px;font-weight:700;line-height:1">${figure}</span>
         </div>`;
       }
@@ -1205,7 +1312,7 @@
       const menu = `<div class="kebabmenu" style="background:#201D1B;color:#EDE8E4;position:absolute;top:44px;right:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
         ${items.map((it, i) => `<div class="kebabitem${i === items.length - 1 ? ' err' : ''}" style="${i === 1 ? 'font-weight:700' : ''}">${it}</div>`).join('')}
       </div>`;
-      const card = `<div style="position:relative;width:328px;background:#201D1B;color:#EDE8E4;border-radius:16px;padding:16px;font-family:Roboto,Arial,sans-serif">
+      const card = `<div style="position:relative;width:328px;margin-bottom:215px;background:#201D1B;color:#EDE8E4;border-radius:16px;padding:16px;font-family:Roboto,Arial,sans-serif">
         <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">Pro</b><svg width="22" height="22" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>
         ${menu}
       </div>`;
@@ -1242,7 +1349,7 @@
         return `<div style="background:#1A1A1A;border-radius:14px;padding:12px;margin:0 14px 8px">
           <div style="display:flex;align-items:baseline"><span style="font-size:12.5px;opacity:.85">${title}</span><span style="margin-left:auto;font-size:17px;font-weight:700">${pct}%</span></div>
           ${barHTML(268, 10, { pct, elapsed, dark: true, accent: CLAUDE_DARK.accent, paceTick: elapsed })}
-          <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.7;margin-top:6px"><span style="font-weight:700;color:#D8AC63">8 points above even pace</span><span>${resetLine}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.7;margin-top:6px"><span style="font-weight:700;color:#D8AC63">${pct - elapsed}% above even pace</span><span>${resetLine}</span></div>
         </div>`;
       }
       const statusLine = `<div style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.7;margin:2px 14px 12px">Synced 6:29 PM</div>`;
@@ -1303,7 +1410,7 @@
       const menu = `<div class="kebabmenu" style="background:#201D1B;color:#EDE8E4;position:absolute;top:44px;right:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
         <div class="kebabitem">Main screen layout</div><div class="kebabitem" style="font-weight:700">Share snapshot</div>
       </div>`;
-      const bar = `<div style="position:relative;width:328px;background:#0D0D0D;color:#EDE8E4;border-radius:16px;padding:14px 16px;font-family:Roboto,Arial,sans-serif">
+      const bar = `<div style="position:relative;width:328px;margin-bottom:100px;background:#0D0D0D;color:#EDE8E4;border-radius:16px;padding:14px 16px;font-family:Roboto,Arial,sans-serif">
         <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">Cooldown</b><svg width="22" height="22" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>${menu}
       </div>`;
       // Rev B: built from RingRenderer, BarRenderer AND a trend chart — one ring
@@ -1334,7 +1441,7 @@
             : `<div style="margin-top:2px"><div style="font-size:9.5px;opacity:.6;margin-bottom:2px">5h &middot; resets ${RESET_5H_LABEL}</div>${barHTML(190, 6, { pct, elapsed: 38, dark, accent: color, paceTick: 38 })}
                <div style="font-size:9.5px;opacity:.6;margin:5px 0 2px">Weekly &middot; resets ${RESET_WEEKLY_LABEL}</div>${barHTML(190, 6, { pct: weeklyPct, elapsed: 30, dark, accent: color, paceTick: 30 })}</div>`;
           return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid ${ink(dark, .08)}">
-            ${ringWithFigure(38, 5, { pct, elapsed: 38, dark, accent: color, spentX: true, figure: pct + '%', figSize: 10.5 })}
+            ${ringWithFigure(38, 5, { pct, elapsed: null, dark, accent: color, spentX: true, figure: pct + '%', figSize: 10.5 })}
             <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;margin-bottom:2px">${a.label}</div>${bars}</div>
           </div>`;
         }).join('');
@@ -1373,6 +1480,12 @@
     bore text to protect, and CCRM-83 (Ring Renderer) holds it pixel-equivalent to
     <code>UsageIcon.railsGauge</code>, so it keeps the needle and hub.
   </p>
+  <ul class="inv">
+    <li><b>Pace tick weight</b> (rev C): 3.5 dp, round caps, 90% ink, 1 dp halo &mdash; Robin: "more visible than just a thin line".</li>
+    <li><b>Round ends on the usage arc</b> (rev C), Robin.</li>
+    <li><b>Background</b> (rev C): Solid / Gradient / Transparent per widget, default Solid &mdash; Robin. <code>w&lt;id&gt;.bg</code> gains a third value; the key itself is unchanged (R9).</li>
+    <li><b>Number layout</b> (rev C): label left and figure right on one row, full-width bar under &mdash; Robin.</li>
+  </ul>
 
   <ol class="dec">
     <li><b>Q10 &mdash; Ring 2&times;2 at 100%</b> (&sect;3): spent &times; or "100%" text?
@@ -1380,7 +1493,7 @@
       consistent with itself), and it matches the app's own spent-ring decision (CCRM-51).</li>
     <li><b>Q11 &mdash; the "as of" stamp</b> (&sect;8): keep or drop, and on which faces?
       <b>Recommend keep</b>, only where drawn above (Number 4&times;1/4&times;2, Countdown
-      2&times;2, Ring 2&times;2, Strip 4&times;2), at 8.5 sp so it never competes with the
+      2&times;2, Ring 2&times;2, Strip 4&times;2), at 10 sp and 55% ink, in-flow (never overlaid), so it never competes with the
       primary reading.</li>
     <li><b>S13's marker form</b> (&sect;2's options panel): corner dot only, a dashed outline, or
       the in-flow "SYNTHETIC" ribbon. <b>Recommend the ribbon</b> (option C) &mdash; it's the only
@@ -1402,14 +1515,12 @@
     <li><b>Countdown ignoring the Reset time chip</b> (&sect;4): confirmed already in ROADMAP.md's
       text, changed from an earlier draft's Clock-mode variant. Flagging for acknowledgement, not
       a new decision.</li>
-    <li><b>Weekly-outside-24h text at Countdown 2&times;1</b> (&sect;4): "Resets Sat 9:10 PM" at
-      24 sp ellipsizes. Proposed fallback: 17 sp for that one case. Approve?</li>
-    <li><b>Number 2&times;1's S4 label still overflows</b> (&sect;2, flagged): "ChatGPT &middot;
-      Weekly" doesn't fit the 90 dp label budget there either &mdash; unlike the Strip, the
-      Number face keeps the suffix inline since 4&times;1/4&times;2 have room for it and only
-      2&times;1 is tight. Proposed fallback: drop the " &middot; Weekly" suffix at 2&times;1
-      specifically (the bare figure and bar already carry the reading at that width). Approve, or
-      should 2&times;1 borrow the Strip's bore-tag treatment instead?</li>
+    <li><b>Weekly-outside-24h at Countdown 2&times;1</b> (&sect;4): rev C drops "Resets" from the
+      big line &mdash; the caption above already reads "Weekly reset" &mdash; so the face shows
+      "Sat 9:10 PM" at the count's 24 sp and nothing shrinks. Approve?</li>
+    <li><b>Number 2&times;1's S4 label</b> (&sect;2): with the rev C one-row layout, "ChatGPT &middot;
+      Weekly" no longer fits beside the figure, so at 2&times;1 a weekly-only account shows the name,
+      with "Weekly" as a small second line under it. 4&times;1 and 4&times;2 keep the one-line label. Approve?</li>
     <li><b>The Strip's weekly tag</b> (&sect;2, item 1): "ChatGPT &middot; Weekly" doesn't
       reliably fit the label at 4&times;1's cell width, so the Strip carries "Weekly" as a small
       tag under the figure in the bore instead &mdash; the Ring keeps it in the label line, since
@@ -1418,9 +1529,13 @@
     <li><b>Number S10 at 2&times;1</b> (&sect;2, item 12): "Pro (unassigned) &middot; 5h"
       overflowed 90 dp; the fallback drops the window suffix and marks it with a small
       "UNASSIGNED" corner tag instead. Approve?</li>
-    <li><b>Strip's Solid colour</b> (&sect;1): no single account owns it. Recommend the neutral
-      Claude-room card tint used throughout this file, unless Robin prefers a plain system surface
-      colour instead.</li>
+    <li><b>Strip's Solid and Gradient colour</b> (&sect;1): no single account owns it. Recommend the
+      neutral card (#1A1A1A / #FCF8F4) and a neutral wash for Gradient, unless Robin prefers a
+      plain system surface colour instead.</li>
+    <li><b>Strip ring size</b> (&sect;1): four Ø88 rings do not fit the cover's 339 dp inner width,
+      and Ø56 plus a label does not fit its 68 dp inner height. Proposed: the spec's diameters are
+      ceilings; the ring takes what fits (Ø78 at 4&times;2, Ø50 at 4&times;1 on the cover, the full
+      Ø88 / Ø56 on the inner grid). Approve?</li>
   </ol>
 
   <hr class="hr">
