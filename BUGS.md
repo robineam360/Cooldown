@@ -110,6 +110,23 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
+### CCBG-36 · Widget Reapply Residue — a view one widget state shows survives into the next
+- **Status:** **Fixed 2026-09-25, pending device verification** (RUNBOOK.md Step 5 → Step 7) —
+  found the same day on the API 36 emulator while checking CCRM-15 (Above-Pace Verification)'s
+  Off switch; `WidgetReapplyTest` reproduces it (fails without the fix) and pins it.
+- **Severity:** Medium (a widget can show two states at once, or a marker for a mode that is off)
+- **Symptom:** after Synthetic Off, the Accounts Strip showed the real figures with the violet
+  synthetic dot still in its corner, and the Countdown 2×2 showed the live count *and* an absolute
+  "Reset…" beside it ("2:44:54Reset…").
+- **Cause:** the launcher's `AppWidgetHostView` *reapplies* an update onto the existing view tree
+  whenever the layout id is unchanged. `WidgetFace.render` only ever sets the views a state needs
+  to VISIBLE and relies on the layout's GONE defaults for the rest, which hold on a fresh inflate
+  but not on a reapply — so anything an earlier state turned on stayed on. Any same-background state
+  change on any face could leave residue; the synthetic marker made it obvious.
+- **Fix:** `WidgetHost.single` adds each rendered face into a new `widget_fresh.xml` frame
+  (`removeAllViews` + `addView`), so every update inflates the face fresh. The faces, their layouts
+  and the size map are unchanged; `WidgetFitTest` still renders the faces directly.
+
 ### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
 - **Status:** **Shipped v1.7 (2026-09-25).** **Fixed (2026-09-16)** — built, unit-tested (3 new cases) and **seen on the Fold 7 the
   same day**: the ChatGPT card's 5h window reads `0% used` with *"Starts when a message is sent"*,

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    CCBG-36 (Widget Reapply Residue): every face is added into this frame, never set as
+    the widget's layout itself. The launcher *reapplies* an update onto the old view tree
+    whenever the layout id is unchanged, so a view an earlier state made VISIBLE (the R8
+    marker, the live chronometer) stayed visible under a state that never mentions it.
+    Re-adding the face here inflates it fresh on every update.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_fresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />

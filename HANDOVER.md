@@ -4,42 +4,34 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 5 (written 2026-09-25, night)
+## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 6 (written 2026-09-25, late night)
 
-**Next is Widgets Reborn: paste the Step 5 prompt below.** The tester bugs are done. CCBG-31
-(Alert Crash), CCBG-32 (Accounts Button Wrap) and CCBG-33 (Device-Code Prerequisite) are fixed,
-seen on the emulator and on the Fold 7, and wait for a release. The Fold 7 runs an unreleased
-release-signed build of `main`, still version 1.7.
+**Step 5 is done.** CCBG-24 (Duet Label Clamp) is fixed pending the device pass; CCRM-14 (Clear
+History), CCRM-15 (Above-Pace Verification)'s synthetic series and CCRM-84 (Faces Gallery) are
+Built; the emulator pass found and fixed CCBG-36 (Widget Reapply Residue). Tests green.
 
-Still open, none of it blocking Step 5:
-- **CCBG-34 (Account Display Name):** Robin settled the meaning, which is to show the email an
-  account signed in with. It needs a wireframe; the recommended placement is in its BUGS.md entry.
-  Wireframe it when Robin asks for it, or alongside the Step 5 wireframe work.
-- **CCRM-85 (Crash Capture):** the option is decided. Its next-launch card needs a wireframe.
-- **CCBG-35 (Tab Clip):** Low, needs a wireframe.
-- **Tell Raja** that the crash was the always-on notification with one account.
+**One call for Robin before Step 7:** with synthetic data on, the *collapsed* notification is too
+short for rev D's full-width "SYNTHETIC DATA" band above its row, so the 32 sp figure clips (the
+expanded view matches rev D). The seat's recommendation, to wireframe: keep the band on the
+expanded view only, and on the collapsed row use the widgets' short-face marker, a 7 dp violet
+dot. That is the rule rev D already uses for widgets under 160 dp.
 
----
-
-## CCRM-78 Step 5 prompt (written 2026-09-25, before the bug reports)
-
+Still open, none of it blocking Step 6: CCBG-34 (Account Display Name), CCRM-85 (Crash Capture)
+and CCBG-35 (Tab Clip) each need a wireframe; tell Raja the crash was the always-on notification
+with one account.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 5; BUGS.md CCBG-24 (Duet Label Clamp);
-> ROADMAP.md CCRM-14 (Clear History), CCRM-15 (Above-Pace Verification), CCRM-84 (Faces Gallery)
-> and rule R8; the approved wireframe's ride-along sections. Build, one commit each: CCBG-24 —
-> measure the 30 sp bold figure with Paint.measureText in the device font and clamp the label to
-> the remainder, Duet.labelClampDp pure and tested; CCRM-14 — "Clear usage history…" in the
-> Accounts card ⋮ with the confirm dialog naming both stores, HistoryStore.clear +
-> SessionLog.clear for that profile, then Surfaces.refresh; CCRM-15 — data/SyntheticSeries per R8,
-> applied where UsageRepository hands out a snapshot, the Debug chip row, the tap-to-off banner,
-> the notification strip, the widget marker, and a unit test that no store changes while it is on;
-> CCRM-84 — the gallery per its entry. Tests green.
->
-> Also, from Step 4: `WidgetHost.state` passes `synthetic = false` — wire it to
-> `SyntheticSeries` so the widgets' R8 marker (already rendered by `WidgetFace`) turns on; and
-> `WidgetFitTest` must stay green for the gallery's faces too.
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 6; ROADMAP.md CCRM-24 (Share Card) and the
+> approved share-card section. Build share/ShareCard.kt at 4× (1440 px wide) from RingRenderer,
+> BarRenderer and a ChartBitmap adapted from git show 530781f:.../widget/ChartBitmap.kt; the
+> FileProvider (res/xml/share_paths.xml, cache-path "share/") with FLAG_GRANT_READ_URI_PERMISSION
+> on the chooser intent; every earlier file in cacheDir/share deleted before each render and the
+> folder emptied on app start; the render-then-preview dialog; ACTION_SEND; "Share snapshot" in
+> the Main ⋮ menu. Privacy: the profile label only — no email, no plan tier; nothing written
+> outside app cache. Tests green; one commit.
+
+---
 
 ### What changed on 2026-09-25 (Step 4, the short version)
 

@@ -185,9 +185,19 @@ object WidgetHost {
 
     // ---- composing --------------------------------------------------------------------
 
-    /** One bucket, rendered and wired. */
-    fun single(context: Context, appWidgetId: Int, bucket: Bucket, state: FaceState): RemoteViews =
-        WidgetFace.render(context, bucket.face, bucket, state).also { wire(context, it, appWidgetId, bucket, state) }
+    /**
+     * One bucket, rendered, wired and added into [R.layout.widget_fresh], so the launcher
+     * inflates it fresh rather than reapplying it over the last state's views (CCBG-36
+     * (Widget Reapply Residue)).
+     */
+    fun single(context: Context, appWidgetId: Int, bucket: Bucket, state: FaceState): RemoteViews {
+        val face = WidgetFace.render(context, bucket.face, bucket, state)
+            .also { wire(context, it, appWidgetId, bucket, state) }
+        return RemoteViews(context.packageName, R.layout.widget_fresh).apply {
+            removeAllViews(R.id.w_fresh)
+            addView(R.id.w_fresh, face)
+        }
+    }
 
     /** The composed `RemoteViews(Map<SizeF, RemoteViews>)` — at most three buckets (R10). */
     fun sizeMap(context: Context, appWidgetId: Int, face: Face, state: FaceState): RemoteViews =

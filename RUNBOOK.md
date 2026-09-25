@@ -71,7 +71,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☑ |
 | 3 | Pure layer: RingRenderer, Surfaces, WidgetFace, Transitions, WidgetPrefs — no visible change | builder · session reviews | 2 | ☑ |
 | 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☑ |
-| 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☐ |
+| 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☐☑ |
 | 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☐ |
 | 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☐ |
 | 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☐ |
@@ -276,14 +276,26 @@ CCRM-84 — the gallery per its entry. Tests green.
 ```
 
 **Done when:**
-- ☐ CCBG-24 reads Fixed, pending device verification; CCRM-14, CCRM-84 and CCRM-15's series read
+- ☑ CCBG-24 reads Fixed, pending device verification; CCRM-14, CCRM-84 and CCRM-15's series read
   Built.
-- ☐ Synthetic Off returns every surface to real data without a restart; `am kill` in the emulator
+- ☑ Synthetic Off returns every surface to real data without a restart; `am kill` in the emulator
   does the same; the stores test passes.
 
 **Reversal:** `git revert`.
 
 **Log:**
+- 2026-09-25 — done in one session (commits from 58531bb). CCBG-24 (Duet Label Clamp) and CCRM-14
+  (Clear History) and CCRM-15 (Above-Pace Verification) by the seat; CCRM-84 (Faces Gallery) by a
+  Sonnet builder in a worktree (purpose b+d), reviewed and cherry-picked; its Debug button rides in
+  the CCRM-15 card. API 36 emulator: Above pace / At 100% drew the banner, the notification band,
+  the widget marker and the above-pace chart; the banner's tap and the chip's Off returned every
+  surface to real data; process death (`run-as … kill` — `am kill` does not kill a process holding
+  the pinned notification's foreground service) came back real on Main and the notification at
+  once, and on the widgets at their next redraw, as R8 says. The pass found **CCBG-36 (Widget
+  Reapply Residue)** — the launcher reapplied updates over old views, so the synthetic dot and the
+  Countdown's live count survived Off — fixed and tested. **Open for Robin:** the collapsed
+  notification is too short for the "SYNTHETIC DATA" band above its row; the 32 sp figure clips
+  (the expanded view matches rev D). Needs a wireframe call before Step 7.
 
 ---
 
