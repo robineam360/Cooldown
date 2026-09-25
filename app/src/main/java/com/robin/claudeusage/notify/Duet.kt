@@ -21,21 +21,35 @@ object Duet {
     enum class Slot { FIRST, SECOND }
 
     /**
-     * How wide a Duet half's account label may be, in dp.
+     * How wide a Duet half's account label may be, in dp, given how wide this half's
+     * figure really is.
      *
      * The width arithmetic: a 360 dp notification card less 16 dp of padding a side leaves
      * 328 dp, and one 16 dp gutter down the middle leaves **156 dp per half** — the tight
-     * case, which is the one that has to work. A three-character figure at 30 sp bold takes
-     * about 54 dp plus its 8 dp gap, leaving a 90 dp left column that also has to hold the
-     * 14 dp provider mark and its 4 dp gap: hence **72 dp** for the label.
+     * case, which is the one that has to work. The half also holds the 14 dp provider
+     * mark and its 4 dp gap, and the figure's 8 dp start margin; the condition dot, when
+     * it shows, takes 6 dp plus its 5 dp margin. The label gets whatever is left.
      *
-     * A four-character figure ("100%") takes about 74 dp instead, so the label gives back
-     * the difference and clamps at **56 dp**. Short labels never notice; a long one loses
-     * about two characters exactly when the number matters most, which is the accepted
-     * trade — the mark and the accent still say which account it is, and the full label is
-     * one tap away in the expanded header.
+     * CCBG-24 (Duet Label Clamp): this used to be a two-step table (72 dp, or 56 dp at four
+     * characters), priced against a ~54 dp three-character figure. Samsung's font draws
+     * "98%" at 30 sp bold wider than that, so the label ellipsized to "ChatG…" beside it.
+     * The caller now measures the figure ([figureWidthDp], `Paint.measureText` in the
+     * device font) and the label takes the true remainder — "ChatGPT 98%" reads whole, and
+     * a genuinely long label still ellipsizes. Never below [MIN_LABEL_DP], so a huge font
+     * scale leaves a stub of label rather than none.
      */
-    fun labelClampDp(figureText: String): Int = if (figureText.length >= 4) 56 else 72
+    fun labelClampDp(figureWidthDp: Float, dotShown: Boolean = false): Int {
+        val left = HALF_DP - MARK_DP - MARK_GAP_DP - FIGURE_GAP_DP - figureWidthDp -
+            (if (dotShown) DOT_DP else 0f)
+        return kotlin.math.floor(left).toInt().coerceAtLeast(MIN_LABEL_DP)
+    }
+
+    private const val HALF_DP = 156f
+    private const val MARK_DP = 14f
+    private const val MARK_GAP_DP = 4f
+    private const val FIGURE_GAP_DP = 8f
+    private const val DOT_DP = 11f
+    const val MIN_LABEL_DP = 24
 
     /**
      * How many condition strips the expanded panel may draw.

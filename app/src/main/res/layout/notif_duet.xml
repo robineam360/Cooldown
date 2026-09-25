@@ -66,8 +66,8 @@
                     android:layout_marginEnd="4dp"
                     android:importantForAccessibility="no" />
 
-                <!-- maxWidth is set at runtime (Duet.labelClampDp): 72 dp normally,
-                     56 dp when this half's figure is four characters wide. -->
+                <!-- maxWidth is set at runtime (Duet.labelClampDp): whatever the
+                     measured 30 sp bold figure leaves of the 156 dp half (CCBG-24). -->
                 <TextView
                     android:id="@+id/duet_label_first"
                     style="@android:style/TextAppearance.Material.Notification.Title"

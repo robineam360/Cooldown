@@ -16,19 +16,26 @@ class DuetTest {
     // --- the label clamp: 156 dp per half, minus the figure ---------------------------
 
     @Test
-    fun `label clamps at 72 dp, and at 56 when the figure is four characters`() {
-        // A three-character figure at 30 sp bold takes ~54 dp of the 156 dp half.
-        assertEquals(72, Duet.labelClampDp("42%"))
-        assertEquals(72, Duet.labelClampDp("7%"))
-        // "100%" takes ~74 dp instead, so the label gives back the difference.
-        assertEquals(56, Duet.labelClampDp("100%"))
+    fun `the label takes what the measured figure leaves of the 156 dp half`() {
+        // 156 − 14 mark − 4 gap − 8 figure margin = 130 dp shared by label and figure.
+        // CCBG-24 (Duet Label Clamp)'s case: "98%" measured at ~54 dp leaves 76 dp, so
+        // "ChatGPT" fits whole where the old table's 72 dp let the figure eat into it.
+        assertEquals(76, Duet.labelClampDp(54f))
+        // Samsung's wider "98%": the label gives back the difference, rounded down.
+        assertEquals(69, Duet.labelClampDp(60.4f))
+        // "100%", the widest figure, clamps tighter; "2%", the narrowest, gets the most.
+        assertEquals(56, Duet.labelClampDp(74f))
+        assertEquals(98, Duet.labelClampDp(32f))
     }
 
     @Test
-    fun `the no-reading placeholder is the roomiest figure there is`() {
-        // The em dash is one character, so a broken or unread half keeps the full clamp —
-        // the label is the only thing left on that half worth reading.
-        assertEquals(72, Duet.labelClampDp("—"))
+    fun `the condition dot takes its 11 dp from the label`() {
+        assertEquals(65, Duet.labelClampDp(54f, dotShown = true))
+    }
+
+    @Test
+    fun `a huge font scale still leaves a stub of label`() {
+        assertEquals(Duet.MIN_LABEL_DP, Duet.labelClampDp(140f))
     }
 
     // --- the strip cap: ~120 dp of panel left under two header blocks -----------------
