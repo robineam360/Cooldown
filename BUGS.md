@@ -17,16 +17,24 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > with three screenshots, and the 19:49 message on alert crashes.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
-- **Status:** Open — **Critical, first in the queue.** Not yet reproduced.
+- **Status:** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
+  seen on the emulator the same day; not yet on the Fold 7 or in a release.
 - **Severity:** High (crash)
 - **Symptom:** **Reported by Raja, 2026-09-25:** *"Couple of crashes I observed when I enable
   Alerts."* No stack trace, device or Android version was given. Robin has not used alerts for a
   while (the always-on notification covers his use), so the alert path has gone unexercised
   since the multi-provider and widget work landed.
-- **To do next session:** reproduce on the Fold 7 and an emulator (turn each alert on, per
-  provider and per account, and let one fire) with `adb logcat` capturing the trace; ask Raja for
-  his device, Android version and exact steps if it will not reproduce. The app has no crash
-  reporter — Raja asked whether Crashlytics is on; it is not, so the trace has to come from logcat.
+- **Cause:** turning on *Always-on usage notification* (Settings → Alerts) with one account
+  shown crashed the app at once, and again on every restart of the foreground service:
+  `BadForegroundServiceNotificationException … notif_panel_single: Class not allowed to be
+  inflated android.view.View`. The four row spacers in `notif_panel_single.xml`, added with the
+  native notification panel in v1.6, were plain `<View>`s, which RemoteViews refuses; for a
+  foreground service's notification the refusal kills the process. Robin runs the Duet, whose
+  `notif_panel_duet.xml` has no such spacer, so it never showed on his phone. The reset-ping
+  toggles were never the cause.
+- **Fix:** the spacers are empty `FrameLayout`s (the widget layouts' rule), so the panel looks
+  the same. `WidgetLayoutsTest.onlyViewsRemoteViewsAllows` now checks the `notif_` layouts as
+  well as the `widget_` ones — it fails on the old file.
 
 ### CCBG-32 · Accounts Button Wrap — the sign-in card's "Cancel" wraps one letter per line
 - **Status:** Open — Critical (tester-visible on first sign-in).

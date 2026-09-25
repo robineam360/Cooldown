@@ -2,6 +2,7 @@ package com.robin.claudeusage.widgets
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
@@ -31,12 +32,20 @@ class WidgetLayoutsTest {
         }
     }
 
+    /**
+     * Covers the notification layouts too: CCBG-31 (Alert Crash) was a plain `<View>`
+     * spacer in `notif_panel_single.xml`, which the shade refuses to inflate — and for a
+     * foreground service's notification that refusal kills the app, in a restart loop.
+     * `include` is resolved by the inflater itself, so it never reaches the filter.
+     */
     @Test
     fun onlyViewsRemoteViewsAllows() {
         val allowed = setOf(
-            "FrameLayout", "LinearLayout", "TextView", "ImageView", "Chronometer",
+            "FrameLayout", "LinearLayout", "TextView", "ImageView", "Chronometer", "include",
         )
-        for (f in dir.listFiles()!!.filter { it.name.startsWith("widget_") }) {
+        val remote = dir.listFiles()!!.filter { it.name.startsWith("widget_") || it.name.startsWith("notif_") }
+        assertTrue("no notification layouts found", remote.any { it.name.startsWith("notif_") })
+        for (f in remote) {
             val xml = f.readText().replace(Regex("(?s)<!--.*?-->"), "")
             val tags = Regex("""<([A-Za-z.]+)[\s>/]""").findAll(xml).map { it.groupValues[1] }
                 .filterNot { it == "?xml" }.toSet()

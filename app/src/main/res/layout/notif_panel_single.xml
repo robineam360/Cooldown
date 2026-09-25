@@ -303,7 +303,7 @@
                 android:ellipsize="end"
                 android:visibility="gone" />
 
-            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/panel_row_value_1"
@@ -375,7 +375,7 @@
                 android:ellipsize="end"
                 android:visibility="gone" />
 
-            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/panel_row_value_2"
@@ -447,7 +447,7 @@
                 android:ellipsize="end"
                 android:visibility="gone" />
 
-            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/panel_row_value_3"
@@ -519,7 +519,7 @@
                 android:ellipsize="end"
                 android:visibility="gone" />
 
-            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/panel_row_value_4"
