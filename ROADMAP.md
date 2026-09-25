@@ -1429,7 +1429,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   it does not ship.
 
 ### CCRM-84 · Faces Gallery — every face and state, reachable on the live phone
-- **Status:** Planned · small · **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9d: tiles captioned "Ring 2×2 · S3 · 14 KB") (debug-only screen) · supersedes CCBG-19 (Fixture
+- **Status:** Built 2026-09-25 (RUNBOOK.md Step 5) · **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9d: tiles captioned "Ring 2×2 · S3 · 14 KB") (debug-only screen) · `FacesGalleryActivity`, `android:exported="false"`, entry in Settings → Debug wired by the seat · supersedes CCBG-19 (Fixture
   Unreachable)'s won't-fix path and CCRM-15 (Above-Pace Verification)'s harness paragraph.
 - **What:** a Debug-section screen after the 7-tap unlock, in the release build, that inflates every
   face × bucket × state through `WidgetFace.render` — the providers' own function — with

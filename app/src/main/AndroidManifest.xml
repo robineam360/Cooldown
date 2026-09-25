@@ -89,6 +89,14 @@
                 android:value="Persistent usage-window readout the user turned on in Settings" />
         </service>
 
+        <!-- CCRM-84 (Faces Gallery): the debug-only screen that inflates every face ×
+             bucket × state, reached from Settings → Debug (wired by the seat). Not
+             exported: nothing outside this app has a reason to open it. -->
+        <activity
+            android:name=".widgets.FacesGalleryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ClaudeUsage" />
+
         <!-- CCRM-78 (Widgets Reborn) §Config: placing and reconfiguring any of the four
              faces. Exported with the APPWIDGET_CONFIGURE filter because the launcher
              starts it; it finishes at once on an invalid id or one whose provider is not
