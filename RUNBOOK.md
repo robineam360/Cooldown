@@ -49,7 +49,9 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
    Progress tick (☐ → ☑) and one dated line after **Log:**; (d) commit and push, the tick in the same
    commit as the work.
 5. **Handover.** The session's last message: what changed in one paragraph, what Robin must do
-   himself before the next step, and the next step's *Resume* block.
+   himself before the next step, and the next step's *Resume* block — and the same block goes
+   into [HANDOVER.md](HANDOVER.md)'s "Next session" section, replacing the last one (Robin,
+   2026-09-25, as CooldownMac does).
 6. **Wireframe gate.** Step 2 draws every face × size × state (S1–S14) and every ride-along's visible
    change. Review happens in the `design/` HTML, never in chat; questions go to Robin one at a time;
    silence is not approval. A later step that wants to change anything the user sees stops and goes
@@ -68,7 +70,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | 1 | Plan: concept, Robin's ten answers, CCRM-78–84 filed, Astra ×2, Fable redraft, Astra round 3, freeze | session | — | ☑ |
 | 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☑ |
 | 3 | Pure layer: RingRenderer, Surfaces, WidgetFace, Transitions, WidgetPrefs — no visible change | builder · session reviews | 2 | ☑ |
-| 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☐ |
+| 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☑ |
 | 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☐ |
 | 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☐ |
 | 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☐ |
@@ -235,20 +237,21 @@ green; assembleDebug.
 ```
 
 **Done when:**
-- ☐ Four providers are in the manifest, each placeable in a debug build and matching the approved
+- ☑ Four providers are in the manifest, each placeable in a debug build and matching the approved
   wireframe state by state, in an emulator or on the phone.
-- ☐ Every trigger R7 names is wired and each was exercised once in the emulator; there is exactly
+- ☑ Every trigger R7 names is wired and each was exercised once in the emulator; there is exactly
   one alarm, and it is cancelled when the last widget is removed.
-- ☐ R10's fallback has tests that force it through `SafeUpdate` with each of the three exception
+- ☑ R10's fallback has tests that force it through `SafeUpdate` with each of the three exception
   shapes, and `bitmapBytes` is tested over each face's whole size map.
-- ☐ Two Number 4×2 widgets on different accounts: a tap on either's chips or cycler changes only that
+- ☑ Two Number 4×2 widgets on different accounts: a tap on either's chips or cycler changes only that
   widget (unique PendingIntent identity), and every config save, toggle, delete and restore re-arms
   the one alarm over all placed widgets. Removing the last Number while a Countdown stays keeps the alarm armed.
-- ☐ CCRM-78–82 read Built, with the chronometer form recorded in CCRM-81.
+- ☑ CCRM-78–82 read Built, with the chronometer form recorded in CCRM-81.
 
 **Reversal before release:** `git revert`. After release: R9 — forward-only, see Step 8.
 
 **Log:**
+- 2026-09-25 — Built by the session (model-mesh rung 1) in six commits on `claude/widgets-reborn-impl-ecc70e`: shared plumbing (`WidgetHost`, `SafeUpdate`, `FaceWidgetProvider`, `WidgetActionReceiver`, `WidgetSystemReceiver`, `WidgetConfigActivity`, `Surfaces.arm`), then Ring, Number, Countdown and Strip providers, then the emulator-pass fixes. Calls: Robin — widget bars take rev D's 3 dp tick, the Number figure keeps the severity colour, and from now on minor gaps go to Fable, only major visual changes to him; Fable — "No reading yet" accepted (Strip reads "No reading"), R7 kind (d) `fetchedAt + 24 h`, Strip 4×1 S12 "Free" in the bore. Countdown ships live H:MM:SS (recorded in CCRM-81). A fresh Opus judge returned **concerns** (no blocking); adopted: neutral `initialLayout`, widget redraw off the caller's thread, smallest-size fallback, saveable config picks, guarded preview, OOM contained. Emulator (API 36, Pixel launcher, 420 dpi): all four placed; config save, both chips, the cycler, resize, `Surfaces.refresh` from Settings, the alarm, `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET`, `TIMEZONE_CHANGED` each redrew; a spoofed action did nothing; one RTC alarm, cancelled when the last widget went; prefs pruned on delete; 321 KB bitmap memory on a 4×2. The pass found cover-cell overflows (Number 4×1, Strip 4×1, Countdown 2×1 S5) and collapsed/solid chip backgrounds, all fixed by spacing and tint only; `WidgetFitTest` added. Not exercised on the emulator: `onRestored` (unit-tested in `WidgetPrefsTest`). **Open for Step 7:** see CCRM-78's Status line.
 
 ---
 

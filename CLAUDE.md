@@ -57,6 +57,8 @@ parsing, scheduling, tests, docs, or a bug fix that restores an already-approved
   (currently the v1.8 widgets arc, CCRM-78 (Widgets Reborn); earlier arcs are in git history at the commits the file names): one step per fresh
   session, the prompt to paste, and what "done" means. Tick steps off there; statuses still
   live in the tracker files.
+- [HANDOVER.md](HANDOVER.md) — the paste-ready prompt for the next session; each session that
+  ends with a next step replaces its "Next session" block (as CooldownMac does).
 - `release/docs/` — the user-facing guide and brochure (HTML → headless Chrome; sources in
   `docs/src/`).
 

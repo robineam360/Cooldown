@@ -1279,7 +1279,7 @@ unavailable (R9) · and each narrow size, with what drops out. The wireframe dra
 face; `WidgetFaceTest` covers every state × bucket.
 
 ### CCRM-78 · Widgets Reborn — the suite, its config, and one refresh seam
-- **Status:** Planned · large · **wireframe rev D approved by Robin 2026-09-25** (`design/2026-09-25-widgets-reborn.html`; RUNBOOK.md Step 2) · **Step 3 done 2026-09-25** (the pure layer, no visible change): `notify/Surfaces.refresh` replaces all 13 `PinnedNotification.update` call sites (widget half and `arm` no-ops until Step 4; `SurfacesSeamTest` keeps it that way); `widgets/WidgetFace.kt` built — the pure S1–S14 table (`FaceStates`), nine cover-sized buckets, `render(face, bucket, state)` → one single-size RemoteViews on generated layouts (`tools/widget_layouts.py`), `bitmapBytes` — with `WidgetFaceTest` over every state × bucket × background × theme and R10 at 420 dpi; `Fmt.widgetClock` is R2's one formatter; `widgets/Transitions.nextTransitionAt` per R7 with `TransitionsTest` (each kind, earliest-wins, a past reset, empty); `widgets/WidgetPrefs.kt` (`w<id>.account/.window/.bg/.v`, stored values `5h`/`weekly` and `solid`/`gradient`/`transparent`, an empty account = unassigned) with `WidgetPrefsTest`; no provider, manifest entry or reachable layout yet · **Step 4 in progress 2026-09-25:** the shared plumbing — `widgets/WidgetHost` (cache → `FaceInput`, the size map keyed 12 dp under each cover bucket, the bucket picker, taps: S9 opens the config, any other face opens Cooldown on its account), `widgets/SafeUpdate` (R10's three shapes, one fallback, contained), `FaceWidgetProvider`, `WidgetActionReceiver`, `WidgetSystemReceiver`, `WidgetConfigActivity`, `Surfaces.arm` on one `setAndAllowWhileIdle(RTC)` alarm; the widget bars take rev D's 3 dp tick (Robin, Step 4) and R7 gains kind (d) (Fable) · reopens the widget half of
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · large · **wireframe rev D approved by Robin 2026-09-25** (`design/2026-09-25-widgets-reborn.html`; RUNBOOK.md Step 2) · **Step 3 done 2026-09-25** (the pure layer, no visible change): `notify/Surfaces.refresh` replaces all 13 `PinnedNotification.update` call sites (widget half and `arm` no-ops until Step 4; `SurfacesSeamTest` keeps it that way); `widgets/WidgetFace.kt` built — the pure S1–S14 table (`FaceStates`), nine cover-sized buckets, `render(face, bucket, state)` → one single-size RemoteViews on generated layouts (`tools/widget_layouts.py`), `bitmapBytes` — with `WidgetFaceTest` over every state × bucket × background × theme and R10 at 420 dpi; `Fmt.widgetClock` is R2's one formatter; `widgets/Transitions.nextTransitionAt` per R7 with `TransitionsTest` (each kind, earliest-wins, a past reset, empty); `widgets/WidgetPrefs.kt` (`w<id>.account/.window/.bg/.v`, stored values `5h`/`weekly` and `solid`/`gradient`/`transparent`, an empty account = unassigned) with `WidgetPrefsTest`; no provider, manifest entry or reachable layout yet · **Step 4 done 2026-09-25:** the shared plumbing — `widgets/WidgetHost` (cache → `FaceInput`, the size map keyed 12 dp under each cover bucket, the bucket picker, taps: S9 opens the config, any other face opens Cooldown on its account), `widgets/SafeUpdate` (R10's three shapes, one fallback, contained), `FaceWidgetProvider`, `WidgetActionReceiver`, `WidgetSystemReceiver`, `WidgetConfigActivity`, `Surfaces.arm` on one `setAndAllowWhileIdle(RTC)` alarm; the widget bars take rev D's 3 dp tick (Robin, Step 4) and R7 gains kind (d) (Fable); the four providers placed and every R7 trigger exercised on an API 36 emulator, which found and fixed cover-cell overflows and chip rendering (`WidgetFitTest` now guards them) · **open for Robin / Step 7:** a system light/dark switch has no R7 trigger, so widgets keep the old theme until the next redraw; a widget placed without config and then reconfigured says "Add widget", not "Save changes"; a long unassigned label can push the Ring 2×2's "as of" stamp off its row · next: Step 5 · reopens the widget half of
   CCRM-61 (Settings Diet); supersedes CCRM-4 (Widget Quick-Edit) and closes the history of CCRM-39
   (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget) and CCRM-13 (Chart Widget).
 - **Faces (Robin, Q1): four.** CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face)
@@ -1322,7 +1322,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   manifest.
 
 ### CCRM-79 · Ring Face — the status-bar ring at home-screen size
-- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** — Q10: the spent × at 100% on
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** — Q10: the spent × at 100% on
   2×2 as on 1×1; the needle and hub replaced by a pace tick on every ring with a figure in its bore
   (3.5 dp on the 9 dp stroke, never under 2.5 dp, round caps, 90% ink, 1 dp halo in the face colour,
   overhanging the stroke equally inside and out); the usage band has round ends; S5 labels "Pro · not
@@ -1338,7 +1338,7 @@ face; `WidgetFaceTest` covers every state × bucket.
 - **Omits:** window name, reset, weekly, credits.
 
 ### CCRM-80 · Number Face — the Huge-number row for one account
-- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** — Robin (rev C): the label and
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** — Robin (rev C): the label and
   the figure share one row, label left baseline-aligned to the figure on the right, with the
   full-width bar under both — a deliberate departure from the notification's geometry. 4×2 grows to a
   44 sp figure over a 10 dp bar, centred above the control row. S5's sub-line reads "Starts when a
@@ -1358,7 +1358,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   flips.
 
 ### CCRM-81 · Countdown Face — when the window comes back
-- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** · new — Robin: the face
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** · new — Robin: the face
   ignores the Reset time chip; the Weekly absolute form is the "Weekly reset" caption over "Sat 9:10 PM"
   at the count's 24 sp (it fits 2×1, "Resets Sat 9:10 PM" did not). 2×2 draws the count at 28 sp with
   "at 9:10 PM" under it, then the 18 sp figure on the left and "~ runs out …" on the right of one row
@@ -1394,7 +1394,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   Reset Silence) is not made worse.
 
 ### CCRM-82 · Accounts Strip — every account as its own ring, never a sum
-- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** · new — the diameters below
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** · new — the diameters below
   are ceilings: on the cover four rings are Ø53 at 4×1 and Ø80 at 4×2, which is what fits with 6 dp gaps
   and every line kept; the inner grid keeps Ø56 / Ø88 (Fable review, delegated by Robin). A weekly-only
   ring carries "Weekly" in the bore under the figure (8 sp at 4×1, 9 sp at 4×2), kept under the × at
