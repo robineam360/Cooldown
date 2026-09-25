@@ -1,6 +1,6 @@
 {
-  "model": "sonnet[1m]",
-  "effortLevel": "high",
+  "model": "opus",
+  "effortLevel": "medium",
   "permissions": {
     "defaultMode": "auto"
   }
