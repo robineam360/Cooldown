@@ -2865,6 +2865,40 @@ keys) would still make this a different product. Not filed, not an open question
 
 ## Needs design — decide the shape before building
 
+### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
+- **Status:** Needs design · small · **option decided 2026-09-25** (Fable recommended, Astra
+  reviewed: `concerns`, all adopted below; the two agreed, so it did not go to Robin). Build waits
+  for the next-launch card's wireframe (CLAUDE.md §2).
+- **Why:** the app has no crash reporting. A tester asked whether Crashlytics was on; it is not,
+  so CCBG-31 (Alert Crash) reached us as a chat message with no trace and had to be reproduced
+  from logcat.
+- **Decided against:** Firebase Crashlytics, Sentry/GlitchTip and ACRA's HTTP sender. Each sends
+  data off the phone automatically, which breaks the "no servers, no analytics, no third-party
+  network calls" promise in README, `.github/SECURITY.md` and the user guide, and would need a
+  privacy policy and a third-party account. Turning any of them on later is Robin's call.
+  ACRA's mail sender was close, but its default fields include SharedPreferences, which is a bad
+  default for an app that holds OAuth tokens.
+- **What:** built in, no dependency, no account:
+  1. an `Application` class that installs a default uncaught-exception handler. It writes a
+     scrubbed `last-crash.txt` to private, no-backup storage with an atomic write, as a bounded
+     best-effort step that takes no AppLog lock, then hands the crash to the previous handler in
+     `finally`, so the system dialog and process death are unchanged;
+  2. `diag/CrashReport.kt`, pure and tested: the class, the frames up to a cap, and the version, SDK
+     and model. **Exception messages are left out by default**, because OAuth tokens need no
+     `Bearer` prefix to turn up in free text. Every capture and share path goes through one
+     scrubber;
+  3. `diag/ExitReasons.kt`: `ApplicationExitInfo` on launch as a supplement, for ANRs, native
+     crashes and system kills. Reasons are classified, entries already caught by the Java
+     handler are dropped as duplicates, a missing trace is tolerated, and the watermark moves
+     only once an entry has been processed;
+  4. a small next-launch card, *"Cooldown crashed on <date> · Share report / Not now"*, that
+     shares the report through the existing Diagnostics share path. It tracks seen and dismissed
+     separately and keeps reports for a bounded time. **It needs a wireframe first**;
+  5. one sentence in the README and user guide: *a crash report stays on your phone until you
+     share it.*
+- **Done when:** a forced crash on the Fold 7 is captured, the card appears after the restart, a
+  dismissed card stays gone, and the shared report contains no token, email or exception message.
+
 ### CCRM-65 · Accounts Redesign — a shorter, cleaner account card
 - **Status:** **Shipped v1.7 (2026-09-25).** **Verified on the Fold 7, 2026-09-17** — compact cards, the amber ≤3-day expiry line, the three action cells, the ChatGPT variant and the two-column inner layout all as approved (rev D, 2026-09-11). Wireframe
   `design/accounts-redesign-wireframe.html`, drafted and revised the same day the brief was filed,
