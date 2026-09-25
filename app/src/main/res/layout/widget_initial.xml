@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-78 (Widgets Reborn): what the launcher shows before a face's first draw — the
+     neutral card and nothing on it. Never a sample reading: if the first draw fails, R10
+     keeps the last good face, and an invented number must not be it (Step 4 judge finding). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_bg"
+        android:tint="?android:attr/colorBackgroundFloating" />
+</FrameLayout>

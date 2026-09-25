@@ -14,7 +14,7 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:previewLayout="@layout/widget_preview_number"
-    android:initialLayout="@layout/widget_preview_number"
+    android:initialLayout="@layout/widget_initial"
     android:configure="com.robin.claudeusage.widgets.WidgetConfigActivity"
     android:widgetFeatures="reconfigurable|configuration_optional"
     android:widgetCategory="home_screen" />

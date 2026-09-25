@@ -61,6 +61,9 @@ abstract class FaceWidgetProvider(private val face: Face) : AppWidgetProvider() 
                 block()
             } catch (e: Exception) {
                 WidgetHost.log(context, "widget callback failed: ${e.javaClass.simpleName}: ${e.message}")
+            } catch (e: OutOfMemoryError) {
+                // A bitmap too many: still never out of a provider or receiver (R10).
+                WidgetHost.log(context, "widget callback out of memory: ${e.message}")
             }
         }
     }

@@ -117,6 +117,16 @@
                                 android:visibility="gone"
                                 android:layout_gravity="center"
                                 android:includeFontPadding="false" />
+                            <TextView
+                                android:id="@+id/strip_free0"
+                                style="@style/WFace"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:text="Free"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:includeFontPadding="false" />
                         </FrameLayout>
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -136,6 +146,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="9.5sp"
+                                android:includeFontPadding="false"
                                 android:singleLine="true"
                                 android:ellipsize="end" />
                             <ImageView
@@ -207,6 +218,16 @@
                                 android:visibility="gone"
                                 android:layout_gravity="center"
                                 android:includeFontPadding="false" />
+                            <TextView
+                                android:id="@+id/strip_free1"
+                                style="@style/WFace"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:text="Free"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:includeFontPadding="false" />
                         </FrameLayout>
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -226,6 +247,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="9.5sp"
+                                android:includeFontPadding="false"
                                 android:singleLine="true"
                                 android:ellipsize="end" />
                             <ImageView
@@ -297,6 +319,16 @@
                                 android:visibility="gone"
                                 android:layout_gravity="center"
                                 android:includeFontPadding="false" />
+                            <TextView
+                                android:id="@+id/strip_free2"
+                                style="@style/WFace"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:text="Free"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:includeFontPadding="false" />
                         </FrameLayout>
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -316,6 +348,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="9.5sp"
+                                android:includeFontPadding="false"
                                 android:singleLine="true"
                                 android:ellipsize="end" />
                             <ImageView
@@ -387,6 +420,16 @@
                                 android:visibility="gone"
                                 android:layout_gravity="center"
                                 android:includeFontPadding="false" />
+                            <TextView
+                                android:id="@+id/strip_free3"
+                                style="@style/WFace"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:text="Free"
+                                android:visibility="gone"
+                                android:layout_gravity="center"
+                                android:includeFontPadding="false" />
                         </FrameLayout>
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -406,6 +449,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="9.5sp"
+                                android:includeFontPadding="false"
                                 android:singleLine="true"
                                 android:ellipsize="end" />
                             <ImageView

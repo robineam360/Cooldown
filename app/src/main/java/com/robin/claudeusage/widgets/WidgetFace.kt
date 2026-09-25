@@ -745,13 +745,13 @@ object WidgetFace {
             // A single-window account shows a fixed tag instead of chips.
             rv.setViewVisibility(R.id.num_chip_fixed, View.VISIBLE)
             rv.setImageViewResource(R.id.num_chip_fixed_bg, R.drawable.widget_tag)
-            rv.setInt(R.id.num_chip_fixed_bg, "setColorFilter", ink(s.dark, 0.08f))
+            tint(rv, R.id.num_chip_fixed_bg, ink(s.dark, 0.08f))
             rv.setTextViewText(R.id.num_chip_fixed_text, c.window.word)
             rv.setTextColor(R.id.num_chip_fixed_text, ink(s.dark, 0.8f))
             rv.setViewPadding(R.id.num_chip_fixed_text, (8 * d).toInt(), 0, (8 * d).toInt(), 0)
         }
         // The account cycler (Robin, Q5); wired to WidgetActionReceiver at Step 4.
-        rv.setInt(R.id.num_cycler_bg, "setColorFilter", ink(s.dark, 0.08f))
+        tint(rv, R.id.num_cycler_bg, ink(s.dark, 0.08f))
         mark(rv, R.id.num_cycler_mark, c)
         rv.setTextViewText(R.id.num_cycler_text, cyclerSpan(c, s.dark))
         rv.setTextColor(R.id.num_cycler_text, ink(s.dark, 1f))
@@ -788,11 +788,11 @@ object WidgetFace {
         rv.setTextViewText(text, word)
         if (selected) {
             rv.setImageViewResource(bg, R.drawable.widget_chip)
-            rv.setInt(bg, "setColorFilter", c.accentArgb)
+            tint(rv, bg, c.accentArgb)
             rv.setTextColor(text, if (s.dark) 0xFF1A1A1A.toInt() else 0xFFFFFFFF.toInt())
         } else {
             rv.setImageViewResource(bg, R.drawable.widget_chip_outline)
-            rv.setInt(bg, "setColorFilter", ink(s.dark, 0.28f))
+            tint(rv, bg, ink(s.dark, 0.28f))
             rv.setTextColor(text, ink(s.dark, 0.85f))
         }
     }
@@ -894,6 +894,7 @@ object WidgetFace {
     private val STRIP_FIG = intArrayOf(R.id.strip_fig0, R.id.strip_fig1, R.id.strip_fig2, R.id.strip_fig3)
     private val STRIP_TAG = intArrayOf(R.id.strip_tag0, R.id.strip_tag1, R.id.strip_tag2, R.id.strip_tag3)
     private val STRIP_XTAG = intArrayOf(R.id.strip_xtag0, R.id.strip_xtag1, R.id.strip_xtag2, R.id.strip_xtag3)
+    private val STRIP_FREE = intArrayOf(R.id.strip_free0, R.id.strip_free1, R.id.strip_free2, R.id.strip_free3)
     private val STRIP_MARK = intArrayOf(R.id.strip_mark0, R.id.strip_mark1, R.id.strip_mark2, R.id.strip_mark3)
     private val STRIP_LABEL = intArrayOf(R.id.strip_label0, R.id.strip_label1, R.id.strip_label2, R.id.strip_label3)
     private val STRIP_DOT = intArrayOf(R.id.strip_dot0, R.id.strip_dot1, R.id.strip_dot2, R.id.strip_dot3)
@@ -925,11 +926,15 @@ object WidgetFace {
             if (c.brokenDot) dot(rv, STRIP_DOT[i], s.dark)
 
             if (c.free) {
-                // S12 on one ring: the empty extent, the name, and "Free" under it.
+                // S12 on one ring: the empty extent, the name, and "Free" — under the name
+                // on 4×2; in the empty bore on 4×1, where a second line has no room left
+                // (Fable call at Step 4, measured: 0 dp under Ø53 + the name).
+                // The bore slot is regular weight: a label, not a figure.
                 rv.setViewVisibility(STRIP_FIG[i], View.GONE)
-                rv.setViewVisibility(STRIP_RESET[i], View.VISIBLE)
-                rv.setTextViewText(STRIP_RESET[i], "Free")
-                rv.setTextColor(STRIP_RESET[i], ink(s.dark, 0.7f))
+                val slot = if (big) STRIP_RESET[i] else STRIP_FREE[i]
+                rv.setViewVisibility(slot, View.VISIBLE)
+                rv.setTextViewText(slot, "Free")
+                rv.setTextColor(slot, ink(s.dark, 0.7f))
                 continue
             }
             if (c.full) rv.setViewVisibility(STRIP_FIG[i], View.GONE)
@@ -1008,6 +1013,16 @@ object WidgetFace {
         rv.setTextViewTextSize(id, TypedValue.COMPLEX_UNIT_SP, sp)
         val dim = if (c.dim) DIM_FIGURE else 1f
         rv.setTextColor(id, if (c.pct == null) ink(dark, noReadingAlpha * dim) else fade(c.fillArgb, dim))
+    }
+
+    /**
+     * A white shape drawable in [argb]. A colour filter keeps the drawable's own (opaque)
+     * alpha, so a translucent [argb] would still paint solid: the colour goes in opaque
+     * and its alpha through `setImageAlpha` (found on the emulator at Step 4).
+     */
+    private fun tint(rv: RemoteViews, id: Int, argb: Int) {
+        rv.setInt(id, "setColorFilter", argb or 0xFF000000.toInt())
+        rv.setInt(id, "setImageAlpha", argb ushr 24)
     }
 
     /** R6's 0.45 on a ring or bar bitmap. */

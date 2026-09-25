@@ -132,6 +132,8 @@ ring += '\n\n' + I('ring_corner_dot','6dp','6dp', N+'    android:layout_gravity=
 
 # ------------------------------------------------------------------ Number
 def chip(id):
+    # The text is match_parent too: FrameLayout stretches match_parent children of a
+    # wrap_content frame only when there are two or more, else the bg collapses to 1 px.
     return f'''<FrameLayout
     android:id="@+id/{id}"
     android:layout_width="wrap_content"
@@ -139,7 +141,7 @@ def chip(id):
     android:layout_marginEnd="6dp"
     android:visibility="gone">
 {ind(I(id+'_bg','match_parent','match_parent', N+'    android:scaleType="fitXY"', src='widget_chip'),4)}
-{ind(T(id+'_text','11', N+'    android:layout_gravity="center"'+N+'    android:paddingStart="11dp"'+N+'    android:paddingEnd="11dp"', vis=None),4)}
+{ind(T(id+'_text','11', N+'    android:gravity="center"'+N+'    android:paddingStart="11dp"'+N+'    android:paddingEnd="11dp"', h='match_parent', vis=None),4)}
 </FrameLayout>'''
 
 number = ll('num_col', 'vertical', '\n'.join([
@@ -157,11 +159,11 @@ number = ll('num_col', 'vertical', '\n'.join([
             T('num_fig','32', N+'    android:layout_marginStart="10dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"', vis=None, bold=True),
             T('num_leftcap','10', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
         ]), extra=G('bottom')),
-        I('num_bar','match_parent','12dp', N+'    android:layout_marginTop="4dp"'+N+'    android:scaleType="fitXY"'),
+        I('num_bar','match_parent','12dp', N+'    android:layout_marginTop="1dp"'+N+'    android:scaleType="fitXY"'),
         ll('num_subrow', 'horizontal', '\n'.join([
-            T('num_sub','12', N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', w='0dp', vis=None),
-            T('num_stamp','10', N+'    android:layout_marginStart="8dp"'+N+'    android:singleLine="true"'),
-        ]), extra=G('bottom')+N+'    android:layout_marginTop="5dp"', vis='gone'),
+            T('num_sub','12', N+'    android:includeFontPadding="false"'+N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', w='0dp', vis=None),
+            T('num_stamp','10', N+'    android:includeFontPadding="false"'+N+'    android:layout_marginStart="8dp"'+N+'    android:singleLine="true"'),
+        ]), extra=G('bottom')+N+'    android:layout_marginTop="2dp"', vis='gone'),
     ]), h='0dp', extra=N+'    android:layout_weight="1"'+G('center_vertical')),
     ll('num_ctrl', 'horizontal', '\n'.join([
         chip('num_chip_s'), chip('num_chip_w'), chip('num_chip_fixed'),
@@ -194,7 +196,7 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
         T('cd_at_inline','11', N+'    android:layout_marginStart="6dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
     ]), extra=N+'    android:baselineAligned="true"'+N+'    android:layout_marginTop="2dp"'),
     T('cd_at_below','12', N+'    android:layout_marginTop="3dp"'+N+'    android:singleLine="true"'),
-    T('cd_msg','13.5', N+'    android:layout_marginTop="2dp"'+N+'    android:layout_marginBottom="2dp"', bold=True),
+    T('cd_msg','13.5', N+'    android:includeFontPadding="false"', bold=True),
     spacer('cd_gap1', 'v', vis='gone'),
     ll('cd_figrow', 'horizontal', '\n'.join([
         T('cd_fig','18', N+'    android:includeFontPadding="false"', vis=None, bold=True),
@@ -222,10 +224,11 @@ def cell(i):
 {ind(I(f'strip_ring{i}','53dp','53dp'),4)}
 {ind(ll(None,'vertical', chr(10).join([T(f'strip_fig{i}','13', N+'    android:includeFontPadding="false"', vis=None, bold=True), T(f'strip_tag{i}','8', N+'    android:includeFontPadding="false"', bold=True, text='Weekly')]), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_gravity="center"'),4)}
 {ind(T(f'strip_xtag{i}','8', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', bold=True, text='Weekly'),4)}
+{ind(T(f'strip_free{i}','13', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', text='Free'),4)}
 </FrameLayout>''',
         ll(None, 'horizontal', '\n'.join([
             I(f'strip_mark{i}','10dp','10dp', N+'    android:layout_marginEnd="3dp"'),
-            T(f'strip_label{i}','9.5', N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
+            T(f'strip_label{i}','9.5', N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
             I(f'strip_dot{i}','5dp','5dp', N+'    android:layout_marginStart="3dp"', vis='gone', src='notif_condition_dot'),
         ]), w='wrap_content', extra=G('center_vertical')+N+'    android:layout_marginTop="3dp"'),
         T(f'strip_reset{i}','10', N+'    android:singleLine="true"'),

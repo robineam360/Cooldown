@@ -809,8 +809,10 @@
         const color = accentFor(a, dark);
         if (isFree) {
           return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
-            ${ringWithFigure(d, stroke, { pct: null, dark, accent: color, noFigureSlot: true })}
-            <div style="font-size:${labelSize}px;text-align:center">${a.label}<br><span style="opacity:.7">Free</span></div>
+            ${isBig
+              ? ringWithFigure(d, stroke, { pct: null, dark, accent: color, noFigureSlot: true })
+              : ringWithFigure(d, stroke, { pct: null, dark, accent: color, figure: '<span style="font-weight:400;opacity:.7">Free</span>', figSize })}
+            <div style="font-size:${labelSize}px;text-align:center">${a.label}${isBig ? '<br><span style="opacity:.7">Free</span>' : ''}</div>
           </div>`;
         }
         const pctText = pct == null ? '—' : fmtPct({ pct }, isLeft);

@@ -157,7 +157,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="12dp"
                         android:importantForAccessibility="no"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="1dp"
                         android:scaleType="fitXY" />
                     <LinearLayout
                         android:id="@+id/num_subrow"
@@ -166,13 +166,14 @@
                         android:orientation="horizontal"
                         android:visibility="gone"
                         android:gravity="bottom"
-                        android:layout_marginTop="5dp">
+                        android:layout_marginTop="2dp">
                         <TextView
                             android:id="@+id/num_sub"
                             style="@style/WFace.ShadowDark"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:textSize="12sp"
+                            android:includeFontPadding="false"
                             android:layout_weight="1"
                             android:singleLine="true"
                             android:ellipsize="end" />
@@ -183,6 +184,7 @@
                             android:layout_height="wrap_content"
                             android:textSize="10sp"
                             android:visibility="gone"
+                            android:includeFontPadding="false"
                             android:layout_marginStart="8dp"
                             android:singleLine="true" />
                     </LinearLayout>
@@ -211,9 +213,9 @@
                             android:id="@+id/num_chip_s_text"
                             style="@style/WFace.ShadowDark"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:textSize="11sp"
-                            android:layout_gravity="center"
+                            android:gravity="center"
                             android:paddingStart="11dp"
                             android:paddingEnd="11dp" />
                     </FrameLayout>
@@ -234,9 +236,9 @@
                             android:id="@+id/num_chip_w_text"
                             style="@style/WFace.ShadowDark"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:textSize="11sp"
-                            android:layout_gravity="center"
+                            android:gravity="center"
                             android:paddingStart="11dp"
                             android:paddingEnd="11dp" />
                     </FrameLayout>
@@ -257,9 +259,9 @@
                             android:id="@+id/num_chip_fixed_text"
                             style="@style/WFace.ShadowDark"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:textSize="11sp"
-                            android:layout_gravity="center"
+                            android:gravity="center"
                             android:paddingStart="11dp"
                             android:paddingEnd="11dp" />
                     </FrameLayout>

@@ -21,8 +21,18 @@ object Surfaces {
     /** Redraws the notification and every placed widget from [cache], then re-arms. */
     fun refresh(context: Context, cache: UsageCache) {
         PinnedNotification.update(context, cache)
-        FaceWidgetProvider.contained(context) { WidgetHost.updateAll(context, cache) }
-        arm(context)
+        // Off the caller's thread: most Settings changes land here from a click handler,
+        // and every placed widget's whole size map is drawn. One thread, so two refreshes
+        // never interleave their updates.
+        val app = context.applicationContext
+        widgetThread.execute {
+            FaceWidgetProvider.contained(app) { WidgetHost.updateAll(app, UsageCache(app)) }
+            arm(app)
+        }
+    }
+
+    private val widgetThread = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+        Thread(r, "cooldown-widgets").apply { isDaemon = true }
     }
 
     /**

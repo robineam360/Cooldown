@@ -123,8 +123,7 @@
                     android:textSize="13.5sp"
                     android:textStyle="bold"
                     android:visibility="gone"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="2dp" />
+                    android:includeFontPadding="false" />
                 <FrameLayout
                     android:id="@+id/cd_gap1"
                     android:layout_width="1dp"

@@ -37,6 +37,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,11 +92,13 @@ class WidgetConfigActivity : ComponentActivity() {
             if (!view.isInEditMode) SideEffect {
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !dark
             }
-            var account by remember {
-                mutableStateOf(profiles.firstOrNull { it.key == stored.accountKey } ?: profiles.firstOrNull())
+            // Saveable, so a fold or unfold mid-config keeps the picks.
+            var accountKey by rememberSaveable {
+                mutableStateOf((profiles.firstOrNull { it.key == stored.accountKey } ?: profiles.firstOrNull())?.key)
             }
-            var windowPick by remember { mutableStateOf(stored.window) }
-            var bg by remember { mutableStateOf(stored.background) }
+            val account = profiles.firstOrNull { it.key == accountKey }
+            var windowPick by rememberSaveable { mutableStateOf(stored.window) }
+            var bg by rememberSaveable { mutableStateOf(stored.background) }
 
             ConfigScreen(
                 face = face,
@@ -106,7 +109,7 @@ class WidgetConfigActivity : ComponentActivity() {
                 window = windowPick,
                 background = bg,
                 reconfigure = reconfigure,
-                onAccount = { account = it },
+                onAccount = { accountKey = it.key },
                 onWindow = { windowPick = it },
                 onBackground = { bg = it },
                 onBack = { finish() },
@@ -154,7 +157,7 @@ private fun ConfigScreen(
     onWindow: (FaceWindow) -> Unit,
     onBackground: (FaceBackground) -> Unit,
     onBack: () -> Unit,
-    preview: () -> Pair<Bucket, android.widget.RemoteViews>,
+    preview: () -> Pair<Bucket, android.widget.RemoteViews>?,
     onSave: () -> Unit,
 ) {
     val surface = Color(if (dark) 0xFF0D0D0D else 0xFFF5EFE8)
@@ -183,11 +186,14 @@ private fun ConfigScreen(
             }
 
             // The live preview: the very render the launcher gets, at the widget's size.
-            val (bucket, views) = preview()
-            BoxWithConstraints(
+            // Rebuilt only when a pick changes; a preview that fails to draw is left out
+            // rather than taking the screen down.
+            val built = remember(account, window, background) { runCatching(preview).getOrNull() }
+            if (built != null) BoxWithConstraints(
                 Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
+                val (bucket, views) = built
                 val scale = minOf(1f, maxWidth.value / bucket.widthDp)
                 Box(Modifier.requiredSize((bucket.widthDp * scale).dp, (bucket.heightDp * scale).dp)) {
                     AndroidView(

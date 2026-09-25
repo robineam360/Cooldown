@@ -175,7 +175,9 @@ object WidgetHost {
             @Suppress("DEPRECATION")
             options.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES)
         }
-        sizes?.firstOrNull()?.let { return it }
+        // A Fold lists the cover and the inner size; the smallest always fits whichever
+        // screen is showing, so the one-size fallback is never clipped.
+        sizes?.minByOrNull { it.width * it.height }?.let { return it }
         val w = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
         val h = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
         return if (w > 0 && h > 0) SizeF(w.toFloat(), h.toFloat()) else null

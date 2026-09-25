@@ -1408,7 +1408,9 @@ face; `WidgetFaceTest` covers every state × bucket.
   buckets.
 - More than four accounts: the first four and a "+N" cell. One account: centred. No accounts: S10.
   S6–S8 and S12 apply per ring. Narrow: the reset drops first, then the label; the ring never gives
-  way (CCBG-10's rule).
+  way (CCBG-10's rule). S12 on 4×1 puts "Free" in the empty bore (regular weight, 70% ink):
+  measured at Step 4, a line under the name has 0 dp left there (Fable call, 2026-09-25; the
+  wireframe's S12 branch updated to match).
 - **Provider in (Step 4, 2026-09-25):** `widgets.StripWidgetProvider` (R9), 4×1/4×2, default
   4×1, picker name "All accounts"; its tap opens Cooldown as it was (no one account to open).
 

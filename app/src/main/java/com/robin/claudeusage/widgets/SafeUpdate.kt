@@ -37,10 +37,13 @@ object SafeUpdate {
         fallback: () -> RemoteViews,
         log: (String) -> Unit,
     ): Outcome {
-        val first = try {
+        val first: Throwable = try {
             updater.update(appWidgetId, full())
             return Outcome.UPDATED
         } catch (e: Exception) {
+            e
+        } catch (e: OutOfMemoryError) {
+            // Drawing every bucket's bitmaps ran out: one size is exactly the remedy.
             e
         }
         if (!isHostLimit(first)) {
@@ -55,12 +58,15 @@ object SafeUpdate {
         } catch (second: Exception) {
             log("widget $appWidgetId fallback refused too (${describe(second)}); keeping the last face")
             Outcome.FAILED
+        } catch (second: OutOfMemoryError) {
+            log("widget $appWidgetId fallback refused too (${describe(second)}); keeping the last face")
+            Outcome.FAILED
         }
     }
 
     /** The three shapes R10 names. */
     fun isHostLimit(t: Throwable): Boolean {
-        if (t is IllegalArgumentException || t is TransactionTooLargeException) return true
+        if (t is IllegalArgumentException || t is TransactionTooLargeException || t is OutOfMemoryError) return true
         if (t !is RuntimeException) return false
         var c: Throwable? = t.cause
         var depth = 0
