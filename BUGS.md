@@ -11,6 +11,54 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ## Open
 
+> **Critical — tester feedback, 2026-09-25 (Raja Jawahar, Slack DM, v1.7).** CCBG-31 to CCBG-34
+> below are the next session's first work, ahead of any CCRM-78 (Widgets Reborn) step. Logged
+> only: no reproduction or analysis was done when they were filed. Source: the 19:48 IST thread
+> with three screenshots, and the 19:49 message on alert crashes.
+
+### CCBG-31 · Alert Crash — enabling alerts crashes the app
+- **Status:** Open — **Critical, first in the queue.** Not yet reproduced.
+- **Severity:** High (crash)
+- **Symptom:** **Reported by Raja, 2026-09-25:** *"Couple of crashes I observed when I enable
+  Alerts."* No stack trace, device or Android version was given. Robin has not used alerts for a
+  while (the always-on notification covers his use), so the alert path has gone unexercised
+  since the multi-provider and widget work landed.
+- **To do next session:** reproduce on the Fold 7 and an emulator (turn each alert on, per
+  provider and per account, and let one fire) with `adb logcat` capturing the trace; ask Raja for
+  his device, Android version and exact steps if it will not reproduce. The app has no crash
+  reporter — Raja asked whether Crashlytics is on; it is not, so the trace has to come from logcat.
+
+### CCBG-32 · Accounts Button Wrap — the sign-in card's "Cancel" wraps one letter per line
+- **Status:** Open — Critical (tester-visible on first sign-in).
+- **Severity:** Medium (broken layout on the Accounts screen)
+- **Symptom:** **Reported by Raja, 2026-09-25, with screenshots.** In a Claude account's *Finish
+  signing in* card, the button row *Finish sign-in · Reopen page · Cancel* does not fit the
+  width, so "Cancel" is squeezed into a one-character column ("C / a / n / c / el"). Seen on a
+  newly added account after the latest Accounts redesign — Robin had not re-tested adding an
+  account since it.
+- **Note:** a fix that restores the approved Accounts layout needs no wireframe (CLAUDE.md §2); a
+  new arrangement of the row does.
+
+### CCBG-33 · Device-Code Prerequisite — ChatGPT sign-in fails unless a ChatGPT setting is on
+- **Status:** Open — Critical (blocks a new user's ChatGPT sign-in).
+- **Severity:** Medium (sign-in cannot complete, and the app does not say why)
+- **Symptom:** **Reported by Raja, 2026-09-25, with a screenshot.** ChatGPT's *Sign in with a
+  code* only works after the user turns on **"Enable device code sign-in for Codex, Excel,
+  PowerPoint, and Word"** in their ChatGPT settings. Robin had it on already (Codex on a headless
+  Raspberry Pi), so the requirement never showed. Raja asks for a note in the ChatGPT section.
+- **To do:** name the prerequisite in the app's ChatGPT sign-in step and in the user guide
+  (`docs/src/`). The in-app note is a visible change — wireframe first (CLAUDE.md §2).
+
+### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
+- **Status:** Open — Critical per Robin's triage; **needs clarification from Raja first.**
+- **Severity:** Low (labelling)
+- **Symptom:** **Reported by Raja, 2026-09-25:** *"Rather than Account, if we get Meta data, we
+  can show the Display Name."* Robin replied asking whether this means the account's email
+  address; no answer yet. Read together with the screenshots, it likely means labelling an
+  account by the name or email the provider returns rather than a generic default.
+- **To do:** get Raja's answer, then check what the Claude and ChatGPT profile calls return. Any
+  label change is visible — wireframe first (CLAUDE.md §2).
+
 ### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
 - **Status:** **Shipped v1.7 (2026-09-25).** **Fixed (2026-09-16)** — built, unit-tested (3 new cases) and **seen on the Fold 7 the
   same day**: the ChatGPT card's 5h window reads `0% used` with *"Starts when a message is sent"*,
