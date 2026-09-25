@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCRM-78 (Widgets Reborn) — rev A, for review</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 140px; line-height: 1.5;
+  }
+  .page { max-width: 1320px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 84ch; margin: 0 0 12px; font-size: 14px; }
+  .review {
+    display: inline-block; font-size: 12.5px; color: var(--warn); border: 1px solid var(--warn);
+    border-radius: 6px; padding: 4px 10px; margin: 4px 0 4px;
+  }
+  .rules-box { border: 1px solid var(--hair); border-radius: 12px; padding: 12px 16px; margin: 16px 0 0; max-width: 84ch; font-size: 12.5px; color: var(--muted); }
+  .rules-box b { color: var(--ink); }
+  .rules-box ul { margin: 6px 0 0; padding-left: 18px; }
+  .rules-box li { margin: 0 0 4px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 58px 0 4px; }
+  h3 { font-size: 14.5px; font-weight: 650; margin: 26px 0 8px; }
+  h4 { font-size: 12.5px; font-weight: 650; margin: 18px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 90ch; margin: 0 0 18px; }
+  .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 50px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin: 6px 0 0; max-width: 200px;
+  }
+  .cap.good { color: var(--good); } .cap.bad { color: var(--bad); } .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .row { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 92ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 8px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 90ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 12px; }
+  .q { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0; font-size: 13.5px; max-width: 84ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 12.5px; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .tbl-wrap { overflow-x: auto; }
+  .scroll { overflow-x: auto; padding-bottom: 10px; }
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .04em; color: var(--muted); margin: 6px 0 0; text-align: left; max-width: 240px; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 340px; margin: 6px 0 0; }
+  .note.wide { max-width: 720px; }
+  .unver { color: var(--warn); font-weight: 650; }
+
+  /* ---- widget tiles ---- */
+  .dev { font-family: Roboto, Arial, sans-serif; }
+  .tf { margin: 0 16px 20px 0; display: inline-block; vertical-align: top; }
+  .tile { position: relative; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }
+  .tile.overflow { outline: 2px solid var(--bad); outline-offset: 2px; }
+  .overflowcap { position: absolute; left: 3px; right: 3px; bottom: 3px; font-family: ui-monospace, monospace; font-size: 8px; color: #fff; background: var(--bad); padding: 1px 4px; border-radius: 3px; line-height: 1.3; z-index: 5; }
+  .fitrun { display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .ringfig { font-weight: 700; line-height: 1; font-family: Roboto, Arial, sans-serif; }
+  .liv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 8px; letter-spacing: .04em; color: var(--good); }
+  .matrix-wrap table td.sizehead, .matrix-wrap table th.sizehead { font-family: ui-monospace, monospace; }
+  .statebadge { display:inline-block; font-family: ui-monospace, monospace; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--hair); color: var(--ink); margin-right: 6px; }
+
+  /* ---- phone frame (config screens) ---- */
+  .phone { width: 360px; border-radius: 28px; border: 6px solid #000; overflow: hidden; position: relative; font-family: Roboto, Arial, sans-serif; }
+  .room { --rsurface:#000; --rcard:#000; --rink:#000; --rmuted:#0009; --raccent:#000; background: var(--rsurface); color: var(--rink); }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 10px; font-size: 17px; font-weight: 600; }
+  .topbar .sp { flex: 1; }
+  .mk { flex: 0 0 auto; }
+  .chiprow2 { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .fchip3 { height: 34px; padding: 0 14px; border-radius: 17px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; border: 1px solid rgba(255,255,255,.18); }
+  .fchip3.sel { border-color: transparent; font-weight: 700; }
+  .cfgrow { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .cfglabel { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .65; margin-bottom: 8px; }
+  .primbtn { height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14.5px; margin: 16px; }
+  .kebabmenu { border-radius: 12px; padding: 6px 0; width: 210px; font-size: 14px; }
+  .kebabitem { padding: 10px 16px; }
+  .kebabitem.err { color: var(--bad); }
+  .dlgwrap { background: rgba(0,0,0,.55); border-radius: 20px; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .dlg { width: 300px; border-radius: 20px; padding: 20px; }
+  .dlg .dt { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .dlg .db { font-size: 12.5px; opacity: .85; line-height: 1.55; }
+  .dlg .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px; }
+  .dlgbtn { font-size: 13.5px; font-weight: 650; padding: 6px 10px; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+    <symbol id="icoMore" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="icoBack" viewBox="0 0 24 24"><polyline points="15,5 8,12 15,19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev A</p>
+  <h1>Four home-screen faces, none of them a clone of the app</h1>
+  <p class="lede">
+    A status-bar-style <b>Ring</b> (CCRM-79 (Ring Face)) at two sizes; a <b>Number</b> face
+    (CCRM-80 (Number Face)) carrying the always-on notification's Huge-number geometry through
+    three widths, gaining an absolute reset line and then a window/account control row as it
+    grows; a new <b>Countdown</b> face (CCRM-81 (Countdown Face)) that answers "when does it come
+    back" as a live chronometer or an absolute clock time, never a static relative one; and a new
+    <b>Accounts Strip</b> (CCRM-82 (Accounts Strip)) — every account as its own small ring, never
+    summed. Riding along: the measured Duet label clamp (CCBG-24 (Duet Label Clamp)), the
+    Accounts-tab "Clear usage history…" action (CCRM-14 (Clear History)), the Debug-section
+    synthetic-series override (CCRM-15 (Above-Pace Verification)), the Faces gallery
+    (CCRM-84 (Faces Gallery)) and the Share Card (CCRM-24 (Share Card)).
+  </p>
+  <p class="review">Rev A &mdash; for review. Nothing is approved yet.</p>
+  <div class="rules-box">
+    <b>Rules on every tile</b>
+    <ul>
+      <li><b>R1 wording</b> &mdash; "5h" and "Weekly", never "5-hour window" or "7-day".</li>
+      <li><b>R2 clocks</b> &mdash; every time is 12-hour, always; a day is added only past 24h out
+        ("Sat 9:10 PM"). No 24-hour time appears anywhere on this page.</li>
+      <li><b>R4 time is a claim</b> &mdash; every time is <b>live</b> (a ticking chronometer,
+        captioned) or <b>absolute</b> ("Resets 9:10 PM", "at 9:10 PM"). Never a static relative
+        time &mdash; no countdown-language remaining-time phrasing, no elapsed-since-last-refresh
+        caption, no refresh glyph.</li>
+      <li><b>R6 stale</b> &mdash; the figure dims to 0.5, the ring/bar to 0.45, with "Stale"
+        where a sub-line exists.</li>
+      <li><b>No combined figure anywhere</b> &mdash; least of all on the Strip.</li>
+    </ul>
+  </div>
+
+  <script>
+    // ============================================================================
+    // Fixtures — now, resets, accounts (registry order), rooms and severity ladder.
+    // ============================================================================
+    const NOW_LABEL = "6:29 PM";
+    const RESET_5H_LABEL = "9:10 PM";
+    const RESET_WEEKLY_LABEL = "Sat 9:10 PM";
+
+    // Rooms — same token values as design/2026-09-17-main-screen-redesign.html §JS,
+    // and Palette.kt's own ladder (barColor: >=100 red / >90 orange / >80 yellow).
+    const CLAUDE_DARK  = { accent: '#E59980', g100: '#FF5252', g90: '#FFA726', g80: '#FDD663', card: '#1A1A1A', surface: '#0D0D0D' };
+    const CLAUDE_LIGHT = { accent: '#D97757', g100: '#C62828', g90: '#F57C00', g80: '#F9A825', card: '#FCF8F4', surface: '#F5EFE8' };
+    const GPT_DARK     = { accent: '#19C39A', g100: '#FF5252', g90: '#FFA726', g80: '#FDD663', card: '#1A1A1A', surface: '#0D0D0D' };
+    const GPT_LIGHT    = { accent: '#10A37F', g100: '#C62828', g90: '#F57C00', g80: '#F9A825', card: '#FFFFFF', surface: '#F5F5F5' };
+    // Product's per-account accent override (Palette.options "Purple") — the reason it
+    // does NOT share Pro/Teams's hue, per Q3: "two Claude accounts share a hue" is Pro+Teams.
+    const PRODUCT_OVERRIDE = { dark: '#CE93D8', light: '#8E24AA' };
+
+    // Registry order (CCRM-71 (Account Order)) — fixed for every cycler/first-account example.
+    const ACCOUNTS = [
+      { key: 'pro',     label: 'Pro',     provider: 'claude', override: null },
+      { key: 'teams',   label: 'Teams',   provider: 'claude', override: null },
+      { key: 'product', label: 'Product', provider: 'claude', override: PRODUCT_OVERRIDE },
+      { key: 'chatgpt', label: 'ChatGPT', provider: 'gpt',    override: null, weeklyOnly: true },
+    ];
+    function acc(key) { return ACCOUNTS.find(a => a.key === key); }
+    function accentFor(a, dark) {
+      if (a.override) return dark ? a.override.dark : a.override.light;
+      const room = a.provider === 'claude' ? (dark ? CLAUDE_DARK : CLAUDE_LIGHT) : (dark ? GPT_DARK : GPT_LIGHT);
+      return room.accent;
+    }
+    function ladder(dark) { return dark ? CLAUDE_DARK : CLAUDE_LIGHT; } // ladder hues are provider-agnostic
+    function sevColor(pct, dark, accent) {
+      if (pct == null) return accent;
+      const L = ladder(dark);
+      if (pct >= 100) return L.g100;
+      if (pct > 90) return L.g90;
+      if (pct > 80) return L.g80;
+      return accent;
+    }
+    function ink(dark, a) { return dark ? `rgba(255,255,255,${a})` : `rgba(17,17,18,${a})`; }
+    function roomCard(a, dark) {
+      if (a.override) return dark ? '#241C28' : '#F8EEFB'; // a plausible card tint for the overridden hue
+      const room = a.provider === 'claude' ? (dark ? CLAUDE_DARK : CLAUDE_LIGHT) : (dark ? GPT_DARK : GPT_LIGHT);
+      return room.card;
+    }
+
+    // ---- fit-check: canvas.measureText against the run's declared available width ----
+    const fitCv = document.createElement('canvas');
+    const fitCx = fitCv.getContext('2d');
+    function textPx(text, sizePx, weight) {
+      fitCx.font = `${weight || 400} ${sizePx}px Roboto, Arial, sans-serif`;
+      return fitCx.measureText(text).width;
+    }
+    let FIT_RUN_ID = 0;
+    const FIT_REGISTRY = [];
+    function fitSpan(text, sizePx, weight, availPx, extraStyle) {
+      const w = textPx(text, sizePx, weight);
+      const id = 'fr' + (FIT_RUN_ID++);
+      const over = w - availPx;
+      if (over > 0.5) FIT_REGISTRY.push({ id, over, text, availPx, w });
+      return `<span id="${id}" class="fitrun" style="font-size:${sizePx}px;font-weight:${weight || 400};max-width:${availPx}px;${extraStyle || ''}">${text}</span>`;
+    }
+    function runFitCheck() {
+      FIT_REGISTRY.forEach(r => {
+        const el = document.getElementById(r.id);
+        if (!el) return;
+        const t = el.closest('.tile');
+        if (!t) return;
+        t.classList.add('overflow');
+        let cap = t.querySelector('.overflowcap');
+        if (!cap) { cap = document.createElement('div'); cap.className = 'overflowcap'; t.appendChild(cap); }
+        cap.textContent = `⚠ "${r.text}" overflows by ${Math.ceil(r.over)}px of ${r.availPx}px`;
+      });
+    }
+
+    // ---- S13 synthetic marker (R8) — recommended form: a violet 7dp dot, always,
+    // plus a "SYNTHETIC" micro-tag where the face has 120dp+ to spend on it. See §2/§10. ----
+    function synthOverlay(w) {
+      const dot = `<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#B388FF;box-shadow:0 0 0 1.5px rgba(0,0,0,.28);z-index:4"></div>`;
+      const tag = w >= 120 ? `<div style="position:absolute;left:5px;bottom:5px;font-size:7.5px;font-weight:700;letter-spacing:.06em;color:#fff;background:#7C4DFF;padding:1px 5px;border-radius:4px;z-index:4">SYNTHETIC</div>` : '';
+      return dot + tag;
+    }
+
+    // ---- provider mark ----
+    function mark(provider, size, color) {
+      const id = provider === 'claude' ? 'mkClaude' : 'mkGpt';
+      return `<svg class="mk" width="${size}" height="${size}" viewBox="0 0 24 24" style="color:${color}"><use href="#${id}"/></svg>`;
+    }
+
+    // ---- rails ring: hairline extent, usage band, red slice, hub, needle, spent x ----
+    // Faithful (scaled) to ui/UsageIcon.kt railsGauge's draw order: extent, usage, red
+    // slice, hub, needle, spent cross — see the code note above this script's data section.
+    function ringSVG(size, stroke, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const r = (size - stroke) / 2 - 1;
+      const cx = size / 2, cy = size / 2;
+      const hairW = Math.max(1.1, stroke * 0.26);
+      let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${ink(dark, .5)}" stroke-width="${hairW}"/>`;
+      const pct = o.pct;
+      if (pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, pct));
+        const fill = o.color || sevColor(pct, dark, o.accent);
+        const over = o.elapsed != null && (pct - o.elapsed) > 3 && o.showRed !== false;
+        if (v >= 100) {
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"/>`;
+        } else if (v > 0) {
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"
+            stroke-dasharray="${v} 100" pathLength="100" stroke-linecap="${over ? 'butt' : 'round'}"
+            transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        if (over) {
+          const e = Math.min(100, o.elapsed);
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${dark ? '#FF5252' : '#C62828'}" stroke-width="${stroke}"
+            pathLength="100" stroke-dasharray="0 ${e} ${Math.max(0, v - e)} 100" stroke-linecap="butt"
+            transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        const needleDraws = o.elapsed != null && v > 0;
+        if (needleDraws) {
+          const a = (Math.min(100, o.elapsed) / 100) * 2 * Math.PI - Math.PI / 2;
+          const hubR = Math.max(1.2, stroke * 0.30);
+          const rim = r + stroke / 2 + 1.5;
+          s += `<circle cx="${cx}" cy="${cy}" r="${hubR}" fill="${ink(dark, .85)}"/>`;
+          s += `<line x1="${cx + hubR * Math.cos(a)}" y1="${cy + hubR * Math.sin(a)}" x2="${cx + rim * Math.cos(a)}" y2="${cy + rim * Math.sin(a)}"
+            stroke="${ink(dark, .85)}" stroke-width="${Math.max(1, stroke * 0.20)}" stroke-linecap="round"/>`;
+        }
+        if (v >= 100 && o.spentX) {
+          const arm = r * 0.32, c2 = dark ? '#fff' : '#111';
+          const w2 = Math.max(1.4, stroke * 0.22);
+          s += `<line x1="${cx - arm}" y1="${cy - arm}" x2="${cx + arm}" y2="${cy + arm}" stroke="${c2}" stroke-width="${w2}" stroke-linecap="round"/>`;
+          s += `<line x1="${cx + arm}" y1="${cy - arm}" x2="${cx - arm}" y2="${cy + arm}" stroke="${c2}" stroke-width="${w2}" stroke-linecap="round"/>`;
+        }
+      }
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block">${s}</svg>`;
+    }
+    function ringWithFigure(d, stroke, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const showX = o.pct != null && o.pct >= 100 && o.spentX !== false && !o.forcePercentAt100;
+      const svg = ringSVG(d, stroke, { pct: o.pct, elapsed: o.elapsed, dark, accent: o.accent, showRed: o.showRed, noReading: o.noReading, spentX: showX });
+      let center = '';
+      if (!o.noFigureSlot) {
+        if (o.pct != null && o.pct >= 100 && o.forcePercentAt100) {
+          center = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">100%</div>`;
+        } else if (!showX && o.figure != null) {
+          center = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">${o.figure}</div>`;
+        }
+      }
+      return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dimRing ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}</div>`;
+    }
+
+    // ---- bar (HTML/CSS, avoids SVG viewBox math for a tick that overhangs) ----
+    function barHTML(w, h, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const track = ink(dark, .16);
+      let fill = '';
+      if (o.pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, o.pct));
+        const color = o.color || sevColor(o.pct, dark, o.accent);
+        fill = `<div style="position:absolute;left:0;top:0;bottom:0;width:${v}%;${v > 0 ? `min-width:${h}px;` : ''}border-radius:${h / 2}px;background:${color}${o.dimFill ? ';opacity:.45' : ''}"></div>`;
+      }
+      let tick = '';
+      if (o.paceTick != null) {
+        tick = `<div style="position:absolute;left:${o.paceTick}%;top:-${h * 0.4}px;bottom:-${h * 0.4}px;width:2px;background:${ink(dark, .55)};border-radius:1px"></div>`;
+      }
+      return `<div style="position:relative;width:${w}px;height:${h}px;border-radius:${h / 2}px;background:${track};overflow:visible;margin-top:${h * 0.4 + 1}px">${fill}${tick}</div>`;
+    }
+
+    // ---- label row: mark + text (+ optional stale/broken affordance) ----
+    function labelRow(a, color, text, markSize, fontSize, dark, opts) {
+      opts = opts || {};
+      const dot = opts.dot ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'};margin-left:4px;flex:0 0 auto"></span>` : '';
+      const textHtml = opts.fit != null ? fitSpan(text, fontSize, opts.weight || 500, opts.fit) : `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${text}</span>`;
+      return `<div style="display:flex;align-items:center;gap:4px;font-size:${fontSize}px;font-weight:${opts.weight || 500};${opts.dim ? 'opacity:.5' : ''}">
+        ${a ? mark(a.provider, markSize, color) : ''}${textHtml}${dot}
+      </div>`;
+    }
+
+    // ---- tile wrapper: fixed dp box, Solid room card or Transparent over wallpaper ----
+    const WALL_LIGHT = 'linear-gradient(135deg,#cfe3f7 0%,#f3ddc8 55%,#eef2f8 100%)';
+    const WALL_DARK  = 'linear-gradient(135deg,#141826 0%,#241f3a 55%,#171a22 100%)';
+    function tile(o) {
+      const radius = o.radius != null ? o.radius : 24;
+      let bg;
+      if (o.bg === 'transparent') bg = o.wallpaper === 'dark' ? WALL_DARK : WALL_LIGHT;
+      else bg = o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4');
+      const textColor = o.dark ? '#EDE8E4' : '#26211E';
+      const border = o.bg === 'transparent' ? '' : `border:1px solid ${o.dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'};`;
+      return `<div class="tile" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">
+        <div style="position:absolute;inset:0;padding:${o.pad != null ? o.pad : 7}px;box-sizing:border-box">${o.content}</div>
+        ${o.synthetic ? synthOverlay(o.w) : ''}
+      </div>`;
+    }
+    function tf(tileHtml, caption, w) {
+      return `<figure class="tf" style="margin:0 16px 18px 0;max-width:${w ? w + 40 : 400}px"><div>${tileHtml}</div><figcaption class="devcap">${caption}</figcaption></figure>`;
+    }
+  </script>
+
+  <hr class="hr">
+  <h2>1 &middot; Each face at each size &mdash; four backgrounds</h2>
+  <p class="sub">
+    S1 (normal), dark and light Solid (the account's Room card colour, radius = the system
+    <code>system_app_widget_background_radius</code>, drawn at 24 dp), and Transparent over a
+    light and a dark wallpaper &mdash; including the <b>mismatched</b> case, drawn honestly.
+    Cover sizes shown; the Fold 7 cover cell is 90.75&times;84 dp (4&times;2 = 363&times;168 dp).
+  </p>
+  <div id="s1-root"></div>
+
+  <script>
+    // ============================================================================
+    // Face renderers — one function per face, parameterised by bucket size.
+    // ============================================================================
+    const COVER = { '1x1': [91, 84], '2x1': [181, 84], '2x2': [181, 168], '4x1': [363, 84], '4x2': [363, 168] };
+    const INNER = { '1x1': [118, 100], '2x1': [236, 100], '2x2': [236, 200], '4x1': [472, 100], '4x2': [472, 200] };
+
+    // ---- state fixtures, keyed S1..S14 (a face picks what it needs from these) ----
+    const ST = {
+      S1: { pct: 47, elapsed: 38, sub: `Resets ${RESET_5H_LABEL}` },
+      S2: { pct: 62, elapsed: 45, sub: `Resets ${RESET_5H_LABEL}` }, // above pace: pct - elapsed > 3
+      S3: { pct: 100, elapsed: 70, sub: `Resets ${RESET_5H_LABEL}` },
+      S4: { pct: 31, elapsed: 52, sub: `Resets ${RESET_WEEKLY_LABEL}`, weeklyOnly: true },
+      S5: { pct: null, elapsed: null, sub: 'Starts when a message is sent' },
+      S6: { pct: null, elapsed: null, sub: `Reset ${RESET_5H_LABEL}`, noReading: true },
+      S7: { pct: 47, elapsed: 38, sub: 'Sign-in needed', broken: true },
+      S8: { pct: 47, elapsed: 38, sub: 'Stale', stale: true },
+      S9: { removed: true },
+      S10u: { unassigned: true, pct: 47, elapsed: 38, sub: `Resets ${RESET_5H_LABEL}` },
+      S10n: { noAccounts: true },
+      S11: { pct: 47, elapsed: 38, left: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S12: { free: true },
+      S13: { pct: 47, elapsed: 38, synthetic: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S14: { unavailable: true },
+    };
+    const STATE_ORDER = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14'];
+    const STATE_LABEL = {
+      S1: 'S1 normal', S2: 'S2 above pace', S3: 'S3 100%', S4: 'S4 no 5h window',
+      S5: 'S5 not started', S6: 'S6 reset passed', S7: 'S7 sign-in broken', S8: 'S8 stale',
+      S9: 'S9 account removed', S10: 'S10 unassigned / no accounts', S11: 'S11 Left mode',
+      S12: 'S12 Free plan', S13: 'S13 synthetic', S14: 'S14 unavailable',
+    };
+
+    function fmtPct(st, left) {
+      if (st.pct == null) return null;
+      return left ? `${Math.max(0, 100 - Math.trunc(st.pct))}%` : `${Math.trunc(st.pct)}%`;
+    }
+
+    // Generic "message-only" tile body for S9 / S10n / S12 / S14 — centred text, no ring/bar.
+    function msgBody(text, sizePx, dark, opts) {
+      opts = opts || {};
+      return `<div style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center">
+        <div style="font-size:${sizePx}px;line-height:1.25;${opts.dim ? 'opacity:.7' : ''};max-width:100%">${text}</div>
+      </div>`;
+    }
+
+    // ---------------------------------------------------------------- Ring (CCRM-79)
+    function ringFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const isSmall = bucket === '1x1';
+      const d = isSmall ? 64 : Math.min(110, 140);
+      const stroke = isSmall ? 6 : 9;
+      const figSize = isSmall ? 16 : 26;
+      const st = ST[stateKey] || ST.S1;
+      const color = accentFor(a, dark);
+
+      if (stateKey === 'S9') return msgBody('Account removed<br><span style="font-size:.72em;opacity:.75">tap to choose</span>', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown<br>to sign in', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S12') return msgBody('No usage<br>on this plan', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S14') return msgBody(isSmall ? 'Update<br>Cooldown' : 'Unavailable in this version<br>update Cooldown', isSmall ? 9.5 : 11, dark);
+
+      let effA = a, label = a.label, sub = st.sub, dimAll = false, dot = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
+      if (stateKey === 'S7') dot = true;
+      if (stateKey === 'S8') dimAll = true;
+      const effColor = accentFor(effA, dark);
+      const pctText = fmtPct(st, stateKey === 'S11');
+      const windowTag = st.weeklyOnly ? 'Weekly' : '5h';
+
+      const ringHtml = ringWithFigure(d, stroke, {
+        pct: st.pct, elapsed: st.elapsed, dark, accent: effColor, showRed: true,
+        noReading: st.noReading, spentX: !opts.forcePercent, forcePercentAt100: !!opts.forcePercent,
+        figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll,
+      });
+
+      if (isSmall) {
+        return `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`;
+      }
+      const labelText = st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`;
+      return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+        ${ringHtml}
+        ${labelRow(effA, effColor, labelText, 12, 12, dark, { dim: dimAll, dot, weight: 500 })}
+      </div>`;
+    }
+
+    // -------------------------------------------------------------- Number (CCRM-80)
+    function numberFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const st = ST[stateKey] || ST.S1;
+      const [w, h] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      if (stateKey === 'S9') return msgBody('Account removed · tap to choose', 11.5, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11.5, dark);
+      if (stateKey === 'S12') return msgBody('No usage on this plan', 11.5, dark);
+      if (stateKey === 'S14') {
+        const full = 'Unavailable in this version · update Cooldown';
+        const text = bucket === '2x1' ? 'Update Cooldown' : full;
+        return msgBody(text, 11.5, dark);
+      }
+
+      let effA = a, label = a.label, dimAll = false, dot = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
+      if (stateKey === 'S7') dot = true;
+      if (stateKey === 'S8') dimAll = true;
+      const color = accentFor(effA, dark);
+      const pctText = fmtPct(st, stateKey === 'S11') ?? '—';
+      const paceTick = st.elapsed;
+      const labelText = st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`;
+      const availLabel = bucket === '2x1' ? 90 : bucket === '4x1' ? 260 : 260;
+
+      const row1 = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        ${labelRow(effA, color, labelText, 14, 13, dark, { dim: dimAll, dot, fit: availLabel, weight: 500 })}
+      </div>`;
+      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 8, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick })}</div>`;
+      const figRow = `<div style="display:flex;align-items:baseline;justify-content:flex-end;gap:4px;${dimAll ? 'opacity:.5' : ''}">
+        <span style="font-size:32px;font-weight:700;line-height:1">${pctText}</span>
+        ${stateKey === 'S11' ? '<span style="font-size:10px;letter-spacing:.08em;opacity:.75">LEFT</span>' : ''}
+      </div>`;
+
+      if (bucket === '2x1') {
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}</div>`;
+      }
+      const subText = st.sub || `Resets ${RESET_5H_LABEL}`;
+      const subLine = `<div style="font-size:12px;opacity:.78;margin-top:4px;${dimAll ? 'opacity:.5' : ''}">${fitSpan(subText, 12, 400, w - 14)}</div>`;
+
+      if (bucket === '4x1') {
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}${subLine}</div>`;
+      }
+      // 4x2: control row — [5h|Weekly] chips (only the windows the account has) + cycler
+      const hasBoth = !effA.weeklyOnly;
+      const nextIdx = (ACCOUNTS.findIndex(x => x.key === effA.key) + 1) % ACCOUNTS.length;
+      const chips = hasBoth
+        ? `<div style="display:flex;gap:6px">
+             <span style="height:20px;padding:0 9px;border-radius:10px;background:${color};color:${dark ? '#1A1A1A' : '#fff'};font-size:10.5px;font-weight:700;display:flex;align-items:center">5h</span>
+             <span style="height:20px;padding:0 9px;border-radius:10px;border:1px solid ${ink(dark, .3)};font-size:10.5px;display:flex;align-items:center;opacity:.8">Weekly</span>
+           </div>`
+        : `<span style="height:20px;padding:0 9px;border-radius:10px;background:${ink(dark, .12)};font-size:10.5px;display:flex;align-items:center;opacity:.85">Weekly · fixed</span>`;
+      const cycler = `<div style="font-size:11px;font-weight:600;opacity:.9;display:flex;align-items:center;gap:3px">${label} <span style="opacity:.6">⇄</span></div>`;
+      const ctrl = `<div style="height:28px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid ${ink(dark, .1)};padding-top:6px">${chips}${cycler}</div>`;
+      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:2px">${row1}${bar}${figRow}${subLine}${ctrl}</div>`;
+    }
+
+    // ------------------------------------------------------------ Countdown (CCRM-81)
+    function countdownFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const st = ST[stateKey] || ST.S1;
+      const [w] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      if (stateKey === 'S9') return msgBody('Account removed · tap to choose', 11, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
+      if (stateKey === 'S12') return msgBody('No usage on this plan', 11, dark);
+      if (stateKey === 'S14') return msgBody(bucket === '2x1' ? 'Update Cooldown' : 'Unavailable in this version · update Cooldown', 11, dark);
+
+      let effA = a, label = a.label, dimAll = false, dot = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
+      if (stateKey === 'S7') dot = true;
+      if (stateKey === 'S8') dimAll = true;
+      const color = accentFor(effA, dark);
+      const windowWord = st.weeklyOnly ? 'Weekly' : '5h';
+      const resetLabel = st.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL;
+      const countText = stateKey === 'S6' ? '—' : opts.countText || '2:41:07';
+      const caption = `${windowWord} reset`;
+
+      const capLine = `<div style="font-size:11px;opacity:.75;${dimAll ? 'opacity:.5' : ''}">${caption}</div>`;
+      const countRow = `<div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;${dimAll ? 'opacity:.5' : ''}">
+        <span class="liv" style="opacity:.8">${stateKey === 'S6' ? '' : '● live'}</span>
+        <span style="font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">${countText}</span>
+        ${fitSpan(`at ${resetLabel}`, 11, 400, w - 100, 'opacity:.78')}
+      </div>`;
+      const bottom = labelRow(effA, color, `${label} · ${windowWord}`, 11, 11, dark, { dim: dimAll, dot, weight: 500 });
+
+      if (bucket === '2x1') {
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${capLine}${countRow}${bottom}</div>`;
+      }
+      // 2x2: adds an 18sp figure over a 6dp bar and, if estimate present, "~ runs out …"
+      const pctText = fmtPct(st, false) ?? '—';
+      const fig = `<div style="font-size:18px;font-weight:700;${dimAll ? 'opacity:.5' : ''}">${pctText}</div>`;
+      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(w - 14, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick: st.elapsed })}</div>`;
+      const estLine = opts.showEstimate === false ? '' :
+        `<div style="font-size:11px;opacity:.75;margin-top:2px;${dimAll ? 'opacity:.5' : ''}">~ runs out ${opts.estimateAt || '8:52 PM'}</div>`;
+      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:3px">${capLine}${countRow}${fig}${bar}${estLine}${bottom}</div>`;
+    }
+
+    // ------------------------------------------------------------------ Strip (CCRM-82)
+    function stripFace(bucket, accountsList, stateKey, dark, opts) {
+      opts = opts || {};
+      const [w] = (opts.frame === 'inner' ? INNER : COVER)[bucket];
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
+      if (stateKey === 'S14') return msgBody(bucket === '4x1' ? 'Update Cooldown' : 'Unavailable in this version · update Cooldown', 11, dark);
+      const isBig = bucket === '4x2';
+      const d = isBig ? 88 : 56;
+      const stroke = isBig ? 6 : 5;
+      const figSize = isBig ? 18 : 13;
+      const labelSize = isBig ? 11 : 9.5;
+      const list = accountsList.length > 4 ? accountsList.slice(0, 4) : accountsList;
+      const overflowCount = accountsList.length > 4 ? accountsList.length - 4 : 0;
+      const cellW = Math.floor((w - 8) / Math.max(1, list.length + (overflowCount ? 1 : 0)));
+
+      const cells = list.map(a => {
+        const st = ST[stateKey] || ST.S1;
+        let effA = a, label = a.label, dimAll = false, dot = false;
+        if (stateKey === 'S9') return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:${labelSize}px;text-align:center;opacity:.75">Removed<br>tap to choose</div>`;
+        if (stateKey === 'S7') dot = true;
+        if (stateKey === 'S8') dimAll = true;
+        if (stateKey === 'S12') return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">${ringWithFigure(d, stroke, { pct: null, dark, accent: accentFor(a, dark), noFigureSlot: true })}<div style="font-size:${labelSize}px;text-align:center">${label}<br><span style="opacity:.7">Free</span></div></div>`;
+        const color = accentFor(effA, dark);
+        const isWeekly = a.weeklyOnly;
+        const pctText = fmtPct(st, false) ?? '—';
+        const ring = ringWithFigure(d, stroke, { pct: st.pct, elapsed: st.elapsed, dark, accent: color, showRed: true, noReading: st.noReading, spentX: true, figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll });
+        const resetTxt = isBig ? `<div style="font-size:10px;opacity:.72;${dimAll ? 'opacity:.5' : ''}">${isWeekly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>` : '';
+        const labelHtml = fitSpan(label + (isWeekly ? ' · Wkly' : ''), labelSize, 500, cellW - 4, dimAll ? 'opacity:.5' : '');
+        return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
+          ${ring}
+          <div style="display:flex;align-items:center;gap:3px;max-width:100%">${mark(effA.provider, 10, color)}${labelHtml}${dot ? `<span style="width:5px;height:5px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></span>` : ''}</div>
+          ${resetTxt}
+        </div>`;
+      }).join('');
+      const plusCell = overflowCount ? `<div style="flex:0 0 ${d}px;display:flex;align-items:center;justify-content:center;font-size:${figSize}px;font-weight:700;opacity:.7">+${overflowCount}</div>` : '';
+      return `<div style="height:100%;display:flex;align-items:center;justify-content:space-around;gap:4px">${cells}${plusCell}</div>`;
+    }
+  </script>
+
+  <script>
+    function faceLabel(face, bucket) {
+      return { ring: 'Ring', number: 'Number', countdown: 'Countdown', strip: 'Accounts Strip' }[face] + ' ' + bucket.replace('x', '×');
+    }
+    function section1() {
+      const root = document.getElementById('s1-root');
+      const entries = [
+        { face: 'ring', sizes: ['1x1', '2x2'] },
+        { face: 'number', sizes: ['2x1', '4x1', '4x2'] },
+        { face: 'countdown', sizes: ['2x1', '2x2'] },
+        { face: 'strip', sizes: ['4x1', '4x2'] },
+      ];
+      let html = '';
+      entries.forEach(e => {
+        e.sizes.forEach(bucket => {
+          ['cover', 'inner'].forEach(frame => {
+            const [w, h] = (frame === 'cover' ? COVER : INNER)[bucket];
+            const renderFn = (dark) => {
+              if (e.face === 'ring') return ringFace(bucket, acc('pro'), 'S1', dark, { frame });
+              if (e.face === 'number') return numberFace(bucket, acc('pro'), 'S1', dark, { frame });
+              if (e.face === 'countdown') return countdownFace(bucket, acc('pro'), 'S1', dark, { frame });
+              return stripFace(bucket, ACCOUNTS, 'S1', dark, { frame });
+            };
+            const ccDark = e.face === 'strip' ? CLAUDE_DARK.card : roomCard(acc('pro'), true);
+            const ccLight = e.face === 'strip' ? CLAUDE_LIGHT.card : roomCard(acc('pro'), false);
+            const variants = [
+              { bg: 'solid', dark: true, cc: ccDark, label: 'Solid · dark' },
+              { bg: 'solid', dark: false, cc: ccLight, label: 'Solid · light' },
+              { bg: 'transparent', dark: true, wallpaper: 'dark', label: 'Transparent · dark theme on dark wallpaper' },
+              { bg: 'transparent', dark: false, wallpaper: 'light', label: 'Transparent · light theme on light wallpaper' },
+              { bg: 'transparent', dark: true, wallpaper: 'light', label: 'Transparent · dark theme, LIGHT wallpaper — mismatched' },
+              { bg: 'transparent', dark: false, wallpaper: 'dark', label: 'Transparent · light theme, DARK wallpaper — mismatched' },
+            ];
+            const row = variants.map(v => {
+              const content = renderFn(v.dark);
+              const t = tile({ w, h, bg: v.bg, dark: v.dark, wallpaper: v.wallpaper, cardColor: v.cc, content });
+              return tf(t, v.label, w);
+            }).join('');
+            html += `<h4>${faceLabel(e.face, bucket)} · ${frame} ${w}×${h} dp${frame === 'inner' ? ' <span class="unver">unverified until Step 7</span>' : ''}</h4><div class="scroll" style="white-space:nowrap">${row}</div>`;
+          });
+        });
+      });
+      root.innerHTML = html;
+    }
+    section1();
+  </script>
+  <p class="note wide">
+    <b>Strip's Solid colour</b>: the Strip has no single account, so "Solid" here uses a neutral
+    card tint (the Claude room's own card colour) rather than any one account's accent &mdash; open
+    for Robin, see Q in &sect;10.
+  </p>
+  <p class="note wide">
+    <b>Mismatched Transparent is drawn honestly above</b> and it is not legible: the dark theme's
+    white-ish text sits on a light wallpaper (and the reverse). <b>Proposed fix:</b> a soft
+    text shadow / 40%-black scrim behind every text run on Transparent backgrounds, keyed to
+    the *system* dark-mode flag rather than the theme choice &mdash; flagged as a question,
+    &sect;10.
+  </p>
+
+  <hr class="hr">
+  <h2>2 &middot; Every state, on every face, at every size</h2>
+  <p class="sub">
+    Dark Solid unless the state needs another background to make its point. Cover dimensions.
+    <b>S4</b> uses ChatGPT (weekly-only); every other row uses Pro. <b>S10</b> shows both
+    variants &mdash; unassigned (first account in registry order, labelled) and no accounts.
+    <b>S13</b> carries the proposed synthetic marker (a violet dot, always; a "SYNTHETIC"
+    micro-tag where the face has room) &mdash; see &sect;10 for the three options considered.
+  </p>
+  <div id="s2-root"></div>
+
+  <script>
+    function faceContentFn(face, bucket, subject, stateKey, dark, opts) {
+      if (face === 'ring') return ringFace(bucket, subject, stateKey, dark, opts);
+      if (face === 'number') return numberFace(bucket, subject, stateKey, dark, opts);
+      if (face === 'countdown') return countdownFace(bucket, subject, stateKey, dark, opts);
+      return stripFace(bucket, subject, stateKey, dark, opts);
+    }
+    function buildStateMatrix(face, sizes, opts) {
+      const isStrip = face === 'strip';
+      let html = `<h3>${{ ring: 'Ring', number: 'Number', countdown: 'Countdown', strip: 'Accounts Strip' }[face]}</h3><div class="scroll"><table><thead><tr><th>State</th>`;
+      sizes.forEach(b => { const [w, h] = COVER[b]; html += `<th class="sizehead">${b.replace('x', '×')}<br><span style="font-weight:400;text-transform:none">${w}×${h} dp</span></th>`; });
+      html += `</tr></thead><tbody>`;
+      STATE_ORDER.forEach(sk => {
+        html += `<tr><td style="white-space:nowrap"><span class="statebadge">${sk}</span>${STATE_LABEL[sk]}</td>`;
+        sizes.forEach(b => {
+          const [w, h] = COVER[b];
+          const dark = true;
+          const subjFor = (k) => (k === 'S4' ? acc('chatgpt') : acc('pro'));
+          let cellHtml;
+          const id = `m-${face}-${b}-${sk}`;
+          if (sk === 'S10' && !isStrip) {
+            const c1 = faceContentFn(face, b, acc('pro'), 'S10u', dark, opts);
+            const c2 = faceContentFn(face, b, acc('pro'), 'S10n', dark, opts);
+            const t1 = tile({ w, h, bg: 'solid', dark, cardColor: roomCard(acc('pro'), dark), content: c1 });
+            const t2 = tile({ w, h, bg: 'solid', dark, cardColor: roomCard(acc('pro'), dark), content: c2 });
+            cellHtml = `<div id="${id}" style="display:flex;gap:6px;flex-wrap:wrap"><div>${t1}<div class="cap">unassigned</div></div><div>${t2}<div class="cap">no accounts</div></div></div>`;
+          } else if (sk === 'S10' && isStrip) {
+            const c2 = faceContentFn(face, b, ACCOUNTS, 'S10n', dark, opts);
+            const t2 = tile({ w, h, bg: 'solid', dark, cardColor: CLAUDE_DARK.card, content: c2, id });
+            cellHtml = `${t2}<div class="cap">no accounts &mdash; the Strip always shows the whole registry, so "unassigned" has no separate case here</div>`;
+          } else {
+            const subject = isStrip ? ACCOUNTS : subjFor(sk);
+            const content = faceContentFn(face, b, subject, sk, dark, opts);
+            const cc = isStrip ? CLAUDE_DARK.card : roomCard(subjFor(sk), dark);
+            cellHtml = tile({ w, h, bg: 'solid', dark, cardColor: cc, content, id, synthetic: sk === 'S13' });
+          }
+          html += `<td>${cellHtml}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      return html;
+    }
+    document.getElementById('s2-root').innerHTML =
+      buildStateMatrix('ring', ['1x1', '2x2'], {}) +
+      `<p class="note wide"><b>What drops out, narrow → wide (Ring):</b> at 1×1 there is no label at all &mdash; the bore holds only the figure (or the ×); the account/window line appears starting at 2×2. The ring itself never shrinks below its declared diameter or gives way to text (CCBG-11's rule).</p>` +
+      buildStateMatrix('number', ['2x1', '4x1', '4x2'], {}) +
+      `<p class="note wide"><b>What drops out, narrow → wide (Number):</b> below 4×1 the LEFT caption is dropped and the bare figure alone is shown (still correct in Left mode, just unlabelled); the absolute sub-line only exists from 4×1 up; the control row (chips + cycler) only exists at 4×2. The bar and figure never drop.</p>` +
+      buildStateMatrix('countdown', ['2x1', '2x2'], {}) +
+      `<p class="note wide"><b>What drops out, narrow → wide (Countdown):</b> at 2×1 there is no figure/bar and no estimate line &mdash; caption, count and clock time only. Both appear at 2×2. The absolute clock time never drops (R4) even when the count is live.</p>` +
+      buildStateMatrix('strip', ['4x1', '4x2'], {}) +
+      `<p class="note wide"><b>What drops out, narrow → wide (Strip):</b> the absolute reset line drops first (present only at 4×2), then the label truncates (see the fit flags below), and the ring itself never gives way (CCBG-10's rule) &mdash; it stays Ø56/Ø88 dp regardless of how many accounts share the row.</p>`;
+  </script>
+
+  <hr class="hr">
+  <h2>3 &middot; Q10 &mdash; Ring 2&times;2 at 100%, both ways</h2>
+  <p class="sub">
+    The spent &times; (what 1&times;1 always uses) versus the literal "100%" text &mdash; dark
+    and light, cover and inner. Robin's call; see &sect;10.
+  </p>
+  <div id="s3-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s3-root');
+      let html = '';
+      ['cover', 'inner'].forEach(frame => {
+        const [w, h] = (frame === 'cover' ? COVER : INNER)['2x2'];
+        [true, false].forEach(dark => {
+          const cc = roomCard(acc('pro'), dark);
+          const xContent = ringFace('2x2', acc('pro'), 'S3', dark, { frame, forcePercent: false });
+          const pctContent = ringFace('2x2', acc('pro'), 'S3', dark, { frame, forcePercent: true });
+          const t1 = tile({ w, h, bg: 'solid', dark, cardColor: cc, content: xContent });
+          const t2 = tile({ w, h, bg: 'solid', dark, cardColor: cc, content: pctContent });
+          html += `<div class="row" style="margin-bottom:6px">${tf(t1, `${frame} · ${dark ? 'dark' : 'light'} · spent ×`, w)}${tf(t2, `${frame} · ${dark ? 'dark' : 'light'} · "100%" text`, w)}</div>`;
+        });
+      });
+      root.innerHTML = html;
+    })();
+  </script>
+
+  <h2>4 &middot; The Countdown's forms</h2>
+  <p class="sub">
+    Live H:MM (untested &mdash; RemoteViews' <code>Chronometer</code> only formats through
+    <code>DateUtils.formatElapsedTime</code>, so this may not be achievable) and live H:MM:SS;
+    MM:SS under one hour; the negative past-zero count beside its true clock time; the Weekly
+    absolute form and its last-24h live form; the 2&times;2 estimate line present and absent.
+    <b>The caption holds on both sides of zero</b> ("5h reset", never "Resets in"). <b>The face
+    ignores the Reset time chip (CCRM-23 (Reset Display))</b> &mdash; the absolute clock time is
+    already on every size, so Clock mode has nothing to add.
+  </p>
+  <div id="s4-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s4-root');
+      const [w, h] = COVER['2x1'];
+      const cc = roomCard(acc('pro'), true);
+      function ctile(countText, extra) {
+        const content = countdownFace('2x1', acc('pro'), 'S1', true, Object.assign({ countText }, extra || {}));
+        return tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content });
+      }
+      let html = '<div class="row">';
+      html += tf(ctile('2:41'), 'Live H:MM &mdash; tried first; likely not achievable with a stock Chronometer (see caption below)', w);
+      html += tf(ctile('2:41:07'), 'Live H:MM:SS &mdash; the fallback that shipped (setChronometerCountDown)', w);
+      html += tf(ctile('41:23'), 'Under one hour: MM:SS ("41:23")', w);
+      html += tf(ctile('−0:05:12', { }), 'Past zero: the negative count ("−0:05:12"), true clock time beside it &mdash; illustrative: now 9:15:12 PM, window reset 9:10 PM', w);
+      html += '</div><div class="row">';
+      html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content: weeklyAbsoluteTile(true, 24) }), `Weekly, outside the last 24h: absolute form only &mdash; "Resets ${RESET_WEEKLY_LABEL}"`, w);
+      html += tf(ctile('19:03:44'), 'Weekly, inside the last 24h: the transition alarm has switched it to live ticking (same H:MM:SS face)', w);
+      html += '</div><div class="row">';
+      html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: cc, content: weeklyAbsoluteTile(true, 17), id: 'q4-weekly-fallback' }), '⚠ at 24sp "Resets Sat 9:10 PM" ellipsizes (flagged above) &mdash; proposed fallback: drop to 17sp for the Weekly-outside-24h case only, everything else stays 24sp', w);
+      html += '</div>';
+      const [w2, h2] = COVER['2x2'];
+      const withEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: true, estimateAt: '8:52 PM' });
+      const noEst = countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07', showEstimate: false });
+      html += '<div class="row">';
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: withEst }), '2×2 with the estimate line &mdash; only when Projection.estimate is non-null ("~" is CCRM-30 (Estimate Honesty)\'s marker)', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: cc, content: noEst }), '2×2 with no estimate &mdash; most days: the line is simply absent, no placeholder', w2);
+      html += '</div>';
+      root.innerHTML = html;
+    })();
+    function weeklyAbsoluteTile(dark, fontSize) {
+      const color = accentFor(acc('pro'), dark);
+      const w = COVER['2x1'][0] - 14;
+      return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px;overflow:visible">
+        <div style="font-size:11px;opacity:.75">Weekly reset</div>
+        <div style="font-weight:700;line-height:1.15">${fitSpan(`Resets ${RESET_WEEKLY_LABEL}`, fontSize, 700, w)}</div>
+        ${labelRow(acc('pro'), color, 'Pro · Weekly', 11, 11, dark, { weight: 500 })}
+      </div>`;
+    }
+  </script>
+
+  <h2>5 &middot; Number 4&times;1 and 4&times;2 detail</h2>
+  <p class="sub">
+    The 4&times;1 absolute sub-line's four variants, and the 4&times;2 control row: chips only
+    for the windows the account has, the fixed tag for a single-window account, and the account
+    cycler stepping through registry order &mdash; before/after of one tap.
+  </p>
+  <div id="s5-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s5-root');
+      const [w, h] = COVER['4x1'];
+      const cc = roomCard(acc('pro'), true);
+      const variants = [
+        { sk: 'S1', label: 'Normal &mdash; "Resets 9:10 PM"' },
+        { sk: 'S4Weekly', label: 'Weekly window &mdash; "Resets Sat 9:10 PM"', acct: acc('chatgpt'), key: 'S4' },
+        { sk: 'S6', label: 'S6 reset passed &mdash; "Reset 9:10 PM" (no "s")' },
+        { sk: 'S8', label: 'S8 stale &mdash; "Stale"' },
+      ];
+      let html = '<h4>4×1 sub-line variants</h4><div class="row">';
+      variants.forEach(v => {
+        const subject = v.acct || acc('pro');
+        const content = numberFace('4x1', subject, v.key || v.sk, true, {});
+        html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: roomCard(subject, true), content }), v.label, w);
+      });
+      html += '</div>';
+
+      const [w2, h2] = COVER['4x2'];
+      html += '<h4>4×2 control row</h4><div class="row">';
+      const both = numberFace('4x2', acc('pro'), 'S1', true, {});
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: both }), 'Pro has 5h + Weekly → both chips, 5h selected', w2);
+      const single = numberFace('4x2', acc('chatgpt'), 'S4', true, {});
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: single }), 'ChatGPT is weekly-only → a fixed "Weekly · fixed" tag, no chips to tap', w2);
+      const beforeContent = numberFace('4x2', acc('pro'), 'S1', true, {});
+      const afterContent = numberFace('4x2', acc('teams'), 'S1', true, {});
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: beforeContent }), 'Cycler before: showing Pro', w2);
+      html += tf(tile({ w: w2, h: h2, bg: 'solid', dark: true, cardColor: roomCard(acc('teams'), true), content: afterContent }), 'Cycler after one tap on "Pro ⇄": steps to Teams (next in registry order), storing the account key so reordering never repoints it', w2);
+      html += '</div>';
+      root.innerHTML = html;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>6 &middot; Config activity and reconfigure view</h2>
+  <p class="sub">
+    <code>WidgetConfigActivity</code>, 360 dp wide, light and dark. Controls: Account (chips with
+    provider marks &mdash; absent for the Strip, which shows every account by design), Window
+    (5h / Weekly &mdash; hidden when the account has one window; absent on the Strip, which is
+    fixed to each account's headline window) and Background (Solid / Transparent, default Solid).
+    A live preview sits at top. Reconfigure (long-press &rarr; "Widget settings") is the same
+    screen with "Save changes" instead of "Add widget".
+  </p>
+  <div id="s6-root"></div>
+  <script>
+    (function () {
+      function cfgScreen(o) {
+        // o: {dark, face, account, window, bg, showWindow, save, previewHtml}
+        const dark = o.dark;
+        const surf = dark ? '#0D0D0D' : '#F5EFE8';
+        const cardInk = dark ? '#EDE8E4' : '#26211E';
+        const accChips = ACCOUNTS.map(a => {
+          const sel = a.key === o.account.key;
+          const color = accentFor(a, dark);
+          return `<div class="fchip3${sel ? ' sel' : ''}" style="background:${sel ? color : 'transparent'};color:${sel ? (dark ? '#1A1A1A' : '#fff') : cardInk}">${mark(a.provider, 14, sel ? (dark ? '#1A1A1A' : '#fff') : color)}${a.label}</div>`;
+        }).join('');
+        const winRow = o.face === 'strip' ? `<div class="note" style="margin:0">Fixed to each account's headline window &mdash; no control here.</div>`
+          : (o.showWindow === false ? `<div class="note" style="margin:0">${o.account.label} has one window &mdash; no control needed.</div>`
+            : `<div class="chiprow2"><div class="fchip3${o.window === '5h' ? ' sel' : ''}" style="background:${o.window === '5h' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === '5h' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">5h</div><div class="fchip3${o.window === 'Weekly' ? ' sel' : ''}" style="background:${o.window === 'Weekly' ? accentFor(o.account, dark) : 'transparent'};color:${o.window === 'Weekly' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Weekly</div></div>`);
+        const bgRow = `<div class="chiprow2"><div class="fchip3${o.bg === 'Solid' ? ' sel' : ''}" style="background:${o.bg === 'Solid' ? accentFor(o.account, dark) : 'transparent'};color:${o.bg === 'Solid' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Solid</div><div class="fchip3${o.bg === 'Transparent' ? ' sel' : ''}" style="background:${o.bg === 'Transparent' ? accentFor(o.account, dark) : 'transparent'};color:${o.bg === 'Transparent' ? (dark ? '#1A1A1A' : '#fff') : cardInk}">Transparent</div></div>`;
+        return `<div class="phone room" style="background:${surf};color:${cardInk}">
+          <div class="topbar"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#icoBack"/></svg><span>${o.title || 'Add widget'}</span></div>
+          <div style="padding:8px 16px 16px;display:flex;justify-content:center">${o.previewHtml}</div>
+          <div class="cfgrow"><div class="cfglabel">Account${o.face === 'strip' ? ' — not shown, the Strip carries every account' : ''}</div>${o.face === 'strip' ? '' : `<div class="chiprow2">${accChips}</div>`}</div>
+          <div class="cfgrow"><div class="cfglabel">Window</div>${winRow}</div>
+          <div class="cfgrow"><div class="cfglabel">Background</div>${bgRow}</div>
+          <div class="primbtn" style="background:${accentFor(o.account, dark)};color:${dark ? '#1A1A1A' : '#fff'}">${o.save ? 'Save changes' : 'Add widget'}</div>
+        </div>`;
+      }
+      const numPreview = numberFace('2x1', acc('pro'), 'S1', true, {});
+      const stripPreview = stripFace('4x1', ACCOUNTS, 'S1', true, {});
+      const cdPreview = countdownFace('2x1', acc('chatgpt'), 'S4', true, {});
+      const root = document.getElementById('s6-root');
+      let html = '<div class="row">';
+      html += tf(cfgScreen({ dark: true, face: 'number', account: acc('pro'), window: '5h', bg: 'Solid', showWindow: true, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: numPreview }) }), 'Number, add flow, dark — Pro has both windows', 360);
+      html += tf(cfgScreen({ dark: false, face: 'number', account: acc('pro'), window: '5h', bg: 'Solid', showWindow: true, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: false, cardColor: roomCard(acc('pro'), false), content: numberFace('2x1', acc('pro'), 'S1', false, {}) }) }), 'Number, add flow, light', 360);
+      html += '</div><div class="row">';
+      html += tf(cfgScreen({ dark: true, face: 'countdown', account: acc('chatgpt'), window: 'Weekly', bg: 'Solid', showWindow: false, previewHtml: tile({ w: 181, h: 84, bg: 'solid', dark: true, cardColor: roomCard(acc('chatgpt'), true), content: cdPreview }) }), 'Countdown, single-window account (ChatGPT, weekly-only) — Window control hidden', 360);
+      html += tf(cfgScreen({ dark: true, face: 'strip', account: acc('pro'), window: '5h', bg: 'Transparent', showWindow: true, title: 'Widget settings', save: true, previewHtml: tile({ w: 363, h: 84, bg: 'transparent', dark: true, wallpaper: 'dark', content: stripPreview }) }), 'Accounts Strip — no Account, no Window; reconfigure via long-press ("Widget settings" / "Save changes")', 360);
+      html += '</div>';
+      root.innerHTML = html;
+    })();
+  </script>
+
+  <h2>7 &middot; Picker names and previews</h2>
+  <p class="sub">Proposed, as One UI's widget picker would show them.</p>
+  <div id="s7-root"></div>
+  <script>
+    (function () {
+      const items = [
+        { name: 'Ring', desc: 'One account’s usage as a small gauge.', size: '2×2 (also 1×1)', prev: () => tile({ w: 130, h: 130, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: ringFace('2x2', acc('pro'), 'S1', true, {}), radius: 18 }) },
+        { name: 'Number', desc: 'One account, the big percentage — like the pinned notification.', size: '4×1 (also 2×1, 4×2)', prev: () => tile({ w: 260, h: 60, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: numberFace('4x1', acc('pro'), 'S1', true, {}), radius: 14 }) },
+        { name: 'Countdown', desc: 'When one account’s window comes back.', size: '2×1 (also 2×2)', prev: () => tile({ w: 130, h: 60, bg: 'solid', dark: true, cardColor: roomCard(acc('pro'), true), content: countdownFace('2x1', acc('pro'), 'S1', true, {}), radius: 14 }) },
+        { name: 'All accounts', desc: 'Every account as its own ring, side by side.', size: '4×1 (also 4×2)', prev: () => tile({ w: 260, h: 60, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: stripFace('4x1', ACCOUNTS, 'S1', true, {}), radius: 14 }) },
+      ];
+      document.getElementById('s7-root').innerHTML = '<div class="row">' + items.map(it =>
+        `<div class="opt" style="border:1px solid var(--hair);border-radius:16px;padding:16px;max-width:300px">
+          <div style="font-weight:700;font-size:15px;margin-bottom:2px">${it.name}</div>
+          <div class="note" style="margin:0 0 10px">${it.desc}</div>
+          ${it.prev()}
+          <div class="cap" style="margin-top:10px">Default size ${it.size}</div>
+        </div>`).join('') + '</div>';
+    })();
+  </script>
+
+  <h2>8 &middot; Q11 &mdash; the absolute "as of" stamp</h2>
+  <p class="sub">
+    On the faces with room to spend on it: Number 4&times;1/4&times;2, Countdown 2&times;2, Ring
+    2&times;2, Strip 4&times;2. Present and absent, side by side &mdash; drawn as "as of 6:29 PM"
+    since that is <code>fetchedAt</code> against the fixture's "now". Robin's call whether to keep
+    it; see &sect;10.
+  </p>
+  <div id="s8-root"></div>
+  <script>
+    (function () {
+      function withStamp(html, show) {
+        return show ? `<div style="position:relative;height:100%">${html}<div style="position:absolute;left:7px;bottom:6px;font-size:8.5px;opacity:.55">as of 6:29 PM</div></div>` : html;
+      }
+      const root = document.getElementById('s8-root');
+      const rows = [
+        { label: 'Number 4×2', w: 363, h: 168, cc: roomCard(acc('pro'), true), content: numberFace('4x2', acc('pro'), 'S1', true, {}) },
+        { label: 'Countdown 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: countdownFace('2x2', acc('pro'), 'S1', true, { countText: '2:41:07' }) },
+        { label: 'Ring 2×2', w: 181, h: 168, cc: roomCard(acc('pro'), true), content: ringFace('2x2', acc('pro'), 'S1', true, {}) },
+        { label: 'Strip 4×2', w: 363, h: 168, cc: CLAUDE_DARK.card, content: stripFace('4x2', ACCOUNTS, 'S1', true, {}) },
+      ];
+      let html = '';
+      rows.forEach(r => {
+        html += `<div class="row">${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: withStamp(r.content, true) }), `${r.label} — present`, r.w)}${tf(tile({ w: r.w, h: r.h, bg: 'solid', dark: true, cardColor: r.cc, content: withStamp(r.content, false) }), `${r.label} — absent`, r.w)}</div>`;
+      });
+      root.innerHTML = html;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>9 &middot; Ride-alongs</h2>
+
+  <h3>a. CCBG-24 (Duet Label Clamp) &mdash; the measured clamp on the Duet collapsed row</h3>
+  <p class="sub">Huge-number base. Before: the two-step table (72/56 dp) still lets the figure's real
+    width eat into the label. After: <code>Duet.labelClampDp(figureWidthDp)</code> measures the
+    figure with <code>Paint.measureText</code> and clamps the label to whatever is left.</p>
+  <div id="s9a-root"></div>
+  <script>
+    (function () {
+      function duetCard(halves, dark) {
+        const surf = dark ? '#141210' : '#FFFFFF';
+        const ink = dark ? '#EDE8E4' : '#26211E';
+        return `<div style="width:328px;background:${surf};color:${ink};border-radius:16px;padding:10px 12px;display:flex;font-family:Roboto,Arial,sans-serif">
+          ${halves[0]}<div style="width:16px"></div>${halves[1]}
+        </div>`;
+      }
+      function half(label, figure, availPx, id) {
+        return `<div id="${id}" style="flex:1;min-width:0;display:flex;align-items:center;gap:4px">
+          ${mark('gpt', 14, GPT_DARK.accent)}${fitSpan(label, 12, 500, availPx)}
+          <span style="margin-left:auto;font-size:30px;font-weight:700;line-height:1">${figure}</span>
+        </div>`;
+      }
+      const root = document.getElementById('s9a-root');
+      let html = '<div class="row">';
+      const before = duetCard([half('ChatGPT', '98%', 50, 'duet-before'), half('Pro', '41%', 90, '')], true);
+      html += tf(`<div class="tile" style="width:328px;height:auto;border-radius:16px;overflow:visible">${before}</div>`, 'Before — Left mode: table still says 72dp, but "98%" at 30sp bold leaves only ~50dp; the label ellipsizes to "ChatG…"', 328);
+      const after = duetCard([half('ChatGPT', '98%', 76, ''), half('Pro', '41%', 90, '')], true);
+      html += tf(`<div class="tile" style="width:328px;height:auto;border-radius:16px;overflow:visible">${after}</div>`, 'After — measured: figureWidthDp(‘98%’) ≈ 54dp, so the label clamps to the true 76dp remainder and "ChatGPT" fits whole', 328);
+      html += '</div><div class="row">';
+      const hundred = duetCard([half('ChatGPT', '100%', 70, ''), half('Pro', '41%', 90, '')], true);
+      html += tf(`<div class="tile" style="width:328px;height:auto;border-radius:16px;overflow:visible">${hundred}</div>`, '"100%" (4 chars, widest figure) — label clamps tighter still and fits', 328);
+      const two = duetCard([half('ChatGPT', '2%', 96, ''), half('Pro', '41%', 90, '')], true);
+      html += tf(`<div class="tile" style="width:328px;height:auto;border-radius:16px;overflow:visible">${two}</div>`, '"2%" (1 char, narrowest) — label gets the most room of any figure width', 328);
+      html += '</div><div class="row">';
+      const longLabel = duetCard([half('Anthropic Enterprise', '47%', 84, ''), half('Pro', '41%', 90, '')], true);
+      html += tf(`<div class="tile" style="width:328px;height:auto;border-radius:16px;overflow:visible">${longLabel}</div>`, 'A long label ("Anthropic Enterprise") still ellipsizes — the measured clamp bounds the figure’s intrusion, not the label’s own length', 328);
+      html += '</div>';
+      root.innerHTML = html;
+    })();
+  </script>
+
+  <h3>b. CCRM-14 (Clear History) &mdash; the Accounts-tab card &sdot; menu and its confirm dialog</h3>
+  <p class="sub">"Clear usage history…" lands beside <code>Details…</code>, ahead of the
+    identity-editing items, per <code>TokenCard</code>'s existing menu order in
+    <code>SettingsScreen.kt</code>.</p>
+  <div id="s9b-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s9b-root');
+      const items = ['Details…', 'Clear usage history…', 'Rename…', 'Accent colour…', 'Remove account'];
+      const menu = `<div class="kebabmenu" style="background:#201D1B;color:#EDE8E4;position:absolute;top:44px;right:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+        ${items.map((it, i) => `<div class="kebabitem${i === items.length - 1 ? ' err' : ''}" style="${i === 1 ? 'font-weight:700' : ''}">${it}</div>`).join('')}
+      </div>`;
+      const card = `<div style="position:relative;width:328px;background:#201D1B;color:#EDE8E4;border-radius:16px;padding:16px;font-family:Roboto,Arial,sans-serif">
+        <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">Pro</b><svg width="22" height="22" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>
+        ${menu}
+      </div>`;
+      const dlg = `<div class="dlgwrap" style="width:328px;border-radius:16px;padding:24px"><div class="dlg" style="background:#201D1B;color:#EDE8E4">
+        <div class="dt">Clear usage history?</div>
+        <div class="db">This clears, for "Pro" only:<br>
+          &bull;&nbsp; 8 days of trend history<br>
+          &bull;&nbsp; a year of session and weekly history<br><br>
+          The account itself, its sign-in and its settings are untouched — it stays.</div>
+        <div class="btns"><span class="dlgbtn" style="color:#9B928B">Cancel</span><span class="dlgbtn" style="color:#E08268">Clear history</span></div>
+      </div></div>`;
+      root.innerHTML = '<div class="row">' + tf(card, 'The card · menu open, "Clear usage history…" ahead of Rename/Accent colour, above the destructive Remove item', 328) + tf(dlg, 'Confirm — RemoveAccountDialog’s shape, naming both stores; the account stays', 328) + '</div>';
+    })();
+  </script>
+
+  <h3>c. CCRM-15 (Above-Pace Verification) &mdash; the synthetic-series override</h3>
+  <div id="s9c-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s9c-root');
+      const chips = ['Off', 'Above pace', 'At 100%', 'No data'].map((c, i) =>
+        `<div class="fchip3" style="background:${i === 1 ? '#9A6B1E' : 'transparent'};color:${i === 1 ? '#fff' : '#EDE8E4'};border-color:rgba(255,255,255,.2);height:30px;font-size:12px">${c}</div>`).join('');
+      const debugRow = `<div style="width:328px;background:#201D1B;color:#EDE8E4;border-radius:16px;padding:14px;font-family:Roboto,Arial,sans-serif">
+        <div class="cfglabel" style="opacity:.65;margin-bottom:8px">Synthetic series</div>
+        <div class="chiprow2">${chips}</div>
+      </div>`;
+      const banner = `<div style="height:34px;background:#9A6B1E;color:#1A1400;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;letter-spacing:.03em;border-radius:10px 10px 0 0">SYNTHETIC DATA · tap to turn off</div>`;
+      const mainMock = `<div style="width:328px;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif">
+        ${banner}
+        <div style="background:#0D0D0D;color:#EDE8E4;padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">${mark('claude', 18, CLAUDE_DARK.accent)}<b>Pro</b><span style="margin-left:auto;font-size:19px;font-weight:700">62%</span></div>
+          ${barHTML(296, 12, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
+        </div>
+      </div>`;
+      const notifStrip = tile({ w: 328, h: 62, bg: 'solid', dark: true, cardColor: '#1A1A1A', synthetic: true, radius: 16, content: `
+        <div style="display:flex;align-items:center;gap:4px">${mark('claude', 14, CLAUDE_DARK.accent)}<span style="font-size:13px">Pro · 5h</span></div>
+        ${barHTML(300, 8, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
+        <div style="text-align:right;font-size:24px;font-weight:700;margin-top:-4px">62%</div>` });
+      root.innerHTML = '<div class="row">' + tf(debugRow, 'Debug-section chip row, release build, behind the 7-tap unlock', 328) +
+        tf(mainMock, 'Main, drawn faithfully under the banner — the banner is also the off switch', 328) +
+        tf(notifStrip, 'The always-on notification (Huge-number base) while synthetic is on — same violet marker as the widgets', 328) + '</div>';
+    })();
+  </script>
+
+  <h3>d. CCRM-84 (Faces Gallery) &mdash; the Debug gallery screen</h3>
+  <p class="sub">Every face &times; bucket &times; state, inflated through the same
+    <code>WidgetFace.render</code> the providers call, captioned with its state and a
+    <code>bitmapBytes</code> estimate (illustrative numbers here, real ones from the R10 test).</p>
+  <div id="s9d-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s9d-root');
+      const picks = [
+        { face: 'ring', bucket: '1x1', sk: 'S1', kb: 6 }, { face: 'ring', bucket: '2x2', sk: 'S3', kb: 14 },
+        { face: 'number', bucket: '2x1', sk: 'S1', kb: 9 }, { face: 'number', bucket: '4x2', sk: 'S2', kb: 22 },
+        { face: 'countdown', bucket: '2x2', sk: 'S1', kb: 18 }, { face: 'strip', bucket: '4x2', sk: 'S1', kb: 31 },
+        { face: 'strip', bucket: '4x2', sk: 'S6', kb: 19 }, { face: 'number', bucket: '4x1', sk: 'S8', kb: 11 },
+      ];
+      const html = picks.map(p => {
+        const [w, h] = COVER[p.bucket];
+        const subj = p.sk === 'S4' ? acc('chatgpt') : (p.face === 'strip' ? ACCOUNTS : acc('pro'));
+        const content = faceContentFn(p.face, p.bucket, subj, p.sk, true, {});
+        const t = tile({ w, h, bg: 'solid', dark: true, cardColor: p.face === 'strip' ? CLAUDE_DARK.card : roomCard(acc('pro'), true), content });
+        return tf(t, `${faceLabel(p.face, p.bucket)} · ${p.sk} · ${p.kb} KB`, w);
+      }).join('');
+      root.innerHTML = '<div class="row">' + html + '</div><p class="note wide">Every tile is captioned with its state and estimate the same way in the real gallery; the R10 budget test asserts the whole composed size map stays under 2 MB at both Fold 7 densities.</p>';
+    })();
+  </script>
+
+  <h3>e. CCRM-24 (Share Card) &mdash; Main &sdot; menu, preview dialog, the card</h3>
+  <div id="s9e-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s9e-root');
+      const menu = `<div class="kebabmenu" style="background:#201D1B;color:#EDE8E4;position:absolute;top:44px;right:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+        <div class="kebabitem">Main screen layout</div><div class="kebabitem" style="font-weight:700">Share snapshot</div>
+      </div>`;
+      const bar = `<div style="position:relative;width:328px;background:#0D0D0D;color:#EDE8E4;border-radius:16px;padding:14px 16px;font-family:Roboto,Arial,sans-serif">
+        <div style="display:flex;align-items:center;gap:8px"><b style="flex:1">Cooldown</b><svg width="22" height="22" viewBox="0 0 24 24" style="color:#EDE8E4"><use href="#icoMore"/></svg></div>${menu}
+      </div>`;
+      function cardBody(dark) {
+        const rows = ACCOUNTS.map(a => {
+          const color = accentFor(a, dark);
+          const pct = a.key === 'chatgpt' ? 31 : (a.key === 'pro' ? 62 : a.key === 'teams' ? 24 : 8);
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+            ${ringWithFigure(40, 5, { pct, elapsed: 40, dark, accent: color, spentX: true, figure: pct + '%', figSize: 11 })}
+            <div style="flex:1"><div style="font-size:13px;font-weight:600">${a.label}</div><div style="font-size:10.5px;opacity:.65">${a.weeklyOnly ? 'Weekly' : '5h'} · resets ${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div></div>
+          </div>`;
+        }).join('');
+        return `<div style="width:328px;background:${dark ? '#0D0D0D' : '#F5EFE8'};color:${dark ? '#EDE8E4' : '#26211E'};border-radius:20px;padding:18px;font-family:Roboto,Arial,sans-serif">
+          <div style="font-size:11px;letter-spacing:.05em;opacity:.6;margin-bottom:6px">COOLDOWN · SNAPSHOT</div>
+          ${rows}
+          <div style="font-size:9.5px;opacity:.45;margin-top:6px">No email or plan shown — label only</div>
+        </div>`;
+      }
+      const preview = `<div class="dlgwrap" style="width:328px;border-radius:16px;padding:20px"><div class="dlg" style="background:#201D1B;color:#EDE8E4;width:100%">
+        <div class="dt">Share snapshot</div>
+        <div style="transform:scale(.82);transform-origin:top left;margin-bottom:-40px">${cardBody(true)}</div>
+        <div class="btns"><span class="dlgbtn" style="color:#9B928B">Cancel</span><span class="dlgbtn" style="color:#E59980;font-weight:700">Share</span></div>
+      </div></div>`;
+      root.innerHTML = '<div class="row">' + tf(bar, 'Main · menu, "Share snapshot" added under "Main screen layout"', 328) +
+        tf(preview, 'Render-then-preview dialog — nothing leaves without being seen', 328) + '</div>' +
+        '<div class="row">' + tf(cardBody(true), 'The card, dark, drawn at 360dp here (rendered at 4× = 1440px for the real share) — rings from the same renderer as every other face', 328) +
+        tf(cardBody(false), 'Light', 328) + '</div>';
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>10 &middot; Questions for Robin</h2>
+  <ol class="dec">
+    <li><b>Q10 &mdash; Ring 2&times;2 at 100%:</b> spent &times; or "100%" text (&sect;3)? <b>Recommend the &times;</b> &mdash; it's what 1&times;1 already uses (so the face is consistent with itself), and it matches the app's own spent-ring decision (CCRM-51).</li>
+    <li><b>Q11 &mdash; the "as of" stamp</b> (&sect;8): keep or drop, and on which faces? <b>Recommend keep</b>, only where drawn above (Number 4&times;1/4&times;2, Countdown 2&times;2, Ring 2&times;2, Strip 4&times;2), at 8.5 sp so it never competes with the primary reading.</li>
+    <li><b>S13's marker form</b> (&sect;2, &sect;9c): the violet-dot-always + "SYNTHETIC" tag-where-there's-room hybrid. It visibly collides with the sub-line/control row on a few Number tiles in &sect;2 &mdash; acceptable, or should the tag move to the top edge instead of the bottom?</li>
+    <li><b>S14's wording per size:</b> "Update Cooldown" at every size below 4&times;1/2&times;2, the full "Unavailable in this version &middot; update Cooldown" from there up (drawn throughout &sect;2). Confirm the shortened wording reads clearly enough with no other context.</li>
+    <li><b>Transparent legibility</b> (&sect;1): the mismatched cases are illegible as drawn. Recommend a soft text shadow / scrim keyed to the <em>system</em> dark-mode flag. Approve the direction so it can be specced at Step 3?</li>
+    <li><b>Share card:</b> build in this arc, or defer past v1.8 (RUNBOOK.md Step 6 says "the release does not wait")? The mock in &sect;9e is low-risk since it shares every renderer already built for the other faces.</li>
+    <li><b>Countdown ignoring the Reset time chip</b> (&sect;4): confirmed already in ROADMAP.md's text, changed from an earlier draft's Clock-mode variant. Flagging for acknowledgement, not a new decision.</li>
+    <li><b>Weekly-outside-24h text at Countdown 2&times;1</b> (&sect;4): "Resets Sat 9:10 PM" at 24 sp ellipsizes. Proposed fallback: 17 sp for that one case. Approve?</li>
+    <li><b>"ChatGPT &middot; Weekly" overflow at Number 2&times;1</b> (&sect;2, S4 row, flagged): the label+window suffix doesn't fit 90 dp. Proposed fallback: drop the " &middot; Weekly" suffix from the label at 2&times;1 specifically, since the bare figure and bar already carry the reading and the suffix is decorative at this width. Approve?</li>
+    <li><b>Strip's Solid colour</b> (&sect;1): no single account owns it. Recommend the neutral Claude-room card tint used throughout this file, unless Robin prefers a plain system surface colour instead.</li>
+  </ol>
+
+  <hr class="hr">
+  <h2>11 &middot; Coverage checklist</h2>
+  <p class="sub">Every face-size &times; state drawn in &sect;2, linked to its tile.</p>
+  <div id="s11-root"></div>
+  <script>
+    (function () {
+      const root = document.getElementById('s11-root');
+      const faces = [
+        { face: 'ring', sizes: ['1x1', '2x2'] },
+        { face: 'number', sizes: ['2x1', '4x1', '4x2'] },
+        { face: 'countdown', sizes: ['2x1', '2x2'] },
+        { face: 'strip', sizes: ['4x1', '4x2'] },
+      ];
+      let html = '<div class="tbl-wrap"><table><thead><tr><th>Face × size</th>' + STATE_ORDER.map(s => `<th>${s}</th>`).join('') + '</tr></thead><tbody>';
+      faces.forEach(f => f.sizes.forEach(b => {
+        html += `<tr><td>${faceLabel(f.face, b)}</td>`;
+        STATE_ORDER.forEach(sk => {
+          const anchor = `#m-${f.face}-${b}-${sk}`;
+          html += `<td style="text-align:center"><a href="${anchor}" style="color:var(--good);text-decoration:none;font-weight:700">✓</a></td>`;
+        });
+        html += '</tr>';
+      }));
+      html += '</tbody></table></div>';
+      root.innerHTML = html;
+    })();
+    runFitCheck();
+  </script>
+
+</div>
+</body>
+</html>
