@@ -342,7 +342,7 @@ fun SettingsScreen(
                     // account order shows up in the shortcuts and the pinned
                     // notification too, not only the tab strips.
                     Shortcuts.publish(context)
-                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                 },
                 onDismiss = { showReorderSheet = false },
             )
@@ -362,7 +362,7 @@ fun SettingsScreen(
             var tapTarget by remember { mutableStateOf(cacheSettings.pinnedTapTarget()) }
             var ringShows by remember { mutableStateOf(cacheSettings.statusRingShows()) }
             fun refreshPinned() {
-                com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
             }
             ToggleRow(
                 title = "Always-on usage notification",
@@ -621,7 +621,7 @@ fun SettingsScreen(
                     onClick = {
                         onTimeFormat(value)
                         cacheSettings.setTimeFormat(value)
-                        com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     },
                     label = { Text(text) },
                 )
@@ -651,8 +651,7 @@ fun SettingsScreen(
                         onUsageLeft(value == "left")
                         cacheSettings.setUsageDisplay(value)
                         // Re-post so the change lands without waiting for a poll.
-                        com.robin.claudeusage.notify.PinnedNotification
-                            .update(context, cacheSettings)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     },
                     label = { Text(text) },
                 )
@@ -668,7 +667,7 @@ fun SettingsScreen(
         RowDivider()
         // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
         // Comfortable stays the default — Compact is opt-in, so nobody's screen changes
-        // under them. No PinnedNotification.update: these three are in-app only.
+        // under them. No Surfaces.refresh: these three are in-app only.
         Text(
             "Density",
             style = MaterialTheme.typography.bodyLarge,
@@ -795,8 +794,7 @@ fun SettingsScreen(
                         onResetClock(value == "clock")
                         cacheSettings.setResetDisplay(value)
                         // Re-post so the change lands without waiting for a poll.
-                        com.robin.claudeusage.notify.PinnedNotification
-                            .update(context, cacheSettings)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     },
                     label = { Text(text) },
                 )
@@ -828,7 +826,7 @@ fun SettingsScreen(
             onShowOverPace(it)
             cacheSettings.setShowOverPace(it)
             // Re-post so the change lands without waiting for the next refresh.
-            com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+            com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
         }
         RowDivider()
         Text("Theme color", style = MaterialTheme.typography.bodyLarge)
@@ -838,7 +836,7 @@ fun SettingsScreen(
             repo.cacheSettings().setThemeColorName(it)
             // CCBG-14 (Stale Notification Theme): the pinned notification's gauge
             // and status-bar glyph wear the theme too — redraw now, not next poll.
-            com.robin.claudeusage.notify.PinnedNotification.update(context, repo.cacheSettings())
+            com.robin.claudeusage.notify.Surfaces.refresh(context, repo.cacheSettings())
         }
     }
 
@@ -883,7 +881,7 @@ fun SettingsScreen(
                     ) {
                         visible = it
                         cacheSettings.setCreditsVisible(profile, it)
-                        com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     }
                 }
             }
@@ -1029,7 +1027,7 @@ fun SettingsScreen(
                 namesTick++
                 // CCRM-33 (App Shortcuts): shortcut labels follow renames.
                 Shortcuts.publish(context)
-                com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
             },
         )
     }
@@ -1044,7 +1042,7 @@ fun SettingsScreen(
                     repo.removeProfile(profile)
                     removing = null
                     namesTick++
-                    com.robin.claudeusage.notify.PinnedNotification.update(context, cacheSettings)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                 }
             },
         )
@@ -3291,7 +3289,7 @@ private fun ResetModeRow(label: String, profile: Profile, window: String, cache:
                     onClick = {
                         mode = value
                         cache.setResetPingMode(profile, window, value)
-                        com.robin.claudeusage.notify.PinnedNotification.update(context, cache)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
                 ) { Text(text) }

@@ -94,9 +94,10 @@ object Alerts {
             checkReset(context, cache, profile, "Session", "5h", data.session, Projection.SESSION_MS)
             checkReset(context, cache, profile, "Weekly", "Weekly", data.weekly, Projection.WEEKLY_MS)
         }
-        // The always-on notification rides the same cadence so it stays live. This is its
-        // only per-poll re-render, and it must stay last: it draws from the state above.
-        com.robin.claudeusage.notify.PinnedNotification.update(context, cache)
+        // The always-on notification and the widgets ride the same cadence so they stay
+        // live (Surfaces, R7). This is their only per-poll re-render, and it must stay
+        // last: it draws from the state above.
+        com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
     }
 
     /**

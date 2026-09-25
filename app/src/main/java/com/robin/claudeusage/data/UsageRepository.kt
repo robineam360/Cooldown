@@ -167,7 +167,7 @@ class UsageRepository(private val context: Context) {
             "removed — slot ${profile.slot} retired, data deleted",
         )
         com.robin.claudeusage.Shortcuts.publish(context)
-        com.robin.claudeusage.notify.PinnedNotification.update(context, cache)
+        com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
         return true
     }
 
