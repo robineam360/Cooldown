@@ -89,7 +89,11 @@ class HistoryStore(context: Context) {
         writeAtomically(file(profile), kept + line)
     }
 
+    /** What the chart and the estimates draw: the file, or R8's series while it is on. */
     fun points(profile: Profile): List<HistoryPoint> =
+        if (SyntheticSeries.isOn) SyntheticSeries.points(emptyList()) else realPoints(profile)
+
+    fun realPoints(profile: Profile): List<HistoryPoint> =
         readLines(profile).mapNotNull { parsePoint(it) }.sortedBy { it.at }
 
     fun clear(profile: Profile) {

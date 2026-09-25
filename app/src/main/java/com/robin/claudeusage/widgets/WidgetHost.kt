@@ -138,9 +138,9 @@ object WidgetHost {
                 accounts = accounts(context, cache, dark, withEstimates = face == Face.COUNTDOWN),
                 usageLeft = cache.usageLeft(),
                 showOverPace = cache.showOverPace(),
-                // R8's synthetic series arrives with CCRM-15 (Above-Pace Verification) at
-                // RUNBOOK.md Step 5; until then nothing is synthetic.
-                synthetic = false,
+                // R8 (CCRM-15 (Above-Pace Verification)): the marker follows the one
+                // process-wide switch the cache's snapshots already honour.
+                synthetic = com.robin.claudeusage.data.SyntheticSeries.isOn,
                 unavailable = unavailable,
                 nowMs = nowMs,
             ),

@@ -132,7 +132,7 @@ object Polling {
     fun scheduleResetChecks(context: Context, cache: UsageCache) {
         val now = Instant.now()
         for (profile in cache.registry().all()) {
-            val data = cache.snapshot(profile).data ?: continue
+            val data = cache.realSnapshot(profile).data ?: continue
             val targets = listOf(
                 "session" to data.session?.resetsAt,
                 "weekly" to data.weekly?.resetsAt,

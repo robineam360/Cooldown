@@ -292,15 +292,15 @@ object PinnedNotification {
         )
 
         // Custom views: the largest number the collapsed row can hold.
-        builder.setCustomContentView(
+        builder.setCustomContentView(synthetic(context,
             bigNumberView(
                 context, R.layout.notif_big_number, h.pctText, h.title, collapsedText,
                 h.pct, h.elapsed, h.fill, h.accent, dark, showOverPace, null, panelState.stale,
                 profile.provider,
                 leftCaption = left && h.pct != null,
             )
-        )
-        builder.setCustomBigContentView(
+        ))
+        builder.setCustomBigContentView(synthetic(context,
             bigNumberView(
                 context, R.layout.notif_big_number_expanded,
                 h.pctText, h.title, expandedText,
@@ -308,7 +308,7 @@ object PinnedNotification {
                 profile.provider,
                 leftCaption = left && h.pct != null,
             )
-        )
+        ))
         builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
         return builder
     }
@@ -384,18 +384,18 @@ object PinnedNotification {
         )
 
         val update = Conditions.hasUpdate(context, cache)
-        builder.setCustomContentView(
+        builder.setCustomContentView(synthetic(context,
             duetView(
                 context, R.layout.notif_duet, first, second, dark, left, showOverPace,
                 update, panel = null, expanded = false, firstTap = firstTap, secondTap = secondTap,
             )
-        )
-        builder.setCustomBigContentView(
+        ))
+        builder.setCustomBigContentView(synthetic(context,
             duetView(
                 context, R.layout.notif_duet_expanded, first, second, dark, left, showOverPace,
                 update, panel = panel, expanded = true, firstTap = firstTap, secondTap = secondTap,
             )
-        )
+        ))
         builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
         return builder
     }
@@ -544,6 +544,16 @@ object PinnedNotification {
      * theme attributes so they follow the notification shade; only the percentage
      * takes the usage colour, which is the whole point of the style.
      */
+    /**
+     * R8 (CCRM-15 (Above-Pace Verification)): [inner] under the full-width
+     * "SYNTHETIC DATA" band while the synthetic series is on, else [inner] itself.
+     */
+    private fun synthetic(context: Context, inner: RemoteViews): RemoteViews =
+        if (!com.robin.claudeusage.data.SyntheticSeries.isOn) inner
+        else RemoteViews(context.packageName, R.layout.notif_synthetic_wrap).apply {
+            addView(R.id.synthetic_body, inner)
+        }
+
     private fun bigNumberView(
         context: Context,
         layout: Int,

@@ -405,7 +405,7 @@ class UsageRepository(private val context: Context) {
             if (!manual && now < backoffUntil) {
                 return FetchResult.BackedOff((backoffUntil - now) / 60_000L + 1)
             }
-            val fetchedAt = cache.snapshot(profile).fetchedAt
+            val fetchedAt = cache.realSnapshot(profile).fetchedAt
             if (manual && fetchedAt > 0 && now - fetchedAt < MANUAL_MIN_INTERVAL_MS) {
                 return FetchResult.TooSoon((MANUAL_MIN_INTERVAL_MS - (now - fetchedAt)) / 1000L)
             }
@@ -427,7 +427,7 @@ class UsageRepository(private val context: Context) {
         // account back into hammering the endpoint. A profile read that fails keeps the
         // known state rather than inventing a new one.
         if (profile.provider == Provider.CLAUDE &&
-            (cache.snapshot(profile).lastStatusKind == ErrorKind.PLAN.key ||
+            (cache.realSnapshot(profile).lastStatusKind == ErrorKind.PLAN.key ||
                 ClaudePlan.isBlockedPlan(cache.plan(profile)))
         ) {
             val info = try {
@@ -606,7 +606,7 @@ class UsageRepository(private val context: Context) {
     }
 
     private fun authFailure(profile: Profile, now: Long): FetchResult {
-        val state = cache.snapshot(profile).authState
+        val state = cache.realSnapshot(profile).authState
         if (state == AuthState.REAUTH_NEEDED) {
             cache.saveFailure(profile, "Re-auth needed", now, AuthState.REAUTH_NEEDED, ErrorKind.AUTH)
             return FetchResult.AuthNeeded()

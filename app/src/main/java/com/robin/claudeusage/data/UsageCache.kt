@@ -27,10 +27,17 @@ data class Snapshot(
      * phone 2026-09-06, minutes after the first real sign-in.
      */
     val provider: Provider = Provider.CLAUDE,
+    /**
+     * R8 (CCRM-15 (Above-Pace Verification)): this snapshot carries [SyntheticSeries]'
+     * numbers, not the cache's. [syntheticData] is then the whole of [data].
+     */
+    val synthetic: Boolean = false,
+    val syntheticData: UsageData? = null,
 ) {
     // Lazy, not get(): the UI reads this several times per composition and
     // on a 5-second tick — one parse per snapshot is plenty.
     val data: UsageData? by lazy {
+        if (synthetic) return@lazy syntheticData
         rawJson?.let {
             // A provider with no source yet (Antigravity, CCRM-55) must read as "no
             // data", never as a crash on a lazy the whole UI touches.
@@ -115,7 +122,15 @@ class UsageCache(context: Context) {
     private fun k(profile: Profile, name: String): String =
         if (profile.key == Profile.LEGACY_KEY) name else "${profile.key}.$name"
 
-    fun snapshot(profile: Profile): Snapshot {
+    /**
+     * What every surface draws: the cache's snapshot, or R8's synthetic series while it is
+     * on ([SyntheticSeries]). Anything that *acts* on usage — alerts, reset pings, the
+     * fetch — reads [realSnapshot] instead.
+     */
+    fun snapshot(profile: Profile): Snapshot = SyntheticSeries.apply(realSnapshot(profile))
+
+    /** The cache as stored, never synthetic. */
+    fun realSnapshot(profile: Profile): Snapshot {
         val lastStatus =
             prefs.getString(k(profile, "lastStatus"), "Never fetched") ?: "Never fetched"
         return Snapshot(

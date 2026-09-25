@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import com.robin.claudeusage.data.SyntheticSeries
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -920,6 +922,8 @@ fun SettingsScreen(
             Spacer(Modifier.height(24.dp))
 
             SectionLabel("Debug")
+            SyntheticSeriesCard(cacheSettings)
+            Spacer(Modifier.height(10.dp))
             TrendDiagnostics(repo, use24h)
             Spacer(Modifier.height(10.dp))
             DebugSection(repo) { namesTick++; Shortcuts.publish(context) }
@@ -3183,6 +3187,41 @@ private fun TrendDiagnostics(repo: UsageRepository, use24h: Boolean) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/**
+ * R8 (CCRM-15 (Above-Pace Verification)): the synthetic-series switch, in the release
+ * build behind the 7-tap unlock. The mode is in memory only; Main's banner is its other
+ * off switch, and process death turns it off too. Wireframe rev D §9c.
+ */
+@Composable
+private fun SyntheticSeriesCard(cache: UsageCache) {
+    val context = LocalContext.current
+    val mode by SyntheticSeries.mode.collectAsState()
+    SectionCard {
+        Text(
+            "Synthetic series",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(8.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (m in SyntheticSeries.Mode.entries) {
+                FilterChip(
+                    selected = mode == m,
+                    onClick = {
+                        SyntheticSeries.set(m)
+                        com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                    },
+                    label = { Text(m.label) },
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(onClick = {
+            context.startActivity(com.robin.claudeusage.widgets.FacesGalleryActivity.intent(context))
+        }) { Text("Faces gallery") }
     }
 }
 

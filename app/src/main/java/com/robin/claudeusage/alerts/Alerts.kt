@@ -90,7 +90,7 @@ object Alerts {
         retireOldChannels(context, cache)
         ensureChannels(context)
         for (profile in cache.registry().all()) {
-            val data = cache.snapshot(profile).data ?: continue
+            val data = cache.realSnapshot(profile).data ?: continue
             checkReset(context, cache, profile, "Session", "5h", data.session, Projection.SESSION_MS)
             checkReset(context, cache, profile, "Weekly", "Weekly", data.weekly, Projection.WEEKLY_MS)
         }

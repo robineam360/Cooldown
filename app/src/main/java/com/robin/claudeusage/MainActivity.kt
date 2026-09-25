@@ -10,6 +10,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.unit.sp
+import com.robin.claudeusage.data.SyntheticSeries
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -178,6 +187,10 @@ private fun App(startProfile: Profile) {
     var layoutMenuOpen by remember { mutableStateOf(false) }
     var showLayoutSheet by remember { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
+    // R8 (CCRM-15 (Above-Pace Verification)): a mode change redraws Main at once rather
+    // than on the next 5-second tick.
+    val syntheticMode by SyntheticSeries.mode.collectAsState()
+    LaunchedEffect(syntheticMode) { tick++ }
 
     // Ticks every few seconds so "updated Xm ago" and background results stay fresh.
     LaunchedEffect(Unit) {
@@ -288,7 +301,35 @@ private fun App(startProfile: Profile) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
+                    Column {
+                    // R8 (CCRM-15 (Above-Pace Verification)): Main's marker, and its off
+                    // switch — the 7-tap unlock relocks on recreation, so the Debug chips
+                    // alone could strand the mode on. Wireframe rev D §9c.
+                    val syntheticBanner = screen == Screen.MAIN && syntheticMode != SyntheticSeries.Mode.OFF
+                    if (syntheticBanner) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF9A6B1E))
+                                .windowInsetsPadding(WindowInsets.statusBars)
+                                .clickable {
+                                    SyntheticSeries.set(SyntheticSeries.Mode.OFF)
+                                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                                }
+                                .height(34.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                "SYNTHETIC DATA · tap to turn off",
+                                color = Color(0xFF1A1400),
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.35.sp,
+                            )
+                        }
+                    }
                     TopAppBar(
+                        windowInsets = if (syntheticBanner) WindowInsets(0) else TopAppBarDefaults.windowInsets,
                         title = {
                             // CCRM-60 (Dual Identity), decision 3: the main screen only —
                             // Settings, History and the Guide keep a plain text title.
@@ -362,6 +403,7 @@ private fun App(startProfile: Profile) {
                             }
                         },
                     )
+                    }
                 },
             ) { innerPadding ->
                 // History lays its own content out in columns when there's room, so

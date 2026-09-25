@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    R8 (CCRM-15 (Above-Pace Verification)): while the synthetic series is on, every
+    notification layout is added into synthetic_body under this full-width band, so the
+    numbers below it cannot be mistaken for real ones (wireframe rev D §9c). Violet, the
+    same colour as the widgets' marker.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:background="@drawable/notif_synthetic_band"
+        android:gravity="center"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:text="SYNTHETIC DATA"
+        android:textColor="#FFFFFFFF"
+        android:textSize="9.5sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.06"
+        android:importantForAccessibility="yes" />
+
+    <FrameLayout
+        android:id="@+id/synthetic_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
