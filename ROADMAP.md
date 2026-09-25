@@ -1184,7 +1184,7 @@ false through a polling failure. Whether a face is past its reset is decided **a
 `resetsAt` and `fetchedAt`, never from an expectation that a redraw will arrive, so a redraw from any
 trigger is true and a late one is merely late. A percentage cannot be made live; its age shows through
 the stale dim (R6) and, on the faces with room, through an absolute "as of 9:10 PM" stamp **if Robin
-wants one** (Q11, open, decided on the wireframe — the earlier "no Updated Xm ago" ruling was against
+wants one** (Q11 — **decided 2026-09-25, wireframe rev D: kept** on Number 4×1/4×2, Countdown 2×2, Ring 2×2 and Strip 4×2, 10 sp at 55% ink, in-flow, never overlaid — the earlier "no Updated Xm ago" ruling was against
 a *relative* stamp).
 
 **R5 · Never repoint silently.** A removed account's widget shows "Account removed · tap to choose";
@@ -1233,7 +1233,7 @@ hands a snapshot out, so every surface — chart, bars, rings, notification, wid
 series. It is never written to any store; a unit test proves the stores stay untouched. While on: a
 SYNTHETIC DATA banner on Main **which is also the off switch** (the 7-tap unlock is `remember` state
 and relocks on recreation, so the chip row alone could strand the mode on); a strip on the
-notification; a marker on every widget face (form approved on the wireframe). Process death resets it
+notification; a marker on every widget face (**approved at rev D, 2026-09-25**: a full-width violet "SYNTHETIC" ribbon on faces 160 dp tall or more, a 7 dp violet corner dot on the shorter ones; neither overlaps content). Process death resets it
 to Off and the next redraw of every surface is real data — the safe direction. The device pass
 therefore simulates process death with `am kill`, never `force-stop`.
 
@@ -1246,7 +1246,7 @@ info file's contents, the layouts. **Recovery is forward-only.** Android refuses
 a non-debuggable 24, and uninstalling loses app data, so an installed v1.8 is never rolled back; a
 defect is fixed in **v1.8.1 (versionCode 25)**, built from the fix or from a revert, which keeps all
 four components registered. A face that must be pulled keeps its provider and draws the **unavailable
-face** (S14, "Unavailable in this version · update Cooldown"), approved on the v1.8 wireframe so the
+face** (S14, "Unavailable in this version · update Cooldown" on 4×1, 2×2 and larger, "Update Cooldown" on 1×1 and 2×1 — approved at wireframe rev D, 2026-09-25), so the
 recovery release needs no design round.
 
 **R10 · Memory.** Bitmaps are drawn at bucket size, never scaled; at most three buckets per face and
@@ -1276,7 +1276,7 @@ unavailable (R9) · and each narrow size, with what drops out. The wireframe dra
 face; `WidgetFaceTest` covers every state × bucket.
 
 ### CCRM-78 · Widgets Reborn — the suite, its config, and one refresh seam
-- **Status:** Planned · large · **wireframe gate** (RUNBOOK.md Step 2) · reopens the widget half of
+- **Status:** Planned · large · **wireframe rev D approved by Robin 2026-09-25** (`design/2026-09-25-widgets-reborn.html`; RUNBOOK.md Step 2) · next: Step 3 · reopens the widget half of
   CCRM-61 (Settings Diet); supersedes CCRM-4 (Widget Quick-Edit) and closes the history of CCRM-39
   (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget) and CCRM-13 (Chart Widget).
 - **Faces (Robin, Q1): four.** CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face)
@@ -1286,10 +1286,14 @@ face; `WidgetFaceTest` covers every state × bucket.
   `setResult(RESULT_CANCELED)` with the id, and finishes at once on `INVALID_APPWIDGET_ID` or an id
   whose provider is not this package. Controls: **Account** (chips with marks; none on the Strip),
   **Window** (5h / Weekly; hidden when the account has one window; the Strip is fixed to each
-  account's headline window) and **Background** (Solid / Transparent — Robin, Q4, a per-widget
-  toggle; default Solid). Solid is the account's Room card colour with
-  `system_app_widget_background_radius`; Transparent draws on the wallpaper, shown on the wireframe
-  over a light and a dark one. Save writes `w<id>.*` and `w<id>.v = 1`, redraws that widget, re-arms (R7) and
+  account's headline window) and **Background** (Solid / Gradient / Transparent — Robin, Q4, a per-widget
+  toggle, widened to three at rev C; default Solid). Solid is the account's Room card colour with
+  `system_app_widget_background_radius`; Gradient is a light wash of the account's accent over that
+  card, top-left to bottom-right; Transparent draws on the wallpaper, with a soft shadow in the
+  opposite tone under every text run and ring so a mismatched wallpaper stays legible (rev D). The
+  Strip, which no account owns, uses the neutral card (#1A1A1A / #FCF8F4) and a neutral 6%-ink wash
+  (Fable review, rev D). Padding: 12 dp on the cover (8 dp top and bottom on 84 dp-tall faces), 14 dp
+  on the inner grid. Save writes `w<id>.*` and `w<id>.v = 1`, redraws that widget, re-arms (R7) and
   returns `RESULT_OK`. Reconfigure by long-press ("Widget settings" / "Save changes"). Prefs are
   pruned in `onDeleted` and remapped in `onRestored`; unknown ids are unassigned (R5).
 - **On-face controls** (Number 4×2): the 5h|Weekly chips and the account cycler are
@@ -1315,21 +1319,32 @@ face; `WidgetFaceTest` covers every state × bucket.
   manifest.
 
 ### CCRM-79 · Ring Face — the status-bar ring at home-screen size
-- **Status:** Planned · medium · wireframe gate.
-- **What:** the rails gauge from `UsageIcon.railsGauge` (hairline extent, usage band, red slice, hub,
-  needle, spent ×) for one account's 5h window, or its headline window when it has no 5h. It bears no
+- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** — Q10: the spent × at 100% on
+  2×2 as on 1×1; the needle and hub replaced by a pace tick on every ring with a figure in its bore
+  (3.5 dp on the 9 dp stroke, never under 2.5 dp, round caps, 90% ink, 1 dp halo in the face colour,
+  overhanging the stroke equally inside and out); the usage band has round ends; S5 labels "Pro · not
+  started", S7's red dot sits at 1×1's top-right inset, S11 adds " · left" on 2×2.
+- **What:** the rails gauge from `UsageIcon.railsGauge` (hairline extent, usage band, red slice, spent
+  ×, with the pace tick in place of the hub and needle — rev D) for one account's 5h window, or its headline window when it has no 5h. It bears no
   time; at S6 it draws the extent alone.
 - **1×1:** ring Ø 64 dp, stroke 6 dp, **16 sp figure in the bore** (Robin, Q3 — two Claude accounts
   share a hue). At 100% the × replaces the figure.
 - **2×2:** ring Ø 110 dp (cap 140), stroke 9 dp, 26 sp figure, one line under with the 12 dp mark and
-  a 12 sp label. **100% as × or "100%": Robin decides on the wireframe (Q10); draw both.**
+  a 12 sp label (the account name only; the window is tagged only when it is not 5h). At 100% the ×
+  (Q10, decided 2026-09-25).
 - **Omits:** window name, reset, weekly, credits.
 
 ### CCRM-80 · Number Face — the Huge-number row for one account
-- **Status:** Planned · medium · wireframe gate.
-- **What:** the notification's collapsed Huge-number geometry: 14 dp mark, 13 sp label, 8 dp bar with
-  the pace tick, 32 sp bold trailing figure.
-- **2×1:** mark + label, bar, figure. The label clamp is CCBG-24 (Duet Label Clamp)'s measure.
+- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** — Robin (rev C): the label and
+  the figure share one row, label left baseline-aligned to the figure on the right, with the
+  full-width bar under both — a deliberate departure from the notification's geometry. 4×2 grows to a
+  44 sp figure over a 10 dp bar, centred above the control row. S5's sub-line reads "Starts when a
+  message is sent". At 2×1 a weekly-only account shows the name with "Weekly" as a 10 sp second line;
+  an unassigned one shows an 8 sp "UNASSIGNED" pill above the name (Fable review, rev D).
+- **What:** the Huge-number parts — 14 dp mark, 13 sp label, 8 dp bar with the pace tick, 32 sp bold
+  figure — laid out as above.
+- **2×1:** mark + label and the figure on one row, the bar under. The label is clamped to what the
+  measured figure leaves: CCBG-24 (Duet Label Clamp)'s measure.
 - **4×1:** adds a 12 sp sub-line that is **always absolute** (R4): "Resets 9:10 PM", "Resets Sat
   9:10 PM" for Weekly, "Reset 9:10 PM" at S6, "Stale" at S8.
 - **4×2:** adds a 28 dp control row: `[5h | Weekly]` chips on the left — only the windows the account
@@ -1340,7 +1355,13 @@ face; `WidgetFaceTest` covers every state × bucket.
   flips.
 
 ### CCRM-81 · Countdown Face — when the window comes back
-- **Status:** Planned · medium · wireframe gate · new.
+- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** · new — Robin: the face
+  ignores the Reset time chip; the Weekly absolute form is the "Weekly reset" caption over "Sat 9:10 PM"
+  at the count's 24 sp (it fits 2×1, "Resets Sat 9:10 PM" did not). 2×2 draws the count at 28 sp with
+  "at 9:10 PM" under it, then the 18 sp figure on the left and "~ runs out …" on the right of one row
+  over the 6 dp bar, the account line at the bottom. No count at S5 ("Starts when a message is sent")
+  or at S6 ("Reset 9:10 PM"), and no estimate at S3, S5 or S6. Inside the last 24 h the Weekly clock
+  time drops its day (R2).
 - **Ticking (Robin, Q6):** try a live **H:MM** without seconds. RemoteViews' `Chronometer` formats
   only through `DateUtils.formatElapsedTime`, so expect it cannot; then a live **H:MM:SS** —
   `setChronometerCountDown(true)`, base `elapsedRealtime + (resetsAt − now)`. Under one hour the same
@@ -1364,7 +1385,11 @@ face; `WidgetFaceTest` covers every state × bucket.
   Reset Silence) is not made worse.
 
 ### CCRM-82 · Accounts Strip — every account as its own ring, never a sum
-- **Status:** Planned · medium · wireframe gate · new.
+- **Status:** Planned · medium · **wireframe rev D approved 2026-09-25** · new — the diameters below
+  are ceilings: on the cover four rings are Ø53 at 4×1 and Ø80 at 4×2, which is what fits with 6 dp gaps
+  and every line kept; the inner grid keeps Ø56 / Ø88 (Fable review, delegated by Robin). A weekly-only
+  ring carries "Weekly" in the bore under the figure (8 sp at 4×1, 9 sp at 4×2), kept under the × at
+  100% on 4×2 and dropped on 4×1. A state lands on one ring; a removed account simply leaves the row.
 - **What:** one rails ring per account in registry order, each in its own accent, each on its
   headline window (a Weekly-only ring is tagged). **No sum, no average, no combined figure, ever** —
   the appendix's ruling against a cross-provider percentage and CCRM-31 (Combined Total)'s scope both
@@ -1378,7 +1403,10 @@ face; `WidgetFaceTest` covers every state × bucket.
 
 ### CCRM-83 · Ring Renderer — one ring painter for the status bar, the widgets and the share card
 - **Status:** Planned · small · **no visible change** (RUNBOOK.md Step 3) · closes the ring half of
-  CCRM-3 (Unified Theming) phase 3; lifts CCRM-24 (Share Card)'s gate.
+  CCRM-3 (Unified Theming) phase 3; lifts CCRM-24 (Share Card)'s gate. **Wireframe rev D (2026-09-25)
+  adds a pace-tick variant** for rings with a figure in the bore (widgets, share card): no hub, no
+  needle, a 3.5 dp round-capped tick with a 1 dp halo, round ends on the usage band. The 24 dp
+  status-bar call keeps the needle and hub and stays pixel-equivalent.
 - **What:** `ui/RingRenderer.draw(context, sizePx, strokePx, pct, elapsed, fillArgb, dark,
   showOverPace, spentCross)` generalises `UsageIcon.railsGauge`; `UsageIcon.draw` becomes a 24 dp
   call into it. `BarRenderer` is unchanged.
@@ -1388,7 +1416,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   it does not ship.
 
 ### CCRM-84 · Faces Gallery — every face and state, reachable on the live phone
-- **Status:** Planned · small · wireframe gate (debug-only screen) · supersedes CCBG-19 (Fixture
+- **Status:** Planned · small · **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9d: tiles captioned "Ring 2×2 · S3 · 14 KB") (debug-only screen) · supersedes CCBG-19 (Fixture
   Unreachable)'s won't-fix path and CCRM-15 (Above-Pace Verification)'s harness paragraph.
 - **What:** a Debug-section screen after the 7-tap unlock, in the release build, that inflates every
   face × bucket × state through `WidgetFace.render` — the providers' own function — with
@@ -3489,7 +3517,7 @@ keys) would still make this a different product. Not filed, not an open question
   figure was derived from.
 
 ### CCRM-14 · Clear History — let the user clear usage history
-- **Status:** Planned · **in the v1.8 arc** (RUNBOOK.md Step 5) · placement decided 2026-09-25 (Robin): "Clear usage history…" in the Accounts-tab card ⋮ beside Details and Remove, confirmed in the `RemoveAccountDialog` shape naming both stores; calls `HistoryStore.clear` + `SessionLog.clear` + `Surfaces.refresh`. Copy is visible → wireframe section in Step 2
+- **Status:** Planned · **in the v1.8 arc** (RUNBOOK.md Step 5) · placement decided 2026-09-25 (Robin): "Clear usage history…" in the Accounts-tab card ⋮ beside Details and Remove, confirmed in the `RemoveAccountDialog` shape naming both stores; calls `HistoryStore.clear` + `SessionLog.clear` + `Surfaces.refresh`. **Wireframe rev D approved 2026-09-25** (§9b): the ⋮ reads Details… · Clear usage history… · Rename… · Accent colour… · Remove account; the dialog "Clear usage history?" names "8 days of trend history" and "a year of session and weekly history" for that account only, says the account, its sign-in and settings stay, and confirms with "Clear history"
 - **Why:** CCBG-1 decoupled history from the credential lifecycle, which was right — but
   it left *nothing* able to clear it. `HistoryStore.clear()` and `SessionLog.clear()` are
   both callerless. Someone genuinely switching the account behind a profile slot has no
@@ -3507,7 +3535,7 @@ keys) would still make this a different product. Not filed, not an open question
   confirmed action, on a card that stays. That is what this entry is now for.
 
 ### CCRM-15 · Above-Pace Verification — verify the above-pace chart state on a device
-- **Status:** **Observed 2026-08-04** · synthetic-series override **in the v1.8 arc** (RUNBOOK.md Step 5; rule R8 of the v1.8 section, 2026-09-25): a Debug-section chip row "Synthetic series: Off / Above pace / At 100% / No data" in the **release** build behind the 7-tap unlock; a process-wide in-memory holder `data/SyntheticSeries`, applied where `UsageRepository` hands out a snapshot so chart, bars, rings, the notification and the widgets render one series; never written to a store (unit-tested); marked wherever it shows — a SYNTHETIC DATA banner on Main that is also the off switch, a strip on the notification, a marker on every widget face (form approved at Step 2); resets to Off with the process. The harness half moves to CCRM-84 (Faces Gallery)
+- **Status:** **Observed 2026-08-04** · synthetic-series override **in the v1.8 arc** (RUNBOOK.md Step 5; rule R8 of the v1.8 section, 2026-09-25): a Debug-section chip row "Synthetic series: Off / Above pace / At 100% / No data" in the **release** build behind the 7-tap unlock; a process-wide in-memory holder `data/SyntheticSeries`, applied where `UsageRepository` hands out a snapshot so chart, bars, rings, the notification and the widgets render one series; never written to a store (unit-tested); marked wherever it shows — a SYNTHETIC DATA banner on Main that is also the off switch, a strip on the notification, a marker on every widget face (**rev D, 2026-09-25**: the violet "SYNTHETIC" ribbon on faces 160 dp tall or more, a 7 dp violet dot on the shorter ones; the notification carries a full-width "SYNTHETIC DATA" band above its row; the Main banner reads "SYNTHETIC DATA · tap to turn off"); resets to Off with the process. The harness half moves to CCRM-84 (Faces Gallery)
 - **Why:** The pace chart's warning half — the amber overshoot fill, the wash over the
   above-pace region, and the bold warning-coloured readout — had **never rendered on real
   hardware**. Every window on every account sat below pace, so it had only ever been seen
@@ -3610,7 +3638,7 @@ keys) would still make this a different product. Not filed, not an open question
   re-making before it is built.
 
 ### CCRM-24 · Share Card — share a usage snapshot as an image
-- **Status:** Planned · medium · **in the v1.8 arc** (Robin, 2026-09-25: wireframe now, build last, ships in v1.8 only if ready — the release does not wait). Gate lifted by CCRM-83 (Ring Renderer); `share/ShareCard.kt` at 4× (1440 px wide) from `RingRenderer`, `BarRenderer` and a `ChartBitmap` read from `530781f`; render-then-preview, then `ACTION_SEND` with `FLAG_GRANT_READ_URI_PERMISSION` on a `FileProvider` cache-path URI (`cacheDir/share/`, earlier files deleted before each render, the folder emptied on app start; nothing written outside app cache); entry in the Main ⋮ menu ("Share snapshot"). Privacy rules below unchanged
+- **Status:** Planned · medium · **in the v1.8 arc** (Robin, 2026-09-25: wireframe now, build last, ships in v1.8 only if ready — the release does not wait). **Wireframe rev D approved 2026-09-25 — build** (RUNBOOK.md Step 6). **Scope: only the account open when Share is tapped** (Robin, against the all-accounts recommendation): an 88 dp ring with the figure, the name and "as of 6:29 PM, Thu Sep 25", the 5h and Weekly bars with pace readouts and absolute resets, that account's 5h trend, a small COOLDOWN wordmark. Gate lifted by CCRM-83 (Ring Renderer); `share/ShareCard.kt` at 4× (1440 px wide) from `RingRenderer`, `BarRenderer` and a `ChartBitmap` read from `530781f`; render-then-preview, then `ACTION_SEND` with `FLAG_GRANT_READ_URI_PERMISSION` on a `FileProvider` cache-path URI (`cacheDir/share/`, earlier files deleted before each render, the folder emptied on app start; nothing written outside app cache); entry in the Main ⋮ menu ("Share snapshot"). Privacy rules below unchanged
 - **Why:** People screenshot this app today. A composed card is better than a crop of a
   screenshot, and unlike on desktop, sharing is a first-class Android surface — this feature
   is a better fit here than in the app it's being copied from.

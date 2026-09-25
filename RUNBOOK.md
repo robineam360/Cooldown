@@ -66,7 +66,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
 | 1 | Plan: concept, Robin's ten answers, CCRM-78–84 filed, Astra ×2, Fable redraft, Astra round 3, freeze | session | — | ☑ |
-| 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☐ |
+| 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☑ |
 | 3 | Pure layer: RingRenderer, Surfaces, WidgetFace, Transitions, WidgetPrefs — no visible change | builder · session reviews | 2 | ☐ |
 | 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☐ |
 | 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☐ |
@@ -110,7 +110,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
   bounded attempt). Both were adopted. Plan FROZEN.
 - Open for Robin at Step 2, raised by the redraft: Q11 (an absolute "as of 9:10 PM" stamp on the
   larger faces), the synthetic marker's form, and the Countdown no longer following the Reset time
-  chip (its absolute time is always shown).
+  chip (its absolute time is always shown). *All three were decided at Step 2 (rev D, 2026-09-25).*
 
 ---
 
@@ -153,14 +153,28 @@ build or defer — into the items' Status lines; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Robin has said "approved" to a named revision.
-- ☐ Every decision taken in review is written into CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and CCBG-24.
-- ☐ The share card is marked *build* or *defer* — Robin's call.
+- ☑ Robin has said "approved" to a named revision — rev D, 2026-09-25.
+- ☑ Every decision taken in review is written into CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and CCBG-24.
+- ☑ The share card is marked *build* or *defer* — Robin's call: **build**, last, the open account only.
 
 **Reversal:** documentation only.
 
 **Log:**
-
+- 2026-09-25 — A Sonnet sub-agent (mesh-builder) drew rev A of `design/2026-09-25-widgets-reborn.html`.
+  The session's review found 19 defects before Robin saw it: false chronometers on the Countdown
+  S4/S5/S6, "Wkly", Strip states applied to every ring, simplified Main and notification mocks, and
+  others. The same agent drew rev B. Robin replaced the needle with a pace tick while viewing, then
+  asked for a bolder tick, round arc ends, Solid / Gradient / Transparent, and the Number label and
+  figure on one row. The session drew those itself as rev C, together with a layout pass; it stopped
+  the sub-agent, which had resumed on a queued message and was editing the same file.
+- 2026-09-25 — Robin answered one at a time: Q10 spent ×; Q11 keep the stamp where drawn; S13
+  ribbon + dot; S14 two lengths; the Transparent soft shadow; share card build, the open account
+  only; the Countdown ignores the Reset time chip; Countdown 2×1 Weekly "Sat 9:10 PM". He delegated
+  the remaining fit calls to a fresh Fable judge (mesh-judge, model fable), which approved three
+  and changed two (Strip cover rings recorded as Ø53 / Ø80, as drawn; the UNASSIGNED pill raised to
+  8 sp). It also found the Weekly tag vanishing at 100%, which is now drawn. **Rev D approved by
+  Robin, 2026-09-25**, and the decisions were written into CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and
+  CCBG-24.
 ---
 
 ## Step 3 · Pure layer — no visible change
