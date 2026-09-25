@@ -96,6 +96,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
@@ -2251,14 +2254,53 @@ private fun SignInCompletion(
         },
     )
     Spacer(Modifier.height(8.dp))
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    SignInActionRow {
         Button(enabled = !busy && codeInput.isNotBlank(), onClick = onFinish) {
             Text("Finish sign-in")
         }
-        Spacer(Modifier.width(8.dp))
         TextButton(enabled = !busy, onClick = onReopen) { Text("Reopen page") }
-        Spacer(Modifier.weight(1f))
         TextButton(enabled = !busy, onClick = onCancel) { Text("Cancel") }
+    }
+}
+
+/**
+ * CCBG-32 (Accounts Button Wrap): the Finish / Reopen / Cancel row. When all three fit, it
+ * is the approved one-line row with Cancel at the far end. When they don't — a 360 dp
+ * phone, the Fold 7 cover, the inner screen's two-column Accounts, a large font — the
+ * buttons wrap in order and Cancel sits at the end of its own line, instead of a plain
+ * `Row` squeezing the last child into a one-letter column. A label wider than a whole
+ * line wraps inside its button rather than clipping.
+ */
+@Composable
+private fun SignInActionRow(content: @Composable () -> Unit) {
+    Layout(content) { measurables, constraints ->
+        val gap = 8.dp.roundToPx()
+        val width = constraints.maxWidth
+        val placeables = measurables.map { it.measure(Constraints(maxWidth = width)) }
+        // Lines of (placeable, x). The leading buttons flow left to right; the last one
+        // goes to the end of the current line if it fits there, else to its own line.
+        val lines = mutableListOf(mutableListOf<Pair<Placeable, Int>>())
+        var x = 0
+        for ((i, p) in placeables.withIndex()) {
+            val last = i == placeables.lastIndex
+            val start = if (lines.last().isEmpty()) 0 else x + gap
+            if (start + p.width > width && lines.last().isNotEmpty()) {
+                lines.add(mutableListOf())
+                x = 0
+            }
+            val px = if (last) width - p.width else if (lines.last().isEmpty()) 0 else x + gap
+            lines.last().add(p to px)
+            x = px + p.width
+        }
+        val heights = lines.map { line -> line.maxOf { it.first.height } }
+        val total = heights.sum() + gap * (lines.size - 1)
+        layout(width, total) {
+            var y = 0
+            for ((line, h) in lines.zip(heights)) {
+                for ((p, px) in line) p.placeRelative(px, y + (h - p.height) / 2)
+                y += h + gap
+            }
+        }
     }
 }
 

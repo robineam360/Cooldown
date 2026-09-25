@@ -37,15 +37,22 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   well as the `widget_` ones — it fails on the old file.
 
 ### CCBG-32 · Accounts Button Wrap — the sign-in card's "Cancel" wraps one letter per line
-- **Status:** Open — Critical (tester-visible on first sign-in).
+- **Status:** **Fixed (2026-09-25)** — seen on the API 36 emulator at 360 dp and 411 dp, and at
+  font scales 1.0, 1.3 and 2.0; not yet on the Fold 7 or in a release.
 - **Severity:** Medium (broken layout on the Accounts screen)
 - **Symptom:** **Reported by Raja, 2026-09-25, with screenshots.** In a Claude account's *Finish
   signing in* card, the button row *Finish sign-in · Reopen page · Cancel* does not fit the
   width, so "Cancel" is squeezed into a one-character column ("C / a / n / c / el"). Seen on a
   newly added account after the latest Accounts redesign — Robin had not re-tested adding an
   account since it.
-- **Note:** a fix that restores the approved Accounts layout needs no wireframe (CLAUDE.md §2); a
-  new arrangement of the row does.
+- **Cause:** the row has been a plain `Row` since v0.12. It needs about 323 dp and a 360 dp phone's
+  card gives it 288 dp, so the last child was squeezed. It fitted only on wider phones (339 dp at
+  411 dp).
+- **Fix:** `SignInActionRow`, a small custom layout. When all three buttons fit it is the approved
+  one-line row, pixel for pixel. When they don't, the buttons wrap in order and Cancel sits at the
+  end of its own line; a label wider than a whole line wraps inside its button. This narrow
+  arrangement is new, so it was wireframed (`design/2026-09-25-tester-fixes-wireframe.md`),
+  approved by a Fable judge and reviewed by Astra.
 
 ### CCBG-33 · Device-Code Prerequisite — ChatGPT sign-in fails unless a ChatGPT setting is on
 - **Status:** Open — Critical (blocks a new user's ChatGPT sign-in).
