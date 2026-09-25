@@ -76,6 +76,8 @@ The sign-in is minted on the phone and is yours alone — no computer shares it,
 
 Tap **"+ Add account" → ChatGPT** (or **"Sign in with a code"** on an existing ChatGPT card). The sheet shows a short code and a countdown. Go to **auth.openai.com/codex/device** — with **Open in browser** on this phone, or on any other device — enter the code and approve. The sheet closes by itself and the card turns Active with its **Plus / Pro** tag. Nothing is copied from a computer, deliberately: reusing a desktop Codex token would sign that CLI out.
 
+**Before your first ChatGPT sign-in:** turn on **"Enable device code sign-in for Codex, Excel, PowerPoint, and Word"** in ChatGPT → **Settings → Security** (chatgpt.com/security-settings; the sheet has a link to it). OpenAI keeps it off by default, and while it is off the code is never accepted — the sheet just waits until the code expires. On a work (Team or Enterprise) account, your workspace admin has to allow it.
+
 ### Removed in the next update: the computer-token backup
 
 Earlier versions kept a **"Use a computer token instead"** section under each Claude card (paste from clipboard, Scan QR, the in-app "How do I get my token?" guide). It is gone. Phone sign-in has carried every account since v0.12, and a pasted desktop token was the only way the desktop's token rotation could break the app.

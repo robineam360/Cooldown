@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.annotation.DrawableRes
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -1994,7 +1996,7 @@ private fun ChatGptAccountBody(
         Spacer(Modifier.height(2.dp))
         Text(
             "Shows a short code to type at auth.openai.com — on this phone or any " +
-                "other device.",
+                "other device. ${DeviceCodeCopy.PREREQUISITE}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -2150,6 +2152,7 @@ private fun DeviceCodeSheet(
 
             if (showsCode) {
                 val flow = started
+                DeviceCodeCopy.hint(stage)?.let { PrerequisiteBox(it, onOpenPage) }
                 Spacer(Modifier.height(16.dp))
                 Text(
                     DeviceCodeCopy.INSTRUCTION_PREFIX,
@@ -2209,6 +2212,9 @@ private fun DeviceCodeSheet(
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             }
 
+            // EXPIRED and DENIED: the same box, below the body and above "Get a new code".
+            if (!showsCode) DeviceCodeCopy.hint(stage)?.let { PrerequisiteBox(it, onOpenPage) }
+
             DeviceCodeCopy.primaryLabel(stage)?.let { primary ->
                 Spacer(Modifier.height(16.dp))
                 Button(enabled = !busy, onClick = onRetry) { Text(primary) }
@@ -2218,6 +2224,40 @@ private fun DeviceCodeSheet(
             TextButton(onClick = onDismiss) {
                 Text(if (showsCode) "Cancel" else "Close")
             }
+        }
+    }
+}
+
+/**
+ * CCBG-33 (Device-Code Prerequisite): the tonal box naming the ChatGPT setting the code
+ * depends on, with the one tap that reaches it (design/2026-09-25-tester-fixes-wireframe.md).
+ */
+@Composable
+private fun PrerequisiteBox(text: String, onOpenPage: (String) -> Unit) {
+    Spacer(Modifier.height(16.dp))
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Icon(
+            Icons.Outlined.Info,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 1.dp).size(16.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Column {
+            Text(
+                text,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(
+                onClick = { onOpenPage(DeviceCodeCopy.SECURITY_SETTINGS_URL) },
+                contentPadding = PaddingValues(start = 0.dp, end = 8.dp),
+            ) { Text(DeviceCodeCopy.SECURITY_LINK) }
         }
     }
 }
@@ -2461,7 +2501,8 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
             Spacer(Modifier.height(14.dp))
             AddAccountRow(
                 Provider.CHATGPT,
-                "Shows a short code to type at auth.openai.com — on this phone or any other device.",
+                "Shows a short code to type at auth.openai.com — on this phone or any other " +
+                    "device. ${DeviceCodeCopy.PREREQUISITE}",
                 onClick = { onPick(Provider.CHATGPT) },
             )
         }

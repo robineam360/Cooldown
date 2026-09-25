@@ -55,14 +55,22 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   approved by a Fable judge and reviewed by Astra.
 
 ### CCBG-33 · Device-Code Prerequisite — ChatGPT sign-in fails unless a ChatGPT setting is on
-- **Status:** Open — Critical (blocks a new user's ChatGPT sign-in).
+- **Status:** **Fixed (2026-09-25)** — built and seen on the API 36 emulator the same day, where the
+  link opened chatgpt.com/security-settings on the setting itself; not yet on the Fold 7 or in a
+  release.
 - **Severity:** Medium (sign-in cannot complete, and the app does not say why)
 - **Symptom:** **Reported by Raja, 2026-09-25, with a screenshot.** ChatGPT's *Sign in with a
   code* only works after the user turns on **"Enable device code sign-in for Codex, Excel,
   PowerPoint, and Word"** in their ChatGPT settings. Robin had it on already (Codex on a headless
   Raspberry Pi), so the requirement never showed. Raja asks for a note in the ChatGPT section.
-- **To do:** name the prerequisite in the app's ChatGPT sign-in step and in the user guide
-  (`docs/src/`). The in-app note is a visible change — wireframe first (CLAUDE.md §2).
+- **Fix:** built to `design/2026-09-25-tester-fixes-wireframe.md` (Fable approved it, Astra
+  reviewed it). The sign-in sheet's WAITING state gains a tonal box naming the setting, with a
+  link, *Open ChatGPT security settings*. EXPIRED and DENIED show the same box with retry
+  wording, because a switched-off setting shows up as an expired code: the poll waits the code
+  out. The subtitle on the ChatGPT card and in the Add-account picker names the prerequisite, and
+  the user guide (`release/USER-GUIDE.md`, `release/docs/src/guide.html`) explains it, including
+  the workspace-admin case. The copy lives in `DeviceCodeCopy.hint`, pinned by
+  `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
 - **Status:** Open — Critical per Robin's triage; **needs clarification from Raja first.**

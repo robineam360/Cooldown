@@ -87,4 +87,23 @@ class DeviceCodeCopyTest {
     fun `expired says how long a code lasts`() {
         assertTrue(DeviceCodeCopy.body(DeviceCodeStage.EXPIRED).contains("15 minutes"))
     }
+
+    @Test
+    fun `the prerequisite box shows where a code was or is in play`() {
+        // CCBG-33 (Device-Code Prerequisite): the states a switched-off setting lands in.
+        for (stage in listOf(DeviceCodeStage.WAITING, DeviceCodeStage.EXPIRED, DeviceCodeStage.DENIED)) {
+            val hint = DeviceCodeCopy.hint(stage)
+            assertNotNull("$stage has no hint", hint)
+            assertTrue(hint!!.contains("ChatGPT → Settings → Security"))
+            assertTrue(hint.endsWith("Work accounts need their admin to allow it."))
+        }
+        for (stage in listOf(DeviceCodeStage.STARTING, DeviceCodeStage.UNAVAILABLE, DeviceCodeStage.FAILED)) {
+            assertNull("$stage shouldn't hint", DeviceCodeCopy.hint(stage))
+        }
+        assertEquals(
+            "If ChatGPT wouldn't accept the code, turn on device code sign-in in ChatGPT → " +
+                "Settings → Security, then get a new code. Work accounts need their admin to allow it.",
+            DeviceCodeCopy.hint(DeviceCodeStage.EXPIRED),
+        )
+    }
 }

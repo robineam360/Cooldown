@@ -82,6 +82,35 @@ object DeviceCodeCopy {
         DeviceCodeStage.UNAVAILABLE -> null
     }
 
+    /**
+     * CCBG-33 (Device-Code Prerequisite): OpenAI refuses every device code until the user
+     * turns on "Enable device code sign-in for Codex, Excel, PowerPoint, and Word" in
+     * their ChatGPT security settings — off by default, and a workspace member can't turn
+     * it on without their admin. When it is off, the poll just waits out the code, so the
+     * app has to say it up front.
+     */
+    const val SECURITY_SETTINGS_URL = "https://chatgpt.com/security-settings"
+    const val SECURITY_LINK = "Open ChatGPT security settings"
+
+    /** The second sentence under "Sign in with a code", on the card and in Add account. */
+    const val PREREQUISITE = "Needs device code sign-in turned on in ChatGPT → Settings → Security."
+
+    private const val ADMIN = "Work accounts need their admin to allow it."
+
+    /**
+     * The prerequisite box's words for [stage], or null where it has no box: before a
+     * code exists, and where retrying can't help.
+     */
+    fun hint(stage: DeviceCodeStage): String? = when (stage) {
+        DeviceCodeStage.WAITING ->
+            "First time? Turn on device code sign-in in ChatGPT → Settings → Security, " +
+                "or the code won't be accepted. $ADMIN"
+        DeviceCodeStage.EXPIRED, DeviceCodeStage.DENIED ->
+            "If ChatGPT wouldn't accept the code, turn on device code sign-in in " +
+                "ChatGPT → Settings → Security, then get a new code. $ADMIN"
+        DeviceCodeStage.STARTING, DeviceCodeStage.UNAVAILABLE, DeviceCodeStage.FAILED -> null
+    }
+
     /** Whether the code, the countdown and the copy/open buttons are on screen. */
     fun showsCode(stage: DeviceCodeStage): Boolean = stage == DeviceCodeStage.WAITING
 }
