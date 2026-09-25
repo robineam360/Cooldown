@@ -1402,7 +1402,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   way (CCBG-10's rule).
 
 ### CCRM-83 · Ring Renderer — one ring painter for the status bar, the widgets and the share card
-- **Status:** Planned · small · **no visible change** (RUNBOOK.md Step 3) · closes the ring half of
+- **Status:** **Built 2026-09-25** (RUNBOOK.md Step 3a): `ui/RingRenderer.kt` with a NEEDLE mark (the status bar, `UsageIcon.draw` now a 24 dp call into it) and the rev D TICK mark (halo in the face colour, or cleared on Transparent; an optional soft shadow); `RingRendererTest` proves the icon byte-identical to the frozen pre-extraction copy over 16 states × both themes × mdpi/420dpi/xxhdpi. Robolectric 4.17 added as a test-only dependency for it. The Fold 7 comparison stays at Step 7 · small · **no visible change** · closes the ring half of
   CCRM-3 (Unified Theming) phase 3; lifts CCRM-24 (Share Card)'s gate. **Wireframe rev D (2026-09-25)
   adds a pace-tick variant** for rings with a figure in the bore (widgets, share card): no hub, no
   needle, a 3.5 dp round-capped tick with a 1 dp halo, round ends on the usage band. The 24 dp

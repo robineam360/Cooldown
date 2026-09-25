@@ -53,6 +53,19 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        // Robolectric (CCRM-83 (Ring Renderer)): the ring's bitmap-equality test and the
+        // widget faces' RemoteViews inflation need real resources and native graphics.
+        unitTests.isIncludeAndroidResources = true
+        // Robolectric reaches into FileDescriptor internals, which JDK 17+ closes.
+        unitTests.all {
+            it.jvmArgs(
+                "--add-opens=java.base/java.io=ALL-UNNAMED",
+                "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -77,4 +90,8 @@ dependencies {
     // Android's org.json is a stub in unit tests; the real one lets UsageParser
     // be tested against captured payloads.
     testImplementation("org.json:json:20260814")
+    // Test-only: native-graphics Canvas for RingRenderer's pixel-equality test and
+    // RemoteViews.apply for WidgetFaceTest (the v1.8 pure layer, RUNBOOK.md Step 3).
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.test:core:1.7.0")
 }
