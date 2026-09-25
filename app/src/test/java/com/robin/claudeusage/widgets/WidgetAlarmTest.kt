@@ -102,6 +102,16 @@ class WidgetAlarmTest {
     }
 
     @Test
+    fun removingTheLastNumberWhileACountdownStays_keepsTheAlarm() {
+        place(5, Face.COUNTDOWN)
+        WidgetPrefs(context).save(5, "work", FaceWindow.SESSION, FaceBackground.SOLID)
+        // The launcher removed the only Number: onDeleted, then that provider's onDisabled.
+        NumberWidgetProvider().onDeleted(context, intArrayOf(3))
+        NumberWidgetProvider().onDisabled(context)
+        assertEquals(now + 4 * H, armedAt())
+    }
+
+    @Test
     fun nothingPlaced_onDisabledCancels() {
         // An alarm left from when a widget was placed; now nothing of any face is bound.
         context.getSystemService(AlarmManager::class.java)

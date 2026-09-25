@@ -6,4 +6,6 @@
     <string name="widget_ring_description">One account’s usage as a small gauge.</string>
     <string name="widget_number_label">Number</string>
     <string name="widget_number_description">One account, the big percentage — like the pinned notification.</string>
+    <string name="widget_countdown_label">Countdown</string>
+    <string name="widget_countdown_description">When one account’s window comes back.</string>
 </resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-78 (Widgets Reborn): free to change after release (R9) — only the provider's class
+     name and the widget_prefs keys are permanent. updatePeriodMillis is 0 (R7: no periodic
+     redraw; Surfaces.refresh, the provider callbacks and the one transition alarm do it).
+     configuration_optional: a launcher that skips config leaves the widget unassigned (R5). -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_countdown_description"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:previewLayout="@layout/widget_preview_countdown"
+    android:initialLayout="@layout/widget_preview_countdown"
+    android:configure="com.robin.claudeusage.widgets.WidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:widgetCategory="home_screen" />

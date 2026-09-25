@@ -1364,7 +1364,13 @@ face; `WidgetFaceTest` covers every state × bucket.
   "at 9:10 PM" under it, then the 18 sp figure on the left and "~ runs out …" on the right of one row
   over the 6 dp bar, the account line at the bottom. No count at S5 ("Starts when a message is sent")
   or at S6 ("Reset 9:10 PM"), and no estimate at S3, S5 or S6. Inside the last 24 h the Weekly clock
-  time drops its day (R2).
+  time drops its day (R2). · **Provider in (Step 4, 2026-09-25):** `widgets.CountdownWidgetProvider`
+  (R9), 2×1/2×2, default 2×1, picker name "Countdown". **Chronometer form shipped: live H:MM:SS**
+  (MM:SS under an hour, a negative duration past zero), `setChronometer` + `setChronometerCountDown(true)`
+  with base `elapsedRealtime + (resetsAt − now)`. **Why not H:MM:** `Chronometer` builds its text
+  with `DateUtils.formatElapsedTime`, which always carries seconds, and `setFormat` only wraps that
+  string (`%s`) — RemoteViews exposes no other formatter, so seconds cannot be dropped. Step 7
+  confirms on the phone.
 - **Ticking (Robin, Q6):** try a live **H:MM** without seconds. RemoteViews' `Chronometer` formats
   only through `DateUtils.formatElapsedTime`, so expect it cannot; then a live **H:MM:SS** —
   `setChronometerCountDown(true)`, base `elapsedRealtime + (resetsAt − now)`. Under one hour the same
