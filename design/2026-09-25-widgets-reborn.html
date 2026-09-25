@@ -140,7 +140,7 @@
     synthetic-series override (CCRM-15 (Above-Pace Verification)), the Faces gallery
     (CCRM-84 (Faces Gallery)) and the Share Card (CCRM-24 (Share Card)).
   </p>
-  <p class="review">Rev D &mdash; approved by Robin 2026-09-25. Decisions in &sect;10; building per RUNBOOK.md Steps 3&ndash;6.</p>
+  <p class="review">Rev D &mdash; approved by Robin 2026-09-25. Decisions in &sect;10; building per RUNBOOK.md Steps 3&ndash;6. Rev E (same day, &sect;9c only): the collapsed notification trades the synthetic band for a violet dot &mdash; Fable, checked by Astra.</p>
   <div class="rules-box" style="border-color:var(--accent)">
     <b>Changes since rev C &mdash; Robin's answers</b>
     <ul>
@@ -1390,9 +1390,56 @@
         ${barHTML(280, 8, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}
       </div>`;
       const notifCard = `<div style="width:328px;background:#141210;color:#EDE8E4;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif">${shadeHeader}${synthLine}${notifRow}</div>`;
+      // Rev E (2026-09-25): the band stays on the EXPANDED view only. The collapsed
+      // row (~53 dp of a 48–64 dp slot) has no height for it, so it takes rev D's
+      // short-surface marker instead: a 7 dp #B388FF dot in flow at the end of the
+      // title row of notif_big_number.xml (after the weight-1 title, so it sits at
+      // the row's end before the figure column), gone unless synthetic is on. The
+      // collapsed view's content description reads "Synthetic data".
+      const dotSpan = (px, col) => `<span style="display:inline-block;width:${px}px;height:${px}px;border-radius:50%;background:${col};margin-left:5px;flex:none"></span>`;
+      const synthDot = dotSpan(7, '#B388FF');
+      // The builder sets setShowWhen(false): the real shade header carries no time.
+      const shadeHeaderNoTime = `<div style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.6;padding:8px 12px 0">${mark('claude', 12, ink(true, .7))}<span>Cooldown</span></div>`;
+      const collapsedRow = (subHtml) => `<div style="padding:4px 12px 10px;display:flex;align-items:center;gap:14px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:4px">${mark('claude', 14, CLAUDE_DARK.accent)}<span style="font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Pro · 5h</span>${synthDot}</div>
+          <div style="margin-top:3px">${barHTML(206, 13, { pct: 62, elapsed: 45, dark: true, accent: CLAUDE_DARK.accent, paceTick: 45 })}</div>
+          <div style="font-size:12px;opacity:.7;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${subHtml}</div>
+        </div>
+        <span style="font-size:32px;font-weight:700;line-height:1">62%</span>
+      </div>`;
+      const shadeCard = (inner) => `<div style="width:328px;background:#141210;color:#EDE8E4;border-radius:16px;overflow:hidden;font-family:Roboto,Arial,sans-serif">${shadeHeaderNoTime}${inner}</div>`;
+      const collapsedCard = shadeCard(collapsedRow(`Resets in 2h 41m · ${RESET_5H_LABEL}`));
+      // Both dots: a condition strip owns the sub line (withConditionDot, strip hue)
+      // while the violet synthetic dot stays on the title row — two rows, two meanings.
+      const collapsedStripCard = shadeCard(collapsedRow(`<span style="color:#E08268">●</span> Sign in again to refresh`));
+      // The Duet collapsed row (~40 dp) would reach ~58 dp with the band and clip on
+      // the 48–56 dp skins, so it takes the same dot. Synthetic is app-global, so like
+      // the update dot it marks the First half only, after that half's condition dot,
+      // at 6 dp to match the condition dot it sits beside (Fable), and
+      // Duet.labelClampDp counts 11 dp per dot shown.
+      const duetDot = dotSpan(6, '#B388FF');
+      const duetHalf = (a, pct, el, dot) => `<div style="flex:1;min-width:0;display:flex;align-items:center;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:4px">${mark(a.provider, 14, CLAUDE_DARK.accent)}<span style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.label}</span>${dot}</div>
+            <div style="margin-top:3px">${barHTML(84, 8, { pct, elapsed: el, dark: true, accent: CLAUDE_DARK.accent, paceTick: el })}</div>
+          </div>
+          <span style="font-size:30px;font-weight:700;line-height:1">${pct}%</span>
+        </div>`;
+      const duetCard = shadeCard(`<div style="padding:6px 12px 10px;display:flex;gap:16px">${duetHalf(acc('pro'), 62, 45, duetDot)}${duetHalf(acc('teams'), 31, 22, '')}</div>`);
+      // Both dots on First: the condition dot (red fault here) then the violet one;
+      // the clamp takes 22 dp, so "Product" ellipsizes.
+      const duetBothCard = shadeCard(`<div style="padding:6px 12px 10px;display:flex;gap:16px">${duetHalf(acc('product'), 62, 45, dotSpan(6, '#E57373') + duetDot)}${duetHalf(acc('teams'), 31, 22, '')}</div>`);
       root.innerHTML = '<div class="row">' + tf(debugRow, 'Debug-section chip row, release build, behind the 7-tap unlock', 328) +
-        tf(mainMock, 'Main, drawn faithfully under the banner — the banner is also the off switch', 328) +
-        tf(notifCard, 'The always-on notification (Huge-number base) while synthetic is on, in its shade card — a full-width "SYNTHETIC DATA" band above the row', 328) + '</div>';
+        tf(mainMock, 'Main, drawn faithfully under the banner — the banner is also the off switch', 328) + '</div>' +
+        '<div class="row">' +
+        tf(collapsedCard, 'Rev E · the always-on notification COLLAPSED (Huge-number) while synthetic is on — no band; a 7 dp violet dot ends the title row. TalkBack: "Synthetic data"', 328) +
+        tf(notifCard, 'EXPANDED, unchanged from rev D — the full-width "SYNTHETIC DATA" band above the row', 328) + '</div>' +
+        '<div class="row">' +
+        tf(collapsedStripCard, 'Rev E · COLLAPSED with a condition strip — the strip takes the sub line with its own-hue dot; the violet dot stays on the title row', 328) + '</div>' +
+        '<div class="row">' +
+        tf(duetCard, 'Rev E · Duet COLLAPSED while synthetic is on — the band would clip at 48–56 dp, so a 6 dp violet dot, First half only (app-global, like the update dot)', 328) +
+        tf(duetBothCard, 'Rev E · Duet COLLAPSED, First half with both dots — condition dot, then violet; the label clamp gives up 11 dp per dot. Expanded Duet keeps the band and, while synthetic is on, draws no condition strip (the ~256 dp cap has no room for band + strip)', 328) + '</div>';
     })();
   </script>
 

@@ -293,9 +293,10 @@ CCRM-84 — the gallery per its entry. Tests green.
   the pinned notification's foreground service) came back real on Main and the notification at
   once, and on the widgets at their next redraw, as R8 says. The pass found **CCBG-36 (Widget
   Reapply Residue)** — the launcher reapplied updates over old views, so the synthetic dot and the
-  Countdown's live count survived Off — fixed and tested. **Open for Robin:** the collapsed
-  notification is too short for the "SYNTHETIC DATA" band above its row; the 32 sp figure clips
-  (the expanded view matches rev D). Needs a wireframe call before Step 7.
+  Countdown's live count survived Off — fixed and tested. The collapsed notification was too
+  short for the "SYNTHETIC DATA" band; settled 2026-09-25 as wireframe rev E §9c (Fable, checked
+  by Astra — blocking once on unlabelled fallback text, accepted after the content-text prefix):
+  collapsed views carry a violet dot instead, expanded keep the band. Built; see CCRM-15.
 
 ---
 

@@ -30,7 +30,12 @@ class DuetTest {
 
     @Test
     fun `the condition dot takes its 11 dp from the label`() {
-        assertEquals(65, Duet.labelClampDp(54f, dotShown = true))
+        assertEquals(65, Duet.labelClampDp(54f, dots = 1))
+    }
+
+    @Test
+    fun `the synthetic dot beside the condition dot takes another 11 dp`() {
+        assertEquals(54, Duet.labelClampDp(54f, dots = 2))
     }
 
     @Test

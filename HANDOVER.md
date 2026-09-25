@@ -4,35 +4,27 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: the collapsed-notification synthetic dot, then CCRM-78 (Widgets Reborn) Step 7 (written 2026-09-25, night)
+## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 7, the Fold 7 device pass (written 2026-09-25, late night)
 
-**Step 6 is done.** CCRM-24 (Share Card) is Built: "Share snapshot" in the Main ⋮, a 1440 px card
-of the open account (ring, both bars, the full 120 dp trend chart — Robin chose it over rev D's
-sparkline), a preview, then the share sheet through a FileProvider in `cacheDir/share/`. Renders:
-`design/2026-09-25-share-card-renders.html`. Tests green.
+**The collapsed-notification synthetic dot is built** (wireframe rev E §9c, Fable checked, Astra
+accepted on round 2): collapsed views drop the band for a violet dot (7 dp single row, 6 dp on the
+Duet's First half), TalkBack reads "Synthetic data", the content text is prefixed "Synthetic data · "
+for surfaces that ignore custom views, the expanded Duet draws no condition strip under synthetic.
+Seen on the API 36 emulator (single row); the Duet is unit-tested only — look at it on the Fold.
+Also seen there with synthetic Off: the collapsed row's third line (reset/strip) clips on the Pixel
+skin — check whether One UI clips it too, and file a CCBG if so.
 
-**The collapsed-notification call is settled** (Fable, checked by Astra — no need to ask Robin):
-with synthetic data on, the full-width band stays on the *expanded* notification only; the
-*collapsed* row gets rev D's short-surface marker, a 7 dp `#B388FF` dot in flow at the end of the
-title row of `notif_big_number.xml` (after `title`), gone unless `SyntheticSeries.isOn`, and the
-collapsed notification's accessible text says "Synthetic data" (Astra's addition). Check
-`notif_duet.xml` clips the same way before touching it. It revises an approved drawing, so a
-tile goes first: Huge-number collapsed with the dot beside the expanded view unchanged, checked
-by Fable then Astra, then build.
+Step 7 needs the Fold 7 on USB with Robin there to unlock it — no device was attached this session.
 
 Still open, none of it blocking: CCBG-34 (Account Display Name), CCRM-85 (Crash Capture) and
 CCBG-35 (Tab Clip) each need a wireframe; tell Raja the crash was the always-on notification with
 one account.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown`, with the Fold 7 plugged in:
 
-> Read CLAUDE.md and HANDOVER.md. First, the collapsed-notification synthetic dot: add one tile to
-> design/2026-09-25-widgets-reborn.html §9c (Huge-number collapsed with the 7 dp #B388FF dot at
-> the end of the title row, expanded unchanged beside it), have Fable check it and Astra check
-> Fable, then build it in notif_big_number.xml (and notif_duet.xml only if it clips too), with
-> "Synthetic data" in the collapsed notification's content description; tests green; one commit.
-> Then RUNBOOK.md Step 7 from its Resume block, sharing one snapshot from the Fold 7 as part of the
-> pass.
+> Read CLAUDE.md and HANDOVER.md, then RUNBOOK.md Step 7 from its Resume block, sharing one
+> snapshot from the Fold 7 as part of the pass. Include the Duet collapsed with synthetic on (rev E
+> §9c dot) and whether the collapsed row's third line clips on One UI.
 
 ---
 

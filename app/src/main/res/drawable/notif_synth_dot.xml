@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    R8 (CCRM-15 (Above-Pace Verification)): the collapsed notification's synthetic marker
+    (wireframe rev E §9c) — the collapsed row has no height for the band the expanded view
+    carries. The widgets' violet, without their corner dot's wallpaper stroke: the shade is
+    a known surface.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFB388FF" />
+</shape>

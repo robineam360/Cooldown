@@ -85,6 +85,20 @@
                     android:src="@drawable/notif_condition_dot"
                     android:visibility="gone"
                     android:importantForAccessibility="no" />
+
+                <!-- CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic
+                     marker. The band would take this ~40 dp row to ~58 dp and clip on
+                     short skins. App-global, so First only, like the update dot; 6 dp
+                     to match the condition dot beside it. -->
+                <ImageView
+                    android:id="@+id/duet_synth_dot"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="5dp"
+                    android:src="@drawable/notif_synth_dot"
+                    android:visibility="gone"
+                    android:contentDescription="Synthetic data"
+                    android:importantForAccessibility="yes" />
             </LinearLayout>
 
             <ImageView

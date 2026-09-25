@@ -51,6 +51,20 @@
                 android:textSize="13sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
+
+            <!-- CCRM-15 (Above-Pace Verification), wireframe rev E §9c: while the
+                 synthetic series is on, this dot stands in for the band the collapsed
+                 row has no height for. After the weight-1 title, so it ends the row
+                 beside the figure. TalkBack reads it in flow; gone, it is silent. -->
+            <ImageView
+                android:id="@+id/synth_dot"
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/notif_synth_dot"
+                android:visibility="gone"
+                android:contentDescription="Synthetic data"
+                android:importantForAccessibility="yes" />
         </LinearLayout>
 
         <ImageView

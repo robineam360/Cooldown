@@ -28,7 +28,9 @@ object Duet {
      * 328 dp, and one 16 dp gutter down the middle leaves **156 dp per half** — the tight
      * case, which is the one that has to work. The half also holds the 14 dp provider
      * mark and its 4 dp gap, and the figure's 8 dp start margin; the condition dot, when
-     * it shows, takes 6 dp plus its 5 dp margin. The label gets whatever is left.
+     * it shows, takes 6 dp plus its 5 dp margin, and so does the synthetic dot beside it
+     * (CCRM-15 (Above-Pace Verification)) — [dots] counts them. The label gets whatever
+     * is left.
      *
      * CCBG-24 (Duet Label Clamp): this used to be a two-step table (72 dp, or 56 dp at four
      * characters), priced against a ~54 dp three-character figure. Samsung's font draws
@@ -38,9 +40,9 @@ object Duet {
      * a genuinely long label still ellipsizes. Never below [MIN_LABEL_DP], so a huge font
      * scale leaves a stub of label rather than none.
      */
-    fun labelClampDp(figureWidthDp: Float, dotShown: Boolean = false): Int {
+    fun labelClampDp(figureWidthDp: Float, dots: Int = 0): Int {
         val left = HALF_DP - MARK_DP - MARK_GAP_DP - FIGURE_GAP_DP - figureWidthDp -
-            (if (dotShown) DOT_DP else 0f)
+            dots * DOT_DP
         return kotlin.math.floor(left).toInt().coerceAtLeast(MIN_LABEL_DP)
     }
 

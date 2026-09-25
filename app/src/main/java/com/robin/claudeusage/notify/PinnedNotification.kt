@@ -24,6 +24,7 @@ import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.Provider
+import com.robin.claudeusage.data.SyntheticSeries
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageData
 import com.robin.claudeusage.data.UsageWindow
@@ -263,15 +264,13 @@ object PinnedNotification {
         // wireframe); quiet, it keeps the reset line as always. The dot marks the
         // line as a strip, in the strip's own hue.
         val panelState = Conditions.panelFor(context, cache, profile)
-        val collapsedText = panelState.strips.firstOrNull()
-            ?.let { withConditionDot(it.short, conditionHue(it, h.accent, dark)) }
-            ?: h.sub
+        val collapsedText = collapsedLine(panelState, h.sub, h.accent, dark, synthetic = false)
         // Expanded has the room the collapsed row doesn't: the panel below carries every
         // condition in full, so the header needs no marker at all.
         val expandedText = h.sub
 
         val builder = baseBuilder(
-            context, smallIcon, h.title, collapsedText,
+            context, smallIcon, h.title, collapsedLine(panelState, h.sub, h.accent, dark),
             tapIntent(context, cache, profile, slot = 0), h.fill,
         )
 
@@ -291,15 +290,16 @@ object PinnedNotification {
             conditions = panelState.strips, overflow = panelState.overflow,
         )
 
-        // Custom views: the largest number the collapsed row can hold.
-        builder.setCustomContentView(synthetic(context,
+        // Custom views: the largest number the collapsed row can hold. Collapsed has no
+        // height for the synthetic band (rev E §9c), so it shows the violet dot instead.
+        builder.setCustomContentView(
             bigNumberView(
                 context, R.layout.notif_big_number, h.pctText, h.title, collapsedText,
                 h.pct, h.elapsed, h.fill, h.accent, dark, showOverPace, null, panelState.stale,
                 profile.provider,
                 leftCaption = left && h.pct != null,
-            )
-        ))
+            ).apply { showSyntheticDot(R.id.synth_dot) }
+        )
         builder.setCustomBigContentView(synthetic(context,
             bigNumberView(
                 context, R.layout.notif_big_number_expanded,
@@ -346,9 +346,7 @@ object PinnedNotification {
         // ignores the custom view read these and nothing else. Both accounts, both
         // numbers, in the order the halves are drawn.
         val title = "${first.label} ${first.pctText} · ${second.label} ${second.pctText}"
-        val collapsedText = panelState.strips.firstOrNull()
-            ?.let { withConditionDot(it.short, conditionHue(it, first.accent, dark)) }
-            ?: first.sub
+        val collapsedText = collapsedLine(panelState, first.sub, first.accent, dark)
 
         val firstTap = tapIntent(context, cache, firstProfile, slot = 0)
         val secondTap = tapIntent(context, cache, secondProfile, slot = 1)
@@ -379,17 +377,21 @@ object PinnedNotification {
                 }
             },
             theme = first.accent, dark = dark, usageLeft = left, showOverPace = showOverPace,
-            conditions = panelState.strips, overflow = panelState.overflow,
+            // CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic band spends
+            // ~19 dp of the cap the one strip was priced against, so under synthetic the
+            // expanded Duet draws no strip. The collapsed halves keep their condition dots.
+            conditions = if (SyntheticSeries.isOn) emptyList() else panelState.strips,
+            overflow = if (SyntheticSeries.isOn) 0 else panelState.overflow,
             compact = true,
         )
 
         val update = Conditions.hasUpdate(context, cache)
-        builder.setCustomContentView(synthetic(context,
+        builder.setCustomContentView(
             duetView(
                 context, R.layout.notif_duet, first, second, dark, left, showOverPace,
                 update, panel = null, expanded = false, firstTap = firstTap, secondTap = secondTap,
             )
-        ))
+        )
         builder.setCustomBigContentView(synthetic(context,
             duetView(
                 context, R.layout.notif_duet_expanded, first, second, dark, left, showOverPace,
@@ -547,12 +549,39 @@ object PinnedNotification {
     /**
      * R8 (CCRM-15 (Above-Pace Verification)): [inner] under the full-width
      * "SYNTHETIC DATA" band while the synthetic series is on, else [inner] itself.
+     * Expanded views only: a collapsed row has no height for it (rev E §9c) and takes
+     * [showSyntheticDot] instead.
      */
     private fun synthetic(context: Context, inner: RemoteViews): RemoteViews =
-        if (!com.robin.claudeusage.data.SyntheticSeries.isOn) inner
+        if (!SyntheticSeries.isOn) inner
         else RemoteViews(context.packageName, R.layout.notif_synthetic_wrap).apply {
             addView(R.id.synthetic_body, inner)
         }
+
+    /**
+     * The collapsed line: the top strip behind its dot, else [sub]. With [synthetic]
+     * (the default, for the builder's content text), rev E §9c: surfaces that never
+     * draw the custom views (Wear, skins that ignore RemoteViews) show only the content
+     * title and text, so while the synthetic series is on the text says so. The ● of a
+     * strip line stays leading. The custom row passes false: its violet dot says it.
+     */
+    private fun collapsedLine(
+        panelState: Conditions.Panel,
+        sub: String,
+        accent: Color,
+        dark: Boolean,
+        synthetic: Boolean = true,
+    ): CharSequence {
+        val prefix = if (synthetic && SyntheticSeries.isOn) "Synthetic data · " else ""
+        return panelState.strips.firstOrNull()
+            ?.let { withConditionDot(prefix + it.short, conditionHue(it, accent, dark)) }
+            ?: (prefix + sub)
+    }
+
+    /** Rev E §9c: the collapsed row's violet marker, gone in the layout unless synthetic is on. */
+    private fun RemoteViews.showSyntheticDot(id: Int) {
+        if (SyntheticSeries.isOn) setViewVisibility(id, android.view.View.VISIBLE)
+    }
 
     private fun bigNumberView(
         context: Context,
@@ -653,7 +682,10 @@ object PinnedNotification {
                 updateAvailable -> conditionHue(error = false, theme = first.accent, dark = dark)
                 else -> null
             },
+            // Rev E §9c: app-global like the update dot, so First only, collapsed only.
+            synthDot = !expanded && SyntheticSeries.isOn,
         )
+        if (!expanded) showSyntheticDot(R.id.duet_synth_dot)
         fillHalf(
             context, SECOND_IDS, second, dark, usageLeft, showOverPace, expanded, secondTap,
             dotHue = if (second.fault) {
@@ -675,6 +707,7 @@ object PinnedNotification {
         expanded: Boolean,
         tap: PendingIntent,
         dotHue: Int?,
+        synthDot: Boolean = false,
     ) {
         // Per-view PendingIntents: the one thing a custom RemoteViews layout can do that
         // the styles CCRM-61 (Settings Diet) removed could not, and the reason each half
@@ -686,7 +719,10 @@ object PinnedNotification {
         if (!expanded) {
             // The collapsed clamp, which depends on how wide this half's own figure is.
             // The expanded header's bound is in the layout: it has the full card width.
-            val clamp = Duet.labelClampDp(figureWidthDp(context, h.pctText), dotShown = dotHue != null)
+            val clamp = Duet.labelClampDp(
+                figureWidthDp(context, h.pctText),
+                dots = (if (dotHue != null) 1 else 0) + (if (synthDot) 1 else 0),
+            )
             setInt(ids.label, "setMaxWidth", dp(context, clamp.toFloat()).toInt())
         }
         setTextViewText(ids.pct, h.pctText)
