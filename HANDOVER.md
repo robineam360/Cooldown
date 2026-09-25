@@ -4,29 +4,23 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CRITICAL BUGS FIRST (written 2026-09-25, evening)
+## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 5 (written 2026-09-25, late evening)
 
-**Fix these before any feature work. CCRM-78 (Widgets Reborn) Step 5, below, waits until they
-are closed.** Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
-
-> Read CLAUDE.md and BUGS.md CCBG-31 (Alert Crash), CCBG-32 (Accounts Button Wrap), CCBG-33
-> (Device-Code Prerequisite) and CCBG-34 (Account Display Name) — tester feedback from Raja
-> Jawahar on v1.7, logged but not analysed. Work them in that order, one commit each with the
-> BUGS.md status in the same commit. CCBG-31 first: reproduce the crash when alerts are
-> enabled (Fold 7 over adb and an emulator, logcat capturing the trace), find the cause, fix it
-> and add a test that would have caught it. CCBG-32: restore the approved Accounts layout so the
-> sign-in card's Finish sign-in / Reopen page / Cancel row fits at every width; if the fix needs
-> a new arrangement, wireframe first. CCBG-33 and CCBG-34 change what the user sees: wireframe
-> and wait for approval (CLAUDE.md §2); CCBG-34 needs Raja's answer on what "Display Name"
-> means before anything. Also raise with Robin, before fixing CCBG-31, a discussion on crash
-> reporting: the app has none today (Raja asked whether Crashlytics is on), so testers' crashes
-> reach us only as messages. Lay out the options and trade-offs and let Robin decide; build
-> nothing for it until he has. When all four are closed or parked on Robin, replace this block with
-> the widgets prompt below.
+The tester bugs are done: CCBG-31 (Alert Crash), CCBG-32 (Accounts Button Wrap) and CCBG-33
+(Device-Code Prerequisite) are Fixed and emulator-verified, and CCBG-34 (Account Display Name) is
+parked on Raja's answer. Before the widgets work, do these two first:
+**(1)** when the Fold 7 is on adb, see the three fixes on it (one-account always-on notification
+expanded; the Finish-signing-in card on the cover screen and on the inner two-column Accounts; the
+ChatGPT sheet's prerequisite box);
+**(2)** tell Raja that the crash was the always-on notification with one account, and ask him
+again what "Display Name" means.
+CCRM-85 (Crash Capture) is filed. Its option is decided: on-device only, as Fable recommended and
+Astra accepted with concerns. Its next-launch card still needs a wireframe before it is built.
+CCBG-35 (Tab Clip) is new and Low. Then paste the Step 5 prompt below.
 
 ---
 
-## Then — CCRM-78 Step 5 (written 2026-09-25, before the bug reports)
+## CCRM-78 Step 5 prompt (written 2026-09-25, before the bug reports)
 
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:

@@ -12,9 +12,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 ## Open
 
 > **Critical — tester feedback, 2026-09-25 (Raja Jawahar, Slack DM, v1.7).** CCBG-31 to CCBG-34
-> below are the next session's first work, ahead of any CCRM-78 (Widgets Reborn) step. Logged
-> only: no reproduction or analysis was done when they were filed. Source: the 19:48 IST thread
-> with three screenshots, and the 19:49 message on alert crashes.
+> were logged from the 19:48 IST thread, which had three screenshots, and the 19:49 message on
+> alert crashes. **Worked the same evening:** CCBG-31 to CCBG-33 are Fixed (emulator-verified,
+> awaiting the Fold 7 and a release), and CCBG-34 is parked on Raja's answer.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
@@ -73,14 +73,30 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
-- **Status:** Open — Critical per Robin's triage; **needs clarification from Raja first.**
+- **Status:** **Parked — awaiting Raja's answer** (2026-09-25; a Fable judge agreed and Astra
+  reviewed). Nothing is built until he says what "Display Name" means.
 - **Severity:** Low (labelling)
 - **Symptom:** **Reported by Raja, 2026-09-25:** *"Rather than Account, if we get Meta data, we
   can show the Display Name."* Robin replied asking whether this means the account's email
   address; no answer yet. Read together with the screenshots, it likely means labelling an
   account by the name or email the provider returns rather than a generic default.
-- **To do:** get Raja's answer, then check what the Claude and ChatGPT profile calls return. Any
-  label change is visible — wireframe first (CLAUDE.md §2).
+- **To do:** get Raja's answer. Any label change is visible, so it needs a wireframe first
+  (CLAUDE.md §2).
+- **What the app already receives:** Claude's `/api/oauth/profile` carries `account.display_name`,
+  `account.full_name` and `account.email`, and the app already fetches it once a day for the plan
+  tag. ChatGPT's id_token carries `email`. Today a new account is named by position ("Account 3")
+  until the user renames it.
+- **Privacy, for whoever picks this up:** an account's label is shown on the lock-screen
+  notification, on the widgets and on the share card. A name or an email there is visible to
+  anyone holding the phone. The diagnostics log's rule is "no emails".
+
+### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
+- **Status:** Open — found 2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the
+  emulator; not analysed.
+- **Severity:** Low (a clipped label; every tab still works)
+- **Symptom:** at 360 dp (API 36 emulator, `wm density 480`), the Settings tab row shows
+  "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
+  fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
 ### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
 - **Status:** **Shipped v1.7 (2026-09-25).** **Fixed (2026-09-16)** — built, unit-tested (3 new cases) and **seen on the Fold 7 the
