@@ -97,3 +97,9 @@ discipline bind sub-agents as they bind a session.**
 Project gates that bind sub-agents exactly as they bind a session: a sub-agent that would change anything
 the user sees beyond the approved wireframe (§2) stops and reports instead of improvising; code and its
 ROADMAP/BUGS status update land in the same commit; two sub-agents never edit the same file at once.
+
+---
+
+## 5. Git — worktree sessions
+
+**Worktree sessions: read [`WORKTREE.md`](WORKTREE.md) at every session start** (2026-09-25). In an app-created worktree (`git rev-parse --git-dir` ≠ `--git-common-dir`) it replaces the "work on `main`" and "never push a `claude/*` branch" rules for that session only; in the main checkout those rules stand unchanged. Either mode runs its sweeper after the pull. Main-checkout sessions work exactly as before.
