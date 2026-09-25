@@ -171,6 +171,17 @@ class UsageRepository(private val context: Context) {
         return true
     }
 
+    /**
+     * CCRM-14 (Clear History): empties this account's two history stores together and
+     * leaves everything else — sign-in, cache, settings — alone. The caller redraws the
+     * surfaces. The account stays, which is what separates this from [removeProfile].
+     */
+    fun clearHistory(profile: Profile) {
+        historyStore.clear(profile)
+        sessionLogStore.clear(profile)
+        AppLog.log(context, AppLog.Level.INFO, "account", profile, "usage history cleared")
+    }
+
     fun hasPendingSignIn(profile: Profile): Boolean =
         OAuthSignIn.pending(context)?.profile == profile
 

@@ -225,6 +225,9 @@ fun SettingsScreen(
     // CCRM-65 (Accounts Redesign): Details… lives here too, for the same reason —
     // it should survive the card recomposing under it.
     var detailing by remember { mutableStateOf<Profile?>(null) }
+    // CCRM-14 (Clear History): the ⋮ menu's "Clear usage history…" confirm, hoisted with
+    // the other two for the same reason.
+    var clearingHistory by remember { mutableStateOf<Profile?>(null) }
     val accountScope = rememberCoroutineScope()
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -257,6 +260,7 @@ fun SettingsScreen(
                                 onRename = { renaming = profile },
                                 onRemove = { removing = profile },
                                 onDetails = { detailing = profile },
+                                onClearHistory = { clearingHistory = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
                             )
                         }
@@ -274,6 +278,7 @@ fun SettingsScreen(
                                 onRename = { renaming = profile },
                                 onRemove = { removing = profile },
                                 onDetails = { detailing = profile },
+                                onClearHistory = { clearingHistory = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
                             )
                         }
@@ -295,6 +300,7 @@ fun SettingsScreen(
                         onRename = { renaming = profile },
                         onRemove = { removing = profile },
                         onDetails = { detailing = profile },
+                        onClearHistory = { clearingHistory = profile },
                         autoStartSignIn = profile.key == autoStartProfileKey,
                     )
                 }
@@ -1052,6 +1058,18 @@ fun SettingsScreen(
             },
         )
     }
+    clearingHistory?.let { profile ->
+        ClearHistoryDialog(
+            label = labels[profile] ?: cacheSettings.profileLabel(profile),
+            onDismiss = { clearingHistory = null },
+            onConfirm = {
+                repo.clearHistory(profile)
+                clearingHistory = null
+                namesTick++
+                com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
+            },
+        )
+    }
     // CCRM-65 (Accounts Redesign): the ⋮ menu's first item, opening what the card
     // used to say all the time as a dialog instead.
     detailing?.let { profile ->
@@ -1100,6 +1118,52 @@ private fun RenameAccountDialog(
             }
         },
         confirmButton = { TextButton(onClick = { onSave(name) }) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+/**
+ * CCRM-14 (Clear History): starting an account's trend line over without removing the
+ * account. Both stores go together — the 8-day sample history feeds the chart and the
+ * projections, the year-long session log feeds the History bars and the sparkline, and
+ * clearing one alone makes the two disagree. Same shape as [RemoveAccountDialog]; the
+ * wording is wireframe rev D §9b's.
+ */
+@Composable
+private fun ClearHistoryDialog(
+    label: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Clear usage history?") },
+        text = {
+            Column {
+                Text(
+                    "This clears, for \"$label\" only:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(6.dp))
+                for (line in listOf(
+                    "8 days of trend history",
+                    "a year of session and weekly history",
+                )) {
+                    Text("•  $line", style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "The account itself, its sign-in and its settings are untouched — it stays.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Clear history", color = MaterialTheme.colorScheme.error)
+            }
+        },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
@@ -1387,6 +1451,8 @@ private fun TokenCard(
     onRemove: () -> Unit,
     /** CCRM-65 (Accounts Redesign): the ⋮ menu's "Details…", first item, Claude-or-not. */
     onDetails: () -> Unit,
+    /** CCRM-14 (Clear History): the ⋮ menu's "Clear usage history…". */
+    onClearHistory: () -> Unit,
     /** CCRM-56 (Provider Identity): the Add-account sheet starts sign-in at once. */
     autoStartSignIn: Boolean = false,
 ) {
@@ -1510,6 +1576,12 @@ private fun TokenCard(
                                 onClick = { menuOpen = false; onDetails() },
                             )
                         }
+                        // CCRM-14 (Clear History): beside Details…, ahead of the identity
+                        // items. Shown signed-out too — Clear keeps the history (CCBG-1).
+                        DropdownMenuItem(
+                            text = { Text("Clear usage history…") },
+                            onClick = { menuOpen = false; onClearHistory() },
+                        )
                         DropdownMenuItem(
                             text = { Text("Rename…") },
                             onClick = { menuOpen = false; onRename() },
