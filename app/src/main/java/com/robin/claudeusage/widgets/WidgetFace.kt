@@ -8,7 +8,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
+import android.text.style.ForegroundColorSpan
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
@@ -491,9 +491,16 @@ object WidgetFace {
 
     private fun ringPx(dDp: Float, density: Float): Int = kotlin.math.ceil(dDp * density).toInt()
 
+    /**
+     * The track width in px that makes the bar's bitmap — track plus BarRenderer's tick
+     * padding at each end — exactly the bucket's inner width, so it is shown 1:1.
+     */
+    private fun barTrackPx(b: BarDp, density: Float): Float =
+        b.width * density - 2f * BarRenderer.sidePadding(b.height * density)
+
     private fun barBytes(b: BarDp, density: Float): Long {
         val h = b.height * density
-        val w = (b.width * density + 2f * BarRenderer.sidePadding(h)).toInt().coerceAtLeast(1)
+        val w = (barTrackPx(b, density) + 2f * BarRenderer.sidePadding(h)).toInt().coerceAtLeast(1)
         return w.toLong() * BarRenderer.bitmapHeight(h) * 4L
     }
 
@@ -535,10 +542,10 @@ object WidgetFace {
         if (message != null) {
             rv.setViewVisibility(contentId(face), View.GONE)
             rv.setViewVisibility(R.id.w_msg, View.VISIBLE)
-            rv.setTextViewText(R.id.w_msg, messageText(message, bucket))
+            rv.setTextViewText(R.id.w_msg, messageText(message, bucket, state.dark))
             rv.setTextViewTextSize(R.id.w_msg, TypedValue.COMPLEX_UNIT_SP, messageSp(message, bucket))
             rv.setTextColor(R.id.w_msg, ink(state.dark, 1f))
-            rv.setContentDescription(R.id.w_root, messageText(message, bucket).toString().replace('\n', ' '))
+            rv.setContentDescription(R.id.w_root, messageText(message, bucket, state.dark).toString().replace('\n', ' '))
             return rv
         }
         when (face) {
@@ -598,13 +605,13 @@ object WidgetFace {
         }
     }
 
-    fun messageText(m: FaceMessage, bucket: Bucket): CharSequence {
+    fun messageText(m: FaceMessage, bucket: Bucket, dark: Boolean = true): CharSequence {
         val ring = bucket.face == Face.RING
         val small = bucket == Bucket.RING_1X1 || bucket == Bucket.NUMBER_2X1 ||
             bucket == Bucket.COUNTDOWN_2X1
         return when (m) {
             FaceMessage.REMOVED ->
-                if (ring) twoLine("Account removed", "tap to choose")
+                if (ring) twoLine("Account removed", "tap to choose", dark)
                 else "Account removed · tap to choose"
             FaceMessage.SIGN_IN -> if (ring) "Open Cooldown\nto sign in" else "Open Cooldown to sign in"
             FaceMessage.FREE -> if (ring) "No usage\non this plan" else "No usage on this plan"
@@ -629,11 +636,11 @@ object WidgetFace {
     }
 
     /** "Account removed" over a 72%-size, 75%-ink "tap to choose". */
-    private fun twoLine(first: String, second: String): CharSequence =
+    private fun twoLine(first: String, second: String, dark: Boolean): CharSequence =
         SpannableString("$first\n$second").apply {
             val start = first.length + 1
             setSpan(RelativeSizeSpan(0.72f), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(StyleSpan(Typeface.NORMAL), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(ForegroundColorSpan(ink(dark, 0.75f)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
 
     // ---- Ring (CCRM-79) -------------------------------------------------------------
@@ -644,7 +651,7 @@ object WidgetFace {
         rv.setImageViewBitmap(R.id.ring, ringBitmap(context, g, s, c, d))
         rv.setViewLayoutWidth(R.id.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
         rv.setViewLayoutHeight(R.id.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
-        if (c.dim) rv.setFloat(R.id.ring, "setAlpha", DIM_GAUGE)
+        if (c.dim) dimImage(rv, R.id.ring)
 
         // At 100% the × replaces the figure (Q3, Q10).
         if (c.full) rv.setViewVisibility(R.id.ring_fig, View.GONE)
@@ -657,8 +664,7 @@ object WidgetFace {
         rv.setViewVisibility(R.id.ring_label_row, View.VISIBLE)
         mark(rv, R.id.ring_mark, c)
         rv.setTextViewText(R.id.ring_label, ringLabel(c))
-        rv.setTextColor(R.id.ring_label, ink(s.dark, 1f))
-        if (c.dim) rv.setFloat(R.id.ring_label, "setAlpha", DIM_FIGURE)
+        rv.setTextColor(R.id.ring_label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
         if (c.brokenDot) dot(rv, R.id.ring_dot, s.dark)
         s.asOf?.let { stamp(rv, R.id.ring_stamp, "· $it", s.dark) }
     }
@@ -687,7 +693,7 @@ object WidgetFace {
         mark(rv, R.id.num_mark, c)
         rv.setTextViewText(R.id.num_label, numberLabel(c, bucket))
         rv.setTextViewTextSize(R.id.num_label, TypedValue.COMPLEX_UNIT_SP, labelSp)
-        rv.setTextColor(R.id.num_label, ink(s.dark, 1f))
+        rv.setTextColor(R.id.num_label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
         if (c.brokenDot) dot(rv, R.id.num_dot, s.dark)
         if (bucket == Bucket.NUMBER_2X1 && c.unassigned) {
             rv.setViewVisibility(R.id.num_pill, View.VISIBLE)
@@ -711,10 +717,7 @@ object WidgetFace {
             (if (leftCap) textDp(context, "LEFT", 10f, bold = true) + 4f else 0f)
         val labelDp = bucket.innerWidthDp - figDp - 10f - 14f - 4f - (if (c.brokenDot) 10f else 0f)
         rv.setInt(R.id.num_label, "setMaxWidth", (labelDp.coerceAtLeast(24f) * d).toInt())
-        if (c.dim) {
-            rv.setFloat(R.id.num_label, "setAlpha", DIM_FIGURE)
-            rv.setFloat(R.id.num_mark, "setAlpha", DIM_FIGURE)
-        }
+        if (c.dim) rv.setInt(R.id.num_mark, "setImageAlpha", (DIM_FIGURE * 255).toInt())
 
         val b = bar(bucket)!!
         barInto(context, rv, R.id.num_bar, b, s, c)
@@ -742,7 +745,7 @@ object WidgetFace {
         // The account cycler (Robin, Q5); wired to WidgetActionReceiver at Step 4.
         rv.setInt(R.id.num_cycler_bg, "setColorFilter", ink(s.dark, 0.08f))
         mark(rv, R.id.num_cycler_mark, c)
-        rv.setTextViewText(R.id.num_cycler_text, cyclerText(c))
+        rv.setTextViewText(R.id.num_cycler_text, cyclerSpan(c, s.dark))
         rv.setTextColor(R.id.num_cycler_text, ink(s.dark, 1f))
     }
 
@@ -762,6 +765,12 @@ object WidgetFace {
     }
 
     fun cyclerText(c: Cell): String = "${c.name} ⇄"
+
+    /** The cycler's "⇄" at 60% ink, the name at full (rev D). */
+    private fun cyclerSpan(c: Cell, dark: Boolean): CharSequence =
+        SpannableString(cyclerText(c)).apply {
+            setSpan(ForegroundColorSpan(ink(dark, 0.6f)), length - 1, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
 
     private fun chip(
         rv: RemoteViews, root: Int, bg: Int, text: Int, word: String, selected: Boolean,
@@ -790,8 +799,7 @@ object WidgetFace {
         rv.setTextColor(R.id.cd_caption, ink(s.dark, if (c.dim) 0.5f else 0.75f))
         mark(rv, R.id.cd_mark, c)
         rv.setTextViewText(R.id.cd_label, countdownLabel(c))
-        rv.setTextColor(R.id.cd_label, ink(s.dark, 1f))
-        if (c.dim) rv.setFloat(R.id.cd_label, "setAlpha", DIM_FIGURE)
+        rv.setTextColor(R.id.cd_label, ink(s.dark, dim))
         if (c.brokenDot) dot(rv, R.id.cd_dot, s.dark)
 
         if (c.countForm == CountForm.NONE) {
@@ -799,7 +807,10 @@ object WidgetFace {
             // and the account line. No estimate either.
             rv.setViewVisibility(R.id.cd_countrow, View.GONE)
             rv.setViewVisibility(R.id.cd_msg, View.VISIBLE)
-            rv.setTextViewText(R.id.cd_msg, c.sub ?: FaceStates.NOT_STARTED)
+            rv.setTextViewText(
+                R.id.cd_msg,
+                if (StateId.S5 in c.states) FaceStates.NOT_STARTED else FaceStates.NO_READING,
+            )
             rv.setTextColor(R.id.cd_msg, ink(s.dark, 1f))
             if (big) s.asOf?.let { stamp(rv, R.id.cd_stamp, it, s.dark) }
             return
@@ -815,15 +826,13 @@ object WidgetFace {
                 rv.setChronometer(R.id.cd_chrono, base, null, true)
                 rv.setChronometerCountDown(R.id.cd_chrono, true)
                 rv.setTextViewTextSize(R.id.cd_chrono, TypedValue.COMPLEX_UNIT_SP, if (big) 28f else 24f)
-                rv.setTextColor(R.id.cd_chrono, ink(s.dark, 1f))
-                rv.setFloat(R.id.cd_chrono, "setAlpha", dim)
+                rv.setTextColor(R.id.cd_chrono, ink(s.dark, dim))
                 // The absolute time is always on the face (R2), so the count is readable
                 // when its form is ambiguous and true after zero.
                 val at = if (big) R.id.cd_at_below else R.id.cd_at_inline
                 rv.setViewVisibility(at, View.VISIBLE)
                 rv.setTextViewText(at, "at $clock")
-                rv.setTextColor(at, ink(s.dark, 0.78f))
-                rv.setFloat(at, "setAlpha", dim)
+                rv.setTextColor(at, ink(s.dark, 0.78f * dim))
             }
             CountForm.ABSOLUTE, CountForm.RESET_PASSED -> {
                 rv.setViewVisibility(R.id.cd_abs, View.VISIBLE)
@@ -834,8 +843,7 @@ object WidgetFace {
                     else -> 24f
                 }
                 rv.setTextViewTextSize(R.id.cd_abs, TypedValue.COMPLEX_UNIT_SP, sp)
-                rv.setTextColor(R.id.cd_abs, ink(s.dark, 1f))
-                rv.setFloat(R.id.cd_abs, "setAlpha", dim)
+                rv.setTextColor(R.id.cd_abs, ink(s.dark, dim))
             }
             CountForm.NONE -> Unit
         }
@@ -844,8 +852,8 @@ object WidgetFace {
         rv.setViewVisibility(R.id.cd_gap1, View.VISIBLE)
         rv.setViewVisibility(R.id.cd_gap2, View.VISIBLE)
         rv.setViewVisibility(R.id.cd_figrow, View.VISIBLE)
-        figure(rv, R.id.cd_fig, c, s.dark, 18f)
-        if (c.pct == null) rv.setFloat(R.id.cd_fig, "setAlpha", DIM_FIGURE)
+        // S6's "—" is at half ink: nothing is read, and the count above says why.
+        figure(rv, R.id.cd_fig, c, s.dark, 18f, noReadingAlpha = DIM_FIGURE)
         if (c.left && c.pct != null) {
             rv.setViewVisibility(R.id.cd_leftcap, View.VISIBLE)
             rv.setTextColor(R.id.cd_leftcap, ink(s.dark, 0.8f))
@@ -901,12 +909,11 @@ object WidgetFace {
             rv.setImageViewBitmap(STRIP_RING[i], ringBitmap(context, g, s, c, d))
             rv.setViewLayoutWidth(STRIP_RING[i], g.diameter, TypedValue.COMPLEX_UNIT_DIP)
             rv.setViewLayoutHeight(STRIP_RING[i], g.diameter, TypedValue.COMPLEX_UNIT_DIP)
-            if (c.dim) rv.setFloat(STRIP_RING[i], "setAlpha", DIM_GAUGE)
+            if (c.dim) dimImage(rv, STRIP_RING[i])
             mark(rv, STRIP_MARK[i], c)
             rv.setTextViewText(STRIP_LABEL[i], stripLabel(c))
             rv.setTextViewTextSize(STRIP_LABEL[i], TypedValue.COMPLEX_UNIT_SP, labelSp)
-            rv.setTextColor(STRIP_LABEL[i], ink(s.dark, 1f))
-            if (c.dim) rv.setFloat(STRIP_LABEL[i], "setAlpha", DIM_FIGURE)
+            rv.setTextColor(STRIP_LABEL[i], ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
             if (c.brokenDot) dot(rv, STRIP_DOT[i], s.dark)
 
             if (c.free) {
@@ -968,23 +975,40 @@ object WidgetFace {
     private fun barInto(context: Context, rv: RemoteViews, id: Int, b: BarDp, s: FaceState, c: Cell) {
         val d = context.resources.displayMetrics.density
         val h = b.height * d
-        rv.setImageViewBitmap(
-            id,
-            BarRenderer.draw(
-                b.width * d, h, c.pct, c.elapsed, androidx.compose.ui.graphics.Color(c.accentArgb),
-                s.dark, s.showOverPace,
-            ),
+        val bmp = BarRenderer.draw(
+            barTrackPx(b, d), h, c.pct, c.elapsed, androidx.compose.ui.graphics.Color(c.accentArgb),
+            s.dark, s.showOverPace,
         )
-        rv.setViewLayoutHeight(id, BarRenderer.bitmapHeight(h).toFloat(), TypedValue.COMPLEX_UNIT_PX)
-        if (c.dim) rv.setFloat(id, "setAlpha", DIM_GAUGE)
+        rv.setImageViewBitmap(id, bmp)
+        // Sized to the bitmap, never stretched to the cell (R10).
+        rv.setViewLayoutWidth(id, bmp.width.toFloat(), TypedValue.COMPLEX_UNIT_PX)
+        rv.setViewLayoutHeight(id, bmp.height.toFloat(), TypedValue.COMPLEX_UNIT_PX)
+        if (c.dim) dimImage(rv, id)
     }
 
-    private fun figure(rv: RemoteViews, id: Int, c: Cell, dark: Boolean, sp: Float) {
+    /**
+     * The figure in the severity colour. Dimming is folded into the colour's alpha, and
+     * the gauges' into `setImageAlpha`: `View.setAlpha` is not a remotable method on every
+     * API level this app supports, and one unremotable call fails the whole face.
+     */
+    private fun figure(
+        rv: RemoteViews, id: Int, c: Cell, dark: Boolean, sp: Float, noReadingAlpha: Float = 1f,
+    ) {
         rv.setViewVisibility(id, View.VISIBLE)
         rv.setTextViewText(id, c.figure)
         rv.setTextViewTextSize(id, TypedValue.COMPLEX_UNIT_SP, sp)
-        rv.setTextColor(id, if (c.pct == null) ink(dark, 1f) else c.fillArgb)
-        if (c.dim) rv.setFloat(id, "setAlpha", DIM_FIGURE)
+        val dim = if (c.dim) DIM_FIGURE else 1f
+        rv.setTextColor(id, if (c.pct == null) ink(dark, noReadingAlpha * dim) else fade(c.fillArgb, dim))
+    }
+
+    /** R6's 0.45 on a ring or bar bitmap. */
+    private fun dimImage(rv: RemoteViews, id: Int) =
+        rv.setInt(id, "setImageAlpha", (DIM_GAUGE * 255).toInt())
+
+    /** [argb] with its alpha scaled by [a]. */
+    private fun fade(argb: Int, a: Float): Int {
+        val alpha = ((argb ushr 24) * a).toInt().coerceIn(0, 255)
+        return (alpha shl 24) or (argb and 0x00FFFFFF)
     }
 
     private fun mark(rv: RemoteViews, id: Int, c: Cell) {

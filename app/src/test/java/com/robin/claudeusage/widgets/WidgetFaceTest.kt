@@ -28,7 +28,8 @@ import org.robolectric.annotation.Config
  * wireframe's (design/2026-09-25-widgets-reborn.html, rev D).
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(qualifiers = "420dpi")
+// API 31 is minSdk: every RemoteViews call must be remotable there, not only on 36.
+@Config(qualifiers = "420dpi", sdk = [31, 36])
 class WidgetFaceTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
@@ -134,8 +135,10 @@ class WidgetFaceTest {
         assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.ring_corner_dot)))
         val v2 = inflate(Bucket.RING_2X2, FaceStates.of(forState(Face.RING, StateId.S7)))
         assertTrue(shown(v2.findViewById(com.robin.claudeusage.R.id.ring_dot)))
-        assertEquals(0.5f, v2.findViewById<View>(com.robin.claudeusage.R.id.ring_fig).alpha)
-        assertEquals(0.45f, v2.findViewById<View>(com.robin.claudeusage.R.id.ring).alpha)
+        // R6: the figure at half alpha, the ring at 0.45 — through the colour and
+        // setImageAlpha, since View.setAlpha is not remotable on every supported API.
+        assertEquals(127, v2.findViewById<TextView>(com.robin.claudeusage.R.id.ring_fig).currentTextColor ushr 24)
+        assertEquals(114, v2.findViewById<ImageView>(com.robin.claudeusage.R.id.ring).imageAlpha)
     }
 
     @Test
@@ -195,6 +198,31 @@ class WidgetFaceTest {
         assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S11).contains("62% | LEFT"))
         assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S11).endsWith("Pro · 5h · left"))
         assertEquals("Update Cooldown", joined(Bucket.COUNTDOWN_2X1, StateId.S14))
+    }
+
+    @Test
+    fun countdown_notStartedAndStale_saysBothOnce() {
+        val i = forState(Face.COUNTDOWN, StateId.S5).let { x ->
+            x.copy(accounts = x.accounts.mapIndexed { n, a -> if (n == 0) a.copy(fetchedAt = NOW_MS - 7 * 60 * WidgetFixtures.MIN) else a })
+        }
+        assertEquals(
+            "Stale | Starts when a message is sent | Pro · 5h",
+            texts(inflate(Bucket.COUNTDOWN_2X1, FaceStates.of(i))).joinToString(" | "),
+        )
+    }
+
+    @Test
+    fun bars_areDrawnAtTheirViewsSize() {
+        for (bucket in listOf(Bucket.NUMBER_2X1, Bucket.NUMBER_4X1, Bucket.NUMBER_4X2, Bucket.COUNTDOWN_2X2)) {
+            val v = inflate(bucket, FaceStates.of(forState(bucket.face, StateId.S1)))
+            val id = if (bucket.face == Face.NUMBER) com.robin.claudeusage.R.id.num_bar else com.robin.claudeusage.R.id.cd_bar
+            val bar = v.findViewById<ImageView>(id)
+            val bmp = (bar.drawable as BitmapDrawable).bitmap
+            assertEquals("$bucket", bmp.width, bar.layoutParams.width)
+            assertEquals("$bucket", bmp.height, bar.layoutParams.height)
+            val inner = (bucket.innerWidthDp * context.resources.displayMetrics.density).toInt()
+            assertTrue("$bucket ${bmp.width} vs $inner", kotlin.math.abs(bmp.width - inner) <= 1)
+        }
     }
 
     @Test
