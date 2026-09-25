@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCRM-78 (Widgets Reborn) — rev C, for review</title>
+<title>CCRM-78 (Widgets Reborn) — rev D, for review</title>
 <style>
   :root {
     --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
@@ -85,6 +85,10 @@
   .overflowcap { position: absolute; left: 3px; right: 3px; bottom: 3px; font-family: ui-monospace, monospace; font-size: 8px; color: #fff; background: var(--bad); padding: 1px 4px; border-radius: 3px; line-height: 1.3; z-index: 5; }
   .fitrun { display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
   .ringfig { font-weight: 700; line-height: 1; font-family: Roboto, Arial, sans-serif; }
+  .tile.tx-d { text-shadow: 0 1px 2px rgba(0,0,0,.8), 0 0 8px rgba(0,0,0,.5); }
+  .tile.tx-d svg { filter: drop-shadow(0 0 1.5px rgba(0,0,0,.55)) drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
+  .tile.tx-l { text-shadow: 0 1px 2px rgba(255,255,255,.9), 0 0 8px rgba(255,255,255,.65); }
+  .tile.tx-l svg { filter: drop-shadow(0 0 1.5px rgba(255,255,255,.7)) drop-shadow(0 1px 3px rgba(255,255,255,.45)); }
   .liv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 8px; letter-spacing: .04em; color: var(--good); }
   .matrix-wrap table td.sizehead, .matrix-wrap table th.sizehead { font-family: ui-monospace, monospace; }
   .statebadge { display:inline-block; font-family: ui-monospace, monospace; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--hair); color: var(--ink); margin-right: 6px; }
@@ -122,7 +126,7 @@
 <body>
 <div class="page">
 
-  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev C</p>
+  <p class="eyebrow">CCRM-78 (Widgets Reborn) &middot; 2026-09-25 &middot; rev D</p>
   <h1>Four home-screen faces, none of them a clone of the app</h1>
   <p class="lede">
     A status-bar-style <b>Ring</b> (CCRM-79 (Ring Face)) at two sizes; a <b>Number</b> face
@@ -136,15 +140,21 @@
     synthetic-series override (CCRM-15 (Above-Pace Verification)), the Faces gallery
     (CCRM-84 (Faces Gallery)) and the Share Card (CCRM-24 (Share Card)).
   </p>
-  <p class="review">Rev C &mdash; for review. Four of Robin's calls are in (below); nothing is approved yet.</p>
+  <p class="review">Rev D &mdash; for review. Robin's answers to &sect;10 are in; the remaining fit calls were delegated to a Fable review.</p>
   <div class="rules-box" style="border-color:var(--accent)">
+    <b>Changes since rev C &mdash; Robin's answers</b>
+    <ul>
+      <li><b>Transparent carries a soft shadow</b> under every text run and ring, in the opposite tone, so the mismatched wallpaper cases read &mdash; &sect;1.</li>
+      <li><b>Share card: only the open account</b> &mdash; a bigger ring, both windows as bars with pace and absolute resets, that account's 5h trend, stamped "as of 6:29 PM, Thu Sep 25" &mdash; &sect;9e.</li>
+      <li>Decisions recorded in &sect;10: Q10 spent &times;, Q11 keep the stamp where drawn, S13 ribbon + dot, S14 two lengths, share card built last, the Countdown ignores the Reset time chip, Countdown 2&times;1 Weekly reads "Sat 9:10 PM".</li>
+    </ul>
     <b>Changes since rev B &mdash; Robin's calls</b>
     <ul>
       <li><b>Pace tick, more visible</b>: 3.5 dp on the 9 dp stroke (never under 2.5 dp), round caps, 90% ink with a 1 dp halo in the face colour, overhanging the stroke equally inside and out; the widget bars' tick matches (3 dp) &mdash; every ring and bar.</li>
       <li><b>Round ends on the usage arc</b>, the red slice included &mdash; no sawn-off ends.</li>
       <li><b>Background: Solid / Gradient / Transparent</b>. Solid is the account's room card colour; Gradient is a light wash of the account's accent over it; the Strip's Gradient is a neutral wash &mdash; &sect;1, &sect;6.</li>
       <li><b>Number face: label and figure on one row, the bar underneath</b> (a deliberate departure from the notification's geometry); the label is clamped to what the measured figure leaves (CCBG-24's measure); 4&times;2's control row is pinned to the bottom edge &mdash; &sect;1, &sect;2, &sect;5.</li>
-      <li><b>Layout pass</b>: one padding rule (12 dp cover, 8 dp top/bottom on 84 dp faces, 14 dp inner); Strip rings sized to fit (the spec's Ø88/Ø56 is a ceiling: Ø78 / Ø50 on the cover with four accounts).</li>
+      <li><b>Layout pass</b>: one padding rule (12 dp cover, 8 dp top/bottom on 84 dp faces, 14 dp inner); Strip rings sized to fit (the spec's Ø88/Ø56 is a ceiling: Ø80 / Ø53 on the cover with four accounts).</li>
     </ul>
     <b>Changes since rev A</b>
     <ul>
@@ -363,8 +373,11 @@
       // A small "Weekly" tag under the figure, in the bore — the Strip's chosen way
       // to mark a weekly-only ring without lengthening its label (item 1, §10).
       const tagHtml = (o.subTag && figureHtml) ? `<div style="font-size:${o.subTagSize || 7}px;font-weight:700;letter-spacing:.02em;opacity:${o.dimFig ? .45 : .78};margin-top:-1px">${o.subTag}</div>` : '';
+      // rev D (Fable's review): at 100% the × replaces the figure; on a ring with room
+      // (Ø70+) the "Weekly" tag stays, under the ×. At 4×1 there is no room and it drops.
+      const xTag = (o.subTag && showX && d >= 70) ? `<div style="position:absolute;left:0;right:0;top:calc(50% + ${Math.round(((d - stroke) / 2 - 1) * 0.32) + 5}px);text-align:center;font-size:${o.subTagSize || 7}px;font-weight:700;opacity:.78">${o.subTag}</div>` : '';
       const center = figureHtml ? `<div style="display:flex;flex-direction:column;align-items:center;line-height:1.05">${figureHtml}${tagHtml}</div>` : '';
-      return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dimRing ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}</div>`;
+      return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dimRing ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}${xTag}</div>`;
     }
 
     // ---- bar (HTML/CSS, avoids SVG viewBox math for a tick that overhangs) ----
@@ -430,7 +443,10 @@
       const padCss = o.pad != null ? `${o.pad}px` : `${P.y}px ${P.x}px`;
       const textColor = o.dark ? '#EDE8E4' : '#26211E';
       const border = o.bg === 'transparent' ? '' : `border:1px solid ${o.dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'};`;
-      const shellOpen = `<div class="tile" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">`;
+      // rev D, Robin: on Transparent every text run and every ring carries a soft shadow
+      // in the opposite tone, so a face stays legible over a wallpaper it does not match.
+      const txCls = o.bg === 'transparent' ? (o.dark ? ' tx-d' : ' tx-l') : '';
+      const shellOpen = `<div class="tile${txCls}" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">`;
       if (o.synthetic && o.h >= 160) {
         // Tall enough for the in-flow ribbon (never overlaps content — see synthRibbon).
         return `${shellOpen}<div style="position:absolute;inset:0;display:flex;flex-direction:column">${synthRibbon()}<div style="flex:1;min-height:0;padding:${padCss};box-sizing:border-box;overflow:hidden">${o.content}</div></div></div>`;
@@ -598,7 +614,7 @@
       const showLeftCap = stateKey === 'S11' && bucket !== '2x1'; // below 4×1 the LEFT caption drops
       const figW = textPx(pctText, figPx, 700) + (showLeftCap ? textPx('LEFT', 10, 400) + 4 : 0);
       const availLabel = Math.floor(IW - figW - 10 - 14 - 4 - (dot ? 10 : 0));
-      const unassignedTag = compact2x1 ? `<span style="font-size:7.5px;font-weight:700;letter-spacing:.05em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;margin-left:18px;align-self:flex-start">UNASSIGNED</span>` : '';
+      const unassignedTag = compact2x1 ? `<span style="font-size:8px;font-weight:700;letter-spacing:.05em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;margin-left:18px;align-self:flex-start">UNASSIGNED</span>` : '';
 
       const figGroup = `<div style="display:flex;align-items:baseline;gap:4px;flex:0 0 auto;${dimAll ? 'opacity:.5' : ''}">
         <span style="font-size:${figPx}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em">${pctText}</span>
@@ -755,7 +771,7 @@
       const IW = innerW(w, hh), IH = hh - 2 * padFor(w, hh).y;
       // rev C fit: the spec's Ø88 / Ø56 is a ceiling. Four rings share the inner width
       // with 6 dp gaps, and the ring + label (+ reset) must fit the inner height —
-      // on the cover that is Ø78 at 4×2 and Ø50 at 4×1 (see the note under §1).
+      // on the cover that is Ø80 at 4×2 and Ø53 at 4×1 (see the note under §1).
       const nCells = Math.min(4, accountsList.length) + (accountsList.length > 4 ? 1 : 0);
       const byW = Math.floor((IW - 6 * (nCells - 1)) / Math.max(1, nCells));
       const byH = Math.floor(IH - (isBig ? 14 + 13 + 6 : 12 + 3));
@@ -880,16 +896,15 @@
   <p class="note wide">
     <b>Strip's Solid and Gradient</b>: the Strip has no single account, so Solid uses the neutral
     card (#1A1A1A / #FCF8F4) and Gradient a neutral wash, rather than any one account's accent
-    &mdash; open for Robin, see &sect;10. <b>Strip ring size</b>: the spec's Ø88 / Ø56 are ceilings;
-    on the cover four rings take Ø78 at 4&times;2 and Ø50 at 4&times;1, which is what fits the
+    &mdash; decided in &sect;10. <b>Strip ring size</b>: the spec's Ø88 / Ø56 are ceilings;
+    on the cover four rings take Ø80 at 4&times;2 and Ø53 at 4&times;1, which is what fits the
     inner box with 6 dp gaps and the label (&sect;10).
   </p>
   <p class="note wide">
-    <b>Mismatched Transparent is drawn honestly above</b> and it is not legible: the dark theme's
-    white-ish text sits on a light wallpaper (and the reverse). <b>Proposed fix:</b> a soft
-    text shadow / 40%-black scrim behind every text run on Transparent backgrounds, keyed to
-    the *system* dark-mode flag rather than the theme choice &mdash; flagged as a question,
-    &sect;10.
+    <b>Transparent carries a soft shadow</b> (Robin, rev D): every text run and every ring on a
+    Transparent face gets a soft shadow in the opposite tone (dark under light text, light under
+    dark), so the mismatched cases above &mdash; dark theme on a light wallpaper and the reverse
+    &mdash; stay legible while the background stays fully see-through.
   </p>
 
   <h4>The pace mark, before and after (decided in review)</h4>
@@ -1030,6 +1045,8 @@
         const oneContent = stripFace(b, oneList, 'S1', true, {});
         html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: overContent }), `${faceLabel('strip', b)} — 5 accounts: the first four in registry order, then a "+1" cell`, w);
         html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: oneContent }), `${faceLabel('strip', b)} — 1 account: centred`, w);
+        const gptFull = stripFace(b, ACCOUNTS, 'S3', true, { target: 'chatgpt' });
+        html += tf(tile({ w, h, bg: 'solid', dark: true, cardColor: CLAUDE_DARK.card, content: gptFull }), `${faceLabel('strip', b)} — ChatGPT (weekly-only) at 100%: ${b === '4x2' ? 'the "Weekly" tag stays under the ×' : 'no room under the ×, so the tag drops (the label still says ChatGPT)'}`, w);
       });
       html += '</div>';
       return html;
@@ -1040,7 +1057,7 @@
   <h2>3 &middot; Q10 &mdash; Ring 2&times;2 at 100%, both ways</h2>
   <p class="sub">
     The spent &times; (what 1&times;1 always uses) versus the literal "100%" text &mdash; dark
-    and light, cover and inner. Robin's call; see &sect;10.
+    and light, cover and inner. <b>Decided: the spent &times;</b> (Robin, &sect;10).
   </p>
   <div id="s3-root"></div>
   <script>
@@ -1233,8 +1250,8 @@
   <p class="sub">
     On the faces with room to spend on it: Number 4&times;1/4&times;2, Countdown 2&times;2, Ring
     2&times;2, Strip 4&times;2. Present and absent, side by side &mdash; drawn as "as of 6:29 PM"
-    since that is <code>fetchedAt</code> against the fixture's "now". Robin's call whether to keep
-    it; see &sect;10.
+    since that is <code>fetchedAt</code> against the fixture's "now". <b>Decided: kept, where drawn</b> (Robin,
+    &sect;10).
   </p>
   <div id="s8-root"></div>
   <script>
@@ -1415,12 +1432,12 @@
       </div>`;
       // Rev B: built from RingRenderer, BarRenderer AND a trend chart — one ring
       // plus 5h/Weekly bars (with pace ticks) per account, and one sparkline for
-      // the account that was open when Share was tapped (Pro here; §10 asks
+      // the account that was open when Share was tapped (Pro here; §10 records
       // whether every account or only the open one belongs on the card at all).
       // The privacy line is an annotation beside the card now, never printed on it.
       function sparkline(dark) {
         const pts = [8, 11, 9, 14, 19, 17, 23, 28, 25, 31, 36, 33, 40, 47, 44, 52, 58, 55, 62];
-        const W = 280, H = 46, max = 70;
+        const W = 292, H = 64, max = 70;
         const step = W / (pts.length - 1);
         const xy = pts.map((v, i) => [i * step, H - (v / max) * H]);
         const path = xy.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
@@ -1431,45 +1448,50 @@
           <path d="${path}" fill="none" stroke="${col}" stroke-width="1.6"/>
         </svg>`;
       }
+      // rev D, Robin: the card carries ONLY the account that was open when Share was
+      // tapped — a bigger ring, both windows as bars with their pace ticks and absolute
+      // resets, and that account's 5h trend. Label only: no email, no plan tier.
       function cardBody(dark) {
-        const rows = ACCOUNTS.map(a => {
-          const color = accentFor(a, dark);
-          const pct = a.key === 'chatgpt' ? 31 : (a.key === 'pro' ? 62 : a.key === 'teams' ? 24 : 8);
-          const weeklyPct = a.key === 'chatgpt' ? 31 : (a.key === 'pro' ? 22 : a.key === 'teams' ? 15 : 4);
-          const bars = a.weeklyOnly
-            ? `<div style="margin-top:2px"><div style="font-size:9.5px;opacity:.6;margin-bottom:2px">Weekly &middot; resets ${RESET_WEEKLY_LABEL}</div>${barHTML(190, 6, { pct, elapsed: 40, dark, accent: color, paceTick: 40 })}</div>`
-            : `<div style="margin-top:2px"><div style="font-size:9.5px;opacity:.6;margin-bottom:2px">5h &middot; resets ${RESET_5H_LABEL}</div>${barHTML(190, 6, { pct, elapsed: 38, dark, accent: color, paceTick: 38 })}
-               <div style="font-size:9.5px;opacity:.6;margin:5px 0 2px">Weekly &middot; resets ${RESET_WEEKLY_LABEL}</div>${barHTML(190, 6, { pct: weeklyPct, elapsed: 30, dark, accent: color, paceTick: 30 })}</div>`;
-          return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid ${ink(dark, .08)}">
-            ${ringWithFigure(38, 5, { pct, elapsed: null, dark, accent: color, spentX: true, figure: pct + '%', figSize: 10.5 })}
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;margin-bottom:2px">${a.label}</div>${bars}</div>
+        const a = acc('pro'), color = accentFor(a, dark);
+        const fiveH = 62, fiveE = 46, week = 22, weekE = 30;
+        const row = (name, pct, el, reset) => `<div style="margin-top:12px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:12.5px;opacity:.85">${name}</span><span style="font-size:17px;font-weight:700">${pct}%</span></div>
+            ${barHTML(292, 10, { pct, dark, accent: color, paceTick: el })}
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.7;margin-top:6px"><span>${pct - el > 3 ? `${pct - el}% above even pace` : `${el - pct}% below even pace`}</span><span>Resets ${reset}</span></div>
           </div>`;
-        }).join('');
         return `<div style="width:328px;background:${dark ? '#0D0D0D' : '#F5EFE8'};color:${dark ? '#EDE8E4' : '#26211E'};border-radius:20px;padding:18px;font-family:Roboto,Arial,sans-serif">
-          <div style="font-size:11px;letter-spacing:.05em;opacity:.6;margin-bottom:2px">COOLDOWN &middot; SNAPSHOT</div>
-          ${rows}
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${ink(dark, .08)}">
-            <div style="font-size:9.5px;opacity:.6;margin-bottom:4px">Pro &middot; 5h trend</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            ${ringWithFigure(88, 8, { pct: fiveH, elapsed: fiveE, dark, accent: color, showRed: true, spentX: true, figure: fiveH + '%', figSize: 22 })}
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:6px;font-size:17px;font-weight:700">${mark(a.provider, 16, color)}${a.label}</div>
+              <div style="font-size:11px;opacity:.6;margin-top:3px">as of ${NOW_LABEL}, Thu Sep 25</div>
+            </div>
+          </div>
+          ${row('5h', fiveH, fiveE, RESET_5H_LABEL)}
+          ${row('Weekly', week, weekE, RESET_WEEKLY_LABEL)}
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid ${ink(dark, .08)}">
+            <div style="font-size:10.5px;opacity:.6;margin-bottom:6px">5h trend</div>
             ${sparkline(dark)}
           </div>
+          <div style="font-size:9.5px;letter-spacing:.06em;opacity:.45;margin-top:12px">COOLDOWN</div>
         </div>`;
       }
       const preview = `<div class="dlgwrap" style="width:328px;border-radius:16px;padding:20px"><div class="dlg" style="background:#201D1B;color:#EDE8E4;width:100%">
         <div class="dt">Share snapshot</div>
-        <div style="transform:scale(.82);transform-origin:top left;margin-bottom:-70px">${cardBody(true)}</div>
+        <div style="transform:scale(.82);transform-origin:top left;margin-bottom:-78px">${cardBody(true)}</div>
         <div class="btns"><span class="dlgbtn" style="color:#9B928B">Cancel</span><span class="dlgbtn" style="color:#E59980;font-weight:700">Share</span></div>
       </div></div>`;
       root.innerHTML = '<div class="row">' + tf(bar, 'Main · menu, "Share snapshot" added under "Main screen layout"', 328) +
         tf(preview, 'Render-then-preview dialog — nothing leaves without being seen', 328) + '</div>' +
         '<div class="row">' +
         `<div>${tf(cardBody(true), 'The card, dark, drawn at 360dp here (rendered at 4× = 1440px for the real share) — rings, bars and the sparkline from the same renderers as every other face', 328)}
-          <p class="note" style="max-width:328px">No email or plan tier anywhere on the card — only each profile's own label. (Moved off the card itself; it printed there in rev A.)</p></div>` +
+          <p class="note" style="max-width:328px">Only the account that was open when Share was tapped (Robin, rev D) &mdash; its own label, never an email or plan tier. This note sits beside the card, never on it.</p></div>` +
         tf(cardBody(false), 'Light', 328) + '</div>';
     })();
   </script>
 
   <hr class="hr">
-  <h2>10 &middot; Questions for Robin</h2>
+  <h2>10 &middot; Decisions</h2>
 
   <h4>Decided in review</h4>
   <p class="sub">
@@ -1483,60 +1505,26 @@
   <ul class="inv">
     <li><b>Pace tick weight</b> (rev C): 3.5 dp, round caps, 90% ink, 1 dp halo &mdash; Robin: "more visible than just a thin line".</li>
     <li><b>Round ends on the usage arc</b> (rev C), Robin.</li>
-    <li><b>Background</b> (rev C): Solid / Gradient / Transparent per widget, default Solid &mdash; Robin. <code>w&lt;id&gt;.bg</code> gains a third value; the key itself is unchanged (R9).</li>
+    <li><b>Background</b> (rev C): Solid / Gradient / Transparent per widget, default Solid &mdash; Robin. Solid is the account's room card; Gradient a light wash of its accent. <code>w&lt;id&gt;.bg</code> gains a third value; the key itself is unchanged (R9).</li>
     <li><b>Number layout</b> (rev C): label left and figure right on one row, full-width bar under &mdash; Robin.</li>
+    <li><b>Q10 &mdash; Ring 2&times;2 at 100%</b>: the spent &times;, as on 1&times;1 &mdash; Robin.</li>
+    <li><b>Q11 &mdash; "as of" stamp</b>: kept, where drawn in &sect;8 (Number 4&times;1/4&times;2, Countdown 2&times;2, Ring 2&times;2, Strip 4&times;2), 10 sp, 55% ink, in-flow &mdash; Robin.</li>
+    <li><b>S13 marker</b>: the violet "SYNTHETIC" ribbon on faces 160 dp tall or more, a 7 dp violet corner dot on the short ones &mdash; Robin.</li>
+    <li><b>S14 wording</b>: "Unavailable in this version &middot; update Cooldown" on 4&times;1, 2&times;2 and up; "Update Cooldown" on 1&times;1 and 2&times;1 &mdash; Robin.</li>
+    <li><b>Transparent legibility</b>: a soft shadow in the opposite tone under every text run and ring; the background stays see-through &mdash; Robin.</li>
+    <li><b>Share card</b>: built last in the arc (RUNBOOK.md Step 6; the release does not wait) &mdash; Robin. <b>Scope: only the account that was open</b> when Share was tapped &mdash; Robin (against the recommendation of all accounts).</li>
+    <li><b>Countdown and the Reset time chip</b>: the face ignores the chip &mdash; Robin.</li>
+    <li><b>Countdown 2&times;1 Weekly</b>: "Weekly reset" caption over "Sat 9:10 PM" at 24 sp &mdash; Robin.</li>
   </ul>
-
-  <ol class="dec">
-    <li><b>Q10 &mdash; Ring 2&times;2 at 100%</b> (&sect;3): spent &times; or "100%" text?
-      <b>Recommend the &times;</b> &mdash; it's what 1&times;1 already uses (so the face is
-      consistent with itself), and it matches the app's own spent-ring decision (CCRM-51).</li>
-    <li><b>Q11 &mdash; the "as of" stamp</b> (&sect;8): keep or drop, and on which faces?
-      <b>Recommend keep</b>, only where drawn above (Number 4&times;1/4&times;2, Countdown
-      2&times;2, Ring 2&times;2, Strip 4&times;2), at 10 sp and 55% ink, in-flow (never overlaid), so it never competes with the
-      primary reading.</li>
-    <li><b>S13's marker form</b> (&sect;2's options panel): corner dot only, a dashed outline, or
-      the in-flow "SYNTHETIC" ribbon. <b>Recommend the ribbon</b> (option C) &mdash; it's the only
-      one of the three that cannot collide with a sub-line or control row, because it takes real
-      layout space instead of overlaying.</li>
-    <li><b>S14's wording per size</b> (&sect;2): "Update Cooldown" below 4&times;1/2&times;2/Strip
-      4&times;2, the full "Unavailable in this version &middot; update Cooldown" from there up.
-      Confirm the shortened wording reads clearly enough with no other context.</li>
-    <li><b>Transparent legibility</b> (&sect;1): the mismatched cases are illegible as drawn.
-      Recommend a soft text shadow / scrim keyed to the <em>system</em> dark-mode flag. Approve the
-      direction so it can be specced at Step 3?</li>
-    <li><b>Share card &mdash; build or defer</b> (&sect;9e): RUNBOOK.md Step 6 says "the release
-      does not wait." The mock is low-risk since it shares every renderer already built for the
-      other faces, now including the bars and the sparkline.</li>
-    <li><b>Share card &mdash; which accounts</b> (&sect;9e, new): every account on one card, as
-      drawn, or only the one that was open when Share was tapped? Recommend keeping all of
-      them &mdash; a snapshot of one account is just a screenshot with extra steps, and "every
-      account, one card" is closer to what makes this worth building at all.</li>
-    <li><b>Countdown ignoring the Reset time chip</b> (&sect;4): confirmed already in ROADMAP.md's
-      text, changed from an earlier draft's Clock-mode variant. Flagging for acknowledgement, not
-      a new decision.</li>
-    <li><b>Weekly-outside-24h at Countdown 2&times;1</b> (&sect;4): rev C drops "Resets" from the
-      big line &mdash; the caption above already reads "Weekly reset" &mdash; so the face shows
-      "Sat 9:10 PM" at the count's 24 sp and nothing shrinks. Approve?</li>
-    <li><b>Number 2&times;1's S4 label</b> (&sect;2): with the rev C one-row layout, "ChatGPT &middot;
-      Weekly" no longer fits beside the figure, so at 2&times;1 a weekly-only account shows the name,
-      with "Weekly" as a small second line under it. 4&times;1 and 4&times;2 keep the one-line label. Approve?</li>
-    <li><b>The Strip's weekly tag</b> (&sect;2, item 1): "ChatGPT &middot; Weekly" doesn't
-      reliably fit the label at 4&times;1's cell width, so the Strip carries "Weekly" as a small
-      tag under the figure in the bore instead &mdash; the Ring keeps it in the label line, since
-      that has room. Approve the split, or should the Strip try the inline label anyway and take
-      whatever the fit check flags?</li>
-    <li><b>Number S10 at 2&times;1</b> (&sect;2, item 12): "Pro (unassigned) &middot; 5h"
-      overflowed 90 dp; the fallback drops the window suffix and marks it with a small
-      "UNASSIGNED" corner tag instead. Approve?</li>
-    <li><b>Strip's Solid and Gradient colour</b> (&sect;1): no single account owns it. Recommend the
-      neutral card (#1A1A1A / #FCF8F4) and a neutral wash for Gradient, unless Robin prefers a
-      plain system surface colour instead.</li>
-    <li><b>Strip ring size</b> (&sect;1): four Ø88 rings do not fit the cover's 339 dp inner width,
-      and Ø56 plus a label does not fit its 68 dp inner height. Proposed: the spec's diameters are
-      ceilings; the ring takes what fits (Ø78 at 4&times;2, Ø50 at 4&times;1 on the cover, the full
-      Ø88 / Ø56 on the inner grid). Approve?</li>
-  </ol>
+  <h4>Decided by a Fable review (delegated by Robin, rev D)</h4>
+  <ul class="inv">
+    <li><b>Number 2&times;1, weekly-only</b>: "ChatGPT" with "Weekly" as a 10 sp second line &mdash; approved as drawn.</li>
+    <li><b>Strip weekly tag</b>: in the bore under the figure, 8 sp at 4&times;1, 9 sp at 4&times;2; at 100% it stays under the &times; at 4&times;2 and drops at 4&times;1 (drawn in &sect;2's edge cases).</li>
+    <li><b>Strip ring sizes</b>: the spec's &Oslash;56 / &Oslash;88 are ceilings; on the cover four rings are &Oslash;53 at 4&times;1 and &Oslash;80 at 4&times;2; the inner grid keeps 56 / 88. No line is dropped to win a few dp.</li>
+    <li><b>Number 2&times;1 unassigned</b>: the "UNASSIGNED" pill above the name, raised to 8 sp (the legibility floor).</li>
+    <li><b>Strip background</b>: the neutral card (#1A1A1A / #FCF8F4) for Solid and a neutral 6%-ink wash for Gradient &mdash; not the system dynamic colour (it would follow the wallpaper, not the app), not a multi-account blend (it would read as the combined figure the spec forbids).</li>
+  </ul>
+  <p class="sub"><b>Nothing is open.</b> The wireframe waits for Robin's approval of rev D.</p>
 
   <hr class="hr">
   <h2>11 &middot; Coverage checklist</h2>
