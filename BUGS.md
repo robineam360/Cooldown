@@ -14,7 +14,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **Critical — tester feedback, 2026-09-25 (Raja Jawahar, Slack DM, v1.7).** CCBG-31 to CCBG-34
 > were logged from the 19:48 IST thread, which had three screenshots, and the 19:49 message on
 > alert crashes. **Worked the same evening:** CCBG-31 to CCBG-33 are Fixed (emulator-verified,
-> and seen on the Fold 7; they await a release), and CCBG-34 is parked on Raja's answer.
+> and seen on the Fold 7; they await a release). CCBG-34 is open, its meaning settled by Robin, and
+> waits for a wireframe.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
@@ -76,15 +77,23 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
-- **Status:** **Parked — awaiting Raja's answer** (2026-09-25; a Fable judge agreed and Astra
-  reviewed). Nothing is built until he says what "Display Name" means.
+- **Status:** Open — **meaning settled by Robin, 2026-09-25:** after adding an account, a user can't
+  tell which login it is (the eam360.com one or the gmail.com one) unless they rename it by hand.
+  So the fix is to show the email the account signed in with. It needs a wireframe (CLAUDE.md §2)
+  before it is built.
+- **Recommended placement, to wireframe:** only inside the app, where the phone's owner is the
+  reader. That means the Settings → Accounts card, as a small line under the account name, and the
+  ⋮ → Details sheet. The email should also be offered as the suggested name when an account is
+  added or renamed. It should **not** go on the lock-screen notification, the widgets or the
+  share card, which are all visible to anyone holding the phone, and it stays out of the
+  diagnostics log. States to draw: email known, email unknown (an older sign-in, before the next
+  profile fetch), a long email ellipsized at narrow widths, and the Fold 7 cover and inner
+  screens.
 - **Severity:** Low (labelling)
 - **Symptom:** **Reported by Raja, 2026-09-25:** *"Rather than Account, if we get Meta data, we
   can show the Display Name."* Robin replied asking whether this means the account's email
   address; no answer yet. Read together with the screenshots, it likely means labelling an
   account by the name or email the provider returns rather than a generic default.
-- **To do:** get Raja's answer. Any label change is visible, so it needs a wireframe first
-  (CLAUDE.md §2).
 - **What the app already receives:** Claude's `/api/oauth/profile` carries `account.display_name`,
   `account.full_name` and `account.email`, and the app already fetches it once a day for the plan
   tag. ChatGPT's id_token carries `email`. Today a new account is named by position ("Account 3")

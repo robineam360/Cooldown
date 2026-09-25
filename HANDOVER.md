@@ -4,18 +4,20 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 5 (written 2026-09-25, late evening)
+## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 5 (written 2026-09-25, night)
 
-The tester bugs are done: CCBG-31 (Alert Crash), CCBG-32 (Accounts Button Wrap) and CCBG-33
-(Device-Code Prerequisite) are Fixed and emulator-verified, and CCBG-34 (Account Display Name) is
-parked on Raja's answer. Before the widgets work, do these two first:
-**(1)** done: all three fixes were seen on the Fold 7 the same evening. The phone runs an
-unreleased release-signed build of `main`;
-**(2)** tell Raja that the crash was the always-on notification with one account, and ask him
-again what "Display Name" means.
-CCRM-85 (Crash Capture) is filed. Its option is decided: on-device only, as Fable recommended and
-Astra accepted with concerns. Its next-launch card still needs a wireframe before it is built.
-CCBG-35 (Tab Clip) is new and Low. Then paste the Step 5 prompt below.
+**Next is Widgets Reborn: paste the Step 5 prompt below.** The tester bugs are done. CCBG-31
+(Alert Crash), CCBG-32 (Accounts Button Wrap) and CCBG-33 (Device-Code Prerequisite) are fixed,
+seen on the emulator and on the Fold 7, and wait for a release. The Fold 7 runs an unreleased
+release-signed build of `main`, still version 1.7.
+
+Still open, none of it blocking Step 5:
+- **CCBG-34 (Account Display Name):** Robin settled the meaning, which is to show the email an
+  account signed in with. It needs a wireframe; the recommended placement is in its BUGS.md entry.
+  Wireframe it when Robin asks for it, or alongside the Step 5 wireframe work.
+- **CCRM-85 (Crash Capture):** the option is decided. Its next-launch card needs a wireframe.
+- **CCBG-35 (Tab Clip):** Low, needs a wireframe.
+- **Tell Raja** that the crash was the always-on notification with one account.
 
 ---
 
