@@ -168,7 +168,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   change to an approved layout, so it waits for the wireframe's approval.
 
 ### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
-- **Status:** Open (2026-09-10)
+- **Status:** Open (2026-09-10) · **fix scheduled in the v1.8 arc** (RUNBOOK.md Step 5): option 1, measure-and-clamp, chosen by Robin 2026-09-25; `Duet.labelClampDp(figureWidthDp)` stays pure and tested; Duet wireframe section in Step 2 first
 - **Severity:** Low (the mark and the accent still identify the provider; the label only has to
   tell two accounts apart)
 - **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass

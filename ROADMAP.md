@@ -858,6 +858,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   CCRM-44 (One Surface) in part, CCRM-11 (Tile Reset Time), CCRM-3 (Unified Theming) phase 1;
   resolves CCBG-20 (Pinned Identity Loss) by removal; re-scopes CCRM-5 (Per-Profile
   Notification) into CCRM-62 (Duet Notification).
+- *2026-09-25: the widget half is reopened by CCRM-78 (Widgets Reborn) for v1.8 — a new suite built to answer the four reasons above (no clone faces, no Glance, no Settings rows or redraw worker, a harness reachable on the live phone). The tile and the alert removals stand.*
 - **Removed:** all five home-screen widgets (providers, config activity, Glance dependency,
   redraw worker, widget prefs, "Show on widgets", "On widgets"); the Quick Settings tile
   (service and manifest entries — placed tiles vanish on update, say so in release notes, as do
@@ -932,7 +933,7 @@ a time per the design-review workflow; [RUNBOOK.md](RUNBOOK.md) is the ordered b
   Second's sign-in broken (dot, strip, figure "—"); First stale (that half dimmed); Left mode;
   long labels; light shade.
 
-## v1.7 — the main-screen redesign · **the next thing we build**
+## v1.7 — the main-screen redesign · **shipped 2026-09-25**
 
 **Decided 2026-09-17.** Robin asked for one big item before v1.7 ships and chose the main screen:
 the one surface never redesigned, and the one everybody looks at. The Accounts tab got this
@@ -1130,6 +1131,269 @@ The execution order lives in [RUNBOOK.md](RUNBOOK.md).
 - **Decided 2026-09-17:** ships as a toggle, not the default. Stored as `UsageCache.chartOrientation` ("across" | "down").
 - **Where (if it proceeds):** `ui/Sparkline.kt` (a second geometry, sharing `SparkGeometry`'s
   bindings), `SettingsScreen.kt`, `data/UsageCache.kt`.
+
+## v1.8 — Widgets, reborn · **the next thing we build**
+
+**Decided 2026-09-25.** Robin's brief: a fresh widget suite that is *not* a clone of the app — the
+status-bar ring at several sizes with any account per widget, the Huge-number style for one account
+with account and 5h/Weekly toggles on the larger sizes, and one or two genuinely new faces. Riding
+along: CCRM-24 (Share Card), which shares the renderer; CCBG-24 (Duet Label Clamp); CCRM-14 (Clear
+History); and CCRM-15 (Above-Pace Verification)'s synthetic series. The concept came from a Fable
+plan call; Robin took ten questions one at a time and the answers are recorded under each item. Two
+cross-family reviews (Astra, xhigh) came back blocking on the first draft and its patch; this text is
+the Fable redraft of 2026-09-25, written so each finding is met by the design rather than by a
+footnote. The execution order is in [RUNBOOK.md](RUNBOOK.md).
+
+**This reopens the widget half of CCRM-61 (Settings Diet), deliberately, and answers its four
+reasons rather than arguing past them:**
+1. *They cloned the app* (a tall usage widget, a bar widget, a pace chart) → no chart, no card list,
+   no credits bar. Four faces, each doing one thing neither the app nor the always-on notification
+   does.
+2. *Glance and its theming shims* → **no new dependency.** RemoteViews and the bitmap renderers the
+   notification already uses. Text stays in real `TextView`s at true sp; only the ring and the bar are
+   bitmaps.
+3. *A redraw worker, and `refreshWidgets()` threaded through nine Settings controls* → **no Settings
+   rows and no 15-minute tick.** One seam, `notify/Surfaces.refresh(context, cache)`, redraws the
+   notification and the widgets together. It replaces the 13 `PinnedNotification.update` call sites
+   (eleven in `SettingsScreen.kt`, `Alerts.evaluate`, `UsageRepository.removeProfile`), so every poll
+   and every Settings change already ends there.
+4. *The fixture harness was unreachable on the phone that runs the app* (CCBG-19 (Fixture
+   Unreachable)) → the Faces gallery and the synthetic series ship in the **release** build behind the
+   existing 7-tap Debug unlock. No `applicationIdSuffix`.
+
+The last tree that still holds the old widgets is `530781f`; `d599b87` removed them. Read for
+pattern, never restored wholesale: `widget/WidgetFace.kt`, `widget/ChartBitmap.kt` (share card only),
+`ui/RingRenderer.kt`, `widget/WidgetConfigActivity.kt`, `app/src/debug/.../DebugFacesActivity.kt`.
+
+### The rules every face obeys (R1–R10, decided 2026-09-25)
+
+**R1 · Wording.** "5h" and "Weekly", never "5-hour window" / "7-day".
+
+**R2 · Clock times are 12-hour on every face, always** (Robin, Q6: no military time anywhere). H
+runs 1–12; AM/PM is dropped only where it does not fit; a day is added only when the time is more
+than 24 h away ("Sat 9:10 PM"). Widgets ignore the Time format chip's "24" setting; the app and the
+notification keep honouring it. One `Fmt` helper, unit-tested, formats every widget time.
+
+**R3 · Identity.** Colour is the account accent below 80%, then the yellow/orange/red ladder — the
+status bar's own grammar. Provider marks at 12–14 dp wherever a label appears.
+
+**R4 · A time is a claim; a percentage is a snapshot.** Every time on a face is either **live** (a
+chronometer the launcher ticks) or **absolute** ("Resets 9:10 PM", "at 9:10 PM"). No static relative
+time — "Resets in 2h 41m", "5d 3h" — appears on any widget: it goes false between redraws and stays
+false through a polling failure. Whether a face is past its reset is decided **at draw time** from
+`resetsAt` and `fetchedAt`, never from an expectation that a redraw will arrive, so a redraw from any
+trigger is true and a late one is merely late. A percentage cannot be made live; its age shows through
+the stale dim (R6) and, on the faces with room, through an absolute "as of 9:10 PM" stamp **if Robin
+wants one** (Q11, open, decided on the wireframe — the earlier "no Updated Xm ago" ruling was against
+a *relative* stamp).
+
+**R5 · Never repoint silently.** A removed account's widget shows "Account removed · tap to choose";
+the tap opens that widget's config. **Unassigned is a state, not a guess:** a launcher that skips
+config (`configuration_optional`), an unknown id after a launcher reset, or a restored id with no
+prefs stores nothing and draws the first account in registry order (CCRM-71 (Account Order)) at draw
+time — the label says which — or the no-accounts face while the registry is empty, picking up the
+first account the moment one is added. Saving the config is the only thing that assigns.
+
+**R6 · Stale.** `fetchedAt + Alerts.STALE_DATA_MS` (6 h) dims the figure (0.5) and the bar or ring
+(0.45) and puts "Stale" where a sub-line exists. No "Updated Xm ago" and no ↻ on any face: the
+notification owns Refresh.
+
+**R7 · One scheduler, best effort — no periodic worker.** Redraws come from `Surfaces.refresh`
+(every poll, every Settings change), the provider's `onUpdate` / `onEnabled` /
+`onAppWidgetOptionsChanged` (fold, unfold, resize), a config save, an on-face toggle, and **one
+app-wide transition alarm**. `updatePeriodMillis` is 0. The alarm: the pure
+`widgets/Transitions.nextTransitionAt(nowMs, placed, snapshots): Long?` returns the earliest future
+instant among, over every placed widget's shown account and window, (a) `resetsAt` — the
+reset-passed state S6; (b) `fetchedAt + STALE_DATA_MS` — the stale dim; (c) for a Countdown on
+Weekly, `resetsAt − 24 h` — live ticking begins; null when nothing is placed. `Surfaces.arm(context)`
+sets exactly one `AlarmManager.setAndAllowWhileIdle(RTC, at, → WidgetActionReceiver)` or cancels it
+when null — RTC, not RTC_WAKEUP, because a widget is only looked at while the screen is on and a
+non-wakeup alarm fires on wake. Firing redraws every placed widget from the cache and re-arms. It
+fetches nothing: `Polling.scheduleResetChecks` already queues a poll two minutes after every reset.
+**Re-armed on:** every `Surfaces.refresh`; `onUpdate` / `onEnabled`; **every change to what any
+placed widget shows** — a config save, an on-face window or account change, `onDeleted`,
+`onDisabled` and `onRestored` (Android calls `onDisabled` per provider, so it only re-arms like the
+rest; the alarm is cancelled only when `nextTransitionAt` finds **no widget of any of the four
+providers** placed) — through the one `Surfaces.arm`, which always
+recomputes over *all* placed widgets, never just the one that changed; and, through a new exported
+`widgets/WidgetSystemReceiver`, `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET` and
+`TIMEZONE_CHANGED` — each of which also redraws, because a clock change moves every chronometer base
+and a zone change moves every absolute time. All four reach a manifest receiver (the first is a
+protected broadcast, the second is addressed to this package, the last two are on the
+implicit-broadcast exemption list). Not `LOCKED_BOOT_COMPLETED`: prefs and cache are
+credential-encrypted. Not behind `PinnedBootReceiver`'s `pinnedEnabled()` early return — the widgets
+do not need the pin. No exact-alarm permission. **Nothing is claimed about delivery.** Inexact alarms
+have no bound under Doze; One UI's deep sleep and a force-stop (Android's stopped state, cleared only
+when the user opens the app) suspend them entirely. R4 is what makes that survivable; the Step 7
+device pass measures it, and the guide tells widget-only users about "Never sleeping apps".
+
+**R8 · Synthetic data is marked and dies with the process** (CCRM-15 (Above-Pace Verification)).
+The mode is a process-wide in-memory holder, `data/SyntheticSeries`, applied where `UsageRepository`
+hands a snapshot out, so every surface — chart, bars, rings, notification, widgets — renders the same
+series. It is never written to any store; a unit test proves the stores stay untouched. While on: a
+SYNTHETIC DATA banner on Main **which is also the off switch** (the 7-tap unlock is `remember` state
+and relocks on recreation, so the chip row alone could strand the mode on); a strip on the
+notification; a marker on every widget face (form approved on the wireframe). Process death resets it
+to Off and the next redraw of every surface is real data — the safe direction. The device pass
+therefore simulates process death with `am kill`, never `force-stop`.
+
+**R9 · Provider class names are a permanent contract.**
+`com.robin.claudeusage.widgets.{Ring,Number,Countdown,Strip}WidgetProvider` in a fresh package, so no
+v1.5 launcher record can resurrect; never renamed after release, because a rename deletes every
+user's placements. The same for the `widget_prefs` keys (`w<id>.account`, `w<id>.window`,
+`w<id>.bg`, `w<id>.v`). Free to change later: the picker label, `previewLayout`, the `res/xml`
+info file's contents, the layouts. **Recovery is forward-only.** Android refuses versionCode 23 over
+a non-debuggable 24, and uninstalling loses app data, so an installed v1.8 is never rolled back; a
+defect is fixed in **v1.8.1 (versionCode 25)**, built from the fix or from a revert, which keeps all
+four components registered. A face that must be pulled keeps its provider and draws the **unavailable
+face** (S14, "Unavailable in this version · update Cooldown"), approved on the v1.8 wireframe so the
+recovery release needs no design round.
+
+**R10 · Memory.** Bitmaps are drawn at bucket size, never scaled; at most three buckets per face and
+five bitmaps per bucket. A pure `WidgetFace.bitmapBytes(face, sizeMap, density)` estimate over the **whole composed size
+map** (every bucket's bitmaps together, as one update carries them) is unit-tested under 2 MB at both
+Fold 7 densities, for every face at its largest state. `AppWidgetManager.updateAppWidget` goes
+through one wrapper, `widgets/SafeUpdate`, which catches `IllegalArgumentException` (the host's
+bitmap-memory cap), `TransactionTooLargeException`, and a `RuntimeException` whose cause chain
+holds a `RemoteException`/`TransactionTooLargeException` (how `AppWidgetManager` rethrows Binder
+failures). It falls back to a single-size RemoteViews at the current `OPTION_APPWIDGET_SIZES` size
+and logs to `AppLog` at INFO. The fallback is **one attempt only**: if it throws too, `SafeUpdate`
+contains it, logs both failures, and leaves the launcher's last good face in place. It never
+retries in a loop and never lets an exception out of a provider or receiver. The fallback is exercised
+through `SafeUpdate` itself, with an injected updater that throws each of the three shapes, and
+one that throws on both attempts, not by testing a bucket in isolation.
+
+### The states every face draws (S1–S14)
+
+S1 normal · S2 above pace · S3 100% · S4 no 5h window (a weekly-only ChatGPT account gets a Weekly
+headline, tagged) · S5 window not started ("Starts when a message is sent") · **S6 reset passed**
+(`resetsAt` ≤ now and `fetchedAt` < `resetsAt`: figure, bar and ring drop to *no reading* — the
+extent alone, never 0% — with "Reset 9:10 PM" where a sub-line exists, until the poll brings data) ·
+S7 sign-in broken (last snapshot dimmed, 6 dp red dot after the label) · S8 stale (R6) · S9 account
+removed (R5) · S10 unassigned / no accounts ("Open Cooldown to sign in") · S11 Left mode (CCRM-22
+(Used or Left)) · S12 Free plan ("No usage on this plan") · S13 synthetic (R8's marker) · S14
+unavailable (R9) · and each narrow size, with what drops out. The wireframe draws every one on every
+face; `WidgetFaceTest` covers every state × bucket.
+
+### CCRM-78 · Widgets Reborn — the suite, its config, and one refresh seam
+- **Status:** Planned · large · **wireframe gate** (RUNBOOK.md Step 2) · reopens the widget half of
+  CCRM-61 (Settings Diet); supersedes CCRM-4 (Widget Quick-Edit) and closes the history of CCRM-39
+  (Ring Widget), CCRM-40 (Mini-Rings Widget), CCRM-41 (Pace Widget) and CCRM-13 (Chart Widget).
+- **Faces (Robin, Q1): four.** CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face)
+  and CCRM-82 (Accounts Strip). Never a combined figure.
+- **Config:** one `WidgetConfigActivity`, exported with the `APPWIDGET_CONFIGURE` filter,
+  `widgetFeatures="reconfigurable|configuration_optional"`. On entry it calls
+  `setResult(RESULT_CANCELED)` with the id, and finishes at once on `INVALID_APPWIDGET_ID` or an id
+  whose provider is not this package. Controls: **Account** (chips with marks; none on the Strip),
+  **Window** (5h / Weekly; hidden when the account has one window; the Strip is fixed to each
+  account's headline window) and **Background** (Solid / Transparent — Robin, Q4, a per-widget
+  toggle; default Solid). Solid is the account's Room card colour with
+  `system_app_widget_background_radius`; Transparent draws on the wallpaper, shown on the wireframe
+  over a light and a dark one. Save writes `w<id>.*` and `w<id>.v = 1`, redraws that widget, re-arms (R7) and
+  returns `RESULT_OK`. Reconfigure by long-press ("Widget settings" / "Save changes"). Prefs are
+  pruned in `onDeleted` and remapped in `onRestored`; unknown ids are unassigned (R5).
+- **On-face controls** (Number 4×2): the 5h|Weekly chips and the account cycler are
+  `PendingIntent.getBroadcast(FLAG_IMMUTABLE)` to `widgets/WidgetActionReceiver`
+  (`exported="false"`), each with a **unique identity per widget and action**: intent data
+  `cooldown-widget://<appWidgetId>/<action>` (extras do not distinguish PendingIntents) and a
+  request code derived from both; `WidgetActionReceiver` reads the id from the data, not the extras.
+  Tested with two placed Number 4×2 widgets on different accounts: a tap on one never moves the
+  other. The receiver writes the pref, redraws that widget and re-arms the transition alarm (R7).
+  The intents go to this receiver, not to the provider: its receiver is exported for the launcher, and a custom action on an
+  exported receiver could be sent by any app. They work with the app swiped away — a receiver needs
+  no activity.
+- **Sizing:** API 31 `RemoteViews(Map<SizeF, RemoteViews>)`, at most three buckets per face,
+  `previewLayout` (a PNG `previewImage` is added only if One UI's picker shows nothing — Step 7
+  checks). Cover cells from CCBG-10/11 (4×2 = 363×168 dp); the inner grid (~118×100 dp per cell) is
+  **unverified** until Step 7.
+- **Refresh, transitions, memory:** R7 and R10.
+- **Where:** `widgets/` (new package) — `WidgetFace.kt` (the pure state table, the buckets,
+  `render(face, bucket, state)` returning one single-size RemoteViews, from which the providers
+  compose their size maps and the gallery inflates, so the two cannot drift; `bitmapBytes`),
+  `Transitions.kt`, `WidgetPrefs.kt`, `WidgetConfigActivity.kt`, `WidgetActionReceiver.kt`,
+  `WidgetSystemReceiver.kt`, the four providers; `notify/Surfaces.kt`; `res/xml/*_widget_info.xml`;
+  manifest.
+
+### CCRM-79 · Ring Face — the status-bar ring at home-screen size
+- **Status:** Planned · medium · wireframe gate.
+- **What:** the rails gauge from `UsageIcon.railsGauge` (hairline extent, usage band, red slice, hub,
+  needle, spent ×) for one account's 5h window, or its headline window when it has no 5h. It bears no
+  time; at S6 it draws the extent alone.
+- **1×1:** ring Ø 64 dp, stroke 6 dp, **16 sp figure in the bore** (Robin, Q3 — two Claude accounts
+  share a hue). At 100% the × replaces the figure.
+- **2×2:** ring Ø 110 dp (cap 140), stroke 9 dp, 26 sp figure, one line under with the 12 dp mark and
+  a 12 sp label. **100% as × or "100%": Robin decides on the wireframe (Q10); draw both.**
+- **Omits:** window name, reset, weekly, credits.
+
+### CCRM-80 · Number Face — the Huge-number row for one account
+- **Status:** Planned · medium · wireframe gate.
+- **What:** the notification's collapsed Huge-number geometry: 14 dp mark, 13 sp label, 8 dp bar with
+  the pace tick, 32 sp bold trailing figure.
+- **2×1:** mark + label, bar, figure. The label clamp is CCBG-24 (Duet Label Clamp)'s measure.
+- **4×1:** adds a 12 sp sub-line that is **always absolute** (R4): "Resets 9:10 PM", "Resets Sat
+  9:10 PM" for Weekly, "Reset 9:10 PM" at S6, "Stale" at S8.
+- **4×2:** adds a 28 dp control row: `[5h | Weekly]` chips on the left — only the windows the account
+  has; a single-window account shows a fixed tag instead — and the **account cycler** on the right
+  (Robin, Q5): a tap on "Pro ⇄" steps through registry order (CCRM-71 (Account Order)) and stores the
+  account *key*, so reordering accounts never repoints it. Wiring per CCRM-78 §On-face controls.
+- **Omits:** chart, credits, model caps. Below 4×1 the LEFT caption is dropped and the bare figure
+  flips.
+
+### CCRM-81 · Countdown Face — when the window comes back
+- **Status:** Planned · medium · wireframe gate · new.
+- **Ticking (Robin, Q6):** try a live **H:MM** without seconds. RemoteViews' `Chronometer` formats
+  only through `DateUtils.formatElapsedTime`, so expect it cannot; then a live **H:MM:SS** —
+  `setChronometerCountDown(true)`, base `elapsedRealtime + (resetsAt − now)`. Under one hour the same
+  view reads **MM:SS** ("41:23"); past zero it reads a negative duration ("−0:05:12"). The launcher
+  ticks it: no alarm, no per-minute redraw. Which form shipped, and why, is recorded here at Step 4.
+- **The absolute time is always on the face** ("at 9:10 PM", R2), so the count is readable when its
+  form is ambiguous and true after zero. The caption holds on both sides of zero ("5h reset", not
+  "Resets in"). The face does **not** follow the Reset time chip (CCRM-23 (Reset Display)): the clock
+  time is already there, so Clock mode has nothing to add. *(Changed from the first draft's static
+  Clock-mode variant — one fewer state, the same information; Robin sees it on the wireframe.)*
+- **Weekly:** a chronometer would read "123:45:10", so outside the last 24 h the Weekly form is the
+  absolute "Resets Sat 9:10 PM"; inside 24 h the transition alarm (R7) switches it to live ticking,
+  and if that alarm is late the absolute form is still true.
+- **2×1:** caption at 11 sp, the count at 24 sp bold with "at 9:10 PM" beside or under it, and a
+  "Pro · 5h" line at 11 sp with the mark.
+- **2×2:** adds an 18 sp figure over a 6 dp bar and, **only when `Projection.estimate` is non-null**,
+  one 11 sp line "~ runs out 4:20 PM" (Robin, Q2); the "~" is CCRM-30 (Estimate Honesty)'s marker.
+  Runway is not a face of its own: the estimate is null on most days, so the face would be empty.
+- **Past zero:** the negative count beside the true clock time until the alarm or the poll redraws to
+  S6, then S5 once the payload has no window; `Polling.scheduleResetChecks` fetches. CCBG-25 (Idle
+  Reset Silence) is not made worse.
+
+### CCRM-82 · Accounts Strip — every account as its own ring, never a sum
+- **Status:** Planned · medium · wireframe gate · new.
+- **What:** one rails ring per account in registry order, each in its own accent, each on its
+  headline window (a Weekly-only ring is tagged). **No sum, no average, no combined figure, ever** —
+  the appendix's ruling against a cross-provider percentage and CCRM-31 (Combined Total)'s scope both
+  stand. A row of separate gauges, which the two-account notification cannot show.
+- **4×1:** up to four rings Ø 56 dp, stroke 5 dp, 13 sp figure inside, 9.5 sp label under.
+  **4×2:** rings Ø 88 dp, 18 sp figure, 11 sp label, 10 sp absolute reset under ("9:10 PM", R4). Two
+  buckets.
+- More than four accounts: the first four and a "+N" cell. One account: centred. No accounts: S10.
+  S6–S8 and S12 apply per ring. Narrow: the reset drops first, then the label; the ring never gives
+  way (CCBG-10's rule).
+
+### CCRM-83 · Ring Renderer — one ring painter for the status bar, the widgets and the share card
+- **Status:** Planned · small · **no visible change** (RUNBOOK.md Step 3) · closes the ring half of
+  CCRM-3 (Unified Theming) phase 3; lifts CCRM-24 (Share Card)'s gate.
+- **What:** `ui/RingRenderer.draw(context, sizePx, strokePx, pct, elapsed, fillArgb, dark,
+  showOverPace, spentCross)` generalises `UsageIcon.railsGauge`; `UsageIcon.draw` becomes a 24 dp
+  call into it. `BarRenderer` is unchanged.
+- **Check:** a bitmap-equality unit test at 24 dp for every state the icon draws, and the status-bar
+  ring compared on the Fold 7 against
+  `design/research/2026-09-17-v17-device-pass/24-main-statusbar.png` at Step 7. Pixel-equivalent, or
+  it does not ship.
+
+### CCRM-84 · Faces Gallery — every face and state, reachable on the live phone
+- **Status:** Planned · small · wireframe gate (debug-only screen) · supersedes CCBG-19 (Fixture
+  Unreachable)'s won't-fix path and CCRM-15 (Above-Pace Verification)'s harness paragraph.
+- **What:** a Debug-section screen after the 7-tap unlock, in the release build, that inflates every
+  face × bucket × state through `WidgetFace.render` — the providers' own function — with
+  `RemoteViews.apply` inside the app, each tile captioned with its state and its `bitmapBytes`
+  estimate. It is the `DebugFacesActivity` idea, on the phone that runs the app.
 
 ## Next — small, high value, ready to build
 
@@ -3225,7 +3489,7 @@ keys) would still make this a different product. Not filed, not an open question
   figure was derived from.
 
 ### CCRM-14 · Clear History — let the user clear usage history
-- **Status:** Planned
+- **Status:** Planned · **in the v1.8 arc** (RUNBOOK.md Step 5) · placement decided 2026-09-25 (Robin): "Clear usage history…" in the Accounts-tab card ⋮ beside Details and Remove, confirmed in the `RemoveAccountDialog` shape naming both stores; calls `HistoryStore.clear` + `SessionLog.clear` + `Surfaces.refresh`. Copy is visible → wireframe section in Step 2
 - **Why:** CCBG-1 decoupled history from the credential lifecycle, which was right — but
   it left *nothing* able to clear it. `HistoryStore.clear()` and `SessionLog.clear()` are
   both callerless. Someone genuinely switching the account behind a profile slot has no
@@ -3243,7 +3507,7 @@ keys) would still make this a different product. Not filed, not an open question
   confirmed action, on a card that stays. That is what this entry is now for.
 
 ### CCRM-15 · Above-Pace Verification — verify the above-pace chart state on a device
-- **Status:** **Observed 2026-08-04** · synthetic-series override still worth building
+- **Status:** **Observed 2026-08-04** · synthetic-series override **in the v1.8 arc** (RUNBOOK.md Step 5; rule R8 of the v1.8 section, 2026-09-25): a Debug-section chip row "Synthetic series: Off / Above pace / At 100% / No data" in the **release** build behind the 7-tap unlock; a process-wide in-memory holder `data/SyntheticSeries`, applied where `UsageRepository` hands out a snapshot so chart, bars, rings, the notification and the widgets render one series; never written to a store (unit-tested); marked wherever it shows — a SYNTHETIC DATA banner on Main that is also the off switch, a strip on the notification, a marker on every widget face (form approved at Step 2); resets to Off with the process. The harness half moves to CCRM-84 (Faces Gallery)
 - **Why:** The pace chart's warning half — the amber overshoot fill, the wash over the
   above-pace region, and the bold warning-coloured readout — had **never rendered on real
   hardware**. Every window on every account sat below pace, so it had only ever been seen
@@ -3346,7 +3610,7 @@ keys) would still make this a different product. Not filed, not an open question
   re-making before it is built.
 
 ### CCRM-24 · Share Card — share a usage snapshot as an image
-- **Status:** Planned · medium · **gated on the Canvas-to-bitmap extraction**
+- **Status:** Planned · medium · **in the v1.8 arc** (Robin, 2026-09-25: wireframe now, build last, ships in v1.8 only if ready — the release does not wait). Gate lifted by CCRM-83 (Ring Renderer); `share/ShareCard.kt` at 4× (1440 px wide) from `RingRenderer`, `BarRenderer` and a `ChartBitmap` read from `530781f`; render-then-preview, then `ACTION_SEND` with `FLAG_GRANT_READ_URI_PERMISSION` on a `FileProvider` cache-path URI (`cacheDir/share/`, earlier files deleted before each render, the folder emptied on app start; nothing written outside app cache); entry in the Main ⋮ menu ("Share snapshot"). Privacy rules below unchanged
 - **Why:** People screenshot this app today. A composed card is better than a crop of a
   screenshot, and unlike on desktop, sharing is a first-class Android surface — this feature
   is a better fit here than in the app it's being copied from.
