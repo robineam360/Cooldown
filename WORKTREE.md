@@ -33,7 +33,11 @@ Everything here is automatic. Never ask the owner to commit, push, open, merge o
    3. Run the verify command on this head (sha *T*). Nothing changes the tree after it.
    4. `git push --force-with-lease origin HEAD` (this session's own branch only), then `git push origin HEAD:main` (plain push; HEAD is *T* here). Rejected → repeat from 4.1 once. Rejected again → stop and report; the PR stays open.
    5. Verify: `git fetch origin`, `git merge-base --is-ancestor T origin/main`, and `gh pr view <n> --json state` shows `MERGED` (allow 60 s). Both hold → `git push origin --delete <branch>`. Otherwise keep the branch and PR, and report.
-5. **The final message is a report with no questions.** Anything the owner must do is a plain instruction. End the turn; the app's auto-archive archives the session and removes the worktree. **Never archive the session yourself** (in the trial, a self-archive left the worktree behind).
+5. **Ending the session.**
+   - **The owner says the session is done** ("done", "end the session", "close it", "that's all"): land first if not landed yet (step 4, every gate). Then, only once step 4.5's checks hold, archive this session yourself with the app's archive tool (`self`). The owner's words in this session are the agreement. If landing stopped (conflict, failing test, second rejection, failed check), do **not** archive; report instead.
+   - **You finished on your own** (no such words): land, then end the turn with a report that asks no questions. Anything the owner must do is a plain instruction. The app's auto-archive takes it from there and may wait up to a day. Don't archive yourself in this case.
+   - A self-archive can leave the worktree on disk; the next session's sweeper removes it.
+   - **Undo:** unarchive the session from the sidebar's Archived list. Its commits are on `main`, so a new worktree session carries on from there. Files that were never committed can't be restored once a tree is removed; that is why the sweeper only removes trees holding nothing but disposable files.
 6. **Never:**
    - merge a PR this session did not open;
    - plain `--force`, `branch -D`, `worktree remove --force` or `worktree unlock`;
