@@ -104,8 +104,11 @@ object SyntheticSeries {
         val wReset = weeklyResetAt(w)
         val wStart = wReset - WEEKLY_MS
         val out = ArrayList<HistoryPoint>()
-        var t = wStart + SAMPLE_MS
-        while (t <= anchorMs) {
+        // 15-minute samples, then one at the anchor itself so the curve ends on the
+        // headline figure rather than up to 15 minutes short of it.
+        val times = generateSequence(wStart + SAMPLE_MS) { it + SAMPLE_MS }
+            .takeWhile { it < anchorMs } + anchorMs
+        for (t in times) {
             // Which 5-hour window t sits in, counting back from the current one.
             val back = if (t > sReset - SESSION_MS) 0L else (sReset - SESSION_MS - t) / SESSION_MS + 1
             val thisReset = sReset - back * SESSION_MS
@@ -117,7 +120,6 @@ object SyntheticSeries {
                 sessionPct = sPct, sessionResetAt = thisReset,
                 weeklyPct = curve(w.pct, wx / w.elapsed), weeklyResetAt = wReset,
             )
-            t += SAMPLE_MS
         }
         return out
     }

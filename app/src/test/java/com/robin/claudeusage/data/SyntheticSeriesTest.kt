@@ -102,5 +102,8 @@ class SyntheticSeriesTest {
         val pace = { t: Long -> 100.0 * (t - start) / Projection.SESSION_MS }
         assertTrue("starts under pace", samples.first().second < pace(samples.first().first))
         assertTrue("ends over pace", samples.last().second > pace(samples.last().first))
+        // The curve ends on the headline figure, at the anchor.
+        assertEquals(now, samples.last().first)
+        assertEquals(62.0, samples.last().second, 0.0)
     }
 }
