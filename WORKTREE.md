@@ -31,7 +31,7 @@ Everything here is automatic. Never ask the owner to commit, push, open, merge o
    1. `git fetch origin` → `git rebase origin/main`. Conflict → `git rebase --abort`, stop, report.
    2. ID check: for every sequential ID this session added (table), grep the rebased tree. If one is defined twice, renumber **this session's own** entry to the next free number, fix its references, and say so in the report.
    3. Run the verify command on this head (sha *T*). Nothing changes the tree after it.
-   4. `git push --force-with-lease origin HEAD` (this session's own branch only), then `git push origin T:main` (plain push). Rejected → repeat from 4.1 once. Rejected again → stop and report; the PR stays open.
+   4. `git push --force-with-lease origin HEAD` (this session's own branch only), then `git push origin HEAD:main` (plain push; HEAD is *T* here). Rejected → repeat from 4.1 once. Rejected again → stop and report; the PR stays open.
    5. Verify: `git fetch origin`, `git merge-base --is-ancestor T origin/main`, and `gh pr view <n> --json state` shows `MERGED` (allow 60 s). Both hold → `git push origin --delete <branch>`. Otherwise keep the branch and PR, and report.
 5. **The final message is a report with no questions.** Anything the owner must do is a plain instruction. End the turn; the app's auto-archive archives the session and removes the worktree. **Never archive the session yourself** (in the trial, a self-archive left the worktree behind).
 6. **Never:**
