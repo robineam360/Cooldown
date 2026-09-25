@@ -9,9 +9,8 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 The tester bugs are done: CCBG-31 (Alert Crash), CCBG-32 (Accounts Button Wrap) and CCBG-33
 (Device-Code Prerequisite) are Fixed and emulator-verified, and CCBG-34 (Account Display Name) is
 parked on Raja's answer. Before the widgets work, do these two first:
-**(1)** when the Fold 7 is on adb, see the three fixes on it (one-account always-on notification
-expanded; the Finish-signing-in card on the cover screen and on the inner two-column Accounts; the
-ChatGPT sheet's prerequisite box);
+**(1)** done: all three fixes were seen on the Fold 7 the same evening. The phone runs an
+unreleased release-signed build of `main`;
 **(2)** tell Raja that the crash was the always-on notification with one account, and ask him
 again what "Display Name" means.
 CCRM-85 (Crash Capture) is filed. Its option is decided: on-device only, as Fable recommended and

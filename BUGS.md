@@ -14,11 +14,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **Critical — tester feedback, 2026-09-25 (Raja Jawahar, Slack DM, v1.7).** CCBG-31 to CCBG-34
 > were logged from the 19:48 IST thread, which had three screenshots, and the 19:49 message on
 > alert crashes. **Worked the same evening:** CCBG-31 to CCBG-33 are Fixed (emulator-verified,
-> awaiting the Fold 7 and a release), and CCBG-34 is parked on Raja's answer.
+> and seen on the Fold 7; they await a release), and CCBG-34 is parked on Raja's answer.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
-  seen on the emulator the same day; not yet on the Fold 7 or in a release.
+  seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
+  notification draws; no crash). Not yet in a release.
 - **Severity:** High (crash)
 - **Symptom:** **Reported by Raja, 2026-09-25:** *"Couple of crashes I observed when I enable
   Alerts."* No stack trace, device or Android version was given. Robin has not used alerts for a
@@ -38,7 +39,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-32 · Accounts Button Wrap — the sign-in card's "Cancel" wraps one letter per line
 - **Status:** **Fixed (2026-09-25)** — seen on the API 36 emulator at 360 dp and 411 dp, and at
-  font scales 1.0, 1.3 and 2.0; not yet on the Fold 7 or in a release.
+  font scales 1.0, 1.3 and 2.0, and **on the Fold 7** (the cover screen keeps the one-line row; the
+  inner screen's two-column Accounts wraps Cancel to its own line, right-aligned). Not yet in a
+  release.
 - **Severity:** Medium (broken layout on the Accounts screen)
 - **Symptom:** **Reported by Raja, 2026-09-25, with screenshots.** In a Claude account's *Finish
   signing in* card, the button row *Finish sign-in · Reopen page · Cancel* does not fit the
@@ -56,8 +59,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-33 · Device-Code Prerequisite — ChatGPT sign-in fails unless a ChatGPT setting is on
 - **Status:** **Fixed (2026-09-25)** — built and seen on the API 36 emulator the same day, where the
-  link opened chatgpt.com/security-settings on the setting itself; not yet on the Fold 7 or in a
-  release.
+  link opened chatgpt.com/security-settings on the setting itself, and **on the Fold 7's cover
+  screen**. Not yet in a release.
 - **Severity:** Medium (sign-in cannot complete, and the app does not say why)
 - **Symptom:** **Reported by Raja, 2026-09-25, with a screenshot.** ChatGPT's *Sign in with a
   code* only works after the user turns on **"Enable device code sign-in for Codex, Excel,
