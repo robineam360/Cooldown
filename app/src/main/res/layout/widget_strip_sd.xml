@@ -62,16 +62,15 @@
                 android:gravity="center">
                 <LinearLayout
                     android:id="@+id/strip_row"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
                     <LinearLayout
                         android:id="@+id/strip_cell0"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_weight="1"
                         android:gravity="center_horizontal">
                         <FrameLayout
                             android:layout_width="wrap_content"
@@ -169,10 +168,9 @@
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/strip_cell1"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_weight="1"
                         android:gravity="center_horizontal">
                         <FrameLayout
                             android:layout_width="wrap_content"
@@ -270,10 +268,9 @@
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/strip_cell2"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_weight="1"
                         android:gravity="center_horizontal">
                         <FrameLayout
                             android:layout_width="wrap_content"
@@ -371,10 +368,9 @@
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/strip_cell3"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_weight="1"
                         android:gravity="center_horizontal">
                         <FrameLayout
                             android:layout_width="wrap_content"

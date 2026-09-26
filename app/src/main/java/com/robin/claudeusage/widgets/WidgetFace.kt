@@ -101,6 +101,21 @@ data class Frame(val bucket: Bucket, val widthDp: Float, val heightDp: Float) {
     val innerWidthDp: Float get() = widthDp - 2 * padXDp
     val innerHeightDp: Float get() = heightDp - 2 * padYDp
 
+    /**
+     * Rev H (CCBG-44 (Widget Fill)): the tier inside the bucket — short (under 140 dp tall,
+     * narrow or wide at 240 dp), tall (T, aspect under 1.35) or wide (W). The bucket still
+     * picks the layout file (R9's keys and R10's three buckets are untouched); the tier
+     * picks how the face fills the frame.
+     */
+    val tier: Tier get() = when {
+        heightDp < 140f -> if (widthDp < 240f) Tier.S_NARROW else Tier.S_WIDE
+        widthDp / heightDp < 1.35f -> Tier.T
+        else -> Tier.W
+    }
+
+    /** Rev H's roomy type (label 15, sub 13, caption 12) once the inner height reaches 200 dp. */
+    val roomy: Boolean get() = innerHeightDp >= 200f
+
     companion object {
         /** The layout a [face] takes in a [widthDp] × [heightDp] frame: rev F's class thresholds. */
         fun bucketFor(face: Face, widthDp: Float, heightDp: Float): Bucket = when (face) {
@@ -120,6 +135,9 @@ data class Frame(val bucket: Bucket, val widthDp: Float, val heightDp: Float) {
             Frame(bucketFor(face, widthDp, heightDp), widthDp, heightDp)
     }
 }
+
+/** Rev H's tiers (CCBG-44 (Widget Fill)): see [Frame.tier]. */
+enum class Tier { S_NARROW, S_WIDE, T, W }
 
 /** The ROADMAP's state table. A cell carries every state that applies to it at once. */
 enum class StateId(val label: String) {
@@ -268,6 +286,11 @@ data class FaceState(
     val washArgb: Int,
     val nowMs: Long,
     val zone: ZoneId,
+    /**
+     * Rev H (Q1): a Ring's companion — the same account's other window, when it has both.
+     * Drawn only where the frame has room for it ([WidgetFace.ringLayout]).
+     */
+    val companion: Cell? = null,
 )
 
 /** The state table: [FaceInput] → [FaceState]. Pure. */
@@ -320,12 +343,16 @@ object FaceStates {
             return message(FaceMessage.SIGN_IN, StateId.S10, card)
         }
         val c = cell(input, account, input.window, unassigned = key == null)
+        val other = if (c.window == FaceWindow.SESSION) FaceWindow.WEEKLY else FaceWindow.SESSION
+        val companion = if (input.face == Face.RING && c.hasBothWindows) {
+            cell(input, account, other, unassigned = key == null)
+        } else null
         return FaceState(
             face = input.face, background = input.background, dark = input.dark,
             showOverPace = input.showOverPace, synthetic = input.synthetic, message = null,
             cells = listOf(c), overflow = 0, asOf = asOf(account.fetchedAt, input),
             states = faceWide + c.states, cardArgb = card, washArgb = c.accentArgb,
-            nowMs = input.nowMs, zone = input.zone,
+            nowMs = input.nowMs, zone = input.zone, companion = companion,
         )
     }
 
@@ -449,6 +476,9 @@ object FaceStates {
     /** No payload yet on a signed-in account — the notification's own wording. */
     const val NO_READING = "No reading yet"
 
+    /** Rev H (Q4): an unassigned face's stamp slot — the tap opens its config (CCBG-43 (Widget Settings Hidden)). */
+    const val TAP_TO_CHOOSE = "tap to choose account"
+
     private const val DAY_MS = 24 * 60 * 60_000L
 
     private fun asOf(fetchedAt: Long, input: FaceInput): String? =
@@ -494,8 +524,14 @@ object FaceStates {
  */
 object WidgetFace {
 
-    /** R10's budget for one composed update's bitmaps, every bucket together. */
-    const val BITMAP_BUDGET_BYTES = 2L * 1024 * 1024
+    /**
+     * R10's budget for one composed update's bitmaps, every frame together: 4 MB since rev H
+     * (CCBG-44 (Widget Fill)), for the Strip's larger rings on a Fold's two frames. The host
+     * caps an update at 1.5 × the screen's pixels × 4 B (≈16 MB on the Fold 7's cover); bitmaps
+     * cross Binder as ashmem blobs; [WidgetHost.withinBudget] drops the largest frames past it
+     * and SafeUpdate falls back to one size if the host refuses anyway.
+     */
+    const val BITMAP_BUDGET_BYTES = 4L * 1024 * 1024
 
     private const val INK_DARK = 0xFFEDE8E4.toInt()
     private const val INK_LIGHT = 0xFF26211E.toInt()
@@ -516,34 +552,88 @@ object WidgetFace {
 
     fun ring(bucket: Bucket, cells: Int = 1): RingDp? = ring(bucket.frame, cells)
 
-    /**
-     * Rev F: a ring's size follows its frame. 1×1 takes the whole inner box, capped at rev
-     * D's Ø64; 2×2 the inner width, or the inner height less the label row and its air
-     * (34 dp — rev D's 144 − 110), capped at Ø150; the stroke scales from rev D's 6 / 9 dp.
-     */
-    fun ring(frame: Frame, cells: Int = 1): RingDp? = when (frame.bucket) {
-        Bucket.RING_1X1 -> {
-            val dia = kotlin.math.floor(minOf(64f, frame.innerWidthDp, frame.innerHeightDp))
-            RingDp(dia, maxOf(5f, kotlin.math.round(6f * dia / 64f)))
-        }
-        Bucket.RING_2X2 -> {
-            val dia = kotlin.math.floor(minOf(150f, frame.innerWidthDp, frame.innerHeightDp - 34f))
-            RingDp(dia, kotlin.math.round(9f * dia / 110f).coerceIn(7f, 12f))
-        }
-        // The spec's Ø56 / Ø88 are ceilings (CCRM-82 (Accounts Strip), rev D): four rings
-        // share the inner width with 6 dp gaps, and the ring plus its lines must fit the
-        // inner height — Ø53 at 4×1 and Ø80 at 4×2 on rev D's frames. A 4×1 at least
-        // 100 dp tall (One UI's cover, 108) takes rev G's Ø64 over its 12 sp name line
-        // (CCBG-41 (Cover Strip Type)).
-        Bucket.STRIP_4X1, Bucket.STRIP_4X2 -> {
-            val big = frame.bucket == Bucket.STRIP_4X2
-            val roomy = stripRoomy(frame)
-            val n = cells.coerceAtLeast(1)
-            val byW = kotlin.math.floor((frame.innerWidthDp - 6f * (n - 1)) / n)
-            val byH = kotlin.math.floor(frame.innerHeightDp - if (big) 33f else if (roomy) 19f else 15f)
-            RingDp(minOf(if (big) 88f else if (roomy) 64f else 56f, byW, byH), if (big) 6f else 5f)
-        }
+    /** The main ring of a Ring face, or one Strip ring for [cells] cells, at [frame]. */
+    fun ring(frame: Frame, cells: Int = 1): RingDp? = when (frame.bucket.face) {
+        Face.RING -> ringLayout(frame, companion = false).main
+        Face.STRIP -> stripRing(frame, cells)
         else -> null
+    }
+
+    /**
+     * How a Ring face fills [frame] (rev H, CCBG-44 (Widget Fill)): the ring takes what its
+     * lines leave, up to a cap; [lines] is how many of name · reset · stamp are shown;
+     * [horizontal] puts them beside the ring (the wide tiers); [companionRing] is the other
+     * window's ring (Q1), drawn only when [companion] — the account has both — and the frame
+     * has the room.
+     */
+    data class RingLayout(
+        val main: RingDp,
+        val horizontal: Boolean,
+        val lines: Int,
+        val companionRing: RingDp?,
+        /** The lines' start margin beside the ring, when [horizontal]. */
+        val gapDp: Float = 0f,
+    )
+
+    private const val RING_CAP = 160f
+
+    /** R8's synthetic ribbon on a tall face (the layouts' 12 dp). */
+    private const val RIBBON_DP = 12f
+    private const val COMPANION = 100f
+
+    private fun mainRing(dia: Float, small: Boolean) = if (small) {
+        RingDp(dia, maxOf(5f, kotlin.math.round(6f * dia / 64f)))
+    } else {
+        RingDp(dia, kotlin.math.round(9f * dia / 110f).coerceIn(7f, 13f))
+    }
+
+    private val COMPANION_RING = RingDp(COMPANION, 6f)
+
+    /**
+     * The height the Ring's lines take under it: each line at 1.34× its size (the text's own
+     * font padding), the 6 dp above them and 2 dp between. Fable's 56 dp at rev D's type.
+     */
+    private fun ringReserve(lines: Int, roomy: Boolean): Float {
+        val name = if (roomy) 15f else 13f
+        val reset = if (roomy) 13f else 12f
+        return 1f + kotlin.math.ceil(when (lines) {
+            3 -> 6f + 1.34f * (name + reset + 10f) + 4f
+            2 -> 6f + 1.34f * (name + reset) + 2f
+            1 -> 6f + 1.34f * name
+            else -> 0f
+        })
+    }
+
+    fun ringLayout(frame: Frame, companion: Boolean): RingLayout {
+        val w = frame.innerWidthDp
+        val h = frame.innerHeightDp
+        if (frame.bucket == Bucket.RING_1X1) {
+            // 1×1 and 2×1 are the ring alone; a short frame wide enough for a 90 dp column
+            // beside it (3×1 and up) adds the lines there.
+            val dia = kotlin.math.floor(minOf(92f, w, h))
+            val side = w - dia - 12f >= 90f
+            return RingLayout(mainRing(dia, small = true), side, if (side) 3 else 0, null, 12f)
+        }
+        if (frame.tier == Tier.W) {
+            var dia = kotlin.math.floor(minOf(RING_CAP, h))
+            if (w - dia - 16f < 90f) dia = kotlin.math.floor(w - 106f)
+            if (dia >= 64f) {
+                val comp = companion && w - dia - 162f >= COMPANION
+                return RingLayout(mainRing(dia, small = false), true, 3, if (comp) COMPANION_RING else null, 16f)
+            }
+        }
+        // T: the lines centred under the ring, dropped from the stamp up until the ring is
+        // at least Ø100 (or only the name is left).
+        var lines = 3
+        var dia: Float
+        while (true) {
+            dia = kotlin.math.floor(minOf(RING_CAP, w, h - ringReserve(lines, frame.roomy)))
+            if (dia >= 100f || lines == 1) break
+            lines--
+        }
+        val spare = h - dia - ringReserve(lines, frame.roomy)
+        val comp = companion && lines == 3 && spare >= COMPANION + 8f && w >= COMPANION
+        return RingLayout(mainRing(dia, small = false), false, lines, if (comp) COMPANION_RING else null)
     }
 
     /** The Ring's bore figure, scaled with the ring from rev D's 16 / 26 sp. */
@@ -553,22 +643,151 @@ object WidgetFace {
         else kotlin.math.round(26f * g.diameter / 110f)
     }
 
+    /**
+     * One Strip ring. 4×1 keeps rev G (Ø53 at rev D's 84 dp, Ø64 over a 12 sp name at 100 dp
+     * and up — CCBG-41 (Cover Strip Type)). 4×2 fills (rev H): four rings share the inner
+     * width with 8 dp gaps, the ring plus name, reset and stamp (62 dp) the inner height, up
+     * to Ø120.
+     */
+    private fun stripRing(frame: Frame, cells: Int): RingDp {
+        val big = frame.bucket == Bucket.STRIP_4X2
+        val n = cells.coerceAtLeast(1)
+        if (big) {
+            val byW = kotlin.math.floor((frame.innerWidthDp - 8f * (n - 1)) / n)
+            val byH = kotlin.math.floor(frame.innerHeightDp - 62f)
+            val dia = minOf(120f, byW, byH)
+            return RingDp(dia, kotlin.math.round(6f * dia / 88f).coerceIn(5f, 9f))
+        }
+        val roomy = stripRoomy(frame)
+        val byW = kotlin.math.floor((frame.innerWidthDp - 6f * (n - 1)) / n)
+        val byH = kotlin.math.floor(frame.innerHeightDp - if (roomy) 19f else 15f)
+        return RingDp(minOf(if (roomy) 64f else 56f, byW, byH), 5f)
+    }
+
+    /**
+     * Rev H: a Strip cell's width — its share of the row, capped at the ring plus 40 dp
+     * (4×2) or 56 dp (4×1), CCBG-10's pitch rule, so a wide row is a centred group rather
+     * than rings spread to the third-points. A "+N" cell keeps 30 dp of its own.
+     */
+    fun stripPitch(frame: Frame, rings: Int, overflow: Boolean): Float {
+        val g = stripRing(frame, rings + if (overflow) 1 else 0)
+        val share = stripShare(frame, rings, overflow)
+        val cap = g.diameter + when {
+            frame.bucket == Bucket.STRIP_4X2 -> 40f
+            // The seat's call on a rev H gap: Fable's "reset joins the name at Ø+70" could
+            // never fire under an Ø+56 cap, so a 4×1 whose share has that room widens its
+            // cap to fit "Personal · 9:20 PM".
+            stripInlineReset(frame, rings, overflow) -> 96f
+            else -> 56f
+        }
+        return minOf(share, cap)
+    }
+
+    private fun stripShare(frame: Frame, rings: Int, overflow: Boolean): Float =
+        kotlin.math.floor((frame.innerWidthDp - if (overflow) 30f else 0f) / rings.coerceAtLeast(1))
+
+    /** Rev H: a 4×1 cell with room for it puts the reset beside the name. */
+    fun stripInlineReset(frame: Frame, rings: Int, overflow: Boolean): Boolean =
+        frame.bucket == Bucket.STRIP_4X1 &&
+            stripShare(frame, rings, overflow) >= stripRing(frame, rings + if (overflow) 1 else 0).diameter + 70f
+
+    // ---- Number (rev H) ---------------------------------------------------------------
+
+    /**
+     * Rev H: the Number 2×2 — the 2×1 layout on a frame at least 180 dp tall (One UI's two
+     * rows, 237 dp). A Pixel-style 140–180 dp 2×2 stacks without the controls.
+     */
+    fun numberTall(frame: Frame): Boolean = frame.bucket == Bucket.NUMBER_2X1 && frame.heightDp >= 180f
+
+    /** The 5h|Weekly chips and the cycler: the 4×2 and, since rev H, the 2×2. */
+    fun numberControls(frame: Frame): Boolean = frame.bucket == Bucket.NUMBER_4X2 || numberTall(frame)
+
+    /** The cycler's view: on its own row on the 2×2, in the chip row on the 4×2. */
+    fun cycler(frame: Frame): Int = if (numberTall(frame)) R.id.num_cycler2 else R.id.num_cycler
+
+    /**
+     * The Number's figure (rev H): the hero takes the height the rows leave, within the
+     * width a "100%" needs (2.4 em). Rev D's frames keep 32 / 44 sp.
+     */
+    fun numberFigSp(frame: Frame, pill: Boolean = false): Float {
+        val w = frame.innerWidthDp
+        val h = frame.innerHeightDp
+        val sp = when (frame.bucket) {
+            Bucket.NUMBER_2X1 -> when {
+                numberTall(frame) -> minOf(w / 2.4f, 72f)
+                numberStacked(frame) -> minOf(w / 2.4f, h - 29f).coerceIn(32f, if (pill) 36f else 44f)
+                else -> 32f
+            }
+            // The figure's line is about 1.1–1.17× its size; the bar and sub-line take 36 dp.
+            Bucket.NUMBER_4X1 -> ((h - 36f) / 1.1f).coerceIn(32f, 44f)
+            Bucket.NUMBER_4X2 -> {
+                // The controls, bar and sub-line take 73 dp, a stacked label 20 more.
+                val stacked = numberStacked(frame)
+                val byW = if (stacked) w / 2.4f else (w - 94f) / 2.4f
+                val byH = (h - 73f - if (stacked) 20f else 0f) / 1.17f
+                minOf(byW, byH).coerceIn(if (stacked) 32f else 44f, if (h >= 300f) 96f else 72f)
+            }
+            else -> 32f
+        }
+        return kotlin.math.floor(sp)
+    }
+
+    // ---- Countdown (rev H) ------------------------------------------------------------
+
+    /**
+     * The count's size (rev H): within the width "−0:00:00" needs (4.5 em) and the height the
+     * other rows leave. Rev D's frames keep 24 / 28 sp.
+     */
+    fun countSp(frame: Frame): Float {
+        val w = frame.innerWidthDp
+        val h = frame.innerHeightDp
+        // A 1-row face's caption, account line and air take 37 dp; "at 9:10 PM" on its own
+        // line 16 more. The count's line is 1.17× its size (no font padding).
+        val sp = when {
+            frame.bucket == Bucket.COUNTDOWN_2X2 -> minOf(w / 4.5f, h - 118f).coerceIn(28f, 80f)
+            frame.tier == Tier.S_WIDE -> minOf(44f, (w - 66f) / 4.5f, (h - 37f) / 1.17f).coerceAtLeast(20f)
+            else -> {
+                val inline = minOf(w / 4.5f, (h - 37f) / 1.17f)
+                val one = if (frame.heightDp < 100f || countFitsInline(w, inline)) inline
+                else minOf(w / 4.5f, (h - 53f) / 1.17f)
+                one.coerceIn(20f, 44f)
+            }
+        }
+        return kotlin.math.floor(sp)
+    }
+
+    /** "0:00:00" is about 3.9 em of bold digits; "at 9:10 PM" about 62 dp, 6 dp after it. */
+    private fun countFitsInline(innerW: Float, sp: Float): Boolean = 3.9f * sp + 6f + 62f <= innerW
+
+    /** Rev H: a wide 1-row Countdown's side column (figure over a bar), or null. */
+    fun countdownSideDp(frame: Frame): Float? {
+        if (frame.bucket != Bucket.COUNTDOWN_2X1 || frame.tier != Tier.S_WIDE) return null
+        val room = frame.innerWidthDp - 4.5f * countSp(frame) - 82f
+        return if (room >= 95f) kotlin.math.floor(minOf(160f, room)) else null
+    }
+
     fun bar(bucket: Bucket): BarDp? = bar(bucket.frame)
 
     fun bar(frame: Frame): BarDp? = when (frame.bucket) {
-        Bucket.NUMBER_2X1, Bucket.NUMBER_4X1 -> BarDp(frame.innerWidthDp, 8f)
-        Bucket.NUMBER_4X2 -> BarDp(frame.innerWidthDp, 10f)
-        Bucket.COUNTDOWN_2X2 -> BarDp(frame.innerWidthDp, 6f)
+        Bucket.NUMBER_2X1 -> BarDp(frame.innerWidthDp, if (numberTall(frame)) 12f else if (numberFigSp(frame) >= 40f) 10f else 8f)
+        Bucket.NUMBER_4X1 -> BarDp(frame.innerWidthDp, if (numberFigSp(frame) >= 40f) 10f else 8f)
+        Bucket.NUMBER_4X2 -> BarDp(frame.innerWidthDp, if (numberFigSp(frame) >= 64f) 14f else 12f)
+        Bucket.COUNTDOWN_2X2 -> BarDp(frame.innerWidthDp, if (countSp(frame) >= 60f) 10f else 8f)
+        Bucket.COUNTDOWN_2X1 -> countdownSideDp(frame)?.let { BarDp(it, 8f) }
         else -> null
     }
 
     /**
      * Rev F: a 2×1 Number on a frame narrower than rev D's (inner under 150 dp) cannot
      * hold the label beside the 32 sp figure; where the frame has the height (100 dp or
-     * more — One UI's 108 dp row) the label takes its own line above the figure.
+     * more — One UI's 108 dp row) the label takes its own line above the figure. Rev H: the
+     * 2×2 always stacks, and so does a 4×2 under 260 dp inner with 180 dp of height (the 3×2).
      */
-    fun numberStacked(frame: Frame): Boolean =
-        frame.bucket == Bucket.NUMBER_2X1 && frame.innerWidthDp < 150f && frame.heightDp >= 100f
+    fun numberStacked(frame: Frame): Boolean = when (frame.bucket) {
+        Bucket.NUMBER_2X1 -> (frame.innerWidthDp < 150f && frame.heightDp >= 100f) || numberTall(frame)
+        Bucket.NUMBER_4X2 -> frame.innerWidthDp < 260f && frame.innerHeightDp >= 180f
+        else -> false
+    }
 
     /**
      * Rev F.1: the same narrow 2×1 without the height (a five-column launcher) takes rev
@@ -615,7 +834,12 @@ object WidgetFace {
             val px = ringPx(r.diameter, density).toLong()
             n * px * px * 4L
         }
-        return rings + (bar(frame)?.let { barBytes(it, density) } ?: 0L)
+        // Rev H: the worst case of a Ring carries its companion wherever the frame has room.
+        val companion = if (bucket.face == Face.RING) {
+            ringLayout(frame, companion = true).companionRing
+                ?.let { ringPx(it.diameter, density).toLong().let { px -> px * px * 4L } } ?: 0L
+        } else 0L
+        return rings + companion + (bar(frame)?.let { barBytes(it, density) } ?: 0L)
     }
 
     /**
@@ -643,6 +867,8 @@ object WidgetFace {
         val rv = RemoteViews(context.packageName, layoutFor(face, state))
         val d = context.resources.displayMetrics.density
         shell(rv, frame, state, d)
+        // R8's ribbon takes 12 dp off the top of a tall face: the face fills what is left.
+        val geo = if (state.synthetic && frame.tall) frame.copy(heightDp = frame.heightDp - RIBBON_DP) else frame
         val message = state.message
         if (message != null) {
             rv.setViewVisibility(contentId(face), View.GONE)
@@ -654,10 +880,10 @@ object WidgetFace {
             return rv
         }
         when (face) {
-            Face.RING -> ringFace(context, rv, frame, state, state.cells.single())
-            Face.NUMBER -> numberFace(context, rv, frame, state, state.cells.single())
-            Face.COUNTDOWN -> countdownFace(context, rv, frame, state, state.cells.single())
-            Face.STRIP -> stripFace(context, rv, frame, state)
+            Face.RING -> ringFace(context, rv, geo, state, state.cells.single())
+            Face.NUMBER -> numberFace(context, rv, geo, state, state.cells.single())
+            Face.COUNTDOWN -> countdownFace(context, rv, geo, state, state.cells.single())
+            Face.STRIP -> stripFace(context, rv, geo, state)
         }
         rv.setContentDescription(R.id.w_root, describe(state))
         return rv
@@ -679,7 +905,7 @@ object WidgetFace {
     }
 
     private fun contentId(face: Face): Int = when (face) {
-        Face.RING -> R.id.ring_col
+        Face.RING -> R.id.ring_content
         Face.NUMBER -> R.id.num_col
         Face.COUNTDOWN -> R.id.cd_col
         Face.STRIP -> R.id.strip_col
@@ -750,47 +976,105 @@ object WidgetFace {
 
     // ---- Ring (CCRM-79) -------------------------------------------------------------
 
+    /** One of the Ring's two arrangements (rev H): the column, or the row beside the ring. */
+    private class RingIds(
+        val group: Int, val ring: Int, val fig: Int, val lines: Int, val labelRow: Int,
+        val mark: Int, val label: Int, val dot: Int, val reset: Int, val stamp: Int,
+        val compBox: Int, val comp: Int, val compFig: Int, val compTag: Int,
+    )
+
+    private val RING_V = RingIds(
+        R.id.ring_col, R.id.ring, R.id.ring_fig, R.id.ring_lines, R.id.ring_label_row,
+        R.id.ring_mark, R.id.ring_label, R.id.ring_dot, R.id.ring_reset, R.id.ring_stamp,
+        R.id.ring_comp_box, R.id.ring_comp, R.id.ring_comp_fig, R.id.ring_comp_tag,
+    )
+    private val RING_H = RingIds(
+        R.id.ring_row, R.id.ring_h, R.id.ring_fig_h, R.id.ring_lines_h, R.id.ring_label_row_h,
+        R.id.ring_mark_h, R.id.ring_label_h, R.id.ring_dot_h, R.id.ring_reset_h, R.id.ring_stamp_h,
+        R.id.ring_comp_box_h, R.id.ring_comp_h, R.id.ring_comp_fig_h, R.id.ring_comp_tag_h,
+    )
+
     private fun ringFace(context: Context, rv: RemoteViews, frame: Frame, s: FaceState, c: Cell) {
-        val bucket = frame.bucket
-        val g = ring(frame)!!
+        val companion = s.companion
+        val l = ringLayout(frame, companion = companion != null)
+        val g = l.main
+        val ids = if (l.horizontal) RING_H else RING_V
+        if (l.horizontal) {
+            rv.setViewVisibility(R.id.ring_col, View.GONE)
+            rv.setViewVisibility(R.id.ring_row, View.VISIBLE)
+        }
         val d = context.resources.displayMetrics.density
-        rv.setImageViewBitmap(R.id.ring, ringBitmap(context, g, s, c, d))
-        rv.setViewLayoutWidth(R.id.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
-        rv.setViewLayoutHeight(R.id.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
-        if (c.dim) dimImage(rv, R.id.ring)
+        rv.setImageViewBitmap(ids.ring, ringBitmap(context, g, s, c, d))
+        rv.setViewLayoutWidth(ids.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
+        rv.setViewLayoutHeight(ids.ring, g.diameter, TypedValue.COMPLEX_UNIT_DIP)
+        if (c.dim) dimImage(rv, ids.ring)
 
         // At 100% the × replaces the figure (Q3, Q10).
-        if (c.full) rv.setViewVisibility(R.id.ring_fig, View.GONE)
-        else figure(rv, R.id.ring_fig, c, s.dark, ringFigureSp(frame))
+        if (c.full) rv.setViewVisibility(ids.fig, View.GONE)
+        else figure(rv, ids.fig, c, s.dark, ringFigureSp(frame))
 
-        if (bucket == Bucket.RING_1X1) {
+        if (l.lines == 0) {
             if (c.brokenDot) dot(rv, R.id.ring_corner_dot, s.dark)
             return
         }
-        rv.setViewVisibility(R.id.ring_label_row, View.VISIBLE)
-        mark(rv, R.id.ring_mark, c)
-        rv.setTextViewText(R.id.ring_label, ringLabel(c))
-        rv.setTextColor(R.id.ring_label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
-        if (c.brokenDot) dot(rv, R.id.ring_dot, s.dark)
-        // Rev F.1: the stamp, never the name, gives way when the line is too narrow for both.
-        s.asOf?.let {
-            val need = textDp(context, ringLabel(c), 12f, bold = false) + 16f + (if (c.brokenDot) 10f else 0f) +
-                6f + textDp(context, "· $it", 10f, bold = false)
-            if (need <= frame.innerWidthDp) stamp(rv, R.id.ring_stamp, "· $it", s.dark)
+        val nameSp = if (frame.roomy) 15f else 13f
+        val resetSp = if (frame.roomy) 13f else 12f
+        rv.setViewVisibility(ids.lines, View.VISIBLE)
+        if (l.horizontal) rv.setViewLayoutMargin(ids.lines, RemoteViews.MARGIN_START, l.gapDp, TypedValue.COMPLEX_UNIT_DIP)
+        // The width the lines may take: the whole inner width under the ring, or what the
+        // ring (and a companion) leave beside it.
+        val lineDp = if (!l.horizontal) frame.innerWidthDp
+        else frame.innerWidthDp - g.diameter - l.gapDp - (l.companionRing?.let { it.diameter + 8f } ?: 0f)
+
+        rv.setViewVisibility(ids.labelRow, View.VISIBLE)
+        mark(rv, ids.mark, c)
+        val label = ringLabel(c, withReset = l.lines >= 2)
+        rv.setTextViewText(ids.label, label)
+        rv.setTextViewTextSize(ids.label, TypedValue.COMPLEX_UNIT_SP, nameSp)
+        rv.setTextColor(ids.label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
+        rv.setInt(ids.label, "setMaxWidth", ((lineDp - 16f - if (c.brokenDot) 10f else 0f).coerceAtLeast(24f) * d).toInt())
+        if (c.brokenDot) dot(rv, ids.dot, s.dark)
+
+        if (l.lines >= 2) c.sub?.let {
+            rv.setViewVisibility(ids.reset, View.VISIBLE)
+            rv.setTextViewText(ids.reset, it)
+            rv.setTextViewTextSize(ids.reset, TypedValue.COMPLEX_UNIT_SP, resetSp)
+            rv.setTextColor(ids.reset, ink(s.dark, if (c.dim) 0.5f else 0.78f))
+            rv.setInt(ids.reset, "setMaxWidth", (lineDp * d).toInt())
         }
+        if (l.lines >= 3) {
+            // Rev H (Q4): an unassigned face says how to choose, in the stamp's slot.
+            val text = if (c.unassigned) FaceStates.TAP_TO_CHOOSE else s.asOf
+            text?.let {
+                stamp(rv, ids.stamp, it, s.dark)
+                rv.setInt(ids.stamp, "setMaxWidth", (lineDp * d).toInt())
+            }
+        }
+
+        val cg = l.companionRing ?: return
+        val k = companion ?: return
+        rv.setViewVisibility(ids.compBox, View.VISIBLE)
+        rv.setImageViewBitmap(ids.comp, ringBitmap(context, cg, s, k, d))
+        rv.setViewLayoutWidth(ids.comp, cg.diameter, TypedValue.COMPLEX_UNIT_DIP)
+        rv.setViewLayoutHeight(ids.comp, cg.diameter, TypedValue.COMPLEX_UNIT_DIP)
+        if (k.dim) dimImage(rv, ids.comp)
+        if (k.full) rv.setViewVisibility(ids.compFig, View.GONE)
+        else figure(rv, ids.compFig, k, s.dark, kotlin.math.round(22f * cg.diameter / COMPANION))
+        rv.setTextViewText(ids.compTag, k.window.word)
+        rv.setTextColor(ids.compTag, ink(s.dark, if (k.dim) 0.45f else 0.78f))
     }
 
     /**
-     * The Ring's one line: the account alone, tagged only when the window is not 5h, and
-     * in Left mode — the bore has no other room to say so. S5 says "not started" in words:
-     * an empty extent means two different things and the Ring bears no time.
+     * The Ring's name line: the account, tagged only when the window is not 5h, and in
+     * Left mode. S5 says "not started" in words when no reset line under it can (a 2×2
+     * that dropped its lines); rev H's reset line says "Starts when a message is sent".
+     * Rev H (Q4): no "(unassigned)" — the stamp slot says "tap to choose account".
      */
-    fun ringLabel(c: Cell): String = buildString {
+    fun ringLabel(c: Cell, withReset: Boolean = false): String = buildString {
         append(c.name)
-        if (c.unassigned) append(" (unassigned)")
         if (c.weeklyTagged) append(" · Weekly")
         if (c.left) append(" · left")
-        if (StateId.S5 in c.states) append(" · not started")
+        if (StateId.S5 in c.states && !withReset) append(" · not started")
     }
 
     // ---- Number (CCRM-80) -----------------------------------------------------------
@@ -799,26 +1083,31 @@ object WidgetFace {
         val bucket = frame.bucket
         val d = context.resources.displayMetrics.density
         val big = bucket == Bucket.NUMBER_4X2
-        val figSp = if (big) 44f else 32f
-        val labelSp = if (big) 14f else 13f
+        val tall = numberTall(frame)
+        val stacked = numberStacked(frame)
+        // Rev D's pill marks an unassigned 2×1; rev H's 2×2 says it in the stamp slot (Q4).
+        val pill = bucket == Bucket.NUMBER_2X1 && c.unassigned && !tall
+        val figSp = numberFigSp(frame, pill)
+        val labelSp = if (big || tall) (if (frame.roomy) 15f else 14f) else 13f
 
         mark(rv, R.id.num_mark, c)
-        rv.setTextViewText(R.id.num_label, if (numberCompact(frame)) c.name else numberLabel(c, bucket))
+        rv.setTextViewText(R.id.num_label, if (numberCompact(frame)) c.name else numberLabel(c, frame))
         rv.setTextViewTextSize(R.id.num_label, TypedValue.COMPLEX_UNIT_SP, labelSp)
         rv.setTextColor(R.id.num_label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
         if (c.brokenDot) dot(rv, R.id.num_dot, s.dark)
-        if (bucket == Bucket.NUMBER_2X1 && c.unassigned) {
+        if (pill) {
             rv.setViewVisibility(R.id.num_pill, View.VISIBLE)
             rv.setTextColor(R.id.num_pill, s.cardArgb)
         }
-        if (bucket == Bucket.NUMBER_2X1 && c.weeklyTagged) {
+        if (bucket == Bucket.NUMBER_2X1 && c.weeklyTagged && !tall) {
             rv.setViewVisibility(R.id.num_weekly2, View.VISIBLE)
             rv.setTextColor(R.id.num_weekly2, ink(s.dark, 0.75f))
         }
 
         figure(rv, R.id.num_fig, c, s.dark, figSp)
-        // Below 4×1 the LEFT caption drops and the bare figure flips.
-        val leftCap = c.left && c.pct != null && bucket != Bucket.NUMBER_2X1
+        // Below 4×1 the LEFT caption drops and the bare figure flips; a stacked figure has
+        // no row beside it for the caption either.
+        val leftCap = c.left && c.pct != null && bucket != Bucket.NUMBER_2X1 && !stacked
         if (leftCap) {
             rv.setViewVisibility(R.id.num_leftcap, View.VISIBLE)
             rv.setTextColor(R.id.num_leftcap, ink(s.dark, 0.75f))
@@ -830,19 +1119,31 @@ object WidgetFace {
         val labelDp = frame.innerWidthDp - figDp - 10f - 14f - 4f - (if (c.brokenDot) 10f else 0f)
         rv.setInt(R.id.num_label, "setMaxWidth", (labelDp.coerceAtLeast(24f) * d).toInt())
         if (c.dim) rv.setInt(R.id.num_mark, "setImageAlpha", (DIM_FIGURE * 255).toInt())
-        if (numberStacked(frame)) stackNumberLabel(rv, frame, s, c, d)
+        if (stacked) stackNumberLabel(rv, frame, s, c, d, figSp, pill)
 
         val b = bar(frame)!!
         barInto(context, rv, R.id.num_bar, b, s, c)
 
-        if (bucket == Bucket.NUMBER_2X1) return
+        if (bucket == Bucket.NUMBER_2X1 && !tall) return
         rv.setViewVisibility(R.id.num_subrow, View.VISIBLE)
         rv.setTextViewText(R.id.num_sub, c.sub ?: "")
+        if (frame.roomy) rv.setTextViewTextSize(R.id.num_sub, TypedValue.COMPLEX_UNIT_SP, 13f)
         rv.setTextColor(R.id.num_sub, ink(s.dark, if (c.dim) 0.5f else 0.78f))
-        s.asOf?.let { stamp(rv, R.id.num_stamp, it, s.dark) }
+        // Rev H (Q4): an unassigned face says how to choose, in the stamp's slot — on the
+        // 2×2 on a line of its own.
+        (if (c.unassigned) FaceStates.TAP_TO_CHOOSE else s.asOf)?.let {
+            stamp(rv, if (tall) R.id.num_stamp_below else R.id.num_stamp, it, s.dark)
+        }
 
-        if (!big) return
+        if (!numberControls(frame)) return
         rv.setViewVisibility(R.id.num_ctrl, View.VISIBLE)
+        if (big) {
+            // Rev H: a 32 dp control row with 26 dp chips on the 4×2.
+            rv.setViewLayoutHeight(R.id.num_ctrl_row, 32f, TypedValue.COMPLEX_UNIT_DIP)
+            for (id in intArrayOf(R.id.num_chip_s, R.id.num_chip_w, R.id.num_chip_fixed, R.id.num_cycler)) {
+                rv.setViewLayoutHeight(id, 26f, TypedValue.COMPLEX_UNIT_DIP)
+            }
+        }
         if (c.hasBothWindows) {
             chip(rv, R.id.num_chip_s, R.id.num_chip_s_bg, R.id.num_chip_s_text, "5h", c.window == FaceWindow.SESSION, s, c)
             chip(rv, R.id.num_chip_w, R.id.num_chip_w_bg, R.id.num_chip_w_text, "Weekly", c.window == FaceWindow.WEEKLY, s, c)
@@ -855,25 +1156,36 @@ object WidgetFace {
             rv.setTextColor(R.id.num_chip_fixed_text, ink(s.dark, 0.8f))
             rv.setViewPadding(R.id.num_chip_fixed_text, (8 * d).toInt(), 0, (8 * d).toInt(), 0)
         }
-        // The account cycler (Robin, Q5); wired to WidgetActionReceiver at Step 4.
-        tint(rv, R.id.num_cycler_bg, ink(s.dark, 0.08f))
-        mark(rv, R.id.num_cycler_mark, c)
-        rv.setTextViewText(R.id.num_cycler_text, cyclerSpan(c, s.dark))
-        rv.setTextColor(R.id.num_cycler_text, ink(s.dark, 1f))
+        // The account cycler (Robin, Q5): in the chip row on the 4×2, its own row on the 2×2.
+        if (tall) {
+            rv.setViewVisibility(R.id.num_cycler, View.GONE)
+            rv.setViewVisibility(R.id.num_cycler2, View.VISIBLE)
+            cyclerInto(rv, R.id.num_cycler2_bg, R.id.num_cycler2_mark, R.id.num_cycler2_text, s, c)
+        } else {
+            cyclerInto(rv, R.id.num_cycler_bg, R.id.num_cycler_mark, R.id.num_cycler_text, s, c)
+        }
+    }
+
+    private fun cyclerInto(rv: RemoteViews, bg: Int, mark: Int, text: Int, s: FaceState, c: Cell) {
+        tint(rv, bg, ink(s.dark, 0.08f))
+        mark(rv, mark, c)
+        rv.setTextViewText(text, cyclerSpan(c, s.dark))
+        rv.setTextColor(text, ink(s.dark, 1f))
     }
 
     /** The on-face views Step 4 wires to `WidgetActionReceiver` (CCRM-78 §On-face controls). */
     val CHIP_SESSION: Int get() = R.id.num_chip_s
     val CHIP_WEEKLY: Int get() = R.id.num_chip_w
-    val CYCLER: Int get() = R.id.num_cycler
 
     /**
      * The Number's label. At 2×1 an unassigned or weekly-only account shows the name
-     * alone — the pill or the second line says the rest (rev D); from 4×1 it is inline.
+     * alone — the pill or the second line says the rest (rev D); from 4×1, and on rev H's
+     * 2×2, it is inline, and never says "(unassigned)" (Q4: the stamp slot does).
      */
-    fun numberLabel(c: Cell, bucket: Bucket): String = when {
-        bucket == Bucket.NUMBER_2X1 && (c.unassigned || c.weeklyTagged) -> c.name
-        c.unassigned -> "${c.name} (unassigned) · ${c.window.word}"
+    fun numberLabel(c: Cell, bucket: Bucket): String = numberLabel(c, bucket.frame)
+
+    fun numberLabel(c: Cell, frame: Frame): String = when {
+        frame.bucket == Bucket.NUMBER_2X1 && !numberTall(frame) && (c.unassigned || c.weeklyTagged) -> c.name
         else -> "${c.name} · ${c.window.word}"
     }
 
@@ -882,13 +1194,15 @@ object WidgetFace {
      * window inline ("ChatGPT · Weekly"), the pill still marking an unassigned widget — and
      * the figure moves under it.
      */
-    private fun stackNumberLabel(rv: RemoteViews, frame: Frame, s: FaceState, c: Cell, d: Float) {
-        rv.setTextViewText(R.id.num_label, if (c.unassigned) c.name else "${c.name} · ${c.window.word}")
+    private fun stackNumberLabel(
+        rv: RemoteViews, frame: Frame, s: FaceState, c: Cell, d: Float, figSp: Float, pill: Boolean,
+    ) {
+        rv.setTextViewText(R.id.num_label, if (pill) c.name else "${c.name} · ${c.window.word}")
         rv.setViewVisibility(R.id.num_weekly2, View.GONE)
         val labelDp = frame.innerWidthDp - 14f - 4f - (if (c.brokenDot) 10f else 0f)
         rv.setInt(R.id.num_label, "setMaxWidth", (labelDp * d).toInt())
         rv.setViewVisibility(R.id.num_fig, View.GONE)
-        figure(rv, R.id.num_fig_below, c, s.dark, 32f)
+        figure(rv, R.id.num_fig_below, c, s.dark, figSp)
     }
 
     fun cyclerText(c: Cell): String = "${c.name} ⇄"
@@ -922,8 +1236,11 @@ object WidgetFace {
         val bucket = frame.bucket
         val big = bucket == Bucket.COUNTDOWN_2X2
         val dim = if (c.dim) DIM_FIGURE else 1f
+        val count = countSp(frame)
 
-        rv.setTextViewText(R.id.cd_caption, countdownCaption(c))
+        // Rev H (Q4): an unassigned 2×1 says how to choose in its caption; the 2×2 in its stamp slot.
+        rv.setTextViewText(R.id.cd_caption, if (c.unassigned && !big) "${countdownCaption(c)} · tap to choose" else countdownCaption(c))
+        if (frame.roomy) rv.setTextViewTextSize(R.id.cd_caption, TypedValue.COMPLEX_UNIT_SP, 12f)
         rv.setTextColor(R.id.cd_caption, ink(s.dark, if (c.dim) 0.5f else 0.75f))
         mark(rv, R.id.cd_mark, c)
         rv.setTextViewText(R.id.cd_label, countdownLabel(c))
@@ -940,7 +1257,7 @@ object WidgetFace {
                 if (StateId.S5 in c.states) FaceStates.NOT_STARTED else FaceStates.NO_READING,
             )
             rv.setTextColor(R.id.cd_msg, ink(s.dark, 1f))
-            if (big) s.asOf?.let { cdStamp(context, rv, frame, s, c, it) }
+            if (big) stampText(s, c)?.let { cdStamp(context, rv, frame, s, c, it) }
             return
         }
 
@@ -953,7 +1270,7 @@ object WidgetFace {
                 val base = SystemClock.elapsedRealtime() + (c.resetsAt.toEpochMilli() - s.nowMs)
                 rv.setChronometer(R.id.cd_chrono, base, null, true)
                 rv.setChronometerCountDown(R.id.cd_chrono, true)
-                rv.setTextViewTextSize(R.id.cd_chrono, TypedValue.COMPLEX_UNIT_SP, if (big) 28f else 24f)
+                rv.setTextViewTextSize(R.id.cd_chrono, TypedValue.COMPLEX_UNIT_SP, count)
                 rv.setTextColor(R.id.cd_chrono, ink(s.dark, dim))
                 // The absolute time is always on the face (R2), so the count is readable
                 // when its form is ambiguous and true after zero.
@@ -967,6 +1284,8 @@ object WidgetFace {
                     rv.setTextViewTextSize(at, TypedValue.COMPLEX_UNIT_SP, 11f)
                     rv.setViewLayoutMargin(at, RemoteViews.MARGIN_TOP, 2f, TypedValue.COMPLEX_UNIT_DIP)
                 }
+                if (big && frame.roomy) rv.setTextViewTextSize(at, TypedValue.COMPLEX_UNIT_SP, 14f)
+                if (!big && frame.tier == Tier.S_WIDE) rv.setTextViewTextSize(at, TypedValue.COMPLEX_UNIT_SP, 12f)
                 rv.setTextColor(at, ink(s.dark, 0.78f * dim))
             }
             CountForm.ABSOLUTE, CountForm.RESET_PASSED -> {
@@ -975,10 +1294,8 @@ object WidgetFace {
                 rv.setTextViewText(R.id.cd_abs, if (passed) "Reset $clock" else clock)
                 val text = if (passed) "Reset $clock" else clock
                 // Rev F: steps down 2 sp at a time until it fits the frame, never under 18.
-                var sp = when {
-                    passed -> if (big) 22f else 20f
-                    else -> 24f
-                }
+                // Rev H: from the count's own size (the past tense at 80 % of it).
+                var sp = if (passed) kotlin.math.floor(count * 0.8f).coerceAtLeast(18f) else count
                 while (sp > 18f && textDp(context, text, sp, bold = true) > frame.innerWidthDp) sp -= 2f
                 rv.setTextViewTextSize(R.id.cd_abs, TypedValue.COMPLEX_UNIT_SP, sp)
                 rv.setTextColor(R.id.cd_abs, ink(s.dark, dim))
@@ -986,29 +1303,57 @@ object WidgetFace {
             CountForm.NONE -> Unit
         }
 
-        if (!big) return
+        if (!big) {
+            countdownSide(context, rv, frame, s, c)
+            return
+        }
         rv.setViewVisibility(R.id.cd_gap1, View.VISIBLE)
         rv.setViewVisibility(R.id.cd_gap2, View.VISIBLE)
         rv.setViewVisibility(R.id.cd_figrow, View.VISIBLE)
         // S6's "—" is at half ink: nothing is read, and the count above says why.
-        figure(rv, R.id.cd_fig, c, s.dark, 18f, noReadingAlpha = DIM_FIGURE)
+        // Rev H: 32 sp on a frame with the room, rev D's 18 on its own 168 dp frame.
+        val figSp = cdFigureSp(frame)
+        val leftSp = if (figSp >= 28f) 10f else 8.5f
+        val estSp = if (frame.roomy) 12f else 11f
+        figure(rv, R.id.cd_fig, c, s.dark, figSp, noReadingAlpha = DIM_FIGURE)
         if (c.left && c.pct != null) {
             rv.setViewVisibility(R.id.cd_leftcap, View.VISIBLE)
+            rv.setTextViewTextSize(R.id.cd_leftcap, TypedValue.COMPLEX_UNIT_SP, leftSp)
             rv.setTextColor(R.id.cd_leftcap, ink(s.dark, 0.8f))
         }
         c.estimate?.let {
             // Rev F.1: on a narrow tall frame the estimate takes its own line under the figure.
-            val figDp = textDp(context, c.figure, 18f, bold = true) +
-                (if (c.left && c.pct != null) textDp(context, "LEFT", 8.5f, bold = true) + 4f else 0f)
-            val below = figDp + 6f + textDp(context, it, 11f, bold = false) > frame.innerWidthDp && frame.heightDp >= 150f
+            val figDp = textDp(context, c.figure, figSp, bold = true) +
+                (if (c.left && c.pct != null) textDp(context, "LEFT", leftSp, bold = true) + 4f else 0f)
+            val below = figDp + 6f + textDp(context, it, estSp, bold = false) > frame.innerWidthDp && frame.heightDp >= 150f
             val id = if (below) R.id.cd_est_below else R.id.cd_est
             rv.setViewVisibility(id, View.VISIBLE)
             rv.setTextViewText(id, it)
+            rv.setTextViewTextSize(id, TypedValue.COMPLEX_UNIT_SP, estSp)
             rv.setTextColor(id, ink(s.dark, if (c.dim) 0.5f else 0.78f))
         }
         rv.setViewVisibility(R.id.cd_bar, View.VISIBLE)
         barInto(context, rv, R.id.cd_bar, bar(frame)!!, s, c)
-        s.asOf?.let { cdStamp(context, rv, frame, s, c, it) }
+        stampText(s, c)?.let { cdStamp(context, rv, frame, s, c, it) }
+    }
+
+    /** The Countdown 2×2's figure: rev D's 18 sp until the frame has 180 dp inside, then 32. */
+    fun cdFigureSp(frame: Frame): Float = if (frame.innerHeightDp >= 180f) 32f else 18f
+
+    /** Rev H (Q4): the stamp slot — "tap to choose account" on an unassigned face. */
+    private fun stampText(s: FaceState, c: Cell): String? = if (c.unassigned) FaceStates.TAP_TO_CHOOSE else s.asOf
+
+    /** Rev H: a wide 1-row Countdown's figure over a bar at the row's end (5×1 and up). */
+    private fun countdownSide(context: Context, rv: RemoteViews, frame: Frame, s: FaceState, c: Cell) {
+        val b = bar(frame) ?: return
+        rv.setViewVisibility(R.id.cd_side_gap, View.VISIBLE)
+        rv.setViewVisibility(R.id.cd_side, View.VISIBLE)
+        figure(rv, R.id.cd_side_fig, c, s.dark, 24f, noReadingAlpha = DIM_FIGURE)
+        if (c.left && c.pct != null) {
+            rv.setViewVisibility(R.id.cd_side_left, View.VISIBLE)
+            rv.setTextColor(R.id.cd_side_left, ink(s.dark, 0.8f))
+        }
+        barInto(context, rv, R.id.cd_side_bar, b, s, c)
     }
 
     /**
@@ -1016,9 +1361,9 @@ object WidgetFace {
      * height for a second line (100 dp or more), puts it underneath instead.
      */
     private fun countdownStacked(context: Context, frame: Frame, s: FaceState, at: String): Boolean {
-        if (frame.bucket != Bucket.COUNTDOWN_2X1 || frame.heightDp < 100f) return false
-        val count = textDp(context, "0:00:00", 24f, bold = true)
-        return count + 6f + textDp(context, at, 11f, bold = false) > frame.innerWidthDp
+        if (frame.bucket != Bucket.COUNTDOWN_2X1 || frame.heightDp < 100f || frame.tier == Tier.S_WIDE) return false
+        // Rev H: the same estimate [countSp] sized the count by, so the two never disagree.
+        return !countFitsInline(frame.innerWidthDp, countSp(frame))
     }
 
     /** Rev F.1: the Countdown's stamp, left off when it and the account line do not fit. */
@@ -1034,7 +1379,6 @@ object WidgetFace {
 
     fun countdownLabel(c: Cell): String = buildString {
         append(c.name)
-        if (c.unassigned) append(" (unassigned)")
         append(" · ").append(c.window.word)
         if (c.left) append(" · left")
     }
@@ -1055,12 +1399,17 @@ object WidgetFace {
     private fun stripFace(context: Context, rv: RemoteViews, frame: Frame, s: FaceState) {
         val big = frame.bucket == Bucket.STRIP_4X2
         val d = context.resources.displayMetrics.density
-        val cellCount = s.cells.size + if (s.overflow > 0) 1 else 0
+        val overflow = s.overflow > 0
+        val cellCount = s.cells.size + if (overflow) 1 else 0
         val g = ring(frame, cellCount)!!
         val roomy = stripRoomy(frame)
-        val figSp = if (big) 18f else if (roomy) 16f else 13f
-        val labelSp = stripLabelSp(frame, cellCount)
-        val tagSp = if (big || roomy) 9f else 8f
+        // Rev H: the 4×2's bore figure scales with its ring from rev D's 18 sp at Ø88.
+        val figSp = if (big) kotlin.math.round(18f * g.diameter / 88f) else if (roomy) 16f else 13f
+        val labelSp = if (big && g.diameter >= 100f) 13f else stripLabelSp(frame, cellCount)
+        val resetSp = if (big && g.diameter >= 100f) 11f else 10f
+        val tagSp = if (big && g.diameter >= 110f) 10f else if (big || roomy) 9f else 8f
+        val pitch = stripPitch(frame, s.cells.size, overflow)
+        val inline = stripInlineReset(frame, s.cells.size, overflow)
 
         for (i in 0 until FaceStates.STRIP_MAX) {
             val c = s.cells.getOrNull(i)
@@ -1068,14 +1417,17 @@ object WidgetFace {
                 rv.setViewVisibility(STRIP_CELL[i], View.GONE)
                 continue
             }
+            rv.setViewLayoutWidth(STRIP_CELL[i], pitch, TypedValue.COMPLEX_UNIT_DIP)
             rv.setImageViewBitmap(STRIP_RING[i], ringBitmap(context, g, s, c, d))
             rv.setViewLayoutWidth(STRIP_RING[i], g.diameter, TypedValue.COMPLEX_UNIT_DIP)
             rv.setViewLayoutHeight(STRIP_RING[i], g.diameter, TypedValue.COMPLEX_UNIT_DIP)
             if (c.dim) dimImage(rv, STRIP_RING[i])
             mark(rv, STRIP_MARK[i], c)
-            rv.setTextViewText(STRIP_LABEL[i], stripLabel(c))
+            val reset = c.shortReset?.takeIf { inline && !c.free }
+            rv.setTextViewText(STRIP_LABEL[i], if (reset != null) inlineReset(stripLabel(c), reset, labelSp, s.dark) else stripLabel(c))
             rv.setTextViewTextSize(STRIP_LABEL[i], TypedValue.COMPLEX_UNIT_SP, labelSp)
             rv.setTextColor(STRIP_LABEL[i], ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
+            rv.setInt(STRIP_LABEL[i], "setMaxWidth", ((pitch - 13f - if (c.brokenDot) 8f else 0f).coerceAtLeast(20f) * d).toInt())
             if (c.brokenDot) dot(rv, STRIP_DOT[i], s.dark)
 
             if (c.free) {
@@ -1088,6 +1440,7 @@ object WidgetFace {
                 rv.setViewVisibility(slot, View.VISIBLE)
                 rv.setTextViewText(slot, "Free")
                 if (roomy && !big) rv.setTextViewTextSize(slot, TypedValue.COMPLEX_UNIT_SP, 15f)
+                if (big) rv.setTextViewTextSize(slot, TypedValue.COMPLEX_UNIT_SP, resetSp)
                 rv.setTextColor(slot, ink(s.dark, 0.7f))
                 continue
             }
@@ -1115,10 +1468,11 @@ object WidgetFace {
             if (big) c.shortReset?.let {
                 rv.setViewVisibility(STRIP_RESET[i], View.VISIBLE)
                 rv.setTextViewText(STRIP_RESET[i], it)
+                rv.setTextViewTextSize(STRIP_RESET[i], TypedValue.COMPLEX_UNIT_SP, resetSp)
                 rv.setTextColor(STRIP_RESET[i], ink(s.dark, if (c.dim) 0.5f else 0.72f))
             }
         }
-        if (s.overflow > 0) {
+        if (overflow) {
             rv.setViewVisibility(R.id.strip_plus, View.VISIBLE)
             rv.setTextViewText(R.id.strip_plus, "+${s.overflow}")
             rv.setTextViewTextSize(R.id.strip_plus, TypedValue.COMPLEX_UNIT_SP, figSp)
@@ -1126,6 +1480,14 @@ object WidgetFace {
         }
         if (big) s.asOf?.let { stamp(rv, R.id.strip_stamp, it, s.dark) }
     }
+
+    /** "Personal · 9:20 PM": the time at 10 sp and 72 % ink after the name (rev H, 4×1). */
+    private fun inlineReset(name: String, reset: String, labelSp: Float, dark: Boolean): CharSequence =
+        SpannableString("$name · $reset").apply {
+            val start = name.length
+            setSpan(RelativeSizeSpan(10f / labelSp), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(ForegroundColorSpan(ink(dark, 0.72f)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
 
     fun stripLabel(c: Cell): String = if (c.left) "${c.name} · left" else c.name
 

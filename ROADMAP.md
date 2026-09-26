@@ -1255,7 +1255,11 @@ recovery release needs no design round.
 **R10 · Memory.** Bitmaps are drawn at bucket size, never scaled; at most three buckets per face and
 five bitmaps per bucket. A pure `WidgetFace.bitmapBytes(face, sizeMap, density)` estimate over the **whole composed size
 map** (every bucket's bitmaps together, as one update carries them) is unit-tested under 2 MB at both
-Fold 7 densities, for every face at its largest state. `AppWidgetManager.updateAppWidget` goes
+Fold 7 densities, for every face at its largest state. **Rev H (CCBG-44 (Widget Fill), 2026-09-26): 4 MB**,
+for the Strip's Ø120 rings on a Fold's two frames (the host's own cap is 1.5 × screen px × 4 B, ≈16 MB on
+the cover); the worst cover + inner pairs are tested whole at 2.625×, and at the 3.5× headroom density
+`withinBudget` drops the larger frame. Rev H's tiers (short / tall / wide) live inside the buckets, so
+"three buckets per face" and "five bitmaps per bucket" stand. `AppWidgetManager.updateAppWidget` goes
 through one wrapper, `widgets/SafeUpdate`, which catches `IllegalArgumentException` (the host's
 bitmap-memory cap), `TransactionTooLargeException`, and a `RuntimeException` whose cause chain
 holds a `RemoteException`/`TransactionTooLargeException` (how `AppWidgetManager` rethrows Binder
@@ -1335,7 +1339,10 @@ face; `WidgetFaceTest` covers every state × bucket.
 - **2×2:** ring Ø 110 dp (cap 140), stroke 9 dp, 26 sp figure, one line under with the 12 dp mark and
   a 12 sp label (the account name only; the window is tagged only when it is not 5h). At 100% the ×
   (Q10, decided 2026-09-25).
-- **Omits:** window name, reset, weekly, credits.
+- **Omits:** window name, credits. **Rev H (CCBG-44 (Widget Fill), Q1–Q2, Robin 2026-09-26):** from 2×2
+  and on 3×1-and-up rows the Ring carries "Resets 9:20 PM" under its name (absolute, R4-true), and on a
+  4×3 or 6×2 whose account has both windows a Ø100 companion ring for the other window, its word in the
+  bore; `Transitions` counts both windows for a Ring (R7).
 
 ### CCRM-80 · Number Face — the Huge-number row for one account
 - **Status:** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run over USB, release build of 20328c3; captures in `design/research/2026-09-26-v18-device-pass/` 20–52): 2×1 (stacked on the cover, side by side on the inner), 4×1 and 4×2 with chips and cycler seen · **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** — Robin (rev C): the label and
@@ -1358,6 +1365,9 @@ face; `WidgetFaceTest` covers every state × bucket.
   flips.
 
 ### CCRM-81 · Countdown Face — when the window comes back
+- **Rev H (CCBG-44 (Widget Fill), Q3, Robin 2026-09-26):** the figure fills the frame (up to 72 sp, 96 at
+  4×3); a 2×2 (the 2×1 layout at 180 dp tall and up) stacks name, figure, bar, reset and stamp over the
+  5h|Weekly chips and the cycler on its own row; the 4×2's control row is 32 dp with 26 dp chips.
 - **Status:** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run over USB, release build of 20328c3; captures in `design/research/2026-09-26-v18-device-pass/` 20–52): 2×1 and 2×2 seen; the live count reads H:MM:SS, MM:SS under an hour (15:10), runs negative past the reset (−00:29) until the alarm draws S6 "Reset 9:20 PM", then "Stale" · **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** · new — Robin: the face
   ignores the Reset time chip; the Weekly absolute form is the "Weekly reset" caption over "Sat 9:10 PM"
   at the count's 24 sp (it fits 2×1, "Resets Sat 9:10 PM" did not). 2×2 draws the count at 28 sp with

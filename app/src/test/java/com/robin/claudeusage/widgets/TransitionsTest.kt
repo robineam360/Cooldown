@@ -75,6 +75,15 @@ class TransitionsTest {
         assertNull(next(listOf(Placed(Face.COUNTDOWN, "pro", FaceWindow.WEEKLY)), old))
     }
 
+    /** Rev H (CCBG-44 (Widget Fill)): a Ring may draw the other window as its companion. */
+    @Test
+    fun aRingCountsBothWindows() {
+        val s = Snapshot("pro", data(now + 5 * h, now + 3 * h), fetchedAt = now)
+        assertEquals(now + 3 * h, next(listOf(Placed(Face.RING, "pro", FaceWindow.SESSION)), s))
+        // …a Number on 5h still waits for its own window.
+        assertEquals(now + 5 * h, next(listOf(Placed(Face.NUMBER, "pro", FaceWindow.SESSION)), s))
+    }
+
     @Test
     fun empty_nothingPlacedOrNoAccounts() {
         val s = Snapshot("pro", data(now + h, now + 50 * h), fetchedAt = now)

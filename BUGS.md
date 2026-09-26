@@ -131,8 +131,13 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   CCBG-44 (Widget Fill) wireframe.
 
 ### CCBG-44 · Widget Fill — the faces leave large empty areas at most sizes
-- **Status:** Open — filed 2026-09-26; needs a design review and a wireframe (CLAUDE.md §2) before
-  any change.
+- **Status:** **Fixed 2026-09-26** (unit tests green, every face × state fits every One UI frame in
+  `WidgetFitTest`); not yet seen on the phone, not yet in a release. Design: Fable's review
+  (`design/research/2026-09-26-ccbg44-fable-review.md`), wireframe rev H
+  (`design/2026-09-26-widgets-fill-revh.html`), Q1–Q5 as Fable recommended — **approved by Robin
+  2026-09-26** ("go with Fable's recommendations and don't wait for me"). Build plan Astra-reviewed
+  (concerns, adopted: `design/research/2026-09-26-ccbg44-build-plan.md`). The device check must show
+  no `SafeUpdate` fallback line and survive fold, unfold and tier resizes.
 - **Severity:** Medium (looks unfinished on the home screen; the data is right)
 - **Symptom:** **Reported by Robin, 2026-09-26, with four home-screen screenshots** (Fold 7 cover,
   `design/research/2026-09-26-v18-robin-home/1…4`): each face draws its data at every size but
@@ -144,6 +149,14 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   widget between buckets gets the smaller bucket's layout inside the larger frame.
 - **Direction (Robin):** a Fable design review, so every face looks right at any size placed on
   these home screens.
+- **Fix:** one fill rule — the hero (ring Ø, figure, count) takes what the fixed rows leave, up to a
+  cap — with three tiers inside the existing buckets (`Frame.tier`). Ring: Ø up to 160, name · reset ·
+  stamp under it (tall) or beside it (wide), a companion ring for the other window on 4×3 and 6×2.
+  Number: the figure up to 72 sp (96 at 4×3), a 2×2 with chips and the cycler on its own row. Countdown:
+  the count up to 80 sp in tabular digits, a figure-over-bar column on 5×1 and up. Strip: rings up to
+  Ø120 as a centred group, the reset beside the name on a roomy 4×1. "(unassigned)" leaves every
+  label; the stamp slot says "tap to choose account". R10's budget is 4 MB. Heights use each line's
+  real size (1.17–1.34× the text size) and subtract the synthetic ribbon, so the formulas fit.
 
 ### CCBG-42 · Kebab Drift — the Accounts card's ⋮ sits at a different spot on every card
 - **Status:** **Fixed 2026-09-26** (compiles, unit tests green); not yet seen on the phone, not yet

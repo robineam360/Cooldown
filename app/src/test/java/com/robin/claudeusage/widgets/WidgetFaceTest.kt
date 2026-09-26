@@ -117,14 +117,17 @@ class WidgetFaceTest {
     @Test
     fun ring() {
         assertEquals("38%", joined(Bucket.RING_1X1, StateId.S1))
-        assertEquals("38% | Pro | · as of 6:26 PM", joined(Bucket.RING_2X2, StateId.S1))
+        // Rev H: rev D's 2×2 frame fills with name and reset; the stamp needs more height.
+        assertEquals("38% | Pro | Resets 9:10 PM", joined(Bucket.RING_2X2, StateId.S1))
         // At 100% the × replaces the figure, on both sizes (Q10).
         assertEquals("", joined(Bucket.RING_1X1, StateId.S3))
-        assertEquals("Pro | · as of 6:26 PM", joined(Bucket.RING_2X2, StateId.S3))
+        assertEquals("Pro | Resets 9:10 PM", joined(Bucket.RING_2X2, StateId.S3))
         assertTrue(joined(Bucket.RING_2X2, StateId.S4).startsWith("31% | ChatGPT · Weekly"))
-        assertTrue(joined(Bucket.RING_2X2, StateId.S5).startsWith("— | Pro · not started"))
+        // S5: the reset line says it, so the name line doesn't repeat it.
+        assertTrue(joined(Bucket.RING_2X2, StateId.S5).startsWith("— | Pro | Starts when a message is sent"))
         assertTrue(joined(Bucket.RING_2X2, StateId.S6).startsWith("— | Pro |"))
-        assertTrue(joined(Bucket.RING_2X2, StateId.S10).startsWith("38% | Pro (unassigned)"))
+        // Rev H (Q4): no "(unassigned)" on the name.
+        assertTrue(joined(Bucket.RING_2X2, StateId.S10).startsWith("38% | Pro | Resets"))
         assertTrue(joined(Bucket.RING_2X2, StateId.S11).startsWith("62% | Pro · left"))
         assertEquals("Account removed\ntap to choose", joined(Bucket.RING_1X1, StateId.S9))
         assertEquals("No usage\non this plan", joined(Bucket.RING_2X2, StateId.S12))
@@ -161,7 +164,8 @@ class WidgetFaceTest {
         assertTrue(joined(Bucket.NUMBER_4X1, StateId.S8).contains("| Stale |"))
         assertEquals("Account removed · tap to choose", joined(Bucket.NUMBER_4X1, StateId.S9))
         assertEquals("UNASSIGNED | Pro | 38%", joined(Bucket.NUMBER_2X1, StateId.S10))
-        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S10).startsWith("Pro (unassigned) · 5h | 38%"))
+        // Rev H (Q4): the stamp slot says how to choose, the name stays whole.
+        assertEquals("Pro · 5h | 38% | Resets 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
         // Left: the bare figure flips at 2×1; the LEFT caption from 4×1 up.
         assertEquals("Pro · 5h | 62%", joined(Bucket.NUMBER_2X1, StateId.S11))
         assertTrue(joined(Bucket.NUMBER_4X1, StateId.S11).startsWith("Pro · 5h | 62% | LEFT"))
@@ -194,7 +198,9 @@ class WidgetFaceTest {
         assertEquals("5h reset | Reset 6:19 PM | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S6))
         assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S6).contains("Reset 6:19 PM | — |"))
         assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S8).startsWith("Stale | <live>"))
-        assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S10).endsWith("Pro (unassigned) · 5h"))
+        // Rev H (Q4): the 2×1's caption says how to choose; the 2×2's stamp slot does.
+        assertEquals("5h reset · tap to choose | <live> | at 9:10 PM | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S10))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S10).endsWith("Pro · 5h | tap to choose account"))
         assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S11).contains("62% | LEFT"))
         assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S11).endsWith("Pro · 5h · left"))
         assertEquals("Update Cooldown", joined(Bucket.COUNTDOWN_2X1, StateId.S14))
@@ -331,29 +337,88 @@ class WidgetFaceTest {
 
     /**
      * Rev F: a Fold reporting its cover and inner frames for one placement (the measured
-     * 2×2 pair), and the largest single frame at the Ø150 ring cap.
+     * 2×2 pair), and the largest single frame; rev H adds the 6×2 and 4×3 pairs.
      */
     @Test
     fun r10_underBudget_atReportedFrames() {
-        val maps = listOf(listOf(156f to 237f, 202f to 264f), listOf(510f to 366f))
-        for (face in Face.entries) for (density in listOf(COVER_DENSITY, HEADROOM_DENSITY)) for (m in maps) {
-            val bytes = WidgetFace.frameBytes(m.map { (w, h) -> Frame.at(face, w, h) }, density)
-            assertTrue("$face at $density $m: $bytes bytes", bytes < WidgetFace.BITMAP_BUDGET_BYTES)
+        // Rev H (R10 at 4 MB): the worst Fold pairs — the Strip and the Ring at 6×2 and 4×3 on
+        // the cover with the inner frame a placement also reports.
+        val maps = listOf(
+            listOf(156f to 237f, 202f to 264f), listOf(510f to 366f),
+            listOf(510f to 237f, 470f to 264f), listOf(333f to 366f, 470f to 414f),
+        )
+        // At the Fold 7's own density every pair is sent whole.
+        for (face in Face.entries) for (m in maps) {
+            val bytes = WidgetFace.frameBytes(m.map { (w, h) -> Frame.at(face, w, h) }, COVER_DENSITY)
+            assertTrue("$face $m: $bytes bytes", bytes < WidgetFace.BITMAP_BUDGET_BYTES)
+        }
+        // At the headroom density what withinBudget sends stays under, keeping the smallest.
+        for (face in Face.entries) for (m in maps) {
+            val sizes = m.map { (w, h) -> android.util.SizeF(w, h) }.sortedBy { it.width * it.height }
+            val kept = WidgetHost.withinBudget(face, sizes, HEADROOM_DENSITY)
+            assertEquals(sizes.first().width, kept.first().widthDp)
+            val bytes = WidgetFace.frameBytes(kept, HEADROOM_DENSITY)
+            assertTrue("$face at headroom $m: $bytes bytes", kept.size == 1 || bytes < WidgetFace.BITMAP_BUDGET_BYTES)
         }
     }
 
-    /** Rev F's geometry reproduces rev D exactly at rev D's own frames. */
+    /**
+     * Rev H (CCBG-44 (Widget Fill)): the hero fills the frame One UI reports on the Fold 7's
+     * six-column cover — the numbers design/2026-09-26-widgets-fill-revh.html draws.
+     */
     @Test
-    fun revF_revDFramesKeepRevDGeometry() {
-        assertEquals(WidgetFace.RingDp(64f, 6f), WidgetFace.ring(Bucket.RING_1X1))
-        assertEquals(WidgetFace.RingDp(110f, 9f), WidgetFace.ring(Bucket.RING_2X2))
-        assertEquals(16f, WidgetFace.ringFigureSp(Bucket.RING_1X1.frame))
-        assertEquals(26f, WidgetFace.ringFigureSp(Bucket.RING_2X2.frame))
-        assertEquals(11f, WidgetFace.stripLabelSp(Bucket.STRIP_4X2.frame))
-        for (b in Bucket.entries) assertEquals(false, WidgetFace.numberStacked(b.frame))
-        // …and grows the Ring to the cover's 2×2: Ø131 across the 155.8 dp frame.
-        assertEquals(131f, WidgetFace.ring(Frame.at(Face.RING, 155.8f, 237f))!!.diameter)
-        assertEquals(true, WidgetFace.numberStacked(Frame.at(Face.NUMBER, 155.8f, 107.8f)))
+    fun revH_theHeroFillsTheFrame() {
+        fun ring(w: Float, h: Float) = WidgetFace.ring(Frame.at(Face.RING, w, h))!!.diameter
+        assertEquals(68f, ring(84f, 108f))            // 1×1, was Ø64
+        assertEquals(84f, ring(156f, 108f))           // 2×1, the ring alone
+        assertEquals(132f, ring(156f, 237f))          // 2×2
+        assertEquals(160f, ring(333f, 366f))          // 4×3, at the cap
+        assertEquals(160f, ring(510f, 237f))          // 6×2, beside its lines
+        // The companion Weekly ring (Q1) where the frame has the room, and only there.
+        assertNotNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 366f), companion = true).companionRing)
+        assertNotNull(WidgetFace.ringLayout(Frame.at(Face.RING, 510f, 237f), companion = true).companionRing)
+        assertNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 237f), companion = true).companionRing)
+        assertNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 366f), companion = false).companionRing)
+        assertTrue(WidgetFace.ringLayout(Frame.at(Face.RING, 244f, 108f), companion = false).horizontal)
+        // Number, Countdown, Strip.
+        assertEquals(72f, WidgetFace.numberFigSp(Frame.at(Face.NUMBER, 510f, 237f)))
+        assertEquals(44f, WidgetFace.numberFigSp(Frame.at(Face.NUMBER, 156f, 108f)))
+        assertTrue(WidgetFace.numberTall(Frame.at(Face.NUMBER, 156f, 237f)))
+        assertTrue(WidgetFace.numberControls(Frame.at(Face.NUMBER, 156f, 237f)))
+        assertEquals(80f, WidgetFace.countSp(Frame.at(Face.COUNTDOWN, 510f, 237f)))
+        assertNotNull(WidgetFace.countdownSideDp(Frame.at(Face.COUNTDOWN, 510f, 108f)))
+        assertNull(WidgetFace.countdownSideDp(Frame.at(Face.COUNTDOWN, 333f, 108f)))
+        assertEquals(120f, WidgetFace.ring(Frame.at(Face.STRIP, 510f, 237f), 3)!!.diameter)
+        // The Strip's row is a centred group: each cell the ring plus 40 dp, not a third.
+        assertEquals(160f, WidgetFace.stripPitch(Frame.at(Face.STRIP, 510f, 237f), 3, overflow = false))
+        // Rev D's own frames: a 1×1 at 91×84 is Ø67 now, the 4×1 figure stays 32, the count 26.
+        assertEquals(67f, WidgetFace.ring(Bucket.RING_1X1)!!.diameter)
+        assertEquals(32f, WidgetFace.numberFigSp(Bucket.NUMBER_4X1.frame))
+        assertEquals(26f, WidgetFace.countSp(Bucket.COUNTDOWN_2X1.frame))
+    }
+
+    /** Rev H: the companion ring draws the other window, in the bore its word. */
+    @Test
+    fun revH_theRingsCompanionIsTheOtherWindow() {
+        val s = FaceStates.of(forState(Face.RING, StateId.S1))
+        assertEquals(FaceWindow.WEEKLY, s.companion!!.window)
+        val v = WidgetFace.render(context, Face.RING, Frame.at(Face.RING, 333f, 366f), s).apply(context, FrameLayout(context))
+        val t = texts(v).joinToString(" | ")
+        assertTrue(t, t.endsWith("Weekly"))
+        // A one-window account has no companion.
+        assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).companion)
+    }
+
+    /** Rev H: the Number 2×2 carries the chips and a cycler on its own row. */
+    @Test
+    fun revH_theNumber2x2HasItsControls() {
+        val s = FaceStates.of(forState(Face.NUMBER, StateId.S1))
+        val frame = Frame.at(Face.NUMBER, 156f, 237f)
+        val v = WidgetFace.render(context, Face.NUMBER, frame, s).apply(context, FrameLayout(context))
+        assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.num_cycler2)))
+        assertFalse(shown(v.findViewById(com.robin.claudeusage.R.id.num_cycler)))
+        assertEquals(com.robin.claudeusage.R.id.num_cycler2, WidgetFace.cycler(frame))
+        assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.num_chip_w)))
     }
 
     @Test

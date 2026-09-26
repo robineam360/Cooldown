@@ -113,21 +113,56 @@ N = '\n'
 G = lambda g: f'{N}    android:gravity="{g}"'
 
 # ------------------------------------------------------------------ Ring
-ring = ll('ring_col', 'vertical', '\n'.join([
-    f'''<FrameLayout
-    android:id="@+id/ring_box"
+# Rev H (CCBG-44 (Widget Fill)): RemoteViews cannot switch a LinearLayout's orientation, so
+# the Ring carries both arrangements as siblings and shows one — the column (1×1, 2×1 and the
+# tall tier T) or the row (the wide tiers: 3×1 and up, 4×2 and up). Suffix '' is the column,
+# '_h' the row; the code addresses both through one id set each.
+def ring_box(sfx):
+    return f"""<FrameLayout
+    android:id="@+id/ring_box{sfx}"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
-{ind(I('ring','64dp','64dp'),4)}
-{ind(T('ring_fig','16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', vis=None, bold=True),4)}
-</FrameLayout>''',
-    ll('ring_label_row', 'horizontal', '\n'.join([
-        I('ring_mark','12dp','12dp', N+'    android:layout_marginEnd="4dp"'),
-        T('ring_label','12', N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
-        I('ring_dot','6dp','6dp', N+'    android:layout_marginStart="4dp"', vis='gone', src='notif_condition_dot'),
-        T('ring_stamp','10', N+'    android:layout_marginStart="6dp"'+N+'    android:singleLine="true"'),
-    ]), w='wrap_content', extra=G('center_vertical')+N+'    android:layout_marginTop="6dp"', vis='gone'),
-]), h='match_parent', extra=G('center'))
+{ind(I('ring'+sfx,'64dp','64dp'),4)}
+{ind(T('ring_fig'+sfx,'16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', vis=None, bold=True),4)}
+</FrameLayout>"""
+
+def ring_comp(sfx, extra):
+    # The companion ring (rev H, Q1): the same account's other window, its word in the bore.
+    return f"""<FrameLayout
+    android:id="@+id/ring_comp_box{sfx}"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone"{extra}>
+{ind(I('ring_comp'+sfx,'64dp','64dp'),4)}
+{ind(ll(None,'vertical', chr(10).join([T('ring_comp_fig'+sfx,'22', N+'    android:includeFontPadding="false"', vis=None, bold=True), T('ring_comp_tag'+sfx,'9', N+'    android:includeFontPadding="false"', vis=None, bold=True)]), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_gravity="center"'),4)}
+</FrameLayout>"""
+
+def ring_lines(sfx, gravity):
+    return '\n'.join([
+        ll('ring_label_row'+sfx, 'horizontal', '\n'.join([
+            I('ring_mark'+sfx,'12dp','12dp', N+'    android:layout_marginEnd="4dp"'),
+            T('ring_label'+sfx,'12', N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
+            I('ring_dot'+sfx,'6dp','6dp', N+'    android:layout_marginStart="4dp"', vis='gone', src='notif_condition_dot'),
+        ]), w='wrap_content', extra=G('center_vertical'), vis='gone'),
+        T('ring_reset'+sfx,'12', N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
+        T('ring_stamp'+sfx,'10', N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
+    ])
+
+ring = f"""<FrameLayout
+    android:id="@+id/ring_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+{ind(ll('ring_col', 'vertical', chr(10).join([
+    ring_box(''),
+    ll('ring_lines', 'vertical', ring_lines('', 'center_horizontal'), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_marginTop="6dp"', vis='gone'),
+    ring_comp('', N+'    android:layout_marginTop="8dp"'),
+]), h='match_parent', extra=G('center')), 4)}
+{ind(ll('ring_row', 'horizontal', chr(10).join([
+    ring_box('_h'),
+    ll('ring_lines_h', 'vertical', ring_lines('_h', 'start'), w='0dp', extra=N+'    android:layout_weight="1"'+N+'    android:layout_marginStart="12dp"', vis='gone'),
+    ring_comp('_h', N+'    android:layout_marginStart="8dp"'),
+]), h='match_parent', extra=G('center_vertical'), vis='gone'), 4)}
+</FrameLayout>"""
 ring += '\n\n' + I('ring_corner_dot','6dp','6dp', N+'    android:layout_gravity="top|end"', vis='gone', src='notif_condition_dot')
 
 # ------------------------------------------------------------------ Number
@@ -167,8 +202,10 @@ number = ll('num_col', 'vertical', '\n'.join([
             T('num_sub','12', N+'    android:includeFontPadding="false"'+N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', w='0dp', vis=None),
             T('num_stamp','10', N+'    android:includeFontPadding="false"'+N+'    android:layout_marginStart="8dp"'+N+'    android:singleLine="true"'),
         ]), extra=G('bottom')+N+'    android:layout_marginTop="2dp"', vis='gone'),
+        # rev H: the Number 2×2 (tall tier, CCBG-44 (Widget Fill)) puts the stamp on its own line.
+        T('num_stamp_below','10', N+'    android:includeFontPadding="false"'+N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'),
     ]), h='0dp', extra=N+'    android:layout_weight="1"'+G('center_vertical')),
-    ll('num_ctrl', 'horizontal', '\n'.join([
+    ll('num_ctrl', 'vertical', '\n'.join([ll('num_ctrl_row', 'horizontal', '\n'.join([
         chip('num_chip_s'), chip('num_chip_w'), chip('num_chip_fixed'),
         spacer(),
         f'''<FrameLayout
@@ -178,7 +215,18 @@ number = ll('num_col', 'vertical', '\n'.join([
 {ind(I('num_cycler_bg','match_parent','match_parent', N+'    android:scaleType="fitXY"', src='widget_chip'),4)}
 {ind(ll(None,'horizontal', chr(10).join([I('num_cycler_mark','12dp','12dp', N+'    android:layout_marginEnd="5dp"'), T('num_cycler_text','11', N+'    android:singleLine="true"', vis=None, bold=True)]), w='wrap_content', h='match_parent', extra=G('center_vertical')+N+'    android:paddingStart="10dp"'+N+'    android:paddingEnd="10dp"'),4)}
 </FrameLayout>''',
-    ]), h='28dp', extra=G('center_vertical'), vis='gone'),
+    ]), h='28dp', extra=G('center_vertical')),
+    # rev H: on the Number 2×2 the cycler takes a row of its own under the chips.
+    f'''<FrameLayout
+    android:id="@+id/num_cycler2"
+    android:layout_width="wrap_content"
+    android:layout_height="24dp"
+    android:layout_marginTop="4dp"
+    android:visibility="gone">
+{ind(I('num_cycler2_bg','match_parent','match_parent', N+'    android:scaleType="fitXY"', src='widget_chip'),4)}
+{ind(ll(None,'horizontal', chr(10).join([I('num_cycler2_mark','12dp','12dp', N+'    android:layout_marginEnd="5dp"'), T('num_cycler2_text','11', N+'    android:singleLine="true"', vis=None, bold=True)]), w='wrap_content', h='match_parent', extra=G('center_vertical')+N+'    android:paddingStart="10dp"'+N+'    android:paddingEnd="10dp"'),4)}
+</FrameLayout>''',
+    ]), vis='gone'),
 ]), h='match_parent')
 
 # ------------------------------------------------------------------ Countdown
@@ -194,9 +242,20 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
     android:singleLine="true"
     android:textSize="24sp"
     android:textStyle="bold"
+    android:fontFeatureSettings="tnum"
     android:visibility="gone" />''',
         T('cd_abs','24', N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', bold=True),
         T('cd_at_inline','11', N+'    android:layout_marginStart="6dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
+        # rev H (CCBG-44 (Widget Fill)): a wide 1-row Countdown (5×1 and up) adds the figure
+        # over a bar at the row's end, bottom-aligned to the count.
+        spacer('cd_side_gap', vis='gone'),
+        ll('cd_side', 'vertical', '\n'.join([
+            ll(None, 'horizontal', '\n'.join([
+                T('cd_side_fig','24', N+'    android:includeFontPadding="false"', vis=None, bold=True),
+                T('cd_side_left','9', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
+            ]), w='wrap_content', extra=G('bottom')),
+            I('cd_side_bar','match_parent','8dp', N+'    android:layout_marginTop="3dp"'+N+'    android:scaleType="fitXY"'),
+        ]), w='wrap_content', extra=N+'    android:layout_gravity="bottom"', vis='gone'),
     ]), extra=N+'    android:baselineAligned="true"'+N+'    android:layout_marginTop="2dp"'),
     T('cd_at_below','12', N+'    android:layout_marginTop="3dp"'+N+'    android:singleLine="true"'),
     T('cd_msg','13.5', N+'    android:includeFontPadding="false"', bold=True),
@@ -241,11 +300,11 @@ def cell(i):
             I(f'strip_dot{i}','5dp','5dp', N+'    android:layout_marginStart="3dp"', vis='gone', src='notif_condition_dot'),
         ]), w='wrap_content', extra=G('center_vertical')+N+'    android:layout_marginTop="3dp"'),
         T(f'strip_reset{i}','10', N+'    android:singleLine="true"'),
-    ]), w='0dp', extra=N+'    android:layout_weight="1"'+G('center_horizontal'))
+    ]), w='wrap_content', extra=G('center_horizontal'))
 
 strip = ll('strip_col', 'vertical', '\n'.join([
     ll('strip_row', 'horizontal', '\n'.join([cell(i) for i in range(4)] + [
-        T('strip_plus','13', N+'    android:layout_marginStart="6dp"', bold=True)]), extra=G('center_vertical')),
+        T('strip_plus','13', N+'    android:layout_marginStart="6dp"', bold=True)]), w='wrap_content', extra=G('center_vertical')),
     T('strip_stamp','10', N+'    android:layout_gravity="end"'+N+'    android:layout_marginTop="6dp"'+N+'    android:singleLine="true"'),
 ]), h='match_parent', extra=G('center'))
 

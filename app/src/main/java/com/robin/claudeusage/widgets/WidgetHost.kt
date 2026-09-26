@@ -225,7 +225,7 @@ object WidgetHost {
     /** One face drawn at [frame], wired and added fresh (as above). */
     fun single(context: Context, appWidgetId: Int, frame: Frame, state: FaceState): RemoteViews {
         val face = WidgetFace.render(context, frame.bucket.face, frame, state)
-            .also { wire(context, it, appWidgetId, frame.bucket, state) }
+            .also { wire(context, it, appWidgetId, frame, state) }
         return RemoteViews(context.packageName, R.layout.widget_fresh).apply {
             removeAllViews(R.id.w_fresh)
             addView(R.id.w_fresh, face)
@@ -311,18 +311,18 @@ object WidgetHost {
 
     /**
      * The face's own tap: S9 opens this widget's config (R5, "tap to choose"); anything
-     * else opens Cooldown on the account it shows. Number 4×2's chips and cycler go to
-     * [WidgetActionReceiver] with an identity unique per widget and action.
+     * else opens Cooldown on the account it shows. The Number's chips and cycler (4×2, and
+     * rev H's 2×2) go to [WidgetActionReceiver] with an identity unique per widget and action.
      */
-    private fun wire(context: Context, rv: RemoteViews, id: Int, bucket: Bucket, state: FaceState) {
+    private fun wire(context: Context, rv: RemoteViews, id: Int, frame: Frame, state: FaceState) {
         rv.setOnClickPendingIntent(R.id.w_root, faceTap(context, id, state))
-        if (bucket == Bucket.NUMBER_4X2 && state.message == null) {
+        if (WidgetFace.numberControls(frame) && state.message == null) {
             val c = state.cells.single()
             if (c.hasBothWindows) {
                 rv.setOnClickPendingIntent(WidgetFace.CHIP_SESSION, WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.WINDOW_5H))
                 rv.setOnClickPendingIntent(WidgetFace.CHIP_WEEKLY, WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.WINDOW_WEEKLY))
             }
-            rv.setOnClickPendingIntent(WidgetFace.CYCLER, WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.CYCLE))
+            rv.setOnClickPendingIntent(WidgetFace.cycler(frame), WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.CYCLE))
         }
     }
 
