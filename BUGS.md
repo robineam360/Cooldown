@@ -128,7 +128,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   and the size map are unchanged; `WidgetFitTest` still renders the faces directly.
 
 ### CCBG-38 · Cover Buckets — on the Fold 7 cover every widget draws its smallest face
-- **Status:** **Fixed 2026-09-26, pending device verification** (RUNBOOK.md Step 7 re-run) —
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (RUNBOOK.md Step 7 re-run over USB: all nine face × size pairs draw their own layout at One UI's cover frames, `21`–`28-usb-cover-*.png`) —
   found in the Step 7 device pass of CCRM-78 (Widgets Reborn); fixed to wireframe rev F.1
   (`design/2026-09-26-widgets-cover-refit.html`), approved by Fable on Robin's delegation after
   two rounds. Not yet in a release.
@@ -154,6 +154,24 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   (`WidgetFaceTest.revF_revDFramesKeepRevDGeometry`); `WidgetFitTest` now lays every face and
   state out at the measured One UI frames and other grids. Picker previews shrink their rings to
   the box. Seen on the phone: not yet — the re-run of Step 7 checks it.
+
+### CCBG-39 · Inner Duet Squeeze — on the Fold 7's inner shade the collapsed Duet keeps one letter of each name
+- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run) · a fix changes an approved layout, so it needs a wireframe first
+- **Severity:** Low (the mark and accent still tell the two accounts apart; the figures are right)
+- **Symptom:** unfolded, the shade is a narrow pill and each collapsed Duet half is ~130 dp; the
+  30 sp figure and the bar leave the label ~12 dp, so "Personal 12%" reads "P… 12%" and "Work
+  23%" reads "W… 23%", in Used and Left alike
+  (`design/research/2026-09-26-v18-device-pass/47-usb-inner-duet-collapsed-left.png`, `48-…-used.png`).
+  The cover shows "Pers…". CCBG-24 (Duet Label Clamp) fitted its clamp to a 156 dp half.
+- **Fix, not chosen:** a wireframe for narrow halves (drop the label for the mark alone, or stack it
+  over the bar) — Robin's call.
+
+### CCBG-40 · Picker Preview Ellipsis — the inner widget picker cuts the Countdown preview's "at 9:10 PM"
+- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run)
+- **Severity:** Low (the picker only; the placed face is right)
+- **Symptom:** in One UI's picker on the inner screen the Countdown 2×1 preview reads "2:41:07
+  at…"; on the cover it reads in full (`design/research/2026-09-26-v18-device-pass/36-usb-inner-picker-previews.png`).
+  The preview box is wider than tall there and the live count keeps its size.
 
 ### CCBG-37 · Duet Dot Squeeze — the collapsed Duet's dots vanish when the label ellipsizes
 - **Status:** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a
@@ -328,7 +346,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   change to an approved layout, so it waits for the wireframe's approval.
 
 ### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
-- **Status:** **Fixed 2026-09-25, pending device verification** (RUNBOOK.md Step 5 → Step 7): `Duet.labelClampDp(figureWidthDp, dotShown)` takes the 30 sp bold figure measured with `Paint.measureText` in the device font at the user's font scale, and the label gets the rest of the 156 dp half (floor 24 dp); `DuetTest` pins 54 dp → 76, "100%" ~74 dp → 56, "2%" ~32 dp → 98, the dot's 11 dp · was Open (2026-09-10) · fix scheduled in the v1.8 arc: option 1, measure-and-clamp, chosen by Robin 2026-09-25; `Duet.labelClampDp(figureWidthDp)` stays pure and tested; **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9a): on the Huge-number Duet row the label takes what the measured 30 sp bold figure leaves, so Left mode reads "ChatGPT 98%" in full; "100%" and "2%" drawn; a genuinely long label still ellipsizes. The same measure clamps the CCRM-80 (Number Face) label
+- **Status:** **Its own symptom verified gone on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run): Left and Used now ellipsize alike — but on One UI's inner shade the collapsed half leaves one letter in either mode ("P… 88%" / "P… 12%"), which is CCBG-39 (Inner Duet Squeeze) · **Fixed 2026-09-25, pending device verification** (RUNBOOK.md Step 5 → Step 7): `Duet.labelClampDp(figureWidthDp, dotShown)` takes the 30 sp bold figure measured with `Paint.measureText` in the device font at the user's font scale, and the label gets the rest of the 156 dp half (floor 24 dp); `DuetTest` pins 54 dp → 76, "100%" ~74 dp → 56, "2%" ~32 dp → 98, the dot's 11 dp · was Open (2026-09-10) · fix scheduled in the v1.8 arc: option 1, measure-and-clamp, chosen by Robin 2026-09-25; `Duet.labelClampDp(figureWidthDp)` stays pure and tested; **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9a): on the Huge-number Duet row the label takes what the measured 30 sp bold figure leaves, so Left mode reads "ChatGPT 98%" in full; "100%" and "2%" drawn; a genuinely long label still ellipsizes. The same measure clamps the CCRM-80 (Number Face) label
 - **Severity:** Low (the mark and the accent still identify the provider; the label only has to
   tell two accounts apart)
 - **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass

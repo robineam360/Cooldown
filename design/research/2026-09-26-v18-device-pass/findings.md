@@ -21,3 +21,44 @@ Reported frame (dp, what RemoteViews picks against); One UI then scales the host
 
 ## Not runnable over wireless adb (need USB)
 - airplane mode past STALE_DATA_MS, wifi/data toggles, reboot + alarm re-arm: each drops the wireless link.
+
+# Re-run over USB, 2026-09-26 (release build of 20328c3, versionName 1.7), captures 20–52
+
+State: `phone-state-before-usb.txt` / `phone-state-after-usb.txt` — identical but for the clock
+reading (same offset, 0 s) and the charger (USB → AC after `battery reset`, a live reading).
+
+## CCBG-38 (Cover Buckets) — verified
+- Cover, every face × size: Ring 1×1 (28) / 2×2 (21), Number 2×1 stacked (25) / 4×1 (23) / 4×2 (24),
+  Countdown 2×1 (23) / 2×2 (26), Strip 4×1 (23) / 4×2 (27). Each draws its own layout.
+- Inner defaults (38): Ring 2×2 211×291, Countdown 2×1 211×126, Strip and Number 4×1 467×126;
+  resized Ring 1×1, Countdown 2×2 (39), Number 3×1 (40) and 2×1. Inner 4×2 not placed: no free
+  4-column two-row span without moving Robin's widgets.
+- Picker: cover previews fit (20, 22); inner Countdown preview ellipsizes "at…" (36) → CCBG-40.
+
+## States
+- Synthetic Above pace / At 100% / No data on every cover face (30–32), inner (41); ribbon ≥160 dp,
+  dot below. Banner tap → Off, faces real again (34, 35). Gallery: 126 tiles, no clipping (33).
+- Reboot: faces survive with real data, synthetic Off, alarm re-armed (20:20, the real reset).
+- `am kill` refused: PinnedService is a foreground service. Not force-stopped.
+- Launcher restart: our faces survive; Samsung Health's Energy widget showed "Couldn't add
+  widget" until the reboot.
+
+## R7 scheduling (airplane on, battery unplugged, deviceidle force-idle, manual clock)
+- Clock jump to 21:05: Countdown redrew to 15:10 (MM:SS) ~15 s later, cold process (42).
+- Across the 21:20:42 reset: 00:40 → 00:04 → −00:12 → −00:29 (43); the alarm fired 21:21:35.8 in
+  deep idle, 53.8 s late, inside its window; face drew S6 "Reset 9:20 PM" (44).
+- Alarm window: `setAndAllowWhileIdle(RTC)` → window 0.75× the lead, capped at 1 h (seen +1h
+  when armed 2h40m out, +54 s at 1 min out). Cooldown is on the battery allowlist (bucket 5
+  EXEMPTED), so this is the allowlisted case.
+- Timezone Europe/London: "Reset 4:50 PM" (45). Back to IST.
+- 00:04:30 → stale alarm (fetchedAt + 6 h = 00:05:16) fired 00:05:35.7, 18.8 s late; every face
+  dimmed, Countdown reads "Stale" (46).
+
+## Other surfaces
+- Status-bar ring vs v1.7 (52): same geometry and colours.
+- Inner shade collapsed Duet: "P… 12%" / "W… 23%", Left "P… 88%" (47, 48) → CCBG-39. CCBG-24's
+  own symptom (Left worse than Used) gone.
+- Share card preview (49) and system chooser; not sent. Clear History dialog to Cancel (50).
+- Fold: cover faces fresh after folding (51).
+- Side effects on Robin's phone: Samsung Health Medications "Time zone changed" notice; Wispr
+  Flow's accessibility service paused by the reboot.
