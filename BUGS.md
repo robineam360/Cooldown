@@ -156,7 +156,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   the box. Seen on the phone: not yet — the re-run of Step 7 checks it.
 
 ### CCBG-39 · Inner Duet Squeeze — on the Fold 7's inner shade the collapsed Duet keeps one letter of each name
-- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run) · a fix changes an approved layout, so it needs a wireframe first
+- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run) · Robin: fix before v1.8 · proposal in wireframe rev G §1 (`design/2026-09-26-v18-gate-fixes.html`), awaiting approval
 - **Severity:** Low (the mark and accent still tell the two accounts apart; the figures are right)
 - **Symptom:** unfolded, the shade is a narrow pill and each collapsed Duet half is ~130 dp; the
   30 sp figure and the bar leave the label ~12 dp, so "Personal 12%" reads "P… 12%" and "Work
@@ -167,11 +167,18 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   over the bar) — Robin's call.
 
 ### CCBG-40 · Picker Preview Ellipsis — the inner widget picker cuts the Countdown preview's "at 9:10 PM"
-- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run)
+- **Status:** Open (found 2026-09-26, RUNBOOK.md Step 7 re-run) · Robin: fix before v1.8 · options in wireframe rev G §3, awaiting approval · the cover picker drops the time silently too
 - **Severity:** Low (the picker only; the placed face is right)
 - **Symptom:** in One UI's picker on the inner screen the Countdown 2×1 preview reads "2:41:07
   at…"; on the cover it reads in full (`design/research/2026-09-26-v18-device-pass/36-usb-inner-picker-previews.png`).
   The preview box is wider than tall there and the live count keeps its size.
+
+### CCBG-41 · Cover Strip Type — the Strip 4×1's labels read ~6.8 sp on One UI's cover
+- **Status:** Open (Fable's open note in wireframe rev F.1 §7, confirmed on the Fold 7 2026-09-26) · Robin: fix before v1.8 · proposal in wireframe rev G §2 (`design/2026-09-26-v18-gate-fixes.html`), awaiting approval
+- **Severity:** Low (legible up close; the figures are right)
+- **Symptom:** One UI draws cover widgets at 71 %, so the Strip 4×1's 9.5 sp labels and 13 sp
+  figures read as ~6.8 / 9.3 sp (`design/research/2026-09-26-v18-device-pass/23-usb-cover-four-faces-default.png`),
+  while the 108 dp-tall frame leaves ~13 dp unused under the names.
 
 ### CCBG-37 · Duet Dot Squeeze — the collapsed Duet's dots vanish when the label ellipsizes
 - **Status:** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a
