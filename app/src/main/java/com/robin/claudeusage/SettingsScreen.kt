@@ -1525,34 +1525,39 @@ private fun TokenCard(
                 }
                 ProviderMark(profile.provider, size = 20.dp, tint = cardAccent)
                 Spacer(Modifier.width(6.dp))
-                // CCRM-65 (Accounts Redesign): the label shrinks only when it must —
-                // weight(fill = false) rather than a plain weight(1f), so a short
-                // label like "Free" doesn't push the dot/chip/kebab to the far edge.
-                Text(
-                    label,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (hasToken) {
-                    Spacer(Modifier.width(8.dp))
-                    StatusDot(snapshot.authState)
-                }
-                if (hasToken && plan != null) {
-                    Spacer(Modifier.width(6.dp))
-                    // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
-                    // grammar. No multiplier is invented for OpenAI or Google, so a
-                    // non-Claude account passes null and renders the bare plan.
-                    // CCRM-64 (Claude Plan Tag): the multiplier is only meaningful on
-                    // Max ("Max 5x"); a Team premium seat also reports a `_5x` tier,
-                    // and "Team Premium 5x" would read as a third plan.
-                    PlanChip(
-                        plan,
-                        tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") },
+                // CCBG-42 (Kebab Drift): the label, dot and chip share one weighted Row,
+                // so the kebab is pinned to the card's right edge above ↻. Two weighted
+                // siblings (the label and a Spacer) split the free width between them,
+                // which parked the kebab at a label-dependent x.
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    // CCRM-65 (Accounts Redesign): the label shrinks only when it must —
+                    // weight(fill = false) rather than a plain weight(1f), so a short
+                    // label like "Free" doesn't push the dot/chip to the far edge.
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
+                    if (hasToken) {
+                        Spacer(Modifier.width(8.dp))
+                        StatusDot(snapshot.authState)
+                    }
+                    if (hasToken && plan != null) {
+                        Spacer(Modifier.width(6.dp))
+                        // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
+                        // grammar. No multiplier is invented for OpenAI or Google, so a
+                        // non-Claude account passes null and renders the bare plan.
+                        // CCRM-64 (Claude Plan Tag): the multiplier is only meaningful on
+                        // Max ("Max 5x"); a Team premium seat also reports a `_5x` tier,
+                        // and "Team Premium 5x" would read as a third plan.
+                        PlanChip(
+                            plan,
+                            tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") },
+                        )
+                    }
                 }
-                Spacer(Modifier.weight(1f))
                 if (busy) {
                     Spacer(Modifier.width(8.dp))
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)

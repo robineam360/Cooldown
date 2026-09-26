@@ -110,6 +110,22 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
+### CCBG-42 · Kebab Drift — the Accounts card's ⋮ sits at a different spot on every card
+- **Status:** **Fixed 2026-09-26** (compiles, unit tests green); not yet seen on the phone, not yet
+  in a release. Restores the approved CCRM-65 (Accounts Redesign) layout
+  (`design/accounts-redesign-wireframe.html`: name · dot · chip · spacer · ⋮), so no new wireframe.
+- **Severity:** Low (alignment; every control works)
+- **Symptom:** **Reported by Robin, 2026-09-26, with a screenshot** (Fold 7 cover, v1.8 release
+  candidate, Settings → Accounts), repeating what Raja Jawahar pointed out on v1.7: the ⋮ is
+  not above the ↻ and moves from card to card. "Personal · Plus" and "Work · Team Premium" put it
+  at one x, "Product · Team Premium" further right, "Account 4" (no dot, no chip) further left.
+- **Cause:** the header `Row` in `AccountCard` had two weighted children, the label
+  (`weight(1f, fill = false)`) and a `Spacer(weight(1f))`. Compose splits the free width between
+  them, so the Spacer got only half of it and the ⋮ landed at a label-dependent x.
+- **Fix:** the label, dot and chip sit in one inner `Row(weight(1f))`, with the label keeping its
+  `weight(1f, fill = false)` inside it, so the ⋮ is pinned to the card's right edge. It is the same
+  28 dp button as ↻, so the two line up.
+
 ### CCBG-36 · Widget Reapply Residue — a view one widget state shows survives into the next
 - **Status:** **Fixed 2026-09-25, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 USB re-run, release build of 20328c3: after the banner tap turned Synthetic Off, the Strip carried no violet dot and the Countdown 2×2 showed the count alone, `34`→`35-usb-cover-faces-banner-off.png`; status recorded 2026-09-26 at the rev G check) — not yet in a release ·
   found the same day on the API 36 emulator while checking CCRM-15 (Above-Pace Verification)'s
