@@ -302,11 +302,12 @@ def cell(i):
         T(f'strip_reset{i}','10', N+'    android:singleLine="true"'),
     ]), w='wrap_content', extra=G('center_horizontal'))
 
-strip = ll('strip_col', 'vertical', '\n'.join([
+# rev H: the row is a centred group, and the stamp sits right under it, at its end.
+strip = ll('strip_col', 'vertical', ll('strip_group', 'vertical', '\n'.join([
     ll('strip_row', 'horizontal', '\n'.join([cell(i) for i in range(4)] + [
         T('strip_plus','13', N+'    android:layout_marginStart="6dp"', bold=True)]), w='wrap_content', extra=G('center_vertical')),
     T('strip_stamp','10', N+'    android:layout_gravity="end"'+N+'    android:layout_marginTop="6dp"'+N+'    android:singleLine="true"'),
-]), h='match_parent', extra=G('center'))
+]), w='wrap_content'), h='match_parent', extra=G('center'))
 
 faces = {
   'widget_ring': ('    CCRM-79 (Ring Face): the rails ring (a RingRenderer TICK bitmap) with the figure in\n    its bore as real text; on 2×2 a label line under it.', ring),

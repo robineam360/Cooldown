@@ -80,7 +80,13 @@ enum class Bucket(val face: Face, val label: String, val widthDp: Float, val hei
  * One UI's cells differ from the Pixel's and from grid to grid, so nothing here assumes a
  * cell; at a bucket's own design size ([Bucket.frame]) every number is rev D's.
  */
-data class Frame(val bucket: Bucket, val widthDp: Float, val heightDp: Float) {
+data class Frame(
+    val bucket: Bucket,
+    val widthDp: Float,
+    val heightDp: Float,
+    /** R8's ribbon over a tall face: it comes off the inner height only (rev H). */
+    val ribbonDp: Float = 0f,
+) {
     /** 160 dp or more: the synthetic marker is the full-width ribbon, not the dot (R8). */
     val tall: Boolean get() = heightDp >= 160f
 
@@ -95,11 +101,12 @@ data class Frame(val bucket: Bucket, val widthDp: Float, val heightDp: Float) {
     }
     val padYDp: Float get() = when {
         minOf(widthDp, heightDp) >= 200f -> 14f
-        heightDp < 90f -> 8f
+        // Rev H: any row under 100 dp (a 90 dp launcher row too) keeps the short row's 8 dp.
+        heightDp < 100f -> 8f
         else -> 12f
     }
     val innerWidthDp: Float get() = widthDp - 2 * padXDp
-    val innerHeightDp: Float get() = heightDp - 2 * padYDp
+    val innerHeightDp: Float get() = heightDp - 2 * padYDp - ribbonDp
 
     /**
      * Rev H (CCBG-44 (Widget Fill)): the tier inside the bucket — short (under 140 dp tall,
@@ -579,6 +586,15 @@ object WidgetFace {
 
     /** R8's synthetic ribbon on a tall face (the layouts' 12 dp). */
     private const val RIBBON_DP = 12f
+
+    /**
+     * The frame a face is laid out in: R8's ribbon takes 12 dp off a tall face's inner
+     * height, its padding and tier stay the frame's. [WidgetHost] wires controls from the
+     * same frame, so a control is never wired on a view the draw hid. [frameBytes] estimates
+     * at the full frame, an upper bound on a ribboned draw.
+     */
+    fun drawFrame(frame: Frame, state: FaceState): Frame =
+        if (state.synthetic && frame.tall) frame.copy(ribbonDp = RIBBON_DP) else frame
     private const val COMPANION = 100f
 
     private fun mainRing(dia: Float, small: Boolean) = if (small) {
@@ -694,10 +710,11 @@ object WidgetFace {
     // ---- Number (rev H) ---------------------------------------------------------------
 
     /**
-     * Rev H: the Number 2×2 — the 2×1 layout on a frame at least 180 dp tall (One UI's two
-     * rows, 237 dp). A Pixel-style 140–180 dp 2×2 stacks without the controls.
+     * Rev H: the Number 2×2 — the 2×1 layout with 205 dp inside (One UI's two rows, 237 dp):
+     * label, figure, bar, reset, stamp, chips and cycler need it. A shorter 2×2 keeps the
+     * one-row or stacked 2×1.
      */
-    fun numberTall(frame: Frame): Boolean = frame.bucket == Bucket.NUMBER_2X1 && frame.heightDp >= 180f
+    fun numberTall(frame: Frame): Boolean = frame.bucket == Bucket.NUMBER_2X1 && frame.innerHeightDp >= 205f
 
     /** The 5h|Weekly chips and the cycler: the 4×2 and, since rev H, the 2×2. */
     fun numberControls(frame: Frame): Boolean = frame.bucket == Bucket.NUMBER_4X2 || numberTall(frame)
@@ -714,7 +731,8 @@ object WidgetFace {
         val h = frame.innerHeightDp
         val sp = when (frame.bucket) {
             Bucket.NUMBER_2X1 -> when {
-                numberTall(frame) -> minOf(w / 2.4f, 72f)
+                // Its rows take 134 dp; the figure's line is 1.17× its size.
+                numberTall(frame) -> minOf(w / 2.4f, 72f, (h - 134f) / 1.17f).coerceAtLeast(32f)
                 numberStacked(frame) -> minOf(w / 2.4f, h - 29f).coerceIn(32f, if (pill) 36f else 44f)
                 else -> 32f
             }
@@ -761,7 +779,8 @@ object WidgetFace {
 
     /** Rev H: a wide 1-row Countdown's side column (figure over a bar), or null. */
     fun countdownSideDp(frame: Frame): Float? {
-        if (frame.bucket != Bucket.COUNTDOWN_2X1 || frame.tier != Tier.S_WIDE) return null
+        // The column (figure over bar, ~39 dp) needs One UI's 108 dp row; an 84 dp row can't.
+        if (frame.bucket != Bucket.COUNTDOWN_2X1 || frame.tier != Tier.S_WIDE || frame.innerHeightDp < 80f) return null
         val room = frame.innerWidthDp - 4.5f * countSp(frame) - 82f
         return if (room >= 95f) kotlin.math.floor(minOf(160f, room)) else null
     }
@@ -867,8 +886,7 @@ object WidgetFace {
         val rv = RemoteViews(context.packageName, layoutFor(face, state))
         val d = context.resources.displayMetrics.density
         shell(rv, frame, state, d)
-        // R8's ribbon takes 12 dp off the top of a tall face: the face fills what is left.
-        val geo = if (state.synthetic && frame.tall) frame.copy(heightDp = frame.heightDp - RIBBON_DP) else frame
+        val geo = drawFrame(frame, state)
         val message = state.message
         if (message != null) {
             rv.setViewVisibility(contentId(face), View.GONE)
@@ -1028,7 +1046,7 @@ object WidgetFace {
 
         rv.setViewVisibility(ids.labelRow, View.VISIBLE)
         mark(rv, ids.mark, c)
-        val label = ringLabel(c, withReset = l.lines >= 2)
+        val label = ringLabel(c, withReset = l.lines >= 2 && c.sub == FaceStates.NOT_STARTED)
         rv.setTextViewText(ids.label, label)
         rv.setTextViewTextSize(ids.label, TypedValue.COMPLEX_UNIT_SP, nameSp)
         rv.setTextColor(ids.label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
@@ -1197,7 +1215,10 @@ object WidgetFace {
     private fun stackNumberLabel(
         rv: RemoteViews, frame: Frame, s: FaceState, c: Cell, d: Float, figSp: Float, pill: Boolean,
     ) {
-        rv.setTextViewText(R.id.num_label, if (pill) c.name else "${c.name} · ${c.window.word}")
+        // A stacked 4×2 has no row for the LEFT caption, so the label says it (rev D's 2×1
+        // rule — the bare figure flips — stays for the 2×1 and 2×2).
+        val left = if (c.left && frame.bucket == Bucket.NUMBER_4X2) " · left" else ""
+        rv.setTextViewText(R.id.num_label, if (pill) c.name else "${c.name} · ${c.window.word}$left")
         rv.setViewVisibility(R.id.num_weekly2, View.GONE)
         val labelDp = frame.innerWidthDp - 14f - 4f - (if (c.brokenDot) 10f else 0f)
         rv.setInt(R.id.num_label, "setMaxWidth", (labelDp * d).toInt())

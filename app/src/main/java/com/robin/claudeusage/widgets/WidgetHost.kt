@@ -225,7 +225,7 @@ object WidgetHost {
     /** One face drawn at [frame], wired and added fresh (as above). */
     fun single(context: Context, appWidgetId: Int, frame: Frame, state: FaceState): RemoteViews {
         val face = WidgetFace.render(context, frame.bucket.face, frame, state)
-            .also { wire(context, it, appWidgetId, frame, state) }
+            .also { wire(context, it, appWidgetId, WidgetFace.drawFrame(frame, state), state) }
         return RemoteViews(context.packageName, R.layout.widget_fresh).apply {
             removeAllViews(R.id.w_fresh)
             addView(R.id.w_fresh, face)

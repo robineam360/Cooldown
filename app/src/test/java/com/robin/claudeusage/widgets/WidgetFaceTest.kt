@@ -409,6 +409,22 @@ class WidgetFaceTest {
         assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).companion)
     }
 
+    /** Rev H: a stacked 3×2 Number has no row for LEFT, so its label says it; a synthetic
+     *  face never draws more bitmap than the estimate. */
+    @Test
+    fun revH_stackedLeftAndTheRibbonedEstimate() {
+        val s = FaceStates.of(forState(Face.NUMBER, StateId.S11))
+        val v = WidgetFace.render(context, Face.NUMBER, Frame.at(Face.NUMBER, 244f, 237f), s).apply(context, FrameLayout(context))
+        assertTrue(texts(v).joinToString(" | "), texts(v).first().endsWith("· left"))
+        val synth = FaceStates.of(forState(Face.RING, StateId.S13))
+        val density = context.resources.displayMetrics.density
+        for ((w, h) in listOf(300f to 230f, 250f to 210f, 333f to 366f)) {
+            val frame = Frame.at(Face.RING, w, h)
+            val drawn = bitmaps(WidgetFace.render(context, Face.RING, frame, synth).apply(context, FrameLayout(context)))
+            assertTrue("$w×$h", drawn.sumOf { it.toLong() } <= WidgetFace.frameBytes(frame, density))
+        }
+    }
+
     /** Rev H: the Number 2×2 carries the chips and a cycler on its own row. */
     @Test
     fun revH_theNumber2x2HasItsControls() {

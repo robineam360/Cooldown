@@ -61,41 +61,57 @@
                 android:orientation="vertical"
                 android:gravity="center">
                 <LinearLayout
-                    android:id="@+id/strip_row"
+                    android:id="@+id/strip_group"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical">
                     <LinearLayout
-                        android:id="@+id/strip_cell0"
+                        android:id="@+id/strip_row"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal">
-                        <FrameLayout
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <LinearLayout
+                            android:id="@+id/strip_cell0"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/strip_ring0"
-                                android:layout_width="53dp"
-                                android:layout_height="53dp"
-                                android:importantForAccessibility="no" />
-                            <LinearLayout
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+                            <FrameLayout
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:gravity="center_horizontal"
-                                android:layout_gravity="center">
-                                <TextView
-                                    android:id="@+id/strip_fig0"
-                                    style="@style/WFace.ShadowLight"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/strip_ring0"
+                                    android:layout_width="53dp"
+                                    android:layout_height="53dp"
+                                    android:importantForAccessibility="no" />
+                                <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:textSize="13sp"
-                                    android:textStyle="bold"
-                                    android:includeFontPadding="false" />
+                                    android:orientation="vertical"
+                                    android:gravity="center_horizontal"
+                                    android:layout_gravity="center">
+                                    <TextView
+                                        android:id="@+id/strip_fig0"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:includeFontPadding="false" />
+                                    <TextView
+                                        android:id="@+id/strip_tag0"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="8sp"
+                                        android:textStyle="bold"
+                                        android:text="Weekly"
+                                        android:visibility="gone"
+                                        android:includeFontPadding="false" />
+                                </LinearLayout>
                                 <TextView
-                                    android:id="@+id/strip_tag0"
+                                    android:id="@+id/strip_xtag0"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -103,99 +119,99 @@
                                     android:textStyle="bold"
                                     android:text="Weekly"
                                     android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
-                            </LinearLayout>
-                            <TextView
-                                android:id="@+id/strip_xtag0"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="8sp"
-                                android:textStyle="bold"
-                                android:text="Weekly"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                            <TextView
-                                android:id="@+id/strip_free0"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:text="Free"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                        </FrameLayout>
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="3dp">
-                            <ImageView
-                                android:id="@+id/strip_mark0"
-                                android:layout_width="10dp"
-                                android:layout_height="10dp"
-                                android:importantForAccessibility="no"
-                                android:layout_marginEnd="3dp" />
-                            <TextView
-                                android:id="@+id/strip_label0"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="9.5sp"
-                                android:includeFontPadding="false"
-                                android:singleLine="true"
-                                android:ellipsize="end" />
-                            <ImageView
-                                android:id="@+id/strip_dot0"
-                                android:layout_width="5dp"
-                                android:layout_height="5dp"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/notif_condition_dot"
-                                android:visibility="gone"
-                                android:layout_marginStart="3dp" />
-                        </LinearLayout>
-                        <TextView
-                            android:id="@+id/strip_reset0"
-                            style="@style/WFace.ShadowLight"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10sp"
-                            android:visibility="gone"
-                            android:singleLine="true" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:id="@+id/strip_cell1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal">
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/strip_ring1"
-                                android:layout_width="53dp"
-                                android:layout_height="53dp"
-                                android:importantForAccessibility="no" />
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:gravity="center_horizontal"
-                                android:layout_gravity="center">
                                 <TextView
-                                    android:id="@+id/strip_fig1"
+                                    android:id="@+id/strip_free0"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textSize="13sp"
-                                    android:textStyle="bold"
+                                    android:text="Free"
+                                    android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
+                            </FrameLayout>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_mark0"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:importantForAccessibility="no"
+                                    android:layout_marginEnd="3dp" />
                                 <TextView
-                                    android:id="@+id/strip_tag1"
+                                    android:id="@+id/strip_label0"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="9.5sp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:ellipsize="end" />
+                                <ImageView
+                                    android:id="@+id/strip_dot0"
+                                    android:layout_width="5dp"
+                                    android:layout_height="5dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/notif_condition_dot"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="3dp" />
+                            </LinearLayout>
+                            <TextView
+                                android:id="@+id/strip_reset0"
+                                style="@style/WFace.ShadowLight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="10sp"
+                                android:visibility="gone"
+                                android:singleLine="true" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/strip_cell1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+                            <FrameLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/strip_ring1"
+                                    android:layout_width="53dp"
+                                    android:layout_height="53dp"
+                                    android:importantForAccessibility="no" />
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:gravity="center_horizontal"
+                                    android:layout_gravity="center">
+                                    <TextView
+                                        android:id="@+id/strip_fig1"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:includeFontPadding="false" />
+                                    <TextView
+                                        android:id="@+id/strip_tag1"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="8sp"
+                                        android:textStyle="bold"
+                                        android:text="Weekly"
+                                        android:visibility="gone"
+                                        android:includeFontPadding="false" />
+                                </LinearLayout>
+                                <TextView
+                                    android:id="@+id/strip_xtag1"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -203,99 +219,99 @@
                                     android:textStyle="bold"
                                     android:text="Weekly"
                                     android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
-                            </LinearLayout>
-                            <TextView
-                                android:id="@+id/strip_xtag1"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="8sp"
-                                android:textStyle="bold"
-                                android:text="Weekly"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                            <TextView
-                                android:id="@+id/strip_free1"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:text="Free"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                        </FrameLayout>
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="3dp">
-                            <ImageView
-                                android:id="@+id/strip_mark1"
-                                android:layout_width="10dp"
-                                android:layout_height="10dp"
-                                android:importantForAccessibility="no"
-                                android:layout_marginEnd="3dp" />
-                            <TextView
-                                android:id="@+id/strip_label1"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="9.5sp"
-                                android:includeFontPadding="false"
-                                android:singleLine="true"
-                                android:ellipsize="end" />
-                            <ImageView
-                                android:id="@+id/strip_dot1"
-                                android:layout_width="5dp"
-                                android:layout_height="5dp"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/notif_condition_dot"
-                                android:visibility="gone"
-                                android:layout_marginStart="3dp" />
-                        </LinearLayout>
-                        <TextView
-                            android:id="@+id/strip_reset1"
-                            style="@style/WFace.ShadowLight"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10sp"
-                            android:visibility="gone"
-                            android:singleLine="true" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:id="@+id/strip_cell2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal">
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/strip_ring2"
-                                android:layout_width="53dp"
-                                android:layout_height="53dp"
-                                android:importantForAccessibility="no" />
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:gravity="center_horizontal"
-                                android:layout_gravity="center">
                                 <TextView
-                                    android:id="@+id/strip_fig2"
+                                    android:id="@+id/strip_free1"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textSize="13sp"
-                                    android:textStyle="bold"
+                                    android:text="Free"
+                                    android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
+                            </FrameLayout>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_mark1"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:importantForAccessibility="no"
+                                    android:layout_marginEnd="3dp" />
                                 <TextView
-                                    android:id="@+id/strip_tag2"
+                                    android:id="@+id/strip_label1"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="9.5sp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:ellipsize="end" />
+                                <ImageView
+                                    android:id="@+id/strip_dot1"
+                                    android:layout_width="5dp"
+                                    android:layout_height="5dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/notif_condition_dot"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="3dp" />
+                            </LinearLayout>
+                            <TextView
+                                android:id="@+id/strip_reset1"
+                                style="@style/WFace.ShadowLight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="10sp"
+                                android:visibility="gone"
+                                android:singleLine="true" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/strip_cell2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+                            <FrameLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/strip_ring2"
+                                    android:layout_width="53dp"
+                                    android:layout_height="53dp"
+                                    android:importantForAccessibility="no" />
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:gravity="center_horizontal"
+                                    android:layout_gravity="center">
+                                    <TextView
+                                        android:id="@+id/strip_fig2"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:includeFontPadding="false" />
+                                    <TextView
+                                        android:id="@+id/strip_tag2"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="8sp"
+                                        android:textStyle="bold"
+                                        android:text="Weekly"
+                                        android:visibility="gone"
+                                        android:includeFontPadding="false" />
+                                </LinearLayout>
+                                <TextView
+                                    android:id="@+id/strip_xtag2"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -303,99 +319,99 @@
                                     android:textStyle="bold"
                                     android:text="Weekly"
                                     android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
-                            </LinearLayout>
-                            <TextView
-                                android:id="@+id/strip_xtag2"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="8sp"
-                                android:textStyle="bold"
-                                android:text="Weekly"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                            <TextView
-                                android:id="@+id/strip_free2"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:text="Free"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                        </FrameLayout>
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="3dp">
-                            <ImageView
-                                android:id="@+id/strip_mark2"
-                                android:layout_width="10dp"
-                                android:layout_height="10dp"
-                                android:importantForAccessibility="no"
-                                android:layout_marginEnd="3dp" />
-                            <TextView
-                                android:id="@+id/strip_label2"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="9.5sp"
-                                android:includeFontPadding="false"
-                                android:singleLine="true"
-                                android:ellipsize="end" />
-                            <ImageView
-                                android:id="@+id/strip_dot2"
-                                android:layout_width="5dp"
-                                android:layout_height="5dp"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/notif_condition_dot"
-                                android:visibility="gone"
-                                android:layout_marginStart="3dp" />
-                        </LinearLayout>
-                        <TextView
-                            android:id="@+id/strip_reset2"
-                            style="@style/WFace.ShadowLight"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10sp"
-                            android:visibility="gone"
-                            android:singleLine="true" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:id="@+id/strip_cell3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal">
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                            <ImageView
-                                android:id="@+id/strip_ring3"
-                                android:layout_width="53dp"
-                                android:layout_height="53dp"
-                                android:importantForAccessibility="no" />
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:gravity="center_horizontal"
-                                android:layout_gravity="center">
                                 <TextView
-                                    android:id="@+id/strip_fig3"
+                                    android:id="@+id/strip_free2"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textSize="13sp"
-                                    android:textStyle="bold"
+                                    android:text="Free"
+                                    android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
+                            </FrameLayout>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_mark2"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:importantForAccessibility="no"
+                                    android:layout_marginEnd="3dp" />
                                 <TextView
-                                    android:id="@+id/strip_tag3"
+                                    android:id="@+id/strip_label2"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="9.5sp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:ellipsize="end" />
+                                <ImageView
+                                    android:id="@+id/strip_dot2"
+                                    android:layout_width="5dp"
+                                    android:layout_height="5dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/notif_condition_dot"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="3dp" />
+                            </LinearLayout>
+                            <TextView
+                                android:id="@+id/strip_reset2"
+                                style="@style/WFace.ShadowLight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="10sp"
+                                android:visibility="gone"
+                                android:singleLine="true" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/strip_cell3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+                            <FrameLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/strip_ring3"
+                                    android:layout_width="53dp"
+                                    android:layout_height="53dp"
+                                    android:importantForAccessibility="no" />
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:gravity="center_horizontal"
+                                    android:layout_gravity="center">
+                                    <TextView
+                                        android:id="@+id/strip_fig3"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:includeFontPadding="false" />
+                                    <TextView
+                                        android:id="@+id/strip_tag3"
+                                        style="@style/WFace.ShadowLight"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textSize="8sp"
+                                        android:textStyle="bold"
+                                        android:text="Weekly"
+                                        android:visibility="gone"
+                                        android:includeFontPadding="false" />
+                                </LinearLayout>
+                                <TextView
+                                    android:id="@+id/strip_xtag3"
                                     style="@style/WFace.ShadowLight"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -403,89 +419,79 @@
                                     android:textStyle="bold"
                                     android:text="Weekly"
                                     android:visibility="gone"
+                                    android:layout_gravity="center"
                                     android:includeFontPadding="false" />
+                                <TextView
+                                    android:id="@+id/strip_free3"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="13sp"
+                                    android:text="Free"
+                                    android:visibility="gone"
+                                    android:layout_gravity="center"
+                                    android:includeFontPadding="false" />
+                            </FrameLayout>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_mark3"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:importantForAccessibility="no"
+                                    android:layout_marginEnd="3dp" />
+                                <TextView
+                                    android:id="@+id/strip_label3"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="9.5sp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:ellipsize="end" />
+                                <ImageView
+                                    android:id="@+id/strip_dot3"
+                                    android:layout_width="5dp"
+                                    android:layout_height="5dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/notif_condition_dot"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="3dp" />
                             </LinearLayout>
                             <TextView
-                                android:id="@+id/strip_xtag3"
+                                android:id="@+id/strip_reset3"
                                 style="@style/WFace.ShadowLight"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="8sp"
-                                android:textStyle="bold"
-                                android:text="Weekly"
+                                android:textSize="10sp"
                                 android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                            <TextView
-                                android:id="@+id/strip_free3"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:text="Free"
-                                android:visibility="gone"
-                                android:layout_gravity="center"
-                                android:includeFontPadding="false" />
-                        </FrameLayout>
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="3dp">
-                            <ImageView
-                                android:id="@+id/strip_mark3"
-                                android:layout_width="10dp"
-                                android:layout_height="10dp"
-                                android:importantForAccessibility="no"
-                                android:layout_marginEnd="3dp" />
-                            <TextView
-                                android:id="@+id/strip_label3"
-                                style="@style/WFace.ShadowLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="9.5sp"
-                                android:includeFontPadding="false"
-                                android:singleLine="true"
-                                android:ellipsize="end" />
-                            <ImageView
-                                android:id="@+id/strip_dot3"
-                                android:layout_width="5dp"
-                                android:layout_height="5dp"
-                                android:importantForAccessibility="no"
-                                android:src="@drawable/notif_condition_dot"
-                                android:visibility="gone"
-                                android:layout_marginStart="3dp" />
+                                android:singleLine="true" />
                         </LinearLayout>
                         <TextView
-                            android:id="@+id/strip_reset3"
+                            android:id="@+id/strip_plus"
                             style="@style/WFace.ShadowLight"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="10sp"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
                             android:visibility="gone"
-                            android:singleLine="true" />
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
                     <TextView
-                        android:id="@+id/strip_plus"
+                        android:id="@+id/strip_stamp"
                         style="@style/WFace.ShadowLight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textSize="10sp"
                         android:visibility="gone"
-                        android:layout_marginStart="6dp" />
+                        android:layout_gravity="end"
+                        android:layout_marginTop="6dp"
+                        android:singleLine="true" />
                 </LinearLayout>
-                <TextView
-                    android:id="@+id/strip_stamp"
-                    style="@style/WFace.ShadowLight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="10sp"
-                    android:visibility="gone"
-                    android:layout_gravity="end"
-                    android:layout_marginTop="6dp"
-                    android:singleLine="true" />
             </LinearLayout>
 
             <TextView

@@ -68,6 +68,18 @@ class WidgetFitTest {
                 val name = runCatching { context.resources.getResourceEntryName(v.id) }.getOrDefault("?")
                 out += "$bucket $label ${s.name} $name collapsed to ${v.width / d}×${v.height / d}dp"
             }
+            // Rev H: a ring or bar bitmap pushed past the frame's edge, or squeezed below its size.
+            if (v is android.widget.ImageView && v.drawable is android.graphics.drawable.BitmapDrawable) {
+                val name = runCatching { context.resources.getResourceEntryName(v.id) }.getOrDefault("?")
+                val x = left(v, root)
+                if (x + v.width > w + 1 || y + v.height > h + 1) {
+                    out += "$bucket $label ${s.name} $name bitmap ends ${(x + v.width) / d}×${(y + v.height) / d}dp past the frame"
+                }
+                val lp = v.layoutParams
+                if (lp != null && lp.height > 0 && v.height + 1 < lp.height) {
+                    out += "$bucket $label ${s.name} $name bitmap ${v.height / d}dp < ${lp.height / d}dp"
+                }
+            }
             if (v is ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i), y)
         }
         walk(root, 0)
@@ -105,8 +117,15 @@ class WidgetFitTest {
         // launcher's narrow 2×1, and every no-size-yet key frame.
         val other = listOf(244f to 84f, 272f to 84f, 140f to 84f, 84f to 84f, 140f to 140f,
             240f to 84f, 240f to 150f, 140f to 150f, 244f to 150f)
+        // Rev H (CCBG-44 (Widget Fill)): the tiers' edges — the 4×3 and 6×3, the plan's inner
+        // frames, Pixel-style 2×2s between 180 and 240 dp, wide 84–90 dp rows (the Countdown's
+        // side column), and frames where the synthetic ribbon moves a tier.
+        val revH = listOf(333f to 366f, 510f to 366f, 211f to 126f, 211f to 291f, 467f to 126f,
+            467f to 291f, 180f to 180f, 200f to 190f, 180f to 200f, 220f to 185f, 239f to 180f,
+            239f to 230f, 318f to 84f, 320f to 84f, 363f to 84f, 400f to 84f, 330f to 90f,
+            300f to 230f, 250f to 210f, 156f to 205f, 156f to 229f)
         val all = mutableListOf<String>()
-        for (face in Face.entries) for ((w, h) in cover + inner + other) {
+        for (face in Face.entries) for ((w, h) in cover + inner + other + revH) {
             // The info files' minResizeWidth: the Strip is never under 250 dp wide, the
             // Number and the Countdown never under 110 dp.
             if (face == Face.STRIP && w < 244f) continue
