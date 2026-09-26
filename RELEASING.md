@@ -83,25 +83,49 @@ Also update by hand when the UI or features change:
   "themeable" figure is currently absent for this reason — reshoot it with a blue theme
   if you want it back.
 
-## 4. Commit and push
+## 4. Commit, build, tag, draft, verify, publish — in this order
 
-```bash
-git add -A          # source + docs only — the APK is gitignored now
-git commit -m "v0.8 — <one line on what changed>"
-git tag v0.8
-git push && git push --tags
+Since v1.8 (CCRM-78 (Widgets Reborn), RUNBOOK.md Step 8) the release runs as six steps, strictly
+in order, so the published APK is provably the build of the tagged commit and carries the
+permanent key. Nothing is public until step 6.
+
+**Trusted signer digest** — the SHA-256 of the permanent release certificate, taken on
+2026-09-26 from the published v1.7 asset (`gh release download v1.7`, then
+`apksigner verify --print-certs`). Step 5 compares every new asset against it:
+
+```
+8bc21a2aca81e5a09b239d1847822549f10775d76849f0e1948980ecd044f64f
 ```
 
-## 5. GitHub Release
-
-Publish the APK to the Releases page (the README's download link points at
-`releases/latest`, so this is what colleagues actually install from):
-
 ```bash
-gh release create v0.8 app/build/outputs/apk/release/app-release.apk \
-  --title "Cooldown v0.8" \
-  --notes "<one line on what changed>"
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+BT=$ANDROID_HOME/build-tools/36.0.0          # apksigner, aapt
+V=1.8                                        # this release's versionName
+
+git add -A && git commit -m "v$V — <one line>"                                  # 1 release source
+./gradlew assembleRelease                                                       # 2 built from that commit
+git tag v$V && git push && git push origin v$V                                  # 3 tag on it, both pushed
+gh release create v$V app/build/outputs/apk/release/app-release.apk \
+   --draft --verify-tag --title "Cooldown v$V" --notes-file <notes>             # 4 draft bound to the pushed tag
+gh release download v$V -p '*.apk' -D /tmp/v$V                                  # 5 the asset is the build:
+   shasum -a 256 app/build/outputs/apk/release/app-release.apk /tmp/v$V/app-release.apk  #   hashes equal
+   $BT/apksigner verify --print-certs /tmp/v$V/app-release.apk                  #   signer SHA-256 = the digest above
+   $BT/aapt dump badging /tmp/v$V/app-release.apk | head -1                     #   package com.robin.claudeusage, the new versionCode/Name
+   # any mismatch: stop, gh release delete v$V --yes (still a draft), nothing was published
+gh release edit v$V --draft=false                                               # 6 publish, last
 ```
+
+Never stage `ccooldown-release.jks`, `keystore.properties` or `local.properties` (all
+gitignored). Get a fresh judge's verdict before step 6 — publishing is irreversible for anyone
+who installs (an installed build cannot be downgraded). Release notes go in
+`release/docs/release-notes-v<ver>.md`, passed as `--notes-file`.
+
+**If it goes wrong:** after 1–3 nothing is public — fix forward, or move the tag only if it must
+(`git tag -d v$V && git push --delete origin v$V`). After 4–5 a bad asset is deleted with the
+draft. After 6: `gh release edit v$V --draft` withdraws it, so `releases/latest` falls back to
+the previous release (installed phones are untouched); installed apps recover only through a
+new, higher versionCode.
 
 The APK is distributed **only** as this release asset — the README, USER-GUIDE, and the
 app's *Check for updates* button all point at `releases/latest`, so publishing the release
