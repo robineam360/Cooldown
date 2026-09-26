@@ -1394,7 +1394,7 @@ face; `WidgetFaceTest` covers every state × bucket.
   Reset Silence) is not made worse.
 
 ### CCRM-82 · Accounts Strip — every account as its own ring, never a sum
-- **Status:** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run over USB, release build of 20328c3; captures in `design/research/2026-09-26-v18-device-pass/` 20–52): 4×1 and 4×2 seen on the cover, 4×1 on the inner; open for Robin: the 4×1's 9.5 / 8 sp reads ~6.8 / 5.7 sp at One UI's 71% cover scale · **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** · new — the diameters below
+- **Status:** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run over USB, release build of 20328c3; captures in `design/research/2026-09-26-v18-device-pass/` 20–52): 4×1 and 4×2 seen on the cover, 4×1 on the inner; the 4×1's 9.5 / 8 sp read ~6.8 / 5.7 sp at One UI's 71% cover scale — fixed as CCBG-41 (Cover Strip Type) to rev G and verified on the cover 2026-09-26 (`65-usb-cover-strip-4x1-revg.png`) · **Built 2026-09-25** (RUNBOOK.md Step 4; device pass at Step 7) · was Planned · medium · **wireframe rev D approved 2026-09-25** · new — the diameters below
   are ceilings: on the cover four rings are Ø53 at 4×1 and Ø80 at 4×2, which is what fits with 6 dp gaps
   and every line kept; the inner grid keeps Ø56 / Ø88 (Fable review, delegated by Robin). A weekly-only
   ring carries "Weekly" in the bore under the figure (8 sp at 4×1, 9 sp at 4×2), kept under the × at

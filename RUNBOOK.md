@@ -73,7 +73,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☑ |
 | 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☑ |
 | 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☑ |
-| 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☐ |
+| 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☑ |
 | 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☐ |
 
 ---
@@ -413,9 +413,9 @@ Always-after block. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Every item above is Verified or has a filed CCBG with a severity.
-- ☐ The *Always after* block has run and the diff against `phone-state-before.txt` is empty.
-- ☐ **Release gate:** no High-severity CCBG from this pass, or still open against an arc item, is
+- ☑ Every item above is Verified or has a filed CCBG with a severity.
+- ☑ The *Always after* block has run and the diff against `phone-state-before.txt` is empty.
+- ☑ **Release gate:** no High-severity CCBG from this pass, or still open against an arc item, is
   unresolved — a High blocks Step 8 until fixed and re-verified. Every Medium and Low deferral is
   listed in the Log with Robin's words accepting it; silence is not acceptance.
 
@@ -427,6 +427,7 @@ Always-after block. Close out per Convention 4.
 - 2026-09-26 (same session, later) — Robin: restore the phone, disconnect, then wireframe, Fable approval and fix. *Always after* run: screen timeout back to 60000, test Ring widget and the empty home page removed, Before/After diff empty, clock within 1 s; disconnected. Wireframe rev F → F.1 (`design/2026-09-26-widgets-cover-refit.html`) by the seat; Fable (mesh-judge, purpose a+c) approve-with-changes, then approve after one more required change (frames smallest first, drop the largest). CCBG-38 built to F.1 (seat, rung 1; code was begun before Fable's first verdict — noted by Fable, brought in line with F.1). 644 unit tests green. **Still to do in Step 7:** the whole device pass again from the Before block — over USB for the airplane/wifi/reboot items — with CCBG-38 and CCBG-37 checked on the phone.
 - 2026-09-26 (re-run, USB) — Seat rung 1. Before recorded (`phone-state-before-usb.txt`), release build of 20328c3 installed over the live app. **CCBG-38 (Cover Buckets) verified**: every face × size draws its own layout on the cover; inner defaults and shrinks too (inner 4×2 not placed — no free span). Synthetic states, banner-off, gallery (126 tiles), launcher restart, fold, reboot (alarm re-armed, synthetic Off), clock jump, timezone, force-idle across a real reset (alarm 53.8 s late) and the stale mark (18.8 s late) all seen; `am kill` refused by the foreground service (reboot covered process death). Status-bar ring matches v1.7; share card and Clear History (to Cancel) seen. Filed **CCBG-39 (Inner Duet Squeeze), Low** and **CCBG-40 (Picker Preview Ellipsis), Low**. Test widgets and the added page removed; *Always after* run, diff clean but for the charger reading. **Release gate:** no High open; the two Low deferrals await Robin's acceptance.
 - 2026-09-26 (same session, later) — Robin declined both deferrals and asked for the Strip type too: **fix all three before v1.8**. Wireframe rev G (`design/2026-09-26-v18-gate-fixes.html`) drawn by the seat and approved by Robin one question at a time (§1 Duet, §2 Strip, §3 preview option 2). Built (seat, rung 1): CCBG-39 (Inner Duet Squeeze), CCBG-40 (Picker Preview Ellipsis), CCBG-41 (Cover Strip Type); 643 unit tests green, release build compiles. The phone was off USB by then — **still to do in Step 7:** see the three on the Fold 7, then tick.
+- 2026-09-26 (rev G check, USB) — Seat rung 1. Before recorded (`phone-state-before-revg.txt`), release build of c8d5fe7 installed over the live app. Seen on the Fold 7 and set **Verified**: **CCBG-39 (Inner Duet Squeeze)** — the collapsed Duet reads "Personal" and "Work" whole on the cover and unfolded, Used and Left, synthetic dot beside the name (60–63, 66, 67, 69); **CCBG-41 (Cover Strip Type)** — a Strip 4×1 at the cover's 332×107 frame draws the roomy layout (65); **CCBG-40 (Picker Preview Ellipsis)** — "5h · at 9:10 PM" in full on both pickers (64, 68). Also recorded as Verified from the earlier re-run's captures: CCBG-36 (Widget Reapply Residue) (34→35) and CCBG-24 (Duet Label Clamp). Test Strip removed, Usage display back to Used, Synthetic Off; *Always after* run, diff against Before is the timestamps only (clock offset 0 s). **Release gate:** no High open; no Medium or Low deferral from this pass remains (Robin chose to fix all three rather than defer them). CCBG-34 (Account Display Name), CCBG-35 (Tab Clip) and CCRM-85 (Crash Capture) stay open outside the arc. **Step 7 done.**
 
 ---
 

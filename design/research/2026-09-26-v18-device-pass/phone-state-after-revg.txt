@@ -1,0 +1,16 @@
+# After, rev G check, 2026-09-26 19:21 IST, USB
+settings get system screen_off_timeout: 300000
+settings get global airplane_mode_on: 0
+settings get global auto_time: 1
+settings get global auto_time_zone: 1
+getprop persist.sys.timezone: Asia/Calcutta
+date +%s: 1790430661
+settings get global wifi_on: 1
+settings get global mobile_data: 1
+host date +%s: 1790430661
+deviceidle:
+  mForceIdle=false
+  mState=ACTIVE mLightState=ACTIVE
+battery:
+  AC powered: false
+  USB powered: true

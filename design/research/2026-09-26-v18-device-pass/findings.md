@@ -62,3 +62,12 @@ reading (same offset, 0 s) and the charger (USB → AC after `battery reset`, a 
 - Fold: cover faces fresh after folding (51).
 - Side effects on Robin's phone: Samsung Health Medications "Time zone changed" notice; Wispr
   Flow's accessibility service paused by the reboot.
+
+## Rev G check (USB, 2026-09-26 19:06–19:21 IST, release build of c8d5fe7)
+Before/After: `phone-state-before-revg.txt` / `phone-state-after-revg.txt` — diff is the timestamps only.
+- CCBG-39: collapsed Duet reads "Personal" / "Work" whole — cover Used (60), Left (61), Left +
+  synthetic dot (62), Used + dot (63); inner Used + dot (66), Left + dot (67), Used real (69).
+- CCBG-41: Strip 4×1 on the cover, frame 332×107 dp, draws the roomy layout (65; compare 23).
+  Placed on page 4, removed after.
+- CCBG-40: Countdown preview caption "5h · at 9:10 PM" in full, cover picker (64) and inner (68).
+- Left after the check: Usage display Used (as found), Synthetic Off, no Cooldown widget placed.

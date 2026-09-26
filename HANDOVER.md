@@ -4,36 +4,31 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 7 close-out, over USB (written 2026-09-26)
+## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 8, release v1.8 (written 2026-09-26)
 
-The Step 7 re-run (USB, 2026-09-26, e5bb5c9) **verified CCBG-38 (Cover Buckets)**: every face at every
-size draws its own layout on the cover, plus synthetic states, gallery, fold, reboot, clock,
-timezone and deep-idle alarms (findings: `design/research/2026-09-26-v18-device-pass/findings.md`,
-captures 20–52). It found three Low defects; Robin chose to fix all three before v1.8, approved
-wireframe rev G (`design/2026-09-26-v18-gate-fixes.html`), and they are built but **not yet seen
-on the phone**:
+**Step 7 is done** (RUNBOOK.md, ticked 2026-09-26). The rev G check on the Fold 7 over USB, release build of
+c8d5fe7, verified all three gate fixes: CCBG-39 (Inner Duet Squeeze) reads "Personal" whole on the cover and
+unfolded, in Used and Left, with the synthetic dot; CCBG-41 (Cover Strip Type) draws the roomy Strip 4×1 at the
+cover's 332×107 frame; CCBG-40 (Picker Preview Ellipsis) reads "5h · at 9:10 PM" on both pickers (captures
+60–69 in `design/research/2026-09-26-v18-device-pass/`). CCBG-36 (Widget Reapply Residue) and CCBG-24 (Duet
+Label Clamp) now read Verified too. No High is open and no deferral from the pass remains, so the release gate
+is clear. The phone is restored (Before/After diff clean) and has no Cooldown widget placed.
 
-- **CCBG-39 (Inner Duet Squeeze):** the collapsed Duet is two lines per half — the name across
-  the half, the bar and the 30 sp figure under it. Unfolded it read "P… 12%"; it should now
-  read "Personal" whole on the cover and unfolded, in Used and Left.
-- **CCBG-41 (Cover Strip Type):** a Strip 4×1 on the cover (333×108) draws Ø64 rings, 16 sp
-  figures, 12 sp names.
-- **CCBG-40 (Picker Preview Ellipsis):** the Countdown picker preview's caption reads
-  "5h · at 9:10 PM", on both pickers.
-
-When all three look right, Step 7 is done: tick it (no High open, no deferrals left) and go to
-Step 8 (release v1.8). Still open, not blocking: CCBG-34 (Account Display Name), CCRM-85 (Crash
-Capture) and CCBG-35 (Tab Clip) each need a wireframe.
+Step 8 is **irreversible once published** (an installed v1.8 cannot be downgraded, R9). Robin needs to be at
+the phone to tap "Check for updates" at the end. `ccooldown-release.jks` and `keystore.properties` are
+already in the repo root. Still open outside the arc, not blocking: CCBG-34 (Account Display Name),
+CCBG-35 (Tab Clip) and CCRM-85 (Crash Capture), each waiting on a wireframe.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`, with the Fold 7 on USB:
 
-> Read CLAUDE.md and HANDOVER.md, then RUNBOOK.md Step 7's Log. Record the phone's Before
-> state, install the release build of HEAD, and check on the Fold 7 the three rev G fixes —
-> CCBG-39 (the collapsed Duet on the cover and unfolded, Used and Left, with synthetic on for
-> the dots), CCBG-41 (a Strip 4×1 on the cover) and CCBG-40 (the Countdown preview in both
-> pickers). Remove any test widget, run the Always-after block, set the three Verified, tick
-> Step 7 and write Step 8's handover.
-
+> Read CLAUDE.md and HANDOVER.md, then RELEASING.md and RUNBOOK.md Conventions and Step 8 in full,
+> and the Status lines Step 7 verified (CCRM-78 (Widgets Reborn) to CCRM-84 (Faces Gallery), CCRM-14
+> (Clear History), CCRM-15 (Above-Pace Verification), CCRM-24 (Share Card), CCBG-24, CCBG-36 to
+> CCBG-41). Run Step 8's Resume block: versionCode 24 / versionName "1.8", docs and widget shots,
+> release notes, the six-line order into RELEASING.md with the trusted signer digest from the
+> published v1.7 asset, then the six steps strictly in order, a judge verdict before step 6
+> (publish). Robin confirms "Check for updates" on the phone. Set shipped items to Shipped v1.8
+> and close out per Convention 4.
 ---
 
 ### What changed on 2026-09-25 (Step 4, the short version)
