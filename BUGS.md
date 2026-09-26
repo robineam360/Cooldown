@@ -111,8 +111,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
 ### CCBG-43 · Widget Settings Hidden — a widget added on One UI can't be pointed at an account
-- **Status:** **Fixed 2026-09-26** (unit tests green, debug build compiles); not yet seen on the
-  phone, not yet in a release. v1.8 is held for CCBG-44 (Widget Fill) (Robin, 2026-09-26).
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (adding a Ring opens "Add
+  widget"; Back places nothing — `design/research/2026-09-26-v18-revh-device-check/07`) — not yet in a
+  release.
 - **Severity:** Medium (every widget shows the first account and the user can't find how to change it)
 - **Symptom:** **Reported by Robin, 2026-09-26, with screenshots** (Fold 7 cover, v1.8 release
   candidate, `design/research/2026-09-26-v18-robin-home/`): every single-account widget reads
@@ -131,8 +132,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   CCBG-44 (Widget Fill) wireframe.
 
 ### CCBG-44 · Widget Fill — the faces leave large empty areas at most sizes
-- **Status:** **Fixed 2026-09-26** (unit tests green, every face × state fits every One UI frame in
-  `WidgetFitTest`); not yet seen on the phone, not yet in a release. Design: Fable's review
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** on Robin's 21 cover placements
+  (`design/research/2026-09-26-v18-revh-device-check/findings.md`: no SafeUpdate fallback, a live
+  resize redraw; the Number 2×1 pill clip found there and fixed; fold/unfold not exercisable on
+  one-frame placements) — not yet in a release. Design: Fable's review
   (`design/research/2026-09-26-ccbg44-fable-review.md`), wireframe rev H
   (`design/2026-09-26-widgets-fill-revh.html`), Q1–Q5 as Fable recommended — **approved by Robin
   2026-09-26** ("go with Fable's recommendations and don't wait for me"). Build plan Astra-reviewed
@@ -159,8 +162,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   real size (1.17–1.34× the text size) and subtract the synthetic ribbon, so the formulas fit.
 
 ### CCBG-42 · Kebab Drift — the Accounts card's ⋮ sits at a different spot on every card
-- **Status:** **Fixed 2026-09-26** (compiles, unit tests green); not yet seen on the phone, not yet
-  in a release. Restores the approved CCRM-65 (Accounts Redesign) layout
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (every ⋮ above its ↻,
+  `design/research/2026-09-26-v18-revh-device-check/08`) — not yet in a release. Restores the approved CCRM-65 (Accounts Redesign) layout
   (`design/accounts-redesign-wireframe.html`: name · dot · chip · spacer · ⋮), so no new wireframe.
 - **Severity:** Low (alignment; every control works)
 - **Symptom:** **Reported by Robin, 2026-09-26, with a screenshot** (Fold 7 cover, v1.8 release

@@ -61,6 +61,8 @@ class WidgetFitTest {
                 if (v.maxLines == 1 && x + v.width > w + 1) out += "$bucket $label ${s.name} $name '${v.text}' ends ${(x + v.width) / d}dp > ${frame.widthDp}dp"
                 if (got + 1 < wants) out += "$bucket $label ${s.name} $name '${v.text}' ${got / d}dp < ${wants / d}dp"
                 if (y + got > h + 1) out += "$bucket $label ${s.name} $name '${v.text}' ends ${(y + got) / d}dp > ${frame.heightDp}dp"
+                // Rev H device check: a centred block taller than its frame spills off the top too.
+                if (y < -1) out += "$bucket $label ${s.name} $name '${v.text}' starts ${y / d}dp above the frame"
             }
             // A shape background (chip, pill, tag) that collapsed to a sliver: FrameLayout
             // only stretches match_parent children of a wrap_content frame when it has two.

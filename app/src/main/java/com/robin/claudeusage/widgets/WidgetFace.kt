@@ -733,7 +733,9 @@ object WidgetFace {
             Bucket.NUMBER_2X1 -> when {
                 // Its rows take 134 dp; the figure's line is 1.17× its size.
                 numberTall(frame) -> minOf(w / 2.4f, 72f, (h - 134f) / 1.17f).coerceAtLeast(32f)
-                numberStacked(frame) -> minOf(w / 2.4f, h - 29f).coerceIn(32f, if (pill) 36f else 44f)
+                // With the pill a stacked 2×1 has 13 dp less: 30 sp (the Fold 7 device check
+                // showed One UI's font clipping the pill at Fable's 36).
+                numberStacked(frame) -> if (pill) 30f else minOf(w / 2.4f, h - 29f).coerceIn(32f, 44f)
                 else -> 32f
             }
             // The figure's line is about 1.1–1.17× its size; the bar and sub-line take 36 dp.
