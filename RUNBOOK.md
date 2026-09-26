@@ -489,6 +489,10 @@ Convention 4.
   in `design/research/2026-09-26-v18-robin-home/`; the app log shows **no `SafeUpdate` fallback
   line**; fold / unfold and a resize across S → T → W and back on the same widgets; CCBG-42's ⋮ above
   ↻; adding a widget opens its config (CCBG-43). Then Robin's widget shots for the docs, then step 1.
+- 2026-09-26 (later) — Device check done (`876455a`, `design/research/2026-09-26-v18-revh-device-check/`):
+  CCBG-42, CCBG-43 and CCBG-44 Verified; the Number 2×1 pill clip found there and fixed. Robin added
+  CCBG-34 (Account Display Name) to v1.8: wireframe approved, built `5d9ebe0`, verified on the phone
+  `b13b5cf`. Phone restored. **Next:** Robin's widget shots for the docs, then step 1.
 
 ---
 
