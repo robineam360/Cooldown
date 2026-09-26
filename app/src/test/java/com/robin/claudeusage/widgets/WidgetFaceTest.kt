@@ -418,7 +418,7 @@ class WidgetFaceTest {
         assertTrue(texts(v).joinToString(" | "), texts(v).first().endsWith("· left"))
         val synth = FaceStates.of(forState(Face.RING, StateId.S13))
         val density = context.resources.displayMetrics.density
-        for ((w, h) in listOf(300f to 230f, 250f to 210f, 333f to 366f)) {
+        for ((w, h) in listOf(300f to 230f, 250f to 210f, 333f to 366f, 190f to 175f, 200f to 190f, 220f to 185f)) {
             val frame = Frame.at(Face.RING, w, h)
             val drawn = bitmaps(WidgetFace.render(context, Face.RING, frame, synth).apply(context, FrameLayout(context)))
             assertTrue("$w×$h", drawn.sumOf { it.toLong() } <= WidgetFace.frameBytes(frame, density))
@@ -447,7 +447,9 @@ class WidgetFaceTest {
             else FaceStates.of(forState(bucket.face, StateId.S1))
             val drawn = bitmaps(inflate(bucket, state))
             assertTrue("$bucket: at most five bitmaps", drawn.size <= 5)
-            assertEquals("$bucket", WidgetFace.bucketBytes(bucket, density), drawn.sumOf { it.toLong() })
+            // Exact on a short face; on a tall one the estimate also covers the ribboned draw.
+            if (bucket.tall) assertTrue("$bucket", drawn.sumOf { it.toLong() } <= WidgetFace.bucketBytes(bucket, density))
+            else assertEquals("$bucket", WidgetFace.bucketBytes(bucket, density), drawn.sumOf { it.toLong() })
         }
     }
 

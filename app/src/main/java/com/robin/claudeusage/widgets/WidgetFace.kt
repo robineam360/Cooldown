@@ -590,8 +590,8 @@ object WidgetFace {
     /**
      * The frame a face is laid out in: R8's ribbon takes 12 dp off a tall face's inner
      * height, its padding and tier stay the frame's. [WidgetHost] wires controls from the
-     * same frame, so a control is never wired on a view the draw hid. [frameBytes] estimates
-     * at the full frame, an upper bound on a ribboned draw.
+     * same frame, so a control is never wired on a view the draw hid. [frameBytes] takes the
+     * larger of both, so it bounds a ribboned draw.
      */
     fun drawFrame(frame: Frame, state: FaceState): Frame =
         if (state.synthetic && frame.tall) frame.copy(ribbonDp = RIBBON_DP) else frame
@@ -838,8 +838,15 @@ object WidgetFace {
     /** The largest bitmap set one bucket draws, over every state and account count. */
     fun bucketBytes(bucket: Bucket, density: Float): Long = frameBytes(bucket.frame, density)
 
-    /** The largest bitmap set one frame draws, over every state and account count. */
-    fun frameBytes(frame: Frame, density: Float): Long {
+    /**
+     * The largest bitmap set one frame draws, over every state and account count — with and
+     * without R8's ribbon, since a ribboned tall Ring can drop a line and grow (rev H).
+     */
+    fun frameBytes(frame: Frame, density: Float): Long =
+        if (frame.tall) maxOf(frameBytesAt(frame, density), frameBytesAt(frame.copy(ribbonDp = RIBBON_DP), density))
+        else frameBytesAt(frame, density)
+
+    private fun frameBytesAt(frame: Frame, density: Float): Long {
         val bucket = frame.bucket
         // (rings drawn, cells laid out): the Strip with one to four accounts, and with
         // four rings beside a "+N" cell, which shrinks them.
@@ -1104,7 +1111,8 @@ object WidgetFace {
         val tall = numberTall(frame)
         val stacked = numberStacked(frame)
         // Rev D's pill marks an unassigned 2×1; rev H's 2×2 says it in the stamp slot (Q4).
-        val pill = bucket == Bucket.NUMBER_2X1 && c.unassigned && !tall
+        // …and the 110 dp minimum 2×1 has no height for it: the tap still opens the config.
+        val pill = bucket == Bucket.NUMBER_2X1 && c.unassigned && !tall && !numberCompact(frame)
         val figSp = numberFigSp(frame, pill)
         val labelSp = if (big || tall) (if (frame.roomy) 15f else 14f) else 13f
 
@@ -1273,9 +1281,15 @@ object WidgetFace {
             // and the account line. No estimate either.
             rv.setViewVisibility(R.id.cd_countrow, View.GONE)
             rv.setViewVisibility(R.id.cd_msg, View.VISIBLE)
+            // The 110 dp minimum frame says it short, as the Strip does, rather than wrapping
+            // over the account line.
+            val narrow = frame.innerWidthDp < 120f
             rv.setTextViewText(
                 R.id.cd_msg,
-                if (StateId.S5 in c.states) FaceStates.NOT_STARTED else FaceStates.NO_READING,
+                when {
+                    StateId.S5 in c.states -> if (narrow) "Not started" else FaceStates.NOT_STARTED
+                    else -> if (narrow) "No reading" else FaceStates.NO_READING
+                },
             )
             rv.setTextColor(R.id.cd_msg, ink(s.dark, 1f))
             if (big) stampText(s, c)?.let { cdStamp(context, rv, frame, s, c, it) }

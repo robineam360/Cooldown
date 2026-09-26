@@ -123,7 +123,7 @@ class WidgetFitTest {
         val revH = listOf(333f to 366f, 510f to 366f, 211f to 126f, 211f to 291f, 467f to 126f,
             467f to 291f, 180f to 180f, 200f to 190f, 180f to 200f, 220f to 185f, 239f to 180f,
             239f to 230f, 318f to 84f, 320f to 84f, 363f to 84f, 400f to 84f, 330f to 90f,
-            300f to 230f, 250f to 210f, 156f to 205f, 156f to 229f)
+            300f to 230f, 250f to 210f, 156f to 205f, 156f to 229f, 110f to 84f)
         val all = mutableListOf<String>()
         for (face in Face.entries) for ((w, h) in cover + inner + other + revH) {
             // The info files' minResizeWidth: the Strip is never under 250 dp wide, the
