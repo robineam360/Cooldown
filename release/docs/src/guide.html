@@ -159,7 +159,7 @@
     <div class="callout warn" style="margin-top:7mm; font-size:8.6pt; color:var(--ink);"><b>Before you install:</b> this is an <b>unofficial</b> personal tool — it signs in to Claude with the <b>same OAuth client as the Claude Code CLI</b>, and to ChatGPT with the <b>Codex CLI's</b>, both against <b>undocumented</b> usage endpoints, so there's a small risk either could <b>revoke the token or flag the account</b>. It's read-only and signs in once; full detail on <b>page 4</b>. Use it at your own discretion.</div>
     <div class="bottom">
       <div class="l">USER GUIDE</div>
-      <div class="r">Version 1.7 · September 2026<br>Built by Robin Richard Rajan — with Claude Code (Fable 5 · Opus 4.8 · Opus 5 · Fable 5.1 · Sonnet 5)<br>Personal sideloaded app — not on any store · not affiliated with Anthropic, OpenAI or Google</div>
+      <div class="r">Version 1.8 · September 2026<br>Built by Robin Richard Rajan<br>Personal sideloaded app — not on any store · not affiliated with Anthropic, OpenAI or Google</div>
     </div>
   </div>
 </div>
@@ -180,60 +180,58 @@
   </div>
   <h3 style="margin-top:5.5mm;">Contents</h3>
   <div class="toc">
-    <div class="row"><span class="n">★</span><span class="t">New in v1.7</span><span class="d">the main screen redesigned, chart height &amp; orientation, Plan Fit · page 3</span></div>
+    <div class="row"><span class="n">★</span><span class="t">New in v1.8</span><span class="d">home-screen widgets return, account emails, Share snapshot · page 3</span></div>
     <div class="row"><span class="n">1</span><span class="t">Install</span><span class="d">sideload the APK · page 4</span></div>
     <div class="row"><span class="n">2</span><span class="t">Connect your accounts</span><span class="d">Claude on the phone · page 4–5 · ChatGPT by code · page 6</span></div>
     <div class="row"><span class="n">3</span><span class="t">Reading the screens</span><span class="d">bars, pace chart, credits, the two rooms · page 7</span></div>
-    <div class="row"><span class="n">4</span><span class="t">The always-on notification</span><span class="d">two accounts, the ring, reset pings · page 8</span></div>
-    <div class="row"><span class="n">5</span><span class="t">Settings reference</span><span class="d">four tabs · page 9</span></div>
-    <div class="row"><span class="n">6</span><span class="t">Troubleshooting · Privacy</span><span class="d">page 10</span></div>
-    <div class="row"><span class="n">7</span><span class="t">Version history &amp; dev notes</span><span class="d">page 11</span></div>
+    <div class="row"><span class="n">4</span><span class="t">Widgets</span><span class="d">adding one, the four faces, fill any size · page 8</span></div>
+    <div class="row"><span class="n">5</span><span class="t">The always-on notification</span><span class="d">two accounts, the ring, reset pings · page 9</span></div>
+    <div class="row"><span class="n">6</span><span class="t">Settings reference</span><span class="d">four tabs · page 10</span></div>
+    <div class="row"><span class="n">7</span><span class="t">Troubleshooting · Privacy</span><span class="d">page 11</span></div>
+    <div class="row"><span class="n">8</span><span class="t">Version history &amp; dev notes</span><span class="d">page 12</span></div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>2</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>2</span></div>
 </div>
 
-<!-- ================= PAGE 3 · NEW IN 1.7 ================= -->
+<!-- ================= PAGE 3 · NEW IN 1.8 ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">★</div><div><h2>New in v1.7</h2><div class="sub">what changed since v1.6</div></div></div>
+  <div class="sechead"><div class="secnum">★</div><div><h2>New in v1.8</h2><div class="sub">what changed since v1.7</div></div></div>
   <div class="cols" style="margin-top:1mm;">
     <div>
-      <h3 style="margin-top:0; font-size:10.4pt;">📱 The main screen, redesigned</h3>
-      <ul class="dots" style="font-size:8.2pt; margin-bottom:1mm;">
-        <li><b>Density</b> — Comfortable keeps every chart open, as before. <b>Compact</b> folds each card to a title row, its bar and one line; tap the card to open its chart in place (CCRM-72 (Main Screen Redesign)).</li>
-        <li>The 7-day card gets <b>All / Fable</b> chips — pick which series the chart, pace line and estimate follow (CCRM-73 (Model Cap Chart)).</li>
-        <li><b>Main screen layout</b> (top-bar ⋮): reorder, hide, or fold a card behind <b>More</b>; <b>Reset layout</b> undoes it (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)).</li>
-        <li><b>One status line</b> — "Checked just now · ↻" — replaces the Refresh button and the two timestamps.</li>
-      </ul>
-      <h3 style="font-size:10.4pt;">📈 Chart polish</h3>
-      <ul class="dots" style="font-size:8.2pt;">
-        <li>Guide labels moved <b>inside the plot</b>, so the chart's now-line sits exactly under the bar's pace mark (CCRM-74 (Chart Polish)).</li>
-        <li>Headlines drop "used" ("14%", not "14% used"); pace phrases read in <b>%</b>, not "points".</li>
-        <li><b>Chart height</b> — Small / Medium (default) / Large (CCRM-75 (Chart Height)) — and <b>Chart orientation</b> — Time across (default) / Time down — both new in Appearance (CCRM-77 (Transposed Chart)).</li>
+      <h3 style="margin-top:0; font-size:10.4pt;">🧩 Widgets, reborn</h3>
+      <ul class="dots" style="font-size:8.1pt; margin-bottom:1mm;">
+        <li>Four faces in the picker under <b>Cooldown</b> — <b>Ring</b>, <b>Number</b>, <b>Countdown</b> and <b>All accounts</b> (CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face), CCRM-82 (Accounts Strip)).</li>
+        <li>Adding one opens its settings: the <b>account</b>, the <b>window</b> (5h or Weekly) and the <b>background</b> (Solid, Gradient or Transparent) — change them later from the widget's long-press <b>Settings</b>.</li>
+        <li><b>Fills whatever size you place it at</b>, 1×1 to a full row: bigger Rings add the reset time and a second, smaller ring for the other window; the Number's 2×2 and 4×2 carry 5h|Weekly chips and an account switcher (CCBG-44 (Widget Fill)).</li>
+        <li>The same ring the status bar draws, now painted by one renderer everywhere (CCRM-83 (Ring Renderer)).</li>
+        <li>Widgets from v1.5 don't come back on their own — add the new ones from the picker.</li>
+        <li>Using widgets without the always-on notification? Add Cooldown to One UI's <b>Never sleeping apps</b> (Settings → Battery → Background usage limits) so they keep refreshing.</li>
       </ul>
     </div>
     <div>
-      <h3 style="margin-top:0; font-size:10.4pt;">👤 Accounts and History</h3>
-      <ul class="dots" style="font-size:8.2pt; margin-bottom:1mm;">
-        <li>The Accounts tab is redesigned: shorter cards, a status line, a plan chip, and three action cells — Re-sign in · Clear · Dashboard (CCRM-65 (Accounts Redesign)).</li>
-        <li><b>Drag accounts into your own order</b> on the new Reorder sheet (CCRM-71 (Account Order)).</li>
-        <li><b>Plan Fit</b> on Usage history: is this plan the right size, read off your last eight closed weeks (CCRM-70 (Plan Fit)).</li>
+      <h3 style="margin-top:0; font-size:10.4pt;">👤 Accounts</h3>
+      <ul class="dots" style="font-size:8.1pt; margin-bottom:1mm;">
+        <li>Each account shows the <b>email</b> it signed in with, under its name in Settings → Accounts and first in ⋮ → Details; Rename suggests a name from it (CCBG-34 (Account Display Name)).</li>
+        <li><b>Clear usage history…</b> in an account's ⋮ starts its trend over without removing the account (CCRM-14 (Clear History)).</li>
       </ul>
-      <h3 style="font-size:10.4pt;">🌓 Claude on black</h3>
-      <p style="font-size:8.2pt;">Claude's dark theme now sits on true black, like ChatGPT's, instead of a dark-orange tint that muted the accent (CCRM-76 (Black Room)).</p>
+      <h3 style="font-size:10.4pt;">📤 Share snapshot</h3>
+      <p style="font-size:8.1pt;"><b>Share snapshot</b> in the main screen's ⋮: a square image of the ring, the bars with pace and resets, and the 5h trend (CCRM-24 (Share Card)).</p>
       <h3 style="font-size:10.4pt;">🔧 Fixed underneath</h3>
-      <ul class="dots" style="font-size:8.2pt;">
-        <li>The always-on notification is now a <b>foreground service</b> — no more sinking in the shade or stalling in the background (CCRM-67 (Pin Service)).</li>
-        <li>ChatGPT's idle 5-hour window no longer counts down on its own (CCBG-30 (Phantom Window)).</li>
-        <li>Cooldown now sends its own honest User-Agent to Anthropic's API, instead of borrowing the Claude Code CLI's (CCRM-68 (Honest Agent)).</li>
+      <ul class="dots" style="font-size:8.1pt;">
+        <li>CCBG-24 (Duet Label Clamp) &amp; CCBG-37 (Duet Dot Squeeze) — the two-account notification keeps both names whole, with their dots.</li>
+        <li>CCBG-31 (Alert Crash) — turning on the always-on notification with one account no longer crashes.</li>
+        <li>CCBG-32 (Accounts Button Wrap) — the sign-in card's buttons wrap cleanly on narrow phones.</li>
+        <li>CCBG-33 (Device-Code Prerequisite) — ChatGPT sign-in names the security setting it needs.</li>
+        <li>CCBG-42 (Kebab Drift) — each account card's ⋮ lines up with its refresh button.</li>
       </ul>
     </div>
   </div>
   <div class="shots" style="margin-top:1.5mm;">
-    <figure><img src="shots/v17-main-compact.png" width="88"><figcaption>Compact — title row, bar,<br>one line, tap to expand</figcaption></figure>
-    <figure><img src="shots/v17-layout-sheet.png" width="88"><figcaption>Main screen layout — reorder,<br>hide, or fold behind More</figcaption></figure>
+    <figure><img src="shots/v18-widgets-home.jpg" width="86"><figcaption>A home page mixing<br>faces and sizes</figcaption></figure>
+    <figure><img src="shots/v18-widgets-countdown.jpg" width="86"><figcaption>Countdown,<br>at every size</figcaption></figure>
   </div>
-  <div class="callout" style="margin-top:1.5mm; font-size:7.8pt; padding:2mm 3mm;"><b>Updating from v1.0–v1.6 is in place</b> — same signing key, sign-ins, history and settings all survive. Comfortable stays the default.</div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>3</span></div>
+  <div class="callout" style="margin-top:1.5mm; font-size:7.8pt; padding:2mm 3mm;"><b>Updating from v1.0–v1.7 is in place</b> — same signing key, sign-ins, history and settings all survive. Comfortable stays the default.</div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>3</span></div>
 </div>
 
 <!-- ================= PAGE 4 · INSTALL + SIGN-IN OVERVIEW ================= -->
@@ -245,7 +243,7 @@
     <li>Tap the APK. When Android warns about unknown apps, <b>allow installs from the app you opened it with</b>, then tap <b>Install</b>. <span class="muted">A Play Protect "scan app?" prompt may appear — scan or install anyway; you know where this one came from.</span></li>
     <li>Open <b>Cooldown</b> and <b>allow notifications</b> when asked — that's what powers the always-on notification and the reset pings.</li>
   </ol>
-  <div class="callout green"><b>Updating an existing install?</b> From v0.13 onward, just install the new APK over it — sign-ins, settings and history survive. <b>Coming to v1.6 from an earlier version:</b> any home-screen widgets and the Quick Settings tile disappear on update; the always-on notification is their replacement. (Coming from v0.12 or earlier needs a one-time uninstall + reinstall — the signing key is permanent from v0.13 on.)</div>
+  <div class="callout green"><b>Updating an existing install?</b> From v0.13 onward, just install the new APK over it — sign-ins, settings and history survive. <b>Widgets are back as of v1.8</b>, as a new suite — add them fresh from the picker; nothing placed before v1.6 returns on its own, and the <b>Quick Settings tile stays removed</b>. (Coming from v0.12 or earlier needs a one-time uninstall + reinstall — the signing key is permanent from v0.13 on.)</div>
 
   <div class="sechead" style="margin-top:7mm;"><div class="secnum">2</div><div><h2>Connect your accounts</h2><div class="sub">Personal and Work by default — add as many more as you use</div></div></div>
   <p>The app starts with two account cards, <b>Personal</b> and <b>Work</b> — each with its own sign-in, polling, tab and reset pings. Tap <b>"+ Add account"</b> on the <b>Accounts</b> tab of Settings for a third, fourth, or more; each new one gets an editable name too. Every profile signs in <b>right on the phone — no computer needed</b>:</p>
@@ -257,7 +255,7 @@
     <li>The card turns <b>Active</b> and usage loads: <i>"signed in — usage fetched, polling started."</i></li>
   </ol>
   <p>Works for <b>Pro / Max</b> and <b>Team</b> accounts alike, on any card — <b>not Free</b>: a Free account signs in, but Anthropic's usage endpoint refuses it (HTTP 403), so the card says <i>"Claude doesn't report usage for the Free plan"</i> and shows no numbers until the plan changes. The card also wears the plan — <b>Pro, Max, Team Standard, Team Premium</b> — read from the account's profile. The sign-in is minted on the phone and is yours alone — no computer shares it, so nothing can rotate it away. It self-renews for about <b>a month</b> (the card shows <i>"Sign-in expires around …"</i>), and renewing is the same one-minute flow via <b>"Re-sign in"</b>. An account with no token yet carries no tab — it appears the moment it's signed in.</p>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>4</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>4</span></div>
 </div>
 
 <!-- ================= PAGE 5 · SIGN-IN SCREENS ================= -->
@@ -273,18 +271,19 @@
       <h3 style="margin-top:0;">Why the browser picker matters</h3>
       <p style="font-size:8.8pt;">The sign-in lands on whatever claude.ai account that browser is logged into. Keeping <b>Work in Chrome</b> and <b>Personal in another browser</b> gives you a clean, repeatable way to connect each profile to the right account — no logging in and out.</p>
       <h3>What the card shows afterwards</h3>
-      <ul class="dots" style="font-size:8.8pt;">
+      <ul class="dots" style="font-size:8.6pt;">
         <li>Status chip — <b style="color:var(--green)">Active</b> / Needs re-auth</li>
         <li>Plan badge — Pro, Max or Team</li>
+        <li>The email it signed in with, under the account name (CCBG-34 (Account Display Name))</li>
         <li>Last checked, with a one-tap "check now" button</li>
         <li>Auto-renew countdown &amp; last auto-renewed time</li>
         <li>"Sign-in expires around …" (≈30-day estimate)</li>
       </ul>
-      <p class="muted" style="font-size:8.4pt; margin-top:3mm;">The screens above are from an earlier version — the cards and the sign-in flow are unchanged, the Settings screen around them now has four tabs (page 9).</p>
+      <p class="muted" style="font-size:8.4pt; margin-top:3mm;">The screens above are from an earlier version — the cards and the sign-in flow are unchanged, the Settings screen around them now has four tabs (page 10).</p>
     </div>
   </div>
   <div class="callout" style="margin-top:5mm;"><b>Token safety:</b> the sign-in is stored <b>encrypted on the phone only</b> (Android Keystore) and is never sent anywhere except Anthropic's own API. No servers, no telemetry, no analytics — nothing else ever sees it.</div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>5</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>5</span></div>
 </div>
 
 <!-- ================= PAGE 6 · CHATGPT SIGN-IN ================= -->
@@ -313,6 +312,7 @@
         <li>The <b>ChatGPT mark</b> before the account name</li>
         <li>Status chip — <b style="color:var(--green)">Active</b> / Needs re-auth</li>
         <li>Plan badge — Plus, Pro, Team, Business…</li>
+        <li>The email it signed in with, under the name</li>
         <li>Buttons: <b>Sign in with a code</b> · <b>Refresh</b> · <b>Clear</b></li>
         <li><b>No</b> "expires around …" line — see the note below</li>
       </ul>
@@ -330,11 +330,10 @@
   </div>
   <div class="callout" style="margin-top:3mm;"><b>The phone mints its own sign-in.</b> Nothing is copied from a computer — and deliberately so: reusing the token your desktop Codex CLI holds would trip OpenAI's rotation detection and sign you out of your own CLI. There is no paste or QR option for ChatGPT, and that's the reason.</div>
   <div class="callout warn" style="margin-top:2.5mm; font-size:8.4pt;"><b>Gemini is greyed out.</b> The third row in the Add-account sheet is Google's Antigravity (Gemini). Its sign-in can't be completed on a phone today — Google's flow needs a callback only a desktop can answer. The row is shown, disabled, rather than hidden, so you know it's known about. It'll light up if that changes.</div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>6</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>6</span></div>
 </div>
 
-<!-- ================= PAGE 7 · BACKUP TOKEN METHOD ================= -->
-<!-- ================= PAGE 8 · READING THE SCREENS ================= -->
+<!-- ================= PAGE 7 · READING THE SCREENS ================= -->
 <div class="page">
   <div class="sechead"><div class="secnum">3</div><div><h2>Reading the screens</h2><div class="sub">One tab per signed-in account — swipe or tap to switch</div></div></div>
   <div class="cols">
@@ -366,15 +365,48 @@
     <figure><img src="shots/v17-chart-transposed.png" width="105"><figcaption>Chart orientation:<br>Time down</figcaption></figure>
     <figure><img src="shots/v17-history-7d.png" width="105"><figcaption>Usage history —<br>Plan Fit up top</figcaption></figure>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>7</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>7</span></div>
+</div>
+
+<!-- ================= PAGE 8 · WIDGETS ================= -->
+<div class="page">
+  <div class="sechead"><div class="secnum">4</div><div><h2>Widgets</h2><div class="sub">Home-screen, in any size you give them — CCRM-78 (Widgets Reborn)</div></div></div>
+  <div class="cols" style="margin-top:1mm;">
+    <div>
+      <h3 style="margin-top:0;">Adding one</h3>
+      <p style="font-size:8.6pt;">Long-press the home screen → Widgets → <b>Cooldown</b>, drag one onto a page at any size from 1×1 to a full row, and drop it. Its settings sheet opens right away — pick the <b>account</b>, the <b>window</b> (5h or Weekly) and the <b>background</b> (Solid, Gradient or Transparent). Change any of them later from the widget's own long-press <b>Settings</b>.</p>
+      <h3>The four faces</h3>
+      <ul class="dots" style="font-size:8.6pt;">
+        <li><b>Ring</b> — one account as a gauge, filling with its window (CCRM-79 (Ring Face))</li>
+        <li><b>Number</b> — the big percentage, like the pinned notification (CCRM-80 (Number Face))</li>
+        <li><b>Countdown</b> — when the window comes back, ticking live (CCRM-81 (Countdown Face))</li>
+        <li><b>All accounts</b> — every account as its own ring, side by side — never a sum (CCRM-82 (Accounts Strip))</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0;">Fills whatever size you give it</h3>
+      <p style="font-size:8.6pt;">From 1×1 to a full row. Bigger Rings add the reset time and a second, smaller ring for the other window; the Number's 2×2 and 4×2 sizes carry <b>5h | Weekly</b> chips and an account switcher; the Countdown's count grows with the widget (CCBG-44 (Widget Fill)). The same ring the status bar draws is now painted by one renderer everywhere (CCRM-83 (Ring Renderer)).</p>
+      <h3>Keeping it fresh</h3>
+      <p style="font-size:8.6pt;">If you use widgets without the always-on notification, add Cooldown to One UI's <b>Never sleeping apps</b> (Settings → Battery → Background usage limits) — otherwise the OS can pause the background poll that keeps them current.</p>
+      <div class="callout" style="font-size:8pt; margin-top:2mm;"><b>Widgets from before v1.6 don't come back.</b> Anything placed on an earlier version is long gone; add the new ones fresh from the picker. The Quick Settings tile stays removed — the notification and the widgets cover that job between them.</div>
+    </div>
+  </div>
+  <div class="shots" style="margin-top:3mm;">
+    <figure><img src="shots/v18-widgets-ring.jpg" width="108"><figcaption>Ring</figcaption></figure>
+    <figure><img src="shots/v18-widgets-number.jpg" width="108"><figcaption>Number</figcaption></figure>
+    <figure><img src="shots/v18-widgets-countdown.jpg" width="108"><figcaption>Countdown</figcaption></figure>
+  </div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>8</span></div>
 </div>
 
 <!-- ================= PAGE 9 · THE ALWAYS-ON NOTIFICATION ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">4</div><div><h2>The always-on notification</h2><div class="sub">Two accounts in the shade, a ring in the status bar — usage without opening anything</div></div></div>
+  <div class="sechead"><div class="secnum">5</div><div><h2>The always-on notification</h2><div class="sub">Two accounts in the shade, a ring in the status bar — usage without opening anything</div></div></div>
   <div class="shots">
-    <figure><img src="shots/v16-notif-collapsed.png" width="330"><figcaption>Collapsed — First and Second side by side: mark, name, bar with the pace tick, and the 5-hour figure</figcaption></figure>
-    <figure><img src="shots/v16-notif-expanded.png" width="330"><figcaption>Expanded — both headers with their reset lines, then the Weekly rows and one-tap Refresh</figcaption></figure>
+    <figure><img src="shots/v18-notif-duet-collapsed.jpg" width="130"><figcaption>Two accounts, collapsed —<br>mark, name, bar, 5-hour figure</figcaption></figure>
+    <figure><img src="shots/v18-notif-duet-expanded.jpg" width="130"><figcaption>Two accounts, expanded —<br>reset lines, Weekly rows, Refresh</figcaption></figure>
+    <figure><img src="shots/v18-notif-single-collapsed.jpg" width="130"><figcaption>One account,<br>collapsed</figcaption></figure>
+    <figure><img src="shots/v18-notif-single-expanded.jpg" width="130"><figcaption>One account,<br>expanded</figcaption></figure>
   </div>
   <div class="cols" style="margin-top:5mm;">
     <div>
@@ -395,35 +427,35 @@
       <p style="font-size:8.8pt;">If an account's sign-in stops working, its data has gone stale for six hours, or an update is available, a small <b>dot</b> appears after its name collapsed and a labelled <b>strip</b> in the expanded panel. Nothing else posts separately.</p>
     </div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>8</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>9</span></div>
 </div>
 
 <!-- ================= PAGE 10 · SETTINGS ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">5</div><div><h2>Settings reference</h2><div class="sub">Four swipeable tabs — Accounts · Alerts · Appearance · More</div></div></div>
+  <div class="sechead"><div class="secnum">6</div><div><h2>Settings reference</h2><div class="sub">Four swipeable tabs — Accounts · Alerts · Appearance · More</div></div></div>
   <div class="shots">
-    <figure><img src="shots/v17-accounts.png" width="140"><figcaption><b>Accounts</b> — redesigned cards, three actions</figcaption></figure>
+    <figure><img src="shots/v18-accounts-email.jpg" width="140"><figcaption><b>Accounts</b> — cards with the email shown under each name</figcaption></figure>
     <figure><img src="shots/v16-settings-alerts.png" width="140"><figcaption><b>Alerts</b> — the notification, the ring, reset pings</figcaption></figure>
     <figure><img src="shots/v17-settings-appearance.png" width="140"><figcaption><b>Appearance</b> — density, chart height &amp; orientation</figcaption></figure>
     <figure><img src="shots/v16-settings-more.png" width="140"><figcaption><b>More</b> — polling, updates, About</figcaption></figure>
   </div>
   <table style="margin-top:4mm;">
     <tr><th style="width:24mm;">Tab · Setting</th><th>What it does</th></tr>
-    <tr><td>Accounts</td><td>Redesigned, shorter cards (CCRM-65 (Accounts Redesign)): mark · label · status dot · plan chip · ⋮. A status line ("Checked just now · renews in 1h 9m") plus a conditional line only when something needs saying — Free plan, renewal stopped, or a sign-in expiring inside 3 days. Three action cells — <b>Re-sign in · Clear · Dashboard</b> (ChatGPT: Sign in with a code · Clear · Settings). The ⋮ menu: Details, Rename, Accent colour, Remove account. <b>"+ Add account"</b> and <b>Reorder</b> — drag accounts into your own order (CCRM-71 (Account Order)) — sit at the bottom.</td></tr>
+    <tr><td>Accounts</td><td>Redesigned, shorter cards (CCRM-65 (Accounts Redesign)): mark · label · status dot · plan chip · ⋮. A status line ("Checked just now · renews in 1h 9m") plus a conditional line only when something needs saying — Free plan, renewal stopped, or a sign-in expiring inside 3 days. Each card also shows the <b>email</b> it signed in with, under its name (CCBG-34 (Account Display Name)). Three action cells — <b>Re-sign in · Clear · Dashboard</b> (ChatGPT: Sign in with a code · Clear · Settings). The ⋮ menu: Details, Rename, Accent colour, Remove account, <b>Clear usage history…</b> (CCRM-14 (Clear History)). <b>"+ Add account"</b> and <b>Reorder</b> — drag accounts into your own order (CCRM-71 (Account Order)) — sit at the bottom.</td></tr>
     <tr><td>Alerts · Always-on</td><td>The always-on notification on/off, and <b>Show accounts</b>: a <b>First</b> chip row and a <b>Second · optional</b> one (None to run single).</td></tr>
     <tr><td>Alerts · Tapping</td><td><b>Tapping a number opens</b> Cooldown on that account's tab, or that service's app.</td></tr>
     <tr><td>Alerts · Ring</td><td><b>Status-bar ring shows</b> First / Second / Whichever is higher. <b>System notification settings</b> opens Android's per-channel controls.</td></tr>
     <tr><td>Alerts · Reset pings</td><td>Per account: <b>5h reset</b> and <b>Weekly reset</b>, each Off / If busy / Always.</td></tr>
     <tr><td>Appearance</td><td><b>Theme</b> System / Light / Dark (Claude's dark theme now sits on true black (CCRM-76 (Black Room))) · <b>Density</b> Comfortable / Compact (CCRM-72 (Main Screen Redesign)) · <b>Chart height</b> Small / Medium (default) / Large (CCRM-75 (Chart Height)) · <b>Chart orientation</b> Time across / Time down (CCRM-77 (Transposed Chart)) · <b>Time format</b> 12-hour / 24-hour · <b>Usage display</b> Used / Left · <b>Reset time</b> Countdown / Clock time · <b>Show red past the pace mark</b>, one switch for the app and the notification · <b>Theme colour</b>: Per provider (default), Material You, Claude Orange and twelve more.</td></tr>
-    <tr><td>More</td><td><b>Polling</b> every 5 / 15 / 30 / 60 min · <b>Usage credits</b>, a card switch per account — the section only appears for accounts that have a credit budget · <b>Updates</b> with <b>Check for updates</b> (asks GitHub for the latest release) · <b>Diagnostics</b>: share your log · <b>About</b>: version, credits, Share feedback. Tap the version 7× and a <b>Debug</b> section appends below.</td></tr>
+    <tr><td>More</td><td><b>Polling</b> every 5 / 15 / 30 / 60 min · <b>Usage credits</b>, a card switch per account — the section only appears for accounts that have a credit budget · <b>Updates</b> with <b>Check for updates</b> (asks GitHub for the latest release) · <b>Diagnostics</b>: share your log · <b>About</b>: version, credits, Share feedback, <b>Share snapshot</b> (CCRM-24 (Share Card)). Tap the version 7× and a <b>Debug</b> section appends below.</td></tr>
   </table>
   <p class="muted" style="font-size:8.4pt; margin-top:2mm;">On the Fold's inner screen each tab lays its cards out in two columns. Swipe between tabs or tap their names.</p>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>9</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>10</span></div>
 </div>
 
 <!-- ================= PAGE 11 · TROUBLESHOOTING + PRIVACY ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">6</div><div><h2>Troubleshooting &amp; privacy</h2></div></div>
+  <div class="sechead"><div class="secnum">7</div><div><h2>Troubleshooting &amp; privacy</h2></div></div>
   <table>
     <tr><th>Symptom</th><th>Meaning / fix</th></tr>
     <tr><td>A half is dimmed, "stale" strip</td><td>Polls for that account have failed for six hours — you're seeing the last known numbers, never a blank. Usually temporary; self-heals on the next successful poll.</td></tr>
@@ -431,7 +463,8 @@
     <tr><td>"Claude doesn't report usage for the Free plan"</td><td>The account is on Claude's Free plan, or a Pro plan that lapsed. Anthropic refuses Free organisations at the usage endpoint; the app names the plan and re-checks it every poll. Upgrade to Pro, Max or Team, or remove the account.</td></tr>
     <tr><td>"Rate limited (429)"</td><td>The API asked us to back off; automatic retries with increasing delays (5 min → 1 h max).</td></tr>
     <tr><td>"Token refresh failed (HTTP 429)"</td><td>A <i>dead</i> refresh token, not real rate-limiting — Anthropic answers 429 for one. Fix: <b>"Re-sign in"</b> on that card.</td></tr>
-    <tr><td>My widgets / tile vanished</td><td>Expected on the v1.6 update — they were removed. Turn on the <b>always-on notification</b> (Settings → Alerts); it does the same job from the shade.</td></tr>
+    <tr><td>My Quick Settings tile is gone</td><td>Removed for good in v1.6 — nothing brings it back. Home-screen widgets returned in v1.8 as a new suite; add them fresh from the widget picker.</td></tr>
+    <tr><td>A widget stopped refreshing</td><td>Add Cooldown to One UI's <b>Never sleeping apps</b> (Settings → Battery → Background usage limits), especially if you don't also run the always-on notification.</td></tr>
     <tr><td>No reset ping arrived</td><td>Check notification permission, that the account's <b>5h</b> / <b>Weekly</b> reset isn't Off, and that <i>If busy</i> isn't hiding a window that never reached 80%.</td></tr>
     <tr><td>Anything else</td><td>Settings → More → <b>Diagnostics</b> shares the app log; the Debug section (7 taps on the version) shows the last raw response.</td></tr>
   </table>
@@ -443,25 +476,26 @@
     <li>Reading either usage API with a consumer token outside the official clients is not covered by Anthropic's or OpenAI's consumer terms; personal-use risk was accepted when this was built.</li>
     <li>Not affiliated with or endorsed by Anthropic, OpenAI or Google. Sideload-only, free, no accounts, no strings.</li>
   </ul>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>10</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>11</span></div>
 </div>
 
 <!-- ================= PAGE 12 · HISTORY ================= -->
 <div class="page">
-  <div class="sechead"><div class="secnum">7</div><div><h2>Version history &amp; dev notes</h2></div></div>
+  <div class="sechead"><div class="secnum">8</div><div><h2>Version history &amp; dev notes</h2></div></div>
   <table class="history">
     <tr><th style="width:14mm;">Ver.</th><th>Highlights</th></tr>
-    <tr><td><b>1.7</b></td><td><b>The main screen redesigned, the charts polished.</b> <b>Density</b> — Comfortable, or Compact's tap-to-expand one-line card (CCRM-72 (Main Screen Redesign)) — plus a layout you control: reorder, hide, or fold a card behind <b>More</b>, undone by <b>Reset layout</b> (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)). One status line replaces Refresh and two timestamps. The 7-day card toggles <b>All</b> vs. a per-model cap (CCRM-73 (Model Cap Chart)); guide labels moved inside the plot so the now-line sits under the bar's pace mark, and pace phrases read in <b>%</b>, not "points" (CCRM-74 (Chart Polish)). <b>Chart height</b> Small / Medium (default) / Large (CCRM-75 (Chart Height)); <b>Chart orientation</b> Time across / down (CCRM-77 (Transposed Chart)). Claude's dark theme now sits on true black (CCRM-76 (Black Room)). Accounts redesigned — status line, plan chip, three actions (CCRM-65 (Accounts Redesign)) — with draggable order (CCRM-71 (Account Order)). Usage history gains <b>Plan Fit</b> (CCRM-70 (Plan Fit)). The notification is now a <b>foreground service</b> (CCRM-67 (Pin Service), fixing CCBG-28 (Pin Sinks)); Refresh survives being offline (fixing CCBG-29 (Refresh Swallowed)); ChatGPT's idle window stopped self-counting (CCBG-30 (Phantom Window)); an honest User-Agent replaces the borrowed CLI one (CCRM-68 (Honest Agent)). <b>Known:</b> a narrow account label may still ellipsize (CCBG-24 (Duet Label Clamp)). Built with <b>Claude Sonnet 5</b>.</td></tr>
-    <tr><td><b>1.6</b></td><td><b>Two accounts on one notification, Settings on a diet, the Pulse icon.</b> The always-on notification carries a First and a Second account side by side, with the Weekly rows expanded — the panel now draws at full width whatever it holds, so a warning strip can't shrink the Weekly meters (CCBG-26 (Panel Scaling)). The status-bar ring drops its weekly dot and wears the shown account's colour (First / Second / Whichever is higher), solid red with an × at 100%. Reset pings are per account and per window, and now fire for an idle account too. Settings shrinks to four tabs — Accounts, Alerts, Appearance, More. Every Claude card shows its plan — Free, Pro, Max, Team Standard, Team Premium (CCRM-64 (Claude Plan Tag)) — and a Free account is told plainly it has no usage, not a server error (CCBG-27 (Free Plan 403)). New Pulse launcher tile; each tab is a room (ivory and serif for Claude, neutral for ChatGPT). <b>Removed:</b> the home-screen widgets, the Quick Settings tile, the standalone threshold and pace alerts, three notification styles and three status-bar glyphs, and the computer-token backup — sign in on the phone for both services (CCRM-63 (Token Import Removal)) — placed widgets and tiles disappear on update. Fixed: the two provider marks now render the same size. Built with <b>Claude Fable 5.1</b>, <b>Opus 5</b> and <b>Sonnet 5</b>.</td></tr>
-    <tr><td><b>1.5</b></td><td><b>ChatGPT accounts, and the app becomes just "Cooldown".</b> A ChatGPT account is added from "+ Add account" and signed in with a <b>short code</b> at auth.openai.com — no computer, no copied token — then behaves exactly like a Claude one. Each account carries its provider's mark and, by default, its provider's colour, overridable globally or per account. A window an account doesn't have is hidden rather than drawn as a dash. Gemini (Google Antigravity) is listed but greyed out. Built with <b>Claude Opus 5</b> and <b>Sonnet 5</b>.</td></tr>
-    <tr><td><b>1.4</b></td><td><b>As many accounts as you use.</b> Accounts moved to a proper registry — "+ Add account" for a third, fourth, or more, each with its own tab, renamed from its card's ⋮ menu. A clock-hand pace needle on the status-bar gauge. Fixed: alerts switched off in Settings left their strip stuck on screen. Built with <b>Claude Sonnet 5</b>.</td></tr>
+    <tr><td><b>1.8</b></td><td><b>Home-screen widgets are back, and accounts show their email.</b> Four widgets in the picker under <b>Cooldown</b> — <b>Ring</b>, <b>Number</b>, <b>Countdown</b> and <b>All accounts</b> (CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face), CCRM-82 (Accounts Strip)) — each filling whatever size you place it at, from 1×1 to a full row, with the same ring the status bar draws now painted by one renderer everywhere (CCRM-83 (Ring Renderer), CCBG-44 (Widget Fill)). Adding one opens its settings — account, window, background — changeable later from its long-press <b>Settings</b>; widgets placed before v1.6 do not return on their own. Each account now shows the <b>email</b> it signed in with, in Settings → Accounts and ⋮ → Details, and Rename suggests a name from it (CCBG-34 (Account Display Name)); <b>Clear usage history…</b> starts an account's trend over without removing it (CCRM-14 (Clear History)). <b>Share snapshot</b> in the main screen's ⋮ turns the ring, the bars and the 5h trend into one square image (CCRM-24 (Share Card)). <b>Fixed:</b> the two-account notification keeps both names whole with their dots (CCBG-24 (Duet Label Clamp), CCBG-37 (Duet Dot Squeeze)); the always-on notification no longer crashes with one account (CCBG-31 (Alert Crash)); the sign-in card's buttons wrap cleanly on narrow phones (CCBG-32 (Accounts Button Wrap)); ChatGPT sign-in names the security setting it needs (CCBG-33 (Device-Code Prerequisite)); each account card's ⋮ lines up with its refresh button (CCBG-42 (Kebab Drift)).</td></tr>
+    <tr><td><b>1.7</b></td><td><b>The main screen redesigned, the charts polished.</b> <b>Density</b> — Comfortable, or Compact's tap-to-expand one-line card (CCRM-72 (Main Screen Redesign)) — plus a layout you control: reorder, hide, or fold a card behind <b>More</b>, undone by <b>Reset layout</b> (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)). One status line replaces Refresh and two timestamps. The 7-day card toggles <b>All</b> vs. a per-model cap (CCRM-73 (Model Cap Chart)); guide labels moved inside the plot so the now-line sits under the bar's pace mark, and pace phrases read in <b>%</b>, not "points" (CCRM-74 (Chart Polish)). <b>Chart height</b> Small / Medium (default) / Large (CCRM-75 (Chart Height)); <b>Chart orientation</b> Time across / down (CCRM-77 (Transposed Chart)). Claude's dark theme now sits on true black (CCRM-76 (Black Room)). Accounts redesigned — status line, plan chip, three actions (CCRM-65 (Accounts Redesign)) — with draggable order (CCRM-71 (Account Order)). Usage history gains <b>Plan Fit</b> (CCRM-70 (Plan Fit)). The notification is now a <b>foreground service</b> (CCRM-67 (Pin Service), fixing CCBG-28 (Pin Sinks)); Refresh survives being offline (fixing CCBG-29 (Refresh Swallowed)); ChatGPT's idle window stopped self-counting (CCBG-30 (Phantom Window)); an honest User-Agent replaces the borrowed CLI one (CCRM-68 (Honest Agent)). <b>Known:</b> a narrow account label may still ellipsize (CCBG-24 (Duet Label Clamp)).</td></tr>
+    <tr><td><b>1.6</b></td><td><b>Two accounts on one notification, Settings on a diet, the Pulse icon.</b> The always-on notification carries a First and a Second account side by side, with the Weekly rows expanded — the panel now draws at full width whatever it holds, so a warning strip can't shrink the Weekly meters (CCBG-26 (Panel Scaling)). The status-bar ring drops its weekly dot and wears the shown account's colour (First / Second / Whichever is higher), solid red with an × at 100%. Reset pings are per account and per window, and now fire for an idle account too. Settings shrinks to four tabs — Accounts, Alerts, Appearance, More. Every Claude card shows its plan — Free, Pro, Max, Team Standard, Team Premium (CCRM-64 (Claude Plan Tag)) — and a Free account is told plainly it has no usage, not a server error (CCBG-27 (Free Plan 403)). New Pulse launcher tile; each tab is a room (ivory and serif for Claude, neutral for ChatGPT). <b>Removed:</b> the home-screen widgets, the Quick Settings tile, the standalone threshold and pace alerts, three notification styles and three status-bar glyphs, and the computer-token backup — sign in on the phone for both services (CCRM-63 (Token Import Removal)) — placed widgets and tiles disappear on update. Fixed: the two provider marks now render the same size.</td></tr>
+    <tr><td><b>1.5</b></td><td><b>ChatGPT accounts, and the app becomes just "Cooldown".</b> A ChatGPT account is added from "+ Add account" and signed in with a <b>short code</b> at auth.openai.com — no computer, no copied token — then behaves exactly like a Claude one. Each account carries its provider's mark and, by default, its provider's colour, overridable globally or per account. A window an account doesn't have is hidden rather than drawn as a dash. Gemini (Google Antigravity) is listed but greyed out.</td></tr>
+    <tr><td><b>1.4</b></td><td><b>As many accounts as you use.</b> Accounts moved to a proper registry — "+ Add account" for a third, fourth, or more, each with its own tab, renamed from its card's ⋮ menu. A clock-hand pace needle on the status-bar gauge. Fixed: alerts switched off in Settings left their strip stuck on screen.</td></tr>
     <tr><td><b>1.3</b></td><td><b>A status-bar meter you can read, one alert surface.</b> The tiny status-bar icon rebuilt around its real rendered size, with a theme-coloured 5-hour ring and a pace line; every alert for every profile folds into the pinned notification's one panel; a new hourglass launcher icon; Used-or-Left and countdown-or-clock display switches; typed error messages and a shareable app log.</td></tr>
-    <tr><td><b>1.1–1.2</b></td><td><b>Credits, a readable chart, pace everywhere.</b> Pay-as-you-go <b>usage credits</b> on the main screen; a rebuilt <b>pace chart</b> with an even-pace line, per-reading dots and threshold guides; the even-pace tick on every bar; automatic update checks. (The widget faces and pace alerts these versions added were retired in 1.6.) Built with <b>Claude Opus 5</b> and <b>Fable 5</b>.</td></tr>
-    <tr><td><b>1.0</b></td><td><b>First official release.</b> The v0.1–v0.14 beta, now official: live 5-hour &amp; 7-day windows for Personal + Work, usage history, pinned notification, granular alerts, burn-rate forecast, on-phone sign-in — private, no servers, backed up. Prototyped and built in a weekend by <b>Claude Fable 5</b>; the native sign-in Fable declined, and all the docs, finished by <b>Claude Opus 4.8</b>.</td></tr>
+    <tr><td><b>1.1–1.2</b></td><td><b>Credits, a readable chart, pace everywhere.</b> Pay-as-you-go <b>usage credits</b> on the main screen; a rebuilt <b>pace chart</b> with an even-pace line, per-reading dots and threshold guides; the even-pace tick on every bar; automatic update checks. (The widget faces and pace alerts these versions added were retired in 1.6.)</td></tr>
+    <tr><td><b>1.0</b></td><td><b>First official release.</b> The v0.1–v0.14 beta, now official: live 5-hour &amp; 7-day windows for Personal + Work, usage history, pinned notification, granular alerts, burn-rate forecast, on-phone sign-in — private, no servers, backed up.</td></tr>
     <tr><td>0.12–0.14</td><td><b>Native sign-in, history, distribution.</b> "Sign in on this phone" — the PKCE flow Claude Code uses, browser picker included (0.12); usage history, the always-on notification, granular alerts, editable profile names, a permanent signing key (0.13); feedback by email and <b>Check for updates</b> against GitHub Releases (0.14).</td></tr>
     <tr><td>0.1–0.11</td><td>The beta — first widget and app, Material You polish, usage alerts, the 0.5 redesign, two profiles, on-phone poll history with a burn-rate forecast, QR token import, plan badges and sign-in expiry warnings, the <b>Claude Cooldown</b> rename.</td></tr>
   </table>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>11</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>12</span></div>
 </div>
 
 <!-- ================= PAGE 13 · DEV NOTES + CREDITS ================= -->
@@ -469,7 +503,7 @@
   <div class="sechead"><div class="secnum">✦</div><div><h2>For the curious</h2><div class="sub">how it's built — and how to rebuild it</div></div></div>
   <h3 style="margin-top:2mm;">For future rebuilds</h3>
   <ul class="dots">
-    <li>Single-module Android project — Kotlin · Jetpack Compose · WorkManager · OkHttp · min SDK 31, target 36. No widget framework any more: the notification is plain RemoteViews.</li>
+    <li>Single-module Android project — Kotlin · Jetpack Compose · WorkManager · OkHttp · min SDK 31, target 36. Widgets returned in v1.8 as home-screen AppWidgets, painted by the same ring renderer as the status bar (CCRM-83 (Ring Renderer)); the notification itself is still plain RemoteViews.</li>
     <li>Build (signed release): <code class="inline">JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleRelease</code> → APK in <code class="inline">app/build/outputs/apk/release/</code>. Signing reads a gitignored <code class="inline">keystore.properties</code> + <code class="inline">.jks</code> at the repo root — back them up; losing them means no more updates.</li>
     <li>The launcher icon is four VectorDrawables on one 108-unit grid (foreground, background, monochrome, and the in-app round copy) — the same ECG geometry in each, so About and the drawer show one picture.</li>
     <li>If Anthropic or OpenAI changes an undocumented response schema, the parsers ignore unknown fields; if bars go blank, check the raw JSON in the Debug section first.</li>
@@ -486,11 +520,11 @@
       </g>
     </svg>
     <div>
-      <p style="font-weight:700; font-size:10.5pt;">Built by Robin Richard Rajan — with Claude Code, by a few Claude models.</p>
-      <p class="muted" style="font-size:8.6pt; margin-top:1mm;">Prototyped and built in a weekend by <b>Claude Fable 5</b> — the app and this guide's first drafts. When the OAuth sign-in tripped Fable's cybersecurity guardrails, <b>Claude Opus 4.8</b> built that handshake and finished the docs. <b>Opus 5</b> and <b>Sonnet 5</b> brought ChatGPT aboard; <b>Fable 5.1</b> ran the v1.6 arc — the two-account notification, the diet and the Pulse tile. <b>Sonnet 5</b> ran the v1.7 arc — the main screen redesign, the chart polish, and Plan Fit. If you'd like the APK or want to build something like this, just ask.</p>
+      <p style="font-weight:700; font-size:10.5pt;">Built by Robin Richard Rajan.</p>
+      <p class="muted" style="font-size:8.6pt; margin-top:1mm;">Personal sideloaded app — not on any store, not affiliated with Anthropic, OpenAI or Google. If you'd like the APK or want to build something like this, just ask.</p>
     </div>
   </div>
-  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.7 (September 2026)</span><span>12</span></div>
+  <div class="foot"><span><b>Cooldown</b> · User Guide · v1.8 (September 2026)</span><span>13</span></div>
 </div>
 
 </body>

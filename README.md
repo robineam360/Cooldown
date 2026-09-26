@@ -25,7 +25,7 @@ showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …
 
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.7.pdf) — the full
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.8.pdf) — the full
 install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
@@ -67,7 +67,21 @@ a 2-page overview.
 
 ## What it does
 
-- **The main screen, as open or as compact as you want** 🆕 — a **Density** switch in
+- **Home-screen widgets are back** 🆕 — four faces in the picker under **Cooldown**: **Ring**
+  (one account as a gauge), **Number** (the big percentage), **Countdown** (when the window
+  comes back, ticking live) and **All accounts** (every account as its own ring, side by side —
+  never a sum). Adding one opens its settings — account, window, background — and each one
+  **fills whatever size you place it at**, from 1×1 to a full row, painted by the same ring
+  renderer as the status bar (CCRM-78 (Widgets Reborn), CCRM-79 (Ring Face), CCRM-80 (Number
+  Face), CCRM-81 (Countdown Face), CCRM-82 (Accounts Strip), CCRM-83 (Ring Renderer), CCBG-44
+  (Widget Fill)). Nothing placed before v1.6 comes back on its own
+- **Accounts show their email** 🆕 — under the name in Settings → Accounts and first in
+  ⋮ → Details; Rename suggests a name from it (CCBG-34 (Account Display Name)).
+  **Clear usage history…** starts an account's trend over without removing it (CCRM-14 (Clear
+  History))
+- **Share snapshot** 🆕 — a square image of the ring, the bars with pace and resets, and the
+  5h trend, from the main screen's ⋮ (CCRM-24 (Share Card))
+- **The main screen, as open or as compact as you want** — a **Density** switch in
   Settings → Appearance folds every card to a title, a bar and one line (tap to open its chart
   in place) or keeps today's fully-open **Comfortable** layout; a ⋮ → **Main screen layout**
   sheet reorders, hides or tucks cards behind "More", per account, with one always left in view
@@ -137,18 +151,24 @@ a 2-page overview.
 - **The Pulse icon** 🆕 — an ECG beat on charcoal: Claude terracotta in, ChatGPT green out,
   the red spike crossing a dashed even-pace ceiling. No trademarks on the tile
 
-**Gone in v1.6:** the home-screen widgets, the Quick Settings tile, the standalone threshold
-and pace alerts, and the three other notification styles and status-bar glyphs. The
-notification does their job in one place. **Placed widgets and tiles disappear when you
-update** — nothing else to do.
+**Gone in v1.6:** the Quick Settings tile, the standalone threshold and pace alerts, and the
+three other notification styles and status-bar glyphs — the always-on notification does their
+job in one place, and **the tile stays removed for good**. **Home-screen widgets are back as
+of v1.8**, as a new suite (below) — nothing placed before v1.6 returns on its own; add the new
+ones fresh from the widget picker.
 
 ## Screenshots
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>The always-on notification</b> — unchanged in v1.7, now backed by a foreground service so it doesn't go stale</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v16-notif-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v17-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account in Comfortable density, dark theme"><br><sub><b>The redesigned main screen</b> 🆕 — Comfortable density; Claude's room now goes black in dark theme</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-home.jpg" width="300" alt="A home screen mixing several Cooldown widget faces and sizes"><br><sub><b>Home-screen widgets</b> 🆕 — back in v1.8, mixing faces and sizes on one page</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-strip.jpg" width="300" alt="The All accounts widget face, every account as its own ring"><br><sub><b>All accounts</b> 🆕 — every account as its own ring, side by side</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-countdown.jpg" width="300" alt="The Countdown widget face at several sizes"><br><sub><b>Countdown</b> 🆕 — when the window comes back, at every size</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-notif-duet-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>The always-on notification</b> — unchanged in v1.8, now backed by a foreground service so it doesn't go stale</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-notif-duet-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v17-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account in Comfortable density, dark theme"><br><sub><b>The redesigned main screen</b> — Comfortable density; Claude's room now goes black in dark theme</sub></td>
   </tr>
   <tr>
     <td align="center"><img src="release/docs/src/shots/v17-main-claude-light.jpg" width="300" alt="Main screen, a Claude account, light theme"><br><sub><b>Light theme</b> — the ivory room keeps its warmth; only dark went black</sub></td>
@@ -169,12 +189,11 @@ update** — nothing else to do.
 
 <p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
 
-All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.7
-build — the redesigned main screen, Compact density, the layout sheet, the transposed chart, the
-redesigned Accounts tab and Plan Fit are shown above and walked through in the
-[PDF guide](release/docs/Cooldown-User-Guide-v1.7.pdf); the two notification shots are kept from
-v1.6, since the notification itself didn't change, and are the lock screen, which is where it
-lives. **Usage history** fills in over time as your windows close.
+All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.8
+build — the home-screen widgets, the redesigned main screen, Compact density, the layout sheet,
+the transposed chart, the redesigned Accounts tab and Plan Fit are shown above and walked through
+in the [PDF guide](release/docs/Cooldown-User-Guide-v1.8.pdf); the notification shots are the lock
+screen, which is where it lives. **Usage history** fills in over time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
 
@@ -296,8 +315,28 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.7.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.8.pdf).
 
+- **1.8** — **Home-screen widgets are back, and accounts show their email.** Four widgets in
+  the picker under **Cooldown** — **Ring** (one account as a gauge), **Number** (the big
+  percentage), **Countdown** (when the window comes back, ticking live) and **All accounts**
+  (every account as its own ring, side by side — never a sum) (CCRM-78 (Widgets Reborn),
+  CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face), CCRM-82 (Accounts
+  Strip)). Adding one opens its settings — account, window, background — changeable later from
+  its long-press **Settings**; every widget **fills whatever size you place it at**, from 1×1
+  to a full row, painted by the same ring renderer as the status bar (CCRM-83 (Ring Renderer),
+  CCBG-44 (Widget Fill)); widgets placed before v1.6 do not return on their own. Each account
+  now shows the **email** it signed in with, under its name in Settings → Accounts and first in
+  ⋮ → Details, with Rename suggesting a name from it (CCBG-34 (Account Display Name));
+  **Clear usage history…** starts an account's trend over without removing it (CCRM-14 (Clear
+  History)). **Share snapshot**, in the main screen's ⋮, turns the ring, the bars and the 5h
+  trend into one square image (CCRM-24 (Share Card)). **Fixed:** the two-account notification
+  keeps both names whole with their dots (CCBG-24 (Duet Label Clamp), CCBG-37 (Duet Dot
+  Squeeze)); the always-on notification no longer crashes with one account (CCBG-31 (Alert
+  Crash)); the sign-in card's buttons wrap cleanly on narrow phones (CCBG-32 (Accounts Button
+  Wrap)); ChatGPT sign-in names the security setting it needs (CCBG-33 (Device-Code
+  Prerequisite)); each account card's ⋮ lines up with its refresh button (CCBG-42 (Kebab
+  Drift)).
 - **1.7** — **The main screen redesigned, the Accounts tab to match, and a notification that
   stays alive.** The main screen (CCRM-72 (Main Screen Redesign)) gets a **Compact** density
   that folds each card to a title, a bar and one line — tap to open the chart in place — plus a
@@ -316,8 +355,7 @@ changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.7.pdf).
   Window)); and the app finally identifies itself honestly to Anthropic instead of borrowing the
   Claude Code CLI's name (CCRM-68 (Honest Agent)). Diagnostics moves behind the version-tap
   unlock (CCRM-34 (Diagnostics Log)). **Known issue:** CCBG-24 (Duet Label Clamp) — a long
-  notification label can still clip beside a three-character figure under Left. Built with
-  **Claude Fable 5.1**, **Opus 5** and **Sonnet 5**.
+  notification label can still clip beside a three-character figure under Left.
 
 - **1.6** — **Two accounts on one notification, Settings on a diet, the Pulse icon.** The
   always-on notification now carries a **First** and a **Second** account side by side, with
@@ -366,10 +404,7 @@ changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.7.pdf).
 
 ## Credits
 
-Made by **Robin Richard Rajan**, built with [Claude Code](https://claude.com/claude-code) 🧡 — the
-app was prototyped and **built in a weekend by Claude Fable 5**, with the native sign-in and the
-docs finished by **Claude Opus 4.8** (Fable declined the OAuth handshake on cybersecurity grounds),
-ChatGPT accounts by **Claude Opus 5** and **Sonnet 5**, and the v1.6 arc run by **Claude Fable 5.1**.
+Made by **Robin Richard Rajan**.
 
 Licensed under the [MIT License](LICENSE). See [RELEASING.md](RELEASING.md) for the
 update workflow.
