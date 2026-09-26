@@ -118,6 +118,15 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
+### CCBG-45 · Single Panel Wording — the one-account notification says "5-hour window" and "7-day"
+- **Status:** Open — found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);
+  not blocking v1.8. A visible wording change, so it needs a wireframe (CLAUDE.md §2) — or the approved
+  Duet wording applied as-is, if Robin rules it restores an approved design.
+- **Severity:** Low (wording)
+- **Symptom:** the pinned notification with one account reads "Work · 5-hour window" collapsed and
+  "7-day" in its expanded rows, while the two-account notification reads "Work · 5h" and "Work · Weekly".
+  Tight surfaces say "5h" and "Weekly" everywhere else (R1 in ROADMAP's v1.8 section).
+
 ### CCBG-43 · Widget Settings Hidden — a widget added on One UI can't be pointed at an account
 - **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (adding a Ring opens "Add
   widget"; Back places nothing — `design/research/2026-09-26-v18-revh-device-check/07`) — not yet in a
