@@ -339,6 +339,7 @@ class UsageRepository(private val context: Context) {
             credStore.save(profile, grant.creds, stampAdded = true)
             cache.setAuthState(profile, AuthState.OK)
             cache.setTokenMeta(profile, 0L, grant.plan, null)
+            cache.setEmail(profile, grant.email)
             cache.setRefreshExpiryEstimated(profile, false)
             cache.setNativeSignIn(profile, true)
             cache.setLastRenewedAt(profile, 0L)
@@ -522,6 +523,9 @@ class UsageRepository(private val context: Context) {
     /** Re-read the plan this often when nothing forces it; a plan changes rarely. */
     private val PLAN_RECHECK_MS = 24 * 3_600_000L
 
+    /** CCBG-34 (Account Display Name): how soon an account without an email is re-read. */
+    private val EMAIL_RECHECK_MS = 3_600_000L
+
     /**
      * CCRM-64 (Claude Plan Tag): reads `/api/oauth/profile` and stores the plan label
      * and rate-limit tier the account card shows. Claude only — ChatGPT's plan rides its
@@ -537,14 +541,18 @@ class UsageRepository(private val context: Context) {
         force: Boolean,
     ): ClaudePlan.Info? {
         if (profile.provider != Provider.CLAUDE) return null
+        // CCBG-34 (Account Display Name): an account signed in before v1.8 has no email
+        // yet — read the profile within the hour rather than waiting out the day.
         val due = force || cache.plan(profile) == null ||
-            now - cache.planCheckedAt(profile) > PLAN_RECHECK_MS
+            now - cache.planCheckedAt(profile) > PLAN_RECHECK_MS ||
+            (cache.email(profile) == null && now - cache.planCheckedAt(profile) > EMAIL_RECHECK_MS)
         if (!due) return null
         return try {
             val resp = ApiClient.fetchProfile(token)
             if (resp.code != 200) return null
             val info = ClaudePlan.parse(resp.body) ?: return null
             cache.setPlanCheckedAt(profile, now)
+            cache.setEmail(profile, info.email)
             if (info.plan != cache.plan(profile) || info.tier != cache.tier(profile)) {
                 cache.setTokenMeta(profile, cache.refreshExpiresAt(profile), info.plan, info.tier)
             }
@@ -580,6 +588,7 @@ class UsageRepository(private val context: Context) {
             }
             credStore.save(profile, grant.creds)
             cache.setAuthState(profile, AuthState.OK)
+            cache.setEmail(profile, grant.email)
             cache.setLastRenewedAt(profile, System.currentTimeMillis())
             cache.setFirstRefreshFailAt(profile, 0L)
             val rotated = grant.creds.refreshToken != creds.refreshToken

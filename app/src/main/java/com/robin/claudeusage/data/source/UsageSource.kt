@@ -37,7 +37,8 @@ interface UsageSource {
     fun isAuthFailure(status: Int): Boolean
 }
 
-data class TokenGrant(val creds: Credentials, val plan: String?, val tier: String?)
+/** [email]: the login the grant belongs to, when the response says (CCBG-34 (Account Display Name)). */
+data class TokenGrant(val creds: Credentials, val plan: String?, val tier: String?, val email: String? = null)
 
 object Sources {
     fun of(provider: Provider): UsageSource = when (provider) {

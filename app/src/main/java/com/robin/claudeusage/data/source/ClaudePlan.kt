@@ -30,6 +30,8 @@ object ClaudePlan {
         val tier: String?,
         /** Raw `organization_type`, kept for diagnostics. */
         val organizationType: String?,
+        /** `account.email` — CCBG-34 (Account Display Name); shown only inside the app. */
+        val email: String? = null,
     ) {
         /** The usage endpoint answers 403 for exactly this plan. */
         val usageBlocked: Boolean get() = isBlockedPlan(plan)
@@ -50,7 +52,7 @@ object ClaudePlan {
             hasMax = account?.optBoolean("has_claude_max", false) == true,
             hasPro = account?.optBoolean("has_claude_pro", false) == true,
         ) ?: return null
-        Info(plan, tier, orgType)
+        Info(plan, tier, orgType, account?.optString("email")?.ifEmpty { null })
     } catch (_: Exception) {
         null
     }

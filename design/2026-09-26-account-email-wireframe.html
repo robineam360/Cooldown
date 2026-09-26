@@ -206,7 +206,7 @@
 
   <p class="eyebrow">CCBG-34 (Account Display Name) · wireframe</p>
   <h1>Which account is which</h1>
-  <p class="review">Awaiting Robin's approval</p>
+  <p class="review">Approved by Robin, 2026-09-26 (Q1–Q4 as recommended)</p>
   <p class="lede">Raja's feedback, read together with Robin's 2026-09-25 call: once an account isn't named by hand,
     there's no way to tell the eam360.com login from the gmail.com one apart from opening each and checking. The fix
     is to show the email the account signed in with. This sheet is a revision of
@@ -457,20 +457,20 @@
     Display Name); an end-ellipsis on a long local part (e.g. "robin.richard.rajan.longname&hellip;") would hide
     exactly the thing this line exists to show. Implementation is two <code>Text</code>s in a <code>Row</code>,
     split at "@" &mdash; no experimental API needed.</span>
-    <div class="dec">Decision: </div>
+    <div class="dec">Decision: <b>as recommended</b> (Robin, 2026-09-26).</div>
   </p>
 
   <p class="q"><b>Q2 &mdash; Unknown email (state 2): nothing, or a placeholder?</b>
     <br><span class="rec"><b>Recommend nothing</b> &mdash; a placeholder ("email pending&hellip;") is one more
     line that changes shape the moment the next daily profile fetch lands, for a case that's already rare (only
     an account signed in before this shipped, until its next fetch).</span>
-    <div class="dec">Decision: </div>
+    <div class="dec">Decision: <b>as recommended</b> (Robin, 2026-09-26).</div>
   </p>
 
   <p class="q"><b>Q3 &mdash; Label already equals the email (state 5): show the line anyway, or suppress it?</b>
     <br><span class="rec"><b>Recommend suppress</b> &mdash; repeating the exact same text on the line below adds
     no information and just spends a line.</span>
-    <div class="dec">Decision: </div>
+    <div class="dec">Decision: <b>as recommended</b> (Robin, 2026-09-26).</div>
   </p>
 
   <p class="q"><b>Q4 &mdash; Rename suggestion: local part or full email, as a chip or as supporting text?</b>
@@ -482,7 +482,7 @@
     <br><b>Seat amendment:</b> the local part alone would name both of Robin's logins "robin" &mdash; the very
     collision this fixes. Suggest the local part only when no other account shares it; otherwise the
     domain's first label ("eam360", "gmail"), which is what tells the two apart.</span>
-    <div class="dec">Decision: </div>
+    <div class="dec">Decision: <b>as recommended</b> (Robin, 2026-09-26).</div>
   </p>
 
 </div>

@@ -66,6 +66,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -113,6 +114,7 @@ import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.CodexDeviceSignIn
 import com.robin.claudeusage.data.OAuthSignIn
 import com.robin.claudeusage.data.Profile
+import com.robin.claudeusage.data.AccountEmail
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.ErrorKind
@@ -1032,9 +1034,18 @@ fun SettingsScreen(
     // CCRM-6 (Multi-Account): both live here rather than inside TokenCard so they survive
     // the card recomposing under them, and so the remove path can bump namesTick once.
     renaming?.let { profile ->
+        val current = labels[profile] ?: cacheSettings.profileLabel(profile)
+        val email = cacheSettings.email(profile)
         RenameAccountDialog(
-            current = labels[profile] ?: cacheSettings.profileLabel(profile),
+            current = current,
             fallback = repo.registry().defaultLabelFor(profile.key),
+            email = email,
+            // CCBG-34 (Account Display Name), Q4: never a name another login would share.
+            suggestion = AccountEmail.suggestion(
+                email,
+                repo.registry().all().filter { it != profile }.mapNotNull { cacheSettings.email(it) },
+                current, ProfileRegistry.MAX_LABEL,
+            ),
             onDismiss = { renaming = null },
             onSave = { name ->
                 repo.renameProfile(profile, name)
@@ -1088,6 +1099,24 @@ fun SettingsScreen(
 }
 
 /**
+ * CCBG-34 (Account Display Name), wireframe Q1: the email in bodySmall, the local part
+ * ellipsizing in the middle so the `@domain` — what tells two logins apart — stays whole.
+ */
+@Composable
+private fun AccountEmailLine(email: String, modifier: Modifier = Modifier) {
+    val (local, domain) = AccountEmail.split(email)
+    val style = MaterialTheme.typography.bodySmall
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(modifier.semantics(mergeDescendants = true) {}) {
+        Text(
+            local, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false),
+        )
+        if (domain.isNotEmpty()) Text(domain, style = style, color = color, maxLines = 1)
+    }
+}
+
+/**
  * CCRM-6 (Multi-Account): rename lives behind the card's ⋮ rather than in a standing text
  * field, so a card at rest looks exactly as it did before three accounts were possible.
  */
@@ -1095,6 +1124,8 @@ fun SettingsScreen(
 private fun RenameAccountDialog(
     current: String,
     fallback: String,
+    email: String? = null,
+    suggestion: String? = null,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
 ) {
@@ -1112,6 +1143,20 @@ private fun RenameAccountDialog(
                     supportingText = { Text("${name.length}/${ProfileRegistry.MAX_LABEL}") },
                     modifier = Modifier.fillMaxWidth(),
                 )
+                // CCBG-34 (Account Display Name), Q4: a tap fills the field.
+                if (suggestion != null && email != null && name != suggestion) {
+                    Spacer(Modifier.height(4.dp))
+                    SuggestionChip(
+                        onClick = { name = suggestion },
+                        label = {
+                            Text(
+                                "Use \"$suggestion\" (from $email)",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "Used everywhere — tabs, notifications and shortcuts. " +
@@ -1255,6 +1300,10 @@ private fun AccountDetailsDialog(
         title = { Text(label) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                // CCBG-34 (Account Display Name): the login, first.
+                repo.cacheSettings().email(profile)?.let {
+                    Text("Email: $it", style = MaterialTheme.typography.bodyMedium)
+                }
                 Text(
                     if (snapshot.lastAttemptAt > 0) {
                         "Last checked: ${Fmt.dayTimeWithAgo(snapshot.lastAttemptAt, use24h)}"
@@ -1623,6 +1672,12 @@ private fun TokenCard(
                         onPicked = { showAccentPicker = false; stateKey++ },
                     )
                 }
+            }
+
+            // CCBG-34 (Account Display Name): the login under the name, in the app only.
+            val email = remember(stateKey) { repo.cacheSettings().email(profile) }
+            if (!awaitingCode && hasToken && AccountEmail.shownUnder(label, email)) {
+                AccountEmailLine(email!!, Modifier.padding(start = 26.dp))
             }
 
             // The sign-in completion step takes over the card while active, for

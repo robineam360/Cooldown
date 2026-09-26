@@ -85,7 +85,7 @@ class UsageCache(context: Context) {
             "authState", "plan", "tier", "signInTokenKeys", "nativeSignIn",
             "refreshExpiresAt", "refreshExpiryEstimated", "lastRenewedAt",
             "firstRefreshFailAt", "backoffUntil", "consecutive429",
-            "creditsVisible", "customLabel", "accent",
+            "creditsVisible", "customLabel", "accent", "email",
             "resetPingSession", "resetPingWeekly",
             // retired in v1.6 (CCRM-61 (Settings Diet)); still swept so residue leaves
             // with the account. They are plain strings, not references to live
@@ -631,6 +631,18 @@ class UsageCache(context: Context) {
             .putString(k(profile, "plan"), plan)
             .putString(k(profile, "tier"), tier)
             .apply()
+    }
+
+    /**
+     * CCBG-34 (Account Display Name): the email the account signed in with — Claude's
+     * profile `account.email`, ChatGPT's id_token `email`. Shown only in Settings → Accounts
+     * and its dialogs, never on the notification, widgets, share card or in the log.
+     */
+    fun email(profile: Profile): String? = prefs.getString(k(profile, "email"), null)
+
+    fun setEmail(profile: Profile, email: String?) {
+        if (email.isNullOrBlank()) return
+        prefs.edit().putString(k(profile, "email"), email.trim()).apply()
     }
 
     /** CCRM-64 (Claude Plan Tag): when the profile endpoint was last read for the plan. */

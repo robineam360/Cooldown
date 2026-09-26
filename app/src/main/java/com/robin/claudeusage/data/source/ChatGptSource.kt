@@ -122,8 +122,8 @@ object ChatGptSource : UsageSource {
             } else {
                 jwtExpiryMs(access)
             }
-            val claims = o.optString("id_token").takeIf { it.isNotEmpty() }
-                ?.let { authClaims(it) }
+            val idToken = o.optString("id_token").takeIf { it.isNotEmpty() }
+            val claims = idToken?.let { authClaims(it) }
             TokenGrant(
                 creds = Credentials(
                     accessToken = access,
@@ -134,6 +134,8 @@ object ChatGptSource : UsageSource {
                 ),
                 plan = claims?.optString("chatgpt_plan_type")?.ifEmpty { null },
                 tier = null,
+                // CCBG-34 (Account Display Name): the id_token's own `email` claim.
+                email = idToken?.let { jwtPayload(it)?.optString("email")?.ifEmpty { null } },
             )
         }
     } catch (_: Exception) {

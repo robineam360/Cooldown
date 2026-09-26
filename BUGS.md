@@ -77,10 +77,16 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
-- **Status:** Open — **meaning settled by Robin, 2026-09-25:** after adding an account, a user can't
-  tell which login it is (the eam360.com one or the gmail.com one) unless they rename it by hand.
-  So the fix is to show the email the account signed in with. It needs a wireframe (CLAUDE.md §2)
-  before it is built.
+- **Status:** **Fixed 2026-09-26** (unit tests green, `AccountEmailTest`); not yet seen on the phone,
+  not yet in a release. **Wireframe approved by Robin 2026-09-26**
+  (`design/2026-09-26-account-email-wireframe.html`, Q1–Q4 as recommended; Robin wants it in v1.8).
+  Built: `UsageCache.email` per account, from Claude's profile `account.email` (re-read within the
+  hour while unknown, then with the daily plan check) and ChatGPT's id_token `email` (sign-in and any
+  renewal that carries an id_token); removed with the account. The Accounts card shows it under the
+  name (bodySmall, middle ellipsis keeping the `@domain`), not when the name already is the email and
+  not while signed out; ⋮ → Details leads with "Email:"; Rename offers a chip — the local part, or the
+  domain's first label when another login shares it. Never on the notification, widgets, share card
+  or in the log.
 - **Recommended placement, to wireframe:** only inside the app, where the phone's owner is the
   reader. That means the Settings → Accounts card, as a small line under the account name, and the
   ⋮ → Details sheet. The email should also be offered as the suggested name when an account is
