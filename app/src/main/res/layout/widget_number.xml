@@ -152,6 +152,17 @@
                             android:layout_marginStart="4dp"
                             android:letterSpacing="0.08" />
                     </LinearLayout>
+                    <TextView
+                        android:id="@+id/num_fig_below"
+                        style="@style/WFace"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:layout_marginTop="2dp"
+                        android:includeFontPadding="false"
+                        android:singleLine="true" />
                     <ImageView
                         android:id="@+id/num_bar"
                         android:layout_width="match_parent"

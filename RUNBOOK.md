@@ -424,6 +424,7 @@ Always-after block. Close out per Convention 4.
 **Log:**
 
 - 2026-09-26 — Started over **wireless** adb (no USB cable), seat rung 1. Before state recorded (`design/research/2026-09-26-v18-device-pass/phone-state-before.txt`), screen timeout set to 30 min, release-signed ec63da0 installed over v1.7. Measured cell sizes (findings.md there). Found **CCBG-38 (Cover Buckets), High** — every cover frame falls back to the smallest bucket; needs a wireframe before a fix, so Step 8 is blocked. Found and fixed **CCBG-37 (Duet Dot Squeeze)**, verified on the phone. Collapsed-row third line does not clip on One UI. Airplane/wifi/reboot items need USB. Pass paused for Robin's call on CCBG-38; *Always after* not yet run.
+- 2026-09-26 (same session, later) — Robin: restore the phone, disconnect, then wireframe, Fable approval and fix. *Always after* run: screen timeout back to 60000, test Ring widget and the empty home page removed, Before/After diff empty, clock within 1 s; disconnected. Wireframe rev F → F.1 (`design/2026-09-26-widgets-cover-refit.html`) by the seat; Fable (mesh-judge, purpose a+c) approve-with-changes, then approve after one more required change (frames smallest first, drop the largest). CCBG-38 built to F.1 (seat, rung 1; code was begun before Fable's first verdict — noted by Fable, brought in line with F.1). 644 unit tests green. **Still to do in Step 7:** the whole device pass again from the Before block — over USB for the airplane/wifi/reboot items — with CCBG-38 and CCBG-37 checked on the phone.
 
 ---
 

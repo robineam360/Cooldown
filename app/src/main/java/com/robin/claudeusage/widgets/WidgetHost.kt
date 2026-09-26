@@ -40,9 +40,6 @@ object WidgetHost {
         Face.STRIP to "com.robin.claudeusage.widgets.StripWidgetProvider",
     )
 
-    /** A widget whose frame is a little under a bucket's cover size still gets it. */
-    const val FIT_TOLERANCE_DP = 12f
-
     /** Intent data scheme for every widget PendingIntent (CCRM-78 §On-face controls). */
     const val SCHEME = "cooldown-widget"
 
@@ -150,22 +147,53 @@ object WidgetHost {
 
     // ---- sizes --------------------------------------------------------------------
 
-    /** The size-map key of [bucket]: its cover size less [FIT_TOLERANCE_DP]. */
-    fun key(bucket: Bucket): SizeF =
-        SizeF(bucket.widthDp - FIT_TOLERANCE_DP, bucket.heightDp - FIT_TOLERANCE_DP)
+    /**
+     * The size-map key of [bucket] when no frame has been reported yet: a frame at the
+     * foot of its class under [Frame.bucketFor]'s thresholds (rev F.1), and the bucket is
+     * drawn there too, so no bitmap is wider than the frame that picks it. Rev D keyed each bucket 12 dp under its
+     * assumed cover cell, and One UI's narrower cells fell under every key (CCBG-38).
+     */
+    fun key(bucket: Bucket): SizeF = when (bucket) {
+        Bucket.RING_1X1 -> SizeF(84f, 84f)
+        Bucket.RING_2X2 -> SizeF(140f, 140f)
+        Bucket.NUMBER_2X1, Bucket.COUNTDOWN_2X1 -> SizeF(140f, 84f)
+        Bucket.NUMBER_4X1 -> SizeF(240f, 84f)
+        Bucket.NUMBER_4X2 -> SizeF(240f, 150f)
+        Bucket.COUNTDOWN_2X2 -> SizeF(140f, 150f)
+        Bucket.STRIP_4X1 -> SizeF(244f, 84f)
+        Bucket.STRIP_4X2 -> SizeF(244f, 150f)
+    }
+
+    /** Rev F.1: before any frame is reported, each bucket is drawn at its own key. */
+    fun keyFrame(bucket: Bucket): Frame = key(bucket).let { Frame(bucket, it.width, it.height) }
+
+    /** Rev F.1: each reported frame is keyed this far under itself — the host allows +1 dp. */
+    const val KEY_SLACK_DP = 2f
+
+    /** The layout a frame of [widthDp] × [heightDp] takes — rev F's class rule. */
+    fun pick(face: Face, widthDp: Float, heightDp: Float): Bucket = Frame.bucketFor(face, widthDp, heightDp)
 
     /**
-     * The bucket the launcher would pick for a frame of [widthDp] × [heightDp]: the largest
-     * whose key fits, else the smallest — `RemoteViews(Map)`'s own rule, so the one-size
-     * fallback (R10) draws what the size map would have shown.
+     * Every frame the launcher reports for the widget, smallest first and at most
+     * [MAX_FRAMES]: a Fold reports its cover and its inner frame, most launchers one. When
+     * frames must go, the largest go (rev F.1, Fable): the host falls back to its smallest
+     * entry when no key fits, and a small face centred in a big frame is whole where the
+     * reverse would clip.
      */
-    fun pick(face: Face, widthDp: Float, heightDp: Float): Bucket {
-        val buckets = Bucket.of(face)
-        return buckets
-            .filter { key(it).width <= widthDp && key(it).height <= heightDp }
-            .maxByOrNull { it.widthDp * it.heightDp }
-            ?: buckets.minBy { it.widthDp * it.heightDp }
+    fun reportedSizes(options: Bundle?): List<SizeF> {
+        options ?: return emptyList()
+        val sizes: List<SizeF>? = if (Build.VERSION.SDK_INT >= 33) {
+            options.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            options.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES)
+        }
+        return sizes.orEmpty().filter { it.width > 0f && it.height > 0f }.distinct()
+            .sortedBy { it.width * it.height }.take(MAX_FRAMES)
     }
+
+    /** More than a Fold's two frames would only spend bitmap memory (R10). */
+    const val MAX_FRAMES = 4
 
     /** The widget's current frame in dp, from the launcher's options; null if unknown. */
     fun currentSize(options: Bundle?): SizeF? {
@@ -191,18 +219,54 @@ object WidgetHost {
      * inflates it fresh rather than reapplying it over the last state's views (CCBG-36
      * (Widget Reapply Residue)).
      */
-    fun single(context: Context, appWidgetId: Int, bucket: Bucket, state: FaceState): RemoteViews {
-        val face = WidgetFace.render(context, bucket.face, bucket, state)
-            .also { wire(context, it, appWidgetId, bucket, state) }
+    fun single(context: Context, appWidgetId: Int, bucket: Bucket, state: FaceState): RemoteViews =
+        single(context, appWidgetId, bucket.frame, state)
+
+    /** One face drawn at [frame], wired and added fresh (as above). */
+    fun single(context: Context, appWidgetId: Int, frame: Frame, state: FaceState): RemoteViews {
+        val face = WidgetFace.render(context, frame.bucket.face, frame, state)
+            .also { wire(context, it, appWidgetId, frame.bucket, state) }
         return RemoteViews(context.packageName, R.layout.widget_fresh).apply {
             removeAllViews(R.id.w_fresh)
             addView(R.id.w_fresh, face)
         }
     }
 
-    /** The composed `RemoteViews(Map<SizeF, RemoteViews>)` — at most three buckets (R10). */
-    fun sizeMap(context: Context, appWidgetId: Int, face: Face, state: FaceState): RemoteViews =
-        RemoteViews(Bucket.of(face).associate { key(it) to single(context, appWidgetId, it, state) })
+    /**
+     * The composed `RemoteViews(Map<SizeF, RemoteViews>)` (rev F): one face per frame the
+     * launcher reports, each drawn at exactly that frame, so the host's best fit is always
+     * an exact match. Before any frame is reported (the very first update), the face's
+     * buckets at their design sizes under [key] — at most three (R10).
+     */
+    fun sizeMap(
+        context: Context, appWidgetId: Int, face: Face, state: FaceState, sizes: List<SizeF> = emptyList(),
+    ): RemoteViews =
+        if (sizes.isNotEmpty()) {
+            RemoteViews(
+                withinBudget(face, sizes, context.resources.displayMetrics.density).associate {
+                    SizeF(it.widthDp - KEY_SLACK_DP, it.heightDp - KEY_SLACK_DP) to single(context, appWidgetId, it, state)
+                },
+            )
+        } else {
+            RemoteViews(Bucket.of(face).associate { key(it) to single(context, appWidgetId, keyFrame(it), state) })
+        }
+
+    /**
+     * Rev F.1 (R10): the reported frames, smallest first, for as long as the composed map's
+     * bitmaps stay under [WidgetFace.BITMAP_BUDGET_BYTES] — always at least the smallest.
+     */
+    fun withinBudget(face: Face, sizes: List<SizeF>, density: Float): List<Frame> {
+        val out = mutableListOf<Frame>()
+        var bytes = 0L
+        for (size in sizes) {
+            val frame = Frame.at(face, size.width, size.height)
+            val more = WidgetFace.frameBytes(frame, density)
+            if (out.isNotEmpty() && bytes + more >= WidgetFace.BITMAP_BUDGET_BYTES) break
+            out += frame
+            bytes += more
+        }
+        return out
+    }
 
     /** Draws one widget through [SafeUpdate]. */
     fun update(
@@ -222,11 +286,11 @@ object WidgetHost {
         return SafeUpdate.update(
             updater = { id, views -> mgr.updateAppWidget(id, views) },
             appWidgetId = appWidgetId,
-            full = { sizeMap(context, appWidgetId, face, state) },
+            full = { sizeMap(context, appWidgetId, face, state, reportedSizes(mgr.getAppWidgetOptions(appWidgetId))) },
             fallback = {
                 val size = currentSize(mgr.getAppWidgetOptions(appWidgetId))
-                val bucket = size?.let { pick(face, it.width, it.height) } ?: Bucket.of(face).first()
-                single(context, appWidgetId, bucket, state)
+                if (size != null) single(context, appWidgetId, Frame.at(face, size.width, size.height), state)
+                else single(context, appWidgetId, keyFrame(Bucket.of(face).first()), state)
             },
             log = { log(context, it) },
         )

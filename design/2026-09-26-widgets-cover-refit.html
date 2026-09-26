@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Widgets Cover Refit</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 140px; line-height: 1.5;
+  }
+  .page { max-width: 1320px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 84ch; margin: 0 0 12px; font-size: 14px; }
+  .review {
+    display: inline-block; font-size: 12.5px; color: var(--warn); border: 1px solid var(--warn);
+    border-radius: 6px; padding: 4px 10px; margin: 4px 0 4px;
+  }
+  .rules-box { border: 1px solid var(--hair); border-radius: 12px; padding: 12px 16px; margin: 16px 0 0; max-width: 84ch; font-size: 12.5px; color: var(--muted); }
+  .rules-box b { color: var(--ink); }
+  .rules-box ul { margin: 6px 0 0; padding-left: 18px; }
+  .rules-box li { margin: 0 0 4px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 58px 0 4px; }
+  h3 { font-size: 14.5px; font-weight: 650; margin: 26px 0 8px; }
+  h4 { font-size: 12.5px; font-weight: 650; margin: 18px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 90ch; margin: 0 0 18px; }
+  .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 50px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin: 6px 0 0; max-width: 200px;
+  }
+  .cap.good { color: var(--good); } .cap.bad { color: var(--bad); } .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .row { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 92ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 8px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 90ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 12px; }
+  .q { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0; font-size: 13.5px; max-width: 84ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 12.5px; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .tbl-wrap { overflow-x: auto; }
+  .scroll { overflow-x: auto; padding-bottom: 10px; }
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .04em; color: var(--muted); margin: 6px 0 0; text-align: left; max-width: 240px; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 340px; margin: 6px 0 0; }
+  .note.wide { max-width: 720px; }
+  .unver { color: var(--warn); font-weight: 650; }
+
+  /* ---- widget tiles ---- */
+  .dev { font-family: Roboto, Arial, sans-serif; }
+  .tf { margin: 0 16px 20px 0; display: inline-block; vertical-align: top; }
+  .tile { position: relative; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }
+  .tile.overflow { outline: 2px solid var(--bad); outline-offset: 2px; }
+  .overflowcap { position: absolute; left: 3px; right: 3px; bottom: 3px; font-family: ui-monospace, monospace; font-size: 8px; color: #fff; background: var(--bad); padding: 1px 4px; border-radius: 3px; line-height: 1.3; z-index: 5; }
+  .fitrun { display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+  .ringfig { font-weight: 700; line-height: 1; font-family: Roboto, Arial, sans-serif; }
+  .tile.tx-d { text-shadow: 0 1px 2px rgba(0,0,0,.8), 0 0 8px rgba(0,0,0,.5); }
+  .tile.tx-d svg { filter: drop-shadow(0 0 1.5px rgba(0,0,0,.55)) drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
+  .tile.tx-l { text-shadow: 0 1px 2px rgba(255,255,255,.9), 0 0 8px rgba(255,255,255,.65); }
+  .tile.tx-l svg { filter: drop-shadow(0 0 1.5px rgba(255,255,255,.7)) drop-shadow(0 1px 3px rgba(255,255,255,.45)); }
+  .liv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 8px; letter-spacing: .04em; color: var(--good); }
+  .matrix-wrap table td.sizehead, .matrix-wrap table th.sizehead { font-family: ui-monospace, monospace; }
+  .statebadge { display:inline-block; font-family: ui-monospace, monospace; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--hair); color: var(--ink); margin-right: 6px; }
+
+  /* ---- phone frame (config screens) ---- */
+  .phone { width: 360px; border-radius: 28px; border: 6px solid #000; overflow: hidden; position: relative; font-family: Roboto, Arial, sans-serif; }
+  .room { --rsurface:#000; --rcard:#000; --rink:#000; --rmuted:#0009; --raccent:#000; background: var(--rsurface); color: var(--rink); }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 10px; font-size: 17px; font-weight: 600; }
+  .topbar .sp { flex: 1; }
+  .mk { flex: 0 0 auto; }
+  .chiprow2 { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .fchip3 { height: 34px; padding: 0 14px; border-radius: 17px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; border: 1px solid rgba(255,255,255,.18); }
+  .fchip3.sel { border-color: transparent; font-weight: 700; }
+  .cfgrow { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .cfglabel { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .65; margin-bottom: 8px; }
+  .primbtn { height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14.5px; margin: 16px; }
+  .kebabmenu { border-radius: 12px; padding: 6px 0; width: 210px; font-size: 14px; }
+  .kebabitem { padding: 10px 16px; }
+  .kebabitem.err { color: var(--bad); }
+  .dlgwrap { background: rgba(0,0,0,.55); border-radius: 20px; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .dlg { width: 300px; border-radius: 20px; padding: 20px; }
+  .dlg .dt { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .dlg .db { font-size: 12.5px; opacity: .85; line-height: 1.55; }
+  .dlg .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px; }
+  .dlgbtn { font-size: 13.5px; font-weight: 650; padding: 6px 10px; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+    <symbol id="icoMore" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="icoBack" viewBox="0 0 24 24"><polyline points="15,5 8,12 15,19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCBG-38 (Cover Buckets) &middot; CCRM-78 (Widgets Reborn) &middot; 2026-09-26 &middot; rev F</p>
+
+  <h1>The faces, refitted to the frames the Fold 7 actually hands them</h1>
+  <p class="lede">
+    Rev D fitted every face to a cover cell of 90.75&times;84 dp. The Step 7 device pass measured
+    One UI's real frames, and they are narrower and much taller: a 2&times;2 on Robin's cover is
+    156&times;237 dp, not 181&times;168. Every 2- and 4-column frame came in under its size-map
+    key, so Android fell back to each face's smallest layout &mdash; CCBG-38 (Cover Buckets).
+    Rev F keeps every rev D face exactly as approved and changes only <b>how a face meets its
+    frame</b>: the bucket picks the layout, the reported frame sets the geometry.
+  </p>
+  <p class="review">Rev F.1 &mdash; approved by Fable on Robin's delegation, 2026-09-26, after two rounds: its seven required changes and four of its suggestions are folded in and marked "F.1".</p>
+
+  <div class="rules-box" style="border-color:var(--accent)">
+    <b>What changes from rev D</b>
+    <ul>
+      <li><b>Size map keyed by the reported frames.</b> The provider reads
+        <code>OPTION_APPWIDGET_SIZES</code> and hands the launcher one layout per reported frame,
+        drawn at that frame and <b>keyed 2 dp under it</b> (F.1: the host matches against its own
+        laid-out size with only +1 dp of slack, so a half-dp rounding on One UI's scaled host must
+        not drop the widget to the smallest entry again). A Fold that reports a cover and an inner
+        frame gets both.</li>
+      <li><b>R10 with frames (F.1).</b> Frames are taken <b>smallest first</b> while the composed map's bitmaps
+        stay under R10's 2 MB, never more than four (a Pixel Fold reports two screens &times; two
+        orientations) and always at least one; when the budget or the cap is hit, <b>the largest are dropped</b>.
+        The host falls back to its smallest entry when no key fits, and a smaller face centred in a larger
+        frame is whole, where the reverse would clip. At 2.625 dpi a Ø150 ring is 0.62 MB, so a Fold's two
+        Ring frames fit together.</li>
+      <li><b>Before any frame is reported (F.1)</b> &mdash; the very first update &mdash; each class is drawn
+        at its threshold frame and keyed there, so no bitmap is ever wider than the frame that picks it:
+        Ring 1&times;1 84&times;84, Ring 2&times;2 140&times;140, Number and Countdown 2&times;1 140&times;84,
+        Number 4&times;1 240&times;84, 4&times;2 240&times;150, Countdown 2&times;2 140&times;150, Strip 4&times;1
+        244&times;84, 4&times;2 244&times;150. The launcher's first options broadcast redraws at the real frame.</li>
+      <li><b>Class thresholds, not exact cells.</b> Ring: 2&times;2 layout once the frame is
+        &ge;140 dp both ways, else 1&times;1. Number: 2&times;1 under 240 dp wide; 4&times;1 from 240 dp;
+        4&times;2 from 240&times;150 (F.1: the cover's 3-column 244 dp frame has the width for the
+        sub-line). Countdown: 2&times;2 from 140&times;150, else 2&times;1. Strip: 4&times;2 from 150 dp
+        tall, else 4&times;1.</li>
+      <li><b>Geometry from the frame.</b> Ring &Oslash; is the inner width or the inner height less the
+        label row, whichever is smaller (1&times;1 capped at 64, 2&times;2 at 150); stroke and figure scale
+        with it from rev D's 110 / 9 dp / 26 sp. Bars and label clamps use the frame's inner width.
+        Content centres vertically in a frame taller than it needs.</li>
+      <li><b>Padding from the frame:</b> 8 dp top and bottom under a 90 dp row and 8 dp a side under 90 dp
+        wide (F.1, so the cover's 84 dp 1&times;1 keeps Ø64), 14 dp once both sides reach 200 dp, 12 dp
+        otherwise &mdash; rev D's values, now chosen by size, not by a list of known cells.</li>
+      <li><b>Countdown 2&times;2's estimate (F.1):</b> when "62% ~ runs out 7:54 PM" does not fit one line and
+        the frame is &ge;150 dp tall, the estimate takes its own 11 sp line under the figure, above the bar.</li>
+      <li><b>The "as of" stamp gives way, never the name (F.1):</b> on the Ring 2&times;2 and the Countdown
+        2&times;2, when the account line and the stamp do not fit one line, the stamp is left off.</li>
+      <li><b>Number 2&times;1 on a narrow short frame (F.1):</b> under 150 dp inner and under 100 dp tall
+        (a five-column launcher) the label is the name alone, rev D's compact rule, instead of an ellipsis.</li>
+      <li><b>Countdown 2&times;1 on a narrow frame:</b> when "2:41:07 at 9:10 PM" does not fit one line,
+        "at 9:10 PM" drops to its own line under the count. One UI's 108 dp row has the height; the
+        Pixel's 84 dp row keeps rev D's one line.</li>
+      <li><b>Picker previews</b> are one static layout each, not a size map (F.1): the Ring's ring takes the
+        height the preview box leaves above its label, centred; each Strip ring takes the height its label
+        leaves &mdash; &sect;6.</li>
+    </ul>
+    <b>What does not change</b>: every face's content, order, type sizes on the rev D frames, colours,
+    backgrounds, the pace tick, the synthetic ribbon and dot, the states table, the taps.
+  </div>
+
+  <hr class="hr">
+  <h2>0 &middot; What the device pass saw</h2>
+  <p class="sub">The Ring, added at its default 2&times;2 on the cover with Synthetic "Above pace" on:
+    the 1&times;1 face (a Ø64 ring with no label) sits in a tall empty frame, and the synthetic dot is
+    clipped by the corner. One UI logged <code>findBestFitLayout, widgetSize=155.80952x236.95238,
+    bestFitSize=79.0x72.0</code> &mdash; the smallest key, because the 2&times;2 key is 169 dp wide.</p>
+  <div class="row">
+    <figure class="tf"><img src="research/2026-09-26-v18-device-pass/09-cover-ring-2x2-draws-1x1-synthetic.png" width="270" alt="Ring widget on the cover drawing its small face in a tall frame"><figcaption class="devcap">Fold 7 cover, One UI, 2026-09-26 (crop)</figcaption></figure>
+    <div>
+      <table style="max-width:560px">
+        <tr><th>Frame (dp, as reported)</th><th>Cover &middot; One UI</th><th>Inner &middot; One UI</th><th>Rev D assumed</th></tr>
+        <tr><td>1 column &times; 1 row</td><td>84.2 &times; 107.8</td><td>~68 &times; ~114 <span class="unver">derived</span></td><td>91 &times; 84</td></tr>
+        <tr><td>2 &times; 1</td><td>155.8 &times; 107.8</td><td>202.3 &times; ~114 <span class="unver">derived</span></td><td>181 &times; 84</td></tr>
+        <tr><td>2 &times; 2</td><td>155.8 &times; 237.0</td><td>202.3 &times; 264.4</td><td>181 &times; 168</td></tr>
+        <tr><td>3 &times; 3</td><td>244.2 &times; 365.7</td><td>&mdash;</td><td>&mdash;</td></tr>
+        <tr><td>4 &times; 1</td><td>333.0 &times; 107.8</td><td>470.5 &times; ~114 <span class="unver">derived</span></td><td>363 &times; 84</td></tr>
+        <tr><td>4 &times; 2</td><td>333.0 &times; 237.0</td><td>470.5 &times; ~264 <span class="unver">derived</span></td><td>363 &times; 168</td></tr>
+        <tr><td>6 &times; 1</td><td>509.7 &times; 107.8</td><td>&mdash;</td><td>&mdash;</td></tr>
+      </table>
+      <p class="note wide">Measured with <code>dumpsys appwidget</code> from every placed widget on Robin's
+        home screens. The cover is a six-column grid; One UI then scales the whole widget by
+        <code>hsResizeRatio</code> (0.714 on the cover, 0.625 inner) when it draws it, as it does every
+        other app's widget, so a face looks about 70% of the size drawn here. Another grid setting
+        gives other frames &mdash; which is why rev F keys on the reported frame, not on these numbers.</p>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // Fixtures — now, resets, accounts (registry order), rooms and severity ladder.
+    // ============================================================================
+    const NOW_LABEL = "6:29 PM";
+    const RESET_5H_LABEL = "9:10 PM";
+    const RESET_WEEKLY_LABEL = "Sat 9:10 PM";
+
+    // Rooms — same token values as design/2026-09-17-main-screen-redesign.html §JS,
+    // and Palette.kt's own ladder (barColor: >=100 red / >90 orange / >80 yellow).
+    const CLAUDE_DARK  = { accent: '#E59980', g100: '#FF5252', g90: '#FFA726', g80: '#FDD663', card: '#1A1A1A', surface: '#0D0D0D' };
+    const CLAUDE_LIGHT = { accent: '#D97757', g100: '#C62828', g90: '#F57C00', g80: '#F9A825', card: '#FCF8F4', surface: '#F5EFE8' };
+    const GPT_DARK     = { accent: '#19C39A', g100: '#FF5252', g90: '#FFA726', g80: '#FDD663', card: '#1A1A1A', surface: '#0D0D0D' };
+    const GPT_LIGHT    = { accent: '#10A37F', g100: '#C62828', g90: '#F57C00', g80: '#F9A825', card: '#FFFFFF', surface: '#F5F5F5' };
+    // Product's per-account accent override (Palette.options "Purple") — the reason it
+    // does NOT share Pro/Teams's hue, per Q3: "two Claude accounts share a hue" is Pro+Teams.
+    const PRODUCT_OVERRIDE = { dark: '#CE93D8', light: '#8E24AA' };
+
+    // Registry order (CCRM-71 (Account Order)) — fixed for every cycler/first-account example.
+    const ACCOUNTS = [
+      { key: 'pro',     label: 'Pro',     provider: 'claude', override: null },
+      { key: 'teams',   label: 'Teams',   provider: 'claude', override: null },
+      { key: 'product', label: 'Product', provider: 'claude', override: PRODUCT_OVERRIDE },
+      { key: 'chatgpt', label: 'ChatGPT', provider: 'gpt',    override: null, weeklyOnly: true },
+    ];
+    // A fifth account, Strip-demo only, for the ">4 accounts" edge case (§2).
+    const RESEARCH_DEMO = { key: 'research', label: 'Research', provider: 'claude', override: { dark: '#4DD0E1', light: '#00ACC1' } };
+    function acc(key) { return ACCOUNTS.find(a => a.key === key); }
+    function accentFor(a, dark) {
+      if (a.override) return dark ? a.override.dark : a.override.light;
+      const room = a.provider === 'claude' ? (dark ? CLAUDE_DARK : CLAUDE_LIGHT) : (dark ? GPT_DARK : GPT_LIGHT);
+      return room.accent;
+    }
+    function ladder(dark) { return dark ? CLAUDE_DARK : CLAUDE_LIGHT; } // ladder hues are provider-agnostic
+    function sevColor(pct, dark, accent) {
+      if (pct == null) return accent;
+      const L = ladder(dark);
+      if (pct >= 100) return L.g100;
+      if (pct > 90) return L.g90;
+      if (pct > 80) return L.g80;
+      return accent;
+    }
+    function ink(dark, a) { return dark ? `rgba(255,255,255,${a})` : `rgba(17,17,18,${a})`; }
+    function roomCard(a, dark) {
+      if (a.override) return dark ? '#241C28' : '#F8EEFB'; // a plausible card tint for the overridden hue
+      const room = a.provider === 'claude' ? (dark ? CLAUDE_DARK : CLAUDE_LIGHT) : (dark ? GPT_DARK : GPT_LIGHT);
+      return room.card;
+    }
+
+    // ---- fit-check: canvas.measureText against the run's declared available width ----
+    const fitCv = document.createElement('canvas');
+    const fitCx = fitCv.getContext('2d');
+    function textPx(text, sizePx, weight) {
+      fitCx.font = `${weight || 400} ${sizePx}px Roboto, Arial, sans-serif`;
+      return fitCx.measureText(text).width;
+    }
+    let FIT_RUN_ID = 0;
+    const FIT_REGISTRY = [];
+    function fitSpan(text, sizePx, weight, availPx, extraStyle) {
+      const w = textPx(text, sizePx, weight);
+      const id = 'fr' + (FIT_RUN_ID++);
+      const over = w - availPx;
+      if (over > 0.5) FIT_REGISTRY.push({ id, over, text, availPx, w });
+      return `<span id="${id}" class="fitrun" style="font-size:${sizePx}px;font-weight:${weight || 400};max-width:${availPx}px;${extraStyle || ''}">${text}</span>`;
+    }
+    function runFitCheck() {
+      FIT_REGISTRY.forEach(r => {
+        const el = document.getElementById(r.id);
+        if (!el) return;
+        const t = el.closest('.tile');
+        if (!t) return;
+        t.classList.add('overflow');
+        let cap = t.querySelector('.overflowcap');
+        if (!cap) { cap = document.createElement('div'); cap.className = 'overflowcap'; t.appendChild(cap); }
+        cap.textContent = `⚠ "${r.text}" overflows by ${Math.ceil(r.over)}px of ${r.availPx}px`;
+      });
+    }
+
+    // ---- S13 synthetic marker (R8), recommended form, rev B: a violet 7dp corner
+    // dot always; on tiles tall enough (>=160px, the 2×2/4×2 buckets) a full-width
+    // in-flow ribbon reading "SYNTHETIC" at the very top, which — because it takes
+    // real layout space rather than overlaying — never collides with a sub-line or
+    // control row. See §2's options panel and §10. ----
+    function synthDot() {
+      return `<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#B388FF;box-shadow:0 0 0 1.5px rgba(0,0,0,.28);z-index:4"></div>`;
+    }
+    function synthRibbon() {
+      return `<div style="height:12px;flex:0 0 auto;background:#7C4DFF;display:flex;align-items:center;justify-content:center;gap:4px">
+        <span style="width:5px;height:5px;border-radius:50%;background:#fff"></span>
+        <span style="font-size:6.5px;font-weight:700;letter-spacing:.06em;color:#fff">SYNTHETIC</span>
+      </div>`;
+    }
+
+    // ---- provider mark ----
+    function mark(provider, size, color) {
+      const id = provider === 'claude' ? 'mkClaude' : 'mkGpt';
+      return `<svg class="mk" width="${size}" height="${size}" viewBox="0 0 24 24" style="color:${color}"><use href="#${id}"/></svg>`;
+    }
+
+    // ---- rails ring: hairline extent, usage band, red slice, hub, needle, spent x ----
+    // Faithful (scaled) to ui/UsageIcon.kt railsGauge's draw order: extent, usage, red
+    // slice, hub, needle, spent cross — see the code note above this script's data section.
+    function ringSVG(size, stroke, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const r = (size - stroke) / 2 - 1;
+      const cx = size / 2, cy = size / 2;
+      const hairW = Math.max(1.1, stroke * 0.26);
+      let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${ink(dark, .5)}" stroke-width="${hairW}"/>`;
+      const pct = o.pct;
+      if (pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, pct));
+        const fill = o.color || sevColor(pct, dark, o.accent);
+        const over = o.elapsed != null && (pct - o.elapsed) > 3 && o.showRed !== false;
+        if (v >= 100) {
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"/>`;
+        } else if (v > 0) {
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"
+            stroke-dasharray="${v} 100" pathLength="100" stroke-linecap="round"
+            transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        if (over) {
+          // rev C, Robin: smooth rounded ends on the usage band — the red slice keeps a
+          // round leading end so the arc finishes as one soft cap, not a sawn-off block.
+          const e = Math.min(100, o.elapsed);
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${dark ? '#FF5252' : '#C62828'}" stroke-width="${stroke}"
+            pathLength="100" stroke-dasharray="${Math.max(0, v - e)} 100" stroke-dashoffset="${-e}" stroke-linecap="round"
+            transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        // The pace mark (rev B, Robin's call): every ring WITH A FIGURE IN THE
+        // BORE drops the clock-hand needle and its hub entirely and draws the
+        // pace position the way the app's own bars do — `.bartick` in
+        // design/2026-09-17-main-screen-redesign.html: a short straight radial
+        // tick across the stroke, overhanging the same amount inside and out,
+        // ink at 50% opacity, never a hand. The 12dp bar's tick overhangs 3.5dp
+        // past each edge (2dp wide) — scaled here to this ring's own stroke.
+        // `needleStyle:'hub'` reproduces the old hub-pinned clock hand, kept only
+        // for the §1 before/after and the 24dp status-bar icon, which has no bore
+        // text to protect and must stay pixel-equivalent to UsageIcon.railsGauge
+        // (CCRM-83 (Ring Renderer)) — so it keeps the needle and hub unchanged.
+        const needleDraws = o.elapsed != null && v > 0;
+        if (needleDraws) {
+          const a = (Math.min(100, o.elapsed) / 100) * 2 * Math.PI - Math.PI / 2;
+          if (o.needleStyle === 'hub') {
+            const hubR = Math.max(1.2, stroke * 0.30);
+            const rim = r + stroke / 2 + 1.5;
+            s += `<circle cx="${cx}" cy="${cy}" r="${hubR}" fill="${ink(dark, .85)}"/>`;
+            s += `<line x1="${cx + hubR * Math.cos(a)}" y1="${cy + hubR * Math.sin(a)}" x2="${cx + rim * Math.cos(a)}" y2="${cy + rim * Math.sin(a)}"
+              stroke="${ink(dark, .85)}" stroke-width="${Math.max(1, stroke * 0.20)}" stroke-linecap="round"/>`;
+          } else {
+            // rev C, Robin: "more visible than just a thin line" — ~3.5 dp on a 9 dp
+            // stroke (scaled, never under 2.5 dp), round caps, ink at 90%, and a 1 dp
+            // halo in the face's own background colour so it reads on the arc and the track.
+            const overhang = Math.max(2.5, stroke * (3.5 / 12));
+            const tickHalf = stroke / 2 + overhang;
+            const tickW = Math.max(2.5, stroke * 0.39);
+            const halo = o.halo || (dark ? '#141414' : '#FFFFFF');
+            const x1 = cx + (r - tickHalf) * Math.cos(a), y1 = cy + (r - tickHalf) * Math.sin(a);
+            const x2 = cx + (r + tickHalf) * Math.cos(a), y2 = cy + (r + tickHalf) * Math.sin(a);
+            s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${halo}" stroke-width="${tickW + 2}" stroke-linecap="round"/>`;
+            s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${dark ? '#FFFFFF' : '#161618'}" stroke-opacity=".9" stroke-width="${tickW}" stroke-linecap="round"/>`;
+          }
+        }
+        if (v >= 100 && o.spentX) {
+          const arm = r * 0.32, c2 = dark ? '#fff' : '#111';
+          const w2 = Math.max(1.4, stroke * 0.22);
+          s += `<line x1="${cx - arm}" y1="${cy - arm}" x2="${cx + arm}" y2="${cy + arm}" stroke="${c2}" stroke-width="${w2}" stroke-linecap="round"/>`;
+          s += `<line x1="${cx + arm}" y1="${cy - arm}" x2="${cx - arm}" y2="${cy + arm}" stroke="${c2}" stroke-width="${w2}" stroke-linecap="round"/>`;
+        }
+      }
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;overflow:visible">${s}</svg>`;
+    }
+    function ringWithFigure(d, stroke, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const showX = o.pct != null && o.pct >= 100 && o.spentX !== false && !o.forcePercentAt100;
+      const svg = ringSVG(d, stroke, { pct: o.pct, elapsed: o.elapsed, dark, accent: o.accent, showRed: o.showRed, noReading: o.noReading, spentX: showX, needleStyle: o.needleStyle });
+      let figureHtml = '';
+      if (!o.noFigureSlot) {
+        if (o.pct != null && o.pct >= 100 && o.forcePercentAt100) {
+          figureHtml = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">100%</div>`;
+        } else if (!showX && o.figure != null) {
+          figureHtml = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dimFig ? 'opacity:.5' : ''}">${o.figure}</div>`;
+        }
+      }
+      // A small "Weekly" tag under the figure, in the bore — the Strip's chosen way
+      // to mark a weekly-only ring without lengthening its label (item 1, §10).
+      const tagHtml = (o.subTag && figureHtml) ? `<div style="font-size:${o.subTagSize || 7}px;font-weight:700;letter-spacing:.02em;opacity:${o.dimFig ? .45 : .78};margin-top:-1px">${o.subTag}</div>` : '';
+      // rev D (Fable's review): at 100% the × replaces the figure; on a ring with room
+      // (Ø70+) the "Weekly" tag stays, under the ×. At 4×1 there is no room and it drops.
+      const xTag = (o.subTag && showX && d >= 70) ? `<div style="position:absolute;left:0;right:0;top:calc(50% + ${Math.round(((d - stroke) / 2 - 1) * 0.32) + 5}px);text-align:center;font-size:${o.subTagSize || 7}px;font-weight:700;opacity:.78">${o.subTag}</div>` : '';
+      const center = figureHtml ? `<div style="display:flex;flex-direction:column;align-items:center;line-height:1.05">${figureHtml}${tagHtml}</div>` : '';
+      return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dimRing ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}${xTag}</div>`;
+    }
+
+    // ---- bar (HTML/CSS, avoids SVG viewBox math for a tick that overhangs) ----
+    function barHTML(w, h, o) {
+      o = o || {};
+      const dark = o.dark !== false;
+      const track = ink(dark, .16);
+      let fill = '';
+      if (o.pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, o.pct));
+        const color = o.color || sevColor(o.pct, dark, o.accent);
+        fill = `<div style="position:absolute;left:0;top:0;bottom:0;width:${v}%;${v > 0 ? `min-width:${h}px;` : ''}border-radius:${h / 2}px;background:${color}${o.dimFill ? ';opacity:.45' : ''}"></div>`;
+      }
+      let tick = '';
+      if (o.paceTick != null) {
+        tick = `<div style="position:absolute;left:calc(${o.paceTick}% - 1.5px);top:-${h * 0.4}px;bottom:-${h * 0.4}px;width:3px;background:${dark ? '#FFFFFF' : '#161618'};opacity:.9;border-radius:1.5px;box-shadow:0 0 0 1px ${dark ? '#141414' : '#FFFFFF'}"></div>`; // rev C: the widget bar's pace tick matches the ring's — 3 dp, 90% ink, 1 dp halo
+      }
+      return `<div style="position:relative;width:${w}px;height:${h}px;border-radius:${h / 2}px;background:${track};overflow:visible;margin-top:${h * 0.4 + 1}px">${fill}${tick}</div>`;
+    }
+
+    // ---- label row: mark + text (+ optional stale/broken affordance) ----
+    function labelRow(a, color, text, markSize, fontSize, dark, opts) {
+      opts = opts || {};
+      const dot = opts.dot ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'};margin-left:4px;flex:0 0 auto"></span>` : '';
+      const textHtml = opts.fit != null ? fitSpan(text, fontSize, opts.weight || 500, opts.fit) : `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${text}</span>`;
+      return `<div style="display:flex;align-items:center;gap:4px;font-size:${fontSize}px;font-weight:${opts.weight || 500};${opts.dim ? 'opacity:.5' : ''}">
+        ${a ? mark(a.provider, markSize, color) : ''}${textHtml}${dot}
+      </div>`;
+    }
+
+    // ---- tile wrapper: fixed dp box, Solid room card or Transparent over wallpaper ----
+    const WALL_LIGHT = 'linear-gradient(135deg,#cfe3f7 0%,#f3ddc8 55%,#eef2f8 100%)';
+    const WALL_DARK  = 'linear-gradient(135deg,#141826 0%,#241f3a 55%,#171a22 100%)';
+    // rev C: one padding rule per frame — 12 dp on the cover (8 dp top/bottom on the
+    // one-row 84 dp faces, which cannot spare 24 dp of height), 14 dp on the inner grid.
+    const INNER_WIDTHS = [118, 236, 472];
+    // rev F: one padding rule from the frame itself — 8 dp top/bottom on a one-row frame
+    // under 90 dp (the Pixel's 84 dp rows), 14 dp once both sides are 200 dp or more,
+    // 12 dp otherwise. No table of known widths: One UI's cells differ per grid setting.
+    function padFor(w, h) {
+      if (Math.min(w, h) >= 200) return { x: 14, y: 14 };
+      // rev F.1 (Fable): 8 dp a side under 90 dp wide, so One UI's 84 dp 1×1 keeps Ø64.
+      return { x: w < 90 ? 8 : 12, y: h < 90 ? 8 : 12 };
+    }
+    function innerW(w, h) { return w - 2 * padFor(w, h).x; }
+    function hexRgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); }
+    function mixHex(a, b, t) { // t of a into b
+      const A = hexRgb(a), B = hexRgb(b);
+      return '#' + A.map((v, i) => Math.round(v * t + B[i] * (1 - t)).toString(16).padStart(2, '0')).join('');
+    }
+    // rev C, Robin: Background is Solid / Gradient / Transparent. Solid is the account's
+    // room card colour (the Black Room stays black, CCRM-76); Gradient is a light wash of
+    // the account's accent over that same card, top-left to bottom-right. The Strip, which
+    // no single account owns, passes no accent and gets a neutral wash.
+    function gradientFor(card, accent, dark) {
+      const to = accent ? mixHex(accent, card, dark ? 0.15 : 0.16) : mixHex(dark ? '#FFFFFF' : '#000000', card, 0.06);
+      const mid = accent ? mixHex(accent, card, dark ? 0.07 : 0.05) : card;
+      return `linear-gradient(135deg,${card} 0%,${mid} 45%,${to} 100%)`;
+    }
+    function tile(o) {
+      const radius = o.radius != null ? o.radius : 24;
+      let bg;
+      if (o.bg === 'transparent') bg = o.wallpaper === 'dark' ? WALL_DARK : WALL_LIGHT;
+      else if (o.bg === 'gradient') bg = gradientFor(o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4'), o.accent, o.dark);
+      else bg = o.cardColor || (o.dark ? '#1A1A1A' : '#FCF8F4');
+      const P = padFor(o.w, o.h);
+      const padCss = o.pad != null ? `${o.pad}px` : `${P.y}px ${P.x}px`;
+      const textColor = o.dark ? '#EDE8E4' : '#26211E';
+      const border = o.bg === 'transparent' ? '' : `border:1px solid ${o.dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'};`;
+      // rev D, Robin: on Transparent every text run and every ring carries a soft shadow
+      // in the opposite tone, so a face stays legible over a wallpaper it does not match.
+      const txCls = o.bg === 'transparent' ? (o.dark ? ' tx-d' : ' tx-l') : '';
+      const shellOpen = `<div class="tile${txCls}" id="${o.id || ''}" style="width:${o.w}px;height:${o.h}px;border-radius:${radius}px;background:${bg};${border}color:${textColor};overflow:hidden;font-family:Roboto,Arial,sans-serif">`;
+      if (o.synthetic && o.h >= 160) {
+        // Tall enough for the in-flow ribbon (never overlaps content — see synthRibbon).
+        return `${shellOpen}<div style="position:absolute;inset:0;display:flex;flex-direction:column">${synthRibbon()}<div style="flex:1;min-height:0;padding:${padCss};box-sizing:border-box;overflow:hidden">${o.content}</div></div></div>`;
+      }
+      return `${shellOpen}<div style="position:absolute;inset:0;padding:${padCss};box-sizing:border-box">${o.content}</div>${o.synthetic ? synthDot() : ''}</div>`;
+    }
+    function tf(tileHtml, caption, w) {
+      const capW = w || 240;
+      return `<figure class="tf" style="margin:0 16px 20px 0;max-width:${w ? w + 40 : 400}px"><div>${tileHtml}</div><figcaption class="devcap" style="max-width:${capW}px;white-space:normal">${caption}</figcaption></figure>`;
+    }
+  </script>
+  <script>
+    // ============================================================================
+    // Face renderers — one function per face, parameterised by bucket size.
+    // ============================================================================
+    const COVER = { '1x1': [91, 84], '2x1': [181, 84], '2x2': [181, 168], '4x1': [363, 84], '4x2': [363, 168] };
+    const INNER = { '1x1': [118, 100], '2x1': [236, 100], '2x2': [236, 200], '4x1': [472, 100], '4x2': [472, 200] };
+
+    // rev F: the face is drawn at the frame the launcher reports (opts.wh), not at a
+    // fixed bucket size; the bucket only picks WHICH layout. Without opts.wh, rev D's table.
+    // rev F: an absolute time on a narrow frame steps down 2 sp at a time until it fits,
+    // never below 18 sp (RemoteViews: autoSizeTextType uniform, 18–24 sp, 2 sp step).
+    function stepFit(text, size, avail) {
+      let s = size;
+      while (s > 18 && textPx(text, s, 700) > avail) s -= 2;
+      return s;
+    }
+    function frameOf(bucket, opts) {
+      if (opts && opts.wh) return opts.wh;
+      return ((opts && opts.frame === 'inner') ? INNER : COVER)[bucket];
+    }
+
+    // ---- state fixtures, keyed S1..S14 (a face picks what it needs from these) ----
+    const ST = {
+      S1: { pct: 38, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` },
+      S2: { pct: 62, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` }, // above pace: pct - elapsed > 3
+      S3: { pct: 100, elapsed: 70, sub: `Resets ${RESET_5H_LABEL}` },
+      S4: { pct: 31, elapsed: 52, sub: `Resets ${RESET_WEEKLY_LABEL}`, weeklyOnly: true },
+      S5: { pct: null, elapsed: null, sub: 'Starts when a message is sent' },
+      S6: { pct: null, elapsed: null, sub: `Reset ${RESET_5H_LABEL}`, noReading: true },
+      S7: { pct: 38, elapsed: 46, sub: 'Sign-in needed', broken: true },
+      S8: { pct: 38, elapsed: 46, sub: 'Stale', stale: true },
+      S9: { removed: true },
+      S10u: { unassigned: true, pct: 38, elapsed: 46, sub: `Resets ${RESET_5H_LABEL}` },
+      S10n: { noAccounts: true },
+      S11: { pct: 38, elapsed: 46, left: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S12: { free: true },
+      S13: { pct: 38, elapsed: 46, synthetic: true, sub: `Resets ${RESET_5H_LABEL}` },
+      S14: { unavailable: true },
+    };
+    const STATE_ORDER = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14'];
+    const STATE_LABEL = {
+      S1: 'S1 normal', S2: 'S2 above pace', S3: 'S3 100%', S4: 'S4 no 5h window',
+      S5: 'S5 not started', S6: 'S6 reset passed', S7: 'S7 sign-in broken', S8: 'S8 stale',
+      S9: 'S9 account removed', S10: 'S10 unassigned / no accounts', S11: 'S11 Left mode',
+      S12: 'S12 Free plan', S13: 'S13 synthetic', S14: 'S14 unavailable',
+    };
+
+    function fmtPct(st, left) {
+      if (st.pct == null) return null;
+      return left ? `${Math.max(0, 100 - Math.trunc(st.pct))}%` : `${Math.trunc(st.pct)}%`;
+    }
+
+    // Generic "message-only" tile body for S9 / S10n / S12 / S14 — centred text, no ring/bar.
+    function msgBody(text, sizePx, dark, opts) {
+      opts = opts || {};
+      return `<div style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center">
+        <div style="font-size:${sizePx}px;line-height:1.25;${opts.dim ? 'opacity:.7' : ''};max-width:100%">${text}</div>
+      </div>`;
+    }
+
+    // ---------------------------------------------------------------- Ring (CCRM-79)
+    function ringFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const isSmall = bucket === '1x1';
+      // rev F: Ø from the frame. 1×1: the whole inner box, capped at 64 (rev D's size).
+      // 2×2: the inner width, or the inner height less the label row and its air (34 dp,
+      // rev D's 144 − 110), capped at 150; stroke and figure scale with Ø from rev D's 110 / 9 / 26.
+      const [fw, fh] = frameOf(bucket, opts);
+      const P = padFor(fw, fh), iw = fw - 2 * P.x, ih = fh - 2 * P.y;
+      const d = Math.floor(isSmall ? Math.min(64, iw, ih) : Math.min(150, iw, ih - 34));
+      const stroke = isSmall ? Math.max(5, Math.round(6 * d / 64)) : Math.min(12, Math.max(7, Math.round(9 * d / 110)));
+      const figSize = isSmall ? Math.round(16 * d / 64) : Math.round(26 * d / 110);
+      const st = ST[stateKey] || ST.S1;
+      const color = accentFor(a, dark);
+
+      if (stateKey === 'S9') return msgBody('Account removed<br><span style="font-size:.72em;opacity:.75">tap to choose</span>', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown<br>to sign in', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S12') return msgBody('No usage<br>on this plan', isSmall ? 9 : 11.5, dark);
+      if (stateKey === 'S14') return msgBody(isSmall ? 'Update<br>Cooldown' : 'Unavailable in this version<br>update Cooldown', isSmall ? 9.5 : 11, dark);
+
+      let effA = a, label = a.label, dimAll = false, dot = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
+      if (stateKey === 'S8') dimAll = true;
+      const effColor = accentFor(effA, dark);
+      const pctText = fmtPct(st, stateKey === 'S11');
+
+      const ringHtml = ringWithFigure(d, stroke, {
+        pct: st.pct, elapsed: st.elapsed, dark, accent: effColor, showRed: true,
+        noReading: st.noReading, spentX: !opts.forcePercent, forcePercentAt100: !!opts.forcePercent,
+        figure: pctText, figSize, dimRing: dimAll, dimFig: dimAll, needleStyle: opts.needleStyle,
+      });
+
+      if (isSmall) {
+        // CCRM-79: the 1×1 bore holds only the figure — no room for a label line,
+        // so S7's dot goes in the face's own top-right inset instead (item 8, §2).
+        const dotHtml = (stateKey === 'S7') ? `<div style="position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></div>` : '';
+        return `<div style="height:100%;position:relative;display:flex;align-items:center;justify-content:center">${ringHtml}${dotHtml}</div>`;
+      }
+      // CCRM-79: the Ring omits the window name — the label is the account name
+      // alone. It's tagged only when the ring isn't on 5h ("ChatGPT · Weekly", S4),
+      // and Left mode adds " · left" since the bore has no other room to say so.
+      let labelText = label;
+      if (st.weeklyOnly) labelText += ' · Weekly';
+      if (stateKey === 'S11') labelText += ' · left';
+      // rev C: an empty extent means two different things; the Ring bears no time, so
+      // S5 says so in words on the label line (as the Strip does), S6 stays bare.
+      if (stateKey === 'S5') labelText += ' · not started';
+      // Q11 (rev C): the Ring's corners are too small for the stamp, so it trails the label.
+      const ringStamp = '';
+      // rev F.1 (Fable): the stamp, never the name, gives way on a narrow frame.
+      const stampFits = !!opts.asOf && (textPx(labelText, 12, 500) + 16 + (dot ? 10 : 0) + 6 + textPx(`· as of ${NOW_LABEL}`, 10, 400) <= iw);
+      return `<div style="height:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">${ringStamp}
+        ${ringHtml}
+        <div style="display:flex;align-items:center;gap:6px">${labelRow(effA, effColor, labelText, 12, 12, dark, { dim: dimAll, dot, weight: 500 })}${stampFits ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">· as of ${NOW_LABEL}</span>` : ''}</div>
+      </div>`;
+    }
+
+    // -------------------------------------------------------------- Number (CCRM-80)
+    function numberFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const st = ST[stateKey] || ST.S1;
+      const [w, h] = frameOf(bucket, opts);
+      if (stateKey === 'S9') return msgBody('Account removed · tap to choose', 11.5, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11.5, dark);
+      if (stateKey === 'S12') return msgBody('No usage on this plan', 11.5, dark);
+      if (stateKey === 'S14') {
+        const full = 'Unavailable in this version · update Cooldown';
+        const text = bucket === '2x1' ? 'Update Cooldown' : full;
+        return msgBody(text, 11.5, dark);
+      }
+
+      let effA = a, label = a.label, dimAll = false, dot = false, isUnassigned = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = ACCOUNTS[0].label; isUnassigned = true; }
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
+      if (stateKey === 'S8') dimAll = true;
+      const color = accentFor(effA, dark);
+      const pctText = fmtPct(st, stateKey === 'S11') ?? '—';
+      const paceTick = st.elapsed;
+      // item 12: "Pro (unassigned) · 5h" overflows 90dp at 2×1 — drop the window
+      // suffix there and mark unassigned with a small corner tag instead; from
+      // 4×1 up (260dp) there's room to say it inline.
+      const [nw0, nh0] = frameOf(bucket, opts);
+      const narrowShort = bucket === '2x1' && innerW(nw0, nh0) < 150 && nh0 < 100;
+      const compact2x1 = (isUnassigned || narrowShort) && bucket === '2x1';
+      // rev C: at 2×1 a weekly-only account's label is the name alone, with "Weekly" as a
+      // small second line in the label column (the 32 sp row has the height for it), so
+      // the tag survives where "ChatGPT · Weekly" on one line would ellipsize.
+      const weekly2x1 = st.weeklyOnly && bucket === '2x1';
+      let labelText = (compact2x1 || weekly2x1) ? label : (st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`);
+      if (isUnassigned && !compact2x1) labelText = `${label} (unassigned)${st.weeklyOnly ? ' · Weekly' : ' · 5h'}`;
+      // rev C, Robin: the label and the figure share ONE row — label on the left,
+      // baseline-aligned to the 32 sp figure on the right — with the full-width 8 dp
+      // bar underneath. A deliberate departure from the notification's collapsed
+      // geometry. The label gets exactly what the measured figure leaves, which is
+      // CCBG-24 (Duet Label Clamp)'s measure-and-clamp applied here too.
+      const IW = innerW(w, h);
+      // rev C layout pass: 4×2 has 144–172 dp of height for one reading, so its figure
+      // grows to 44 sp over a 10 dp bar and the reading is centred above the control row,
+      // instead of 32 sp stranded at the top with a dead band under it.
+      const big = bucket === '4x2';
+      const figPx = big ? 44 : 32, barH = big ? 10 : 8, lblPx = big ? 14 : 13;
+      const showLeftCap = stateKey === 'S11' && bucket !== '2x1'; // below 4×1 the LEFT caption drops
+      const figW = textPx(pctText, figPx, 700) + (showLeftCap ? textPx('LEFT', 10, 400) + 4 : 0);
+      const availLabel = Math.floor(IW - figW - 10 - 14 - 4 - (dot ? 10 : 0));
+      const unassignedTag = (compact2x1 && isUnassigned) ? `<span style="font-size:8px;font-weight:700;letter-spacing:.05em;color:${dark ? '#1A1A1A' : '#fff'};background:${ink(dark, .55)};padding:1px 4px;border-radius:4px;margin-left:18px;align-self:flex-start">UNASSIGNED</span>` : '';
+
+      const figGroup = `<div style="display:flex;align-items:baseline;gap:4px;flex:0 0 auto;${dimAll ? 'opacity:.5' : ''}">
+        <span style="font-size:${figPx}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em">${pctText}</span>
+        ${showLeftCap ? '<span style="font-size:10px;font-weight:600;letter-spacing:.08em;opacity:.75">LEFT</span>' : ''}
+      </div>`;
+      const row1 = `<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+        <div style="min-width:0;display:flex;flex-direction:column;gap:2px;padding-bottom:3px">${unassignedTag}${labelRow(effA, color, labelText, 14, lblPx, dark, { dim: dimAll, dot, fit: availLabel, weight: 500 })}${weekly2x1 ? `<span style="font-size:10px;font-weight:600;opacity:.75;margin-left:18px">Weekly</span>` : ''}</div>
+        ${figGroup}
+      </div>`;
+      const bar = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(IW, barH, { pct: st.pct, dark, accent: color, noReading: st.noReading, paceTick })}</div>`;
+
+      // rev F: a 2×1 frame narrower than rev D's (inner < 150 dp) cannot hold the label
+      // beside the 32 sp figure; where the frame has the height (One UI's 108 dp row) the
+      // label takes its own full-width line above the figure. Rev D's frames keep one row.
+      if (bucket === '2x1' && IW < 150 && h >= 100) {
+        const stackText = compact2x1 ? label : (st.weeklyOnly ? `${label} · Weekly` : `${label} · 5h`);
+        const lbl = labelRow(effA, color, stackText, 14, lblPx, dark, { dim: dimAll, dot, fit: Math.floor(IW - 18 - (dot ? 10 : 0)), weight: 500 });
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px"><div style="display:flex;flex-direction:column;gap:2px">${unassignedTag}${lbl}</div>${figGroup}${bar}</div>`;
+      }
+      if (bucket === '2x1') {
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${row1}${bar}</div>`;
+      }
+      // The sub-line is always the absolute reset (R4) — S7 keeps it too (item 11):
+      // a broken sign-in dims the last snapshot, it doesn't hide when it resets.
+      let subText;
+      if (stateKey === 'S8') subText = 'Stale';
+      else if (stateKey === 'S5') subText = 'Starts when a message is sent';
+      else if (stateKey === 'S6') subText = `Reset ${RESET_5H_LABEL}`;
+      else subText = st.weeklyOnly ? `Resets ${RESET_WEEKLY_LABEL}` : `Resets ${RESET_5H_LABEL}`;
+      // Q11 (rev C): the "as of" stamp, when kept, sits at the right end of the sub-line.
+      const stampHtml = opts.asOf ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>` : '';
+      const subLine = `<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:5px"><span style="font-size:12px;line-height:1.2;opacity:${dimAll ? .5 : .78}">${fitSpan(subText, 12, 400, IW - (opts.asOf ? 80 : 0))}</span>${stampHtml}</div>`;
+
+      if (bucket === '4x1') {
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${row1}${bar}${subLine}</div>`;
+      }
+      // 4x2: the reading on top, the 28 dp control row pinned to the bottom edge —
+      // [5h|Weekly] chips (only the windows the account has) + the account cycler.
+      const hasBoth = !effA.weeklyOnly;
+      const chips = hasBoth
+        ? `<div style="display:flex;gap:6px">
+             <span style="height:24px;padding:0 11px;border-radius:12px;background:${color};color:${dark ? '#1A1A1A' : '#fff'};font-size:11px;font-weight:700;display:flex;align-items:center">5h</span>
+             <span style="height:24px;padding:0 11px;border-radius:12px;border:1px solid ${ink(dark, .28)};font-size:11px;display:flex;align-items:center;opacity:.85">Weekly</span>
+           </div>`
+        : `<span style="height:24px;padding:0 8px;border-radius:6px;background:${ink(dark, .08)};font-size:11px;display:flex;align-items:center;opacity:.8">Weekly</span>`;
+      const cycler = `<div style="height:24px;padding:0 10px;border-radius:12px;background:${ink(dark, .08)};font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px">${mark(effA.provider, 12, color)}${label} <span style="opacity:.6">⇄</span></div>`;
+      const ctrl = `<div style="height:28px;display:flex;align-items:center;justify-content:space-between">${chips}${cycler}</div>`;
+      return `<div style="height:100%;display:flex;flex-direction:column">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px">${row1}${bar}${subLine}</div>${ctrl}</div>`;
+    }
+
+    // ------------------------------------------------------------ Countdown (CCRM-81)
+    function countdownFace(bucket, a, stateKey, dark, opts) {
+      opts = opts || {};
+      const st = ST[stateKey] || ST.S1;
+      const [w, h] = frameOf(bucket, opts);
+      const IW = innerW(w, h);
+      if (stateKey === 'S9') return msgBody('Account removed · tap to choose', 11, dark);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
+      if (stateKey === 'S12') return msgBody('No usage on this plan', 11, dark);
+      if (stateKey === 'S14') return msgBody(bucket === '2x1' ? 'Update Cooldown' : 'Unavailable in this version · update Cooldown', 11, dark);
+
+      let effA = a, label = a.label, dimAll = false, dot = false;
+      if (stateKey === 'S10u') { effA = ACCOUNTS[0]; label = `${ACCOUNTS[0].label} (unassigned)`; }
+      if (stateKey === 'S7') { dot = true; dimAll = true; }
+      if (stateKey === 'S8') dimAll = true;
+      const color = accentFor(effA, dark);
+      const windowWord = st.weeklyOnly ? 'Weekly' : '5h';
+      // R2: the day is added only when the reset is more than 24 h away — inside the last
+      // 24 h (forceLive) the Weekly clock time drops its day.
+      const resetLabel = (st.weeklyOnly && !opts.forceLive) ? RESET_WEEKLY_LABEL : RESET_5H_LABEL;
+      const isLeft = stateKey === 'S11';
+      const bottomText = `${label} · ${windowWord}${isLeft ? ' · left' : ''}`;
+      const bottom = labelRow(effA, color, bottomText, 11, 11, dark, { dim: dimAll, dot, weight: 500 });
+
+      // S5 — not started: CCRM-81 has no reset time to show yet, so there is no
+      // count and no clock; just the caption, the message, and the account line.
+      if (stateKey === 'S5') {
+        const cap = `<div style="font-size:11px;opacity:.75">${windowWord} reset</div>`;
+        const msg = `<div style="font-size:13.5px;font-weight:600;line-height:1.3;margin:2px 0">Starts when a message is sent</div>`;
+        return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">${cap}${msg}${bottom}</div>`;
+      }
+
+      const capText = stateKey === 'S8' ? 'Stale' : `${windowWord} reset`;
+      const capLine = `<div style="font-size:11px;opacity:.75;${dimAll ? 'opacity:.5' : ''}">${capText}</div>`;
+
+      // Weekly outside the last 24h (the default S4) is absolute, no chronometer —
+      // and S6 (reset passed) is the past-tense absolute "Reset 9:10 PM", no count
+      // either. `opts.forceLive` is only used by §4's "inside 24h" illustration.
+      // rev C layout pass: the "● live" wireframe note moves out of the layout into the
+      // tile's top-right corner, so the count sits flush left like the real face will.
+      const big = bucket === '2x2';
+      const countPx = big ? 28 : 24;
+      const weeklyAbsolute = st.weeklyOnly && !opts.forceLive;
+      const isLive = !(stateKey === 'S6' || weeklyAbsolute);
+      const liveNote = isLive ? `<span class="liv" style="position:absolute;top:0;right:0;opacity:.85">● live</span>` : '';
+      const dimCss = dimAll ? 'opacity:.5;' : '';
+      let countBlock;
+      if (stateKey === 'S6') {
+        countBlock = `<div style="font-weight:700;line-height:1.1;${dimCss}">${fitSpan(`Reset ${RESET_5H_LABEL}`, stepFit(`Reset ${RESET_5H_LABEL}`, big ? 22 : 20, IW), 700, IW)}</div>`;
+      } else if (weeklyAbsolute) {
+        // rev C: the caption already says "Weekly reset", so the absolute form is the clock
+        // time alone at the count's size — "Sat 9:10 PM" fits 2×1 where "Resets Sat 9:10 PM" did not.
+        countBlock = `<div style="font-weight:700;line-height:1.1;${dimCss}">${fitSpan(resetLabel, stepFit(resetLabel, opts.weeklyFontSize || 24, IW), 700, IW)}</div>`;
+      } else {
+        const countText = opts.countText || '2:41:07';
+        const count = `<span style="font-size:${countPx}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em">${countText}</span>`;
+        const atTxt = `at ${resetLabel}`;
+        countBlock = big
+          ? `<div style="${dimCss}">${count}<div style="font-size:12px;opacity:.78;margin-top:3px">${fitSpan(atTxt, 12, 400, IW)}</div></div>`
+          : (textPx(countText, countPx, 700) + 6 + textPx(atTxt, 11, 400) > IW && h >= 100)
+            ? `<div style="${dimCss}">${count}<div style="font-size:11px;opacity:.78;margin-top:2px">${fitSpan(atTxt, 11, 400, IW)}</div></div>`
+            : `<div style="display:flex;align-items:baseline;gap:6px;${dimCss}">${count}${fitSpan(atTxt, 11, 400, Math.max(40, IW - textPx(countText, countPx, 700) - 6), 'opacity:.78')}</div>`;
+      }
+
+      if (bucket === '2x1') {
+        return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px">${liveNote}${capLine}${countBlock}${bottom}</div>`;
+      }
+      // 2×2: the count on top; then the 18 sp figure on the left with, only where the
+      // projection says the window runs dry before it resets, "~ runs out …" on the
+      // right (CCRM-30 (Estimate Honesty)'s "~"); the 6 dp bar under both; the account
+      // line pinned to the bottom. Most days there is no estimate and the row holds
+      // the figure alone.
+      const pctText = fmtPct(st, isLeft) ?? '—';
+      const fig = stateKey === 'S6'
+        ? `<span style="font-size:18px;font-weight:700;opacity:.5">—</span>`
+        : `<span style="display:flex;align-items:baseline;gap:4px;${dimCss}"><span style="font-size:18px;font-weight:700;line-height:1">${pctText}</span>${isLeft ? '<span style="font-size:8.5px;font-weight:600;letter-spacing:.08em;opacity:.8">LEFT</span>' : ''}</span>`;
+      const EST_STATES = ['S2'];
+      const showEst = opts.showEstimate != null ? opts.showEstimate : EST_STATES.includes(stateKey);
+      const estimateAt = opts.estimateAt || '7:54 PM';
+      const est = showEst ? `<span style="font-size:11px;opacity:${dimAll ? .5 : .78}">~ runs out ${estimateAt}</span>` : '';
+      // rev F.1 (Fable): on a narrow tall frame the estimate drops under the figure.
+      const figW = textPx(pctText, 18, 700) + (isLeft ? textPx('LEFT', 8.5, 600) + 4 : 0);
+      const estBelow = showEst && (figW + 6 + textPx(`~ runs out ${estimateAt}`, 11, 400) > IW) && h >= 150;
+      const figRow = estBelow
+        ? `<div style="display:flex;flex-direction:column;gap:2px">${fig}${est}</div>`
+        : `<div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px">${fig}${est}</div>`;
+      const barLine = `<div style="${dimAll ? 'opacity:.45' : ''}">${barHTML(IW, 6, { pct: st.pct, dark, accent: color, noReading: st.noReading || stateKey === 'S6', paceTick: st.elapsed })}</div>`;
+      return `<div style="height:100%;position:relative;display:flex;flex-direction:column;justify-content:space-between">${liveNote}
+        <div style="display:flex;flex-direction:column;gap:3px">${capLine}${countBlock}</div>
+        <div style="display:flex;flex-direction:column;gap:2px">${figRow}${barLine}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">${bottom}${(opts.asOf && textPx(bottomText, 11, 500) + 15 + (dot ? 10 : 0) + 6 + textPx(`as of ${NOW_LABEL}`, 10, 400) <= IW) ? `<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>` : ''}</div></div>`;
+    }
+
+    // ------------------------------------------------------------------ Strip (CCRM-82)
+    // Rev B: a state applies to ONE ring (the target, Teams by default) — every
+    // other account keeps its own distinct baseline reading. S9/S10n/S13/S14 are
+    // the face-wide exceptions (CCRM-82's own text); everything else (S1–S8,
+    // S11, S12) is "per ring". Weekly is a small tag under the figure in the
+    // bore (ringWithFigure's subTag), not a label suffix — see item 1, §10.
+    const STRIP_BASE = {
+      pro: { pct: 62, elapsed: 66 }, teams: { pct: 24, elapsed: 30 },
+      product: { pct: 8, elapsed: 12 }, chatgpt: { pct: 31, elapsed: 40 },
+      research: { pct: 15, elapsed: 18 },
+    };
+    const STRIP_PER_RING_OVERRIDE = {
+      S2: { pct: 55, elapsed: 38 }, S3: { pct: 100, elapsed: 70 },
+      S5: { noReading: true, notStarted: true }, S6: { noReading: true },
+      S7: { dim: true, dot: true }, S8: { dim: true, stale: true },
+      S11: { left: true }, S12: { free: true },
+    };
+    function stripFace(bucket, accountsList, stateKey, dark, opts) {
+      opts = opts || {};
+      const [w] = frameOf(bucket, opts);
+      if (stateKey === 'S10n') return msgBody('Open Cooldown to sign in', 11, dark);
+      if (stateKey === 'S14') return msgBody(bucket === '4x1' ? 'Update Cooldown' : 'Unavailable in this version · update Cooldown', 11, dark);
+      const isBig = bucket === '4x2';
+      const [, hh] = frameOf(bucket, opts);
+      const IW = innerW(w, hh), IH = hh - 2 * padFor(w, hh).y;
+      // rev C fit: the spec's Ø88 / Ø56 is a ceiling. Four rings share the inner width
+      // with 6 dp gaps, and the ring + label (+ reset) must fit the inner height —
+      // on the cover that is Ø80 at 4×2 and Ø53 at 4×1 (see the note under §1).
+      const nCells = Math.min(4, accountsList.length) + (accountsList.length > 4 ? 1 : 0);
+      const byW = Math.floor((IW - 6 * (nCells - 1)) / Math.max(1, nCells));
+      const byH = Math.floor(IH - (isBig ? 14 + 13 + 6 : 12 + 3));
+      const d = Math.min(isBig ? 88 : 56, byW, byH);
+      const stroke = isBig ? 6 : 5;
+      const figSize = isBig ? 18 : 13;
+      // rev F: 10 sp on 4×2 once a cell is under 80 dp (four on ~340 dp, or five cells).
+      const nCellsL = Math.min(4, accountsList.length) + (accountsList.length > 4 ? 1 : 0);
+      const labelSize = isBig ? (Math.floor((IW - 6 * (nCellsL - 1)) / Math.max(1, nCellsL)) < 80 ? 10 : 11) : 9.5;
+      const subTagSize = isBig ? 9 : 8; // rev C: 8 sp is the floor for legible text on a phone
+      const targetKey = opts.target || 'teams';
+      const centered = stateKey === 'S9' || accountsList.length <= 1;
+
+      let list = accountsList.length > 4 ? accountsList.slice(0, 4) : accountsList.slice();
+      const overflowCount = accountsList.length > 4 ? accountsList.length - 4 : 0;
+      if (stateKey === 'S9') list = list.filter(x => x.key !== targetKey);
+      const cellCount = list.length + (overflowCount ? 1 : 0);
+      const cellW = Math.floor((IW - 6 * (cellCount - 1)) / Math.max(1, cellCount));
+      const faceWideNormal = ['S1', 'S4', 'S13'].includes(stateKey);
+
+      const cells = list.map(a => {
+        const isTarget = a.key === targetKey && !faceWideNormal;
+        const ov = isTarget ? STRIP_PER_RING_OVERRIDE[stateKey] : null;
+        const base = STRIP_BASE[a.key] || { pct: 47, elapsed: 38 };
+        let pct = base.pct, elapsed = base.elapsed, dim = false, dot = false, isLeft = false, isFree = false, stale = false, noReading = false, notStarted = false;
+        if (ov) {
+          if (ov.pct !== undefined) pct = ov.pct;
+          if (ov.elapsed !== undefined) elapsed = ov.elapsed;
+          if (ov.noReading) { noReading = true; pct = null; elapsed = null; }
+          if (ov.dim) dim = true;
+          if (ov.dot) dot = true;
+          if (ov.left) isLeft = true;
+          if (ov.free) isFree = true;
+          if (ov.stale) stale = true;
+          if (ov.notStarted) notStarted = true;
+        }
+        const color = accentFor(a, dark);
+        if (isFree) {
+          return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
+            ${isBig
+              ? ringWithFigure(d, stroke, { pct: null, dark, accent: color, noFigureSlot: true })
+              : ringWithFigure(d, stroke, { pct: null, dark, accent: color, figure: '<span style="font-weight:400;opacity:.7">Free</span>', figSize })}
+            <div style="font-size:${labelSize}px;text-align:center">${a.label}${isBig ? '<br><span style="opacity:.7">Free</span>' : ''}</div>
+          </div>`;
+        }
+        const pctText = pct == null ? '—' : fmtPct({ pct }, isLeft);
+        const ring = ringWithFigure(d, stroke, {
+          pct, elapsed, dark, accent: color, showRed: true, noReading, spentX: true,
+          figure: pctText, figSize, dimRing: dim, dimFig: dim,
+          subTag: a.weeklyOnly ? 'Weekly' : null, subTagSize,
+        });
+        let resetTxt = '';
+        if (isBig) {
+          if (stale) resetTxt = `<div style="font-size:10px;opacity:.55">Stale</div>`;
+          else if (notStarted) resetTxt = `<div style="font-size:10px;opacity:.72">Not started</div>`;
+          else if (noReading) resetTxt = `<div style="font-size:10px;opacity:.72;${dim ? 'opacity:.5' : ''}">Reset ${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>`;
+          else resetTxt = `<div style="font-size:10px;opacity:.72;${dim ? 'opacity:.5' : ''}">${a.weeklyOnly ? RESET_WEEKLY_LABEL : RESET_5H_LABEL}</div>`;
+        }
+        const labelSuffix = isLeft ? ' · left' : '';
+        const labelHtml = fitSpan(a.label + labelSuffix, labelSize, 500, cellW - 13, dim ? 'opacity:.5' : '');
+        return `<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px">
+          ${ring}
+          <div style="display:flex;align-items:center;gap:3px;max-width:100%">${mark(a.provider, 10, color)}${labelHtml}${dot ? `<span style="width:5px;height:5px;border-radius:50%;background:${dark ? '#FF6B6B' : '#C62828'}"></span>` : ''}</div>
+          ${resetTxt}
+        </div>`;
+      }).join('');
+      const plusCell = overflowCount ? `<div style="flex:0 0 ${d}px;display:flex;align-items:center;justify-content:center;font-size:${figSize}px;font-weight:700;opacity:.7">+${overflowCount}</div>` : '';
+      const justify = centered ? 'center' : 'space-between';
+      const gap = centered ? '18px' : '6px';
+      const row = `<div style="display:flex;align-items:center;justify-content:${justify};gap:${gap};width:100%">${cells}${plusCell}</div>`;
+      if (opts.asOf) return `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px">${row}<div style="text-align:right">${`<span style="font-size:10px;opacity:.55;white-space:nowrap">as of ${NOW_LABEL}</span>`}</div></div>`;
+      return `<div style="height:100%;display:flex;align-items:center;justify-content:${justify};gap:${gap}">${cells}${plusCell}</div>`;
+    }
+  </script>
+
+  <script>
+    // ---- rev F frames and the class rule ----
+    const OUI = { // Fold 7 cover, One UI, Robin's grid — measured 2026-09-26
+      '1x1': [84, 108], '2x1': [156, 108], '2x2': [156, 237], '3x1': [244, 108], '3x2': [244, 237],
+      '3x3': [244, 366], '4x1': [333, 108], '4x2': [333, 237], '6x1': [510, 108], '6x2': [510, 237],
+    };
+    const OUI_IN = { // Fold 7 inner, One UI — 2×2 and 4×3 measured, one-row height derived
+      '2x1': [202, 114], '2x2': [202, 264], '4x1': [470, 114], '4x2': [470, 264], '4x3': [470, 414],
+    };
+    function classOf(face, w, h) {
+      if (face === 'ring') return (w >= 140 && h >= 140) ? '2x2' : '1x1';
+      if (face === 'number') return w < 240 ? '2x1' : (h >= 150 ? '4x2' : '4x1');
+      if (face === 'countdown') return (w >= 140 && h >= 150) ? '2x2' : '2x1';
+      return h >= 150 ? '4x2' : '4x1';
+    }
+    const FACE_NAME = { ring: 'Ring', number: 'Number', countdown: 'Countdown', strip: 'All accounts' };
+    function draw(face, w, h, stateKey, dark, extra) {
+      extra = extra || {};
+      const bucket = classOf(face, w, h);
+      const a = extra.account || acc('pro');
+      const o = Object.assign({ wh: [w, h] }, extra.opts || {});
+      let content;
+      if (face === 'ring') content = ringFace(bucket, a, stateKey, dark, o);
+      else if (face === 'number') content = numberFace(bucket, a, stateKey, dark, o);
+      else if (face === 'countdown') content = countdownFace(bucket, a, stateKey, dark, o);
+      else content = stripFace(bucket, extra.accounts || ACCOUNTS, stateKey, dark, o);
+      const strip = face === 'strip';
+      const bg = extra.bg || 'solid';
+      return tile({
+        w, h, bg, dark, wallpaper: extra.wallpaper,
+        cardColor: strip ? (dark ? CLAUDE_DARK.card : CLAUDE_LIGHT.card) : roomCard(a, dark),
+        accent: strip ? null : accentFor(a, dark),
+        // The page's scrolling rows are nowrap; a face's own text wraps as its TextViews do.
+        synthetic: stateKey === 'S13', content: `<div style="white-space:normal;height:100%">${content}</div>`,
+      });
+    }
+    function cellName(k) { return k.replace('x', ' col × ') + ' row'; }
+  </script>
+
+  <hr class="hr">
+  <h2>1 &middot; Every face on the cover, at the frames One UI gives it</h2>
+  <p class="sub">S1 (normal), Solid, dark and light. Each tile is drawn at the reported frame, 1 px = 1 dp;
+    the caption names the grid cells, the frame and the layout the class rule picks. The first tile of
+    each face is its default placement.</p>
+  <div id="s1"></div>
+  <script>
+    (function () {
+      const rows = [
+        ['ring', ['2x2', '1x1', '3x3', '2x1']],
+        ['number', ['4x1', '2x1', '3x1', '4x2', '6x1', '2x2']],
+        ['countdown', ['2x1', '2x2', '3x1', '3x2']],
+        ['strip', ['4x1', '4x2', '6x1', '6x2']],
+      ];
+      let html = '';
+      rows.forEach(([face, cells]) => {
+        html += `<h3>${FACE_NAME[face]}</h3>`;
+        ['dark', 'light'].forEach(theme => {
+          const dark = theme === 'dark';
+          html += `<div class="scroll" style="white-space:nowrap">` + cells.map(k => {
+            const [w, h] = OUI[k];
+            return tf(draw(face, w, h, 'S1', dark), `${cellName(k)} · ${w}×${h} · ${classOf(face, w, h).replace('x', '×')} layout · ${theme}`, Math.max(w, 150));
+          }).join('') + `</div>`;
+        });
+      });
+      document.getElementById('s1').innerHTML = html;
+    })();
+  </script>
+  <p class="note wide"><b>Ring 2&times;1 (156&times;108)</b> is shorter than 140 dp, so it takes the
+    1&times;1 layout, centred &mdash; a ring with no label, the same as rev D's 1&times;1. <b>Number at
+    2&times;2</b> is under 300 dp wide, so it keeps the 2&times;1 layout, centred in the taller frame; rev D
+    has no Number layout for a square frame and rev F does not invent one.</p>
+
+  <hr class="hr">
+  <h2>2 &middot; States at the tightest cover frames</h2>
+  <p class="sub">The states most likely to overflow &mdash; long labels, the widest figures, the
+    markers &mdash; at the narrowest frame each face can have on the cover. A run that overflows its
+    box draws a red outline with the overflow in px (none should). Dark Solid; S4 uses ChatGPT.</p>
+  <div id="s2"></div>
+  <script>
+    (function () {
+      const states = ['S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S10u', 'S11', 'S13'];
+      const rows = [['ring', '2x2'], ['ring', '1x1'], ['number', '2x1'], ['number', '4x1'], ['number', '4x2'],
+                    ['countdown', '2x1'], ['countdown', '2x2'], ['strip', '4x1'], ['strip', '4x2']];
+      let html = '';
+      rows.forEach(([face, k]) => {
+        const [w, h] = OUI[k];
+        html += `<h4>${FACE_NAME[face]} · ${cellName(k)} · ${w}×${h} dp</h4><div class="scroll" style="white-space:nowrap">`;
+        html += states.map(s => {
+          const account = s === 'S4' ? acc('chatgpt') : acc('pro');
+          return tf(draw(face, w, h, s, true, { account }), STATE_LABEL[s.replace(/[un]$/, '')] + (s === 'S10u' ? ' (unassigned)' : ''), Math.max(w, 120));
+        }).join('') + '</div>';
+      });
+      // F.1: the same rows in the light theme.
+      rows.forEach(([face, k]) => {
+        const [w, h] = OUI[k];
+        html += `<h4>${FACE_NAME[face]} · ${cellName(k)} · ${w}×${h} dp · light</h4><div class="scroll" style="white-space:nowrap">`;
+        html += states.map(s => {
+          const account = s === 'S4' ? acc('chatgpt') : acc('pro');
+          return tf(draw(face, w, h, s, false, { account }), STATE_LABEL[s.replace(/[un]$/, '')] + (s === 'S10u' ? ' (unassigned)' : ''), Math.max(w, 120));
+        }).join('') + '</div>';
+      });
+      document.getElementById('s2').innerHTML = html;
+    })();
+  </script>
+
+  <h3>F.1 &middot; The "as of" stamp, a five-account Strip, a five-column launcher</h3>
+  <p class="sub">The stamp where rev D draws it, at the narrow cover frames: it stays when the line has
+    room and is left off when it does not &mdash; the account name is never the one to go. The Strip
+    with five accounts shows four rings and a "+1" cell. A five-column launcher's 2&times;1 (~140&times;84 dp)
+    drops the window suffix, rev D's compact rule.</p>
+  <div id="s2b"></div>
+  <script>
+    (function () {
+      const five = ACCOUNTS.concat([RESEARCH_DEMO]);
+      const t = [];
+      t.push(tf(draw('ring', 156, 237, 'S1', true, { opts: { asOf: true } }), 'Ring 2×2 · S1 · stamp fits', 160));
+      t.push(tf(draw('ring', 156, 237, 'S10u', true, { opts: { asOf: true } }), 'Ring 2×2 · S10 unassigned · stamp left off', 160));
+      t.push(tf(draw('countdown', 156, 237, 'S1', true, { opts: { asOf: true } }), 'Countdown 2×2 · S1 · stamp fits', 160));
+      t.push(tf(draw('countdown', 156, 237, 'S10u', true, { opts: { asOf: true } }), 'Countdown 2×2 · S10 unassigned · stamp left off', 160));
+      t.push(tf(draw('countdown', 156, 237, 'S11', true, { opts: { showEstimate: true } }), 'Countdown 2×2 · S11 Left + estimate · estimate on its own line', 160));
+      t.push(tf(draw('strip', 333, 108, 'S1', true, { accounts: five }), 'All accounts 4×1 · five accounts', 333));
+      t.push(tf(draw('strip', 333, 237, 'S1', true, { accounts: five }), 'All accounts 4×2 · five accounts', 333));
+      t.push(tf(draw('number', 140, 84, 'S1', true), 'Number 2×1 · five-column launcher ~140×84 · compact label', 150));
+      t.push(tf(draw('number', 140, 84, 'S10u', true), 'Number 2×1 · ~140×84 · S10 unassigned · tag', 150));
+      document.getElementById('s2b').innerHTML = `<div class="scroll" style="white-space:nowrap">${t.join('')}</div>`;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>3 &middot; The inner screen</h2>
+  <p class="sub">The inner frames already fit rev D's keys; rev F draws them at their own size too.
+    2&times;2 and 4&times;3 are measured; the one-row height is derived from the row pitch
+    (<span class="unver">confirm at the re-run</span>).</p>
+  <div id="s3"></div>
+  <script>
+    (function () {
+      const rows = [['ring', ['2x2', '2x1']], ['number', ['4x1', '2x1', '4x2']], ['countdown', ['2x1', '2x2']], ['strip', ['4x1', '4x2']]];
+      let html = '';
+      rows.forEach(([face, cells]) => {
+        html += `<h4>${FACE_NAME[face]}</h4><div class="scroll" style="white-space:nowrap">` + cells.map(k => {
+          const [w, h] = OUI_IN[k];
+          return tf(draw(face, w, h, 'S1', true), `inner ${cellName(k)} · ${w}×${h} · ${classOf(face, w, h).replace('x', '×')} layout`, Math.max(w, 150));
+        }).join('') + '</div>';
+      });
+      document.getElementById('s3').innerHTML = html;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>4 &middot; Rev D's frames still draw rev D</h2>
+  <p class="sub">The same rule at the frames rev D was fitted to (the Pixel launcher's 84 dp rows):
+    nothing moves. This is the check that rev F is a refit, not a redesign.</p>
+  <div id="s4"></div>
+  <script>
+    (function () {
+      const rows = [['ring', ['1x1', '2x2']], ['number', ['2x1', '4x1', '4x2']], ['countdown', ['2x1', '2x2']], ['strip', ['4x1', '4x2']]];
+      let html = '<div class="scroll" style="white-space:nowrap">';
+      rows.forEach(([face, cells]) => cells.forEach(k => {
+        const [w, h] = COVER[k];
+        html += tf(draw(face, w, h, 'S1', true), `${FACE_NAME[face]} ${k.replace('x', '×')} · rev D frame ${w}×${h}`, Math.max(w, 150));
+      }));
+      document.getElementById('s4').innerHTML = html + '</div>';
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>5 &middot; Transparent on the cover</h2>
+  <p class="sub">The tall frames on a wallpaper, both themes, including the mismatched case &mdash;
+    the centred content must still read with rev D's soft shadow.</p>
+  <div id="s5"></div>
+  <script>
+    (function () {
+      const combos = [['dark', 'dark'], ['light', 'light'], ['dark', 'light'], ['light', 'dark']];
+      let html = '';
+      [['ring', '2x2'], ['countdown', '2x2'], ['number', '4x1'], ['strip', '4x2']].forEach(([face, k]) => {
+        const [w, h] = OUI[k];
+        html += `<h4>${FACE_NAME[face]} · ${cellName(k)}</h4><div class="scroll" style="white-space:nowrap">` + combos.map(([t, wp]) =>
+          tf(draw(face, w, h, 'S1', t === 'dark', { bg: 'transparent', wallpaper: wp }), `${t} theme on ${wp} wallpaper${t !== wp ? ' — mismatched' : ''}`, Math.max(w, 150))).join('') + '</div>';
+      });
+      document.getElementById('s5').innerHTML = html;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>6 &middot; Picker previews (F.1)</h2>
+  <p class="sub">A preview is one static layout (Solid, dark, S1), so it cannot pick a layout by size.
+    It is drawn here in the boxes One UI's picker gave it: the Ring's ring takes the height its box leaves
+    above the label, centred, so a narrow box never clips it, and its figure auto-sizes inside the bore (26 sp at most); each Strip ring takes the height its label
+    leaves, so a short box shrinks the rings rather than cutting the names.</p>
+  <div id="s6"></div>
+  <script>
+    (function () {
+      function ringPreview(w, h) {
+        const P = padFor(w, h), iw = w - 2 * P.x, ih = h - 2 * P.y;
+        const d = Math.floor(Math.min(iw, ih - 12 - 8));
+        const content = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+          ${ringWithFigure(d, Math.max(6, Math.round(9 * d / 110)), { pct: 38, elapsed: 46, dark: true, accent: accentFor(acc('pro'), true), figure: '38%', figSize: Math.min(26, Math.round((d - 36) * 0.8)) })}
+          ${labelRow(acc('pro'), accentFor(acc('pro'), true), 'Pro', 12, 12, true, {})}</div>`;
+        return tile({ w, h, bg: 'solid', dark: true, cardColor: '#1A1A1A', content });
+      }
+      function stripPreview(w, h) {
+        const P = padFor(w, h), iw = w - 2 * P.x, ih = h - 2 * P.y;
+        const d = Math.floor(Math.min((iw - 12) / 3, ih - 3 - 12));
+        const cells = [['pro', 38], ['teams', 62], ['chatgpt', 20]].map(([k, pct]) => {
+          const a = acc(k), c = accentFor(a, true);
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">${ringWithFigure(d, 5, { pct, elapsed: 46, dark: true, accent: c, figure: pct + '%', figSize: 13 })}
+            <div style="display:flex;align-items:center;gap:3px;font-size:9.5px">${mark(a.provider, 11, c)}${a.key === 'teams' ? 'Work' : a.label}</div></div>`;
+        }).join('');
+        return tile({ w, h, bg: 'solid', dark: true, cardColor: '#1A1A1A', content: `<div style="height:100%;display:flex;align-items:center">${cells}</div>` });
+      }
+      const t = [
+        tf(ringPreview(156, 237), 'Ring preview · cover box 156×237', 160),
+        tf(ringPreview(202, 264), 'Ring preview · inner box 202×264', 202),
+        tf(ringPreview(156, 108), 'Ring preview · a short box 156×108', 160),
+        tf(stripPreview(333, 108), 'All accounts preview · 333×108', 333),
+        tf(stripPreview(333, 84), 'All accounts preview · a short box 333×84', 333),
+      ];
+      document.getElementById('s6').innerHTML = `<div class="scroll" style="white-space:nowrap">${t.join('')}</div>`;
+    })();
+  </script>
+
+  <hr class="hr">
+  <h2>7 &middot; Decisions</h2>
+  <p class="sub">Fable approved these with the F.1 changes above. Two are visible departures from rev D and
+    are named for Robin: the <b>stacked Number 2&times;1</b> (label above the figure, figure left) and the
+    <b>larger Ring 2&times;2</b> (Ø131 / 30 sp on the cover, against rev D's Ø110 / 26 sp).</p>
+  <ol class="dec">
+    <li><b>Key on the reported frame</b> (one layout per entry in <code>OPTION_APPWIDGET_SIZES</code>, drawn at
+      that size), rather than retuning the fixed keys to the Fold's numbers. <i>Why:</i> One UI's frames
+      change with the grid setting and differ from the Pixel's; any fixed table breaks on the next grid.</li>
+    <li><b>The class thresholds</b> in the box at the top (140 / 150 / 240 dp). <i>Why:</i> they sit below
+      the smallest frame each class gets on the Fold cover (156 wide, 237 tall, 244 wide) and above the
+      largest frame of the class below it.</li>
+    <li><b>Ring &Oslash; grows with the frame</b>, capped at 150 dp; on the cover 2&times;2 that is &Oslash;131 with
+      a 31 sp figure, against rev D's &Oslash;110 / 26 sp. <i>Alternative:</i> keep &Oslash;110 and leave the
+      extra space empty &mdash; rejected, it strands the ring in a tall card as the device pass showed.</li>
+    <li><b>Extra height stays empty, centred.</b> No new line appears just because a frame is taller;
+      adding content would be a design change beyond this bug.</li>
+    <li><b>Countdown 2&times;1 stacks "at 9:10 PM"</b> under the count when one line does not fit and the frame
+      has the height; otherwise rev D's one line and its ellipsis.</li>
+  </ol>
+  <p class="note wide"><b>For Robin (Fable):</b> One UI draws every widget at <code>hsResizeRatio</code> &mdash; 0.714 on
+    the cover &mdash; so every type size lands at about 71%: the Strip 4&times;1's 9.5 / 8 sp reads as ~6.8 / 5.7 sp,
+    under rev C's 8 sp floor. The app cannot read that ratio. Whether the Strip's type moves up on frames 108 dp
+    or taller is Robin's call; rev F leaves rev D's sizes.</p>
+</div>
+<script>runFitCheck();</script>
+</body>
+</html>

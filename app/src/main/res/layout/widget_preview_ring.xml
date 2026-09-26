@@ -15,10 +15,15 @@
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical" android:gravity="center" android:padding="12dp">
-        <FrameLayout android:layout_width="110dp" android:layout_height="110dp">
+        <!-- Rev F (CCBG-38 (Cover Buckets)): the ring takes whatever height the picker's
+             preview box leaves above the label, so a narrow or short box never clips it. -->
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
             <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                android:scaleType="fitCenter"
                 android:src="@drawable/widget_preview_ring" android:importantForAccessibility="no" />
-            <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="38%" android:textSize="26sp" android:textColor="#FFE59980" android:textStyle="bold" android:layout_gravity="center" />
+            <!-- The figure auto-sizes inside the bore: 26 sp at most, smaller in a short box. -->
+            <TextView style="@style/WFace" android:layout_width="match_parent" android:layout_height="match_parent" android:paddingTop="18dp" android:paddingBottom="18dp" android:gravity="center" android:includeFontPadding="false" android:maxLines="1" android:text="38%" android:textColor="#FFE59980" android:textStyle="bold"
+                android:autoSizeTextType="uniform" android:autoSizeMinTextSize="10sp" android:autoSizeMaxTextSize="26sp" android:autoSizeStepGranularity="1sp" />
         </FrameLayout>
         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="8dp">

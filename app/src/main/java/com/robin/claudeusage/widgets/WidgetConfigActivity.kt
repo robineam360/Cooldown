@@ -122,8 +122,8 @@ class WidgetConfigActivity : ComponentActivity() {
                         this, cache, id, face, FaceWidgetProvider.UNAVAILABLE.getValue(face), config = config,
                     )
                     val size = WidgetHost.currentSize(AppWidgetManager.getInstance(this).getAppWidgetOptions(id))
-                    val bucket = size?.let { WidgetHost.pick(face, it.width, it.height) } ?: Bucket.of(face).first()
-                    bucket to WidgetFace.render(this, face, bucket, state)
+                    val frame = size?.let { Frame.at(face, it.width, it.height) } ?: Bucket.of(face).first().frame
+                    frame to WidgetFace.render(this, face, frame, state)
                 },
                 onSave = {
                     prefs.save(
@@ -157,7 +157,7 @@ private fun ConfigScreen(
     onWindow: (FaceWindow) -> Unit,
     onBackground: (FaceBackground) -> Unit,
     onBack: () -> Unit,
-    preview: () -> Pair<Bucket, android.widget.RemoteViews>?,
+    preview: () -> Pair<Frame, android.widget.RemoteViews>?,
     onSave: () -> Unit,
 ) {
     val surface = Color(if (dark) 0xFF0D0D0D else 0xFFF5EFE8)
@@ -193,9 +193,9 @@ private fun ConfigScreen(
                 Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                val (bucket, views) = built
-                val scale = minOf(1f, maxWidth.value / bucket.widthDp)
-                Box(Modifier.requiredSize((bucket.widthDp * scale).dp, (bucket.heightDp * scale).dp)) {
+                val (frame, views) = built
+                val scale = minOf(1f, maxWidth.value / frame.widthDp)
+                Box(Modifier.requiredSize((frame.widthDp * scale).dp, (frame.heightDp * scale).dp)) {
                     AndroidView(
                         factory = { FrameLayout(it) },
                         update = { host ->
@@ -203,7 +203,7 @@ private fun ConfigScreen(
                             host.addView(views.apply(host.context, host))
                         },
                         modifier = Modifier
-                            .requiredSize(bucket.widthDp.dp, bucket.heightDp.dp)
+                            .requiredSize(frame.widthDp.dp, frame.heightDp.dp)
                             .graphicsLayer { scaleX = scale; scaleY = scale },
                     )
                 }

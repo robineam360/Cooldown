@@ -329,6 +329,33 @@ class WidgetFaceTest {
         }
     }
 
+    /**
+     * Rev F: a Fold reporting its cover and inner frames for one placement (the measured
+     * 2×2 pair), and the largest single frame at the Ø150 ring cap.
+     */
+    @Test
+    fun r10_underBudget_atReportedFrames() {
+        val maps = listOf(listOf(156f to 237f, 202f to 264f), listOf(510f to 366f))
+        for (face in Face.entries) for (density in listOf(COVER_DENSITY, HEADROOM_DENSITY)) for (m in maps) {
+            val bytes = WidgetFace.frameBytes(m.map { (w, h) -> Frame.at(face, w, h) }, density)
+            assertTrue("$face at $density $m: $bytes bytes", bytes < WidgetFace.BITMAP_BUDGET_BYTES)
+        }
+    }
+
+    /** Rev F's geometry reproduces rev D exactly at rev D's own frames. */
+    @Test
+    fun revF_revDFramesKeepRevDGeometry() {
+        assertEquals(WidgetFace.RingDp(64f, 6f), WidgetFace.ring(Bucket.RING_1X1))
+        assertEquals(WidgetFace.RingDp(110f, 9f), WidgetFace.ring(Bucket.RING_2X2))
+        assertEquals(16f, WidgetFace.ringFigureSp(Bucket.RING_1X1.frame))
+        assertEquals(26f, WidgetFace.ringFigureSp(Bucket.RING_2X2.frame))
+        assertEquals(11f, WidgetFace.stripLabelSp(Bucket.STRIP_4X2.frame))
+        for (b in Bucket.entries) assertEquals(false, WidgetFace.numberStacked(b.frame))
+        // …and grows the Ring to the cover's 2×2: Ø131 across the 155.8 dp frame.
+        assertEquals(131f, WidgetFace.ring(Frame.at(Face.RING, 155.8f, 237f))!!.diameter)
+        assertEquals(true, WidgetFace.numberStacked(Frame.at(Face.NUMBER, 155.8f, 107.8f)))
+    }
+
     @Test
     fun r10_theEstimateIsWhatRenderDraws() {
         val density = context.resources.displayMetrics.density

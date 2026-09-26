@@ -128,22 +128,32 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   and the size map are unchanged; `WidgetFitTest` still renders the faces directly.
 
 ### CCBG-38 · Cover Buckets — on the Fold 7 cover every widget draws its smallest face
-- **Status:** **Open (2026-09-26)** — found in the RUNBOOK.md Step 7 device pass of CCRM-78
-  (Widgets Reborn); the fix changes the approved layouts' frames, so it goes back to the wireframe
-  (CLAUDE.md §2) before any code.
-- **Severity:** High (every face on the cover screen shows the wrong layout; blocks Step 8)
+- **Status:** **Fixed 2026-09-26, pending device verification** (RUNBOOK.md Step 7 re-run) —
+  found in the Step 7 device pass of CCRM-78 (Widgets Reborn); fixed to wireframe rev F.1
+  (`design/2026-09-26-widgets-cover-refit.html`), approved by Fable on Robin's delegation after
+  two rounds. Not yet in a release.
+- **Severity:** High (every face on the cover screen showed the wrong layout; blocks Step 8)
 - **Symptom:** the Ring added at its default 2×2 on the cover drew the 1×1 face — a small ring,
   no label — in the middle of a tall empty card, with the synthetic dot clipped by the corner
   (`design/research/2026-09-26-v18-device-pass/09-cover-ring-2x2-draws-1x1-synthetic.png`).
   One UI's logcat: `findBestFitLayout, widgetSize=155.80952x236.95238, bestFitSize=79.0x72.0`.
-- **Cause:** `Bucket` assumes cover cells of 90.75×84 dp (2×2 = 181×168). The One UI launcher on
+- **Cause:** `Bucket` assumed cover cells of 90.75×84 dp (2×2 = 181×168). The One UI launcher on
   Robin's grid reports cover frames of 1×1 84.2×107.8, 2×2 155.8×237.0, 4×2 333.0×237.0 — cells
-  are narrower and much taller than assumed. Every 2-column key (169 dp) and 4-column key (351 dp)
-  is wider than the frame, so `RemoteViews` falls back to the smallest bucket. The inner screen
-  (2×2 202.3×264.4, 4×3 470.5×414.5) fits the keys. The picker previews show the same mismatch:
-  the Ring 2×2 preview is clipped left and right, the Strip 4×1 preview cuts its labels.
-- **Fix:** open — re-key the buckets to the measured frames and refit the faces to the portrait
-  cover cells; needs a revised wireframe and Robin's approval first.
+  narrower and much taller than assumed. Every 2-column key (169 dp) and 4-column key (351 dp)
+  was wider than the frame, so `RemoteViews` fell back to the smallest bucket. The picker
+  previews showed the same mismatch (Ring 2×2 clipped left and right, Strip labels cut).
+- **Fix (rev F.1):** the size map is keyed by the frames the launcher reports
+  (`OPTION_APPWIDGET_SIZES`), 2 dp under each, and every face is drawn at its own frame
+  (`Frame`): the bucket only picks the layout, by class thresholds (Ring 2×2 ≥140×140; Number
+  4×1 ≥240 wide, 4×2 ≥240×150; Countdown 2×2 ≥140×150; Strip 4×2 ≥150 tall). Frames are taken
+  smallest first under R10's 2 MB, at most four. Geometry follows the frame (Ring Ø up to 150,
+  bars and clamps at the inner width, padding by size); a narrow tall Number 2×1 stacks its
+  label over the figure, a narrow Countdown 2×1 stacks "at 9:10 PM", the 2×2 estimate takes its
+  own line, absolute times step down to 18 sp, the "as of" stamp gives way before a name does,
+  Strip 4×2 labels drop to 10 sp under 80 dp cells. Rev D's own frames draw exactly as before
+  (`WidgetFaceTest.revF_revDFramesKeepRevDGeometry`); `WidgetFitTest` now lays every face and
+  state out at the measured One UI frames and other grids. Picker previews shrink their rings to
+  the box. Seen on the phone: not yet — the re-run of Step 7 checks it.
 
 ### CCBG-37 · Duet Dot Squeeze — the collapsed Duet's dots vanish when the label ellipsizes
 - **Status:** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a

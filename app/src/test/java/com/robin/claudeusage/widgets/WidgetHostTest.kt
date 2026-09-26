@@ -49,8 +49,10 @@ class WidgetHostTest {
 
     @Test
     fun pick_inBetweenAndTooSmall() {
-        // Number 3×1 is wider than 2×1 but not a 4×1: the 2×1 face.
-        assertEquals(Bucket.NUMBER_2X1, WidgetHost.pick(Face.NUMBER, 272f, 84f))
+        // Rev F.1: a 3-column frame (240 dp or more) has the width for the 4×1 face and its
+        // sub-line; under that it is the 2×1 face.
+        assertEquals(Bucket.NUMBER_4X1, WidgetHost.pick(Face.NUMBER, 272f, 84f))
+        assertEquals(Bucket.NUMBER_2X1, WidgetHost.pick(Face.NUMBER, 236f, 84f))
         // The inner grid's taller cells: a 4×1 there (~472×100) is still the 4×1 face.
         assertEquals(Bucket.NUMBER_4X1, WidgetHost.pick(Face.NUMBER, 472f, 100f))
         assertEquals(Bucket.COUNTDOWN_2X1, WidgetHost.pick(Face.COUNTDOWN, 236f, 100f))
@@ -58,6 +60,58 @@ class WidgetHostTest {
         // Smaller than every key: the smallest face, as RemoteViews(Map) itself does.
         assertEquals(Bucket.RING_1X1, WidgetHost.pick(Face.RING, 40f, 40f))
         assertEquals(Bucket.STRIP_4X1, WidgetHost.pick(Face.STRIP, 200f, 60f))
+    }
+
+    /**
+     * CCBG-38 (Cover Buckets): the frames One UI reported on the Fold 7 cover pick the
+     * layout the device pass expected — rev D's keys sent all of them to the smallest.
+     */
+    @Test
+    fun pick_oneUiCoverFrames() {
+        assertEquals(Bucket.RING_2X2, WidgetHost.pick(Face.RING, 155.8f, 237f))
+        assertEquals(Bucket.RING_1X1, WidgetHost.pick(Face.RING, 84.2f, 107.8f))
+        assertEquals(Bucket.RING_1X1, WidgetHost.pick(Face.RING, 155.8f, 107.8f))
+        assertEquals(Bucket.NUMBER_2X1, WidgetHost.pick(Face.NUMBER, 155.8f, 107.8f))
+        assertEquals(Bucket.NUMBER_4X1, WidgetHost.pick(Face.NUMBER, 333f, 107.8f))
+        assertEquals(Bucket.NUMBER_4X2, WidgetHost.pick(Face.NUMBER, 333f, 237f))
+        assertEquals(Bucket.COUNTDOWN_2X1, WidgetHost.pick(Face.COUNTDOWN, 155.8f, 107.8f))
+        assertEquals(Bucket.COUNTDOWN_2X2, WidgetHost.pick(Face.COUNTDOWN, 155.8f, 237f))
+        assertEquals(Bucket.STRIP_4X1, WidgetHost.pick(Face.STRIP, 333f, 107.8f))
+        assertEquals(Bucket.STRIP_4X2, WidgetHost.pick(Face.STRIP, 333f, 237f))
+    }
+
+    /** The no-sizes-yet keys agree with the class rule: each key picks its own bucket. */
+    @Test
+    fun key_isTheSmallestFrameOfItsClass() {
+        for (b in Bucket.entries) {
+            val k = WidgetHost.key(b)
+            assertEquals(b, WidgetHost.pick(b.face, k.width, k.height))
+        }
+        for (face in Face.entries) {
+            val keys = Bucket.of(face).map { WidgetHost.key(it) }
+            assertEquals(face.name, keys.size, keys.distinct().size)
+        }
+    }
+
+    @Test
+    fun reportedSizes_smallestFirstDistinctAndCapped() {
+        assertTrue(WidgetHost.reportedSizes(null).isEmpty())
+        val options = android.os.Bundle().apply {
+            putParcelableArrayList(
+                android.appwidget.AppWidgetManager.OPTION_APPWIDGET_SIZES,
+                arrayListOf(android.util.SizeF(155.8f, 237f), android.util.SizeF(202.3f, 264.4f),
+                    android.util.SizeF(155.8f, 237f), android.util.SizeF(0f, 10f)),
+            )
+        }
+        assertEquals(
+            listOf(android.util.SizeF(155.8f, 237f), android.util.SizeF(202.3f, 264.4f)),
+            WidgetHost.reportedSizes(options),
+        )
+        // Over budget, the largest go: the smallest frame is always kept.
+        val huge = List(4) { android.util.SizeF(470f + it, 414f) }
+        val kept = WidgetHost.withinBudget(Face.RING, listOf(android.util.SizeF(155.8f, 237f)) + huge, 3.5f)
+        assertEquals(155.8f, kept.first().widthDp)
+        assertTrue(kept.size < 5)
     }
 
     @Test

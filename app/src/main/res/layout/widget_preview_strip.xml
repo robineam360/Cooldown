@@ -12,14 +12,16 @@
         android:scaleType="fitXY"
         android:src="@drawable/widget_bg"
         android:tint="#FF1A1A1A" />
+    <!-- Rev F (CCBG-38 (Cover Buckets)): each ring takes the height its label leaves, so a
+         short picker box shrinks the rings instead of cutting the labels. -->
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="horizontal" android:gravity="center_vertical"
         android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
-        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
             android:orientation="vertical" android:gravity="center_horizontal">
-            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
-                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter"
                     android:src="@drawable/widget_preview_strip_a" android:importantForAccessibility="no" />
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="38%" android:textSize="13sp" android:textColor="#FFE59980" android:textStyle="bold" android:layout_gravity="center" />
             </FrameLayout>
@@ -29,10 +31,10 @@
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="Pro" android:textSize="9.5sp" android:textColor="#FFEDE8E4" />
             </LinearLayout>
         </LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
             android:orientation="vertical" android:gravity="center_horizontal">
-            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
-                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter"
                     android:src="@drawable/widget_preview_strip_b" android:importantForAccessibility="no" />
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="62%" android:textSize="13sp" android:textColor="#FFE59980" android:textStyle="bold" android:layout_gravity="center" />
             </FrameLayout>
@@ -42,10 +44,10 @@
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="Work" android:textSize="9.5sp" android:textColor="#FFEDE8E4" />
             </LinearLayout>
         </LinearLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
             android:orientation="vertical" android:gravity="center_horizontal">
-            <FrameLayout android:layout_width="53dp" android:layout_height="53dp">
-                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter"
                     android:src="@drawable/widget_preview_strip_c" android:importantForAccessibility="no" />
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="20%" android:textSize="13sp" android:textColor="#FF19C39A" android:textStyle="bold" android:layout_gravity="center" />
             </FrameLayout>

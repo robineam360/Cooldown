@@ -159,6 +159,9 @@ number = ll('num_col', 'vertical', '\n'.join([
             T('num_fig','32', N+'    android:layout_marginStart="10dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"', vis=None, bold=True),
             T('num_leftcap','10', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
         ]), extra=G('bottom')),
+        # rev F (CCBG-38 (Cover Buckets)): a 2×1 frame too narrow for label and figure on one
+        # row shows the figure here, under the label, instead of beside it.
+        T('num_fig_below','32', N+'    android:layout_marginTop="2dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"', bold=True),
         I('num_bar','match_parent','12dp', N+'    android:layout_marginTop="1dp"'+N+'    android:scaleType="fitXY"'),
         ll('num_subrow', 'horizontal', '\n'.join([
             T('num_sub','12', N+'    android:includeFontPadding="false"'+N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', w='0dp', vis=None),
@@ -204,14 +207,20 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
         spacer(),
         T('cd_est','11', N+'    android:singleLine="true"'),
     ]), extra=G('bottom'), vis='gone'),
+    # rev F.1: the estimate's own line when it does not fit beside the figure.
+    T('cd_est_below','11', N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'),
     I('cd_bar','match_parent','10dp', N+'    android:layout_marginTop="2dp"'+N+'    android:scaleType="fitXY"', vis='gone'),
     spacer('cd_gap2', 'v', vis='gone'),
+    # rev F: the account line gives way to the stamp. The weighted wrap_content group takes
+    # any spare width at its end (the dot stays beside the label) and, when the row
+    # overflows, shrinks — and its own weighted label ellipsizes — so the stamp stays whole.
     ll('cd_bottom', 'horizontal', '\n'.join([
-        I('cd_mark','11dp','11dp', N+'    android:layout_marginEnd="4dp"'),
-        T('cd_label','11', N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
-        I('cd_dot','6dp','6dp', N+'    android:layout_marginStart="4dp"', vis='gone', src='notif_condition_dot'),
-        spacer(),
-        T('cd_stamp','10', N+'    android:singleLine="true"'),
+        ll(None, 'horizontal', '\n'.join([
+            I('cd_mark','11dp','11dp', N+'    android:layout_marginEnd="4dp"'),
+            T('cd_label','11', N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
+            I('cd_dot','6dp','6dp', N+'    android:layout_marginStart="4dp"', vis='gone', src='notif_condition_dot'),
+        ]), w='wrap_content', extra=N+'    android:layout_weight="1"'+G('center_vertical')),
+        T('cd_stamp','10', N+'    android:layout_marginStart="6dp"'+N+'    android:singleLine="true"'),
     ]), extra=G('center_vertical')+N+'    android:layout_marginTop="4dp"'),
 ]), h='match_parent', extra=G('center_vertical'))
 
