@@ -330,7 +330,11 @@ object WidgetHost {
 
     private fun faceTap(context: Context, id: Int, state: FaceState): PendingIntent {
         val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        if (state.message == FaceMessage.REMOVED) {
+        // R5: a removed account's face opens its config; so does an unassigned one
+        // (CCBG-43 (Widget Settings Hidden)), since it is drawing a default, not a choice.
+        val unassigned = state.message == null && state.face != Face.STRIP &&
+            state.cells.firstOrNull()?.unassigned == true
+        if (state.message == FaceMessage.REMOVED || unassigned) {
             val configure = Intent(context, WidgetConfigActivity::class.java)
                 .setAction(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE)
                 .setData(uri(id, "configure"))

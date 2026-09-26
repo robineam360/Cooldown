@@ -2,7 +2,8 @@
 <!-- CCRM-78 (Widgets Reborn): free to change after release (R9) — only the provider's class
      name and the widget_prefs keys are permanent. updatePeriodMillis is 0 (R7: no periodic
      redraw; Surfaces.refresh, the provider callbacks and the one transition alarm do it).
-     configuration_optional: a launcher that skips config leaves the widget unassigned (R5). -->
+     No configuration_optional (CCBG-43 (Widget Settings Hidden)): One UI took it as leave to
+     skip the config on add, so every widget came up unassigned (R5) with no visible way out. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_ring_description"
     android:minWidth="110dp"
@@ -16,5 +17,5 @@
     android:previewLayout="@layout/widget_preview_ring"
     android:initialLayout="@layout/widget_initial"
     android:configure="com.robin.claudeusage.widgets.WidgetConfigActivity"
-    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:widgetFeatures="reconfigurable"
     android:widgetCategory="home_screen" />

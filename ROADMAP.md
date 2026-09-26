@@ -1188,8 +1188,8 @@ wants one** (Q11 — **decided 2026-09-25, wireframe rev D: kept** on Number 4×
 a *relative* stamp).
 
 **R5 · Never repoint silently.** A removed account's widget shows "Account removed · tap to choose";
-the tap opens that widget's config. **Unassigned is a state, not a guess:** a launcher that skips
-config (`configuration_optional`), an unknown id after a launcher reset, or a restored id with no
+the tap opens that widget's config, and so does a tap on an unassigned face (CCBG-43 (Widget Settings
+Hidden)). **Unassigned is a state, not a guess:** a launcher that skips config anyway, an unknown id after a launcher reset, or a restored id with no
 prefs stores nothing and draws the first account in registry order (CCRM-71 (Account Order)) at draw
 time — the label says which — or the no-accounts face while the registry is empty, picking up the
 first account the moment one is added. Saving the config is the only thing that assigns.
@@ -1285,7 +1285,7 @@ face; `WidgetFaceTest` covers every state × bucket.
 - **Faces (Robin, Q1): four.** CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face)
   and CCRM-82 (Accounts Strip). Never a combined figure.
 - **Config:** one `WidgetConfigActivity`, exported with the `APPWIDGET_CONFIGURE` filter,
-  `widgetFeatures="reconfigurable|configuration_optional"`. On entry it calls
+  `widgetFeatures="reconfigurable"` (no `configuration_optional` since CCBG-43 (Widget Settings Hidden): One UI used it to skip the config on add). On entry it calls
   `setResult(RESULT_CANCELED)` with the id, and finishes at once on `INVALID_APPWIDGET_ID` or an id
   whose provider is not this package. Controls: **Account** (chips with marks; none on the Strip),
   **Window** (5h / Weekly; hidden when the account has one window; the Strip is fixed to each
