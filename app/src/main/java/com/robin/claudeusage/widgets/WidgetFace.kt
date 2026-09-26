@@ -532,13 +532,16 @@ object WidgetFace {
         }
         // The spec's Ø56 / Ø88 are ceilings (CCRM-82 (Accounts Strip), rev D): four rings
         // share the inner width with 6 dp gaps, and the ring plus its lines must fit the
-        // inner height — Ø53 at 4×1 and Ø80 at 4×2 on rev D's frames.
+        // inner height — Ø53 at 4×1 and Ø80 at 4×2 on rev D's frames. A 4×1 at least
+        // 100 dp tall (One UI's cover, 108) takes rev G's Ø64 over its 12 sp name line
+        // (CCBG-41 (Cover Strip Type)).
         Bucket.STRIP_4X1, Bucket.STRIP_4X2 -> {
             val big = frame.bucket == Bucket.STRIP_4X2
+            val roomy = stripRoomy(frame)
             val n = cells.coerceAtLeast(1)
             val byW = kotlin.math.floor((frame.innerWidthDp - 6f * (n - 1)) / n)
-            val byH = kotlin.math.floor(frame.innerHeightDp - if (big) 33f else 15f)
-            RingDp(minOf(if (big) 88f else 56f, byW, byH), if (big) 6f else 5f)
+            val byH = kotlin.math.floor(frame.innerHeightDp - if (big) 33f else if (roomy) 19f else 15f)
+            RingDp(minOf(if (big) 88f else if (roomy) 64f else 56f, byW, byH), if (big) 6f else 5f)
         }
         else -> null
     }
@@ -1054,9 +1057,10 @@ object WidgetFace {
         val d = context.resources.displayMetrics.density
         val cellCount = s.cells.size + if (s.overflow > 0) 1 else 0
         val g = ring(frame, cellCount)!!
-        val figSp = if (big) 18f else 13f
+        val roomy = stripRoomy(frame)
+        val figSp = if (big) 18f else if (roomy) 16f else 13f
         val labelSp = stripLabelSp(frame, cellCount)
-        val tagSp = if (big) 9f else 8f
+        val tagSp = if (big || roomy) 9f else 8f
 
         for (i in 0 until FaceStates.STRIP_MAX) {
             val c = s.cells.getOrNull(i)
@@ -1083,6 +1087,7 @@ object WidgetFace {
                 val slot = if (big) STRIP_RESET[i] else STRIP_FREE[i]
                 rv.setViewVisibility(slot, View.VISIBLE)
                 rv.setTextViewText(slot, "Free")
+                if (roomy && !big) rv.setTextViewTextSize(slot, TypedValue.COMPLEX_UNIT_SP, 15f)
                 rv.setTextColor(slot, ink(s.dark, 0.7f))
                 continue
             }
@@ -1124,9 +1129,16 @@ object WidgetFace {
 
     fun stripLabel(c: Cell): String = if (c.left) "${c.name} · left" else c.name
 
-    /** 11 sp on 4×2, 10 sp once a cell is under 80 dp wide (rev F), 9.5 sp on 4×1. */
+    /**
+     * A 4×1 frame at least 100 dp tall — One UI's cover gives 108 and then draws it at 71 %,
+     * so rev D's 9.5 sp name read as 6.8 sp. Rev G (CCBG-41 (Cover Strip Type)) spends the
+     * spare height on Ø64, a 16 sp figure and a 12 sp name; rev D's 84 dp frame is untouched.
+     */
+    fun stripRoomy(frame: Frame): Boolean = frame.bucket == Bucket.STRIP_4X1 && frame.heightDp >= 100f
+
+    /** 11 sp on 4×2, 10 sp once a cell is under 80 dp wide (rev F); on 4×1 12 sp when roomy (rev G), else 9.5. */
     fun stripLabelSp(frame: Frame, cells: Int = FaceStates.STRIP_MAX): Float {
-        if (frame.bucket != Bucket.STRIP_4X2) return 9.5f
+        if (frame.bucket != Bucket.STRIP_4X2) return if (stripRoomy(frame)) 12f else 9.5f
         val n = cells.coerceAtLeast(1)
         return if (kotlin.math.floor((frame.innerWidthDp - 6f * (n - 1)) / n) < 80f) 10f else 11f
     }

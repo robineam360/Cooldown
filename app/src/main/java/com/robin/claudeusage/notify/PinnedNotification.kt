@@ -717,10 +717,9 @@ object PinnedNotification {
         setInt(ids.mark, "setColorFilter", h.accent.toArgb())
         setTextViewText(ids.label, if (expanded) h.title else h.label)
         if (!expanded) {
-            // The collapsed clamp, which depends on how wide this half's own figure is.
+            // The collapsed clamp: the label's own line, less the dots after it (rev G).
             // The expanded header's bound is in the layout: it has the full card width.
             val clamp = Duet.labelClampDp(
-                figureWidthDp(context, h.pctText),
                 dots = (if (dotHue != null) 1 else 0) + (if (synthDot) 1 else 0),
             )
             setInt(ids.label, "setMaxWidth", dp(context, clamp.toFloat()).toInt())
@@ -790,22 +789,6 @@ object PinnedNotification {
         (context.resources.configuration.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
             android.content.res.Configuration.UI_MODE_NIGHT_YES
-
-    /**
-     * The Duet figure's real width in dp: 30 sp bold in the device font, as
-     * `notif_duet.xml` draws it (CCBG-24 (Duet Label Clamp)). Measured in px at the
-     * user's font scale, then taken back to dp, so a larger font scale narrows the label.
-     */
-    private fun figureWidthDp(context: Context, text: String): Float {
-        val metrics = context.resources.displayMetrics
-        val paint = android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = android.util.TypedValue.applyDimension(
-                android.util.TypedValue.COMPLEX_UNIT_SP, 30f, metrics,
-            )
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-        }
-        return paint.measureText(text) / metrics.density
-    }
 
     private fun dp(context: Context, value: Float): Float =
         TypedValue.applyDimension(

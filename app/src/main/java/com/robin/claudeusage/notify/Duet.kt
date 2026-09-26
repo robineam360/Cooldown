@@ -21,35 +21,28 @@ object Duet {
     enum class Slot { FIRST, SECOND }
 
     /**
-     * How wide a Duet half's account label may be, in dp, given how wide this half's
-     * figure really is.
+     * How wide a Duet half's account label may be, in dp.
      *
      * The width arithmetic: a 360 dp notification card less 16 dp of padding a side leaves
-     * 328 dp, and one 16 dp gutter down the middle leaves **156 dp per half** — the tight
-     * case, which is the one that has to work. The half also holds the 14 dp provider
-     * mark and its 4 dp gap, and the figure's 8 dp start margin; the condition dot, when
-     * it shows, takes 6 dp plus its 5 dp margin, and so does the synthetic dot beside it
-     * (CCRM-15 (Above-Pace Verification)) — [dots] counts them. The label gets whatever
-     * is left.
+     * 328 dp, and one 16 dp gutter down the middle leaves **156 dp per half**. The label's
+     * line holds the 14 dp provider mark and its 4 dp gap; the condition dot, when it
+     * shows, takes 6 dp plus its 5 dp margin, and so does the synthetic dot beside it
+     * (CCRM-15 (Above-Pace Verification)) — [dots] counts them. The label gets the rest.
      *
-     * CCBG-24 (Duet Label Clamp): this used to be a two-step table (72 dp, or 56 dp at four
-     * characters), priced against a ~54 dp three-character figure. Samsung's font draws
-     * "98%" at 30 sp bold wider than that, so the label ellipsized to "ChatG…" beside it.
-     * The caller now measures the figure ([figureWidthDp], `Paint.measureText` in the
-     * device font) and the label takes the true remainder — "ChatGPT 98%" reads whole, and
-     * a genuinely long label still ellipsizes. Never below [MIN_LABEL_DP], so a huge font
-     * scale leaves a stub of label rather than none.
+     * CCBG-24 (Duet Label Clamp) measured the figure and gave the label what it left; the
+     * Fold 7's unfolded shade then left one letter (CCBG-39 (Inner Duet Squeeze)), since a
+     * notification is one layout for every width and its halves run from ~101 to 156 dp.
+     * Wireframe rev G puts the label on its own line across the half, so the figure no
+     * longer takes from it: this is the ceiling at 156 dp, and on a narrower half the
+     * layout's weight ellipsizes the label against the width it really has. Never below
+     * [MIN_LABEL_DP].
      */
-    fun labelClampDp(figureWidthDp: Float, dots: Int = 0): Int {
-        val left = HALF_DP - MARK_DP - MARK_GAP_DP - FIGURE_GAP_DP - figureWidthDp -
-            dots * DOT_DP
-        return kotlin.math.floor(left).toInt().coerceAtLeast(MIN_LABEL_DP)
-    }
+    fun labelClampDp(dots: Int = 0): Int =
+        (HALF_DP - MARK_DP - MARK_GAP_DP - dots * DOT_DP).toInt().coerceAtLeast(MIN_LABEL_DP)
 
     private const val HALF_DP = 156f
     private const val MARK_DP = 14f
     private const val MARK_GAP_DP = 4f
-    private const val FIGURE_GAP_DP = 8f
     private const val DOT_DP = 11f
     const val MIN_LABEL_DP = 24
 

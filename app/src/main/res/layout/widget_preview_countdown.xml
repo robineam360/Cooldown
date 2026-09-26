@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- CCRM-78 (Widgets Reborn): the Countdown face's picker preview (previewLayout, wireframe
      rev D §7) — a static Solid, dark, S1 face. Free to change later (R9); never inflated
-     for a placed widget, which always draws through WidgetFace.render. -->
+     for a placed widget, which always draws through WidgetFace.render. One UI lays a preview
+     out at ~110 × 76 dp, where "at 9:10 PM" fits neither beside nor under the count, so rev G
+     (CCBG-40 (Picker Preview Ellipsis)) moves the time into the caption. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -16,12 +18,8 @@
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical" android:gravity="center_vertical"
         android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
-        <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="5h reset" android:textSize="11sp" android:textColor="#BFEDE8E4" />
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:baselineAligned="true" android:layout_marginTop="2dp">
-            <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="2:41:07" android:textSize="24sp" android:textColor="#FFEDE8E4" android:textStyle="bold" />
-            <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="at 9:10 PM" android:textSize="11sp" android:textColor="#C7EDE8E4" android:layout_marginStart="6dp" />
-        </LinearLayout>
+        <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="5h · at 9:10 PM" android:textSize="11sp" android:textColor="#BFEDE8E4" />
+        <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="2:41:07" android:textSize="24sp" android:textColor="#FFEDE8E4" android:textStyle="bold" android:layout_marginTop="2dp" />
         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="4dp">
             <ImageView android:layout_width="12dp" android:layout_height="12dp" android:src="@drawable/ic_provider_claude" android:tint="#FFE59980" android:importantForAccessibility="no" android:layout_marginEnd="4dp" />

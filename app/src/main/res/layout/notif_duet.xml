@@ -9,10 +9,15 @@
     The height constraint is the whole design. A collapsed custom view gets roughly
     48 to 64 dp depending on the skin, and today's single row already spends about
     53 dp, so two of those do not fit at any width. What leaves is the reset line
-    and the window name; both reappear in the expanded view. Measured content
-    height here is about 40 dp: the 30 sp figure with includeFontPadding="false"
-    is the tallest thing in the row (~35 dp of Roboto ascent + descent) and the
-    left column's 19 + 3 + 8 dp comes in under it, plus 2 dp of padding a side.
+    and the window name; both reappear in the expanded view.
+
+    Rev G (design/2026-09-26-v18-gate-fixes.html §1, CCBG-39 (Inner Duet Squeeze)):
+    each half is two lines — the mark and label across the whole half, then the bar
+    and the 30 sp figure. A notification is one layout for every width (the Fold 7's
+    unfolded shade gives each half ~101 dp, the cover ~128, a phone 156), so the label
+    can no longer share its line with the figure. Content height is about 52 dp: the
+    label line (~14 dp without font padding), 1 dp, and the figure (~35 dp of Roboto
+    ascent + descent), plus 1 dp of padding a side — the single-account row's ~53.
 
     Two halves of 156 dp at the Fold 7's cover width (360 dp card, 16 dp of system
     padding a side, one 16 dp gutter). The gutter is a start margin on the second
@@ -30,103 +35,100 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingTop="2dp"
-    android:paddingBottom="2dp">
+    android:paddingTop="1dp"
+    android:paddingBottom="1dp">
 
     <!-- First. Each half is its own click target (CCRM-2 (Notification Tap Target),
          now resolved per half against that account's own provider), which is the one
          thing a custom RemoteViews layout can do and the other pinned styles could
-         not: a PendingIntent per view rather than one content intent for the row. -->
+         not: a PendingIntent per view rather than one content intent for the row.
+         Two lines (rev G): the mark and label, then the bar and the figure. -->
     <LinearLayout
         android:id="@+id/duet_half_first"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <LinearLayout
+            <ImageView
+                android:id="@+id/duet_mark_first"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="no" />
+
+            <!-- maxWidth is set at runtime (Duet.labelClampDp): the 156 dp half less the
+                 mark and any dots. On a narrower half the weight lets the label give way
+                 to the dots after it, and the wrap_content row keeps a short label's dots
+                 beside it rather than at the far end (CCBG-37). -->
+            <TextView
+                android:id="@+id/duet_label_first"
+                style="@android:style/TextAppearance.Material.Notification.Title"
                 android:layout_width="wrap_content"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:textSize="12sp"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
-                <!-- CCRM-56 (Provider Identity): the mark rides the label line,
-                     tinted with the account's own resolved accent. -->
-                <ImageView
-                    android:id="@+id/duet_mark_first"
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_marginEnd="4dp"
-                    android:importantForAccessibility="no" />
+            <ImageView
+                android:id="@+id/duet_dot_first"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/notif_condition_dot"
+                android:visibility="gone"
+                android:importantForAccessibility="no" />
+            <!-- CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic
+                 marker. The band would take this row past what short skins give a
+                 collapsed view. App-global, so First only, like the update dot; 6 dp
+                 to match the condition dot beside it. -->
+            <ImageView
+                android:id="@+id/duet_synth_dot"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/notif_synth_dot"
+                android:visibility="gone"
+                android:contentDescription="Synthetic data"
+                android:importantForAccessibility="yes" />
+        </LinearLayout>
 
-                <!-- maxWidth is set at runtime (Duet.labelClampDp): whatever the
-                     measured 30 sp bold figure leaves of the 156 dp half (CCBG-24).
-                     One UI's cover half is narrower than that, so the weight lets the
-                     label give way to the dots after it; the wrap_content row keeps a
-                     short label's dots beside it rather than at the far end (CCBG-37). -->
-                <TextView
-                    android:id="@+id/duet_label_first"
-                    style="@android:style/TextAppearance.Material.Notification.Title"
-                    android:layout_width="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
-
-                <ImageView
-                    android:id="@+id/duet_dot_first"
-                    android:layout_width="6dp"
-                    android:layout_height="6dp"
-                    android:layout_marginStart="5dp"
-                    android:src="@drawable/notif_condition_dot"
-                    android:visibility="gone"
-                    android:importantForAccessibility="no" />
-
-                <!-- CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic
-                     marker. The band would take this ~40 dp row to ~58 dp and clip on
-                     short skins. App-global, so First only, like the update dot; 6 dp
-                     to match the condition dot beside it. -->
-                <ImageView
-                    android:id="@+id/duet_synth_dot"
-                    android:layout_width="6dp"
-                    android:layout_height="6dp"
-                    android:layout_marginStart="5dp"
-                    android:src="@drawable/notif_synth_dot"
-                    android:visibility="gone"
-                    android:contentDescription="Synthetic data"
-                    android:importantForAccessibility="yes" />
-            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <ImageView
                 android:id="@+id/duet_bar_first"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="8dp"
-                android:layout_marginTop="3dp"
+                android:layout_weight="1"
                 android:scaleType="fitXY"
                 android:importantForAccessibility="no" />
-        </LinearLayout>
 
-        <!-- No "LEFT" caption here (CCRM-22 (Used or Left)): two of them in a 40 dp
-             row cost more height than the row has, so the caption appears in the
-             expanded headers only. -->
-        <TextView
-            android:id="@+id/duet_pct_first"
-            style="@android:style/TextAppearance.Material.Notification.Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:includeFontPadding="false"
-            android:maxLines="1" />
+            <!-- No "LEFT" caption here (CCRM-22 (Used or Left)): the caption appears in
+                 the expanded headers only. -->
+            <TextView
+                android:id="@+id/duet_pct_first"
+                style="@android:style/TextAppearance.Material.Notification.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                android:maxLines="1" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Second, with the 16 dp gutter as its start margin. -->
@@ -136,66 +138,67 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginStart="16dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:id="@+id/duet_mark_second"
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_marginEnd="4dp"
-                    android:importantForAccessibility="no" />
-
-                <TextView
-                    android:id="@+id/duet_label_second"
-                    style="@android:style/TextAppearance.Material.Notification.Title"
-                    android:layout_width="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
-
-                <ImageView
-                    android:id="@+id/duet_dot_second"
-                    android:layout_width="6dp"
-                    android:layout_height="6dp"
-                    android:layout_marginStart="5dp"
-                    android:src="@drawable/notif_condition_dot"
-                    android:visibility="gone"
-                    android:importantForAccessibility="no" />
-            </LinearLayout>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <ImageView
-                android:id="@+id/duet_bar_second"
-                android:layout_width="match_parent"
-                android:layout_height="8dp"
-                android:layout_marginTop="3dp"
-                android:scaleType="fitXY"
+                android:id="@+id/duet_mark_second"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/duet_label_second"
+                style="@android:style/TextAppearance.Material.Notification.Title"
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <ImageView
+                android:id="@+id/duet_dot_second"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/notif_condition_dot"
+                android:visibility="gone"
                 android:importantForAccessibility="no" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/duet_pct_second"
-            style="@android:style/TextAppearance.Material.Notification.Title"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:includeFontPadding="false"
-            android:maxLines="1" />
+            android:layout_marginTop="1dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/duet_bar_second"
+                android:layout_width="0dp"
+                android:layout_height="8dp"
+                android:layout_weight="1"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/duet_pct_second"
+                style="@android:style/TextAppearance.Material.Notification.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                android:maxLines="1" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

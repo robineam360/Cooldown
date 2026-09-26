@@ -13,34 +13,23 @@ import org.junit.Test
  */
 class DuetTest {
 
-    // --- the label clamp: 156 dp per half, minus the figure ---------------------------
+    // --- the label clamp: the label's own line across a 156 dp half (rev G) ----------
 
     @Test
-    fun `the label takes what the measured figure leaves of the 156 dp half`() {
-        // 156 − 14 mark − 4 gap − 8 figure margin = 130 dp shared by label and figure.
-        // CCBG-24 (Duet Label Clamp)'s case: "98%" measured at ~54 dp leaves 76 dp, so
-        // "ChatGPT" fits whole where the old table's 72 dp let the figure eat into it.
-        assertEquals(76, Duet.labelClampDp(54f))
-        // Samsung's wider "98%": the label gives back the difference, rounded down.
-        assertEquals(69, Duet.labelClampDp(60.4f))
-        // "100%", the widest figure, clamps tighter; "2%", the narrowest, gets the most.
-        assertEquals(56, Duet.labelClampDp(74f))
-        assertEquals(98, Duet.labelClampDp(32f))
+    fun `the label takes the whole half less the mark, whatever the figure`() {
+        // 156 − 14 mark − 4 gap. CCBG-39 (Inner Duet Squeeze): the figure sits on the line
+        // below now, so "100%" and "2%" leave the label the same room.
+        assertEquals(138, Duet.labelClampDp())
     }
 
     @Test
     fun `the condition dot takes its 11 dp from the label`() {
-        assertEquals(65, Duet.labelClampDp(54f, dots = 1))
+        assertEquals(127, Duet.labelClampDp(dots = 1))
     }
 
     @Test
     fun `the synthetic dot beside the condition dot takes another 11 dp`() {
-        assertEquals(54, Duet.labelClampDp(54f, dots = 2))
-    }
-
-    @Test
-    fun `a huge font scale still leaves a stub of label`() {
-        assertEquals(Duet.MIN_LABEL_DP, Duet.labelClampDp(140f))
+        assertEquals(116, Duet.labelClampDp(dots = 2))
     }
 
     // --- the strip cap: ~120 dp of panel left under two header blocks -----------------
