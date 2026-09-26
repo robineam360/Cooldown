@@ -4,31 +4,29 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 8, release v1.8 (written 2026-09-26)
+## ▶ Next session — start here: rev H device check, then CCRM-78 (Widgets Reborn) Step 8, release v1.8 (written 2026-09-26)
 
-**Step 7 is done** (RUNBOOK.md, ticked 2026-09-26). The rev G check on the Fold 7 over USB, release build of
-c8d5fe7, verified all three gate fixes: CCBG-39 (Inner Duet Squeeze) reads "Personal" whole on the cover and
-unfolded, in Used and Left, with the synthetic dot; CCBG-41 (Cover Strip Type) draws the roomy Strip 4×1 at the
-cover's 332×107 frame; CCBG-40 (Picker Preview Ellipsis) reads "5h · at 9:10 PM" on both pickers (captures
-60–69 in `design/research/2026-09-26-v18-device-pass/`). CCBG-36 (Widget Reapply Residue) and CCBG-24 (Duet
-Label Clamp) now read Verified too. No High is open and no deferral from the pass remains, so the release gate
-is clear. The phone is restored (Before/After diff clean) and has no Cooldown widget placed.
+**v1.8 is held** (Robin, 2026-09-26) for three bugs he found on the phone, all now fixed in code:
+CCBG-42 (Kebab Drift, `059608f`), CCBG-43 (Widget Settings Hidden, `f69af70`: config opens on add, a tap
+on an unassigned face opens it) and CCBG-44 (Widget Fill): every face fills its frame at every size —
+Fable's review, wireframe rev H (`design/2026-09-26-widgets-fill-revh.html`, approved: "go with Fable's
+recommendations"), build plan Astra-reviewed, built `7b6909b` and fixed through two judge rounds
+(`f6caf52`, `363c192`). None is seen on the phone yet. The tree still carries the uncommitted release prep
+(versionCode 24 / "1.8", RELEASING.md's six-line order with the v1.7 signer digest); it goes into Step 8's
+step 1. RUNBOOK.md Step 8's Log says exactly what the device check must show.
 
-Step 8 is **irreversible once published** (an installed v1.8 cannot be downgraded, R9). Robin needs to be at
-the phone to tap "Check for updates" at the end. `ccooldown-release.jks` and `keystore.properties` are
-already in the repo root. Still open outside the arc, not blocking: CCBG-34 (Account Display Name),
-CCBG-35 (Tab Clip) and CCRM-85 (Crash Capture), each waiting on a wireframe.
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown`, with the Fold 7 on USB and Robin
+there to unlock:
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`, with the Fold 7 on USB:
-
-> Read CLAUDE.md and HANDOVER.md, then RELEASING.md and RUNBOOK.md Conventions and Step 8 in full,
-> and the Status lines Step 7 verified (CCRM-78 (Widgets Reborn) to CCRM-84 (Faces Gallery), CCRM-14
-> (Clear History), CCRM-15 (Above-Pace Verification), CCRM-24 (Share Card), CCBG-24, CCBG-36 to
-> CCBG-41). Run Step 8's Resume block: versionCode 24 / versionName "1.8", docs and widget shots,
-> release notes, the six-line order into RELEASING.md with the trusted signer digest from the
-> published v1.7 asset, then the six steps strictly in order, a judge verdict before step 6
-> (publish). Robin confirms "Check for updates" on the phone. Set shipped items to Shipped v1.8
-> and close out per Convention 4.
+> Read CLAUDE.md and HANDOVER.md, then RUNBOOK.md Conventions, Step 7's Before / Always-after blocks and
+> Step 8 in full, BUGS.md CCBG-42 to CCBG-44, and `design/research/2026-09-26-ccbg44-build-plan.md` step 10.
+> Run the rev H device check on the Fold 7 over USB: record Before, install a release build of HEAD,
+> place each face at the six-column sizes in `design/research/2026-09-26-v18-robin-home/`, confirm the app
+> log has no SafeUpdate fallback line, fold / unfold, resize across S → T → W and back, check CCBG-42's ⋮
+> and that adding a widget opens its config (CCBG-43). File anything found; set the three bugs Verified.
+> Restore the phone (Always after). Then Robin shoots the widget screenshots for the docs, and Step 8
+> runs from its Resume block (the version bump and RELEASING.md are already in the tree), a judge
+> verdict before step 6 (publish).
 ---
 
 ### What changed on 2026-09-25 (Step 4, the short version)

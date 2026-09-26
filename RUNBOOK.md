@@ -478,6 +478,17 @@ Convention 4.
   v1.8.1 (versionCode 25) per R9, keeping all four provider components, released through this step.
 
 **Log:**
+- 2026-09-26 — **Held by Robin before step 1** for three bugs he found on the phone: CCBG-42 (Kebab
+  Drift) fixed `059608f`; CCBG-43 (Widget Settings Hidden) fixed `f69af70`; CCBG-44 (Widget Fill)
+  redesigned — Fable review, wireframe rev H approved by Robin (Fable's Q1–Q5), build plan
+  Astra-reviewed (concerns, adopted), built `7b6909b`, a fresh Opus judge drew blocking → fixed
+  `f6caf52` → concerns → fixed `363c192`. Prep already done, uncommitted until step 1: versionCode 24 /
+  versionName "1.8" and RELEASING.md's six-line order with the v1.7 trusted signer digest
+  (`8bc21a2a…f64f`). **Before step 1:** a device check of rev H on the Fold 7 over USB (Step 7's
+  Before / Always-after blocks): release build installed; every face placed at the six-column sizes
+  in `design/research/2026-09-26-v18-robin-home/`; the app log shows **no `SafeUpdate` fallback
+  line**; fold / unfold and a resize across S → T → W and back on the same widgets; CCBG-42's ⋮ above
+  ↻; adding a widget opens its config (CCBG-43). Then Robin's widget shots for the docs, then step 1.
 
 ---
 
