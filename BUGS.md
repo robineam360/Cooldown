@@ -110,6 +110,38 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
+### CCBG-43 · Widget Settings Hidden — a widget added on One UI can't be pointed at an account
+- **Status:** Open — filed 2026-09-26; blocks v1.8 until Robin says otherwise.
+- **Severity:** Medium (every widget shows the first account and the user can't find how to change it)
+- **Symptom:** **Reported by Robin, 2026-09-26, with screenshots** (Fold 7 cover, v1.8 release
+  candidate, `design/research/2026-09-26-v18-robin-home/`): every single-account widget reads
+  "Personal (unassigned)" or carries the UNASSIGNED pill, and there is no visible way to choose
+  the account: *"where is the widget settings?"*
+- **Cause:** the providers declare `configuration_optional`, so One UI skips `WidgetConfigActivity`
+  on add (seen at Step 7, `findings.md` line 20, and accepted as R5's unassigned state). The only
+  way back in is the launcher's reconfigure entry on long-press, which Robin did not find, and a
+  tap on an unassigned face opens the app, not the config (`WidgetHost.faceTap` sends only the
+  "Account removed" face to config).
+- **Fix proposed (logic, no layout change):** drop `configuration_optional` so the approved config
+  screen opens on add, and make a tap on an unassigned face open its config, as R5 already does
+  for a removed account. The "(unassigned)" wording itself is visible design and goes to the
+  CCBG-44 (Widget Fill) wireframe.
+
+### CCBG-44 · Widget Fill — the faces leave large empty areas at most sizes
+- **Status:** Open — filed 2026-09-26; needs a design review and a wireframe (CLAUDE.md §2) before
+  any change.
+- **Severity:** Medium (looks unfinished on the home screen; the data is right)
+- **Symptom:** **Reported by Robin, 2026-09-26, with four home-screen screenshots** (Fold 7 cover,
+  `design/research/2026-09-26-v18-robin-home/1…4`): each face draws its data at every size but
+  does not use the space. Ring: at 2×2-plus the ring stays small and centred in a large empty card.
+  Number 4×2: the row floats mid-card, with the chips at the bottom and empty bands above and
+  below. Strip 4×2: rings and names use the top half, with the bottom third empty. Countdown: the
+  2×2 and larger faces pin the count to the top, the bar in the middle and the label at the
+  bottom, leaving two empty bands. The layouts are three fixed buckets per face, so a resized
+  widget between buckets gets the smaller bucket's layout inside the larger frame.
+- **Direction (Robin):** a Fable design review, so every face looks right at any size placed on
+  these home screens.
+
 ### CCBG-42 · Kebab Drift — the Accounts card's ⋮ sits at a different spot on every card
 - **Status:** **Fixed 2026-09-26** (compiles, unit tests green); not yet seen on the phone, not yet
   in a release. Restores the approved CCRM-65 (Accounts Redesign) layout
