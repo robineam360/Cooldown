@@ -77,8 +77,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
-- **Status:** **Fixed 2026-09-26** (unit tests green, `AccountEmailTest`); not yet seen on the phone,
-  not yet in a release. **Wireframe approved by Robin 2026-09-26**
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (release build: both Claude
+  cards show their eam360.com login under the name within the hour, ⋮ → Details leads with "Email:",
+  Rename offers the "robin" chip; ChatGPT's Personal shows none until an id_token carries it — as
+  designed; no capture committed, it shows real emails) — not yet in a release. **Wireframe approved by Robin 2026-09-26**
   (`design/2026-09-26-account-email-wireframe.html`, Q1–Q4 as recommended; Robin wants it in v1.8).
   Built: `UsageCache.email` per account, from Claude's profile `account.email` (re-read within the
   hour while unknown, then with the daily plan check) and ChatGPT's id_token `email` (sign-in and any
