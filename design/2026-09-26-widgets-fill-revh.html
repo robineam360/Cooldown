@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Widgets Fill — rev H</title>
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 48px 24px 140px; line-height: 1.5;
+  }
+  .page { max-width: 1320px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 84ch; margin: 0 0 12px; font-size: 14px; }
+  .review {
+    display: inline-block; font-size: 12.5px; color: var(--warn); border: 1px solid var(--warn);
+    border-radius: 6px; padding: 4px 10px; margin: 4px 0 4px;
+  }
+  .rules-box { border: 1px solid var(--hair); border-radius: 12px; padding: 12px 16px; margin: 16px 0 0; max-width: 84ch; font-size: 12.5px; color: var(--muted); }
+  .rules-box b { color: var(--ink); }
+  .rules-box ul, .rules-box ol { margin: 6px 0 0; padding-left: 18px; }
+  .rules-box li { margin: 0 0 4px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 58px 0 4px; }
+  h3 { font-size: 14.5px; font-weight: 650; margin: 26px 0 8px; }
+  h4 { font-size: 12.5px; font-weight: 650; margin: 18px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 90ch; margin: 0 0 18px; }
+  .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    background: color-mix(in srgb, var(--hair) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  .hr { height: 1px; background: var(--hair); margin: 50px 0 0; border: 0; }
+  .cap {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin: 6px 0 0; max-width: 260px;
+  }
+  .cap b { color: var(--ink); }
+  .cap.good { color: var(--good); } .cap.bad { color: var(--bad); } .cap.warn { color: var(--warn); }
+
+  .grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .row { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+  ul.inv { font-size: 13px; color: var(--muted); max-width: 92ch; padding-left: 20px; margin: 0; }
+  ul.inv li { margin: 0 0 8px; }
+  ul.inv li b { color: var(--ink); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 90ch; padding-left: 22px; }
+  ol.dec li { margin: 0 0 12px; }
+  .q { border-left: 3px solid var(--accent); padding: 8px 0 8px 14px; margin: 14px 0; font-size: 13.5px; max-width: 84ch; color: var(--muted); }
+  .q b { color: var(--ink); }
+  .q .rec { display: inline-block; font-size: 11px; font-weight: 700; color: var(--good); border: 1px solid var(--good); border-radius: 5px; padding: 1px 7px; margin-left: 6px; }
+  .q .dec { margin-top: 8px; font-size: 12.5px; color: var(--warn); border-top: 1px dashed var(--hair); padding-top: 6px; }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 12.5px; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .tbl-wrap { overflow-x: auto; }
+  .devcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .04em; color: var(--muted); margin: 6px 0 0; text-align: left; max-width: 240px; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 340px; margin: 6px 0 0; }
+  .note.wide { max-width: 720px; }
+  .unver { color: var(--warn); font-weight: 650; }
+  .ringfig { font-weight: 700; line-height: 1; font-family: Roboto, Arial, sans-serif; }
+  .tf { margin: 0 16px 22px 0; display: inline-block; vertical-align: top; }
+  .shot { width: 220px; border-radius: 10px; display: block; }
+  .openlist { font-size: 13px; color: var(--muted); max-width: 92ch; padding-left: 20px; }
+  .openlist li { margin: 0 0 8px; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+    <symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.35) translate(-12 -12)"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></g></symbol>
+  </defs>
+</svg>
+<body>
+<div class="page">
+
+  <p class="eyebrow">CCBG-44 (Widget Fill) &middot; wireframe rev H</p>
+  <h1>Widgets that fill their frame</h1>
+  <p class="lede">
+    Fable's review (<code>research/2026-09-26-ccbg44-fable-review.md</code>) found every widget
+    face drawing a rev-D/F-sized block inside a much bigger reported frame and leaving the rest as
+    air — a 4&times;3 Ring with 42 visible dp of nothing above and below its ring, a Number whose
+    6&times;2 leaves two ~35 dp bands, a Countdown that never grows past its 2&times;1 content, a
+    Strip whose rings sit 70 visible dp apart. Rev H is the fill rule: one hero per face (ring
+    &Oslash;, figure sp, count sp) sized to the room the frame's fixed secondary rows leave, up to a
+    cap, with spare splitting evenly above and below rather than sitting between rows. Every number
+    on this page is drawn from Fable's formulas, to scale, at 1 dp = 1 px reported.
+  </p>
+  <p class="review">Awaiting Robin's approval</p>
+
+  <hr class="hr">
+  <h2>0 &middot; The problem, in Robin's own units</h2>
+  <p class="sub">Four shots from the Fold 7 cover, reported dp as <code>dumpsys appwidget</code> gave
+    them (multiply by 0.714 for what the eye sees). Fable's one-line diagnosis under each.</p>
+  <div class="row">
+    <figure class="tf">
+      <img class="shot" src="research/2026-09-26-v18-robin-home/1-ring-sizes.jpg" alt="Ring widget at several cover sizes">
+      <figcaption class="devcap" style="max-width:220px;white-space:normal">
+        <b>Ring.</b> The 3&times;2 and 4&times;3 draw the identical ring — the 4&times;3 has ~42
+        visible dp of nothing above and below it; the 2&times;2's label ellipsizes on
+        &ldquo;(unassigned)&rdquo;.
+      </figcaption>
+    </figure>
+    <figure class="tf">
+      <img class="shot" src="research/2026-09-26-v18-robin-home/2-number-sizes.jpg" alt="Number widget at several cover sizes">
+      <figcaption class="devcap" style="max-width:220px;white-space:normal">
+        <b>Number.</b> A rev-D-sized block centres above a bottom-pinned control row; the 6&times;2
+        leaves two ~35 visible dp bands top and bottom of that block.
+      </figcaption>
+    </figure>
+    <figure class="tf">
+      <img class="shot" src="research/2026-09-26-v18-robin-home/3-strip-sizes.jpg" alt="Accounts Strip widget at several cover sizes">
+      <figcaption class="devcap" style="max-width:220px;white-space:normal">
+        <b>Strip.</b> The 4&times;2 and 6&times;2 draw the same &Oslash;~84 rings with ~25 visible dp
+        above and ~50 below; on the 6&times;2 the rings sit ~70 visible dp apart.
+      </figcaption>
+    </figure>
+    <figure class="tf">
+      <img class="shot" src="research/2026-09-26-v18-robin-home/4-countdown-sizes.jpg" alt="Countdown widget at several cover sizes">
+      <figcaption class="devcap" style="max-width:220px;white-space:normal">
+        <b>Countdown.</b> Content stays 2&times;1-sized in every two-row frame &mdash; two ~40
+        visible dp bands; the 6&times;2 leaves ~300 dp beside the count.
+      </figcaption>
+    </figure>
+  </div>
+
+  <div class="rules-box" style="border-color:var(--accent)">
+    <b>The fill rule (spec &sect;2)</b>
+    <ul>
+      <li>Each face has one <b>hero</b> (ring &Oslash;, figure sp, count sp) and fixed
+        <b>secondary rows</b> of known height. Rows are added in a fixed order as room allows,
+        dropped in reverse at the narrow end. The hero takes the height (or width) the rows leave,
+        up to a cap. Spare never sits <i>between</i> rows &mdash; what remains after the cap splits
+        evenly above and below the block. Left-aligned as rev D; rings centred. Pads unchanged
+        (8/12/14).</li>
+      <li><b>Tiers</b> (by the reported frame, <code>bucketFor</code> unchanged): <b>S</b> H&lt;140
+        &mdash; <i>narrow</i> W&lt;240 / <i>wide</i> &ge;240; <b>T</b> H&ge;140 and W/H&lt;1.35;
+        <b>W</b> H&ge;140 and W/H&ge;1.35.</li>
+      <li><b>Roomy type</b> at inner H &ge; 200: label 15, sub 13, caption 12, marks 14, stamp 10,
+        gaps 8 &mdash; else rev D's 13/12/11/12&ndash;14/10, gaps 6.</li>
+      <li><b>Caps:</b> Ring &Oslash;160 (companion &Oslash;100), Strip &Oslash;120; Number figure 72
+        sp (96 at inner H &ge; 300), count 80 sp.</li>
+    </ul>
+    <p class="note wide">Six-column cover frame table this page draws to (reported dp): 1 col 84,
+      2 cols 156, 3 cols 244, 4 cols 333, 6 cols 510; rows 108 / 237 / 366. Inner screen: 2&times;2
+      211&times;291, 2&times;1 211&times;126, 4&times;1 467&times;126, 4&times;2 467&times;291
+      (derived &mdash; see &sect;7 Open items).</p>
+  </div>
+
+  <script>
+    // ================= shared primitives (rendering approach faithful to rev D/F; dark theme only) =================
+    const STAMP = 'as of 7:46 PM';
+    const COUNTDOWN_STR = '1:28:52';
+    const ACC = {
+      personal: { label: 'Personal', provider: 'gpt',    accent: '#19C39A', pct: 16, elapsed: 12, reset: 'Resets 9:20 PM', weeklyOnly: true },
+      work:     { label: 'Work',     provider: 'claude', accent: '#E59980', pct: 28, elapsed: 22, reset: 'Resets 8:20 PM', weeklyPct: 52, weeklyElapsed: 40 },
+      product:  { label: 'Product',  provider: 'claude', accent: '#E59980', pct: 30, elapsed: 24, reset: 'Resets 8:39 PM' },
+    };
+    function ink(a) { return `rgba(255,255,255,${a})`; }
+    function sevColor(pct, accent) {
+      if (pct == null) return accent;
+      if (pct >= 100) return '#FF5252';
+      if (pct > 90) return '#FFA726';
+      if (pct > 80) return '#FDD663';
+      return accent;
+    }
+    function mark(provider, size, color) {
+      const id = provider === 'claude' ? 'mkClaude' : 'mkGpt';
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="color:${color};flex:0 0 auto"><use href="#${id}"/></svg>`;
+    }
+    // ---- ring: hairline extent, usage band, red-over-pace slice, pace tick (never a needle here) ----
+    function ringSVG(size, stroke, o) {
+      o = o || {};
+      const r = (size - stroke) / 2 - 1, cx = size / 2, cy = size / 2;
+      const hairW = Math.max(1.1, stroke * 0.26);
+      let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${ink(.5)}" stroke-width="${hairW}"/>`;
+      const pct = o.pct;
+      if (pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, pct));
+        const fill = o.color || sevColor(pct, o.accent);
+        const over = o.elapsed != null && (pct - o.elapsed) > 3;
+        if (v >= 100) s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}"/>`;
+        else if (v > 0) s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${fill}" stroke-width="${stroke}" stroke-dasharray="${v} 100" pathLength="100" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>`;
+        if (over) {
+          const e = Math.min(100, o.elapsed);
+          s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#FF5252" stroke-width="${stroke}" pathLength="100" stroke-dasharray="${Math.max(0, v - e)} 100" stroke-dashoffset="${-e}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        if (o.elapsed != null && v > 0) {
+          // pace tick — a short radial tick across the stroke, ink 90%, 1dp halo, never a hand
+          const a = (Math.min(100, o.elapsed) / 100) * 2 * Math.PI - Math.PI / 2;
+          const overhang = Math.max(2.5, stroke * (3.5 / 12));
+          const tickHalf = stroke / 2 + overhang;
+          const tickW = Math.max(2.5, stroke * 0.39);
+          const x1 = cx + (r - tickHalf) * Math.cos(a), y1 = cy + (r - tickHalf) * Math.sin(a);
+          const x2 = cx + (r + tickHalf) * Math.cos(a), y2 = cy + (r + tickHalf) * Math.sin(a);
+          s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#141414" stroke-width="${tickW + 2}" stroke-linecap="round"/>`;
+          s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="${tickW}" stroke-linecap="round"/>`;
+        }
+        if (v >= 100) {
+          const arm = r * 0.32, w2 = Math.max(1.4, stroke * 0.22);
+          s += `<line x1="${cx - arm}" y1="${cy - arm}" x2="${cx + arm}" y2="${cy + arm}" stroke="#fff" stroke-width="${w2}" stroke-linecap="round"/>`;
+          s += `<line x1="${cx + arm}" y1="${cy - arm}" x2="${cx - arm}" y2="${cy + arm}" stroke="#fff" stroke-width="${w2}" stroke-linecap="round"/>`;
+        }
+      }
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;overflow:visible">${s}</svg>`;
+    }
+    function ringWithFigure(d, stroke, o) {
+      o = o || {};
+      const showX = o.pct != null && o.pct >= 100;
+      const svg = ringSVG(d, stroke, { pct: o.pct, elapsed: o.elapsed, accent: o.accent, noReading: o.noReading });
+      let figureHtml = '';
+      if (!showX && o.figure != null) figureHtml = `<div class="ringfig" style="font-size:${o.figSize}px;${o.dim ? 'opacity:.5' : ''}">${o.figure}</div>`;
+      const tagHtml = (o.subTag && figureHtml) ? `<div style="font-size:${o.subTagSize || 9}px;font-weight:700;letter-spacing:.02em;opacity:${o.dim ? .45 : .78};margin-top:-1px">${o.subTag}</div>` : '';
+      const center = figureHtml ? `<div style="display:flex;flex-direction:column;align-items:center;line-height:1.05">${figureHtml}${tagHtml}</div>` : '';
+      return `<div style="position:relative;width:${d}px;height:${d}px;flex:0 0 auto;${o.dim ? 'opacity:.45' : ''}">${svg}${center ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${center}</div>` : ''}</div>`;
+    }
+    // ---- bar with pace tick ----
+    function barHTML(w, h, o) {
+      o = o || {};
+      const track = ink(.16);
+      let fill = '';
+      if (o.pct != null && !o.noReading) {
+        const v = Math.min(100, Math.max(0, o.pct));
+        const color = o.color || sevColor(o.pct, o.accent);
+        fill = `<div style="position:absolute;left:0;top:0;bottom:0;width:${v}%;${v > 0 ? `min-width:${h}px;` : ''}border-radius:${h / 2}px;background:${color}${o.dim ? ';opacity:.45' : ''}"></div>`;
+      }
+      let tick = '';
+      if (o.paceTick != null) {
+        tick = `<div style="position:absolute;left:calc(${o.paceTick}% - 1.5px);top:-${h * 0.4}px;bottom:-${h * 0.4}px;width:3px;background:#FFFFFF;opacity:.9;border-radius:1.5px;box-shadow:0 0 0 1px #141414"></div>`;
+      }
+      return `<div style="position:relative;width:${w}px;height:${h}px;border-radius:${h / 2}px;background:${track};overflow:visible;margin-top:${h * 0.4 + 1}px">${fill}${tick}</div>`;
+    }
+    function padFor(w, h) {
+      if (Math.min(w, h) >= 200) return { x: 14, y: 14 };
+      return { x: w < 90 ? 8 : 12, y: h < 90 ? 8 : 12 };
+    }
+    function tierOf(w, h) {
+      if (h < 140) return w < 240 ? 'S narrow' : 'S wide';
+      return (w / h) < 1.35 ? 'T' : 'W';
+    }
+    function card(w, h, innerHtml) {
+      const P = padFor(w, h);
+      return `<div style="width:${w}px;height:${h}px;border-radius:24px;background:#1A1A1A;overflow:hidden;position:relative;font-family:Roboto,Arial,sans-serif;color:#EDE8E4;box-sizing:border-box;border:1px solid rgba(255,255,255,.06)"><div style="position:absolute;inset:0;padding:${P.y}px ${P.x}px;box-sizing:border-box;overflow:hidden">${innerHtml}</div></div>`;
+    }
+    function figWrap(html, tier, frameLabel, wh, hero, w) {
+      const capW = (w || 260) + 40;
+      return `<figure class="tf" style="max-width:${capW}px"><div>${html}</div><figcaption class="cap"><b>${tier}</b> &middot; ${frameLabel} (${wh}) &middot; ${hero}</figcaption></figure>`;
+    }
+    function ell(text, style) { return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;${style || ''}">${text}</span>`; }
+  </script>
+
+  <hr class="hr">
+  <h2>1 &middot; Ring (CCRM-79)</h2>
+  <p class="sub">Reserve under the ring: T tier 56 dp (name 18 + reset 16 + stamp 14 + gaps 8);
+    W tier's column runs beside the ring instead of under it. Drop order at the narrow end:
+    companion &rarr; stamp &rarr; reset &rarr; name.</p>
+  <div id="sec1"></div>
+  <script>
+    function ringLinesUnder(w, h, d, stroke, fig, acc, o) {
+      o = o || {};
+      const ringHtml = ringWithFigure(d, stroke, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: fig, subTag: o.weeklyTag ? 'Weekly' : null });
+      const label = acc.label + (o.weeklyTag ? ' &middot; Weekly' : '');
+      const lines = `<div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:600">${mark(acc.provider, 14, acc.accent)}${ell(label)}</div>
+        <div style="font-size:13px;opacity:.78;margin-top:2px">${acc.reset}</div>
+        <div style="font-size:10px;opacity:.55;margin-top:2px">${STAMP}</div>`;
+      let companionHtml = '';
+      if (o.companion) {
+        const c = o.companion;
+        const cRing = ringWithFigure(c.d, c.stroke, { pct: c.pct, elapsed: c.elapsed, accent: acc.accent, figure: `${c.pct}%`, figSize: c.fig, subTag: 'Weekly', subTagSize: 9 });
+        companionHtml = `<div style="margin-top:10px">${cRing}</div>`;
+      }
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">
+        ${ringHtml}
+        <div style="text-align:center;margin-top:8px">${lines}</div>
+        ${companionHtml}
+      </div>`;
+      return card(w, h, inner);
+    }
+    function ringColumnRow(w, h, d, stroke, fig, acc, o) {
+      o = o || {};
+      const ringHtml = ringWithFigure(d, stroke, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: fig });
+      const nameSize = o.nameSize || 13, resetSize = o.resetSize || 12, resetOp = o.resetOp != null ? o.resetOp : 0.78, stampSize = o.stampSize || 10, markSize = o.markSize || 13;
+      const col = `<div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+        <div style="display:flex;align-items:center;gap:4px;font-size:${nameSize}px;font-weight:600">${mark(acc.provider, markSize, acc.accent)}${ell(acc.label)}</div>
+        <div style="font-size:${resetSize}px;opacity:${resetOp}">${ell(acc.reset)}</div>
+        ${o.showStamp !== false ? `<div style="font-size:${stampSize}px;opacity:.55">${ell(STAMP)}</div>` : ''}
+      </div>`;
+      let companionHtml = '';
+      if (o.companion) {
+        const c = o.companion;
+        companionHtml = ringWithFigure(c.d, c.stroke, { pct: c.pct, elapsed: c.elapsed, accent: acc.accent, figure: `${c.pct}%`, figSize: c.fig, subTag: 'Weekly', subTagSize: 9 });
+      }
+      const inner = `<div style="height:100%;display:flex;align-items:center;gap:16px">
+        ${ringHtml}${col}${companionHtml ? `<div style="margin-left:auto">${companionHtml}</div>` : ''}
+      </div>`;
+      return card(w, h, inner);
+    }
+    function ringCentered(w, h, d, stroke, fig, acc) {
+      const ringHtml = ringWithFigure(d, stroke, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: fig });
+      return card(w, h, `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`);
+    }
+    function ring1x1(w, h, d, stroke, fig, acc) {
+      const ringHtml = ringWithFigure(d, stroke, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: fig });
+      return card(w, h, `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`);
+    }
+
+    const ringHtmls = [];
+    // 1×1 — Ø68, fig 17
+    ringHtmls.push(figWrap(ring1x1(84, 108, 68, 6, 17, ACC.personal), tierOf(84, 108), '1&times;1', '84&times;108', 'Ø68', 84));
+    // 2×1 — ring alone, Ø84, fig 21
+    ringHtmls.push(figWrap(ringCentered(156, 108, 84, 7, 21, ACC.product), tierOf(156, 108), '2&times;1 (ring alone)', '156&times;108', 'Ø84', 156));
+    // 3×1 — S wide with column, Ø84, fig 21
+    ringHtmls.push(figWrap(ringColumnRow(244, 108, 84, 7, 21, ACC.work, { nameSize: 13, resetSize: 12, resetOp: .78, stampSize: 10, showStamp: true }), tierOf(244, 108), '3&times;1 (with column)', '244&times;108', 'Ø84', 244));
+    // 2×2 T — Ø132, fig 31
+    ringHtmls.push(figWrap(ringLinesUnder(156, 237, 132, 11, 31, ACC.product), tierOf(156, 237), '2&times;2', '156&times;237', 'Ø132', 156));
+    // 3×2 T — Ø153, fig 36
+    ringHtmls.push(figWrap(ringLinesUnder(244, 237, 153, 13, 36, ACC.work), tierOf(244, 237), '3&times;2', '244&times;237', 'Ø153', 244));
+    // 4×3 T — Ø160, fig 38, + companion Weekly Ø100
+    ringHtmls.push(figWrap(ringLinesUnder(333, 366, 160, 13, 38, ACC.work, { companion: { d: 100, stroke: 6, fig: 22, pct: ACC.work.weeklyPct, elapsed: ACC.work.weeklyElapsed } }), tierOf(333, 366), '4&times;3 (+ companion)', '333&times;366', 'Ø160 + companion Ø100', 333));
+    // inner 2×2 T — Ø160, fig 38 (weekly-only account, no companion needed)
+    ringHtmls.push(figWrap(ringLinesUnder(211, 291, 160, 13, 38, ACC.personal, { weeklyTag: true }), tierOf(211, 291), 'inner 2&times;2', '211&times;291', 'Ø160', 211));
+    // 4×2 W — Ø160, fig 38, no companion (column widens)
+    ringHtmls.push(figWrap(ringColumnRow(333, 237, 160, 13, 38, ACC.product, { nameSize: 15, resetSize: 13, resetOp: .78, stampSize: 10 }), tierOf(333, 237), '4&times;2 (no companion)', '333&times;237', 'Ø160', 333));
+    // 6×2 W — Ø160, fig 38 + companion at right
+    ringHtmls.push(figWrap(ringColumnRow(510, 237, 160, 13, 38, ACC.work, { nameSize: 15, resetSize: 13, resetOp: .78, stampSize: 10, companion: { d: 100, stroke: 6, fig: 22, pct: ACC.work.weeklyPct, elapsed: ACC.work.weeklyElapsed } }), tierOf(510, 237), '6&times;2 (+ companion)', '510&times;237', 'Ø160 + companion Ø100', 510));
+    document.getElementById('sec1').innerHTML = '<div class="row">' + ringHtmls.join('') + '</div>';
+  </script>
+
+  <hr class="hr">
+  <h2>2 &middot; Number (CCRM-80)</h2>
+  <p class="sub">Label+figure share one row from 3&times;1 up (S narrow stacks them); bar under;
+    sub row under the bar; controls (5h|Weekly chips + account cycler) appear only once the frame
+    has a dedicated bottom row for them (2&times;2 T narrow, and every T/W large frame).</p>
+  <div id="sec2"></div>
+  <script>
+    function numberStacked(w, h, figSp, bar, acc) {
+      const color = sevColor(acc.pct, acc.accent);
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px">
+        <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500">${mark(acc.provider, 12, acc.accent)}${ell(acc.label)}</div>
+        <div style="font-weight:700;font-size:${figSp}px;line-height:1">${acc.pct}%</div>
+        ${barHTML(Math.min(120, 156 - 2 * padFor(w, h).x), bar, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, paceTick: acc.elapsed })}
+      </div>`;
+      return card(w, h, inner);
+    }
+    function numberOneRow(w, h, figSp, bar, acc, showControls) {
+      const P = padFor(w, h), barW = w - 2 * P.x;
+      const ctrl = showControls ? `<div style="margin-top:auto;height:32px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;gap:6px">
+            <div style="height:26px;padding:0 10px;border-radius:13px;background:${acc.accent};color:#1A1A1A;font-size:11px;font-weight:700;display:flex;align-items:center">5h</div>
+            ${!acc.weeklyOnly ? `<div style="height:26px;padding:0 10px;border-radius:13px;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:600;display:flex;align-items:center">Weekly</div>` : ''}
+          </div>
+          <div style="height:24px;padding:0 10px;border-radius:12px;background:${ink(.08)};font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px">${mark(acc.provider, 12, acc.accent)}${acc.label} <span style="opacity:.6">&#8644;</span></div>
+        </div>` : '';
+      const inner = `<div style="height:100%;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;min-width:0">${mark(acc.provider, 13, acc.accent)}${ell(acc.label)}</div>
+          <div style="font-weight:700;font-size:${figSp}px;line-height:1;flex:0 0 auto">${acc.pct}%</div>
+        </div>
+        ${barHTML(barW, bar, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, paceTick: acc.elapsed })}
+        <div style="font-size:12px;opacity:.7;margin-top:4px">${acc.reset}</div>
+        ${ctrl}
+      </div>`;
+      return card(w, h, inner);
+    }
+    function numberTNarrow(w, h, acc) {
+      const P = padFor(w, h), barW = w - 2 * P.x;
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:600">${mark(acc.provider, 14, acc.accent)}${ell(acc.label)}</div>
+        <div style="font-weight:700;font-size:52px;line-height:1;text-align:left">${acc.pct}%</div>
+        ${barHTML(barW, 12, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, paceTick: acc.elapsed })}
+        <div style="font-size:13px;opacity:.78">${acc.reset}</div>
+        <div style="font-size:10px;opacity:.55">${STAMP}</div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">
+          <div style="height:28px;display:flex;gap:6px">
+            <div style="height:28px;padding:0 10px;border-radius:14px;background:${acc.accent};color:#1A1A1A;font-size:11px;font-weight:700;display:flex;align-items:center">5h</div>
+            <div style="height:28px;padding:0 10px;border-radius:14px;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:600;display:flex;align-items:center">Weekly</div>
+          </div>
+          <div style="height:28px;padding:0 10px;border-radius:14px;background:${ink(.08)};font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;width:fit-content">${mark(acc.provider, 12, acc.accent)}${acc.label} <span style="opacity:.6">&#8644;</span></div>
+        </div>
+      </div>`;
+      return card(w, h, inner);
+    }
+
+    const numHtmls = [];
+    numHtmls.push(figWrap(numberStacked(156, 108, 44, 10, ACC.personal), tierOf(156, 108), '2&times;1', '156&times;108', '44sp', 156));
+    numHtmls.push(figWrap(numberOneRow(244, 108, 44, 10, ACC.work, false), tierOf(244, 108), '3&times;1', '244&times;108', '44sp', 244));
+    numHtmls.push(figWrap(numberOneRow(333, 108, 44, 10, ACC.product, false), tierOf(333, 108), '4&times;1', '333&times;108', '44sp', 333));
+    numHtmls.push(figWrap(numberOneRow(510, 108, 44, 10, ACC.personal, false), tierOf(510, 108), '6&times;1', '510&times;108', '44sp', 510));
+    numHtmls.push(figWrap(numberTNarrow(156, 237, ACC.work), 'T narrow', '2&times;2', '156&times;237', '52sp (+ chips + cycler)', 156));
+    numHtmls.push(figWrap(numberStacked(244, 237, 72, 14, ACC.product), tierOf(244, 237), '3&times;2 (stacked)', '244&times;237', '72sp', 244));
+    numHtmls.push(figWrap(numberOneRow(333, 237, 72, 14, ACC.work, true), tierOf(333, 237), '4&times;2', '333&times;237', '72sp', 333));
+    numHtmls.push(figWrap(numberOneRow(510, 237, 72, 14, ACC.product, true), tierOf(510, 237), '6&times;2', '510&times;237', '72sp', 510));
+    numHtmls.push(figWrap(numberOneRow(333, 366, 88, 14, ACC.work, true), tierOf(333, 366), '4&times;3', '333&times;366', '88sp (cap 96)', 333));
+    document.getElementById('sec2').innerHTML = '<div class="row">' + numHtmls.join('') + '</div>';
+  </script>
+
+  <hr class="hr">
+  <h2>3 &middot; Countdown (CCRM-81)</h2>
+  <p class="sub">A left-aligned column from 2&times;2 up: caption, the live count, an absolute
+    &ldquo;at&rdquo; time, a figure row (percent LEFT + when it runs out), a bar, then label and
+    stamp pinned to the bottom. <b>4&times;3 is not a placement this face is for</b> &mdash; see
+    the note at the end of this section.</p>
+  <div id="sec3"></div>
+  <script>
+    function cdNarrow(w, h, count, acc) {
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px">
+        <div style="font-weight:700;font-size:${count}px;line-height:1;font-variant-numeric:tabular-nums">${COUNTDOWN_STR}</div>
+        <div style="font-size:12px;opacity:.7">at ${acc.reset.replace('Resets ', '')}</div>
+      </div>`;
+      return card(w, h, inner);
+    }
+    function cdWideInline(w, h, count, acc, rightCol) {
+      const P = padFor(w, h);
+      const left = 100 - acc.pct;
+      const rc = rightCol ? `<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;margin-left:auto">
+          <div style="font-weight:700;font-size:24px;line-height:1">${left}%</div>
+          <div style="font-size:9px;opacity:.6;letter-spacing:.04em;text-transform:uppercase">left</div>
+          <div style="margin-top:4px">${barHTML(64, 8, { pct: acc.pct, accent: acc.accent })}</div>
+        </div>` : '';
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px">
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div style="font-weight:700;font-size:${count}px;line-height:1;font-variant-numeric:tabular-nums">${COUNTDOWN_STR}</div>
+          <div style="font-size:13px;opacity:.7">at ${acc.reset.replace('Resets ', '')}</div>
+          ${rc}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500">${mark(acc.provider, 12, acc.accent)}${ell(acc.label)}</div>
+        <div style="font-size:10px;opacity:.55">${STAMP}</div>
+      </div>`;
+      return card(w, h, inner);
+    }
+    function cdTW(w, h, countSp, bar, acc, oneLineFigRow) {
+      const left = 100 - acc.pct;
+      const P = padFor(w, h), barW = w - 2 * P.x;
+      const figRow = oneLineFigRow
+        ? `<div style="display:flex;align-items:baseline;gap:10px;margin-top:4px"><span style="font-weight:700;font-size:32px;line-height:1">${left}% <span style="font-size:12px;font-weight:600;opacity:.6">LEFT</span></span><span style="font-size:12px;opacity:.65">~ runs out ${acc.reset.replace('Resets ', '')}</span></div>`
+        : `<div style="margin-top:4px"><div style="font-weight:700;font-size:32px;line-height:1">${left}% <span style="font-size:12px;font-weight:600;opacity:.6">LEFT</span></div><div style="font-size:12px;opacity:.65;margin-top:2px">~ runs out ${acc.reset.replace('Resets ', '')}</div></div>`;
+      const inner = `<div style="height:100%;display:flex;flex-direction:column">
+        <div style="font-size:12px;opacity:.7">${acc.label}${acc.weeklyOnly ? ' &middot; Weekly' : ''}</div>
+        <div style="font-weight:700;font-size:${countSp}px;line-height:1;font-variant-numeric:tabular-nums;margin-top:2px">${COUNTDOWN_STR}</div>
+        <div style="font-size:14px;opacity:.7;margin-top:2px">at ${acc.reset.replace('Resets ', '')}</div>
+        ${figRow}
+        ${barHTML(barW, bar, { pct: acc.pct, accent: acc.accent })}
+        <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500">${mark(acc.provider, 12, acc.accent)}${ell(acc.label)}</div>
+          <div style="font-size:10px;opacity:.55">${STAMP}</div>
+        </div>
+      </div>`;
+      return card(w, h, inner);
+    }
+
+    const cdHtmls = [];
+    cdHtmls.push(figWrap(cdNarrow(156, 108, 30, ACC.personal), tierOf(156, 108), '2&times;1', '156&times;108', '30sp', 156));
+    cdHtmls.push(figWrap(cdWideInline(244, 108, 34, ACC.work, false), tierOf(244, 108), '3&times;1', '244&times;108', '34sp', 244));
+    cdHtmls.push(figWrap(cdWideInline(333, 108, 44, ACC.product, false), tierOf(333, 108), '4&times;1', '333&times;108', '44sp', 333));
+    cdHtmls.push(figWrap(cdWideInline(510, 108, 44, ACC.personal, true), tierOf(510, 108), '6&times;1 (right column)', '510&times;108', '44sp', 510));
+    cdHtmls.push(figWrap(cdTW(156, 237, 29, 8, ACC.personal, false), tierOf(156, 237), '2&times;2', '156&times;237', '29sp', 156));
+    cdHtmls.push(figWrap(cdTW(244, 237, 48, 8, ACC.work, false), tierOf(244, 237), '3&times;2', '244&times;237', '48sp', 244));
+    cdHtmls.push(figWrap(cdTW(333, 237, 66, 10, ACC.work, true), tierOf(333, 237), '4&times;2', '333&times;237', '66sp', 333));
+    cdHtmls.push(figWrap(cdTW(510, 237, 80, 10, ACC.product, true), tierOf(510, 237), '6&times;2', '510&times;237', '80sp', 510));
+    cdHtmls.push(figWrap(cdTW(211, 291, 41, 8, ACC.personal, false), tierOf(211, 291), 'inner 2&times;2', '211&times;291', '41sp', 211));
+    document.getElementById('sec3').innerHTML = '<div class="row">' + cdHtmls.join('') + '</div>';
+  </script>
+  <p class="note wide">A 4&times;3 Countdown was measured (count 66sp, 149 dp of spare below the
+    figure row) and rejected — no placement offers it that shape, so it is not drawn as a mock here.
+    A two-column layout at W tier was also measured and rejected (it forces the count under 40 sp
+    and reopens the bands rev H exists to close).</p>
+
+  <hr class="hr">
+  <h2>4 &middot; All accounts (Strip, CCRM-82)</h2>
+  <p class="sub">Every account is its own ring, never summed. S tier (one row): a name line under
+    each ring, pitch capped at &Oslash;+56 so the row never over-spreads; the reset joins the name
+    inline once the account's own slot is &ge; &Oslash;+70 wide. T/W tier (two rows): &Oslash; from
+    the row's own height, name+reset appear only once &Oslash; &ge; 100, the &ldquo;Weekly&rdquo;
+    tag once &Oslash; &ge; 110.</p>
+  <div id="sec4"></div>
+  <script>
+    function stripRow(w, h, accounts, o) {
+      o = o || {};
+      const P = padFor(w, h), innerW = w - 2 * P.x;
+      const d = o.d;
+      const pitchCap = d + 56;
+      const nominal = innerW / accounts.length;
+      const pitch = Math.min(nominal, pitchCap);
+      const groupW = pitch * accounts.length;
+      const cells = accounts.map(acc => {
+        const ringHtml = ringWithFigure(d, d * 0.16, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: Math.round(16 * d / 64) });
+        const nameLine = o.inlineReset
+          ? `${acc.label} &middot; ${acc.reset.replace('Resets ', '')}`
+          : acc.label;
+        return `<div style="width:${pitch}px;display:flex;flex-direction:column;align-items:center;gap:3px">
+          ${ringHtml}
+          <div style="font-size:11px;font-weight:500;text-align:center;max-width:${pitch}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nameLine}</div>
+        </div>`;
+      }).join('');
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;justify-content:center">${cells}</div>
+        <div style="font-size:10px;opacity:.55;margin-top:4px">${STAMP}</div>
+      </div>`;
+      return { html: card(w, h, inner), pitch, groupW, nominal };
+    }
+    function stripTWRow(w, h, accounts, o) {
+      o = o || {};
+      const P = padFor(w, h), innerW = w - 2 * P.x, innerH = h - 2 * P.y;
+      const n = accounts.length;
+      const d = Math.min((innerW - 8 * (n - 1)) / n, innerH - 62, 120);
+      const bore = Math.round(18 * d / 88);
+      const showNameReset = d >= 100;
+      const showWeekly = d >= 110;
+      const cells = accounts.map(acc => {
+        const ringHtml = ringWithFigure(d, Math.max(5, d * 0.12), { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure: `${acc.pct}%`, figSize: bore, subTag: (showWeekly && acc.weeklyOnly) ? 'Weekly' : null, subTagSize: 10 });
+        const label = showNameReset ? `<div style="text-align:center;margin-top:4px">
+            <div style="font-size:13px;font-weight:600">${acc.label}</div>
+            <div style="font-size:11px;opacity:.7">${acc.reset.replace('Resets ', '')}</div>
+          </div>` : '';
+        return `<div style="display:flex;flex-direction:column;align-items:center">${ringHtml}${label}</div>`;
+      }).join('<div style="width:8px"></div>');
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;justify-content:center;align-items:flex-start">${cells}</div>
+        <div style="font-size:10px;opacity:.55;margin-top:6px">${STAMP}</div>
+      </div>`;
+      return { html: card(w, h, inner), d, bore };
+    }
+
+    const stripHtmls = [];
+    { const r = stripRow(333, 108, [ACC.personal, ACC.work, ACC.product], { d: 56, inlineReset: false });
+      stripHtmls.push(figWrap(r.html, tierOf(333, 108), '4&times;1 (3 accounts)', '333&times;108', `Ø56, pitch ${Math.round(r.pitch)} (no cap active)`, 333)); }
+    { const r = stripRow(510, 108, [ACC.personal, ACC.work, ACC.product], { d: 56, inlineReset: true });
+      stripHtmls.push(figWrap(r.html, tierOf(510, 108), '6&times;1 (pitch cap, inline reset)', '510&times;108', `Ø56, pitch capped ${r.pitch} (nominal ${Math.round(r.nominal)})`, 510)); }
+    { const r = stripTWRow(333, 237, [ACC.personal, ACC.work, ACC.product]);
+      stripHtmls.push(figWrap(r.html, tierOf(333, 237), '4&times;2 (3 accounts)', '333&times;237', `Ø${Math.round(r.d)}`, 333)); }
+    { const r = stripTWRow(333, 237, [ACC.personal, ACC.work, ACC.product, { label: 'Research', provider: 'claude', accent: '#4DD0E1', pct: 44, elapsed: 40, reset: 'Resets 10:05 PM' }]);
+      stripHtmls.push(figWrap(r.html, tierOf(333, 237), '4&times;2 (4 accounts)', '333&times;237', `Ø${Math.round(r.d)}`, 333)); }
+    { const r = stripTWRow(510, 237, [ACC.personal, ACC.work, ACC.product]);
+      stripHtmls.push(figWrap(r.html, tierOf(510, 237), '6&times;2 (3 accounts)', '510&times;237', `Ø${Math.round(r.d)}`, 510)); }
+    { const r = stripRow(467, 126, [ACC.personal, ACC.work, ACC.product], { d: 56, inlineReset: true });
+      stripHtmls.push(figWrap(r.html, tierOf(467, 126), 'inner 4&times;1 (3 accounts)', '467&times;126', `Ø56, pitch capped ${r.pitch}`, 467)); }
+    document.getElementById('sec4').innerHTML = '<div class="row">' + stripHtmls.join('') + '</div>';
+  </script>
+
+  <hr class="hr">
+  <h2>5 &middot; States</h2>
+  <p class="sub">One tight and one roomy frame per face, at five states: 100% (red, the ring's
+    &times; and the bar's/count's red fill), above pace (both the pace-exceeded slice and a ladder
+    colour — pct 94, elapsed 85, so both cues show together), stale (dimmed 0.5, R6), no reading
+    yet (&ldquo;&mdash;&rdquo;), and unassigned (spec &sect;3 Q4 wording — see captions).</p>
+  <div id="sec5"></div>
+  <script>
+    const STATE_DEFS = [
+      { key: '100', label: '100%', pct: 100, elapsed: 90 },
+      { key: 'pace', label: 'Above pace', pct: 94, elapsed: 85 },
+      { key: 'stale', label: 'Stale', pct: 28, elapsed: 22, dim: true },
+      { key: 'none', label: 'No reading yet', pct: null, elapsed: null },
+      { key: 'unassigned', label: 'Unassigned', pct: 28, elapsed: 22, unassigned: true },
+    ];
+    function ringStateTight(state) {
+      // 1×1, Ø68 stroke6 fig17
+      const acc = ACC.work;
+      if (state.key === 'none') {
+        const ringHtml = ringWithFigure(68, 6, { pct: null, noReading: true, figure: '—', figSize: 17, accent: acc.accent });
+        return card(84, 108, `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`);
+      }
+      if (state.key === 'unassigned') {
+        // Ring 1×1 says nothing — blank bore, ring track only
+        const ringHtml = ringWithFigure(68, 6, { pct: state.pct, elapsed: state.elapsed, accent: acc.accent, figure: null });
+        return card(84, 108, `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`);
+      }
+      const ringHtml = ringWithFigure(68, 6, { pct: state.pct, elapsed: state.elapsed, accent: acc.accent, figure: `${Math.trunc(state.pct)}%`, figSize: 17, dim: state.dim });
+      return card(84, 108, `<div style="height:100%;display:flex;align-items:center;justify-content:center">${ringHtml}</div>`);
+    }
+    function ringStateRoomy(state) {
+      // 4×2 W, Ø160 stroke13 fig38, column
+      const acc = ACC.work;
+      let pct = state.pct, elapsed = state.elapsed, dim = !!state.dim, figure, stampText = STAMP, resetText = acc.reset;
+      if (state.key === 'none') { figure = '—'; }
+      else figure = `${Math.trunc(pct)}%`;
+      if (state.key === 'unassigned') stampText = 'tap to choose account';
+      const ringHtml = ringWithFigure(160, 13, { pct, elapsed, accent: acc.accent, figure, figSize: 38, dim, noReading: state.key === 'none' });
+      const col = `<div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:600;${dim ? 'opacity:.5' : ''}">${mark(acc.provider, 13, acc.accent)}${ell(acc.label)}</div>
+        <div style="font-size:13px;opacity:.78">${state.key === 'none' ? '&mdash;' : resetText}</div>
+        <div style="font-size:10px;opacity:${state.key === 'unassigned' ? .55 : .55}">${stampText}</div>
+      </div>`;
+      const inner = `<div style="height:100%;display:flex;align-items:center;gap:16px">${ringHtml}${col}</div>`;
+      return card(333, 237, inner);
+    }
+    function numberStateTight(state) {
+      // 2×1, figSp44
+      const acc = ACC.work;
+      let figure, color = acc.accent;
+      if (state.key === 'none') figure = '&mdash;';
+      else { figure = `${Math.trunc(state.pct)}%`; color = sevColor(state.pct, acc.accent); }
+      const label = state.key === 'unassigned' ? `<span style="display:inline-block;font-size:9px;padding:1px 6px;border-radius:8px;background:${ink(.12)};margin-left:4px">pill</span>` : '';
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px;${state.dim ? 'opacity:.75' : ''}">
+        <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500">${mark(acc.provider, 12, acc.accent)}${ell(acc.label)}${label}</div>
+        <div style="font-weight:700;font-size:44px;line-height:1;${state.dim ? 'opacity:.5' : ''}">${figure}</div>
+        ${barHTML(120, 10, { pct: state.pct, elapsed: state.elapsed, accent: acc.accent, dim: state.dim })}
+      </div>`;
+      return card(156, 108, inner);
+    }
+    function numberStateRoomy(state) {
+      // 4×2, figSp72, one row
+      const acc = ACC.work;
+      const P = padFor(333, 237), barW = 333 - 2 * P.x;
+      let figure = state.key === 'none' ? '&mdash;' : `${Math.trunc(state.pct)}%`;
+      const stampText = state.key === 'unassigned' ? 'tap to choose account' : STAMP;
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;${state.dim ? 'opacity:.85' : ''}">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500">${mark(acc.provider, 13, acc.accent)}${ell(acc.label)}</div>
+          <div style="font-weight:700;font-size:72px;line-height:1;${state.dim ? 'opacity:.5' : ''}">${figure}</div>
+        </div>
+        ${barHTML(barW, 14, { pct: state.pct, elapsed: state.elapsed, accent: acc.accent, dim: state.dim })}
+        <div style="font-size:12px;opacity:.7;margin-top:4px">${state.key === 'none' ? '&mdash;' : acc.reset}</div>
+        <div style="margin-top:auto;font-size:10px;opacity:.55">${stampText}</div>
+      </div>`;
+      return card(333, 237, inner);
+    }
+    function countdownStateTight(state) {
+      // 2×1, count30
+      const acc = ACC.work;
+      const atText = state.key === 'unassigned' ? '5h reset &middot; tap to choose' : `at ${acc.reset.replace('Resets ', '')}`;
+      const countText = state.key === 'none' ? '&mdash;' : COUNTDOWN_STR;
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;${state.dim ? 'opacity:.75' : ''}">
+        <div style="font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">${countText}</div>
+        <div style="font-size:12px;opacity:.7">${atText}</div>
+      </div>`;
+      return card(156, 108, inner);
+    }
+    function countdownStateRoomy(state) {
+      // 4×2, countSp66
+      const acc = ACC.work;
+      const P = padFor(333, 237), barW = 333 - 2 * P.x;
+      const left = state.key === 'none' ? null : 100 - Math.trunc(state.pct);
+      const countText = state.key === 'none' ? '&mdash;' : COUNTDOWN_STR;
+      const stampText = state.key === 'unassigned' ? 'tap to choose account' : STAMP;
+      const figRow = left == null ? '' : `<div style="display:flex;align-items:baseline;gap:10px;margin-top:4px"><span style="font-weight:700;font-size:32px;line-height:1">${left}% <span style="font-size:12px;font-weight:600;opacity:.6">LEFT</span></span><span style="font-size:12px;opacity:.65">~ runs out ${acc.reset.replace('Resets ', '')}</span></div>`;
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;${state.dim ? 'opacity:.85' : ''}">
+        <div style="font-size:12px;opacity:.7">${acc.label}</div>
+        <div style="font-weight:700;font-size:66px;line-height:1;font-variant-numeric:tabular-nums;margin-top:2px">${countText}</div>
+        <div style="font-size:14px;opacity:.7;margin-top:2px">${state.key === 'none' ? '&mdash;' : 'at ' + acc.reset.replace('Resets ', '')}</div>
+        ${figRow}
+        ${barHTML(barW, 10, { pct: state.pct, accent: acc.accent, dim: state.dim })}
+        <div style="margin-top:auto;font-size:10px;opacity:.55">${stampText}</div>
+      </div>`;
+      return card(333, 237, inner);
+    }
+    function stripStateTight(state) {
+      // 4×1, Ø56, 3 accounts (state applied to Work only, the others at baseline)
+      const accounts = [ACC.personal, { ...ACC.work, pct: state.key === 'none' ? null : state.pct, elapsed: state.elapsed, dim: state.dim }, ACC.product];
+      const P = padFor(333, 108), d = 56, pitch = Math.min((333 - 2 * P.x) / 3, d + 56);
+      const cells = accounts.map((acc, i) => {
+        const isTarget = i === 1;
+        const figure = isTarget && state.key === 'none' ? '—' : (acc.pct != null ? `${Math.trunc(acc.pct)}%` : '');
+        const ringHtml = ringWithFigure(d, d * 0.16, { pct: isTarget ? acc.pct : acc.pct, elapsed: isTarget ? acc.elapsed : acc.elapsed, accent: acc.accent, figure, figSize: 14, dim: isTarget && state.dim, noReading: isTarget && state.key === 'none' });
+        const nameText = isTarget && state.key === 'unassigned' ? 'tap to choose' : acc.label;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:${pitch}px">${ringHtml}<div style="font-size:11px;max-width:${pitch}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nameText}</div></div>`;
+      }).join('');
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;justify-content:center">${cells}</div>
+        <div style="font-size:10px;opacity:.55;margin-top:4px">${STAMP}</div>
+      </div>`;
+      return card(333, 108, inner);
+    }
+    function stripStateRoomy(state) {
+      // 6×2, Ø120, 3 accounts (state applied to Work only)
+      const accounts = [ACC.personal, { ...ACC.work, pct: state.key === 'none' ? null : state.pct, elapsed: state.elapsed, dim: state.dim }, ACC.product];
+      const d = 120, bore = 25;
+      const cells = accounts.map((acc, i) => {
+        const isTarget = i === 1;
+        const figure = isTarget && state.key === 'none' ? '—' : `${Math.trunc(acc.pct)}%`;
+        const ringHtml = ringWithFigure(d, 14, { pct: acc.pct, elapsed: acc.elapsed, accent: acc.accent, figure, figSize: bore, dim: isTarget && state.dim, noReading: isTarget && state.key === 'none' });
+        const stampT = isTarget && state.key === 'unassigned' ? 'tap to choose account' : acc.reset.replace('Resets ', '');
+        const label = `<div style="text-align:center;margin-top:4px"><div style="font-size:13px;font-weight:600">${acc.label}</div><div style="font-size:11px;opacity:.7">${state.key === 'none' && isTarget ? '&mdash;' : stampT}</div></div>`;
+        return `<div style="display:flex;flex-direction:column;align-items:center">${ringHtml}${label}</div>`;
+      }).join('<div style="width:8px"></div>');
+      const inner = `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;justify-content:center;align-items:flex-start">${cells}</div>
+        <div style="font-size:10px;opacity:.55;margin-top:6px">${STAMP}</div>
+      </div>`;
+      return card(510, 237, inner);
+    }
+
+    function statesRowFor(title, tightFn, roomyFn, tightLabel, roomyLabel) {
+      let html = `<h3>${title}</h3><div class="row">`;
+      STATE_DEFS.forEach(s => {
+        html += figWrap(tightFn(s), 'state', s.label, tightLabel, '', 156);
+      });
+      html += '</div><div class="row" style="margin-top:4px">';
+      STATE_DEFS.forEach(s => {
+        html += figWrap(roomyFn(s), 'state', s.label, roomyLabel, '', 240);
+      });
+      html += '</div>';
+      return html;
+    }
+    let statesHtml = '';
+    statesHtml += statesRowFor('Ring — tight 1&times;1 (84&times;108) / roomy 4&times;2 (333&times;237)', ringStateTight, ringStateRoomy, '1&times;1', '4&times;2');
+    statesHtml += statesRowFor('Number — tight 2&times;1 (156&times;108) / roomy 4&times;2 (333&times;237)', numberStateTight, numberStateRoomy, '2&times;1', '4&times;2');
+    statesHtml += statesRowFor('Countdown — tight 2&times;1 (156&times;108) / roomy 4&times;2 (333&times;237)', countdownStateTight, countdownStateRoomy, '2&times;1', '4&times;2');
+    statesHtml += statesRowFor('Strip — tight 4&times;1 (333&times;108) / roomy 6&times;2 (510&times;237)', stripStateTight, stripStateRoomy, '4&times;1', '6&times;2');
+    document.getElementById('sec5').innerHTML = statesHtml;
+  </script>
+
+  <hr class="hr">
+  <h2>6 &middot; Rules that change</h2>
+  <div class="rules-box">
+    <ol>
+      <li><b>R10 budget 2&nbsp;&rarr;&nbsp;4 MB.</b> The host cap is ~6 B &times; display px
+        (&asymp;16 MB on a 1080&times;2520 phone), and bitmaps over 16 KB cross Binder as ashmem
+        blobs, so the 1 MB transaction limit was never the real bound. &ldquo;At most three
+        buckets&rdquo; and &ldquo;five bitmaps per bucket&rdquo; stay unchanged &mdash; tiers live
+        inside buckets. <code>revF_revDFramesKeepRevDGeometry</code> becomes a rev H invariance test
+        (the 1&times;1 &Oslash;64 cap and the Countdown gaps change on rev D's own frames).</li>
+      <li><b>CCRM-79 (Ring Face) &ldquo;Omits: reset, weekly&rdquo;</b> is reversed: the Ring gains
+        an absolute reset line from 2&times;2 up, and a companion Weekly ring on 4&times;3/6&times;2.
+        <code>Transitions</code> counts both windows for a Ring whose account has both.</li>
+      <li><b>CCRM-80 (Number Face)</b> — controls land on the new 2&times;2 Number (Q3);
+        <code>WidgetHost.wire</code> wires by tier, not bucket.</li>
+      <li><b>Rev F d.4</b> (&ldquo;extra height stays empty&rdquo;) is reversed — that is this bug.
+        The &ldquo;as of&rdquo; stamp gains two homes it didn't have before: the Ring's S-wide column
+        and the Number's 2&times;2.</li>
+    </ol>
+  </div>
+
+  <hr class="hr">
+  <h2>7 &middot; Questions for Robin</h2>
+  <div class="q">
+    <b>Q1 &mdash; Companion Weekly ring</b> on the Ring's 4&times;3 and 6&times;2 (both-window
+    accounts only)? <span class="rec">Recommended: yes</span><br>
+    The only fill in the ring's own grammar; the alternative is 42 visible dp of air above and below.
+    <div class="dec">Decision: </div>
+  </div>
+  <div class="q">
+    <b>Q2 &mdash; &ldquo;Resets 9:20 PM&rdquo; under the Ring's name</b> from 2&times;2 up, though
+    CCRM-79 (Ring Face) said the Ring bears no time? <span class="rec">Recommended: yes</span><br>
+    Absolute, R4-true, and every other face already has it.
+    <div class="dec">Decision: </div>
+  </div>
+  <div class="q">
+    <b>Q3 &mdash; Number 2&times;2</b>: chips + cycler on two bottom rows, or no controls (36/36
+    spare)? <span class="rec">Recommended: controls</span><br>
+    Otherwise it is a 4&times;1 stood on end.
+    <div class="dec">Decision: </div>
+  </div>
+  <div class="q">
+    <b>Q4 &mdash; Unassigned wording</b> as drawn in &sect;5 (the parenthetical dropped, the
+    &ldquo;as of&rdquo; slot reading &ldquo;tap to choose account&rdquo;)? <span class="rec">Recommended: yes</span><br>
+    CCBG-43 (Widget Settings Hidden) makes it a one-tap state; the parenthesis was costing ~110 dp
+    of label on every face.
+    <div class="dec">Decision: </div>
+  </div>
+  <div class="q">
+    <b>Q5 &mdash; R10 budget 2&nbsp;&rarr;&nbsp;4 MB</b> (Strip only)? <span class="rec">Recommended: yes</span><br>
+    If no, Strip rings stay &le; &Oslash;94 but type, pitch and the inline reset still improve.
+    <div class="dec">Decision: </div>
+  </div>
+
+  <hr class="hr">
+  <h2>Open for the session</h2>
+  <ul class="openlist">
+    <li><b>Inner 4&times;2 frame (467&times;291)</b> is not in Fable's numbers; derived by pairing
+      the inner grid's 4-column width (from the given inner 4&times;1, 467 dp) with its 2-row height
+      (from the given inner 2&times;2, 291 dp) — the same row-height-independent-of-column-count
+      pattern the cover table shows. Literal reading, not a measured value.</li>
+    <li><b>Number 2&times;2's figure (52 sp)</b> is Fable's literal number; recomputing
+      <code>min(innerW/2.4, 72)</code> from this page's own <code>padFor</code> gives 55, not 52 —
+      used the spec's stated value rather than my recomputation.</li>
+    <li><b>Strip's S-tier ring size (&Oslash;56)</b> has no formula in Fable's table (only the T/W
+      row gives one) — used one of rev D's own historical ceilings, cited in the spec's intro. The
+      6&times;1 and inner 4&times;1 &ldquo;inline reset&rdquo; demo also reads &ldquo;cell width&rdquo;
+      as the nominal per-account share of the row (before the pitch cap centres the group), since a
+      literal reading where cell width equals the capped pitch can never clear the Ø+70 threshold
+      (a cap of Ø+56 is always short of Ø+70 by construction) — worth Fable's or Robin's check.</li>
+    <li><b>Companion ring's Weekly percentage (52%, elapsed 40)</b> for Work is invented — the
+      task's fixture data gives only a 5h reading per account, no Weekly figure.</li>
+    <li><b>Number 4&times;3's figure (88 sp)</b> is this page's own computation from the formula
+      with the stated cap raised to 96; Fable's text gives the cap but not the resulting number.</li>
+    <li><b>"Above pace / orange ladder" state</b> (&sect;5) is drawn as pct 94 / elapsed 85 so the
+      pace-exceeded slice and the severity ladder's orange band show at once; the spec names both
+      cues but doesn't give a shared fixture.</li>
+    <li><b>Which frames stand in for "one tight and one roomy" per face</b> (&sect;5) is this
+      page's own choice (1&times;1/4&times;2 for the Ring, 2&times;1/4&times;2 for the rest) —
+      the spec's Q4 wording happens to name exactly those tight frames, which is why they were
+      picked, but nothing in the spec pins the roomy side.</li>
+    <li><b>Ring's 2&times;1 (156&times;108)</b> is <i>S narrow</i> by the tier formula (W&lt;240)
+      even though Fable's table discusses it inside the "S wide" row alongside 3&times;1+; captioned
+      here per the literal tier math, not the table's grouping.</li>
+    <li>Simplified the canvas-based overflow/fit-check machinery rev F used (<code>fitSpan</code> /
+      <code>runFitCheck</code>) to plain CSS ellipsis, since every hero number here is hardcoded from
+      the spec rather than derived at runtime — no live overflow detector was needed to hit the
+      acceptance test's "no mock overflows its frame" bar, but it means this page can't self-flag a
+      future data change the way rev D/F could.</li>
+  </ul>
+
+</div>
+</body>
+</html>
