@@ -52,7 +52,7 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
@@ -67,11 +67,15 @@
                     android:importantForAccessibility="no" />
 
                 <!-- maxWidth is set at runtime (Duet.labelClampDp): whatever the
-                     measured 30 sp bold figure leaves of the 156 dp half (CCBG-24). -->
+                     measured 30 sp bold figure leaves of the 156 dp half (CCBG-24).
+                     One UI's cover half is narrower than that, so the weight lets the
+                     label give way to the dots after it; the wrap_content row keeps a
+                     short label's dots beside it rather than at the far end (CCBG-37). -->
                 <TextView
                     android:id="@+id/duet_label_first"
                     style="@android:style/TextAppearance.Material.Notification.Title"
                     android:layout_width="wrap_content"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
                     android:maxLines="1"
@@ -142,7 +146,7 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
@@ -158,6 +162,7 @@
                     android:id="@+id/duet_label_second"
                     style="@android:style/TextAppearance.Material.Notification.Title"
                     android:layout_width="wrap_content"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
                     android:maxLines="1"

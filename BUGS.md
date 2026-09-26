@@ -127,6 +127,40 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   (`removeAllViews` + `addView`), so every update inflates the face fresh. The faces, their layouts
   and the size map are unchanged; `WidgetFitTest` still renders the faces directly.
 
+### CCBG-38 · Cover Buckets — on the Fold 7 cover every widget draws its smallest face
+- **Status:** **Open (2026-09-26)** — found in the RUNBOOK.md Step 7 device pass of CCRM-78
+  (Widgets Reborn); the fix changes the approved layouts' frames, so it goes back to the wireframe
+  (CLAUDE.md §2) before any code.
+- **Severity:** High (every face on the cover screen shows the wrong layout; blocks Step 8)
+- **Symptom:** the Ring added at its default 2×2 on the cover drew the 1×1 face — a small ring,
+  no label — in the middle of a tall empty card, with the synthetic dot clipped by the corner
+  (`design/research/2026-09-26-v18-device-pass/09-cover-ring-2x2-draws-1x1-synthetic.png`).
+  One UI's logcat: `findBestFitLayout, widgetSize=155.80952x236.95238, bestFitSize=79.0x72.0`.
+- **Cause:** `Bucket` assumes cover cells of 90.75×84 dp (2×2 = 181×168). The One UI launcher on
+  Robin's grid reports cover frames of 1×1 84.2×107.8, 2×2 155.8×237.0, 4×2 333.0×237.0 — cells
+  are narrower and much taller than assumed. Every 2-column key (169 dp) and 4-column key (351 dp)
+  is wider than the frame, so `RemoteViews` falls back to the smallest bucket. The inner screen
+  (2×2 202.3×264.4, 4×3 470.5×414.5) fits the keys. The picker previews show the same mismatch:
+  the Ring 2×2 preview is clipped left and right, the Strip 4×1 preview cuts its labels.
+- **Fix:** open — re-key the buckets to the measured frames and refit the faces to the portrait
+  cover cells; needs a revised wireframe and Robin's approval first.
+
+### CCBG-37 · Duet Dot Squeeze — the collapsed Duet's dots vanish when the label ellipsizes
+- **Status:** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a
+  release.
+- **Severity:** Medium (the synthetic marker, and the red fault dot, could silently not show)
+- **Symptom:** with Synthetic "Above pace" on, the collapsed Duet on the Fold 7 cover showed no
+  violet dot; "Personal" ellipsized to "Perso…" and TalkBack had no "Synthetic data" node
+  (`07-cover-duet-collapsed-synthetic.png`).
+- **Cause:** `Duet.labelClampDp` prices a 156 dp half; One UI's cover half is ~128 dp. The label
+  took all of its row, so the 6 dp dots after it (condition and synthetic alike) were laid out
+  past the row's end and clipped.
+- **Fix:** in `notif_duet.xml` the label row is `wrap_content` and the label carries
+  `layout_weight="1"`, so an overlong label gives way to the dots while a short label keeps them
+  beside it. Seen on the Fold 7: dot shows with "Pers…" and TalkBack reads "Synthetic data"
+  (`10-cover-duet-collapsed-synthetic-fixed.png`); synthetic Off reads "Personal 0% · Work 4%"
+  exactly as before (`13-cover-duet-collapsed-real-fixed.png`).
+
 ### CCBG-30 · Phantom Window — ChatGPT's 5h window always counts down, even untouched
 - **Status:** **Shipped v1.7 (2026-09-25).** **Fixed (2026-09-16)** — built, unit-tested (3 new cases) and **seen on the Fold 7 the
   same day**: the ChatGPT card's 5h window reads `0% used` with *"Starts when a message is sent"*,

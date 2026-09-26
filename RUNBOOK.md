@@ -423,6 +423,8 @@ Always-after block. Close out per Convention 4.
 
 **Log:**
 
+- 2026-09-26 — Started over **wireless** adb (no USB cable), seat rung 1. Before state recorded (`design/research/2026-09-26-v18-device-pass/phone-state-before.txt`), screen timeout set to 30 min, release-signed ec63da0 installed over v1.7. Measured cell sizes (findings.md there). Found **CCBG-38 (Cover Buckets), High** — every cover frame falls back to the smallest bucket; needs a wireframe before a fix, so Step 8 is blocked. Found and fixed **CCBG-37 (Duet Dot Squeeze)**, verified on the phone. Collapsed-row third line does not clip on One UI. Airplane/wifi/reboot items need USB. Pass paused for Robin's call on CCBG-38; *Always after* not yet run.
+
 ---
 
 ## Step 8 · Release v1.8
