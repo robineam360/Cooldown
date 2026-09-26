@@ -478,7 +478,10 @@
     is 16 characters (<code>app/src/main/java/com/robin/claudeusage/data/ProfileRegistry.kt:155</code>), so a full
     email suggestion would be truncated ugly for most real addresses (even "robin@eam360.com" is 17). The
     field's <code>supportingText</code> slot is already the character counter, so the suggestion needs its own
-    spot &mdash; a small tappable chip reads clearly there without crowding the counter.</span>
+    spot &mdash; a small tappable chip reads clearly there without crowding the counter.
+    <br><b>Seat amendment:</b> the local part alone would name both of Robin's logins "robin" &mdash; the very
+    collision this fixes. Suggest the local part only when no other account shares it; otherwise the
+    domain's first label ("eam360", "gmail"), which is what tells the two apart.</span>
     <div class="dec">Decision: </div>
   </p>
 
