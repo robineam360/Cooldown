@@ -81,7 +81,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.work:work-runtime-ktx:2.11.2")
     implementation("androidx.security:security-crypto:1.1.0")
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
     // QR token import (bundles the camera capture activity + permission flow).
     // Custom Tabs for the in-app OAuth sign-in browser trip.
     implementation("androidx.browser:browser:1.10.0")
