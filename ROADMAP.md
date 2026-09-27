@@ -1446,11 +1446,112 @@ face; `WidgetFaceTest` covers every state × bucket.
   `RemoteViews.apply` inside the app, each tile captioned with its state and its `bitmapBytes`
   estimate. It is the `DebugFacesActivity` idea, on the phone that runs the app.
 
+## v1.9 — Play-ready and steady · **planned 2026-09-27**
+
+**Decided 2026-09-27.** Robin's brief: *"stability and readiness for a possible Play Store
+release — don't worry about the check with Anthropic and OpenAI for now, we'll do that when we're
+sure we're ready to launch."* The plan came from a Fable call. Robin took four questions one at a
+time:
+- **Q1:** v1.9 goes as far as a Play Console account and the **internal-testing track**. It does
+  not start closed testing and does not publish to production.
+- **Q2:** CCBG-45 (Single Panel Wording) is fixed as-is, under CLAUDE.md §2's "restores an approved
+  design" exemption.
+- **Q3:** Play App Signing uses **our existing key** (PEPK upload), so one signer covers both
+  channels.
+- **Q4:** the account type (personal or organisation) is **open**. Robin will talk it through with
+  Fable, weighing a portfolio of small single-purpose apps under one developer name, all free and
+  open source now, with a possible one-time "Pro" in-app purchase later. Step 9 of
+  [RUNBOOK.md](RUNBOOK.md) cannot start until Q4 is answered.
+
+**What v1.9 is not.** It is not the launch. CCRM-66 (Play Store Launch) stays the launch decision.
+The launch and the provider check are one gated decision, and it is Robin's. The execution order is
+in [RUNBOOK.md](RUNBOOK.md).
+
+### CCRM-86 · Play Readiness — a Play-uploadable build from the same commit as the GitHub APK
+- **Status:** Planned v1.9 (umbrella).
+- **What:** v1.9 produces two artefacts from one commit, signed by one permanent key, with one
+  versionCode sequence across both channels: the GitHub APK as always, and an AAB for Play. Calls
+  made (Fable, 2026-09-27):
+  - product flavors rather than a runtime install-source check (the 2026-09-11 assessment under
+    CCRM-66);
+  - minify stays off, since it is not a Play requirement and unobfuscated traces are what CCRM-85
+    (Crash Capture) reports need;
+  - the privacy policy lives at the repo blob URL of `docs/privacy.md`, so no Pages setting is
+    needed;
+  - the AAB is **not** attached to the GitHub release. It is rebuilt from the tag when needed, and
+    its sha256 and signer go in the release step's Log.
+- **Done when:** every sub-item reads Shipped v1.9. `bundlePlayRelease` output passes
+  `bundletool validate`, and its signer matches RELEASING.md's trusted digest.
+
+### CCRM-87 · Update Channel — `github` and `play` flavors; the Play build has no out-of-store update path
+- **Status:** Planned v1.9. Visible in the play flavor only (the Updates card is absent, and one
+  notice action goes), so it needs a wireframe line in Step 2.
+- **Why:** Play's policy is about *offering* update paths outside Play. A static scan finds
+  `api.github.com/…/releases/latest`, so the classes must be **absent** from the Play artefact, not
+  hidden behind a flag.
+- **What:** add a flavor dimension `channel` with `github` and `play`, both on the same
+  `applicationId`. Move these under `src/github/`: `data/UpdateCheck.kt`,
+  `notify/UpdateNotification.kt`, the Polling auto-check hook (`work/Polling.kt:64-66`), the
+  Updates card and release-page button (`SettingsScreen.kt:2935-3071`), and the "Check for updates"
+  action in the invalidResponse notice (`MainActivity.kt:972`). `src/play/` supplies a no-op
+  channel: it hides the card, never writes `latestKnownVersion`, and **clears an inherited one**,
+  so a github→play install shows no "Update available" strip (`notify/Conditions.kt:176-192`).
+- **Done when:**
+  - the play artefact holds no update endpoint (`api.github.com`, `releases/latest`) and no
+    `UpdateCheck` / `UpdateNotification` class. A `tools/` script checks this, and Step 8 reruns it
+    on the final artefact. The privacy policy's github.com blob URL is allowed;
+  - unit tests pass on both flavors, including a test for the stale `latestKnownVersion`;
+  - RUNBOOK Conventions and RELEASING.md name the real flavor task names.
+
+### CCRM-88 · Scoped Queries — `QUERY_ALL_PACKAGES` goes
+- **Status:** Planned v1.9. Not a layout change, so it needs a device check but no wireframe.
+- **What:** drop the permission (`AndroidManifest.xml:29-30`) from `main` and add a `<queries>`
+  block for `ACTION_VIEW` + `BROWSABLE` + `https`. This serves the browser picker
+  (`SettingsScreen.kt:1434-1450`). If the Fold 7 pass shows One UI under-reporting browsers, re-add
+  the permission in `src/github/AndroidManifest.xml` only, decided on evidence.
+- **Done when:** Samsung Internet, Chrome and any third installed browser appear in the picker on
+  the Fold 7, in both flavors.
+
+### CCRM-89 · Privacy Policy — the policy, the Data-safety answers, and a row on the About card
+- **Status:** Planned v1.9. The About row is visible, so it needs a wireframe.
+- **What:**
+  - `docs/privacy.md`: what is stored and where, where it is sent, what is never sent, deletion
+    (remove the account), the github-only GitHub call, and the crash report staying on the phone.
+    It must agree with README and `.github/SECURITY.md`.
+  - `release/play/data-safety.md`: the form answered question by question from code, with the
+    maximal honest answer wherever Play's definitions are unclear.
+  - a "Privacy policy" row on the About card, in both flavors.
+- **Done when:** all three exist, and the row opens the policy.
+
+### CCRM-90 · Listing Pack — everything the Console asks for, drafted in the repo
+- **Status:** Planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
+  artefact, not an app screen.
+- **What:** everything goes in `release/play/`:
+  - the title and the short and full descriptions, with no provider mark in the title, icon or
+    feature graphic;
+  - the FGS `specialUse` declaration text (seeded from the manifest subtype) and its demo video,
+    recorded on the Fold 7 in Step 7;
+  - the "App access" note for reviewers (every function sits behind a provider sign-in);
+  - the screenshot list, from Robin's full-frame shots;
+  - the 1024×500 feature graphic, as `design/2026-09-xx-play-feature-graphic.html`.
+- **Done when:** every file is present, and Robin has approved the graphic.
+
+### CCRM-91 · CI Gate — tests, builds and lint on every push
+- **Status:** Planned v1.9.
+- **What:** `.github/workflows/ci.yml`. On push and PR it runs `testGithubDebugUnitTest`, an
+  unsigned `assembleGithubRelease`, `bundlePlayRelease` and `lint` (with a baseline if needed). It
+  also restores the `github-actions` entry in `.github/dependabot.yml`. No secrets: CI never signs.
+- **Done when:** green on `main`.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
 - **Status:** **Dropped 2026-09-16, by Robin.** Not deferred — dropped. The ID stays filed and
   is never reused, per CLAUDE.md.
+  **2026-09-27 — readiness split out.** Robin asked for v1.9 to make the app Play-*ready*. That is
+  CCRM-86 (Play Readiness) and CCRM-87–91. v1.9 goes as far as a Console account and the
+  internal-testing track (Robin's Q1). The *launch* stays here: it is gated on the provider check
+  and it is Robin's decision. The reopening condition below is unchanged.
 - **Why it was dropped:** Step 1's research (`design/research/2026-09-16-permission-emails.md`)
   established that Anthropic's own
   [legal and compliance page](https://code.claude.com/docs/en/legal-and-compliance) already
@@ -2878,7 +2979,7 @@ keys) would still make this a different product. Not filed, not an open question
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
 - **Status:** Needs design · small · **option decided 2026-09-25** (Fable recommended, Astra
   reviewed: `concerns`, all adopted below; the two agreed, so it did not go to Robin). Build waits
-  for the next-launch card's wireframe (CLAUDE.md §2).
+  for the next-launch card's wireframe (CLAUDE.md §2). **Planned v1.9** (RUNBOOK Steps 2 and 4).
 - **Why:** the app has no crash reporting. A tester asked whether Crashlytics was on; it is not,
   so CCBG-31 (Alert Crash) reached us as a chat message with no trace and had to be reproduced
   from logcat.

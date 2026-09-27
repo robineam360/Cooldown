@@ -16,6 +16,53 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > alert crashes. **Worked the same evening:** CCBG-31 to CCBG-34 are fixed and
 > **shipped in v1.8 (2026-09-27)**.
 
+### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
+- **Status:** Open — suspected, not observed. Found 2026-09-27 by the v1.9 plan review. Planned v1.9.
+- **Severity:** Medium (a possible crash loop with no way out but "Clear data")
+- **Symptom (suspected):** `data/CredentialStore.kt:20-32` builds the deprecated
+  `EncryptedSharedPreferences` in its constructor with no failure handling. The store is built on
+  hot paths (`Shortcuts.kt:33`, the repository, the workers). A wedged Keystore or an undecryptable
+  file (`AEADBadTagException`) would throw on every launch.
+- **Fix (Fable's call, 2026-09-27; narrowed after Astra round 1):** wrap the construction and walk
+  the exception's cause chain.
+  - **Wipe only on an established permanent failure:** an `AEADBadTagException`, or a
+    `KeyPermanentlyInvalidatedException`, found in the cause chain of the store's own open or
+    decrypt. That case deletes `secure_credentials` **and** the Keystore entry
+    `MasterKey.DEFAULT_MASTER_KEY_ALIAS`. CredentialStore is the only user of that key (checked
+    2026-09-27), so no other store is invalidated. It then rebuilds both and proves them with a
+    write/read probe. It logs INFO "credential store reset — sign in again" and opens the app signed
+    out (an existing state, so no new screen). If the probe fails, it falls back to the in-memory
+    case below, and there is no second wipe.
+  - **Never wipe for anything else**, including `UserNotAuthenticatedException`, a locked device
+    (before first unlock), any other `InvalidKeyException` or `KeyStoreException`, and a transient
+    error that is still failing after one retry. The app runs this process with an empty in-memory
+    store (no crash), logs WARN, and retries on the next launch. The file stays untouched.
+  - Nothing is ever wiped from a `BOOT_COMPLETED` path.
+  - Tests cover each case above through an injectable store factory. The preserve cases assert the
+    file still exists, and the recovery case asserts that a write after recovery reads back from a
+    freshly built store. Step 7 checks that sign-in persists across a restart on the phone. The library is not replaced in v1.9,
+  since that would mean migrating the tokens. The diff needs a fresh judge, because it can sign
+  accounts out.
+
+### CCBG-47 · Widget Theme Lag — widgets keep the old theme after a system light/dark switch
+- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (it needs design:
+  no R7 trigger exists for a theme change).
+- **Severity:** Low
+- **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
+
+### CCBG-48 · Reconfigure Label — a widget reconfigured later shows "Add widget", not "Save changes"
+- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. In v1.9 only if the fix restores
+  the approved rev D reconfigure view (CLAUDE.md §2's exemption). Otherwise it waits.
+- **Severity:** Low
+- **Symptom:** the launcher placed the widget without config. When it is reconfigured later, the
+  config screen's button reads "Add widget".
+
+### CCBG-49 · Unassigned Label Overflow — "Personal (unassigned)" pushes the Ring 2×2 stamp off its row
+- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (visible, so it
+  needs a wireframe).
+- **Severity:** Low
+- **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
+
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
@@ -111,7 +158,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
 - **Status:** Open — found 2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the
-  emulator; not analysed.
+  emulator; not analysed. Planned v1.9, wireframe first (Step 2).
 - **Severity:** Low (a clipped label; every tab still works)
 - **Symptom:** at 360 dp (API 36 emulator, `wm density 480`), the Settings tab row shows
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any
@@ -121,6 +168,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Status:** Open — found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);
   not blocking v1.8 — **Robin, 2026-09-27: "Ship with it open"**; v1.8 shipped with it, fix in a later release. A visible wording change, so it needs a wireframe (CLAUDE.md §2) — or the approved
   Duet wording applied as-is, if Robin rules it restores an approved design.
+  **Robin, 2026-09-27 (v1.9 Q2): fix as-is under the exemption.** Planned v1.9.
 - **Severity:** Low (wording)
 - **Symptom:** the pinned notification with one account reads "Work · 5-hour window" collapsed and
   "7-day" in its expanded rows, while the two-account notification reads "Work · 5h" and "Work · Weekly".

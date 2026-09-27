@@ -1,65 +1,80 @@
-# Runbook — the v1.8 arc: Widgets, reborn
+# Runbook — the v1.9 arc: Play-ready and steady
 
-**Plan status: FROZEN 2026-09-25.** Cross-family review: Astra at xhigh. The seat-edited Fable draft drew blocking twice, so Robin chose a Fable redraft. The redraft drew blocking once (five findings, all adopted), then **concerns** (two, both adopted). See Step 1's Log.
+**Plan status: DRAFT 2026-09-27 — adoption stopped.** Astra at xhigh returned **blocking** twice (five findings in round 1, then four in round 2), and every finding is adopted in the text. Under model-mesh §2 there is no third round, so freezing is **Robin's call**. See Step 1's Log.
 
-Ordered, checkable steps from `main` as of 2026-09-25 (v1.7 shipped, versionCode 23) to a released
-v1.8 that brings home-screen widgets back as a new suite. Items: CCRM-78 (Widgets Reborn) with
-CCRM-79 (Ring Face), CCRM-80 (Number Face), CCRM-81 (Countdown Face) and CCRM-82 (Accounts Strip);
-CCRM-83 (Ring Renderer); CCRM-84 (Faces Gallery). Ride-alongs: CCBG-24 (Duet Label Clamp), CCRM-14
-(Clear History), CCRM-15 (Above-Pace Verification)'s synthetic series, and CCRM-24 (Share Card),
-built last — the release does not wait for it.
+This runbook takes `main` as of 2026-09-27 (v1.8 shipped, versionCode 24) to a released v1.9, and
+then to the same build on Google Play's internal-testing track. It is written as ordered, checkable
+steps.
 
-Earlier arcs are in git history: v1.7 at `4f30dba`, the dropped Play Store arc at `b827dc5`, v1.6 at
-`a7dba1b`, v1.5 at `e18cf32`.
+**Items:**
+- CCRM-86 (Play Readiness), with its four parts: CCRM-87 (Update Channel), CCRM-88 (Scoped Queries),
+  CCRM-89 (Privacy Policy) and CCRM-90 (Listing Pack);
+- CCRM-91 (CI Gate);
+- CCRM-85 (Crash Capture);
+- CCBG-46 (Keystore Wedge);
+- visible fixes: CCBG-35 (Tab Clip), CCBG-45 (Single Panel Wording), and CCBG-48 (Reconfigure Label)
+  if it qualifies.
 
-**What is different.** Widgets left in v1.6 by CCRM-61 (Settings Diet) and come back on purpose. The
-v1.8 section of [ROADMAP.md](ROADMAP.md) answers its four reasons and holds the ten rules (R1–R10) and
-fourteen states (S1–S14) every face obeys. **This file never restates a rule or a number that lives in
-a spec — it names the section.** If a paste block and a spec disagree, the spec wins and the paste
-block is fixed in the same commit. **No widget code, renderer extraction or visible change lands
-before Robin approves the wireframe in Step 2.**
+**Filed but not in v1.9:** CCBG-47 (Widget Theme Lag) and CCBG-49 (Unassigned Label Overflow).
 
-**Five things the plan is built on**, each answering a review finding by construction:
-1. **Forward-only release** (R9). An installed v1.8 has no downgrade path. Code is reversed with
-   `git revert` until it is released; after that, recovery is v1.8.1 through Step 8's own path.
-2. **A time is a claim** (R4). No face depends on a redraw arriving; the scheduler (R7) is best
-   effort and claims nothing about delivery.
-3. **Destructive tests touch disposable data only** (Step 7). Nothing irreversible runs on an account
-   whose history Robin has not named as expendable, on the record, in that session.
-4. **The phone is restored unconditionally** (Step 7's *Before* and *Always after* blocks); a resumed
-   session's first act is the restore.
-5. **The gate is by severity and deferrals are accepted explicitly** (Step 7 → 8); the release order
-   is commit → build from it → tag and push → draft with `--verify-tag` → verify the asset → publish.
+**Out of scope:** CCRM-66 (Play Store Launch) stays the launch decision. It is gated on the
+Anthropic/OpenAI check and it is Robin's.
 
-**How this arc is run.** Delegation follows the `model-mesh` skill (CLAUDE.md §4). The session owns
-every decision and reviews every diff; whoever writes code runs the git gate and lands the code with
-its Status line in one commit; the session ticks this file. The device pass and anything touching
-signing stay with the session. A session that runs out mid-arc is resumed by pasting the *Resume*
-block of the first unticked step — and, if Step 7 had begun, by running its *Always after* block first.
+Earlier arcs are in git history: v1.8 at `6e4c1a0`, v1.7 at `4f30dba`, the dropped Play Store arc at
+`b827dc5` (read its research, never its conclusions, as current), and v1.6 at `a7dba1b`.
+
+**Robin's answers (2026-09-27), recorded in ROADMAP.md's v1.9 section:**
+- **Q1:** v1.9 goes as far as a Console account and the internal-testing track (Step 9). It does not
+  start closed testing and does not publish to production.
+- **Q2:** CCBG-45 is fixed as-is, under CLAUDE.md §2's exemption.
+- **Q3:** Play App Signing uses our existing key.
+- **Q4:** the account type (personal or organisation) is **open**, and Robin will talk it through
+  with Fable. **Step 9 cannot start until Q4 is answered.**
+
+**Five things the plan is built on:**
+1. **Nothing outside git or the phone changes before Step 8.** Steps 1–6 are commits, and
+   `git revert` reverses them. Step 7 changes the phone, and its *Always after* block restores it.
+   Step 8 is irreversible once published. So is Step 9 (the fee, the identity check, the key
+   enrolment, and the package name claimed on Play).
+2. **The Play build lacks out-of-store update code rather than hiding it.** The code lives in a
+   flavor source set, not behind a flag (CCRM-87).
+3. **One key, one versionCode sequence, one commit** for both channels. The AAB is built from the
+   release commit, and its signer is checked against RELEASING.md's trusted digest.
+4. **No session opens the Play Console on its own.** Step 9 is Robin's clicks, with the session
+   guiding. Every irreversible console action is named before it is taken.
+5. **The phone ends on the github flavor.** A play-flavor build left on the Fold 7 would strand
+   Robin without update checks.
+
+**How this arc is run.** Delegation follows the `model-mesh` skill (CLAUDE.md §4), and the seat
+builds by default. Minor spec or wireframe gaps go to a Fable judge, and Fable's answer goes to
+Astra. Only disagreements, major visual changes and reserved decisions come to Robin. Whoever writes
+code lands it with its Status line in one commit, and the session ticks this file. A session that
+runs out mid-arc is resumed by pasting the *Resume* block of the first unticked step. If Step 7 had
+begun, run its *Always after* block first.
 
 ## Conventions — every session reads this block first
 
 1. **Start from the paste.** Each step's fenced block needs no earlier conversation.
 2. **Tests:** `./gradlew testDebugUnitTest` green and `./gradlew assembleDebug` compiling before a
-   step closes.
-3. **Commits:** straight to `main`; subjects like `feat(CCRM-80): …`, `fix(CCBG-24): …`; the body
-   names anything unrelated that rides along. Never stage `ccooldown-release.jks`,
-   `keystore.properties` or `local.properties`.
-4. **Close-out, in order:** (a) every *Done when* item; (b) the roadmap/bug Status lines; (c) the
-   Progress tick (☐ → ☑) and one dated line after **Log:**; (d) commit and push, the tick in the same
-   commit as the work.
-5. **Handover.** The session's last message: what changed in one paragraph, what Robin must do
-   himself before the next step, and the next step's *Resume* block — and the same block goes
-   into [HANDOVER.md](HANDOVER.md)'s "Next session" section, replacing the last one (Robin,
-   2026-09-25, as CooldownMac does).
-6. **Wireframe gate.** Step 2 draws every face × size × state (S1–S14) and every ride-along's visible
-   change. Review happens in the `design/` HTML, never in chat; questions go to Robin one at a time;
-   silence is not approval. A later step that wants to change anything the user sees stops and goes
-   back to the wireframe, naming the file to open.
-7. **Mocks keep full functionality.** Nothing existing is drawn simplified. Notification sections use
-   the Huge-number style as their base.
-8. **The permanent contract** is R9: provider class names and `widget_prefs` keys are fixed at Step 4
-   and never renamed.
+   step closes. **From Step 3 on, these become the flavor task names Step 3 confirms**, and Step 3
+   rewrites this line in the same commit as the split.
+3. **Commits:** straight to `main`. Subjects look like `feat(CCRM-87): …` or `fix(CCBG-46): …`, and
+   the body names anything unrelated that rides along. Never stage `ccooldown-release.jks`,
+   `keystore.properties`, `local.properties` or any PEPK output.
+4. **Close-out, in order:**
+   1. every *Done when* item;
+   2. the roadmap and bug Status lines;
+   3. the Progress tick (☐ → ☑) and one dated line after **Log:**;
+   4. commit and push, with the tick in the same commit as the work.
+5. **Handover.** The session's last message covers three things: what changed (one paragraph), what
+   Robin must do himself before the next step, and the next step's *Resume* block. The same block
+   replaces the "Next session" section of [HANDOVER.md](HANDOVER.md).
+6. **Wireframe gate.** Step 2 draws every visible change in every state and both width classes.
+   Review happens in the `design/` HTML, never in chat. Questions go to Robin one at a time, and
+   silence is not approval. A later step that wants to change anything else the user sees stops and
+   goes back to the wireframe.
+7. **Mocks keep full functionality.** Notification sections use the Huge-number style as their base.
+8. **The Play Console is never opened by a session.** Only Robin opens it (Step 9).
 9. Tracker IDs carry their epic name on first use (CLAUDE.md §1). Two sub-agents never edit the same
    file at once.
 
@@ -67,455 +82,437 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
-| 1 | Plan: concept, Robin's ten answers, CCRM-78–84 filed, Astra ×2, Fable redraft, Astra round 3, freeze | session | — | ☑ |
-| 2 | Wireframe: every face × size × state, ride-alongs, the recovery face, reviewed to approval | sub-agent draws · session reviews · Robin approves | 1 | ☑ |
-| 3 | Pure layer: RingRenderer, Surfaces, WidgetFace, Transitions, WidgetPrefs — no visible change | builder · session reviews | 2 | ☑ |
-| 4 | Widgets: four providers, config, two receivers, the alarm | builders · session reviews | 3 | ☑ |
-| 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☑ |
-| 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☑ |
-| 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☑ |
-| 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☑ |
+| 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☐ |
+| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☐ |
+| 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☐ |
+| 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
+| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48 | session | 2, 3 | ☐ |
+| 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☐ |
+| 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☐ |
+| 8 | Release v1.9 on GitHub; AAB built from the same commit | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
+| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | ☐ |
 
 ---
 
 ## Step 1 · Plan, file, review, freeze
 
-**Who:** the planning session, 2026-09-25.
+**Who:** the planning session, 2026-09-27.
 
 **Done when:**
-- ☑ The Fable concept was checked against the repo (the removal commit `d599b87`,
-  `UsageIcon.railsGauge`, the 7-tap unlock, versionCode 23).
-- ☑ Robin's ten answers are recorded in CCRM-78–82, CCRM-14, CCRM-15, CCRM-24 and CCBG-24.
-- ☑ CCRM-78–84 are filed and the CCRM-61 (Settings Diet) reopening note is written.
-- ☑ Astra rounds 1 and 2 (both blocking) are recorded, and the Fable redraft is adopted in full into
-  ROADMAP.md and this file.
-- ☑ Astra round 3 at xhigh on the redraft returns non-blocking — or every remaining finding is
-  answered in the text and Robin accepts the residual on the record. Then **FROZEN** replaces DRAFT
-  in the status line, with the date.
+- ☑ Fable (mesh-expert) drafted the plan, and the session checked its findings against the code
+  (`QUERY_ALL_PACKAGES` at `AndroidManifest.xml:29-30`, `CredentialStore.kt:20-32`,
+  `isMinifyEnabled = false`, and the highest IDs CCRM-85 and CCBG-45).
+- ☑ Robin answered Q1–Q4 one at a time. Q4 is open by his choice.
+- ☑ CCRM-86–91 and CCBG-46–49 are filed, the CCRM-66 split note is written, and CCBG-45, CCBG-35
+  and CCRM-85 read Planned v1.9.
+- ☐ Astra at xhigh returns non-blocking, or every remaining finding is answered in the text and
+  Robin accepts the residual on the record. Then **FROZEN** replaces DRAFT in the status line, with
+  the date.
 
 **Reversal:** documentation only — `git revert` of the planning commits.
 
 **Log:**
-- 2026-09-25 — Fable (mesh-expert) drafted the concept. The session checked it against the repo, and
-  Robin answered Q1–Q10 one at a time. Q4 was changed from the recommendation to a per-widget
-  Background toggle. Q6 became try-H:MM-else-H:MM:SS, with no military time. Q10 goes to the
-  wireframe. CCRM-78–84 were filed and this runbook was written.
-- 2026-09-25 — Astra xhigh round 1 **blocking** (5: no downgrade path, the destructive test on live
-  history, the severity gate, unbounded alarms, the empty registry). All were adopted. Round 2
-  **blocking** (4: release order, static relative times, a stale Step 4 instruction, phone-state
-  restore). All were adopted, and adoption stopped per model-mesh §2.
-- 2026-09-25 — Robin chose a **Fable redraft** (one spec in ROADMAP R1–R10 / S1–S14, with the runbook
-  pointing at it). Astra xhigh on the redraft: **blocking** (5: restore recorded phone values rather
-  than defaults, asset hash/signer/versionCode identity, unique PendingIntent identity per widget and
-  action, re-arm on every schedule change, the wrapped Binder exception and the whole-map budget).
-  All were adopted. Re-review: **concerns** (2: `onDisabled` is per provider, and the fallback is one
-  bounded attempt). Both were adopted. Plan FROZEN.
-- Open for Robin at Step 2, raised by the redraft: Q11 (an absolute "as of 9:10 PM" stamp on the
-  larger faces), the synthetic marker's form, and the Countdown no longer following the Reset time
-  chip (its absolute time is always shown). *All three were decided at Step 2 (rev D, 2026-09-25).*
+- 2026-09-27 — Fable drafted the plan. Robin answered: Q1 account plus internal test, Q2 fix as-is,
+  Q3 existing key, Q4 open (a portfolio of small free apps, a possible one-time "Pro" IAP later).
+  Items filed and this runbook written.
+- 2026-09-27 — Astra xhigh round 1: **blocking**, with five findings, all adopted.
+  1. CCBG-46's wipe list was too broad (`InvalidKeyException` includes
+     `UserNotAuthenticatedException`), so wiping is narrowed to AEADBadTag and
+     KeyPermanentlyInvalidated, and the preserve cases get tests.
+  2. The AAB was built after publishing, so both artefacts are now built and verified before the tag.
+  3. The phone was restored to github only on the success path, so *Always after* now reinstalls the
+     kept github APK.
+  4. bundletool would have signed with the debug key, so it now gets the release keystore and a
+     signer check before install.
+  5. The privacy blob URL contradicted the "no github.com" check, so the check now targets update
+     endpoints and classes via a `tools/` script and is rerun at Step 8.
+- 2026-09-27 — Astra xhigh round 2: **blocking**, with four findings, all adopted in the text.
+  1. Permanent-key recovery now also deletes and rebuilds the master key, with a write/read probe
+     and tests (only CredentialStore uses that key).
+  2. The whole-plan reversal said the phone could be restored, but after v1.9 it can only roll
+     forward. Step 7 now keeps the v1.8 APK and says installing v1.9 is one-way for the phone.
+  3. Step 8 now requires CI green on the exact release commit.
+  4. CCRM-87's own acceptance criterion now matches the update-endpoint check.
+  Adoption stopped (no third round), so freezing is Robin's call.
 
 ---
 
-## Step 2 · Wireframe — every face, size and state, reviewed to approval
+## Step 2 · Wireframe — every visible v1.9 change, reviewed to approval
 
-**Who:** a sub-agent draws; the session reviews against ROADMAP.md before Robin sees it; Robin
-approves, one question at a time.
+**Who:** a Sonnet sub-agent draws (purpose b), the session does the polish pass and reviews, and
+Robin approves.
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 2; ROADMAP.md's v1.8 section in full — the rules
-R1–R10, the states S1–S14, CCRM-78 (Widgets Reborn) to CCRM-84 (Faces Gallery); CCRM-14 (Clear
-History), CCRM-15 (Above-Pace Verification), CCRM-24 (Share Card); BUGS.md CCBG-24 (Duet Label
-Clamp). Open design/2026-09-17-main-screen-redesign.html for conventions (CSS tokens, .phone
-frame, numbered h2 sections, a "For review" banner) and design/widget-wireframes.html for the
-v1.5 prior art not to clone. Brief a sub-agent to draw design/2026-09-2x-widgets-reborn.html with
-real dp/sp: (1) each face at each size — Ring 1×1/2×2, Number 2×1/4×1/4×2, Countdown 2×1/2×2,
-Strip 4×1/4×2 — on the Fold 7 cover (4×2 = 363×168 dp) and inner (~118×100 dp cells, marked
-unverified), dark and light, Solid and Transparent over a light and a dark wallpaper; (2) every
-state S1–S14 on every face — including S6 reset passed, S13 the synthetic marker (propose its
-form) and S14 the unavailable face — with what drops out at each narrow size; (3) Ring 2×2 at
-100% both ways, × and "100%" (Q10); (4) the Countdown's forms: H:MM and H:MM:SS, MM:SS under one
-hour, the negative past-zero count beside its clock time, the Weekly absolute form and its
-last-24-h live form, the "~ runs out" line present and absent; (5) Number 4×1's absolute
-sub-line and 4×2's control row — chips only for the windows the account has, the fixed tag for a
-single-window account, the account cycler; (6) the config activity (Account, Window, Background)
-and the reconfigure view; (7) picker names and previews (proposed: Ring / Number / Countdown /
-All accounts); (8) Q11 — an absolute "as of 9:10 PM" stamp on the faces with room, drawn present
-and absent, for Robin to keep or drop; (9) the ride-alongs: the CCBG-24 measured clamp on the
-Duet collapsed row (Huge-number base, "ChatGPT 98%" fitting in Left mode), the CCRM-14 card ⋮
-item and its confirm dialog, the CCRM-15 chip row, the tap-to-turn-off SYNTHETIC DATA banner and
-the notification strip, the CCRM-84 gallery screen, and the CCRM-24 share card with its preview
-dialog and ⋮ entry. Review it yourself first: every state on every face, nothing clones an app
-card, no combined figure anywhere on the Strip, every time absolute or live (R4), every clock
-time 12-hour (R2). Then name the file to Robin and ask one question at a time. On "change X",
-revise (rev B, C …) and show again. No code. When Robin says approved, write the revision
-letter, the date and every decision — Q10, Q11, the marker's form, the S14 wording, share card
-build or defer — into the items' Status lines; close out per Convention 4.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 2; ROADMAP.md's v1.9 section, CCRM-85 (Crash
+Capture) in full; BUGS.md CCBG-35 (Tab Clip) and CCBG-48 (Reconfigure Label). Open
+design/2026-09-17-main-screen-redesign.html for conventions (CSS tokens, .phone frame, numbered
+h2 sections, a "For review" banner). Brief a Sonnet sub-agent (purpose b) to draw
+design/2026-09-2x-v19-play-ready.html with real dp/sp, on the Fold 7 cover and inner widths and at
+360 dp, dark and light: (1) the About card with a "Privacy policy" row, both flavors; (2) the
+CCRM-85 next-launch card "Cooldown crashed on <date> · Share report / Not now" — present, after
+Share, after Not now (gone), two crashes on file, a crash with no trace (ExitReasons only) — and
+where it sits relative to the existing status line and notices; (3) the Debug section (behind the
+7-tap unlock) with a "Crash now" entry for the Step 7 test; (4) the play flavor's Settings More tab
+with the Updates card absent, and the invalidResponse notice without its "Check for updates"
+action; (5) CCBG-35 — the Settings tab row at 360 dp and at font scale 2.0, with a proposed fix
+(e.g. scrollable tabs or shorter titles); (6) CCBG-48 — only if the approved rev D reconfigure view
+(design/2026-09-25-widgets-reborn.html) already shows "Save changes"; if it does, it is a
+restoration and needs no drawing, so say so. Do the polish pass yourself. Minor gaps go to a Fable
+judge, then Astra. Then name the file to Robin and ask one question at a time. On "change X",
+revise (rev B …). No code. When Robin says approved, write the revision and every decision into the
+Status lines of CCRM-85, CCRM-87, CCRM-89, CCBG-35 and CCBG-48; close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ Robin has said "approved" to a named revision — rev D, 2026-09-25.
-- ☑ Every decision taken in review is written into CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and CCBG-24.
-- ☑ The share card is marked *build* or *defer* — Robin's call: **build**, last, the open account only.
+- ☐ Robin has said "approved" to a named revision.
+- ☐ Every decision is written into the items' Status lines, including whether CCBG-48 is a
+  restoration.
 
 **Reversal:** documentation only.
 
 **Log:**
-- 2026-09-25 — A Sonnet sub-agent (mesh-builder) drew rev A of `design/2026-09-25-widgets-reborn.html`.
-  The session's review found 19 defects before Robin saw it: false chronometers on the Countdown
-  S4/S5/S6, "Wkly", Strip states applied to every ring, simplified Main and notification mocks, and
-  others. The same agent drew rev B. Robin replaced the needle with a pace tick while viewing, then
-  asked for a bolder tick, round arc ends, Solid / Gradient / Transparent, and the Number label and
-  figure on one row. The session drew those itself as rev C, together with a layout pass; it stopped
-  the sub-agent, which had resumed on a queued message and was editing the same file.
-- 2026-09-25 — Robin answered one at a time: Q10 spent ×; Q11 keep the stamp where drawn; S13
-  ribbon + dot; S14 two lengths; the Transparent soft shadow; share card build, the open account
-  only; the Countdown ignores the Reset time chip; Countdown 2×1 Weekly "Sat 9:10 PM". He delegated
-  the remaining fit calls to a fresh Fable judge (mesh-judge, model fable), which approved three
-  and changed two (Strip cover rings recorded as Ø53 / Ø80, as drawn; the UNASSIGNED pill raised to
-  8 sp). It also found the Weekly tag vanishing at 100%, which is now drawn. **Rev D approved by
-  Robin, 2026-09-25**, and the decisions were written into CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and
-  CCBG-24.
+
 ---
 
-## Step 3 · Pure layer — no visible change
+## Step 3 · Channel split, scoped queries, CI
 
-**Who:** a builder (the model-mesh ladder picks the rung); the session reviews the diff and runs the
-tests.
+**Who:** the session (rung 1). After it, a **fresh Opus judge** (mesh-judge, purpose c) reviews the
+diff, because it touches the release path and the signing config.
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 3; ROADMAP.md v1.8 rules R4, R7 and R10, CCRM-78
-(Widgets Reborn) §Where, and CCRM-83 (Ring Renderer); the approved wireframe named in CCRM-78's
-Status line. Read ui/UsageIcon.kt, ui/BarRenderer.kt, notify/PinnedNotification.kt,
-alerts/Alerts.kt, work/Polling.kt and every PinnedNotification.update call site (grep — 13).
-Pattern only: git show 530781f:app/src/main/java/com/robin/claudeusage/widget/WidgetFace.kt and
-ui/RingRenderer.kt. Build, one commit each: (a) ui/RingRenderer.kt per CCRM-83, UsageIcon.draw
-delegating at 24 dp, with a bitmap-equality test for every state the icon draws; (b)
-notify/Surfaces.kt — refresh(context, cache) replacing all 13 call sites, its widget half and
-arm() no-ops until Step 4; (c) widgets/WidgetFace.kt — the pure state table (S1–S14), the
-buckets, render(face, bucket, state) returning one single-size RemoteViews, and bitmapBytes,
-with WidgetFaceTest over every state × bucket and the R10 budget at both Fold 7 densities; (d)
-widgets/Transitions.kt — nextTransitionAt per R7, tested for each of its three kinds, the
-earliest-wins case, a past reset and the empty case; (e) widgets/WidgetPrefs.kt
-(w<id>.account/.window/.bg/.v; an empty account is the unassigned state, R5). No manifest
-entries, no providers, no layout the user can reach. Tests green; assembleDebug.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 3; ROADMAP.md CCRM-86 (Play Readiness), CCRM-87
+(Update Channel), CCRM-88 (Scoped Queries), CCRM-91 (CI Gate); RELEASING.md; app/build.gradle.kts;
+app/src/main/AndroidManifest.xml; .github/dependabot.yml; the approved Step 2 wireframe's
+play-flavor section. Build, one commit per item:
+CCRM-87 — flavor dimension "channel", flavors github and play, same applicationId; move
+UpdateCheck, UpdateNotification, the Polling auto-check hook, the Updates card and the
+invalidResponse "Check for updates" action behind a small UpdateChannel interface with the github
+implementation under src/github/ and a no-op under src/play/ that also clears an inherited
+latestKnownVersion; tests on both flavors, including the stale-latestKnownVersion case. Confirm the
+real task names on AGP (testGithubDebugUnitTest, assembleGithubDebug, assembleGithubRelease,
+bundlePlayRelease — or whatever the aggregate names are) and rewrite Convention 2 and RELEASING.md's
+build lines in the same commit. The release asset must keep the file name app-release.apk (copy
+the flavor output to that name in RELEASING.md's order).
+CCRM-88 — drop QUERY_ALL_PACKAGES from main, add a <queries> intent for ACTION_VIEW + BROWSABLE +
+https; the github re-add is decided at Step 7, not now.
+CCRM-91 — .github/workflows/ci.yml running the unit tests, an unsigned assembleGithubRelease,
+bundlePlayRelease and lint (baseline if needed) on push and PR; no secrets; restore the
+github-actions entry in dependabot.yml.
+Check: `unzip -l` of both outputs has no .so; the play APK's dex and resources contain no
+"api.github.com", no "releases/latest" and no UpdateCheck/UpdateNotification class (the privacy
+policy's github.com/…/docs/privacy.md URL is allowed — write this check as a script in tools/ so
+Step 8 reruns it on the final artefact); bundlePlayRelease signed locally passes `bundletool validate` and its signer
+(keytool -printcert -jarfile) equals RELEASING.md's trusted digest. Then spawn a fresh mesh-judge
+(Opus, purpose c) on the diff against CCRM-87/88/91; adopt or answer every finding. Close out per
+Convention 4.
 ```
 
 **Done when:**
-- ☑ All five pieces are merged with tests; `UsageIcon` renders byte-identically at 24 dp.
-- ☑ No `<receiver>` or `<activity>` for a widget is in the manifest; nothing the user sees changed.
+- ☐ Both flavors compile, both flavors' tests are green, and the stale-`latestKnownVersion` test
+  exists.
+- ☐ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
+  the privacy URL is allowed), and neither output holds a `.so`.
+- ☐ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
+- ☐ CI is green on `main`.
+- ☐ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
+  `app-release.apk`.
+- ☐ The judge's verdict is recorded and its findings are adopted or answered.
 
-**Reversal:** `git revert` of the step's commits.
+**Reversal:** `git revert` per commit, newest first. Delete `ci.yml` with its commit's revert.
 
 **Log:**
-- 2026-09-25 — Built by the session (model-mesh rung 1) in six commits: (a) `ui/RingRenderer.kt`, NEEDLE + rev D TICK, `UsageIcon.draw` a 24 dp call into it, `RingRendererTest` pixel-equal to a frozen pre-extraction copy over 16 states × both themes × three densities; (b) `notify/Surfaces.kt`, all 13 call sites moved, `SurfacesSeamTest`; (c) `widgets/WidgetFace.kt` — `FaceStates` (S1–S14), nine cover buckets, `render`, `bitmapBytes`, layouts generated by `tools/widget_layouts.py` — with `WidgetFaceTest` over every state × bucket × background × theme on API 31 and 36, and `Fmt.widgetClock` (R2); (d) `widgets/Transitions.kt`; (e) `widgets/WidgetPrefs.kt`. Robolectric 4.17 added test-only. A fresh Opus judge returned **concerns** (no blocking): `View.setAlpha` through RemoteViews, a doubled "Stale" on the Countdown, bars stretched by `fitXY` — all fixed in a follow-up commit. **Open for Step 4:** (1) the widget bar's pace tick — the wireframe draws 3 dp, 90% ink with a 1 dp halo, but CCRM-83 says `BarRenderer` is unchanged, so the bars carry the notification's tick until Robin picks one; (2) the Number figure is drawn in the severity colour (R3, the notification's Huge number) where the wireframe's mock is plain ink; (3) a signed-in account with no payload yet reads "No reading yet" (the notification's words), a state the wireframe does not draw; (4) the "as of" stamp gains its weekday only on a redraw, so after 24 h without one it can read as today (already dimmed Stale by then) — R7's three alarm kinds do not cover it; (5) both Fold 7 screens are recorded at 420 dpi, so R10 is tested at 2.625 (twice) plus 3.5 for headroom.
 
 ---
 
-## Step 4 · Widgets
+## Step 4 · Crash Capture and Keystore Wedge
 
-**Who:** builders, one face per agent where files do not overlap; the manifest,
-`WidgetConfigActivity`, both receivers and `res/xml` belong to one agent (or the session merges
-them). The session reviews each face against the approved wireframe, state by state.
+**Who:** the session (rung 1). After it, a **fresh Opus judge** (purpose c), because CCBG-46 can
+sign accounts out.
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 4; ROADMAP.md v1.8 rules R1–R10, states S1–S14,
-and CCRM-78 (Widgets Reborn) to CCRM-82 (Accounts Strip) in full; the approved wireframe. Those
-sections are the spec and this block is not — build exactly what they say: the four providers
-with R9's class names, each composing its size map from WidgetFace.render; WidgetConfigActivity
-per CCRM-78 §Config; WidgetActionReceiver and WidgetSystemReceiver per CCRM-78 §On-face controls
-and R7; Surfaces.arm and the one alarm per R7, with R10's fallback; the Countdown per CCRM-81
-(Countdown Face), recording in its Status line which chronometer form shipped and why; res/xml
-info files with updatePeriodMillis 0 and previewLayout. One commit per face plus one for the
-shared plumbing. Anything the wireframe does not show: stop and ask, naming the file. Tests
-green; assembleDebug.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 4; ROADMAP.md CCRM-85 (Crash Capture) in full;
+BUGS.md CCBG-46 (Keystore Wedge); data/CredentialStore.kt, Shortcuts.kt, diag/AppLog.kt; the
+approved Step 2 wireframe's crash card and Debug "Crash now" entry. Build CCRM-85 exactly as
+specified (Application class with the chained handler in finally, pure diag/CrashReport.kt with
+the one scrubber and no exception messages, diag/ExitReasons.kt with the watermark rule, the
+next-launch card, the Debug "Crash now" entry, the README/user-guide sentence). Build CCBG-46 as
+its Fix line says: walk the cause chain; wipe ONLY on AEADBadTagException or
+KeyPermanentlyInvalidatedException from the store's own open/decrypt, and then delete both the
+prefs file and the MasterKey.DEFAULT_MASTER_KEY_ALIAS Keystore entry, rebuild, and prove it with a
+write/read probe (probe fails → the in-memory case, never a second wipe); every other failure
+(UserNotAuthenticatedException, locked device, other InvalidKey/KeyStore exceptions, a transient
+error still failing after one retry) runs with an empty in-memory store, logs WARN and leaves the
+file untouched; never from a BOOT_COMPLETED path. Tests: the scrubber strips tokens (with and
+without "Bearer"), emails and messages; the handler always chains; each exception case goes the
+right way and the preserve cases assert secure_credentials still exists; no wipe on the boot
+path. Spawn a fresh mesh-judge (Opus, purpose c) on the diff against the
+two specs; adopt or answer every finding. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ Four providers are in the manifest, each placeable in a debug build and matching the approved
-  wireframe state by state, in an emulator or on the phone.
-- ☑ Every trigger R7 names is wired and each was exercised once in the emulator; there is exactly
-  one alarm, and it is cancelled when the last widget is removed.
-- ☑ R10's fallback has tests that force it through `SafeUpdate` with each of the three exception
-  shapes, and `bitmapBytes` is tested over each face's whole size map.
-- ☑ Two Number 4×2 widgets on different accounts: a tap on either's chips or cycler changes only that
-  widget (unique PendingIntent identity), and every config save, toggle, delete and restore re-arms
-  the one alarm over all placed widgets. Removing the last Number while a Countdown stays keeps the alarm armed.
-- ☑ CCRM-78–82 read Built, with the chronometer form recorded in CCRM-81.
+- ☐ Every test named above exists and passes on both flavors.
+- ☐ The crash card matches the approved wireframe state by state.
+- ☐ The judge's verdict is recorded.
 
-**Reversal before release:** `git revert`. After release: R9 — forward-only, see Step 8.
+**Reversal:** `git revert`. CCBG-46 has wiped nothing yet, because it runs only on phones that get
+the build.
 
 **Log:**
-- 2026-09-25 — Built by the session (model-mesh rung 1) in six commits on `claude/widgets-reborn-impl-ecc70e`: shared plumbing (`WidgetHost`, `SafeUpdate`, `FaceWidgetProvider`, `WidgetActionReceiver`, `WidgetSystemReceiver`, `WidgetConfigActivity`, `Surfaces.arm`), then Ring, Number, Countdown and Strip providers, then the emulator-pass fixes. Calls: Robin — widget bars take rev D's 3 dp tick, the Number figure keeps the severity colour, and from now on minor gaps go to Fable, only major visual changes to him; Fable — "No reading yet" accepted (Strip reads "No reading"), R7 kind (d) `fetchedAt + 24 h`, Strip 4×1 S12 "Free" in the bore. Countdown ships live H:MM:SS (recorded in CCRM-81). A fresh Opus judge returned **concerns** (no blocking); adopted: neutral `initialLayout`, widget redraw off the caller's thread, smallest-size fallback, saveable config picks, guarded preview, OOM contained. Emulator (API 36, Pixel launcher, 420 dpi): all four placed; config save, both chips, the cycler, resize, `Surfaces.refresh` from Settings, the alarm, `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET`, `TIMEZONE_CHANGED` each redrew; a spoofed action did nothing; one RTC alarm, cancelled when the last widget went; prefs pruned on delete; 321 KB bitmap memory on a 4×2. The pass found cover-cell overflows (Number 4×1, Strip 4×1, Countdown 2×1 S5) and collapsed/solid chip backgrounds, all fixed by spacing and tint only; `WidgetFitTest` added. Not exercised on the emulator: `onRestored` (unit-tested in `WidgetPrefsTest`). **Open for Step 7:** see CCRM-78's Status line.
 
 ---
 
-## Step 5 · Ride-alongs
+## Step 5 · Visible fixes
 
-**Who:** builders. **One agent owns `SettingsScreen.kt`** (CCRM-14 and CCRM-15 both touch it);
-another does CCBG-24; another the gallery. The session reviews.
+**Who:** the session (rung 1).
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 5; BUGS.md CCBG-24 (Duet Label Clamp);
-ROADMAP.md CCRM-14 (Clear History), CCRM-15 (Above-Pace Verification), CCRM-84 (Faces Gallery)
-and rule R8; the approved wireframe's ride-along sections. Build, one commit each: CCBG-24 —
-measure the 30 sp bold figure with Paint.measureText in the device font and clamp the label to
-the remainder, Duet.labelClampDp pure and tested; CCRM-14 — "Clear usage history…" in the
-Accounts card ⋮ with the confirm dialog naming both stores, HistoryStore.clear +
-SessionLog.clear for that profile, then Surfaces.refresh; CCRM-15 — data/SyntheticSeries per R8,
-applied where UsageRepository hands out a snapshot, the Debug chip row, the tap-to-off banner,
-the notification strip, the widget marker, and a unit test that no store changes while it is on;
-CCRM-84 — the gallery per its entry. Tests green.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 5; ROADMAP.md CCRM-89 (Privacy Policy); BUGS.md
+CCBG-35 (Tab Clip), CCBG-45 (Single Panel Wording), CCBG-48 (Reconfigure Label); the approved Step
+2 wireframe; ROADMAP's v1.8 R1 for the "5h"/"Weekly" wording. Build, one commit each: the About
+card's "Privacy policy" row (opens the docs/privacy.md blob URL on main); CCBG-35 as approved;
+CCBG-45 — the one-account notification uses the Duet wording, "5h" and "Weekly", collapsed and
+expanded (Robin's Q2: fix as-is); CCBG-48 only if Step 2 ruled it a restoration. Check each at 360
+dp and on the Fold 7 widths in the emulator. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ CCBG-24 reads Fixed, pending device verification; CCRM-14, CCRM-84 and CCRM-15's series read
-  Built.
-- ☑ Synthetic Off returns every surface to real data without a restart; `am kill` in the emulator
-  does the same; the stores test passes.
+- ☐ Each fix matches the wireframe or the approved design it restores, and the tests are green.
 
 **Reversal:** `git revert`.
 
 **Log:**
-- 2026-09-25 — done in one session (commits from 58531bb). CCBG-24 (Duet Label Clamp) and CCRM-14
-  (Clear History) and CCRM-15 (Above-Pace Verification) by the seat; CCRM-84 (Faces Gallery) by a
-  Sonnet builder in a worktree (purpose b+d), reviewed and cherry-picked; its Debug button rides in
-  the CCRM-15 card. API 36 emulator: Above pace / At 100% drew the banner, the notification band,
-  the widget marker and the above-pace chart; the banner's tap and the chip's Off returned every
-  surface to real data; process death (`run-as … kill` — `am kill` does not kill a process holding
-  the pinned notification's foreground service) came back real on Main and the notification at
-  once, and on the widgets at their next redraw, as R8 says. The pass found **CCBG-36 (Widget
-  Reapply Residue)** — the launcher reapplied updates over old views, so the synthetic dot and the
-  Countdown's live count survived Off — fixed and tested. The collapsed notification was too
-  short for the "SYNTHETIC DATA" band; settled 2026-09-25 as wireframe rev E §9c (Fable, checked
-  by Astra — blocking once on unlabelled fallback text, accepted after the content-text prefix):
-  collapsed views carry a violet dot instead, expanded keep the band. Built; see CCRM-15.
 
 ---
 
-## Step 6 · Share card (only if Step 2 marked it *build*)
+## Step 6 · Docs and listing pack
 
-**Who:** a builder; the session reviews.
+**Who:** the session. A Sonnet sub-agent drafts the listing copy (purpose b) and the session edits
+it. The session draws the feature graphic, and Robin approves it in `design/`.
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 6; ROADMAP.md CCRM-24 (Share Card) and the
-approved share-card section. Build share/ShareCard.kt at 4× (1440 px wide) from RingRenderer,
-BarRenderer and a ChartBitmap adapted from git show 530781f:.../widget/ChartBitmap.kt; the
-FileProvider (res/xml/share_paths.xml, cache-path "share/") with FLAG_GRANT_READ_URI_PERMISSION
-on the chooser intent; every earlier file in cacheDir/share deleted before each render and the
-folder emptied on app start; the render-then-preview dialog; ACTION_SEND; "Share snapshot" in
-the Main ⋮ menu. Privacy: the profile label only — no email, no plan tier; nothing written
-outside app cache. Tests green; one commit.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 6; ROADMAP.md CCRM-89 (Privacy Policy), CCRM-90
+(Listing Pack), CCRM-67 (Pin Service)'s FGS risk note; README (the privacy and install sections);
+.github/SECURITY.md; AndroidManifest.xml (the specialUse subtype); data/AccountEmail.kt and the
+endpoints each provider calls. Write docs/privacy.md (true to the code, both flavors); write
+release/play/data-safety.md from code, question by question, taking the maximal honest answer
+wherever Play's definition is unclear and marking those lines "re-read on the day"; brief a
+Sonnet sub-agent (purpose b) to draft release/play/listing.md (title, short and full description;
+no provider mark in title/icon/graphic; nominative mentions only), then edit it; write
+release/play/fgs-declaration.md and release/play/app-access.md; draw
+design/2026-09-2x-play-feature-graphic.html (1024×500, the Pulse icon, no provider marks) and ask
+Robin to approve it; add a "Play channel" section to RELEASING.md (the AAB from the release
+commit, the checks, never attached to the GitHub release, versionCode shared). README keeps "not
+on any store" until a launch. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ Built and matching the wireframe, or recorded as deferred to v1.8.1 without blocking Step 7.
+- ☐ Every file above exists and agrees with the code.
+- ☐ Robin has said "approved" to the graphic.
+- ☐ RELEASING.md has the Play channel section.
 
 **Reversal:** `git revert`.
 
 **Log:**
-- 2026-09-25 — Built by the seat (one piece, rung 1): `share/ShareCard.kt` + `share/ChartBitmap.kt`,
-  the FileProvider, the preview dialog and the ⋮ entry; `ShareCardTest` renders nine states at
-  1440 px. Five calls to Fable, checked by Astra (`concerns`, adopted: the synthetic ribbon keys to
-  the snapshot's provenance; the preview's bitmap is the one shared). They split on the trend
-  block — Robin chose the full 120 dp chart over rev D's sparkline. Fable also settled HANDOVER's
-  collapsed-notification call (see HANDOVER.md): Astra agreed, adding screen-reader text.
 
 ---
 
 ## Step 7 · Fold 7 device pass
 
-**Who:** the session, phone over USB adb. Robin unlocks the phone; nobody stores the pattern. Keep
-the screen awake for the whole session and put auto-off back before disconnecting.
+**Who:** the session, with the phone over USB adb. Robin unlocks the phone, and nobody stores the
+pattern. Keep the screen awake for the whole session, and put auto-off back before disconnecting.
 
-**Before anything else — record the phone's state** into
-`design/research/2026-09-xx-v18-device-pass/phone-state-before.txt`:
+**Before and Always after:** use the v1.8 Step 7 blocks verbatim (`git show 6e4c1a0:RUNBOOK.md`,
+"Step 7 · Fold 7 device pass"). Record the phone's state into
+`design/research/2026-09-xx-v19-device-pass/phone-state-before.txt`. Restore every value that was
+**recorded**, never a default. A resumed session runs *Always after* first. v1.9 adds two things:
+- **To Before:** pull the installed APK and keep it in the research folder (outside git), with its
+  path, sha256 and versionCode. This is the pre-arc build, v1.8 (`2eea1a4c…8819`) as of 2026-09-27.
+- **To Always after, as its first line:** pull the installed APK. If its sha256 is not the github
+  build's (logged in the research folder when item 1 installs it; that APK is kept in the folder,
+  outside git), `adb install -r` that github APK and check its sha256 again. The phone never leaves
+  the cable on a play build, on success, failure or a cut-short session.
 
-```
-adb shell settings get system screen_off_timeout
-adb shell settings get global airplane_mode_on
-adb shell settings get global auto_time
-adb shell settings get global auto_time_zone
-adb shell getprop persist.sys.timezone
-adb shell date +%s
-adb shell settings get global wifi_on
-adb shell settings get global mobile_data
-adb shell dumpsys deviceidle | grep -E "mForceIdle|mState"
-adb shell dumpsys battery | grep -E "USB powered|AC powered"
-```
-
-Also note the host's `date +%s` beside the phone's, so a manual clock (auto_time 0) can be
-restored to the same offset from real time.
-
-The synthetic series is Off before the pass — a fresh install of the release build guarantees it.
-
-**Always after — on success, failure or a cut-short session; a resumed session runs this first:**
-
-```
-adb shell dumpsys deviceidle unforce
-adb shell dumpsys battery reset
-adb shell cmd connectivity airplane-mode <enable|disable — the recorded airplane_mode_on>
-adb shell svc wifi <enable|disable — the recorded wifi_on>
-adb shell svc data <enable|disable — the recorded mobile_data>
-adb shell cmd alarm set-timezone <the recorded persist.sys.timezone>
-adb shell settings put global auto_time <recorded value>
-adb shell settings put global auto_time_zone <recorded value>
-# only if auto_time was 0: set the clock to host-now + the recorded phone−host offset
-#   (adb shell cmd alarm set-time <ms>, or by hand in Settings if the shell refuses)
-adb shell settings put system screen_off_timeout <recorded value>
-```
-
-Each value is the one **recorded**, never a default; a line whose recorded value was not captured
-stops the session and asks Robin.
-
-then, in the app, synthetic series Off (tap the banner if it shows); then re-run the *Before*
-commands and diff against the file: every line matches (the phone's clock within 5 s of the
-recorded offset from host time) before the cable comes out.
+**Two different restorations.** *After flavor testing:* the phone goes back to the v1.9 github
+candidate, as described above. *Rolling back the whole arc:* Android refuses to downgrade a
+non-debuggable app without an uninstall, and an uninstall loses data. So once item 1 installs
+versionCode 25, the phone's only rollback is **forward**: a build of the reverted `main` with a
+higher versionCode, installed with `adb install -r`. The kept v1.8 APK is the record and the
+last-resort reinstall after an uninstall, which only Robin may choose. Installing item 1 is
+therefore a one-way step for this phone, and Robin accepts it by starting Step 7.
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 7 in full — run the Always-after block first if
-a previous session began this step; the Status lines of CCRM-78 (Widgets Reborn) to CCRM-84
-(Faces Gallery), CCRM-14 (Clear History), CCRM-15 (Above-Pace Verification), CCRM-24 (Share
-Card) and BUGS.md CCBG-24 (Duet Label Clamp). Record the Before state. Install the
-release-signed build over the live install. Then: measure the real cell sizes on both screens
-(dumpsys appwidget) and record them in CCRM-78; place every face at every size on cover and
-inner; fold, unfold, resize; restart the launcher; check One UI's transparency, corner radius,
-picker previews and configuration_optional; drive every state through the CCRM-15 chips and the
-CCRM-84 gallery, confirming the widget marker and the banner-off path; confirm the chronometer
-form, MM:SS under an hour and the negative count; confirm the status-bar ring is
-pixel-equivalent to design/research/2026-09-17-v17-device-pass/24-main-statusbar.png (CCRM-83
-(Ring Renderer)); check CCBG-24's "ChatGPT 98%" in Left mode; the share card if built.
-Scheduling (R7): adb shell dumpsys battery unplug, then dumpsys deviceidle force-idle across a
-real reset — record the alarm delay and the S6 face; reboot and confirm the alarm is re-armed
-(dumpsys alarm | grep claudeusage); adb shell cmd alarm set-time / set-timezone (by hand in
-Settings if the shell refuses) and confirm every chronometer and absolute time redraws; airplane
-mode past STALE_DATA_MS and confirm the stale dim arrives on its own; adb shell am kill
-com.robin.claudeusage and confirm the widgets survive and synthetic resets to Off — never am
-force-stop, which puts the app in Android's stopped state and is not a defect. Note whether
-Cooldown sits in One UI's sleeping-apps list. CCRM-14: run the destructive branch only on an
-account Robin names as expendable in this session, on the record; otherwise verify the dialog
-to Cancel and rely on the unit test plus a debug-build emulator run. Screencap with -d and the
-physical display id; captures to design/research/2026-09-xx-v18-device-pass/. Fix and re-run; a
-fix that changes an approved layout goes back to the wireframe first. File every deferral in
-BUGS.md with a severity. Set verified items to Verified on the Fold 7 with the date. Run the
-Always-after block. Close out per Convention 4.
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 7; the v1.8 Step 7 Before / Always-after blocks
+(git show 6e4c1a0:RUNBOOK.md); the Status lines of CCRM-85–91, CCBG-35, 45, 46, 48. Memory notes
+on the Fold 7 (screencap display ids, the secure bouncer, shade cropping) apply. Run Before. Then:
+(1) install the github release build over v1.8 with adb install -r — accounts and history survive;
+(2) the browser picker lists Samsung Internet, Chrome and any other installed browser — if One UI
+under-reports, re-add QUERY_ALL_PACKAGES in src/github only and note the play-flavor gap; (3) the
+Updates card, auto-check and the update strip work as before on github; (4) the crash: Debug
+"Crash now" → the system dialog still appears → relaunch → the card shows → Share → the shared text
+has no token, email or exception message → Not now keeps it gone; (5) the pin survives
+MY_PACKAGE_REPLACED and a reboot; (6) the CCRM-90 FGS demo video with screenrecord (display id per
+the memory note), saved to release/play/; (7) the play flavor: bundletool build-apks --connected-
+device with --ks ccooldown-release.jks, --ks-key-alias and the passwords from keystore.properties
+(never the debug key), unzip the .apks and check every APK's signer with apksigner against the
+trusted digest BEFORE install-apks over the github build (same key, same versionCode — if the
+installer refuses the equal versionCode, adb uninstall is NOT allowed: build a signed play APK with
+assemblePlayRelease, check its signer, and adb install -r it instead) → no Updates card, no update strip
+even though github had written latestKnownVersion, no "Check for updates" action, the picker
+works; (8) end on the github build: adb install -r the github APK kept from item 1 and check its sha256
+(Always after repeats this if the session is cut short); (9) CCBG-35, CCBG-45 and the privacy row on the phone. File every defect in
+BUGS.md with a severity. Run Always after and diff. Gate for Step 8: no High open, and every
+deferral accepted in Robin's words. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ Every item above is Verified or has a filed CCBG with a severity.
-- ☑ The *Always after* block has run and the diff against `phone-state-before.txt` is empty.
-- ☑ **Release gate:** no High-severity CCBG from this pass, or still open against an arc item, is
-  unresolved — a High blocks Step 8 until fixed and re-verified. Every Medium and Low deferral is
-  listed in the Log with Robin's words accepting it; silence is not acceptance.
+- ☐ Items 1–9 are recorded, with shots in the research folder (the private shade is cropped to the
+  card).
+- ☐ The phone ends on the github build, its sha256 is logged, and the *Always after* diff is empty.
+- ☐ Gate: no High open, and every deferral is accepted by Robin on the record.
 
-**Reversal:** the *Always after* block restores the phone; code fixes are `git revert`.
+**Reversal:** the *Always after* block restores the phone, and code fixes are `git revert`. The
+phone never loses data in this pass. No uninstall is allowed and no destructive test runs.
 
 **Log:**
-
-- 2026-09-26 — Started over **wireless** adb (no USB cable), seat rung 1. Before state recorded (`design/research/2026-09-26-v18-device-pass/phone-state-before.txt`), screen timeout set to 30 min, release-signed ec63da0 installed over v1.7. Measured cell sizes (findings.md there). Found **CCBG-38 (Cover Buckets), High** — every cover frame falls back to the smallest bucket; needs a wireframe before a fix, so Step 8 is blocked. Found and fixed **CCBG-37 (Duet Dot Squeeze)**, verified on the phone. Collapsed-row third line does not clip on One UI. Airplane/wifi/reboot items need USB. Pass paused for Robin's call on CCBG-38; *Always after* not yet run.
-- 2026-09-26 (same session, later) — Robin: restore the phone, disconnect, then wireframe, Fable approval and fix. *Always after* run: screen timeout back to 60000, test Ring widget and the empty home page removed, Before/After diff empty, clock within 1 s; disconnected. Wireframe rev F → F.1 (`design/2026-09-26-widgets-cover-refit.html`) by the seat; Fable (mesh-judge, purpose a+c) approve-with-changes, then approve after one more required change (frames smallest first, drop the largest). CCBG-38 built to F.1 (seat, rung 1; code was begun before Fable's first verdict — noted by Fable, brought in line with F.1). 644 unit tests green. **Still to do in Step 7:** the whole device pass again from the Before block — over USB for the airplane/wifi/reboot items — with CCBG-38 and CCBG-37 checked on the phone.
-- 2026-09-26 (re-run, USB) — Seat rung 1. Before recorded (`phone-state-before-usb.txt`), release build of 20328c3 installed over the live app. **CCBG-38 (Cover Buckets) verified**: every face × size draws its own layout on the cover; inner defaults and shrinks too (inner 4×2 not placed — no free span). Synthetic states, banner-off, gallery (126 tiles), launcher restart, fold, reboot (alarm re-armed, synthetic Off), clock jump, timezone, force-idle across a real reset (alarm 53.8 s late) and the stale mark (18.8 s late) all seen; `am kill` refused by the foreground service (reboot covered process death). Status-bar ring matches v1.7; share card and Clear History (to Cancel) seen. Filed **CCBG-39 (Inner Duet Squeeze), Low** and **CCBG-40 (Picker Preview Ellipsis), Low**. Test widgets and the added page removed; *Always after* run, diff clean but for the charger reading. **Release gate:** no High open; the two Low deferrals await Robin's acceptance.
-- 2026-09-26 (same session, later) — Robin declined both deferrals and asked for the Strip type too: **fix all three before v1.8**. Wireframe rev G (`design/2026-09-26-v18-gate-fixes.html`) drawn by the seat and approved by Robin one question at a time (§1 Duet, §2 Strip, §3 preview option 2). Built (seat, rung 1): CCBG-39 (Inner Duet Squeeze), CCBG-40 (Picker Preview Ellipsis), CCBG-41 (Cover Strip Type); 643 unit tests green, release build compiles. The phone was off USB by then — **still to do in Step 7:** see the three on the Fold 7, then tick.
-- 2026-09-26 (rev G check, USB) — Seat rung 1. Before recorded (`phone-state-before-revg.txt`), release build of c8d5fe7 installed over the live app. Seen on the Fold 7 and set **Verified**: **CCBG-39 (Inner Duet Squeeze)** — the collapsed Duet reads "Personal" and "Work" whole on the cover and unfolded, Used and Left, synthetic dot beside the name (60–63, 66, 67, 69); **CCBG-41 (Cover Strip Type)** — a Strip 4×1 at the cover's 332×107 frame draws the roomy layout (65); **CCBG-40 (Picker Preview Ellipsis)** — "5h · at 9:10 PM" in full on both pickers (64, 68). Also recorded as Verified from the earlier re-run's captures: CCBG-36 (Widget Reapply Residue) (34→35) and CCBG-24 (Duet Label Clamp). Test Strip removed, Usage display back to Used, Synthetic Off; *Always after* run, diff against Before is the timestamps only (clock offset 0 s). **Release gate:** no High open; no Medium or Low deferral from this pass remains (Robin chose to fix all three rather than defer them). CCBG-34 (Account Display Name), CCBG-35 (Tab Clip) and CCRM-85 (Crash Capture) stay open outside the arc. **Step 7 done.**
 
 ---
 
-## Step 8 · Release v1.8
+## Step 8 · Release v1.9
 
-**Who:** the session; Robin confirms "Check for updates" on the phone. **Irreversible once
-published: an installed v1.8 cannot be downgraded (R9).**
+**Who:** the session. A fresh judge reviews before publishing (RELEASING.md rule), and Robin
+confirms "Check for updates" on the phone. **Irreversible once published.**
 
 **Resume in a fresh session:**
 
 ```
-Read CLAUDE.md; RELEASING.md; RUNBOOK.md Conventions and Step 8; the Status lines Step 7
-verified. Set versionCode 24 / versionName "1.8". Docs: widget shots on the home screen (full
-frame, never cropped to a card); guide.html and brochure.html rebuilt with release/docs/build.sh
-and every changed page read in the PDF; USER-GUIDE.md changelog; README bullets; release notes —
-widgets are back as a new suite, v1.5 placements do not return so add the new ones from the
-picker, widget-only users add Cooldown to One UI's Never sleeping apps, CCBG-24 (Duet Label
-Clamp) fixed, Clear history, the share card if shipped. Replace RELEASING.md §4–5 with the six
-lines below, so the order is written once from now on, and record there the **trusted signer
-digest** — taken before this release from the published v1.7 asset (gh release download v1.7;
-apksigner verify --print-certs) — which step 5 compares against. Then, strictly in this order:
-  git add -A && git commit -m "v1.8 — widgets, reborn"                           # 1 release source
-  ./gradlew assembleRelease                                                      # 2 built from that commit
-  git tag v1.8 && git push && git push origin v1.8                               # 3 tag on it, both pushed
-  gh release create v1.8 app/build/outputs/apk/release/app-release.apk \
-     --draft --verify-tag --title "Cooldown v1.8" --notes-file <notes>           # 4 draft bound to the pushed tag
-  gh release download v1.8 -p '*.apk' -D /tmp/v18                               # 5 the asset is the build:
-     shasum -a 256 app/build/outputs/apk/release/app-release.apk /tmp/v18/app-release.apk  #   hashes equal
-     apksigner verify --print-certs /tmp/v18/app-release.apk                     #   signer SHA-256 = RELEASING.md's trusted digest
-     aapt dump badging /tmp/v18/app-release.apk | head -1                        #   package com.robin.claudeusage, versionCode 24, versionName 1.8
-     # any mismatch: stop, gh release delete v1.8 (still a draft), nothing was published
-  gh release edit v1.8 --draft=false                                             # 6 publish, last
-Check for updates on the phone reports v1.8. Set shipped items to Shipped v1.8; close out per
-Convention 4.
+Read CLAUDE.md; RELEASING.md (with the Play channel section and Step 3's task names); RUNBOOK.md
+Conventions and Step 8; the Status lines Step 7 verified. Set versionCode 25 / versionName "1.9"
+(both flavors). Docs: USER-GUIDE.md changelog; README bullets (crash reports stay on the phone;
+privacy policy link); guide.html and brochure.html rebuilt with release/docs/build.sh, every
+changed page read in the PDF; release notes (app only — no build story): crash capture, a steadier
+credential store, the privacy policy, the fixes. Then RELEASING.md's order, with both
+artefacts built and verified BEFORE anything is published: commit → push main → **CI green on
+that exact sha** (gh run list --commit <sha>; pending or failed stops here, and any recommit
+repeats this gate) → build BOTH from it
+(assembleGithubRelease, asset copied to app-release.apk; bundlePlayRelease) → verify the AAB
+(bundletool validate, signer = trusted digest, versionCode 25 / 1.9, the tools/ update-path check
+on a universal APK built from it with the release key) → tag and push → draft with --verify-tag →
+download and verify the APK (sha256 equal, signer = trusted digest, versionCode 25 / 1.9) → a
+fresh mesh-judge verdict covering both artefacts → publish with --latest. Log the AAB's sha256
+and signer here; do not attach it. Any AAB failure stops before the tag: fix, recommit, rebuild
+both. Robin taps Check for updates.
+Set the shipped items to Shipped v1.9; close out per Convention 4.
 ```
 
 **Done when:**
-- ☑ v1.8 is published and `releases/latest` resolves to it; ☐ the phone agrees (Robin, "Check for updates").
-- ☑ Every arc item reads Shipped v1.8, or Deferred with a reason; RELEASING.md carries the six-line
-  order.
+- ☐ v1.9 is published, `releases/latest` resolves to it, and the phone agrees.
+- ☐ CI was green on the exact release commit before the tag.
+- ☐ The AAB was built and verified from the release commit **before publishing**. Its sha256 and
+  signer are logged here, and the file is kept outside git for Step 9.
+- ☐ Every arc item reads Shipped v1.9, or Deferred with a reason.
 
-**If it goes wrong mid-way:**
-- After 1–3, no draft yet: nothing is public. Fix forward, or `git revert`; move the tag only if it
-  must move (`git tag -d v1.8 && git push --delete origin v1.8`).
-- After 4–5 with a bad asset: `gh release delete v1.8 --yes` — a draft was never public.
-- **After 6 — two distinct recoveries.** *Withdraw distribution:* `gh release edit v1.8 --draft`, so
-  `releases/latest` falls back to v1.7; installed phones are untouched. *Recover installed apps:*
-  v1.8.1 (versionCode 25) per R9, keeping all four provider components, released through this step.
+**If it goes wrong mid-way:** as in RELEASING.md.
+- Before the draft is published, nothing is public: delete the draft and move the tag only if it
+  must move.
+- After publishing, there are two recoveries. To withdraw distribution: `gh release edit v1.9
+  --draft`. To recover installed apps: v1.9.1 (versionCode 26) on both channels.
 
 **Log:**
-- 2026-09-26 — **Held by Robin before step 1** for three bugs he found on the phone: CCBG-42 (Kebab
-  Drift) fixed `059608f`; CCBG-43 (Widget Settings Hidden) fixed `f69af70`; CCBG-44 (Widget Fill)
-  redesigned — Fable review, wireframe rev H approved by Robin (Fable's Q1–Q5), build plan
-  Astra-reviewed (concerns, adopted), built `7b6909b`, a fresh Opus judge drew blocking → fixed
-  `f6caf52` → concerns → fixed `363c192`. Prep already done, uncommitted until step 1: versionCode 24 /
-  versionName "1.8" and RELEASING.md's six-line order with the v1.7 trusted signer digest
-  (`8bc21a2a…f64f`). **Before step 1:** a device check of rev H on the Fold 7 over USB (Step 7's
-  Before / Always-after blocks): release build installed; every face placed at the six-column sizes
-  in `design/research/2026-09-26-v18-robin-home/`; the app log shows **no `SafeUpdate` fallback
-  line**; fold / unfold and a resize across S → T → W and back on the same widgets; CCBG-42's ⋮ above
-  ↻; adding a widget opens its config (CCBG-43). Then Robin's widget shots for the docs, then step 1.
-- 2026-09-26 (later) — Device check done (`876455a`, `design/research/2026-09-26-v18-revh-device-check/`):
-  CCBG-42, CCBG-43 and CCBG-44 Verified; the Number 2×1 pill clip found there and fixed. Robin added
-  CCBG-34 (Account Display Name) to v1.8: wireframe approved, built `5d9ebe0`, verified on the phone
-  `b13b5cf`. Phone restored. **Next:** Robin's widget shots for the docs, then step 1.
-- 2026-09-26/27 — Steps 1–4 run 2026-09-26 (release commit `40a3bb5`, APK built 34 s later, tag
-  `v1.8` pushed, draft bound to it); the laptop went off before step 5. Resumed 2026-09-27 (seat, rung
-  1): step 5 passed — asset sha256 `2eea1a4c…8819` = the local build, signer = the trusted digest,
-  versionCode 24 / 1.8. A fresh Fable judge (mesh-judge, purpose a+c) returned **approve**: binding,
-  asset, provenance, 653 tests green, notes checked ID by ID, release gate met. Its one item for
-  Robin — CCBG-45 (Single Panel Wording), Low, open — Robin: "Ship with it open". Its note that
-  USER-GUIDE.md is missing was wrong (it is `release/USER-GUIDE.md`). Step 6: published with
-  `--latest`; `releases/latest` = v1.8. CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and CCBG-24, 31–34,
-  36–44 set to Shipped v1.8. **Arc closed.**
+
+---
+
+## Step 9 · Play Console — account, app, existing-key signing, internal testing
+
+**Who:** **Robin at the console, every click his.** The session guides from `release/play/` and
+checks results, and never holds a console login. **Blocked until Q4 (the account type) is answered**,
+by Robin after his talk with Fable. That answer is recorded here before anything else.
+
+**Irreversible, named up front:**
+1. the registration fee and the identity verification, with the developer name and country made
+   public;
+2. the package name `com.robin.claudeusage` claimed on Play for good. "claude" in the store URL is
+   a trademark risk, recorded for the launch decision;
+3. enrolling our existing key in Play App Signing (Q3). Google then holds a copy of the key;
+4. the app's **Free** setting, which can never become paid upfront. In-app purchases stay possible,
+   which fits Robin's possible "Pro" purchase.
+
+**Resume in a fresh session:**
+
+```
+Read CLAUDE.md; RUNBOOK.md Conventions and Step 9 (Q4's answer must be in its Log — if not, stop);
+ROADMAP.md CCRM-66 (Play Store Launch) and CCRM-86–90; release/play/*; docs/privacy.md;
+RELEASING.md's Play channel section and trusted digest. Confirm the keystore backup exists where
+Robin keeps it before anything is exported. Guide Robin, one screen at a time, naming each
+irreversible choice before he makes it: (1) the developer account of the Q4 type; (2) create the
+app — name "Cooldown" (or the fallback Robin picks if taken), app, Free; (3) Play App Signing →
+use an existing key → export with Google's PEPK tool from ccooldown-release.jks into the
+scratchpad, upload, then delete the PEPK output (never in git); the same key stays the upload key;
+(4) the declarations the Console demands before an internal release, filled from release/play/ —
+re-read each Play definition on the day against our drafts, fix the drafts in the repo if they
+disagree; (5) Internal testing → create a release with the v1.9 AAB logged in Step 8 → testers:
+Robin's own address → roll out. Verify: App bundle explorer → the signed universal APK's signer =
+RELEASING.md's trusted digest; the release shows "available to internal testers"; the opt-in link
+opens. The Fold 7 keeps the github build (same versionCode — Play will show it as installed).
+Do not start closed testing, and do not touch production. Close out per Convention 4, and write
+HANDOVER.md's next block around the launch decision (the provider check, CCRM-66).
+```
+
+**Done when:**
+- ☐ Q4's answer and the account are recorded.
+- ☐ The app exists, and the existing key is enrolled: the Play-signed APK's signer equals the
+  trusted digest.
+- ☐ v1.9 is available on the internal track, and no closed or production track has been touched.
+- ☐ No key material or PEPK output is left outside Robin's backup.
+
+**Reversal:** none for items 1–4 above. The internal release can be halted and the app record left
+unpublished. Whether the app record can be deleted after an internal upload is unverified, so treat
+it as permanent.
+
+**Log:**
 
 ---
 
 ## Risks and partial states
 
-- **Unverified until Step 7:** the inner-screen cell sizes; One UI's handling of
-  `configuration_optional` and `previewLayout`; whether the chronometer can drop seconds (expected
-  no → H:MM:SS); the real inexact-alarm delay under Doze; that `cmd alarm set-time` works from the
-  adb shell on One UI; the host's exact bitmap cap.
-- **Partial execution leaves:** after Step 3, inert code (no providers, no manifest entries); after
-  Steps 4–6 without 7, unverified but unreleased code. Each step is independent commits, reversed with
-  `git revert` in reverse order. Nothing outside git changes until Step 7 (phone state — the *Always
-  after* block) and Step 8 (irreversible).
-- **Not reversible:** R9's names and keys once released; an installed v1.8; CCRM-14 (Clear History)'s
-  clear on whatever account it runs on.
-- **Accepted by design:** a percentage on a face is a snapshot until the next redraw (R4); the
-  notification's own relative reset line has the same trait and is outside this arc.
+- **Unverified until the step that meets it:**
+  - AGP's aggregate task names under flavors (Step 3);
+  - whether One UI reports every browser through scoped `<queries>` (Step 7);
+  - whether the installer accepts an equal-versionCode sibling-flavor install (Step 7 has the
+    fallback);
+  - `screenrecord` on the cover display (Step 7);
+  - Play's exact Data-safety definitions and the in-app privacy-link wording (Step 9, on the day);
+  - which declarations an internal release demands (Step 9).
+- **The flavor split renames every Gradle task.** Until Step 3's commit rewrites Convention 2, the
+  paste blocks name the old tasks.
+- **A play build left on the phone** strands Robin without update checks. Step 7 ends on the github
+  build by rule, and Step 9 never installs from Play onto the Fold 7.
+- **CCBG-46 wipes on a transient error** → every account signed out. This is guarded by the
+  transient/unrecoverable split, the boot-path exclusion, tests and a fresh judge. Only tokens are at
+  risk, and signing in mints them again.
+- **CCRM-85's handler hides a crash.** It is chained in `finally`, and Step 7 proves the system dialog
+  still appears.
+- **Play review sees the app before the provider check.** The internal track is not a public
+  listing and gets limited review. The check still comes before any closed test (Q1), and that
+  timing is Robin's accepted trade-off.
+- **Partial execution:**
+  - after Steps 3–6: unreleased commits, reversed with `git revert` newest first, each step on its
+    own;
+  - after Step 7 has begun: run *Always after* first;
+  - after Step 8 publishes: forward recovery only (v1.9.1, versionCode 26, both channels);
+  - Step 9: no reversal. See its list.
+- **Whole-plan reversal before Step 8:** revert the arc's commits newest first (this removes
+  `ci.yml` and restores `dependabot.yml`). Before Step 7, nothing outside git has changed. After
+  Step 7's item 1, the phone rolls **forward** to a build of the reverted `main` (see Step 7's "Two
+  different restorations"). *Always after* restores its settings.

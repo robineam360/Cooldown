@@ -4,24 +4,20 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: pick the arc after v1.8 (written 2026-09-27)
+## ▶ Next session — start here: v1.9 (Play-ready and steady), freeze and then Step 2 (written 2026-09-27)
 
-**v1.8 shipped 2026-09-27** (`releases/latest` = v1.8, release commit `40a3bb5`). CCRM-78 (Widgets
-Reborn) is closed: RUNBOOK.md Step 8 is ticked, and every arc item and v1.8 bug fix reads Shipped v1.8.
-Open, all Low: CCBG-45 (Single Panel Wording), which Robin shipped on purpose ("Ship with it open"),
-CCBG-35 (Tab Clip), CCBG-15 (Amber Ladder Blindness) and CCBG-3 (Credits Visibility). The widget
-questions for Robin are still in the section below. **Robin, before the next session:** tap "Check for
-updates" on the Fold 7 and confirm it offers v1.8. That is Step 8's last Done-when box, so tick it in
-RUNBOOK.md once confirmed. (2026-09-27: the leftover widgets-reborn worktree and both
-`claude/widgets-reborn-impl-*` branches are removed, and the Fold 7 now runs the published v1.8 APK.)
+v1.8 shipped 2026-09-27. The Fold 7 runs the published v1.8 APK, and the leftover worktree and
+branches are gone. **The v1.9 plan is written** ([RUNBOOK.md](RUNBOOK.md); ROADMAP.md's v1.9 section;
+CCRM-86 (Play Readiness) to CCRM-91 (CI Gate), CCBG-46 (Keystore Wedge) to CCBG-49). Robin answered
+Q1–Q3. **Q4, the Play account type, is open:** Robin will talk it through with Fable, and it gates
+only Step 9. Astra at xhigh drew blocking twice, and all nine findings are adopted in the text. The
+freeze is Robin's call (see RUNBOOK Step 1's Log). The Step 8 box still waiting on Robin ("Check for
+updates") is moot now that the phone runs v1.8.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown` once the plan is FROZEN:
 
-> Read CLAUDE.md and HANDOVER.md, then ROADMAP.md's "Next — small, high value, ready to build" section
-> and BUGS.md's Open section. v1.8 has shipped. Propose the next arc: the candidates, what each
-> costs, and your recommendation, including whether CCBG-45 (Single Panel Wording) and CCBG-35 (Tab
-> Clip) go into a v1.8.1 or wait for it. Ask me one question at a time. Once I decide, write RUNBOOK.md
-> for it (the v1.8 runbook stays in git history at the close-out commit).
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 2, and run Step 2's Resume block.
+
 ---
 
 ### What changed on 2026-09-25 (Step 4, the short version)
