@@ -12,8 +12,8 @@ Open, all Low: CCBG-45 (Single Panel Wording), which Robin shipped on purpose ("
 CCBG-35 (Tab Clip), CCBG-15 (Amber Ladder Blindness) and CCBG-3 (Credits Visibility). The widget
 questions for Robin are still in the section below. **Robin, before the next session:** tap "Check for
 updates" on the Fold 7 and confirm it offers v1.8. That is Step 8's last Done-when box, so tick it in
-RUNBOOK.md once confirmed. There is also a leftover worktree
-(`.claude/worktrees/widgets-reborn-impl-d382a0`) and two `claude/widgets-reborn-impl-*` branches to clean up.
+RUNBOOK.md once confirmed. (2026-09-27: the leftover widgets-reborn worktree and both
+`claude/widgets-reborn-impl-*` branches are removed, and the Fold 7 now runs the published v1.8 APK.)
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
