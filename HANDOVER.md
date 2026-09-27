@@ -4,17 +4,16 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: v1.9 (Play-ready and steady), freeze and then Step 2 (written 2026-09-27)
+## ▶ Next session — start here: v1.9 Step 2, the wireframe (written 2026-09-27)
 
 v1.8 shipped 2026-09-27. The Fold 7 runs the published v1.8 APK, and the leftover worktree and
-branches are gone. **The v1.9 plan is written** ([RUNBOOK.md](RUNBOOK.md); ROADMAP.md's v1.9 section;
-CCRM-86 (Play Readiness) to CCRM-91 (CI Gate), CCBG-46 (Keystore Wedge) to CCBG-49). Robin answered
-Q1–Q3. **Q4, the Play account type, is open:** Robin will talk it through with Fable, and it gates
-only Step 9. Astra at xhigh drew blocking twice, and all nine findings are adopted in the text. The
-freeze is Robin's call (see RUNBOOK Step 1's Log). The Step 8 box still waiting on Robin ("Check for
-updates") is moot now that the phone runs v1.8.
+branches are gone. **The v1.9 plan is FROZEN** ([RUNBOOK.md](RUNBOOK.md); ROADMAP.md's v1.9 section;
+CCRM-86 (Play Readiness) to CCRM-91 (CI Gate), CCBG-46 (Keystore Wedge) to CCBG-49). Astra at xhigh
+reviewed it three times (blocking, blocking, then concerns), and all findings are adopted. **Q4, the
+Play account type, is open:** Robin will talk it through with Fable (pros and cons in RUNBOOK Step
+9), and it gates only Step 9.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown` once the plan is FROZEN:
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
 > Read CLAUDE.md; RUNBOOK.md Conventions and Step 2, and run Step 2's Resume block.
 

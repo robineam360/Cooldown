@@ -1,6 +1,6 @@
 # Runbook — the v1.9 arc: Play-ready and steady
 
-**Plan status: DRAFT 2026-09-27 — adoption stopped.** Astra at xhigh returned **blocking** twice (five findings in round 1, then four in round 2), and every finding is adopted in the text. Under model-mesh §2 there is no third round, so freezing is **Robin's call**. See Step 1's Log.
+**Plan status: FROZEN 2026-09-27.** Cross-family review: Astra at xhigh. Rounds 1 and 2 were blocking, and round 3 returned **concerns**. All thirteen findings are adopted. Q4 (the Play account type) stays open by Robin's choice and gates only Step 9. See Step 1's Log.
 
 This runbook takes `main` as of 2026-09-27 (v1.8 shipped, versionCode 24) to a released v1.9, and
 then to the same build on Google Play's internal-testing track. It is written as ordered, checkable
@@ -82,7 +82,7 @@ begun, run its *Always after* block first.
 
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
-| 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☐ |
+| 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
 | 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☐ |
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☐ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
@@ -105,7 +105,7 @@ begun, run its *Always after* block first.
 - ☑ Robin answered Q1–Q4 one at a time. Q4 is open by his choice.
 - ☑ CCRM-86–91 and CCBG-46–49 are filed, the CCRM-66 split note is written, and CCBG-45, CCBG-35
   and CCRM-85 read Planned v1.9.
-- ☐ Astra at xhigh returns non-blocking, or every remaining finding is answered in the text and
+- ☑ Astra at xhigh returns non-blocking, or every remaining finding is answered in the text and
   Robin accepts the residual on the record. Then **FROZEN** replaces DRAFT in the status line, with
   the date.
 
@@ -134,6 +134,19 @@ begun, run its *Always after* block first.
   3. Step 8 now requires CI green on the exact release commit.
   4. CCRM-87's own acceptance criterion now matches the update-endpoint check.
   Adoption stopped (no third round), so freezing is Robin's call.
+- 2026-09-27 — Robin: *"I allow up to 5 Astra rounds for this session. Go and let's get it cleared.
+  Just keep the open question on Company/Personal account open and think for both with PROs and
+  CONs of each."* The Q4 pros-and-cons table was added to Step 9, and round 3 was sent.
+- 2026-09-27 — Astra xhigh round 3: **concerns**, with four findings, all adopted.
+  1. Q4's disclosure rows were wrong: a personal account shows Robin's legal identity even on a free
+     app, monetised disclosure is Play's own rule, and an organisation at a home address shows that
+     address. The rows are corrected, with a read-on-the-day check before Robin pays.
+  2. Step 8 now checks Play's current upload requirements (target API, 16 KB pages) against the AAB
+     before publishing.
+  3. versionCode 25 now moves to the start of Step 7, and Step 8 installs the published APK on the
+     phone and checks it.
+  4. CI now runs both flavors' tests.
+  Plan **FROZEN**.
 
 ---
 
@@ -199,7 +212,7 @@ build lines in the same commit. The release asset must keep the file name app-re
 the flavor output to that name in RELEASING.md's order).
 CCRM-88 — drop QUERY_ALL_PACKAGES from main, add a <queries> intent for ACTION_VIEW + BROWSABLE +
 https; the github re-add is decided at Step 7, not now.
-CCRM-91 — .github/workflows/ci.yml running the unit tests, an unsigned assembleGithubRelease,
+CCRM-91 — .github/workflows/ci.yml running BOTH flavors' unit tests (github and play), an unsigned assembleGithubRelease,
 bundlePlayRelease and lint (baseline if needed) on push and PR; no secrets; restore the
 github-actions entry in dependabot.yml.
 Check: `unzip -l` of both outputs has no .so; the play APK's dex and resources contain no
@@ -217,7 +230,7 @@ Convention 4.
 - ☐ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
   the privacy URL is allowed), and neither output holds a `.so`.
 - ☐ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
-- ☐ CI is green on `main`.
+- ☐ CI runs both flavors' unit tests and is green on `main`.
 - ☐ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
   `app-release.apk`.
 - ☐ The judge's verdict is recorded and its findings are adopted or answered.
@@ -355,7 +368,9 @@ therefore a one-way step for this phone, and Robin accepts it by starting Step 7
 ```
 Read CLAUDE.md; RUNBOOK.md Conventions and Step 7; the v1.8 Step 7 Before / Always-after blocks
 (git show 6e4c1a0:RUNBOOK.md); the Status lines of CCRM-85–91, CCBG-35, 45, 46, 48. Memory notes
-on the Fold 7 (screencap display ids, the secure bouncer, shade cropping) apply. Run Before. Then:
+on the Fold 7 (screencap display ids, the secure bouncer, shade cropping) apply. Run Before. First commit versionCode 25 / versionName
+"1.9" (both flavors) — the candidate carries the release version, so the phone never needs a
+downgrade. Then:
 (1) install the github release build over v1.8 with adb install -r — accounts and history survive;
 (2) the browser picker lists Samsung Internet, Chrome and any other installed browser — if One UI
 under-reports, re-add QUERY_ALL_PACKAGES in src/github only and note the play-flavor gap; (3) the
@@ -398,8 +413,8 @@ confirms "Check for updates" on the phone. **Irreversible once published.**
 
 ```
 Read CLAUDE.md; RELEASING.md (with the Play channel section and Step 3's task names); RUNBOOK.md
-Conventions and Step 8; the Status lines Step 7 verified. Set versionCode 25 / versionName "1.9"
-(both flavors). Docs: USER-GUIDE.md changelog; README bullets (crash reports stay on the phone;
+Conventions and Step 8; the Status lines Step 7 verified. versionCode 25 / versionName "1.9" is already set
+(Step 7). Docs: USER-GUIDE.md changelog; README bullets (crash reports stay on the phone;
 privacy policy link); guide.html and brochure.html rebuilt with release/docs/build.sh, every
 changed page read in the PDF; release notes (app only — no build story): crash capture, a steadier
 credential store, the privacy policy, the fixes. Then RELEASING.md's order, with both
@@ -408,16 +423,22 @@ that exact sha** (gh run list --commit <sha>; pending or failed stops here, and 
 repeats this gate) → build BOTH from it
 (assembleGithubRelease, asset copied to app-release.apk; bundlePlayRelease) → verify the AAB
 (bundletool validate, signer = trusted digest, versionCode 25 / 1.9, the tools/ update-path check
-on a universal APK built from it with the release key) → tag and push → draft with --verify-tag →
+on a universal APK built from it with the release key, and Play's CURRENT upload requirements read
+on the day — target API level, 16 KB page size, anything new — so a published v1.9 never needs
+replacing before Step 9) → tag and push → draft with --verify-tag →
 download and verify the APK (sha256 equal, signer = trusted digest, versionCode 25 / 1.9) → a
-fresh mesh-judge verdict covering both artefacts → publish with --latest. Log the AAB's sha256
+fresh mesh-judge verdict covering both artefacts → publish with --latest → adb install -r the downloaded published APK on the Fold 7 and check the
+installed sha256 equals the asset (the phone already holds a versionCode 25 candidate, so "Check
+for updates" will not replace it; Robin's tap only confirms it reads up to date). Log the AAB's sha256
 and signer here; do not attach it. Any AAB failure stops before the tag: fix, recommit, rebuild
 both. Robin taps Check for updates.
 Set the shipped items to Shipped v1.9; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ v1.9 is published, `releases/latest` resolves to it, and the phone agrees.
+- ☐ v1.9 is published and `releases/latest` resolves to it. The phone runs the published APK
+  (sha256 checked), and "Check for updates" reads up to date.
+- ☐ Play's current upload requirements were checked against the AAB before publishing.
 - ☐ CI was green on the exact release commit before the tag.
 - ☐ The AAB was built and verified from the release commit **before publishing**. Its sha256 and
   signer are logged here, and the file is kept outside git for Step 9.
@@ -438,6 +459,36 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 **Who:** **Robin at the console, every click his.** The session guides from `release/play/` and
 checks results, and never holds a console login. **Blocked until Q4 (the account type) is answered**,
 by Robin after his talk with Fable. That answer is recorded here before anything else.
+
+### Q4 — personal or organisation account (open; both paths are planned)
+
+Robin's context: a portfolio of small single-purpose apps (Cooldown, then simple timer or checklist
+apps) under one developer name. They are all free and open source now, with a possible one-time
+"Pro" in-app purchase later. Rows marked † are Play facts to re-read on the day, never trusted from
+this file.
+
+| | Personal | Organisation |
+|---|---|---|
+| Cost and paperwork | The one-time fee (US $25 †) and a government ID check. No company needed. | The same fee, plus a D-U-N-S number (free, but days to weeks †) for a legal entity **Robin owns**. Verification is longer, and a website and contact details may be asked for †. |
+| Getting to production | New personal accounts must run a closed test with **12 opted-in testers for 14 days in a row** † before they can apply for production. v1.9 stops at the internal track, so this bites only at launch, and again for **every new app** in the portfolio †. | No closed-test rule †. Straight to production once the app passes review. |
+| What the public sees | Play verifies and may display **Robin's legal identity** (name and country †) even on a free app. Once an app sells something (the "Pro" purchase), **address and contact details are shown publicly** †. That is Play's own monetisation rule, not only the EU's. A private address needs a business or virtual address †. | The organisation's name and its registered address †. It reads as a studio brand across many apps. An organisation **registered at Robin's home shows that address**, so keeping home private needs a separate business address either way. |
+| Payments ("Pro" later) | A payments profile in Robin's name. Income is personal income. | A payments profile in the organisation's name, which also suits tax and invoices. |
+| Changing course | Apps can be **transferred** to an organisation account later, keeping users, reviews and the signing key †. So "personal now, organisation later" is a real path. | Going back is also a transfer, but there is rarely a reason to. |
+| Fits v1.9 (internal track only) | Yes, today. | Yes, once the D-U-N-S arrives. That can delay Step 9 by weeks. |
+
+**The session's read, not a decision:**
+- **Personal** is cheapest and fastest for Step 9. Its costs arrive later: the 12-tester gate for each
+  new app, and a public home address once "Pro" ships.
+- **Organisation** costs time up front and fits the portfolio-and-"Pro" plan best.
+- **Personal now, transfer later** keeps v1.9 moving, at the price of one transfer. The Pulse key
+  enrolled under Q3 travels with the app.
+
+**Before Robin chooses and pays:** read Play's current identity and disclosure pages for both account
+types on the day. The † rows are the ones most likely to have moved.
+
+**Robin decides after his talk with Fable.** The answer goes into this step's Log before anything
+else happens. Everything below applies to both paths, except that the organisation path first waits
+for the D-U-N-S.
 
 **Irreversible, named up front:**
 1. the registration fee and the identity verification, with the developer name and country made

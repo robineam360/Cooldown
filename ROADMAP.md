@@ -1538,10 +1538,11 @@ in [RUNBOOK.md](RUNBOOK.md).
 
 ### CCRM-91 · CI Gate — tests, builds and lint on every push
 - **Status:** Planned v1.9.
-- **What:** `.github/workflows/ci.yml`. On push and PR it runs `testGithubDebugUnitTest`, an
+- **What:** `.github/workflows/ci.yml`. On push and PR it runs both flavors' unit tests (github and play), an
   unsigned `assembleGithubRelease`, `bundlePlayRelease` and `lint` (with a baseline if needed). It
   also restores the `github-actions` entry in `.github/dependabot.yml`. No secrets: CI never signs.
-- **Done when:** green on `main`.
+- **Done when:** both flavors' tests run in CI, and CI is green on `main`. Step 8 gates the release
+  on CI being green for the exact release commit.
 
 ## Next — small, high value, ready to build
 
