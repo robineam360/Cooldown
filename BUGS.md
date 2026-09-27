@@ -13,12 +13,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 > **Critical — tester feedback, 2026-09-25 (Raja Jawahar, Slack DM, v1.7).** CCBG-31 to CCBG-34
 > were logged from the 19:48 IST thread, which had three screenshots, and the 19:49 message on
-> alert crashes. **Worked the same evening:** CCBG-31 to CCBG-33 are Fixed (emulator-verified,
-> and seen on the Fold 7; they await a release). CCBG-34 is open, its meaning settled by Robin, and
-> waits for a wireframe.
+> alert crashes. **Worked the same evening:** CCBG-31 to CCBG-34 are fixed and
+> **shipped in v1.8 (2026-09-27)**.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
-- **Status:** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
   notification draws; no crash). Not yet in a release.
 - **Severity:** High (crash)
@@ -39,7 +38,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   well as the `widget_` ones — it fails on the old file.
 
 ### CCBG-32 · Accounts Button Wrap — the sign-in card's "Cancel" wraps one letter per line
-- **Status:** **Fixed (2026-09-25)** — seen on the API 36 emulator at 360 dp and 411 dp, and at
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — seen on the API 36 emulator at 360 dp and 411 dp, and at
   font scales 1.0, 1.3 and 2.0, and **on the Fold 7** (the cover screen keeps the one-line row; the
   inner screen's two-column Accounts wraps Cancel to its own line, right-aligned). Not yet in a
   release.
@@ -59,7 +58,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   approved by a Fable judge and reviewed by Astra.
 
 ### CCBG-33 · Device-Code Prerequisite — ChatGPT sign-in fails unless a ChatGPT setting is on
-- **Status:** **Fixed (2026-09-25)** — built and seen on the API 36 emulator the same day, where the
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — built and seen on the API 36 emulator the same day, where the
   link opened chatgpt.com/security-settings on the setting itself, and **on the Fold 7's cover
   screen**. Not yet in a release.
 - **Severity:** Medium (sign-in cannot complete, and the app does not say why)
@@ -77,7 +76,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DeviceCodeCopyTest`.
 
 ### CCBG-34 · Account Display Name — show the account's own name instead of "Account"
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (release build: both Claude
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 the same day** (release build: both Claude
   cards show their eam360.com login under the name within the hour, ⋮ → Details leads with "Email:",
   Rename offers the "robin" chip; ChatGPT's Personal shows none until an id_token carries it — as
   designed; no capture committed, it shows real emails) — not yet in a release. **Wireframe approved by Robin 2026-09-26**
@@ -120,7 +119,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-45 · Single Panel Wording — the one-account notification says "5-hour window" and "7-day"
 - **Status:** Open — found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);
-  not blocking v1.8. A visible wording change, so it needs a wireframe (CLAUDE.md §2) — or the approved
+  not blocking v1.8 — **Robin, 2026-09-27: "Ship with it open"**; v1.8 shipped with it, fix in a later release. A visible wording change, so it needs a wireframe (CLAUDE.md §2) — or the approved
   Duet wording applied as-is, if Robin rules it restores an approved design.
 - **Severity:** Low (wording)
 - **Symptom:** the pinned notification with one account reads "Work · 5-hour window" collapsed and
@@ -128,7 +127,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Tight surfaces say "5h" and "Weekly" everywhere else (R1 in ROADMAP's v1.8 section).
 
 ### CCBG-43 · Widget Settings Hidden — a widget added on One UI can't be pointed at an account
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (adding a Ring opens "Add
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 the same day** (adding a Ring opens "Add
   widget"; Back places nothing — `design/research/2026-09-26-v18-revh-device-check/07`) — not yet in a
   release.
 - **Severity:** Medium (every widget shows the first account and the user can't find how to change it)
@@ -149,7 +148,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   CCBG-44 (Widget Fill) wireframe.
 
 ### CCBG-44 · Widget Fill — the faces leave large empty areas at most sizes
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** on Robin's 21 cover placements
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 the same day** on Robin's 21 cover placements
   (`design/research/2026-09-26-v18-revh-device-check/findings.md`: no SafeUpdate fallback, a live
   resize redraw; the Number 2×1 pill clip found there and fixed; fold/unfold not exercisable on
   one-frame placements) — not yet in a release. Design: Fable's review
@@ -179,7 +178,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   real size (1.17–1.34× the text size) and subtract the synthetic ribbon, so the formulas fit.
 
 ### CCBG-42 · Kebab Drift — the Accounts card's ⋮ sits at a different spot on every card
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (every ⋮ above its ↻,
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 the same day** (every ⋮ above its ↻,
   `design/research/2026-09-26-v18-revh-device-check/08`) — not yet in a release. Restores the approved CCRM-65 (Accounts Redesign) layout
   (`design/accounts-redesign-wireframe.html`: name · dot · chip · spacer · ⋮), so no new wireframe.
 - **Severity:** Low (alignment; every control works)
@@ -195,7 +194,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   28 dp button as ↻, so the two line up.
 
 ### CCBG-36 · Widget Reapply Residue — a view one widget state shows survives into the next
-- **Status:** **Fixed 2026-09-25, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 USB re-run, release build of 20328c3: after the banner tap turned Synthetic Off, the Strip carried no violet dot and the Countdown 2×2 showed the count alone, `34`→`35-usb-cover-faces-banner-off.png`; status recorded 2026-09-26 at the rev G check) — not yet in a release ·
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-25, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 USB re-run, release build of 20328c3: after the banner tap turned Synthetic Off, the Strip carried no violet dot and the Countdown 2×2 showed the count alone, `34`→`35-usb-cover-faces-banner-off.png`; status recorded 2026-09-26 at the rev G check) — not yet in a release ·
   found the same day on the API 36 emulator while checking CCRM-15 (Above-Pace Verification)'s
   Off switch; `WidgetReapplyTest` reproduces it (fails without the fix) and pins it.
 - **Severity:** Medium (a widget can show two states at once, or a marker for a mode that is off)
@@ -212,7 +211,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   and the size map are unchanged; `WidgetFitTest` still renders the faces directly.
 
 ### CCBG-38 · Cover Buckets — on the Fold 7 cover every widget draws its smallest face
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 the same day** (RUNBOOK.md Step 7 re-run over USB: all nine face × size pairs draw their own layout at One UI's cover frames, `21`–`28-usb-cover-*.png`) —
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 the same day** (RUNBOOK.md Step 7 re-run over USB: all nine face × size pairs draw their own layout at One UI's cover frames, `21`–`28-usb-cover-*.png`) —
   found in the Step 7 device pass of CCRM-78 (Widgets Reborn); fixed to wireframe rev F.1
   (`design/2026-09-26-widgets-cover-refit.html`), approved by Fable on Robin's delegation after
   two rounds. Not yet in a release.
@@ -240,7 +239,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   the box. Seen on the phone: not yet — the re-run of Step 7 checks it.
 
 ### CCBG-39 · Inner Duet Squeeze — on the Fold 7's inner shade the collapsed Duet keeps one letter of each name
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7 over USB): the collapsed Duet reads "Personal" and "Work" whole on the cover and unfolded, in Used and Left, with the synthetic dot beside the name (`design/research/2026-09-26-v18-device-pass/60`–`63` cover, `66`, `67`, `69` inner) — not yet in a release · wireframe rev G §1 (`design/2026-09-26-v18-gate-fixes.html`) approved by Robin the same day: each collapsed half is two lines, the mark and label across the half, then the bar and the 30 sp figure; `Duet.labelClampDp(dots)` is the 156 dp ceiling less the mark and dots, the weight ellipsizes below it; `DuetTest` updated · found 2026-09-26 (RUNBOOK.md Step 7 re-run)
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7 over USB): the collapsed Duet reads "Personal" and "Work" whole on the cover and unfolded, in Used and Left, with the synthetic dot beside the name (`design/research/2026-09-26-v18-device-pass/60`–`63` cover, `66`, `67`, `69` inner) — not yet in a release · wireframe rev G §1 (`design/2026-09-26-v18-gate-fixes.html`) approved by Robin the same day: each collapsed half is two lines, the mark and label across the half, then the bar and the 30 sp figure; `Duet.labelClampDp(dots)` is the 156 dp ceiling less the mark and dots, the weight ellipsizes below it; `DuetTest` updated · found 2026-09-26 (RUNBOOK.md Step 7 re-run)
 - **Severity:** Low (the mark and accent still tell the two accounts apart; the figures are right)
 - **Symptom:** unfolded, the shade is a narrow pill and each collapsed Duet half is ~130 dp; the
   30 sp figure and the bar leave the label ~12 dp, so "Personal 12%" reads "P… 12%" and "Work
@@ -251,21 +250,21 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   over the bar) — Robin's call.
 
 ### CCBG-40 · Picker Preview Ellipsis — the inner widget picker cuts the Countdown preview's "at 9:10 PM"
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7): the Countdown preview's caption reads "5h · at 9:10 PM" in full on both pickers (`64-usb-cover-picker-countdown-revg.png`, `68-usb-inner-picker-countdown-revg.png`) — not yet in a release · rev G §3 option 2, chosen by Robin: the preview's caption reads "5h · at 9:10 PM" and the line beside the count is gone · the cover picker dropped the time silently too · found 2026-09-26 (RUNBOOK.md Step 7 re-run)
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7): the Countdown preview's caption reads "5h · at 9:10 PM" in full on both pickers (`64-usb-cover-picker-countdown-revg.png`, `68-usb-inner-picker-countdown-revg.png`) — not yet in a release · rev G §3 option 2, chosen by Robin: the preview's caption reads "5h · at 9:10 PM" and the line beside the count is gone · the cover picker dropped the time silently too · found 2026-09-26 (RUNBOOK.md Step 7 re-run)
 - **Severity:** Low (the picker only; the placed face is right)
 - **Symptom:** in One UI's picker on the inner screen the Countdown 2×1 preview reads "2:41:07
   at…"; on the cover it reads in full (`design/research/2026-09-26-v18-device-pass/36-usb-inner-picker-previews.png`).
   The preview box is wider than tall there and the live count keeps its size.
 
 ### CCBG-41 · Cover Strip Type — the Strip 4×1's labels read ~6.8 sp on One UI's cover
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7): a Strip 4×1 on the cover, reported frame 332×107 dp, draws the roomy layout — the rings, figures and names fill the height (`65-usb-cover-strip-4x1-revg.png`, against `23-…`) — not yet in a release · rev G §2 approved by Robin: on a 4×1 frame at least 100 dp tall (`WidgetFace.stripRoomy`), ring ceiling Ø64, figure 16 sp, name 12 sp, "Weekly" 9 sp, "Free" 15 sp; rev D's 84 dp frame unchanged; `WidgetFitTest` lays it out at One UI's 333×108 · Fable's open note in rev F.1 §7, confirmed on the Fold 7 2026-09-26
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7, release build of c8d5fe7): a Strip 4×1 on the cover, reported frame 332×107 dp, draws the roomy layout — the rings, figures and names fill the height (`65-usb-cover-strip-4x1-revg.png`, against `23-…`) — not yet in a release · rev G §2 approved by Robin: on a 4×1 frame at least 100 dp tall (`WidgetFace.stripRoomy`), ring ceiling Ø64, figure 16 sp, name 12 sp, "Weekly" 9 sp, "Free" 15 sp; rev D's 84 dp frame unchanged; `WidgetFitTest` lays it out at One UI's 333×108 · Fable's open note in rev F.1 §7, confirmed on the Fold 7 2026-09-26
 - **Severity:** Low (legible up close; the figures are right)
 - **Symptom:** One UI draws cover widgets at 71 %, so the Strip 4×1's 9.5 sp labels and 13 sp
   figures read as ~6.8 / 9.3 sp (`design/research/2026-09-26-v18-device-pass/23-usb-cover-four-faces-default.png`),
   while the 108 dp-tall frame leaves ~13 dp unused under the names.
 
 ### CCBG-37 · Duet Dot Squeeze — the collapsed Duet's dots vanish when the label ellipsizes
-- **Status:** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a
+- **Status:** **Shipped v1.8 (2026-09-27).** **Fixed 2026-09-26, verified on the Fold 7** (RUNBOOK.md Step 7) — not yet in a
   release.
 - **Severity:** Medium (the synthetic marker, and the red fault dot, could silently not show)
 - **Symptom:** with Synthetic "Above pace" on, the collapsed Duet on the Fold 7 cover showed no
@@ -437,7 +436,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   change to an approved layout, so it waits for the wireframe's approval.
 
 ### CCBG-24 · Duet Label Clamp — a seven-character label ellipsizes beside a three-character figure
-- **Status:** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7): with CCBG-39 (Inner Duet Squeeze) fixed, the collapsed Duet reads "Personal" whole in Left and Used on both screens (`60`–`69-usb-*-revg.png`) — not yet in a release · **Its own symptom verified gone on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run): Left and Used now ellipsize alike — but on One UI's inner shade the collapsed half leaves one letter in either mode ("P… 88%" / "P… 12%"), which is CCBG-39 (Inner Duet Squeeze) · **Fixed 2026-09-25, pending device verification** (RUNBOOK.md Step 5 → Step 7): `Duet.labelClampDp(figureWidthDp, dotShown)` takes the 30 sp bold figure measured with `Paint.measureText` in the device font at the user's font scale, and the label gets the rest of the 156 dp half (floor 24 dp); `DuetTest` pins 54 dp → 76, "100%" ~74 dp → 56, "2%" ~32 dp → 98, the dot's 11 dp · was Open (2026-09-10) · fix scheduled in the v1.8 arc: option 1, measure-and-clamp, chosen by Robin 2026-09-25; `Duet.labelClampDp(figureWidthDp)` stays pure and tested; **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9a): on the Huge-number Duet row the label takes what the measured 30 sp bold figure leaves, so Left mode reads "ChatGPT 98%" in full; "100%" and "2%" drawn; a genuinely long label still ellipsizes. The same measure clamps the CCRM-80 (Number Face) label
+- **Status:** **Shipped v1.8 (2026-09-27).** **Verified on the Fold 7 2026-09-26** (RUNBOOK.md Step 7): with CCBG-39 (Inner Duet Squeeze) fixed, the collapsed Duet reads "Personal" whole in Left and Used on both screens (`60`–`69-usb-*-revg.png`) — not yet in a release · **Its own symptom verified gone on the Fold 7 2026-09-26** (RUNBOOK.md Step 7 re-run): Left and Used now ellipsize alike — but on One UI's inner shade the collapsed half leaves one letter in either mode ("P… 88%" / "P… 12%"), which is CCBG-39 (Inner Duet Squeeze) · **Fixed 2026-09-25, pending device verification** (RUNBOOK.md Step 5 → Step 7): `Duet.labelClampDp(figureWidthDp, dotShown)` takes the 30 sp bold figure measured with `Paint.measureText` in the device font at the user's font scale, and the label gets the rest of the 156 dp half (floor 24 dp); `DuetTest` pins 54 dp → 76, "100%" ~74 dp → 56, "2%" ~32 dp → 98, the dot's 11 dp · was Open (2026-09-10) · fix scheduled in the v1.8 arc: option 1, measure-and-clamp, chosen by Robin 2026-09-25; `Duet.labelClampDp(figureWidthDp)` stays pure and tested; **wireframe rev D approved 2026-09-25** (`design/2026-09-25-widgets-reborn.html` §9a): on the Huge-number Duet row the label takes what the measured 30 sp bold figure leaves, so Left mode reads "ChatGPT 98%" in full; "100%" and "2%" drawn; a genuinely long label still ellipsizes. The same measure clamps the CCRM-80 (Number Face) label
 - **Severity:** Low (the mark and the accent still identify the provider; the label only has to
   tell two accounts apart)
 - **Symptom:** **Observed on the Fold 7, 2026-09-10**, during the CCRM-60/61/62 device pass

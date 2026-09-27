@@ -4,24 +4,24 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: CCRM-78 (Widgets Reborn) Step 8, release v1.8 (written 2026-09-26)
+## ▶ Next session — start here: pick the arc after v1.8 (written 2026-09-27)
 
-Everything held for is fixed and verified on the Fold 7: CCBG-42 (Kebab Drift), CCBG-43 (Widget
-Settings Hidden), CCBG-44 (Widget Fill, rev H) and CCBG-34 (Account Display Name, the email, which Robin
-added to v1.8). RUNBOOK.md Step 8's Log has the details. The tree still carries the uncommitted release
-prep (versionCode 24 / "1.8", RELEASING.md's six-line order with the v1.7 signer digest); it goes in at
-step 1. Robin shoots the home-screen widget screenshots (full frame, lock-screen/phone JPGs from
-~/Downloads); the docs also need the email on the Accounts card and v1.8's changelog.
+**v1.8 shipped 2026-09-27** (`releases/latest` = v1.8, release commit `40a3bb5`). CCRM-78 (Widgets
+Reborn) is closed: RUNBOOK.md Step 8 is ticked, and every arc item and v1.8 bug fix reads Shipped v1.8.
+Open, all Low: CCBG-45 (Single Panel Wording), which Robin shipped on purpose ("Ship with it open"),
+CCBG-35 (Tab Clip), CCBG-15 (Amber Ladder Blindness) and CCBG-3 (Credits Visibility). The widget
+questions for Robin are still in the section below. **Robin, before the next session:** tap "Check for
+updates" on the Fold 7 and confirm it offers v1.8. That is Step 8's last Done-when box, so tick it in
+RUNBOOK.md once confirmed. There is also a leftover worktree
+(`.claude/worktrees/widgets-reborn-impl-d382a0`) and two `claude/widgets-reborn-impl-*` branches to clean up.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`, with the Fold 7 on USB:
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md and HANDOVER.md, then RELEASING.md and RUNBOOK.md Conventions and Step 8 in full, and
-> BUGS.md CCBG-34 and CCBG-42 to CCBG-44. Run Step 8's Resume block: the version bump and RELEASING.md
-> are already in the tree; docs and Robin's widget shots from ~/Downloads (never cropped); release notes
-> — widgets are back as a new suite that fills any size, the email under each account, CCBG-24 fixed,
-> Clear history, the share card; then the six steps strictly in order, a judge verdict before step 6
-> (publish). Robin confirms "Check for updates" on the phone. Set shipped items to Shipped v1.8 and
-> close out per Convention 4.
+> Read CLAUDE.md and HANDOVER.md, then ROADMAP.md's "Next — small, high value, ready to build" section
+> and BUGS.md's Open section. v1.8 has shipped. Propose the next arc: the candidates, what each
+> costs, and your recommendation, including whether CCBG-45 (Single Panel Wording) and CCBG-35 (Tab
+> Clip) go into a v1.8.1 or wait for it. Ask me one question at a time. Once I decide, write RUNBOOK.md
+> for it (the v1.8 runbook stays in git history at the close-out commit).
 ---
 
 ### What changed on 2026-09-25 (Step 4, the short version)

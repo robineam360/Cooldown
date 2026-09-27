@@ -74,7 +74,7 @@ block of the first unticked step — and, if Step 7 had begun, by running its *A
 | 5 | Ride-alongs: CCBG-24, CCRM-14, CCRM-15 synthetic series, CCRM-84 gallery | builders · session reviews | 3 | ☑ |
 | 6 | Share card (CCRM-24), only if Step 2 said build — the release does not wait | builder · session reviews | 3 | ☑ |
 | 7 | Fold 7 device pass, phone restored, release gate | session · phone over USB · Robin unlocks | 4, 5 | ☑ |
-| 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☐ |
+| 8 | Release v1.8 | session · Robin at the phone | 7's gate | ☑ |
 
 ---
 
@@ -465,8 +465,8 @@ Convention 4.
 ```
 
 **Done when:**
-- ☐ v1.8 is published, `releases/latest` resolves to it, and the phone agrees.
-- ☐ Every arc item reads Shipped v1.8, or Deferred with a reason; RELEASING.md carries the six-line
+- ☑ v1.8 is published and `releases/latest` resolves to it; ☐ the phone agrees (Robin, "Check for updates").
+- ☑ Every arc item reads Shipped v1.8, or Deferred with a reason; RELEASING.md carries the six-line
   order.
 
 **If it goes wrong mid-way:**
@@ -493,6 +493,15 @@ Convention 4.
   CCBG-42, CCBG-43 and CCBG-44 Verified; the Number 2×1 pill clip found there and fixed. Robin added
   CCBG-34 (Account Display Name) to v1.8: wireframe approved, built `5d9ebe0`, verified on the phone
   `b13b5cf`. Phone restored. **Next:** Robin's widget shots for the docs, then step 1.
+- 2026-09-26/27 — Steps 1–4 run 2026-09-26 (release commit `40a3bb5`, APK built 34 s later, tag
+  `v1.8` pushed, draft bound to it); the laptop went off before step 5. Resumed 2026-09-27 (seat, rung
+  1): step 5 passed — asset sha256 `2eea1a4c…8819` = the local build, signer = the trusted digest,
+  versionCode 24 / 1.8. A fresh Fable judge (mesh-judge, purpose a+c) returned **approve**: binding,
+  asset, provenance, 653 tests green, notes checked ID by ID, release gate met. Its one item for
+  Robin — CCBG-45 (Single Panel Wording), Low, open — Robin: "Ship with it open". Its note that
+  USER-GUIDE.md is missing was wrong (it is `release/USER-GUIDE.md`). Step 6: published with
+  `--latest`; `releases/latest` = v1.8. CCRM-78–84, CCRM-14, CCRM-15, CCRM-24 and CCBG-24, 31–34,
+  36–44 set to Shipped v1.8. **Arc closed.**
 
 ---
 
