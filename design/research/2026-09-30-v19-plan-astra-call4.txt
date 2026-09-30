@@ -1,0 +1,18 @@
+VERDICT: concerns
+1. prior R1.1 [individual grade unstated; round blocking] — fixed at §Step 4 and CHANGED D: reset classification narrowed, with authentication failures preserved — no change.
+2. prior R1.2 [individual grade unstated; round blocking] — fixed at §Step 8: both artefacts verified before publication — no change.
+3. prior R1.3 [individual grade unstated; round blocking] — fixed at §Step 7, Always after: retained github APK restored on interruption — no change.
+4. prior R1.4 [individual grade unstated; round blocking] — fixed at §Step 7(7): bundletool uses the release key and signers are checked before installation — no change.
+5. prior R1.5 [individual grade unstated; round blocking] — fixed at §Steps 3 and 8: update-specific scan permits the privacy URL — no change.
+6. prior R2.1 [individual grade unstated; round blocking] — fixed at §Step 4: master key rebuilt and recovery verified by a write/read probe — no change.
+7. prior R2.2 [individual grade unstated; round blocking] — fixed at §Step 7, Two different restorations: whole-arc rollback uses a higher versionCode — no change.
+8. prior R2.3 [individual grade unstated; round blocking] — fixed at §Step 8: CI must pass on the exact release commit — no change.
+9. prior R2.4 [individual grade unstated; round blocking] — fixed at §Step 3 acceptance criteria and §Step 8: update-endpoint checks agree — no change.
+10. prior R3.1 [concerns] — fixed at §Step 9, Q4: disclosure distinctions corrected and current requirements checked before payment — no change.
+11. prior R3.2 [concerns] — fixed at §Step 8: current Play upload requirements checked before publication — no change.
+12. prior R3.3 [concerns] — fixed at §Steps 7 and 8: version bumped before device testing and published APK installed and verified — no change.
+13. prior R3.4 [concerns] — fixed at §Step 3 and Convention 2: both flavors’ tests required — no change.
+14. [concerns] CHANGED D / §Step 5 — Recovery can replace the in-memory store while the process remains alive, but no reconciliation policy covers sign-ins or other credential mutations made there — credentials can disappear at the five-minute retry or next app open, earlier than CCBG-50’s stated restart boundary — define how interim mutations survive or are explicitly discarded without overwriting preserved disk credentials; include recovery during an active session in the notice’s approved states, CredentialStoreTest, and Step 7’s non-destructive checks.
+15. [concerns] CHANGED C / §Step 4 — The new 8,000-character cap does not specify whether scrubbing precedes truncation — truncating first can leave an email fragment or partial credential that no longer matches the scrubber — require scrubbing before final truncation and test secrets crossing the cap, asserting that retained fragments are also absent → CrashReportTest.
+16. [concerns] CHANGED C / §Step 4 — “Completed share” is not defined by an observable Android event — ACTION_SEND handoff or chooser selection does not establish that the receiving app completed delivery, and catching a failed launch alone does not establish correct dismissal behavior — specify the actual dismissal event, reconcile it with the approved wireframe, and test that chooser cancellation and launch failure leave the report undismissed.
+COVERAGE: changed text in full; rest scanned for blocking-grade only[model-mesh] tier=astra model=gpt-6-astra effort=xhigh tokens=28,233 transcript=/var/folders/_h/p57yw3_54cd5brs6bb858bch0000gq/T/model-mesh.XXXXXX.r4ZuLYDLKL/transcript.log

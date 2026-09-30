@@ -123,10 +123,7 @@ internal fun CrashCard(use24h: Boolean, modifier: Modifier = Modifier) {
 
 /** The crash reporter must never crash the app: a failed share just does nothing. */
 private fun share(context: android.content.Context, reports: List<CrashStore.Report>) {
-    try {
-        context.startActivity(CrashStore.shareIntent(context, reports))
-    } catch (_: RuntimeException) {
-    }
+    CrashStore.share(context, reports)
 }
 
 /**

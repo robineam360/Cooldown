@@ -1,7 +1,10 @@
 package com.robin.claudeusage.diag
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.os.TransactionTooLargeException
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -123,6 +126,35 @@ class CrashStoreTest {
         CrashStore.writeLast(context, crash(now + 1))
         CrashStore.fileLast(context)
         assertEquals(2, CrashStore.unseen(context).size)
+    }
+
+    // Astra 2026-09-30 (C4-3): dismissal is the chooser's pick callback and nothing else.
+    @Test
+    fun `opening, backing out of or failing a share dismisses nothing`() {
+        val now = System.currentTimeMillis()
+        CrashStore.writeLast(context, crash(now))
+        CrashStore.ingestForTest(context, now)
+        val unseen = CrashStore.unseen(context)
+
+        // The sheet opens; backing out sends no callback.
+        assertTrue(CrashStore.share(context, unseen))
+        assertEquals(unseen, CrashStore.unseen(context))
+
+        // A launch the system refuses — too large, or no activity — never crashes and keeps the card.
+        for (failure in listOf(
+            RuntimeException("Failure from system", TransactionTooLargeException()),
+            ActivityNotFoundException(),
+        )) {
+            val refusing = object : ContextWrapper(context) {
+                override fun startActivity(intent: Intent?) = throw failure
+            }
+            assertFalse(CrashStore.share(refusing, unseen))
+            assertEquals(unseen, CrashStore.unseen(context))
+        }
+
+        // Only the pick callback dismisses.
+        CrashShareReceiver().onReceive(context, Intent().putExtra(CrashShareReceiver.EXTRA_REPORTS, unseen.map { it.name }.toTypedArray()))
+        assertEquals(0, CrashStore.unseen(context).size)
     }
 
     @Test

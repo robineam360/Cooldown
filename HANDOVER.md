@@ -15,16 +15,15 @@ KeyPermanentlyInvalidated error resets, only when the app is opened, and never f
 background; every other failure runs in memory. A fresh Opus judge said `blocking` (share size),
 then `accept` after the fixes. The gate is green on both flavors.
 
-**Robin, before Step 5:**
-1. **CCBG-50 (Degraded Store Notice)** is the degraded-store notice you chose to wireframe for v1.9.
-   The v1.9 plan is FROZEN with its 3-call Astra budget spent, so adding it is a scope change. Say
-   either "waive the review for CCBG-50" or "one exception Astra delta for CCBG-50".
-2. Optional, as before: comment `@dependabot rebase` on the two red Dependabot PRs.
+**Robin, before Step 5:** nothing is required. CCBG-50 (Degraded Store Notice), the notice you chose
+to wireframe for v1.9, was cleared by the exception Astra call you granted (concerns, all three
+adopted, none disputed). Step 5 starts with its wireframe, for your approval. Optional, as before:
+comment `@dependabot rebase` on the two red Dependabot PRs.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 5, and run Step 5's Resume block. Start with the
-> CCBG-50 (Degraded Store Notice) wireframe; my review call on it is: <waive | one exception delta>.
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 5, and run Step 5's Resume block, starting with
+> the CCBG-50 (Degraded Store Notice) wireframe.
 
 ---
 

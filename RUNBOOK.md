@@ -342,6 +342,14 @@ the build.
   notice is filed as CCBG-50 and is to be wireframed for v1.9. One ungraded note: at the 5-minute
   background retry a main-thread getter can run the two-attempt retry (≈200 ms) under the opener's
   lock. It applies only while degraded, and was accepted.
+- 2026-09-30 — **Astra xhigh call 4**, an exception Robin granted for the scope change and the
+  CCBG-46 rulings: **concerns**. The 13 prior findings are confirmed fixed, and three new ones were
+  adopted (table in `design/research/2026-09-30-v19-plan-findings.md`, verdict verbatim in
+  `…-astra-call4.txt`): C4-1, a degraded process that holds a write stays on memory, with no merge;
+  C4-2, a trace cut at the read cap drops its partial last line before scrubbing; C4-3, dismissal
+  is the chooser's pick callback only, and a failed launch keeps the card (fixing a missing
+  NEW_TASK flag for non-Activity contexts on the way). Robin's instruction: adopt everything agreed
+  and bring back only disagreements. There were none.
 
 ---
 
@@ -359,9 +367,16 @@ card's "Privacy policy" row (opens the docs/privacy.md blob URL on main); CCBG-3
 CCBG-45 — the one-account notification uses the Duet wording, "5h" and "Weekly", collapsed and
 expanded (Robin's Q2: fix as-is); CCBG-48 only if Step 2 ruled it a restoration. Check each at 360
 dp and on the Fold 7 widths in the emulator. Close out per Convention 4.
-Before any of that: CCBG-50 (Degraded Store Notice) was added to v1.9 by Robin on 2026-09-30. Draw
-its wireframe in design/ (every state, both width classes), get Robin's approval, and get Robin's
-review call on the scope change (the plan's Astra budget is spent), then build it here too.
+Before any of that: CCBG-50 (Degraded Store Notice) was added to v1.9 by Robin on 2026-09-30 and
+cleared by Astra's exception call 4 (concerns, adopted). Draw its wireframe in design/ (every state,
+both width classes) and get Robin's approval, then build it here too. The states must include:
+degraded with nothing written; a sign-in or sign-out made while degraded (the notice says it lasts
+only until the app restarts); recovery mid-session with nothing written (the notice goes); and the
+restart after a degraded write (the interim write is gone and the preserved file is back). The
+policy is fixed in code: once the in-memory store holds a write, the process stays on it, and nothing
+is merged into or overwrites the file. Also draw a Debug-only "simulate degraded store" entry,
+in memory only, so Step 7 can check every state without touching the Keystore. CredentialStoreTest
+already pins the policy.
 ```
 
 **Done when:**
@@ -444,7 +459,10 @@ downgrade. Then:
 under-reports, re-add QUERY_ALL_PACKAGES in src/github only and note the play-flavor gap; (3) the
 Updates card, auto-check and the update strip work as before on github; (4) the crash: Debug
 "Crash now" → the system dialog still appears → relaunch → the card shows → Share → the shared text
-has no token, email or exception message → Not now keeps it gone; (5) the pin survives
+has no token, email or exception message → Not now keeps it gone; also: backing out of the share
+sheet keeps the card, and picking an app removes it; (4b) CCBG-46 and CCBG-50, without touching the
+Keystore: sign-in persists across a force-stop and relaunch, and the CCBG-50 Debug "simulate degraded
+store" entry shows each approved notice state, including a sign-in made while degraded; (5) the pin survives
 MY_PACKAGE_REPLACED and a reboot; (6) the CCRM-90 FGS demo video with screenrecord (display id per
 the memory note), saved to release/play/; (7) the play flavor: bundletool build-apks --connected-
 device with --ks ccooldown-release.jks, --ks-key-alias and the passwords from keystore.properties

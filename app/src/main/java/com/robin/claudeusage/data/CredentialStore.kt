@@ -169,11 +169,14 @@ internal object CredentialStoreOpener {
         val prefs: SharedPreferences,
         val healthy: Boolean,
         val deferred: Boolean = false,
-        val at: Long = System.currentTimeMillis(),
+        val at: Long = clock(),
     )
 
     private var outcome: Outcome? = null
     private var resetDone = false
+
+    /** Tests move time; production reads the wall clock. */
+    @Volatile internal var clock: () -> Long = System::currentTimeMillis
 
     /** One in-memory store for the whole process, so every degraded caller sees the same one. */
     private val memory: SharedPreferences by lazy { InMemoryPrefs() }
@@ -195,7 +198,13 @@ internal object CredentialStoreOpener {
         if (o.healthy) return false
         // After a reset whose probe failed there is nothing left to try in this process.
         if (resetDone) return false
-        val age = System.currentTimeMillis() - o.at
+        // Astra 2026-09-30 (C4-1): once anything was written to the in-memory store — a
+        // sign-in, a sign-out — the process stays on it until it ends. Switching to the real
+        // store mid-session would drop that write earlier than the restart CCBG-50 (Degraded
+        // Store Notice) promises, and merging it would risk overwriting the preserved file.
+        // Nothing is merged: the write is discarded at restart, the file is never touched.
+        if ((memory as InMemoryPrefs).written) return false
+        val age = clock() - o.at
         return if (resetAllowed) o.deferred || age >= LAUNCH_RECHECK_MS
         else !o.deferred && age >= BACKGROUND_RETRY_MS
     }
@@ -205,6 +214,7 @@ internal object CredentialStoreOpener {
     internal fun resetForTest() {
         outcome = null
         resetDone = false
+        clock = System::currentTimeMillis
         (memory as InMemoryPrefs).wipe()
     }
 
@@ -298,7 +308,14 @@ internal class InMemoryPrefs : SharedPreferences {
     private val map = mutableMapOf<String, Any?>()
     private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
-    @Synchronized fun wipe() = map.clear()
+    /** True once anything has been committed — the in-memory store then holds the user's work. */
+    @Volatile var written = false
+        private set
+
+    @Synchronized fun wipe() {
+        map.clear()
+        written = false
+    }
 
     @Synchronized override fun getAll(): Map<String, *> = HashMap(map)
     @Synchronized override fun getString(key: String, defValue: String?): String? = map[key] as? String ?: defValue
@@ -329,6 +346,7 @@ internal class InMemoryPrefs : SharedPreferences {
         override fun clear() = apply { clear = true }
         override fun commit(): Boolean {
             synchronized(this@InMemoryPrefs) {
+                if (clear || removes.isNotEmpty() || puts.isNotEmpty()) written = true
                 if (clear) map.clear()
                 removes.forEach { map.remove(it) }
                 puts.forEach { (k, v) -> if (v == null) map.remove(k) else map[k] = v }

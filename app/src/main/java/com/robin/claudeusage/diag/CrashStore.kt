@@ -199,8 +199,9 @@ object CrashStore {
                 out.write(buf, 0, n)
             }
             val bytes = out.toByteArray()
+            val cut = bytes.size >= MAX_TRACE_BYTES
             when (kind) {
-                CrashReport.Kind.ANR -> CrashReport.anrTrace(bytes.toString(Charsets.UTF_8))
+                CrashReport.Kind.ANR -> CrashReport.anrTrace(CrashReport.dropPartialLine(bytes.toString(Charsets.UTF_8), cut))
                 CrashReport.Kind.NATIVE -> CrashReport.nativeTrace(bytes)
                 CrashReport.Kind.CRASH -> null
             }
@@ -245,8 +246,25 @@ object CrashStore {
     }
 
     /**
-     * The share sheet, plus the chooser's callback: [CrashShareReceiver] dismisses
-     * [reports] only once an app is picked, so backing out keeps the card.
+     * Opens the share sheet for [reports]. Never dismisses anything itself and never throws:
+     * a launch that fails (a TransactionTooLargeException, no activity) returns false and
+     * leaves every report on the card.
+     */
+    fun share(context: Context, reports: List<Report>): Boolean = try {
+        val chooser = shareIntent(context, reports)
+        if (context !is android.app.Activity) chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(chooser)
+        true
+    } catch (_: RuntimeException) {
+        false
+    }
+
+    /**
+     * The share sheet, plus the chooser's callback. **Dismissal is that callback and nothing
+     * else** (Astra 2026-09-30, C4-3; wireframe rev B: "The card goes away only once you pick
+     * an app in the sheet"). Android reports the pick, not whether the receiving app then
+     * delivered anything, so "shared" in this app means "an app was picked". Backing out of
+     * the sheet sends no callback, so the card stays.
      */
     fun shareIntent(context: Context, reports: List<Report>): Intent {
         val send = Intent(Intent.ACTION_SEND)

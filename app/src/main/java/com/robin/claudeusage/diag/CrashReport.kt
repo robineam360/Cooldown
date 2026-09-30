@@ -119,6 +119,17 @@ object CrashReport {
     }
 
     /**
+     * A trace read up to a byte cap may end part-way through a line, and so part-way through
+     * a secret the scrubber would no longer recognise (Astra 2026-09-30, C4-2). A cut trace
+     * therefore loses its last, partial line before anything scrubs it.
+     */
+    fun dropPartialLine(text: String, cut: Boolean): String {
+        if (!cut) return text
+        val nl = text.lastIndexOf('\n')
+        return (if (nl >= 0) text.substring(0, nl) else "") + "\n… (trace cut at the read limit)"
+    }
+
+    /**
      * An ANR dump is every thread in the process; the main thread is the one that
      * matters, so it goes first and the rest follows until the report's cap.
      */

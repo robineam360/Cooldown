@@ -146,6 +146,20 @@ class CrashReportTest {
         assertTrue(report.contains("Signal Catcher"))
     }
 
+    @Test
+    fun `a secret crossing the read cap leaves no fragment`() {
+        // What a 1 MB read can end on: part of an email and part of a token, too short for
+        // the scrubber to recognise once cut.
+        val raw = anrDump + "\n  held by robin.fragment@exam"
+        val cut = CrashReport.dropPartialLine(raw, cut = true)
+        val report = CrashReport.exitReport(CrashReport.Kind.ANR, "not responding", 9L, 1, CrashReport.anrTrace(cut), meta, zone)
+        assertFalse(report.contains("robin.fragment"))
+        assertTrue(report.contains("trace cut at the read limit"))
+        val token = CrashReport.dropPartialLine(anrDump + "\n  Bearer sk-FRAG", cut = true)
+        assertFalse(token.contains("sk-FRAG"))
+        assertEquals("an uncut trace is untouched", anrDump, CrashReport.dropPartialLine(anrDump, cut = false))
+    }
+
     // --- a native tombstone (protobuf) ---
 
     private class Pb {

@@ -169,6 +169,43 @@ class CredentialStoreTest {
         assertEquals("the same in-memory store", creds, second.load(profile))
     }
 
+    // --- recovery while the process lives (Astra 2026-09-30, C4-1) ---
+
+    private var now = 1_000_000L
+
+    private fun useClock() { CredentialStoreOpener.clock = { now } }
+
+    @Test
+    fun `a merely unavailable store recovers in the background after five minutes`() {
+        useClock()
+        val backend = FakeBackend(IOException("a"), IOException("b"))
+        val background = CredentialStore(context, false, backend)
+        assertNull(background.load(profile))
+        now += CredentialStoreOpener.BACKGROUND_RETRY_MS - 1
+        assertNull("not yet", background.load(profile))
+        now += 1
+        assertEquals(creds, background.load(profile))
+        assertEquals(0, backend.keyDeletes)
+    }
+
+    @Test
+    fun `a write made while degraded keeps the process on memory, never merged, the file untouched`() {
+        useClock()
+        val backend = FakeBackend(IOException("a"), IOException("b"))
+        val store = CredentialStore(context, false, backend)
+        val interim = creds.copy(accessToken = "sk-ant-oat01-interim")
+        store.save(profile, interim)
+        now += 10 * CredentialStoreOpener.BACKGROUND_RETRY_MS
+        assertEquals("still the in-memory sign-in", interim, store.load(profile))
+        // Even the app opening again does not switch it away mid-session.
+        assertEquals(interim, CredentialStore(context, true, backend).load(profile))
+        assertEquals(2, backend.opens)
+        assertEquals(0, backend.keyDeletes)
+        // At restart the interim write is gone and the preserved file is what it was.
+        CredentialStoreOpener.resetForTest()
+        assertEquals(creds, CredentialStore(context, true, FakeBackend()).load(profile))
+    }
+
     // --- the boot path ---
 
     @Test

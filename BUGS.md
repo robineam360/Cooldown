@@ -81,6 +81,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** when CCBG-46 (Keystore Wedge) runs a process on the empty in-memory store, signing
   in looks like it works, but the tokens live only in memory and are gone at the next restart. The
   only trace is a WARN line in the app log. Nothing on screen says the store is degraded.
+- **Policy, fixed in code 2026-09-30 (Astra C4-1):** once the in-memory store holds a write, the
+  process stays on it until it ends. The write is discarded at restart, never merged into the file,
+  and never overwrites it. The notice's wireframe draws that boundary; see RUNBOOK Step 5.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
