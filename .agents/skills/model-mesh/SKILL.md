@@ -60,7 +60,7 @@ GPT review need Claude Code.
    own ChatGPT login. Off by default. Turn it on?"*
    - **No** (or no answer) → `mkdir -p ~/.local/share/model-mesh && echo OFF > ~/.local/share/model-mesh/review`.
    - **Yes** → check and report each prerequisite: a `codex` binary (`command -v codex`, or
-     `/Applications/ChatGPT.app/Contents/Resources/codex` on macOS, `/usr/lib/chatgpt/resources/codex` on
+     `/Applications/ChatGPT.app/Contents/Resources/codex` or `…/Resources/codex-cli/bin/codex` on macOS, `/usr/lib/chatgpt/resources/codex` on
      Linux); a login (`~/.codex/auth.json` — the user runs `codex login`, never you); a sandbox
      (`sandbox-exec`, built into macOS; `bwrap` on Linux — the user runs `sudo apt install bubblewrap`;
      native Windows has none → OFF, WSL2 works as Linux). Anything missing → say what and how, write
