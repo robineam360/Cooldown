@@ -24,10 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # JDK 21, not 17: Robolectric's SDK 36 sandbox refuses to start on Java 17. The code
+      # still compiles to Java 17 bytecode (compileOptions). The Mac gets 21 the same way
+      # through org.gradle.java.home in ~/.gradle/gradle.properties.
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - uses: gradle/actions/setup-gradle@v6
 

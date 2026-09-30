@@ -271,6 +271,9 @@ Convention 4.
   so no baseline. Lint runs per flavor (`lintGithubDebug lintPlayDebug`) rather than the bare `lint`,
   which covers only the default variant. Actions pinned to their current majors (checkout v7,
   setup-java v6, setup-gradle v6, upload-artifact v7); Dependabot keeps them current.
+- 2026-09-30 — First CI run on 90271b3 **failed**: all 14 Robolectric classes, "Android SDK 36 requires
+  Java 21 (have Java 17)". The Mac passes only because `~/.gradle/gradle.properties` points Gradle at
+  JDK 21, which the repo never recorded. CI now sets up JDK 21.
 
 ---
 
