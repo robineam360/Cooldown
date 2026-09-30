@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cooldown v1.9 visible changes — rev A, for review</title>
+<style>
+  :root { --page:#f8f6f3; --ink:#28231f; --muted:#665f59; --edge:#dfd7d0; --paper:#fff; --accent:#b75c3d; --warm:#f4e9e1; --ok:#286b46; --bad:#a83d34; }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--page); color:var(--ink); font:14px/1.48 system-ui,-apple-system,Segoe UI,sans-serif }
+  main { max-width:1280px; margin:auto; padding:32px 24px 100px }
+  h1 { font-size:30px; letter-spacing:-.025em; margin:4px 0 8px }
+  h2 { font-size:21px; letter-spacing:-.015em; border-top:1px solid var(--edge); padding-top:28px; margin:42px 0 6px }
+  h3 { font-size:15px; margin:18px 0 8px }
+  p { max-width:88ch; margin:7px 0 12px }
+  .eyebrow,.caption,.badge { font:600 11px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; text-transform:uppercase }
+  .eyebrow { color:var(--accent) }
+  .lede,.note { color:var(--muted) }
+  .badge { display:inline-block; padding:5px 9px; border:1px solid #ad741f; color:#80500d; border-radius:6px; margin:4px 0 8px }
+  .controls { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:11px 14px; background:#ffffffeb; border:1px solid var(--edge); border-radius:12px; backdrop-filter:blur(12px); box-shadow:0 4px 16px #0001; margin:22px 0 }
+  .controls label { display:flex; gap:7px; align-items:center; font-size:12px; font-weight:650 }
+  select { font:inherit; border:1px solid var(--edge); background:#fff; border-radius:7px; padding:6px 8px; color:var(--ink) }
+  .frames { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; margin:18px 0 8px }
+  .sample { max-width:100% }
+  .caption { color:var(--muted); margin:7px 0 0; max-width:360px }
+  .phone { width:360px; max-width:100%; background:var(--surface); color:var(--fg); border:5px solid #1b1b1b; border-radius:24px; overflow:hidden; min-height:220px; font:14px/1.35 Roboto,Arial,sans-serif; box-shadow:0 9px 23px #0002 }
+  .phone.w410 { width:410px }
+  .phone.w760 { width:760px; border-radius:18px }
+  .phone.light { --surface:#faf7f3; --card:#fff; --fg:#25201d; --quiet:#66605b; --line:#e7dfd9; --primary:#b75c3d; --soft:#f4e9e1; --error:#a03c32; --error-bg:#f9e9e6 }
+  .phone.dark { --surface:#0d0d0d; --card:#1b1b1b; --fg:#eee8e3; --quiet:#b4aaa3; --line:#34302d; --primary:#e79a80; --soft:#35241e; --error:#f0a59d; --error-bg:#3d2423 }
+  .statusbar { height:25px; display:flex; justify-content:space-between; align-items:center; padding:0 18px; font-size:11px; font-weight:600 }
+  .toolbar { min-height:55px; display:flex; align-items:center; gap:12px; padding:0 16px; font-size:19px; font-weight:600 }
+  .toolbar .right { margin-left:auto; font-size:18px }
+  .account-tabs { display:flex; border-bottom:1px solid var(--line); padding:0 14px; gap:25px; font-size:13px; color:var(--quiet) }
+  .account-tabs span { padding:8px 0; white-space:nowrap }
+  .account-tabs .active { border-bottom:2px solid var(--primary); color:var(--fg); font-weight:700 }
+  .content { padding:14px 16px 22px }
+  .content.wide { max-width:740px; margin:auto }
+  .section-label { font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--quiet); margin:14px 0 8px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:0 0 11px }
+  .card.compact { padding:14px }
+  .row { display:flex; align-items:center; gap:10px }
+  .grow { flex:1; min-width:0 }
+  .muted { color:var(--quiet) }
+  .small { font-size:12px }
+  .tiny { font-size:11px }
+  .title { font-size:15px; font-weight:700 }
+  .rule { height:1px; background:var(--line); margin:13px 0 }
+  .pill { display:inline-block; padding:3px 7px; border-radius:30px; font-size:11px; background:var(--soft); color:var(--primary); font-weight:700 }
+  .button { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:0 12px; border:1px solid var(--primary); border-radius:20px; color:var(--primary); font-size:13px; font-weight:700; white-space:nowrap }
+  .button.text { border-color:transparent; padding:0 9px }
+  .actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:2px; margin-top:8px }
+  .value { font-size:27px; font-weight:750; color:var(--primary); margin-left:auto }
+  .bar { height:8px; margin:11px 0 7px; background:var(--line); border-radius:8px; overflow:hidden }
+  .bar:before { content:""; display:block; width:58%; height:100%; background:var(--primary) }
+  .statusline { color:var(--quiet); font-size:12px; display:flex; gap:6px; align-items:center; padding:8px 1px }
+  .notice { border-radius:12px; background:var(--error-bg); color:var(--error); padding:10px 12px; margin:6px 0 11px }
+  .notice .button { color:var(--error); border-color:transparent }
+  .crash { border-left:3px solid var(--primary); padding-left:13px }
+  .crash .headline { font-weight:700; font-size:14px; line-height:1.35 }
+  .crash .summary { font-size:12px; color:var(--quiet); margin-top:4px }
+  .error-icon { color:var(--error); font-size:18px; align-self:flex-start }
+  .about { text-align:center; padding:19px 18px }
+  .appicon { margin:0 auto 7px; width:52px; height:52px; display:grid; place-items:center; border-radius:14px; background:#242425; color:#df7651; font-size:27px }
+  .about .rule { margin:14px 0 }
+  .linkrow { min-height:48px; display:flex; align-items:center; gap:10px; text-align:left; font-size:14px }
+  .linkrow .icon { font-size:18px; color:var(--primary) }
+  .linkrow .chevron { margin-left:auto; color:var(--quiet) }
+  .more-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px }
+  .more-grid > div { min-width:0 }
+  .settings-tabs { display:flex; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--line); white-space:nowrap }
+  .settings-tabs::-webkit-scrollbar { display:none }
+  .settings-tabs span { min-height:48px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0 13px; font-size:14px; font-weight:600; border-bottom:2px solid transparent }
+  .settings-tabs span.active { color:var(--primary); border-bottom-color:var(--primary) }
+  .settings-tabs.large span { min-height:72px; font-size:28px; padding:0 20px }
+  .tab-window { width:100%; overflow:hidden }
+  .tab-track { width:max-content; display:flex; border-bottom:1px solid var(--line) }
+  .tab-track span { height:48px; display:flex; align-items:center; padding:0 13px; font-size:14px; font-weight:600; white-space:nowrap }
+  .tab-track.large span { height:72px; font-size:28px; padding:0 20px }
+  .tab-track span.active { border-bottom:2px solid var(--primary); color:var(--primary) }
+  .tab-track.shift { transform:translateX(-180px) }
+  .tab-track.large.shift { transform:translateX(-278px) }
+  .debug-row { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px }
+  .bullet { width:8px; height:8px; border-radius:50%; background:var(--primary); display:inline-block }
+  .matrix { width:100%; border-collapse:collapse; font-size:13px; margin:16px 0 }
+  .matrix th,.matrix td { border-bottom:1px solid var(--edge); padding:9px 12px 9px 0; text-align:left; vertical-align:top }
+  .matrix th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.05em }
+  .matrix td:first-child { font-weight:650 }
+  code { background:#0000000d; padding:1px 4px; border-radius:3px }
+  @media(max-width:800px) { main { padding:22px 13px 80px } .controls { top:0 } .more-grid { grid-template-columns:1fr } }
+</style>
+<main>
+  <div class="eyebrow">v1.9 · 28 September 2026 · rev A</div>
+  <h1>Play-ready visible changes</h1>
+  <p class="lede">A review wireframe for the v1.9 screens. Values and dates are sample data. It shows both release channels, the crash report states, the narrow and unfolded Settings layouts, and the large-font tab behavior.</p>
+  <span class="badge">For review · no implementation approved yet</span>
+  <div class="controls" aria-label="Wireframe controls">
+    <label>Appearance <select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    <label>Width <select id="width"><option value="360">360 dp · narrow phone</option><option value="410">410 dp · Fold cover</option><option value="760">760 dp · Fold inner</option></select></label>
+    <label>Channel <select id="channel"><option value="github">GitHub</option><option value="play">Play</option></select></label>
+  </div>
+  <p class="note">Measurements below are design units: one CSS px in the device frames represents one Android dp at normal font scale; text px represents sp. The 2.0× examples double text size while leaving dp spacing in place.</p>
+  <table class="matrix">
+    <tr><th>Element</th><th>Size and spacing for implementation</th></tr>
+    <tr><td>Screen content</td><td>16 dp side padding at 360/410 dp; centered content capped at 760 dp on the Fold inner screen. Settings More uses two columns from the app's existing wide breakpoint.</td></tr>
+    <tr><td>Crash card</td><td>16 dp radius, 16 dp inset, 3 dp accent rail, 14 sp title, 12 sp summary, 36 dp action height, 8 dp between text and actions. The card has an 11 dp gap below it.</td></tr>
+    <tr><td>Privacy row</td><td>48 dp minimum height with 18 dp leading icon, 14 sp label and trailing external-link chevron; the existing About card keeps its 20 dp inset.</td></tr>
+    <tr><td>Settings tabs</td><td>48 dp minimum height, 14 sp label, 13 dp horizontal padding, 2 dp selected underline. At font scale 2.0, labels render at 28 sp and the row grows to at least 72 dp. No label truncation.</td></tr>
+    <tr><td>Debug action</td><td>48 dp minimum row height, below the existing Debug tools with a divider; confirmation uses a 16 sp title and two 36 dp actions.</td></tr>
+  </table>
+
+  <h2>1 · About card: Privacy policy</h2>
+  <p class="note">The row sits below “Share feedback” and above the existing unofficial disclaimer. It opens the same public policy in both flavors. No sign-in or network call is needed to see the row; a browser handles the link.</p>
+  <div id="about" class="frames"></div>
+
+  <h2>2 · Next launch: crash report card</h2>
+  <p class="note">One app-wide card sits directly below the account tabs and above usage cards. The existing “Checked…” status line and any usage error notice stay beneath the usage cards. This placement also works when the current account is signed out or has no data. The card never shows a stack trace or an email on screen.</p>
+  <div id="crashes" class="frames"></div>
+  <table class="matrix">
+    <tr><th>State</th><th>Visible behavior</th></tr>
+    <tr><td>After Share report</td><td>The share chooser opens with a scrubbed text report. On return, the card is gone. The local report remains available through the existing diagnostics path until its retention limit.</td></tr>
+    <tr><td>After Not now</td><td>The card disappears and stays dismissed on later launches for this report.</td></tr>
+    <tr><td>Two crashes on file</td><td>One card for the newest crash, with “2 reports on this phone.” Share report shares the newest report; older reports stay in diagnostics.</td></tr>
+    <tr><td>Exit reason, no trace</td><td>The card says a report could not be captured. There is no Share report action, since a trace-free report would mislead. Not now remains.</td></tr>
+  </table>
+
+  <h2>3 · Debug: Crash now</h2>
+  <p class="note">In Settings → More, tapping the version seven times reveals Diagnostics and Debug. “Crash now” is last in Debug, separated from synthetic data tools. It opens a confirmation dialog before the intentional crash; the next launch then shows the card in section 2. This entry is absent while locked.</p>
+  <div id="debug" class="frames"></div>
+
+  <h2>4 · Play channel: no Updates card or update action</h2>
+  <p class="note">GitHub retains the Updates card and its manual check. Play removes that entire section; Polling and Usage credits meet the About section directly at narrow widths. The invalid-response notice still explains the failure, but has no “Check for updates” action in Play. Other notice actions keep their current behavior.</p>
+  <div id="channels" class="frames"></div>
+
+  <h2>5 · Settings tabs: readable at 360 dp and 2.0× font</h2>
+  <p class="note">Proposed fix: one horizontally scrollable row at every width, with each title at full text size. No title is shortened or ellipsized. The selected tab scrolls into view when tapped or reached by a page swipe. At 360 dp, the next tab peeks in to indicate horizontal movement; users can still swipe the pages below. The row is 48 dp high normally and grows to at least 72 dp at 2.0× font, rather than clipping text.</p>
+  <div id="tabs" class="frames"></div>
+
+  <h2>6 · Widget reconfiguration label</h2>
+  <p class="note">The approved widget rev D already draws “Widget settings” with a “Save changes” button for long-press reconfiguration. The current code chooses that label only when saved widget preferences exist. When a launcher placed the widget before configuration, that check fails. The v1.9 fix restores the approved view for a placed widget, including that edge case; no new visual design is proposed here.</p>
+  <div id="reconfigure" class="frames"></div>
+
+  <h2>7 · Decisions requested in this review</h2>
+  <p>Approve or revise the card position, the no-trace state, the “Crash now” confirmation, the Privacy policy row placement, and the scrollable Settings tabs. “Save changes” follows the previously approved widget rev D. The single-account notification wording follows the already approved Duet wording.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function settingsTabs(selected='More',large=false,shift=false){const a=['Accounts','Alerts','Appearance','More'];return `<div class="tab-window"><div class="tab-track ${large?'large':''} ${shift?'shift':''}">${a.map(x=>`<span class="${x===selected?'active':''}">${x}</span>`).join('')}</div></div>`}
+function shell(body,{title='Cooldown',tabs=false,settings=false}={}){return `<div class="statusbar"><span>9:41</span><span>◕ ▰</span></div><div class="toolbar"><span>${settings?'‹ ':''}${title}</span><span class="right">${settings?'':'⋮'}</span></div>${tabs?'<div class="account-tabs"><span class="active">Personal</span><span>Work</span></div>':''}${settings?settingsTabs('More'):''}${body}`}
+function sample(html,caption,opt={}){const w=$('width').value,t=$('theme').value;return `<div class="sample"><div class="phone ${t} w${w}">${html}</div><div class="caption">${caption} · ${w} dp · ${t}</div></div>`}
+function about(){let wide=$('width').value==='760';return sample(shell(`<div class="content ${wide?'wide':''}"><div class="${wide?'more-grid':''}"><div><div class="section-label">Polling</div><div class="card compact"><div class="title">Refresh interval</div><div class="small muted">Every 15 minutes</div></div>${$('channel').value==='github'?'<div class="section-label">Updates</div><div class="card compact"><div class="title">Check automatically</div><div class="small muted">Check for updates</div></div>':''}</div><div><div class="section-label">About</div><div class="card about"><div class="appicon">⌁</div><div class="title">Cooldown</div><div class="small muted">Version 1.9</div><div style="height:9px"></div><div class="small">Made by Robin Richard Rajan</div><div class="small muted">Built with Claude Code</div><div style="height:14px"></div><span class="button">Share feedback</span><div class="rule"></div><div class="linkrow"><span class="icon">▤</span><span>Privacy policy</span><span class="chevron">↗</span></div><div class="rule"></div><div class="tiny muted">Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI.</div></div></div></div></div>`,{title:'Settings',settings:true}),`About row · ${$('channel').value} channel`)}
+function usage(){return `<div class="card compact"><div class="row"><span class="title">5h</span><span class="value">58%</span></div><div class="bar"></div><div class="small muted">Resets at 2:40 PM</div></div><div class="statusline">↻ Checked 4m ago</div><div class="notice"><b>Couldn’t read usage</b><div class="small">Last reading remains visible.</div></div>`}
+function crashCard(kind){if(kind==='none')return '';let missing=kind==='missing',two=kind==='two';return `<div class="card crash"><div class="row"><span class="error-icon">●</span><div class="grow"><div class="headline">Cooldown crashed on Sep 28</div><div class="summary">${missing?'A crash was detected, but no trace was available.':two?'2 reports on this phone · newest: Sep 28, 9:41 AM':'A report is saved on this phone. Share it only if you choose.'}</div></div></div><div class="actions">${missing?'':'<span class="button text">Share report</span>'}<span class="button text">Not now</span></div></div>`}
+function crashFrame(kind,label){return sample(shell(`<div class="content">${crashCard(kind)}${usage()}</div>`,{tabs:true}),label)}
+function debug(){return sample(shell(`<div class="content"><div class="section-label">About</div><div class="card about"><div class="appicon">⌁</div><div class="title">Cooldown</div><div class="small muted">Version 1.9</div><div class="small" style="color:var(--primary);margin-top:5px">Debug tools unlocked until the app is closed</div></div><div class="section-label">Diagnostics</div><div class="card compact">App log · Share log</div><div class="section-label">Debug</div><div class="card compact"><div class="debug-row">Synthetic series <span class="muted">›</span></div><div class="rule"></div><div class="debug-row">Last raw response <span class="muted">›</span></div><div class="rule"></div><div class="debug-row"><span><span class="bullet"></span> &nbsp;Crash now</span><span class="muted">›</span></div></div><div class="card compact" style="border-color:var(--error)"><div class="title">Crash Cooldown?</div><p class="small muted">The app will close immediately. A report should appear when you reopen it.</p><div class="actions"><span class="button text">Cancel</span><span class="button text">Crash now</span></div></div></div>`,{title:'Settings',settings:true}), 'Unlocked Debug + confirmation; locked view omits Diagnostics and Debug')}
+function channel(){
+  let play=$('channel').value==='play',wide=$('width').value==='760';
+  let left=`<div class="section-label">Polling</div><div class="card compact"><div class="title">Refresh interval</div><div class="small muted">Every 15 minutes</div></div><div class="section-label">Usage credits</div><div class="card compact">Show usage credits</div>${play?'':'<div class="section-label">Updates</div><div class="card compact"><div class="row"><div class="grow"><div class="title">Check automatically</div><div class="small muted">Checks GitHub every 6 hours</div></div><span>◉</span></div><div class="rule"></div><span class="button">Check for updates</span></div>'}`;
+  let right=`<div class="section-label">About</div><div class="card compact">Cooldown · Privacy policy</div>`;
+  let notice=`<div class="section-label" style="margin-top:20px">Main screen: invalid response</div><div class="notice"><b>Couldn't read the response</b><div class="small">Last reading remains visible.</div>${play?'':'<div class="actions"><span class="button text">Check for updates</span></div>'}</div>`;
+  let body=wide?`<div class="content wide"><div class="more-grid"><div>${left}</div><div>${right}</div></div>${notice}</div>`:`<div class="content">${left}${right}${notice}</div>`;
+  return sample(shell(body,{title:'Settings',settings:true}),`${play?'Play':'GitHub'} More and invalid-response notice`)
+}
+function tabFrame(large,shift){return sample(shell(`<div class="tab-window">${settingsTabs(shift?'More':'Accounts',large,shift)}</div><div class="content"><div class="section-label">${shift?'More':'Accounts'}</div><div class="card compact">${shift?'Polling · About':'Personal · Work'}</div></div>`,{title:'Settings'}),`${large?'2.0× font':'Normal font'} · ${shift?'More selected; row follows page':'Accounts selected'}`)}
+function reconfigure(){return sample(shell(`<div class="content"><div class="section-label">Ring preview</div><div class="card compact" style="text-align:center;padding:25px"><span style="font-size:34px;color:var(--primary)">◉</span><div class="title">Personal · 58%</div></div><div class="section-label">Account</div><div class="card compact">Personal &nbsp; Work</div><div class="section-label">Window</div><div class="card compact">5h &nbsp; Weekly</div><div class="section-label">Background</div><div class="card compact">Solid &nbsp; Gradient &nbsp; Transparent</div><div class="button" style="width:100%;background:var(--primary);color:var(--card)">Save changes</div></div>`,{title:'Widget settings'}),'Previously approved rev D reconfigure view; restored for a placed widget with no saved preferences')}
+function render(){ $('about').innerHTML=about();$('crashes').innerHTML=crashFrame('one','New report')+crashFrame('none','After Share or Not now: card gone')+crashFrame('two','Two crashes on file')+crashFrame('missing','Exit reason with no trace');$('debug').innerHTML=debug();$('channels').innerHTML=channel();$('tabs').innerHTML=tabFrame(false,false)+tabFrame(false,true)+tabFrame(true,false)+tabFrame(true,true);$('reconfigure').innerHTML=reconfigure() }
+['theme','width','channel'].forEach(id=>$(id).addEventListener('change',render)); render();
+</script>
+</html>
