@@ -23,9 +23,14 @@ sealed class FetchResult(val message: String) {
     class Error(detail: String) : FetchResult("Error: $detail")
 }
 
-class UsageRepository(private val context: Context) {
+/**
+ * [credentialResetAllowed] is true only for the main screen's repository: CCBG-46 (Keystore
+ * Wedge) resets an unreadable credential store only when the app is opened, never from a
+ * worker, the pinned service or anything a `BOOT_COMPLETED` starts.
+ */
+class UsageRepository(private val context: Context, credentialResetAllowed: Boolean = false) {
 
-    private val credStore = CredentialStore(context)
+    private val credStore = CredentialStore(context, resetAllowed = credentialResetAllowed)
     private val cache = UsageCache(context)
     private val registry = ProfileRegistry(context)
     private val historyStore = HistoryStore(context)

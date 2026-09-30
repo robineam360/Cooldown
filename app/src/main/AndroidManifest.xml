@@ -39,6 +39,7 @@
     </queries>
 
     <application
+        android:name=".CooldownApp"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.ClaudeUsage"
@@ -199,6 +200,12 @@
                 android:resource="@xml/strip_widget_info" />
         </receiver>
 
+
+        <!-- CCRM-85 (Crash Capture): the crash share sheet's callback. Only the chooser's
+             own PendingIntent reaches it. -->
+        <receiver
+            android:name=".diag.CrashShareReceiver"
+            android:exported="false" />
 
         <!-- CCRM-24 (Share Card): hands the one snapshot in cacheDir/share/ to the share
              target as a content:// URI; read access is granted per share, never exported. -->

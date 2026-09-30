@@ -2981,8 +2981,11 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
-- **Status:** **Designed — wireframe rev B approved by Robin 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §1 and §3).
-  Build next, **planned v1.9** (RUNBOOK Step 4). Option decided 2026-09-25 (Fable recommended, Astra
+- **Status:** **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
+  Wireframe rev B approved by Robin 2026-09-30 (`design/2026-09-28-v19-play-ready.mockup.html` §1 and
+  §3). A fresh Opus judge's findings are adopted: a report is capped at 8,000 characters so eight fit
+  one share intent, a failed share never crashes, the handler goes in at `attachBaseContext`, and every
+  process start files the last crash, so a background crash loop keeps each trace. Option decided 2026-09-25 (Fable recommended, Astra
   reviewed: `concerns`, all adopted below). Decisions from the review (Robin, one question at a time):
   - **Position:** one app-wide card under the top bar, above the account tabs, outside the pager.
     At compact height (< 480 dp) it moves into the open page's scrolling column instead.

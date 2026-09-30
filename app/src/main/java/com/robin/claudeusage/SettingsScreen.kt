@@ -918,6 +918,8 @@ fun SettingsScreen(
             Spacer(Modifier.height(24.dp))
             SectionLabel("Diagnostics")
             AppLogCard(cacheSettings)
+            // CCRM-85 (Crash Capture): hidden, gap and all, while no report is on file.
+            CrashReportsCard(use24h)
             Spacer(Modifier.height(24.dp))
 
             SectionLabel("Debug")
@@ -926,6 +928,8 @@ fun SettingsScreen(
             TrendDiagnostics(repo, use24h)
             Spacer(Modifier.height(10.dp))
             DebugSection(repo) { namesTick++; Shortcuts.publish(context) }
+            Spacer(Modifier.height(10.dp))
+            CrashNowCard()
         }
     }
 

@@ -17,7 +17,15 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **shipped in v1.8 (2026-09-27)**.
 
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
-- **Status:** Open — suspected, not observed. Found 2026-09-27 by the v1.9 plan review. Planned v1.9.
+- **Status:** **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
+  persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh
+  Opus judge adopted: only the main screen's repository may reset (workers, the pinned service and
+  anything `BOOT_COMPLETED` starts never do, and defer to the next app open), and the marker counts
+  anywhere in the cause chain, so Tink's "master key … exists but is unusable" `KeyStoreException`
+  around a `KeyPermanentlyInvalidatedException` resets too. **Known residual, kept by Robin
+  2026-09-30:** Tink reports one undecryptable *value* as a causeless "decryption failed", which
+  preserves — the app then runs signed out in memory each launch until "Clear data". A sign-in made
+  while degraded is lost at restart; the notice for that is CCBG-50 (Degraded Store Notice).
 - **Severity:** Medium (a possible crash loop with no way out but "Clear data")
 - **Symptom (suspected):** `data/CredentialStore.kt:20-32` builds the deprecated
   `EncryptedSharedPreferences` in its constructor with no failure handling. The store is built on
@@ -64,6 +72,15 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   needs a wireframe).
 - **Severity:** Low
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
+
+### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
+- **Status:** Open — filed 2026-09-30 by the RUNBOOK Step 4 judge (finding 6). Suspected, not
+  observed. **Robin: wireframe it for v1.9** (2026-09-30), so it is drawn and approved before RUNBOOK
+  Step 5 builds it. The v1.9 plan's review budget is spent, so adding it waits on Robin's review call.
+- **Severity:** Low (tokens are never lost from disk; only a sign-in made in the degraded state is)
+- **Symptom:** when CCBG-46 (Keystore Wedge) runs a process on the empty in-memory store, signing
+  in looks like it works, but the tokens live only in memory and are gone at the next restart. The
+  only trace is a WARN line in the app log. Nothing on screen says the store is degraded.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and

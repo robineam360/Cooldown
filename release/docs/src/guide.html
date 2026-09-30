@@ -472,6 +472,7 @@
   <ul class="dots">
     <li><b>No servers, no telemetry, no analytics.</b> The app talks only to <code class="inline">api.anthropic.com</code> (usage), <code class="inline">platform.claude.com</code> (sign-in code exchange + token refresh), <code class="inline">claude.com</code> (the sign-in page in your browser), <code class="inline">auth.openai.com</code> (the device-code sign-in) and <code class="inline">chatgpt.com</code> (usage) — plus <code class="inline">api.github.com</code> only when you tap Check for updates.</li>
     <li>Tokens live in <b>Android-Keystore-encrypted storage</b>; cached usage numbers contain nothing sensitive.</li>
+    <li>A crash report stays on your phone until you share it.</li>
     <li>Polling is deliberately gentle — 15-minute default, 3-minute manual floor, exponential backoff on 429s.</li>
     <li>Reading either usage API with a consumer token outside the official clients is not covered by Anthropic's or OpenAI's consumer terms; personal-use risk was accepted when this was built.</li>
     <li>Not affiliated with or endorsed by Anthropic, OpenAI or Google. Sideload-only, free, no accounts, no strings.</li>

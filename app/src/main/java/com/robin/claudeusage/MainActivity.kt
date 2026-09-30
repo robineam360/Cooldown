@@ -97,6 +97,8 @@ import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.ui.ChartColumnMaxWidth
+import com.robin.claudeusage.ui.LocalWindowHeight
+import androidx.compose.foundation.layout.widthIn
 import com.robin.claudeusage.ui.ContentColumn
 import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.Fmt
@@ -164,7 +166,9 @@ internal const val FIXED_TAB_LIMIT = 3
 @Composable
 private fun App(startProfile: Profile) {
     val context = LocalContext.current
-    val repo = remember { UsageRepository(context) }
+    // CCBG-46 (Keystore Wedge): the one repository allowed to reset an unreadable
+    // credential store — opening the app is the only path that may sign accounts out.
+    val repo = remember { UsageRepository(context, credentialResetAllowed = true) }
     val cache = remember { repo.cacheSettings() }
     var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
     // Deliberately not persisted: the debug easter egg re-locks on every launch.
@@ -603,7 +607,24 @@ private fun ProfileTabs(
     // must honour the new answer.
     val motionContext = LocalContext.current
 
+    // CCRM-85 (Crash Capture), wireframe rev B §1: one app-wide card above the tabs and
+    // outside the pager, so it never repeats per page. At compact height (a phone in
+    // landscape) pinning it would eat a short screen, so it moves into the open page's
+    // scrolling column instead.
+    val compactHeight = LocalWindowHeight.current < 480.dp
+
     Column(modifier = modifier.fillMaxSize()) {
+        if (!compactHeight) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                CrashCard(
+                    use24h,
+                    Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+                        .widthIn(max = ChartColumnMaxWidth - 40.dp)
+                        .fillMaxWidth(),
+                )
+            }
+        }
         // One tab is no choice, so the strip disappears entirely rather than showing a lone
         // tab with nothing to switch to.
         if (profiles.size > 1) {
@@ -679,6 +700,7 @@ private fun ProfileTabs(
         ) { page ->
             ContentColumn(maxWidth = ChartColumnMaxWidth) {
                 Spacer(Modifier.height(16.dp))
+                if (compactHeight) CrashCard(use24h, Modifier.fillMaxWidth().padding(bottom = 12.dp))
                 ProfileScreen(
                     repo, profiles[page], use24h, usageLeft, resetClock, showOverPace,
                     density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,

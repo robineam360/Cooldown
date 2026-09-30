@@ -13,7 +13,9 @@ steps.
 - CCRM-85 (Crash Capture);
 - CCBG-46 (Keystore Wedge);
 - visible fixes: CCBG-35 (Tab Clip), CCBG-45 (Single Panel Wording), and CCBG-48 (Reconfigure Label)
-  if it qualifies.
+  if it qualifies;
+- CCBG-50 (Degraded Store Notice), added by Robin on 2026-09-30 after the Step 4 judge. It needs a
+  wireframe and Robin's review call on the scope change.
 
 **Filed but not in v1.9:** CCBG-47 (Widget Theme Lag) and CCBG-49 (Unassigned Label Overflow).
 
@@ -88,8 +90,8 @@ begun, run its *Always after* block first.
 | 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
 | 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☑ |
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☑ |
-| 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
-| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48 | session | 2, 3 | ☐ |
+| 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☑ |
+| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☐ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☐ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☐ |
 | 8 | Release v1.9 on GitHub; AAB built from the same commit | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
@@ -317,14 +319,29 @@ two specs; adopt or answer every finding. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Every test named above exists and passes on both flavors.
-- ☐ The crash card matches the approved wireframe state by state.
-- ☐ The judge's verdict is recorded.
+- ☑ Every test named above exists and passes on both flavors.
+- ☑ The crash card matches the approved wireframe state by state (the copy is word for word, pinned
+  by `CrashCopyTest`; the look is checked on the phone in Step 7).
+- ☑ The judge's verdict is recorded.
 
 **Reversal:** `git revert`. CCBG-46 has wiped nothing yet, because it runs only on phones that get
 the build.
 
 **Log:**
+- 2026-09-30 — Built. The tests are `CredentialStoreTest` (every exception case, preserve cases
+  assert the file survives, the reset reads back from a fresh store, the no-reset boot path and a
+  source scan for it), `CrashReportTest` (the scrubber with and without Bearer, emails, keyed
+  secrets, canaries in every kept field and in sample ANR and native tombstone traces, no messages),
+  `CrashHandlerTest` (always chains), `ExitReasonsTest` (whitelist, duplicates, watermark),
+  `CrashCopyTest` and `CrashStoreTest`. The gate is green: 707 github tests and 693 play tests,
+  both debug builds, lint on both. **Fresh Opus judge (purpose c):** round 1 was `blocking`
+  (a share of eight ANR-sized reports could throw TransactionTooLargeException), plus five
+  concerns and four nits. Every finding within the spec was fixed. The round 2 delta was `accept`.
+  A first judge spawn died on the account's weekly limit before reading anything and was re-run.
+  **Robin, 2026-09-30:** a corrupted *value* stays a preserve case, as specced. The degraded-store
+  notice is filed as CCBG-50 and is to be wireframed for v1.9. One ungraded note: at the 5-minute
+  background retry a main-thread getter can run the two-attempt retry (≈200 ms) under the opener's
+  lock. It applies only while degraded, and was accepted.
 
 ---
 
@@ -342,6 +359,9 @@ card's "Privacy policy" row (opens the docs/privacy.md blob URL on main); CCBG-3
 CCBG-45 — the one-account notification uses the Duet wording, "5h" and "Weekly", collapsed and
 expanded (Robin's Q2: fix as-is); CCBG-48 only if Step 2 ruled it a restoration. Check each at 360
 dp and on the Fold 7 widths in the emulator. Close out per Convention 4.
+Before any of that: CCBG-50 (Degraded Store Notice) was added to v1.9 by Robin on 2026-09-30. Draw
+its wireframe in design/ (every state, both width classes), get Robin's approval, and get Robin's
+review call on the scope change (the plan's Astra budget is spent), then build it here too.
 ```
 
 **Done when:**
