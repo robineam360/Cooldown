@@ -57,7 +57,7 @@ class PlayChannelTest {
     }
 
     @Test
-    fun `the poll writes nothing on a clean install`() {
+    fun `a clean install stays clean`() {
         cache.clearUpdateState()
         Channel.autoCheck(context, cache)
         assertNull(cache.latestKnownVersion())

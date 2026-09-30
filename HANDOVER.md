@@ -4,19 +4,27 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: v1.9 Step 3, channel split, scoped queries and CI (written 2026-09-30)
+## ▶ Next session — start here: v1.9 Step 4, Crash Capture and Keystore Wedge (written 2026-09-30)
 
-**Step 2 is done.** Robin approved wireframe rev B of
-[design/2026-09-28-v19-play-ready.mockup.html](design/2026-09-28-v19-play-ready.mockup.html) on
-2026-09-30, answering Q1–Q7 one at a time, each as drawn. The decisions are in the Status lines of
-CCRM-85 (Crash Capture), CCRM-87 (Update Channel), CCRM-89 (Privacy Policy), CCBG-35 (Tab Clip) and
-CCBG-48 (Reconfigure Label); CCBG-48 is a restoration of rev D. Fable was out of usage credits for
-the review, so a fresh Opus judge ruled in its place and Astra (high) cross-checked; every concern
-is adopted or was decided by Robin. **Q4, the Play account type, is still open** and gates only Step 9.
+**Step 3 is done.** The app now builds as two flavors from one commit: `github` (the Releases APK,
+update check unchanged) and `play` (no update path at all; it clears update state inherited from a
+GitHub install). That is CCRM-87 (Update Channel). CCRM-88 (Scoped Queries) replaced
+`QUERY_ALL_PACKAGES` with a scoped `<queries>` that also names the three provider apps, so the
+notification's "open the provider's app" tap keeps working. CCRM-91 (CI Gate) is green on `main` at
+02df435. The task names are now `testGithubDebugUnitTest testPlayDebugUnitTest`,
+`assembleGithubRelease` (published as `app-release.apk`) and `bundlePlayRelease`. The build needs
+JDK 21. Two spec gaps were ruled on and logged in RUNBOOK Step 3: "no `.so`" became an allowlist
+plus a 16 KB check, and the provider-app `<package>` lines. A fresh Opus judge and Sol reviewed;
+every concern is adopted or answered. **Q4, the Play account type, is still open** and gates only
+Step 9.
 
-Nothing for Robin to do before Step 3. Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
+**Robin, optional before Step 4:** two Dependabot PRs (work-runtime 2.12.0, Gradle wrapper 9.8.0)
+went red on the old JDK 17 workflow. Comment `@dependabot rebase` on each to re-run them on the
+fixed one. Nothing else is needed.
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 3, and run Step 3's Resume block.
+Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
+
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 4, and run Step 4's Resume block.
 
 ---
 

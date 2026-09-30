@@ -57,7 +57,11 @@ FORBIDDEN = [
     "Lcom/robin/claudeusage/data/UpdateCheck;",
     "Lcom/robin/claudeusage/data/UpdateGate;",
     "Lcom/robin/claudeusage/notify/UpdateNotification;",
+    "Lcom/robin/claudeusage/data/UpdateInfo;",
     "Lcom/robin/claudeusage/channel/UpdatesCardKt;",
+    # The Settings button and the notice action; any copy of it in the Play build is a
+    # leftover update path.
+    "Check for updates",
 ]
 
 

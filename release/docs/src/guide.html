@@ -504,7 +504,7 @@
   <h3 style="margin-top:2mm;">For future rebuilds</h3>
   <ul class="dots">
     <li>Single-module Android project — Kotlin · Jetpack Compose · WorkManager · OkHttp · min SDK 31, target 36. Widgets returned in v1.8 as home-screen AppWidgets, painted by the same ring renderer as the status bar (CCRM-83 (Ring Renderer)); the notification itself is still plain RemoteViews.</li>
-    <li>Build (signed release): <code class="inline">JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleGithubRelease</code> → APK in <code class="inline">app/build/outputs/apk/github/release/</code>. Signing reads a gitignored <code class="inline">keystore.properties</code> + <code class="inline">.jks</code> at the repo root — back them up; losing them means no more updates.</li>
+    <li>Build (signed release): <code class="inline">JAVA_HOME=/opt/homebrew/opt/openjdk@21 ./gradlew :app:assembleGithubRelease</code> → APK in <code class="inline">app/build/outputs/apk/github/release/</code>. Signing reads a gitignored <code class="inline">keystore.properties</code> + <code class="inline">.jks</code> at the repo root — back them up; losing them means no more updates.</li>
     <li>The launcher icon is four VectorDrawables on one 108-unit grid (foreground, background, monochrome, and the in-app round copy) — the same ECG geometry in each, so About and the drawer show one picture.</li>
     <li>If Anthropic or OpenAI changes an undocumented response schema, the parsers ignore unknown fields; if bars go blank, check the raw JSON in the Debug section first.</li>
   </ul>

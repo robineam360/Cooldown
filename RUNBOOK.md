@@ -87,7 +87,7 @@ begun, run its *Always after* block first.
 |---|---|---|---|---|
 | 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
 | 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☑ |
-| 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☐ |
+| 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☑ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48 | session | 2, 3 | ☐ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☐ |
@@ -231,16 +231,16 @@ Convention 4.
 ```
 
 **Done when:**
-- ☐ Both flavors compile, both flavors' tests are green, and the stale-`latestKnownVersion` test
+- ☑ Both flavors compile, both flavors' tests are green, and the stale-`latestKnownVersion` test
   exists.
-- ☐ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
+- ☑ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
   the privacy URL is allowed), and every `.so` in either output is on the allowlist and ready for
   16 KB pages (amended 2026-09-30 from "no `.so`"; see the Log).
-- ☐ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
-- ☐ CI runs both flavors' unit tests and is green on `main`.
-- ☐ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
+- ☑ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
+- ☑ CI runs both flavors' unit tests and is green on `main`.
+- ☑ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
   `app-release.apk`.
-- ☐ The judge's verdict is recorded and its findings are adopted or answered.
+- ☑ The judge's verdict is recorded and its findings are adopted or answered.
 
 **Reversal:** `git revert` per commit, newest first. Delete `ci.yml` with its commit's revert.
 
@@ -274,6 +274,18 @@ Convention 4.
 - 2026-09-30 — First CI run on 90271b3 **failed**: all 14 Robolectric classes, "Android SDK 36 requires
   Java 21 (have Java 17)". The Mac passes only because `~/.gradle/gradle.properties` points Gradle at
   JDK 21, which the repo never recorded. CI now sets up JDK 21.
+- 2026-09-30 — CI green on `main` at 02df435 (run 36740267293: both flavors' tests, unsigned
+  `assembleGithubRelease` + `bundlePlayRelease`, lint on both flavors). Signed artefacts rebuilt at
+  HEAD: AAB `bundletool validate` passes, AAB/APK signers equal the trusted digest, no
+  `QUERY_ALL_PACKAGES` in either merged manifest, and `tools/check_artefact.py` passes on the AAB,
+  the play APK, a universal APK and every device split.
+- 2026-09-30 — Fresh Opus judge on `126c701..90271b3` (Fable out of credits): **concerns**, six
+  findings. J1 (CI on JDK 17) was already fixed at 02df435; J2–J5 adopted (JDK 21 in the build docs,
+  a test rename, `UpdateInfo` and "Check for updates" added to the scan, `&&` in RELEASING §2); J6
+  (SHA-pin the actions) answered, not adopted. Table and reasons:
+  `design/research/2026-09-30-v19-step3-judge.md`. Two Dependabot PRs opened today ran on the old
+  JDK 17 workflow and are red; they need a rebase onto 02df435 before they can go green. **Step 3
+  closed.**
 
 ---
 

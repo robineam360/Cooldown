@@ -21,10 +21,10 @@ forgetting the bump means colleagues can't install over the old build.
 ## 2. Build and refresh the APK
 
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # the tests need 21; the app targets 17 bytecode
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
-./gradlew assembleGithubRelease
-mkdir -p app/build/asset && cp app/build/outputs/apk/github/release/app-github-release.apk app/build/asset/app-release.apk
+./gradlew assembleGithubRelease && mkdir -p app/build/asset && \
+   cp app/build/outputs/apk/github/release/app-github-release.apk app/build/asset/app-release.apk
 # The release asset is app/build/asset/app-release.apk — upload it in step 4.
 # (No longer copied into release/ or committed.)
 ```
@@ -109,7 +109,7 @@ permanent key. Nothing is public until step 6.
 ```
 
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # the tests need 21; the app targets 17 bytecode
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 BT=$ANDROID_HOME/build-tools/36.0.0          # apksigner, aapt
 V=1.8                                        # this release's versionName

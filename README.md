@@ -276,7 +276,8 @@ logs record status codes only — never tokens, headers or response bodies.
 
 ## Build from source
 
-Requirements: JDK 17, Android SDK (compileSdk 36).
+Requirements: JDK 21 to build and run the tests (Robolectric's SDK 36 sandbox needs it; the
+app still targets Java 17 bytecode), Android SDK (compileSdk 36).
 
 ```bash
 ./gradlew assembleGithubDebug
