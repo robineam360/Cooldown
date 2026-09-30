@@ -1,0 +1,4 @@
+VERDICT: concerns
+1. [concerns] Call 4, interacting with call 2 — Dismissed reports are reachable only through an undisclosed seven-tap unlock; cancelling the share sheet also dismisses the card — Users can lose the visible route to a report without sharing it — Put saved-report access in ordinary Settings, or provide a discoverable route after dismissal.
+2. [concerns] Call 7 — A canary placed only in the exception message cannot prove the scrubber works because exception messages are excluded entirely — The device test could pass while retained fields or supplemental ANR/native reports still expose sensitive content — Keep this test for message exclusion and add canaries in retained input fields and supplemental trace fixtures; inspect the saved and shared reports.
+COVERAGE: full[model-mesh] tier=astra model=gpt-6-astra effort=high tokens=15,917 transcript=/var/folders/_h/p57yw3_54cd5brs6bb858bch0000gq/T/model-mesh.XXXXXX.3oOyfYzc6x/transcript.log

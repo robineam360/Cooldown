@@ -2,167 +2,335 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cooldown v1.9 visible changes — rev A, for review</title>
+<title>Cooldown v1.9 visible changes — rev B, for review</title>
 <style>
-  :root { --page:#f8f6f3; --ink:#28231f; --muted:#665f59; --edge:#dfd7d0; --paper:#fff; --accent:#b75c3d; --warm:#f4e9e1; --ok:#286b46; --bad:#a83d34; }
+  :root { --page:#f8f6f3; --ink:#28231f; --muted:#665f59; --edge:#dfd7d0; --accent:#b75c3d; --warn:#80500d; --good:#286b46; --bad:#a83d34 }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page:#171513; --ink:#ede8e4; --muted:#9b928b; --edge:#2c2825; --accent:#e59980; --warn:#d8ac63; --good:#7fc08f; --bad:#e08268 } }
+  :root[data-theme="dark"] { --page:#171513; --ink:#ede8e4; --muted:#9b928b; --edge:#2c2825; --accent:#e59980; --warn:#d8ac63; --good:#7fc08f; --bad:#e08268 }
   * { box-sizing:border-box }
-  body { margin:0; background:var(--page); color:var(--ink); font:14px/1.48 system-ui,-apple-system,Segoe UI,sans-serif }
-  main { max-width:1280px; margin:auto; padding:32px 24px 100px }
-  h1 { font-size:30px; letter-spacing:-.025em; margin:4px 0 8px }
-  h2 { font-size:21px; letter-spacing:-.015em; border-top:1px solid var(--edge); padding-top:28px; margin:42px 0 6px }
-  h3 { font-size:15px; margin:18px 0 8px }
-  p { max-width:88ch; margin:7px 0 12px }
-  .eyebrow,.caption,.badge { font:600 11px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; text-transform:uppercase }
+  body { margin:0; background:var(--page); color:var(--ink); font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif }
+  main { max-width:1320px; margin:auto; padding:32px 24px 110px }
+  h1 { font-size:29px; letter-spacing:-.02em; margin:4px 0 8px }
+  h2 { font-size:20px; letter-spacing:-.01em; border-top:1px solid var(--edge); padding-top:28px; margin:48px 0 6px }
+  h3 { font-size:14px; margin:22px 0 8px }
+  p, ul { max-width:92ch }
+  .eyebrow,.cap,.badge,.tag { font:600 11px/1.3 ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.06em; text-transform:uppercase }
   .eyebrow { color:var(--accent) }
   .lede,.note { color:var(--muted) }
-  .badge { display:inline-block; padding:5px 9px; border:1px solid #ad741f; color:#80500d; border-radius:6px; margin:4px 0 8px }
-  .controls { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:11px 14px; background:#ffffffeb; border:1px solid var(--edge); border-radius:12px; backdrop-filter:blur(12px); box-shadow:0 4px 16px #0001; margin:22px 0 }
+  .note b { color:var(--ink) }
+  .badge { display:inline-block; padding:5px 9px; border:1px solid var(--warn); color:var(--warn); border-radius:6px; margin:4px 0 8px }
+  .tag { display:inline-block; padding:2px 6px; border-radius:4px; background:color-mix(in srgb,var(--warn) 16%,transparent); color:var(--warn); letter-spacing:.04em }
+  .controls { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:10px 14px; background:color-mix(in srgb,var(--page) 92%,transparent); border:1px solid var(--edge); border-radius:12px; backdrop-filter:blur(12px); margin:20px 0 }
   .controls label { display:flex; gap:7px; align-items:center; font-size:12px; font-weight:650 }
-  select { font:inherit; border:1px solid var(--edge); background:#fff; border-radius:7px; padding:6px 8px; color:var(--ink) }
-  .frames { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; margin:18px 0 8px }
+  select { font:inherit; border:1px solid var(--edge); background:var(--page); color:var(--ink); border-radius:7px; padding:5px 8px }
+  .frames { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; margin:18px 0 8px }
   .sample { max-width:100% }
-  .caption { color:var(--muted); margin:7px 0 0; max-width:360px }
-  .phone { width:360px; max-width:100%; background:var(--surface); color:var(--fg); border:5px solid #1b1b1b; border-radius:24px; overflow:hidden; min-height:220px; font:14px/1.35 Roboto,Arial,sans-serif; box-shadow:0 9px 23px #0002 }
-  .phone.w410 { width:410px }
-  .phone.w760 { width:760px; border-radius:18px }
-  .phone.light { --surface:#faf7f3; --card:#fff; --fg:#25201d; --quiet:#66605b; --line:#e7dfd9; --primary:#b75c3d; --soft:#f4e9e1; --error:#a03c32; --error-bg:#f9e9e6 }
-  .phone.dark { --surface:#0d0d0d; --card:#1b1b1b; --fg:#eee8e3; --quiet:#b4aaa3; --line:#34302d; --primary:#e79a80; --soft:#35241e; --error:#f0a59d; --error-bg:#3d2423 }
-  .statusbar { height:25px; display:flex; justify-content:space-between; align-items:center; padding:0 18px; font-size:11px; font-weight:600 }
-  .toolbar { min-height:55px; display:flex; align-items:center; gap:12px; padding:0 16px; font-size:19px; font-weight:600 }
-  .toolbar .right { margin-left:auto; font-size:18px }
-  .account-tabs { display:flex; border-bottom:1px solid var(--line); padding:0 14px; gap:25px; font-size:13px; color:var(--quiet) }
-  .account-tabs span { padding:8px 0; white-space:nowrap }
-  .account-tabs .active { border-bottom:2px solid var(--primary); color:var(--fg); font-weight:700 }
-  .content { padding:14px 16px 22px }
-  .content.wide { max-width:740px; margin:auto }
-  .section-label { font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--quiet); margin:14px 0 8px }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:0 0 11px }
-  .card.compact { padding:14px }
-  .row { display:flex; align-items:center; gap:10px }
+  .cap { color:var(--muted); margin:8px 0 0; max-width:360px; line-height:1.45 }
+  .cap.good { color:var(--good) } .cap.bad { color:var(--bad) } .cap.warn { color:var(--warn) }
+  table.m { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0 }
+  table.m th, table.m td { border-bottom:1px solid var(--edge); padding:8px 14px 8px 0; text-align:left; vertical-align:top }
+  table.m th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.05em }
+  table.m td:first-child { font-weight:650; white-space:nowrap }
+  code { font:12px ui-monospace,"SF Mono",Menlo,monospace; background:color-mix(in srgb,var(--edge) 60%,transparent); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere }
+  .calls li { margin:6px 0 }
+
+  /* ---------- device frames: 1 CSS px = 1 dp; text px = sp at font scale 1.0 ---------- */
+  .phone { background:var(--surface); color:var(--fg); border:5px solid #1b1b1b; border-radius:26px; overflow:hidden; font:14px/1.4 Roboto,"Segoe UI",Arial,sans-serif; box-shadow:0 8px 22px #0002; position:relative }
+  .w360 { width:370px } .w420 { width:430px } .w750 { width:760px; border-radius:18px }
+  .light { --surface:#fbf8f5; --card:#f3ece7; --fg:#231f1c; --quiet:#5f5853; --line:#e2d9d2; --primary:#a8522f; --onprimary:#fff; --err:#a03c32; --warnT:#8a5a12; --scrim:#0006; --dialog:#f6efea }
+  .dark  { --surface:#141210; --card:#221f1c; --fg:#ece6e1; --quiet:#b3a9a2; --line:#38332f; --primary:#e79a80; --onprimary:#3a1a0e; --err:#f0a59d; --warnT:#e2b867; --scrim:#000a; --dialog:#2a2623 }
+  .sb { height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 18px; font-size:11px; font-weight:600 }
+  .bar { height:56px; display:flex; align-items:center; gap:14px; padding:0 8px 0 16px; font-size:20px; font-weight:500 }
+  .bar .r { margin-left:auto; display:flex; gap:18px; font-size:18px; color:var(--quiet); padding-right:8px }
+  .ptabs { display:flex; border-bottom:1px solid var(--line) }
+  .ptabs span { flex:1; text-align:center; padding:12px 0 11px; font-size:14px; font-weight:500; opacity:.6; border-bottom:2px solid transparent; margin-bottom:-1px }
+  .ptabs span.on { opacity:1; border-color:var(--primary) }
+  .mark { display:inline-block; width:12px; height:12px; border-radius:50%; background:#d97757; vertical-align:-1px; margin-right:6px }
+  .mark.gpt { background:var(--fg); border-radius:3px }
+  .col { padding:0 16px 20px; margin:0 auto }
+  .w750 .col { max-width:560px }
+  .w750 .col.settings { max-width:none; padding:0 24px 20px }
+  .card { background:var(--card); border-radius:12px; padding:16px; margin:0 0 12px }
+  .lbl { font-size:12px; font-weight:500; letter-spacing:.06em; text-transform:uppercase; color:var(--quiet); padding:0 0 8px 4px }
+  .gap24 { height:24px } .gap16 { height:16px } .gap12 { height:12px } .gap8 { height:8px }
+  .t-lg { font-size:16px } .t-md { font-size:14px } .t-sm { font-size:12px; color:var(--quiet) } .t-xs { font-size:11px; color:var(--quiet) }
+  .semi { font-weight:600 }
+  .hr { height:1px; background:var(--line); margin:10px 0 }
+  .row { display:flex; align-items:center; gap:12px }
   .grow { flex:1; min-width:0 }
-  .muted { color:var(--quiet) }
-  .small { font-size:12px }
-  .tiny { font-size:11px }
-  .title { font-size:15px; font-weight:700 }
-  .rule { height:1px; background:var(--line); margin:13px 0 }
-  .pill { display:inline-block; padding:3px 7px; border-radius:30px; font-size:11px; background:var(--soft); color:var(--primary); font-weight:700 }
-  .button { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:0 12px; border:1px solid var(--primary); border-radius:20px; color:var(--primary); font-size:13px; font-weight:700; white-space:nowrap }
-  .button.text { border-color:transparent; padding:0 9px }
-  .actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:2px; margin-top:8px }
-  .value { font-size:27px; font-weight:750; color:var(--primary); margin-left:auto }
-  .bar { height:8px; margin:11px 0 7px; background:var(--line); border-radius:8px; overflow:hidden }
-  .bar:before { content:""; display:block; width:58%; height:100%; background:var(--primary) }
-  .statusline { color:var(--quiet); font-size:12px; display:flex; gap:6px; align-items:center; padding:8px 1px }
-  .notice { border-radius:12px; background:var(--error-bg); color:var(--error); padding:10px 12px; margin:6px 0 11px }
-  .notice .button { color:var(--error); border-color:transparent }
-  .crash { border-left:3px solid var(--primary); padding-left:13px }
-  .crash .headline { font-weight:700; font-size:14px; line-height:1.35 }
-  .crash .summary { font-size:12px; color:var(--quiet); margin-top:4px }
-  .error-icon { color:var(--error); font-size:18px; align-self:flex-start }
-  .about { text-align:center; padding:19px 18px }
-  .appicon { margin:0 auto 7px; width:52px; height:52px; display:grid; place-items:center; border-radius:14px; background:#242425; color:#df7651; font-size:27px }
-  .about .rule { margin:14px 0 }
-  .linkrow { min-height:48px; display:flex; align-items:center; gap:10px; text-align:left; font-size:14px }
-  .linkrow .icon { font-size:18px; color:var(--primary) }
-  .linkrow .chevron { margin-left:auto; color:var(--quiet) }
-  .more-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px }
-  .more-grid > div { min-width:0 }
-  .settings-tabs { display:flex; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--line); white-space:nowrap }
-  .settings-tabs::-webkit-scrollbar { display:none }
-  .settings-tabs span { min-height:48px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0 13px; font-size:14px; font-weight:600; border-bottom:2px solid transparent }
-  .settings-tabs span.active { color:var(--primary); border-bottom-color:var(--primary) }
-  .settings-tabs.large span { min-height:72px; font-size:28px; padding:0 20px }
-  .tab-window { width:100%; overflow:hidden }
-  .tab-track { width:max-content; display:flex; border-bottom:1px solid var(--line) }
-  .tab-track span { height:48px; display:flex; align-items:center; padding:0 13px; font-size:14px; font-weight:600; white-space:nowrap }
-  .tab-track.large span { height:72px; font-size:28px; padding:0 20px }
-  .tab-track span.active { border-bottom:2px solid var(--primary); color:var(--primary) }
-  .tab-track.shift { transform:translateX(-180px) }
-  .tab-track.large.shift { transform:translateX(-278px) }
-  .debug-row { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px }
-  .bullet { width:8px; height:8px; border-radius:50%; background:var(--primary); display:inline-block }
-  .matrix { width:100%; border-collapse:collapse; font-size:13px; margin:16px 0 }
-  .matrix th,.matrix td { border-bottom:1px solid var(--edge); padding:9px 12px 9px 0; text-align:left; vertical-align:top }
-  .matrix th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.05em }
-  .matrix td:first-child { font-weight:650 }
-  code { background:#0000000d; padding:1px 4px; border-radius:3px }
-  @media(max-width:800px) { main { padding:22px 13px 80px } .controls { top:0 } .more-grid { grid-template-columns:1fr } }
+  .sw { width:40px; height:24px; border-radius:12px; background:var(--primary); position:relative; flex:none }
+  .sw:after { content:""; position:absolute; right:4px; top:4px; width:16px; height:16px; border-radius:50%; background:var(--onprimary) }
+  .ob { display:inline-flex; align-items:center; height:40px; padding:0 20px; border:1px solid var(--quiet); border-radius:20px; color:var(--primary); font-size:14px; font-weight:500; white-space:nowrap }
+  .ob.err { color:var(--err); border-color:var(--err) }
+  .tb { display:inline-flex; align-items:center; height:40px; padding:0 12px; border-radius:20px; color:var(--primary); font-size:14px; font-weight:500; white-space:nowrap }
+  .tb.hl { outline:2px dashed var(--warnT); outline-offset:1px }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 }
+  .chip { height:32px; display:inline-flex; align-items:center; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px }
+  .chip.on { background:color-mix(in srgb,var(--primary) 22%,transparent); border-color:transparent }
+  .status { display:flex; gap:6px; align-items:center; font-size:12px; color:var(--quiet); padding:4px 2px }
+  .notice { border-radius:12px; padding:10px 12px; background:color-mix(in srgb,var(--warnT) 13%,transparent) }
+  .notice .h { font-size:14px; font-weight:600; color:var(--warnT) }
+  .notice .d { font:12px ui-monospace,Menlo,monospace; color:var(--warnT); opacity:.8 }
+  .notice .tb { color:var(--warnT); padding:0 8px; margin-left:-8px }
+  .usage { background:var(--card); border-radius:12px; padding:16px; margin-bottom:12px }
+  .usage .big { font-size:34px; font-weight:600; font-family:Georgia,serif }
+  .meter { height:8px; border-radius:4px; background:var(--line); margin:10px 0 6px; position:relative; overflow:hidden }
+  .meter i { position:absolute; left:0; top:0; bottom:0; width:58%; background:var(--primary); border-radius:4px }
+  .dim { opacity:.35 }
+  /* crash card */
+  .crash { background:var(--card); border-radius:12px; padding:14px 16px 6px; margin:12px 16px 4px; border:1px solid var(--line) }
+  .w750 .crash { max-width:560px; margin:12px auto 4px }
+  .crash .ic { width:20px; height:20px; flex:none; border:2px solid var(--quiet); border-radius:50%; display:grid; place-items:center; font:700 12px/1 Roboto,Arial; color:var(--quiet); margin-top:1px }
+  .crash .h { font-size:14px; font-weight:600 }
+  .crash .d { font-size:12px; color:var(--quiet); margin-top:2px }
+  .crash .acts { display:flex; justify-content:flex-end; gap:4px; margin:6px -8px 0 0; flex-wrap:wrap }
+  .fs2 .crash .h { font-size:28px } .fs2 .crash .d { font-size:24px } .fs2 .crash .tb { font-size:28px; height:56px } .fs2 .crash .ic { width:36px; height:36px; font-size:22px }
+  /* about */
+  .about { text-align:center; padding:20px }
+  .about .icon { width:56px; height:56px; border-radius:14px; margin:0 auto 8px; background:#1f1f22; display:grid; place-items:center }
+  .about .icon svg { width:40px; height:40px }
+  .about .ver { display:inline-block; font-size:12px; color:var(--quiet); padding:4px 8px }
+  /* settings tabs */
+  .stabs { display:flex; border-bottom:1px solid var(--line); overflow:hidden; white-space:nowrap }
+  .stabs span { flex:1; text-align:center; font-size:14px; padding:12px 10px; border-bottom:2px solid transparent; margin-bottom:-1px; overflow:hidden }
+  .stabs span.on { color:var(--primary); border-color:var(--primary) }
+  .stabs.scroll span { flex:0 0 auto; min-width:90px; padding:12px 16px }
+  .stabs.clip span { flex:0 0 90px; padding-left:10px; padding-right:10px; text-overflow:clip }
+  .fs2 .stabs span { font-size:28px; padding:14px 10px }
+  .fs2 .stabs.scroll span { padding:14px 16px }
+  .fade { position:relative } .fade:after { content:""; position:absolute; right:0; top:0; bottom:0; width:28px; background:linear-gradient(90deg,transparent,var(--surface)); pointer-events:none }
+  .twocol { display:grid; grid-template-columns:1fr 1fr; gap:20px }
+  /* dialog */
+  .scrim { position:absolute; inset:0; background:var(--scrim); display:grid; place-items:center; padding:24px }
+  .dlg { background:var(--dialog); border-radius:28px; padding:24px 24px 18px; max-width:312px }
+  .dlg .h { font-size:24px; line-height:1.25; margin-bottom:14px }
+  .dlg .b { font-size:14px; color:var(--quiet) }
+  .dlg .acts { display:flex; justify-content:flex-end; gap:8px; margin-top:22px }
+  .hl-box { outline:2px dashed var(--warnT); outline-offset:3px; border-radius:12px }
+  .ghost { color:var(--quiet); font-size:12px; text-align:center; padding:6px; border:1px dashed var(--line); border-radius:10px; margin:0 16px 8px }
+  @media (max-width:820px) { main { padding:22px 12px 80px } .twocol-page { display:block } }
 </style>
 <main>
-  <div class="eyebrow">v1.9 · 28 September 2026 · rev A</div>
+  <div class="eyebrow">v1.9 · CCRM-86 (Play Readiness) · rev B · 30 September 2026</div>
   <h1>Play-ready visible changes</h1>
-  <p class="lede">A review wireframe for the v1.9 screens. Values and dates are sample data. It shows both release channels, the crash report states, the narrow and unfolded Settings layouts, and the large-font tab behavior.</p>
-  <span class="badge">For review · no implementation approved yet</span>
-  <div class="controls" aria-label="Wireframe controls">
+  <p class="lede">Every change a user can see in v1.9, drawn in every state at 360 dp (narrow phone), about 420 dp (Fold 7 cover) and about 750 dp (Fold 7 inner). The frames are 1 CSS px per dp; text is in sp at font scale 1.0 unless a frame says 2.0×. Usage values and dates are sample data. Things that are new are outlined in a dashed amber line.</p>
+  <span class="badge">For review · nothing here is approved yet</span>
+  <p class="note"><b>Rev B, compared with rev A:</b> every existing element is now drawn from the real code (About card, Updates card, Debug cards, error notice, status line), not invented. The crash card moves out of the swipeable account pages to above the account tabs, so it no longer repeats on every page. The buttons are in Material order ("Not now" then "Share report"). A crash with no trace can still be shared. System kills never show a card. The Settings tabs now scroll only when a title does not fit. A <b>Crash reports</b> card in Diagnostics lets you share a report you dismissed. The widget reconfigure section just points to the approved rev D view and draws nothing new.</p>
+
+  <div class="controls">
     <label>Appearance <select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
-    <label>Width <select id="width"><option value="360">360 dp · narrow phone</option><option value="410">410 dp · Fold cover</option><option value="760">760 dp · Fold inner</option></select></label>
-    <label>Channel <select id="channel"><option value="github">GitHub</option><option value="play">Play</option></select></label>
+    <span class="note" style="font-size:12px">The page follows your system theme. This control only switches the device frames.</span>
   </div>
-  <p class="note">Measurements below are design units: one CSS px in the device frames represents one Android dp at normal font scale; text px represents sp. The 2.0× examples double text size while leaving dp spacing in place.</p>
-  <table class="matrix">
-    <tr><th>Element</th><th>Size and spacing for implementation</th></tr>
-    <tr><td>Screen content</td><td>16 dp side padding at 360/410 dp; centered content capped at 760 dp on the Fold inner screen. Settings More uses two columns from the app's existing wide breakpoint.</td></tr>
-    <tr><td>Crash card</td><td>16 dp radius, 16 dp inset, 3 dp accent rail, 14 sp title, 12 sp summary, 36 dp action height, 8 dp between text and actions. The card has an 11 dp gap below it.</td></tr>
-    <tr><td>Privacy row</td><td>48 dp minimum height with 18 dp leading icon, 14 sp label and trailing external-link chevron; the existing About card keeps its 20 dp inset.</td></tr>
-    <tr><td>Settings tabs</td><td>48 dp minimum height, 14 sp label, 13 dp horizontal padding, 2 dp selected underline. At font scale 2.0, labels render at 28 sp and the row grows to at least 72 dp. No label truncation.</td></tr>
-    <tr><td>Debug action</td><td>48 dp minimum row height, below the existing Debug tools with a divider; confirmation uses a 16 sp title and two 36 dp actions.</td></tr>
+
+  <!-- ===================================================================== -->
+  <h2>1 · Main screen: the crash card on the next launch</h2>
+  <p class="note">This is CCRM-85 (Crash Capture). After a crash, the next launch shows <b>one app-wide card directly under the top bar, above the account tabs</b>. It sits outside the swipeable account pages, so it stays put while you swipe accounts and never appears twice. With one account there are no tabs, and the card sits above the usage cards. It never shows a trace, an email or an exception message.</p>
+  <table class="m">
+    <tr><th>Part</th><th>Spec</th></tr>
+    <tr><td>Container</td><td>Card on <code>surfaceContainer</code>, 12 dp radius, a 1 dp <code>outlineVariant</code> border, 16 dp side margins, 12 dp above and 4 dp below. On the inner screen it is capped at the chart-column width and centred. Padding is 16 dp at the sides, 14 dp on top and 6 dp at the bottom (the text buttons bring their own height).</td></tr>
+    <tr><td>Icon</td><td>A 20 dp outlined "!" in <code>onSurfaceVariant</code>, top-aligned with the title, 12 dp gap. Deliberately not red: it's past news, not an ongoing failure.</td></tr>
+    <tr><td>Text</td><td>Title in <code>bodyMedium</code> SemiBold. The detail line below it is <code>bodySmall</code> in <code>onSurfaceVariant</code>, 2 dp gap. Both wrap and neither is truncated.</td></tr>
+    <tr><td>Actions</td><td>Two TextButtons, 40 dp high, aligned to the end, 4 dp apart: <b>Not now</b> · <b>Share report</b>. At 2.0× they wrap below each other rather than clip.</td></tr>
+    <tr><td>Time</td><td>"today at 9:41" or "yesterday at 21:07", otherwise "on 28 Sep". It follows the app's 12 h/24 h setting.</td></tr>
+    <tr><td>Share</td><td>The system share sheet with <code>text/plain</code> and the subject "Cooldown crash report (v1.9)". It uses the same chooser path as "Share app log", plus the chooser's callback (<code>createChooser</code> with an <code>IntentSender</code>). The card goes away only once you pick an app in the sheet. Backing out of the sheet keeps the card.</td></tr>
+  </table>
+  <h3>States</h3>
+  <div id="crashA" class="frames"></div>
+  <div id="crashB" class="frames"></div>
+  <table class="m">
+    <tr><th>What happened</th><th>Card</th></tr>
+    <tr><td>A Java crash (uncaught exception)</td><td>"Cooldown crashed today at 9:41". Detail: "A report is saved on this phone. It goes nowhere unless you share it."</td></tr>
+    <tr><td>An ANR</td><td>"Cooldown stopped responding today at 9:41". Same detail line. The report carries the ANR thread dump.</td></tr>
+    <tr><td>A native crash</td><td>Worded like a Java crash. The report carries the reason and whatever tombstone Android kept.</td></tr>
+    <tr><td>No trace kept</td><td>Same title. Detail: "Android kept no trace, so the report has only the time, the reason and the app version." <b>Share report stays</b>, because a timestamp and a reason still help pin a crash to a build.</td></tr>
+    <tr><td>Two or more on file</td><td>The title uses the newest. Detail for two: "2 reports on this phone. Share sends both, newest first." For three or more: "N reports on this phone. Share sends all N, newest first." One share holds every unseen report.</td></tr>
+    <tr><td>Which exits show a card</td><td><b>A whitelist:</b> only <code>REASON_CRASH</code>, <code>REASON_CRASH_NATIVE</code> and <code>REASON_ANR</code> (and the Java handler's own capture) show a card. Every other reason is logged only and never shows a card: low memory, force stop, app update, swipe-away, excessive resource use, initialization failure, a signal, a permission change, a dependency dying. Calling any of those a crash would be a false alarm.</td></tr>
+    <tr><td>First launch after installing or upgrading to v1.9</td><td><b>No card</b> for exits from before v1.9. On its first run the watermark starts at the install or upgrade time, so a v1.8 crash that v1.9 never captured is not reported.</td></tr>
+    <tr><td>Phone in landscape (height under 480 dp)</td><td>Pinned above the tabs, the card would take up most of a short screen. At compact height it moves into the top of the open account page's scrolling column instead, above the usage cards, so it scrolls away. (It then shows on each page you swipe to, which is acceptable for a one-tap dismiss on a rare layout.)</td></tr>
+    <tr><td>After Share report (an app picked) or Not now</td><td>The card is gone, and it stays gone on later launches for those reports. If you back out of the share sheet, the card stays. The reports stay in Diagnostics until they expire (section 3).</td></tr>
+    <tr><td>A signed-out account, or no data yet</td><td>The card sits in the same place, above "No Work account yet" or "No data yet".</td></tr>
   </table>
 
-  <h2>1 · About card: Privacy policy</h2>
-  <p class="note">The row sits below “Share feedback” and above the existing unofficial disclaimer. It opens the same public policy in both flavors. No sign-in or network call is needed to see the row; a browser handles the link.</p>
+  <!-- ===================================================================== -->
+  <h2>2 · About card: Privacy policy</h2>
+  <p class="note">This is CCRM-89 (Privacy Policy). The About card stays exactly as it is, and one TextButton is added: <b>Privacy policy</b>, centred, 8 dp below "Share feedback" and 4 dp above the disclaimer (which moves down by 48 dp, since the button is a 48 dp touch target). A text button fits this centred card better than a divided list row. It opens <code>docs/privacy.md</code> on GitHub in the browser chosen in Settings, and the row is the same in both flavors. An on-screen link to the policy is allowed in the Play build; only update paths outside Play are not.</p>
   <div id="about" class="frames"></div>
 
-  <h2>2 · Next launch: crash report card</h2>
-  <p class="note">One app-wide card sits directly below the account tabs and above usage cards. The existing “Checked…” status line and any usage error notice stay beneath the usage cards. This placement also works when the current account is signed out or has no data. The card never shows a stack trace or an email on screen.</p>
-  <div id="crashes" class="frames"></div>
-  <table class="matrix">
-    <tr><th>State</th><th>Visible behavior</th></tr>
-    <tr><td>After Share report</td><td>The share chooser opens with a scrubbed text report. On return, the card is gone. The local report remains available through the existing diagnostics path until its retention limit.</td></tr>
-    <tr><td>After Not now</td><td>The card disappears and stays dismissed on later launches for this report.</td></tr>
-    <tr><td>Two crashes on file</td><td>One card for the newest crash, with “2 reports on this phone.” Share report shares the newest report; older reports stay in diagnostics.</td></tr>
-    <tr><td>Exit reason, no trace</td><td>The card says a report could not be captured. There is no Share report action, since a trace-free report would mislead. Not now remains.</td></tr>
-  </table>
-
-  <h2>3 · Debug: Crash now</h2>
-  <p class="note">In Settings → More, tapping the version seven times reveals Diagnostics and Debug. “Crash now” is last in Debug, separated from synthetic data tools. It opens a confirmation dialog before the intentional crash; the next launch then shows the card in section 2. This entry is absent while locked.</p>
+  <!-- ===================================================================== -->
+  <h2>3 · Diagnostics and Debug: Crash reports and Crash now</h2>
+  <p class="note">Both sit behind the existing unlock (tap the version seven times), so a locked More tab looks exactly as it does today. <b>Crash reports</b> goes under "App log" in Diagnostics: it says how many reports are on file, with <b>Share</b> and <b>Delete</b>, and it is hidden when there are none. <b>Crash now</b> is the last card in Debug, for the Step 7 test. It uses an outlined button in the error colour, behind a confirm dialog. Its exception message carries a canary, a fake <code>sk-ant-…</code> token and an email address, so Step 7 proves the shared report leaves both out. That only tests that messages are excluded, so CCRM-85's unit tests also plant canaries in every field the report keeps and in sample ANR and native traces, and Step 7 checks both the saved file and the shared text. It is in both flavors, because Step 7 tests both.</p>
   <div id="debug" class="frames"></div>
 
-  <h2>4 · Play channel: no Updates card or update action</h2>
-  <p class="note">GitHub retains the Updates card and its manual check. Play removes that entire section; Polling and Usage credits meet the About section directly at narrow widths. The invalid-response notice still explains the failure, but has no “Check for updates” action in Play. Other notice actions keep their current behavior.</p>
-  <div id="channels" class="frames"></div>
+  <!-- ===================================================================== -->
+  <h2>4 · The Play build: no Updates card, no update action</h2>
+  <p class="note">This is CCRM-87 (Update Channel). The GitHub build is unchanged. The Play build drops the whole <b>Updates</b> section (its label, toggle, "Check for updates" button and last-checked line), so Polling and Usage credits run straight into About. On the inner screen the left column simply ends sooner. Also missing from the Play build, though never on screen unless triggered: the "Update available" notification, the strip in the pinned notification, and the "Open GitHub" dialog.</p>
+  <div id="more" class="frames"></div>
+  <h3>The invalid-response notice on the main screen</h3>
+  <p class="note">The title and detail are unchanged in both flavors. Only the action row differs: GitHub keeps "Check for updates" (it opens Settings), and Play has no action. The words "an app update may be needed" still hold on Play, where the update comes through the Play Store by itself.</p>
+  <div id="notice" class="frames"></div>
 
-  <h2>5 · Settings tabs: readable at 360 dp and 2.0× font</h2>
-  <p class="note">Proposed fix: one horizontally scrollable row at every width, with each title at full text size. No title is shortened or ellipsized. The selected tab scrolls into view when tapped or reached by a page swipe. At 360 dp, the next tab peeks in to indicate horizontal movement; users can still swipe the pages below. The row is 48 dp high normally and grows to at least 72 dp at 2.0× font, rather than clipping text.</p>
+  <!-- ===================================================================== -->
+  <h2>5 · Settings tabs: CCBG-35 (Tab Clip)</h2>
+  <p class="note"><b>Today:</b> a fixed four-way <code>TabRow</code>. At 360 dp each tab gets 90 dp and "Appearance" clips to "Appearanc". At 2.0× all four clip. <b>Proposed fix:</b> keep the fixed row whenever every title fits its equal share at the current width and font scale, which leaves the cover and inner screens exactly as they are today. Otherwise switch to a <code>ScrollableTabRow</code> (<code>edgePadding 0</code>, 90 dp minimum). The fixed row keeps today's 10 dp a side on each title, and the fit test measures with that same 10 dp, so the cover screen at 1.0× stays fixed. The scrolling row uses 16 dp a side. <b>A cost that is accepted:</b> the main screen's account tabs switch on the number of accounts, deliberately, so that row never changes shape when the phone unfolds. This rule switches on fit instead, so at a large font scale the Settings row can be scrolling on the cover screen and fixed on the inner screen. Titles are never shortened or ellipsized, and the row grows taller at large font sizes instead of clipping. The selected tab scrolls into view when you tap it or swipe the page, and the edge of the next tab stays visible as a hint that the row scrolls.</p>
   <div id="tabs" class="frames"></div>
 
-  <h2>6 · Widget reconfiguration label</h2>
-  <p class="note">The approved widget rev D already draws “Widget settings” with a “Save changes” button for long-press reconfiguration. The current code chooses that label only when saved widget preferences exist. When a launcher placed the widget before configuration, that check fails. The v1.9 fix restores the approved view for a placed widget, including that edge case; no new visual design is proposed here.</p>
-  <div id="reconfigure" class="frames"></div>
+  <!-- ===================================================================== -->
+  <h2>6 · Widget reconfigure label: CCBG-48 (Reconfigure Label)</h2>
+  <p class="note"><b>A restoration, nothing new to draw.</b> The approved widget rev D (<code>design/2026-09-25-widgets-reborn.html</code>) already draws the reconfigure view as "Widget settings" with a <b>Save changes</b> button. Today the app chooses that label only when saved preferences exist, so a widget the launcher placed without config shows "Add widget" when you reconfigure it later. v1.9 bases the choice on whether the widget is already placed. The screen matches rev D exactly, so under CLAUDE.md §2's exemption it needs no new drawing.</p>
+  <p class="note">CCBG-45 (Single Panel Wording) is the same kind of case. You ruled on 2026-09-27 that it is fixed as-is: the one-account notification takes the approved "5h" and "Weekly" wording. It is listed here so this page covers every visible v1.9 change.</p>
 
-  <h2>7 · Decisions requested in this review</h2>
-  <p>Approve or revise the card position, the no-trace state, the “Crash now” confirmation, the Privacy policy row placement, and the scrollable Settings tabs. “Save changes” follows the previously approved widget rev D. The single-account notification wording follows the already approved Duet wording.</p>
+  <!-- ===================================================================== -->
+  <h2>7 · Reviews so far</h2>
+  <p class="note"><b>A fresh Opus judge</b> (Fable was out of credits) ruled "keep rev B" on all seven calls, with six concerns, all adopted: the "N reports" wording, a whitelist of exit reasons, no card after an upgrade, the landscape placement, 48 dp not 40, and the tab padding and unfold wording. <b>Astra</b> (GPT-6, high) agreed with every ruling and raised two concerns. Backing out of the share sheet used to dismiss the card; now the card stays (adopted). The canary only tested that messages are excluded; there are now canaries in every field (adopted). Astra's other concern is question 1 below.</p>
+
+  <h2>8 · For you to decide</h2>
+  <ol class="calls">
+    <li><b>Crash card position:</b> above the account tabs (as drawn), or inside each account page above the usage cards (rev A)?</li>
+    <li><b>Crash card look and wording:</b> the neutral card with a grey "!", the title as "crashed" or "stopped responding", and the detail lines above. In landscape it moves into the page's scrolling column.</li>
+    <li><b>No-trace crash:</b> keep Share report (as drawn), or offer only Not now (rev A)?</li>
+    <li><b>Crash reports card</b> (Share and Delete, kept for 30 days): put it behind the 7-tap unlock in Diagnostics (as drawn, which follows your 2026-09-16 rule that everything diagnostic sits behind the unlock), or in the ordinary More tab, shown only while a report exists (Astra: otherwise a dismissed report has no route anyone can find)?</li>
+    <li><b>Privacy policy:</b> a centred text button under Share feedback (as drawn), or a divided row with a chevron (rev A)?</li>
+    <li><b>Settings tabs:</b> switch to a scrolling row only when a title doesn't fit (as drawn), or always scroll (rev A)? This accepts that at a large font the row can look different on the cover and inner screens.</li>
+    <li><b>Crash now</b> as the last Debug card, behind a confirm dialog.</li>
+  </ol>
 </main>
 <script>
-const $=id=>document.getElementById(id);
-function settingsTabs(selected='More',large=false,shift=false){const a=['Accounts','Alerts','Appearance','More'];return `<div class="tab-window"><div class="tab-track ${large?'large':''} ${shift?'shift':''}">${a.map(x=>`<span class="${x===selected?'active':''}">${x}</span>`).join('')}</div></div>`}
-function shell(body,{title='Cooldown',tabs=false,settings=false}={}){return `<div class="statusbar"><span>9:41</span><span>◕ ▰</span></div><div class="toolbar"><span>${settings?'‹ ':''}${title}</span><span class="right">${settings?'':'⋮'}</span></div>${tabs?'<div class="account-tabs"><span class="active">Personal</span><span>Work</span></div>':''}${settings?settingsTabs('More'):''}${body}`}
-function sample(html,caption,opt={}){const w=$('width').value,t=$('theme').value;return `<div class="sample"><div class="phone ${t} w${w}">${html}</div><div class="caption">${caption} · ${w} dp · ${t}</div></div>`}
-function about(){let wide=$('width').value==='760';return sample(shell(`<div class="content ${wide?'wide':''}"><div class="${wide?'more-grid':''}"><div><div class="section-label">Polling</div><div class="card compact"><div class="title">Refresh interval</div><div class="small muted">Every 15 minutes</div></div>${$('channel').value==='github'?'<div class="section-label">Updates</div><div class="card compact"><div class="title">Check automatically</div><div class="small muted">Check for updates</div></div>':''}</div><div><div class="section-label">About</div><div class="card about"><div class="appicon">⌁</div><div class="title">Cooldown</div><div class="small muted">Version 1.9</div><div style="height:9px"></div><div class="small">Made by Robin Richard Rajan</div><div class="small muted">Built with Claude Code</div><div style="height:14px"></div><span class="button">Share feedback</span><div class="rule"></div><div class="linkrow"><span class="icon">▤</span><span>Privacy policy</span><span class="chevron">↗</span></div><div class="rule"></div><div class="tiny muted">Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI.</div></div></div></div></div>`,{title:'Settings',settings:true}),`About row · ${$('channel').value} channel`)}
-function usage(){return `<div class="card compact"><div class="row"><span class="title">5h</span><span class="value">58%</span></div><div class="bar"></div><div class="small muted">Resets at 2:40 PM</div></div><div class="statusline">↻ Checked 4m ago</div><div class="notice"><b>Couldn’t read usage</b><div class="small">Last reading remains visible.</div></div>`}
-function crashCard(kind){if(kind==='none')return '';let missing=kind==='missing',two=kind==='two';return `<div class="card crash"><div class="row"><span class="error-icon">●</span><div class="grow"><div class="headline">Cooldown crashed on Sep 28</div><div class="summary">${missing?'A crash was detected, but no trace was available.':two?'2 reports on this phone · newest: Sep 28, 9:41 AM':'A report is saved on this phone. Share it only if you choose.'}</div></div></div><div class="actions">${missing?'':'<span class="button text">Share report</span>'}<span class="button text">Not now</span></div></div>`}
-function crashFrame(kind,label){return sample(shell(`<div class="content">${crashCard(kind)}${usage()}</div>`,{tabs:true}),label)}
-function debug(){return sample(shell(`<div class="content"><div class="section-label">About</div><div class="card about"><div class="appicon">⌁</div><div class="title">Cooldown</div><div class="small muted">Version 1.9</div><div class="small" style="color:var(--primary);margin-top:5px">Debug tools unlocked until the app is closed</div></div><div class="section-label">Diagnostics</div><div class="card compact">App log · Share log</div><div class="section-label">Debug</div><div class="card compact"><div class="debug-row">Synthetic series <span class="muted">›</span></div><div class="rule"></div><div class="debug-row">Last raw response <span class="muted">›</span></div><div class="rule"></div><div class="debug-row"><span><span class="bullet"></span> &nbsp;Crash now</span><span class="muted">›</span></div></div><div class="card compact" style="border-color:var(--error)"><div class="title">Crash Cooldown?</div><p class="small muted">The app will close immediately. A report should appear when you reopen it.</p><div class="actions"><span class="button text">Cancel</span><span class="button text">Crash now</span></div></div></div>`,{title:'Settings',settings:true}), 'Unlocked Debug + confirmation; locked view omits Diagnostics and Debug')}
-function channel(){
-  let play=$('channel').value==='play',wide=$('width').value==='760';
-  let left=`<div class="section-label">Polling</div><div class="card compact"><div class="title">Refresh interval</div><div class="small muted">Every 15 minutes</div></div><div class="section-label">Usage credits</div><div class="card compact">Show usage credits</div>${play?'':'<div class="section-label">Updates</div><div class="card compact"><div class="row"><div class="grow"><div class="title">Check automatically</div><div class="small muted">Checks GitHub every 6 hours</div></div><span>◉</span></div><div class="rule"></div><span class="button">Check for updates</span></div>'}`;
-  let right=`<div class="section-label">About</div><div class="card compact">Cooldown · Privacy policy</div>`;
-  let notice=`<div class="section-label" style="margin-top:20px">Main screen: invalid response</div><div class="notice"><b>Couldn't read the response</b><div class="small">Last reading remains visible.</div>${play?'':'<div class="actions"><span class="button text">Check for updates</span></div>'}</div>`;
-  let body=wide?`<div class="content wide"><div class="more-grid"><div>${left}</div><div>${right}</div></div>${notice}</div>`:`<div class="content">${left}${right}${notice}</div>`;
-  return sample(shell(body,{title:'Settings',settings:true}),`${play?'Play':'GitHub'} More and invalid-response notice`)
+const $ = id => document.getElementById(id);
+const T = () => $('theme').value;
+const ICON = '<svg viewBox="0 0 40 40"><path d="M3 22h8l4-10 6 18 5-12 3 4h8" fill="none" stroke="#e07a52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function frame(w, body, cap, {fs2=false, capClass=''}={}) {
+  return `<div class="sample"><div class="phone ${T()} w${w} ${fs2?'fs2':''}">${body}</div><div class="cap ${capClass}">${cap} · ${w} dp${fs2?' · 2.0× font':''} · ${T()}</div></div>`;
 }
-function tabFrame(large,shift){return sample(shell(`<div class="tab-window">${settingsTabs(shift?'More':'Accounts',large,shift)}</div><div class="content"><div class="section-label">${shift?'More':'Accounts'}</div><div class="card compact">${shift?'Polling · About':'Personal · Work'}</div></div>`,{title:'Settings'}),`${large?'2.0× font':'Normal font'} · ${shift?'More selected; row follows page':'Accounts selected'}`)}
-function reconfigure(){return sample(shell(`<div class="content"><div class="section-label">Ring preview</div><div class="card compact" style="text-align:center;padding:25px"><span style="font-size:34px;color:var(--primary)">◉</span><div class="title">Personal · 58%</div></div><div class="section-label">Account</div><div class="card compact">Personal &nbsp; Work</div><div class="section-label">Window</div><div class="card compact">5h &nbsp; Weekly</div><div class="section-label">Background</div><div class="card compact">Solid &nbsp; Gradient &nbsp; Transparent</div><div class="button" style="width:100%;background:var(--primary);color:var(--card)">Save changes</div></div>`,{title:'Widget settings'}),'Previously approved rev D reconfigure view; restored for a placed widget with no saved preferences')}
-function render(){ $('about').innerHTML=about();$('crashes').innerHTML=crashFrame('one','New report')+crashFrame('none','After Share or Not now: card gone')+crashFrame('two','Two crashes on file')+crashFrame('missing','Exit reason with no trace');$('debug').innerHTML=debug();$('channels').innerHTML=channel();$('tabs').innerHTML=tabFrame(false,false)+tabFrame(false,true)+tabFrame(true,false)+tabFrame(true,true);$('reconfigure').innerHTML=reconfigure() }
-['theme','width','channel'].forEach(id=>$(id).addEventListener('change',render)); render();
+const sb = '<div class="sb"><span>9:41</span><span>▾ ▮ 86%</span></div>';
+function topbar(title, back) {
+  return `<div class="bar">${back?'<span>←</span>':''}<span>${title}</span>${back?'':'<span class="r"><span>⋮</span><span>⚙</span></span>'}</div>`;
+}
+
+/* ---------- 1 · crash card ---------- */
+const CRASH = {
+  java:   {h:'Cooldown crashed today at 9:41', d:'A report is saved on this phone. It goes nowhere unless you share it.'},
+  anr:    {h:'Cooldown stopped responding today at 9:41', d:'A report is saved on this phone. It goes nowhere unless you share it.'},
+  notrace:{h:'Cooldown crashed on 28 Sep', d:'Android kept no trace, so the report has only the time, the reason and the app version.'},
+  two:    {h:'Cooldown crashed today at 9:41', d:'2 reports on this phone. Share sends both, newest first.'},
+  three:  {h:'Cooldown crashed today at 9:41', d:'3 reports on this phone. Share sends all 3, newest first.'},
+};
+function crashCard(k) {
+  const c = CRASH[k];
+  return `<div class="crash hl-box"><div class="row" style="align-items:flex-start"><span class="ic">!</span><div class="grow"><div class="h">${c.h}</div><div class="d">${c.d}</div></div></div><div class="acts"><span class="tb">Not now</span><span class="tb">Share report</span></div></div>`;
+}
+function usageCards(dim) {
+  return `<div class="${dim?'dim':''}"><div class="usage"><div class="row"><span class="t-md semi">5h</span><span class="grow"></span><span class="t-sm">resets 14:40</span></div><div class="big">58%</div><div class="meter"><i></i></div><div class="t-sm">On pace · 2h 59m left</div></div><div class="usage"><div class="row"><span class="t-md semi">Weekly</span><span class="grow"></span><span class="t-sm">resets Thu</span></div><div class="big">31%</div><div class="meter"><i style="width:31%"></i></div></div></div><div class="status ${dim?'dim':''}">↻ Checked 4m ago</div>`;
+}
+function mainScreen(w, k, {tabs=true, signedOut=false, fs2=false}={}) {
+  let body = sb + topbar('Cooldown');
+  if (k) body += crashCard(k);
+  if (tabs) body += '<div class="ptabs"><span class="on"><i class="mark"></i>Personal</span><span><i class="mark gpt"></i>Work</span></div>';
+  body += '<div class="col"><div class="gap16"></div>';
+  body += signedOut
+    ? '<div class="card"><div class="semi">No Work account yet</div><div class="gap8"></div><div class="t-md">Open Settings and tap "Sign in with a code" for the Work account. It shows a short code to type at auth.openai.com — on this phone or any other device.</div></div>'
+    : usageCards(true);
+  body += '</div>';
+  return body;
+}
+function renderCrash() {
+  $('crashA').innerHTML =
+    frame(360, mainScreen(360,'java'), 'New crash · two accounts') +
+    frame(360, mainScreen(360,null), 'After Share report or Not now: the card is gone, nothing else moves', {capClass:'good'}) +
+    frame(360, mainScreen(360,'anr',{tabs:false}), 'ANR · one account, so no tabs') +
+    frame(360, mainScreen(360,'two'), 'Two reports on file') +
+    frame(360, mainScreen(360,'three'), 'Three or more on file');
+  $('crashB').innerHTML =
+    frame(360, mainScreen(360,'notrace'), 'No trace kept (from exit reasons only), but still shareable') +
+    frame(360, mainScreen(360,'java',{signedOut:true}), 'Above a signed-out account') +
+    frame(360, mainScreen(360,'java',{fs2:true}), 'Large font (only the new card is drawn at 2.0×): text wraps, buttons wrap, nothing clips', {fs2:true}) +
+    frame(420, mainScreen(420,'java'), 'Fold cover') +
+    frame(750, mainScreen(750,'java'), 'Fold inner: capped at the chart-column width and centred');
+}
+
+/* ---------- settings shell ---------- */
+function stabs(sel, mode) {
+  const t = ['Accounts','Alerts','Appearance','More'];
+  return `<div class="stabs ${mode||''} ${mode==='scroll'?'fade':''}">${t.map(x=>`<span class="${x===sel?'on':''}">${x}</span>`).join('')}</div>`;
+}
+function settings(w, inner, {sel='More', mode='', fs2=false}={}) {
+  return sb + topbar('Settings', true) + stabs(sel, mode) + `<div class="col settings"><div class="gap8"></div>${inner}</div>`;
+}
+const polling = `<div class="lbl">Polling</div><div class="card"><div class="t-lg">Check usage every</div><div class="chips"><span class="chip">5m</span><span class="chip on">15m</span><span class="chip">30m</span><span class="chip">60m</span></div><div class="t-sm">Short intervals use chained jobs; Android may delay them to save battery. Applies to all configured profiles.</div><div class="gap8"></div><div class="t-sm">Next automatic check: in ~11m</div></div><div class="gap12"></div>`;
+const updates = `<div class="lbl">Updates</div><div class="card"><div class="row"><div class="grow"><div class="t-lg">Check automatically</div><div class="t-sm">Checks GitHub for a newer release every 6 hours, riding the usage poll. A new version notifies once; a failed check never notifies.</div></div><span class="sw"></span></div><div class="hr"></div><span class="ob">Check for updates</span><div class="gap8"></div><div class="t-sm">Last checked 2h ago — you're on the latest version.</div></div>`;
+function about(newRow=true, unlocked=false) {
+  return `<div class="lbl">About</div><div class="card about"><div class="icon">${ICON}</div><div class="t-lg semi">Cooldown</div><span class="ver">Version 1.9</span>${unlocked?'<div class="t-xs" style="color:var(--primary)">Debug tools unlocked until the app is closed</div>':''}<div style="height:10px"></div><div class="t-md">Made by Robin Richard Rajan</div><div class="t-sm">Built with Claude Code</div><div class="gap12"></div><span class="ob">Share feedback</span>${newRow?'<div class="gap8"></div><span class="tb hl">Privacy policy</span><div style="height:4px"></div>':'<div class="gap12"></div>'}<div class="t-xs">Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI. "Claude" is a trademark of Anthropic, PBC. "ChatGPT" is a trademark of OpenAI.</div></div>`;
+}
+
+/* ---------- 2 · about ---------- */
+function renderAbout() {
+  $('about').innerHTML =
+    frame(360, settings(360, about(false), {mode:'clip'}), 'Today (for comparison)') +
+    frame(360, settings(360, about(true), {mode:'scroll'}), 'v1.9 · both flavors') +
+    frame(750, settings(750, `<div class="twocol"><div>${polling}${updates}</div><div>${about(true)}</div></div>`), 'v1.9 · Fold inner, GitHub build');
+}
+
+/* ---------- 3 · diagnostics + debug ---------- */
+function debugBody(withDialog) {
+  const applog = `<div class="lbl">Diagnostics</div><div class="card"><div class="t-lg">App log</div><div class="t-sm">What the app does in the background — polls, alerts, sign-in renewals. Share it when reporting a problem; it never contains tokens.</div><div class="gap8"></div><div class="row" style="gap:8px"><span class="ob">Reload</span><span class="ob">Share</span><span class="ob">Clear</span></div></div>`;
+  const crashes = `<div class="card hl-box"><div class="t-lg">Crash reports</div><div class="t-sm">2 on this phone · newest today at 9:41 · each is kept for 30 days. A report never contains tokens, emails or exception messages.</div><div class="gap8"></div><div class="row" style="gap:8px"><span class="ob">Share</span><span class="ob">Delete</span></div></div>`;
+  const synth = `<div class="lbl" style="margin-top:12px">Debug</div><div class="card"><div class="t-xs" style="font-weight:500">Synthetic series</div><div class="chips"><span class="chip on">Off</span><span class="chip">Climb</span><span class="chip">Spike</span></div><span class="ob">Faces gallery</span></div>`;
+  const trend = `<div class="card"><div class="t-xs" style="font-weight:500">Trend diagnostics</div><div class="t-sm">Personal · 5h: 42 points, 1 resets_at value</div></div>`;
+  const dbg = `<div class="card"><span class="ob">+ Add ChatGPT account</span><div class="gap12"></div><div class="t-sm">Sign-in age: Personal 12d (exact) · Work 3d (est. ~30d)</div><div class="gap8"></div><span class="ob">Show last raw response</span></div>`;
+  const crashNow = `<div class="card hl-box"><div class="t-xs" style="font-weight:500">Crash test</div><div class="t-sm">Throws an uncaught exception on the main thread, so the crash card and report can be checked.</div><div class="gap8"></div><span class="ob err">Crash now</span></div>`;
+  let body = settings(360, about(true,true) + '<div class="gap12"></div>' + applog + crashes + synth + trend + dbg + crashNow, {mode:'scroll'});
+  if (withDialog) body += `<div class="scrim"><div class="dlg"><div class="h">Crash Cooldown now?</div><div class="b">The app closes at once. Reopen it and the crash card should appear. Nothing leaves the phone.</div><div class="acts"><span class="tb">Cancel</span><span class="tb" style="color:var(--err)">Crash</span></div></div></div>`;
+  return body;
+}
+function renderDebug() {
+  $('debug').innerHTML =
+    frame(360, debugBody(false), 'Unlocked: the new cards are outlined; the rest is today\'s Debug, abridged') +
+    frame(360, debugBody(true), 'Crash now → confirm') +
+    frame(360, settings(360, polling + updates + '<div class="gap12"></div>' + about(true), {mode:'scroll'}), 'Locked (the default): no Diagnostics, no Debug');
+}
+
+/* ---------- 4 · play vs github ---------- */
+function renderMore() {
+  const credits = `<div class="lbl">Usage credits</div><div class="card"><div class="t-sm">Pay-as-you-go credits that cover you once a plan window runs out. The section only appears for accounts that actually have a credit budget.</div><div class="hr"></div><div class="row"><div class="grow"><div class="t-lg">Show for Personal</div><div class="t-sm">Credits card on this profile's screen</div></div><span class="sw"></span></div></div><div class="gap12"></div>`;
+  $('more').innerHTML =
+    frame(360, settings(360, polling + credits + updates + '<div class="gap24"></div>' + about(true), {mode:'scroll'}), 'GitHub build: unchanged apart from the privacy row') +
+    frame(360, settings(360, polling + credits + '<div class="gap12"></div>' + about(true), {mode:'scroll'}), 'Play build: Updates is gone, About follows Usage credits', {capClass:'warn'}) +
+    frame(750, settings(750, `<div class="twocol"><div>${polling}${credits}</div><div>${about(true)}</div></div>`), 'Play build · Fold inner: the left column ends after Usage credits', {capClass:'warn'});
+}
+function noticeScreen(w, play) {
+  const n = `<div class="notice"><div class="h">The server answered in a shape this app doesn't know — an app update may be needed.</div><div class="d">Unrecognized response shape</div>${play?'':'<span class="tb">Check for updates</span>'}</div>`;
+  return sb + topbar('Cooldown') + '<div class="col"><div class="gap16"></div>' + usageCards(false) + '<div style="height:6px"></div>' + n + '</div>';
+}
+function renderNotice() {
+  $('notice').innerHTML = frame(360, noticeScreen(360,false), 'GitHub build') + frame(360, noticeScreen(360,true), 'Play build: no action row', {capClass:'warn'});
+}
+
+/* ---------- 5 · tabs ---------- */
+function tabShot(w, mode, sel, fs2, cap, capClass) {
+  const body = sb + topbar('Settings', true) + stabs(sel, mode) + `<div class="col settings"><div class="gap8"></div><div class="lbl">${sel}</div><div class="card"><div class="t-md">…</div></div></div>`;
+  return frame(w, body, cap, {fs2, capClass});
+}
+function renderTabs() {
+  $('tabs').innerHTML =
+    tabShot(360, 'clip', 'Accounts', false, 'Today: "Appearance" clips', 'bad') +
+    tabShot(360, 'scroll', 'Accounts', false, 'Fix: scrolls; the edge of "More" shows', 'good') +
+    tabShot(360, 'scroll', 'More', false, 'Fix: More selected, row scrolled to it', 'good') +
+    tabShot(360, 'clip', 'Accounts', true, 'Today at 2.0×: all four clip', 'bad') +
+    tabShot(360, 'scroll', 'Appearance', true, 'Fix at 2.0×: full titles, taller row', 'good') +
+    tabShot(420, '', 'Accounts', false, 'Fold cover: everything fits, fixed row as today') +
+    tabShot(750, '', 'Accounts', false, 'Fold inner: fixed row as today');
+}
+
+function scrollTabs() {
+  // A scrolling row keeps the selected tab in view, as ScrollableTabRow does.
+  document.querySelectorAll('.stabs.scroll').forEach(el => {
+    const on = el.querySelector('.on');
+    const over = on.offsetLeft + on.offsetWidth - el.clientWidth;
+    if (over > 0) { el.scrollLeft = over + 16; el.classList.remove('fade'); }
+  });
+}
+function render() { renderCrash(); renderAbout(); renderDebug(); renderMore(); renderNotice(); renderTabs(); scrollTabs(); }
+$('theme').addEventListener('change', render);
+render();
 </script>
 </html>
