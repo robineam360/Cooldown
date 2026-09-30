@@ -12,13 +12,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.FetchResult
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
-import com.robin.claudeusage.notify.UpdateNotification
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -58,11 +58,11 @@ class UsagePollWorker(context: Context, params: WorkerParameters) :
         if (interval < 15) Polling.chainNext(applicationContext, interval)
 
         // Auto update check (CCRM-28) tail-runs the poll — no scheduler of its own,
-        // and nothing on the launch path ever blocks on it. The 6-hour gate lives in
-        // UpdateGate.shouldCheckNow; a failed check records itself and retries here
-        // next time.
+        // and nothing on the launch path ever blocks on it. The channel decides what
+        // that means (CCRM-87 (Update Channel)): the github build's 6-hour gate and
+        // retry-on-failure, or the Play build dropping inherited update state.
         withContext(Dispatchers.IO) {
-            UpdateNotification.autoCheck(applicationContext, cache)
+            Channel.autoCheck(applicationContext, cache)
         }
 
         val transientFailure = results.any { it is FetchResult.Error }

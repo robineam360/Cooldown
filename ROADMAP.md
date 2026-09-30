@@ -1484,7 +1484,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   `bundletool validate`, and its signer matches RELEASING.md's trusted digest.
 
 ### CCRM-87 · Update Channel — `github` and `play` flavors; the Play build has no out-of-store update path
-- **Status:** Planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
+- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): flavor dimension `channel` with `github` and `play` on one `applicationId`; `channel/UpdateChannel.kt` in `main`, `object Channel` in each flavor; `UpdateCheck`, `UpdateGate`, `UpdateNotification` and the Updates card moved to `src/github/`; the play no-op drops inherited update prefs on the first poll (`PlayChannelTest`). `tools/check_artefact.py` checks the artefacts. Ships in v1.9 · planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
   In the play flavor the whole Updates section goes, so Polling and Usage credits run straight into
   About. The invalidResponse notice keeps its title and detail and has no action row.
 - **Why:** Play's policy is about *offering* update paths outside Play. A static scan finds

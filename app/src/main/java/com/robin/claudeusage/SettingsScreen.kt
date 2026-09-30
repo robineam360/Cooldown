@@ -109,6 +109,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.browser.customtabs.CustomTabsIntent
+import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.ApiClient
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.CodexDeviceSignIn
@@ -121,13 +122,9 @@ import com.robin.claudeusage.data.ErrorKind
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.SignInExpiry
-import com.robin.claudeusage.data.UpdateCheck
-import com.robin.claudeusage.data.UpdateGate
-import com.robin.claudeusage.data.UpdateInfo
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.diag.AppLog
-import com.robin.claudeusage.notify.UpdateNotification
 import com.robin.claudeusage.ui.AccountStatusLine
 import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
@@ -870,8 +867,8 @@ fun SettingsScreen(
     val pollingUpdatesCredits: @Composable () -> Unit = {
         SectionLabel("Polling")
         PollingSection(repo)
-        Spacer(Modifier.height(24.dp))
         if (creditProfiles.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
             SectionLabel("Usage credits")
             SectionCard {
                 Text(
@@ -900,10 +897,10 @@ fun SettingsScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(24.dp))
         }
-        SectionLabel("Updates")
-        UpdatesCard(cacheSettings)
+        // CCRM-87 (Update Channel): the github build's Updates section; nothing on Play,
+        // where Polling and Usage credits run straight into About.
+        Channel.SettingsSection(cacheSettings)
     }
 
     val diagnosticsAboutDebug: @Composable () -> Unit = {
@@ -2918,176 +2915,6 @@ private fun AccentColorDialog(
     )
 }
 
-/**
- * The UPDATES section (CCRM-28): the auto-check toggle, the manual check button
- * (moved here from the About card), and the outcome line the background check
- * shares with it. Failures only ever surface here — never as a notification.
- */
-@Composable
-private fun UpdatesCard(cache: UsageCache) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var auto by remember { mutableStateOf(cache.autoCheckUpdates()) }
-    var checking by remember { mutableStateOf(false) }
-    var updateResult by remember { mutableStateOf<UpdateUi?>(null) }
-    // Bumped when a manual check finishes so the outcome line re-reads the cache.
-    var outcomeTick by remember { mutableIntStateOf(0) }
-    val versionName = remember { UpdateNotification.installedVersion(context) }
-
-    SectionCard {
-        ToggleRow(
-            title = "Check automatically",
-            subtitle = "Checks GitHub for a newer release every 6 hours, riding the " +
-                "usage poll. A new version notifies once; a failed check never notifies.",
-            checked = auto,
-        ) {
-            auto = it
-            cache.setAutoCheckUpdates(it)
-        }
-        RowDivider()
-        OutlinedButton(
-            enabled = !checking,
-            onClick = {
-                checking = true
-                scope.launch {
-                    // Manual checks ignore the toggle and the skip record; a success
-                    // still refreshes the shared last-checked line below.
-                    updateResult = try {
-                        val info = withContext(Dispatchers.IO) {
-                            UpdateCheck.fetchLatest(versionName)
-                        }
-                        cache.recordUpdateCheckSuccess(
-                            System.currentTimeMillis(),
-                            UpdateGate.successOutcome(info.latestVersion, info.updateAvailable),
-                            info.latestVersion,
-                        )
-                        UpdateUi.Ok(info)
-                    } catch (_: Exception) {
-                        cache.recordUpdateCheckFailure(System.currentTimeMillis(), "couldn't reach GitHub")
-                        UpdateUi.Message(
-                            "Couldn't check for updates. Check your connection and try again."
-                        )
-                    }
-                    outcomeTick++
-                    checking = false
-                }
-            },
-        ) {
-            if (checking) {
-                CircularProgressIndicator(
-                    Modifier.size(16.dp),
-                    strokeWidth = 2.dp,
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Checking…")
-            } else {
-                Text("Check for updates")
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        val lastOkAt = remember(outcomeTick) { cache.lastUpdateCheckAt() }
-        val outcome = remember(outcomeTick) { cache.lastUpdateCheckOutcome() }
-        val failAt = remember(outcomeTick) { cache.lastUpdateFailAt() }
-        val failReason = remember(outcomeTick) { cache.lastUpdateFailReason() }
-        val dismissed = remember(outcomeTick) { cache.dismissedUpdateVersion() }
-        when {
-            failAt > lastOkAt -> {
-                Text(
-                    "Last check failed ${Fmt.ago(failAt)} — " +
-                        "${failReason ?: "couldn't reach GitHub"}. Retries with the next poll.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                if (lastOkAt > 0 && outcome != null) {
-                    Text(
-                        "Last successful check ${Fmt.ago(lastOkAt)} — $outcome",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            lastOkAt > 0 && outcome != null -> Text(
-                "Last checked ${Fmt.ago(lastOkAt)} — ${UpdateGate.outcomeLine(outcome, dismissed)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            else -> Text(
-                "Not checked yet — the first check rides the next poll.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-
-    when (val r = updateResult) {
-        is UpdateUi.Message -> AlertDialog(
-            onDismissRequest = { updateResult = null },
-            confirmButton = {
-                TextButton(onClick = { updateResult = null }) { Text("OK") }
-            },
-            text = { Text(r.text) },
-        )
-        is UpdateUi.Ok -> {
-            val info = r.info
-            AlertDialog(
-                onDismissRequest = { updateResult = null },
-                title = {
-                    Text(
-                        if (info.updateAvailable) "Update available"
-                        else "You're up to date"
-                    )
-                },
-                text = {
-                    Column {
-                        if (info.updateAvailable) {
-                            Text("v${info.latestVersion} is available (you have v${info.currentVersion}).")
-                            if (info.notes.isNotBlank()) {
-                                Spacer(Modifier.height(10.dp))
-                                Text(
-                                    info.notes,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            if (UpdateGate.isSkipped(info.latestVersion, cache.dismissedUpdateVersion())) {
-                                Spacer(Modifier.height(10.dp))
-                                Text(
-                                    "You skipped this version, so it isn't notifying.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        } else {
-                            Text("You're running the latest version (v${info.currentVersion}).")
-                        }
-                    }
-                },
-                confirmButton = {
-                    if (info.updateAvailable && info.releaseUrl.isNotBlank()) {
-                        TextButton(onClick = {
-                            context.startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(UpdateGate.safeReleaseUrl(info.releaseUrl)),
-                                )
-                            )
-                            updateResult = null
-                        }) { Text("Open GitHub") }
-                    } else {
-                        TextButton(onClick = { updateResult = null }) { Text("OK") }
-                    }
-                },
-                dismissButton = {
-                    if (info.updateAvailable) {
-                        TextButton(onClick = { updateResult = null }) { Text("Later") }
-                    }
-                },
-            )
-        }
-        null -> {}
-    }
-}
-
 @Composable
 private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
     val context = LocalContext.current
@@ -3175,13 +3002,6 @@ private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
             text = { Text(message) },
         )
     }
-}
-
-private sealed interface UpdateUi {
-    /** A successful check with version details. */
-    data class Ok(val info: UpdateInfo) : UpdateUi
-    /** A plain message (error, or fallback when no email app is present). */
-    data class Message(val text: String) : UpdateUi
 }
 
 /**
@@ -3655,7 +3475,7 @@ private fun AppLogCard(cache: UsageCache) {
 }
 
 @Composable
-private fun SectionLabel(text: String) {
+internal fun SectionLabel(text: String) {
     Text(
         text.uppercase(),
         style = MaterialTheme.typography.labelMedium,
@@ -3665,17 +3485,17 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun SectionCard(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+internal fun SectionCard(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
     Card { Column(Modifier.fillMaxWidth().padding(16.dp), content = content) }
 }
 
 @Composable
-private fun RowDivider() {
+internal fun RowDivider() {
     HorizontalDivider(Modifier.padding(vertical = 10.dp))
 }
 
 @Composable
-private fun ToggleRow(
+internal fun ToggleRow(
     title: String,
     subtitle: String,
     checked: Boolean,

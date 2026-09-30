@@ -27,7 +27,7 @@ Serves:
 
 ## Tests
 
-- [ ] `./gradlew testDebugUnitTest` passes locally
+- [ ] `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest` passes locally
 - [ ] New/changed pure logic has unit tests in the existing style
 
 ## Credentials check

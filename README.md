@@ -279,8 +279,8 @@ logs record status codes only — never tokens, headers or response bodies.
 Requirements: JDK 17, Android SDK (compileSdk 36).
 
 ```bash
-./gradlew assembleDebug
-# APK lands in app/build/outputs/apk/debug/
+./gradlew assembleGithubDebug
+# APK lands in app/build/outputs/apk/github/debug/
 ```
 
 Stack: Kotlin, Jetpack Compose (Material 3), WorkManager for polling, OkHttp. The

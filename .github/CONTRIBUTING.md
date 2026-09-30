@@ -44,9 +44,14 @@ use the `feat(CCRM-17): …` convention and need no epic name. Details in
 Requirements: JDK 17, Android SDK (compileSdk 36).
 
 ```bash
-./gradlew assembleDebug        # APK lands in app/build/outputs/apk/debug/
-./gradlew testDebugUnitTest    # unit tests — must pass before you open a PR
+./gradlew assembleGithubDebug                          # APK lands in app/build/outputs/apk/github/debug/
+./gradlew testGithubDebugUnitTest testPlayDebugUnitTest  # unit tests, both flavors — must pass before you open a PR
 ```
+
+Two product flavors share one codebase (CCRM-87 (Update Channel)): `github`, the APK on the
+Releases page with its own update check, and `play`, the Google Play build, which has no
+update path of its own. Code that differs lives in `app/src/github/` and `app/src/play/`
+behind the `UpdateChannel` interface; everything else is in `app/src/main/`.
 
 Pure logic gets unit tests in the existing style (see `PingScheduleTest`,
 `SignInExpiryTest`). Match the surrounding code — comment density, naming, Kotlin

@@ -1,0 +1,31 @@
+# v1.9 Step 3 — the '.so' spec gap, 2026-09-30
+
+## Question sent to Sol (and, in substance, to the Opus judge)
+REVIEW: cross-check of a Claude judge verdict on a spec gap · Android app "Cooldown" v1.9 (making it Google Play-ready) · RUNBOOK Step 3
+Threat model: a release-path check that is wrong either way — too loose lets a Play-rejectable or unexpected native library through; too strict blocks the release on a false premise.
+
+THE GAP. The frozen plan's Step 3 said: "unzip -l of both outputs has no .so" / "neither output holds a .so" (github APK, play AAB). The plan assumed a pure-JVM app. The concern behind it (plan's Step 1 log): Play's 16 KB memory page-size requirement; Step 8 separately re-reads Play's current upload requirements on release day.
+
+FACTS (verified by the seat):
+- Every output contains lib/{arm64-v8a,armeabi-v7a,x86,x86_64}/libandroidx.graphics.path.so from androidx.graphics:graphics-path:1.0.1, pulled in by Compose UI. The shipped v1.8 APK has the same four files.
+- It backs PathIterator below API 34; minSdk is 31, so excluding it risks crashes on API 31-33.
+- All four ELFs: every PT_LOAD p_align = 0x4000. In the APKs they are stored uncompressed and `zipalign -c -P 16 -v 4` passes. In the AAB they are deflated (normal). A universal APK built by bundletool 1.18.3 from the AAB also passes.
+- `bundletool validate` passes on the AAB; its signer equals the trusted release digest.
+
+JUDGE VERDICT (fresh Claude Opus, read-only): "accept". A minor spec gap, not a material revision needing the owner: the check was a stand-in for the 16 KB concern and rested on a false premise. Rejected: excluding the lib (crash risk on minSdk ground), raising minSdk to 34 (a product decision), dropping the check (loses the guard against new native code). Concerns (both adopted): (1) key an allowlist on the file name, fail on any other .so or p_align < 0x4000; (2) split by container — AAB: ELF p_align only; APK: also stored uncompressed at a 16 KB-aligned data offset; and test on a bundletool universal APK now.
+
+IMPLEMENTED RULE (tools/check_artefact.py, rerun at Step 8): every .so must have basename in {libandroidx.graphics.path.so}; every ELF PT_LOAD p_align >= 0x4000; for .apk files also ZIP_STORED and local-header data offset % 16384 == 0. Negative test: a fake libfoo.so fails on all three counts. The same script also enforces that the play artefact contains no "api.github.com", no "releases/latest" and none of the update class descriptors (passes on play, and the github APK shows all present, proving the scan sees them).
+
+QUESTION: is the verdict sound, and is the implemented rule a correct and sufficient stand-in for Play's 16 KB requirement at this stage (Step 8 still reads the live requirement)? Anything the judge missed that should be graded blocking?
+
+## Opus judge (mesh-judge, fresh, read-only) — verbatim return
+VERDICT: accept (two small concerns, neither blocking)
+Ruling: this is a minor spec gap, not a material revision, so it does not need Robin. "No .so" appears only in RUNBOOK Step 3 (lines 221 and 234). ROADMAP says nothing about .so. The check was only a stand-in for the 16 KB concern (Step 1 log, line 144; Step 8, line 430), and it rested on a false premise: v1.8's shipped app-release.apk already carries the same four libs. Your allowlist-plus-16 KB rule keeps what the check was for and is stricter where it matters. It changes nothing the user sees, nothing in scope and nothing in how the step is reversed.
+Rejected alternatives: excluding the lib risks a PathIterator crash on API 31–33, which is minSdk 31 ground. Raising minSdk to 34 would drop users, which is a product decision reserved for Robin and not justified by this. Dropping the check would lose the guard against a future dependency adding native code.
+Concern 1: tools/check_artefact.py in the working tree still enforces "no .so". Land the allowlist version in the same commit as the Log and Done-when edits. Key the allowlist on the file name, and fail on any other .so, or on any lib with a PT_LOAD p_align below 0x4000.
+Concern 2: split the rule by container. For an AAB, check ELF p_align only, because deflated storage there is normal. For an APK, also require the lib stored uncompressed and passing zipalign -c -P 16. Step 8 runs the script on a universal APK that bundletool builds. Build that APK once now and run the script on it, so a bundletool storage difference cannot false-fail on release day.
+
+## Sol (gpt-6-sol, high) — verbatim
+VERDICT: concerns
+1. [concerns] AAB check — ELF alignment alone does not verify how Play will align native libraries in generated split APKs — a bundletool universal APK passing does not establish that device-specific APKs pass — check the AAB’s page-alignment configuration and test representative generated splits before release.
+2. [concerns] Native-library allowlist — matching only the basename permits an unexpected library with that name or in an unexpected path — the guard would miss the change it is meant to detect — require the expected ABI paths and verify the library’s provenance or contents.

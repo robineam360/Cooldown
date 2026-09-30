@@ -1,10 +1,9 @@
 package com.robin.claudeusage.notify
 
 import android.content.Context
+import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.Profile
-import com.robin.claudeusage.data.UpdateCheck
-import com.robin.claudeusage.data.UpdateGate
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.ui.Fmt
 
@@ -165,31 +164,12 @@ object Conditions {
     }
 
     /**
-     * Update-available as a condition (CCRM-44), app-global so it shows whichever
-     * profile the panel carries. Persisting while the installed version lags is what
-     * resolved CCBG-12's timeout tension: the standalone notice it replaced posted once
-     * per version, ever, so it could never be given an expiry — a strip that is simply
-     * present while the version is behind needs no such ceremony. It is the only
-     * update surface in the shade now (CCRM-61 (Settings Diet)). Respects "skip this
-     * version".
+     * Update-available as a condition (CCRM-44). The channel owns it since CCRM-87
+     * (Update Channel): the github build derives it from the last release check, and the
+     * Play build never has one.
      */
-    private fun update(context: Context, cache: UsageCache): Condition? {
-        val latest = cache.latestKnownVersion() ?: return null
-        val installed = try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: return null
-        } catch (_: Exception) {
-            return null
-        }
-        val normalized = UpdateCheck.normalize(latest)
-        if (UpdateCheck.compare(normalized, UpdateCheck.normalize(installed)) <= 0) return null
-        if (UpdateGate.isSkipped(latest, cache.dismissedUpdateVersion())) return null
-        return Condition(
-            short = "Update available — v$normalized",
-            title = "Update available — v$normalized",
-            detail = "You have v$installed. Tap to open the app; nothing installs by itself.",
-            error = false,
-        )
-    }
+    private fun update(context: Context, cache: UsageCache): Condition? =
+        Channel.updateCondition(context, cache)
 
     /**
      * CCBG-27 (Free Plan 403): the plan does not report usage. Persistent until the plan

@@ -615,6 +615,22 @@ class UsageCache(context: Context) {
         prefs.edit().putString("dismissedUpdateVersion", version).apply()
     }
 
+    /**
+     * CCRM-87 (Update Channel): the Play build drops what a GitHub build left behind, so
+     * an inherited `latestKnownVersion` can never surface as an update Play won't offer.
+     * The auto-check toggle stays: it is a preference, not a record.
+     */
+    fun clearUpdateState() {
+        prefs.edit()
+            .remove("lastUpdateCheckAt")
+            .remove("lastUpdateCheckOutcome")
+            .remove("latestKnownVersion")
+            .remove("lastUpdateFailAt")
+            .remove("lastUpdateFailReason")
+            .remove("dismissedUpdateVersion")
+            .apply()
+    }
+
     // --- token health metadata (informational fields from the pasted JSON) ---
 
     /** Stored at paste time; cleared when a renewal rotates the refresh token. */

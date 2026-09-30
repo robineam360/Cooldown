@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.sp
+import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.SyntheticSeries
 import com.robin.claudeusage.data.HistoryStore
 import com.robin.claudeusage.share.ShareCard
@@ -968,8 +969,9 @@ private fun ErrorNotice(
                     }
                 ErrorKind.AUTH ->
                     TextButton(onClick = onOpenSettings) { Text("Open Settings") }
-                ErrorKind.INVALID_RESPONSE ->
-                    TextButton(onClick = onOpenSettings) { Text("Check for updates") }
+                // CCRM-87 (Update Channel): "Check for updates" on the github build;
+                // the Play build has no action, since Play updates by itself.
+                ErrorKind.INVALID_RESPONSE -> Channel.InvalidResponseAction(onOpenSettings)
                 // CCBG-27 (Free Plan 403): the only fix is a plan change, so that is the
                 // one link offered.
                 ErrorKind.PLAN ->

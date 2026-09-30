@@ -55,9 +55,12 @@ begun, run its *Always after* block first.
 ## Conventions — every session reads this block first
 
 1. **Start from the paste.** Each step's fenced block needs no earlier conversation.
-2. **Tests:** `./gradlew testDebugUnitTest` green and `./gradlew assembleDebug` compiling before a
-   step closes. **From Step 3 on, these become the flavor task names Step 3 confirms**, and Step 3
-   rewrites this line in the same commit as the split.
+2. **Tests:** `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest` green and
+   `./gradlew assembleGithubDebug assemblePlayDebug` compiling before a step closes. These are the
+   flavor task names Step 3 confirmed on AGP 9.4 (2026-09-30); the old `testDebugUnitTest` is now
+   ambiguous and fails. Release outputs: `assembleGithubRelease` →
+   `app/build/outputs/apk/github/release/app-github-release.apk` (published as `app-release.apk`),
+   `bundlePlayRelease` → `app/build/outputs/bundle/playRelease/app-play-release.aab`.
 3. **Commits:** straight to `main`. Subjects look like `feat(CCRM-87): …` or `fix(CCBG-46): …`, and
    the body names anything unrelated that rides along. Never stage `ccooldown-release.jks`,
    `keystore.properties`, `local.properties` or any PEPK output.
@@ -83,7 +86,7 @@ begun, run its *Always after* block first.
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
 | 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
-| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☐☑ |
+| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☑ |
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☐ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48 | session | 2, 3 | ☐ |
@@ -231,7 +234,8 @@ Convention 4.
 - ☐ Both flavors compile, both flavors' tests are green, and the stale-`latestKnownVersion` test
   exists.
 - ☐ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
-  the privacy URL is allowed), and neither output holds a `.so`.
+  the privacy URL is allowed), and every `.so` in either output is on the allowlist and ready for
+  16 KB pages (amended 2026-09-30 from "no `.so`"; see the Log).
 - ☐ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
 - ☐ CI runs both flavors' unit tests and is green on `main`.
 - ☐ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
@@ -241,6 +245,24 @@ Convention 4.
 **Reversal:** `git revert` per commit, newest first. Delete `ci.yml` with its commit's revert.
 
 **Log:**
+- 2026-09-30 — CCRM-87 (Update Channel) built. Real task names on AGP 9.4: `testGithubDebugUnitTest`,
+  `testPlayDebugUnitTest`, `assembleGithubRelease`, `bundlePlayRelease` (`testDebugUnitTest` is now
+  ambiguous). Tests green on both flavors (657 github, 643 play). `bundletool` 1.18.3 installed from
+  Homebrew for the AAB checks (reversal: `brew uninstall bundletool`).
+- 2026-09-30 — **Spec gap: "no `.so`" was a false premise.** Every output, and v1.8's shipped APK,
+  carries `lib/<4 ABIs>/libandroidx.graphics.path.so` (androidx.graphics:graphics-path 1.0.1, via
+  Compose UI; PathIterator below API 34, and minSdk is 31, so it cannot be excluded). Fable was out
+  of usage credits, so a fresh Opus judge ruled: **accept**, a minor gap, not Robin's. Its two
+  concerns were adopted. Sol (GPT-6, high) cross-checked the verdict: **concerns**, two. Test the
+  real device splits and the AAB's alignment config: adopted. Pin full ABI paths: adopted; its "verify
+  the library's contents" half is answered, not adopted, because a hash pin would fail every Compose
+  bump, and the 16 KB checks already run on whatever the contents are. Verdicts are in
+  `design/research/2026-09-30-v19-step3-so-gap.txt`. The rule in `tools/check_artefact.py` is now: every `.so` sits at an allowlisted ABI
+  path; every ELF PT_LOAD has p_align ≥ 0x4000; in an APK (alone or in an `.apks` set) it is stored
+  uncompressed at a 16 KB offset; an AAB's BundleConfig asks for uncompressed native libraries with
+  `PAGE_ALIGNMENT_16K`. It passes on the play AAB, the play and github APKs, a bundletool universal
+  APK and all 172 device split APKs. A fake library fails it. Step 8 still reads Play's live
+  requirements on the day.
 
 ---
 

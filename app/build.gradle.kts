@@ -26,6 +26,16 @@ android {
         versionName = "1.8"
     }
 
+    // CCRM-87 (Update Channel): one app, two distribution channels, one commit. Both share
+    // the applicationId, the key and the versionCode sequence, so an install can move
+    // between them. github carries the GitHub Releases update path (src/github/); play
+    // carries a no-op (src/play/), so the update classes are absent from the Play build.
+    flavorDimensions += "channel"
+    productFlavors {
+        create("github") { dimension = "channel" }
+        create("play") { dimension = "channel" }
+    }
+
     signingConfigs {
         if (keystorePropsFile.exists()) {
             create("release") {

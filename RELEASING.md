@@ -23,10 +23,21 @@ forgetting the bump means colleagues can't install over the old build.
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
-./gradlew assembleRelease
-# Signed APK lands at app/build/outputs/apk/release/app-release.apk — upload it in step 5.
+./gradlew assembleGithubRelease
+mkdir -p app/build/asset && cp app/build/outputs/apk/github/release/app-github-release.apk app/build/asset/app-release.apk
+# The release asset is app/build/asset/app-release.apk — upload it in step 4.
 # (No longer copied into release/ or committed.)
 ```
+
+**Two flavors since v1.9** (CCRM-87 (Update Channel)). `github` is the APK on the Releases
+page and keeps the *Check for updates* path; `play` is the Google Play build and has none.
+The GitHub asset is always the **github** flavor, copied to the file name `app-release.apk`
+that every earlier release used, so links and habits keep working. The bare
+`assembleRelease` now builds both flavors and names neither `app-release.apk` — never
+upload from `app/build/outputs/apk/release/`, which only holds a stale pre-v1.9 build.
+`tools/check_artefact.py --channel play|github <apk|aab|apks>` checks an artefact: the
+play build holds no update endpoint or update class, and every native library is on its
+allowlist and ready for 16 KB pages.
 
 **Signing (since v0.13).** The app is signed with a permanent release keystore, not the
 throwaway debug key. The keystore + its password live in two gitignored files that are
@@ -38,7 +49,7 @@ root). `app/build.gradle.kts` reads them automatically.
 - Because the keystore is stable, every release from v0.13 onward updates in place and keeps
   the user's history and settings. (The one-time exception was v0.12 → v0.13: v0.12 was
   debug-signed with a key that's gone, so that single upgrade required a reinstall.)
-- On a fresh clone without the two files, `assembleRelease` still builds but produces an
+- On a fresh clone without the two files, `assembleGithubRelease` still builds but produces an
   **unsigned** APK — restore the keystore files before a real release.
 
 ## 3. Update the docs
@@ -104,12 +115,13 @@ BT=$ANDROID_HOME/build-tools/36.0.0          # apksigner, aapt
 V=1.8                                        # this release's versionName
 
 git add -A && git commit -m "v$V — <one line>"                                  # 1 release source
-./gradlew assembleRelease                                                       # 2 built from that commit
+./gradlew assembleGithubRelease && mkdir -p app/build/asset && \
+   cp app/build/outputs/apk/github/release/app-github-release.apk app/build/asset/app-release.apk  # 2 built from that commit
 git tag v$V && git push && git push origin v$V                                  # 3 tag on it, both pushed
-gh release create v$V app/build/outputs/apk/release/app-release.apk \
+gh release create v$V app/build/asset/app-release.apk \
    --draft --verify-tag --title "Cooldown v$V" --notes-file <notes>             # 4 draft bound to the pushed tag
 gh release download v$V -p '*.apk' -D /tmp/v$V                                  # 5 the asset is the build:
-   shasum -a 256 app/build/outputs/apk/release/app-release.apk /tmp/v$V/app-release.apk  #   hashes equal
+   shasum -a 256 app/build/asset/app-release.apk /tmp/v$V/app-release.apk      #   hashes equal
    $BT/apksigner verify --print-certs /tmp/v$V/app-release.apk                  #   signer SHA-256 = the digest above
    $BT/aapt dump badging /tmp/v$V/app-release.apk | head -1                     #   package com.robin.claudeusage, the new versionCode/Name
    # any mismatch: stop, gh release delete v$V --yes (still a draft), nothing was published

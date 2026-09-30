@@ -254,7 +254,7 @@ Below the main screen's cards, one status line — *"Checked 4m ago ↻"* — ha
 
 - Source: the git working copy at `~/Projects/Cooldown`, pushed to GitHub `robineam360/Cooldown`; single-module Android project
 - Stack: Kotlin · Jetpack Compose · WorkManager · OkHttp · AGP 9.2.1 (built-in Kotlin 2.3.10) · min SDK 31, target 36. No Glance for the notification, which is still plain RemoteViews; the v1.8 widgets are separate home-screen AppWidgets, painted by the same ring renderer (CCRM-83 (Ring Renderer)).
-- Build on the Mac (signed release): `JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleRelease` → `app/build/outputs/apk/release/app-release.apk`. Signing reads the gitignored `keystore.properties` + `ccooldown-release.jks` at the repo root — **back those up; losing them means no more updates.** See `RELEASING.md`.
+- Build on the Mac (signed release): `JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleGithubRelease` → `app/build/outputs/apk/github/release/app-github-release.apk`, published as `app-release.apk`. Signing reads the gitignored `keystore.properties` + `ccooldown-release.jks` at the repo root — **back those up; losing them means no more updates.** See `RELEASING.md`.
 - RemoteViews gotcha: containers max out at 10 children — keep notification blocks wrapped in nested layouts.
 - If Anthropic changes the undocumented response schema, the parser ignores unknown fields; if bars go blank, check the raw JSON in the debug view first.
 
