@@ -267,6 +267,10 @@ Convention 4.
   notification resolves its target with `getLaunchIntentForPackage`, which package visibility hides,
   so `<queries>` also names the three provider packages (restores existing behaviour; nothing
   visible changes). Step 7's device check covers the browser picker and that tap, in both flavors.
+- 2026-09-30 — CCRM-91 (CI Gate) built. Local lint on both flavors: 333 and 332 warnings, 0 errors,
+  so no baseline. Lint runs per flavor (`lintGithubDebug lintPlayDebug`) rather than the bare `lint`,
+  which covers only the default variant. Actions pinned to their current majors (checkout v7,
+  setup-java v6, setup-gradle v6, upload-artifact v7); Dependabot keeps them current.
 
 ---
 

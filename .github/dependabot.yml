@@ -1,13 +1,16 @@
-# Dependabot — keep Gradle dependencies current.
+# Dependabot — keep Gradle dependencies and the CI workflow's actions current.
 #
-# No github-actions ecosystem entry: this repo has no .github/workflows/, and Dependabot
-# fails its weekly run ("file-path: /action.yml or /.github/workflows/<anything>.yml")
-# when asked to update an ecosystem that has no files — which showed up as a red
-# "Dependabot Updates" run every week from 2026-08-27 on. Add the entry back the day a
-# workflow lands.
+# The github-actions entry was removed while this repo had no .github/workflows/:
+# Dependabot fails its weekly run ("file-path: /action.yml or /.github/workflows/<anything>.yml")
+# for an ecosystem with no files, which showed up as a red "Dependabot Updates" run every
+# week from 2026-08-27 on. CCRM-91 (CI Gate) added .github/workflows/ci.yml, so it is back.
 version: 2
 updates:
   - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"

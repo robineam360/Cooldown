@@ -1540,7 +1540,7 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** every file is present, and Robin has approved the graphic.
 
 ### CCRM-91 · CI Gate — tests, builds and lint on every push
-- **Status:** Planned v1.9.
+- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): `.github/workflows/ci.yml` on push to `main` and every PR — `testGithubDebugUnitTest testPlayDebugUnitTest`, unsigned `assembleGithubRelease bundlePlayRelease`, `lintGithubDebug lintPlayDebug` (warnings only today, so no baseline), reports kept 14 days; `contents: read`, no secrets. Dependabot's `github-actions` entry is back · planned v1.9.
 - **What:** `.github/workflows/ci.yml`. On push and PR it runs both flavors' unit tests (github and play), an
   unsigned `assembleGithubRelease`, `bundlePlayRelease` and `lint` (with a baseline if needed). It
   also restores the `github-actions` entry in `.github/dependabot.yml`. No secrets: CI never signs.
