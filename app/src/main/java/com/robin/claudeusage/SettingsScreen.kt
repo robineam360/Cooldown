@@ -1423,14 +1423,15 @@ private fun Drawable.asIconBitmap(): ImageBitmap? = try {
 }
 
 /**
- * Installed browsers, for the sign-in "open with" picker. Uses QUERY_ALL_PACKAGES
- * (fine for a sideload app) so OEM skins that under-report a scoped <queries> still
- * list every browser. Signing a given account in the browser where that account is
- * logged in is the whole point — e.g. Work in Samsung Internet, Personal in Brave.
+ * Installed browsers, for the sign-in "open with" picker. Signing a given account in
+ * the browser where that account is logged in is the whole point — e.g. Work in
+ * Samsung Internet, Personal in Brave. Since CCRM-88 (Scoped Queries) this sees only
+ * what the manifest's <queries> names, so the probe must match it exactly: VIEW,
+ * BROWSABLE, https.
  */
 private fun installedBrowsers(context: android.content.Context): List<BrowserChoice> {
     val pm = context.packageManager
-    val probe = Intent(Intent.ACTION_VIEW, Uri.parse("http://example.com"))
+    val probe = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))
         .addCategory(Intent.CATEGORY_BROWSABLE)
     return pm.queryIntentActivities(probe, android.content.pm.PackageManager.MATCH_ALL)
         .mapNotNull { ri ->

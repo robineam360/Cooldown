@@ -263,6 +263,10 @@ Convention 4.
   `PAGE_ALIGNMENT_16K`. It passes on the play AAB, the play and github APKs, a bundletool universal
   APK and all 172 device split APKs. A fake library fails it. Step 8 still reads Play's live
   requirements on the day.
+- 2026-09-30 — CCRM-88 (Scoped Queries) built. A gap in the spec: the provider-app tap in the pinned
+  notification resolves its target with `getLaunchIntentForPackage`, which package visibility hides,
+  so `<queries>` also names the three provider packages (restores existing behaviour; nothing
+  visible changes). Step 7's device check covers the browser picker and that tap, in both flavors.
 
 ---
 

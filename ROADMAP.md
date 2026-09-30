@@ -1505,7 +1505,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   - RUNBOOK Conventions and RELEASING.md name the real flavor task names.
 
 ### CCRM-88 · Scoped Queries — `QUERY_ALL_PACKAGES` goes
-- **Status:** Planned v1.9. Not a layout change, so it needs a device check but no wireframe.
+- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): the permission is gone from `main`; `<queries>` names VIEW + BROWSABLE + https (the picker's probe moved from http to https to match) and, beyond the spec, `<package>` lines for the three provider apps, because `getLaunchIntentForPackage` (the pinned notification's "open the provider's app" tap, CCRM-56 (Provider Identity)) returns null for an invisible package. `ManifestQueriesTest` keeps that list equal to `Provider.appPackage`. The device check is RUNBOOK Step 7 · planned v1.9. Not a layout change, so it needs a device check but no wireframe.
 - **What:** drop the permission (`AndroidManifest.xml:29-30`) from `main` and add a `<queries>`
   block for `ACTION_VIEW` + `BROWSABLE` + `https`. This serves the browser picker
   (`SettingsScreen.kt:1434-1450`). If the Fold 7 pass shows One UI under-reporting browsers, re-add
