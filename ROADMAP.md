@@ -1484,8 +1484,9 @@ in [RUNBOOK.md](RUNBOOK.md).
   `bundletool validate`, and its signer matches RELEASING.md's trusted digest.
 
 ### CCRM-87 · Update Channel — `github` and `play` flavors; the Play build has no out-of-store update path
-- **Status:** Planned v1.9. Visible in the play flavor only (the Updates card is absent, and one
-  notice action goes), so it needs a wireframe line in Step 2.
+- **Status:** Planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
+  In the play flavor the whole Updates section goes, so Polling and Usage credits run straight into
+  About. The invalidResponse notice keeps its title and detail and has no action row.
 - **Why:** Play's policy is about *offering* update paths outside Play. A static scan finds
   `api.github.com/…/releases/latest`, so the classes must be **absent** from the Play artefact, not
   hidden behind a flag.
@@ -1513,7 +1514,9 @@ in [RUNBOOK.md](RUNBOOK.md).
   the Fold 7, in both flavors.
 
 ### CCRM-89 · Privacy Policy — the policy, the Data-safety answers, and a row on the About card
-- **Status:** Planned v1.9. The About row is visible, so it needs a wireframe.
+- **Status:** Planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
+  "Privacy policy" TextButton 8 dp below "Share feedback", the same in both flavors. It opens the
+  policy through the browser picker (`openInBrowser`).
 - **What:**
   - `docs/privacy.md`: what is stored and where, where it is sent, what is never sent, deletion
     (remove the account), the github-only GitHub call, and the crash report staying on the phone.
@@ -2978,9 +2981,23 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
-- **Status:** Needs design · small · **option decided 2026-09-25** (Fable recommended, Astra
-  reviewed: `concerns`, all adopted below; the two agreed, so it did not go to Robin). Build waits
-  for the next-launch card's wireframe (CLAUDE.md §2). **Planned v1.9** (RUNBOOK Steps 2 and 4).
+- **Status:** **Designed — wireframe rev B approved by Robin 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §1 and §3).
+  Build next, **planned v1.9** (RUNBOOK Step 4). Option decided 2026-09-25 (Fable recommended, Astra
+  reviewed: `concerns`, all adopted below). Decisions from the review (Robin, one question at a time):
+  - **Position:** one app-wide card under the top bar, above the account tabs, outside the pager.
+    At compact height (< 480 dp) it moves into the open page's scrolling column instead.
+  - **Look:** neutral `surfaceContainer` card, grey outlined "!", "Not now" · "Share report". The
+    title says "Cooldown crashed today at 9:41", or "stopped responding" for an ANR.
+  - **Share** uses the chooser's `IntentSender` callback, so the card goes only once a target is
+    picked (backing out keeps it). N reports: "Share sends all N, newest first".
+  - **No trace kept:** Share stays. **Card whitelist:** `REASON_CRASH`, `REASON_CRASH_NATIVE`,
+    `REASON_ANR` and the Java handler only; every other exit reason is logged only. The
+    watermark starts at install or upgrade, so there is no card for pre-v1.9 exits.
+  - **Crash reports card** in Diagnostics, **behind the 7-tap unlock** (Robin kept the 2026-09-16
+    rule over Astra's concern): count, 30-day retention, Share and Delete; hidden when empty.
+  - **Crash now:** the last Debug card, both flavors, with a confirm dialog. Its exception message
+    carries a canary (a fake token and an email). The unit tests plant canaries in every retained
+    field and in sample ANR and native traces; Step 7 checks the saved file and the shared text.
 - **Why:** the app has no crash reporting. A tester asked whether Crashlytics was on; it is not,
   so CCBG-31 (Alert Crash) reached us as a chat message with no trace and had to be reproduced
   from logcat.

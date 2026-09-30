@@ -4,18 +4,19 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: v1.9 Step 2, the wireframe (written 2026-09-27)
+## ▶ Next session — start here: v1.9 Step 3, channel split, scoped queries and CI (written 2026-09-30)
 
-v1.8 shipped 2026-09-27. The Fold 7 runs the published v1.8 APK, and the leftover worktree and
-branches are gone. **The v1.9 plan is FROZEN** ([RUNBOOK.md](RUNBOOK.md); ROADMAP.md's v1.9 section;
-CCRM-86 (Play Readiness) to CCRM-91 (CI Gate), CCBG-46 (Keystore Wedge) to CCBG-49). Astra at xhigh
-reviewed it three times (blocking, blocking, then concerns), and all findings are adopted. **Q4, the
-Play account type, is open:** Robin will talk it through with Fable (pros and cons in RUNBOOK Step
-9), and it gates only Step 9.
+**Step 2 is done.** Robin approved wireframe rev B of
+[design/2026-09-28-v19-play-ready.mockup.html](design/2026-09-28-v19-play-ready.mockup.html) on
+2026-09-30, answering Q1–Q7 one at a time, each as drawn. The decisions are in the Status lines of
+CCRM-85 (Crash Capture), CCRM-87 (Update Channel), CCRM-89 (Privacy Policy), CCBG-35 (Tab Clip) and
+CCBG-48 (Reconfigure Label); CCBG-48 is a restoration of rev D. Fable was out of usage credits for
+the review, so a fresh Opus judge ruled in its place and Astra (high) cross-checked; every concern
+is adopted or was decided by Robin. **Q4, the Play account type, is still open** and gates only Step 9.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
+Nothing for Robin to do before Step 3. Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 2, and run Step 2's Resume block.
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 3, and run Step 3's Resume block.
 
 ---
 

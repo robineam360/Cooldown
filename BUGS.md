@@ -51,8 +51,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
 ### CCBG-48 · Reconfigure Label — a widget reconfigured later shows "Add widget", not "Save changes"
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. In v1.9 only if the fix restores
-  the approved rev D reconfigure view (CLAUDE.md §2's exemption). Otherwise it waits.
+- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. **Ruled a restoration on
+  2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §6): rev D already draws "Widget settings" · "Save changes".
+  Planned v1.9 (RUNBOOK Step 5): choose the label from whether the widget is placed, not from
+  saved prefs.
 - **Severity:** Low
 - **Symptom:** the launcher placed the widget without config. When it is reconfigured later, the
   config screen's button reads "Add widget".
@@ -158,7 +160,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
 - **Status:** Open — found 2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the
-  emulator; not analysed. Planned v1.9, wireframe first (Step 2).
+  emulator. Planned v1.9 (RUNBOOK Step 5). **Fix approved 2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §5): keep
+  the fixed `TabRow` (10 dp a side) whenever every title fits its equal share at the current width
+  and font scale, and switch to a `ScrollableTabRow` (edgePadding 0, 16 dp a side, 90 dp minimum)
+  otherwise. Titles are never truncated, and the selected tab is kept in view. Accepted cost: at a
+  large font the row can differ between the cover and inner screens.
 - **Severity:** Low (a clipped label; every tab still works)
 - **Symptom:** at 360 dp (API 36 emulator, `wm density 480`), the Settings tab row shows
   "Appearanc". At font scale 2.0 all four titles are cut ("Acco", "Alert", "Appe", "More"). Any

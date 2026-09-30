@@ -83,7 +83,7 @@ begun, run its *Always after* block first.
 | Step | Item | Who | Gated on | Status |
 |---|---|---|---|---|
 | 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
-| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☐ |
+| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☐☑ |
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☐ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☐ |
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48 | session | 2, 3 | ☐ |
@@ -179,8 +179,8 @@ Status lines of CCRM-85, CCRM-87, CCRM-89, CCBG-35 and CCBG-48; close out per Co
 ```
 
 **Done when:**
-- ☐ Robin has said "approved" to a named revision.
-- ☐ Every decision is written into the items' Status lines, including whether CCBG-48 is a
+- ☑ Robin has said "approved" to a named revision.
+- ☑ Every decision is written into the items' Status lines, including whether CCBG-48 is a
   restoration.
 
 **Reversal:** documentation only.
@@ -188,6 +188,7 @@ Status lines of CCRM-85, CCRM-87, CCRM-89, CCBG-35 and CCBG-48; close out per Co
 **Log:**
 
 - 2026-09-30 — rev A drawn (Sonnet, 703e4a5). The seat's polish pass produced rev B: every existing element redrawn from the code, the crash card moved above the account tabs, share and exit-reason rules, fit-based tabs, a Crash reports card. Fable was out of credits, so a fresh Opus judge ruled instead: keep rev B on all 7 calls, 6 concerns adopted. Astra (high) agreed with all 7 and raised 2 concerns: one adopted, one (where Crash reports lives) goes to Robin as Q1. Verdict in `design/research/2026-09-30-v19-wireframe-revB-astra.txt`. Waiting for Robin.
+- 2026-09-30 — Robin answered Q1–Q7 one at a time, each as drawn (Crash reports stays behind the unlock), and **approved rev B**. Decisions are in the Status lines of CCRM-85, 87 and 89 and CCBG-35 and 48; CCBG-48 is a restoration. Step 2 done.
 
 ---
 
