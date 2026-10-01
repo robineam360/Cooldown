@@ -184,5 +184,6 @@ anything new) so a published GitHub release never has to be replaced before the 
   `release/play/data-safety.md` if the release changes what leaves the phone. A change like that
   updates `docs/privacy.md` and the Console's Data safety form in the same release.
 - **The listing copy, the FGS declaration and the App access note** live in `release/play/`. The
-  feature graphic is exported from `design/2026-10-01-play-feature-graphic.html` once Robin has
-  approved it.
+  feature graphic is `release/play/feature-graphic.png`, variant B of
+  `design/2026-10-01-play-feature-graphic.html` (approved 2026-10-01); re-export it from that page
+  with `?only=b` if the design changes.

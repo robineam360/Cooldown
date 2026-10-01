@@ -98,9 +98,9 @@ Account risk: Cooldown reads undocumented usage endpoints using your own sign-in
 
 - [ ] **App icon, 512×512 PNG** — export from the Pulse launcher icon (the ECG beat on charcoal).
   No provider marks on it.
-- [ ] **Feature graphic, 1024×500** — `design/2026-10-01-play-feature-graphic.html`. No provider
-  mark in it either. **Needs Robin's approval** before it is uploaded (CCRM-90 (Listing Pack) is not
-  done until he approves it).
+- [x] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha),
+  variant B of `design/2026-10-01-play-feature-graphic.html`, approved by Robin on 2026-10-01. No
+  provider mark in it either.
 - [ ] **Phone screenshots, 2 minimum, 4–8 recommended.** Candidates in `release/screenshots/`
   (`token-guide.png` is excluded: it shows a removed feature):
   1. `hero.png` — the README hero, if it works as a plain phone shot

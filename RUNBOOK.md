@@ -92,7 +92,7 @@ begun, run its *Always after* block first.
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☑ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☑ |
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
-| 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☐ |
+| 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☐ |
 | 8 | Release v1.9 on GitHub; AAB built from the same commit | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
 | 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | ☐ |
@@ -433,7 +433,7 @@ on any store" until a launch. Close out per Convention 4.
 
 **Done when:**
 - ☑ Every file above exists and agrees with the code.
-- ☐ Robin has said "approved" to the graphic.
+- ☑ Robin has said "approved" to the graphic (variant B, 2026-10-01).
 - ☑ RELEASING.md has the Play channel section.
 
 **Reversal:** `git revert`.
@@ -452,6 +452,11 @@ on any store" until a launch. Close out per Convention 4.
   **Open for Robin:** the feature graphic, A or B (`design/2026-10-01-play-feature-graphic.html`);
   whether the Debug probe stays in release builds (it is disclosed now); whether CCBG-51 rides in
   v1.9. Step 9 will need his call on which reviewer account to give (`app-access.md`).
+- 2026-10-01 — Step 6 closed. Robin approved graphic **B**; it is exported to
+  `release/play/feature-graphic.png` (1024×500, 8-bit RGB, no alpha) with the page's own headless
+  Chrome command and `?only=b`. Robin's other two calls, the same day: the Debug Endpoint probe is
+  **removed from release builds** (debug builds keep it), and CCBG-51 (Held Change Residue) **rides in
+  v1.9**. Both land as their own commits before Step 7's versionCode bump.
 
 ---
 

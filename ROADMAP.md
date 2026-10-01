@@ -1514,7 +1514,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   the Fold 7, in both flavors.
 
 ### CCRM-89 · Privacy Policy — the policy, the Data-safety answers, and a row on the About card
-- **Status:** **Built 2026-10-01** (RUNBOOK Step 6): `docs/privacy.md` (both flavors, every host and every store, CCBG-50 (Degraded Store Notice)'s `store_held_changes` record included) and `release/play/data-safety.md` (question by question, maximal honest answers, unclear lines marked "re-read on the day"); a fresh Opus judge checked both against the code (round 1 blocking: the hidden Debug endpoint probe was undisclosed; 13 findings fixed, delta accepted). CCBG-51 (Held Change Residue) was filed from it. `.github/SECURITY.md` and README's Privacy paragraph now agree with it · planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
+- **Status:** **Built 2026-10-01** (RUNBOOK Step 6): `docs/privacy.md` (both flavors, every host and every store, CCBG-50 (Degraded Store Notice)'s `store_held_changes` record included) and `release/play/data-safety.md` (question by question, maximal honest answers, unclear lines marked "re-read on the day"); a fresh Opus judge checked both against the code (round 1 blocking: the hidden Debug endpoint probe was undisclosed; 13 findings fixed, delta accepted). CCBG-51 (Held Change Residue) was filed from it. `.github/SECURITY.md` and README's Privacy paragraph now agree with it. Step 6 closed 2026-10-01: the policy is on main, so the About row's link resolves · planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
   "Privacy policy" TextButton 8 dp below "Share feedback", the same in both flavors. It opens the
   policy through the browser picker (`openInBrowser`).
   **The row is built** (2026-10-01, RUNBOOK Step 5) and was checked at 360 dp on the emulator. It opens
@@ -1530,7 +1530,7 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** all three exist, and the row opens the policy.
 
 ### CCRM-90 · Listing Pack — everything the Console asks for, drafted in the repo
-- **Status:** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic `design/2026-10-01-play-feature-graphic.html`, variants A and B, **awaits Robin's approval** · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
+- **Status:** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic: **variant B approved by Robin 2026-10-01**, exported to `release/play/feature-graphic.png` (1024×500, RGB, no alpha) from `design/2026-10-01-play-feature-graphic.html`. Step 6 closed; the FGS demo video is Step 7's · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
   artefact, not an app screen.
 - **What:** everything goes in `release/play/`:
   - the title and the short and full descriptions, with no provider mark in the title, icon or
