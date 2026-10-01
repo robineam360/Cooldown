@@ -4,26 +4,26 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: v1.9 Step 5, Visible fixes (written 2026-09-30)
+## ▶ Next session — start here: v1.9 Step 6, Docs and listing pack (written 2026-10-01)
 
-**Step 4 is done.** CCRM-85 (Crash Capture) is built. It uses no dependency and no network: an
-Application class installs a chained uncaught-exception handler; a pure scrubbed report keeps
-classes and frames and never an exception message; exit reasons add ANRs and native crashes past an
-install-time watermark; the next-launch card sits above the tabs; Crash reports and Crash now sit
-behind the 7-tap unlock. CCBG-46 (Keystore Wedge) is fixed: only an AEADBadTag or
-KeyPermanentlyInvalidated error resets, only when the app is opened, and never from boot or the
-background; every other failure runs in memory. A fresh Opus judge said `blocking` (share size),
-then `accept` after the fixes. The gate is green on both flavors.
+**Step 5 is done.** CCBG-50 (Degraded Store Notice) was wireframed and judged. A fresh Fable judge
+ruled rev A blocking, because Try again could reset the file and a failed reset had no wording, and
+it accepted rev B. Robin approved rev B, with calls 1–7 all as drawn. It is built: the amber
+notice, the restart card that goes by each account's last change (plus the CCBG-46 (Keystore
+Wedge) reset card), the "can't remove now" dialog, and the Debug "Simulate degraded store" switch.
+Also built: the About card's Privacy policy row for CCRM-89 (Privacy Policy), CCBG-35 (Tab Clip)'s
+scroll-when-it-doesn't-fit tabs, CCBG-45 (Single Panel Wording)'s "5h"/"Weekly", and CCBG-48
+(Reconfigure Label). Both flavors' tests are green. RUNBOOK Step 5's log lists what Step 7 must
+check on the phone.
 
-**Robin, before Step 5:** nothing is required. CCBG-50 (Degraded Store Notice), the notice you chose
-to wireframe for v1.9, was cleared by the exception Astra call you granted (concerns, all three
-adopted, none disputed). Step 5 starts with its wireframe, for your approval. Optional, as before:
-comment `@dependabot rebase` on the two red Dependabot PRs.
+**Robin, before Step 6:** nothing is required. The Privacy policy link 404s until Step 6 puts
+`docs/privacy.md` on main.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 5, and run Step 5's Resume block, starting with
-> the CCBG-50 (Degraded Store Notice) wireframe.
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 6, and run Step 6's Resume block. The privacy
+> policy must also cover CCBG-50 (Degraded Store Notice)'s `store_held_changes` record (see Step 5's
+> log).
 
 ---
 

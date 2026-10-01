@@ -91,7 +91,7 @@ begun, run its *Always after* block first.
 | 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☑ |
 | 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☑ |
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☑ |
-| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☐ |
+| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☐ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☐ |
 | 8 | Release v1.9 on GitHub; AAB built from the same commit | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
@@ -380,7 +380,7 @@ already pins the policy.
 ```
 
 **Done when:**
-- ☐ Each fix matches the wireframe or the approved design it restores, and the tests are green.
+- ☑ Each fix matches the wireframe or the approved design it restores, and the tests are green.
 
 **Reversal:** `git revert`.
 
@@ -392,6 +392,19 @@ already pins the policy.
 - 2026-10-01 — CCBG-50 built and checked on a separate API 36 emulator (`fold7inner`, port 5556),
   because another session was using `testfone`. On the inner screen the notice spans the full width,
   as the crash card does: the slot caps at 760 dp. The held-change wordings are left for Step 7.
+- 2026-10-01 — Step 5 closed. The commits: d5cab22 is CCRM-89 (Privacy Policy)'s About row,
+  checked at 360 dp; fdbd957 is CCBG-35 (Tab Clip), checked at 360 dp, at 2.0×, at about 411 dp and
+  at 750 dp; 9af4482 is CCBG-45 (Single Panel Wording), with the collapsed row seen on the emulator;
+  17a4e73 is CCBG-48 (Reconfigure Label), checked by unit tests. Both flavors' tests are green, and
+  both debug builds compile. **For Step 7 on the phone:**
+  - CCBG-50: turn on Simulate in Debug, Clear an account, close the app from Recents and reopen it.
+    The "signed in again" card should appear, and the account should be signed in.
+  - CCBG-45: the expanded one-account notification should read "Weekly".
+  - CCBG-48: on One UI, place a widget without config, then use Widget settings. The button should
+    read "Save changes".
+  **For Step 6:** `docs/privacy.md` must cover CCBG-50's `store_held_changes` record, which holds
+  account keys, sign-in or sign-out, and times, never a token. The privacy link 404s until that
+  file is on main.
 
 ---
 
