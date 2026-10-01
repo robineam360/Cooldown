@@ -22,8 +22,8 @@ android {
         applicationId = "com.robin.claudeusage"
         minSdk = 31
         targetSdk = 36
-        versionCode = 24
-        versionName = "1.8"
+        versionCode = 25
+        versionName = "1.9"
     }
 
     // CCRM-87 (Update Channel): one app, two distribution channels, one commit. Both share
