@@ -209,7 +209,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
 ### CCBG-45 · Single Panel Wording — the one-account notification says "5-hour window" and "7-day"
-- **Status:** Open — found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);
+- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9, under Robin's as-is ruling.
+  The single row and its weekly panel row now say "5h" and "Weekly", as the Duet does. The collapsed
+  "Personal · 5h" was seen on the API 36 emulator; the expanded Weekly row needs real usage, so
+  `SinglePanelWordingTest` pins it and Step 7 sees it on the phone. Found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);
   not blocking v1.8 — **Robin, 2026-09-27: "Ship with it open"**; v1.8 shipped with it, fix in a later release. A visible wording change, so it needs a wireframe (CLAUDE.md §2) — or the approved
   Duet wording applied as-is, if Robin rules it restores an approved design.
   **Robin, 2026-09-27 (v1.9 Q2): fix as-is under the exemption.** Planned v1.9.

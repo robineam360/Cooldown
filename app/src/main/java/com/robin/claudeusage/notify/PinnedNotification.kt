@@ -54,8 +54,8 @@ import com.robin.claudeusage.ui.providerMarkRes
  *
  * Since CCRM-62 (Duet Notification) it can carry **two** accounts. Which layout it
  * renders is decided by one setting and nothing else: with no Second account
- * ([UsageCache.pinnedSecondProfile] null, "None") it is today's single layout, down
- * to its "5-hour window" wording; with one, it is the Duet — two halves collapsed,
+ * ([UsageCache.pinnedSecondProfile] null, "None") it is the single layout; with
+ * one, it is the Duet — two halves collapsed,
  * two header blocks expanded, each half its own tap target. An install that never
  * sets Second never sees any of it.
  *
@@ -463,7 +463,7 @@ object PinnedNotification {
         /** [Palette.barColor] of [pct] over [accent] — the figure's and the ring's hue. */
         val fill: Color,
         val elapsed: Double?,
-        /** "Personal · 5h" on a Duet, "Personal · 5-hour window" on the single row. */
+        /** "Personal · 5h", on the single row and a Duet alike (CCBG-45 (Single Panel Wording)). */
         val title: String,
         val sub: String,
         val stale: Boolean,
@@ -478,7 +478,7 @@ object PinnedNotification {
         usageLeft: Boolean,
         use24h: Boolean,
         resetClock: Boolean,
-        /** True for the two-account layout: shorter window names, stricter no-reading. */
+        /** True for the two-account layout: a stricter no-reading. */
         duet: Boolean,
     ): Half {
         val label = cache.profileLabel(profile)
@@ -503,14 +503,10 @@ object PinnedNotification {
             else elapsedPercent(
                 window, if (headlineWeekly) Projection.WEEKLY_MS else Projection.SESSION_MS,
             )
-        // "5h" and "Weekly" on every Duet surface, never "5-hour window" / "7-day":
-        // two accounts doubled every label in the expanded view and the account prefix
-        // had to come from somewhere. The single row keeps the long names — it has the
-        // width for them, and nothing about it changed.
-        val windowName = when {
-            !duet -> if (headlineWeekly) "7-day window" else "5-hour window"
-            else -> if (headlineWeekly) "Weekly" else "5h"
-        }
+        // "5h" and "Weekly" on every surface, never "5-hour window" / "7-day" (ROADMAP's
+        // v1.8 R1). The Duet needed them first, since two accounts doubled every label;
+        // CCBG-45 (Single Panel Wording) brought the single row in line, as approved as-is.
+        val windowName = windowName(headlineWeekly)
         val resetsAt = window?.resetsAt
         return Half(
             profile = profile,
@@ -857,6 +853,13 @@ object PinnedNotification {
      * accounts and each draws in its own colour, which is what lets the panel be read
      * without a legend.
      */
+    /** The headline window's name, on the single row and a Duet alike. */
+    internal fun windowName(headlineWeekly: Boolean): String = if (headlineWeekly) "Weekly" else "5h"
+
+    /** The weekly panel row's label: bare with one account, prefixed with two. */
+    internal fun weeklyLabel(accountLabel: String?): String =
+        if (accountLabel == null) "Weekly" else "$accountLabel · Weekly"
+
     private data class PanelBar(
         val label: String,
         val window: UsageWindow?,
@@ -880,7 +883,7 @@ object PinnedNotification {
     ): PanelBar? {
         if (data == null) return null
         return PanelBar(
-            label = if (label == null) "7-day" else "$label · Weekly",
+            label = weeklyLabel(label),
             window = data.weekly,
             // CCRM-23 (Reset Display): both forms, chosen first. The panel
             // has the room, and a 7-day clock needs its weekday to be honest.
