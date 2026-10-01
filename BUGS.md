@@ -108,9 +108,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   and never overwrites it. The notice's wireframe draws that boundary; see RUNBOOK Step 5.
 
 ### CCBG-51 · Held Change Residue — a removed account's held-change item can stay in settings for good
-- **Status:** Open — filed 2026-10-01 by the RUNBOOK Step 6 judge (finding 4d) while checking
-  `docs/privacy.md` against the code. Not observed on a device. Not scheduled; whether it rides in
-  v1.9 is Robin's call.
+- **Status:** **Fixed in code 2026-10-01**, ships v1.9 (Robin's call, the same day). Filed by the
+  RUNBOOK Step 6 judge (finding 4d) while checking `docs/privacy.md` against the code; never observed
+  on a device. `removeProfile` calls `HeldChanges.forgetAccount`, and `card()` deletes the orphan
+  items it skips; three tests in `HeldChangesTest`. `docs/privacy.md` says removing an account
+  deletes its entries.
 - **Severity:** Low (a few bytes of residue: an account key and a change kind, never a token; no
   visible effect)
 - **Symptom (from code):** CCBG-50 (Degraded Store Notice)'s `store_held_changes` keeps

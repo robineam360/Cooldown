@@ -197,6 +197,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         cache.clearProfile(profile)
         historyStore.clear(profile)
         sessionLogStore.clear(profile)
+        HeldChanges.forgetAccount(context, profile.key)
 
         if (!registry.remove(profile.key)) return false
 

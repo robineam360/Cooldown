@@ -119,21 +119,47 @@ object HeldChanges {
         _changes.value++
     }
 
-    /** The card to show now: a reset first, then the dropped changes. Null when there is none. */
+    /**
+     * The card to show now: a reset first, then the dropped changes. Null when there is none.
+     * An item whose account is gone, or that no longer reads, is deleted rather than skipped:
+     * with no card to dismiss, it would otherwise stay in settings for good (CCBG-51 (Held
+     * Change Residue)).
+     */
     @Synchronized
     fun card(context: Context, liveKeys: Set<String>): Card? {
         val p = prefs(context)
         p.getLong(RESET_AT, 0L).takeIf { it > 0L }?.let { return Card.Reset(it) }
-        val items = p.all.entries
-            .filter { it.key.startsWith(PENDING) }
-            .mapNotNull { (name, value) ->
-                val key = name.removePrefix(PENDING)
-                val kind = runCatching { Kind.valueOf(value as String) }.getOrNull()
-                if (kind == null || key !in liveKeys) null else Item(key, kind)
-            }
-            .sortedBy { it.profileKey }
+        val items = mutableListOf<Item>()
+        val orphans = mutableListOf<String>()
+        for ((name, value) in p.all) {
+            if (!name.startsWith(PENDING)) continue
+            val key = name.removePrefix(PENDING)
+            val kind = runCatching { Kind.valueOf(value as String) }.getOrNull()
+            if (kind == null || key !in liveKeys) orphans += name else items += Item(key, kind)
+        }
+        if (orphans.isNotEmpty()) {
+            val e = p.edit()
+            orphans.forEach { e.remove(it) }
+            if (items.isEmpty()) e.remove(PENDING_AT)
+            e.commit()
+        }
         if (items.isEmpty()) return null
-        return Card.Changes(p.getLong(PENDING_AT, 0L), items)
+        return Card.Changes(p.getLong(PENDING_AT, 0L), items.sortedBy { it.profileKey })
+    }
+
+    /**
+     * A removed account's entries go with it (CCBG-51 (Held Change Residue)): its held
+     * change and its notice item. The rest of the record is left for [settle] and [card].
+     */
+    @Synchronized
+    fun forgetAccount(context: Context, profileKey: String) {
+        val p = prefs(context)
+        val e = p.edit().remove(OP + profileKey).remove(PENDING + profileKey)
+        val keys = p.all.keys - setOf(OP + profileKey, PENDING + profileKey)
+        if (keys.none { it.startsWith(OP) }) e.remove(SESSION_KEY).remove(FIRST_AT)
+        if (keys.none { it.startsWith(PENDING) }) e.remove(PENDING_AT)
+        e.commit()
+        _changes.value++
     }
 
     /** OK and Open Settings both end the card for good. */

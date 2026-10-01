@@ -23,11 +23,15 @@ Play's definitions, as read on 2026-10-01:
 |---|---|---|
 | OAuth access token and refresh token, the one-time sign-in code and PKCE value | Anthropic (`platform.claude.com`, `api.anthropic.com`) | `data/ApiClient.kt`, `data/OAuthSignIn.kt` |
 | OAuth tokens, the device code, and the ChatGPT account ID (`ChatGPT-Account-Id` header) | OpenAI (`auth.openai.com`, `chatgpt.com`) | `data/source/ChatGptSource.kt`, `data/CodexDeviceSignIn.kt` |
-| The access token, on a GET to a path the user types, only when they tap Probe in the hidden Debug section (7 taps on the version); the response is shown, never stored | Anthropic (`api.anthropic.com`, `claude.ai`) or OpenAI (`chatgpt.com`), allowlisted | `data/ApiClient.kt` (`probe`), `SettingsScreen.kt` (EndpointProbe) |
 | A crash report: time, exception class, frames, app version and flavor, Android version, manufacturer, model; for an ANR, the system's thread dump (thread names, build fingerprint). No message; all scrubbed. | Only through the share sheet, to the app the user picks | `diag/CrashReport.kt`, `diag/CrashStore.kt` |
 | The diagnostics log: timestamps, account keys, status codes, outcomes | Only through the share sheet | `diag/AppLog.kt`, `SettingsScreen.kt` (AppLogCard) |
 | A share card PNG: one account's label and usage | Only through the share sheet | `share/ShareCard.kt` |
 | The feedback email | The user's own mail app (`mailto:`), written and sent by the user | `SettingsScreen.kt` (AboutCard) |
+
+**Not in any published build:** the Debug section's endpoint probe (a token-bearing GET to a typed
+path) is compiled only into debug builds (`BuildConfig.DEBUG` in `SettingsScreen.kt`), so neither
+the release AAB nor the GitHub APK can send it. Removed from release builds by Robin's call on
+2026-10-01.
 
 **Never leaves the device:** the account email (received from the provider and shown in Settings
 only), the usage numbers and history, settings, the `store_held_changes` record of CCBG-50 (Degraded

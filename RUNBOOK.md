@@ -16,6 +16,8 @@ steps.
   if it qualifies;
 - CCBG-50 (Degraded Store Notice), added by Robin on 2026-09-30 after the Step 4 judge. It needs a
   wireframe and Robin's review call on the scope change.
+- CCBG-51 (Held Change Residue), added by Robin on 2026-10-01: pure logic, no wireframe;
+- the Debug section's Endpoint probe leaves release builds (Robin, 2026-10-01; `BuildConfig.DEBUG`).
 
 **Filed but not in v1.9:** CCBG-47 (Widget Theme Lag) and CCBG-49 (Unassigned Label Overflow).
 

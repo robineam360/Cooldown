@@ -42,11 +42,10 @@ covered by their own privacy policies: Anthropic's, OpenAI's and GitHub's.
 is not in that build.
 
 **A developer tool, hidden by default.** Settings has a Debug section, which appears only after you
-tap the version on the About card seven times. Its *Endpoint probe* sends one request when you tap
-Probe: a read-only GET, with the chosen account's access token, to a path you type on
-`api.anthropic.com`, `claude.ai` or `chatgpt.com`, and on no other host. The response is shown on
-screen as it arrives, which can include that account's email and IDs, and it is never stored or
-logged. Nothing in the Debug section runs unless you tap it.
+tap the version on the About card seven times. In the builds published on GitHub and Google Play it
+sends nothing. The developer's own debug builds add an *Endpoint probe* there, which sends a
+read-only GET with an account's access token to a path typed on `api.anthropic.com`, `claude.ai` or
+`chatgpt.com`; no published build contains it. Nothing in the Debug section runs unless you tap it.
 
 The app is read-only. It never sends prompts, never spends quota and never calls an endpoint that
 would use up a credit.
@@ -89,7 +88,8 @@ Everything below lives in the app's private storage, which other apps cannot rea
   does not read back its own record. If the store had to be reset, it also holds the time of the
   reset. **It never holds a token.** At the first start where the store opens again, each change
   that the restored store undid becomes an item on an on-screen notice, and the rest of the record
-  is deleted. The notice's items are deleted when you dismiss it. A reset is reported straight away
+  is deleted. The notice's items are deleted when you dismiss it, and an account's entries are deleted when you
+remove that account. A reset is reported straight away
   on its own notice, deleted the same way.
 - **Diagnostics log** (`app-log.txt`, in the app's own folder on shared storage, which other apps
   cannot read on Android 12 and later): what the app did and when, with each account's internal

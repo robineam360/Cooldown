@@ -3258,7 +3258,10 @@ private fun DebugSection(repo: UsageRepository, onAccountsChanged: () -> Unit) {
             )
         }
     }
-    EndpointProbe(repo)
+    // The probe sends a live token to a typed path and shows the raw body, so it stays in
+    // debug builds only: no build published on GitHub or Play carries it (Robin, 2026-10-01,
+    // CCRM-89 (Privacy Policy)).
+    if (BuildConfig.DEBUG) EndpointProbe(repo)
 }
 
 /**

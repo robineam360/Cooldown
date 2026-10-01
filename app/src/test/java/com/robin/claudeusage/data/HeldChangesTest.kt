@@ -96,4 +96,38 @@ class HeldChangesTest {
         HeldChanges.dismiss(context, second)
         assertNull(HeldChanges.card(context, setOf("a")))
     }
+
+    private fun stored() =
+        context.getSharedPreferences("store_held_changes", Context.MODE_PRIVATE).all.keys
+
+    @Test
+    fun `CCBG-51 an item whose account is gone is deleted, not left behind`() {
+        HeldChanges.record(context, "a", HeldChanges.Op.SIGN_IN, 100L, earlier)
+        HeldChanges.record(context, "b", HeldChanges.Op.SIGN_IN, 100L, earlier)
+        settle(mapOf("a" to false, "b" to false))
+        // Both accounts were removed before any card could be dismissed.
+        assertNull(HeldChanges.card(context, emptySet()))
+        assertEquals(emptySet<String>(), stored())
+    }
+
+    @Test
+    fun `CCBG-51 a live account's item survives an orphan's deletion`() {
+        HeldChanges.record(context, "a", HeldChanges.Op.SIGN_IN, 100L, earlier)
+        HeldChanges.record(context, "z", HeldChanges.Op.SIGN_IN, 100L, earlier)
+        settle(mapOf("a" to false, "z" to false))
+        assertEquals(listOf(HeldChanges.Item("a", HeldChanges.Kind.SIGN_IN_LOST)), items())
+        assertEquals(setOf("pendingAt", "pending.a"), stored())
+    }
+
+    @Test
+    fun `CCBG-51 removing an account drops its held change and its item`() {
+        HeldChanges.record(context, "a", HeldChanges.Op.SIGN_IN, 100L, earlier)
+        settle(mapOf("a" to false))
+        HeldChanges.record(context, "a", HeldChanges.Op.SIGN_OUT, 200L, earlier)
+        HeldChanges.record(context, "b", HeldChanges.Op.SIGN_IN, 200L, earlier)
+        HeldChanges.forgetAccount(context, "a")
+        assertEquals(setOf("session", "firstAt", "op.b"), stored())
+        HeldChanges.forgetAccount(context, "b")
+        assertEquals(emptySet<String>(), stored())
+    }
 }
