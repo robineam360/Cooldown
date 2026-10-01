@@ -74,9 +74,14 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** Open — filed 2026-09-30 by the RUNBOOK Step 4 judge (finding 6). Suspected, not
-  observed. **Robin: wireframe it for v1.9** (2026-09-30), so it is drawn and approved before RUNBOOK
-  Step 5 builds it. The v1.9 plan's review budget is spent, so adding it waits on Robin's review call.
+- **Status:** Open. It was filed 2026-09-30 by the RUNBOOK Step 4 judge (finding 6), and is suspected,
+  not observed. **The wireframe is approved:** Robin approved rev B on 2026-10-01 with calls 1–7 all as
+  drawn (`design/2026-10-01-ccbg50-degraded-store.mockup.html`). A fresh Fable judge ruled rev A
+  blocking (Try again could reset the file, and a failed reset had no wording) and accepted rev B.
+  The approved scope: an amber notice on the main screen and in Settings → Accounts, in four
+  wordings; a one-time restart card that goes by each account's last change; one more use of that
+  card when CCBG-46 resets a store; a "can't remove now" dialog; and a Debug switch to simulate the
+  failure. RUNBOOK Step 5 builds it.
 - **Severity:** Low (tokens are never lost from disk; only a sign-in made in the degraded state is)
 - **Symptom:** when CCBG-46 (Keystore Wedge) runs a process on the empty in-memory store, signing
   in looks like it works, but the tokens live only in memory and are gone at the next restart. The

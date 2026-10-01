@@ -385,6 +385,10 @@ already pins the policy.
 **Reversal:** `git revert`.
 
 **Log:**
+- 2026-10-01 — CCBG-50 (Degraded Store Notice): the wireframe is
+  `design/2026-10-01-ccbg50-degraded-store.mockup.html`. A Fable judge ruled rev A blocking, with 2
+  blocking findings and 7 concerns, all adopted; its delta check accepted rev B. Robin approved rev B
+  the same day with calls 1–7 all as drawn, including the reset card that rides along.
 
 ---
 
