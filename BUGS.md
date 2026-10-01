@@ -17,7 +17,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **shipped in v1.8 (2026-09-27)**.
 
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
-- **Status:** **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
   persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh
   Opus judge adopted: only the main screen's repository may reset (workers, the pinned service and
   anything `BOOT_COMPLETED` starts never do, and defer to the next app open), and the marker counts
@@ -59,7 +59,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
 ### CCBG-48 · Reconfigure Label — a widget reconfigured later shows "Add widget", not "Save changes"
-- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. `WidgetPrefs.placed` is
+- **Status:** **Verified on the Fold 7 2026-10-01** for a placed widget opened for reconfigure ("Save changes"); placement without config on One UI not exercised. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. `WidgetPrefs.placed` is
   true once config is saved or the widget has been drawn (`w<id>.drawn`, set after each successful
   draw, moved by a restore, pruned by a delete). The config screen picks its label from that.
   `WidgetPrefsTest` pins it. It was not seen on the emulator, because placing through the Pixel
@@ -80,7 +80,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. The restart cards after a held sign-in or sign-out are still to see (next session). **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator at 360 dp, about 411 dp and 750 dp: the notice, Try again, recovery, the Remove dialog, the
   Debug switch, and the restart card (from a seeded record). The held-change wordings need a real
   sign-in, so Step 7 checks them on the phone: simulate, Clear an account, restart, and the
@@ -122,6 +122,21 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   them either.
 - **Fix:** `removeProfile` drops that key's `op.` and `pending.` entries, and `card()` drops orphan
   items it skips. Pure logic, no wireframe; one test in `HeldChangesTest`/`CredentialStoreTest`.
+
+### CCBG-52 · Boot Pin Delay — after a reboot the always-on notification takes minutes, not seconds, to return
+- **Status:** Open — found 2026-10-01 in RUNBOOK v1.9 Step 7 (item 5) on the Fold 7. Not scheduled;
+  whether it is deferred past v1.9 is Robin's call.
+- **Severity:** Low (the pin does come back on its own; nothing is lost)
+- **Symptom:** after a reboot with the pin on, the notification reappeared **5 min 45 s** after
+  boot (boot 18:33:38, unlocked 18:33:45, pin 18:39:30). `PinnedBootReceiver` enqueued
+  `PinBootWorker` with its 5 s delay at 18:33:54 and the process was then cached and killed; the job
+  had every constraint satisfied from 18:33:59 but One UI's JobScheduler held it until 18:39:25. It
+  then started the `specialUse` service without trouble (`am_foreground_service_start …
+  SYSTEM_ALLOW_LISTED`). The receiver's KDoc promises "a handful of seconds". The status-bar ring
+  and the widgets' alarm were not affected (the alarm was re-armed at boot).
+- **Fix (to decide):** an expedited WorkManager request (`setExpedited`, with a non-expedited
+  fallback) is the usual way to get a post-boot job run promptly; whether One UI honours it right
+  after boot needs a reboot on the phone. Or accept the delay and correct the KDoc.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
@@ -217,7 +232,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   anyone holding the phone. The diagnostics log's rule is "no emails".
 
 ### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
-- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the four Settings tabs fit without scrolling on the cover and fill the width on the inner screen. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator: at 360 dp the row scrolls with every title whole, and choosing More scrolls it into view;
   at 2.0× it scrolls too; at about 411 dp and 750 dp it stays the fixed row it was. Found
   2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the emulator. **Fix approved 2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §5): keep
@@ -231,7 +246,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
 ### CCBG-45 · Single Panel Wording — the one-account notification says "5-hour window" and "7-day"
-- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9, under Robin's as-is ruling.
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): collapsed "Work · 5h", expanded "Weekly". **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9, under Robin's as-is ruling.
   The single row and its weekly panel row now say "5h" and "Weekly", as the Duet does. The collapsed
   "Personal · 5h" was seen on the API 36 emulator; the expanded Weekly row needs real usage, so
   `SinglePanelWordingTest` pins it and Step 7 sees it on the phone. Found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);

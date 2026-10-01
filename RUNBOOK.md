@@ -528,6 +528,27 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
 
 **Log:**
 
+- 2026-10-01 — Most of the pass is done (seat rung 1; findings in
+  `design/research/2026-10-01-v19-device-pass/findings.md`). Before was recorded over wireless adb,
+  then the pass moved to USB. versionCode 25 / 1.9 went in at 0e8ac99. A fresh Opus judge (purpose c)
+  checked the one-way install over v1.8 and returned **concerns**: record the app's state first, and
+  pin the device serial. Both were adopted.
+  - **Pass:** items 1, 2 (the picker lists every enabled browser; Chrome is disabled on this phone),
+    3, 4, 7 (every split's signer is the trusted digest), 8 and 9 (cover and inner screens).
+  - **Pass in 4b:** CCBG-46 (Keystore Wedge) after a force-stop and a reboot, and CCBG-50 (Degraded
+    Store Notice)'s live notice.
+  - **Pass, beyond the list:** the release build has no Endpoint probe, and CCBG-48 (Reconfigure
+    Label) reads "Save changes".
+  - **Item 5:** the pin survives MY_PACKAGE_REPLACED, and the alarm is re-armed at boot. After a
+    reboot, though, the pin took 5 min 45 s to come back, so I filed **CCBG-52 (Boot Pin Delay),
+    Low**.
+  - **Always after:** run; the phone is on the github build (sha256 73a1c1f9…846e); the diff
+    against Before is clean.
+  - **Still to do (Robin: next session):** CCBG-50's restart cards (a sign-in held while degraded, and
+    a sign-out held while degraded), item 6's FGS video, and Robin's word on CCBG-52 (fix it, or defer
+    it on the record).
+  - **Gate so far:** no High open.
+
 ---
 
 ## Step 8 · Release v1.9

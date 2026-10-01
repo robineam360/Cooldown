@@ -1,0 +1,26 @@
+text="Cooldown crash report
+Kind: crash
+Reason: uncaught exception
+When: 2026-10-01 18:17:43 +05:30
+At: 1790858863796
+Pid: 6527
+App: 1.9 (25) github
+Android: 16 (SDK 36)
+Device: samsung SM-F966B
+Thread: main
+Trace: 
+com.robin.claudeusage.diag.CrashNowCanary
+    at com.robin.claudeusage.CrashCardsKt.CrashNowCard$lambda$5$0$0$0(CrashCards.kt:202)
+    at com.robin.claudeusage.CrashCardsKt.$r8$lambda$owE6KRJRqQUrH84vTBoJHI1WTEk(CrashCards.kt:0)
+    at com.robin.claudeusage.CrashCardsKt$$ExternalSyntheticLambda13.run(D8$$SyntheticClass:0)
+    at android.os.Handler.handleCallback(Handler.java:1070)
+    at android.os.Handler.dispatchMessage(Handler.java:125)
+    at android.os.Looper.dispatchMessage(Looper.java:358)
+    at android.os.Looper.loopOnce(Looper.java:288)
+    at android.os.Looper.loop(Looper.java:392)
+    at android.app.ActivityThread.main(ActivityThread.java:10346)
+    at java.lang.reflect.Method.invoke(Method.java)
+    at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+    at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+
+"

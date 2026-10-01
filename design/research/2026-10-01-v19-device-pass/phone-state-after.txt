@@ -1,0 +1,12 @@
+settings get system screen_off_timeout: 60000
+settings get global airplane_mode_on: 0
+settings get global auto_time: 1
+settings get global auto_time_zone: 1
+getprop persist.sys.timezone: Asia/Calcutta
+settings get global wifi_on: 1
+settings get global mobile_data: 1
+phone-host clock offset: 0s
+  mForceIdle=false
+installed:
+    versionCode=25 minSdk=31 targetSdk=36
+    versionName=1.9

@@ -1484,7 +1484,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   `bundletool validate`, and its signer matches RELEASING.md's trusted digest.
 
 ### CCRM-87 · Update Channel — `github` and `play` flavors; the Play build has no out-of-store update path
-- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): flavor dimension `channel` with `github` and `play` on one `applicationId`; `channel/UpdateChannel.kt` in `main`, `object Channel` in each flavor; `UpdateCheck`, `UpdateGate`, `UpdateNotification` and the Updates card moved to `src/github/`; the play no-op drops inherited update prefs on the first poll (`PlayChannelTest`). `tools/check_artefact.py` checks the artefacts. Ships in v1.9 · planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): github keeps the Updates card and Check for updates; the play build (installed from the AAB's device splits over github, same key and versionCode) has no card, no strip and no check. **Built 2026-09-30** (RUNBOOK.md Step 3): flavor dimension `channel` with `github` and `play` on one `applicationId`; `channel/UpdateChannel.kt` in `main`, `object Channel` in each flavor; `UpdateCheck`, `UpdateGate`, `UpdateNotification` and the Updates card moved to `src/github/`; the play no-op drops inherited update prefs on the first poll (`PlayChannelTest`). `tools/check_artefact.py` checks the artefacts. Ships in v1.9 · planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
   In the play flavor the whole Updates section goes, so Polling and Usage credits run straight into
   About. The invalidResponse notice keeps its title and detail and has no action row.
 - **Why:** Play's policy is about *offering* update paths outside Play. A static scan finds
@@ -1505,7 +1505,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   - RUNBOOK Conventions and RELEASING.md name the real flavor task names.
 
 ### CCRM-88 · Scoped Queries — `QUERY_ALL_PACKAGES` goes
-- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): the permission is gone from `main`; `<queries>` names VIEW + BROWSABLE + https (the picker's probe moved from http to https to match) and, beyond the spec, `<package>` lines for the three provider apps, because `getLaunchIntentForPackage` (the pinned notification's "open the provider's app" tap, CCRM-56 (Provider Identity)) returns null for an invisible package. `ManifestQueriesTest` keeps that list equal to `Provider.appPackage`. The device check is RUNBOOK Step 7 · planned v1.9. Not a layout change, so it needs a device check but no wireframe.
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the picker lists every enabled browser (Brave, Edge, Samsung Browser; Chrome is disabled on this phone) in both flavors, so QUERY_ALL_PACKAGES is not re-added. **Built 2026-09-30** (RUNBOOK.md Step 3): the permission is gone from `main`; `<queries>` names VIEW + BROWSABLE + https (the picker's probe moved from http to https to match) and, beyond the spec, `<package>` lines for the three provider apps, because `getLaunchIntentForPackage` (the pinned notification's "open the provider's app" tap, CCRM-56 (Provider Identity)) returns null for an invisible package. `ManifestQueriesTest` keeps that list equal to `Provider.appPackage`. The device check is RUNBOOK Step 7 · planned v1.9. Not a layout change, so it needs a device check but no wireframe.
 - **What:** drop the permission (`AndroidManifest.xml:29-30`) from `main` and add a `<queries>`
   block for `ACTION_VIEW` + `BROWSABLE` + `https`. This serves the browser picker
   (`SettingsScreen.kt:1434-1450`). If the Fold 7 pass shows One UI under-reporting browsers, re-add
@@ -2984,7 +2984,7 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
-- **Status:** **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
+- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Crash now → the system recorded APP CRASH (EXCEPTION) → the card on relaunch → the shared text carries no token, email or message; backing out keeps the card, picking an app ends it, Not now keeps it gone across a restart. **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
   Wireframe rev B approved by Robin 2026-09-30 (`design/2026-09-28-v19-play-ready.mockup.html` §1 and
   §3). A fresh Opus judge's findings are adopted: a report is capped at 8,000 characters so eight fit
   one share intent, a failed share never crashes, the handler goes in at `attachBaseContext`, and every

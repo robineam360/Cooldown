@@ -1,0 +1,2 @@
+candidate github APK: design/research/2026-10-01-v19-device-pass/candidate-v1.9-github-0e8ac99.apk sha256 73a1c1f99541c1890bc5e89dceb025d40b5fdbe9b72a0683e2d1f2895d54846e (0e8ac99, versionCode 25)
+item1 installed github candidate 0e8ac99 sha256 73a1c1f9…846e at 2026-10-01T12:43:28Z; on-device sha256 equal

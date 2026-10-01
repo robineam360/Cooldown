@@ -28,3 +28,4 @@ keystore.properties
 
 # Claude Code app worktree sessions (see WORKTREE.md)
 /.claude/worktrees/
+*.apks
