@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Feature Graphic</title>
+<!--
+  CCRM-90 (Listing Pack), RUNBOOK v1.9 Step 6: the Google Play feature graphic, 1024 x 500.
+  Two variants for Robin to choose from. No provider mark anywhere: the Pulse icon, the wordmark
+  and app-drawn shapes only. The Pulse geometry is copied coordinate for coordinate from
+  app/src/main/res/drawable/ic_launcher_foreground.xml (round 10, variant S2).
+  Export: open with ?only=a or ?only=b and screenshot the 1024 x 500 frame with headless Chrome
+  (see the note at the bottom of the page).
+-->
+<style>
+  :root {
+    --page: #f4efea; --ink: #1f1b19; --muted: #6b625c; --card: #ffffff; --line: #e2d9d1;
+    --charcoal: #1F1B19; --cream: #F3EBE3; --terra: #D97757; --green: #10A37F; --red: #FF5252;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page: #141110; --ink: #f3ebe3; --muted: #a89d95; --card: #1f1b19; --line: #3a332f; }
+  }
+  :root[data-theme="dark"] { --page: #141110; --ink: #f3ebe3; --muted: #a89d95; --card: #1f1b19; --line: #3a332f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+         font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 40px 0 8px; }
+  p, li { color: var(--muted); max-width: 72ch; }
+  .scaler { width: 100%; max-width: 1024px; aspect-ratio: 1024 / 500; position: relative;
+            border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+  .scaler > .fg { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+  .note { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin-top: 16px; }
+  code { font-size: 13px; overflow-wrap: anywhere; }
+
+  /* ---- the graphic itself: fixed 1024 x 500, never responsive ---- */
+  .fg { width: 1024px; height: 500px; background: var(--charcoal); color: var(--cream); overflow: hidden;
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .fg .safe { position: absolute; inset: 0; }
+  .fg .wordmark { font-weight: 700; letter-spacing: -0.02em; }
+  .fg .tag { color: rgba(243,235,227,0.78); font-weight: 500; }
+
+  /* Variant A: icon + wordmark, a long faint trace behind */
+  .a .icon { position: absolute; left: 132px; top: 130px; width: 240px; height: 240px; }
+  .a .wordmark { position: absolute; left: 412px; top: 160px; font-size: 104px; line-height: 1; }
+  .a .tag { position: absolute; left: 418px; top: 292px; font-size: 29px; line-height: 1.3; white-space: nowrap; }
+  .a .ghost { position: absolute; left: 0; top: 0; }
+
+  /* Variant B: wordmark left, a big-number readout right (app-drawn, no provider marks) */
+  .b .icon { position: absolute; left: 96px; top: 96px; width: 112px; height: 112px; }
+  .b .wordmark { position: absolute; left: 96px; top: 236px; font-size: 84px; line-height: 1; }
+  .b .tag { position: absolute; left: 100px; top: 340px; font-size: 25px; line-height: 1.3; white-space: nowrap; }
+  .b .panel { position: absolute; left: 588px; top: 50%; transform: translateY(-50%); width: 340px; border-radius: 28px;
+              background: #2A2522; box-shadow: inset 0 0 0 1px rgba(243,235,227,0.08); padding: 26px 32px 30px; }
+  .b .row { display: flex; align-items: baseline; justify-content: space-between; }
+  .b .lbl { font-size: 22px; font-weight: 600; color: rgba(243,235,227,0.72); }
+  .b .big { font-size: 88px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .b .reset { font-size: 20px; color: rgba(243,235,227,0.62); }
+  .b .bar { position: relative; height: 14px; border-radius: 7px; background: rgba(243,235,227,0.14); margin: 18px 0 10px; }
+  .b .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; }
+  .b .bar > b { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: var(--cream); opacity: 0.8; }
+  .b .wk { margin-top: 16px; }
+  .b .wk .big { font-size: 44px; }
+  .fg .safebox { position: absolute; inset: 96px; border: 2px dashed rgba(255,82,82,0.55); border-radius: 4px; pointer-events: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Play feature graphic — 1024 × 500</h1>
+  <p>CCRM-90 (Listing Pack), RUNBOOK v1.9 Step 6. Shown on the Play listing above the screenshots
+  and in some promotional slots, where Play may crop the edges and overlay a play button in the
+  middle on video listings (we have no promo video). Everything that matters sits inside the
+  central safe area. No provider logo or name appears: the Pulse icon, the wordmark and shapes the
+  app itself draws. The two colours in the trace are the icon's own, as approved in round 10.</p>
+  <p><strong>Pick one, or ask for a change.</strong> Silence is not approval.</p>
+
+  <h2>A · Icon and wordmark</h2>
+  <p>The launcher tile at 240 px, the name, one line of what it does. A faint trace runs along the
+  bottom at 8 % opacity, so the wide frame isn't empty at the sides.</p>
+  <div class="scaler" data-variant="a"><div class="fg a" id="fg-a">
+    <svg class="ghost" width="1024" height="500" viewBox="0 0 1024 500" aria-hidden="true">
+      <polyline points="0,432 560,432 578,408 596,432 616,432 626,450 642,372 658,454 668,432 688,432 706,408 724,432 1024,432"
+        fill="none" stroke="#F3EBE3" stroke-opacity="0.08" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <svg class="icon" viewBox="0 0 108 108" role="img" aria-label="Cooldown icon"><use href="#pulse"/></svg>
+    <div class="wordmark">Cooldown</div>
+    <div class="tag">Your AI usage limits, always in sight.</div>
+    <div class="safebox"></div>
+  </div></div>
+
+  <h2>B · Wordmark and a readout</h2>
+  <p>The name on the left, and on the right one readout in the app's own "huge number" style: the
+  5h figure, the bar with its even-pace tick, the reset time and the weekly figure. Generic labels
+  only, no account name and no provider mark. The numbers are illustrative. The 5h bar is red because
+  it is past its even-pace tick, which is what red means in the icon; the weekly bar is under pace,
+  so it stays cream. Neither bar uses a provider's colour.</p>
+  <div class="scaler" data-variant="b"><div class="fg b" id="fg-b">
+    <svg class="icon" viewBox="0 0 108 108" role="img" aria-label="Cooldown icon"><use href="#pulse"/></svg>
+    <div class="wordmark">Cooldown</div>
+    <div class="tag">Your AI usage limits, always in sight.</div>
+    <div class="panel">
+      <div class="row"><span class="lbl">5h</span><span class="reset">resets 4:30 pm</span></div>
+      <div class="big" style="color:#F3EBE3">62%</div>
+      <div class="bar"><i style="width:62%;background:var(--red)"></i><b style="left:48%"></b></div>
+      <div class="wk row"><span class="lbl">Weekly</span><span class="big" style="color:#F3EBE3">38%</span></div>
+      <div class="bar"><i style="width:38%;background:var(--cream);opacity:0.85"></i><b style="left:55%"></b></div>
+    </div>
+    <div class="safebox"></div>
+  </div></div>
+
+  <h2>States and widths</h2>
+  <ul>
+    <li><strong>One size only.</strong> Play takes exactly 1024 × 500 (JPEG or 24-bit PNG, no
+    alpha). The page scales the preview down on a narrow screen; the exported file is always the
+    full frame.</li>
+    <li><strong>Crop:</strong> Play may show it with the edges trimmed. The dashed red box on each
+    preview is a 96 px inset; nothing important sits outside it. The box is not in the export.</li>
+    <li><strong>Light or dark listing:</strong> the graphic carries its own charcoal ground, so the
+    store theme doesn't change it.</li>
+  </ul>
+
+  <div class="note">
+    <strong>Export</strong> (after approval): <code>"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    --headless --hide-scrollbars --window-size=1024,500 --screenshot=release/play/feature-graphic.png
+    "file://$PWD/design/2026-10-01-play-feature-graphic.html?only=a"</code> (or <code>only=b</code>),
+    then flatten to no-alpha PNG.
+  </div>
+</main>
+
+<svg id="defs" width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="pulse" viewBox="0 0 108 108">
+      <clipPath id="tile"><rect x="0" y="0" width="108" height="108" rx="26"/></clipPath>
+      <g clip-path="url(#tile)">
+        <rect width="108" height="108" fill="#1F1B19"/>
+        <rect x="0.5" y="0.5" width="107" height="107" rx="25.5" fill="none" stroke="#F3EBE3" stroke-opacity="0.14"/>
+        <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7"
+              fill="none" stroke="#F3EBE3" stroke-opacity="0.72" stroke-width="3.9" stroke-linecap="butt"/>
+        <path d="M12,64 L27,64 L34,50 L41,64 L44,64" fill="none" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M66,64 L71,64 L78,50 L85,64 L96,64" fill="none" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M44,64 L48,72 L54,20 L60,74 L66,64" fill="none" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+  // Preview scaling: the frame is fixed at 1024 x 500 and scaled to fit its box.
+  function fit() {
+    document.querySelectorAll('.scaler').forEach(function (s) {
+      var fg = s.querySelector('.fg');
+      fg.style.transform = 'scale(' + (s.clientWidth / 1024) + ')';
+    });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+  // ?only=a|b — export mode: just the frame, at 1:1, nothing else on the page.
+  var only = new URLSearchParams(location.search).get('only');
+  if (only) {
+    var fg = document.getElementById('fg-' + only);
+    var defs = document.getElementById('defs');
+    fg.querySelectorAll('.safebox').forEach(function (b) { b.remove(); });
+    document.body.innerHTML = '';
+    document.body.style.margin = '0';
+    document.body.style.background = '#1F1B19';
+    fg.style.transform = 'none';
+    document.body.appendChild(defs);
+    document.body.appendChild(fg);
+  }
+</script>
+</body>
+</html>

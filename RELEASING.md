@@ -142,3 +142,47 @@ new, higher versionCode.
 The APK is distributed **only** as this release asset — the README, USER-GUIDE, and the
 app's *Check for updates* button all point at `releases/latest`, so publishing the release
 is what actually ships the update to colleagues.
+
+## 5. The Play channel (since v1.9)
+
+CCRM-86 (Play Readiness): the Google Play build is the **play** flavor, packaged as an AAB. It is
+built from **the same commit** as the GitHub APK, signed with **the same key**, and carries **the
+same versionCode**. It fits inside step 4 above. It is built and checked between steps 1 and 3,
+**before the tag**, so a bad AAB stops the release while nothing is public.
+
+```bash
+SHA=$(git rev-parse HEAD)                                # the release commit from step 1
+gh run list --commit $SHA                                # CI green on this exact sha, or stop
+git status --porcelain                                   # empty: the build is the commit
+./gradlew bundlePlayRelease                              # → app/build/outputs/bundle/playRelease/app-play-release.aab
+AAB=app/build/outputs/bundle/playRelease/app-play-release.aab
+bundletool validate --bundle=$AAB                        # passes
+keytool -printcert -jarfile $AAB | grep SHA256           # = the trusted digest above (keytool prints colons; compare without them)
+bundletool dump manifest --bundle=$AAB | grep -o 'android:version[A-Za-z]*="[^"]*"'   # the same versionCode/Name as the APK
+tools/check_artefact.py --channel play $AAB              # no update endpoint, no update class, native libs on the allowlist
+shasum -a 256 $AAB                                       # goes in the release step's Log
+```
+
+Then read Play's **current** upload requirements on the day (target API level, 16 KB page size,
+anything new) so a published GitHub release never has to be replaced before the Play upload.
+
+**Rules:**
+- **The AAB is never attached to the GitHub release.** The GitHub asset stays the github-flavor
+  APK. The AAB's sha256 and signer go in the RUNBOOK release step's Log. If it is needed again, it
+  is rebuilt from the tag and checked the same way. A rebuild need not be byte-identical, so the
+  logged sha256 names the one that was uploaded.
+- **One versionCode sequence for both channels.** Bump once per release (step 1); both flavors take
+  it. Play refuses a versionCode it has seen before, even from a deleted or rejected upload, so a
+  Play-only fix is still a new release with a new versionCode for both channels.
+- **Only Robin opens the Play Console.** A session never uploads, never enrols a key and never
+  changes a Console setting. It prepares the AAB and the copy in `release/play/` and guides.
+- **Play App Signing uses the existing key** (Robin's Q3, v1.9): the PEPK export of
+  `ccooldown-release.jks` is enrolled once, at the first upload. **Never stage any PEPK output**,
+  and never stage the keystore or its properties file.
+- **Before each Play upload,** check the privacy policy URL resolves
+  (`https://github.com/robineam360/Cooldown/blob/main/docs/privacy.md`), and re-read
+  `release/play/data-safety.md` if the release changes what leaves the phone. A change like that
+  updates `docs/privacy.md` and the Console's Data safety form in the same release.
+- **The listing copy, the FGS declaration and the App access note** live in `release/play/`. The
+  feature graphic is exported from `design/2026-10-01-play-feature-graphic.html` once Robin has
+  approved it.

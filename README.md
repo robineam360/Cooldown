@@ -272,8 +272,10 @@ moment, and an idle account's window is rolled over on the first poll after it.
 **Privacy:** your tokens stay on your device, encrypted with the Android Keystore
 (EncryptedSharedPreferences, AES-256-GCM). They are sent to Anthropic's and OpenAI's APIs and
 nowhere else. There are no servers, no analytics, no third-party network calls. Diagnostics
-logs record status codes only — never tokens, headers or response bodies. A crash report stays
-on your phone until you share it.
+logs record outcomes and status codes — never tokens or headers. A crash report stays
+on your phone until you share it. The GitHub build also asks GitHub's releases API whether a newer
+version exists, sending no account data. The [privacy policy](docs/privacy.md) lists every host the
+app talks to and everything it keeps.
 
 ## Build from source
 

@@ -432,13 +432,26 @@ on any store" until a launch. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Every file above exists and agrees with the code.
+- ☑ Every file above exists and agrees with the code.
 - ☐ Robin has said "approved" to the graphic.
-- ☐ RELEASING.md has the Play channel section.
+- ☑ RELEASING.md has the Play channel section.
 
 **Reversal:** `git revert`.
 
 **Log:**
+- 2026-10-01 — Drafts in: `docs/privacy.md` (both flavors, every host and store, CCBG-50 (Degraded
+  Store Notice)'s `store_held_changes` record), `release/play/data-safety.md`, `listing.md` (Sonnet
+  drafted, purpose b; the seat edited the SDK claim), `fgs-declaration.md`, `app-access.md`, and
+  RELEASING.md §5 (the Play channel). `.github/SECURITY.md` was stale (paste/QR import, "Anthropic
+  only") and now agrees, and so does README's Privacy paragraph. A fresh Opus judge (purpose c) ruled
+  round 1 **blocking**: the hidden Debug endpoint probe sends the token to `claude.ai` and shows raw
+  bodies, which the policy did not disclose. It also raised 7 concerns and 5 notes: the last account
+  can't be removed, backup carries OpenAI's IDs and pending sign-ins, the held-changes details,
+  WorkManager's two permissions, ANR dumps, and the profile-call cadence. All are fixed in the docs,
+  and the delta was **accepted**. Its finding 4d is filed as CCBG-51 (Held Change Residue), Low.
+  **Open for Robin:** the feature graphic, A or B (`design/2026-10-01-play-feature-graphic.html`);
+  whether the Debug probe stays in release builds (it is disclosed now); whether CCBG-51 rides in
+  v1.9. Step 9 will need his call on which reviewer account to give (`app-access.md`).
 
 ---
 

@@ -107,6 +107,20 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   process stays on it until it ends. The write is discarded at restart, never merged into the file,
   and never overwrites it. The notice's wireframe draws that boundary; see RUNBOOK Step 5.
 
+### CCBG-51 · Held Change Residue — a removed account's held-change item can stay in settings for good
+- **Status:** Open — filed 2026-10-01 by the RUNBOOK Step 6 judge (finding 4d) while checking
+  `docs/privacy.md` against the code. Not observed on a device. Not scheduled; whether it rides in
+  v1.9 is Robin's call.
+- **Severity:** Low (a few bytes of residue: an account key and a change kind, never a token; no
+  visible effect)
+- **Symptom (from code):** CCBG-50 (Degraded Store Notice)'s `store_held_changes` keeps
+  `pending.<key>` items until the notice is dismissed. `HeldChanges.card()` drops an item whose
+  account is gone (`HeldChanges.kt:132`), so if every item belongs to a removed account no notice
+  appears, nothing is dismissed and the items stay. `UsageRepository.removeProfile` does not clear
+  them either.
+- **Fix:** `removeProfile` drops that key's `op.` and `pending.` entries, and `card()` drops orphan
+  items it skips. Pure logic, no wireframe; one test in `HeldChangesTest`/`CredentialStoreTest`.
+
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account

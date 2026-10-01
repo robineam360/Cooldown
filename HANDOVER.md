@@ -4,26 +4,30 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: v1.9 Step 6, Docs and listing pack (written 2026-10-01)
+## ▶ Next session — start here: v1.9 Step 6 close-out, then Step 7 (written 2026-10-01)
 
-**Step 5 is done.** CCBG-50 (Degraded Store Notice) was wireframed and judged. A fresh Fable judge
-ruled rev A blocking, because Try again could reset the file and a failed reset had no wording, and
-it accepted rev B. Robin approved rev B, with calls 1–7 all as drawn. It is built: the amber
-notice, the restart card that goes by each account's last change (plus the CCBG-46 (Keystore
-Wedge) reset card), the "can't remove now" dialog, and the Debug "Simulate degraded store" switch.
-Also built: the About card's Privacy policy row for CCRM-89 (Privacy Policy), CCBG-35 (Tab Clip)'s
-scroll-when-it-doesn't-fit tabs, CCBG-45 (Single Panel Wording)'s "5h"/"Weekly", and CCBG-48
-(Reconfigure Label). Both flavors' tests are green. RUNBOOK Step 5's log lists what Step 7 must
-check on the phone.
+**Step 6 is drafted, but it stays open until Robin approves the feature graphic.** `docs/privacy.md`
+covers both flavors, every host and store, and CCBG-50 (Degraded Store Notice)'s
+`store_held_changes` record. `release/play/` holds the Data safety answers, the listing copy, the FGS
+declaration and the App access note, and RELEASING.md §5 is the Play channel. A fresh Opus judge
+first ruled the policy blocking, because the hidden Debug endpoint probe was undisclosed. All 13
+findings are fixed and the delta was accepted. CCBG-51 (Held Change Residue) was filed from that
+review. The privacy link in the app resolves once this commit is on main.
 
-**Robin, before Step 6:** nothing is required. The Privacy policy link 404s until Step 6 puts
-`docs/privacy.md` on main.
+**Robin, before the next session:**
+1. Open `design/2026-10-01-play-feature-graphic.html` and say **"approved A"** or **"approved B"**,
+   or ask for a change.
+2. Decide whether the Debug section's Endpoint probe stays in release and Play builds. It is
+   disclosed in the policy now; removing it from release builds would be a small code change.
+3. Decide whether CCBG-51 (Held Change Residue, Low) rides in v1.9.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 6, and run Step 6's Resume block. The privacy
-> policy must also cover CCBG-50 (Degraded Store Notice)'s `store_held_changes` record (see Step 5's
-> log).
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 6. Robin's graphic answer: <A|B|changes>.
+> Export the approved variant to release/play/feature-graphic.png (1024×500, no alpha; the command
+> is on the design page), tick Step 6 per Convention 4 (Progress ☑, CCRM-89 (Privacy Policy) and
+> CCRM-90 (Listing Pack) Status lines), then run Step 7's Resume block. Robin's calls on the Debug
+> probe and CCBG-51 (Held Change Residue): <answers>.
 
 ---
 
