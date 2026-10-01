@@ -94,4 +94,23 @@ class WidgetPrefsTest {
         assertEquals(FaceWindow.SESSION, prefs.read(9).window)
         assertEquals(FaceBackground.SOLID, prefs.read(9).background)
     }
+
+    @Test
+    fun placedFollowsSaveOrADraw_CCBG48() {
+        // The add flow: nothing saved, never drawn.
+        assertFalse(prefs.placed(30))
+        // Placed by the launcher without config, then drawn: reconfiguring says "Save changes".
+        prefs.markDrawn(30)
+        assertTrue(prefs.placed(30))
+        assertEquals(0, prefs.read(30).version)
+        // Saved config counts on its own.
+        prefs.save(31, "pro", FaceWindow.SESSION, FaceBackground.SOLID)
+        assertTrue(prefs.placed(31))
+        // The mark moves with a restore and goes with a delete.
+        prefs.remap(intArrayOf(30), intArrayOf(32))
+        assertTrue(prefs.placed(32))
+        assertFalse(prefs.placed(30))
+        prefs.delete(intArrayOf(32))
+        assertFalse(prefs.placed(32))
+    }
 }

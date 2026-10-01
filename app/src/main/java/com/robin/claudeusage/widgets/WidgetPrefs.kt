@@ -46,6 +46,19 @@ class WidgetPrefs(context: Context) {
             .apply()
     }
 
+    /**
+     * CCBG-48 (Reconfigure Label): the widget is on the home screen — config was saved, or
+     * the launcher placed it without config and it has been drawn since. The config screen
+     * then reads "Widget settings" · "Save changes" (rev D), not "Add widget".
+     */
+    fun placed(id: Int): Boolean =
+        prefs.getInt(key(id, VERSION), 0) > 0 || prefs.getInt(key(id, DRAWN), 0) == 1
+
+    /** Called after every successful draw; writes only the first time. */
+    fun markDrawn(id: Int) {
+        if (prefs.getInt(key(id, DRAWN), 0) != 1) prefs.edit().putInt(key(id, DRAWN), 1).apply()
+    }
+
     /** Number 4×2's `[5h | Weekly]` chips. */
     fun setWindow(id: Int, window: FaceWindow) {
         prefs.edit().putString(key(id, WINDOW), encode(window)).apply()
@@ -91,7 +104,9 @@ class WidgetPrefs(context: Context) {
         const val WINDOW = "window"
         const val BG = "bg"
         const val VERSION = "v"
-        private val NAMES = listOf(ACCOUNT, WINDOW, BG, VERSION)
+        /** CCBG-48: 1 once the widget has been drawn. Not a setting, but it moves with the id. */
+        const val DRAWN = "drawn"
+        private val NAMES = listOf(ACCOUNT, WINDOW, BG, VERSION, DRAWN)
 
         const val CURRENT_VERSION = 1
 

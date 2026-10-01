@@ -59,7 +59,13 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
 ### CCBG-48 · Reconfigure Label — a widget reconfigured later shows "Add widget", not "Save changes"
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. **Ruled a restoration on
+- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. `WidgetPrefs.placed` is
+  true once config is saved or the widget has been drawn (`w<id>.drawn`, set after each successful
+  draw, moved by a restore, pruned by a delete). The config screen picks its label from that.
+  `WidgetPrefsTest` pins it. It was not seen on the emulator, because placing through the Pixel
+  launcher over adb is unreliable, so Step 7 checks it on One UI: place without config, then use
+  Widget settings, and the button should read "Save changes". Filed 2026-09-27 from the v1.8
+  HANDOVER notes. **Ruled a restoration on
   2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §6): rev D already draws "Widget settings" · "Save changes".
   Planned v1.9 (RUNBOOK Step 5): choose the label from whether the widget is placed, not from
   saved prefs.

@@ -284,7 +284,11 @@ object WidgetHost {
             return SafeUpdate.Outcome.FAILED
         }
         return SafeUpdate.update(
-            updater = { id, views -> mgr.updateAppWidget(id, views) },
+            updater = { id, views ->
+                mgr.updateAppWidget(id, views)
+                // CCBG-48 (Reconfigure Label): drawn means placed, config or not.
+                WidgetPrefs(context).markDrawn(id)
+            },
             appWidgetId = appWidgetId,
             full = { sizeMap(context, appWidgetId, face, state, reportedSizes(mgr.getAppWidgetOptions(appWidgetId))) },
             fallback = {

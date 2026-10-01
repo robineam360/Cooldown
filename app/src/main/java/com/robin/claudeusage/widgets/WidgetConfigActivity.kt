@@ -84,7 +84,9 @@ class WidgetConfigActivity : ComponentActivity() {
         val stored = prefs.read(id)
         val cache = UsageCache(this)
         val profiles = cache.registry().all()
-        val reconfigure = stored.version > 0
+        // CCBG-48 (Reconfigure Label): from whether the widget is placed, not from saved
+        // prefs, so one the launcher placed without config reads "Save changes" later too.
+        val reconfigure = prefs.placed(id)
 
         setContent {
             val dark = resolveDark(remember { cache.themeMode() }, isSystemInDarkTheme())
