@@ -1517,6 +1517,9 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Status:** Planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
   "Privacy policy" TextButton 8 dp below "Share feedback", the same in both flavors. It opens the
   policy through the browser picker (`openInBrowser`).
+  **The row is built** (2026-10-01, RUNBOOK Step 5) and was checked at 360 dp on the emulator. It opens
+  `PRIVACY_POLICY_URL`, the `docs/privacy.md` blob on main. That file and `release/play/data-safety.md`
+  are RUNBOOK Step 6, so the link 404s until then.
 - **What:**
   - `docs/privacy.md`: what is stored and where, where it is sent, what is never sent, deletion
     (remove the account), the github-only GitHub call, and the crash report staying on the phone.

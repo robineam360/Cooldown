@@ -152,6 +152,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val FEEDBACK_EMAIL = "robin@eam360.com"
+
+/** CCRM-89 (Privacy Policy): the policy on main, which Step 6 writes. */
+internal const val PRIVACY_POLICY_URL = "https://github.com/robineam360/Cooldown/blob/main/docs/privacy.md"
+
 private const val DEBUG_UNLOCK_TAPS = 7
 
 // CCRM-26 (Quick Links) destinations now live in the per-provider table
@@ -3004,7 +3008,14 @@ private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
                     emailFallback = "Email me at $FEEDBACK_EMAIL"
                 }
             }) { Text("Share feedback") }
-            Spacer(Modifier.height(12.dp))
+            // CCRM-89 (Privacy Policy), wireframe rev B §2: a centred TextButton 8 dp below
+            // "Share feedback", the same in both flavors; its 48 dp touch target moves the
+            // disclaimer down, 4 dp below it.
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = { openInBrowser(context, PRIVACY_POLICY_URL, null) }) {
+                Text("Privacy policy")
+            }
+            Spacer(Modifier.height(4.dp))
             Text(
                 "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI. " +
                     "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI.",

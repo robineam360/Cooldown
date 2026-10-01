@@ -53,4 +53,11 @@ class QuickLinksTest {
         assertFalse(allowedLinkUrl("example.com/path:8080"))
         assertTrue(allowedLinkUrl("https://claude.ai/a:b"))
     }
+
+    @Test
+    fun `the privacy policy link passes the guard and points at the policy on main`() {
+        // CCRM-89 (Privacy Policy): the About card's row.
+        assertTrue(allowedLinkUrl(PRIVACY_POLICY_URL))
+        assertTrue(PRIVACY_POLICY_URL.endsWith("/Cooldown/blob/main/docs/privacy.md"))
+    }
 }
