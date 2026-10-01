@@ -9,6 +9,8 @@ import androidx.security.crypto.MasterKey
 import com.robin.claudeusage.diag.AppLog
 import java.security.KeyStore
 import javax.crypto.AEADBadTagException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 data class Credentials(
     val accessToken: String,
@@ -85,6 +87,8 @@ class CredentialStore internal constructor(
             e.putString(k(profile, "tokenTail"), creds.accessToken.takeLast(4))
         }
         e.apply()
+        // CCBG-50 (Degraded Store Notice): the next working launch says what was dropped.
+        if (CredentialStoreOpener.isMemory(prefs)) HeldChanges.record(appContext, profile.key, HeldChanges.Op.SIGN_IN)
     }
 
     fun addedAt(profile: Profile): Long = prefs.getLong(k(profile, "addedAt"), 0L)
@@ -101,6 +105,7 @@ class CredentialStore internal constructor(
             .remove(k(profile, "addedAt"))
             .remove(k(profile, "tokenTail"))
             .apply()
+        if (CredentialStoreOpener.isMemory(prefs)) HeldChanges.record(appContext, profile.key, HeldChanges.Op.SIGN_OUT)
     }
 
     companion object {
@@ -156,8 +161,33 @@ internal object KeystoreBackend : CredentialBackend {
  * The outcome is kept for the process: a healthy store forever, a degraded one until
  * the next app open (a [resetAllowed] caller) tries again. There is at most one reset
  * per process — a probe that fails after it falls back to memory, never to a second wipe.
+ *
+ * CCBG-50 (Degraded Store Notice): [state] is what the notice draws, published on every
+ * outcome and on the first write to the in-memory store.
  */
 internal object CredentialStoreOpener {
+
+    /** What the notice and the Debug card read. [version] moves on every change. */
+    data class State(
+        val healthy: Boolean = true,
+        val simulated: Boolean = false,
+        /** A reset ran this process and its probe failed: nothing is left to try. */
+        val resetFailed: Boolean = false,
+        /** The failure's class name, never its message. */
+        val errorName: String? = null,
+        val checkedAt: Long = 0L,
+        /** When the in-memory store first took a write; 0 while it holds nothing. */
+        val heldSince: Long = 0L,
+        val version: Int = 0,
+    ) {
+        val degraded: Boolean get() = !healthy
+        val held: Boolean get() = heldSince > 0L
+        /** Try again: only while nothing is held, and never after a failed reset. */
+        val canRetry: Boolean get() = degraded && !held && !resetFailed
+    }
+
+    private val _state = MutableStateFlow(State())
+    val state: StateFlow<State> = _state
 
     enum class Failure { PERMANENT, PRESERVE }
 
@@ -170,16 +200,22 @@ internal object CredentialStoreOpener {
         val healthy: Boolean,
         val deferred: Boolean = false,
         val at: Long = clock(),
+        val error: String? = null,
+        val simulated: Boolean = false,
     )
 
     private var outcome: Outcome? = null
     private var resetDone = false
+    private var resetFailed = false
 
     /** Tests move time; production reads the wall clock. */
     @Volatile internal var clock: () -> Long = System::currentTimeMillis
 
     /** One in-memory store for the whole process, so every degraded caller sees the same one. */
-    private val memory: SharedPreferences by lazy { InMemoryPrefs() }
+    private val memory: InMemoryPrefs by lazy { InMemoryPrefs { publish() } }
+
+    /** True when [prefs] is the in-memory store, so a write to it is held, not saved. */
+    fun isMemory(prefs: SharedPreferences): Boolean = prefs === memory
 
     internal const val RETRY_DELAY_MS = 200L
     /** A background caller retries a store that was merely unavailable this often, never wiping. */
@@ -191,11 +227,67 @@ internal object CredentialStoreOpener {
     @Synchronized
     fun open(context: Context, resetAllowed: Boolean, backend: CredentialBackend): SharedPreferences {
         outcome?.let { if (!shouldRetry(it, resetAllowed)) return it.prefs }
-        return resolve(context, resetAllowed, backend).also { outcome = it }.prefs
+        return resolve(context, resetAllowed, backend).also { outcome = it; publish() }.prefs
+    }
+
+    /**
+     * CCBG-50 (Degraded Store Notice), wireframe rev B §1: the notice's Try again. It
+     * re-checks **without reset rights**, past the five-minute spacing and the launch
+     * guard, so it can never delete anything: a permanent failure it finds waits for the
+     * next app open, as a worker's does. A no-op once a write is held or after a failed
+     * reset. While simulating it "still fails", so the Debug switch is the recovery test.
+     * Blocks for the retry's 200 ms — call it off the main thread.
+     */
+    @Synchronized
+    fun retryNow(context: Context, backend: CredentialBackend = KeystoreBackend): State {
+        val o = outcome
+        if (_state.value.canRetry && o != null && !o.healthy) {
+            outcome = if (o.simulated) Outcome(memory, false, error = o.error, simulated = true)
+            else resolve(context.applicationContext, false, backend)
+            publish()
+        }
+        return _state.value
+    }
+
+    /**
+     * CCBG-50 wireframe rev B §4: the Debug switch. On makes this process act as if the
+     * store had failed with a non-permanent error, in memory only — the Keystore and the
+     * file are never touched. Off is refused once a write is held (the policy), and on is
+     * refused while the real store has failed. Returns whether it took effect.
+     */
+    @Synchronized
+    fun simulate(context: Context, on: Boolean, backend: CredentialBackend = KeystoreBackend): Boolean {
+        val o = outcome
+        if (on) {
+            if (o != null && !o.healthy) return false
+            outcome = Outcome(memory, false, error = "Simulated", simulated = true)
+        } else {
+            if (o?.simulated != true || memory.written) return false
+            outcome = resolve(context.applicationContext, false, backend)
+        }
+        publish()
+        return true
+    }
+
+    @Synchronized
+    private fun publish() {
+        val o = outcome
+        val prev = _state.value
+        _state.value = State(
+            healthy = o?.healthy ?: true,
+            simulated = o?.simulated == true,
+            resetFailed = o?.healthy == false && resetFailed,
+            errorName = o?.error,
+            checkedAt = o?.at ?: 0L,
+            heldSince = memory.firstWriteAt,
+            version = prev.version + 1,
+        )
     }
 
     private fun shouldRetry(o: Outcome, resetAllowed: Boolean): Boolean {
         if (o.healthy) return false
+        // The Debug simulation holds until it is switched off.
+        if (o.simulated) return false
         // After a reset whose probe failed there is nothing left to try in this process.
         if (resetDone) return false
         // Astra 2026-09-30 (C4-1): once anything was written to the in-memory store — a
@@ -203,7 +295,7 @@ internal object CredentialStoreOpener {
         // store mid-session would drop that write earlier than the restart CCBG-50 (Degraded
         // Store Notice) promises, and merging it would risk overwriting the preserved file.
         // Nothing is merged: the write is discarded at restart, the file is never touched.
-        if ((memory as InMemoryPrefs).written) return false
+        if (memory.written) return false
         val age = clock() - o.at
         return if (resetAllowed) o.deferred || age >= LAUNCH_RECHECK_MS
         else !o.deferred && age >= BACKGROUND_RETRY_MS
@@ -214,8 +306,10 @@ internal object CredentialStoreOpener {
     internal fun resetForTest() {
         outcome = null
         resetDone = false
+        resetFailed = false
         clock = System::currentTimeMillis
-        (memory as InMemoryPrefs).wipe()
+        memory.wipe()
+        _state.value = State()
     }
 
     private fun resolve(context: Context, resetAllowed: Boolean, backend: CredentialBackend): Outcome {
@@ -227,15 +321,16 @@ internal object CredentialStoreOpener {
         }
         if (classify(error) == Failure.PRESERVE) {
             log(context, AppLog.Level.WARN, "credential store unavailable (${error.javaClass.simpleName}) — running without saved sign-ins this time")
-            return Outcome(memory, false)
+            return Outcome(memory, false, error = error.javaClass.simpleName)
         }
         if (!resetAllowed) {
             log(context, AppLog.Level.WARN, "credential store unreadable (${rootName(error)}) — reset waits for the app to open")
-            return Outcome(memory, false, deferred = true)
+            return Outcome(memory, false, deferred = true, error = rootName(error))
         }
         if (resetDone) {
             log(context, AppLog.Level.WARN, "credential store still unreadable after a reset — running without saved sign-ins")
-            return Outcome(memory, false)
+            resetFailed = true
+            return Outcome(memory, false, error = rootName(error))
         }
         resetDone = true
         return try {
@@ -244,10 +339,13 @@ internal object CredentialStoreOpener {
             val fresh = backend.open(context)
             if (!probe(fresh)) throw IllegalStateException("probe")
             log(context, AppLog.Level.INFO, "credential store reset — sign in again")
+            // CCBG-50 wireframe rev B call 7: the next screen says the sign-ins were cleared.
+            HeldChanges.recordReset(context, clock())
             Outcome(fresh, true)
         } catch (e: Exception) {
             log(context, AppLog.Level.WARN, "credential store reset failed (${e.javaClass.simpleName}) — running without saved sign-ins")
-            Outcome(memory, false)
+            resetFailed = true
+            Outcome(memory, false, error = e.javaClass.simpleName)
         }
     }
 
@@ -303,8 +401,8 @@ internal object CredentialStoreOpener {
         AppLog.log(context, level, "auth", event = event)
 }
 
-/** The degraded store: empty, per process, never on disk. */
-internal class InMemoryPrefs : SharedPreferences {
+/** The degraded store: empty, per process, never on disk. [onFirstWrite] runs once, outside its lock. */
+internal class InMemoryPrefs(private val onFirstWrite: () -> Unit = {}) : SharedPreferences {
     private val map = mutableMapOf<String, Any?>()
     private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
@@ -312,9 +410,14 @@ internal class InMemoryPrefs : SharedPreferences {
     @Volatile var written = false
         private set
 
+    /** When the first write landed (CCBG-50's "Held in memory since"); 0 while nothing is held. */
+    @Volatile var firstWriteAt = 0L
+        private set
+
     @Synchronized fun wipe() {
         map.clear()
         written = false
+        firstWriteAt = 0L
     }
 
     @Synchronized override fun getAll(): Map<String, *> = HashMap(map)
@@ -345,12 +448,18 @@ internal class InMemoryPrefs : SharedPreferences {
         override fun remove(key: String) = apply { removes += key }
         override fun clear() = apply { clear = true }
         override fun commit(): Boolean {
+            val first: Boolean
             synchronized(this@InMemoryPrefs) {
-                if (clear || removes.isNotEmpty() || puts.isNotEmpty()) written = true
+                first = !written && (clear || removes.isNotEmpty() || puts.isNotEmpty())
+                if (first) {
+                    written = true
+                    firstWriteAt = CredentialStoreOpener.clock()
+                }
                 if (clear) map.clear()
                 removes.forEach { map.remove(it) }
                 puts.forEach { (k, v) -> if (v == null) map.remove(k) else map[k] = v }
             }
+            if (first) onFirstWrite()
             return true
         }
         override fun apply() { commit() }

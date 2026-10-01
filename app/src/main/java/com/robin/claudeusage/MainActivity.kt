@@ -74,6 +74,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -89,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import android.text.format.DateFormat
 import com.robin.claudeusage.alerts.Alerts
+import com.robin.claudeusage.data.CredentialStoreOpener
 import com.robin.claudeusage.data.ErrorKind
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
@@ -612,17 +614,22 @@ private fun ProfileTabs(
     // landscape) pinning it would eat a short screen, so it moves into the open page's
     // scrolling column instead.
     val compactHeight = LocalWindowHeight.current < 480.dp
+    // CCBG-50 (Degraded Store Notice): read here so the account list above re-reads the
+    // store when it degrades, recovers or takes a write.
+    val store by CredentialStoreOpener.state.collectAsState()
 
     Column(modifier = modifier.fillMaxSize()) {
         if (!compactHeight) {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                CrashCard(
-                    use24h,
-                    Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
-                        .widthIn(max = ChartColumnMaxWidth - 40.dp)
-                        .fillMaxWidth(),
-                )
+            // CCBG-50 wireframe rev B §1: the live notice first, then the restart card,
+            // then a waiting crash card, all in the crash card's slot.
+            val slot = Modifier
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+                .widthIn(max = ChartColumnMaxWidth - 40.dp)
+                .fillMaxWidth()
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                DegradedStoreNotice(use24h, slot)
+                StoreChangeCard(repo, use24h, onOpenSettings, slot)
+                CrashCard(use24h, slot)
             }
         }
         // One tab is no choice, so the strip disappears entirely rather than showing a lone
@@ -700,11 +707,19 @@ private fun ProfileTabs(
         ) { page ->
             ContentColumn(maxWidth = ChartColumnMaxWidth) {
                 Spacer(Modifier.height(16.dp))
-                if (compactHeight) CrashCard(use24h, Modifier.fillMaxWidth().padding(bottom = 12.dp))
-                ProfileScreen(
-                    repo, profiles[page], use24h, usageLeft, resetClock, showOverPace,
-                    density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
-                )
+                if (compactHeight) {
+                    val slot = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                    DegradedStoreNotice(use24h, slot)
+                    StoreChangeCard(repo, use24h, onOpenSettings, slot)
+                    CrashCard(use24h, slot)
+                }
+                // A new store state is a new answer to "has this account a token".
+                key(store.version) {
+                    ProfileScreen(
+                        repo, profiles[page], use24h, usageLeft, resetClock, showOverPace,
+                        density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
+                    )
+                }
                 Spacer(Modifier.height(24.dp))
             }
         }
@@ -745,6 +760,11 @@ private fun ProfileScreen(
     val compact = density == Density.COMPACT
 
     if (!repo.hasCredentials(profile)) {
+        // CCBG-50 wireframe rev B §2: while the notice explains, "sign in" is the wrong
+        // advice — the sign-in is very likely saved, just locked. Once a change is held,
+        // the card returns under the notice.
+        val store = CredentialStoreOpener.state.value
+        if (store.degraded && !store.held) return
         val label = cache.profileLabel(profile)
         Card {
             Column(Modifier.padding(16.dp)) {

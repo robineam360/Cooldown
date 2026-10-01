@@ -113,6 +113,7 @@ import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.ApiClient
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.CodexDeviceSignIn
+import com.robin.claudeusage.data.CredentialStoreOpener
 import com.robin.claudeusage.data.OAuthSignIn
 import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.AccountEmail
@@ -242,6 +243,9 @@ fun SettingsScreen(
     // --- Accounts tab ---
     val accountsTab: @Composable () -> Unit = {
         SectionLabel("Accounts")
+        // CCBG-50 (Degraded Store Notice), wireframe rev B §3: above the first card, full
+        // width, since this is where you would sign in.
+        DegradedStoreNotice(use24h, Modifier.fillMaxWidth().padding(bottom = 12.dp))
         if (hasTwoColumns()) {
             // At the inner screen's width the cards alternate left/right (1st left,
             // 2nd right, …) rather than splitting into two independent lists — with
@@ -929,6 +933,9 @@ fun SettingsScreen(
             Spacer(Modifier.height(10.dp))
             DebugSection(repo) { namesTick++; Shortcuts.publish(context) }
             Spacer(Modifier.height(10.dp))
+            // CCBG-50 wireframe rev B §4: just above Crash test.
+            SimulateDegradedCard(use24h)
+            Spacer(Modifier.height(10.dp))
             CrashNowCard()
         }
     }
@@ -1059,6 +1066,11 @@ fun SettingsScreen(
         )
     }
     removing?.let { profile ->
+        // CCBG-50 wireframe rev B §3: nothing is deleted while the store is degraded.
+        if (repo.storeDegraded()) {
+            CantRemoveDialog(labels[profile] ?: cacheSettings.profileLabel(profile)) { removing = null }
+            return@let
+        }
         RemoveAccountDialog(
             label = labels[profile] ?: cacheSettings.profileLabel(profile),
             replacement = repo.profiles().firstOrNull { it != profile }
@@ -1525,6 +1537,9 @@ private fun TokenCard(
     var codeInput by remember { mutableStateOf("") }
     var authUrl by remember { mutableStateOf<String?>(null) }
 
+    // CCBG-50 (Degraded Store Notice): the store degrading or recovering changes the answer.
+    val storeHealthy = CredentialStoreOpener.state.collectAsState().value.healthy
+    LaunchedEffect(storeHealthy) { stateKey++ }
     val hasToken = remember(stateKey) { repo.hasCredentials(profile) }
     val snapshot = remember(stateKey) { repo.snapshot(profile) }
     val addedAt = remember(stateKey) { repo.tokenAddedAt(profile) }
@@ -1821,7 +1836,7 @@ private fun TokenCard(
                         enabled = !busy,
                         onClick = {
                             repo.clearCredentials(profile)
-                            message = "$label signed out."
+                            message = StoreCopy.clearedMessage(label, repo.storeDegraded())
                             stateKey++
                         },
                     )
@@ -2026,6 +2041,8 @@ private fun ChatGptAccountBody(
     val scope = rememberCoroutineScope()
     val openWithPicker = rememberBrowserOpener(label, profile.provider)
     var tick by remember { mutableIntStateOf(0) }
+    val storeHealthy = CredentialStoreOpener.state.collectAsState().value.healthy
+    LaunchedEffect(storeHealthy) { tick++ }
     val hasToken = remember(tick) { repo.hasCredentials(profile) }
     val snapshot = remember(tick) { repo.snapshot(profile) }
     var busy by remember { mutableStateOf(false) }
@@ -2196,7 +2213,7 @@ private fun ChatGptAccountBody(
                 enabled = !busy,
                 onClick = {
                     repo.clearCredentials(profile)
-                    message = "$label signed out."
+                    message = StoreCopy.clearedMessage(label, repo.storeDegraded())
                     bump()
                 },
             )

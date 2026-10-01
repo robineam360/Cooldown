@@ -31,6 +31,9 @@ object Shortcuts {
             val cap = ShortcutManagerCompat.getMaxShortcutCountPerActivity(context)
                 .coerceAtLeast(2)
             val creds = CredentialStore(context)
+            // CCBG-50 (Degraded Store Notice): no account has a token while the store runs
+            // in memory, so publishing now would wipe every account shortcut. Keep them.
+            if (com.robin.claudeusage.data.CredentialStoreOpener.state.value.degraded) return
             val profiles = cache.registry().all()
                 .filter { creds.load(it) != null }
                 .take(cap - 1)

@@ -389,6 +389,9 @@ already pins the policy.
   `design/2026-10-01-ccbg50-degraded-store.mockup.html`. A Fable judge ruled rev A blocking, with 2
   blocking findings and 7 concerns, all adopted; its delta check accepted rev B. Robin approved rev B
   the same day with calls 1–7 all as drawn, including the reset card that rides along.
+- 2026-10-01 — CCBG-50 built and checked on a separate API 36 emulator (`fold7inner`, port 5556),
+  because another session was using `testfone`. On the inner screen the notice spans the full width,
+  as the crash card does: the slot caps at 760 dp. The held-change wordings are left for Step 7.
 
 ---
 

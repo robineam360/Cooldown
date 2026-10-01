@@ -206,6 +206,98 @@ class CredentialStoreTest {
         assertEquals(creds, CredentialStore(context, true, FakeBackend()).load(profile))
     }
 
+    // --- CCBG-50 (Degraded Store Notice): the state the notice draws ---
+
+    @Test
+    fun `the state follows the store - degraded, then held from the first write`() {
+        useClock()
+        val store = CredentialStore(context, true, FakeBackend(always = IOException("down")))
+        val s = CredentialStoreOpener.state.value
+        assertTrue(s.degraded)
+        assertEquals("IOException", s.errorName)
+        assertFalse(s.held)
+        assertTrue(s.canRetry)
+        now += 5_000
+        store.save(profile, creds)
+        val held = CredentialStoreOpener.state.value
+        assertEquals(now, held.heldSince)
+        assertFalse("no Try again once a change is held", held.canRetry)
+    }
+
+    @Test
+    fun `try again recovers a store that answers now`() {
+        val backend = FakeBackend(IOException("a"), IOException("b"))
+        val store = CredentialStore(context, true, backend)
+        assertNull(store.load(profile))
+        assertTrue(CredentialStoreOpener.retryNow(context, backend).healthy)
+        assertEquals(creds, store.load(profile))
+    }
+
+    @Test
+    fun `try again never resets, even when it finds a permanent failure`() {
+        val backend = FakeBackend(IOException("a"), IOException("b"), AEADBadTagException(), AEADBadTagException())
+        CredentialStore(context, true, backend)
+        val after = CredentialStoreOpener.retryNow(context, backend)
+        assertTrue(after.degraded)
+        assertEquals(0, backend.keyDeletes)
+        assertTrue("the file the notice calls untouched", file.exists())
+    }
+
+    @Test
+    fun `try again does nothing once a change is held`() {
+        val backend = FakeBackend(IOException("a"), IOException("b"))
+        val store = CredentialStore(context, true, backend)
+        store.save(profile, creds.copy(accessToken = "sk-ant-oat01-interim"))
+        val opens = backend.opens
+        assertTrue(CredentialStoreOpener.retryNow(context, backend).degraded)
+        assertEquals(opens, backend.opens)
+    }
+
+    @Test
+    fun `a failed reset says so, and leaves nothing to retry`() {
+        val backend = FakeBackend(AEADBadTagException(), openAfterReset = { BrokenPrefs() })
+        CredentialStore(context, true, backend)
+        val s = CredentialStoreOpener.state.value
+        assertTrue(s.resetFailed)
+        assertFalse(s.canRetry)
+    }
+
+    @Test
+    fun `the simulation runs in memory and never touches the store`() {
+        val backend = FakeBackend()
+        val store = CredentialStore(context, true, backend)
+        assertEquals(creds, store.load(profile))
+        val opens = backend.opens
+        assertTrue(CredentialStoreOpener.simulate(context, true, backend))
+        assertTrue(CredentialStoreOpener.state.value.simulated)
+        assertNull("runs empty in memory", store.load(profile))
+        // Try again "still fails" while simulating, without opening anything.
+        assertTrue(CredentialStoreOpener.retryNow(context, backend).simulated)
+        assertEquals(opens, backend.opens)
+        // Switching it off is the recovery test.
+        assertTrue(CredentialStoreOpener.simulate(context, false, backend))
+        assertTrue(CredentialStoreOpener.state.value.healthy)
+        assertEquals(creds, store.load(profile))
+        assertEquals(0, backend.keyDeletes)
+    }
+
+    @Test
+    fun `the simulation holds once a change is held, and is refused over a real failure`() {
+        val backend = FakeBackend()
+        val store = CredentialStore(context, true, backend)
+        CredentialStoreOpener.simulate(context, true, backend)
+        store.save(profile, creds.copy(accessToken = "sk-ant-oat01-interim"))
+        assertFalse(CredentialStoreOpener.simulate(context, false, backend))
+        assertTrue(CredentialStoreOpener.state.value.simulated)
+        // Restart: the real store, untouched.
+        CredentialStoreOpener.resetForTest()
+        assertEquals(creds, CredentialStore(context, true, FakeBackend()).load(profile))
+
+        CredentialStoreOpener.resetForTest()
+        CredentialStore(context, true, FakeBackend(always = IOException("down")))
+        assertFalse(CredentialStoreOpener.simulate(context, true, backend))
+    }
+
     // --- the boot path ---
 
     @Test

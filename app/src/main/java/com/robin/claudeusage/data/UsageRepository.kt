@@ -100,14 +100,50 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
      */
     fun clearCredentials(profile: Profile) {
         credStore.clear(profile)
+        OAuthSignIn.clearPending(context)
+        CodexDeviceSignIn.clearPending(context)
+        // CCBG-50 (Degraded Store Notice), wireframe rev B's first build rule: a Clear made
+        // while degraded is undone at restart, when the file brings the token back, so the
+        // cache keeps what it had rather than a plan and sign-in flags that would be wrong.
+        if (storeDegraded()) return
+        forgetCachedSignIn(profile)
+    }
+
+    /** The cache half of a sign-out. */
+    private fun forgetCachedSignIn(profile: Profile) {
         cache.setAuthState(profile, AuthState.NO_CREDENTIALS)
         cache.setTokenMeta(profile, 0L, null, null)
         cache.setRefreshExpiryEstimated(profile, false)
         cache.setNativeSignIn(profile, false)
         cache.setLastRenewedAt(profile, 0L)
         cache.setFirstRefreshFailAt(profile, 0L)
-        OAuthSignIn.clearPending(context)
-        CodexDeviceSignIn.clearPending(context)
+    }
+
+    /** CCBG-50: the credential store is running in memory this process. */
+    fun storeDegraded(): Boolean = CredentialStoreOpener.state.value.degraded
+
+    /**
+     * CCBG-50 wireframe rev B's second build rule: at the launch that drops a held change,
+     * an account the file left without a token loses its whole cached snapshot, so the
+     * widgets and the notification don't keep a dropped sign-in's numbers.
+     */
+    fun forgetDroppedSignIn(profile: Profile) {
+        forgetCachedSignIn(profile)
+        cache.clearUsage(profile)
+    }
+
+    /**
+     * CCBG-50: turns a record from an earlier degraded session into the restart card, once
+     * the store opens. Harmless to call again: a settled record is gone.
+     */
+    fun settleHeldChanges() {
+        val byKey = profiles().associateBy { it.key }
+        HeldChanges.settle(
+            context,
+            healthy = !storeDegraded(),
+            hasToken = { key -> byKey[key]?.let { hasCredentials(it) } },
+            forget = { key -> byKey[key]?.let { forgetDroppedSignIn(it) } },
+        )
     }
 
     /**
@@ -142,10 +178,14 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
      * Because slots are never reused there is no window in which a not-yet-redrawn surface
      * can read a *new* account's numbers. The worst case is a surface showing nothing.
      *
-     * @return false if this is the last account, in which case nothing is touched.
+     * @return false if this is the last account, or the credential store is degraded
+     *   (CCBG-50), in which case nothing is touched.
      */
     suspend fun removeProfile(profile: Profile): Boolean {
         if (!registry.canRemove()) return false
+        // CCBG-50 (Degraded Store Notice): the saved sign-in sits in the locked file, which
+        // must not be touched, so removing now would strand it under a retired slot.
+        if (storeDegraded()) return false
 
         Alerts.cancelAllFor(context, profile)
 

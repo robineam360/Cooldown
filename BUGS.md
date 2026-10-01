@@ -74,14 +74,25 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** Open. It was filed 2026-09-30 by the RUNBOOK Step 4 judge (finding 6), and is suspected,
-  not observed. **The wireframe is approved:** Robin approved rev B on 2026-10-01 with calls 1–7 all as
+- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+  emulator at 360 dp, about 411 dp and 750 dp: the notice, Try again, recovery, the Remove dialog, the
+  Debug switch, and the restart card (from a seeded record). The held-change wordings need a real
+  sign-in, so Step 7 checks them on the phone: simulate, Clear an account, restart, and the
+  "signed in again" card should appear. It was filed 2026-09-30 by the RUNBOOK Step 4 judge (finding
+  6), and is suspected, not observed. **The wireframe is approved:** Robin approved rev B on 2026-10-01 with calls 1–7 all as
   drawn (`design/2026-10-01-ccbg50-degraded-store.mockup.html`). A fresh Fable judge ruled rev A
   blocking (Try again could reset the file, and a failed reset had no wording) and accepted rev B.
   The approved scope: an amber notice on the main screen and in Settings → Accounts, in four
   wordings; a one-time restart card that goes by each account's last change; one more use of that
   card when CCBG-46 resets a store; a "can't remove now" dialog; and a Debug switch to simulate the
-  failure. RUNBOOK Step 5 builds it.
+  failure.
+- **Fix:** `CredentialStoreOpener.state` publishes what the notice draws. `retryNow` re-checks
+  without reset rights, and `simulate` runs the Debug switch in memory. `HeldChanges` keeps each
+  account's last held change in plain settings (never a token) and turns it into the restart card
+  at the first launch where the store opens. While degraded, a Clear leaves the usage cache alone,
+  Remove refuses to run, and the shortcuts are not republished. At the launch that drops a sign-in,
+  an account left without a token loses its cached snapshot. `StoreCopyTest`, `HeldChangesTest`
+  and seven new `CredentialStoreTest` cases pin all of this.
 - **Severity:** Low (tokens are never lost from disk; only a sign-in made in the degraded state is)
 - **Symptom:** when CCBG-46 (Keystore Wedge) runs a process on the empty in-memory store, signing
   in looks like it works, but the tokens live only in memory and are gone at the next restart. The
