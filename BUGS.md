@@ -195,8 +195,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   anyone holding the phone. The diagnostics log's rule is "no emails".
 
 ### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
-- **Status:** Open — found 2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the
-  emulator. Planned v1.9 (RUNBOOK Step 5). **Fix approved 2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §5): keep
+- **Status:** **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+  emulator: at 360 dp the row scrolls with every title whole, and choosing More scrolls it into view;
+  at 2.0× it scrolls too; at about 411 dp and 750 dp it stays the fixed row it was. Found
+  2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the emulator. **Fix approved 2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §5): keep
   the fixed `TabRow` (10 dp a side) whenever every title fits its equal share at the current width
   and font scale, and switch to a `ScrollableTabRow` (edgePadding 0, 16 dp a side, 90 dp minimum)
   otherwise. Titles are never truncated, and the selected tab is kept in view. Accepted cost: at a

@@ -74,6 +74,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -957,32 +960,53 @@ fun SettingsScreen(
     val tabTitles = listOf("Accounts", "Alerts", "Appearance", "More")
 
     Column(modifier = modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = pagerState.currentPage) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        tabScope.launch {
-                            if (Motion.reduced(Motion.scale(motionContext))) {
-                                pagerState.scrollToPage(index)
-                            } else {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        }
-                    },
-                ) {
-                    // 10 dp a side rather than Material's default 16 dp, so
-                    // "Appearance" fits in the ~102 dp four tabs get at a 410 dp
-                    // width (decision 4 of the approved wireframe). If a larger
-                    // font scale still reads tight on some device, the fallback is
-                    // ScrollableTabRow rather than shrinking this further.
-                    Text(
-                        title,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
+        // CCBG-35 (Tab Clip), wireframe rev B §5: the fixed row (10 dp a side) whenever every
+        // title fits its equal share at this width and font scale, which leaves the cover and
+        // inner screens as they were; otherwise a scrolling row (16 dp a side, 90 dp minimum)
+        // that keeps the selected tab in view. Titles are never shortened.
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val measurer = rememberTextMeasurer()
+            val style = MaterialTheme.typography.bodyMedium
+            val density = LocalDensity.current
+            val fixed = remember(maxWidth, style, density) {
+                with(density) {
+                    SettingsTabs.fit(
+                        tabTitles.map { measurer.measure(it, style, maxLines = 1).size.width.toFloat() },
+                        (maxWidth / tabTitles.size).toPx(),
+                        (SettingsTabs.FIXED_PADDING * 2).toPx(),
                     )
                 }
+            }
+            val tabs: @Composable () -> Unit = {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            tabScope.launch {
+                                if (Motion.reduced(Motion.scale(motionContext))) {
+                                    pagerState.scrollToPage(index)
+                                } else {
+                                    pagerState.animateScrollToPage(index)
+                                }
+                            }
+                        },
+                    ) {
+                        Text(
+                            title,
+                            modifier = Modifier.padding(
+                                horizontal = if (fixed) SettingsTabs.FIXED_PADDING else SettingsTabs.SCROLL_PADDING,
+                                vertical = 12.dp,
+                            ),
+                            style = style,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+            if (fixed) {
+                TabRow(selectedTabIndex = pagerState.currentPage) { tabs() }
+            } else {
+                ScrollableTabRow(selectedTabIndex = pagerState.currentPage, edgePadding = 0.dp) { tabs() }
             }
         }
         HorizontalPager(
@@ -3580,4 +3604,18 @@ private fun LinkRow(title: String, subtitle: String? = null, onClick: () -> Unit
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/**
+ * CCBG-35 (Tab Clip): when the Settings tabs can stay a fixed row. 10 dp a side rather than
+ * Material's 16, so "Appearance" fits the ~102 dp four tabs get at 410 dp (decision 4 of the
+ * Settings Diet wireframe); the scrolling fallback uses Material's 16.
+ */
+internal object SettingsTabs {
+    val FIXED_PADDING = 10.dp
+    val SCROLL_PADDING = 16.dp
+
+    /** Every title, plus its padding, fits an equal share of the row. All in px. */
+    fun fit(titleWidths: List<Float>, share: Float, padding: Float): Boolean =
+        titleWidths.all { it + padding <= share }
 }
