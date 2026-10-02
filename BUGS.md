@@ -80,7 +80,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. The restart cards after a held sign-in or sign-out are still to see (next session). **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. The restart cards after a held sign-in or sign-out are still to see (next session). **2026-10-02:** CI lint had failed on every push since ce2b904 because the main page's "No account yet" card read the store state with `.value` during composition (`StateFlowValueCalledInComposition`); it now collects it, so the card also follows a state change without waiting for the next tick. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator at 360 dp, about 411 dp and 750 dp: the notice, Try again, recovery, the Remove dialog, the
   Debug switch, and the restart card (from a seeded record). The held-change wordings need a real
   sign-in, so Step 7 checks them on the phone: simulate, Clear an account, restart, and the

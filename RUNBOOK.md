@@ -552,6 +552,8 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
   expedited with no delay (`BootRequestTest`; both flavors' tests green, both debug builds compile).
   The phone was not on the cable today, so the CCBG-50 restart cards, item 6's video and a reboot
   that times the pin on the new candidate wait for the next session.
+  CI had been red since ce2b904 (Step 5) on one lint error in the CCBG-50 (Degraded Store Notice)
+  card; fixed the same day, so the candidate was rebuilt from the fix (see HANDOVER.md).
 
 ---
 

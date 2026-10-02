@@ -758,12 +758,12 @@ private fun ProfileScreen(
     // else on the card changes.
     val serifHeadline = Rooms.forProvider(profile.provider).serifHeadline
     val compact = density == Density.COMPACT
+    val store by CredentialStoreOpener.state.collectAsState()
 
     if (!repo.hasCredentials(profile)) {
         // CCBG-50 wireframe rev B §2: while the notice explains, "sign in" is the wrong
         // advice — the sign-in is very likely saved, just locked. Once a change is held,
         // the card returns under the notice.
-        val store = CredentialStoreOpener.state.value
         if (store.degraded && !store.held) return
         val label = cache.profileLabel(profile)
         Card {
