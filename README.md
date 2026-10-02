@@ -25,7 +25,7 @@ showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …
 
 **📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.8.pdf) — the full
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.9.pdf) — the full
 install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
@@ -192,7 +192,7 @@ ones fresh from the widget picker.
 All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.8
 build — the home-screen widgets, the redesigned main screen, Compact density, the layout sheet,
 the transposed chart, the redesigned Accounts tab and Plan Fit are shown above and walked through
-in the [PDF guide](release/docs/Cooldown-User-Guide-v1.8.pdf); the notification shots are the lock
+in the [PDF guide](release/docs/Cooldown-User-Guide-v1.9.pdf); the notification shots are the lock
 screen, which is where it lives. **Usage history** fills in over time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
@@ -319,8 +319,29 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.8.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.9.pdf).
 
+- **1.9** — **Crash reports that stay on the phone, a steadier sign-in store, a privacy
+  policy.** If Cooldown crashes or stops responding, the next launch shows a card under the top
+  bar — *"Cooldown crashed today at 6:17 PM"* — with **Share report** and **Not now**; the
+  report goes only where you send it, holds the error's type, the code locations and the app,
+  Android and phone versions, and leaves out error messages, tokens and emails. Behind the
+  7-tap unlock, **Diagnostics → Crash reports** keeps them for 30 days (CCRM-85 (Crash
+  Capture)). A credential store Android can no longer unlock no longer crashes the app at every
+  launch: Cooldown clears the unreadable sign-ins, says so, and you sign in again (CCBG-46
+  (Keystore Wedge)). When secure storage only stops responding, an amber notice says so on the
+  main screen and in Settings → Accounts, with **Try again**; saved sign-ins stay on the phone
+  and come back once it answers, and a sign-in or sign-out made meanwhile is named on a
+  one-time card after the restart (CCBG-50 (Degraded Store Notice)). A **Privacy policy** row
+  on the About card, under Share feedback, lists every host the app talks to and everything it
+  keeps (CCRM-89 (Privacy Policy)); the app no longer holds the permission to see every
+  installed app, and the browser picker still lists your browsers (CCRM-88 (Scoped Queries)).
+  **Fixed:** Settings tab titles are never cut off on a narrow phone or at a large font — the
+  row scrolls instead (CCBG-35 (Tab Clip)); the one-account notification says "5h" and
+  "Weekly", like the two-account one (CCBG-45 (Single Panel Wording)); a widget's settings
+  opened later say "Save changes", not "Add widget" (CCBG-48 (Reconfigure Label)); after a
+  reboot the always-on notification comes back promptly, not minutes later (CCBG-52 (Boot Pin
+  Delay)).
 - **1.8** — **Home-screen widgets are back, and accounts show their email.** Four widgets in
   the picker under **Cooldown** — **Ring** (one account as a gauge), **Number** (the big
   percentage), **Countdown** (when the window comes back, ticking live) and **All accounts**

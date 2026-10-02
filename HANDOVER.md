@@ -16,6 +16,8 @@ outside git:
 That APK replaces 0e8ac99's (73a1c1f9…846e) as "the github build" that Always after checks for.
 The phone was not on the cable, so no device work was done today. The phone still runs 0e8ac99's
 candidate.
+Step 8's user docs are drafted ahead and the PDFs built (RUNBOOK Step 8 Log, 2026-10-02); Step 8
+only fills in the release day, and drops the CCBG-52 line if the reboot check fails.
 
 **Robin, before the next session:**
 1. Have the Fold 7 on USB and unlocked, and be ready to sign Product and Work in again in the browser.

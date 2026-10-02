@@ -605,6 +605,14 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 
 **Log:**
 
+- 2026-10-02 — Docs drafted ahead, before Step 7 closed (Robin: "Yes please"): guide.html (cover, contents,
+  New in v1.9 with the crash-card shot `v19-crash-card.jpg`, Settings reference, Troubleshooting,
+  version history, footers), brochure.html, USER-GUIDE.md, README (PDF links, 1.9 entry) and
+  `release/docs/release-notes-v1.9.md`; `build.sh` run and every changed page read in the PDF (page 12
+  overflowed once; the 1.8 row was shortened). **Still Step 8's:** the release day in USER-GUIDE.md's
+  header; drop CCBG-52 (Boot Pin Delay) from all five places if Step 7's reboot does not confirm it, and
+  touch up anything else Step 7 changes; then rebuild with `build.sh` and re-read the changed pages.
+
 ---
 
 ## Step 9 · Play Console — account, app, existing-key signing, internal testing
