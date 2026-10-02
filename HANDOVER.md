@@ -8,9 +8,11 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 
 **What changed today.** Robin chose to fix CCBG-52 (Boot Pin Delay) in v1.9. The post-boot restart
 is now an expedited WorkManager request with no delay (3c2f4e0, `BootRequestTest`; both flavors'
-tests green). A new github release candidate was built from 3c2f4e0 and kept outside git:
-`design/research/2026-10-01-v19-device-pass/candidate-v1.9-github-3c2f4e0.apk`, 1.9 / 25, sha256
-`08b5cfb3c6b2890e6260d4710dc43c8f87419c54de3f8b2d6ddb85a57e79a6d0`, signer = the trusted digest.
+tests green). CI had been red since ce2b904 (Step 5) on one lint error in the CCBG-50 (Degraded
+Store Notice) card; 3c70538 fixes it. A new github release candidate was built from 3c70538 and kept
+outside git:
+`design/research/2026-10-01-v19-device-pass/candidate-v1.9-github-3c70538.apk`, 1.9 / 25, sha256
+`89e1b6aa7e4fb475d82f9550d5a3656e5c03d35f9b8dc6689c8e28fecc4f646e`, signer = the trusted digest.
 That APK replaces 0e8ac99's (73a1c1f9…846e) as "the github build" that Always after checks for.
 The phone was not on the cable, so no device work was done today. The phone still runs 0e8ac99's
 candidate.
@@ -24,7 +26,7 @@ Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 > Read CLAUDE.md; RUNBOOK.md Conventions and Step 7 (its 2026-10-01 and 2026-10-02 Log entries and
 > design/research/2026-10-01-v19-device-pass/findings.md); BUGS.md CCBG-52 (Boot Pin Delay). The
 > phone is on USB. Run Before again into phone-state-before-2.txt. The github build is now
-> candidate-v1.9-github-3c2f4e0.apk (sha256 08b5cfb3…a6d0): adb install -r it and check its sha256.
+> candidate-v1.9-github-3c70538.apk (sha256 89e1b6aa…646e): adb install -r it and check its sha256.
 > Then:
 > (0) CCBG-52: reboot with the pin on and time the pin from boot. Seconds → mark CCBG-52 verified
 > on the phone. Still minutes → record it in CCBG-52 and ask Robin whether to defer the rest.
@@ -36,7 +38,7 @@ Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 > note, after Robin has cleared his own notifications: switch on, the notification and ring appear,
 > Refresh, switch off. Save to release/play/, watch it for private content, and put the path in
 > fgs-declaration.md.
-> Then Always after (against the 3c2f4e0 sha256), tick Step 7 per Convention 4 (the gate: no High
+> Then Always after (against the 3c70538 sha256), tick Step 7 per Convention 4 (the gate: no High
 > open, and every deferral in Robin's words), and run Step 8's Resume block.
 
 ---
