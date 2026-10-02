@@ -4,27 +4,30 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-01)
+## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
 
-**What changed today.** Step 6 is closed: Robin approved feature graphic B, and it is exported to
-`release/play/feature-graphic.png`. On Robin's calls, the Debug Endpoint probe is now in debug builds
-only, and CCBG-51 (Held Change Residue) is fixed (945122b). versionCode 25 / 1.9 went in at 0e8ac99.
-Most of the Step 7 device pass is done on the Fold 7, and every item checked passed. The release
-gate so far: no High is open. One new Low was filed, CCBG-52 (Boot Pin Delay): after a reboot the
-always-on notification took almost 6 minutes to come back. The phone is back on the github 1.9
-candidate, and the restore step's diff is clean.
+**What changed today.** Robin chose to fix CCBG-52 (Boot Pin Delay) in v1.9. The post-boot restart
+is now an expedited WorkManager request with no delay (3c2f4e0, `BootRequestTest`; both flavors'
+tests green). A new github release candidate was built from 3c2f4e0 and kept outside git:
+`design/research/2026-10-01-v19-device-pass/candidate-v1.9-github-3c2f4e0.apk`, 1.9 / 25, sha256
+`08b5cfb3c6b2890e6260d4710dc43c8f87419c54de3f8b2d6ddb85a57e79a6d0`, signer = the trusted digest.
+That APK replaces 0e8ac99's (73a1c1f9…846e) as "the github build" that Always after checks for.
+The phone was not on the cable, so no device work was done today. The phone still runs 0e8ac99's
+candidate.
 
 **Robin, before the next session:**
-1. Decide CCBG-52 (Boot Pin Delay, Low): fix it in v1.9 (an expedited boot job, then one more
-   reboot on the phone), or defer it on the record.
-2. Have the Fold 7 on USB, and be ready to sign Product and Work in again in the browser.
-3. Before the video, swipe away your own notifications so the shade shows only Cooldown's.
+1. Have the Fold 7 on USB and unlocked, and be ready to sign Product and Work in again in the browser.
+2. Before the video, swipe away your own notifications so the shade shows only Cooldown's.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 7 (its 2026-10-01 Log entry and
-> design/research/2026-10-01-v19-device-pass/findings.md). The phone is on USB. Run Before again
-> into phone-state-before-2.txt. Then the two items still open:
+> Read CLAUDE.md; RUNBOOK.md Conventions and Step 7 (its 2026-10-01 and 2026-10-02 Log entries and
+> design/research/2026-10-01-v19-device-pass/findings.md); BUGS.md CCBG-52 (Boot Pin Delay). The
+> phone is on USB. Run Before again into phone-state-before-2.txt. The github build is now
+> candidate-v1.9-github-3c2f4e0.apk (sha256 08b5cfb3…a6d0): adb install -r it and check its sha256.
+> Then:
+> (0) CCBG-52: reboot with the pin on and time the pin from boot. Seconds → mark CCBG-52 verified
+> on the phone. Still minutes → record it in CCBG-52 and ask Robin whether to defer the rest.
 > (a) CCBG-50 (Degraded Store Notice)'s restart cards. Debug → Simulate on. Robin signs Product in
 > through the browser; then Robin signs Work in and I tap Clear on Work. Force-stop, reopen: one card
 > with two items ("back on the sign-in saved before" and "signed in again"), both accounts still
@@ -33,9 +36,8 @@ Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 > note, after Robin has cleared his own notifications: switch on, the notification and ring appear,
 > Refresh, switch off. Save to release/play/, watch it for private content, and put the path in
 > fgs-declaration.md.
-> Robin's call on CCBG-52 (Boot Pin Delay): <fix | defer>. Then Always after, tick Step 7 per
-> Convention 4 (the gate: no High open, and every deferral in Robin's words), and run Step 8's Resume
-> block.
+> Then Always after (against the 3c2f4e0 sha256), tick Step 7 per Convention 4 (the gate: no High
+> open, and every deferral in Robin's words), and run Step 8's Resume block.
 
 ---
 
