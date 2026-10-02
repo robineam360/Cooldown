@@ -124,8 +124,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   items it skips. Pure logic, no wireframe; one test in `HeldChangesTest`/`CredentialStoreTest`.
 
 ### CCBG-52 · Boot Pin Delay — after a reboot the always-on notification takes minutes, not seconds, to return
-- **Status:** Open — found 2026-10-01 in RUNBOOK v1.9 Step 7 (item 5) on the Fold 7. Not scheduled;
-  whether it is deferred past v1.9 is Robin's call.
+- **Status:** **Fixed (2026-10-02), not yet seen on the phone** — found 2026-10-01 in RUNBOOK v1.9
+  Step 7 (item 5) on the Fold 7. Robin, 2026-10-02: fix it in v1.9. The boot restart is now an
+  expedited request with no delay (`BootRequestTest`); one reboot on the Fold 7 in the rest of Step 7
+  times the pin. If One UI still holds the job, that is recorded here and the rest goes to Robin.
 - **Severity:** Low (the pin does come back on its own; nothing is lost)
 - **Symptom:** after a reboot with the pin on, the notification reappeared **5 min 45 s** after
   boot (boot 18:33:38, unlocked 18:33:45, pin 18:39:30). `PinnedBootReceiver` enqueued
@@ -134,9 +136,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   then started the `specialUse` service without trouble (`am_foreground_service_start …
   SYSTEM_ALLOW_LISTED`). The receiver's KDoc promises "a handful of seconds". The status-bar ring
   and the widgets' alarm were not affected (the alarm was re-armed at boot).
-- **Fix (to decide):** an expedited WorkManager request (`setExpedited`, with a non-expedited
-  fallback) is the usual way to get a post-boot job run promptly; whether One UI honours it right
-  after boot needs a reboot on the phone. Or accept the delay and correct the KDoc.
+- **Fix:** `PinnedBootReceiver` enqueues `PinBootWorker` expedited
+  (`OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST`), without the 5 s initial delay (expedited
+  work cannot be delayed); the KDoc no longer promises "a handful of seconds".
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and

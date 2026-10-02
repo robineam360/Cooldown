@@ -548,6 +548,10 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
     a sign-out held while degraded), item 6's FGS video, and Robin's word on CCBG-52 (fix it, or defer
     it on the record).
   - **Gate so far:** no High open.
+- 2026-10-02 — Robin's call on CCBG-52 (Boot Pin Delay): fix it in v1.9. The boot restart is now
+  expedited with no delay (`BootRequestTest`; both flavors' tests green, both debug builds compile).
+  The phone was not on the cable today, so the CCBG-50 restart cards, item 6's video and a reboot
+  that times the pin on the new candidate wait for the next session.
 
 ---
 
