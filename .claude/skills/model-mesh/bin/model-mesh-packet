@@ -1,0 +1,1718 @@
+#!/usr/bin/env python3
+"""model-mesh-packet — review packet, evidence, records, waivers and the check-only gate (model-mesh v2.6, DESIGN §6, §14).
+
+Usually reached through the wrapper:  model-mesh-review <sub> ...   (python3 stdlib only; macOS + Linux)
+
+  snapshot [--command C] [--target T]              print the snapshot record of the repo at cwd (read-only)
+  evidence -- <cmd...>                             snapshot, run cmd at the repo root, snapshot; register the output
+  packet --spec F --step-id S --command C --target T --base REV --requires R[,R...]
+         [--publish-commit SHA] [--irreversible] [--seat claude|codex] [--context F...] --evidence F... --claim F
+         [--plan F]                                assemble ONE frozen packet for this attempt; print its path.
+                                                   EVIDENCE is a digest per file (command, exit, last 20 lines,
+                                                   sha256 of the full output, which stays in the store); CONTEXT
+                                                   files over 20 KB are truncated with a note. With the review
+                                                   switch ON a GPT path is required only for --publish-commit
+                                                   or --irreversible (publishes, pays, deletes or grants).
+                                                   --seat codex (v2.7): switch ON the floor is a claude-verdict
+                                                   record always (gpt-sol alone never passes) plus gpt-sol for a
+                                                   step that publishes, pays, deletes or grants; switch OFF it is
+                                                   gpt-sol (or the expert-verdict stand-in) always.
+  record --packet P --return-file F --journaled-model M [--role claude-judge|expert-verdict] [--adopted TEXT]
+  record ... [--account BASENAME]                  the account (config-dir basename) a worker-produced judge return came from
+  usage [--since YYYY-MM-DD] [--json]              summarise $MODEL_MESH_HOME/journal/usage.log by family, account,
+                                                   model and repo (calls, input, output/tokens); terminated runs and
+                                                   `usage unknown` calls are listed apart: totals are a floor
+  record --record ID --adopted TEXT                note which parts of a `concerns` verdict the seat adopted
+  waive --record ID --reason TEXT                  user waiver over a record's verdict (user's words, quoted)
+  waive --retry --auth AUTHID --reason TEXT --evidence F...   user waiver for ONE retry of a consumed attempt,
+                                                   naming registered reconciliation evidence
+  gate  (--packet P | --record ID | both) --step-id S --command C --target T
+                                                   RUN / RUN (WAIVED) -> 0, RE-REVIEW -> 1, REFUSE -> 2
+  outcome (--auth AUTHID | --record ID) --exit N [--ambiguous]
+
+Internal (called by the wrapper / tests, not part of the seat's interface):
+  _attach --packet P [--prior-record ID] --out F   packet + the prior verdict as a separate attachment
+  _gpt-record --packet P --tier sol|terra --model M --effort E --verdict-file F [--prior-record ID]
+  _cli-record --family gpt  (the _gpt-record arguments)
+  _cli-record --family claude --packet P --slot verdict|build --model-alias A --model-reported M --effort E
+              --tier fable|standard --reviewer ACCOUNT --verdict-file F [--prior-record ID]
+  _reassemble --packet P [--step-id S --command C --target T]   print the gate's re-assembly (inspection)
+  _claude-stream --stream F --out V                parse the Claude reviewer's stream-json run (v2.6): print
+                                                   status=ok|usage-limit|error|breach and the reported model and
+                                                   usage; write the answer to V only for status ok
+
+Store: $MODEL_MESH_HOME (default ~/.local/share/model-mesh) -> packets/ evidence/ records/ authorizations/.
+Nothing is ever written inside the repo root: a store or evidence path whose realpath is inside it is refused.
+
+Exit codes (non-gate): 0 ok, 2 refused/usage, 3 secret in the packet.
+Test seams, honoured ONLY with MODEL_MESH_TEST=1: MODEL_MESH_HOME (always honoured, it is the store root),
+MM_FAULT=after-claim (SIGKILL right after the gate's atomic claim, before bundle.json).
+"""
+import argparse
+import errno
+import hashlib
+import json
+import os
+import re
+import secrets
+import time
+import shlex
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
+
+EXIT_RUN, EXIT_REREVIEW, EXIT_REFUSE, EXIT_SECRET = 0, 1, 2, 3
+CORE_KEYS = ("tree", "index", "head", "branch", "upstream")
+ALT_CREDS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN",
+             "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY")
+REQUIRE_WORDS = ("claude-judge", "gpt-sol", "gpt-terra", "stand-in", "claude-verdict", "claude-build")
+SEATS = ("claude", "codex")
+VERDICT_RE = re.compile(r"^VERDICT: (accept|concerns|blocking)[ \t]*\r?$", re.M)
+
+# Secret floor — VERBATIM copy of the patterns in bin/model-mesh-review (the wrapper's `grep -n -E -e ...`
+# block). Keep the two in sync by hand; they are run the same way (grep -E, the caller's locale), so the
+# behaviour is the wrapper's, applied here to the WHOLE assembled packet.
+SECRET_PATTERNS = (
+    r'-----BEGIN [A-Z ]*PRIVATE KEY-----',
+    r'\b(sk|ghp|gho|ghu|github_pat|xox[abp])[-_][A-Za-z0-9_-]{16,}',
+    r'\bAKIA[0-9A-Z]{16}\b',
+    r'\b[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}\b',
+    r'\b[A-Z]{5}[0-9]{4}[A-Z]\b',
+)
+
+
+class Refuse(Exception):
+    def __init__(self, msg, code=EXIT_REFUSE):
+        Exception.__init__(self, msg)
+        self.code = code
+
+
+class GateResult(Exception):
+    def __init__(self, word, reason, code):
+        Exception.__init__(self, reason)
+        self.word, self.reason, self.code = word, reason, code
+
+
+# ---------------------------------------------------------------------------------------------- helpers
+def testing():
+    return os.environ.get("MODEL_MESH_TEST") == "1"
+
+
+def fault(point):
+    if testing() and os.environ.get("MM_FAULT") == point:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+
+def sha256(data):
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
+
+
+def canon(obj):
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def utc_now():
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def new_id():
+    """UTC timestamp + 16 random hex. An all-digit hex tail would trip the secret floor's card pattern."""
+    while True:
+        h = secrets.token_hex(8)
+        if not h.isdigit():
+            return "%s-%s" % (utc_now(), h)
+
+
+def mm_home():
+    return os.environ.get("MODEL_MESH_HOME") or os.path.join(os.path.expanduser("~"), ".local", "share", "model-mesh")
+
+
+def store(*parts):
+    return os.path.join(mm_home(), *parts)
+
+
+def ensure_dir(path):
+    os.makedirs(path, mode=0o700, exist_ok=True)
+    return path
+
+
+def inside(path, root):
+    rp, rr = os.path.realpath(path), os.path.realpath(root)
+    return rp == rr or rp.startswith(rr.rstrip("/") + "/")
+
+
+def check_store(root):
+    if inside(mm_home(), root):
+        raise Refuse("store %s is inside the repo root %s — the store must live outside every repo "
+                     "(unset MODEL_MESH_HOME or point it elsewhere)" % (os.path.realpath(mm_home()), root))
+
+
+def write_atomic(path, data):
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    d = os.path.dirname(path)
+    fd, tmp = tempfile.mkstemp(prefix=".tmp-", dir=d)
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def write_excl(path, data):
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def jdump(obj):
+    return json.dumps(obj, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def read_text(path):
+    with open(path, "rb") as f:
+        return f.read().decode("utf-8", "replace")
+
+
+def models_value(key):
+    """Same rule as the wrapper's mm_get: exported value, else the last KEY= line of models.env."""
+    v = os.environ.get(key, "")
+    if v:
+        return v
+    cands = [os.environ.get("MODEL_MESH_MODELS", ""), store("models.env"),
+             os.path.join(os.path.expanduser("~"), ".local", "share", "model-mesh", "models.env")]
+    for c in cands:
+        if c and os.path.isfile(c):
+            val = ""
+            for line in read_text(c).splitlines():
+                if line.startswith(key + "="):
+                    val = line[len(key) + 1:]
+            return val
+    return ""
+
+
+# -------------------------------------------------------------------------------------------------- git
+def git_env(extra=None):
+    env = dict(os.environ)
+    for k in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_PREFIX"):
+        env.pop(k, None)
+    env["GIT_OPTIONAL_LOCKS"] = "0"      # never refresh/rewrite the real index as a side effect
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    if extra:
+        env.update(extra)
+    return env
+
+
+def git(root, args, extra=None, check=True, timeout=120):
+    try:
+        p = subprocess.run(["git", "-C", root] + list(args), env=git_env(extra), stdin=subprocess.DEVNULL,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise Refuse("git %s timed out" % " ".join(args))
+    except OSError as e:
+        raise Refuse("cannot run git: %s" % e)
+    if check and p.returncode != 0:
+        raise Refuse("git %s failed (rc %d): %s" % (" ".join(args), p.returncode,
+                                                    p.stderr.decode("utf-8", "replace").strip()))
+    return p
+
+
+def out(p):
+    return p.stdout.decode("utf-8", "replace").strip()
+
+
+def repo_root(cwd=None):
+    p = git(cwd or os.getcwd(), ["rev-parse", "--show-toplevel"], check=False)
+    if p.returncode != 0 or not out(p):
+        raise Refuse("not inside a git work tree (cwd %s)" % (cwd or os.getcwd()))
+    return os.path.realpath(out(p))
+
+
+def rev_commit(root, rev):
+    p = git(root, ["rev-parse", "--verify", "-q", rev + "^{commit}"], check=False)
+    return out(p) if p.returncode == 0 and out(p) else None
+
+
+def rev_tree(root, rev):
+    p = git(root, ["rev-parse", "--verify", "-q", rev + "^{tree}"], check=False)
+    return out(p) if p.returncode == 0 and out(p) else None
+
+
+def validated_tmpdir():
+    """mktemp -d, then accept it only under $TMPDIR, /tmp or /var/folders (DESIGN §6); never delete otherwise."""
+    try:
+        t = tempfile.mkdtemp(prefix="model-mesh-snap.")
+    except OSError as e:
+        raise Refuse("mktemp failed: %s" % e)
+    allowed = [os.environ.get("TMPDIR", "").rstrip("/"), "/tmp", "/var/folders", "/private/tmp",
+               "/private/var/folders"]
+    if not any(a and t.startswith(a + "/") for a in allowed):
+        raise Refuse("mktemp returned an unexpected path %s — refusing (left in place)" % t)
+    return t
+
+
+def parse_status_z(data):
+    parts, paths, i = data.split(b"\0"), [], 0
+    while i < len(parts):
+        e = parts[i]
+        i += 1
+        if len(e) < 4:
+            continue
+        xy, path = e[:2], e[3:]
+        paths.append(path.decode("utf-8", "surrogateescape"))
+        if xy[:1] in (b"R", b"C") or xy[1:2] in (b"R", b"C"):
+            i += 1
+    return paths
+
+
+def gitlinks(root):
+    p = git(root, ["ls-files", "-s", "-z"])
+    links = set()
+    for e in p.stdout.split(b"\0"):
+        if e.startswith(b"160000 "):
+            links.add(e.split(b"\t", 1)[1].decode("utf-8", "surrogateescape"))
+    return links
+
+
+def command_tokens(command):
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return command.split()
+
+
+def take_snapshot(root, command="", target=""):
+    st = git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=none"],
+             check=False)
+    if st.returncode != 0:
+        raise Refuse("git status failed (rc %d) — refusing to snapshot" % st.returncode)
+    links = gitlinks(root)
+    if links:
+        dirty = sorted(p for p in parse_status_z(st.stdout) if p.rstrip("/") in links)
+        if dirty:
+            raise Refuse("dirty submodule(s): %s — commit or clean them first" % ", ".join(dirty))
+        ss = git(root, ["submodule", "status", "--recursive"], check=False)
+        if ss.returncode != 0:
+            raise Refuse("git submodule status failed (rc %d): %s" % (
+                ss.returncode, ss.stderr.decode("utf-8", "replace").strip()))
+        for line in out(ss).splitlines():
+            if line[:1] in ("+", "U"):
+                raise Refuse("submodule not at its recorded commit: %s" % line.strip())
+    head = rev_commit(root, "HEAD")
+    t = validated_tmpdir()
+    try:
+        idx = os.path.join(t, "index")
+        env = {"GIT_INDEX_FILE": idx}
+        git(root, ["read-tree", head] if head else ["read-tree", "--empty"], env)
+        git(root, ["add", "-A"], env)
+        tree = out(git(root, ["write-tree"], env))
+        real = out(git(root, ["rev-parse", "--git-path", "index"]))
+        real = real if os.path.isabs(real) else os.path.join(root, real)
+        ridx = os.path.join(t, "real-index")
+        if os.path.exists(real):
+            shutil.copyfile(real, ridx)
+        index_tree = out(git(root, ["write-tree"], {"GIT_INDEX_FILE": ridx}))
+    finally:
+        shutil.rmtree(t, ignore_errors=True)       # t was validated above
+    sr = git(root, ["symbolic-ref", "-q", "HEAD"], check=False)
+    branch = ("branch:" + out(sr)) if sr.returncode == 0 and out(sr) else "detached"
+    upstream = "none"
+    u = git(root, ["rev-parse", "--symbolic-full-name", "@{u}"], check=False)
+    if u.returncode == 0 and out(u):
+        us = rev_commit(root, "@{u}")
+        upstream = "%s@%s" % (out(u), us or "missing")
+    remotes = {}
+    if command:
+        names = out(git(root, ["remote"])).split()
+        toks = command_tokens(command)
+        for n in sorted(set(names) & set(toks)):
+            url = out(git(root, ["remote", "get-url", n]))
+            pat = target[len(n) + 1:] if target.startswith(n + "/") else target
+            ls = git(root, ["ls-remote", n] + ([pat] if pat else []), check=False, timeout=90)
+            if ls.returncode != 0:
+                raise Refuse("git ls-remote %s %s failed (rc %d) — cannot record the remote tip" % (
+                    n, pat, ls.returncode))
+            tips = []
+            for line in out(ls).splitlines():
+                if "\t" in line:
+                    sha, ref = line.split("\t", 1)
+                    tips.append("%s=%s" % (ref, sha))
+            remotes[n] = "%s@%s" % (url, ",".join(sorted(tips)) or "absent")
+    return {"tree": tree, "index": index_tree, "head": head or "unborn", "branch": branch,
+            "upstream": upstream, "remotes": remotes}
+
+
+def core(snap):
+    return dict((k, snap[k]) for k in CORE_KEYS)
+
+
+def snapshot_id(snap):
+    return sha256(canon(core(snap)))
+
+
+# -------------------------------------------------------------------------------------- policy helpers
+def resolve_tier():
+    for v in ALT_CREDS:
+        if os.environ.get(v):
+            return "standard"
+    d = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
+    try:
+        with open(os.path.join(d, "model-mesh-tier"), "rb") as f:
+            s = f.read().decode("utf-8", "replace")
+    except OSError:
+        return "standard"
+    if s.endswith("\n"):
+        s = s[:-1]
+    return s if s in ("fable", "standard") else "standard"
+
+
+def review_switch():
+    try:
+        s = read_text(store("review")).strip().lower()
+    except OSError:
+        return "unset"
+    return s if s in ("on", "off") else "unset"
+
+
+def resolve_requires(raw, review, seat="claude"):
+    words, resolved = [], []
+    for r in raw.split(","):
+        r = r.strip()
+        if not r:
+            continue
+        if r not in REQUIRE_WORDS:
+            raise Refuse("unknown --requires path %r (use %s)" % (r, "|".join(REQUIRE_WORDS)))
+        words.append(r)
+        if r == "claude-judge" and seat == "codex":
+            raise Refuse("--requires claude-judge is a Claude seat's sub-agent judge; a Codex seat's fresh judge is "
+                         "gpt-sol, and its Claude verdict is claude-verdict (model-mesh-review --reviewer claude)")
+        if r == "stand-in":
+            if review == "on":
+                adds = ["claude-judge", "gpt-sol-astra"] if seat == "claude" else ["claude-verdict", "gpt-sol"]
+            elif review == "off":
+                adds = ["expert-verdict"]
+            else:
+                raise Refuse("--requires stand-in resolves from %s, which must say on or off (it says: %s)" % (
+                    store("review"), review))
+        else:
+            adds = [r]
+        for a in adds:
+            if a not in resolved:
+                resolved.append(a)
+    if not resolved:
+        raise Refuse("missing section: --requires")
+    return words, resolved
+
+
+CLAUDE_PATHS = ("claude-judge", "expert-verdict")
+GPT_PATHS = ("gpt-sol", "gpt-terra", "gpt-sol-astra")
+CODEX_OWN_PATHS = ("gpt-sol", "expert-verdict")      # a Codex seat's fresh same-family judge, or its stand-in (OFF)
+
+
+def requires_floor(resolved, review, exc, publish=None, irreversible=False, seat="claude"):
+    """The minimum reviewer set for any gated step: always a Claude verdict (Sol round 4). A GPT cross-check is
+    required only while the review switch is ON and the step publishes history (--publish-commit) or is marked
+    --irreversible (pays, deletes or grants) — v2.5 P5; any other step may still add one. The caller may add
+    paths, never go below this.
+    A Codex seat (v2.7, plan decision 1 / appendix D): switch ON — a Claude verdict (claude-verdict; a claude-build
+    record never counts) ALWAYS, plus gpt-sol for a step that publishes, pays, deletes or grants; switch not ON
+    (the Claude-less OFF mesh) — its own family's fresh judge always (gpt-sol, or the expert-verdict stand-in)."""
+    if seat == "codex":
+        if review not in ("on", "off"):
+            raise exc("a Codex-seat floor needs the review switch set on or off (it says: %s) — the Sol-only floor "
+                      "applies only when the user set OFF" % review)
+        if review == "on":
+            if "claude-verdict" not in resolved:
+                raise exc("--requires must include a Claude verdict (claude-verdict or stand-in; claude-build does not "
+                          "count) for a Codex-seat gated step while the review switch is ON — a gpt-sol record alone "
+                          "never satisfies the floor")
+            if (publish or irreversible) and "gpt-sol" not in resolved:
+                raise exc("--requires must include gpt-sol (or stand-in) as well as claude-verdict for a Codex-seat "
+                          "step that publishes, pays, deletes or grants (--publish-commit / --irreversible) while "
+                          "the review switch is ON")
+        elif not any(p in resolved for p in CODEX_OWN_PATHS):
+            raise exc("--requires must include the fresh same-family judge for a Codex seat (gpt-sol, or stand-in) — "
+                      "a gated step always gets a fresh judge")
+        return
+    if not any(p in resolved for p in CLAUDE_PATHS):
+        raise exc("--requires must include a Claude verdict (claude-judge, or stand-in) — a gated step always "
+                  "gets a fresh judge")
+    if review == "on" and (publish or irreversible) and not any(p in resolved for p in GPT_PATHS):
+        raise exc("--requires must include a GPT cross-check (gpt-sol, gpt-terra or stand-in) for a step that "
+                  "publishes, pays, deletes or grants (--publish-commit / --irreversible) while the review "
+                  "switch is ON")
+
+
+def publishes(command):
+    """A history-publishing command (git push, incl. tag pushes; gh pr merge). Over-matching is safe."""
+    return bool(re.search(r"\bgit\b.*\bpush\b", command, re.S) or re.search(r"\bgh\b\s+pr\s+merge\b", command))
+
+
+# Push flags are an ALLOWLIST (round-6 follow-up 1): git expands any unambiguous abbreviation of a long option
+# (`--tag` -> --tags, `--follow` -> --follow-tags) and accepts bundled short flags (`-fd`), so a denylist of
+# exact spellings lets extra refs through. Every other `-…` token is refused.
+PUSH_FLAGS = ("-q", "--quiet", "-v", "--verbose", "-f", "--force", "--force-if-includes", "-u", "--set-upstream",
+              "-n", "--dry-run", "--atomic", "--no-verify", "--porcelain")
+PUSH_FLAGS_OPT_VALUE = ("--force-with-lease", "--signed")          # bare, or --flag=<value>
+PUSH_VALUE_FLAGS = ("-o", "--push-option", "--repo")               # --flag <value>, or (long) --flag=<value>
+
+
+def names_commit(command, full):
+    """Every publishing invocation must name the reviewed commit as what it publishes (Sol rounds 4-5, judge rounds 5-6):
+    each `git … push <remote> <refspec>…` refspec's source is a hex prefix (>= 7) of it, and each `gh pr merge` carries
+    `--match-head-commit <it>`. Refused: a SHA merely appearing elsewhere; a push with no explicit refspec; any push
+    flag outside the allowlist (PUSH_FLAGS…; this covers --tags, --all, --mirror, --prune, --delete, their
+    abbreviations, bundled short flags and --recurse-submodules); `git -c` / `--config-env` before push; and a
+    segment the publishes() regex matches that this parser cannot read as a push or merge.
+
+    This is a STATIC check of the command text (DESIGN §13). It cannot see: a config-defined alias whose segment
+    does not contain the word `push` (`git p origin HEAD:main`); config injected through the environment
+    (GIT_CONFIG_COUNT/KEY/VALUE, GIT_CONFIG_PARAMETERS, GIT_DIR) or read from repo/global config at run time
+    (push.followTags, remote.<n>.push, remote.<n>.mirror, url.insteadOf, push.recurseSubmodules); run-time
+    expansion in another segment (variables, $(…), eval, scripts); pre-push hooks; and other publishers
+    (`gh api … /merge`, `hub push`). Those are outside the guarantee, not refused."""
+    found = False
+    for seg in re.split(r"[;&|\n]+", command):
+        try:
+            toks = shlex.split(seg)
+        except ValueError:
+            return False
+        gi = next((k for k, t in enumerate(toks) if os.path.basename(t) == "git"), None)
+        hi = next((k for k, t in enumerate(toks) if os.path.basename(t) == "gh"), None)
+        if gi is not None and "push" in toks[gi + 1:]:
+            i = toks.index("push", gi + 1)
+            if any(t.startswith("-c") or t.startswith("--config-env") for t in toks[gi + 1:i]):
+                return False                                   # `git -c …` before push can rewrite what push does
+            args, skip = [], False
+            for t in toks[i + 1:]:
+                if skip:
+                    skip = False
+                elif not t.startswith("-"):
+                    args.append(t)
+                elif t in PUSH_FLAGS or t in PUSH_FLAGS_OPT_VALUE:
+                    pass
+                elif t in PUSH_VALUE_FLAGS:
+                    skip = True
+                elif t.startswith("--") and "=" in t and t.split("=", 1)[0] in PUSH_FLAGS_OPT_VALUE + PUSH_VALUE_FLAGS:
+                    pass
+                else:
+                    return False                               # not on the allowlist: abbreviation, bundle, other
+            if skip:
+                return False                                   # a value flag with no value
+            if len(args) < 2:
+                return False
+            for ref in args[1:]:
+                src = ref.lstrip("+").split(":", 1)[0]
+                if not (re.fullmatch(r"[0-9A-Fa-f]{7,40}", src) and full.startswith(src.lower())):
+                    return False
+            found = True
+        elif hi is not None and re.search(r"\bpr\s+merge\b", " ".join(toks[hi:])):
+            vals = [toks[k + 1] for k, t in enumerate(toks[:-1]) if t == "--match-head-commit"]
+            vals += [t.split("=", 1)[1] for t in toks if t.startswith("--match-head-commit=")]
+            if not any(re.fullmatch(r"[0-9A-Fa-f]{7,40}", v) and full.startswith(v.lower()) for v in vals):
+                return False
+            found = True
+        elif publishes(seg):
+            return False                                       # looks like publishing, but not a form we can verify
+    return found
+
+
+def auth_id(packet_sha, snap, step_id, command, target, publish_commit):
+    return sha256("\0".join([packet_sha, canon(snap), step_id, command, target, publish_commit or ""]))
+
+
+def secret_floor(path):
+    args = ["grep", "-n", "-E"]
+    for pat in SECRET_PATTERNS:
+        args += ["-e", pat]
+    args.append(path)
+    p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.returncode == 1:
+        return None
+    if p.returncode == 0:
+        return sorted(set(l.split(b":", 1)[0].decode() for l in p.stdout.splitlines() if b":" in l), key=int)
+    raise Refuse("secret floor: grep failed (rc %d) — refusing" % p.returncode)
+
+
+def parse_verdict(text):
+    found = set(VERDICT_RE.findall(text))
+    for v in ("blocking", "concerns", "accept"):       # most severe line wins
+        if v in found:
+            return v
+    return None
+
+
+# ------------------------------------------------------------------------ the Claude reviewer's stream (v2.6)
+# The usage-limit signal (DESIGN §14, UNVERIFIED until S10 measures it on a Linux/WSL2 machine): a `result` event that is an error
+# and whose text says the account's usage limit is reached (observed CLI wording: "Claude AI usage limit reached|<t>",
+# "5-hour limit reached ∙ resets <time>"). Only this moves the wrapper to the next reviewer account; nothing else does.
+USAGE_LIMIT_RE = re.compile(r"usage limit|limit reached", re.I)
+USAGE_KEYS = (("input", "input_tokens"), ("cache_creation", "cache_creation_input_tokens"),
+              ("cache_read", "cache_read_input_tokens"), ("output", "output_tokens"))
+
+
+def parse_claude_stream(text):
+    """Classify one fenced `claude -p --output-format stream-json --verbose` run. Returns a dict: status (ok |
+    usage-limit | error | breach), reason, answer (only for ok), model (the ids the run reports), usage, turns.
+    The first `system/init` event must list no tools, MCP servers or plugins and the result must carry no permission
+    denials BEFORE any answer is read; a run that shows neither event is an error, a run whose answer cannot be tied
+    to a clean init event is a breach."""
+    init, result, bad = None, None, 0
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            bad += 1
+            continue
+        if not isinstance(e, dict):
+            continue
+        if e.get("type") == "system" and e.get("subtype") == "init" and init is None:
+            init = e
+        elif e.get("type") == "result":
+            result = e
+    r = {"status": "error", "reason": "", "answer": None, "model": "", "usage": None, "turns": None}
+    if isinstance(result, dict):
+        u = result.get("usage")
+        if isinstance(u, dict):
+            r["usage"] = dict((k, u.get(f) if isinstance(u.get(f), int) and not isinstance(u.get(f), bool) else 0)
+                              for k, f in USAGE_KEYS)
+        mu = result.get("modelUsage")
+        if isinstance(mu, dict) and mu:
+            r["model"] = ",".join(sorted(str(k) for k in mu))
+        if isinstance(result.get("num_turns"), int):
+            r["turns"] = result["num_turns"]
+    if not r["model"] and isinstance(init, dict) and isinstance(init.get("model"), str):
+        r["model"] = init["model"]
+    if isinstance(init, dict):
+        for k in ("tools", "mcp_servers", "plugins"):
+            v = init.get(k)
+            if not isinstance(v, list):
+                r.update(status="breach", reason="the init event has no %s list — the fence cannot be checked" % k)
+                return r
+            if k == "plugins":
+                # Measured 2026-10-09 (v2.7 S9, Claude Code 2.1.295): the CLI loads its own built-in plugins even under
+                # --safe-mode --restricted (path "builtin", source "<name>@builtin"). With `tools` empty they can run
+                # nothing, so they are allowed; any plugin from anywhere else is still a breach.
+                v = [p for p in v if not (isinstance(p, dict) and p.get("path") == "builtin"
+                                          and str(p.get("source", "")).endswith("@builtin"))]
+            if v:
+                r.update(status="breach", reason="the init event lists %s: %s" % (k, json.dumps(v)[:200]))
+                return r
+    if result is None:
+        r["reason"] = "no result event in the stream%s" % (" (no init event either)" if init is None else "")
+        return r
+    pd = result.get("permission_denials")
+    if pd is not None and not isinstance(pd, list):
+        r.update(status="breach", reason="permission_denials is not a list")
+        return r
+    if pd:
+        r.update(status="breach", reason="the run reports permission denials: %s" % json.dumps(pd)[:200])
+        return r
+    rtext = result.get("result") if isinstance(result.get("result"), str) else ""
+    if result.get("is_error") is True or result.get("subtype") != "success":
+        if USAGE_LIMIT_RE.search(rtext):
+            r.update(status="usage-limit", reason=rtext.strip().splitlines()[0][:200] if rtext.strip() else "usage limit")
+        else:
+            r["reason"] = "the run ended in an error (%s): %s" % (result.get("subtype"), rtext.strip()[:200])
+        return r
+    if init is None:
+        r.update(status="breach", reason="no init event before the result — the tool list cannot be checked")
+        return r
+    r.update(status="ok", answer=rtext)
+    return r
+
+
+def cmd_claude_stream(a):
+    try:
+        text = read_text(a.stream)
+    except OSError as e:
+        raise Refuse("cannot read stream %s: %s" % (a.stream, e))
+    r = parse_claude_stream(text)
+    if r["status"] == "ok":
+        write_atomic(os.path.realpath(a.out), r["answer"])
+
+    def clean(v):
+        return re.sub(r"[^ -~]", "?", str(v))
+    print("status=%s" % r["status"])
+    print("reason=%s" % clean(r["reason"]))
+    print("model=%s" % clean(r["model"]))
+    if r["usage"] is not None:
+        for k, _ in USAGE_KEYS:
+            print("%s=%d" % (k, r["usage"][k]))
+    if r["turns"] is not None:
+        print("turns=%d" % r["turns"])
+    return 0
+
+
+# ---------------------------------------------------------------------------------------------- packet
+def read_input(role, path):
+    if not path:
+        raise Refuse("missing section: --%s" % role)
+    if not os.path.isfile(path):
+        raise Refuse("missing section: %s file %s does not exist" % (role, path))
+    with open(path, "rb") as f:
+        data = f.read()
+    if not data.strip():
+        raise Refuse("missing section: %s file %s is empty" % (role, path))
+    return {"role": role, "path": os.path.realpath(path), "name": os.path.basename(path)}
+
+
+def check_evidence(meta, data, snap, root):
+    if inside(meta["path"], root):
+        raise Refuse("evidence %s is inside the repo root — evidence lives in the store only" % meta["path"])
+    h = sha256(data)
+    reg = store("evidence", h + ".json")
+    if not os.path.isfile(reg):
+        raise Refuse("unregistered evidence %s (sha256 %s): only `model-mesh-review evidence -- <cmd>` "
+                     "produces evidence" % (meta["path"], h))
+    try:
+        r = json.loads(read_text(reg))
+    except ValueError:
+        raise Refuse("evidence registration %s is malformed" % reg)
+    if r.get("sha256") != h:
+        raise Refuse("evidence registration %s does not match the file" % reg)
+    if r.get("before") != r.get("after"):
+        raise Refuse("mutating evidence %s: the repo state changed while its command ran" % meta["path"])
+    if r.get("before") != core(snap):
+        raise Refuse("stale evidence %s: recorded on another repo state than this packet's snapshot" % meta["path"])
+
+
+def text_of(data):
+    t = data.decode("utf-8", "replace")
+    return t[:-1] if t.endswith("\n") else t
+
+
+CONTEXT_MAX = 20 * 1024
+DIGEST_LINES = 20
+
+
+def context_text(data):
+    """A CONTEXT file as reviewers see it: whole up to 20 KB, else its first 20 KB and a note (v2.5 P4)."""
+    if len(data) <= CONTEXT_MAX:
+        return text_of(data)
+    return "%s\n[truncated by model-mesh: first %d of %d bytes shown; the manifest sha256 covers the whole file]" % (
+        text_of(data[:CONTEXT_MAX]), CONTEXT_MAX, len(data))
+
+
+def evidence_digest(data):
+    """An evidence file as reviewers see it (v2.5 P4): its command and exit lines, the last 20 output lines, and
+    the sha256 of the full output. The full file stays in the store; the gate checks it, not this digest."""
+    head, sep, output = data.partition(b"\n--- output ---\n")
+    if not sep:
+        head, output = b"", data
+    lines = [l for l in text_of(head).split("\n") if l.startswith(("$ ", "exit: "))]
+    lines.append("output: %d bytes, sha256=%s (full output in the store)" % (len(output), sha256(output)))
+    if b"\0" in output:
+        lines.append("(binary output — not shown)")
+        return "\n".join(lines)
+    try:
+        out = output.decode("utf-8")
+    except UnicodeDecodeError:
+        lines.append("(binary output — not shown)")
+        return "\n".join(lines)
+    out_lines = out.split("\n")
+    if out_lines and out_lines[-1] == "":
+        out_lines.pop()
+    shown = out_lines[-DIGEST_LINES:]
+    lines.append("--- last %d of %d lines ---" % (len(shown), len(out_lines)))
+    lines += shown
+    return "\n".join(lines)
+
+
+def assemble(m, snap, step, attempt, root, validate_evidence=False):
+    """Deterministic: identical inputs + the same attempt id -> byte-identical packet."""
+    datas = []
+    for inp in m["inputs"]:
+        try:
+            with open(inp["path"], "rb") as f:
+                data = f.read()
+        except OSError:
+            raise Refuse("cannot read %s input %s" % (inp["role"], inp["path"]))
+        meta = dict(inp)
+        meta["sha256"] = sha256(data)
+        if validate_evidence and inp["role"] == "evidence":
+            check_evidence(meta, data, snap, root)
+        datas.append((meta, data))
+    diff = git(root, ["-c", "core.quotepath=on", "diff", "--no-color", "--no-ext-diff", "--no-textconv",
+                      "--src-prefix=a/", "--dst-prefix=b/", m["base"], snap["tree"]])
+    L = ["## PACKET", "attempt: " + attempt, "tier: " + m["tier"], "mode: " + m["mode"]]
+    if "seat" in m:                                    # v2.6; a v2.5 manifest has no seat and re-assembles as before
+        L.append("seat: " + m["seat"])
+    L.append("snapshot:")
+    for k in CORE_KEYS:
+        L.append("  %s: %s" % (k, snap[k]))
+    for n in sorted(snap["remotes"]):
+        L.append("  remote:%s: %s" % (n, snap["remotes"][n]))
+    L.append("manifest:")
+    for meta, _ in datas:
+        L.append("  %s: %s sha256=%s" % (meta["role"], meta["name"], meta["sha256"]))
+    L += ["", "## STEP", "step-id: " + step["id"], "command: " + step["command"], "target: " + step["target"],
+          "publish-commit: " + (m["publish_commit"] or "none"),
+          "irreversible: " + ("yes" if m.get("irreversible") else "no"), "requires: " + ",".join(m["requires"]),
+          "requires-resolved: " + ",".join(m["requires_resolved"]), ""]
+
+    def section(role):
+        return [(meta, d) for meta, d in datas if meta["role"] == role]
+    L += ["## SPEC", text_of(section("spec")[0][1]), ""]
+    if section("plan"):
+        L += ["## PLAN", text_of(section("plan")[0][1]), ""]
+    L += ["## DIFF", "base: %s = %s" % (m["base_rev"], m["base"]), "snapshot-tree: " + snap["tree"],
+          text_of(diff.stdout), ""]
+    L.append("## CONTEXT")
+    ctx = section("context")
+    if not ctx:
+        L += ["(none)", ""]
+    for meta, d in ctx:
+        L += ["### %s sha256=%s" % (meta["name"], meta["sha256"]), context_text(d), ""]
+    L.append("## EVIDENCE — digest (the full files are in the store, hashed in the manifest)")
+    for meta, d in section("evidence"):
+        L += ["### %s sha256=%s" % (meta["name"], meta["sha256"]), evidence_digest(d), ""]
+    L += ["## CLAIM — not evidence", text_of(section("claim")[0][1])]
+    body = "\n".join(L) + "\n"
+    pid = sha256(body)
+    head, rest = body.split("\n", 1)
+    return head + "\npacket-id: " + pid + "\n" + rest, pid
+
+
+def load_packet(path):
+    if not path:
+        raise Refuse("missing --packet")
+    pp = os.path.realpath(path)
+    try:
+        with open(pp, "rb") as f:
+            text = f.read().decode("utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        raise Refuse("cannot read packet %s: %s" % (path, e))
+    parts = text.split("\n", 2)
+    if len(parts) < 3 or parts[0] != "## PACKET" or not parts[1].startswith("packet-id: "):
+        raise Refuse("malformed packet %s" % pp)
+    pid = parts[1][len("packet-id: "):]
+    if sha256(parts[0] + "\n" + parts[2]) != pid:
+        raise Refuse("packet %s was modified after assembly (packet-id does not match its body)" % pp)
+    first = parts[2].split("\n", 1)[0]
+    if not first.startswith("attempt: "):
+        raise Refuse("malformed packet %s: no attempt line" % pp)
+    try:
+        m = json.loads(read_text(os.path.join(os.path.dirname(pp), "manifest.json")))
+    except (OSError, ValueError):
+        raise Refuse("packet %s has no readable manifest.json" % pp)
+    attempt = first[len("attempt: "):]
+    if m.get("packet_id") != pid or m.get("attempt") != attempt:
+        raise Refuse("manifest does not belong to packet %s" % pp)
+    return {"path": pp, "text": text, "pid": pid, "attempt": attempt, "m": m}
+
+
+def packet_auth(m):
+    return auth_id(m["packet_id"], m["snapshot"], m["step"]["id"], m["step"]["command"], m["step"]["target"],
+                   m["publish_commit"])
+
+
+def cmd_packet(a):
+    for name in ("spec", "step_id", "command", "target", "base", "requires", "claim"):
+        if not getattr(a, name):
+            raise Refuse("missing section: --%s" % name.replace("_", "-"))
+    if not a.evidence:
+        raise Refuse("missing section: --evidence (at least one registered evidence file)")
+    root = repo_root()
+    check_store(root)
+    base = rev_commit(root, a.base)
+    if not base:
+        raise Refuse("unresolvable --base %r" % a.base)
+    review = review_switch()
+    seat = a.seat or "claude"
+    if seat not in SEATS:
+        raise Refuse("unknown --seat %r (use claude|codex)" % a.seat)
+    words, resolved = resolve_requires(a.requires, review, seat)
+    publish = None
+    if a.publish_commit:
+        publish = rev_commit(root, a.publish_commit)
+        if not publish:
+            raise Refuse("unresolvable --publish-commit %r" % a.publish_commit)
+    requires_floor(resolved, review, Refuse, publish, a.irreversible, seat)
+    if publishes(a.command):
+        if not publish:
+            raise Refuse("the command publishes history — it needs --publish-commit <sha> (commit everything, "
+                         "then review the commit)")
+        if not names_commit(a.command, publish):
+            raise Refuse("the publishing command must name the publish commit %s explicitly" % publish)
+    inputs = [read_input("spec", a.spec)]
+    if a.plan:
+        inputs.append(read_input("plan", a.plan))
+    for c in a.context or []:
+        inputs.append(read_input("context", c))
+    for e in a.evidence:
+        inputs.append(read_input("evidence", e))
+    inputs.append(read_input("claim", a.claim))
+    for inp in inputs:
+        if inp["role"] == "evidence" and inside(inp["path"], root):
+            raise Refuse("evidence %s is inside the repo root — evidence lives in the store only" % inp["path"])
+    snap = take_snapshot(root, a.command, a.target)
+    if publish and rev_tree(root, publish) != snap["tree"]:
+        raise Refuse("--publish-commit %s has tree %s but the reviewed snapshot tree is %s — commit everything, "
+                     "then review the commit" % (publish, rev_tree(root, publish), snap["tree"]))
+    m = {"version": 1, "repo": root, "base_rev": a.base, "base": base, "tier": resolve_tier(),
+         "mode": "review=" + review, "seat": seat, "requires": words, "requires_resolved": resolved, "publish_commit": publish,
+         "irreversible": bool(a.irreversible),
+         "step": {"id": a.step_id, "command": a.command, "target": a.target}, "inputs": inputs}
+    attempt = new_id()
+    text, pid = assemble(m, snap, m["step"], attempt, root, validate_evidence=True)
+    pdir = store("packets", attempt)
+    ensure_dir(store("packets"))
+    os.mkdir(pdir, 0o700)
+    tmp = os.path.join(pdir, ".packet.md.check")
+    write_atomic(tmp, text)
+    hits = secret_floor(tmp)
+    if hits:
+        shutil.rmtree(pdir, ignore_errors=True)
+        raise Refuse("the assembled packet looks like it contains a secret (packet lines %s). Redact the "
+                     "input and rerun." % ",".join(hits), EXIT_SECRET)
+    m.update({"attempt": attempt, "packet_id": pid, "snapshot": snap, "created": utc_now()})
+    m["auth_id"] = packet_auth(m)
+    write_atomic(os.path.join(pdir, "manifest.json"), jdump(m))
+    os.replace(tmp, os.path.join(pdir, "packet.md"))
+    print(os.path.join(pdir, "packet.md"))
+    return 0
+
+
+def cmd_evidence(argv):
+    # The `--` separator is required, so a stray option (e.g. `evidence --help`) is never run and registered
+    # as evidence.
+    if argv[:1] in (["-h"], ["--help"]):
+        print("usage: model-mesh-review evidence -- <command...>  (run at the repo root; records raw output, "
+              "exit code and the snapshot before and after)")
+        return 0
+    if argv[:1] != ["--"] or len(argv) < 2:
+        raise Refuse("usage: evidence -- <command...> (the -- separator is required)")
+    argv = argv[1:]
+    root = repo_root()
+    check_store(root)
+    before = take_snapshot(root)
+    try:
+        p = subprocess.run(argv, cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
+        rc, output = p.returncode, p.stdout
+    except OSError as e:
+        rc, output = 127, ("cannot run: %s\n" % e).encode()
+    after = take_snapshot(root)
+    head = "$ %s\nexit: %d\nbefore: %s\nafter: %s\n--- output ---\n" % (
+        shlex.join(argv), rc, snapshot_id(before), snapshot_id(after))
+    content = head.encode("utf-8") + output
+    h = sha256(content)
+    ensure_dir(store("evidence"))
+    path = store("evidence", h + ".txt")
+    write_atomic(path, content)
+    write_atomic(store("evidence", h + ".json"), jdump({
+        "sha256": h, "command": argv, "exit": rc, "before": core(before), "after": core(after),
+        "before_id": snapshot_id(before), "after_id": snapshot_id(after), "created": utc_now(),
+        "created_ns": time.time_ns()}))
+    print(path)
+    return 0
+
+
+def cmd_snapshot(a):
+    root = repo_root()
+    print(jdump(take_snapshot(root, a.command or "", a.target or "")), end="")
+    return 0
+
+
+# --------------------------------------------------------------------------------------------- records
+def record_path(rid):
+    if not rid or not re.match(r"^[A-Za-z0-9._-]+$", rid):
+        raise Refuse("malformed record id %r" % rid)
+    return store("records", rid + ".json")
+
+
+def load_record(rid):
+    p = record_path(rid)
+    if not os.path.isfile(p):
+        raise Refuse("missing record %s" % rid)
+    try:
+        r = json.loads(read_text(p))
+    except ValueError:
+        raise Refuse("malformed record %s (not JSON)" % rid)
+    validate_record(r, rid)
+    return r
+
+
+def validate_record(r, rid):
+    ok = (isinstance(r, dict) and r.get("record_id") == rid and isinstance(r.get("auth_id"), str)
+          and isinstance(r.get("packet_sha256"), str) and r.get("verdict") in ("accept", "concerns", "blocking")
+          and isinstance(r.get("reviewer"), dict) and r["reviewer"].get("kind") in ("claude", "gpt", "claude-cli", "seat"))
+    if ok and r["reviewer"]["kind"] == "claude":
+        ok = r["reviewer"].get("role") in ("claude-judge", "expert-verdict")
+    if ok and r["reviewer"]["kind"] == "gpt":
+        ok = r["reviewer"].get("tier") in ("sol", "terra")
+    if ok and r["reviewer"]["kind"] == "claude-cli":
+        ok = r["reviewer"].get("slot") in ("verdict", "build")
+    if ok and r["reviewer"]["kind"] == "seat":
+        ok = r["reviewer"].get("seat") == "codex" and r["reviewer"].get("role") == "expert-verdict"
+    if not ok:
+        raise Refuse("malformed record %s" % rid)
+
+
+def save_record(r):
+    write_atomic(record_path(r["record_id"]), jdump(r))
+
+
+def new_record(P, reviewer, verdict, return_text, prior=None, adopted=None):
+    m = P["m"]
+    rid = new_id()
+    ensure_dir(store("records"))
+    write_atomic(store("records", rid + ".return.txt"), return_text)
+    r = {"record_id": rid, "created": utc_now(), "packet_path": P["path"], "packet_sha256": P["pid"],
+         "attempt": P["attempt"], "auth_id": packet_auth(m), "snapshot": m["snapshot"],
+         "step_id": m["step"]["id"], "step_command": m["step"]["command"], "step_target": m["step"]["target"],
+         "publish_commit": m["publish_commit"], "reviewer": reviewer, "verdict": verdict,
+         "adopted": adopted or None, "prior_record": prior, "waiver": None, "state": "open"}
+    save_record(r)
+    return rid
+
+
+def cmd_record(a):
+    if a.record:
+        if not a.adopted:
+            raise Refuse("usage: record --record ID --adopted TEXT")
+        r = load_record(a.record)
+        if r["verdict"] != "concerns":
+            raise Refuse("record %s has verdict %s; adopted= applies to concerns only" % (a.record, r["verdict"]))
+        r["adopted"] = a.adopted
+        save_record(r)
+        print("record: %s adopted" % a.record)
+        return 0
+    if not (a.packet and a.return_file and a.journaled_model):
+        raise Refuse("usage: record --packet P --return-file F --journaled-model M")
+    P = load_packet(a.packet)
+    try:
+        ret = read_text(a.return_file)
+    except OSError:
+        raise Refuse("cannot read return file %s" % a.return_file)
+    first = ret.split("\n", 1)[0].rstrip("\r").strip()
+    if first != "packet-id: " + P["pid"]:
+        raise Refuse("return file %s is stale or for another packet: its first line must be 'packet-id: %s' "
+                     "(got %r)" % (a.return_file, P["pid"], first[:90]))
+    verdict = parse_verdict(ret)
+    if not verdict:
+        raise Refuse("return file %s has no 'VERDICT: accept|concerns|blocking' line" % a.return_file)
+    if P["m"].get("seat") == "codex":
+        # a Codex seat journals only its own expert mirror's verdict-mode return (the OFF stand-in); its fresh judge
+        # is Sol through the wrapper, and a Claude verdict comes only through model-mesh-review --reviewer claude
+        if a.role != "expert-verdict":
+            raise Refuse("a Codex-seat packet takes `record` only with --role expert-verdict (the mesh-expert mirror in "
+                         "verdict mode); its judge is `model-mesh-review sol --packet`, its Claude verdict "
+                         "`model-mesh-review --reviewer claude verdict --packet`")
+        reviewer = {"kind": "seat", "seat": "codex", "role": a.role, "model_journaled": a.journaled_model,
+                    "certified": False, "return_sha256": sha256(ret)}
+    else:
+        reviewer = {"kind": "claude", "role": a.role, "model_journaled": a.journaled_model,
+                    "certified": False, "return_sha256": sha256(ret)}
+    if a.account:
+        reviewer["account"] = a.account
+    rid = new_record(P, reviewer, verdict, ret, adopted=a.adopted)
+    print("record: %s" % rid)
+    print("verdict: %s" % verdict)
+    return 0
+
+
+def cmd_gpt_record(a):
+    P = load_packet(a.packet)
+    try:
+        ret = read_text(a.verdict_file)
+    except OSError:
+        raise Refuse("cannot read verdict file %s" % a.verdict_file)
+    verdict = parse_verdict(ret)
+    if not verdict:
+        raise Refuse("verdict file has no VERDICT line")
+    if a.prior_record:
+        pr = load_record(a.prior_record)
+        if pr["packet_sha256"] != P["pid"]:
+            raise Refuse("prior record %s is for another packet" % a.prior_record)
+    rid = new_record(P, {"kind": "gpt", "tier": a.tier, "model": a.model, "effort": a.effort,
+                         "return_sha256": sha256(ret)}, verdict, ret, prior=a.prior_record or None)
+    print(rid)
+    return 0
+
+
+def cmd_claude_record(a):
+    """A record of the fenced Claude reviewer (v2.6): written by the wrapper with the alias it passed, the id the run
+    reported, the effort, the reviewer account's tier and the account (its config dir's basename) actually used."""
+    P = load_packet(a.packet)
+    try:
+        ret = read_text(a.verdict_file)
+    except OSError:
+        raise Refuse("cannot read verdict file %s" % a.verdict_file)
+    verdict = parse_verdict(ret)
+    if not verdict:
+        raise Refuse("verdict file has no VERDICT line")
+    if a.prior_record:
+        pr = load_record(a.prior_record)
+        if pr["packet_sha256"] != P["pid"]:
+            raise Refuse("prior record %s is for another packet" % a.prior_record)
+    rid = new_record(P, {"kind": "claude-cli", "slot": a.slot, "model_alias": a.model_alias,
+                         "model_reported": a.model_reported, "effort": a.effort, "tier": a.tier,
+                         "reviewer": a.reviewer, "return_sha256": sha256(ret)}, verdict, ret,
+                     prior=a.prior_record or None)
+    print(rid)
+    return 0
+
+
+def cmd_attach(a):
+    P = load_packet(a.packet)
+    text = P["text"]
+    if a.prior_record:
+        r = load_record(a.prior_record)
+        if r["packet_sha256"] != P["pid"]:
+            raise Refuse("prior record %s is for another packet — the prior verdict must be on this same packet"
+                         % a.prior_record)
+        rv = r["reviewer"]
+        if rv["kind"] in ("claude", "seat"):
+            who = "%s, role %s, model as journaled by the seat: %s%s" % (
+                "claude" if rv["kind"] == "claude" else "codex-seat agent", rv.get("role"), rv.get("model_journaled"),
+                (", account %s" % rv["account"]) if rv.get("account") else "")
+        elif rv["kind"] == "claude-cli":
+            who = "claude-cli %s slot, model %s (reported %s), effort %s, account %s (tier %s)" % (
+                rv.get("slot"), rv.get("model_alias"), rv.get("model_reported"), rv.get("effort"), rv.get("reviewer"),
+                rv.get("tier"))
+        else:
+            who = "gpt %s, model %s, effort %s" % (rv.get("tier"), rv.get("model"), rv.get("effort"))
+        try:
+            ret = read_text(store("records", a.prior_record + ".return.txt"))
+        except OSError:
+            raise Refuse("prior record %s has no stored return text" % a.prior_record)
+        text += ("\n--- PRIOR VERDICT — a claim, not evidence ---\nrecord: %s\nreviewer: %s\nverdict: %s\n\n%s\n"
+                 "--- PRIOR VERDICT ENDS ---\n" % (a.prior_record, who, r["verdict"], ret.rstrip("\n")))
+    write_atomic(os.path.realpath(a.out), text)
+    return 0
+
+
+# --------------------------------------------------------------------------------------- waive, outcome
+def auth_dir(auth):
+    if not auth or not re.match(r"^[0-9a-f]{64}$", auth):
+        raise Refuse("malformed auth id %r" % auth)
+    return store("authorizations", auth)
+
+
+def runs_of(auth):
+    runs = [auth_dir(auth)]
+    rdir = auth_dir(auth) + ".retry"
+    if os.path.isdir(rdir):
+        runs += [os.path.join(rdir, w) for w in sorted(os.listdir(rdir)) if not w.startswith(".")]
+    return runs
+
+
+def outcome_of(run):
+    try:
+        return json.loads(read_text(os.path.join(run, "outcome.json"))).get("result")
+    except (OSError, ValueError):
+        return None
+
+
+def retry_allowed(auth):
+    """A retry is allowed only when every run of the attempt has an outcome and none of them is ok."""
+    res = [outcome_of(r) for r in runs_of(auth)]
+    if any(x is None for x in res):
+        return False, "a run of this attempt has no outcome yet (record it with `outcome` first)"
+    if "ok" in res:
+        return False, "this attempt already ran with outcome ok"
+    return True, ""
+
+
+def reconciliation_evidence(auth, paths):
+    """A retry waiver names the reconciliation the seat performed: registered evidence (made by `evidence --`)
+    of the target's current state, recorded after the failed run's outcome, non-mutating, and on the reviewed
+    repo state (the gate re-checks that state anyway). Returns [{path, sha256, command, created}]."""
+    if not paths:
+        raise Refuse("waive --retry needs --evidence F (one or more): registered evidence of the target's current "
+                     "state, made with `model-mesh-review evidence -- <cmd>` after the failed run")
+    reviewed = None
+    try:
+        reviewed = json.loads(read_text(os.path.join(auth_dir(auth), "bundle.json"))).get("snapshot")
+    except (OSError, ValueError):
+        pass                                           # a gate killed after the claim wrote no bundle
+    if not isinstance(reviewed, dict):
+        for _rid, r in all_records():
+            if r.get("auth_id") == auth and isinstance(r.get("snapshot"), dict):
+                reviewed = r["snapshot"]
+                break
+    if not isinstance(reviewed, dict) or any(k not in reviewed for k in CORE_KEYS):
+        raise Refuse("attempt %s has no bundle or record carrying its reviewed snapshot — cannot bind "
+                     "reconciliation evidence" % auth)
+    # Ordering is proven on nanosecond stamps (time_ns / created_ns); second-resolution strings alone cannot
+    # order two events in the same second, so without both stamps the evidence must be a strictly later second.
+    times, times_ns = [], []
+    for r in runs_of(auth):
+        try:
+            o = json.loads(read_text(os.path.join(r, "outcome.json")))
+        except (OSError, ValueError):
+            continue
+        times.append(o.get("time") or "")
+        times_ns.append(o.get("time_ns") if isinstance(o.get("time_ns"), int) else None)
+    latest = max(times) if times else ""
+    latest_ns = max(times_ns) if times_ns and None not in times_ns else None
+    out = []
+    for p in paths:
+        if not os.path.isfile(p):
+            raise Refuse("reconciliation evidence %s does not exist" % p)
+        with open(p, "rb") as f:
+            h = sha256(f.read())
+        reg = store("evidence", h + ".json")
+        if not os.path.isfile(reg):
+            raise Refuse("unregistered reconciliation evidence %s (sha256 %s): only `model-mesh-review evidence -- "
+                         "<cmd>` produces evidence" % (p, h))
+        try:
+            r = json.loads(read_text(reg))
+        except ValueError:
+            raise Refuse("evidence registration %s is malformed" % reg)
+        if r.get("sha256") != h:
+            raise Refuse("evidence registration %s does not match the file" % reg)
+        if r.get("before") != r.get("after"):
+            raise Refuse("mutating reconciliation evidence %s: the repo state changed while its command ran" % p)
+        cns = r.get("created_ns") if isinstance(r.get("created_ns"), int) else None
+        later = (cns > latest_ns) if (cns is not None and latest_ns is not None) else ((r.get("created") or "") > latest)
+        if times and not later:
+            raise Refuse("stale reconciliation evidence %s: not provably recorded after the failed run's outcome "
+                         "(%s vs %s)" % (p, r.get("created"), latest))
+        if r.get("before") != core(reviewed):
+            raise Refuse("reconciliation evidence %s was recorded on another repo state than the reviewed one "
+                         "(a changed state needs a fresh packet and review)" % p)
+        out.append({"path": os.path.realpath(p), "sha256": h, "command": r.get("command"),
+                    "created": r.get("created")})
+    return out
+
+
+def cmd_waive(a):
+    if not a.reason:
+        raise Refuse("waive needs --reason \"<the user's words, quoted>\"")
+    if a.retry:
+        if not a.auth:
+            raise Refuse("usage: waive --retry --auth AUTHID --reason TEXT --evidence F [--evidence F]...")
+        adir = auth_dir(a.auth)
+        if not os.path.isdir(adir):
+            raise Refuse("attempt %s is not consumed — a retry waiver applies only to a consumed attempt" % a.auth)
+        ok, why = retry_allowed(a.auth)
+        if not ok:
+            raise Refuse("retry waiver refused: " + why)
+        evidence = reconciliation_evidence(a.auth, a.evidence or [])
+        wid = new_id()
+        ensure_dir(os.path.join(adir, "retry-waivers"))
+        write_excl(os.path.join(adir, "retry-waivers", wid + ".json"), jdump({
+            "waiver_id": wid, "kind": "retry", "auth_id": a.auth, "reason": a.reason, "created": utc_now(),
+            "outcomes": [outcome_of(r) for r in runs_of(a.auth)], "evidence": evidence}))
+        print("waiver-id: %s" % wid)
+        return 0
+    if not a.record:
+        raise Refuse("usage: waive --record ID --reason TEXT")
+    r = load_record(a.record)
+    if r.get("waiver"):
+        raise Refuse("record %s already carries a waiver" % a.record)
+    wid = new_id()
+    r["waiver"] = {"waiver_id": wid, "reason": a.reason, "created": utc_now(), "auth_id": r["auth_id"],
+                   "packet_sha256": r["packet_sha256"], "snapshot": r["snapshot"], "step_id": r["step_id"],
+                   "step_command": r["step_command"], "step_target": r["step_target"],
+                   "original_verdict": r["verdict"]}
+    save_record(r)
+    print("waiver-id: %s" % wid)
+    return 0
+
+
+def cmd_outcome(a):
+    if a.exit is None:
+        raise Refuse("outcome needs --exit N")
+    auth = a.auth or (load_record(a.record)["auth_id"] if a.record else None)
+    if not auth:
+        raise Refuse("usage: outcome --auth AUTHID --exit N [--ambiguous]")
+    if not os.path.isdir(auth_dir(auth)):
+        raise Refuse("no authorization bundle for %s — the gate never said RUN for it" % auth)
+    pending = [r for r in runs_of(auth) if not os.path.exists(os.path.join(r, "outcome.json"))]
+    if not pending:
+        raise Refuse("no run of %s is awaiting an outcome" % auth)
+    if len(pending) > 1:
+        raise Refuse("more than one run awaits an outcome: %s" % ", ".join(pending))
+    result = "ambiguous" if a.ambiguous else ("ok" if a.exit == 0 else "failed")
+    try:
+        write_excl(os.path.join(pending[0], "outcome.json"), jdump(
+            {"result": result, "exit": a.exit, "time": utc_now(), "time_ns": time.time_ns(),
+             "run": os.path.basename(pending[0])}))
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            raise Refuse("an outcome was recorded concurrently")
+        raise
+    print("outcome: %s" % result)
+    return 0
+
+
+# ------------------------------------------------------------------------------------------------ gate
+def all_records():
+    d = store("records")
+    recs = []
+    if not os.path.isdir(d):
+        return recs
+    for f in sorted(os.listdir(d)):
+        if not f.endswith(".json") or f.startswith("."):
+            continue
+        rid = f[:-5]
+        try:
+            r = json.loads(read_text(os.path.join(d, f)))
+        except (OSError, ValueError):
+            continue
+        recs.append((rid, r))
+    return recs
+
+
+def paths_of(r, by_id, astra):
+    rv = r["reviewer"]
+    if rv["kind"] in ("claude", "seat"):
+        return {rv["role"]}
+    if rv["kind"] == "claude-cli":
+        return {"claude-" + rv["slot"]}
+    s = {"gpt-" + rv["tier"]}
+    if rv["tier"] == "sol" and astra and rv.get("model") == astra and rv.get("effort") == "xhigh":
+        p = by_id.get(r.get("prior_record") or "")
+        if p and p["reviewer"]["kind"] == "claude" and p["reviewer"].get("role") == "claude-judge":
+            s.add("gpt-sol-astra")
+    return s
+
+
+def differences(m, snap, step, publish_tree_ok):
+    d = []
+    for k in CORE_KEYS:
+        if m["snapshot"].get(k) != snap[k]:
+            d.append("%s %s -> %s" % (k, m["snapshot"].get(k), snap[k]))
+    if m["snapshot"].get("remotes") != snap["remotes"]:
+        d.append("remote tips changed")
+    for k, label in (("id", "step-id"), ("command", "command"), ("target", "target")):
+        if m["step"][k] != step[k]:
+            d.append("%s changed" % label)
+    if not publish_tree_ok:
+        d.append("publish commit tree no longer equals the snapshot tree")
+    return d
+
+
+def gate(a):
+    for name in ("step_id", "command", "target"):
+        if getattr(a, name) is None:
+            raise GateResult("REFUSE", "gate needs --step-id, --command and --target", EXIT_REFUSE)
+    try:
+        rec = load_record(a.record) if a.record else None
+        P = load_packet(a.packet or (rec or {}).get("packet_path"))
+        m = P["m"]
+        root = m["repo"]
+        check_store(root)
+        snap = take_snapshot(root, a.command, a.target)
+        step = {"id": a.step_id, "command": a.command, "target": a.target}
+        publish_tree_ok = True
+        if m["publish_commit"]:
+            publish_tree_ok = rev_tree(root, m["publish_commit"]) == snap["tree"]
+        _, pid2 = assemble(m, snap, step, P["attempt"], root)
+    except Refuse as e:
+        raise GateResult("REFUSE", str(e), EXIT_REFUSE)
+    auth = auth_id(pid2, snap, a.step_id, a.command, a.target, m["publish_commit"])
+    if not publish_tree_ok:
+        raise GateResult("RE-REVIEW", "publish commit %s tree differs from the current snapshot tree %s" % (
+            m["publish_commit"], snap["tree"]), EXIT_REREVIEW)
+    if rec is not None and rec["auth_id"] != auth:
+        why = differences(m, snap, step, publish_tree_ok) if rec["packet_sha256"] == P["pid"] else [
+            "the record belongs to another packet or attempt (%s)" % rec["attempt"]]
+        raise GateResult("RE-REVIEW", "record %s was given for another state/step: %s" % (
+            rec["record_id"], "; ".join(why) or "packet content changed (spec/context/evidence/claim/plan/diff)"),
+            EXIT_REREVIEW)
+    recs = all_records()
+    attempt = []
+    for rid, r in recs:
+        if isinstance(r, dict) and r.get("auth_id") == auth:
+            try:
+                validate_record(r, rid)
+            except Refuse as e:
+                raise GateResult("REFUSE", str(e), EXIT_REFUSE)
+            attempt.append(r)
+    if not attempt:
+        stale = [rid for rid, r in recs if isinstance(r, dict) and r.get("packet_sha256") == P["pid"]]
+        if stale:
+            why = differences(m, snap, step, publish_tree_ok)
+            raise GateResult("RE-REVIEW", "the reviewed state/step no longer matches: %s" % (
+                "; ".join(why) or "packet content changed (spec/context/evidence/claim/plan/diff)"), EXIT_REREVIEW)
+        raise GateResult("REFUSE", "no verdict record for this packet", EXIT_REFUSE)
+    by_id = dict((r["record_id"], r) for r in attempt)
+    astra = models_value("MM_ASTRA_MODEL")
+    have = set()
+    waived = False
+    for r in attempt:
+        have |= paths_of(r, by_id, astra)
+        v = r["verdict"]
+        if v == "concerns" and not (r.get("adopted") or "").strip():
+            raise GateResult("REFUSE", "record %s says concerns without adopted= (record --record %s --adopted "
+                                       "\"...\")" % (r["record_id"], r["record_id"]), EXIT_REFUSE)
+        if v == "blocking":
+            w = r.get("waiver")
+            if isinstance(w, dict) and w.get("auth_id") == auth:
+                waived = True
+            else:
+                raise GateResult("REFUSE", "record %s says blocking and carries no matching waiver" %
+                                 r["record_id"], EXIT_REFUSE)
+    requires_floor(m["requires_resolved"], str(m.get("mode", "")).split("=", 1)[-1],
+                   lambda msg: GateResult("REFUSE", msg, EXIT_REFUSE), m["publish_commit"], m.get("irreversible"),
+                   m.get("seat", "claude"))
+    missing = [p for p in m["requires_resolved"] if p not in have]
+    if missing:
+        raise GateResult("REFUSE", "missing required reviewer record(s): %s" % ", ".join(missing), EXIT_REFUSE)
+    ids = [r["record_id"] for r in attempt]
+    bundle = {"auth_id": auth, "rid": new_id(), "time": utc_now(), "packet": P["path"], "packet_sha256": pid2,
+              "attempt": P["attempt"], "step_id": a.step_id, "step_command": a.command, "step_target": a.target,
+              "publish_commit": m["publish_commit"], "snapshot": snap,
+              "records": [{"id": r["record_id"], "reviewer": r["reviewer"], "verdict": r["verdict"],
+                           "waived": bool(r.get("waiver"))} for r in attempt]}
+    adir = auth_dir(auth)
+    ensure_dir(store("authorizations"))
+    try:
+        os.mkdir(adir, 0o700)                          # THE claim: atomic on a local filesystem
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise GateResult("REFUSE", "cannot claim %s: %s" % (adir, e), EXIT_REFUSE)
+        return retry_claim(auth, bundle)
+    fault("after-claim")
+    bundle["kind"] = "run"
+    write_atomic(os.path.join(adir, "bundle.json"), jdump(bundle))
+    for r in attempt:
+        try:
+            r2 = load_record(r["record_id"])
+            r2["state"], r2["authorization"] = "consumed", auth
+            save_record(r2)
+        except Refuse:
+            pass
+    word = "RUN (WAIVED)" if waived else "RUN"
+    return word, "records %s" % ",".join(ids), auth, None
+
+
+def retry_claim(auth, bundle):
+    adir = auth_dir(auth)
+    wdir = os.path.join(adir, "retry-waivers")
+    waivers = sorted(f[:-5] for f in os.listdir(wdir) if f.endswith(".json")) if os.path.isdir(wdir) else []
+    if not waivers:
+        raise GateResult("REFUSE (consumed)", "attempt %s already ran; a retry needs a fresh packet and review, "
+                                              "or a user retry waiver" % auth, EXIT_REFUSE)
+    ok, why = retry_allowed(auth)
+    if not ok:
+        raise GateResult("REFUSE (consumed)", "attempt %s already ran; %s" % (auth, why), EXIT_REFUSE)
+    rdir = ensure_dir(adir + ".retry")
+    for wid in waivers:
+        try:
+            wrec = json.loads(read_text(os.path.join(wdir, wid + ".json")))
+        except (OSError, ValueError):
+            continue
+        if not wrec.get("evidence"):
+            continue                                   # a retry waiver without reconciliation evidence is void
+        try:
+            os.mkdir(os.path.join(rdir, wid), 0o700)   # each waiver-id yields at most one RUN (WAIVED)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                continue
+            raise GateResult("REFUSE", "cannot claim retry waiver %s: %s" % (wid, e), EXIT_REFUSE)
+        fault("after-claim")
+        bundle.update({"kind": "retry", "waiver_id": wid})
+        write_atomic(os.path.join(rdir, wid, "bundle.json"), jdump(bundle))
+        return "RUN (WAIVED)", "retry waiver %s" % wid, auth, wid
+    raise GateResult("REFUSE (consumed)", "attempt %s already ran and every retry waiver is used" % auth,
+                     EXIT_REFUSE)
+
+
+def cmd_gate(a):
+    try:
+        word, why, auth, wid = gate(a)
+    except GateResult as g:
+        print("%s: %s" % (g.word, g.reason))
+        return g.code
+    print("%s: %s" % (word, why))
+    print("auth-id: %s" % auth)
+    if wid:
+        print("waiver-id: %s" % wid)
+    return EXIT_RUN
+
+
+def cmd_reassemble(a):
+    P = load_packet(a.packet)
+    m = P["m"]
+    step = {"id": a.step_id if a.step_id is not None else m["step"]["id"],
+            "command": a.command if a.command is not None else m["step"]["command"],
+            "target": a.target if a.target is not None else m["step"]["target"]}
+    snap = take_snapshot(m["repo"], step["command"], step["target"])
+    text, _ = assemble(m, snap, step, P["attempt"], m["repo"])
+    sys.stdout.write(text)
+    return 0
+
+
+# ------------------------------------------------------------------------------------------------ main
+# ------------------------------------------------------------------------------------------------ usage summary (v2.7)
+USAGE_TS = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+USAGE_TERMINATED = ("timeout", "killed", "breach")
+USAGE_NUM = ("input", "cache_creation", "cache_read", "output", "tokens")
+
+
+def usage_parse_line(line):
+    """One usage.log line -> dict (ts, agent, family, kv, unknown) or None when it is not a recognisable line.
+    Formats: Claude hook `ts agent=<type> model= input= cache_creation= cache_read= output=` (or `usage unknown (...)`),
+    reviewer `agent=claude-reviewer:<slot> account= tier= alias= model= ... status=`, worker `agent=claude-worker:<role>`,
+    Codex hook `agent=codex:<type> model= input_tokens= cached_input_tokens= output_tokens=`,
+    GPT wrapper `agent=gpt-reviewer:<role> model= effort= tokens=`."""
+    toks = line.split()
+    if len(toks) < 2 or not USAGE_TS.match(toks[0]) or not toks[1].startswith("agent=") or len(toks[1]) < 7:
+        return None
+    kv = {}
+    for t in toks[2:]:
+        if "=" in t:
+            k, v = t.split("=", 1)
+            if k and k not in kv:
+                kv[k] = v
+    agent = toks[1][6:]
+    fam = "gpt" if agent.startswith(("gpt-reviewer:", "codex:", "codex-spawn:")) else "claude"
+    if agent.startswith("codex-spawn:") or (len(toks) > 2 and toks[2] == "spawn"):
+        return {"ts": toks[0], "agent": agent, "family": fam, "kv": kv, "unknown": False, "nums": {}, "spawn": True}
+    unknown = "usage unknown" in line
+    for k, m in (("input_tokens", "input"), ("output_tokens", "output"), ("cached_input_tokens", "cache_read"),
+                 ("cache_read_input_tokens", "cache_read"), ("cache_creation_input_tokens", "cache_creation")):
+        if k in kv:                                  # the Codex hook's / the API's field names
+            kv.setdefault(m, kv[k])
+    nums = {}
+    for k in USAGE_NUM:
+        if k in kv:
+            if re.match(r"^\d{1,15}$", kv[k]):
+                nums[k] = int(kv[k])
+            else:
+                unknown = True                       # tokens=unknown etc.: a call whose usage is unknown
+    if unknown:
+        nums = {}
+    if not unknown and not nums:
+        return None
+    return {"ts": toks[0], "agent": agent, "family": fam, "kv": kv, "unknown": unknown, "nums": nums}
+
+
+def usage_add(d, nums, calls=1):
+    d["calls"] = d.get("calls", 0) + calls
+    for k in USAGE_NUM:
+        d[k] = d.get(k, 0) + nums.get(k, 0)
+
+
+def cmd_usage(a):
+    since = a.since
+    if since is not None and not re.match(r"^\d{4}-\d{2}-\d{2}$", since):
+        raise Refuse("usage: --since must be YYYY-MM-DD (got %r)" % since)
+    path = os.path.join(mm_home(), "journal", "usage.log")
+    try:
+        with open(path, "rb") as f:
+            raw = f.read().decode("utf-8", "replace")
+    except OSError:
+        raw = ""
+    rows, term, unk = {}, {}, {}
+    spawns = {}
+    lines = bad = 0
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        e = usage_parse_line(line)
+        if e is None:
+            bad += 1
+            continue
+        if since and e["ts"][:10] < since:
+            continue
+        lines += 1
+        if e.get("spawn"):
+            spawns[e["agent"].split(":", 1)[-1] if ":" in e["agent"] else e["agent"]] = spawns.get(
+                e["agent"].split(":", 1)[-1] if ":" in e["agent"] else e["agent"], 0) + 1
+            continue
+        kv = e["kv"]
+        acct = kv.get("account") or "-"
+        repo = kv.get("repo") or "-"
+        model = kv.get("model") if kv.get("model") not in (None, "", "?") else (kv.get("alias") or "?")
+        if e["unknown"]:
+            d = unk.setdefault((e["family"], acct, repo), {})
+            d["calls"] = d.get("calls", 0) + 1
+            continue
+        key = (e["family"], acct, model, repo)
+        st = kv.get("status")
+        if st in USAGE_TERMINATED:
+            usage_add(term.setdefault(key + (st,), {}), e["nums"])
+        else:
+            usage_add(rows.setdefault(key, {}), e["nums"])
+
+    def out_rows(dd, names):
+        return [dict(zip(names, k), **dd[k]) for k in sorted(dd)]
+
+    def rollup(idx, name):
+        r = {}
+        for k, v in rows.items():
+            d = r.setdefault(k[idx], {})
+            usage_add(d, v, v.get("calls", 0))
+        return [dict({name: k}, **r[k]) for k in sorted(r)]
+
+    res = {"log": path, "since": since, "lines_counted": lines, "unparseable_lines": bad,
+           "rows": out_rows(rows, ("family", "account", "model", "repo")),
+           "terminated": out_rows(term, ("family", "account", "model", "repo", "status")),
+           "usage_unknown": out_rows(unk, ("family", "account", "repo")),
+           "spawns": {"count": sum(spawns.values()), "by_agent_type": dict(sorted(spawns.items()))},
+           "by_family": rollup(0, "family"), "by_account": rollup(1, "account"), "by_model": rollup(2, "model"),
+           "by_repo": rollup(3, "repo"),
+           "note": "totals are a floor: terminated runs and `usage unknown` calls are listed apart and are not in them; "
+                   "spawns are counted apart and are not calls"}
+    if a.json:
+        sys.stdout.write(json.dumps(res, indent=2, sort_keys=True) + "\n")
+        return 0
+    w = sys.stdout.write
+
+    def table(title, items, cols):
+        w("%s\n" % title)
+        if not items:
+            w("  (none)\n")
+            return
+        hdr = cols + ["calls", "input", "output", "tokens", "cache_creation", "cache_read"]
+        body = [[str(i.get(c, "")) for c in cols] + [str(i.get(c, 0)) for c in hdr[len(cols):]] for i in items]
+        widths = [max(len(h), *(len(r[n]) for r in body)) for n, h in enumerate(hdr)]
+        w("  " + "  ".join(h.ljust(widths[n]) for n, h in enumerate(hdr)).rstrip() + "\n")
+        for r in body:
+            w("  " + "  ".join(c.ljust(widths[n]) for n, c in enumerate(r)).rstrip() + "\n")
+
+    w("model-mesh usage — %s%s\n" % (path, (" (since %s)" % since) if since else ""))
+    table("by family, account, model, repo", res["rows"], ["family", "account", "model", "repo"])
+    for t, k, c in (("by family", "by_family", "family"), ("by account", "by_account", "account"),
+                    ("by model", "by_model", "model"), ("by repo", "by_repo", "repo")):
+        table(t, res[k], [c])
+    table("terminated runs (status timeout|killed|breach) — not in the totals above", res["terminated"],
+          ["family", "account", "model", "repo", "status"])
+    w("usage unknown — calls with no usable usage figures\n")
+    if res["usage_unknown"]:
+        for i in res["usage_unknown"]:
+            w("  %s  %s  %s  calls=%d\n" % (i["family"], i["account"], i["repo"], i["calls"]))
+    else:
+        w("  (none)\n")
+    w("spawns (Codex spawn lines, not calls): %d\n" % res["spawns"]["count"])
+    w("unparseable lines: %d\n" % bad)
+    w("note: %s\n" % res["note"])
+    return 0
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise Refuse("%s: %s" % (self.prog, message))
+
+
+def parser(prog):
+    return Parser(prog="model-mesh-packet " + prog, add_help=True)
+
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"):
+        sys.stdout.write(__doc__)
+        return 0 if argv else 2
+    sub, rest = argv[0], argv[1:]
+    if sub == "evidence":
+        return cmd_evidence(rest)
+    p = parser(sub)
+    if sub == "packet":
+        for f in ("--spec", "--step-id", "--command", "--target", "--base", "--requires", "--publish-commit",
+                  "--claim", "--plan", "--seat"):
+            p.add_argument(f)
+        p.add_argument("--irreversible", action="store_true")
+        p.add_argument("--context", action="extend", nargs="+")
+        p.add_argument("--evidence", action="extend", nargs="+")
+        return cmd_packet(p.parse_args(rest))
+    if sub == "usage":
+        p.add_argument("--since")
+        p.add_argument("--json", action="store_true")
+        return cmd_usage(p.parse_args(rest))
+    if sub == "snapshot":
+        p.add_argument("--command")
+        p.add_argument("--target")
+        return cmd_snapshot(p.parse_args(rest))
+    if sub == "record":
+        for f in ("--packet", "--return-file", "--journaled-model", "--record", "--adopted", "--account"):
+            p.add_argument(f)
+        p.add_argument("--role", default="claude-judge", choices=("claude-judge", "expert-verdict"))
+        return cmd_record(p.parse_args(rest))
+    if sub == "waive":
+        for f in ("--record", "--auth", "--reason"):
+            p.add_argument(f)
+        p.add_argument("--evidence", action="append")
+        p.add_argument("--retry", action="store_true")
+        return cmd_waive(p.parse_args(rest))
+    if sub == "gate":
+        for f in ("--packet", "--record", "--step-id", "--command", "--target"):
+            p.add_argument(f)
+        return cmd_gate(p.parse_args(rest))
+    if sub == "outcome":
+        for f in ("--auth", "--record"):
+            p.add_argument(f)
+        p.add_argument("--exit", type=int)
+        p.add_argument("--ambiguous", action="store_true")
+        return cmd_outcome(p.parse_args(rest))
+    if sub == "_attach":
+        for f in ("--packet", "--prior-record", "--out"):
+            p.add_argument(f)
+        a = p.parse_args(rest)
+        if not a.out:
+            raise Refuse("_attach needs --out")
+        return cmd_attach(a)
+    if sub == "_cli-record":
+        p.add_argument("--family", choices=("gpt", "claude"))
+        for f in ("--packet", "--model", "--effort", "--verdict-file", "--prior-record", "--model-alias",
+                  "--model-reported", "--reviewer"):
+            p.add_argument(f)
+        p.add_argument("--tier")
+        p.add_argument("--slot", choices=("verdict", "build"))
+        a = p.parse_args(rest)
+        if a.family == "gpt":
+            if not (a.packet and a.tier in ("sol", "terra") and a.model and a.effort and a.verdict_file):
+                raise Refuse("_cli-record --family gpt needs --packet --tier sol|terra --model --effort --verdict-file")
+            return cmd_gpt_record(a)
+        if a.family == "claude":
+            if not (a.packet and a.slot and a.model_alias and a.model_reported and a.effort and a.reviewer
+                    and a.tier in ("fable", "standard") and a.verdict_file):
+                raise Refuse("_cli-record --family claude needs --packet --slot verdict|build --model-alias "
+                             "--model-reported --effort --tier fable|standard --reviewer --verdict-file")
+            return cmd_claude_record(a)
+        raise Refuse("_cli-record needs --family gpt|claude")
+    if sub == "_gpt-record":
+        for f in ("--packet", "--model", "--effort", "--verdict-file", "--prior-record"):
+            p.add_argument(f)
+        p.add_argument("--tier", choices=("sol", "terra"))
+        a = p.parse_args(rest)
+        if not (a.packet and a.tier and a.model and a.effort and a.verdict_file):
+            raise Refuse("_gpt-record needs --packet --tier --model --effort --verdict-file")
+        return cmd_gpt_record(a)
+    if sub == "_claude-stream":
+        for f in ("--stream", "--out"):
+            p.add_argument(f)
+        a = p.parse_args(rest)
+        if not (a.stream and a.out):
+            raise Refuse("_claude-stream needs --stream and --out")
+        return cmd_claude_stream(a)
+    if sub == "_reassemble":
+        for f in ("--packet", "--step-id", "--command", "--target"):
+            p.add_argument(f)
+        return cmd_reassemble(p.parse_args(rest))
+    raise Refuse("unknown subcommand %r (packet|evidence|record|waive|gate|outcome|snapshot|usage)" % sub)
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Refuse as e:
+        sys.stderr.write("model-mesh-packet: refusing: %s\n" % e)
+        sys.exit(e.code)
+    except KeyboardInterrupt:
+        sys.exit(130)
