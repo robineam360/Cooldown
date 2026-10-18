@@ -133,8 +133,9 @@ gitignored). Get a fresh judge's verdict before step 6 — publishing is irrever
 who installs (an installed build cannot be downgraded). Release notes go in
 `release/docs/release-notes-v<ver>.md`, passed as `--notes-file`.
 
-**If it goes wrong:** after 1–3 nothing is public — fix forward, or move the tag only if it must
-(`git tag -d v$V && git push --delete origin v$V`). After 4–5 a bad asset is deleted with the
+**If it goes wrong:** after 1–3 nothing is public — fix forward, or move the tag only if it must:
+the session runs `git tag -d v$V` and asks Robin to delete the remote tag himself
+(`git push --delete origin v$V`; this repo's settings deny remote deletes for sessions). After 4–5 a bad asset is deleted with the
 draft. After 6: `gh release edit v$V --draft` withdraws it, so `releases/latest` falls back to
 the previous release (installed phones are untouched); installed apps recover only through a
 new, higher versionCode.
