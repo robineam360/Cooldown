@@ -346,11 +346,11 @@ suite() {
 
   # --- account resolution (G3 at hook level): two config dirs, the state line names the one in use
   reset fable
-  mkdir -p "$W/home/.claude-product"; printf 'standard\n' >"$W/home/.claude-product/model-mesh-tier"
-  run "$(agent '"fable"')" CLAUDE_CONFIG_DIR="$W/home/.claude-product"; check "G3: product dir standard, primary fable → fable denied" deny_tool
-  run "$(start sess-g3)" CLAUDE_CONFIG_DIR="$W/home/.claude-product";   check "G3: state line names the product dir" context_has SessionStart "account=$W/home/.claude-product "
-  printf 'fable\n' >"$W/home/.claude-product/model-mesh-tier"; printf 'standard\n' >"$W/cfg/model-mesh-tier"
-  run "$(agent '"fable"')" CLAUDE_CONFIG_DIR="$W/home/.claude-product"; check "G3: swapped → fable allowed" silent
+  mkdir -p "$W/home/.claude-second"; printf 'standard\n' >"$W/home/.claude-second/model-mesh-tier"
+  run "$(agent '"fable"')" CLAUDE_CONFIG_DIR="$W/home/.claude-second"; check "G3: second dir standard, primary fable → fable denied" deny_tool
+  run "$(start sess-g3)" CLAUDE_CONFIG_DIR="$W/home/.claude-second";   check "G3: state line names the second dir" context_has SessionStart "account=$W/home/.claude-second "
+  printf 'fable\n' >"$W/home/.claude-second/model-mesh-tier"; printf 'standard\n' >"$W/cfg/model-mesh-tier"
+  run "$(agent '"fable"')" CLAUDE_CONFIG_DIR="$W/home/.claude-second"; check "G3: swapped → fable allowed" silent
 
   # --- state line content
   reset standard

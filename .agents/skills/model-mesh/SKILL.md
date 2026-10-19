@@ -365,6 +365,12 @@ asked once, and the build's tests, dry runs and registered evidence do the closi
   parser is static and cannot see what runs behind an alias, a variable, a hook or repo config (DESIGN §13).
   Dispatch tickets, hook-captured returns, an executing gate with pinned leased pushes and non-git
   preconditions are not built.
+- **The packet gate cannot authorize a remote branch delete** (v2.7.3): every refspec of a push must source the
+  publish commit, and a delete refspec (`:refs/heads/<b>`) sources nothing. The reviewed fallback, used 2026-10-19
+  and outside the gate: one `git push --atomic origin --force-with-lease=refs/heads/<b>:<sha> … :refs/heads/<b> …`
+  per repo, every deletion leased to a tip that is backed up first (local backup refs), the command reviewed by a
+  fresh judge and a Sol cross-check, and a manifest of repos, branches and tips as the history line. The user's
+  deny rules above still refuse it in a vault repo; the user runs or unlocks it.
 
 **Disposition rules — binding:**
 1. `accept` / `concerns` → proceed, adopting what you adopt, in writing.
@@ -637,10 +643,18 @@ and commit path (`fetch`, `log`, `status`, `diff`, `merge --ff-only`, `add`, `co
 worker cannot otherwise run, and denies history rewriting (force, `+` and `--mirror`/`--delete` pushes, `reset --hard`,
 `rebase`, `stash`, `clean`, `branch -D`, `checkout --`, `commit --amend`); the rules bind every session in that repo.
 The denies are a **speed bump against the usual spellings, not a guarantee**: Claude Code matches the command text,
-so git's other spellings pass — a delete refspec (`git push origin :branch`), abbreviated or bundled options
+so git's other spellings pass — a quoted delete refspec (`git push origin ':branch'`; measured 2026-10-19), abbreviated or bundled options
 (`--am`, `-uf`, `--del`, `--mir`), `--prune`, `git -C <dir> …`/`git -c k=v …`/`/usr/bin/git …`, and history-losing
 commands on neither list (`reset HEAD~n`, `checkout .`, `branch -f`, `update-ref -d`); under `bypassPermissions` every
 one of those runs. The mid-command `commit * --amend` deny also refuses a commit whose message contains ` --amend`.
+
+**What the vault deny rules refuse, and the pattern that works with them (v2.7.3, 2026-10-19).** For every session
+in a repo that took `--settings`: `git rebase*` (so a worktree landing by rebase, and `git rebase --abort` after a
+conflicted `git pull --rebase`, are both refused), `git push --force*` (`--force-with-lease` included), remote branch
+deletes (`--delete`, `-d`, and from v2.7.3 `git push * :**`, which catches `git push origin :branch`), `git reset --hard*`, `git stash*`, `git clean*`,
+`git branch -D*`, `git checkout -- *` and `git commit --amend*`. Land a worktree session this way instead: merge
+`origin/main` into the session branch (a merge commit, never a rebase), push plainly, fast-forward `main` to the
+tested tree, and keep the branch for the owner to delete.
 The Windows shim
 `bin/model-mesh-review.cmd` is copied by hand onto the Windows `PATH`; reversal: delete it.
 
