@@ -1,4 +1,4 @@
-<!-- model-mesh contract block v2.7 (2026-10-09), either seat. install.sh --user writes it into ~/.claude/CLAUDE.md,
+<!-- model-mesh contract block v2.8 (2026-10-19), either seat. install.sh --user writes it into ~/.claude/CLAUDE.md,
      --codex-seat into ~/.codex/AGENTS.md; paste it once into a repo's AGENTS.md (CLAUDE.md = @AGENTS.md). Keep the
      wording; change only the ON/OFF switch word. The rule itself lives in the model-mesh skill. -->
 **Delegation & review — the `model-mesh` skill applies to every prompt here, whichever CLI runs it.** Read the
@@ -28,7 +28,7 @@ be obtained never self-waives — the plan waits. The execution gate, discretion
 secret floor in skill §2 and §5–§6 bind. OFF means no other-family call; such a plan gets a fresh single-family
 review instead, recorded as such. A gated step gets **one fresh Opus judge round** on a review packet (the Agent
 tool, a worker, or `model-mesh-review --reviewer claude verdict --packet` under Codex), after which tests decide;
-a Sol cross-check on the packet is required only for a step that publishes, pays, deletes or grants; the gate
+a Sol cross-check on the packet (when GPT review is on) is required only for a step that publishes, pays, deletes or grants; the gate
 re-checks packet, state and step, consumes the authorization, and the seat then runs exactly the reviewed
 command; a step that publishes git history names a commit whose tree equals the reviewed tree. A repo's own
 switch word wins over the global one. **Seat switch:** a seat out of quota commits what is reviewed, writes its

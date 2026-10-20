@@ -35,12 +35,13 @@
 #     NON-blocking error (the tool would proceed), so this script never relies on its exit code to deny: every
 #     PreToolUse path ends in an explicit deny object unless it deliberately allows.
 #
+# v2.8: SessionStart also carries the opt-in update notice (update_note below); the fetcher is bin/model-mesh-update-check.
 # Fail closed: no JSON parser, malformed stdin, unreadable config dir, unusable cwd, an existing-but-unparsable
 # settings file, or an internal error on PreToolUse → deny, with a one-line actionable reason.
 # Writes: only ${TMPDIR:-/tmp}/model-mesh/<session_id>/ (session cache, print markers), $MODEL_MESH_HOOK_LOG and,
 # on SubagentStop only, ${MODEL_MESH_HOME:-~/.local/share/model-mesh}/journal/usage.log (append).
 # Test seams (honoured only when MODEL_MESH_TEST=1): MM_TEST_MANAGED_SETTINGS=<path>, MM_TEST_NO_PYTHON=1,
-# MM_TEST_NO_JQ=1.
+# MM_TEST_NO_JQ=1, MM_TEST_UPDATE_FETCH=<script run instead of the update fetcher>.
 # POSIX sh (bash 3.2 posix mode, dash); no heredocs (bash writes their bodies to temp files).
 
 LC_ALL=C
@@ -522,7 +523,7 @@ remap=''
 map_opus='' map_sonnet='' map_haiku='' map_fast=''
 note_alias() { # <var> <normalised value> <source>
   [ -n "$2" ] || return 0
-  remap="$remap [ALIAS REMAP: $1=$2]"
+  case $remap in *"[ALIAS REMAP: $1=$2]"*) ;; *) remap="$remap [ALIAS REMAP: $1=$2]" ;; esac
   if [ -z "$unsafe_why" ] && ! is_safe "$2"; then unsafe_why="$1=$2 (from $3)"; fi
   case $1 in
     ANTHROPIC_DEFAULT_OPUS_MODEL) [ -n "$map_opus" ] || map_opus=$2 ;;
@@ -622,9 +623,61 @@ state_line() { # <session model or ''>
     line="$line [SESSION ON FABLE, tier ≠ fable: switch now]"
   fi
   line="$line$remap"
+  [ "$ev" = SessionStart ] && line="$line$(update_note)"
   [ "$dir_ok" = 1 ] || line="$line [ACCOUNT DIR UNREADABLE: every spawn is denied — fix CLAUDE_CONFIG_DIR or the directory]"
   [ -z "$settings_bad" ] || line="$line [SETTINGS UNPARSABLE: $settings_bad — every spawn is denied until it is valid JSON]"
   printf '%s' "$line"
+}
+# update_note — v2.8, SessionStart only, opt-in: when $MM_HOME/update-check says `on` and no opt-out variable is set,
+# read $MM_HOME/update-cache (line 1 epoch, line 2 tag); absent/stale → start the fetcher detached and never wait;
+# a cached tag newer than $MM_HOME/VERSION → " [UPDATE: <tag> — install.sh --update]". Silent on every other path.
+ver_gt() { # ver_gt <a> <b>: dotted numeric a > b (both validated by the caller)
+  vg_a=$1; vg_b=$2
+  while [ -n "$vg_a" ] || [ -n "$vg_b" ]; do
+    vg_x=${vg_a%%.*}; vg_y=${vg_b%%.*}
+    case $vg_a in *.*) vg_a=${vg_a#*.} ;; *) vg_a='' ;; esac
+    case $vg_b in *.*) vg_b=${vg_b#*.} ;; *) vg_b='' ;; esac
+    vg_x=${vg_x:-0}; vg_y=${vg_y:-0}
+    [ "$vg_x" -gt "$vg_y" ] && return 0
+    [ "$vg_x" -lt "$vg_y" ] && return 1
+  done
+  return 1
+}
+update_note() {
+  un_h=${MODEL_MESH_HOME:-${HOME:-}/.local/share/model-mesh}
+  case $un_h in /*) ;; *) return 0 ;; esac
+  [ -n "${MODEL_MESH_NO_UPDATE_CHECK:-}${CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:-}${DISABLE_AUTOUPDATER:-}" ] && return 0
+  [ -f "$un_h/update-check" ] && [ -r "$un_h/update-check" ] || return 0
+  [ "$(norm "$(sed -n 1p "$un_h/update-check" 2>/dev/null)")" = on ] || return 0
+  un_now=$(date +%s 2>/dev/null)
+  case $un_now in '' | *[!0-9]*) return 0 ;; esac
+  un_ep=''; un_tag=''
+  if [ -f "$un_h/update-cache" ] && [ -r "$un_h/update-cache" ]; then
+    un_ep=$(sed -n 1p "$un_h/update-cache" 2>/dev/null)
+    un_tag=$(sed -n 2p "$un_h/update-cache" 2>/dev/null)
+  fi
+  case $un_ep in '' | *[!0-9]*) un_ep=''; un_tag='' ;; esac
+  if [ -z "$un_ep" ] || [ "$un_ep" -gt "$un_now" ] || [ $((un_now - un_ep)) -ge 86400 ]; then
+    un_f=''
+    if [ "$testmode" = 1 ] && [ -n "${MM_TEST_UPDATE_FETCH:-}" ]; then un_f=$MM_TEST_UPDATE_FETCH
+    else
+      case $0 in */*) un_hd=${0%/*} ;; *) un_hd=. ;; esac
+      for un_c in "$un_hd/../bin/model-mesh-update-check" "${HOME:-}/.local/bin/model-mesh-update-check"; do
+        if [ -f "$un_c" ] && [ -r "$un_c" ]; then un_f=$un_c; break; fi
+      done
+    fi
+    if [ -n "$un_f" ]; then
+      nohup sh "$un_f" </dev/null >/dev/null 2>&1 &
+    fi
+  fi
+  case $un_tag in v[0-9]*) ;; *) return 0 ;; esac
+  un_tv=${un_tag#v}
+  case $un_tv in *[!0-9.]* | .* | *. | *..*) return 0 ;; esac
+  [ -f "$un_h/VERSION" ] && [ -r "$un_h/VERSION" ] || return 0
+  un_iv=$(trim "$(sed -n 1p "$un_h/VERSION" 2>/dev/null)")
+  case $un_iv in '' | *[!0-9.]* | .* | *. | *..*) return 0 ;; esac
+  if ver_gt "$un_tv" "$un_iv"; then printf ' [UPDATE: %s — install.sh --update]' "$un_tag"; fi
+  return 0
 }
 print_state_once() { # <event> <dedupe key>
   if sess_dir; then

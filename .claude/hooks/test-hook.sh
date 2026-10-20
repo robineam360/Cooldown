@@ -64,8 +64,8 @@ reset() { # reset [tier-file content | none]  — content is written verbatim wi
   esac
 }
 fence() {
-  find "$W" \( -path "$W/tmp/model-mesh" -o -path "$W/hook.log" -o -path "$W/mmhome/journal" \) -prune -o -print 2>/dev/null | LC_ALL=C sort
-  find "$W" \( -path "$W/tmp/model-mesh" -o -path "$W/hook.log" -o -path "$W/mmhome/journal" \) -prune -o -type f -exec cksum {} + 2>/dev/null | LC_ALL=C sort
+  find "$W" \( -path "$W/tmp/model-mesh" -o -path "$W/hook.log" -o -path "$W/mmhome/journal" -o -path "$W/mmhome/update-cache" -o -path "$W/mmhome/.update-cache.*" -o -path "$W/fetch-calls" \) -prune -o -print 2>/dev/null | LC_ALL=C sort
+  find "$W" \( -path "$W/tmp/model-mesh" -o -path "$W/hook.log" -o -path "$W/mmhome/journal" -o -path "$W/mmhome/update-cache" -o -path "$W/mmhome/.update-cache.*" -o -path "$W/fetch-calls" \) -prune -o -type f -exec cksum {} + 2>/dev/null | LC_ALL=C sort
 }
 # run <stdin-json> [VAR=value …] — runs the hook (or $HOOK_OVERRIDE) with a clean environment
 run() {
@@ -471,6 +471,8 @@ suite() {
   run "$(prompt '../../escape' p-9)"; check "cache: hostile session_id → no cache, still prints" context_has UserPromptSubmit
   [ ! -e "$W/escape" ] && [ ! -e "$ROOT/escape" ]; OUT=''; check "cache: hostile session_id wrote nothing outside" test ! -e "$W/escape"
 
+  update_suite
+
   # log line
   reset standard
   rm -f "$W/hook.log"
@@ -483,6 +485,162 @@ suite() {
   run "$(agent '"sonnet"')"
   last=$(tail -n 1 "$W/hook.log" 2>/dev/null); OUT=$last
   check "log: allow line" eval 'case $last in "PreToolUse effective=sonnet via=step2 decision=allow reason="*) true ;; *) false ;; esac'
+}
+
+# --- v2.8: ALIAS REMAP dedupe and the opt-in update notice (SessionStart only)
+remap_once() { # the state line names ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5 exactly once
+  local rest=${OUT#*"[ALIAS REMAP: ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5]"}
+  [ "$rest" != "$OUT" ] || return 1
+  case $rest in *"[ALIAS REMAP: ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5]"*) return 1 ;; esac
+  return 0
+}
+no_fetch() { [ ! -e "$W/fetch-calls" ]; }
+fetched_once() { # the fake fetcher ran exactly once (it is detached: give it up to 3 s to log)
+  local i=0
+  while [ ! -e "$W/fetch-calls" ] && [ "$i" -lt 30 ]; do sleep 0.1; i=$((i + 1)); done
+  [ "$(wc -l <"$W/fetch-calls" 2>/dev/null | tr -d ' ')" = 1 ]
+}
+upd_fixture() { # upd_fixture <switch content or ''> <VERSION or ''> <cache content or ''>  (printf %b)
+  reset standard
+  [ -n "$1" ] && printf '%b' "$1" >"$W/mmhome/update-check"
+  [ -n "$2" ] && printf '%b' "$2" >"$W/mmhome/VERSION"
+  [ -n "$3" ] && printf '%b' "$3" >"$W/mmhome/update-cache"
+  return 0
+}
+update_suite() {
+  local now t0 t1 var
+  now=$(date +%s)
+  mkdir -p "$ROOT/fakes"
+  printf 'echo called >>"%s/fetch-calls"\nsleep 5\n' "$W" >"$ROOT/fakes/fetch-slow.sh"
+  reset standard
+  printf '{"env":{"ANTHROPIC_DEFAULT_OPUS_MODEL":"claude-opus-5-5"}}' >"$W/cfg/settings.json"
+  run "$(start sess-l3 '"claude-sonnet-5-5"')" ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5
+  check "L3: same var=value in env and settings → one ALIAS REMAP tag" remap_once
+  printf '{"env":{"ANTHROPIC_DEFAULT_OPUS_MODEL":"claude-opus-5-5"}}' >"$W/proj/.claude/settings.json"
+  run "$(start sess-l3b '"claude-sonnet-5-5"')" ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5
+  check "L3: … and in a third source → still one tag" remap_once
+  run "$(start sess-l3c '"claude-sonnet-5-5"')" ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-1
+  check "L3: a different value is a different tag" context_has SessionStart "[ALIAS REMAP: ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-1] [ALIAS REMAP: ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5]"
+
+  upd_fixture 'on\n' '2.8.0\n' "$now\nv2.8.1\n"
+  run "$(start sess-u1 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: newer cached tag → [UPDATE: v2.8.1 — install.sh --update]" context_has SessionStart "[UPDATE: v2.8.1 — install.sh --update]"
+  check "update: … fresh cache → fetcher not called" no_fetch
+  upd_fixture 'on\n' '2.8.0\n' "$now\nv2.8.0\n"
+  run "$(start sess-u2 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: equal tag → no notice" context_lacks UPDATE
+  upd_fixture 'on\n' '2.8.0\n' "$now\nv2.7.4\n"
+  run "$(start sess-u3 '"claude-sonnet-5-5"')"
+  check "update: older tag → no notice" context_lacks UPDATE
+  upd_fixture 'on\n' '2.8.0\n' "$now\nv2.10.0\n"
+  run "$(start sess-u4 '"claude-sonnet-5-5"')"
+  check "update: v2.10.0 is newer than 2.8.0 (numeric compare)" context_has SessionStart "[UPDATE: v2.10.0 — install.sh --update]"
+  upd_fixture 'on\n' '2.8.0\n' "$now\n\n"
+  run "$(start sess-u5 '"claude-sonnet-5-5"')"
+  check "update: cached empty tag (private repo) → silent" context_lacks UPDATE
+  upd_fixture 'on\n' '2.8.0\n' "garbage\nv9.9.9\n"
+  run "$(start sess-u6 '"claude-sonnet-5-5"')"
+  check "update: malformed cache → no tag" context_lacks UPDATE
+  upd_fixture 'on\n' '2.8.0\n' "$now\nv9.9.9 extra\n"
+  run "$(start sess-u7 '"claude-sonnet-5-5"')"
+  check "update: malformed tag → no notice" context_lacks UPDATE
+  upd_fixture 'on\n' '' "$now\nv9.9.9\n"
+  run "$(start sess-u8 '"claude-sonnet-5-5"')"
+  check "update: no VERSION file → no notice" context_lacks UPDATE
+  upd_fixture '' '2.8.0\n' "1000\nv9.9.9\n"
+  run "$(start sess-u9 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: no switch file → no notice, fetcher not called" context_lacks UPDATE
+  check "update: … (fetcher not called)" no_fetch
+  upd_fixture 'off\n' '2.8.0\n' "1000\nv9.9.9\n"
+  run "$(start sess-u10 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: switch off → no notice" context_lacks UPDATE
+  check "update: … switch off → fetcher not called" no_fetch
+  for var in MODEL_MESH_NO_UPDATE_CHECK CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC DISABLE_AUTOUPDATER; do
+    upd_fixture 'on\n' '2.8.0\n' "1000\nv9.9.9\n"
+    run "$(start sess-uo '"claude-sonnet-5-5"')" "$var=1" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+    check "update: $var set → no notice" context_lacks UPDATE
+    check "update: … $var set → fetcher not called" no_fetch
+  done
+  upd_fixture 'on\n' '2.8.0\n' "1000\nv9.9.9\n"
+  run "$(prompt sess-u11 p-1)" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: UserPromptSubmit never carries the notice or fetches" context_lacks UPDATE
+  check "update: … (fetcher not called)" no_fetch
+  upd_fixture 'on\n' '2.8.0\n' "1000\nv9.9.9\n"
+  t0=$(date +%s)
+  run "$(start sess-u12 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  t1=$(date +%s)
+  check "update: stale cache → hook returns fast while the fetcher sleeps 5 s" test $((t1 - t0)) -le 1
+  check "update: … and the fetcher was called once" fetched_once
+  # a stale cache's tag is still shown (the cache is only refreshed in the background)
+  check "update: … stale tag still shown meanwhile" context_has SessionStart "[UPDATE: v9.9.9"
+  upd_fixture 'on\n' '2.8.0\n' ''
+  run "$(start sess-u13 '"claude-sonnet-5-5"')" MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "update: no cache → fetcher called, no notice" context_lacks UPDATE
+  check "update: … (called once)" fetched_once
+  upd_fixture 'on\n' '2.8.0\n' "1000\nv9.9.9\n"
+  run "$(start sess-u14 '"claude-sonnet-5-5"')" MODEL_MESH_TEST=0 MM_TEST_UPDATE_FETCH="$ROOT/fakes/fetch-slow.sh"
+  check "seam: MM_TEST_UPDATE_FETCH ignored unless MODEL_MESH_TEST=1" no_fetch
+}
+
+# --- v2.8: the fetcher itself (bin/model-mesh-update-check), with a fake curl first on PATH
+fetch_run() { # fetch_run <fake curl body> [VAR=value …] — runs the fetcher under env -i; sets RC
+  local body=$1; shift
+  mkdir -p "$ROOT/fakebin"
+  printf '#!/bin/sh\n%s\n' "$body" >"$ROOT/fakebin/curl"; chmod +x "$ROOT/fakebin/curl"
+  OUT=$(env -i PATH="$ROOT/fakebin:$TPATH" HOME="$W/home" MODEL_MESH_HOME="$W/mmhome" "$@" sh "$FETCHER" 2>&1)
+  RC=$?
+  FENCE=ok
+}
+cache_is() { # cache_is <tag or ''> — update-cache is two lines: a recent epoch, then the tag
+  [ -f "$W/mmhome/update-cache" ] || return 1
+  [ "$(wc -l <"$W/mmhome/update-cache" | tr -d ' ')" = 2 ] || return 1
+  [ "$(sed -n 2p "$W/mmhome/update-cache")" = "$1" ] || return 1
+  local e; e=$(sed -n 1p "$W/mmhome/update-cache")
+  case $e in '' | *[!0-9]*) return 1 ;; esac
+  [ $(($(date +%s) - e)) -le 30 ]
+}
+fetcher_suite() {
+  MODE=fetcher
+  FETCHER=${HOOK%/*}/../bin/model-mesh-update-check
+  if [ ! -f "$FETCHER" ]; then skip "fetcher cases (no $FETCHER)"; return 0; fi
+  local hdr302='printf "HTTP/2 302\r\nlocation: https://github.com/robineam360/ModelMesh/releases/tag/v2.9.0\r\n\r\n"'
+  reset standard; printf 'on\n' >"$W/mmhome/update-check"
+  fetch_run "$hdr302" MM_UPDATE_URL=https://github.com/robineam360/ModelMesh
+  check "fetcher: 302 to /releases/tag/v2.9.0 → tag cached" cache_is v2.9.0
+  rm -f "$W/mmhome/update-cache"
+  fetch_run "$hdr302"
+  check "fetcher: MM_UPDATE_URL read from \$MODEL_MESH_HOME/models.env or the skill's models.env" cache_is v2.9.0
+  rm -f "$W/mmhome/update-cache"
+  fetch_run 'printf "HTTP/2 404\r\nserver: GitHub.com\r\n\r\n"'
+  check "fetcher: private/404 (no redirect) → empty tag, cache written" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  fetch_run 'printf "HTTP/2 302\r\nlocation: https://github.com/login?return_to=x\r\n\r\n"'
+  check "fetcher: redirect to a login page → empty tag, cache written" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  fetch_run 'printf "HTTP/2 302\r\nlocation: \r\n\r\n"'
+  check "fetcher: empty redirect → empty tag, cache written" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  fetch_run 'printf "HTTP/2 302\r\nlocation: https://github.com/robineam360/ModelMesh/releases/tag/v1.0;rm\r\n\r\n"'
+  check "fetcher: hostile tag text → empty tag" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  fetch_run 'exit 28'
+  check "fetcher: curl fails/times out → empty tag, cache written" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  mkdir -p "$ROOT/nocurl"
+  for t in sed tr date mv rm mkdir; do ln -sf "$(command -v "$t")" "$ROOT/nocurl/$t"; done
+  OUT=$(env -i PATH="$ROOT/nocurl" HOME="$W/home" MODEL_MESH_HOME="$W/mmhome" /bin/sh "$FETCHER" 2>&1); RC=$?; FENCE=ok
+  check "fetcher: no curl → empty tag, cache written" cache_is ''
+  rm -f "$W/mmhome/update-cache"
+  fetch_run "$hdr302" MODEL_MESH_NO_UPDATE_CHECK=1
+  check "fetcher: opt-out variable → no cache written" test ! -e "$W/mmhome/update-cache"
+  fetch_run "$hdr302" DISABLE_AUTOUPDATER=1
+  check "fetcher: DISABLE_AUTOUPDATER → no cache written" test ! -e "$W/mmhome/update-cache"
+  printf 'off\n' >"$W/mmhome/update-check"
+  fetch_run "$hdr302"
+  check "fetcher: switch off → no cache written" test ! -e "$W/mmhome/update-cache"
+  rm -f "$W/mmhome/update-check"
+  fetch_run "$hdr302"
+  check "fetcher: no switch file → no cache written" test ! -e "$W/mmhome/update-cache"
 }
 
 no_parser_suite() {
@@ -531,6 +689,7 @@ else
   echo "SKIP [jq] jq not installed — no-python seam not exercised"; SKIP=$((SKIP + 1))
 fi
 no_parser_suite
+fetcher_suite
 
 echo "test-hook: $PASS passed, $FAIL failed, $SKIP skipped"
 [ "$FAIL" = 0 ] && [ "$PASS" -gt 0 ]

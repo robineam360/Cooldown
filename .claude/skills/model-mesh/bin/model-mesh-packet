@@ -405,7 +405,8 @@ def resolve_requires(raw, review, seat="claude"):
         if r == "stand-in":
             if review == "on":
                 adds = ["claude-judge", "gpt-sol-astra"] if seat == "claude" else ["claude-verdict", "gpt-sol"]
-            elif review == "off":
+            elif review == "off" or (review == "unset" and seat == "claude"):
+                # a missing switch file counts as off on a Claude seat (the standard tier's own path)
                 adds = ["expert-verdict"]
             else:
                 raise Refuse("--requires stand-in resolves from %s, which must say on or off (it says: %s)" % (

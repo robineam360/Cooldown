@@ -24,7 +24,7 @@ Subcommands (all paths absolute):
   remove --journal J --dest D                       remove a file or symlink (not a directory)
   symlink --journal J --dest D --target T           create a symlink where nothing exists
   settings --journal J --dest D [--hook-cmd C] [--remove-hook-cmd C] [--model M] [--effort-medium]
-           [--default-mode MODE] [--bak] [--events E,E…] [--pretool-matcher M]
+           [--default-mode MODE] [--bak] [--events E,E…] [--pretool-matcher M] [--fail-closed]
                                                     JSON merge, keeps indent and every other key; --events names
                                                     the hook events (default: the six Claude Code events; v2.6: the
                                                     Codex seat's ~/.codex/hooks.json takes three)
@@ -326,7 +326,7 @@ def journaled_write(j, dest, data, mode=None, extra=None, no_follow=False):
     return True
 
 
-COPY_SKIP_DIRS = ("__pycache__", ".git")
+COPY_SKIP_DIRS = ("__pycache__", ".git", ".github")
 
 
 def copy_skip(name):
@@ -614,8 +614,24 @@ def fix_matcher(groups, cmd, matcher=PRETOOL_MATCHER):
     return out
 
 
-def add_hooks(data, cmd, events=HOOK_EVENTS, matcher=PRETOOL_MATCHER):
+FAIL_CLOSED_EVENTS = ("PreToolUse", "PreModelSwitch")
+
+
+def set_on_failure(groups, cmd):
+    """Fail-closed (Claude Code >= 2.1.295): our handler carries "onFailure": "block". True when anything changed."""
+    changed = False
+    for g in groups:
+        if isinstance(g, dict) and isinstance(g.get("hooks"), list):
+            for h in g["hooks"]:
+                if isinstance(h, dict) and h.get("command") == cmd and h.get("onFailure") != "block":
+                    h["onFailure"] = "block"
+                    changed = True
+    return changed
+
+
+def add_hooks(data, cmd, events=HOOK_EVENTS, matcher=PRETOOL_MATCHER, fail_closed=False):
     # matcher: the PreToolUse group matcher — Claude Code spawn tools by default; "*" for the v2.7 Codex guard relay
+    # fail_closed: the PreToolUse and PreModelSwitch handlers get "onFailure": "block" (an older entry is upgraded)
     added = []
     hooks = data.get("hooks")
     if hooks is None:
@@ -628,17 +644,27 @@ def add_hooks(data, cmd, events=HOOK_EVENTS, matcher=PRETOOL_MATCHER):
             groups = []
         if not isinstance(groups, list):
             die("settings `hooks.%s` is not a list — refused, left untouched" % ev)
+        closed = fail_closed and ev in FAIL_CLOSED_EVENTS
         if hook_present(groups, cmd):
+            changed = False
             if ev == "PreToolUse":
                 fixed = fix_matcher(groups, cmd, matcher)
                 if fixed:
-                    hooks[ev] = fixed
-                    data["hooks"] = hooks
-                    added.append([ev, cmd])
+                    groups = fixed
+                    changed = True
+            if closed and set_on_failure(groups, cmd):
+                changed = True
+            if changed:
+                hooks[ev] = groups
+                data["hooks"] = hooks
+                added.append([ev, cmd])
             continue
-        g = {"hooks": [{"type": "command", "command": cmd}]}
+        h = {"type": "command", "command": cmd}
+        if closed:
+            h["onFailure"] = "block"
+        g = {"hooks": [h]}
         if ev == "PreToolUse":
-            g = {"matcher": matcher, "hooks": [{"type": "command", "command": cmd}]}
+            g = {"matcher": matcher, "hooks": [h]}
         groups.append(g)
         hooks[ev] = groups
         added.append([ev, cmd])
@@ -714,7 +740,7 @@ def cmd_settings(a):
             events = tuple(e for e in a.events.split(",") if e)
             if not events or any(not re.fullmatch(r"[A-Za-z]+", e) for e in events):
                 die("--events must be a comma-separated list of event names")
-        extra["added_hooks"] = add_hooks(new, a.hook_cmd, events, a.pretool_matcher or PRETOOL_MATCHER)
+        extra["added_hooks"] = add_hooks(new, a.hook_cmd, events, a.pretool_matcher or PRETOOL_MATCHER, a.fail_closed)
     if a.remove_hook_cmd:
         extra["removed_hooks"] = remove_hooks(new, set(a.remove_hook_cmd))
     if a.model:
@@ -964,7 +990,7 @@ def main(argv):
     p.add_argument("--hook-cmd"); p.add_argument("--remove-hook-cmd", action="append")
     p.add_argument("--model"); p.add_argument("--effort-medium", action="store_true")
     p.add_argument("--default-mode"); p.add_argument("--bak", action="store_true")
-    p.add_argument("--drop-model-if"); p.add_argument("--events"); p.add_argument("--pretool-matcher")
+    p.add_argument("--fail-closed", action="store_true"); p.add_argument("--drop-model-if"); p.add_argument("--events"); p.add_argument("--pretool-matcher")
     p = sub.add_parser("claude-md"); p.add_argument("--journal", required=True); p.add_argument("--dest", required=True)
     p.add_argument("--block"); p.add_argument("--switch", default="OFF"); p.add_argument("--strip", action="store_true")
     p.add_argument("--label", default="install.sh --user")

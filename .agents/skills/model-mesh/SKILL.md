@@ -1,6 +1,9 @@
 ---
 name: model-mesh
-description: Delegation pattern for Claude Code, plus cross-family (GPT) review that is mandatory for state-changing plans where it is switched on. Applies to every prompt in every session once installed. The seat is the account's tier seat at effort medium — the current Opus where Fable is in the plan's limits, the current Sonnet otherwise, and Fable is never used on a plan without it — and does the work itself; it spawns a sub-agent only for a named purpose — expertise (the tier's expert), cost (a cheaper rung for simple volume), independence (a fresh judge) or parallelism — choosing one of three rungs per role (lookup, build, judge, plan) and naming the model on every spawn. A GPT reviewer (Astra/Sol) reached through the fenced Codex CLI critiques each plan once and cross-checks irreversible steps from outside the family, on a review packet bound to the exact state and step; either seat: a Codex seat (Sol) gets the same rules, with Claude as reviewer and governed Claude workers with tools, and a front-door seat delegates into other repos through workers rooted there. Use for — any session that plans, builds, changes or reviews something; deciding who does a task; spawning a sub-agent; escalating; planning a runbook; a second-family opinion; setting up model-mesh on a machine, an account or a repo.
+description: Use for — any session that plans, builds, changes or reviews something; deciding who does a task; spawning a sub-agent; escalating; planning a runbook; a second-family opinion; setting up model-mesh on a machine, an account or a repo. Delegation pattern for Claude Code, applied to every prompt once installed: the seat (the account's tier seat at effort medium — the current Opus where Fable is in the plan's limits, the current Sonnet otherwise; Fable is never used without it) does the work itself and spawns a sub-agent only for a named purpose — expertise, cost, independence or parallelism — picking one of three rungs per role (lookup, build, judge, plan) and naming the model on every spawn. Optional cross-family GPT review (Astra/Sol, fenced Codex CLI), mandatory for state-changing plans where switched on, on a packet bound to the exact state and step. A Codex seat (Sol) gets the same rules.
+license: MIT
+metadata:
+  version: "2.8.0"
 ---
 
 # model-mesh — who does the work, who checks it, and when a second family is worth the quota
@@ -67,7 +70,7 @@ a fresh agent). **This file is the one home of the rule**; the short block in `c
 `<skill-dir>` means **this skill's own folder** — the base directory given when the skill loaded. Never
 assume the path. **No shell** (e.g. a claude.ai web chat)? Skip this section, use §1–§5 as guidance for your
 own reasoning, treat the account as `standard`, and say that sub-agents, the hook and GPT review need Claude
-Code.
+Code. A user who asks you to install, update or uninstall model-mesh: follow `<skill-dir>/INSTALL-AGENT.md`.
 
 1. **Tier — once per account.** The hook's state line (§6) says `tier=undeclared→standard` until declared.
    Ask, at the first natural pause, exactly: *"Which plan is this account on? Answer `fable` only if this
@@ -100,13 +103,18 @@ Code.
    - On **macOS** say before turning it on: the sandbox lets the reviewer read `~/Library` (including
      OneDrive/iCloud folders under `~/Library/CloudStorage`) because codex will not start otherwise; only
      the input is sent, but don't run a review with sensitive material sitting there.
-4. **A second account on a different tier** (the claude-dual-account pattern shares `settings.json`): the
+4. **A second account on a different tier** (if you use the claude-dual-account skill, whose pattern shares `settings.json`): the
    shared file carries the primary's seat; the secondary's entry points carry `ANTHROPIC_MODEL=<its seat>`
-   (`setup-vscode.sh <name> --model <seat>` in claude-dual-account). `install.sh --user --tier <t>
+   (`setup-vscode.sh <name> --model <seat>`, if you use the claude-dual-account skill). `install.sh --user --tier <t>
    --config-dir <dir>` writes that account's tier file and prints the instruction. `/model` saves into the
    shared file — use the picker's `s` (this session only) in a secondary.
 5. **Two copies?** If both a hand-installed `~/.claude/skills/model-mesh` and an uploaded copy exist, say
    so once and suggest keeping one.
+6. **Update check (opt-in).** If `~/.local/share/model-mesh/update-check` does not exist, ask **once**:
+   *"model-mesh can check GitHub once a day for a newer release and show a one-line notice in the state line.
+   Nothing is installed automatically. Off by default. Turn it on?"* Write `on` or `off` to
+   `~/.local/share/model-mesh/update-check` (`mkdir -p` first) on the answer; no answer → `off`. When a notice
+   `[UPDATE: <tag> — install.sh --update]` appears, tell the user once and let them decide.
 
 ## 1. The ladders — seat first, two real choices, one purpose each
 
@@ -119,7 +127,7 @@ denies a spawn without one). Claude Code (≥ 2.1.292) also takes a per-invocati
 |---|---|---|---|---|
 | **Lookup** (`mesh-lookup`, medium) | The default: the seat reads unless its context is **already large (> ~100K)** or the reading would take **six or more turns** (the break-even, §4.10); any **interpretation the seat must own** (depends on this session's context or the user's intent, or goes into memory or a decision) | **Haiku** (`model: haiku`) — **(b)** — one independently checkable finding, input < ~100K (Haiku's price steps up above it), returned with `file:line` in **under ~300 tokens**; fan out in parallel | **Sonnet @ medium** (`model: sonnet`) — **(b)** under an Opus seat, **(d)** under a Sonnet seat — findings across several sources or input > ~150K, returned in under ~300 tokens | never reviewed |
 | **Build** (`mesh-builder`, medium) | Any one-piece build that needs judgement as it goes, **complex or not**, and anything short (≲ ~20 tool calls). Complexity alone is not a reason to spawn | **Sonnet @ medium** (`model: sonnet`) — **(b)** under an Opus seat, **(d)** — spec and acceptance test writable, routine, long or split into independent pieces; a runbook from a reviewed plan. **Haiku** (`model: haiku`) — **(b)** — a narrow, fully specified, self-testable piece | **Opus @ medium** (`model: opus`) — **(d) only** — independent pieces that *each* need judgement mid-way. Never for a single complex job | terra (Sol @ medium) vs spec, on the packet, discretionary ≤ 1 |
-| **Judge** (`mesh-judge`, high) | A change reversed by **one command**: history line and reversal, no verdict (gate c) | **Opus @ high, fresh** (`model: opus`) — **(c)** — **one round per gated step**, on the packet digest, then tests decide: the verdict before any irreversible or > 1-command step; review of delegated build work; attempt 3 on one symptom; hard debugging | **Fable tier:** **Fable @ high, fresh** (`model: fable`) — **(a)+(c)** — author Opus **and** irreversible or money/identity/others' data, or rung 2 could not settle it. **Standard tier:** the stand-in (§5) | Sol @ high on the packet digest — **required only for a step that publishes, pays, deletes or grants**, else discretionary ≤ 1; the stand-in on the standard tier |
+| **Judge** (`mesh-judge`, high) | A change reversed by **one command**: history line and reversal, no verdict (gate c) | **Opus @ high, fresh** (`model: opus`) — **(c)** — **one round per gated step**, on the packet digest, then tests decide: the verdict before any irreversible or > 1-command step; review of delegated build work; attempt 3 on one symptom; hard debugging | **Fable tier:** **Fable @ high, fresh** (`model: fable`) — **(a)+(c)** — author Opus **and** irreversible or money/identity/others' data, or rung 2 could not settle it. **Standard tier:** the stand-in (§5) | Sol @ high on the packet digest — **(when GPT review is on) required only for a step that publishes, pays, deletes or grants**, else discretionary ≤ 1; the stand-in on the standard tier |
 | **Plan** (`mesh-expert`, xhigh) | Seat drafts. Whole-plan reversal (incl. from any partly executed state) is one command: Astra only on §5's discretionary triggers | Seat drafts. **One full Astra call @ high, mandatory** when reversal takes more than one command, or is impossible (§5) | **The tier's expert drafts** — **(a)** — Fable @ xhigh (`model: fable`) on the Fable tier, Opus @ xhigh (`model: opus`) on the standard tier — goal/constraints/done-check will not fit a paragraph; the plan for an irreversible step on money, identity or others' data; or the user chose an expert redraft. **One Astra call @ xhigh** reviews | Tie-break: review ON → Astra @ high; OFF → the tier's expert; one call, then the user |
 
 **The other-family column follows the author's family** (for a plan) **and the seat's** (for builds and verdicts). Under a Claude seat it is GPT, as above. Under a
@@ -181,7 +189,7 @@ Then **default to rung 1** and climb only when a purpose (a)–(d) applies and t
 4. Astra clears the *plan*; at execution each gate-(c) *step* still gets its verdict before it runs. For a
    step in a **git** tree the verdict is given on a **review packet** and checked by the **gate** (§5):
    `model-mesh-review gate` re-computes the packet, the full state and the step, requires every reviewer
-   path the step needs — the fresh Claude judge always, a GPT cross-check only when the step **publishes,
+   path the step needs — the fresh Claude judge always, a GPT cross-check (when GPT review is on) only when the step **publishes,
    pays, deletes or grants** — and **consumes** the authorization; the seat then runs **exactly** the reviewed
    command. A step that publishes git history names a commit whose tree equals the reviewed tree. A retry
    after a failed or ambiguous run is never automatic: a fresh packet and review, or the user's retry
@@ -303,7 +311,7 @@ asked once, and the build's tests, dry runs and registered evidence do the closi
   test or build gate. Mechanics — scripts, command lines, crash matrices, test bodies — live in an appendix
   that is **not sent**: they go to `shellcheck`, `bash -n`, dry runs and the test suite. Header:
   `review: calls=<k> (1 full + ≤ 1 delta) effort=<high|xhigh> size=<KB>` plus any exception and who granted it.
-- **Full call.** Input: `REVIEW: full · plan=<name> · drafted by <seat|expert>`, one line of scope and threat
+- **Full call.** Input: `REVIEW: full · plan=<name>` (author-blind: no drafter named; the caller still sets the effort from who drafted the plan, and the record keeps it), one line of scope and threat
   model, then the body. `accept`/`concerns` with `COVERAGE: full` → adopt every finding in writing
   (disposition 1) and proceed. `COVERAGE: partial` → provisional; the unread sections go in the delta call or
   to the user. A finding under confidence 80 is checked by the seat against its quoted words before anything is
@@ -327,7 +335,9 @@ asked once, and the build's tests, dry runs and registered evidence do the closi
   Sol/terra: ≤ 1 call per cross-checked change per revision.
 
 ### 5c. The review packet, the record, the gate (git work)
-`model-mesh-review <sub>` (help: `model-mesh-review packet --help`):
+`model-mesh-review <sub>` (help: `model-mesh-review packet --help`); `model-mesh-review` means
+`~/.local/bin/model-mesh-review` (placed by `--user`), and `<skill-dir>/bin/model-mesh-review` is the same tool
+before any install. `SPEC`, `PLAN` and `CLAIM` name no author model or agent (author-blind input):
 - **`evidence -- <command…>`** — the only way to make evidence: snapshot before, run, snapshot after,
   raw output and exit code, registered. Stale or tree-mutating evidence is refused at assembly.
 - **`packet --spec F --step-id S --command C --target T --base REV --requires R[,R…] [--publish-commit SHA]
@@ -353,8 +363,7 @@ asked once, and the build's tests, dry runs and registered evidence do the closi
   adoption written) from every required path, and atomically **consumes the attempt**; a second gate on the
   same attempt refuses. Every record of the attempt must be acceptable — one unwaived `blocking` among
   several reviews refuses (no reviewer-shopping). `--requires stand-in` is resolved **at packet assembly**
-  from `~/.local/share/model-mesh/review` (`on`/`off`, any case; assembly refuses when it is missing or says
-  anything else) and the resolved paths are frozen into the packet, so the gate never re-reads the switch. Then run exactly `step_command`, and record **`outcome --auth ID|--record R --exit N
+  from `~/.local/share/model-mesh/review` (`on`/`off`, any case; a missing file counts as off on a Claude seat, a Codex seat refuses; anything else refuses) and the resolved paths are frozen into the packet, so the gate never re-reads the switch. Then run exactly `step_command`, and record **`outcome --auth ID|--record R --exit N
   [--ambiguous]`**. Retry after failure: a fresh packet and review, or **`waive --retry --auth ID --reason
   "<the user's words>" --evidence F…`** on the user's explicit instruction — `F` is the reconciliation:
   registered evidence (`evidence -- <cmd>`) of the target's current state, recorded after the failed run's
@@ -484,6 +493,10 @@ and by `--vault --settings` in a repo) handles six events:
   expected-seat=… session-model=… [MISMATCH …] [FABLE-TIER: pass model: fable to mesh-expert and mesh-judge
   r3] [SESSION ON FABLE …] [ALIAS REMAP …]`. The seat reads its tier and effective seat from it.
 - **PostModelSwitch** — tracks the session model. **PreModelSwitch** — denies `/model fable` on standard.
+- **Fail-closed entries (v2.8).** The PreToolUse and PreModelSwitch entries carry `"onFailure": "block"`, so a hook
+  that cannot start (a deleted or unreadable file) or times out **denies** the spawn or model switch instead of
+  letting it through. It needs Claude Code ≥ 2.1.295; `install.sh --user` stops on an older CLI rather than
+  drop the key, and upgrades an old entry on re-run.
 - **PreToolUse (Agent|Task|Workflow)** — on a **standard** account, allows a spawn only when it names a model whose
   effective id is `sonnet`, `opus` or `haiku` (or their `claude-…` ids), after alias remaps
   (`ANTHROPIC_DEFAULT_*_MODEL`, `ANTHROPIC_SMALL_FAST_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL`, from the
@@ -619,8 +632,11 @@ every other path only where it is still as installed; a changed path is left and
 **`--revert-machine`** the newest no-flag install — repeat each until it prints "nothing to revert" (a crash
 plus a converging re-run leaves two journals); the `settings.json.model-mesh.<UTC>.bak` copies are kept. A real `skills/` folder in another account gets the skill
 copied file by file through the same journal. The tier file is never written through a symlink.
-`install.sh` with no flag installs the GPT reviewer (wrapper, packet tool, prompts, `models.env`, Codex
-mirrors) and runs `model-mesh-review --check`. `--agents` installs the agents only. `--uninstall` removes
+`install.sh` with no flag adds the GPT reviewer: codex, the self-check (the wrapper, packet tool, prompts and
+`models.env` already come with `--user`; Codex mirrors here) and runs `model-mesh-review --check`; it installs
+codex through npm only with `--install-codex`, else it prints the command. **`--update`** (from a clean git clone
+of the repo) fetches tags, installs the newest release tag detached — never a branch tip — prints old → new
+version and re-runs `--user`; anywhere else it exits 2 with the unzip hint. `--agents` installs the agents only. `--uninstall` removes
 the hook entries and scripts and the rest of the machine part (the Codex-seat entries and block too); tier files,
 journals and the Claude reviewer accounts file are left.
 
@@ -676,8 +692,8 @@ repo still carries an older pasted contract block. `--publish` additionally zips
 your machine's own admin notes, not in this skill.
 
 **Packaging for sharing** — `bash <skill-dir>/install.sh --package <out.skill>` zips this folder after a leak
-check against `~/.config/model-mesh/leak-markers`. The guide lives in `docs/guide.html`; render the PDF
-outside the skill folder and share it alongside. There is one edition: the file you use is the file you
+check against `~/.config/model-mesh/leak-markers`. `README.md` on GitHub is the guide; `docs/brochure.html` is the
+one-page pitch, rendered to PDF outside the skill folder and shared alongside. There is one edition: the file you use is the file you
 share. **Release gates before publishing:** G1 (automated, every install), G2–G5 (live, on a Fable-tier
 account with a `standard` tier file so a failed case cannot bill), and the bake-off.
 
