@@ -231,9 +231,44 @@ func chatGPTPlanTagMapping() {
     #expect(PlanTag.fromChatGPT(planType: "") == nil)
 }
 
-// MARK: - Request builder and fetch outcomes
-// Ported with the networking layer (sign-in step of CCRM-94 (iOS App)). The Codex-login seam
-// tests stay on the desktop: a phone has no local Codex login (spec core §9.6).
+// MARK: - Request builder
+
+@Test("the ChatGPT usage request carries the right URL, auth, accept and user-agent headers")
+func chatGPTRequestShape() {
+    let request = APIClient.chatGPTUsageRequest(accessToken: "tok-123", accountId: "acct-abc")
+    #expect(request.url?.absoluteString == "https://chatgpt.com/backend-api/wham/usage")
+    #expect(request.httpMethod == "GET")
+    #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer tok-123")
+    #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
+    #expect(request.value(forHTTPHeaderField: "User-Agent") == APIClient.userAgent)
+    #expect(request.value(forHTTPHeaderField: "ChatGPT-Account-Id") == "acct-abc")
+    #expect(
+        request.httpShouldHandleCookies == false,
+        "chatgpt.com is a browser domain — never attach or persist cookies for this request")
+    #expect(
+        request.cachePolicy == .reloadIgnoringLocalCacheData,
+        "CCM-104 [Readout]'s one-directional merge rule treats fetchedAtMs as this response's real receipt time — it must never be a cached response served without a round trip")
+}
+
+@Test("the account-id header is absent, not empty, when the account id is empty")
+func chatGPTRequestNoAccountId() {
+    let request = APIClient.chatGPTUsageRequest(accessToken: "tok-123", accountId: "")
+    #expect(request.value(forHTTPHeaderField: "ChatGPT-Account-Id") == nil)
+}
+
+// MARK: - Fetch outcome classification
+
+@Test("401 and 403 both classify as authNeeded; 429 as rateLimited; anything else as server(code:)")
+func chatGPTFetchOutcomeClassification() {
+    #expect(ChatGPTFetchOutcome.classify(code: 401) == .authNeeded)
+    #expect(ChatGPTFetchOutcome.classify(code: 403) == .authNeeded)
+    #expect(ChatGPTFetchOutcome.classify(code: 429) == .rateLimited)
+    #expect(ChatGPTFetchOutcome.classify(code: 500) == .server(code: 500))
+    #expect(ChatGPTFetchOutcome.classify(code: 200) == nil)
+}
+
+// MARK: - Codex login -> ChatGPT credentials seam
+// Stays on the desktop: a phone has no local Codex login (spec core §9.6).
 
 // MARK: - Test helper
 

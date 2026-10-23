@@ -78,3 +78,23 @@ targets:
       properties:
         com.apple.security.application-groups: [group.com.robinrichardrajan.cooldown]
         keychain-access-groups: ["$(AppIdentifierPrefix)com.robinrichardrajan.cooldown.shared"]
+  CooldownTests:
+    # CCRM-94 (iOS App): tests that need the app's entitlements (Keychain shared group), hosted by the app.
+    type: bundle.unit-test
+    platform: iOS
+    sources: [AppTests]
+    dependencies:
+      - target: Cooldown
+      - package: CooldownCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Cooldown:
+    build:
+      targets:
+        Cooldown: all
+    test:
+      targets:
+        - CooldownTests

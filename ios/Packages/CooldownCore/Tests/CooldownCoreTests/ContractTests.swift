@@ -436,6 +436,131 @@ func evenPace() {
     #expect(Fmt.elapsedPercent(resetsAtMs: nil, windowLengthMs: length, nowMs: reset) == nil)
 }
 
-// MARK: - OAuth request shape, User-Agent and backoff
-// Ported with the networking layer (sign-in step of CCRM-94 (iOS App)): they test APIClient and
-// OAuthSignIn, which are not in the pure core yet.
+// MARK: - OAuth request shape
+
+@Test("form encoding matches Java URLEncoder, not percent-encoding")
+func formEncoding() {
+    // The two rules that broke the grant when done differently.
+    #expect(OAuthSignIn.formEncode("a b") == "a+b")
+    #expect(OAuthSignIn.formEncode("user:profile") == "user%3Aprofile")
+    #expect(OAuthSignIn.formEncode("https://platform.claude.com/oauth/code/callback")
+            == "https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback")
+    // Unreserved set is kept verbatim.
+    #expect(OAuthSignIn.formEncode("aZ09.-*_") == "aZ09.-*_")
+}
+
+@Test("authorize URL has the exact parameter order and encoding")
+func authorizeURLShape() {
+    let (url, pending) = OAuthSignIn.begin(profileKey: "personal")
+
+    #expect(url.hasPrefix("https://claude.com/cai/oauth/authorize?code=true&client_id="))
+    // Parameter order is part of the contract.
+    let expectedOrder = ["code=true", "&client_id=", "&response_type=code", "&redirect_uri=",
+                         "&scope=", "&code_challenge=", "&code_challenge_method=S256", "&state="]
+    var cursor = url.startIndex
+    for token in expectedOrder {
+        let found = url.range(of: token, range: cursor..<url.endIndex)
+        #expect(found != nil, "missing or out-of-order: \(token)")
+        cursor = found?.upperBound ?? cursor
+    }
+    // Scope is form-encoded: spaces as '+', colons as %3A, and never %20.
+    #expect(url.contains("&scope=org%3Acreate_api_key+user%3Aprofile+user%3Ainference"))
+    #expect(!url.contains("%20"))
+    // state IS the verifier.
+    #expect(pending.state == pending.verifier)
+    #expect(url.contains("&state=" + OAuthSignIn.formEncode(pending.verifier)))
+    // The challenge is base64url of SHA-256, so no padding and no '+' or '/'.
+    let challenge = OAuthSignIn.challenge(for: pending.verifier)
+    #expect(!challenge.contains("=") && !challenge.contains("+") && !challenge.contains("/"))
+    #expect(challenge.count == 43)
+}
+
+@Test("pasted code splits on the first hash")
+func pastedCodeSplit() {
+    let (code, state) = OAuthSignIn.splitPastedCode("  abc123#xyz789  ")
+    #expect(code == "abc123")
+    #expect(state == "xyz789")
+    // No hash: the whole string is the code and the state check is skipped.
+    #expect(OAuthSignIn.splitPastedCode("abc123") == ("abc123", ""))
+}
+
+@Test("the token endpoint never sees a claude-code, empty, browser-like or curl User-Agent")
+func tokenUserAgentRule() {
+    // The token endpoint must never see a claude-code UA, and never an empty one.
+    #expect(!APIClient.tokenUserAgent.contains("claude-code"))
+    #expect(!APIClient.tokenUserAgent.isEmpty)
+    #expect(!APIClient.tokenUserAgent.lowercased().contains("mozilla"))
+    #expect(!APIClient.tokenUserAgent.lowercased().contains("curl"))
+}
+
+@Test("the usage endpoint gets our own honest User-Agent, not claude-code's")
+func usageUserAgentIsHonest() {
+    // CCM-72 [Foundation]: verified 2026-09-20 (ua-probe) that the usage endpoint does not
+    // gate on User-Agent, so the claude-code spoof is retired for anything the app sends.
+    #expect(APIClient.userAgent.hasPrefix("Cooldown/"))
+    #expect(APIClient.userAgent.hasSuffix("(\(APIClient.platform))"))  // "(iOS)" on iPhone/iPad, "(macOS)" in `swift test`
+    #expect(!APIClient.userAgent.contains("claude-code"))
+    // The old value is kept only as ua-probe's control arm — still shaped like a real
+    // claude-code UA so the probe's comparison stays meaningful, but no longer sent by us.
+    #expect(APIClient.claudeCodeUserAgent.hasPrefix("claude-code/"))
+}
+
+@Test("the usage request actually carries the honest User-Agent header, not claude-code's")
+func usageRequestSendsHonestUserAgent() async throws {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [UserAgentCapturingURLProtocol.self]
+    let client = APIClient(session: URLSession(configuration: configuration))
+
+    _ = try await client.fetchUsage(accessToken: "test-token")
+
+    let sentUA = capturedRequestBox.get()?.value(forHTTPHeaderField: "User-Agent")
+    #expect(sentUA == APIClient.userAgent)
+    #expect(sentUA?.contains("claude-code") == false)
+}
+
+/// Thread-safe box for the one request `UserAgentCapturingURLProtocol` records — a plain
+/// `static var` on the protocol itself isn't concurrency-safe under Swift 6, and URLProtocol's
+/// own storage is instance-per-request, not shared with the test that wants to read it back.
+private final class RequestBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var request: URLRequest?
+
+    func set(_ request: URLRequest) {
+        lock.lock(); defer { lock.unlock() }
+        self.request = request
+    }
+
+    func get() -> URLRequest? {
+        lock.lock(); defer { lock.unlock() }
+        return request
+    }
+}
+
+private let capturedRequestBox = RequestBox()
+
+/// Captures the last request handed to `URLSession` without hitting the network — used to
+/// pin the exact header values `APIClient` sends, not just the constants it exposes.
+private final class UserAgentCapturingURLProtocol: URLProtocol, @unchecked Sendable {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        capturedRequestBox.set(request)
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data("{}".utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
+
+@Test("429 backoff doubles and caps at an hour")
+func backoffSchedule() {
+    #expect(RateLimits.backoffMs(consecutive429: 0) == 5 * 60_000)
+    #expect(RateLimits.backoffMs(consecutive429: 1) == 10 * 60_000)
+    #expect(RateLimits.backoffMs(consecutive429: 2) == 20 * 60_000)
+    #expect(RateLimits.backoffMs(consecutive429: 3) == 40 * 60_000)
+    #expect(RateLimits.backoffMs(consecutive429: 4) == 60 * 60_000)
+    #expect(RateLimits.backoffMs(consecutive429: 99) == 60 * 60_000)
+}

@@ -9,3 +9,4 @@ out/
 xcuserdata/
 Packages/*/.build/
 Packages/*/.swiftpm/
+.derived-core/

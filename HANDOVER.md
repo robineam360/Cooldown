@@ -11,8 +11,10 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 > (docs/REPO-STRUCTURE.md). The iOS wireframes are **approved** (rev B,
 > `design/2026-10-23-ios-wireframes.html`). [docs/ios/PLAN.md](docs/ios/PLAN.md) step 5, CCRM-94
 > (iOS App), is under way: `ios/Packages/CooldownCore` is built and green against `spec/core/fixtures`
-> (`swift test --package-path ios/Packages/CooldownCore`). Next: the networking layer and sign-in
-> (port the Mac's APIClient/OAuthSignIn request shapes with their deferred tests, Keychain store), then the
+> (`swift test --package-path ios/Packages/CooldownCore`), networking and sign-in included (API client,
+> PKCE, ChatGPT device code, Keychain store in the shared group — the store's tests are app-hosted:
+> `xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown` on a simulator). Next: the fetch
+> repository (token refresh, 429 backoff, history and reset detection, snapshot to the App Group), then the
 > app screens, widgets, lock-screen widgets, the control, reset alerts and the Live Activity —
 > each built to the approved wireframe, checked on the iPhone and iPad simulators and on the
 > iPad. Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major

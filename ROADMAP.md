@@ -1588,7 +1588,11 @@ it carries the umbrella CCRM-7 (iOS).
   iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
   (ios/Packages) built 2026-10-23 — models, both usage parsers, projection and pace, history, plan tag and
   formatting ported from CooldownMac's core at `2bfbdfd`; 52 tests green against `spec/core/fixtures` and the
-  captured payloads, on CI's macOS job too. Next: networking and sign-in, then the screens.
+  captured payloads, on CI's macOS job too. Networking and sign-in added the same day: the Claude and ChatGPT
+  request shapes (User-Agent now names the platform, "(iOS)"), PKCE sign-in, the ChatGPT device-code flow and
+  its copy, and the Keychain store in the shared group (device-only); 86 package tests on the Mac and in the
+  iOS simulator, 4 app-hosted Keychain tests. Next: the fetch repository (refresh, backoff, history), then the
+  screens.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.
