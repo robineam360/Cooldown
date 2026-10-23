@@ -66,8 +66,8 @@ itself; it never posts a notification of its own.
 | Update available | The GitHub-channel Android build only (CCRM-87 (Update Channel)) |
 
 Android shows them as strips in the pinned notification (at most three, the rest folded to one
-line). iOS shows them in the app and as a widget caption; the layout comes from CCRM-94 (iOS App)'s
-wireframes.
+line). iOS shows them as a notice above the cards in the app, as the caption of a widget, the
+label line of a Live Activity row and the Control Center value (wireframes rev B, CCRM-94 (iOS App)).
 
 Source: `notify/Conditions.kt`, `alerts/Alerts.kt` (`STALE_DATA_MS`) (Android).
 
@@ -79,11 +79,11 @@ Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframe
 
 | Android | iPhone and iPad |
 |---|---|
-| The app | The app (two columns on iPad) |
+| The app | The app (iPad: a pinned account on top, the selected one below) |
 | Always-on pinned notification and its status-bar ring | — (iOS has no persistent notification) |
-| Home-screen widgets | Home-screen widgets |
+| Home-screen widgets | Home-screen widgets, plus a Large face |
 | — | Lock-screen widgets |
 | Quick Settings tile | Control Center control |
 | Reset-ping notifications | Reset alerts, scheduled ahead |
-| — | Live Activity (lock screen; Dynamic Island on iPhone) |
+| — | Live Activity: two accounts' 5h and Weekly (lock screen; Dynamic Island on iPhone) |
 | Share card | Share card (to decide with CCRM-94 (iOS App)) |

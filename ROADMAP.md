@@ -1584,7 +1584,8 @@ it carries the umbrella CCRM-7 (iOS).
   to Robin before anything else is built.
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
-- **Status:** Needs design · plan steps 4–5 · wireframes approved before any UI (CLAUDE.md §2).
+- **Status:** Planned · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
+  iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · plan step 5 next.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

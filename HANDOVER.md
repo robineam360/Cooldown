@@ -8,10 +8,13 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 
 > CCRM-93 (iOS Spike) and CCRM-92 (Shared Spec) are done: every iOS surface works on the iPad
 > (docs/ios/SPIKE.md), and `spec/` is this family's spec: `spec/core/` (master of the shared core) + `spec/mobile/`
-> (docs/REPO-STRUCTURE.md). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 4: wireframes for
-> every iOS surface (app on iPhone and iPad, home and lock-screen widgets, Control Center
-> control, reset alerts, Live Activity), all states, in `design/`, for Robin's approval before
-> any UI is built (CLAUDE.md §2). Separately, in the desktop repo (a session rooted there, not
+> (docs/REPO-STRUCTURE.md). The iOS wireframes are **approved** (rev B,
+> `design/2026-10-23-ios-wireframes.html`). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 5,
+> CCRM-94 (iOS App): CooldownCore first, tested against `spec/core/fixtures`, then sign-in, the
+> app screens, widgets, lock-screen widgets, the control, reset alerts and the Live Activity —
+> each built to the approved wireframe, checked on the iPhone and iPad simulators and on the
+> iPad. Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major
+> visual changes. Separately, in the desktop repo (a session rooted there, not
 > this one): REPO-STRUCTURE step 3 — its `contract/` becomes `spec/` = `spec/core/` (pinned copy of
 > this `spec/core/`) + `spec/desktop/`.
 

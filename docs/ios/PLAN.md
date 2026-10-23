@@ -69,7 +69,11 @@ port. The surfaces, each needing a wireframe approved under CLAUDE.md §2 before
 3. **CCRM-92 (Shared Spec)** — **done 23 Oct; `spec/core/` is the master of the shared core, `spec/mobile/` the mobile layer (docs/REPO-STRUCTURE.md).** Create `spec/`, move the two payload fixtures there, point Android's test resources at
    it, add the vectors and the no-code check. Gate: Android's verify command passes unchanged in result.
 4. **Wireframes** for every surface above, all states (empty, signed out, error, at 100 %, above pace, iPhone and
-   iPad widths), in `design/`. Robin approves before step 5.
+   iPad widths), in `design/`. Robin approves before step 5. **Approved 23 Oct: rev B,
+   `design/2026-10-23-ios-wireframes.html`.** Robin's four calls: iPhone keeps Android's account tabs; the Live
+   Activity is the Duet with Weekly (two accounts, 5h and Weekly, measured under iOS's 160 pt cap; one account as the
+   fallback); the Large widget is offered; the iPad uses its height — one pinned account on top, the selected one
+   below (sidebar in landscape, tabs in portrait).
 5. **CCRM-94 (iOS App)** — CooldownCore first (tests on the spec vectors and payloads), then sign-in (Claude token
    paste and the ChatGPT device code, both as on Android), the app screens, widgets, lock-screen widgets, the control,
    reset alerts, Live Activity. CI gains a macOS job running the package tests and a simulator build. Each piece:
