@@ -87,8 +87,10 @@ port. The surfaces, each needing a wireframe approved under CLAUDE.md §2 before
   another company's service (CCRM-8 (Mac Menu-Bar) recorded the risk); TestFlight's beta review is the test of that.
   The EAM360 team would be the publisher of a personal MIT app, which Robin settles with EAM360 first. Access is by
   an invitation to the EAM360 team (App Store Connect and the developer account, role App Manager or Developer) for
-  Robin's own Apple ID, never a shared login or a copied signing certificate; the ad-hoc or TestFlight build is then
-  signed with Robin's own team membership and the team id stays out of the repo.
+  Robin's own Apple ID, never a shared login. Development builds use Robin's own Apple Development certificate,
+  which Xcode creates. Ad-hoc and TestFlight builds use the team's shared Apple Distribution certificate, installed
+  on this Mac by Sedin's iOS developer (Apple caps distribution certificates per team, so teams share one); it never
+  enters the repo, and the team id stays out of the repo.
 - **Release rule (binding from the first GitHub release that carries an IPA, i.e. phase B; phase A's local IPA is
   exempt and never becomes a release asset):** one GitHub release carries both the APK and the IPA under one
   version. Never an iOS-only release: the Android update check (CCRM-87 (Update Channel)) reads `releases/latest` and
