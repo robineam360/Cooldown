@@ -13,8 +13,8 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 > (iOS App), is under way: `ios/Packages/CooldownCore` is built and green against `spec/core/fixtures`
 > (`swift test --package-path ios/Packages/CooldownCore`), networking and sign-in included (API client,
 > PKCE, ChatGPT device code, Keychain store in the shared group — the store's tests are app-hosted:
-> `xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown` on a simulator). Next: the fetch
-> repository (token refresh, 429 backoff, history and reset detection, snapshot to the App Group), then the
+> `xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown` on a simulator), and the fetch
+> repository (`UsageRepository`: Android's mobile rules, reset detection, App Group snapshot). Next: the
 > app screens, widgets, lock-screen widgets, the control, reset alerts and the Live Activity —
 > each built to the approved wireframe, checked on the iPhone and iPad simulators and on the
 > iPad. Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major

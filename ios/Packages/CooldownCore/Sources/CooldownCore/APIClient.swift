@@ -257,6 +257,24 @@ public struct APIClient: Sendable {
         ])
     }
 
+    /// CCRM-94 (iOS App): renews a ChatGPT token family from the device-code sign-in. Same endpoint,
+    /// client id and JSON body as Android's `ChatGptSource.refresh` (the mobile reference); the Mac never
+    /// needed it because Codex CLI renews its own tokens.
+    public func refreshChatGPTToken(_ refreshToken: String) async throws -> HTTPResult {
+        var request = URLRequest(url: Self.deviceTokenExchangeURL, timeoutInterval: 20)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "client_id": DeviceCodeSignIn.clientID,
+            "grant_type": "refresh_token",
+            "refresh_token": refreshToken,
+        ])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
+        request.httpShouldHandleCookies = false
+        return try await perform(request)
+    }
+
     /// JSON body, not form-encoded — this is what Claude's own SDK posts here.
     private func postToken(_ payload: [String: String]) async throws -> HTTPResult {
         var request = URLRequest(url: Self.tokenURL, timeoutInterval: 20)

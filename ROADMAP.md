@@ -1591,8 +1591,10 @@ it carries the umbrella CCRM-7 (iOS).
   captured payloads, on CI's macOS job too. Networking and sign-in added the same day: the Claude and ChatGPT
   request shapes (User-Agent now names the platform, "(iOS)"), PKCE sign-in, the ChatGPT device-code flow and
   its copy, and the Keychain store in the shared group (device-only); 86 package tests on the Mac and in the
-  iOS simulator, 4 app-hosted Keychain tests. Next: the fetch repository (refresh, backoff, history), then the
-  screens.
+  iOS simulator, 4 app-hosted Keychain tests. The fetch repository followed: Android's `doFetch` rules for
+  mobile (180 s floor, 429 backoff, renewal ahead of expiry and on 401, Free-plan parking, 6-hour stuck
+  renewal), reset detection writing closed windows, history, and a per-account snapshot in the App Group for
+  widgets; 100 package tests on the Mac and in the simulator. Next: the screens, to the approved wireframes.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

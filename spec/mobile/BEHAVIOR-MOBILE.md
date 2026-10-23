@@ -20,11 +20,16 @@ time (core API-CONTRACT §6).
 
 **iOS.** No reliable background polling. The app fetches when it is opened or comes to the
 foreground; widgets refresh on WidgetKit's own budget (stale by minutes to hours, which the design
-must show rather than hide). The exact floors are set with CCRM-94 (iOS App) and must not be
-tighter than Android's 180-second manual floor.
+must show rather than hide). **Floor: 180 seconds since the last successful fetch, for manual and
+automatic fetches alike** — app opens are frequent on a phone, so the automatic ones get the same
+floor. An automatic fetch waits out the 429 backoff; a manual one goes through it, as on Android.
 
-Source: `work/Polling.kt`, `data/UsageRepository.kt` (`MANUAL_MIN_INTERVAL_MS`), `data/UsageCache.kt`
-(`pollIntervalMinutes`), `SettingsScreen.kt` presets (Android).
+**Both.** A Claude account refused for its plan (core §10.1) is parked: later fetches read only
+the profile endpoint until the plan changes. A renewal the token endpoint refuses (400–403) means
+"sign in again"; a transient one is retried, and becomes "sign in again" after 6 hours of failing.
+
+Source: `work/Polling.kt`, `data/UsageRepository.kt` (`MANUAL_MIN_INTERVAL_MS`, `doFetch`), `data/UsageCache.kt`
+(`pollIntervalMinutes`), `SettingsScreen.kt` presets (Android); `ios/Packages/CooldownCore` `UsageRepository` (iOS).
 
 ---
 
