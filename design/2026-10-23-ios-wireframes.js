@@ -274,10 +274,28 @@ function laRow(t,a,d,o={}){
      <div style="font-size:12.5px;color:${t.txt}">${line}</div></div>
      <div style="font-size:${d.p>=100&&!o.signin?36:(o.fs||44)}px;font-weight:600;letter-spacing:-.5px;color:${dim||o.signin?t.sub:sev(d.p,ac,t)};font-variant-numeric:tabular-nums">${big}</div></div>`;
 }
+/* Duet with Weekly (Q2, Robin 23 Oct): Android's expanded Duet shows Weekly for both accounts; the lock screen
+   cannot expand and caps a Live Activity at 160 pt, so each row is compressed: countdown (or "runs out") on the label
+   line, the 5h bar, then a thin Weekly line. The page measures each panel and prints its height. */
+function laRowW(t,a,d,w,o={}){
+  const ac=acc(a,t), dim=o.stale;
+  const tail = o.signin ? `<span style="color:${t.O}">sign in again</span>` : o.stale ? `<span style="color:${t.O}">as of 2:10 pm</span>` : d.p>=100 ? `<span style="color:${t.R}">limit</span> · <b style="font-weight:500;font-variant-numeric:tabular-nums">0:42:07</b>` : d.p>d.pace+3 ? `runs out ${d.run||'7:51 pm'}` : `<b style="font-weight:500;font-variant-numeric:tabular-nums">${o.cd||'1:35:12'}</b>`;
+  return `<div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0">
+     <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:${t.ink};white-space:nowrap">${amark(a,14,t)}${ACCTS[a].n} · 5h<span style="color:${t.txt};font-size:12.5px">· ${tail}</span></div>
+     <div style="margin:7px 0 6px">${bar({t,w:o.bw||222,h:7,ac,p:o.signin?null:d.p,pace:d.pace,dim})}</div>
+     <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:${t.txt}"><span style="width:40px">Weekly</span>${bar({t,w:146,h:4,ac,p:o.signin?null:w.p,pace:w.pace,dim})}<span style="margin-left:auto;font-variant-numeric:tabular-nums">${o.signin?'—':pctTxt(w.p)}</span></div></div>
+     <div style="width:${o.nw||96}px;text-align:right;font-size:${d.p>=100&&!o.signin?34:40}px;font-weight:600;letter-spacing:-.5px;color:${dim||o.signin?t.sub:sev(d.p,ac,t)};font-variant-numeric:tabular-nums">${o.signin?'—':pctTxt(d.p)}</div></div>`;
+}
+function liveDuet(o){
+  const t=DARK;
+  const rows=o.rows.map((r,i)=>(i?'<div style="height:10px"></div>':'')+laRowW(t,r.a,r.d,r.w,r)).join('');
+  return `<div class="la" style="width:370px;border-radius:24px;padding:12px 16px 11px;background:rgba(28,28,30,.86);color:${t.ink}">${rows}
+</div>`;
+}
 function liveActivity(o){
   const t=DARK;
   const rows=o.rows.map((r,i)=>(i?'<div style="height:12px"></div>':'')+laRow(t,r.a,r.d,r)).join('');
-  return `<div style="width:370px;border-radius:24px;padding:14px 16px 12px;background:rgba(28,28,30,.86);color:${t.ink}">${rows}
+  return `<div class="la" style="width:370px;border-radius:24px;padding:14px 16px 12px;background:rgba(28,28,30,.86);color:${t.ink}">${rows}${o.week?`<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:${t.txt};margin-top:9px"><span style="width:48px">Weekly</span>${bar({t,w:200,h:5,ac:acc(o.rows[0].a,t),p:o.week.p,pace:o.week.pace})}<span style="margin-left:auto">${pctTxt(o.week.p)} · resets Sun</span></div>`:''}
    ${o.stale?`<div style="font-size:11.5px;color:${t.O};margin-top:8px">as of 2:10 pm — open Cooldown to refresh</div>`:''}</div>`;
 }
 function lockScreen(o){
@@ -318,8 +336,8 @@ projection, time axis), the pace lines and both reset lines; nothing on a card i
 there is <b>no always-on notification</b> and <b>no background polling</b>, so the pinned panel becomes a Live Activity and
 the lock-screen widgets, the Quick Settings tile becomes a Control Center control, and every surface says how old its numbers are.</p>
 <div class="q"><b>Four decisions for you</b> (asked one at a time after you've looked; the drawn option is my recommendation):
-<br><b>Q1 · §1</b> iPhone keeps Android's account tabs at the top — or one long scroll of every account?
-<br><b>Q2 · §6</b> The Live Activity shows two accounts' 5h, like the Duet — or just one?
+
+<br><b>Q1 · §1</b> answered: tabs. <b>Q2 · §6</b> answered: Weekly with 5h; two accounts when they fit — they do (§6).
 <br><b>Q3 · §4</b> Offer the large widget (all accounts, both windows) — or small and medium only, like Android's faces?
 <br><b>Q4 · §2</b> iPad in landscape lists accounts in a sidebar — or uses the iPhone's tabs everywhere?</div>
 <p class="note">Sample accounts: <b>Teams</b> and <b>Product</b> (Claude), <b>Personal</b> (ChatGPT). Colours: each account's provider accent;
@@ -475,20 +493,23 @@ add(row(
 /* ---- 6 · live activity ---- */
 add(`<h2>6 · Live Activity — the pinned panel's iOS home</h2>
 <p>Android's always-on notification becomes a <b>Live Activity</b>: a panel on the lock screen (and the Dynamic Island on iPhone) that stays
-while a 5-hour window is running. It's the Duet “Huge number” panel ported: per account, mark + “· 5h”, the bar with its pace tick, a
-<b>live reset countdown</b> and the big number on the right. iOS limits: it lives at most 8 hours and only updates when the app or a
-background refresh runs, so the countdown is exact but the number can lag — after 30 minutes it says so (“as of”). It starts when you
-switch it on in Settings › Lock Screen, re-arms when the app sees a new window, and ends at the reset with a final “5h reset” frame
-that stays a few minutes.</p>
-<div class="q"><b>Q2</b> — two accounts (drawn, like the Duet; the first two in your order, or the two you pick in Settings) — or one account with
-its Weekly line underneath?</div>`);
+while a 5-hour window is running. It's the Duet “Huge number” panel ported: per account, mark + “· 5h”, the bar with its pace tick, the
+big number on the right — and, because Android's expanded Duet shows Weekly for both accounts and <b>the lock screen can't expand</b>,
+each account also gets a thin <b>Weekly</b> line. iOS caps a Live Activity at <b>160 pt</b> tall, so the 5h countdown moves onto the label
+line (“Teams · 5h · 1:35:12”, ticking live; “runs out 7:51 pm” when above pace). Each panel below prints its measured height.
+iOS limits: it lives at most 8 hours and only updates when the app or a background refresh runs, so the countdown is exact but the
+numbers can lag — after 30 minutes it says so (“as of”). It starts when you switch it on in Settings › Lock Screen, re-arms when the app
+sees a new window, and ends at the reset with a final “5h reset” frame.</p>
+<div class="q"><b>Q2 — answered:</b> show Weekly with the 5h window; two accounts if both fit, one otherwise. <b>Both fit</b> — see the
+measured heights. One account (with Weekly) remains the layout when only one is signed in or chosen.</div>`);
+const W18={p:18,pace:43}, W64={p:64,pace:43}, W9={p:9,pace:43}, W5={p:5,pace:43};
 add(row(
-  lockScreen({la:liveActivity({rows:[{a:'personal',d:{...D5,p:2,pace:1},cd:'4:59:10',at:'1:03 pm'},{a:'teams',d:{...D5b,p:11,pace:62},cd:'1:55:02',at:'10:00 am'}]}),h:560,cap:'<b>Two accounts, on pace.</b> The Duet’s top half; Weekly rows stay in the app and widgets (no room in iOS’s 160 pt).'}),
-  lockScreen({la:liveActivity({rows:[{a:'teams',d:DUP,cd:'2:59:40'},{a:'product',d:DMAX}]}),h:560,cap:'<b>Above pace, and one at 100%.</b> Red overshoot, “runs out”; the maxed account counts down to its reset.'}),
-  lockScreen({la:liveActivity({rows:[{a:'teams',d:D5b,stale:true},{a:'product',d:D5,signin:true}],stale:true}),h:560,cap:'<b>Stale and sign-in needed.</b> Numbers dim with “as of”; a broken sign-in replaces its line. Tapping opens the app.'})));
+  lockScreen({la:liveDuet({rows:[{a:'personal',d:{...D5,p:2,pace:1},w:W9,cd:'4:59:10'},{a:'teams',d:{...D5b,p:11,pace:62},w:W18,cd:'1:55:02'}]}),h:560,cap:'<b>Duet with Weekly, on pace.</b> Both accounts, both windows. <span class="mh"></span>'}),
+  lockScreen({la:liveDuet({rows:[{a:'teams',d:DUP,w:W18},{a:'product',d:DMAX,w:W64}]}),h:560,cap:'<b>Above pace, and one at 100%.</b> “runs out” replaces the countdown when above pace; the maxed account counts down to its reset. <span class="mh"></span>'}),
+  lockScreen({la:liveDuet({rows:[{a:'teams',d:D5b,w:W18,stale:true},{a:'product',d:D5,w:W5,signin:true}]}),h:560,cap:'<b>Stale and sign-in needed.</b> Numbers dim and “as of 2:10 pm” takes the countdown’s place; a broken sign-in says so on its label line. <span class="mh"></span>'})));
 add(row(
-  lockScreen({la:liveActivity({rows:[{a:'teams',d:D5b,fs:52,bw:220}]}),h:520,cap:'<b>One account</b> (Q2’s alternative, or when only one is signed in).'}),
-  lockScreen({la:`<div style="width:370px;border-radius:24px;padding:16px;background:rgba(28,28,30,.86);display:flex;gap:12px;align-items:center">${amark('teams',26,DARK)}<div><div style="font-size:16px;font-weight:600">Teams · 5h reset</div><div style="font-size:13.5px;color:${DARK.txt}">Usage is back at 0%. The last window peaked at 87%.</div></div></div>`,h:520,cap:'<b>Ended.</b> At the reset the activity shows this final frame, then iOS removes it; it re-arms when the app next sees the new window.'})));
+  lockScreen({la:liveActivity({rows:[{a:'teams',d:D5b,fs:52,bw:200}],week:W18}),h:520,cap:'<b>One account</b> (only one signed in, or one chosen): the full 5h row with the clock time, and Weekly. <span class="mh"></span>'}),
+  lockScreen({la:`<div class="la" style="width:370px;border-radius:24px;padding:16px;background:rgba(28,28,30,.86);display:flex;gap:12px;align-items:center">${amark('teams',26,DARK)}<div><div style="font-size:16px;font-weight:600">Teams · 5h reset</div><div style="font-size:13.5px;color:${DARK.txt}">Usage is back at 0%. The last window peaked at 87%.</div></div></div>`,h:520,cap:'<b>Ended.</b> At the reset the activity shows this final frame, then iOS removes it; it re-arms when the app next sees the new window.'})));
 add(`<h3>Dynamic Island (iPhone only)</h3>`+row(
   fig(island('compact'),'<b>Compact</b> · mark and number left of the camera, countdown right'),
   fig(island('minimal'),'<b>Minimal</b> · when another app shares the island: a mini ring'),
@@ -527,3 +548,5 @@ add(`<h2>8 · Every state, every surface</h2><div class="tablewrap"><table>
 the share card, About (version, licences, “not affiliated”). They’ll be the Android screens as iOS grouped lists.</p>`);
 
 document.getElementById('app').innerHTML = S.join('\n');
+// Print each Live Activity panel's height in points next to its caption (limit: 160 pt).
+document.querySelectorAll('figure').forEach(f=>{const la=f.querySelector('.la'), mh=f.querySelector('.mh'); if(la&&mh){const h=la.offsetHeight; mh.innerHTML=`Measured: <b style="color:${h<=160?'#2e9d55':'#d33'}">${h} pt</b> of 160.`;}});
