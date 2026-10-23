@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS Wireframes — rev A</title>
+<!--
+  CCRM-94 (iOS App), docs/ios/PLAN.md step 4: wireframes for every iPhone/iPad surface and its
+  states, for Robin's approval before any UI is built (CLAUDE.md §2). Rev A, 2026-10-23.
+  Ports the approved Android designs: the v1.7 main screen (design/2026-09-17-main-screen-redesign.html),
+  the v1.8 widget faces (design/2026-09-25-widgets-reborn.html, revh), the Duet "Huge number"
+  panel and the history screen, as shipped (device shots in design/research/2026-09-17-v17-device-pass,
+  2026-09-26-v18-device-pass, 2026-09-10-device-pass).
+  Provider marks: the app's own traces (app/src/main/res/drawable/ic_provider_*.xml);
+  Claude — https://www.anthropic.com/brand, ChatGPT — https://openai.com/brand.
+  Numbers, thresholds and wording follow spec/core/BEHAVIOR-SPEC.md and spec/mobile/BEHAVIOR-MOBILE.md.
+-->
+<style>
+:root{--page:#f3f1ed;--ink:#1d1d1f;--muted:#6b6b70;--rule:#d9d5ce;--q:#fff4dc;--qb:#ecd39c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#161617;--ink:#ececec;--muted:#9a9aa0;--rule:#333;--q:#2c2516;--qb:#5b4a22}}
+:root[data-theme="dark"]{--page:#161617;--ink:#ececec;--muted:#9a9aa0;--rule:#333;--q:#2c2516;--qb:#5b4a22}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+main{max-width:1320px;margin:0 auto;padding:28px 16px 96px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:56px 0 6px;padding-top:18px;border-top:1px solid var(--rule)}
+h3{font-size:15px;margin:22px 0 4px}
+p,li{max-width:920px}
+.note{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start;margin:14px 0}
+figure{margin:0;display:table}
+figcaption{display:table-caption;caption-side:bottom;font-size:12.5px;line-height:1.45;color:var(--muted);padding-top:10px;min-width:160px}
+figcaption b{color:var(--ink)}
+.q{background:var(--q);border:1px solid var(--qb);border-radius:10px;padding:10px 14px;margin:14px 0;max-width:920px}
+.q b{font-weight:650}
+table{border-collapse:collapse;font-size:13px;margin:12px 0;max-width:100%}
+td,th{border:1px solid var(--rule);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:color-mix(in srgb,var(--rule) 45%,transparent)}
+.tablewrap{overflow-x:auto}
+code{font:12.5px ui-monospace,Menlo,monospace}
+
+/* ---------- devices (drawn at true iOS points, then zoomed) ---------- */
+.dev{position:relative;overflow:hidden;border-radius:56px;box-shadow:0 0 0 11px #1d1d1f,0 0 0 12px #5a5a5e;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.ipad{border-radius:22px;box-shadow:0 0 0 14px #1d1d1f,0 0 0 15px #5a5a5e}
+.z70{zoom:.70}.z78{zoom:.78}.z62{zoom:.62}.z54{zoom:.54}.z48{zoom:.48}.z100{zoom:1}.z85{zoom:.85}
+.sb{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 46px;font-weight:600;font-size:17px}
+.ipad .sb{height:28px;padding:0 22px;font-size:14px}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000}
+.sbicons{display:flex;gap:6px;align-items:center}
+.sbicons i{display:inline-block;background:currentColor;border-radius:2px}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:138px;height:5px;border-radius:3px;opacity:.9}
+
+/* app chrome */
+.tool{display:flex;justify-content:flex-end;gap:22px;padding:4px 20px 0;height:40px;align-items:center}
+.ltitle{display:flex;align-items:center;gap:8px;padding:0 16px;font-size:34px;font-weight:700;letter-spacing:.2px;height:52px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:4px 0 0}
+.tab{flex:1;display:flex;gap:7px;align-items:center;justify-content:center;height:46px;font-size:16px;font-weight:500;position:relative}
+.tab.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--acc)}
+.scroll{padding:14px 16px 0}
+.card{border-radius:18px;padding:16px;margin-bottom:12px}
+.ch{display:flex;align-items:center;gap:8px;font-size:17px}
+.ch .t{flex:1}
+.ch .p{font-weight:700;font-size:19px;font-variant-numeric:tabular-nums}
+.ln{font-size:14.5px;line-height:1.35;margin-top:6px}
+.rs{display:flex;justify-content:space-between;font-size:14.5px;margin-top:10px}
+.sep{height:1px;margin:10px 0 0}
+.foot{display:flex;align-items:center;gap:8px;font-size:15px;padding:6px 2px 0}
+.notice{border-radius:14px;padding:11px 13px;margin-bottom:12px;font-size:14px;line-height:1.35}
+.notice b{display:block;font-size:15px;margin-bottom:2px}
+.btn{display:inline-block;border-radius:99px;padding:7px 14px;font-size:14.5px;font-weight:600;margin-top:8px}
+.chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.3px;padding:2px 7px;border-radius:6px;vertical-align:2px}
+.dim{opacity:.45}
+.bar{position:relative;display:block;border-radius:99px}
+.bar i{position:absolute;top:0;bottom:0;border-radius:99px}
+.bar i.l{border-radius:99px 0 0 99px}.bar i.r{border-radius:0 99px 99px 0}
+.bar b{position:absolute;top:-4px;bottom:-4px;width:3px;border-radius:2px}
+.sub2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* sheets & lists */
+.sheet{position:absolute;left:0;right:0;bottom:0;border-radius:14px 14px 0 0;padding:8px 20px 40px}
+.grab{width:36px;height:5px;border-radius:3px;margin:0 auto 14px;opacity:.5}
+.group{border-radius:12px;margin:0 16px 22px;overflow:hidden}
+.ghead{font-size:13px;text-transform:uppercase;letter-spacing:.3px;padding:0 32px 6px}
+.li{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:16px;min-height:44px}
+.li+.li{border-top:.5px solid var(--line)}
+.li .v{margin-left:auto}
+.seg{display:inline-flex;border-radius:9px;padding:2px;font-size:13px}
+.seg span{padding:4px 10px;border-radius:7px}
+
+/* widgets */
+.wg{border-radius:22px;position:relative;overflow:hidden;font-family:-apple-system,system-ui,sans-serif}
+.wsm{width:170px;height:170px;padding:15px}
+.wmd{width:364px;height:170px;padding:15px 16px}
+.wlg{width:364px;height:382px;padding:16px}
+.lk{color:#fff;font-family:-apple-system,system-ui,sans-serif}
+.wall{border-radius:30px;padding:22px;background:linear-gradient(160deg,#5b5f8f,#9a6e8f 55%,#c98a6c)}
+.wall2{border-radius:30px;padding:22px;background:linear-gradient(160deg,#20304a,#42345a 60%,#6b4a55)}
+.ctl{border-radius:22px;width:196px;height:76px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.notif{border-radius:22px;padding:12px 14px;width:370px;display:flex;gap:10px;align-items:flex-start}
+.appicon{width:38px;height:38px;border-radius:9px;flex:none;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="2026-10-23-ios-wireframes-marks.js"></script>
+<script src="2026-10-23-ios-wireframes.js"></script>
+</body>
+</html>
