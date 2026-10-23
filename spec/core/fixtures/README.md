@@ -80,4 +80,4 @@ against `profile/403-plan-refusal.json`. A new client is "make these fixtures pa
 one, not a second discovery of bugs the first client already paid for.
 
 Desktop-only fixtures (`ledger/`, `logins/`, `pricing/`) live in the desktop repo's
-`contract/desktop/fixtures/`, not here.
+`spec/desktop/fixtures/`, not here.

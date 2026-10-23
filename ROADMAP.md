@@ -1563,9 +1563,12 @@ it carries the umbrella CCRM-7 (iOS).
   (two repos by product family, Robin 2026-10-23, [docs/REPO-STRUCTURE.md](docs/REPO-STRUCTURE.md)).
   Seeded from CooldownMac's `contract/` at `2bfbdfd`: API contract and core fixtures verbatim,
   BEHAVIOR-SPEC minus the desktop layer (§9.3–§9.5, §11), which stays in the desktop repo. Android's
-  two captured payloads moved to `spec/fixtures/captured/` and its tests read them from there; CI
-  runs `spec/tools/check_no_code.sh`. The pace, projection and history cases already in the Mac
-  fixtures are the vectors. Running Android's parser over every shared fixture stays CCRM-37
+  two captured payloads moved to `spec/core/fixtures/captured/` and its tests read them from there;
+  CI runs `spec/tools/check_no_code.sh`. The projection and history cases are the vectors.
+  **Amended the same day** (Robin: "features differ by family"; Fable: split by cause of change):
+  `spec/` = `spec/core/` (only server facts and fixture-backed numbers) + `spec/mobile/` (polling
+  cadence, reset pings, conditions, surfaces for Android and iOS); alerts, cadence, gauge geometry
+  and desktop surfaces left the core for the desktop layer. Running Android's parser over every shared fixture stays CCRM-37
   (Contract Tests); the desktop repo's pinned copy is that repo's step.
 - **What:** one platform-neutral spec tree (Markdown and JSON) that every client tests against.
 - **Done when:** Android's tests read the payloads from `spec/` and pass; the check passes.

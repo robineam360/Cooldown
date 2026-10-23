@@ -7,13 +7,13 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 ## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-23, after CCRM-92)
 
 > CCRM-93 (iOS Spike) and CCRM-92 (Shared Spec) are done: every iOS surface works on the iPad
-> (docs/ios/SPIKE.md), and `spec/` is the master shared spec for all five clients
+> (docs/ios/SPIKE.md), and `spec/` is this family's spec: `spec/core/` (master of the shared core) + `spec/mobile/`
 > (docs/REPO-STRUCTURE.md). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 4: wireframes for
 > every iOS surface (app on iPhone and iPad, home and lock-screen widgets, Control Center
 > control, reset alerts, Live Activity), all states, in `design/`, for Robin's approval before
 > any UI is built (CLAUDE.md §2). Separately, in the desktop repo (a session rooted there, not
-> this one): REPO-STRUCTURE step 3 — `contract/shared/` as a pinned copy of this `spec/`, plus
-> `contract/desktop/`.
+> this one): REPO-STRUCTURE step 3 — its `contract/` becomes `spec/` = `spec/core/` (pinned copy of
+> this `spec/core/`) + `spec/desktop/`.
 
 ## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
 

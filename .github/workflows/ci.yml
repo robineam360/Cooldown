@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # CCRM-92 (Shared Spec): spec/ is Markdown and JSON only — every client reads it.
+      # CCRM-92 (Shared Spec): spec/ (core and mobile layer) is Markdown and JSON only.
       - name: Shared spec holds no code
         run: sh spec/tools/check_no_code.sh
 

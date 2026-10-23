@@ -63,7 +63,7 @@ here for whichever fetch path implements it; nothing in `UsageRepository` calls
 `ChatGPTUsageParser` yet (Phase 1 is Core-only, §9.6).
 
 Source: `UsageParser.swift` (Claude), `ChatGPTUsageParser.swift` (ChatGPT); cases in
-`contract/fixtures/usage/` and [`contract/fixtures/chatgpt/`](fixtures/chatgpt/README.md).
+`fixtures/usage/` and [`fixtures/chatgpt/`](fixtures/chatgpt/README.md).
 
 ---
 
@@ -290,19 +290,6 @@ hovers on the line.
 
 Source: `Palette.kt:22-63, 192-201`.
 
-### The pie's fill floor, and the rails look's alphas
-
-The pie shape's disc radius is `Ø/2 − 0.4` (grown from `Ø/2 − 1` — the old footprint rendered
-noticeably smaller than the ring at the same box). Any non-zero percent still draws at least a
-6% wedge, so a 1% reading never shrinks to an invisible sliver — the floor is on the drawn angle
-only, never on the number or the colour, the same principle as the bars' own cap-height floor
-("never narrower than the cap diameter"). The rails look's hairline and its posts draw at 0.50
-and 0.70 alpha respectively (lifted from 0.35/0.55 — a smaller canvas makes the old hairline
-close to nothing in the state where it's the *entire* glyph); the needle stays at 0.85.
-
-Source: CCM-70 [Menu Bar], Android's round-two handover (`design/android-gauge-handover-round-two.md`,
-findings F and G).
-
 ---
 
 ## 6. The even-pace line
@@ -313,27 +300,10 @@ below it means finishing inside the limit; crossing it shades the overshoot ambe
 `elapsedPercent = (windowLength − msUntilReset) ÷ windowLength × 100`, clamped to `0…100`.
 Undefined when there is no reset instant or the window length is non-positive.
 
-On bars, the overshoot segment has no minimum width: the red starts exactly on the pace
-line, clamped to the fill's own extent (R1, shared with Android's CCRM-43, landed here as
-CCM-70 [Menu Bar]). The fill-to-red boundary is a straight vertical edge, clipped to the
-bar's rounded rect/capsule so it never pokes outside the bar's silhouette (R2, same source).
-
 Source: `Palette.kt:192-201`.
 
-**The spent post.** Once a window's percent truncates to 100 or more, every shape — ring, pie
-and bar, filled look or rails — draws a small post marking it: a cleared halo with a 1pt ink
-line inside it, in the neutral ink at 0.70 alpha, so it survives template mode even though the
-window itself may be severity-coloured. On the ring it sits at 12 o'clock, spanning the ring's
-own stroke band; on the pie, from ~4.5 to the rim; on a bar, at the far end. Truncated, not
-rounded, same as everywhere else percent is compared — 99.7% is not yet spent. This is a
-shape-level cue, independent of the pace line above: a window can be spent with no pace mark at
-all, and the post still draws. The rails bar is the one exception: its end post is permanent
-(drawn at every percent, not just spent), so there is no separate post to add there — instead
-it doubles its own weight to 2pt wide (still 0.70 alpha, still the same cleared halo) once spent
-(3D).
-
-Source: CCM-70 [Menu Bar] 3A/3D, Android's round-two handover
-(`design/android-gauge-handover-round-two.md`, finding B).
+How each platform draws the line, the overshoot and a spent window is presentation and lives in
+that platform's design, not here.
 
 ---
 
@@ -384,141 +354,20 @@ Source: `HistoryStore.kt`, `SessionLog.kt`, `HistoryStats.kt`, `UsageRepository.
 
 ---
 
-## 8. Alerts
+## 8. Reset detection
 
-All alerts are **per profile** and **deduped per window instance**.
-
-### 8.1 Threshold warnings
-
-Defaults, all user-configurable as a *set* of percentages:
-
-| Window | Default thresholds |
-|---|---|
-| Session (5-hour) | **80, 95** |
-| Weekly (7-day) | **90** |
-| Per-model cap | **90** |
-
-Firing rule:
-
-1. Truncate the percent to an integer. Identify the window by its `resets_at`.
-2. If the stored window key differs from the current one, **reset the dedupe state to 0** — a
-   new window starts with a clean slate.
-3. Fire for the **highest** threshold that the percent has reached and that is above the
-   highest already notified for this window. Sort thresholds descending.
-4. Record the crossed threshold so it cannot fire twice for the same window.
-
-So crossing 80 then 95 in one window produces exactly two notifications, in order, and
-re-polling at 96% produces none.
-
-Per-model caps dedupe **by model name**, so caps appearing or disappearing don't interfere
-with each other.
-
-### 8.2 Reset pings
-
-Three modes per window type:
-
-- **off** — never
-- **smart** — only when the window that just closed had a peak **≥ 80%**. A reset nobody was
-  waiting for is just noise.
-- **always**
-
-Reset detection itself **always runs**, regardless of mode, because it also maintains window
-identity, accumulates the peak, and writes the closed-window record. Only the *notification*
-is gated.
+Which alerts a client posts — threshold warnings, reset pings, pace or expiry alerts — and how,
+is a family feature: see `spec/mobile/` and the desktop repo's `spec/desktop/`. What every client
+shares is the window bookkeeping, because history (§7) is built from it and two installs must
+agree on when a window closed and how high it went.
 
 **Detecting a reset:** the stored window key is non-zero, differs from the current key, and
 lies in the past. On reset: write the closed window to the log (identity = the old key, peak
 = what was accumulated), then re-seed the peak from the current percent. Otherwise the peak
-accumulates as `max(storedPeak, currentPercent)`.
+accumulates as `max(storedPeak, currentPercent)`. Detection always runs, whether or not any
+alert is enabled. Window identity is the window's `resets_at` (§1).
 
-### 8.3 Sign-in expiry warnings
-
-At **7, 3, and 1 days** before the known expiry. Deduped per expiry instance, so a rotation
-that changes the expiry re-arms the warnings. Skipped entirely when the expiry is unknown
-(`0`) or already past — a dead token is the re-auth path's job.
-
-Because the expiry is an estimate for native sign-ins (API-CONTRACT §4.6), word these as
-approximate.
-
-### 8.4 Re-auth alerts
-
-Fire **once per failure episode**, and **withdraw the notification** when auth recovers.
-
-### 8.5 Stale-data alerts
-
-The silent-failure case: polls are running but nothing has succeeded, so the numbers are
-stale and nothing else would say so.
-
-Condition: last fetch was more than **6 hours** ago **and** the last status was not `OK`.
-Fire once; withdraw when it recovers. Include the last error.
-
-### 8.6 Muting
-
-A profile can be muted wholesale, which suppresses threshold warnings and reset pings but
-**not** re-auth or stale-data alerts — those are about the app being broken, not about usage.
-
-Source: `Alerts.kt`, `UsageCache.kt:28-33, 134-142`.
-
-### 8.7 Pace alerts — warning on trajectory
-
-Fires on where a window is **heading** (§3.1's severity), not on a number being crossed. A
-threshold tells you that you have spent 80%; this tells you at 40% that the rate you are going
-will not survive the window — the point at which you can still do something about it.
-
-**Scope:** the session and weekly windows only. Per-model caps are excluded: their samples are
-sparse and bind on the weekly clock, so a projection would mostly be refused anyway.
-
-**Milestones**, evaluated cumulatively — a window projected to run out is also cutting it
-close, so an escalation marks both and the rung it passed through never arrives afterwards as
-stale news:
-
-| Milestone | Satisfied when |
-|---|---|
-| `willRunOut` | severity ≥ `runningOut` (the limit lands before the reset), which includes `spent` |
-| `cuttingItClose` | severity ≥ `close` |
-
-**Only the most severe newly-earned milestone is posted**, under **one notification id per
-profile per window**, so an escalation *replaces* the standing notification rather than
-stacking a second one beside a message that is now wrong.
-
-Android additionally ships an `ALMOST_OUT` milestone at ≥90% *used*. The Mac deliberately
-omits it: it is an absolute threshold rather than a projection, and §8.1's thresholds already
-cover it configurably. A client may offer either; neither is a contract violation.
-
-**The five guards.** Each exists because of a specific way this feature becomes the reason
-someone turns notifications off. All five are required:
-
-1. **Primed.** The first observation of a window never fires; whatever is already true is
-   recorded as known. Without it, enabling the feature — or any state loss, or a fresh
-   install — dumps the whole backlog for a window the user already knows about.
-2. **Dedupe by window proximity, never `==`** (§4), with the stored key **re-anchored** to the
-   newest reading each step so drift cannot accumulate past tolerance over a 7-day window.
-3. **Hysteresis.** A fired bit survives only while its milestone is still satisfied, so a
-   window hovering on a boundary re-fires only after severity genuinely dropped below it and
-   rose again.
-4. **Young-window suppression** — inherited from §3.1, which yields no verdict at all under
-   `max(windowLength ÷ 100, 60s)` elapsed or 5% used.
-5. **Rollback on failed delivery.** Marks land only after the post succeeds, and a pace
-   rollback reverts the **whole record**, not just the posted milestone's bit — a partial
-   revert would leave the escalation's lower rung marked as announced by a notification that
-   never arrived.
-
-**Enabled milestones are masked out before dedupe, never after.** A disabled milestone must
-never be recorded as fired, or re-enabling it later finds the bit already marked and stays
-silent for the rest of the window — the same trap the master switch has (§8.1).
-
-**Off by default even when alerts are on.** An install that updates must not begin receiving a
-new *class* of notification. Switching the feature off clears its stored records, so enabling
-it again mid-window primes rather than announcing a backlog.
-
-**Withdrawal is platform-shaped, and required either way.** A standing pace notification must
-not outlive its window. Android expires it with a notification timeout; the Mac has no such
-mechanism and so **withdraws** on rollover, and also when the feature is switched off.
-
-Cases in [`fixtures/alerts/pace-cases.json`](fixtures/alerts/pace-cases.json).
-
-Source: `Alerts.kt:435-510` + `Projection.kt:160-205` (Android),
-`PaceAlertPlan.swift` + `AlertEngine.evaluatePace` (Mac).
+Source: `ResetRollover.kt` (Android).
 
 ---
 
@@ -589,32 +438,24 @@ Cases in [`fixtures/chatgpt/`](fixtures/chatgpt/README.md).
 ### 9.3–9.5 — desktop layer
 
 The account registry (§9.3), discovered Claude Code credentials (§9.4) and "which account the
-menu bar shows" (§9.5) are desktop-only. They live in the desktop repo's `contract/desktop/`,
+menu bar shows" (§9.5) are desktop-only. They live in the desktop repo's `spec/desktop/`,
 not in this core spec; the numbers are kept so references stay stable.
 
 ### 9.6 ChatGPT provider — read-only guarantee — CCM-76 [Accounts]
 
-Read-only, exactly like §9.4's Claude Code guarantee. `CodexLoginDiscovery.parse` only ever
-reads `~/.codex/auth.json` (or `$CODEX_HOME/auth.json`) in place — nothing here writes it,
-rotates its tokens, or imports it into this app's own credential store (the same "read the
-desktop file, never adopt it" boundary the device-code sign-in research note draws for
-`auth.json` itself). `ChatGPTCredentialBuilder` turns the parsed login into request material
-only; it never persists a token anywhere new. `APIClient.fetchChatGPTUsage` calls exactly one
+Every client reading ChatGPT usage, whatever its credential source, follows these rules (how a
+desktop client discovers a local Codex login is in the desktop layer). The client calls exactly one
 endpoint, GET only — `https://chatgpt.com/backend-api/wham/usage` — and no other ChatGPT
-endpoint is ever called from this app. The request itself sets `httpShouldHandleCookies =
-false` — `chatgpt.com` is a browser domain, and the default would both attach any cookie
-already sitting in the shared `HTTPCookieStorage` and persist any `Set-Cookie` the response
-sends back, neither of which this app has any business doing. Phase 1 (CCM-76's Core half)
-stops there: no registry record, no UI, no `RegistryReconciler` wiring for Codex — those land
-with the UI once Robin approves the wireframe (the project's wireframe-first rule).
+endpoint is ever called. The request neither sends nor stores cookies — `chatgpt.com` is a
+browser domain, and a default HTTP stack would both attach any cookie already in its shared
+store and persist any `Set-Cookie` the response sends back.
 
-**Persisted state must not carry the response's identity fields.** `ProfileState.lastBody` is
-written to disk and restored on relaunch (§10.0's `lastBody` doc). Claude's usage body never
-sends `email`/`user_id`/`account_id`; ChatGPT's does (see the research note's captured shape).
-A ChatGPT fetch path must run the response through `ChatGPTUsageParser.redactedBodyForStorage`
-before assigning it to `lastBody` — never the raw body — so those three keys never reach disk.
+**Persisted state must not carry the response's identity fields.** Claude's usage body never
+sends `email`/`user_id`/`account_id`; ChatGPT's does. Any client that saves a response body to
+disk (a last-good copy restored on relaunch, a debug capture) strips those three keys first —
+never the raw body.
 
-Source: `LoginDiscovery.swift`'s Codex section, `ChatGPTCredentials.swift`,
+Source: `ChatGptSource.kt` (Android); `ChatGPTCredentials.swift`,
 `APIClient.fetchChatGPTUsage` (Mac).
 
 ---
@@ -690,24 +531,8 @@ wins that race — a `.auth`-kind `lastStatusKind` must never be masked by the q
 line — and `PopoverBuilder.build`'s `isParked` encodes exactly that: `usageRefused &&
 lastStatusKind != .auth`.
 
-**Surfaces:**
-- **Popover** (`PopoverContent.notice`): the compact pill — icon + `shortLabel`, tinted by
-  `tone` — replacing the old single-tone `problemLine`. No evidence line on the pill itself; it
-  carries the evidence in a `.help()` tooltip instead (CCM-25 [Panel]'s ask, satisfied without
-  a second line of text on every render). The numbers above stay untouched, from the retained
-  last-good row.
-- **Usage pane** (`UsagePane`'s notice view): the full notice — a tinted row, the title in
-  semibold, the evidence line in small monospace beneath it, one action mapped to a button —
-  above the retained last-good cards, never replacing them. `checkForUpdates` shows no button
-  (CCM-6 is dropped, so there's nowhere for it to route).
-- **Widget**: captions swap the raw string for the kind's `shortLabel` — the full evidence line
-  stays in-app; widgets never grow a monospace detail row (Android's own "too tight" call,
-  CCRM-30, applied by analogy). A parked profile gets its own `WidgetContent.FaceState.parked`
-  face (§10.1).
-- **Menu-bar glyph**: unchanged — `GaugeState(percent: nil, …)` already renders the bare
-  track + em-dash for any no-percent condition, correct for every kind that leaves no percent
-  to show; a kind that still has one (rate-limited, stale, network — the window last reported a
-  number) keeps showing that last-good percent, same as today.
+How each platform shows a notice — panel, widget caption, menu-bar glyph, pinned-notification
+strip — is presentation, in that platform's design.
 
 Source: `ErrorKind.kt`, `MainActivity.kt:826` (Android); `ErrorTaxonomy.swift`,
 `PopoverContent.swift`, `UsagePane.swift`, `WidgetContent.swift` (Mac).
@@ -719,7 +544,7 @@ Source: `ErrorKind.kt`, `MainActivity.kt:826` (Android); `ErrorTaxonomy.swift`,
 | Endpoint | `GET https://api.anthropic.com/api/oauth/usage` | `GET https://chatgpt.com/backend-api/wham/usage` |
 | Auth-failure codes | 401 only (403 with `oauth_not_allowed_for_organization` is the separate `plan`/parked outcome, §10.1 — any other 403 falls into the generic HTTP bucket) | 401 **or** 403 → `.authNeeded`, both fold into the same auth kind — ChatGPT has no parked/plan-refusal outcome to carve 403 out for |
 | Rate limit code | 429 → `.rateLimited` | 429 → `.rateLimited` — unchanged |
-| `User-Agent` | `Cooldown/<version> (macOS)` (CCM-72) | Same value, same rule — no provider-specific User-Agent |
+| `User-Agent` | `Cooldown/<version> (<platform>)` (CCM-72) | Same value, same rule — no provider-specific User-Agent |
 | Account-id header | None | `ChatGPT-Account-Id: <account_id>` sent **only** when the account id is non-empty — never an empty header |
 | Extra headers | `anthropic-beta`, `Content-Type: application/json` | `Accept: application/json` |
 | Cookies | N/A (no cookie-bearing domain) | `httpShouldHandleCookies = false` — `chatgpt.com` is a browser domain; the request carries its own bearer token and must neither send nor accept cookies (§9.6) |
@@ -801,4 +626,4 @@ Source: `UsageRepository.kt:410-448, 476-497`, `UsageCache.kt:629-637` (`clearUs
 
 Reading local Claude Code transcripts and Codex logs, pricing them and bucketing the result is
 desktop-only (a phone has no such files). This section lives in the desktop repo's
-`contract/desktop/`.
+`spec/desktop/`.

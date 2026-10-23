@@ -71,10 +71,13 @@ joins this repo. Because the GitHub `releases/latest` stream is repo-wide and th
 check reads it, **every release that carries an IPA also carries the APK under the same version
 — never an iOS-only release**.
 
-[`spec/`](spec/README.md) is the **master** of the shared spec for all five clients (CCRM-92
-(Shared Spec)): a change to shared behaviour, or the failing fixture for a shared bug, lands
-there first. The desktop repo keeps a pinned copy plus its own desktop-only layer; nothing
-desktop-only comes here. Do not fork this repo to start another client — start clean and read
+[`spec/`](spec/README.md) is this family's one spec folder (CCRM-92 (Shared Spec)):
+`spec/core/` is the **master** of the core every client shares — server facts and the numbers
+two installs must agree on — and `spec/mobile/` holds the mobile family's product rules. A
+change to shared behaviour, or the failing fixture for a shared bug, lands in `spec/core/`
+first; a feature only phones have goes in `spec/mobile/` (the admission rule is in
+`spec/README.md`). The desktop repo keeps a pinned copy of the core plus its own desktop layer;
+nothing desktop-only comes here. Do not fork this repo to start another client — start clean and read
 `spec/`.
 
 The app tracks the usage windows of **exactly three services — Claude, ChatGPT and Google's

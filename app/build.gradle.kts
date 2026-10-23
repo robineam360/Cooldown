@@ -67,7 +67,7 @@ android {
     // the iPhone/iPad and desktop clients test against too; tests still load them by name.
     sourceSets {
         getByName("test") {
-            resources.directories.add("../spec/fixtures/captured")
+            resources.directories.add("../spec/core/fixtures/captured")
         }
     }
 

@@ -50,7 +50,7 @@ actually tested against the live endpoint until now, and it was wrong.
 
 | Endpoint | User-Agent | Consequence of getting it wrong |
 |---|---|---|
-| `api.anthropic.com/api/oauth/usage` | **Send** `Cooldown/<version> (macOS)` — our own honest UA | None observed; verified not to gate on UA (see below) |
+| `api.anthropic.com/api/oauth/usage` | **Send** `Cooldown/<version> (<platform>)` — our own honest UA, `<platform>` being `Android`, `iOS`, `macOS` and so on | None observed; verified not to gate on UA (see below) |
 | `api.anthropic.com/api/oauth/profile` | Same as usage (§9) | Same |
 | `platform.claude.com/v1/oauth/token` | **Must NOT** send a `claude-code` UA | Its WAF returns an opaque `429 rate_limit_error` |
 | `api.anthropic.com/v1/messages` | Irrelevant — no gate | None |
@@ -110,7 +110,7 @@ the Mac side only as `APIClient.claudeCodeUserAgent`, `ua-probe`'s fixed control
 GET https://api.anthropic.com/api/oauth/usage
 Authorization: Bearer <access_token>
 anthropic-beta: oauth-2025-04-20
-User-Agent: Cooldown/<version> (macOS)
+User-Agent: Cooldown/<version> (<platform>)
 Content-Type: application/json
 ```
 
@@ -327,49 +327,11 @@ Source: `UsageRepository.kt:246-289, 332-350`.
 
 Reading usage does not consume quota, but the endpoint is not free to hammer.
 
-- **Background poll interval:** a setting, `backgroundCheckMinutes` (CCM-178 [Readout]) — every
-  **5** (default), 10, 15 or 30 minutes, app-wide, never below 5; any other stored value reads as
-  5. Settings › General › "Checking usage" › "Background check". 5 minutes per account was
-  CCM-175 [Readout]'s fixed value (was 15, and 5 only for the menu bar's account — CCM-164).
-  Every signed-in account with Online on is covered, local ones included, and is skipped while
-  it has a fetch under one interval old or a live reading under **5 minutes** old (the live
-  window does not follow the setting) — so in practice an account with a working terminal status
-  line is not polled while Claude Code runs. The interval counts from the last success and from
-  the last attempt (`RefreshPolicy.Input.backgroundCheckMs`, used by the timed reason only). A
-  change takes effect on the next one-minute tick and fires no check itself. The activity floor,
-  the trailing fetch, the 3-minute open/switch floor and the manual floor do not follow it.
-- **Activity floor:** 60 seconds since the later of the last success and the last attempt, per account (CCM-175 [Readout];
-  was 300 s). A settled burst in an attached Claude Code folder fetches only the account that
-  folder belongs to, never every account, and not while that account has a live reading
-  fresher than 60 s. Respects the 429 backoff.
-- **Trailing fetch (CCM-175 [Readout]):** a settle refused by the 60 s activity floor is not
-  dropped — it arms one fetch for that account at the floor's end (the later of the last success
-  and the last attempt, plus 60 s), so a burst's last reply is read within a minute rather than
-  at the next 5-minute check. Coalesced: further settles while one is armed add nothing. Any
-  fetch for that account that starts in the meantime (activity, the background check, a manual
-  tap, a popover open) cancels it. When it fires it is decided again like a settle: the activity
-  toggle, a fresh live reading, the 429 backoff and the automatic budget below all apply.
-  `ActivityFetchPlan` (Core).
-- **Automatic budget (CCM-175 [Readout]; Astra C1-1):** at most **30 automatic fetches per
-  account in any rolling hour**, counted across activity settles, trailing fetches and the
-  background check (CCM-177's turn-ended trigger joins it). Manual taps (footer, widget) and the
-  view-driven checks (launch, popover opened, account switched, Usage pane shown) are neither
-  counted nor limited — each already has its own floor and a person behind it, and background
-  activity must never spend the check someone opened the popover for. The background check is
-  never refused by the budget, so no account goes stale; instead a fast fetch (activity,
-  trailing) is allowed only if every rolling hour would stay at or under 30 even with the
-  background check then firing every 5 minutes — the setting's minimum, whatever interval is
-  chosen (CCM-178 [Readout]), so a switch from 30 to 5 minutes cannot push an hour over 30. In non-stop use that is 23 fetches a minute
-  apart (about 20 minutes), then the 5-minute cadence until older fetches age out of the hour.
-  Attempt times are held in memory only; a relaunch starts every account's budget empty (the
-  60 s floor still holds across a relaunch through the persisted last-attempt time).
-  `AutomaticFetchBudget` (Core).
-- **Manual refresh floor:** 60 seconds from the last check — the later of the last
-  *success* and the last attempt, so a failed or 429'd attempt starts it too (CCM-165
-  [Readout]). A manual tap inside that window is refused, not queued, and the popover draws
-  the control disabled with a countdown. A tap past it still bypasses the 429 backoff.
-- **Automatic check floor:** 180 seconds since the last *success*, for the launch check and
-  the popover-open / account-switch / Usage-pane checks. Community-derived safe floor.
+- **Polling cadence is a family choice, not a contract.** How often each client polls — the
+  background interval, the floors on manual and automatic checks, any fetch budget — depends on
+  what the platform allows (a phone's scheduler, a desktop's activity signals) and lives in the
+  family layer: `spec/mobile/` for Android and iOS, the desktop repo's `spec/desktop/`. What every
+  client shares is the three rules below.
 - **429 backoff:** `5 min × 2^n`, where `n` is the consecutive-429 count, capped at
   **60 minutes**. Reset the counter on success.
 - **Access-token pre-refresh margin:** refresh proactively when the token expires within
@@ -453,11 +415,11 @@ the next port will be cheap.
 GET https://api.anthropic.com/api/oauth/profile
 Authorization: Bearer <access_token>
 anthropic-beta: oauth-2025-04-20
-User-Agent: Cooldown/<version> (macOS)
+User-Agent: Cooldown/<version> (<platform>)
 Content-Type: application/json
 ```
 
-Same host, headers and User-Agent rule as §2–§3 — the honest `Cooldown/<version> (macOS)` UA,
+Same host, headers and User-Agent rule as §2–§3 — the honest `Cooldown/<version> (<platform>)` UA,
 not `claude-code`.
 
 **Read at most once a day per profile** (`UsageRepository.planTagRecheckMs`, 24h; a clock that
@@ -477,7 +439,7 @@ and reads the profile *instead of* usage while it stays due-gated — within the
 read at all, and the profile just stays parked.
 
 Undocumented and unversioned like §3 — treat every field as optional. Captured shape
-(redacted), mirrored under `contract/fixtures/profile/`:
+(redacted), mirrored under `fixtures/profile/`:
 
 ```json
 {

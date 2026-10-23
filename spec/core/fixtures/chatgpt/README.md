@@ -2,7 +2,7 @@
 
 `GET https://chatgpt.com/backend-api/wham/usage` responses, for `ChatGPTUsageParser.parse` and
 `PlanTag.fromChatGPT` (CCM-76 [Accounts]). See Android's ChatGPT provider notes (2026-09-20, maintainer notes)
-for the reference implementation these port, and `contract/BEHAVIOR-SPEC.md`'s Provider column
+for the reference implementation these port, and `spec/core/BEHAVIOR-SPEC.md`'s Provider column
 for the rules pinned here. Same `_meta`/`captured` conventions as
 [`../usage/README.md`](../../fixtures/README.md) — strip or ignore `_meta`, it isn't part of the API.
 
