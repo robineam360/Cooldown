@@ -107,6 +107,18 @@ public struct Snapshot: Sendable, Equatable, Codable {
     public var lastMessage: String
     public var plan: String?
 
+    public init(profileKey: String, provider: Provider, body: String, fetchedAtMs: Int64, lastAttemptAtMs: Int64,
+                lastKind: String, lastMessage: String, plan: String?) {
+        self.profileKey = profileKey
+        self.provider = provider
+        self.body = body
+        self.fetchedAtMs = fetchedAtMs
+        self.lastAttemptAtMs = lastAttemptAtMs
+        self.lastKind = lastKind
+        self.lastMessage = lastMessage
+        self.plan = plan
+    }
+
     /// The numbers, parsed again from the stored body. `nowMs` only matters for ChatGPT's
     /// not-started session rule.
     public func usage(nowMs: Int64) -> UsageData? {

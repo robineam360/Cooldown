@@ -1594,7 +1594,14 @@ it carries the umbrella CCRM-7 (iOS).
   iOS simulator, 4 app-hosted Keychain tests. The fetch repository followed: Android's `doFetch` rules for
   mobile (180 s floor, 429 backoff, renewal ahead of expiry and on 401, Free-plan parking, 6-hour stuck
   renewal), reset detection writing closed windows, history, and a per-account snapshot in the App Group for
-  widgets; 100 package tests on the Mac and in the simulator. Next: the screens, to the approved wireframes.
+  widgets; 100 package tests on the Mac and in the simulator. The screens followed, to wireframe rev B: iPhone
+  tabs with the 5-hour, 7-day and credits cards (full chart, pace and projection lines), notices for sign-in,
+  stale and Free plan, first launch, iPad pinned + selected (landscape sidebar, portrait tabs), Add account,
+  Claude and ChatGPT sign-in sheets, Settings (accounts, theme, about) and History; a `-demo` mode draws the
+  wireframe's states, and a UI test saves them in both orientations. Still to build: home and lock-screen
+  widgets, the Control Center control, reset alerts (and their Settings rows), the Live Activity (and its
+  Settings row), background refresh, the layout sheet, density and chart height, the share card and the
+  launcher icon.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.
