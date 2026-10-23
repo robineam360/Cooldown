@@ -132,6 +132,9 @@ const D5b = {s:[[0,0],[.06,2],[.11,5],[.18,11],[.24,19],[.3,27],[.36,34],[.41,40
 const DUP = {s:[[0,0],[.05,6],[.1,13],[.15,21],[.2,30],[.25,38],[.3,47],[.36,55],[.4,62]], now:.4, p:62, pace:40, proj:155, x0:'4:50 pm', x1:'9:50 pm', run:'7:51 pm'};
 const DMAX = {s:[[0,0],[.08,15],[.16,33],[.24,52],[.32,70],[.4,86],[.47,97],[.52,100],[.6,100]], now:.6, p:100, pace:60, proj:null, x0:'4:50 pm', x1:'9:50 pm'};
 const DW = {s:[[0,0],[.05,1],[.1,3],[.14,6],[.2,8],[.26,11],[.31,14],[.37,16],[.43,18]], now:.43, p:18, pace:43, proj:null, x0:'13 Oct', x1:'20 Oct'};
+// Variants whose samples are scaled so the chart's end point agrees with the number shown.
+const wk = (p,pace=43) => ({...DW, p, pace, s:DW.s.map(([x,v])=>[x, v*p/18])});
+const sc5 = (p,pace,proj=null) => ({...D5, p, pace, proj, s:D5.s.map(([x,v])=>[x, v*p/26])});
 const DWf = {s:[[0,0],[.2,1],[.43,5]], now:.43, p:5, pace:43, proj:null, x0:'13 Oct', x1:'20 Oct'};
 
 /* ============ devices ============ */
@@ -181,7 +184,7 @@ function cardWeek(o){
   const t=o.t, ac=acc(o.a,t), W=o.W||338, two=o.caps;
   const col = (name,d,w,rin) => `<div><div class="ch" style="font-size:16px"><span class="t" style="color:${t.txt}">${name}</span><span class="p" style="font-size:17px;color:${o.dim?t.sub:t.ink}">${pctTxt(d.p)}</span></div>
      <div style="margin-top:12px">${bar({t,w,h:9,ac,p:d.p,pace:d.pace,dim:o.dim})}</div>
-     ${o.exp?`<div style="margin-top:12px">${chart({t,w,h:120,ac,s:d.s,now:d.now,proj:d.proj,x0:d.x0,x1:d.x1,dim:o.dim})}</div>`:''}
+     ${o.exp?`<div style="margin-top:12px">${chart({t,w,h:120,ac,s:d.s,now:d.now,proj:d.proj,x0:d.x0,x1:d.x1,over:d.p>d.pace+3&&d.p<100,dim:o.dim})}</div>`:''}
      <div class="ln" style="color:${t.txt};font-size:13.5px">${rin}</div></div>`;
   let h=`<div class="card" style="background:${t.card}"><div class="ch" style="margin-bottom:10px"><span class="t" style="color:${t.txt}">7-day window ${o.exp?'':''}</span>${o.exp?ico.up(t.sub):ico.down(t.sub)}</div>`;
   if(two) h+=`<div class="sub2">${col('All',o.d,(W-16)/2,o.rin||'Resets in 3d 1h')}${col(o.capName||'Opus',o.d2,(W-16)/2,o.rin||'Resets in 3d 1h')}</div>`;
@@ -326,7 +329,7 @@ const add = s => S.push(s);
 const row = (...xs) => `<div class="row">${xs.join('')}</div>`;
 const fig = (inner,cap,extra='') => `<figure${extra}>${inner}<figcaption>${cap}</figcaption></figure>`;
 
-add(`<h1>Cooldown for iPhone and iPad — wireframes, rev A</h1>
+add(`<h1>Cooldown for iPhone and iPad — wireframes, rev B</h1>
 <p class="note">CCRM-94 (iOS App) · <code>docs/ios/PLAN.md</code> step 4 · 23 Oct 2026 · for Robin's approval before any UI is built (CLAUDE.md §2).
 Drawn at true iOS points (iPhone 17: 402×874 pt; iPad Pro 11": 1210×834 pt landscape), then scaled down.</p>
 <p><b>What this is.</b> A port, not a redesign. The app screens reproduce the Android v1.7 main screen and history as shipped —
@@ -335,11 +338,11 @@ projection, time axis), the pace lines and both reset lines; nothing on a card i
 (Number, Countdown, Ring, Strip). The Live Activity is the Duet "Huge number" panel. What changes is only what iOS forces:
 there is <b>no always-on notification</b> and <b>no background polling</b>, so the pinned panel becomes a Live Activity and
 the lock-screen widgets, the Quick Settings tile becomes a Control Center control, and every surface says how old its numbers are.</p>
-<div class="q"><b>Four decisions for you</b> (asked one at a time after you've looked; the drawn option is my recommendation):
+<div class="q"><b>Four decisions</b> (asked one at a time):
 
 <br><b>Q1 · §1</b> answered: tabs. <b>Q2 · §6</b> answered: Weekly with 5h; two accounts when they fit — they do (§6).
-<br><b>Q3 · §4</b> Offer the large widget (all accounts, both windows) — or small and medium only, like Android's faces?
-<br><b>Q4 · §2</b> iPad in landscape lists accounts in a sidebar — or uses the iPhone's tabs everywhere?</div>
+
+<br><b>Q3 · §4</b> answered: offer Large. <b>Q4 · §2</b> answered: sidebar, using the height — one pinned account on top, the selected one below.</div>
 <p class="note">Sample accounts: <b>Teams</b> and <b>Product</b> (Claude), <b>Personal</b> (ChatGPT). Colours: each account's provider accent;
 bars and rings turn yellow above 80%, orange above 90%, red at 100%; above pace (more than 3 points over the even-pace line) the overshoot
 is red from the pace tick. Wording: "5-hour window" / "7-day window" in the app's cards, "5h" / "Weekly" everywhere tight.</p>`);
@@ -353,15 +356,14 @@ add(`<h2>1 · iPhone — the main screen</h2>
 <p>Same information architecture as Android: a large title with both marks, the account tabs (swipe or tap), then the cards in the
 user's order (the Android layout sheet ports as-is), then "Checked … ago" with a refresh button; <b>pull to refresh</b> is the iOS addition.
 The toolbar holds History (calendar), Settings (gear) and the "…" menu (Layout, Refresh, Share card).</p>
-<div class="q"><b>Q1</b> — tabs (drawn) keep one account per screen, exactly like Android and the iPad's portrait view.
-The alternative is one scrolling list of every account's cards, which suits one or two accounts but gets long at three.</div>`);
+<div class="q"><b>Q1 — answered: tabs</b>, one account per screen, exactly like Android.</div>`);
 add(row(
   phone({t:T,body:mainNormal(T),cap:'<b>Dark, on pace.</b> 5h expanded with the full chart; 7-day collapsed to its two halves (All and a model cap, as on Android); credits.'}),
   phone({t:T,body:appHead(T,'teams')+`<div class="scroll">`+card5({t:T,a:'teams',d:DUP,exp:true,lines:[`<span style="color:${T.R}">22% above even pace</span>`,'At this pace: runs out ~7:51 pm · 24.0%/h '+ico.info(T.sub)],rin:'Resets in 2h 59m',rat:'Resets at Thu 9:50 pm'})+cardWeek({t:T,a:'teams',caps:true,d:DW,d2:DWf})+foot(T)+`</div>`,cap:'<b>Above pace.</b> The overshoot is red from the pace tick on the bar; the chart line turns red; the projection says when it runs out.'}),
-  phone({t:T,body:appHead(T,'teams')+`<div class="scroll">`+card5({t:T,a:'teams',d:DMAX,exp:true,lines:[`<span style="color:${T.R}">Limit reached</span>`,'Opens again when the window resets'],rin:'Resets in 42m',rat:'Resets at Thu 9:50 pm'})+cardWeek({t:T,a:'teams',caps:true,d:{...DW,p:64,pace:43},d2:DWf})+foot(T)+`</div>`,cap:'<b>At 100%.</b> Number, bar and chart point go red; no projection.'})
+  phone({t:T,body:appHead(T,'teams')+`<div class="scroll">`+card5({t:T,a:'teams',d:DMAX,exp:true,lines:[`<span style="color:${T.R}">Limit reached</span>`,'Opens again when the window resets'],rin:'Resets in 42m',rat:'Resets at Thu 9:50 pm'})+cardWeek({t:T,a:'teams',caps:true,d:wk(64),d2:DWf})+foot(T)+`</div>`,cap:'<b>At 100%.</b> Number, bar and chart point go red; no projection.'})
 ));
 add(row(
-  phone({t:T,body:appHead(T,'personal')+`<div class="scroll">`+card5({t:T,a:'personal',d:{...D5,p:26},exp:true,lines:['42% below even pace','At this pace: ~42% when the window resets · 5.6%/h '+ico.info(T.sub)],rin:'Resets in 1h 35m',rat:'Resets at Thu 9:50 pm'})+cardWeek({t:T,a:'personal',d:{...DW,p:9}})+`<div class="card" style="background:${T.card};display:flex;font-size:16px"><span style="color:${T.txt}">Credits</span><span style="margin-left:auto;font-weight:600">$4.20 balance</span></div>`+foot(T)+`</div>`,cap:'<b>A ChatGPT account.</b> Green accent from the mark; 7-day has no model caps; credits read as a balance (CCRM-54 (ChatGPT Account)).'}),
+  phone({t:T,body:appHead(T,'personal')+`<div class="scroll">`+card5({t:T,a:'personal',d:{...D5,p:26},exp:true,lines:['42% below even pace','At this pace: ~42% when the window resets · 5.6%/h '+ico.info(T.sub)],rin:'Resets in 1h 35m',rat:'Resets at Thu 9:50 pm'})+cardWeek({t:T,a:'personal',d:wk(9)})+`<div class="card" style="background:${T.card};display:flex;font-size:16px"><span style="color:${T.txt}">Credits</span><span style="margin-left:auto;font-weight:600">$4.20 balance</span></div>`+foot(T)+`</div>`,cap:'<b>A ChatGPT account.</b> Green accent from the mark; 7-day has no model caps; credits read as a balance (CCRM-54 (ChatGPT Account)).'}),
   phone({t:T,body:appHead(T,'product')+`<div class="scroll">`+notice(T,'Product: Sign-in stopped working','The saved sign-in failed and couldn’t renew. The numbers below are the last ones that worked.','Sign in again','err')+card5({t:T,a:'product',d:D5,exp:false,rin:'Resets in 1h 35m',rat:'as of 2:10 pm',dim:true})+cardWeek({t:T,a:'product',d:DW,dim:true})+foot(T,'Last success 2:10 pm')+`</div>`,cap:'<b>Sign-in needed / stale.</b> The condition sits above the cards (the iOS home of Android’s notification strips); the last good numbers stay, dimmed. Stale (no success for 6 h) uses the same notice in orange: “Stale — nothing since 3:12 am”.'}),
   phone({t:T,body:appHead(T,'product')+`<div class="scroll">`+notice(T,'Usage isn’t available on the Free plan','Anthropic only reports usage windows for paid plans. This account stays signed in and will show numbers if the plan changes.',null,'warn')+foot(T)+`</div>`,cap:'<b>Plan refusal.</b> The Free plan’s 403 (spec core §10.1): one quiet notice, no cards, no error tone.'})
 ));
@@ -372,28 +374,49 @@ add(row(
 ));
 
 /* ---- 2 · iPad ---- */
-const sideRow=(t,a,d,sel)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin:0 10px;${sel?`background:${rgba(acc(a,t),.18)}`:''}">${amark(a,22,t)}<div style="flex:1"><div style="font-size:16px;font-weight:${sel?600:400}">${ACCTS[a].n} <span class="chip" style="background:${t.fill};color:${t.sub}">${ACCTS[a].plan}</span></div><div style="margin-top:6px">${bar({t,w:170,h:5,ac:acc(a,t),p:d.p,pace:d.pace})}</div></div><span style="font-weight:700;color:${sev(d.p,acc(a,t),t)}">${pctTxt(d.p)}</span></div>`;
-const ipadLand = t => `<div style="display:flex;height:806px">
-  <div style="width:320px;border-right:1px solid ${t.line};background:${t===LIGHT?'#F7F7F9':'#161617'}"><div class="tool" style="justify-content:space-between;padding:4px 18px">${ico.side(t.ink)}<span style="display:flex;gap:18px">${ico.plus(t.ink)}</span></div>
+/* Q4 (Robin, 23 Oct): use the iPad's height — one account is pinned to the top half, the selected one fills the
+   bottom half. Nothing pinned yet means the first account in your order is pinned. */
+const pin = (c,s=16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="flex:none;display:block"><path d="M15 3l6 6-3 1-4 4 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 4-4z" fill="${c}"/></svg>`;
+const sideRow=(t,a,d,sel,pinned)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin:0 10px 2px;${sel?`background:${rgba(acc(a,t),.18)}`:''}">${amark(a,22,t)}<div style="flex:1"><div style="font-size:16px;font-weight:${sel||pinned?600:400};display:flex;align-items:center;gap:6px">${ACCTS[a].n} <span class="chip" style="background:${t.fill};color:${t.sub}">${ACCTS[a].plan}</span>${pinned?pin(t.sub,14):''}</div><div style="margin-top:6px">${bar({t,w:160,h:5,ac:acc(a,t),p:d.p,pace:d.pace})}</div></div><span style="font-weight:700;color:${sev(d.p,acc(a,t),t)}">${pctTxt(d.p)}</span></div>`;
+const credLine = (t,a) => a==='personal' ? `<span style="color:${t.txt};font-size:14px">Credits $4.20 balance</span>` : `<span style="color:${t.txt};font-size:14px">Usage credits $123.90 / $400.00 · <b>31%</b></span>`;
+function half(t,a,d5,dw,dw2,o){
+  const W=o.W, ch=o.ch;
+  const head=`<div style="display:flex;align-items:center;gap:9px;margin:0 2px 10px">${amark(a,22,t)}<span style="font-size:21px;font-weight:700">${ACCTS[a].n}</span><span class="chip" style="background:${t.fill};color:${t.sub};font-size:12px">${ACCTS[a].plan}</span>${o.pinned?`<span style="display:flex;align-items:center;gap:4px;color:${t.sub};font-size:13px;margin-left:4px">${pin(t.sub,14)}Pinned</span>`:''}<span style="margin-left:auto">${credLine(t,a)}</span></div>`;
+  const over = d5.p>d5.pace+3 && d5.p<100;
+  const l5 = over ? [`<span style="color:${t.R}">${Math.round(d5.p-d5.pace)}% above even pace</span>`,'At this pace: runs out ~7:51 pm · 24.0%/h '+ico.info(t.sub)] : [d5.p>=d5.pace-3?'On even pace':`${Math.round(d5.pace-d5.p)}% below even pace`,`At this pace: ~${d5.proj}% when the window resets · 17.7%/h `+ico.info(t.sub)];
+  return `<div>${head}<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div>${card5({t,a,d:d5,exp:true,W,ch,lines:l5,rin:over?'Resets in 2h 59m':'Resets in 1h 35m',rat:'Resets at Thu 9:50 pm'})}</div>
+    <div>${cardWeek({t,a,caps:!!dw2,exp:true,d:dw,d2:dw2,W,rin:'Resets in 3d 1h'})}</div></div></div>`;
+}
+const ipadLand = (t,sel) => `<div style="display:flex;height:806px">
+  <div style="width:300px;border-right:1px solid ${t.line};background:${t===LIGHT?'#F7F7F9':'#161617'};position:relative"><div class="tool" style="justify-content:space-between;padding:4px 18px">${ico.side(t.ink)}${ico.plus(t.ink)}</div>
   <div class="ltitle" style="font-size:30px">${mark('claude',22,acc('teams',t))}${mark('chatgpt',22,acc('personal',t))}Cooldown</div>
-  <div style="margin-top:10px">${sideRow(t,'teams',D5b,true)}${sideRow(t,'product',D5,false)}${sideRow(t,'personal',{...D5,p:12,pace:30},false)}</div>
+  <div style="margin-top:10px">${sideRow(t,'teams',D5b,false,true)}${sideRow(t,'product',DUP,sel==='product')}${sideRow(t,'personal',sc5(12,30),sel==='personal')}</div>
+  <div style="color:${t.sub};font-size:12.5px;padding:14px 22px;line-height:1.4">Touch and hold an account to pin it to the top.</div>
   <div style="position:absolute;bottom:22px;left:22px;color:${t.sub};font-size:14px;display:flex;gap:8px">Checked 3m ago ${ico.refresh(t.sub)}</div></div>
-  <div style="flex:1;padding:0 22px">
-   <div class="tool" style="padding:4px 0">${ico.cal(t.ink)}${ico.gear(t.ink)}${ico.more(t.ink)}</div>
-   <div style="display:flex;align-items:center;gap:10px;font-size:30px;font-weight:700;margin:0 0 12px">${amark('teams',26,t)}Teams <span class="chip" style="background:${t.fill};color:${t.sub};font-size:13px">Team</span></div>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-    <div>${card5({t,a:'teams',d:D5b,exp:true,W:388,ch:180,lines:['On even pace','At this pace: ~83% when the window resets · 17.7%/h '+ico.info(t.sub)],rin:'Resets in 1h 35m',rat:'Resets at Thu 9:50 pm'})}</div>
-    <div>${cardWeek({t,a:'teams',caps:true,exp:true,d:DW,d2:DWf,W:388,rin:'Resets in 3d 1h'})}</div>
-   </div>${cardCredits(t)}</div></div>`;
-add(`<h2>2 · iPad — two columns</h2>
-<p>The iPad always has room for two panes, the Android inner-screen layout. In landscape the accounts sit in a sidebar, each with its
-plan chip, a mini 5h bar and the number, so you see every account at once and the detail pane shows one account's cards side by side
-(5-hour and 7-day both expanded). In portrait, and in Split View narrower than ~700 pt, it falls back to the iPhone's tabs with the
-cards still two across.</p>
-<div class="q"><b>Q4</b> — sidebar in landscape (drawn), or the iPhone's tabs everywhere so both platforms look identical?</div>`);
-add(row(ipad({t:T,body:ipadLand(T),cap:'<b>iPad Pro 11", landscape, dark.</b> Sidebar 320 pt; detail pane two cards across with the full charts; credits full width. Pencil and ⌘R (refresh), ⌘1–9 (accounts) come free.'})));
-add(row(ipad({t:T,w:834,h:1210,z:'z48',body:appHead(T,'teams')+`<div class="scroll" style="padding:14px 22px 0"><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div>${card5({t:T,a:'teams',d:D5b,exp:true,W:338,lines:['On even pace','At this pace: ~83% when the window resets'],rin:'Resets in 1h 35m',rat:'Thu 9:50 pm'})}</div><div>${cardWeek({t:T,a:'teams',caps:true,exp:true,d:DW,d2:DWf,W:338,rin:'Resets in 3d 1h'})}</div></div>${cardCredits(T)}${foot(T)}</div>`,cap:'<b>iPad portrait / narrow Split View.</b> The iPhone tabs, cards two across.'}),
-  ipad({t:L,body:ipadLand(L),z:'z48',cap:'<b>Landscape, light.</b>'})));
+  <div style="flex:1;padding:0 20px;overflow:hidden">
+   <div class="tool" style="padding:4px 0;height:40px">${ico.cal(t.ink)}${ico.gear(t.ink)}${ico.more(t.ink)}</div>
+   ${half(t,'teams',D5b,DW,DWf,{W:396,ch:112,pinned:true})}
+   <div style="height:1px;background:${t.line};margin:2px 0 12px"></div>
+   ${sel==='product'?half(t,'product',DUP,wk(64),null,{W:396,ch:112}):half(t,'personal',sc5(12,30,30),wk(9),null,{W:396,ch:112})}
+  </div></div>`;
+const ipadPort = t => `<div class="tool" style="padding:4px 22px 0">${ico.cal(t.ink)}${ico.gear(t.ink)}${ico.more(t.ink)}</div>
+  <div class="ltitle" style="padding:0 22px">${mark('claude',26,acc('teams',t))}${mark('chatgpt',26,acc('personal',t))}<span>Cooldown</span></div>
+  <div style="padding:10px 22px 0">${half(t,'teams',D5b,DW,DWf,{W:356,ch:200,pinned:true})}</div>
+  <div style="margin:4px 0 0">${(()=>{const sel='product';return `<div class="tabs" style="--line:${t.line};--acc:${acc(sel,t)};padding:0 22px">${['product','personal'].map(k=>`<div class="tab ${k===sel?'on':''}" style="color:${k===sel?t.ink:t.sub}">${amark(k,20,t)}${ACCTS[k].n}</div>`).join('')}</div>`})()}</div>
+  <div style="padding:14px 22px 0">${half(t,'product',DUP,wk(64),null,{W:356,ch:200})}${foot(t)}</div>`;
+add(`<h2>2 · iPad — pinned on top, selected below</h2>
+<p>Revised for Q4 (your idea): the iPad's height is used for <b>two accounts at once</b>. One account is <b>pinned</b> to the top half; the
+account you select fills the bottom half. Each half is the account's 5-hour and 7-day cards side by side with their full charts, and its
+credits on the header line. Until you pin one, the first account in your order is pinned. With a single account it fills the whole pane.
+<b>Landscape:</b> the sidebar lists every account (pinned one marked) and selects the bottom half. <b>Portrait:</b> no sidebar — the pinned
+account on top, then tabs for the others, then the selected one. Split View narrower than ~700 pt uses the iPhone layout.</p>
+<div class="q"><b>Q4 — answered:</b> sidebar, and use the vertical space. Drawn here as one pinned + one selected. The other way to fill the
+space would be every account stacked in one scrolling pane (the sidebar then jumps to an account); pinning keeps the account you watch
+most always in view, so it's drawn as the recommendation.</div>`);
+add(row(ipad({t:T,body:ipadLand(T,'product'),cap:'<b>Landscape, dark.</b> Teams pinned on top; Product (above pace) selected below. Pencil and ⌘R (refresh), ⌘1–9 (accounts) come free.'})));
+add(row(ipad({t:T,w:834,h:1210,z:'z48',body:ipadPort(T),cap:'<b>Portrait, dark.</b> Teams pinned on top with taller charts; tabs pick the bottom account.'}),
+  ipad({t:L,body:ipadLand(L,'personal'),z:'z48',cap:'<b>Landscape, light.</b> Personal (ChatGPT) selected below.'})));
 
 /* ---- 3 · sign-in & settings ---- */
 const sheetWrap = (t,inner,under,top=360) => `${under}<div style="position:absolute;inset:0;background:rgba(0,0,0,.5)"></div><div class="sheet" style="background:${t.sheet};top:${top}px"><div class="grab" style="background:${t.sub}"></div>${inner}</div>`;
@@ -469,15 +492,14 @@ add(row(
   fig(wRing1({t:T,a:'teams',d:DUP}),'<b>Ring</b> · above pace'),
   fig(wNumber({t:L,a:'personal',d:{...D5,p:26}}),'<b>Light</b> — widgets follow the system appearance')));
 add(`<h3>Medium (364 × 170 pt) — Ring (all accounts), Strip</h3>`+row(
-  fig(wRing3({t:T,ds:[D5b,D5,{...D5,p:12,pace:30}]}),'<b>Ring</b> · three accounts, on pace'),
-  fig(wRing3({t:T,ds:[DUP,DMAX,{...D5,p:12,pace:30}],state:[null,null,'signin']}),'<b>Ring</b> · above pace, at 100%, sign-in needed')));
+  fig(wRing3({t:T,ds:[D5b,D5,sc5(12,30)]}),'<b>Ring</b> · three accounts, on pace'),
+  fig(wRing3({t:T,ds:[DUP,DMAX,sc5(12,30)],state:[null,null,'signin']}),'<b>Ring</b> · above pace, at 100%, sign-in needed')));
 add(row(
   fig(wStrip({t:T,a:'teams',d:sd,dw:sw}),'<b>Strip</b> · one account, 5h big with Weekly under it'),
   fig(wStrip({t:T,a:'teams',d:DUP,dw:sw}),'<b>Strip</b> · above pace'),
   fig(wStrip({t:T,a:'product',d:D5,dw:sw,state:'stale'}),'<b>Strip</b> · stale')));
-add(`<div class="q"><b>Q3</b> — the Large widget below is new (Android has no face this big). It suits the iPad home screen, where widgets have room.
-Recommended; drop it and iOS gets exactly Android's faces.</div>`+row(
-  fig(wLarge({t:T,ds:[D5b,DUP,{...D5,p:12,pace:30}],ws:[{p:18,pace:43},{p:64,pace:43},{p:9,pace:43}]}),'<b>Large</b> (364 × 382 pt; iPad 1.5× room) · every account, 5h and Weekly'),
+add(`<div class="q"><b>Q3 — answered: offer it.</b> The Large widget below is new (Android has no face this big); it suits the iPad home screen.</div>`+row(
+  fig(wLarge({t:T,ds:[D5b,DUP,sc5(12,30)],ws:[{p:18,pace:43},{p:64,pace:43},{p:9,pace:43}]}),'<b>Large</b> (364 × 382 pt; iPad 1.5× room) · every account, 5h and Weekly'),
   fig(`<div class="wg wsm" style="background:${T.widget};display:flex;flex-direction:column;gap:10px;padding:16px">${'<i style="display:block;height:14px;border-radius:7px;background:#3A3A3C;width:70%"></i><i style="display:block;height:44px;border-radius:10px;background:#3A3A3C;width:55%"></i><i style="display:block;height:8px;border-radius:4px;background:#3A3A3C"></i><i style="display:block;height:12px;border-radius:6px;background:#3A3A3C;width:60%"></i>'}</div>`,'<b>Placeholder</b> — what iOS shows while a widget first loads, and on a locked device with data protection')));
 
 /* ---- 5 · lock screen widgets ---- */
