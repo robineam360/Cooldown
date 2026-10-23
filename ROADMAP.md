@@ -1566,10 +1566,12 @@ it carries the umbrella CCRM-7 (iOS).
 - **Done when:** Android's tests read the payloads from `spec/` and pass; the check passes.
 
 ### CCRM-93 · iOS Spike — prove the free-team facts on the iPad first
-- **Status:** Planned · plan step 2 · blocks CCRM-94 (iOS App).
-- **What:** a bare XcodeGen app plus widget extension, signed by the personal team and installed on
-  the iPad. Records: App Groups and a shared Keychain group on a free team, a development IPA export,
-  the bundle id, Live Activity availability on iPadOS.
+- **Status:** **Done 2026-10-23** — every check passed on the iPad Pro M4 (iPadOS 27.0.1), results in
+  [docs/ios/SPIKE.md](docs/ios/SPIKE.md). Signed on the Sedin Technologies (EAM360) team instead of
+  the free personal team (Robin's call); Live Activities turned out to work on the iPad too.
+- **What:** a bare XcodeGen app plus widget extension, signed and installed on the iPad. Records:
+  App Groups and a shared Keychain group between app and widget, home and lock-screen widgets, a
+  development IPA export, Live Activity and Control Center control on iPadOS.
 - **Done when:** each fact is recorded as pass or fail with evidence; a fail on App Groups goes back
   to Robin before anything else is built.
 
@@ -1577,7 +1579,7 @@ it carries the umbrella CCRM-7 (iOS).
 - **Status:** Needs design · plan steps 4–5 · wireframes approved before any UI (CLAUDE.md §2).
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
-  locally; a Live Activity last, iPhone only. No always-on notification: iOS has none.
+  locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.
 - **Done when:** every surface matches its approved wireframe, tests and CI's macOS job are green,
   and the iPad device check passes.
 
