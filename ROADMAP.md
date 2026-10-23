@@ -1550,6 +1550,44 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** both flavors' tests run in CI, and CI is green on `main`. Step 8 gates the release
   on CI being green for the exact release commit.
 
+## iOS — iPhone and iPad from this repo · **planned 2026-10-23**
+
+**Decided 2026-10-23 (Robin).** The Android-only rule is lifted for `ios/` and a platform-neutral
+`spec/`, the EAM360 Inspect Lite shape: two native apps, no shared code, one spec. Signing starts on
+Robin's free personal Apple ID (iPad Pro M4 on the device, iPhone on the simulator); the EAM360
+paid account may sign builds for colleagues later. The plan is [docs/ios/PLAN.md](docs/ios/PLAN.md);
+it carries the umbrella CCRM-7 (iOS).
+
+### CCRM-92 · Shared Spec — `spec/` holds the contract, payloads and vectors both apps test against
+- **Status:** Planned · plan step 3.
+- **What:** API contract and behaviour spec seeded from CooldownMac's `contract/`; the captured
+  Claude and ChatGPT payloads move here from Android's test resources; vectors for pace, reset and
+  formatting; a check that rejects code files.
+- **Done when:** Android's tests read the payloads from `spec/` and pass; the check passes.
+
+### CCRM-93 · iOS Spike — prove the free-team facts on the iPad first
+- **Status:** Planned · plan step 2 · blocks CCRM-94 (iOS App).
+- **What:** a bare XcodeGen app plus widget extension, signed by the personal team and installed on
+  the iPad. Records: App Groups and a shared Keychain group on a free team, a development IPA export,
+  the bundle id, Live Activity availability on iPadOS.
+- **Done when:** each fact is recorded as pass or fail with evidence; a fail on App Groups goes back
+  to Robin before anything else is built.
+
+### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
+- **Status:** Needs design · plan steps 4–5 · wireframes approved before any UI (CLAUDE.md §2).
+- **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
+  on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
+  locally; a Live Activity last, iPhone only. No always-on notification: iOS has none.
+- **Done when:** every surface matches its approved wireframe, tests and CI's macOS job are green,
+  and the iPad device check passes.
+
+### CCRM-95 · Dual Release — APK and IPA from one version
+- **Status:** Planned · phase A with CCRM-94 (iOS App), phase B on the EAM360 account.
+- **What:** phase A, the IPA is a local output installed on Robin's iPad only. Phase B, TestFlight
+  or ad hoc on the EAM360 team; one GitHub release then carries both files under one version, never
+  an iOS-only release (the Android update check reads `releases/latest`).
+- **Done when:** RELEASING.md covers both platforms and a release ships both assets.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
@@ -3879,7 +3917,11 @@ keys) would still make this a different product. Not filed, not an open question
 ## Bookends — major efforts, gated on the above
 
 ### CCRM-7 · iOS — an iOS version of the app
-- **Status:** Planned · **behind CCRM-8 (Mac), reordered 2026-07-30** · gated → v2.0
+- **Status:** **Planned, unparked 2026-10-23** — Robin lifted the Android-only rule; built in this
+  repo under `ios/` per [docs/ios/PLAN.md](docs/ios/PLAN.md), split into CCRM-92 (Shared Spec),
+  CCRM-93 (iOS Spike), CCRM-94 (iOS App) and CCRM-95 (Dual Release). Distribution is still the
+  limit: personal iPad first, colleagues only through the EAM360 paid account. *(Earlier: behind
+  CCRM-8 (Mac), reordered 2026-07-30 · gated → v2.0.)*
 - **No longer the next platform.** Mac goes first. iOS is held up by **distribution, not
   readiness** — the full argument lives in CCRM-8 and isn't repeated here, but the short
   version is that sideloading is a first-class path on Android and a dead end on Apple's

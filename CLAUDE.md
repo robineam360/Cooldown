@@ -62,10 +62,13 @@ parsing, scheduling, tests, docs, or a bug fix that restores an already-approved
 - `release/docs/` — the user-facing guide and brochure (HTML → headless Chrome; sources in
   `docs/src/`).
 
-This is an **Android-only** repo. The Mac client is a separate repo by deliberate decision —
-see CCRM-8 (Mac Menu-Bar) for the reasoning, which centres on the GitHub `releases/latest`
-stream being repo-wide. Do not add another platform's code here, and do not fork this repo to
-start another client — start clean and copy the shared contract in.
+This repo holds the **Android app (repo root) and the iPhone/iPad app (`ios/`)**, both reading
+the platform-neutral `spec/` (Markdown and JSON only) and sharing no code — decided 2026-10-23,
+plan in [docs/ios/PLAN.md](docs/ios/PLAN.md), CCRM-7 (iOS). No other platform joins: the Mac
+client stays a separate repo by deliberate decision (CCRM-8 (Mac Menu-Bar)). Because the GitHub
+`releases/latest` stream is repo-wide and the Android update check reads it, **every release
+that carries an IPA also carries the APK under the same version — never an iOS-only release**.
+Do not fork this repo to start another client — start clean and copy the shared contract in.
 
 The app tracks the usage windows of **exactly three services — Claude, ChatGPT and Google's
 Antigravity (Gemini)** — decided 2026-09-06, see the *Multi-provider* section of

@@ -4,6 +4,17 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
+## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-23)
+
+> Start CCRM-93 (iOS Spike) from [docs/ios/PLAN.md](docs/ios/PLAN.md) step 2 (plan reviewed by
+> Astra, both concerns adopted). Build a bare XcodeGen app plus widget extension under `ios/`,
+> sign it with Robin's free personal team (team id on the command line only, never committed),
+> install it on the iPad Pro M4 with devicectl, and record pass/fail with evidence for: App Groups
+> and a shared Keychain group on a free team, a development IPA export, the bundle id, and Live
+> Activity availability on iPadOS. Robin does the Xcode account sign-in, Developer Mode and the
+> trust prompt. If App Groups fail, stop and ask Robin. No UI beyond a placeholder: the real
+> screens wait for wireframes (plan step 4).
+
 ## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
 
 **What changed today.** Robin chose to fix CCBG-52 (Boot Pin Delay) in v1.9. The post-boot restart
