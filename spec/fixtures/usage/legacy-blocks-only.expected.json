@@ -1,0 +1,25 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 0.0,
+    "resetsAt": "2026-07-27T11:49:59.956Z",
+    "resetsAtMs": 1785152999956,
+    "serverSeverity": null,
+    "severity": "NORMAL"
+  },
+  "weekly": {
+    "percent": 30.0,
+    "resetsAt": "2026-07-30T18:59:59.956Z",
+    "resetsAtMs": 1785437999956,
+    "serverSeverity": null,
+    "severity": "NORMAL"
+  },
+  "modelCaps": [],
+  "credits": null,
+  "_asserts": [
+    "`utilization` maps to percent, on the same 0-100 scale as `limits[].percent`.",
+    "serverSeverity is null for legacy blocks — they carry no severity field.",
+    "Absent credit blocks yield no credits, not a zero-valued credits object.",
+    "`seven_day_opus: null` produces no model cap."
+  ]
+}

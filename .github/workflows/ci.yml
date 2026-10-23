@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # CCRM-92 (Shared Spec): spec/ is Markdown and JSON only — every client reads it.
+      - name: Shared spec holds no code
+        run: sh spec/tools/check_no_code.sh
+
       # JDK 21, not 17: Robolectric's SDK 36 sandbox refuses to start on Java 17. The code
       # still compiles to Java 17 bytecode (compileOptions). The Mac gets 21 the same way
       # through org.gradle.java.home in ~/.gradle/gradle.properties.

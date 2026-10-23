@@ -1,0 +1,22 @@
+{
+  "parsed": true,
+  "session": null,
+  "weekly": null,
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 0,
+    "limitMinor": 0,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": null,
+    "moneyUsed": "$0.00",
+    "moneyLimit": "$0.00",
+    "isReportable": false
+  },
+  "_asserts": [
+    "A zero limit yields a nil percent — not a division-by-zero, NaN, infinity, or a synthesised 0.",
+    "`isReportable` is false: no positive cap and no spend, so the render rule hides the row even though parsing succeeded.",
+    "The parser must not itself suppress the credits object — 'a zero budget' (present, hidden) stays distinct from 'no cap' (limitMinor null, see credits-uncapped) and from 'nothing at all' (credits null).",
+    "percent, percentDisplay and remainingMinor are absent from this file on purpose: absence asserts nil."
+  ]
+}

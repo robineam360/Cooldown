@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Synthetic, mirroring the payload shape Android captured for CCBG-9: the user switched the monthly spend limit OFF, so `spend.limit` is null while `spend.used` still reports real money. Having a cap and having credits are different facts — the old `limit > 0` render gate made this account's whole credits row vanish."
+  },
+  "spend": {
+    "used": { "amount_minor": 297, "currency": "USD", "exponent": 2 },
+    "limit": null,
+    "severity": "normal"
+  }
+}

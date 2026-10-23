@@ -1,0 +1,12 @@
+{
+  "_meta": { "captured": false, "note": "CCBG-30: OpenAI always returns a reset time, even for a window nothing has touched yet. used_percent == 0 AND reset_after_seconds >= limit_window_seconds - 1 on the session window means 'not started' — resetsAtMs must come back nil despite reset_at being present. The weekly window is a genuine, in-progress reading and must be untouched by the rule." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "plus",
+  "rate_limit": {
+    "allowed": true, "limit_reached": false,
+    "primary_window":   { "used_percent": 0,  "limit_window_seconds": 18000,  "reset_after_seconds": 18000,  "reset_at": 1788712966 },
+    "secondary_window": { "used_percent": 15, "limit_window_seconds": 604800, "reset_after_seconds": 500000, "reset_at": 1788900000 }
+  },
+  "additional_rate_limits": null,
+  "credits": { "has_credits": false }
+}

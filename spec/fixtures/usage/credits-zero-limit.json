@@ -1,0 +1,10 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Synthetic. A `spend` block whose limit is zero. This parses successfully — it is the *render* rule, not the parser, that hides credits when the limit is non-positive (BEHAVIOR-SPEC section 2). Guards against a division-by-zero in the percent computation."
+  },
+  "spend": {
+    "used": { "amount_minor": 0, "currency": "USD", "exponent": 2 },
+    "limit": { "amount_minor": 0, "currency": "USD", "exponent": 2 }
+  }
+}

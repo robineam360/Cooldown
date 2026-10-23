@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "note": "Pace-alert dedupe and hysteresis (BEHAVIOR-SPEC section 8.7 — CCM-19 [Alerts] on Mac, CCRM-21 on Android). Each case is one evaluation step of PaceAlertPlan.step: the stored record, the window key being observed, and the already-milestone-filtered satisfied mask. Masks are bit fields: willRunOut = 2, cuttingItClose = 1. A stored record of null means nothing has been recorded for this window yet. All times are epoch milliseconds.",
+    "constants": {
+      "sessionLengthMs": 18000000,
+      "weeklyLengthMs": 604800000,
+      "sessionToleranceMs": 4500000,
+      "willRunOutBit": 2,
+      "cuttingItCloseBit": 1
+    },
+    "timeline": "The `timeline` array replays one 5-hour window poll by poll, in order, feeding each step's `carry` in as the next step's `stored`. It is the wireframe's §5 table."
+  },
+
+  "step": [
+    {
+      "name": "guard 1 — the first observation of a window records, never fires",
+      "stored": null,
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 3,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 3 }, "fire": [] },
+      "why": "Whatever is already true is marked as known. Without this, enabling the feature, a fresh install, or any state loss dumps the whole backlog for a window the user already knows about."
+    },
+    {
+      "name": "guard 2 — drift within tolerance is the same window, and the key re-anchors",
+      "stored": { "windowKey": 1000000000000, "firedMask": 1 },
+      "windowKey": 1000000060000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 1,
+      "expected": { "carry": { "windowKey": 1000000060000, "firedMask": 1 }, "fire": [] },
+      "why": "The server slides resets_at forward on nearly every poll (561 distinct values across 672 samples for one live week). Equality would treat one window as hundreds and re-fire endlessly. The carried key is the NEW one, so drift cannot accumulate past tolerance across seven days."
+    },
+    {
+      "name": "guard 2 — a genuine reset is a different window, and re-primes",
+      "stored": { "windowKey": 1000000000000, "firedMask": 3 },
+      "windowKey": 1018000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 0,
+      "expected": { "carry": { "windowKey": 1018000000000, "firedMask": 0 }, "fire": [] },
+      "why": "A real reset moves resets_at by a full window length — four times the tolerance — so the previous window can never leak into the current one."
+    },
+    {
+      "name": "a newly satisfied milestone fires",
+      "stored": { "windowKey": 1000000000000, "firedMask": 0 },
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 1,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 0 }, "fire": ["cuttingItClose"] },
+      "why": "The carry does NOT include the fired bit: the caller ORs it in only after the post succeeds (guard 5), so a failed delivery retries next poll."
+    },
+    {
+      "name": "guard 3 — an already-fired milestone that is still satisfied stays silent",
+      "stored": { "windowKey": 1000000000000, "firedMask": 1 },
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 1,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 1 }, "fire": [] },
+      "why": "Nothing new to say."
+    },
+    {
+      "name": "guard 3 — a milestone that stops being satisfied clears, re-arming it",
+      "stored": { "windowKey": 1000000000000, "firedMask": 1 },
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 0,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 0 }, "fire": [] },
+      "why": "Hysteresis: coming back down is not news, but it must re-arm, or a window that recovers and deteriorates again warns only once. Equally, a boundary-hovering window must not alternate — which is what the dead zone and the ladder's thresholds handle upstream."
+    },
+    {
+      "name": "an escalation fires only the headline but marks the rung it passed through",
+      "stored": { "windowKey": 1000000000000, "firedMask": 0 },
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 3,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 0 }, "fire": ["willRunOut", "cuttingItClose"] },
+      "why": "Both milestones are returned, most severe first; the caller posts only the first and marks both. Posting both would mean two banners for one deterioration, the second of them already out of date."
+    },
+    {
+      "name": "a disabled milestone was masked out upstream and so cannot be marked",
+      "stored": { "windowKey": 1000000000000, "firedMask": 0 },
+      "windowKey": 1000000000000,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 2,
+      "expected": { "carry": { "windowKey": 1000000000000, "firedMask": 0 }, "fire": ["willRunOut"] },
+      "why": "satisfiedMask arrives already filtered to the user's enabled milestones. Filtering after dedupe instead would mark a disabled milestone as fired, and re-enabling it later would find the bit set and stay silent for the rest of the window."
+    },
+    {
+      "name": "a zero window key matches nothing, including another zero",
+      "stored": { "windowKey": 0, "firedMask": 3 },
+      "windowKey": 0,
+      "windowLengthMs": 18000000,
+      "satisfiedMask": 1,
+      "expected": { "carry": { "windowKey": 0, "firedMask": 1 }, "fire": [] },
+      "why": "Zero means 'nothing recorded yet', not 'resets at the epoch'. Two zeros must not be treated as the same window."
+    }
+  ],
+
+  "timeline": [
+    { "at": "0:40", "windowKey": 1000000000000, "windowLengthMs": 18000000, "satisfiedMask": 0,
+      "expectedFire": [], "expectedMask": 0,
+      "why": "First observation of the window: healthy, recorded, silent. Guard 1." },
+    { "at": "1:30", "windowKey": 1000000060000, "windowLengthMs": 18000000, "satisfiedMask": 1,
+      "expectedFire": ["cuttingItClose"], "expectedMask": 1,
+      "why": "Newly satisfied and not already known. Note the drifted key: still the same window." },
+    { "at": "1:35", "windowKey": 1000000120000, "windowLengthMs": 18000000, "satisfiedMask": 1,
+      "expectedFire": [], "expectedMask": 1,
+      "why": "Still satisfied, already announced. Guard 3." },
+    { "at": "2:10", "windowKey": 1000000180000, "windowLengthMs": 18000000, "satisfiedMask": 0,
+      "expectedFire": [], "expectedMask": 0,
+      "why": "Slowed down; the bit clears so it can warn again later." },
+    { "at": "2:50", "windowKey": 1000000240000, "windowLengthMs": 18000000, "satisfiedMask": 3,
+      "expectedFire": ["willRunOut", "cuttingItClose"], "expectedMask": 3,
+      "why": "Only the headline is posted, but both bits are marked." },
+    { "at": "3:20", "windowKey": 1000000300000, "windowLengthMs": 18000000, "satisfiedMask": 3,
+      "expectedFire": [], "expectedMask": 3,
+      "why": "Nothing new to say." },
+    { "at": "5:00", "windowKey": 1018000000000, "windowLengthMs": 18000000, "satisfiedMask": 0,
+      "expectedFire": [], "expectedMask": 0,
+      "why": "Rollover: a new window key, re-primed. The client also withdraws the standing notification here." }
+  ]
+}

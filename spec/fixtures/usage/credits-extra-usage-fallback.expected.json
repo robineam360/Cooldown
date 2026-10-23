@@ -1,0 +1,25 @@
+{
+  "parsed": true,
+  "session": null,
+  "weekly": null,
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 957,
+    "limitMinor": 5000,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": null,
+    "percent": 19.14,
+    "percentDisplay": 19,
+    "remainingMinor": 4043,
+    "moneyUsed": "$9.57",
+    "moneyLimit": "$50.00",
+    "moneyRemaining": "$40.43",
+    "isReportable": true
+  },
+  "_asserts": [
+    "Credits alone are enough for a usable payload \u2014 no windows required.",
+    "`used_credits: 957.0` truncates to the integer 957 minor units.",
+    "`decimal_places` supplies the exponent; `extra_usage` carries no severity, so serverSeverity is null."
+  ]
+}

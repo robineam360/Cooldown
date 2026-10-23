@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "captured": false,
+    "derivedFrom": "pro-with-credits.json (2026-07-27)",
+    "note": "The captured payload with the `limits` array and both credit blocks removed, exercising the legacy fallback path. The `five_hour`/`seven_day` blocks are verbatim from the wire; only the deletion is synthetic. Pins two things: `utilization` is the percent under a different key name, and it is already on a 0-100 scale."
+  },
+  "five_hour": {
+    "utilization": 0.0,
+    "resets_at": "2026-07-27T11:49:59.956769+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 30.0,
+    "resets_at": "2026-07-30T18:59:59.956800+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day_opus": null,
+  "member_dashboard_available": false
+}

@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Mirrors Android's ClaudePlanTest fixture, itself built from three /api/oauth/profile shapes probed on a Fold 7 on 2026-09-11 (see Cooldown's ClaudePlanTest.kt and the project's standing rules `\"a free organisation is Free and blocked\"`). Identifiers redacted."
+  },
+  "account": {
+    "uuid": "redacted-account-uuid",
+    "full_name": "Redacted Name",
+    "display_name": "Redacted Name",
+    "email": "redacted@example.com",
+    "has_claude_max": false,
+    "has_claude_pro": false,
+    "created_at": "2026-04-12T11:12:43Z"
+  },
+  "organization": {
+    "uuid": "redacted-org-uuid",
+    "name": "Redacted Org",
+    "organization_type": "claude_free",
+    "billing_type": "none",
+    "rate_limit_tier": "default_claude_ai",
+    "seat_tier": null,
+    "has_extra_usage_enabled": false,
+    "subscription_status": "canceled"
+  },
+  "application": {
+    "uuid": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+    "name": "Claude Code",
+    "slug": "claude-code"
+  },
+  "enabled_plugins": []
+}

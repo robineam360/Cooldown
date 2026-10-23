@@ -1,0 +1,221 @@
+{
+  "_meta": {
+    "note": "Burn-rate projection cases (BEHAVIOR-SPEC sections 3 and 4). Expectations are ported from the Android reference implementation's passing unit tests, so they are proven, not computed by hand. All times are epoch milliseconds; samples are [timestampMs, percent].",
+    "constants": {
+      "hourMs": 3600000,
+      "sessionLengthMs": 18000000,
+      "weeklyLengthMs": 604800000,
+      "minSpanMs": 1200000,
+      "minDeltaPct": 1.0,
+      "paceCloseAtReset": 85.0,
+      "paceSpentUsed": 99.5,
+      "paceMinUsed": 5.0,
+      "paceMinElapsedFraction": 0.01,
+      "paceMinElapsedFloorMs": 60000
+    },
+    "severityNote": "Pace severity cases (BEHAVIOR-SPEC section 3.1 — CCM-17 [Pace] on Mac, CCRM-21 on Android). Each case is (usedPct, elapsedMs, windowLengthMs, estimate) -> severity, plus the suppression reason where there is no verdict. estimate is null or an object with hitsLimitAtMs and pctAtReset. Suppression is non-null exactly when severity is 'untracked'. Ported from Android's PaceTest wherever a case exists there.",
+
+    "tolerance": "Floating-point comparisons should allow 0.01 on rates and percents."
+  },
+
+  "estimate": [
+    {
+      "name": "steady burn that outruns the window projects a hit before reset",
+      "samples": [[0, 0.0], [3600000, 20.0], [7200000, 40.0]],
+      "resetAtMs": 21600000,
+      "expected": { "ratePctPerHour": 20.0, "hitsLimitAtMs": 18000000, "pctAtReset": 100.0 },
+      "why": "20%/h observed over two hours with four hours left. 60% remaining at 20%/h hits 100% three hours after the last sample. pctAtReset caps at 100."
+    },
+    {
+      "name": "slow burn projects the percent at reset instead of a hit",
+      "samples": [[0, 10.0], [7200000, 20.0]],
+      "resetAtMs": 14400000,
+      "expected": { "ratePctPerHour": 5.0, "hitsLimitAtMs": null, "pctAtReset": 30.0 },
+      "why": "5%/h with two hours left lands at 30%. The limit is never reached, so hitsLimitAtMs is null rather than a time beyond the reset."
+    },
+    {
+      "name": "projection is anchored on the latest reading, not the fitted line",
+      "samples": [[0, 20.0], [3600000, 30.0], [7200000, 40.0]],
+      "resetAtMs": 14400000,
+      "expected": { "ratePctPerHour": 10.0, "hitsLimitAtMs": null, "pctAtReset": 60.0 },
+      "why": "Perfectly linear, so the fit passes through the last point: 10%/h with two hours left lands exactly 20 points above the final 40%."
+    },
+    {
+      "name": "unsorted samples are handled",
+      "samples": [[7200000, 40.0], [0, 0.0], [3600000, 20.0]],
+      "resetAtMs": 36000000,
+      "expected": { "ratePctPerHour": 20.0 },
+      "why": "Input order must not matter — sort before fitting."
+    },
+    {
+      "name": "least squares ignores an early burst instead of extrapolating it",
+      "samples": [[0, 0.0], [1800000, 30.0], [7200000, 30.5], [10800000, 31.0], [14400000, 31.5], [16200000, 32.0]],
+      "resetAtMs": 36000000,
+      "expectedConstraint": { "ratePctPerHourLessThan": 7.111111 },
+      "why": "30% in the first half hour, then flat for four hours. The endpoints-only slope is 32/4.5 = 7.11%/h; a fit over every point must come out materially shallower. This is why the rate is a least-squares fit and not a first-to-last slope."
+    },
+    {
+      "name": "too short a span returns null",
+      "samples": [[0, 0.0], [600000, 50.0]],
+      "resetAtMs": 18000000,
+      "expected": null,
+      "why": "Only 10 minutes observed, under the 20-minute floor — even though the movement is huge."
+    },
+    {
+      "name": "flat usage returns null",
+      "samples": [[0, 42.0], [3600000, 42.5]],
+      "resetAtMs": 18000000,
+      "expected": null,
+      "why": "0.5 points of movement is under the 1.0-point floor."
+    },
+    {
+      "name": "single sample returns null",
+      "samples": [[0, 50.0]],
+      "resetAtMs": 18000000,
+      "expected": null,
+      "why": "Two points are the minimum for any slope."
+    },
+    {
+      "name": "a burst then a decline projects nothing",
+      "samples": [[0, 5.0], [3600000, 60.0], [7200000, 30.0], [10800000, 10.0]],
+      "resetAtMs": 36000000,
+      "expected": null,
+      "why": "The fitted rate is negative. There is no honest projection to make, so return nothing rather than clamping to zero."
+    }
+  ],
+
+  "binding": [
+    {
+      "name": "tolerance is a quarter of the window",
+      "expected": { "sessionToleranceMs": 4500000, "weeklyToleranceMs": 151200000 }
+    },
+    {
+      "name": "session samples bind despite a drifting resets_at",
+      "windowResetAtMs": 36000000,
+      "windowLengthMs": 18000000,
+      "kind": "session",
+      "history": [
+        { "atMs": 1, "sessionPct": 5.0, "sessionResetAtMs": 35820000 },
+        { "atMs": 2, "sessionPct": 9.0, "sessionResetAtMs": 35940000 },
+        { "atMs": 3, "sessionPct": 12.0, "sessionResetAtMs": 36000000 }
+      ],
+      "expected": [[1, 5.0], [2, 9.0], [3, 12.0]],
+      "why": "The server slid resets_at forward a minute at a time across these polls. Exact matching would bind only the last point; proximity matching binds all three."
+    },
+    {
+      "name": "the previous window never leaks into the current one",
+      "windowResetAtMs": 360000000,
+      "windowLengthMs": 18000000,
+      "kind": "session",
+      "history": [
+        { "atMs": 1, "sessionPct": 98.0, "sessionResetAtMs": 342000000 },
+        { "atMs": 2, "sessionPct": 3.0, "sessionResetAtMs": 360000000 }
+      ],
+      "expected": [[2, 3.0]],
+      "why": "A genuine reset moves resets_at by a full window length — four times the tolerance — so the 98% point from the closed window stays out. Without this, a fresh window would inherit the old one's pace."
+    },
+    {
+      "name": "weekly samples bind despite drift and skip missing percents",
+      "windowResetAtMs": 720000000,
+      "windowLengthMs": 604800000,
+      "kind": "weekly",
+      "history": [
+        { "atMs": 1, "weeklyPct": 10.0, "weeklyResetAtMs": 712800000 },
+        { "atMs": 2, "weeklyPct": null, "weeklyResetAtMs": 720000000 },
+        { "atMs": 3, "weeklyPct": 14.0, "weeklyResetAtMs": 723600000 },
+        { "atMs": 4, "weeklyPct": 91.0, "weeklyResetAtMs": 115200000 }
+      ],
+      "expected": [[1, 10.0], [3, 14.0]],
+      "why": "Point 2 has no percent and is skipped rather than counted as zero. Point 4 is last week's window, a full 7 days away, so it stays out."
+    },
+    {
+      "name": "a zero resets_at is never bound",
+      "windowResetAtMs": 0,
+      "windowLengthMs": 18000000,
+      "kind": "session",
+      "history": [{ "atMs": 1, "sessionPct": 5.0, "sessionResetAtMs": 0 }],
+      "expected": [],
+      "why": "Zero means 'window not started', not 'resets at the epoch'. Two zeros must not match each other."
+    }
+  ],
+
+  "severity": [
+    {
+      "name": "2% four minutes in is untracked, however alarming it projects",
+      "usedPct": 2.0, "elapsedMs": 240000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": 1, "pctAtReset": 100.0 },
+      "expected": { "severity": "untracked", "suppression": "tooLittleUsage" },
+      "why": "Android's own example of a meaningless projection (2% after four minutes fits to 150%). Four minutes clears the 3-minute young floor, so the guard that actually catches it is the 5% usage floor — which is why both floors exist and why the reason has to be reported, not just the verdict."
+    },
+    {
+      "name": "real usage in the first minute is still too young",
+      "usedPct": 40.0, "elapsedMs": 30000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": 1, "pctAtReset": 100.0 },
+      "expected": { "severity": "untracked", "suppression": "youngWindow" },
+      "why": "Ported from Android. 30 seconds is under the 3-minute session floor."
+    },
+    {
+      "name": "the young floor scales with the period but never drops below a minute",
+      "usedPct": 40.0, "elapsedMs": 90000, "windowLengthMs": 5400000,
+      "estimate": { "hitsLimitAtMs": 1, "pctAtReset": 100.0 },
+      "expected": { "severity": "runningOut" },
+      "why": "A 90-minute window's 1% is 54s, floored to 60s, and 90s clears it. Same inputs as the case above; only the window length differs."
+    },
+    {
+      "name": "a young window outranks even a full one, because carryover looks like this",
+      "usedPct": 100.0, "elapsedMs": 60000, "windowLengthMs": 18000000,
+      "estimate": null,
+      "expected": { "severity": "untracked", "suppression": "youngWindow" },
+      "why": "Right after a reset the server can still report the previous window's percent for a poll or two. A one-minute-old window reading 100% is far more likely to be that carryover than a genuinely exhausted window, which is why the two floors are checked ahead of 'spent'."
+    },
+    {
+      "name": "barely-used windows get no verdict, whatever the fit says",
+      "usedPct": 3.0, "elapsedMs": 10800000, "windowLengthMs": 604800000,
+      "estimate": { "hitsLimitAtMs": null, "pctAtReset": 97.0 },
+      "expected": { "severity": "untracked", "suppression": "tooLittleUsage" },
+      "why": "Three hours into a 7-day window clears the young floor (1% of a week is 1h41m), so what remains is the usage floor: 3% of a window extrapolates to noise. A different sentence from 'too early' is required: a reader shown 'too early' hours into a window would rightly call it a bug."
+    },
+    {
+      "name": "healthy: a projection that lands well inside the limit",
+      "usedPct": 20.0, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": null, "pctAtReset": 50.0 },
+      "expected": { "severity": "healthy" },
+      "why": "Ported from Android."
+    },
+    {
+      "name": "close: projected at or above 85% at the reset",
+      "usedPct": 40.0, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": null, "pctAtReset": 92.0 },
+      "expected": { "severity": "close" },
+      "why": "Ported from Android."
+    },
+    {
+      "name": "the close boundary is inclusive",
+      "usedPct": 40.0, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": null, "pctAtReset": 85.0 },
+      "expected": { "severity": "close" },
+      "why": "85.0 exactly is 'cutting it close', not healthy. Two installs disagreeing at the boundary is the bug this pins."
+    },
+    {
+      "name": "running out: the limit lands before the reset",
+      "usedPct": 40.0, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": { "hitsLimitAtMs": 123, "pctAtReset": 100.0 },
+      "expected": { "severity": "runningOut" },
+      "why": "Ported from Android. hitsLimitAtMs outranks pctAtReset: a window that runs out early is worse news than one that merely finishes full."
+    },
+    {
+      "name": "spent needs no projection",
+      "usedPct": 99.6, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": null,
+      "expected": { "severity": "spent" },
+      "why": "Ported from Android. 99.5 inclusive is the same 'exhausted' line the history bars use. 'Nothing left' needs no forecast to assert."
+    },
+    {
+      "name": "no projection means no verdict about the future",
+      "usedPct": 60.0, "elapsedMs": 3600000, "windowLengthMs": 18000000,
+      "estimate": null,
+      "expected": { "severity": "untracked", "suppression": "noProjection" },
+      "why": "A null estimate can never be close or runningOut. Android returns HEALTHY here because their ladder feeds alerts, where both answers mean 'say nothing'; a client that prints copy has to tell the two apart, and either answer alerts identically."
+    }
+  ]
+}

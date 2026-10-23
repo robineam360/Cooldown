@@ -1,0 +1,1 @@
+this is not valid JSON at all — the parser must return nil, never a guessed empty UsageData

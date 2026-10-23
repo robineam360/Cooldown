@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Inputs that must all yield 'no data' rather than an empty success or a crash. `raw` is the exact string handed to the parser, so malformed input can be represented too. Each case asserts the same outcome: the parse returns nothing."
+  },
+  "cases": [
+    {
+      "name": "not json at all",
+      "raw": "not json",
+      "expected": { "parsed": false },
+      "why": "A garbage body — e.g. an HTML error page from a proxy — must be caught, not thrown."
+    },
+    {
+      "name": "empty object",
+      "raw": "{}",
+      "expected": { "parsed": false },
+      "why": "Valid JSON with nothing recognisable. No windows, no caps, no credits means unusable."
+    },
+    {
+      "name": "only unknown keys",
+      "raw": "{\"tangelo\":null,\"member_dashboard_available\":false,\"some_new_experiment\":{\"a\":1}}",
+      "expected": { "parsed": false },
+      "why": "Unknown keys are ignored, so this is equivalent to an empty object. Also pins that unknown keys never cause a failure by themselves — the captured payloads carry several."
+    },
+    {
+      "name": "windows present but entirely null",
+      "raw": "{\"five_hour\":null,\"seven_day\":null,\"seven_day_opus\":null,\"spend\":null,\"extra_usage\":null}",
+      "expected": { "parsed": false },
+      "why": "Explicit nulls are absence, not zero. This is the shape seen on an account with no active windows and no credits."
+    },
+    {
+      "name": "empty limits array",
+      "raw": "{\"limits\":[]}",
+      "expected": { "parsed": false },
+      "why": "An empty array must not be mistaken for 'windows found'."
+    },
+    {
+      "name": "credits limit explicitly null",
+      "raw": "{\"extra_usage\":{\"monthly_limit\":null,\"used_credits\":0.0}}",
+      "expected": { "parsed": false },
+      "why": "A null monthly_limit means the account has no credit budget — report no credits rather than a zero budget. Contrast with credits-zero-limit.json, where an actual zero IS reported."
+    },
+    {
+      "name": "truncated json",
+      "raw": "{\"limits\":[{\"kind\":\"session\",\"percent\":12",
+      "expected": { "parsed": false },
+      "why": "A response cut short mid-stream must fail cleanly rather than half-parse."
+    }
+  ]
+}

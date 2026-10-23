@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Mirrors Android's ClaudePlanTest fixture (Fold 7 probe, 2026-09-11): `organization_type` \"claude_team\", `seat_tier` \"team_tier_1\" — the premium seat, which is what carries Claude Code and reports `rate_limit_tier` \"default_claude_max_5x\". Identifiers redacted."
+  },
+  "account": {
+    "uuid": "redacted-account-uuid",
+    "full_name": "Redacted Name",
+    "display_name": "Redacted Name",
+    "email": "redacted@example.com",
+    "has_claude_max": false,
+    "has_claude_pro": false,
+    "created_at": "2026-04-12T11:12:43Z"
+  },
+  "organization": {
+    "uuid": "redacted-org-uuid",
+    "name": "Redacted Org",
+    "organization_type": "claude_team",
+    "billing_type": "invoice",
+    "rate_limit_tier": "default_claude_max_5x",
+    "seat_tier": "team_tier_1",
+    "has_extra_usage_enabled": false,
+    "subscription_status": "active"
+  },
+  "application": {
+    "uuid": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+    "name": "Claude Code",
+    "slug": "claude-code"
+  },
+  "enabled_plugins": []
+}

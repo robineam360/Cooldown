@@ -1,0 +1,8 @@
+{"_meta":{"captured":false,"note":"CCM-71 [Foundation]: not a usage payload — a run of successive polls' `resets_at` for one weekly window, isolating the drift `PaceAlertPlan.sameWindow` must absorb. `resets_at` moved by sub-second amounts on 561 of 672 polls across one real week (Android CCBG-4); equality would treat one window as hundreds of distinct windows and re-fire every milestone on every poll. Redacted from the same live account as the other CCM-71 fixtures. windowLengthMs is HistoryStats.weekMs (604800000) throughout; sameWindow's tolerance is windowLengthMs/4."}}
+{"poll":1,"resets_at":"2026-09-13T18:59:59.956769+00:00","resetsAtMs":1789325999956,"windowLengthMs":604800000,"note":"first observation of this window"}
+{"poll":2,"resets_at":"2026-09-13T18:59:59.956800+00:00","resetsAtMs":1789325999956,"windowLengthMs":604800000,"note":"sub-second drift forward, same window"}
+{"poll":3,"resets_at":"2026-09-13T18:59:59.957001+00:00","resetsAtMs":1789325999957,"windowLengthMs":604800000,"note":"sub-second drift forward again, same window"}
+{"poll":4,"resets_at":"2026-09-13T18:59:59.955998+00:00","resetsAtMs":1789325999955,"windowLengthMs":604800000,"note":"drift can go backward too, still same window"}
+{"poll":5,"resets_at":"2026-09-13T18:59:59.956500+00:00","resetsAtMs":1789325999956,"windowLengthMs":604800000,"note":"same window"}
+{"poll":6,"resets_at":"2026-09-13T18:59:59.956200+00:00","resetsAtMs":1789325999956,"windowLengthMs":604800000,"note":"same window, sixth poll"}
+{"poll":7,"resets_at":"2026-09-20T18:59:59.958000+00:00","resetsAtMs":1789930799958,"windowLengthMs":604800000,"note":"a full window later (~7 days) — the genuine reset; must NOT bind to poll 6 as the same window"}

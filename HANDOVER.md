@@ -4,17 +4,16 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-23, after the spike)
+## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-23, after CCRM-92)
 
-> CCRM-93 (iOS Spike) is done: every surface works on the iPad Pro M4 under the Sedin team's
-> development signing (docs/ios/SPIKE.md). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 3,
-> CCRM-92 (Shared Spec): create `spec/` (Markdown and JSON only), seed it from CooldownMac's
-> `contract/`, move the two payload fixtures out of `app/src/test/resources` and point Android's
-> test resources at `spec/`, add pace/reset/format vectors and a no-code check. Gate: the Android
-> verify command passes. Then step 4, the iOS wireframes (CLAUDE.md §2), for Robin's approval.
-> Device builds: `xcodebuild … -allowProvisioningUpdates DEVELOPMENT_TEAM=<Sedin team id>` from
-> `ios/` after `xcodegen generate`; never revoke the Apple Development certificate Xcode flags as
-> stale (SPIKE.md, Lessons).
+> CCRM-93 (iOS Spike) and CCRM-92 (Shared Spec) are done: every iOS surface works on the iPad
+> (docs/ios/SPIKE.md), and `spec/` is the master shared spec for all five clients
+> (docs/REPO-STRUCTURE.md). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 4: wireframes for
+> every iOS surface (app on iPhone and iPad, home and lock-screen widgets, Control Center
+> control, reset alerts, Live Activity), all states, in `design/`, for Robin's approval before
+> any UI is built (CLAUDE.md §2). Separately, in the desktop repo (a session rooted there, not
+> this one): REPO-STRUCTURE step 3 — `contract/shared/` as a pinned copy of this `spec/`, plus
+> `contract/desktop/`.
 
 ## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
 

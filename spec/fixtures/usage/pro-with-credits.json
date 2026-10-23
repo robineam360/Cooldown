@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "captured": true,
+    "date": "2026-07-27",
+    "note": "Real /api/oauth/usage response. Trimmed only of experiment keys that were all null. Session at 0%, weekly at 30%, credits enabled ($5.99 of $100). Both the modern `limits` array and the legacy `five_hour`/`seven_day` blocks are present, as are both `spend` and `extra_usage` — this payload pins the preference order."
+  },
+  "five_hour": {
+    "utilization": 0.0,
+    "resets_at": "2026-07-27T11:49:59.956769+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 30.0,
+    "resets_at": "2026-07-30T18:59:59.956800+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day_opus": null,
+  "tangelo": null,
+  "extra_usage": {
+    "is_enabled": true,
+    "monthly_limit": 10000,
+    "used_credits": 599.0,
+    "utilization": 5.99,
+    "currency": "USD",
+    "decimal_places": 2,
+    "disabled_reason": null,
+    "user_disabled": false,
+    "spend_limit_reached": false,
+    "credits_ever_enabled": true,
+    "daily": null,
+    "weekly": null
+  },
+  "limits": [
+    {
+      "kind": "session",
+      "group": "session",
+      "percent": 0,
+      "severity": "normal",
+      "resets_at": "2026-07-27T11:49:59.956769+00:00",
+      "scope": null,
+      "is_active": false
+    },
+    {
+      "kind": "weekly_all",
+      "group": "weekly",
+      "percent": 30,
+      "severity": "normal",
+      "resets_at": "2026-07-30T18:59:59.956800+00:00",
+      "scope": null,
+      "is_active": true
+    }
+  ],
+  "spend": {
+    "used": { "amount_minor": 599, "currency": "USD", "exponent": 2 },
+    "limit": { "amount_minor": 10000, "currency": "USD", "exponent": 2 },
+    "percent": 6,
+    "severity": "normal",
+    "enabled": true,
+    "disabled_reason": null,
+    "cap": { "money": null, "credits": { "amount_minor": 10000, "exponent": 2 } },
+    "balance": null,
+    "auto_reload": null,
+    "disclaimer": "Usage credits cover you...",
+    "can_purchase_credits": false,
+    "can_toggle": false
+  },
+  "member_dashboard_available": false
+}

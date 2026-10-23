@@ -66,7 +66,7 @@ port. The surfaces, each needing a wireframe approved under CLAUDE.md §2 before
    After the build, the same record lists what the spike created. Reversal: delete `ios/` and the app from the iPad;
    in Sedin's account, delete only what that record lists as spike-created, after checking no other app or profile
    uses it — an iPad that was registered before the spike stays registered.
-3. **CCRM-92 (Shared Spec)** — create `spec/`, move the two payload fixtures there, point Android's test resources at
+3. **CCRM-92 (Shared Spec)** — **done 23 Oct; `spec/` is the master for all five clients (docs/REPO-STRUCTURE.md).** Create `spec/`, move the two payload fixtures there, point Android's test resources at
    it, add the vectors and the no-code check. Gate: Android's verify command passes unchanged in result.
 4. **Wireframes** for every surface above, all states (empty, signed out, error, at 100 %, above pace, iPhone and
    iPad widths), in `design/`. Robin approves before step 5.

@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "CCM-71 [Foundation] canonical copy of the uncapped-credits shape for every client's test suite: `spend.limit: null` beside real `spend.used`, on the full modern payload (limits[] + spend), redacted from a live account. Android hit this first (CCBG-9); Mac's own copy of the same case is `credits-uncapped.json` (CCM-44) — this file is the one to point a new client's parser tests at, per CCM-71's brief. Values are redacted, not the account's own."
+  },
+  "limits": [
+    {
+      "kind": "session",
+      "group": "session",
+      "percent": 14,
+      "severity": "normal",
+      "resets_at": "2026-09-19T22:00:00.123456+00:00",
+      "scope": null,
+      "is_active": true
+    },
+    {
+      "kind": "weekly_all",
+      "group": "weekly",
+      "percent": 41,
+      "severity": "normal",
+      "resets_at": "2026-09-24T22:00:00.123456+00:00",
+      "scope": null,
+      "is_active": true
+    }
+  ],
+  "spend": {
+    "used": { "amount_minor": 1842, "currency": "USD", "exponent": 2 },
+    "limit": null,
+    "percent": null,
+    "severity": "normal",
+    "enabled": true,
+    "disabled_reason": null,
+    "cap": null,
+    "balance": null,
+    "auto_reload": null,
+    "disclaimer": "Usage credits cover you...",
+    "can_purchase_credits": false,
+    "can_toggle": true
+  },
+  "member_dashboard_available": true
+}

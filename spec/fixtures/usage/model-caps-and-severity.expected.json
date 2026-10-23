@@ -1,0 +1,44 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 72.0,
+    "resetsAt": "2026-07-27T11:49:59.956Z",
+    "resetsAtMs": 1785152999956,
+    "serverSeverity": "normal",
+    "severity": "WARNING"
+  },
+  "weekly": {
+    "percent": 91.0,
+    "resetsAt": "2026-07-30T18:59:59.956Z",
+    "resetsAtMs": 1785437999956,
+    "serverSeverity": "normal",
+    "severity": "CRITICAL"
+  },
+  "modelCaps": [
+    {
+      "modelName": "Claude Opus 4.5",
+      "percent": 45.0,
+      "resetsAtMs": 1785437999956,
+      "serverSeverity": "warning",
+      "severity": "WARNING"
+    },
+    {
+      "modelName": "Model",
+      "percent": null,
+      "resetsAtMs": 1785437999956,
+      "serverSeverity": null,
+      "severity": "NORMAL"
+    }
+  ],
+  "credits": null,
+  "_asserts": [
+    "72% derives WARNING even though the server said `normal` — the percent floor (>= 70) applies independently of server severity.",
+    "91% derives CRITICAL by the > 90 rule, again overriding `normal`.",
+    "A `weekly_scoped` entry with a `warning` server severity keeps WARNING; server severity and the percent rule are OR'd, never AND'd.",
+    "A missing scope.model.display_name falls back to the literal \"Model\".",
+    "An empty-string severity is treated as absent (null), not as a value.",
+    "A null percent stays null and derives NORMAL — it must not become 0.0.",
+    "Model caps preserve payload order.",
+    "`spend: null` plus `extra_usage.monthly_limit: null` yields no credits."
+  ]
+}

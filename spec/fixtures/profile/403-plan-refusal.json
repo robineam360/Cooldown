@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "captured": true,
+    "note": "The usage endpoint's HTTP 403 body for a Free organisation. Verbatim from Android's ClaudePlanTest (`\"the usage endpoint's refusal is recognised by its error code\"`), itself captured off the wire on 2026-09-11. No redaction needed — carries no account identifiers."
+  },
+  "type": "error",
+  "error": {
+    "type": "permission_error",
+    "message": "OAuth authentication is currently not allowed for this organization.",
+    "details": {
+      "error_visibility": "user_facing",
+      "error_code": "oauth_not_allowed_for_organization"
+    }
+  },
+  "request_id": "req_redacted"
+}

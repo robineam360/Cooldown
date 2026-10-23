@@ -63,6 +63,14 @@ android {
         buildConfig = true
     }
 
+    // CCRM-92 (Shared Spec): the captured payloads live in the platform-neutral spec/, which
+    // the iPhone/iPad and desktop clients test against too; tests still load them by name.
+    sourceSets {
+        getByName("test") {
+            resources.directories.add("../spec/fixtures/captured")
+        }
+    }
+
     testOptions {
         // Robolectric (CCRM-83 (Ring Renderer)): the ring's bitmap-equality test and the
         // widget faces' RemoteViews inflation need real resources and native graphics.

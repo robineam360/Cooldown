@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "captured": false,
+    "derivedFrom": "legacy-model-caps.json",
+    "note": "CCM-71 [Foundation] canonical copy of the older, no-`limits[]` shape for every client's test suite: flat `five_hour`/`seven_day` windows plus flat `seven_day_sonnet`/`seven_day_opus` model caps, redacted from a live account seen on a server rollback of the `limits` array. Android hit this first (CCBG-8); Mac's own copy of the same case is `legacy-model-caps.json` (CCM-45) — this file is the one to point a new client's parser tests at, per CCM-71's brief."
+  },
+  "five_hour": {
+    "utilization": 8.0,
+    "resets_at": "2026-09-17T09:20:00.500123+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 52.0,
+    "resets_at": "2026-09-20T09:20:00.500123+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day_sonnet": {
+    "utilization": 61.0,
+    "resets_at": "2026-09-20T09:20:00.500123+00:00"
+  },
+  "seven_day_opus": {
+    "utilization": 3.0,
+    "resets_at": "2026-09-20T09:20:00.500123+00:00"
+  },
+  "member_dashboard_available": false
+}

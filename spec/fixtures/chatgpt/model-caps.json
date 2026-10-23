@@ -1,0 +1,19 @@
+{
+  "_meta": { "captured": false, "note": "additional_rate_limits[] -> model caps, keyed by limit_name. Each entry carries its own rate_limit block; only the 604800-second slot inside it is the cap window (model caps are always 7-day, BEHAVIOR-SPEC §1) — classified by length like every other window, not by slot name." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "pro",
+  "rate_limit": {
+    "primary_window":   { "used_percent": 12, "limit_window_seconds": 18000,  "reset_after_seconds": 9000,   "reset_at": 1788712966 },
+    "secondary_window": { "used_percent": 33, "limit_window_seconds": 604800, "reset_after_seconds": 250000, "reset_at": 1788900000 }
+  },
+  "additional_rate_limits": [
+    {
+      "limit_name": "gpt-6-thinking",
+      "rate_limit": {
+        "primary_window": null,
+        "secondary_window": { "used_percent": 55, "limit_window_seconds": 604800, "reset_after_seconds": 100000, "reset_at": 1788950000 }
+      }
+    }
+  ],
+  "credits": { "has_credits": false }
+}
