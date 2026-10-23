@@ -18,6 +18,12 @@ settings:
 targets:
   Cooldown:
     type: application
+    attributes:
+      SystemCapabilities:
+        com.apple.ApplicationGroups.iOS:
+          enabled: 1
+        com.apple.Keychain:
+          enabled: 1
     platform: iOS
     sources: [Spike/App, Spike/Shared]
     dependencies:
@@ -42,6 +48,12 @@ targets:
         keychain-access-groups: ["$(AppIdentifierPrefix)com.robinrichardrajan.cooldown.shared"]
   CooldownWidgets:
     type: app-extension
+    attributes:
+      SystemCapabilities:
+        com.apple.ApplicationGroups.iOS:
+          enabled: 1
+        com.apple.Keychain:
+          enabled: 1
     platform: iOS
     sources: [Spike/Widget, Spike/Shared]
     settings:
