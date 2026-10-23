@@ -19,7 +19,7 @@ Everything here is automatic. Never ask the owner to commit, push, open, merge o
 
 | This repo | |
 |---|---|
-| Verify command | `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest` |
+| Verify command | `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest`, and when `ios/` changed: `swift test --package-path ios/Packages/CooldownCore` |
 | Sequential IDs to check | `CCRM-<n>` IDs; numbered BUGS/ROADMAP entries |
 | Disposable ignored files | `.gradle/`, `build/`, `app/build/`, `.kotlin/`, `.idea/`, `*.iml`, `.DS_Store` (`local.properties` and signing files are **not** disposable) |
 | Exchange airlock | none |

@@ -7,3 +7,5 @@ Spike/Widget/*.entitlements
 .derived/
 out/
 xcuserdata/
+Packages/*/.build/
+Packages/*/.swiftpm/

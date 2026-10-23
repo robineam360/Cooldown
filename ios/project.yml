@@ -8,6 +8,10 @@ options:
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
+packages:
+  # CCRM-94 (iOS App): the pure core, tested on the Mac against spec/core/fixtures.
+  CooldownCore:
+    path: Packages/CooldownCore
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -28,6 +32,7 @@ targets:
     sources: [Spike/App, Spike/Shared]
     dependencies:
       - target: CooldownWidgets
+      - package: CooldownCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown
@@ -56,6 +61,8 @@ targets:
           enabled: 1
     platform: iOS
     sources: [Spike/Widget, Spike/Shared]
+    dependencies:
+      - package: CooldownCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.widgets

@@ -9,8 +9,10 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 > CCRM-93 (iOS Spike) and CCRM-92 (Shared Spec) are done: every iOS surface works on the iPad
 > (docs/ios/SPIKE.md), and `spec/` is this family's spec: `spec/core/` (master of the shared core) + `spec/mobile/`
 > (docs/REPO-STRUCTURE.md). The iOS wireframes are **approved** (rev B,
-> `design/2026-10-23-ios-wireframes.html`). Next is [docs/ios/PLAN.md](docs/ios/PLAN.md) step 5,
-> CCRM-94 (iOS App): CooldownCore first, tested against `spec/core/fixtures`, then sign-in, the
+> `design/2026-10-23-ios-wireframes.html`). [docs/ios/PLAN.md](docs/ios/PLAN.md) step 5, CCRM-94
+> (iOS App), is under way: `ios/Packages/CooldownCore` is built and green against `spec/core/fixtures`
+> (`swift test --package-path ios/Packages/CooldownCore`). Next: the networking layer and sign-in
+> (port the Mac's APIClient/OAuthSignIn request shapes with their deferred tests, Keychain store), then the
 > app screens, widgets, lock-screen widgets, the control, reset alerts and the Live Activity —
 > each built to the approved wireframe, checked on the iPhone and iPad simulators and on the
 > iPad. Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major

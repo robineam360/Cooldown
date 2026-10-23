@@ -1585,7 +1585,10 @@ it carries the umbrella CCRM-7 (iOS).
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
 - **Status:** Planned · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
-  iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · plan step 5 next.
+  iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
+  (ios/Packages) built 2026-10-23 — models, both usage parsers, projection and pace, history, plan tag and
+  formatting ported from CooldownMac's core at `2bfbdfd`; 52 tests green against `spec/core/fixtures` and the
+  captured payloads, on CI's macOS job too. Next: networking and sign-in, then the screens.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

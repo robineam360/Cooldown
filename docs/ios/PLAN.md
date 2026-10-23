@@ -74,7 +74,9 @@ port. The surfaces, each needing a wireframe approved under CLAUDE.md §2 before
    Activity is the Duet with Weekly (two accounts, 5h and Weekly, measured under iOS's 160 pt cap; one account as the
    fallback); the Large widget is offered; the iPad uses its height — one pinned account on top, the selected one
    below (sidebar in landscape, tabs in portrait).
-5. **CCRM-94 (iOS App)** — CooldownCore first (tests on the spec vectors and payloads), then sign-in (Claude token
+5. **CCRM-94 (iOS App)** — *(23 Oct: CooldownCore done, 52 tests against `spec/core/fixtures`; Mac tests for
+   the networking layer, the pace-alert feature and the popover's chart/tone are deferred to their own pieces or
+   stay on the desktop.)* CooldownCore first (tests on the spec vectors and payloads), then sign-in (Claude token
    paste and the ChatGPT device code, both as on Android), the app screens, widgets, lock-screen widgets, the control,
    reset alerts, Live Activity. CI gains a macOS job running the package tests and a simulator build. Each piece:
    tests green, then a check on every platform it supports — iPhone simulator and iPad simulator, plus the iPad device

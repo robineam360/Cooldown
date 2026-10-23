@@ -56,3 +56,14 @@ jobs:
             app/build/reports/
             app/build/test-results/
           retention-days: 14
+
+  # CCRM-94 (iOS App): the iPhone/iPad app's pure core, tested against the shared spec
+  # (spec/core/fixtures). No signing, no simulator — `swift test` on the Mac runner.
+  ios-core:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: CooldownCore tests against spec/core/fixtures
+        run: swift test --package-path ios/Packages/CooldownCore
