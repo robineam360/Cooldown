@@ -1584,7 +1584,9 @@ it carries the umbrella CCRM-7 (iOS).
   to Robin before anything else is built.
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
-- **Status:** Planned · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
+- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the
+  lock-screen widget picker not reopening for a second widget) · CI builds the app and runs its app-hosted tests on
+  a simulator from 0a6b6fb · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
   iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
   (ios/Packages) built 2026-10-23 — models, both usage parsers, projection and pace, history, plan tag and
   formatting ported from CooldownMac's core at `2bfbdfd`; 52 tests green against `spec/core/fixtures` and the

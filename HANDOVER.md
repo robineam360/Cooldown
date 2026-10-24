@@ -4,27 +4,22 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-23, after CCRM-92)
+## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-24, after the iPad device check)
 
-> CCRM-93 (iOS Spike) and CCRM-92 (Shared Spec) are done: every iOS surface works on the iPad
-> (docs/ios/SPIKE.md), and `spec/` is this family's spec: `spec/core/` (master of the shared core) + `spec/mobile/`
-> (docs/REPO-STRUCTURE.md). The iOS wireframes are **approved** (rev B,
-> `design/2026-10-23-ios-wireframes.html`). [docs/ios/PLAN.md](docs/ios/PLAN.md) step 5, CCRM-94
-> (iOS App), is under way: `ios/Packages/CooldownCore` is built and green against `spec/core/fixtures`
-> (`swift test --package-path ios/Packages/CooldownCore`), networking and sign-in included (API client,
-> PKCE, ChatGPT device code, Keychain store in the shared group — the store's tests are app-hosted:
-> `xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown` on a simulator), and the fetch
-> repository (`UsageRepository`: Android's mobile rules, reset detection, App Group snapshot), and the
-> app screens (`ios/App`: iPhone tabs and cards, iPad pinned + selected, sign-in sheets, Settings,
-> History; launch with `-demo standard|signin|plan|stale|max|empty` to see each state), and the surfaces
-> (widgets, lock-screen widgets, Control Center control, reset alerts, Live Activity, background refresh;
-> faces in `ios/Shared/FaceViews.swift`, rendered by `CooldownTests` to `SHOT_DIR`), and the Android ports
-> (layout sheet, Density and Chart height, share card, Pulse launcher icon; `-screen layout|share`,
-> `-density compact`, `-chartSize small|large` in demo mode). Next: the iPad device check with real Claude and
-> ChatGPT accounts (sign in, widgets on the home and lock screen, Live Activity, a reset alert). Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major
-> visual changes. Separately, in the desktop repo (a session rooted there, not
-> this one): REPO-STRUCTURE step 3 — its `contract/` becomes `spec/` = `spec/core/` (pinned copy of
-> this `spec/core/`) + `spec/desktop/`.
+> CCRM-94 (iOS App) is built and on main (last 0a6b6fb): the app, widgets rev C (Bars small; the Overview as
+> account cards in five tiers across Medium, Large and Extra Large; the Ring dropped), lock-screen widgets, the
+> Control Center control, reset alerts, the Live Activity Duet, the iPad sidebar 5h/Weekly switch, and Android's
+> Appearance, Theme colour and account extras. Weekly-only plans lead with Weekly everywhere. Designs approved
+> 24 Oct: `design/2026-10-24-ios-widgets.html`, `-ios-sidebar-window.html`, `-ios-appearance-accounts.html`.
+> The iPad (UDID 00008132-001C398E14D9001C) runs the latest build, signed on the Sedin team
+> (`DEVELOPMENT_TEAM=546C62BX57 -allowProvisioningUpdates`, never committed); install with
+> `xcrun devicectl device install app`. Debug builds print `[LiveActivity]` lines to a
+> `devicectl device process launch --console` session; widget crashes are in the device's systemCrashLogs.
+> Still open from the device check: (1) a reset alert with the window set to "Always" (none arrived on "If busy",
+> correctly, at a 55% peak); (2) on the iPad lock screen, tapping a second placed widget didn't reopen its Account
+> picker — unresolved, a screen recording would help. Then CCRM-95 (Dual Release) phase B: the IPA to colleagues
+> through the EAM360 team (TestFlight or ad hoc), which waits on EAM360 agreeing to publish; one GitHub release
+> carries both the APK and the IPA, never an iOS-only one. Separately, in the desktop repo: REPO-STRUCTURE step 3.
 
 ## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
 
