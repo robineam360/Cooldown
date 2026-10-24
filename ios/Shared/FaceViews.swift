@@ -51,11 +51,11 @@ struct FaceFootnote: View {
                     Text(face.weeklyReset.map { "Resets \(CardContent.dayClock($0.ms, Date.now.ms, false, .current))" } ?? "")
                         .foregroundStyle(p.sub)
                 } else if face.atLimit, let reset = face.reset {
-                    Text("Limit · resets \(shortClock(reset))").foregroundStyle(p.red)
+                    Text("Limit · resets \(face.resetClock(reset))").foregroundStyle(p.red)
                 } else if let runOut = face.runOut {
                     Text("~ runs out \(shortClock(runOut))").foregroundStyle(p.sub)
                 } else {
-                    Text(face.reset.map { "Resets \(shortClock($0))" } ?? "No window running").foregroundStyle(p.sub)
+                    Text(face.reset.map { "Resets \(face.resetClock($0))" } ?? "No window running").foregroundStyle(p.sub)
                 }
             }
         }
@@ -104,12 +104,12 @@ struct NumberFace: View {
     let entry: FaceEntry
     @Environment(\.palette) private var p
     var body: some View {
-        if let face = entry.face {
+        if let face = entry.face?.leading {
             let weekly = entry.window == .weekly
             let pct = weekly ? face.weeklyPct : face.pct
             let pace = weekly ? face.weeklyPace : face.pace
             VStack(alignment: .leading, spacing: 0) {
-                FaceLabel(face: face, suffix: weekly ? "Weekly" : "5h")
+                FaceLabel(face: face, suffix: weekly ? "Weekly" : face.windowLabel)
                 Spacer(minLength: 6)
                 Text(face.status == .signIn || face.status == .plan ? "—" : (pct.map { "\(Int($0))%" } ?? "—"))
                     .font(.system(size: (pct ?? 0) >= 100 ? 40 : 46, weight: .bold)).monospacedDigit()
@@ -131,15 +131,19 @@ struct CountdownFace: View {
     let entry: FaceEntry
     @Environment(\.palette) private var p
     var body: some View {
-        if let face = entry.face {
+        if let face = entry.face?.leading {
             VStack(alignment: .leading, spacing: 4) {
-                Text("5h reset").font(.system(size: 14)).foregroundStyle(p.txt)
+                Text("\(face.windowLabel) reset").font(.system(size: 14)).foregroundStyle(p.txt)
                 if let reset = face.reset, face.status != .signIn {
-                    Text(timerInterval: Date.now...max(reset, .now), countsDown: true)
+                    Group {
+                        // A week doesn't fit a ticking H:MM:SS; Weekly counts down in days and hours.
+                        if face.leadsWeekly { Text(Fmt.compactDuration(ms: max(reset.ms - Date.now.ms, 0))) }
+                        else { Text(timerInterval: Date.now...max(reset, .now), countsDown: true) }
+                    }
                         .font(.system(size: 35, weight: .bold)).monospacedDigit()
                         .foregroundStyle(p.ink).lineLimit(1).minimumScaleFactor(0.6)
                         .padding(.top, 8)
-                    Text(face.atLimit ? "Limit · opens \(shortClock(reset))" : "at \(shortClock(reset))")
+                    Text(face.atLimit ? "Limit · opens \(face.resetClock(reset))" : "at \(face.resetClock(reset))")
                         .font(.system(size: 13.5)).foregroundStyle(face.atLimit ? p.red : p.sub)
                 } else {
                     Text("—:—").font(.system(size: 35, weight: .bold)).foregroundStyle(p.sub).padding(.top, 8)
@@ -217,11 +221,11 @@ struct StripFace: View {
     let entry: FaceEntry
     @Environment(\.palette) private var p
     var body: some View {
-        if let face = entry.face {
+        if let face = entry.face?.leading {
             let accent = face.account.provider.accent(colorSchemeFor(p))
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .firstTextBaseline) {
-                    FaceLabel(face: face, size: 15)
+                    FaceLabel(face: face, suffix: face.windowLabel, size: 15)
                     Spacer()
                     Text(face.status == .signIn ? "—" : (face.pct.map { "\(Int($0))%" } ?? "—"))
                         .font(.system(size: 34, weight: .bold)).monospacedDigit()
@@ -231,11 +235,13 @@ struct StripFace: View {
                     .padding(.top, 6)
                 stripLine(face).font(.system(size: 12.5)).padding(.top, 6)
                 Spacer(minLength: 6)
-                HStack(spacing: 10) {
-                    Text("Weekly").font(.system(size: 13)).foregroundStyle(p.txt).frame(width: 52, alignment: .leading)
-                    UsageBar(pct: face.status == .signIn ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 6, dimmed: face.isDimmed)
-                    Text(face.status == .signIn ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.txt).frame(width: 40, alignment: .trailing)
+                if !face.leadsWeekly {
+                    HStack(spacing: 10) {
+                        Text("Weekly").font(.system(size: 13)).foregroundStyle(p.txt).frame(width: 52, alignment: .leading)
+                        UsageBar(pct: face.status == .signIn ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 6, dimmed: face.isDimmed)
+                        Text(face.status == .signIn ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(p.txt).frame(width: 40, alignment: .trailing)
+                    }
                 }
             }
         } else {
@@ -248,11 +254,11 @@ struct StripFace: View {
         case .signIn, .plan, .noData, .stale, .aging: FaceFootnote(face: face)
         default:
             if face.atLimit, let reset = face.reset {
-                (Text("Limit reached").foregroundStyle(p.red) + Text(" · resets \(shortClock(reset))").foregroundStyle(p.sub))
+                (Text("Limit reached").foregroundStyle(p.red) + Text(" · resets \(face.resetClock(reset))").foregroundStyle(p.sub))
             } else if let runOut = face.runOut, let reset = face.reset {
-                Text("~ runs out \(shortClock(runOut)) · resets \(shortClock(reset))").foregroundStyle(p.sub)
+                Text("~ runs out \(shortClock(runOut)) · resets \(face.resetClock(reset))").foregroundStyle(p.sub)
             } else if let reset = face.reset {
-                Text("Resets in \(Fmt.compactDuration(ms: reset.ms - Date.now.ms)) · \(shortClock(reset))").foregroundStyle(p.sub)
+                Text("Resets in \(Fmt.compactDuration(ms: reset.ms - Date.now.ms)) · \(face.resetClock(reset))").foregroundStyle(p.sub)
             } else {
                 FaceFootnote(face: face)
             }
@@ -551,21 +557,21 @@ struct LockFace: View {
     private var family: WidgetFamily { familyOverride ?? envFamily }
 
     var body: some View {
-        if let face = entry.face {
+        if let face = entry.face?.leading {
             switch family {
             case .accessoryCircular:
                 ZStack {
                     AccessoryWidgetBackground()
                     UsageRing(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, lineWidth: 5,
                               label: face.status == .signIn ? "—" : face.atLimit ? "MAX" : (face.pct.map { "\(Int($0))" } ?? "—"),
-                              sublabel: "5h", fontSize: 19, mono: .white)
+                              sublabel: face.leadsWeekly ? "W" : "5h", fontSize: 19, mono: .white)
                         .padding(2)
                 }
             case .accessoryRectangular:
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 5) {
                         ProviderMark(provider: face.account.provider, size: 14, color: .white)
-                        Text("\(face.account.label) · 5h").font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                        Text("\(face.account.label) · \(face.windowLabel)").font(.system(size: 14, weight: .semibold)).lineLimit(1)
                         Spacer(minLength: 2)
                         Text(face.status == .signIn ? "—" : (face.pct.map { "\(Int($0))%" } ?? "—"))
                             .font(.system(size: 17, weight: .bold)).monospacedDigit()
@@ -573,7 +579,7 @@ struct LockFace: View {
                     UsageBar(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, height: 6)
                     Group {
                         if face.status == .signIn { Text("Sign in again") }
-                        else if face.atLimit, let reset = face.reset { Text("Limit · resets \(shortClock(reset))") }
+                        else if face.atLimit, let reset = face.reset { Text("Limit · resets \(face.resetClock(reset))") }
                         else if let reset = face.reset { Text("Resets in ") + Text(reset, style: .relative) }
                         else { Text("No window running") }
                     }
@@ -592,8 +598,8 @@ struct LockFace: View {
 
     private func inline(_ face: Face, withReset: Bool) -> String {
         let pct = face.status == .signIn ? "—" : (face.pct.map { "\(Int($0))%" } ?? "—")
-        let tail = withReset ? (face.reset.map { " · resets \(shortClock($0))" } ?? "") : ""
-        return "\(face.account.label) 5h \(pct)\(tail)"
+        let tail = withReset ? (face.reset.map { " · resets \(face.resetClock($0))" } ?? "") : ""
+        return "\(face.account.label) \(face.windowLabel) \(pct)\(tail)"
     }
 }
 
@@ -632,19 +638,21 @@ struct LockPanel: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     ProviderMark(provider: row.providerValue, size: 14)
-                    Text("\(row.label) · 5h").font(.system(size: 14)).lineLimit(1)
+                    Text("\(row.label) · \(row.windowLabel)").font(.system(size: 14)).lineLimit(1)
                     Text("·").foregroundStyle(p.txt)
                     // No fixedSize here: a live timer's natural width is unbounded in a widget, and forcing it
                     // crashed the extension's layout (the two-account panel never appeared). RowLine bounds its timer.
                     RowLine(row: row, long: false).font(.system(size: 12)).lineLimit(1).layoutPriority(1)
                 }
-                UsageBar(pct: row.signIn ? nil : row.pct, pace: row.pace, accent: accent, height: 7, dimmed: row.asOf != nil)
-                HStack(spacing: 7) {
-                    Text("Weekly").frame(width: 42, alignment: .leading)
-                    UsageBar(pct: row.signIn ? nil : row.weeklyPct, pace: row.weeklyPace, accent: accent, height: 4, dimmed: row.asOf != nil)
-                    Text(row.signIn ? "—" : (row.weeklyPct.map { "\(Int($0))%" } ?? "—")).monospacedDigit().frame(width: 36, alignment: .trailing)
+                UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 7, dimmed: row.asOf != nil)
+                if row.weeklyPct != nil || row.signIn {
+                    HStack(spacing: 7) {
+                        Text("Weekly").frame(width: 42, alignment: .leading)
+                        UsageBar(pct: row.signIn ? nil : row.weeklyPct, pace: row.weeklyPace, accent: accent, height: 4, dimmed: row.asOf != nil)
+                        Text(row.signIn ? "—" : (row.weeklyPct.map { "\(Int($0))%" } ?? "—")).monospacedDigit().frame(width: 36, alignment: .trailing)
+                    }
+                    .font(.system(size: 11.5)).foregroundStyle(p.txt)
                 }
-                .font(.system(size: 11.5)).foregroundStyle(p.txt)
             }
             BigNumber(row: row, size: (row.pct ?? 0) >= 100 ? 32 : 38).frame(width: 84, alignment: .trailing)
         }
@@ -656,18 +664,20 @@ struct LockPanel: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 7) {
-                    HStack(spacing: 6) { ProviderMark(provider: row.providerValue, size: 15); Text("\(row.label) · 5h").font(.system(size: 15)) }
-                    UsageBar(pct: row.signIn ? nil : row.pct, pace: row.pace, accent: accent, height: 8, dimmed: row.asOf != nil)
+                    HStack(spacing: 6) { ProviderMark(provider: row.providerValue, size: 15); Text("\(row.label) · \(row.windowLabel)").font(.system(size: 15)) }
+                    UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 8, dimmed: row.asOf != nil)
                     RowLine(row: row, long: true).font(.system(size: 12.5))
                 }
                 BigNumber(row: row, size: 52)
             }
-            HStack(spacing: 8) {
-                Text("Weekly").frame(width: 48, alignment: .leading)
-                UsageBar(pct: row.weeklyPct, pace: row.weeklyPace, accent: accent, height: 5)
-                Text(row.weeklyPct.map { "\(Int($0))%" } ?? "—")
+            if row.weeklyPct != nil {
+                HStack(spacing: 8) {
+                    Text("Weekly").frame(width: 48, alignment: .leading)
+                    UsageBar(pct: row.weeklyPct, pace: row.weeklyPace, accent: accent, height: 5)
+                    Text(row.weeklyPct.map { "\(Int($0))%" } ?? "—")
+                }
+                .font(.system(size: 12.5)).foregroundStyle(p.txt)
             }
-            .font(.system(size: 12.5)).foregroundStyle(p.txt)
         }
     }
 }
@@ -683,6 +693,11 @@ struct RowLine: View {
             Text(long ? "Sign-in stopped working · open Cooldown" : "sign in again").foregroundStyle(p.orange)
         } else if let asOf = row.asOf {
             Text("as of \(shortClock(asOf))").foregroundStyle(p.orange)
+        } else if row.hasReset, let reset = row.reset {
+            // Drawn when iOS marks the activity stale at the first reset: the window is over, so no 0:00.
+            Text(long ? "\(row.windowLabel) reset at \(row.clock(reset)) · back at 0%" : "reset · 0%").foregroundStyle(p.txt)
+        } else if row.leadsWeekly, let reset = row.reset {
+            Text(long ? "Resets \(row.clock(reset))" : row.clock(reset)).foregroundStyle(p.txt)
         } else if let reset = row.reset {
             if (row.pct ?? 0) >= 100 {
                 HStack(spacing: 0) {
@@ -711,8 +726,8 @@ struct BigNumber: View {
     let size: CGFloat
     @Environment(\.palette) private var p
     var body: some View {
-        Text(row.signIn ? "—" : (row.pct.map { "\(Int($0))%" } ?? "—"))
+        Text(row.signIn ? "—" : (row.shownPct.map { "\(Int($0))%" } ?? "—"))
             .font(.system(size: size, weight: .semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
-            .foregroundStyle(row.signIn || row.asOf != nil ? p.sub : p.severity(row.pct, accent: row.providerValue.accent(.dark)))
+            .foregroundStyle(row.signIn || row.asOf != nil ? p.sub : p.severity(row.shownPct, accent: row.providerValue.accent(.dark)))
     }
 }

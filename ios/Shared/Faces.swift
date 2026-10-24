@@ -35,6 +35,27 @@ struct Face: Equatable, Sendable {
 
     /// A plan with no 5h window at all (OpenAI's weekly-only plans): Weekly leads.
     var weeklyOnly: Bool { pct == nil && weeklyPct != nil && status != .noData && status != .signIn }
+    /// Set on `leading` for a weekly-only plan: the main fields carry the Weekly window, and there is no second one.
+    var leadsWeekly = false
+    /// The main window's name on tight surfaces: "5h", or "Weekly" where Weekly leads.
+    var windowLabel: String { leadsWeekly ? "Weekly" : "5h" }
+
+    /// The face as the 5h-led surfaces (Number, Countdown, Strip, lock screen, Control Center, Live Activity) should
+    /// draw it: unchanged, or — for a plan with no 5h window — with Weekly moved into the main slot, so nothing says
+    /// "no 5h" (Robin, 2026-10-24).
+    var leading: Face {
+        guard weeklyOnly else { return self }
+        var f = Face(account: account, pct: weeklyPct, pace: weeklyPace, reset: weeklyReset, runOut: nil,
+                     weeklyPct: nil, weeklyPace: nil, weeklyReset: nil, fetchedAt: fetchedAt, status: status)
+        f.session = weekly
+        f.leadsWeekly = true
+        return f
+    }
+
+    /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
+    func resetClock(_ date: Date) -> String {
+        leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, false, .current) : shortClock(date)
+    }
     var isDimmed: Bool { status == .stale || status == .signIn }
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
     var atLimit: Bool { (pct ?? 0) >= 100 }

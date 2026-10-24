@@ -297,9 +297,12 @@ struct IPadLandscape: View {
 
     private func sidebarRow(_ account: Account) -> some View {
         let usage = model.usage(account.key)
-        let pct = usage?.session?.percent
-        let pace = usage?.session?.resetsAtMs.flatMap {
-            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.sessionMs, nowMs: model.nowMs)
+        // A weekly-only plan has no 5h window: its Weekly leads here too.
+        let main = usage?.session ?? usage?.weekly
+        let pct = main?.percent
+        let pace = main?.resetsAtMs.flatMap {
+            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: usage?.session == nil ? HistoryStats.weekMs : HistoryStats.sessionMs,
+                               nowMs: model.nowMs)
         }
         let accent = account.provider.accent(scheme)
         let selected = account.key == bottomKey

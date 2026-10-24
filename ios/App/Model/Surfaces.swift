@@ -29,7 +29,7 @@ enum LiveActivities {
     /// running, or a sign-in to fix.
     static func rows(_ faces: [Face]) -> [CooldownActivityAttributes.Row] {
         let keys = Prefs.liveActivityKeys ?? faces.prefix(2).map(\.account.key)
-        return faces.filter { keys.contains($0.account.key) && ($0.reset != nil || $0.status == .signIn) }
+        return faces.map(\.leading).filter { keys.contains($0.account.key) && ($0.reset != nil || $0.status == .signIn) }
             .prefix(2).map(CooldownActivityAttributes.Row.init)
     }
 

@@ -118,6 +118,30 @@ struct SurfaceRenderTests {
                                           familyOverride: .systemLarge), width: 346, height: 346)
     }
 
+    /// A weekly-only plan leads with Weekly on every 5h-led surface, and a Live Activity row whose window has reset
+    /// reads "reset · 0%" rather than a stopped 0:00 (iPad device check, 2026-10-24).
+    @Test("weekly-only plans and a reset Live Activity row")
+    func weeklyOnlyAndReset() {
+        let weekly = extraStates[0].1
+        let entry = FaceEntry(date: now, faces: [weekly], key: weekly.account.key)
+        save("wk-number", NumberFace(entry: entry), width: 170, height: 170)
+        save("wk-countdown", CountdownFace(entry: entry), width: 170, height: 170)
+        save("wk-strip", StripFace(entry: entry), width: 364, height: 170)
+        let wall = Color(hex: 0x6E5F95)
+        save("wk-lock-circle", LockFace(entry: entry, familyOverride: .accessoryCircular).foregroundStyle(.white), width: 104, height: 104, background: wall)
+        save("wk-lock-rect", LockFace(entry: entry, familyOverride: .accessoryRectangular).foregroundStyle(.white), width: 204, height: 108, background: wall)
+        let bg = Color(hex: 0x1C1C1E)
+        var reset = CooldownActivityAttributes.Row(states[0].1)
+        reset.reset = now.addingTimeInterval(-60)
+        save("la-reset-duet", LockPanel(state: .init(rows: [reset, CooldownActivityAttributes.Row(states[5].1)], ended: nil)),
+             width: 370, height: 160, background: bg)
+        save("la-weekly-duet", LockPanel(state: .init(rows: [CooldownActivityAttributes.Row(weekly), CooldownActivityAttributes.Row(states[0].1)], ended: nil)),
+             width: 370, height: 160, background: bg)
+        save("la-weekly-single", LockPanel(state: .init(rows: [CooldownActivityAttributes.Row(weekly)], ended: nil)), width: 370, height: 160, background: bg)
+        #expect(weekly.leading.leadsWeekly && weekly.leading.pct == 42 && weekly.leading.weeklyPct == nil)
+        #expect(states[0].1.leading == states[0].1)
+    }
+
     @Test("lock-screen widgets")
     func lockWidgets() {
         let wall = Color(hex: 0x6E5F95)

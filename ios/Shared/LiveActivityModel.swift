@@ -18,10 +18,22 @@ struct CooldownActivityAttributes: ActivityAttributes {
         /// Set when the numbers are over 30 minutes old: the row says "as of" instead of the countdown.
         var asOf: Date?
         var signIn: Bool
+        /// True for a weekly-only plan: the row's main window is Weekly. Optional so older states still decode.
+        var weeklyLeads: Bool?
 
         var providerValue: Provider { Provider(rawValue: provider) ?? .claude }
+        var leadsWeekly: Bool { weeklyLeads ?? false }
+        var windowLabel: String { leadsWeekly ? "Weekly" : "5h" }
+        /// The window has reset since the app last wrote this row (the activity went stale at that moment).
+        var hasReset: Bool { reset.map { $0 <= .now } ?? false }
+        /// What the number shows: a window that has reset is back at 0%.
+        var shownPct: Double? { hasReset ? 0 : pct }
+        func clock(_ date: Date) -> String {
+            leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, false, .current) : shortClock(date)
+        }
 
-        init(_ face: Face) {
+        init(_ source: Face) {
+            let face = source.leading
             key = face.account.key
             label = face.account.label
             provider = face.account.provider.rawValue
@@ -33,6 +45,7 @@ struct CooldownActivityAttributes: ActivityAttributes {
             weeklyPace = face.weeklyPace
             asOf = (face.status == .aging || face.status == .stale) ? face.fetchedAt : nil
             signIn = face.status == .signIn
+            weeklyLeads = face.leadsWeekly ? true : nil
         }
     }
 

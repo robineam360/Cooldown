@@ -17,7 +17,7 @@ struct CooldownLiveActivity: Widget {
             let row = context.state.rows.first
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    if let row { Label { Text("\(row.label) · 5h") } icon: { ProviderMark(provider: row.providerValue, size: 18) } }
+                    if let row { Label { Text("\(row.label) · \(row.windowLabel)") } icon: { ProviderMark(provider: row.providerValue, size: 18) } }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if let row { BigNumber(row: row, size: 34) }
@@ -39,7 +39,10 @@ struct CooldownLiveActivity: Widget {
                     }
                 }
             } compactTrailing: {
-                if let reset = row?.reset {
+                if let row, row.leadsWeekly || row.hasReset {
+                    Text(row.hasReset ? "reset" : row.reset.map { Fmt.compactDuration(ms: max($0.ms - Date.now.ms, 0)) } ?? "")
+                        .monospacedDigit().frame(maxWidth: 52)
+                } else if let reset = row?.reset {
                     Text(timerInterval: Date.now...max(reset, .now), countsDown: true, showsHours: true)
                         .monospacedDigit().frame(maxWidth: 52)
                         .foregroundStyle((row?.pct ?? 0) >= 100 ? Palette.dark.red : .white)
@@ -75,7 +78,7 @@ struct AccountControlProvider: AppIntentControlValueProvider {
     }
 
     func currentValue(configuration: AccountControlIntent) async throws -> AccountControlValue {
-        let faces = Faces.load()
+        let faces = Faces.load().map(\.leading)
         guard let face = faces.first(where: { $0.account.key == configuration.account?.id }) ?? faces.first else {
             return AccountControlValue(key: nil, title: "Cooldown", value: "Add an account")
         }
@@ -86,7 +89,7 @@ struct AccountControlProvider: AppIntentControlValueProvider {
         case .stale, .aging: value = "\(face.pct.map { "\(Int($0))%" } ?? "—") · as of \(face.fetchedAt.map(shortClock) ?? "—")"
         default: value = face.atLimit ? "Limit reached" : (face.pct.map { "\(Int($0))%" } ?? "—")
         }
-        return AccountControlValue(key: face.account.key, title: "\(face.account.label) · 5h", value: value)
+        return AccountControlValue(key: face.account.key, title: "\(face.account.label) · \(face.windowLabel)", value: value)
     }
 }
 

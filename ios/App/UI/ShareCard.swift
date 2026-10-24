@@ -19,7 +19,7 @@ struct ShareCardView: View {
         let week = CardContent.window(title: "Weekly", window: usage.weekly, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs)
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 14) {
-                UsageRing(pct: five?.pct, pace: five?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
+                UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 7) {
                         ProviderMark(provider: account.provider, size: 22)
@@ -31,8 +31,9 @@ struct ShareCardView: View {
             if let five { row(five, accent: accent).padding(.top, 18) }
             if let week { row(week, accent: accent).padding(.top, 14) }
             Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 14)
-            Text("5h trend").font(.system(size: 13)).foregroundStyle(p.sub)
-            if let chart = five?.chart {
+            // A weekly-only plan has no 5h window: its Weekly trend takes the chart.
+            Text(five == nil ? "Weekly trend" : "5h trend").font(.system(size: 13)).foregroundStyle(p.sub)
+            if let chart = (five ?? week)?.chart {
                 TrendChart(model: chart, accent: accent).frame(height: 130).padding(.top, 6)
             }
             Text("COOLDOWN").font(.system(size: 11, weight: .medium)).tracking(1.5).foregroundStyle(p.sub).padding(.top, 14)

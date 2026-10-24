@@ -217,6 +217,8 @@ struct AccountCards: View {
 
     private var defaultOpen: Set<CardID> {
         if Density(rawValue: density) == .compact { return [] }
+        // A weekly-only plan has no 5h card: its Weekly card opens in its place.
+        if model.usage(account.key)?.session == nil { return [.weekly] }
         return twoAcross ? [.session, .weekly] : [.session]
     }
 
