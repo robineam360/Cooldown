@@ -62,11 +62,17 @@ struct TrendChart: View {
     let model: Model
     let accent: Color
     var dimmed = false
+    /// CCRM-75 (Chart Height) Small: guides, pace, curve, now and projection only — no labels; the lines under the
+    /// chart carry the numbers.
+    var linesOnly = false
     @Environment(\.palette) private var p
 
     var body: some View {
         Canvas { ctx, size in
-            let W = size.width, top: CGFloat = 20, base = size.height - 20
+            let W = size.width, top: CGFloat = linesOnly ? 4 : 20, base = size.height - (linesOnly ? 4 : 20)
+            func label(_ t: String, _ at: CGPoint, _ c: Color, _ a: UnitPoint, _ s: CGFloat, _ b: Bool) {
+                if !linesOnly { Self.label(ctx, t, at: at, colour: c, anchor: a, size: s, bold: b) }
+            }
             func X(_ v: Double) -> CGFloat { v * W }
             func Y(_ v: Double) -> CGFloat { base - v / 100 * (base - top) }
             let dash = StrokeStyle(lineWidth: 1, dash: [2, 4])
@@ -74,12 +80,12 @@ struct TrendChart: View {
                 ctx.stroke(Path { $0.move(to: .init(x: 0, y: Y(v))); $0.addLine(to: .init(x: W, y: Y(v))) },
                            with: .color(c.opacity(0.7)), style: dash)
             }
-            label(ctx, "100%", at: .init(x: W, y: Y(100) - 8), colour: p.red, anchor: .trailing)
-            label(ctx, "90%", at: .init(x: W, y: Y(90)), colour: p.orange, anchor: .trailing)
-            label(ctx, "80%", at: .init(x: W, y: Y(80) + 7), colour: p.yellow, anchor: .trailing)
+            label("100%", .init(x: W, y: Y(100) - 8), p.red, .trailing, 10, false)
+            label("90%", .init(x: W, y: Y(90)), p.orange, .trailing, 10, false)
+            label("80%", .init(x: W, y: Y(80) + 7), p.yellow, .trailing, 10, false)
             ctx.stroke(Path { $0.move(to: .init(x: 0, y: Y(95))); $0.addLine(to: .init(x: 13, y: Y(95))) },
                        with: .color(p.pace), style: StrokeStyle(lineWidth: 2.6, dash: [4, 3]))
-            label(ctx, "even pace", at: .init(x: 18, y: Y(95)), colour: p.pace, anchor: .leading, size: 10.5)
+            label("even pace", .init(x: 18, y: Y(95)), p.pace, .leading, 10.5, false)
             ctx.stroke(Path { $0.move(to: .init(x: 0, y: base)); $0.addLine(to: .init(x: W, y: base)) },
                        with: .color(p.line), lineWidth: 1)
 
@@ -109,8 +115,8 @@ struct TrendChart: View {
                                with: .color(proj >= 100 ? p.red : accent.opacity(0.85)), lineWidth: 1.8)
                     if proj < 100 {
                         let v = min(proj, 100)
-                        label(ctx, "~\(Int(proj.rounded()))%", at: .init(x: X(1) - 34, y: Y(v) + (v >= 60 ? 13 : -13)),
-                              colour: p.txt, anchor: .trailing, size: 11.5, bold: true)
+                        label("~\(Int(proj.rounded()))%", .init(x: X(1) - 34, y: Y(v) + (v >= 60 ? 13 : -13)),
+                              p.txt, .trailing, 11.5, true)
                     }
                 }
                 var line = Path()
@@ -121,20 +127,19 @@ struct TrendChart: View {
                 }
                 ctx.fill(Path(ellipseIn: CGRect(x: lastPt.x - 5, y: lastPt.y - 5, width: 10, height: 10)),
                          with: .color(model.over ? p.red : accent))
-                label(ctx, "\(Int(last.y))%", at: .init(x: lastPt.x - 8, y: lastPt.y - 13), colour: p.ink,
-                      anchor: .trailing, size: 12, bold: true)
+                label("\(Int(last.y))%", .init(x: lastPt.x - 8, y: lastPt.y - 13), p.ink, .trailing, 12, true)
             }
-            label(ctx, model.startLabel, at: .init(x: 0, y: base + 11), colour: p.sub, anchor: .leading, size: 11)
+            label(model.startLabel, .init(x: 0, y: base + 11), p.sub, .leading, 11, false)
             if let nowX = model.nowX {
-                label(ctx, "now", at: .init(x: X(nowX), y: base + 11), colour: p.sub, anchor: .center, size: 11)
+                label("now", .init(x: X(nowX), y: base + 11), p.sub, .center, 11, false)
             }
-            label(ctx, model.endLabel, at: .init(x: W, y: base + 11), colour: p.sub, anchor: .trailing, size: 11)
+            label(model.endLabel, .init(x: W, y: base + 11), p.sub, .trailing, 11, false)
         }
         .opacity(dimmed ? 0.45 : 1)
         .accessibilityHidden(true)
     }
 
-    private func label(_ ctx: GraphicsContext, _ text: String, at point: CGPoint, colour: Color,
+    private nonisolated static func label(_ ctx: GraphicsContext, _ text: String, at point: CGPoint, colour: Color,
                        anchor: UnitPoint, size: CGFloat = 10, bold: Bool = false) {
         ctx.draw(Text(text).font(.system(size: size, weight: bold ? .bold : .regular)).foregroundStyle(colour),
                  at: point, anchor: anchor)

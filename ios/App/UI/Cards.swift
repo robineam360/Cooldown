@@ -14,12 +14,15 @@ struct CardBox<Content: View>: View {
 }
 
 /// The 5-hour card: title, number, bar with pace tick, the full chart when expanded, the pace and
-/// projection lines, and both reset lines.
+/// projection lines, and both reset lines. In Compact (or behind More) it folds to a title, the bar and one line,
+/// and a tap opens the chart in place (CCRM-72 (Main Screen Redesign)).
 struct WindowCard: View {
     let content: WindowContent
     let accent: Color
     @Binding var expanded: Bool
+    var collapsible = true
     var chartHeight: CGFloat = 150
+    var linesOnly = false
     var dimmed = false
     var rightResetLine: String?
     @Environment(\.palette) private var p
@@ -29,38 +32,45 @@ struct WindowCard: View {
             header
             UsageBar(pct: content.pct, pace: content.pace, accent: accent, height: 11, dimmed: dimmed)
                 .padding(.top, 12)
-            if expanded, let chart = content.chart {
-                TrendChart(model: chart, accent: accent, dimmed: dimmed)
-                    .frame(height: chartHeight)
-                    .padding(.top, 12)
+            if expanded || !collapsible {
+                if let chart = content.chart {
+                    TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
+                        .frame(height: chartHeight)
+                        .padding(.top, 12)
+                }
                 Text(content.paceLine)
                     .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
                     .font(.system(size: 14.5)).padding(.top, 6)
                 if let line = content.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
                 }
+                HStack {
+                    Text(content.resetsIn)
+                    Spacer(minLength: 8)
+                    Text(rightResetLine ?? content.resetsAt)
+                }
+                .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
+            } else {
+                Text(CardContent.compactLine(content))
+                    .font(.system(size: 14.5)).foregroundStyle(content.paceLineAlarm ? p.red : p.txt).padding(.top, 10)
             }
-            HStack {
-                Text(content.resetsIn)
-                Spacer(minLength: 8)
-                Text(rightResetLine ?? content.resetsAt)
-            }
-            .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(content.title), \(content.pct.map { "\(Int($0)) percent" } ?? "no reading"). \(content.paceLine). \(content.resetsIn).")
     }
 
     private var header: some View {
-        Button { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } } label: {
+        Button { if collapsible { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } } } label: {
             HStack(spacing: 8) {
                 Text(content.title).foregroundStyle(p.txt)
                 Spacer()
                 Text(content.pct.map { "\(Int($0))%" } ?? "—")
                     .font(.system(size: 19, weight: .bold)).monospacedDigit()
                     .foregroundStyle(dimmed ? p.sub : ((content.pct ?? 0) >= 100 ? p.red : p.ink))
-                Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(p.sub)
+                if collapsible {
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 15, weight: .semibold)).foregroundStyle(p.sub)
+                }
             }
             .font(.system(size: 17))
             .contentShape(Rectangle())
@@ -75,17 +85,22 @@ struct WeeklyCard: View {
     let cap: WindowContent?
     let accent: Color
     @Binding var expanded: Bool
+    var collapsible = true
+    var chartHeight: CGFloat = 120
+    var linesOnly = false
     var dimmed = false
     @Environment(\.palette) private var p
 
     var body: some View {
         CardBox {
-            Button { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } } label: {
+            Button { if collapsible { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } } } label: {
                 HStack {
                     Text("7-day window").foregroundStyle(p.txt)
                     Spacer()
-                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 15, weight: .semibold)).foregroundStyle(p.sub)
+                    if collapsible {
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 15, weight: .semibold)).foregroundStyle(p.sub)
+                    }
                 }
                 .font(.system(size: 17)).contentShape(Rectangle())
             }
@@ -95,6 +110,10 @@ struct WeeklyCard: View {
                 HStack(alignment: .top, spacing: 16) { half(all, short: true); half(cap, short: true) }
             } else {
                 half(all, short: false)
+            }
+            if !(expanded || !collapsible) {
+                Text(CardContent.compactLine(all)).font(.system(size: 13.5))
+                    .foregroundStyle(all.paceLineAlarm ? p.red : p.txt).padding(.top, 8)
             }
         }
     }
@@ -109,15 +128,18 @@ struct WeeklyCard: View {
             }
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 9, dimmed: dimmed).padding(.top, 10)
-            if expanded, let chart = c.chart {
-                TrendChart(model: chart, accent: accent, dimmed: dimmed).frame(height: 120).padding(.top, 10)
+            if expanded || !collapsible {
+                if let chart = c.chart {
+                    TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
+                        .frame(height: chartHeight).padding(.top, 10)
+                }
                 Text(c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5)).padding(.top, 6)
                 if let line = c.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 13.5)).padding(.top, 3)
                 }
+                Text(short ? c.resetsIn : "\(c.resetsIn) · \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))")
+                    .font(.system(size: 13.5)).foregroundStyle(p.txt).padding(.top, 6)
             }
-            Text(short ? c.resetsIn : "\(c.resetsIn) · \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))")
-                .font(.system(size: 13.5)).foregroundStyle(p.txt).padding(.top, 6)
         }
     }
 }
@@ -168,53 +190,98 @@ struct NoticeView: View {
     private var tint: Color { notice.tone == .error ? p.red : p.orange }
 }
 
-/// One account's cards, in the order and fold the user chose. Used by the iPhone tabs and both iPad halves.
+/// One account's cards, in the order, visibility and fold the user chose (the layout sheet), drawn at the chosen
+/// density and chart height. Used by the iPhone tabs and both iPad halves; the iPad has room, so it shows what's
+/// behind More inline.
 struct AccountCards: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     let account: Account
     var twoAcross = false
-    var chartHeight: CGFloat = 150
+    /// The card's width, for Large chart heights.
+    var cardWidth: CGFloat = 338
     var onSignIn: () -> Void = {}
-    @AppStorage("fold.5h") private var fiveHourOpen = true
-    @AppStorage("fold.7d") private var weeklyOpen = false
-    @AppStorage("fold.7d.wide") private var weeklyOpenWide = true
+    @AppStorage("density") private var density = Density.comfortable.rawValue
+    @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
+    /// Which cards the user opened or closed; until then, the density's defaults (wireframe rev B: 5-hour open and
+    /// 7-day folded on iPhone, both open on iPad; Compact folds everything).
+    @State private var open: Set<CardID>?
+    @State private var moreOpen = false
+
+    private var defaultOpen: Set<CardID> {
+        if Density(rawValue: density) == .compact { return [] }
+        return twoAcross ? [.session, .weekly] : [.session]
+    }
 
     var body: some View {
         let accent = account.provider.accent(scheme)
         let state = model.states[account.key] ?? AccountState()
         let snapshot = model.snapshots[account.key]
         let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs)
-        let dimmed = notice?.tone == .error || notice?.tone == .warning
-        let usage = model.usage(account.key)
-        let history = model.histories[account.key] ?? []
+        let layout = model.layout(account.key)
         VStack(spacing: 12) {
             if let notice { NoticeView(notice: notice, onAction: onSignIn) }
-            if state.lastKind != "plan", let usage {
-                let five = CardContent.window(title: "5-hour window", window: usage.session, kind: HistoryStats.sessionKind,
-                                              history: history, nowMs: model.nowMs)
-                let all = CardContent.window(title: "All", window: usage.weekly, kind: HistoryStats.weeklyKind,
-                                             history: history, nowMs: model.nowMs)
-                let cap = usage.modelCaps.first.flatMap {
+            if state.lastKind != "plan", model.usage(account.key) != nil {
+                if twoAcross {
+                    let ids = layout.order.filter { !layout.hidden.contains($0) }
+                    let windows = ids.filter { $0 != .credits }
+                    HStack(alignment: .top, spacing: 14) {
+                        ForEach(windows) { card($0, accent: accent, notice: notice, folded: false) }
+                    }
+                } else {
+                    ForEach(layout.main) { card($0, accent: accent, notice: notice, folded: false) }
+                    if !layout.folded.isEmpty {
+                        Button { withAnimation(.easeInOut(duration: 0.2)) { moreOpen.toggle() } } label: {
+                            HStack(spacing: 4) {
+                                Text("More")
+                                Image(systemName: moreOpen ? "arrowtriangle.up.fill" : "arrowtriangle.down.fill").font(.system(size: 8))
+                                Text("· \(layout.folded.count) \(layout.folded.count == 1 ? "card" : "cards")")
+                            }
+                            .font(.system(size: 15)).foregroundStyle(p.txt)
+                            .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 2).padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
+                        if moreOpen { ForEach(layout.folded) { card($0, accent: accent, notice: notice, folded: true) } }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func card(_ id: CardID, accent: Color, notice: Notice?, folded: Bool) -> some View {
+        let usage = model.usage(account.key)
+        let history = model.histories[account.key] ?? []
+        let snapshot = model.snapshots[account.key]
+        let dimmed = notice?.tone == .error || notice?.tone == .warning
+        let size = ChartSize(rawValue: chartSize) ?? .medium
+        let height = size.height(width: cardWidth)
+        // A card behind More starts folded whatever the density (as on Android).
+        let binding = Binding(
+            get: { (open ?? defaultOpen.subtracting(folded ? [id] : [])).contains(id) },
+            set: { var o = open ?? defaultOpen; if $0 { o.insert(id) } else { o.remove(id) }; open = o })
+        switch id {
+        case .session:
+            if let five = CardContent.window(title: "5-hour window", window: usage?.session, kind: HistoryStats.sessionKind,
+                                             history: history, nowMs: model.nowMs) {
+                WindowCard(content: five, accent: accent, expanded: binding, chartHeight: height,
+                           linesOnly: size.linesOnly, dimmed: dimmed,
+                           rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, false, .current))" : nil)
+            }
+        case .weekly:
+            if let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,
+                                            history: history, nowMs: model.nowMs) {
+                let cap = usage?.modelCaps.first.flatMap {
                     CardContent.window(title: $0.modelName.replacingOccurrences(of: "Claude ", with: ""), window: $0.window,
                                        kind: HistoryStats.weeklyKind, history: [], nowMs: model.nowMs)
                 }
-                if twoAcross {
-                    HStack(alignment: .top, spacing: 14) {
-                        if let five { WindowCard(content: five, accent: accent, expanded: $fiveHourOpen, chartHeight: chartHeight, dimmed: dimmed) }
-                        if let all { WeeklyCard(all: all, cap: cap, accent: accent, expanded: $weeklyOpenWide, dimmed: dimmed) }
-                    }
-                } else {
-                    if let five {
-                        WindowCard(content: five, accent: accent, expanded: $fiveHourOpen, chartHeight: chartHeight, dimmed: dimmed,
-                                   rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, false, .current))" : nil)
-                    }
-                    if let all { WeeklyCard(all: all, cap: cap, accent: accent, expanded: $weeklyOpen, dimmed: dimmed) }
-                }
-                if !twoAcross, let credits = CardContent.credits(usage.credits) {
-                    CreditsCard(text: credits.text, pct: credits.pct, isBalance: credits.pct == nil)
-                }
+                WeeklyCard(all: all, cap: cap, accent: accent, expanded: binding,
+                           chartHeight: cap == nil ? height : min(height, 120), linesOnly: size.linesOnly, dimmed: dimmed)
+            }
+        case .credits:
+            if let credits = CardContent.credits(usage?.credits) {
+                CreditsCard(text: credits.text, pct: credits.pct, isBalance: credits.pct == nil)
             }
         }
     }

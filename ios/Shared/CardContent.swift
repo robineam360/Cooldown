@@ -91,6 +91,12 @@ enum CardContent {
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))")
     }
 
+    /// A folded card's one line: "Resets in 1h 57m · 22% below pace" (Android's Compact card).
+    static func compactLine(_ c: WindowContent) -> String {
+        let pace = c.paceLine.replacingOccurrences(of: "even pace", with: "pace")
+        return "\(c.resetsIn) · \(pace == "On pace" ? "on pace" : pace)"
+    }
+
     /// "$123.90 / $400.00" with its percent, or "$4.20 balance"; nil when there's nothing to report.
     static func credits(_ credits: SpendCredits?) -> (text: String, pct: Int?)? {
         guard let credits, credits.isReportable else { return nil }

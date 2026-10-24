@@ -63,7 +63,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 extension Notification.Name { static let openAccount = Notification.Name("cooldown.openAccount") }
 
 enum Sheet: String, Identifiable {
-    case settings, addAccount, claudeSignIn, chatGPTSignIn
+    case settings, addAccount, claudeSignIn, chatGPTSignIn, layout, share
     var id: String { rawValue }
 }
 
@@ -101,6 +101,8 @@ struct RootView: View {
                             .accessibilityLabel("Settings")
                         Menu {
                             Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.refresh(manual: true) } }
+                            Button("Layout", systemImage: "rectangle.3.group") { sheet = .layout }
+                            Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
                             Button("Add account", systemImage: "plus") { sheet = .addAccount }
                         } label: { Image(systemName: "ellipsis.circle") }
                     }
@@ -116,6 +118,8 @@ struct RootView: View {
                 case .addAccount: AddAccountSheet(sheet: $sheet)
                 case .claudeSignIn: ClaudeSignInSheet()
                 case .chatGPTSignIn: ChatGPTSignInSheet()
+                case .layout: LayoutSheet(accountKey: model.selectedKey ?? model.accounts.first?.key ?? "")
+                case .share: ShareSheet(accountKey: model.selectedKey ?? model.accounts.first?.key ?? "")
                 }
             }
             .environment(model)
@@ -135,6 +139,8 @@ struct RootView: View {
         case "addAccount": sheet = .addAccount
         case "claude": sheet = .claudeSignIn
         case "chatgpt": sheet = .chatGPTSignIn
+        case "layout": sheet = .layout
+        case "share": sheet = .share
         default: break
         }
     }
@@ -284,7 +290,7 @@ struct IPadLandscape: View {
     private func half(_ account: Account, pinned: Bool) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             AccountHeader(account: account, pinned: pinned)
-            AccountCards(account: account, twoAcross: true, chartHeight: 112,
+            AccountCards(account: account, twoAcross: true, cardWidth: 396,
                          onSignIn: { sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn })
         }
     }
@@ -338,14 +344,14 @@ struct PinnedAndTabs: View {
                     AppTitle()
                     if let pinned = model.account(model.pinnedKey) {
                         AccountHeader(account: pinned, pinned: true)
-                        AccountCards(account: pinned, twoAcross: true, chartHeight: 200, onSignIn: { signIn(pinned) })
+                        AccountCards(account: pinned, twoAcross: true, cardWidth: 356, onSignIn: { signIn(pinned) })
                     }
                     if !others.isEmpty {
                         AccountTabs(accounts: others, selected: Binding(get: { selected?.key }, set: { model.selectedKey = $0 }))
                             .padding(.horizontal, -22)
                         if let selected {
                             AccountHeader(account: selected, pinned: false)
-                            AccountCards(account: selected, twoAcross: true, chartHeight: 200, onSignIn: { signIn(selected) })
+                            AccountCards(account: selected, twoAcross: true, cardWidth: 356, onSignIn: { signIn(selected) })
                         }
                     }
                     Footer()

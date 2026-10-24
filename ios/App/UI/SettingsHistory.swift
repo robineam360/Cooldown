@@ -10,6 +10,8 @@ struct SettingsScreen: View {
     @Environment(\.palette) private var p
     @Binding var sheet: Sheet?
     @AppStorage("theme") private var theme = "system"
+    @AppStorage("density") private var density = Density.comfortable.rawValue
+    @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
     @State private var renaming: Account?
     @State private var newName = ""
 
@@ -52,6 +54,25 @@ struct SettingsScreen: View {
                 Section {
                     Picker("Theme", selection: $theme) {
                         Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Density")
+                        Picker("Density", selection: $density) {
+                            Text("Comfortable").tag(Density.comfortable.rawValue); Text("Compact").tag(Density.compact.rawValue)
+                        }
+                        .pickerStyle(.segmented)
+                        Text("Comfortable opens the 5-hour chart and keeps the rest a tap away. Compact folds each card to a title, bar and one line — tap it to open the chart in place.")
+                            .font(.system(size: 13)).foregroundStyle(p.sub)
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Chart height")
+                        Picker("Chart height", selection: $chartSize) {
+                            Text("Small").tag(ChartSize.small.rawValue); Text("Medium").tag(ChartSize.medium.rawValue)
+                            Text("Large").tag(ChartSize.large.rawValue)
+                        }
+                        .pickerStyle(.segmented)
+                        Text("Large draws everything. Small keeps just the lines — guides, pace, curve — and drops every label; the pace and estimate text below the chart still say the numbers.")
+                            .font(.system(size: 13)).foregroundStyle(p.sub)
                     }
                 } header: { Text("Appearance") }
                 Section {

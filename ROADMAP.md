@@ -1603,8 +1603,11 @@ it carries the umbrella CCRM-7 (iOS).
   rectangular, inline), the Control Center control, reset alerts scheduled ahead (5h If busy and Weekly Always by
   default, as on Android) with their Settings rows, the Live Activity Duet with Weekly and its Dynamic Island,
   with the Lock Screen Settings row, and background refresh. Widgets only read the App Group; all fetching
-  stays in the app. A render test draws every face in every state. Still to build: the layout sheet, density
-  and chart height, the share card and the launcher icon; then the iPad device check with real accounts.
+  stays in the app. A render test draws every face in every state. The ports from Android followed the same
+  day: the per-account layout sheet (show, hide, reorder, behind More, reset; only the account's own cards count
+  towards the last one), Density (Comfortable/Compact) and Chart height (Small/Medium/Large) in Appearance, the
+  share card (preview sheet, shared as an image) and the Pulse launcher icon. Next: the iPad device check with
+  real accounts.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

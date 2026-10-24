@@ -12,6 +12,8 @@ final class AppModel {
     private(set) var states: [String: AccountState] = [:]
     private(set) var histories: [String: [HistoryPoint]] = [:]
     private(set) var records: [String: [HistoryStats.Record]] = [:]
+    /// Each account's card layout (the layout sheet), kept on this device.
+    private(set) var layouts: [String: CardLayout] = [:]
     var isRefreshing = false
 
     let storage: Storage
@@ -53,6 +55,7 @@ final class AppModel {
             states[account.key] = stateStore.load(account.key)
             histories[account.key] = history.points(profile)
             records[account.key] = sessions.records(profile)
+            layouts[account.key] = CardLayout.load(account.key)
         }
         nowMs = Self.clock()
     }
@@ -66,6 +69,12 @@ final class AppModel {
     }
 
     func account(_ key: String?) -> Account? { accounts.first { $0.key == key } }
+
+    func layout(_ key: String) -> CardLayout { layouts[key] ?? CardLayout.load(key) }
+    func setLayout(_ layout: CardLayout, for key: String) {
+        layouts[key] = layout.normalized
+        if !isDemo { CardLayout.save(layout, key) }
+    }
     var pinnedKey: String? { accounts.first(where: \.pinned)?.key ?? accounts.first?.key }
     var lastCheckedMs: Int64? { states.values.map(\.lastAttemptAtMs).filter { $0 > 0 }.max() }
 
