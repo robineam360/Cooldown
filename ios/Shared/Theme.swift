@@ -56,6 +56,9 @@ struct ProviderMark: View {
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
+            // The Claude starburst runs edge to edge in its square while the ChatGPT knot fills ~70% of its own, so
+            // Claude is drawn at 82% to match apparent size (approved 24 Oct; Android's drawable does the same).
+            .scaleEffect(provider == .claude ? 0.82 : 1)
             .frame(width: size, height: size)
             .foregroundStyle(color ?? provider.accent(scheme))
             .accessibilityHidden(true)

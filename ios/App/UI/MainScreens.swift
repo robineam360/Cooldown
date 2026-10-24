@@ -253,11 +253,17 @@ struct IPadLandscape: View {
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
+    /// Which window the sidebar's bars show, remembered (design/2026-10-24-ios-sidebar-window.html, approved 24 Oct).
+    @AppStorage("sidebarWindow") private var sidebarWindow = "5h"
 
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 AppTitle(size: 30).padding(.horizontal, 18).padding(.bottom, 10)
+                Picker("Window", selection: $sidebarWindow) {
+                    Text("5h").tag("5h"); Text("Weekly").tag("weekly")
+                }
+                .pickerStyle(.segmented).padding(.horizontal, 18).padding(.bottom, 10)
                 ForEach(model.accounts) { account in sidebarRow(account) }
                 Text("Touch and hold an account to pin it to the top.")
                     .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.horizontal, 22).padding(.top, 12)
@@ -297,11 +303,14 @@ struct IPadLandscape: View {
 
     private func sidebarRow(_ account: Account) -> some View {
         let usage = model.usage(account.key)
-        // A weekly-only plan has no 5h window: its Weekly leads here too.
-        let main = usage?.session ?? usage?.weekly
+        // The switch picks the window; a weekly-only plan has no 5h, so it always shows Weekly — labelled, so the row
+        // doesn't read as a 5h figure.
+        let weekly = sidebarWindow == "weekly" || usage?.session == nil
+        let forcedWeekly = sidebarWindow == "5h" && usage?.session == nil && usage?.weekly != nil
+        let main = weekly ? usage?.weekly : usage?.session
         let pct = main?.percent
         let pace = main?.resetsAtMs.flatMap {
-            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: usage?.session == nil ? HistoryStats.weekMs : HistoryStats.sessionMs,
+            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: weekly ? HistoryStats.weekMs : HistoryStats.sessionMs,
                                nowMs: model.nowMs)
         }
         let accent = account.provider.accent(scheme)
@@ -317,7 +326,10 @@ struct IPadLandscape: View {
                     }
                     UsageBar(pct: pct, pace: pace, accent: accent, height: 5)
                 }
-                Text(pct.map { "\(Int($0))%" } ?? "—").font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(pct.map { "\(Int($0))%" } ?? "—").font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
+                    if forcedWeekly { Text("Weekly").font(.system(size: 11)).foregroundStyle(p.sub) }
+                }
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .background(selected ? accent.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 10))
