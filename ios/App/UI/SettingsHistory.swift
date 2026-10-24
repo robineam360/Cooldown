@@ -131,6 +131,8 @@ struct LockScreenSection: View {
     @Environment(AppModel.self) private var model
     @AppStorage("liveActivity.on", store: Prefs.defaults) private var on = false
     @State private var picking = false
+    /// Mirrors `Prefs.liveActivityKeys` so the ticks and the summary redraw on every tap (UserDefaults isn't observed).
+    @State private var keys = Prefs.liveActivityKeys
 
     var body: some View {
         Section {
@@ -158,13 +160,14 @@ struct LockScreenSection: View {
         }
     }
 
-    private var shown: [String] { Prefs.liveActivityKeys ?? model.accounts.prefix(2).map(\.key) }
+    private var shown: [String] { keys ?? model.accounts.prefix(2).map(\.key) }
 
     /// Up to two; picking a third replaces the oldest.
     private func toggle(_ key: String) {
         var keys = shown
         if let i = keys.firstIndex(of: key) { keys.remove(at: i) } else { keys.append(key); if keys.count > 2 { keys.removeFirst() } }
         Prefs.liveActivityKeys = keys
+        self.keys = keys
         model.surfacesChanged()
     }
 }
