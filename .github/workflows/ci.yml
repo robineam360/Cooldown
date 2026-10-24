@@ -67,3 +67,41 @@ jobs:
 
       - name: CooldownCore tests against spec/core/fixtures
         run: swift test --package-path ios/Packages/CooldownCore
+
+  # CCRM-94 (iOS App): the app itself — XcodeGen project, a simulator build of the app and its widget extension, and
+  # the app-hosted tests (Keychain store, card wording, card layout, every widget/lock-screen/Live Activity face
+  # rendered). Simulator only: no signing identity or team on the runner.
+  ios-app:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Newest Xcode on the runner
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XC" ]; then sudo xcode-select -s "$XC"; fi
+          xcodebuild -version
+
+      - name: Generate the project
+        run: |
+          brew install xcodegen
+          xcodegen generate --spec ios/project.yml
+
+      - name: Pick an iPhone simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          phones=[x for k,v in d.items() if "iOS" in k for x in v if x["name"].startswith("iPhone")]
+          print(phones[-1]["udid"] if phones else "")')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          test -n "$UDID"
+
+      - name: Build and run the app tests
+        run: |
+          xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown \
+            -destination "id=${{ steps.sim.outputs.udid }}" -only-testing:CooldownTests \
+            -derivedDataPath ios/.derived | tail -40
+          test ${PIPESTATUS[0]} -eq 0
