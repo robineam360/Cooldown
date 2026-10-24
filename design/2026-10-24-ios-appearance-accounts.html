@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iOS Appearance Accounts</title>
+<!-- CCRM-94 (iOS App): Robin picked groups A (Appearance), B (Accounts) and C (Theme colour) from the Android parity list
+     on 24 Oct. Android's own controls and wording (SettingsScreen.kt; device pass 2026-09-17 shots 07–09, 21–22), laid out
+     as iOS Settings rows. 1 px = 1 pt on an iPhone 17 Pro (393 pt wide). For approval before any code (CLAUDE.md §2). -->
+<style>
+:root{--bg:#000;--group:#1C1C1E;--ink:#F2F2F2;--txt:#D1D1D6;--sub:#98989F;--line:#38383A;--fill:#2C2C2E;--tick:#C7C7CC;--cl:#E59980;--gp:#19C39A;--red:#FF5252;--yellow:#FDD663;--blue:#0A84FF}
+*{box-sizing:border-box}body{margin:0;background:#121214;color:#E5E5EA;font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:28px 16px 80px}h1{font-size:25px;margin:0 0 6px}h2{font-size:19px;margin:40px 0 6px;padding-top:16px;border-top:1px solid #2a2a2e}
+h3{font-size:15px;margin:18px 0 6px;color:#c9c9cf}p,li{color:#b8b8bf;max-width:880px}
+.row{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.phone{width:393px;background:var(--bg);border-radius:30px;padding:14px 16px 24px;border:1px solid #2a2a2e;font-variant-numeric:tabular-nums}
+.cap{font-size:12.5px;color:#9a9aa2;margin-top:6px;max-width:393px}
+.hd{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:.3px;margin:16px 16px 6px}
+.grp{background:var(--group);border-radius:12px;overflow:hidden}
+.cell{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink)}.cell:last-child{border-bottom:0}
+.lbl{font-size:16px}.foot{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.35}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;font-size:13px;margin-top:8px}.seg span{flex:1;text-align:center;padding:5px 0;border-radius:7px;color:var(--txt)}.seg .on{background:#636366;color:#fff;font-weight:600}
+.tog{display:flex;align-items:center;justify-content:space-between}.sw{width:51px;height:31px;border-radius:16px;background:#30D158;position:relative;flex:none}.sw::after{content:"";position:absolute;right:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff}.sw.off{background:#39393D}.sw.off::after{right:auto;left:2px}
+.sws{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:10px}.dot{width:34px;height:34px;border-radius:50%;position:relative}.dot.sel::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.pp{background:conic-gradient(var(--cl) 0 50%,var(--gp) 50% 100%)}
+.card{background:var(--group);border-radius:14px;padding:13px 14px;color:var(--ink);width:361px}
+.ct{display:flex;justify-content:space-between;align-items:baseline;font-size:16px}.ct b{font-size:18px}
+.bar{position:relative;height:11px;margin:12px 0 6px;border-radius:6px}.bar .tr{position:absolute;inset:0;border-radius:6px;opacity:.28}.bar .f{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.bar .tk{position:absolute;top:-5px;width:3px;height:21px;background:var(--tick);border-radius:1.5px;transform:translateX(-50%)}
+.ln{font-size:14.5px;color:var(--txt);margin-top:4px}.two{display:flex;justify-content:space-between;font-size:14.5px;color:var(--txt);margin-top:8px}
+.menu{width:250px;background:#2C2C2E;border-radius:13px;overflow:hidden;font-size:16px}.menu div{padding:11px 16px;border-bottom:1px solid #3a3a3c;display:flex;justify-content:space-between;color:var(--ink)}.menu .new{color:#fff}.menu .new::after{content:"new";font-size:11px;color:#0A84FF;border:1px solid #0A84FF;border-radius:5px;padding:0 4px;margin-left:8px}
+.menu .del{color:var(--red)}
+.sheet{width:393px;background:#1C1C1E;border-radius:14px 14px 0 0;padding:16px;color:var(--ink);border:1px solid #2a2a2e}
+.sheet h4{margin:0 0 4px;font-size:17px;text-align:center}.kv{font-size:14.5px;color:var(--txt);padding:7px 0;border-bottom:1px solid var(--line)}.kv:last-child{border:0}.kv small{display:block;color:var(--sub);font-size:12.5px}
+.alert{width:270px;background:#2C2C2E;border-radius:14px;text-align:center;color:var(--ink);overflow:hidden}.alert .b{padding:16px}.alert .btns{display:flex;border-top:1px solid #3a3a3c}.alert .btns span{flex:1;padding:11px;color:var(--blue)}.alert .btns span+span{border-left:1px solid #3a3a3c;color:var(--red);font-weight:600}
+.dec{background:#18181d;border:1px solid #2c2c33;border-radius:12px;padding:12px 16px;margin:10px 0;max-width:880px}
+.mk{display:inline-block;vertical-align:-3px}
+</style></head><body><main>
+<h1>iOS Settings: Appearance, theme colour and account extras from Android</h1>
+<p>The features you picked from the parity list: group A (Appearance), B (Accounts) and C (Theme colour). The controls and wording are Android's,
+laid out as iOS Settings rows. Drawn at real size on an iPhone. iPad uses the same rows inside its Settings sheet.</p>
+
+<h2>A + C · Appearance, with theme colour</h2>
+<p>Android's order. The four new rows are Time format, Usage display, Chart orientation and Reset time, plus the red-past-pace switch and the Theme colour grid. Theme, Density and Chart height already exist on iOS.
+“Material You” is left out (Android only). Each choice applies everywhere: app, widgets, lock screen and Live Activity.</p>
+<div class="row" id="appearance"></div>
+
+<h3>What the choices change: one 5h card</h3>
+<div class="row" id="effects"></div>
+
+<h2>B · Accounts</h2>
+<p>Touch and hold an account in Settings → Accounts. The menu gains <b>Details…</b>, <b>Accent colour…</b> and <b>Clear usage history…</b>, as Android's ⋮ menu has them.
+Credits get their own switches, one per account that reports credits, as on Android.</p>
+<div class="row" id="accounts"></div>
+
+<div class="dec"><b>Notes for approval.</b>
+(1) <b>Theme colour</b> recolours every account at once. “Per provider” (default) keeps Claude orange and ChatGPT green. An account's own <b>Accent colour</b> overrides the theme colour, exactly as on Android.
+(2) <b>Usage display: Left</b> changes the words and figures (“53% left”), never the bars: bars and colours always show what's spent.
+(3) <b>Time down</b> turns the trend chart so usage runs left to right like the bar above it, and time runs top to bottom.
+(4) Turning <b>red past the pace mark</b> off keeps the tick; only the red fill goes.</div>
+</main>
+<script>
+const cl=`<svg class="mk" width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="var(--cl)"/></svg>`;
+const seg=(opts,on)=>`<div class="seg">${opts.map((o,i)=>`<span class="${i===on?"on":""}">${o}</span>`).join("")}</div>`;
+const SW=[["Per provider","pp"],["Blue","#8AB4F8"],["Indigo","#9FA8DA"],["Cyan","#4DD0E1"],["Teal","#4DB6AC"],["Green","#81C995"],["Amber","#FDD663"],
+          ["Deep Orange","#FF8A65"],["Red","#F28B82"],["Pink","#F48FB1"],["Purple","#CE93D8"],["Brown","#BCAAA4"]];
+const swatches=(sel)=>`<div class="sws">${SW.map(([n,c],i)=>`<div class="dot ${c==="pp"?"pp":""} ${i===sel?"sel":""}" style="${c!=="pp"?`background:${c}`:""}" title="${n}"></div>`).join("")}</div>`;
+function appearance(){
+  return `<div><div class="phone"><div style="font-size:17px;font-weight:600;text-align:center;color:#fff">Settings</div>
+  <div class="hd">Appearance</div><div class="grp">
+   <div class="cell tog"><span class="lbl">Theme</span><span style="color:var(--sub)">System ⌃⌄</span></div>
+   <div class="cell"><div class="lbl">Theme colour</div>${swatches(0)}<div class="foot">Selected: Per provider: Claude orange, ChatGPT green.</div></div>
+   <div class="cell"><div class="lbl">Time format</div>${seg(["System","12-hour","24-hour"],0)}<div class="foot">Times shown like Thu 11:45 pm.</div></div>
+   <div class="cell"><div class="lbl">Usage display</div>${seg(["Used","Left"],0)}<div class="foot">How percentages read on every surface. Bars and colours always show what's spent. Shows “47% used”: what each window has consumed.</div></div>
+   <div class="cell"><div class="lbl">Density</div>${seg(["Comfortable","Compact"],0)}<div class="foot">(as today)</div></div>
+   <div class="cell"><div class="lbl">Chart height</div>${seg(["Small","Medium","Large"],1)}<div class="foot">(as today)</div></div>
+   <div class="cell"><div class="lbl">Chart orientation</div>${seg(["Time across","Time down"],0)}<div class="foot">Time down puts usage on the same axis as the bar above it.</div></div>
+   <div class="cell"><div class="lbl">Reset time</div>${seg(["Countdown","Clock time"],0)}<div class="foot">Which form leads wherever a reset is shown. Where there's room, the other form keeps the second slot. Countdown leads with “resets in 2h 14m”, collapsing to “resets soon” inside five minutes.</div></div>
+   <div class="cell"><div class="tog"><span class="lbl">Show red past the pace mark</span><span class="sw"></span></div><div class="foot">Colours the bar past the even-pace tick, in the app, widgets and Live Activity. Off keeps the tick without the colour.</div></div>
+  </div></div><div class="cap">The Appearance section, top to bottom.</div></div>
+  <div><div class="phone"><div class="hd" style="margin-top:4px">Appearance</div><div class="grp">
+   <div class="cell"><div class="lbl">Theme colour</div>${swatches(1)}<div class="foot">Selected: Blue. Every account's bars, numbers and charts use it, unless the account has its own accent colour.</div></div></div>
+   <div class="hd">Sample</div><div class="grp"><div class="cell">${card({acc:"#8AB4F8",w:329})}</div></div>
+  </div><div class="cap">Theme colour set to Blue.</div></div>`;
+}
+function bar(pct,pace,acc,red=true){const over=pct>pace+3;
+  const f=over&&red?`<div class="f" style="width:${pace}%;background:${acc};border-radius:6px 0 0 6px"></div><div class="f" style="left:${pace}%;width:${pct-pace}%;background:var(--red);border-radius:0 6px 6px 0"></div>`
+                    :`<div class="f" style="width:${pct}%;background:${acc}"></div>`;
+  return `<div class="bar"><div class="tr" style="background:${acc}"></div>${f}<div class="tk" style="left:${pace}%"></div></div>`}
+function card(o){const acc=o.acc||"var(--cl)", pct=o.pct??62, pace=o.pace??40, left=o.left;
+  return `<div class="card" style="${o.w?`width:${o.w}px;padding:0`:""}"><div class="ct"><span>5-hour window</span><b style="color:${pct>pace+3&&o.red!==false?"var(--red)":acc}">${left?(100-pct)+"% left":pct+"%"}</b></div>
+   ${bar(pct,pace,acc,o.red!==false)}${o.chart||""}
+   <div class="ln" style="color:${pct>pace+3?"var(--red)":"var(--txt)"}">22% above even pace</div>
+   <div class="ln">At this pace: runs out ~6:51 pm · 20.6%/h</div>
+   <div class="two">${o.clock?`<span>Resets at Sat 7:43 pm</span><span>in 3h 0m</span>`:`<span>Resets in 3h 0m</span><span>Resets at Sat 7:43 pm</span>`}</div></div>`}
+function chart(down){const W=333,H=down?150:120;
+  let s=`<svg width="${W}" height="${H}" style="display:block;margin-top:10px">`;
+  if(!down){const top=14,base=H-18,X=v=>v*W,Y=v=>base-v/100*(base-top);
+    [[80,"var(--yellow)"],[90,"#FFA726"],[100,"var(--red)"]].forEach(([v,c])=>s+=`<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-dasharray="2 4" opacity=".7"/>`);
+    s+=`<line x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(100)}" stroke="var(--yellow)" stroke-width="2.4" stroke-dasharray="5 4"/>`;
+    const pts=[[0,0],[.1,14],[.2,30],[.3,47],[.4,62]].map(([x,y])=>[X(x),Y(y)]);
+    s+=`<polyline points="${pts.join(" ")}" fill="none" stroke="var(--red)" stroke-width="2.2"/><circle cx="${pts[4][0]}" cy="${pts[4][1]}" r="5" fill="var(--red)"/>`;
+    s+=`<line x1="${pts[4][0]}" y1="${pts[4][1]}" x2="${X(.66)}" y2="${Y(100)}" stroke="var(--cl)" stroke-dasharray="4 3" stroke-width="2"/><circle cx="${X(.66)}" cy="${Y(100)}" r="4" fill="none" stroke="var(--red)" stroke-width="1.8"/>`;
+    s+=`<text x="0" y="${H-3}" fill="var(--sub)" font-size="11">2:43 pm</text><text x="${X(.4)}" y="${H-3}" fill="var(--sub)" font-size="11" text-anchor="middle">now</text><text x="${W}" y="${H-3}" fill="var(--sub)" font-size="11" text-anchor="end">7:43 pm</text>`;
+  } else {const l=6,r=W-50,X=v=>l+v/100*(r-l),Y=t=>8+t*(H-16);
+    [[80,"var(--yellow)"],[90,"#FFA726"],[100,"var(--red)"]].forEach(([v,c])=>s+=`<line y1="0" y2="${H}" x1="${X(v)}" x2="${X(v)}" stroke="${c}" stroke-dasharray="2 4" opacity=".7"/>`);
+    s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(1)}" stroke="var(--yellow)" stroke-width="2.4" stroke-dasharray="5 4"/>`;
+    const pts=[[0,0],[.1,14],[.2,30],[.3,47],[.4,62]].map(([t,v])=>[X(v),Y(t)]);
+    s+=`<polyline points="${pts.join(" ")}" fill="none" stroke="var(--red)" stroke-width="2.2"/><circle cx="${pts[4][0]}" cy="${pts[4][1]}" r="5" fill="var(--red)"/>`;
+    s+=`<line x1="${pts[4][0]}" y1="${pts[4][1]}" x2="${X(100)}" y2="${Y(.66)}" stroke="var(--cl)" stroke-dasharray="4 3" stroke-width="2"/><circle cx="${X(100)}" cy="${Y(.66)}" r="4" fill="none" stroke="var(--red)" stroke-width="1.8"/>`;
+    s+=`<text x="${W}" y="${Y(0)+4}" fill="var(--sub)" font-size="11" text-anchor="end">2:43 pm</text><text x="${W}" y="${Y(.4)+4}" fill="var(--sub)" font-size="11" text-anchor="end">now</text><text x="${W}" y="${Y(1)+2}" fill="var(--sub)" font-size="11" text-anchor="end">7:43 pm</text>`;}
+  return s+"</svg>"}
+document.getElementById("appearance").innerHTML=appearance();
+document.getElementById("effects").innerHTML=[
+  [card({chart:chart(false)}),"Defaults: Used, Countdown first, Time across, red past pace on."],
+  [card({left:true,chart:chart(false)}),"Usage display: <b>Left</b>. The figure reads “38% left”; the bar still fills with what's spent."],
+  [card({clock:true,chart:chart(false)}),"Reset time: <b>Clock time</b> leads, and the countdown takes the second slot."],
+  [card({chart:chart(true)}),"Chart orientation: <b>Time down</b>. Usage runs left to right like the bar; time runs top to bottom."],
+  [card({red:false,chart:chart(false)}),"Red past the pace mark: <b>off</b>. The tick stays; the bar and figure keep the account colour. The pace line under the chart still says “above”."],
+].map(([h,c])=>`<div>${h}<div class="cap">${c}</div></div>`).join("");
+document.getElementById("accounts").innerHTML=`
+ <div><div class="menu"><div>Rename</div><div>Pin to top</div><div class="new">Details…</div><div class="new">Accent colour…</div><div>Sign in again</div><div class="new">Clear usage history…</div><div class="del">Remove</div></div>
+  <div class="cap">Touch and hold an account: the menu with the three new items.</div></div>
+ <div><div class="sheet"><h4>Accent colour · Claude</h4><div style="font-size:13px;color:var(--sub);text-align:center">Teams</div>
+   <div class="sws" style="grid-template-columns:repeat(6,1fr)">${[["var(--cl)",1]].concat(SW.slice(1).map(x=>[x[1],0])).map(([c,s])=>`<div class="dot ${s?"sel":""}" style="background:${c}"></div>`).join("")}</div>
+   <div class="foot">First swatch: provider colour (default). The account's bars, numbers, charts and widgets use the colour picked here, whatever the theme colour.</div>
+   <div style="text-align:center;margin-top:12px;color:var(--blue)">Done</div></div><div class="cap">Accent colour… as a sheet. The same grid as Theme colour, led by the provider's own colour.</div></div>
+ <div><div class="sheet"><h4>Teams</h4>
+   <div class="kv">Plan<small>Team Premium</small></div>
+   <div class="kv">Email<small>robin@example.com</small></div>
+   <div class="kv">Last checked<small>Sat 7:41 pm · 3m ago</small></div>
+   <div class="kv">Last auto-renewed<small>Sat 2:10 pm · 5h ago</small></div>
+   <div class="kv">Sign-in expires around Mon 23 Nov · ~29d left<small>Anthropic doesn't report the real expiry. This is a flat ~30-day estimate from sign-in, corrected if renewal stops working earlier.</small></div>
+   <div class="kv">Added<small>24 Oct 2026</small></div>
+   <div style="text-align:center;margin-top:12px;color:var(--blue)">Close</div></div><div class="cap">Details…: every line Android's dialog shows. A ChatGPT account shows its own sign-in lines.</div></div>
+ <div><div class="alert"><div class="b"><b>Clear usage history?</b><div style="font-size:13px;color:var(--txt);margin-top:6px;text-align:left">This clears, for “Teams” only:<br>•  8 days of trend history<br>•  a year of session and weekly history<br><br>Current readings and the sign-in stay.</div></div><div class="btns"><span>Cancel</span><span>Clear</span></div></div>
+  <div class="cap">Clear usage history…: Android's confirm, word for word.</div></div>
+ <div><div class="phone" style="width:393px"><div class="hd" style="margin-top:4px">Usage credits</div><div class="grp">
+   <div class="cell"><div class="tog"><span class="lbl">Show for Teams</span><span class="sw"></span></div><div class="foot">Credits card on this account's screen</div></div>
+   <div class="cell"><div class="tog"><span class="lbl">Show for Product</span><span class="sw off"></span></div><div class="foot">Credits card on this account's screen</div></div></div>
+   <div class="foot" style="margin:6px 16px">Only accounts that report credits are listed.</div></div>
+  <div class="cap">Usage credits: one switch per account that reports credits, under Accounts, as on Android.</div></div>`;
+</script></body></html>
