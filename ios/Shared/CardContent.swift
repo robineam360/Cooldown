@@ -24,6 +24,14 @@ struct WindowContent: Equatable {
     var notStarted = false
 
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
+
+    /// Settings → Reset time: the form that leads ("Resets in 3h 0m", or "Resets at Sat 7:43 pm" with Clock time) and
+    /// the other form for the second slot ("Resets at Sat 7:43 pm", or "in 3h 0m").
+    var leadReset: String { Display.clockFirst && !notStarted ? resetsAt : resetsIn }
+    var secondReset: String {
+        guard Display.clockFirst else { return resetsAt }
+        return resetsIn.replacingOccurrences(of: "Resets in ", with: "in ").replacingOccurrences(of: "Resets soon", with: "soon")
+    }
 }
 
 enum CardContent {
@@ -99,7 +107,8 @@ enum CardContent {
         return WindowContent(
             title: title, pct: pct, pace: pace, chart: chart, paceLine: paceLine, paceLineAlarm: alarm,
             projectionLine: projectionLine, projectionShort: projectionShort,
-            resetsIn: "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
+            // Android's countdown collapses to "resets soon" inside five minutes.
+            resetsIn: reset - nowMs < 5 * 60_000 ? "Resets soon" : "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))")
     }
 
@@ -109,7 +118,7 @@ enum CardContent {
     static func compactLine(_ c: WindowContent) -> String {
         if c.notStarted { return notStartedLine }
         let pace = c.paceLine.replacingOccurrences(of: "even pace", with: "pace")
-        return "\(c.resetsIn) · \(pace == "On pace" ? "on pace" : pace)"
+        return "\(c.leadReset) · \(pace == "On pace" ? "on pace" : pace)"
     }
 
     /// "$123.90 / $400.00" with its percent, or "$4.20 balance"; nil when there's nothing to report.
@@ -179,7 +188,7 @@ struct Notice: Equatable {
                           action: "Sign in again", tone: .error)
         }
         if let snapshot, nowMs - snapshot.fetchedAtMs > staleMs {
-            let when = CardContent.dayClock(snapshot.fetchedAtMs, nowMs, false, .current)
+            let when = CardContent.dayClock(snapshot.fetchedAtMs, nowMs, Display.use24h, .current)
             return Notice(title: "Stale — nothing since \(when)",
                           body: "Cooldown hasn’t had a reading for over 6 hours. Pull down to try again.",
                           action: nil, tone: .warning)

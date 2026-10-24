@@ -54,7 +54,7 @@ struct Face: Equatable, Sendable {
 
     /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
     func resetClock(_ date: Date) -> String {
-        leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, false, .current) : shortClock(date)
+        leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, Display.use24h, .current) : shortClock(date)
     }
     var isDimmed: Bool { status == .stale || status == .signIn }
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
@@ -97,8 +97,8 @@ struct Face: Equatable, Sendable {
 
     /// Builds the card content for both windows; a window whose reset has passed arrives as "not started".
     mutating func attachContent(sessionWindow: UsageWindow?, weeklyWindow: UsageWindow?, history: [HistoryPoint], nowMs: Int64) {
-        session = CardContent.window(title: "5h", window: sessionWindow, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs)
-        weekly = CardContent.window(title: "Weekly", window: weeklyWindow, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs)
+        session = CardContent.window(title: "5h", window: sessionWindow, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs, use24h: Display.use24h)
+        weekly = CardContent.window(title: "Weekly", window: weeklyWindow, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs, use24h: Display.use24h)
     }
 }
 
@@ -121,7 +121,7 @@ extension Date {
 
 /// Lower-case "9:50 pm", as on Android.
 func shortClock(_ date: Date) -> String {
-    CardContent.clock(date.ms, false, .current)
+    CardContent.clock(date.ms, Display.use24h, .current)
 }
 
 // MARK: - Preferences shared by the app and the extension

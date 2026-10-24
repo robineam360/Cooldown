@@ -1611,7 +1611,11 @@ it carries the umbrella CCRM-7 (iOS).
   (`design/2026-10-24-ios-widgets.html`, layout by Fable; D1 the Ring widget goes, D2 the trend chart on the
   roomiest cards, D3 "+N more" past the cap) and built the same day — a small **Bars** face (5h and Weekly), and
   the Overview as account cards in five tiers across Medium, Large and Extra Large. Rest of the device check
-  (lock-screen widgets, Live Activity, a reset alert) still open.
+  (lock-screen widgets, Live Activity, a reset alert) still open. Later the same day, from the device check: the
+  Live Activity Duet crash fixed, weekly-only plans lead with Weekly everywhere, an iPad sidebar 5h/Weekly switch,
+  the Claude mark at 82% on both apps, and Android's Appearance, Theme colour and account extras
+  (`design/2026-10-24-ios-appearance-accounts.html`, approved 24 Oct: Used/Left, 12/24 h, Time down, Clock first,
+  red past pace, theme and per-account accent colours, Details…, Clear usage history…, credits switches).
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

@@ -14,6 +14,15 @@ struct SettingsScreen: View {
     @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
     @State private var renaming: Account?
     @State private var newName = ""
+    @State private var details: Account?
+    @State private var colouring: Account?
+    @State private var clearing: Account?
+    @AppStorage(Display.Key.timeFormat, store: Prefs.defaults) private var timeFormat = "system"
+    @AppStorage(Display.Key.usageLeft, store: Prefs.defaults) private var usageLeft = false
+    @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
+    @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
+    @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
+    @AppStorage(Display.Key.themeColour, store: Prefs.defaults) private var themeColour = ThemeColours.perProvider
 
     var body: some View {
         NavigationStack {
@@ -33,14 +42,32 @@ struct SettingsScreen: View {
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { newName = account.label; renaming = account }
                             Button("Pin to the top", systemImage: "pin") { model.pin(account.key) }
+                            Button("Details…", systemImage: "info.circle") { details = account }
+                            Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
                                 sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn
                             }
+                            Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
                             Button("Remove", systemImage: "trash", role: .destructive) { Task { await model.remove(account.key) } }
                         }
                     }
                     .onMove { model.move(from: $0, to: $1) }
                     Button { sheet = .addAccount } label: { Label("Add account", systemImage: "plus") }
+                }
+                // Android's "Usage credits" switches: one per account whose reading reports credits.
+                let withCredits = model.accounts.filter { CardContent.credits(model.usage($0.key)?.credits) != nil }
+                if !withCredits.isEmpty {
+                    Section {
+                        ForEach(withCredits) { account in
+                            Toggle(isOn: Binding(get: { Display.creditsVisible(account.key) },
+                                                 set: { Display.setCreditsVisible($0, for: account.key); model.displayChanged() })) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Show for \(account.label)")
+                                    Text("Credits card on this account's screen").font(.system(size: 13)).foregroundStyle(p.sub)
+                                }
+                            }
+                        }
+                    } header: { Text("Usage credits") }
                 }
                 Section {
                     ForEach(model.accounts) { account in
@@ -55,6 +82,20 @@ struct SettingsScreen: View {
                     Picker("Theme", selection: $theme) {
                         Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
                     }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Theme colour")
+                        ColourGrid(first: .perProvider, selection: Binding(
+                            get: { themeColour == ThemeColours.perProvider ? nil : themeColour },
+                            set: { themeColour = $0 ?? ThemeColours.perProvider; model.displayChanged() }))
+                        Text(themeColour == ThemeColours.perProvider ? "Selected: Per provider: Claude orange, ChatGPT green."
+                             : "Selected: \(themeColour). Every account's bars, numbers and charts use it, unless the account has its own accent colour.")
+                            .font(.system(size: 13)).foregroundStyle(p.sub)
+                    }
+                    choice("Time format", $timeFormat, [("System", "system"), ("12-hour", "12"), ("24-hour", "24")],
+                           note: "Times shown like \(CardContent.dayClock(Self.sampleTime, Self.sampleTime, Display.use24h, .current)).")
+                    choice("Usage display", $usageLeft, [("Used", false), ("Left", true)],
+                           note: "How percentages read on every surface. Bars and colours always show what's spent. "
+                               + (usageLeft ? "Shows “53% left”: what remains of each window." : "Shows “47% used”: what each window has consumed."))
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Density")
                         Picker("Density", selection: $density) {
@@ -72,6 +113,16 @@ struct SettingsScreen: View {
                         }
                         .pickerStyle(.segmented)
                         Text("Large draws everything. Small keeps just the lines — guides, pace, curve — and drops every label; the pace and estimate text below the chart still say the numbers.")
+                            .font(.system(size: 13)).foregroundStyle(p.sub)
+                    }
+                    choice("Chart orientation", $chartDown, [("Time across", false), ("Time down", true)],
+                           note: "Time down puts usage on the same axis as the bar above it.")
+                    choice("Reset time", $clockFirst, [("Countdown", false), ("Clock time", true)],
+                           note: "Which form leads wherever a reset is shown. Where there's room, the other form keeps the second slot. "
+                               + (clockFirst ? "Leads with “resets at 9:50 pm”." : "Leads with “resets in 2h 14m”, collapsing to “resets soon” inside five minutes."))
+                    VStack(alignment: .leading, spacing: 6) {
+                        Toggle("Show red past the pace mark", isOn: $redPastPace).onChange(of: redPastPace) { model.displayChanged() }
+                        Text("Colours the bar past the even-pace tick, in the app, widgets and Live Activity. Off keeps the tick without the colour.")
                             .font(.system(size: 13)).foregroundStyle(p.sub)
                     }
                 } header: { Text("Appearance") }
@@ -93,7 +144,146 @@ struct SettingsScreen: View {
                 Button("Save") { if let r = renaming { model.rename(r.key, to: newName) }; renaming = nil }
                 Button("Cancel", role: .cancel) { renaming = nil }
             }
+            .alert("Clear usage history?", isPresented: Binding(get: { clearing != nil }, set: { if !$0 { clearing = nil } })) {
+                Button("Cancel", role: .cancel) { clearing = nil }
+                Button("Clear", role: .destructive) { if let c = clearing { model.clearHistory(c.key) }; clearing = nil }
+            } message: {
+                Text("This clears, for “\(clearing?.label ?? "")” only:\n•  8 days of trend history\n•  a year of session and weekly history\n\nCurrent readings and the sign-in stay.")
+            }
+            .sheet(item: $details) { AccountDetailsSheet(account: $0) }
+            .sheet(item: $colouring) { AccentSheet(account: $0) }
         }
+    }
+}
+
+extension SettingsScreen {
+    /// "Thu 11:45 pm" in the chosen format, for the Time format note.
+    static let sampleTime: Int64 = {
+        var c = DateComponents(); c.year = 2026; c.month = 10; c.day = 22; c.hour = 23; c.minute = 45
+        return Int64((Calendar.current.date(from: c) ?? .now).timeIntervalSince1970 * 1000)
+    }()
+
+    /// A segmented choice with its note underneath, as Android's Appearance rows read.
+    func choice<V: Hashable>(_ title: String, _ value: Binding<V>, _ options: [(String, V)], note: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+            Picker(title, selection: value) {
+                ForEach(options, id: \.1) { Text($0.0).tag($0.1) }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: value.wrappedValue) { model.displayChanged() }
+            Text(note).font(.system(size: 13)).foregroundStyle(p.sub)
+        }
+    }
+}
+
+/// The colour swatches shared by Theme colour (led by "Per provider") and an account's Accent colour (led by its
+/// provider's own colour). `nil` is the leading choice.
+struct ColourGrid: View {
+    enum First { case perProvider, provider(Provider) }
+    let first: First
+    @Binding var selection: String?
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 6), spacing: 10) {
+            swatch(nil)
+            ForEach(ThemeColours.options) { swatch($0.name) }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func swatch(_ name: String?) -> some View {
+        let on = selection == name
+        return Button { selection = name } label: {
+            ZStack {
+                if let name, let option = ThemeColours.option(name) {
+                    Circle().fill(scheme == .dark ? option.dark : option.light)
+                } else {
+                    switch first {
+                    case .perProvider:
+                        Circle().fill(AngularGradient(colors: [Provider.claude.accent(scheme), Provider.claude.accent(scheme),
+                                                              Provider.chatgpt.accent(scheme), Provider.chatgpt.accent(scheme)],
+                                                      center: .center))
+                    case .provider(let provider):
+                        Circle().fill(provider.accent(scheme))
+                    }
+                }
+                if on { Image(systemName: "checkmark").font(.system(size: 14, weight: .bold)).foregroundStyle(.white) }
+            }
+            .frame(width: 36, height: 36)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(name ?? (first.isPerProvider ? "Per provider" : "Provider colour"))
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
+}
+
+extension ColourGrid.First {
+    var isPerProvider: Bool { if case .perProvider = self { true } else { false } }
+}
+
+/// Touch and hold → Accent colour…: the account's own colour over the theme colour (Android's three levels).
+struct AccentSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.palette) private var p
+    let account: Account
+    @State private var name: String?
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 14) {
+                ColourGrid(first: .provider(account.provider), selection: Binding(
+                    get: { name }, set: { name = $0; Display.setAccentName($0, for: account.key); model.displayChanged() }))
+                Text("First swatch: provider colour (default). This account's bars, numbers, charts and widgets use the colour picked here, whatever the theme colour.")
+                    .font(.system(size: 13)).foregroundStyle(p.sub)
+                Spacer(minLength: 0)
+            }
+            .padding(20)
+            .navigationTitle("Accent colour · \(account.provider.displayName)").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .presentationDetents([.medium])
+        .onAppear { name = Display.accentName(account.key) }
+    }
+}
+
+/// Touch and hold → Details…: what Android's dialog lists, from what this app records.
+struct AccountDetailsSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let account: Account
+
+    var body: some View {
+        let state = model.states[account.key]
+        NavigationStack {
+            List {
+                if let plan = state?.plan { LabeledContent("Plan", value: plan) }
+                if let email = state?.email { LabeledContent("Email", value: email) }
+                LabeledContent("Last checked", value: stamp(state?.lastAttemptAtMs ?? 0))
+                LabeledContent("Last successful check", value: stamp(state?.lastSuccessAtMs ?? 0))
+                if state?.reauthNeeded == true {
+                    Text("Sign-in stopped working: sign in again from the account's menu.").foregroundStyle(.orange)
+                } else if account.provider == .claude, let added = account.addedAtMs {
+                    let expiry = added + 30 * 86_400_000
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Sign-in expires around \(CardContent.dayClock(expiry, model.nowMs, Display.use24h, .current)) · ~\(max(0, (expiry - model.nowMs) / 86_400_000))d left")
+                        Text("Anthropic doesn't report the real expiry. This is a flat ~30-day estimate from sign-in, corrected if renewal stops working earlier.")
+                            .font(.system(size: 13)).foregroundStyle(.secondary)
+                    }
+                }
+                LabeledContent("Added", value: account.addedAtMs.map { Date(ms: $0).formatted(date: .abbreviated, time: .omitted) } ?? "—")
+            }
+            .navigationTitle(account.label).navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } } }
+        }
+    }
+
+    private func stamp(_ ms: Int64) -> String {
+        guard ms > 0 else { return "never" }
+        let ago = Fmt.compactDuration(ms: max(model.nowMs - ms, 0))
+        return "\(CardContent.dayClock(ms, model.nowMs, Display.use24h, .current)) · \(ago) ago"
     }
 }
 
@@ -231,13 +421,13 @@ struct HistoryScreen: View {
                 ForEach(week.bars, id: \.resetMs) { bar in
                     HStack(spacing: 10) {
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(CardContent.dayClock(bar.startMs, model.nowMs, false, .current)).font(.system(size: 13.5)).foregroundStyle(p.txt)
+                            Text(CardContent.dayClock(bar.startMs, model.nowMs, Display.use24h, .current)).font(.system(size: 13.5)).foregroundStyle(p.txt)
                             if bar.current {
-                                Text("now").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(account.provider.accent(scheme))
+                                Text("now").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(account.accent(scheme))
                             }
                         }
                         .frame(width: 104, alignment: .leading)
-                        UsageBar(pct: bar.peakPct, pace: nil, accent: account.provider.accent(scheme), height: 11)
+                        UsageBar(pct: bar.peakPct, pace: nil, accent: account.accent(scheme), height: 11)
                         Text("\(Int(bar.peakPct))%").font(.system(size: 13.5)).monospacedDigit()
                             .foregroundStyle(bar.peakPct >= 100 ? p.red : p.txt).frame(width: 44, alignment: .trailing)
                     }

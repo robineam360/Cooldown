@@ -91,6 +91,8 @@ struct RootView: View {
                     PhoneMain(sheet: $sheet)
                 }
             }
+            // A display choice changed in Settings: redraw with it.
+            .id(model.displayStamp)
             .background(p.bg.ignoresSafeArea())
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -184,7 +186,7 @@ struct AccountTabs: View {
                         .frame(height: 46)
                         .frame(minWidth: accounts.count <= 3 ? nil : 110)
                         .overlay(alignment: .bottom) {
-                            if on { Capsule().fill(account.provider.accent(scheme)).frame(height: 3) }
+                            if on { Capsule().fill(account.accent(scheme)).frame(height: 3) }
                         }
                     }
                     .buttonStyle(.plain)
@@ -313,7 +315,7 @@ struct IPadLandscape: View {
             Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: weekly ? HistoryStats.weekMs : HistoryStats.sessionMs,
                                nowMs: model.nowMs)
         }
-        let accent = account.provider.accent(scheme)
+        let accent = account.accent(scheme)
         let selected = account.key == bottomKey
         return Button { model.selectedKey = account.key } label: {
             HStack(spacing: 10) {
@@ -327,7 +329,7 @@ struct IPadLandscape: View {
                     UsageBar(pct: pct, pace: pace, accent: accent, height: 5)
                 }
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(pct.map { "\(Int($0))%" } ?? "—").font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
+                    Display.pctText(pct, size: 16).font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
                     if forcedWeekly { Text("Weekly").font(.system(size: 11)).foregroundStyle(p.sub) }
                 }
             }

@@ -112,6 +112,24 @@ final class AppModel {
         save()
     }
 
+    /// Bumped whenever a display choice changes (Settings → Appearance, an account's accent or credits switch), so the
+    /// main screen redraws with it; widgets and the Live Activity reload through `surfacesChanged`.
+    private(set) var displayStamp = 0
+    func displayChanged() {
+        displayStamp += 1
+        surfacesChanged()
+    }
+
+    /// Settings → touch and hold → Clear usage history…: the trend points and the closed-window log, this account only.
+    func clearHistory(_ key: String) {
+        guard let account = account(key) else { return }
+        let profile = Profile(key: key, label: account.label)
+        HistoryStore(storage: storage).clear(profile)
+        SessionLog(storage: storage).clear(profile)
+        reload()
+        surfacesChanged()
+    }
+
     func rename(_ key: String, to label: String) {
         guard let i = accounts.firstIndex(where: { $0.key == key }), !label.isEmpty else { return }
         accounts[i].label = label
@@ -131,7 +149,7 @@ final class AppModel {
         try await repo?.adopt(grant, profileKey: key)
         let count = accounts.filter { $0.provider == provider }.count
         let label = count == 0 ? provider.displayName : "\(provider.displayName) \(count + 1)"
-        accounts.append(Account(key: key, label: label, provider: provider))
+        accounts.append(Account(key: key, label: label, provider: provider, addedAtMs: Self.clock()))
         selectedKey = key
         save()
         _ = await repo?.refresh(key, manual: true)

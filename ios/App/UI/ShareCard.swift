@@ -14,9 +14,9 @@ struct ShareCardView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let accent = account.provider.accent(scheme)
-        let five = CardContent.window(title: "5h", window: usage.session, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs)
-        let week = CardContent.window(title: "Weekly", window: usage.weekly, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs)
+        let accent = account.accent(scheme)
+        let five = CardContent.window(title: "5h", window: usage.session, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs, use24h: Display.use24h)
+        let week = CardContent.window(title: "Weekly", window: usage.weekly, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs, use24h: Display.use24h)
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 14) {
                 UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
@@ -48,7 +48,7 @@ struct ShareCardView: View {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Text(c.pct.map { "\(Int($0))%" } ?? "—").font(.system(size: 19, weight: .bold)).foregroundStyle(p.ink)
+                Display.pctText(c.pct, size: 19).font(.system(size: 19, weight: .bold)).foregroundStyle(p.ink)
             }
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 10)
@@ -66,7 +66,7 @@ struct ShareCardView: View {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
         f.dateFormat = "EEE d MMM"
-        return "as of \(CardContent.clock(fetchedAtMs, false, .current)), \(f.string(from: Date(ms: fetchedAtMs)))"
+        return "as of \(CardContent.clock(fetchedAtMs, Display.use24h, .current)), \(f.string(from: Date(ms: fetchedAtMs)))"
     }
 }
 

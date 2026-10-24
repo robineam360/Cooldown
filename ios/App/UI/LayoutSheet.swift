@@ -73,7 +73,7 @@ struct LayoutSheet: View {
 
     /// The cards this account has (Android lists only those): credits only when the reading carries them.
     private var available: Set<CardID> {
-        model.usage(accountKey)?.credits == nil ? [.session, .weekly] : Set(CardID.allCases)
+        model.usage(accountKey)?.credits == nil || !Display.creditsVisible(accountKey) ? [.session, .weekly] : Set(CardID.allCases)
     }
 
     private func icon(_ id: CardID) -> String {

@@ -8,6 +8,8 @@ struct Account: Codable, Identifiable, Equatable, Sendable {
     var label: String
     var provider: Provider
     var pinned = false
+    /// When it was signed in here, for Details… (nil for accounts added before this was recorded).
+    var addedAtMs: Int64? = nil
     var id: String { key }
 }
 

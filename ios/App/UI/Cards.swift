@@ -48,9 +48,9 @@ struct WindowCard: View {
                         Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
                     }
                     HStack {
-                        Text(content.resetsIn)
+                        Text(content.leadReset)
                         Spacer(minLength: 8)
-                        Text(rightResetLine ?? content.resetsAt)
+                        Text(rightResetLine ?? content.secondReset)
                     }
                     .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
                 }
@@ -68,7 +68,7 @@ struct WindowCard: View {
             HStack(spacing: 8) {
                 Text(content.title).foregroundStyle(p.txt)
                 Spacer()
-                Text(content.pct.map { "\(Int($0))%" } ?? "—")
+                Display.pctText(content.pct, size: 19)
                     .font(.system(size: 19, weight: .bold)).monospacedDigit()
                     .foregroundStyle(dimmed ? p.sub : ((content.pct ?? 0) >= 100 ? p.red : p.ink))
                 if collapsible {
@@ -127,7 +127,7 @@ struct WeeklyCard: View {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Text(c.pct.map { "\(Int($0))%" } ?? "—").font(.system(size: 17, weight: .bold)).monospacedDigit()
+                Display.pctText(c.pct, size: 17).font(.system(size: 17, weight: .bold)).monospacedDigit()
                     .foregroundStyle(dimmed ? p.sub : p.ink)
             }
             .font(.system(size: 16))
@@ -143,7 +143,8 @@ struct WeeklyCard: View {
                 if let line = c.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 13.5)).padding(.top, 3)
                 }
-                Text(short || c.notStarted ? c.resetsIn : "\(c.resetsIn) · \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))")
+                Text(short || c.notStarted ? c.leadReset
+                     : "\(c.leadReset) · \(c.secondReset.replacingOccurrences(of: "Resets at ", with: ""))")
                     .font(.system(size: 13.5)).foregroundStyle(p.txt).padding(.top, 6)
             }
         }
@@ -223,7 +224,7 @@ struct AccountCards: View {
     }
 
     var body: some View {
-        let accent = account.provider.accent(scheme)
+        let accent = account.accent(scheme)
         let state = model.states[account.key] ?? AccountState()
         let snapshot = model.snapshots[account.key]
         let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs)
@@ -272,23 +273,23 @@ struct AccountCards: View {
         switch id {
         case .session:
             if let five = CardContent.window(title: "5-hour window", window: usage?.session, kind: HistoryStats.sessionKind,
-                                             history: history, nowMs: model.nowMs) {
+                                             history: history, nowMs: model.nowMs, use24h: Display.use24h) {
                 WindowCard(content: five, accent: accent, expanded: binding, chartHeight: height,
                            linesOnly: size.linesOnly, dimmed: dimmed,
-                           rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, false, .current))" : nil)
+                           rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, Display.use24h, .current))" : nil)
             }
         case .weekly:
             if let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,
-                                            history: history, nowMs: model.nowMs) {
+                                            history: history, nowMs: model.nowMs, use24h: Display.use24h) {
                 let cap = usage?.modelCaps.first.flatMap {
                     CardContent.window(title: $0.modelName.replacingOccurrences(of: "Claude ", with: ""), window: $0.window,
-                                       kind: HistoryStats.weeklyKind, history: [], nowMs: model.nowMs)
+                                       kind: HistoryStats.weeklyKind, history: [], nowMs: model.nowMs, use24h: Display.use24h)
                 }
                 WeeklyCard(all: all, cap: cap, accent: accent, expanded: binding,
                            chartHeight: cap == nil ? height : min(height, 120), linesOnly: size.linesOnly, dimmed: dimmed)
             }
         case .credits:
-            if let credits = CardContent.credits(usage?.credits) {
+            if Display.creditsVisible(account.key), let credits = CardContent.credits(usage?.credits) {
                 CreditsCard(text: credits.text, pct: credits.pct, isBalance: credits.pct == nil)
             }
         }

@@ -142,6 +142,32 @@ struct SurfaceRenderTests {
         #expect(states[0].1.leading == states[0].1)
     }
 
+    /// The Android Appearance ports (approved 24 Oct): Used/Left, Clock first, 24-hour, Time down, red off, theme and
+    /// account colours — each rendered on the faces that show it.
+    @Test("display choices")
+    func displayChoices() {
+        let d = Prefs.defaults
+        let keys = [Display.Key.usageLeft, Display.Key.clockFirst, Display.Key.timeFormat, Display.Key.chartDown,
+                    Display.Key.redPastPace, Display.Key.themeColour]
+        defer { keys.forEach { d.removeObject(forKey: $0) } }
+        let work = face("Work", .claude, pct: 62, pace: 40, minutes: 180, runOut: 128, weeklyPct: 48, weeklyPace: 45)
+        func shoot(_ tag: String) {
+            let entry = FaceEntry(date: now, faces: [work], key: work.account.key)
+            save("dc-\(tag)-number", NumberFace(entry: entry), width: 170, height: 170)
+            save("dc-\(tag)-strip", StripFace(entry: entry), width: 364, height: 170)
+            save("dc-\(tag)-overview", OverviewFace(entry: FaceEntry(date: now, faces: [work], key: nil), familyOverride: .systemLarge),
+                 width: 346, height: 346)
+        }
+        shoot("default")
+        d.set(true, forKey: Display.Key.usageLeft); shoot("left"); d.removeObject(forKey: Display.Key.usageLeft)
+        d.set(true, forKey: Display.Key.clockFirst); d.set("24", forKey: Display.Key.timeFormat); shoot("clock24")
+        d.removeObject(forKey: Display.Key.clockFirst); d.removeObject(forKey: Display.Key.timeFormat)
+        d.set(true, forKey: Display.Key.chartDown); shoot("down"); d.removeObject(forKey: Display.Key.chartDown)
+        d.set(false, forKey: Display.Key.redPastPace); shoot("nored"); d.removeObject(forKey: Display.Key.redPastPace)
+        d.set("Blue", forKey: Display.Key.themeColour); shoot("blue")
+        #expect(Display.accent(key: "x", provider: .claude, .dark) != Provider.claude.accent(.dark))
+    }
+
     @Test("lock-screen widgets")
     func lockWidgets() {
         let wall = Color(hex: 0x6E5F95)

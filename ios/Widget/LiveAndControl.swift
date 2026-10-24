@@ -25,7 +25,7 @@ struct CooldownLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     if let row {
                         VStack(alignment: .leading, spacing: 8) {
-                            UsageBar(pct: row.pct, pace: row.pace, accent: row.providerValue.accent(.dark), height: 8)
+                            UsageBar(pct: row.pct, pace: row.pace, accent: row.accent, height: 8)
                             RowLine(row: row, long: true).font(.system(size: 13))
                         }
                         .environment(\.palette, .dark)
@@ -35,7 +35,7 @@ struct CooldownLiveActivity: Widget {
                 if let row {
                     HStack(spacing: 4) {
                         ProviderMark(provider: row.providerValue, size: 16)
-                        Text(row.pct.map { "\(Int($0))%" } ?? "—").foregroundStyle(Palette.dark.severity(row.pct, accent: row.providerValue.accent(.dark)))
+                        Text(Display.number(row.pct)).foregroundStyle(Palette.dark.severity(row.pct, accent: row.accent))
                     }
                 }
             } compactTrailing: {
@@ -49,7 +49,7 @@ struct CooldownLiveActivity: Widget {
                 }
             } minimal: {
                 if let row {
-                    UsageRing(pct: row.pct, pace: row.pace, accent: row.providerValue.accent(.dark), lineWidth: 3.4, label: "")
+                    UsageRing(pct: row.pct, pace: row.pace, accent: row.accent, lineWidth: 3.4, label: "")
                         .environment(\.palette, .dark)
                 }
             }
@@ -86,8 +86,8 @@ struct AccountControlProvider: AppIntentControlValueProvider {
         switch face.status {
         case .signIn: value = "Sign in again"
         case .plan: value = "No usage on this plan"
-        case .stale, .aging: value = "\(face.pct.map { "\(Int($0))%" } ?? "—") · as of \(face.fetchedAt.map(shortClock) ?? "—")"
-        default: value = face.atLimit ? "Limit reached" : (face.pct.map { "\(Int($0))%" } ?? "—")
+        case .stale, .aging: value = "\(Display.pct(face.pct)) · as of \(face.fetchedAt.map(shortClock) ?? "—")"
+        default: value = face.atLimit ? "Limit reached" : Display.pct(face.pct)
         }
         return AccountControlValue(key: face.account.key, title: "\(face.account.label) · \(face.windowLabel)", value: value)
     }

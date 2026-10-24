@@ -1,6 +1,7 @@
 import ActivityKit
 import CooldownCore
 import Foundation
+import SwiftUI
 
 /// CCRM-94 (iOS App): the Live Activity's data — the Duet with Weekly (wireframe rev B §6, Robin's Q2): up to two
 /// accounts, each with its 5h row and a thin Weekly line, under iOS's 160 pt cap.
@@ -23,13 +24,15 @@ struct CooldownActivityAttributes: ActivityAttributes {
 
         var providerValue: Provider { Provider(rawValue: provider) ?? .claude }
         var leadsWeekly: Bool { weeklyLeads ?? false }
+        /// The account's colour as Settings resolves it (its own, the theme colour, or the provider's).
+        var accent: Color { Display.accent(key: key, provider: providerValue, .dark) }
         var windowLabel: String { leadsWeekly ? "Weekly" : "5h" }
         /// The window has reset since the app last wrote this row (the activity went stale at that moment).
         var hasReset: Bool { reset.map { $0 <= .now } ?? false }
         /// What the number shows: a window that has reset is back at 0%.
         var shownPct: Double? { hasReset ? 0 : pct }
         func clock(_ date: Date) -> String {
-            leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, false, .current) : shortClock(date)
+            leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, Display.use24h, .current) : shortClock(date)
         }
 
         init(_ source: Face) {
