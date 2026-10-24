@@ -4,14 +4,15 @@ import SwiftUI
 import WidgetKit
 
 /// CCRM-94 (iOS App): the home-screen and lock-screen widgets of wireframe rev B §4–§5 — the v1.8 faces (Number,
-/// Countdown, Ring, Strip) in iOS's sizes, the Large overview (Robin's Q3), and the lock-screen family. They read
+/// Countdown, Strip) in iOS's sizes, the Bars small and the Overview of rev C (2026-10-24, which dropped the Ring),
+/// and the lock-screen family. They read
 /// what the app wrote to the App Group and never fetch; tapping opens the app on the account.
 @main
 struct CooldownWidgets: WidgetBundle {
     var body: some Widget {
         NumberWidget()
         CountdownWidget()
-        RingWidget()
+        BarsWidget()
         StripWidget()
         OverviewWidget()
         LockWidget()
@@ -79,17 +80,17 @@ struct CountdownWidget: Widget {
     }
 }
 
-// MARK: - Ring (small: one account; medium: every account)
+// MARK: - Bars (small): one account's 5h and Weekly
 
-struct RingWidget: Widget {
+struct BarsWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "Ring", intent: AccountWidgetIntent.self,
+        AppIntentConfiguration(kind: "Bars", intent: AccountWidgetIntent.self,
                                provider: FaceProvider<AccountWidgetIntent>(key: { $0.account?.id })) { entry in
-            WidgetFrame(key: entry.face?.account.key) { RingFace(entry: entry) }
+            WidgetFrame(key: entry.face?.account.key) { BarsFace(entry: entry) }
         }
-        .configurationDisplayName("Ring")
-        .description("The 5h ring — one account in the small size, every account in the medium size.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .configurationDisplayName("Bars")
+        .description("One account's 5h and Weekly, each with its bar and reset.")
+        .supportedFamilies([.systemSmall])
     }
 }
 
@@ -107,7 +108,7 @@ struct StripWidget: Widget {
     }
 }
 
-// MARK: - Large overview (Robin's Q3)
+// MARK: - Overview (rev C): every account as a card, Medium to Extra Large
 
 struct OverviewWidget: Widget {
     var body: some WidgetConfiguration {
@@ -115,8 +116,8 @@ struct OverviewWidget: Widget {
             WidgetFrame(key: nil) { OverviewFace(entry: entry) }
         }
         .configurationDisplayName("Overview")
-        .description("Every account's rings, 5h and Weekly.")
-        .supportedFamilies([.systemLarge, .systemExtraLarge])
+        .description("Every account's 5h and Weekly — with the trend chart where there's room.")
+        .supportedFamilies([.systemMedium, .systemLarge, .systemExtraLarge])
     }
 }
 
@@ -127,9 +128,16 @@ struct StaticFaceProvider: TimelineProvider {
         completion(FaceEntry(date: .now, faces: faces.isEmpty && context.isPreview ? Demo.faces : faces, key: nil))
     }
     func getTimeline(in context: Context, completion: @escaping (Timeline<FaceEntry>) -> Void) {
+        // As FaceProvider: a second entry just after the next reset, so the live countdown never sits at 0:00:00
+        // over a closed window.
         let now = Date.now
-        completion(Timeline(entries: [FaceEntry(date: now, faces: Faces.load(), key: nil)],
-                            policy: .after(now.addingTimeInterval(30 * 60))))
+        let faces = Faces.load()
+        var entries = [FaceEntry(date: now, faces: faces, key: nil)]
+        if let reset = faces.compactMap(\.reset).filter({ $0 > now }).min() {
+            let at = reset.addingTimeInterval(1)
+            entries.append(FaceEntry(date: at, faces: Faces.load(nowMs: at.ms), key: nil))
+        }
+        completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(30 * 60))))
     }
 }
 

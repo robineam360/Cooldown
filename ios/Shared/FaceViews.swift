@@ -19,9 +19,13 @@ enum Demo {
     static var faces: [Face] {
         let now = Date.now
         func face(_ key: String, _ label: String, _ p: Provider, _ pct: Double, _ pace: Double, _ minutes: Double) -> Face {
-            Face(account: Account(key: key, label: label, provider: p), pct: pct, pace: pace,
-                 reset: now.addingTimeInterval(minutes * 60), runOut: nil, weeklyPct: 18, weeklyPace: 43,
-                 weeklyReset: now.addingTimeInterval(4 * 86_400), fetchedAt: now, status: .fresh)
+            var f = Face(account: Account(key: key, label: label, provider: p), pct: pct, pace: pace,
+                         reset: now.addingTimeInterval(minutes * 60), runOut: nil, weeklyPct: 18, weeklyPace: 43,
+                         weeklyReset: now.addingTimeInterval(4 * 86_400), fetchedAt: now, status: .fresh)
+            f.attachContent(sessionWindow: UsageWindow(percent: pct, resetsAtMs: now.addingTimeInterval(minutes * 60).ms, serverSeverity: nil),
+                            weeklyWindow: UsageWindow(percent: 18, resetsAtMs: now.addingTimeInterval(4 * 86_400).ms, serverSeverity: nil),
+                            history: [], nowMs: now.ms)
+            return f
         }
         return [face("teams", "Teams", .claude, 46, 46, 95), face("product", "Product", .claude, 26, 68, 95),
                 face("personal", "Personal", .chatgpt, 12, 30, 95)]
@@ -151,41 +155,60 @@ struct CountdownFace: View {
     }
 }
 
-struct RingFace: View {
+/// Rev C (2026-10-24): one account's 5h and Weekly as two bars in the small size — replaces the small Ring. Below
+/// 136 pt the Weekly reset line goes; below 119 pt the 5h reset line goes too and its clock joins the header.
+struct BarsFace: View {
     let entry: FaceEntry
-    /// Tests render the medium face outside a widget, where the family can't be set.
-    var familyOverride: WidgetFamily?
-    @Environment(\.widgetFamily) private var envFamily
-    private var family: WidgetFamily { familyOverride ?? envFamily }
     @Environment(\.palette) private var p
 
     var body: some View {
-        if entry.faces.isEmpty {
-            NoAccountView()
-        } else if family == .systemMedium {
-            HStack(alignment: .top, spacing: 0) {
-                ForEach(entry.faces.prefix(3), id: \.account.key) { face in
-                    Link(destination: DeepLink.account(face.account.key)) { one(face, ring: 80, line: 6.5) }
-                        .frame(maxWidth: .infinity)
-                }
+        if let face = entry.face {
+            ViewThatFits(in: .vertical) {
+                layout(face, weeklyReset: true, sessionReset: true)
+                layout(face, weeklyReset: false, sessionReset: true)
+                layout(face, weeklyReset: false, sessionReset: false)
             }
-        } else if let face = entry.face {
-            one(face, ring: 98, line: 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        } else {
+            NoAccountView()
         }
     }
 
-    private func one(_ face: Face, ring: CGFloat, line: CGFloat) -> some View {
-        VStack(spacing: 2) {
-            UsageRing(pct: face.status == .signIn ? nil : face.pct, pace: face.pace,
-                      accent: face.account.provider.accent(colorSchemeFor(p)), lineWidth: line,
-                      fontSize: ring * 0.23, dimmed: face.isDimmed)
-                .frame(width: ring, height: ring)
-            FaceLabel(face: face, suffix: nil, size: 13).padding(.top, 6)
-            Group {
-                if face.status == .fresh, let reset = face.reset { Text(shortClock(reset)).foregroundStyle(p.sub) }
-                else { FaceFootnote(face: face) }
+    private func layout(_ face: Face, weeklyReset: Bool, sessionReset: Bool) -> some View {
+        let accent = face.account.provider.accent(colorSchemeFor(p))
+        let lead = face.weeklyOnly
+        let pct = lead ? face.weeklyPct : face.pct, pace = lead ? face.weeklyPace : face.pace
+        let blank = face.status == .signIn || face.status == .plan
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 6) {
+                ProviderMark(provider: face.account.provider, size: 15)
+                Text("\(face.account.label) · \(lead ? "Weekly" : "5h")"
+                     + (!sessionReset && !lead ? face.reset.map { " · \(shortClock($0))" } ?? "" : ""))
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
-            .font(.system(size: 11.5))
+            .font(.system(size: 14)).foregroundStyle(p.txt)
+            Text(blank ? "—" : (pct.map { "\(Int($0))%" } ?? "—"))
+                .font(.system(size: 28, weight: .bold)).monospacedDigit().lineLimit(1)
+                .foregroundStyle(face.isDimmed || pct == nil ? p.sub : p.severity(pct, accent: accent))
+                .padding(.top, 2)
+            UsageBar(pct: blank ? nil : pct, pace: pace, accent: accent, height: 8, dimmed: face.isDimmed).padding(.top, 3)
+            if sessionReset || lead {
+                FaceFootnote(face: face, weekly: lead).font(.system(size: 11.5)).padding(.top, 2)
+            }
+            if !lead {
+                HStack {
+                    Text("Weekly").font(.system(size: 13)).foregroundStyle(p.txt)
+                    Spacer()
+                    Text(blank ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
+                        .font(.system(size: 15, weight: .semibold)).monospacedDigit().foregroundStyle(p.txt)
+                }
+                .padding(.top, sessionReset ? 8 : 6)
+                UsageBar(pct: blank ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 6, dimmed: face.isDimmed)
+                    .padding(.top, 3)
+                if weeklyReset, !blank, face.status != .noData {
+                    FaceFootnote(face: face, weekly: true).font(.system(size: 11.5)).padding(.top, 2)
+                }
+            }
         }
     }
 }
@@ -237,54 +260,288 @@ struct StripFace: View {
     }
 }
 
+/// Rev C (2026-10-24): every account as a card, drawn in one of five tiers by the room each card gets — Full (big
+/// number, 5h bar, reset, pace and projection, the app's trend chart, Weekly), Chart-narrow (the chart lines only),
+/// Regular (no chart), Compact and Mini. Large stacks cards; Extra Large always uses columns so no bar runs wider
+/// than 420 pt; Medium shows one account as the Strip, more as minis. Past the cap, "+N more · open Cooldown".
 struct OverviewFace: View {
     let entry: FaceEntry
+    /// Tests render outside a widget, where the family can't be set.
+    var familyOverride: WidgetFamily?
+    @Environment(\.widgetFamily) private var envFamily
+    private var family: WidgetFamily { familyOverride ?? envFamily }
     @Environment(\.palette) private var p
+
     var body: some View {
-        if entry.faces.isEmpty {
+        let faces = entry.faces
+        if faces.isEmpty {
             NoAccountView()
+        } else if family == .systemMedium, faces.count == 1 {
+            StripFace(entry: entry)
         } else {
-            VStack(spacing: 0) {
-                HStack {
-                    ForEach(entry.faces.prefix(3), id: \.account.key) { face in
-                        VStack(spacing: 4) {
-                            UsageRing(pct: face.pct, pace: face.pace, accent: face.account.provider.accent(colorSchemeFor(p)),
-                                      lineWidth: 5.5, fontSize: 15, dimmed: face.isDimmed)
-                                .frame(width: 62, height: 62)
-                            FaceLabel(face: face, suffix: nil, size: 12)
+            GeometryReader { geo in grid(faces, geo.size) }
+        }
+    }
+
+    private func grid(_ faces: [Face], _ size: CGSize) -> some View {
+        let plan = Self.plan(count: faces.count, family: family)
+        let shown = Array(faces.prefix(plan.cap))
+        let more = faces.count - shown.count
+        let footer: CGFloat = more > 0 ? 20 : 0
+        // One account in an Extra Large: its 5h and its Weekly side by side.
+        let cards: [(Face, AccountCard.Lead)] = family == .systemExtraLarge && faces.count == 1 && !faces[0].weeklyOnly
+            ? [(faces[0], .sessionOnly), (faces[0], .weekly)]
+            : shown.map { ($0, $0.weeklyOnly ? .weekly : .session) }
+        let cols = family == .systemExtraLarge && faces.count == 1 ? (cards.count == 1 ? 1 : 2) : plan.cols
+        let rows = Int((Double(cards.count) / Double(cols)).rounded(.up))
+        let gap: CGFloat = cols == 1 && (cards.count > 4 || size.height < 200) ? 6 : 12
+        let colGap: CGFloat = 16
+        let cellW = min((size.width - colGap * CGFloat(cols - 1)) / CGFloat(cols), cols == 1 && family == .systemExtraLarge ? 420 : .infinity)
+        let cellH = (size.height - footer - gap * CGFloat(rows - 1)) / CGFloat(rows)
+        let tier = AccountCard.Tier(width: cellW, height: cellH)
+        return VStack(alignment: .leading, spacing: 0) {
+            Grid(horizontalSpacing: colGap, verticalSpacing: gap) {
+                ForEach(0..<rows, id: \.self) { r in
+                    GridRow {
+                        ForEach(0..<cols, id: \.self) { c in
+                            let i = r * cols + c
+                            if i < cards.count {
+                                Link(destination: DeepLink.account(cards[i].0.account.key)) {
+                                    AccountCard(face: cards[i].0, lead: cards[i].1, tier: tier, width: cellW)
+                                        .frame(width: cellW, height: cellH, alignment: .topLeading)
+                                }
+                            } else {
+                                Color.clear.frame(width: cellW, height: cellH)
+                            }
                         }
-                        .frame(maxWidth: .infinity)
                     }
                 }
-                ForEach(entry.faces.prefix(3), id: \.account.key) { face in row(face).padding(.top, 10) }
-                Spacer(minLength: 0)
+            }
+            if more > 0 {
+                Text("+\(more) more · open Cooldown").font(.system(size: 12)).foregroundStyle(p.sub).padding(.top, 6)
+            }
+        }
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
+    }
+
+    /// Columns and how many accounts fit, per family (rev C §2–§4).
+    static func plan(count: Int, family: WidgetFamily) -> (cols: Int, cap: Int) {
+        switch family {
+        case .systemExtraLarge:
+            switch count {
+            case ...2: return (2, 2)
+            case 3: return (3, 3)
+            case 4: return (2, 4)
+            default: return (3, 9)
+            }
+        case .systemMedium: return (1, count <= 3 ? 3 : 2)
+        default: return (1, 6)
+        }
+    }
+}
+
+/// One account in the Overview, at the tier its cell allows.
+struct AccountCard: View {
+    enum Lead { case session, sessionOnly, weekly }
+    enum Tier: Int {
+        case full = 1, chartNarrow, regular, compact, mini
+        init(width: CGFloat, height: CGFloat) {
+            if width >= 300 && height >= 260 { self = .full }
+            else if width >= 180 && height >= 260 { self = .chartNarrow }
+            else if width >= 180 && height >= 120 { self = .regular }
+            else if height >= 66 { self = .compact }
+            else { self = .mini }
+        }
+    }
+
+    let face: Face
+    let lead: Lead
+    let tier: Tier
+    /// The cell's width — the Mini row splits it between its two bars.
+    var width: CGFloat = 300
+    @Environment(\.palette) private var p
+
+    private var accent: Color { face.account.provider.accent(colorSchemeFor(p)) }
+    private var leadsWeekly: Bool { lead == .weekly }
+    private var content: WindowContent? { leadsWeekly ? face.weekly : face.session }
+    private var pct: Double? { leadsWeekly ? face.weeklyPct : face.pct }
+    private var pace: Double? { leadsWeekly ? face.weeklyPace : face.pace }
+    private var blank: Bool { face.status == .signIn || face.status == .plan || face.status == .noData }
+    private var showsWeeklyRow: Bool { lead == .session && face.weekly != nil }
+    private var narrow: Bool { tier == .chartNarrow || tier == .compact || tier == .mini }
+
+    var body: some View {
+        switch tier {
+        case .full, .chartNarrow, .regular: tall
+        case .compact: compact
+        case .mini: mini
+        }
+    }
+
+    // MARK: Full, Chart-narrow, Regular
+
+    private var tall: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header(mark: 16, name: 15, number: tier == .full ? 40 : tier == .chartNarrow ? 30 : 34, foot: false)
+            UsageBar(pct: blank ? nil : pct, pace: pace, accent: accent, height: 8, dimmed: face.isDimmed).padding(.top, 6)
+            lineA.font(.system(size: 12.5)).lineLimit(1).padding(.top, 2)
+            if let b = lineB { b.font(.system(size: 12.5)).lineLimit(1).padding(.top, 2) }
+            if tier != .regular {
+                TrendChart(model: blank ? Self.emptyChart : (content?.chart ?? Self.emptyChart), accent: accent,
+                           dimmed: face.isDimmed || blank, linesOnly: tier == .chartNarrow)
+                    .frame(minHeight: 60, maxHeight: 170)
+                    .padding(.top, 8)
+            }
+            if showsWeeklyRow {
+                weeklyRow.padding(.top, 8)
+                if let w = lineW { w.font(.system(size: 11.5)).lineLimit(1).padding(.top, 3) }
+            }
+            if tier == .regular { Spacer(minLength: 0) }
+            if face.status == .aging || face.status == .stale {
+                Text("as of \(face.fetchedAt.map { CardContent.dayClock($0.ms, Date.now.ms, false, .current) } ?? "—")")
+                    .font(.system(size: 11)).foregroundStyle(face.status == .stale ? p.orange : p.sub).padding(.top, 4)
             }
         }
     }
 
-    private func row(_ face: Face) -> some View {
-        let accent = face.account.provider.accent(colorSchemeFor(p))
-        return Link(destination: DeepLink.account(face.account.key)) {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack {
-                    FaceLabel(face: face, suffix: nil, size: 14)
-                    Spacer()
-                    FaceFootnote(face: face).font(.system(size: 12))
+    private func header(mark: CGFloat, name: CGFloat, number: CGFloat, foot: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            ProviderMark(provider: face.account.provider, size: mark)
+            Text(title).font(.system(size: name)).foregroundStyle(p.txt).lineLimit(1).layoutPriority(1)
+            if foot { footnote.font(.system(size: name - 2)).lineLimit(1) }
+            Spacer(minLength: 4)
+            Text(blank ? "—" : (pct.map { "\(Int($0))%" } ?? "—"))
+                .font(.system(size: number, weight: .bold)).monospacedDigit().lineLimit(1).fixedSize()
+                .foregroundStyle(face.isDimmed || pct == nil ? p.sub : p.severity(pct, accent: accent))
+        }
+    }
+
+    private var title: String {
+        switch lead {
+        case .sessionOnly: "\(face.account.label) · 5h"
+        case .weekly where tier.rawValue <= 3: "\(face.account.label) · Weekly"
+        default: face.account.label
+        }
+    }
+
+    /// Line A: the reset, ticking live — or the state that replaces it.
+    @ViewBuilder private var lineA: some View {
+        switch face.status {
+        case .signIn: Text("Sign in again").foregroundStyle(p.orange)
+        case .plan: Text("No usage on this plan").foregroundStyle(p.sub)
+        case .noData: Text("Open Cooldown to check").foregroundStyle(p.sub)
+        default:
+            if let c = content, c.notStarted {
+                Text("No window running").foregroundStyle(p.sub)
+            } else if leadsWeekly, let reset = face.weeklyReset {
+                Text("Resets \(CardContent.dayClock(reset.ms, Date.now.ms, false, .current))").foregroundStyle(p.sub)
+            } else if let reset = face.reset {
+                HStack(spacing: 0) {
+                    Text(face.atLimit ? "Limit · resets in " : "Resets in ").foregroundStyle(face.atLimit ? p.red : p.sub)
+                    Text(timerInterval: Date.now...max(reset, .now), countsDown: true).monospacedDigit()
+                        .foregroundStyle(face.atLimit ? p.red : p.sub)
+                    Text(" · \(shortClock(reset))").foregroundStyle(face.atLimit ? p.red : p.sub)
                 }
-                line("5h", face.pct, face.pace, accent, height: 7, bold: true, dimmed: face.isDimmed)
-                line("Weekly", face.weeklyPct, face.weeklyPace, accent, height: 5, bold: false, dimmed: face.isDimmed)
+            } else {
+                Text("No window running").foregroundStyle(p.sub)
             }
         }
     }
 
-    private func line(_ name: String, _ pct: Double?, _ pace: Double?, _ accent: Color, height: CGFloat, bold: Bool, dimmed: Bool) -> some View {
-        HStack(spacing: 10) {
-            Text(name).font(.system(size: 12)).foregroundStyle(p.sub).frame(width: 44, alignment: .leading)
-            UsageBar(pct: pct, pace: pace, accent: accent, height: height, dimmed: dimmed)
-            Text(pct.map { "\(Int($0))%" } ?? "—").font(.system(size: bold ? 14 : 13, weight: bold ? .bold : .regular))
-                .foregroundStyle(bold ? p.severity(pct, accent: accent) : p.txt).frame(width: 42, alignment: .trailing)
+    /// Line B: the pace verdict and the projection ("9% above even pace · ~ runs out 7:51 pm").
+    private var lineB: Text? {
+        guard !blank, let c = content, !c.notStarted else { return nil }
+        if (c.pct ?? 0) >= 100 { return Text("Opens again when the window resets").foregroundStyle(p.sub) }
+        let verdict = narrow ? c.paceLine.replacingOccurrences(of: "even pace", with: "pace") : c.paceLine
+        var t = Text(verdict).foregroundStyle(c.paceLineAlarm ? p.red : p.txt)
+        if let proj = c.projectionShort { t = t + Text(" · \(proj)").foregroundStyle(p.sub) }
+        return t
+    }
+
+    private var weeklyRow: some View {
+        HStack(spacing: 8) {
+            Text("Weekly").font(.system(size: 13)).foregroundStyle(p.txt).frame(width: 52, alignment: .leading)
+            UsageBar(pct: blank ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 6, dimmed: face.isDimmed)
+            Text(blank ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
+                .font(.system(size: 13, weight: .semibold)).monospacedDigit().foregroundStyle(p.txt)
+                .frame(width: 40, alignment: .trailing)
         }
     }
+
+    private var lineW: Text? {
+        guard !blank, let w = face.weekly else { return nil }
+        if w.notStarted { return Text("No window running").foregroundStyle(p.sub) }
+        let verdict = tier == .full ? w.paceLine : w.paceLine.replacingOccurrences(of: "even pace", with: "pace")
+        return Text("\(w.resetsAt.replacingOccurrences(of: "Resets at ", with: "Resets ")) · \(verdict)").foregroundStyle(p.sub)
+    }
+
+    // MARK: Compact and Mini
+
+    /// The header's short status: the reset clock, or what replaces it.
+    @ViewBuilder private var footnote: some View {
+        switch face.status {
+        case .signIn: Text("· sign in again").foregroundStyle(p.orange)
+        case .stale: Text("· as of \(face.fetchedAt.map(shortClock) ?? "—")").foregroundStyle(p.orange)
+        case .plan: Text("· no usage").foregroundStyle(p.sub)
+        case .noData: Text("· open Cooldown").foregroundStyle(p.sub)
+        default:
+            if let c = content, c.notStarted { Text("· no window").foregroundStyle(p.sub) }
+            else if leadsWeekly, let r = face.weeklyReset { Text("· resets \(CardContent.dayClock(r.ms, Date.now.ms, false, .current))").foregroundStyle(p.sub) }
+            else if face.atLimit, let r = face.reset { Text("· limit · \(shortClock(r))").foregroundStyle(p.red) }
+            else if let r = face.runOut { Text("· runs out \(shortClock(r))").foregroundStyle(p.red) }
+            else if let r = face.reset { Text("· resets \(shortClock(r))").foregroundStyle(p.sub) }
+        }
+    }
+
+    private var compact: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header(mark: 14, name: 14, number: 20, foot: true)
+            HStack(spacing: 8) {
+                Text(leadsWeekly ? "Weekly" : "5h").foregroundStyle(p.sub).frame(width: leadsWeekly ? 44 : 30, alignment: .leading)
+                UsageBar(pct: blank ? nil : pct, pace: pace, accent: accent, height: 7, dimmed: face.isDimmed)
+            }
+            .font(.system(size: 12)).padding(.top, 4)
+            if let b = lineB { b.font(.system(size: 12)).lineLimit(1).padding(.leading, leadsWeekly ? 52 : 38).padding(.top, 1) }
+            if showsWeeklyRow {
+                HStack(spacing: 8) {
+                    Text("Weekly").font(.system(size: 12)).foregroundStyle(p.sub).frame(width: 44, alignment: .leading)
+                    UsageBar(pct: blank ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 5, dimmed: face.isDimmed)
+                    Text(blank ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
+                        .font(.system(size: 13, weight: .semibold)).monospacedDigit().foregroundStyle(p.txt)
+                        .frame(width: 36, alignment: .trailing)
+                }
+                .padding(.top, 3)
+            }
+        }
+    }
+
+    private var mini: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header(mark: 13, name: 13, number: 17, foot: true)
+            HStack(spacing: 6) {
+                if leadsWeekly {
+                    Text("Weekly").foregroundStyle(p.sub).frame(width: 42, alignment: .leading)
+                    UsageBar(pct: blank ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 5, dimmed: face.isDimmed)
+                } else {
+                    Text("5h").foregroundStyle(p.sub).frame(width: 22, alignment: .leading)
+                    // The two bars share what's left 3 : 2 (rev C T5).
+                    let bars = max(width - 22 - 42 - 36 - 6 * 4 - 6, 40)
+                    UsageBar(pct: blank ? nil : face.pct, pace: face.pace, accent: accent, height: 6, dimmed: face.isDimmed)
+                        .frame(width: bars * 0.6)
+                    Text("Weekly").foregroundStyle(p.sub).frame(width: 42, alignment: .leading).padding(.leading, 6)
+                    UsageBar(pct: blank ? nil : face.weeklyPct, pace: face.weeklyPace, accent: accent, height: 5, dimmed: face.isDimmed)
+                        .frame(width: bars * 0.4)
+                    Text(blank ? "—" : (face.weeklyPct.map { "\(Int($0))%" } ?? "—"))
+                        .font(.system(size: 12, weight: .semibold)).monospacedDigit().foregroundStyle(p.txt)
+                        .frame(width: 36, alignment: .trailing)
+                }
+            }
+            .font(.system(size: 11.5)).padding(.top, 4)
+        }
+    }
+
+    /// No reading: the chart still draws its guides and pace line, dimmed — never a blank hole.
+    static let emptyChart = TrendChart.Model(samples: [], nowX: nil, projection: nil, over: false, startLabel: "", endLabel: "")
 }
 
 struct LockFace: View {

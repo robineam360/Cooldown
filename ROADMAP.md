@@ -1606,8 +1606,12 @@ it carries the umbrella CCRM-7 (iOS).
   stays in the app. A render test draws every face in every state. The ports from Android followed the same
   day: the per-account layout sheet (show, hide, reorder, behind More, reset; only the account's own cards count
   towards the last one), Density (Comfortable/Compact) and Chart height (Small/Medium/Large) in Appearance, the
-  share card (preview sheet, shared as an image) and the Pulse launcher icon. Next: the iPad device check with
-  real accounts.
+  share card (preview sheet, shared as an image) and the Pulse launcher icon. The iPad device check (2026-10-24)
+  found the Large / Extra Large Overview wasteful and the small Ring weak: **widgets rev C approved 2026-10-24**
+  (`design/2026-10-24-ios-widgets.html`, layout by Fable; D1 the Ring widget goes, D2 the trend chart on the
+  roomiest cards, D3 "+N more" past the cap) and built the same day — a small **Bars** face (5h and Weekly), and
+  the Overview as account cards in five tiers across Medium, Large and Extra Large. Rest of the device check
+  (lock-screen widgets, Live Activity, a reset alert) still open.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

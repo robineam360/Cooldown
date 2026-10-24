@@ -28,7 +28,13 @@ struct Face: Equatable, Sendable {
     let weeklyReset: Date?
     let fetchedAt: Date?
     let status: Status
+    /// The app's own card lines and charts for each window (CardContent), so the large widgets say what the app says.
+    /// nil when the window is absent (a weekly-only plan has no 5h).
+    var session: WindowContent? = nil
+    var weekly: WindowContent? = nil
 
+    /// A plan with no 5h window at all (OpenAI's weekly-only plans): Weekly leads.
+    var weeklyOnly: Bool { pct == nil && weeklyPct != nil && status != .noData && status != .signIn }
     var isDimmed: Bool { status == .stale || status == .signIn }
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
     var atLimit: Bool { (pct ?? 0) >= 100 }
@@ -57,11 +63,21 @@ struct Face: Equatable, Sendable {
             let age = nowMs - snapshot.fetchedAtMs
             status = age > Notice.staleMs ? .stale : age > agingMs ? .aging : .fresh
         } else { status = .noData }
-        return Face(
+        var face = Face(
             account: account, pct: pct, pace: pace, reset: sessionReset.map(Date.init(ms:)), runOut: runOut,
             weeklyPct: weekly.map { weeklyReset == nil ? 0 : ($0.percent ?? 0) },
             weeklyPace: weeklyReset.flatMap { Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.weekMs, nowMs: nowMs) },
             weeklyReset: weeklyReset.map(Date.init(ms:)), fetchedAt: snapshot.map { Date(ms: $0.fetchedAtMs) }, status: status)
+        face.attachContent(sessionWindow: session.map { sessionReset == nil ? UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil) : $0 },
+                           weeklyWindow: weekly.map { weeklyReset == nil ? UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil) : $0 },
+                           history: history, nowMs: nowMs)
+        return face
+    }
+
+    /// Builds the card content for both windows; a window whose reset has passed arrives as "not started".
+    mutating func attachContent(sessionWindow: UsageWindow?, weeklyWindow: UsageWindow?, history: [HistoryPoint], nowMs: Int64) {
+        session = CardContent.window(title: "5h", window: sessionWindow, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs)
+        weekly = CardContent.window(title: "Weekly", window: weeklyWindow, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs)
     }
 }
 

@@ -127,10 +127,13 @@ struct TrendChart: View {
                 }
                 ctx.fill(Path(ellipseIn: CGRect(x: lastPt.x - 5, y: lastPt.y - 5, width: 10, height: 10)),
                          with: .color(model.over ? p.red : accent))
-                label("\(Int(last.y))%", .init(x: lastPt.x - 8, y: lastPt.y - 13), p.ink, .trailing, 12, true)
+                // Near the left edge the figure sits right of its dot, so it isn't cut off.
+                let early = lastPt.x < 34
+                label("\(Int(last.y))%", .init(x: lastPt.x + (early ? 8 : -8), y: lastPt.y - 13), p.ink, early ? .leading : .trailing, 12, true)
             }
             label(model.startLabel, .init(x: 0, y: base + 11), p.sub, .leading, 11, false)
-            if let nowX = model.nowX {
+            // "now" only where it can't run into the start or end time.
+            if let nowX = model.nowX, X(nowX) > 56, X(nowX) < W - 56 {
                 label("now", .init(x: X(nowX), y: base + 11), p.sub, .center, 11, false)
             }
             label(model.endLabel, .init(x: W, y: base + 11), p.sub, .trailing, 11, false)

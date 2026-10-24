@@ -15,6 +15,8 @@ struct WindowContent: Equatable {
     var paceLineAlarm: Bool
     /// Second line: the projection, or why there isn't one.
     var projectionLine: String?
+    /// The projection alone, short, for widgets: "~ runs out 6:51 pm" / "~70% at reset"; nil when there's none.
+    var projectionShort: String? = nil
     var resetsIn: String
     var resetsAt: String
     /// No reset time yet: the window hasn't started (CCBG-30 (Phantom Window)). The card keeps its bar and says
@@ -70,6 +72,7 @@ enum CardContent {
         let paceLine: String
         var alarm = false
         var projectionLine: String?
+        var projectionShort: String?
         if (pct ?? 0) >= 100 {
             paceLine = "Limit reached"; alarm = true
             projectionLine = "Opens again when the window resets"
@@ -86,14 +89,16 @@ enum CardContent {
                     let when = kind == HistoryStats.weeklyKind || !Fmt.sameDay(hits, nowMs, timeZone: timeZone)
                         ? dayClock(hits, nowMs, use24h, timeZone) : clock(hits, use24h, timeZone)
                     projectionLine = "At this pace: runs out ~\(when) · \(rate)"
+                    projectionShort = "~ runs out \(when)"
                 } else {
                     projectionLine = "At this pace: ~\(Int(estimate.pctAtReset.rounded()))% when the window resets · \(rate)"
+                    projectionShort = "~\(Int(estimate.pctAtReset.rounded()))% at reset"
                 }
             }
         }
         return WindowContent(
             title: title, pct: pct, pace: pace, chart: chart, paceLine: paceLine, paceLineAlarm: alarm,
-            projectionLine: projectionLine,
+            projectionLine: projectionLine, projectionShort: projectionShort,
             resetsIn: "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))")
     }
