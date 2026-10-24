@@ -634,7 +634,9 @@ struct LockPanel: View {
                     ProviderMark(provider: row.providerValue, size: 14)
                     Text("\(row.label) · 5h").font(.system(size: 14)).lineLimit(1)
                     Text("·").foregroundStyle(p.txt)
-                    RowLine(row: row, long: false).font(.system(size: 12)).lineLimit(1).fixedSize()
+                    // No fixedSize here: a live timer's natural width is unbounded in a widget, and forcing it
+                    // crashed the extension's layout (the two-account panel never appeared). RowLine bounds its timer.
+                    RowLine(row: row, long: false).font(.system(size: 12)).lineLimit(1).layoutPriority(1)
                 }
                 UsageBar(pct: row.signIn ? nil : row.pct, pace: row.pace, accent: accent, height: 7, dimmed: row.asOf != nil)
                 HStack(spacing: 7) {
@@ -686,6 +688,7 @@ struct RowLine: View {
                 HStack(spacing: 0) {
                     Text(long ? "Limit reached · resets in " : "limit · ").foregroundStyle(p.red)
                     Text(timerInterval: Date.now...max(reset, .now), countsDown: true).monospacedDigit().foregroundStyle(p.txt)
+                        .frame(maxWidth: long ? nil : 58, alignment: .leading)
                 }
             } else if let runOut = row.runOut {
                 Text("runs out \(shortClock(runOut))").foregroundStyle(p.txt)
@@ -693,6 +696,7 @@ struct RowLine: View {
                 HStack(spacing: 0) {
                     if long { Text("Resets in ").foregroundStyle(p.txt) }
                     Text(timerInterval: Date.now...max(reset, .now), countsDown: true).monospacedDigit().foregroundStyle(p.txt)
+                        .frame(maxWidth: long ? nil : 58, alignment: .leading)
                     if long { Text(" · \(shortClock(reset))").foregroundStyle(p.txt) }
                 }
             }

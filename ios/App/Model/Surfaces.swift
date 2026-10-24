@@ -2,6 +2,7 @@ import ActivityKit
 import BackgroundTasks
 import CooldownCore
 import Foundation
+import OSLog
 import UserNotifications
 import WidgetKit
 
@@ -32,13 +33,25 @@ enum LiveActivities {
             .prefix(2).map(CooldownActivityAttributes.Row.init)
     }
 
+    static let log = Logger(subsystem: "com.robinrichardrajan.cooldown", category: "LiveActivity")
+
+    /// Debug builds also print, so a device console (`devicectl … launch --console`) shows the decision.
+    static func note(_ s: String) {
+        log.info("\(s, privacy: .public)")
+        #if DEBUG
+        print("[LiveActivity] \(s)")
+        #endif
+    }
+
     static func sync(faces: [Face]) async {
         let running = Activity<CooldownActivityAttributes>.activities
+        note("sync: on=\(Prefs.liveActivityOn) keys=\(Prefs.liveActivityKeys ?? []) faces=\(faces.map { "\($0.account.key):reset=\($0.reset.map(shortClock) ?? "nil"):\($0.status)" }) running=\(running.count)")
         guard Prefs.liveActivityOn, ActivityAuthorizationInfo().areActivitiesEnabled else {
             for activity in running { await activity.end(nil, dismissalPolicy: .immediate) }
             return
         }
         let rows = rows(faces)
+        note("rows=\(rows.map(\.key))")
         if rows.isEmpty {
             // Every window it showed has reset: a final frame for a few minutes, then iOS removes it. It re-arms when
             // a fetch sees a new window.
@@ -55,8 +68,16 @@ enum LiveActivities {
         let content = ActivityContent(state: CooldownActivityAttributes.ContentState(rows: rows, ended: nil), staleDate: stale)
         if let activity = running.first {
             await activity.update(content)
+            note("updated \(activity.id) state=\(activity.activityState)")
+            // Only one is ever meant to run; end strays (an earlier install's, say).
+            for extra in running.dropFirst() { await extra.end(nil, dismissalPolicy: .immediate) }
         } else {
-            _ = try? Activity.request(attributes: CooldownActivityAttributes(), content: content)
+            do {
+                let started = try Activity.request(attributes: CooldownActivityAttributes(), content: content)
+                note("requested \(started.id)")
+            } catch {
+                note("request failed: \(error)")
+            }
         }
     }
 }
