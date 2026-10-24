@@ -140,3 +140,65 @@ struct TrendChart: View {
                  at: point, anchor: anchor)
     }
 }
+
+/// The widget ring (CCRM-78 (Widgets Reborn) faces): a thin track, the fill from 12 o'clock, the overshoot red from the
+/// pace tick, the tick itself, and the number in the middle. `mono` draws everything in one colour for the lock
+/// screen, where iOS tints widgets itself (wireframe rev B §5).
+struct UsageRing: View {
+    let pct: Double?
+    let pace: Double?
+    let accent: Color
+    var lineWidth: CGFloat = 7
+    var label: String?
+    var sublabel: String?
+    var fontSize: CGFloat?
+    var mono: Color?
+    var dimmed = false
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
+            let value = min(max(pct ?? 0, 0), 100) / 100
+            let colour = mono ?? p.severity(pct, accent: accent)
+            let over = pace.map { (pct ?? 0) < 100 && (pct ?? 0) > $0 + 3 } ?? false
+            ZStack {
+                Circle().stroke(mono?.opacity(0.32) ?? p.ringTrack, lineWidth: mono == nil ? max(1.5, lineWidth * 0.3) : lineWidth)
+                if pct != nil, value > 0 {
+                    if over, let pace {
+                        arc(0, pace / 100).stroke(colour, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        arc(pace / 100, value).stroke(mono ?? p.red, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    } else {
+                        arc(0, value).stroke(colour, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    }
+                }
+                if let pace, pct != nil {
+                    Capsule().fill(mono ?? p.tick)
+                        .frame(width: max(2, lineWidth * 0.42), height: lineWidth * 1.9)
+                        .offset(y: -(s - lineWidth) / 2)
+                        .rotationEffect(.degrees(pace / 100 * 360))
+                }
+                VStack(spacing: 0) {
+                    Text(label ?? (pct.map { "\(Int($0))%" } ?? "—"))
+                        .font(.system(size: fontSize ?? s * 0.22, weight: .bold)).monospacedDigit()
+                        .foregroundStyle(mono ?? (pct == nil ? p.sub : colour))
+                        .minimumScaleFactor(0.6).lineLimit(1)
+                    if let sublabel {
+                        Text(sublabel).font(.system(size: s * 0.13, weight: .semibold)).foregroundStyle(mono ?? p.sub)
+                    }
+                }
+                .padding(lineWidth * 1.2)
+            }
+            .frame(width: s, height: s)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(lineWidth / 2)
+        }
+        .opacity(dimmed ? 0.45 : 1)
+        .accessibilityElement()
+        .accessibilityLabel(pct.map { "\(Int($0)) percent" } ?? "No reading")
+    }
+
+    private func arc(_ from: Double, _ to: Double) -> some Shape {
+        Circle().trim(from: from, to: to).rotation(.degrees(-90))
+    }
+}

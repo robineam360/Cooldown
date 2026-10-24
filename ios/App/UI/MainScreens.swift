@@ -1,10 +1,12 @@
 import CooldownCore
 import SwiftUI
+import UserNotifications
 
 /// CCRM-94 (iOS App): the app's entry and the main screens of wireframe rev B — iPhone tabs (§1), iPad pinned +
 /// selected (§2), and the first-launch screen.
 @main
 struct CooldownApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel()
     @Environment(\.scenePhase) private var phase
     @AppStorage("theme") private var theme = "system"
@@ -26,9 +28,39 @@ struct CooldownApp: App {
                         model.nowMs = AppModel.clock()
                     }
                 }
+                .onOpenURL { url in if let key = DeepLink.key(from: url) { model.selectedKey = key } }
+                .onReceive(NotificationCenter.default.publisher(for: .openAccount)) { note in
+                    if let key = note.object as? String { model.selectedKey = key }
+                }
+                .onChange(of: phase) { if phase == .background { BackgroundRefresh.schedule() } }
+        }
+        .backgroundTask(.appRefresh(BackgroundRefresh.id)) {
+            await model.refresh(manual: false)
+            BackgroundRefresh.schedule()
         }
     }
 }
+
+/// Shows reset alerts while the app is open, and opens the app on the alert's account when one is tapped.
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                            withCompletionHandler done: @escaping (UNNotificationPresentationOptions) -> Void) {
+        done([.banner, .sound])
+    }
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                            withCompletionHandler done: @escaping () -> Void) {
+        let key = response.notification.request.content.userInfo["key"] as? String
+        Task { @MainActor in NotificationCenter.default.post(name: .openAccount, object: key) }
+        done()
+    }
+}
+
+extension Notification.Name { static let openAccount = Notification.Name("cooldown.openAccount") }
 
 enum Sheet: String, Identifiable {
     case settings, addAccount, claudeSignIn, chatGPTSignIn

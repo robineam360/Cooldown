@@ -1,5 +1,6 @@
-# CCRM-93 (iOS Spike): a bare app + widget extension that proves the free-personal-team facts on the
-# iPad before any feature work (docs/ios/PLAN.md step 2). project.yml is the source of truth; the
+# CCRM-94 (iOS App): the iPhone/iPad app and its widget extension (home and lock-screen widgets, the Control
+# Center control, the Live Activity), sharing ios/Shared and the CooldownCore package. Grew out of the CCRM-93
+# (iOS Spike) project. project.yml is the source of truth; the
 # generated Cooldown.xcodeproj is gitignored. The team id is passed on the command line
 # (DEVELOPMENT_TEAM=...), never committed.
 name: Cooldown
@@ -29,7 +30,7 @@ targets:
         com.apple.Keychain:
           enabled: 1
     platform: iOS
-    sources: [App, Spike/Shared]
+    sources: [App, Shared]
     dependencies:
       - target: CooldownWidgets
       - package: CooldownCore
@@ -49,6 +50,11 @@ targets:
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.robinrichardrajan.cooldown.refresh]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.robinrichardrajan.cooldown
+            CFBundleURLSchemes: [cooldown]
     entitlements:
       path: App/Cooldown.entitlements
       properties:
@@ -63,21 +69,21 @@ targets:
         com.apple.Keychain:
           enabled: 1
     platform: iOS
-    sources: [Spike/Widget, Spike/Shared]
+    sources: [Widget, Shared]
     dependencies:
       - package: CooldownCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.widgets
     info:
-      path: Spike/Widget/Info.plist
+      path: Widget/Info.plist
       properties:
         CFBundleDisplayName: Cooldown
         AppIdentifierPrefix: $(AppIdentifierPrefix)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
-      path: Spike/Widget/CooldownWidgets.entitlements
+      path: Widget/CooldownWidgets.entitlements
       properties:
         com.apple.security.application-groups: [group.com.robinrichardrajan.cooldown]
         keychain-access-groups: ["$(AppIdentifierPrefix)com.robinrichardrajan.cooldown.shared"]

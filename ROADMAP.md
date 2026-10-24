@@ -1598,10 +1598,13 @@ it carries the umbrella CCRM-7 (iOS).
   tabs with the 5-hour, 7-day and credits cards (full chart, pace and projection lines), notices for sign-in,
   stale and Free plan, first launch, iPad pinned + selected (landscape sidebar, portrait tabs), Add account,
   Claude and ChatGPT sign-in sheets, Settings (accounts, theme, about) and History; a `-demo` mode draws the
-  wireframe's states, and a UI test saves them in both orientations. Still to build: home and lock-screen
-  widgets, the Control Center control, reset alerts (and their Settings rows), the Live Activity (and its
-  Settings row), background refresh, the layout sheet, density and chart height, the share card and the
-  launcher icon.
+  wireframe's states, and a UI test saves them in both orientations. The surfaces followed (2026-10-24): home
+  widgets (Number, Countdown, Ring small and medium, Strip, Large overview), the lock-screen family (circular,
+  rectangular, inline), the Control Center control, reset alerts scheduled ahead (5h If busy and Weekly Always by
+  default, as on Android) with their Settings rows, the Live Activity Duet with Weekly and its Dynamic Island,
+  with the Lock Screen Settings row, and background refresh. Widgets only read the App Group; all fetching
+  stays in the app. A render test draws every face in every state. Still to build: the layout sheet, density
+  and chart height, the share card and the launcher icon; then the iPad device check with real accounts.
 - **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
   on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
   locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.

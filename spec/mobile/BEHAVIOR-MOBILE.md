@@ -48,9 +48,9 @@ other alert the desktop has (thresholds, pace, expiry, re-auth, stale data) is e
 - Detecting the reset and recording the closed window always run, whatever the mode (core §8).
 
 **iOS** cannot poll at the moment of reset, so it schedules the reset alert ahead of time from the
-known reset instant and cancels or reschedules it when a fetch shows the window moved. "If busy"
-is decided from the peak known when the app last fetched — the exact behaviour is settled with
-CCRM-94 (iOS App).
+known reset instant and cancels or reschedules it after every fetch (in the app or in iOS's background
+refresh). "If busy" is decided from the highest reading seen for that window by the last fetch. Same
+defaults as Android; notification permission is asked when the first account is added.
 
 Source: `alerts/Alerts.kt`, `alerts/ResetRollover.kt`, `data/UsageCache.kt` (`RESET_*`,
 `SMART_RESET_MIN_PCT`) (Android).

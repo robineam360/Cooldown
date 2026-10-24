@@ -2,41 +2,6 @@ import CooldownCore
 import Foundation
 import Observation
 
-/// CCRM-94 (iOS App): one signed-in account as the app lists it. Order in the list is the user's order —
-/// the same everywhere: tabs, sidebar, widgets, Live Activity (wireframe rev B, Settings).
-struct Account: Codable, Identifiable, Equatable, Sendable {
-    var key: String
-    var label: String
-    var provider: Provider
-    var pinned = false
-    var id: String { key }
-}
-
-struct AccountsStore: Sendable {
-    let storage: Storage
-    var file: URL { storage.file("accounts.json") }
-    func load() -> [Account] {
-        guard let data = try? Data(contentsOf: file) else { return [] }
-        return (try? JSONDecoder().decode([Account].self, from: data)) ?? []
-    }
-    func save(_ accounts: [Account]) {
-        guard let data = try? JSONEncoder().encode(accounts), let text = String(data: data, encoding: .utf8) else { return }
-        storage.writeAtomically(text, to: file)
-    }
-}
-
-/// Where the app and its widget extension share files and tokens (CCRM-93 (iOS Spike) proved both on the iPad).
-enum Shared {
-    static let appGroup = "group.com.robinrichardrajan.cooldown"
-    static var keychainGroup: String {
-        let prefix = Bundle.main.object(forInfoDictionaryKey: "AppIdentifierPrefix") as? String ?? ""
-        return prefix + "com.robinrichardrajan.cooldown.shared"
-    }
-    static var storage: Storage {
-        Storage(directory: FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup))
-    }
-}
-
 /// The app's state: accounts, the latest readings the fetch repository wrote, and the two sign-in flows.
 @MainActor @Observable
 final class AppModel {
@@ -114,11 +79,19 @@ final class AppModel {
         defer { isRefreshing = false }
         _ = await repo.refreshAll(accounts.map(\.key), manual: manual)
         reload()
+        await Surfaces.update(self)
     }
 
     // MARK: - Accounts
 
-    func save() { if !isDemo { accountsStore.save(accounts) } }
+    func save() {
+        guard !isDemo else { return }
+        accountsStore.save(accounts)
+        Task { await Surfaces.update(self) }
+    }
+
+    /// Settings changes that only the surfaces read (reset alert modes, the Live Activity switch).
+    func surfacesChanged() { Task { await Surfaces.update(self) } }
 
     func pin(_ key: String) {
         for i in accounts.indices { accounts[i].pinned = accounts[i].key == key }
@@ -154,6 +127,9 @@ final class AppModel {
         save()
         _ = await repo?.refresh(key, manual: true)
         reload()
+        // Reset alerts are on by default (5h If busy, Weekly Always, as on Android), so ask once, here.
+        await ResetAlerts.requestPermission()
+        await Surfaces.update(self)
     }
 
     // MARK: - Claude sign-in (PKCE, browser + pasted code)

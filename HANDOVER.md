@@ -16,8 +16,11 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 > `xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown` on a simulator), and the fetch
 > repository (`UsageRepository`: Android's mobile rules, reset detection, App Group snapshot), and the
 > app screens (`ios/App`: iPhone tabs and cards, iPad pinned + selected, sign-in sheets, Settings,
-> History; launch with `-demo standard|signin|plan|stale|max|empty` to see each state). Next: the
-> widgets, lock-screen widgets, the control, reset alerts and the Live Activity —
+> History; launch with `-demo standard|signin|plan|stale|max|empty` to see each state), and the surfaces
+> (widgets, lock-screen widgets, Control Center control, reset alerts, Live Activity, background refresh;
+> faces in `ios/Shared/FaceViews.swift`, rendered by `CooldownTests` to `SHOT_DIR`). Next: the iPad device
+> check with real Claude and ChatGPT accounts (sign in, widgets on the home and lock screen, Live Activity,
+> a reset alert), then the layout sheet, density and chart height, the share card and the launcher icon —
 > each built to the approved wireframe, checked on the iPhone and iPad simulators and on the
 > iPad. Anything beyond the wireframe goes to a Fable judge, then Astra; Robin only for major
 > visual changes. Separately, in the desktop repo (a session rooted there, not

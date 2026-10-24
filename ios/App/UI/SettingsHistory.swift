@@ -1,9 +1,9 @@
+import ActivityKit
 import CooldownCore
 import SwiftUI
 
 /// CCRM-94 (iOS App): Settings and History of wireframe rev B §3. Settings is an iOS grouped list with the Android
-/// sections; Reset alerts and the Lock Screen (Live Activity) rows arrive with their own pieces, so this screen
-/// never shows a switch that does nothing yet.
+/// sections, plus Lock Screen (the Live Activity switch).
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -41,6 +41,15 @@ struct SettingsScreen: View {
                     Button { sheet = .addAccount } label: { Label("Add account", systemImage: "plus") }
                 }
                 Section {
+                    ForEach(model.accounts) { account in
+                        ResetModeRow(account: account, weekly: false)
+                        ResetModeRow(account: account, weekly: true)
+                    }
+                } header: { Text("Reset alerts") } footer: {
+                    Text("“If busy” only alerts when the window that closed peaked at 80% or more. Alerts are set ahead from the reset times Cooldown last saw.")
+                }
+                LockScreenSection()
+                Section {
                     Picker("Theme", selection: $theme) {
                         Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
                     }
@@ -64,6 +73,78 @@ struct SettingsScreen: View {
                 Button("Cancel", role: .cancel) { renaming = nil }
             }
         }
+    }
+}
+
+/// One account's window: Off / If busy / Always (spec mobile §2). Turning one on asks for notification permission.
+struct ResetModeRow: View {
+    @Environment(AppModel.self) private var model
+    let account: Account
+    let weekly: Bool
+    @State private var mode = "smart"
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ProviderMark(provider: account.provider, size: 18)
+            Text("\(account.label) · \(weekly ? "Weekly" : "5h")").lineLimit(1)
+            Spacer(minLength: 8)
+            Picker("", selection: $mode) {
+                Text("Off").tag("off"); Text("If busy").tag("smart"); Text("Always").tag("always")
+            }
+            .pickerStyle(.segmented).fixedSize()
+        }
+        .onAppear { mode = Prefs.resetMode(account.key, weekly: weekly) }
+        .onChange(of: mode) { _, new in
+            guard new != Prefs.resetMode(account.key, weekly: weekly) else { return }
+            Prefs.setResetMode(account.key, weekly: weekly, new)
+            Task {
+                if new != "off" { await ResetAlerts.requestPermission() }
+                model.surfacesChanged()
+            }
+        }
+    }
+}
+
+/// The Live Activity switch and which accounts it shows (wireframe rev B §3, §6).
+struct LockScreenSection: View {
+    @Environment(AppModel.self) private var model
+    @AppStorage("liveActivity.on", store: Prefs.defaults) private var on = false
+    @State private var picking = false
+
+    var body: some View {
+        Section {
+            Toggle("Live Activity", isOn: $on)
+                .onChange(of: on) { model.surfacesChanged() }
+            NavigationLink {
+                List(model.accounts) { account in
+                    Button { toggle(account.key) } label: {
+                        HStack {
+                            ProviderMark(provider: account.provider, size: 18)
+                            Text(account.label)
+                            Spacer()
+                            if shown.contains(account.key) { Image(systemName: "checkmark") }
+                        }
+                    }
+                }
+                .navigationTitle("Shows")
+            } label: {
+                LabeledContent("Shows", value: model.accounts.filter { shown.contains($0.key) }.map(\.label).joined(separator: ", "))
+            }
+        } header: { Text("Lock Screen") } footer: {
+            Text(ActivityAuthorizationInfo().areActivitiesEnabled
+                 ? "Two accounts’ 5h and Weekly on the lock screen while a window runs. iOS keeps it up to 8 hours and it updates when Cooldown checks."
+                 : "Live Activities are switched off for Cooldown in the iOS Settings app.")
+        }
+    }
+
+    private var shown: [String] { Prefs.liveActivityKeys ?? model.accounts.prefix(2).map(\.key) }
+
+    /// Up to two; picking a third replaces the oldest.
+    private func toggle(_ key: String) {
+        var keys = shown
+        if let i = keys.firstIndex(of: key) { keys.remove(at: i) } else { keys.append(key); if keys.count > 2 { keys.removeFirst() } }
+        Prefs.liveActivityKeys = keys
+        model.surfacesChanged()
     }
 }
 
