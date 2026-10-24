@@ -32,6 +32,19 @@ struct CardContentTests {
         #expect(above.over)
     }
 
+    @Test("a window with no reset time hasn't started: the card stays, saying so; a missing window drops the card")
+    func notStartedAndAbsent() throws {
+        let idle = try #require(CardContent.window(
+            title: "5-hour window", window: UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil),
+            kind: HistoryStats.sessionKind, history: [], nowMs: now, timeZone: utc))
+        #expect(idle.notStarted && idle.chart == nil && idle.pace == nil)
+        #expect(idle.resetsIn == "Starts when a message is sent")
+        #expect(CardContent.compactLine(idle) == "Starts when a message is sent")
+        // A weekly-only ChatGPT account reports no 5-hour window at all: no card, as on Android.
+        #expect(CardContent.window(title: "5-hour window", window: nil, kind: HistoryStats.sessionKind,
+                                   history: [], nowMs: now, timeZone: utc) == nil)
+    }
+
     @Test("at 100% the card says the limit is reached and draws no projection")
     func atLimit() throws {
         let c = try #require(content(100, elapsed: 0.6))

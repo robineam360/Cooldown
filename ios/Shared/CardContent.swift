@@ -17,6 +17,9 @@ struct WindowContent: Equatable {
     var projectionLine: String?
     var resetsIn: String
     var resetsAt: String
+    /// No reset time yet: the window hasn't started (CCBG-30 (Phantom Window)). The card keeps its bar and says
+    /// "Starts when a message is sent", with no chart or pace — as Android's `ResetRow` does.
+    var notStarted = false
 
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
 }
@@ -27,7 +30,11 @@ enum CardContent {
         title: String, window: UsageWindow?, kind: String, history: [HistoryPoint], nowMs: Int64,
         use24h: Bool = false, timeZone: TimeZone = .current
     ) -> WindowContent? {
-        guard let window, let reset = window.resetsAtMs else { return nil }
+        guard let window else { return nil }
+        guard let reset = window.resetsAtMs else {
+            return WindowContent(title: title, pct: window.percent, pace: nil, chart: nil, paceLine: "", paceLineAlarm: false,
+                                 projectionLine: nil, resetsIn: Self.notStartedLine, resetsAt: "", notStarted: true)
+        }
         let length = HistoryStats.windowMs(kind: kind)
         let start = reset - length
         let pct = window.percent
@@ -91,8 +98,11 @@ enum CardContent {
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))")
     }
 
+    static let notStartedLine = "Starts when a message is sent"
+
     /// A folded card's one line: "Resets in 1h 57m · 22% below pace" (Android's Compact card).
     static func compactLine(_ c: WindowContent) -> String {
+        if c.notStarted { return notStartedLine }
         let pace = c.paceLine.replacingOccurrences(of: "even pace", with: "pace")
         return "\(c.resetsIn) · \(pace == "On pace" ? "on pace" : pace)"
     }

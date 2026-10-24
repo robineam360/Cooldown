@@ -52,7 +52,7 @@ struct ShareCardView: View {
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 10)
             HStack {
-                Text(c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.sub)
+                Text(c.notStarted ? c.resetsIn : c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.sub)
                 Spacer()
                 Text(c.resetsAt.replacingOccurrences(of: "Resets at ", with: "Resets ")).foregroundStyle(p.sub)
             }

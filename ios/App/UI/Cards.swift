@@ -38,18 +38,22 @@ struct WindowCard: View {
                         .frame(height: chartHeight)
                         .padding(.top, 12)
                 }
-                Text(content.paceLine)
-                    .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
-                    .font(.system(size: 14.5)).padding(.top, 6)
-                if let line = content.projectionLine {
-                    Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
+                if content.notStarted {
+                    Text(content.resetsIn).font(.system(size: 14.5)).foregroundStyle(p.sub).padding(.top, 10)
+                } else {
+                    Text(content.paceLine)
+                        .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
+                        .font(.system(size: 14.5)).padding(.top, 6)
+                    if let line = content.projectionLine {
+                        Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
+                    }
+                    HStack {
+                        Text(content.resetsIn)
+                        Spacer(minLength: 8)
+                        Text(rightResetLine ?? content.resetsAt)
+                    }
+                    .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
                 }
-                HStack {
-                    Text(content.resetsIn)
-                    Spacer(minLength: 8)
-                    Text(rightResetLine ?? content.resetsAt)
-                }
-                .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
             } else {
                 Text(CardContent.compactLine(content))
                     .font(.system(size: 14.5)).foregroundStyle(content.paceLineAlarm ? p.red : p.txt).padding(.top, 10)
@@ -133,11 +137,13 @@ struct WeeklyCard: View {
                     TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
                         .frame(height: chartHeight).padding(.top, 10)
                 }
-                Text(c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5)).padding(.top, 6)
+                if !c.notStarted {
+                    Text(c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5)).padding(.top, 6)
+                }
                 if let line = c.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 13.5)).padding(.top, 3)
                 }
-                Text(short ? c.resetsIn : "\(c.resetsIn) · \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))")
+                Text(short || c.notStarted ? c.resetsIn : "\(c.resetsIn) · \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))")
                     .font(.system(size: 13.5)).foregroundStyle(p.txt).padding(.top, 6)
             }
         }
