@@ -1,0 +1,122 @@
+# CCRM-94 (iOS App): the iPhone/iPad app and its widget extension (home and lock-screen widgets, the Control
+# Center control, the Live Activity), sharing ios/Shared and the CooldownCore package. Grew out of the CCRM-93
+# (iOS Spike) project. project.yml is the source of truth; the
+# generated Cooldown.xcodeproj is gitignored. The team id is passed on the command line
+# (DEVELOPMENT_TEAM=...), never committed.
+name: Cooldown
+options:
+  bundleIdPrefix: com.robinrichardrajan
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+packages:
+  # CCRM-94 (iOS App): the pure core, tested on the Mac against spec/core/fixtures.
+  CooldownCore:
+    path: Packages/CooldownCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1,2"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Cooldown:
+    type: application
+    attributes:
+      SystemCapabilities:
+        com.apple.ApplicationGroups.iOS:
+          enabled: 1
+        com.apple.Keychain:
+          enabled: 1
+    platform: iOS
+    sources: [App, Shared]
+    dependencies:
+      - target: CooldownWidgets
+      - package: CooldownCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        # The launcher icon: the approved Pulse tile, CCRM-60 (Dual Identity) round 10 S2, rendered from
+        # design/app-icon-v2-wireframe.html #r10s2 (the 72-unit square Android shows; iOS rounds the corners).
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Cooldown
+        AppIdentifierPrefix: $(AppIdentifierPrefix)
+        UILaunchScreen: {}
+        NSSupportsLiveActivities: true
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.robinrichardrajan.cooldown.refresh]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.robinrichardrajan.cooldown
+            CFBundleURLSchemes: [cooldown]
+    entitlements:
+      path: App/Cooldown.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.robinrichardrajan.cooldown]
+        keychain-access-groups: ["$(AppIdentifierPrefix)com.robinrichardrajan.cooldown.shared"]
+  CooldownWidgets:
+    type: app-extension
+    attributes:
+      SystemCapabilities:
+        com.apple.ApplicationGroups.iOS:
+          enabled: 1
+        com.apple.Keychain:
+          enabled: 1
+    platform: iOS
+    sources: [Widget, Shared]
+    dependencies:
+      - package: CooldownCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.widgets
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: Cooldown
+        AppIdentifierPrefix: $(AppIdentifierPrefix)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/CooldownWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.robinrichardrajan.cooldown]
+        keychain-access-groups: ["$(AppIdentifierPrefix)com.robinrichardrajan.cooldown.shared"]
+  CooldownTests:
+    # CCRM-94 (iOS App): tests that need the app's entitlements (Keychain shared group), hosted by the app.
+    type: bundle.unit-test
+    platform: iOS
+    sources: [AppTests]
+    dependencies:
+      - target: Cooldown
+      - package: CooldownCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.tests
+        GENERATE_INFOPLIST_FILE: YES
+  CooldownUITests:
+    # CCRM-94 (iOS App): demo-state screenshots in both orientations, and a launch smoke test.
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: Cooldown
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.robinrichardrajan.cooldown.uitests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Cooldown:
+    build:
+      targets:
+        Cooldown: all
+    test:
+      targets:
+        - CooldownTests
+        - CooldownUITests

@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "captured": true,
+    "date": "2026-09-20",
+    "note": "CCM-71 [Foundation]: a current payload (September 2026) carrying named-but-null experiment keys Android noticed and asked the shared fixtures to pin — `seven_day_breakdown`, `seven_day_oauth_apps`, `nimbus_quill` — alongside the legacy blocks' always-null `limit_dollars`/`used_dollars`/`remaining_dollars`. None of these should move the parse: `limits[]` and `spend` are still authoritative and every unrecognised key, named or not, must be ignored rather than crash or short-circuit parsing. Values redacted."
+  },
+  "five_hour": {
+    "utilization": 3.0,
+    "resets_at": "2026-09-20T14:00:00.100200+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 22.0,
+    "resets_at": "2026-09-24T14:00:00.100200+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day_opus": null,
+  "seven_day_breakdown": null,
+  "seven_day_oauth_apps": null,
+  "nimbus_quill": null,
+  "extra_usage": {
+    "is_enabled": true,
+    "monthly_limit": 5000,
+    "used_credits": 210.0,
+    "utilization": 4.2,
+    "currency": "USD",
+    "decimal_places": 2,
+    "disabled_reason": null,
+    "user_disabled": false,
+    "spend_limit_reached": false,
+    "credits_ever_enabled": true,
+    "daily": null,
+    "weekly": null
+  },
+  "limits": [
+    {
+      "kind": "session",
+      "group": "session",
+      "percent": 3,
+      "severity": "normal",
+      "resets_at": "2026-09-20T14:00:00.100200+00:00",
+      "scope": null,
+      "is_active": true
+    },
+    {
+      "kind": "weekly_all",
+      "group": "weekly",
+      "percent": 22,
+      "severity": "normal",
+      "resets_at": "2026-09-24T14:00:00.100200+00:00",
+      "scope": null,
+      "is_active": true
+    }
+  ],
+  "spend": {
+    "used": { "amount_minor": 210, "currency": "USD", "exponent": 2 },
+    "limit": { "amount_minor": 5000, "currency": "USD", "exponent": 2 },
+    "percent": 4,
+    "severity": "normal",
+    "enabled": true,
+    "disabled_reason": null,
+    "cap": { "money": null, "credits": { "amount_minor": 5000, "exponent": 2 } },
+    "balance": null,
+    "auto_reload": null,
+    "disclaimer": "Usage credits cover you...",
+    "can_purchase_credits": false,
+    "can_toggle": false
+  },
+  "member_dashboard_available": true
+}

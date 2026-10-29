@@ -1,0 +1,30 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 14.0,
+    "resetsAt": "2026-09-19T22:00:00.123Z",
+    "resetsAtMs": 1789855200123,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "weekly": {
+    "percent": 41.0,
+    "resetsAt": "2026-09-24T22:00:00.123Z",
+    "resetsAtMs": 1790287200123,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 1842,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": "normal",
+    "moneyUsed": "$18.42",
+    "isReportable": true
+  },
+  "_asserts": [
+    "Same rule as `credits-uncapped.json` (CCM-44), on the full modern payload with `limits[]` and windows present: `spend.limit: null` beside real `spend.used` still parses to reportable credits with no limitMinor, percent, percentDisplay or remainingMinor (CCM-71 [Foundation] canonical copy, Android CCBG-9).",
+    "session and weekly come from `limits[]` as usual — the uncapped-credits case is independent of the window shape."
+  ]
+}

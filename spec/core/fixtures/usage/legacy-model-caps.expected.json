@@ -1,0 +1,41 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 12.0,
+    "resetsAt": "2026-07-27T11:49:59.956Z",
+    "resetsAtMs": 1785152999956,
+    "serverSeverity": null,
+    "severity": "NORMAL"
+  },
+  "weekly": {
+    "percent": 31.0,
+    "resetsAt": "2026-07-30T18:59:59.956Z",
+    "resetsAtMs": 1785437999956,
+    "serverSeverity": null,
+    "severity": "NORMAL"
+  },
+  "modelCaps": [
+    {
+      "modelName": "Sonnet",
+      "percent": 44.0,
+      "resetsAtMs": 1785437999956,
+      "serverSeverity": null,
+      "severity": "NORMAL"
+    },
+    {
+      "modelName": "Opus",
+      "percent": 7.0,
+      "resetsAtMs": 1785437999956,
+      "serverSeverity": null,
+      "severity": "NORMAL"
+    }
+  ],
+  "credits": null,
+  "_asserts": [
+    "With no `limits` array, `seven_day_sonnet` and `seven_day_opus` fall back the same way `five_hour`/`seven_day` do — caps must not silently vanish on a server-side rollback of the `limits` shape (CCM-45, Android's CCBG-8).",
+    "Fallback caps are named \"Sonnet\" and \"Opus\", in that order — the flat keys carry no display_name.",
+    "Only those two flat keys are read; any other `seven_day_*` sibling would be a guess.",
+    "serverSeverity is null — legacy blocks carry no severity; NORMAL derives from the percents.",
+    "The fallback fills caps only when the `limits` array produced none."
+  ]
+}

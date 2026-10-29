@@ -1,0 +1,11 @@
+{
+  "_meta": { "captured": false, "note": "OpenAI suspended the 5-hour limit for Plus/Pro/Business on 2026-07-12 (CCRM-54) — a weekly-only account puts its weekly limit in primary_window, with no secondary_window at all." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "pro",
+  "rate_limit": {
+    "allowed": true, "limit_reached": false,
+    "primary_window": { "used_percent": 42, "limit_window_seconds": 604800, "reset_after_seconds": 200000, "reset_at": 1788900000 }
+  },
+  "additional_rate_limits": null,
+  "credits": { "has_credits": false, "unlimited": false, "balance": "0" }
+}

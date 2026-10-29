@@ -1,0 +1,37 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 3.0,
+    "resetsAt": "2026-09-20T14:00:00.100Z",
+    "resetsAtMs": 1789912800100,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "weekly": {
+    "percent": 22.0,
+    "resetsAt": "2026-09-24T14:00:00.100Z",
+    "resetsAtMs": 1790258400100,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 210,
+    "limitMinor": 5000,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": "normal",
+    "percent": 4.2,
+    "percentDisplay": 4,
+    "remainingMinor": 4790,
+    "moneyUsed": "$2.10",
+    "moneyLimit": "$50.00",
+    "moneyRemaining": "$47.90",
+    "isReportable": true
+  },
+  "_asserts": [
+    "`seven_day_breakdown`, `seven_day_oauth_apps` and `nimbus_quill` — named but null — are ignored, exactly like any unrecognised key.",
+    "The legacy blocks' always-null `limit_dollars`/`used_dollars`/`remaining_dollars` are ignored too: `limits[]` and `spend` are authoritative here regardless.",
+    "The parse is otherwise identical to a payload without these keys at all — nothing about their presence changes session, weekly, modelCaps or credits."
+  ]
+}

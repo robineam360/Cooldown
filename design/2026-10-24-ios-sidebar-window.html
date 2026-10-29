@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iPad Sidebar Window</title>
+<!-- CCRM-94 (iOS App), Robin 2026-10-24: (1) a 5h / Weekly switch for the iPad sidebar's bars, remembered;
+     weekly-only plans always show Weekly. (2) The Claude mark reads bigger than ChatGPT's: the Claude path fills its
+     whole 24-unit square, the ChatGPT knot about 70% of it. (3) Android features iOS still lacks. 1 px = 1 pt. -->
+<style>
+:root{--bg:#0E0E0E;--side:#161617;--card:#1C1C1E;--ink:#F2F2F2;--txt:#D1D1D6;--sub:#98989F;--line:#38383A;--fill:#2C2C2E;--tick:#C7C7CC;--cl:#E59980;--gp:#19C39A;--red:#FF5252}
+*{box-sizing:border-box}body{margin:0;background:#121214;color:#E5E5EA;font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 80px}h1{font-size:25px;margin:0 0 6px}h2{font-size:19px;margin:40px 0 6px;padding-top:16px;border-top:1px solid #2a2a2e}
+p,li{color:#b8b8bf;max-width:860px}.row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}.cap{font-size:12.5px;color:#9a9aa2;margin-top:6px;max-width:300px}
+.side{width:300px;background:var(--side);border-radius:14px;padding:16px 0 18px;border:1px solid #2a2a2e;font-variant-numeric:tabular-nums}
+.title{display:flex;align-items:center;gap:6px;font-size:30px;font-weight:700;color:var(--ink);padding:0 18px 10px}
+.seg{margin:0 18px 10px;display:flex;background:var(--fill);border-radius:9px;padding:2px;font-size:13px}
+.seg span{flex:1;text-align:center;padding:5px 0;border-radius:7px;color:var(--txt)}.seg .on{background:#636366;color:#fff;font-weight:600}
+.acc{display:flex;align-items:center;gap:10px;margin:0 6px;padding:10px 12px;border-radius:10px}.acc.sel{background:rgba(229,153,128,.18)}
+.mid{flex:1;min-width:0}.nm{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--ink)}.chip{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.pct{text-align:right;line-height:1.1}.pct b{font-size:16px;display:block}.pct small{font-size:11px;color:var(--sub)}
+.bar{position:relative;height:5px;margin:8px 0 4px;border-radius:3px}.bar .tr{position:absolute;inset:0;border-radius:3px;opacity:.28}
+.bar .f{position:absolute;left:0;top:0;bottom:0;border-radius:3px}.bar .tk{position:absolute;top:-3px;width:2.5px;height:11px;background:var(--tick);border-radius:1px;transform:translateX(-50%)}
+.note{font-size:12.5px;color:var(--sub);padding:12px 22px 0}
+.mk{display:inline-block;vertical-align:middle}.mk *{fill:currentColor!important}
+table{border-collapse:collapse;font-size:13.5px;margin:10px 0}td,th{border:1px solid #2c2c33;padding:6px 9px;text-align:left;color:#c9c9cf;vertical-align:top}th{color:#fff;background:#1a1a1f}
+.pair{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:12px;padding:12px 16px;font-size:15px;color:var(--ink)}
+.dec{background:#18181d;border:1px solid #2c2c33;border-radius:12px;padding:12px 16px;margin:10px 0;max-width:860px}
+</style></head><body><main>
+<h1>iPad sidebar: 5h / Weekly switch, and evened-out marks</h1>
+<p>CCRM-94 (iOS App), from your notes on 24 Oct. Drawn at real size on the iPad landscape sidebar (300 pt wide).</p>
+
+<h2>1 · The switch</h2>
+<p>A two-way switch under the title picks which window the sidebar's bars and figures show. The choice is remembered.
+An account with no 5h window always shows Weekly, and its figure is labelled “Weekly” so the row doesn't look like a 5h reading.
+The switch fits in the sidebar, so it needs no Settings entry. The pinned and selected panes on the right don't change.</p>
+<div class="row" id="side"></div>
+
+<h2>2 · Claude and ChatGPT marks at the same apparent size</h2>
+<p>Same nominal size today, but the Claude starburst runs edge to edge in its square while the ChatGPT knot fills about 70% of it, so Claude reads ~1.4× bigger.
+The fix draws the Claude mark smaller inside the same box, everywhere a mark appears (app, widgets, Live Activity). Android uses the same two marks and would get the same correction.</p>
+<div class="row" id="marks"></div>
+
+<h2>3 · Android features iOS still lacks</h2>
+<p>From a read of both apps. Rev B ported Android's Appearance settings “unchanged”, so group A is owed under that approval. The rest is for you to pick.</p>
+<table>
+<tr><th>Group</th><th>Feature (Android)</th><th>iOS today</th><th>Recommendation</th></tr>
+<tr><td rowspan="5">A · Appearance</td><td>Usage display: Used / Left (every figure)</td><td>missing</td><td rowspan="5">Port: rev B said Appearance ports unchanged</td></tr>
+<tr><td>Reset time: Countdown / Clock first</td><td>missing</td></tr>
+<tr><td>Time format: System / 12 h / 24 h</td><td>missing (code supports 24 h)</td></tr>
+<tr><td>Chart orientation (time down)</td><td>missing</td></tr>
+<tr><td>Show red past the pace mark (on/off)</td><td>missing (always red)</td></tr>
+<tr><td rowspan="3">B · Accounts</td><td>Accent colour per account</td><td>missing (provider colour only)</td><td rowspan="3">Port</td></tr>
+<tr><td>Details… (plan, email, last check) and Clear usage history…</td><td>missing</td></tr>
+<tr><td>Credits card on/off per account</td><td>partial (layout sheet only)</td></tr>
+<tr><td>C · Theme colour</td><td>App theme colour picker</td><td>missing</td><td>Port</td></tr>
+<tr><td>D · About</td><td>Privacy policy, feedback email, user guide</td><td>missing (version + disclaimer)</td><td>Port: needed before anyone else installs it</td></tr>
+<tr><td>E · Alerts</td><td>Link to iOS notification settings</td><td>missing</td><td>Port (one row)</td></tr>
+<tr><td rowspan="3">Not porting</td><td>Polling interval</td><td colspan="2">iOS decides when apps refresh (spec mobile)</td></tr>
+<tr><td>Debug unlock, app log, crash export</td><td colspan="2">Android diagnostics; iOS has its own crash reports</td></tr>
+<tr><td>Degraded-store notice (CCBG-50 (Degraded Store Notice))</td><td colspan="2">An Android storage failure mode; iOS's Keychain differs</td></tr>
+</table>
+<div class="dec"><b>Decisions:</b> (1) approve the switch as drawn; (2) approve the Claude mark at the size you pick in section 2;
+(3) which of groups A–E to port (each would get its own small wireframe where it changes what you see).</div>
+</main>
+<script>
+const CL=`<path d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z" fill="#000000"/>`, GP=`<path d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.27,4.27 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.56,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.86,2.86 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z" fill="#000000"/>`;
+const mk=(p,s,scale=1)=>{const inner=p==="cl"?CL:GP, col=p==="cl"?"var(--cl)":"var(--gp)";
+  const sc=p==="cl"?scale:1, off=12*(1-sc);
+  return `<svg class="mk" width="${s}" height="${s}" viewBox="0 0 24 24" style="color:${col}"><g transform="translate(${off} ${off}) scale(${sc})">${inner}</g></svg>`};
+let CLS=0.82;
+const A=[{p:"gp",n:"ChatGPT",plan:"Plus",five:[5,2],week:[13,7],sel:false,pin:true},
+         {p:"cl",n:"Claude",plan:"Max 5×",five:[55,70],week:[75,80],sel:true},
+         {p:"gp",n:"Pro",plan:"Pro",five:null,week:[42,50]},
+         {p:"cl",n:"Work",plan:"Team",five:[62,40],week:[48,45]}];
+function bar(v,c){const [pct,pace]=v, over=pct<100&&pct>pace+3;
+  let f=over?`<div class="f" style="width:${pace}%;background:${c}"></div><div class="f" style="left:${pace}%;width:${pct-pace}%;background:var(--red);border-radius:0 3px 3px 0"></div>`
+           :`<div class="f" style="width:${Math.max(pct,2)}%;background:${c}"></div>`;
+  return `<div class="bar"><div class="tr" style="background:${c}"></div>${f}<div class="tk" style="left:${pace}%"></div></div>`}
+function side(which,scale){
+  let h=`<div class="side"><div class="title">${mk("cl",22,scale)}${mk("gp",22)} Cooldown</div>
+   <div class="seg"><span class="${which==="5h"?"on":""}">5h</span><span class="${which==="w"?"on":""}">Weekly</span></div>`;
+  for(const a of A){const c=a.p==="cl"?"var(--cl)":"var(--gp)", useW=which==="w"||!a.five, v=useW?a.week:a.five;
+    const tag=useW&&which==="5h"?"Weekly":"";
+    h+=`<div class="acc${a.sel?" sel":""}">${mk(a.p,22,scale)}<div class="mid"><div class="nm">${a.n} <span class="chip">${a.plan}</span>${a.pin?' <span style="font-size:11px;color:var(--sub)">📌</span>':""}</div>${bar(v,c)}</div>
+      <div class="pct"><b style="color:${v[0]>v[1]+3?"var(--red)":c}">${v[0]}%</b>${tag?`<small>${tag}</small>`:""}</div></div>`}
+  return h+`<div class="note">Touch and hold an account to pin it to the top.</div></div>`}
+document.getElementById("side").innerHTML=
+  `<div>${side("5h",CLS)}<div class="cap"><b>5h selected.</b> “Pro” has no 5h window, so it shows Weekly, labelled.</div></div>
+   <div>${side("w",CLS)}<div class="cap"><b>Weekly selected.</b> Every row shows its Weekly window.</div></div>`;
+const pair=(s,cap)=>`<div><div class="pair">${mk("cl",22,s)} Claude &nbsp; ${mk("gp",22)} ChatGPT &nbsp;&nbsp; ${mk("cl",44,s)} ${mk("gp",44)}</div><div class="cap">${cap}</div></div>`;
+document.getElementById("marks").innerHTML=pair(1,"Today: Claude at 100%")+pair(0.88,"Claude at 88%")+pair(0.82,"<b>Claude at 82% (recommended)</b>")+pair(0.76,"Claude at 76%");
+</script></body></html>

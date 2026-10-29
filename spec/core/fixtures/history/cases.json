@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "note": "History bar-building and week-grouping cases (BEHAVIOR-SPEC section 7). Expectations are ported from the Android reference implementation's passing unit tests. All times are epoch milliseconds.",
+    "constants": {
+      "sessionLengthMs": 18000000,
+      "weeklyLengthMs": 604800000,
+      "hitLimitPeakThreshold": 99.5
+    }
+  },
+
+  "bars": [
+    {
+      "name": "session bars derive start from reset and sort newest first",
+      "kind": "session",
+      "records": [
+        { "kind": "session", "resetAtMs": 360000000, "peakPct": 40.0, "hitLimit": false },
+        { "kind": "session", "resetAtMs": 432000000, "peakPct": 100.0, "hitLimit": true },
+        { "kind": "weekly", "resetAtMs": 396000000, "peakPct": 55.0, "hitLimit": false }
+      ],
+      "current": null,
+      "expected": [
+        { "startMs": 414000000, "resetMs": 432000000, "peakPct": 100.0, "hitLimit": true, "current": false },
+        { "startMs": 342000000, "resetMs": 360000000, "peakPct": 40.0, "hitLimit": false, "current": false }
+      ],
+      "why": "The weekly record is filtered out when building session bars. Start is derived as reset minus the window length, never stored. Newest first."
+    },
+    {
+      "name": "current open window merges in and sorts newest",
+      "kind": "session",
+      "records": [
+        { "kind": "session", "resetAtMs": 360000000, "peakPct": 40.0, "hitLimit": false }
+      ],
+      "current": { "startMs": 702000000, "resetMs": 720000000, "peakPct": 12.0, "hitLimit": false, "current": true },
+      "expected": [
+        { "startMs": 702000000, "resetMs": 720000000, "peakPct": 12.0, "hitLimit": false, "current": true },
+        { "startMs": 342000000, "resetMs": 360000000, "peakPct": 40.0, "hitLimit": false, "current": false }
+      ],
+      "why": "The still-open window becomes a bar alongside the logged ones and, being newest, sorts first."
+    },
+    {
+      "name": "a logged record with the same reset as current does not double up",
+      "kind": "session",
+      "records": [
+        { "kind": "session", "resetAtMs": 360000000, "peakPct": 40.0, "hitLimit": false },
+        { "kind": "session", "resetAtMs": 720000000, "peakPct": 12.0, "hitLimit": false }
+      ],
+      "current": { "startMs": 702000000, "resetMs": 720000000, "peakPct": 12.0, "hitLimit": false, "current": true },
+      "expectedCount": 2,
+      "why": "De-duplication is by reset time. This is the real-world race: the window closes and gets logged while the UI still holds it as current."
+    },
+    {
+      "name": "hitLimit is peak >= 99.5, not exactly 100",
+      "kind": "session",
+      "records": [
+        { "kind": "session", "resetAtMs": 360000000, "peakPct": 99.4, "hitLimit": false },
+        { "kind": "session", "resetAtMs": 378000000, "peakPct": 99.5, "hitLimit": true },
+        { "kind": "session", "resetAtMs": 396000000, "peakPct": 100.0, "hitLimit": true }
+      ],
+      "current": null,
+      "expectedHitLimitByResetMs": { "360000000": false, "378000000": true, "396000000": true },
+      "why": "The server rarely reports a clean 100, so the threshold is 99.5 inclusive. A bar at 99.4 must not read as exhausted."
+    }
+  ],
+
+  "weeks": [
+    {
+      "name": "weeks group by Monday and sort newest first",
+      "zone": "UTC",
+      "bars": [
+        { "startMs": 1784109600000, "note": "Wed 2026-07-15 10:00 UTC", "peakPct": 30.0 },
+        { "startMs": 1784282400000, "note": "Fri 2026-07-17 10:00 UTC", "peakPct": 80.0 },
+        { "startMs": 1783332000000, "note": "Mon 2026-07-06 10:00 UTC", "peakPct": 50.0 }
+      ],
+      "expected": [
+        { "monday": "2026-07-13", "barCount": 2 },
+        { "monday": "2026-07-06", "barCount": 1 }
+      ],
+      "why": "Wed the 15th and Fri the 17th share the week beginning Mon the 13th. Mon the 6th is its own week and is already a Monday, so it maps to itself."
+    },
+    {
+      "name": "grouping uses the local zone, not UTC",
+      "zone": "Asia/Kolkata",
+      "bars": [
+        { "startMs": 1783900800000, "note": "Mon 2026-07-13 00:00 UTC = Mon 05:30 IST", "peakPct": 10.0 },
+        { "startMs": 1783879200000, "note": "Sun 2026-07-12 18:00 UTC = Sun 23:30 IST", "peakPct": 20.0 }
+      ],
+      "expected": [
+        { "monday": "2026-07-13", "barCount": 1 },
+        { "monday": "2026-07-06", "barCount": 1 }
+      ],
+      "why": "Both instants are within six hours of each other but fall in different ISO weeks for a user in IST. A client that hard-codes UTC would put them in the same week. Monday is ISO day 1."
+    }
+  ],
+
+  "retention": {
+    "rawSamplesMaxAgeMs": 691200000,
+    "closedWindowsMaxAgeMs": 31622400000,
+    "why": "Raw samples are kept 8 days so the 7-day window always has a full curve; closed windows are kept 366 days for the history bars. Prune on every write."
+  }
+}

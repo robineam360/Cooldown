@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Synthetic, built from the observed `limits` schema. Covers the branches the captured payload doesn't reach: per-model caps (`weekly_scoped`), a missing model display_name, a null percent, and severity derivation overriding a benign server severity. Replace with a captured payload from an account that has an Opus cap when one is available."
+  },
+  "limits": [
+    {
+      "kind": "session",
+      "group": "session",
+      "percent": 72,
+      "severity": "normal",
+      "resets_at": "2026-07-27T11:49:59.956769+00:00",
+      "scope": null,
+      "is_active": true
+    },
+    {
+      "kind": "weekly_all",
+      "group": "weekly",
+      "percent": 91,
+      "severity": "normal",
+      "resets_at": "2026-07-30T18:59:59.956800+00:00",
+      "scope": null,
+      "is_active": true
+    },
+    {
+      "kind": "weekly_scoped",
+      "group": "weekly",
+      "percent": 45,
+      "severity": "warning",
+      "resets_at": "2026-07-30T18:59:59.956800+00:00",
+      "scope": { "model": { "display_name": "Claude Opus 4.5" } },
+      "is_active": true
+    },
+    {
+      "kind": "weekly_scoped",
+      "group": "weekly",
+      "percent": null,
+      "severity": "",
+      "resets_at": "2026-07-30T18:59:59.956800+00:00",
+      "scope": null,
+      "is_active": false
+    }
+  ],
+  "spend": null,
+  "extra_usage": { "monthly_limit": null }
+}

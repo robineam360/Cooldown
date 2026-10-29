@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "captured": false,
+    "note": "Synthetic. The `extra_usage` credit fallback with no `spend` block and no windows at all — a credits-only payload must still parse. `used_credits` is a float in minor units and must be truncated to an integer, and `decimal_places` supplies the exponent."
+  },
+  "extra_usage": {
+    "monthly_limit": 5000,
+    "used_credits": 957.0,
+    "currency": "USD",
+    "decimal_places": 2
+  }
+}

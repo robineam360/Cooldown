@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lock Circle Options</title>
+<!-- CCRM-94 (iOS App): Robin, 2026-10-24 — no circle counter on the lock screen; show 5h and Weekly like the Number
+     widget. The lock-screen "circular" slot is a fixed ~72 pt round tile that iOS tints white, so colour can't carry
+     meaning. Three layouts at real size (1 px = 1 pt) and 2×, for a pick (CLAUDE.md §2). -->
+<style>
+:root{--page:#121214;--ptxt:#E5E5EA}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ptxt);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:24px;margin:0 0 6px}h2{font-size:19px;margin:34px 0 4px}
+p{color:#b8b8bf;max-width:820px}
+.wall{padding:22px;border-radius:24px;background:linear-gradient(135deg,#5b4f8f 0%,#9a6aa8 55%,#d8899a 100%);display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start;overflow-x:auto}
+.shot{display:flex;flex-direction:column;align-items:center;gap:6px;width:150px}
+.cap{font-size:12px;color:#f0eaf6;text-align:center}
+.c{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);color:#fff;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;overflow:hidden}
+.x2{transform:scale(2);transform-origin:top center;margin-bottom:72px}
+.bar{height:4px;border-radius:2px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:#fff;border-radius:2px}
+.tk{position:absolute;top:-2px;width:2px;height:8px;background:#fff;opacity:.85;border-radius:1px}
+.vb{width:7px;height:38px;border-radius:3.5px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}
+.vb i{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:3.5px}
+.dec{background:#18181d;border:1px solid #2c2c33;border-radius:12px;padding:12px 16px;margin:10px 0;max-width:820px}
+</style>
+</head>
+<body>
+<main>
+<h1>Lock-screen circle: no ring, both windows</h1>
+<p>The small round lock-screen widget (the one showing “5 · 5h” in your screenshot). iOS gives it a fixed round tile of about 72 pt and
+tints it white, so it can only use size, weight and bars, not colour. Each option below is shown at real size, then at 2× so you can read it. They all show both windows.
+States across each row: everyday, near the limit, at 100%, weekly-only plan, sign-in needed.</p>
+
+<h2>A · Two numbers stacked</h2>
+<p>5h big on top, Weekly under a hairline. Closest to the Number widget.</p>
+<div class="wall" id="a"></div>
+
+<h2>B · Two numbers, each with a bar</h2>
+<p>As A, plus a short bar with its pace tick under each number. Most information, but tightest.</p>
+<div class="wall" id="b"></div>
+
+<h2>C · Two upright bars</h2>
+<p>A tall bar per window, with its number beside it. Reads like a small chart.</p>
+<div class="wall" id="c"></div>
+
+<div class="dec"><b>Recommendation: A.</b> At 72 pt on a lock screen, two numbers are what you can read at a glance. B’s bars are 3–4 pt tall at real size, too
+thin to read. The bars and pace ticks stay in the rectangular lock-screen widget beside it. That widget can also show both windows if you want; say so.</div>
+</main>
+<script>
+const S=[["55","75","Claude"],["88","91","Work"],["MAX","64","Product"],["","42","Plus"],["—","—","Team"]];
+const lab=(t)=>`<span style="font-size:8px;font-weight:600;opacity:.8;letter-spacing:.2px">${t}</span>`;
+function A([f,w]){
+  if(!f) return `<div class="c">${lab("WEEKLY")}<div style="font-size:24px;font-weight:700;line-height:1">${w}</div><div style="font-size:8px;opacity:.75">no 5h</div></div>`;
+  return `<div class="c"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:${f.length>2?17:23}px;font-weight:700;line-height:1">${f}</span>${lab("5h")}</div>
+   <div style="width:40px;height:1px;background:rgba(255,255,255,.45);margin:4px 0 3px"></div>
+   <div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:15px;font-weight:600;line-height:1">${w}</span>${lab("W")}</div></div>`;
+}
+function bar(v,t){const p=v==="MAX"?100:+v||0;return `<div class="bar" style="width:42px"><i style="width:${p}%"></i></div>`}
+function B([f,w]){
+  if(!f) return `<div class="c">${lab("WEEKLY")}<div style="font-size:22px;font-weight:700;line-height:1;margin:1px 0 3px">${w}</div>${bar(w)}</div>`;
+  return `<div class="c" style="gap:1px"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:${f.length>2?14:18}px;font-weight:700;line-height:1">${f}</span>${lab("5h")}</div>${bar(f)}
+   <div style="display:flex;align-items:baseline;gap:2px;margin-top:3px"><span style="font-size:13px;font-weight:600;line-height:1">${w}</span>${lab("W")}</div>${bar(w)}</div>`;
+}
+function vb(v){const p=v==="MAX"?100:+v||0;return `<div class="vb"><i style="height:${p}%"></i></div>`}
+function C([f,w]){
+  const col=(v,t)=>`<div style="display:flex;align-items:flex-end;gap:3px">${vb(v)}<div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1"><span style="font-size:${v.length>2?10:14}px;font-weight:700">${v}</span>${lab(t)}</div></div>`;
+  if(!f) return `<div class="c"><div style="margin-top:2px">${col(w,"W")}</div></div>`;
+  return `<div class="c"><div style="display:flex;gap:5px;margin-top:2px">${col(f,"5h")}${col(w,"W")}</div></div>`;
+}
+const caps=["Everyday","Near the limit","At 100%","Weekly-only plan","Sign in needed"];
+for(const [id,fn] of [["a",A],["b",B],["c",C]]){
+  document.getElementById(id).innerHTML=S.map((s,i)=>`<div class="shot">${fn(s)}<div class="${"c x2"}" style="display:none"></div><div style="transform:scale(2);transform-origin:top center;margin:6px 0 78px">${fn(s)}</div><div class="cap">${caps[i]}</div></div>`).join("");
+}
+</script>
+</body>
+</html>

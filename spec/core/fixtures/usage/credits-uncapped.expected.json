@@ -1,0 +1,20 @@
+{
+  "parsed": true,
+  "session": null,
+  "weekly": null,
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 297,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": "normal",
+    "moneyUsed": "$2.97",
+    "isReportable": true
+  },
+  "_asserts": [
+    "A null `spend.limit` beside real spend parses to credits with a nil limitMinor — the cap is off, the credits are not gone (CCM-44 / Android CCBG-9).",
+    "limitMinor, percent, percentDisplay and remainingMinor are absent from this file on purpose: absence asserts nil. Never synthesise 0% — a 0% bar reads as headroom against a ceiling that doesn't exist.",
+    "`isReportable` is true: real spend earns the row even with no cap. Render as spend + 'No cap', with no bar.",
+    "The exponent falls back to `used.exponent` when there is no limit block to carry one."
+  ]
+}

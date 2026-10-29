@@ -1,0 +1,39 @@
+{
+  "parsed": true,
+  "session": {
+    "percent": 0.0,
+    "resetsAt": "2026-07-27T11:49:59.956Z",
+    "resetsAtMs": 1785152999956,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "weekly": {
+    "percent": 30.0,
+    "resetsAt": "2026-07-30T18:59:59.956Z",
+    "resetsAtMs": 1785437999956,
+    "serverSeverity": "normal",
+    "severity": "NORMAL"
+  },
+  "modelCaps": [],
+  "credits": {
+    "usedMinor": 599,
+    "limitMinor": 10000,
+    "exponent": 2,
+    "currency": "USD",
+    "serverSeverity": "normal",
+    "percent": 5.99,
+    "percentDisplay": 6,
+    "remainingMinor": 9401,
+    "moneyUsed": "$5.99",
+    "moneyLimit": "$100.00",
+    "moneyRemaining": "$94.01",
+    "isReportable": true
+  },
+  "_asserts": [
+    "Windows come from `limits`, not from the legacy blocks \u2014 both are present here and must agree, but `limits` is authoritative.",
+    "Credits come from `spend`, not `extra_usage` \u2014 both are present.",
+    "credits.percent is 5.99 computed from the money, NOT the server's rounded `spend.percent` of 6.",
+    "credits.percentDisplay rounds that 5.99 to 6.",
+    "modelCaps is empty: no `weekly_scoped` entry in `limits`."
+  ]
+}

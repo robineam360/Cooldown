@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "captured": false,
+    "derivedFrom": "legacy-blocks-only.json",
+    "note": "The legacy shape with the flat per-model cap blocks populated (CCM-45, Android's CCBG-8). `seven_day_sonnet` is attested by OpenQuota reading it; `seven_day_opus` is null-present in our captured payloads, so its populated form follows the same block shape. Pins that model caps survive the `limits` array being absent — without the fallback they degrade to an empty list, indistinguishable from an account that has no caps, and nothing ever flags the loss. The null-opus counterpart (a flat cap key that must NOT materialise a cap) is pinned by legacy-blocks-only.json."
+  },
+  "five_hour": {
+    "utilization": 12.0,
+    "resets_at": "2026-07-27T11:49:59.956769+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day": {
+    "utilization": 31.0,
+    "resets_at": "2026-07-30T18:59:59.956800+00:00",
+    "limit_dollars": null,
+    "used_dollars": null,
+    "remaining_dollars": null
+  },
+  "seven_day_sonnet": {
+    "utilization": 44.0,
+    "resets_at": "2026-07-30T18:59:59.956800+00:00"
+  },
+  "seven_day_opus": {
+    "utilization": 7.0,
+    "resets_at": "2026-07-30T18:59:59.956800+00:00"
+  },
+  "member_dashboard_available": false
+}

@@ -1550,6 +1550,87 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** both flavors' tests run in CI, and CI is green on `main`. Step 8 gates the release
   on CI being green for the exact release commit.
 
+## iOS — iPhone and iPad from this repo · **planned 2026-10-23**
+
+**Decided 2026-10-23 (Robin).** The Android-only rule is lifted for `ios/` and a platform-neutral
+`spec/`, the EAM360 Inspect Lite shape: two native apps, no shared code, one spec. Signing starts on
+Robin's free personal Apple ID (iPad Pro M4 on the device, iPhone on the simulator); the EAM360
+paid account may sign builds for colleagues later. The plan is [docs/ios/PLAN.md](docs/ios/PLAN.md);
+it carries the umbrella CCRM-7 (iOS).
+
+### CCRM-92 · Shared Spec — `spec/` holds the contract, payloads and vectors both apps test against
+- **Status:** **Done 2026-10-23.** `spec/` is the **master** shared spec for all five clients
+  (two repos by product family, Robin 2026-10-23, [docs/REPO-STRUCTURE.md](docs/REPO-STRUCTURE.md)).
+  Seeded from CooldownMac's `contract/` at `2bfbdfd`: API contract and core fixtures verbatim,
+  BEHAVIOR-SPEC minus the desktop layer (§9.3–§9.5, §11), which stays in the desktop repo. Android's
+  two captured payloads moved to `spec/core/fixtures/captured/` and its tests read them from there;
+  CI runs `spec/tools/check_no_code.sh`. The projection and history cases are the vectors.
+  **Amended the same day** (Robin: "features differ by family"; Fable: split by cause of change):
+  `spec/` = `spec/core/` (only server facts and fixture-backed numbers) + `spec/mobile/` (polling
+  cadence, reset pings, conditions, surfaces for Android and iOS); alerts, cadence, gauge geometry
+  and desktop surfaces left the core for the desktop layer. Running Android's parser over every shared fixture stays CCRM-37
+  (Contract Tests); the desktop repo's pinned copy is that repo's step.
+- **What:** one platform-neutral spec tree (Markdown and JSON) that every client tests against.
+- **Done when:** Android's tests read the payloads from `spec/` and pass; the check passes.
+
+### CCRM-93 · iOS Spike — prove the free-team facts on the iPad first
+- **Status:** **Done 2026-10-23** — every check passed on the iPad Pro M4 (iPadOS 27.0.1), results in
+  [docs/ios/SPIKE.md](docs/ios/SPIKE.md). Signed on the Sedin Technologies (EAM360) team instead of
+  the free personal team (Robin's call); Live Activities turned out to work on the iPad too.
+- **What:** a bare XcodeGen app plus widget extension, signed and installed on the iPad. Records:
+  App Groups and a shared Keychain group between app and widget, home and lock-screen widgets, a
+  development IPA export, Live Activity and Control Center control on iPadOS.
+- **Done when:** each fact is recorded as pass or fail with evidence; a fail on App Groups goes back
+  to Robin before anything else is built.
+
+### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
+- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the
+  lock-screen widget picker not reopening for a second widget) · CI builds the app and runs its app-hosted tests on
+  a simulator from 0a6b6fb · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
+  iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
+  (ios/Packages) built 2026-10-23 — models, both usage parsers, projection and pace, history, plan tag and
+  formatting ported from CooldownMac's core at `2bfbdfd`; 52 tests green against `spec/core/fixtures` and the
+  captured payloads, on CI's macOS job too. Networking and sign-in added the same day: the Claude and ChatGPT
+  request shapes (User-Agent now names the platform, "(iOS)"), PKCE sign-in, the ChatGPT device-code flow and
+  its copy, and the Keychain store in the shared group (device-only); 86 package tests on the Mac and in the
+  iOS simulator, 4 app-hosted Keychain tests. The fetch repository followed: Android's `doFetch` rules for
+  mobile (180 s floor, 429 backoff, renewal ahead of expiry and on 401, Free-plan parking, 6-hour stuck
+  renewal), reset detection writing closed windows, history, and a per-account snapshot in the App Group for
+  widgets; 100 package tests on the Mac and in the simulator. The screens followed, to wireframe rev B: iPhone
+  tabs with the 5-hour, 7-day and credits cards (full chart, pace and projection lines), notices for sign-in,
+  stale and Free plan, first launch, iPad pinned + selected (landscape sidebar, portrait tabs), Add account,
+  Claude and ChatGPT sign-in sheets, Settings (accounts, theme, about) and History; a `-demo` mode draws the
+  wireframe's states, and a UI test saves them in both orientations. The surfaces followed (2026-10-24): home
+  widgets (Number, Countdown, Ring small and medium, Strip, Large overview), the lock-screen family (circular,
+  rectangular, inline), the Control Center control, reset alerts scheduled ahead (5h If busy and Weekly Always by
+  default, as on Android) with their Settings rows, the Live Activity Duet with Weekly and its Dynamic Island,
+  with the Lock Screen Settings row, and background refresh. Widgets only read the App Group; all fetching
+  stays in the app. A render test draws every face in every state. The ports from Android followed the same
+  day: the per-account layout sheet (show, hide, reorder, behind More, reset; only the account's own cards count
+  towards the last one), Density (Comfortable/Compact) and Chart height (Small/Medium/Large) in Appearance, the
+  share card (preview sheet, shared as an image) and the Pulse launcher icon. The iPad device check (2026-10-24)
+  found the Large / Extra Large Overview wasteful and the small Ring weak: **widgets rev C approved 2026-10-24**
+  (`design/2026-10-24-ios-widgets.html`, layout by Fable; D1 the Ring widget goes, D2 the trend chart on the
+  roomiest cards, D3 "+N more" past the cap) and built the same day — a small **Bars** face (5h and Weekly), and
+  the Overview as account cards in five tiers across Medium, Large and Extra Large. Rest of the device check
+  (lock-screen widgets, Live Activity, a reset alert) still open. Later the same day, from the device check: the
+  Live Activity Duet crash fixed, weekly-only plans lead with Weekly everywhere, an iPad sidebar 5h/Weekly switch,
+  the Claude mark at 82% on both apps, and Android's Appearance, Theme colour and account extras
+  (`design/2026-10-24-ios-appearance-accounts.html`, approved 24 Oct: Used/Left, 12/24 h, Time down, Clock first,
+  red past pace, theme and per-account accent colours, Details…, Clear usage history…, credits switches).
+- **What:** universal SwiftUI app with a tested `CooldownCore` package; Claude and ChatGPT sign-in as
+  on Android; WidgetKit home and lock-screen widgets; a Control Center control; reset alerts scheduled
+  locally; a Live Activity last (iPad lock screen too, per CCRM-93 (iOS Spike)). No always-on notification: iOS has none.
+- **Done when:** every surface matches its approved wireframe, tests and CI's macOS job are green,
+  and the iPad device check passes.
+
+### CCRM-95 · Dual Release — APK and IPA from one version
+- **Status:** Planned · phase A with CCRM-94 (iOS App), phase B on the EAM360 account.
+- **What:** phase A, the IPA is a local output installed on Robin's iPad only. Phase B, TestFlight
+  or ad hoc on the EAM360 team; one GitHub release then carries both files under one version, never
+  an iOS-only release (the Android update check reads `releases/latest`).
+- **Done when:** RELEASING.md covers both platforms and a release ships both assets.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
@@ -3884,7 +3965,11 @@ keys) would still make this a different product. Not filed, not an open question
 ## Bookends — major efforts, gated on the above
 
 ### CCRM-7 · iOS — an iOS version of the app
-- **Status:** Planned · **behind CCRM-8 (Mac), reordered 2026-07-30** · gated → v2.0
+- **Status:** **Planned, unparked 2026-10-23** — Robin lifted the Android-only rule; built in this
+  repo under `ios/` per [docs/ios/PLAN.md](docs/ios/PLAN.md), split into CCRM-92 (Shared Spec),
+  CCRM-93 (iOS Spike), CCRM-94 (iOS App) and CCRM-95 (Dual Release). Distribution is still the
+  limit: personal iPad first, colleagues only through the EAM360 paid account. *(Earlier: behind
+  CCRM-8 (Mac), reordered 2026-07-30 · gated → v2.0.)*
 - **No longer the next platform.** Mac goes first. iOS is held up by **distribution, not
   readiness** — the full argument lives in CCRM-8 and isn't repeated here, but the short
   version is that sideloading is a first-class path on Android and a dead end on Apple's
@@ -3902,6 +3987,8 @@ keys) would still make this a different product. Not filed, not an open question
 
 ### CCRM-8 · Mac Menu-Bar — desktop Mac menu-bar app
 - **Status:** Planned · **next platform** · **new repo** — decided 2026-07-30
+- **2026-10-23:** the desktop repo now also takes Linux and Windows, and the shared spec's master
+  moved to this repo's `spec/` — CCRM-92 (Shared Spec), [docs/REPO-STRUCTURE.md](docs/REPO-STRUCTURE.md).
 - **Reordered ahead of CCRM-7.** Mac now comes before iOS. iOS is parked on
   distribution, not on readiness: sideloading is a first-class path on Android and a
   dead end on Apple's phone (App Store review would read the Claude Code OAuth

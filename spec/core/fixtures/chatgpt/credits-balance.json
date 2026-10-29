@@ -1,0 +1,10 @@
+{
+  "_meta": { "captured": false, "note": "has_credits true, a plain balance, not unlimited — should parse to a reportable SpendCredits with balanceMinor 1240 ($12.40)." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "plus",
+  "rate_limit": {
+    "primary_window": { "used_percent": 20, "limit_window_seconds": 18000, "reset_after_seconds": 10000, "reset_at": 1788712966 }
+  },
+  "additional_rate_limits": null,
+  "credits": { "has_credits": true, "unlimited": false, "overage_limit_reached": false, "balance": "12.40" }
+}

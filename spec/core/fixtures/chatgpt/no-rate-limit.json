@@ -1,0 +1,5 @@
+{
+  "_meta": { "captured": false, "note": "no rate_limit key at all — tolerant parsing: an empty UsageData (all nils, no caps, no credits), not a parse failure. Distinct from malformed.json, which isn't valid JSON at all." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "plus"
+}

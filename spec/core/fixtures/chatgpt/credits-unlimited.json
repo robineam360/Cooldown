@@ -1,0 +1,10 @@
+{
+  "_meta": { "captured": false, "note": "has_credits true, unlimited true — a balance exists but is not reportable (nothing rendered), per the research note's rule 3." },
+  "account_id": "00000000-0000-0000-0000-000000000000",
+  "plan_type": "team",
+  "rate_limit": {
+    "primary_window": { "used_percent": 5, "limit_window_seconds": 18000, "reset_after_seconds": 10000, "reset_at": 1788712966 }
+  },
+  "additional_rate_limits": null,
+  "credits": { "has_credits": true, "unlimited": true, "overage_limit_reached": false, "balance": "0" }
+}
