@@ -2814,6 +2814,11 @@ keys) would still make this a different product. Not filed, not an open question
   CCBG-13 (Light Status Bar), CCRM-22 (Used or Left), CCRM-23 (Reset Display), CCRM-29
   (Display Mode), CCRM-27 (Error Taxonomy), CCRM-30 (Estimate Honesty), CCRM-34
   (Diagnostics Log) and CCRM-33 (App Shortcuts).
+- **Pace metric (open, 2026-10-29):** evaluate the ModelMesh
+  [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md)
+  for the gauge and for ranking accounts. Compare it with the shared contract first
+  (CooldownMac `contract/BEHAVIOR-SPEC.md` §3.1 severity, §5 dead zone, §6 even-pace line);
+  any change lands in the contract, then in both apps. One source — don't copy the spec here.
 - **Why:** `Profile` was a hard-coded `PERSONAL`/`WORK` enum, wired through credentials,
   cache keys, notification IDs, widgets and alerts. Users with 3+ accounts (multiple work
   orgs, side projects) couldn't be served — and the driver was real, not hypothetical.
