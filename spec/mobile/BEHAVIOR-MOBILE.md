@@ -80,7 +80,8 @@ Source: `notify/Conditions.kt`, `alerts/Alerts.kt` (`STALE_DATA_MS`) (Android).
 
 ## 4. Surfaces
 
-Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframes).
+Listed here; each one's layout, sizes, states and copy as shipped are in [surfaces/](surfaces/README.md),
+and changes still go through a wireframe first (CLAUDE.md §2).
 
 | Android | iPhone and iPad |
 |---|---|
@@ -88,7 +89,7 @@ Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframe
 | Always-on pinned notification and its status-bar ring | — (iOS has no persistent notification) |
 | Home-screen widgets | Home-screen widgets, plus a Large face |
 | — | Lock-screen widgets |
-| Quick Settings tile | Control Center control |
+| — (the Quick Settings tile went with CCRM-61 (Settings Diet)) | Control Center control |
 | Reset-ping notifications | Reset alerts, scheduled ahead |
 | — | Live Activity: two accounts' 5h and Weekly (lock screen; Dynamic Island on iPhone) |
 | Share card | Share card (to decide with CCRM-94 (iOS App)) |
@@ -98,14 +99,14 @@ Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframe
 ## 5. Headline window and pace wording — CCRM-96 (Weekly First), CCRM-97 (Pace Number)
 
 **Status:** decided 2026-11-02, wireframe `design/2026-11-02-weekly-first-pace.html` (rev A,
-awaiting approval); no client implements it yet. Until one does, today's rule stands: the headline
+Android approved 2026-11-02; iOS rev B pending); no client implements it yet. Until one does, today's rule stands: the headline
 is the session if present, else the weekly window.
 
 **The Headline setting is per account:** `weekly` (default) · `fiveHour` · `auto`.
 
 | Surface | Leads with |
 |---|---|
-| Pinned notification (each Duet half follows its own account), QS tile, iOS Overview big number | `weekly` → Weekly · `fiveHour` → 5h · `auto` → 5h while core §6.2's `sessionBinding`, else Weekly |
+| Pinned notification (each Duet half follows its own account), iOS Overview big number | `weekly` → Weekly · `fiveHour` → 5h · `auto` → 5h while core §6.2's `sessionBinding`, else Weekly |
 | Status-bar gauge (one window, no room for a companion) | as above, except `weekly` behaves as `auto` |
 | A new widget's window choice (stored per widget afterwards) | `weekly` and `auto` → Weekly · `fiveHour` → 5h |
 
@@ -129,5 +130,5 @@ as "5h 34%". While `sessionBinding` holds it takes the bar colour's step (core �
 Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h".
 Tight form (notification, folded card): "Slow down · ≈11%/day". The signed number appears only in
 the app card's detail: "Pace +21% · an even week is 39% by now". The words carry no colour of
-their own. The 5-hour session gets no Pace; its line is open in the wireframe (recommended: the
-§3 projection, "on track for ~69%").
+their own. The 5-hour session gets no Pace; its line is core §3's projection: folded "Resets in 2h 20m · on
+track for ~69%", and open the existing "At this pace: ~69% when the window resets" line.

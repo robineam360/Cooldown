@@ -94,15 +94,6 @@
       "why": ""
     },
     {
-      "name": "tile follows the setting like the notification",
-      "setting": "weekly",
-      "surface": "tile",
-      "hasSession": true,
-      "sessionBinding": true,
-      "expected": "weekly",
-      "why": ""
-    },
-    {
       "name": "new widget default under Auto",
       "setting": "auto",
       "surface": "newWidget",

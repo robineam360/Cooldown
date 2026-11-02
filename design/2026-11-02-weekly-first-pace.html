@@ -241,17 +241,16 @@
   <h2>6 · Settings: Headline, per account</h2>
   <p class="sub">
     The setting sits in the account's own page (Settings › Accounts › the account), under its colour, and reads
-    "what the notification, status-bar gauge, tile and new widgets lead with". On an account with no 5h window it
+    "what the notification, status-bar gauge and new widgets lead with". On an account with no 5h window it
     is shown but greyed out, with its reason.
   </p>
   <div class="row" id="settings"></div>
 
   <hr class="hr">
-  <h2>7 · Widgets, tile, iPhone/iPad, desktop</h2>
+  <h2>7 · Widgets, iPhone/iPad, desktop</h2>
   <div class="tbl-wrap"><table>
     <tr><th>Surface</th><th>Change</th><th>Unchanged</th></tr>
     <tr><td>Android widgets (Ring, Number, Countdown, Strip)</td><td>A new widget's window chip starts on the account's Headline (Auto starts on Weekly). Today it always starts on 5h.</td><td>Placed widgets keep their stored window. Every face, size and state stays as approved in v1.8; no face prints a pace sentence today, and none will.</td></tr>
-    <tr><td>Quick Settings tile</td><td>Follows the Headline, as the notification does.</td><td>Monochrome; the figure and label layout.</td></tr>
     <tr><td>iOS Overview (T1–T3 account cards)</td><td>The big number is the Headline window. The pace line becomes the band words: "Slow down · ≈11%/day" (T1), "Slow down" (T3 narrow).</td><td>Tiers, bars, ticks, trend chart (T1).</td></tr>
     <tr><td>iOS small Bars, Strip, Medium</td><td>Weekly block on top, 5h under (order swap only).</td><td>Sizes, the reset-line drop rules.</td></tr>
     <tr><td>iOS Number, Countdown, lock-screen circular/inline</td><td>Default window = the Headline (Auto → Weekly).</td><td>Per-widget window choice.</td></tr>
@@ -505,7 +504,7 @@ function settings(nm, mk, ac, plan, has5h) {
     <div class="it">Plan<div class="d">${plan}</div></div>
     <div class="it">Colour<div class="d">Provider colour</div></div>
     <div class="grp">Headline <span class="tag">new</span></div>
-    <div class="it">What the notification, status-bar gauge, tile and new widgets lead with
+    <div class="it">What the notification, status-bar gauge and new widgets lead with
       <div class="seg ${has5h ? '' : 'off'}"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div>
       <div class="d" style="margin-top:7px">${has5h ? 'Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets.' : 'This plan has no 5-hour window, so Weekly is always the headline.'}</div></div>
     <div class="grp">Usage</div>

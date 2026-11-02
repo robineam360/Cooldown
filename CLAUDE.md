@@ -31,6 +31,9 @@ Anything that changes what the user sees — a new screen, card, notification la
 style, chart element, settings section, or a visible change to an existing one — needs a
 **wireframe reviewed and approved before implementation starts**. Not after. Not alongside.
 
+- **Start from [`spec/mobile/surfaces/`](spec/mobile/surfaces/README.md)**, the as-shipped layouts,
+  sizes, states and copy of every surface, instead of re-reading the code and old wireframes;
+  wireframe only the delta, and update that folder in the same commit as the build.
 - A wireframe is enough: ASCII/markdown sketch, an SVG, or a described layout with real
   numbers (dp sizes, text sizes, what's above what, what happens at each width class).
   Fidelity is not the point; agreeing on the layout before code exists is.

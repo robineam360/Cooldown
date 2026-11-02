@@ -1657,9 +1657,11 @@ Logic lands in `spec/core/` first (formula, bands, the Auto rule, fixtures), the
 desktop repo picks it up with its pinned core. Every visible change waits for an approved wireframe (§2).
 
 ### CCRM-96 · Weekly First — the weekly window heads every surface, 5h is the companion
-- **Status:** Decided 2026-11-02 · wireframes next.
+- **Status:** Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
+  (`design/2026-11-02-weekly-first-pace.html`; the 5h card's line is the §3 projection, "on track
+  for ~69%") · iOS faces to be drawn as rev B before iOS is built (Robin).
 - **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
-  the pinned notification (both halves), the QS tile, the widgets' default window, the iOS Live Activity
+  the pinned notification (both halves), the widgets' default window, the iOS Live Activity
   and lock-screen widgets, and the in-app card order. **Auto** = Weekly, except while 5h binds (BEHAVIOR-SPEC
   §6.2: past 90%, or projected (§3) to hit 100% before its reset, unless the week is spent). The status-bar ring always follows the Auto rule.
   An account with no 5h shows Weekly whatever the setting says. Widgets keep their own per-widget
@@ -1670,7 +1672,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   above pace, narrow widths) are approved, both apps match them, and the Fold 7 and iPad passes are clean.
 
 ### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
-- **Status:** Decided 2026-11-02 · spec and wireframes next.
+- **Status:** Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
+  wireframe rev A approved 2026-11-02; iOS rev B pending.
 - **What:** adopt the ModelMesh
   [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md) —
   `pace = (r − q) / max(r, q) × 100`, `q` = % of quota left, `r` = % of time left — on the weekly window

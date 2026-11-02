@@ -12,6 +12,7 @@ no build system. CCRM-92 (Shared Spec) created it.
 | [core/BEHAVIOR-SPEC.md](core/BEHAVIOR-SPEC.md) | The numbers every install must agree on: severity, credits, projection, pace, colour breakpoints, the even-pace line, history, reset detection, profiles, fetch outcomes |
 | [core/fixtures/](core/fixtures/) | Payloads with expected parse results, projection and history cases; `captured/` holds raw payloads Android's tests read |
 | [mobile/](mobile/) | **The mobile layer** — product choices Android and iOS make the same way: polling cadence, reset pings, conditions, surfaces |
+| [mobile/surfaces/](mobile/surfaces/README.md) | **The as-shipped design** of every mobile surface — tokens, layouts, sizes, states, copy — so a wireframe starts here, not in the code |
 | [tools/](tools/) | `check_no_code.sh`, run by CI |
 
 ## What goes in the core — the admission rule

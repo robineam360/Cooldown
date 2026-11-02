@@ -140,6 +140,29 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   (`OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST`), without the 5 s initial delay (expedited
   work cannot be delayed); the KDoc no longer promises "a handful of seconds".
 
+### CCBG-53 · History Footnote — the History screen prints a literal "%s"
+- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
+- **Severity:** Low (cosmetic, every History visit)
+- **Symptom:** both History footnotes read "Peak %s are sampled at the polling interval." The
+  string is never formatted (`HistoryScreen.kt:228`); it should name the window ("Peak 5h
+  readings…" / "Peak weekly readings…").
+
+### CCBG-54 · Plan Copy Gap — iOS widget plan state reads "No usage on the  plan" for ChatGPT
+- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/widgets.md`.
+- **Severity:** Low (cosmetic, a ChatGPT account in the plan state only)
+- **Symptom:** `ios/Shared/FaceViews.swift:45` interpolates "Free" for Claude and an empty string
+  otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
+
+### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
+- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/`. Needs a decision:
+  change the spec or the code, per item.
+- **Severity:** Low (no wrong number; two installs could disagree in colour)
+- **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
+  Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
+  (2) §5 says every client ships the twelve accents; iOS ships eleven (no Claude orange entry).
+  (3) §3.1 says the three pace suppressions must read differently; Android words them as one line.
+  Details in `spec/mobile/surfaces/foundations.md` and `app.md`, "Differs from" notes.
+
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
