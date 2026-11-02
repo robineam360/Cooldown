@@ -104,6 +104,7 @@ import androidx.compose.foundation.layout.widthIn
 import com.robin.claudeusage.ui.ContentColumn
 import com.robin.claudeusage.ui.ContentMaxWidth
 import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.LocalUsageEndMark
 import com.robin.claudeusage.ui.LocalWidthClass
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProviderMark
@@ -218,6 +219,8 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
     // Settings recomposes every readout behind them.
     // CCRM-100 (Vs Pace Display): the token's third value, Vs pace.
     var usageMode by remember { mutableStateOf(cache.usageMode()) }
+    // CCRM-103 (Hybrid Notification): Appearance › Usage end mark, read by every bar and ring.
+    var usageEndMark by remember { mutableStateOf(cache.usageEndMark()) }
     // CCRM-23 (Reset Display): same hoisting for which reset form leads.
     var resetClock by remember { mutableStateOf(cache.resetClock()) }
     // Hoisted like use24h so flipping the toggle in Settings recomposes the bars
@@ -355,7 +358,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
         baseScheme
     }
 
-    CompositionLocalProvider(LocalAppDark provides dark) {
+    CompositionLocalProvider(LocalAppDark provides dark, LocalUsageEndMark provides usageEndMark) {
     MaterialTheme(colorScheme = scheme) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Scaffold(
@@ -524,6 +527,8 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                             onTimeFormat = { timeFormat = it },
                             usageMode = usageMode,
                             onUsageMode = { usageMode = it },
+                            usageEndMark = usageEndMark,
+                            onUsageEndMark = { usageEndMark = it },
                             resetClock = resetClock,
                             onResetClock = { resetClock = it },
                             showOverPace = showOverPace,
@@ -959,24 +964,10 @@ private fun ProfileScreen(
             // the disclosure is a peek, not a second full screen (wireframe §7f).
             val cardCompact = compact || folded
             when (id) {
-                CardId.SESSION -> data.session?.let { w ->
-                    SessionCard(
-                        window = w,
-                        history = history,
-                        compact = cardCompact,
-                        expanded = isOpen(id, folded),
-                        onToggle = { toggle(id, folded) },
-                        use24h = use24h,
-                        mode = mode,
-                        resetClock = resetClock,
-                        showOverPace = showOverPace,
-                        serifHeadline = serifHeadline,
-                        chartSize = chartSize,
-                        chartOrientation = chartOrientation,
-                        spentWeekly = data.weekly,
-                    )
-                }
-                CardId.WEEKLY -> WeeklyCard(
+                // CCRM-103 (Hybrid Notification): one account tile for both windows. It sits
+                // in the 7-day card's slot; `dataCards` keeps it under SESSION only for an
+                // account that reports no 7-day window at all, so it never draws twice.
+                CardId.SESSION, CardId.WEEKLY -> AccountTile(
                     data = data,
                     history = history,
                     compact = cardCompact,
@@ -991,7 +982,6 @@ private fun ProfileScreen(
                     mode = mode,
                     resetClock = resetClock,
                     showOverPace = showOverPace,
-                    serifHeadline = serifHeadline,
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
                     showModelLimits = showModelLimits,

@@ -18,8 +18,6 @@ enum class Headline(val key: String) {
 enum class HeadlineSurface {
     /** The pinned notification (each Duet half follows its own account). */
     NOTIFICATION,
-    /** One window and no room for a companion: Weekly behaves as Auto here. */
-    STATUS_GAUGE,
     /** A widget's window choice when it is placed; stored per widget afterwards. */
     NEW_WIDGET,
     /** The app's default card order (a layout reordered in the sheet wins). */
@@ -45,10 +43,6 @@ object HeadlineRule {
                 Headline.WEEKLY -> WindowKind.WEEKLY
                 Headline.FIVE_HOUR -> WindowKind.SESSION
                 Headline.AUTO -> auto
-            }
-            HeadlineSurface.STATUS_GAUGE -> when (setting) {
-                Headline.FIVE_HOUR -> WindowKind.SESSION
-                Headline.WEEKLY, Headline.AUTO -> auto
             }
             HeadlineSurface.NEW_WIDGET, HeadlineSurface.CARD_ORDER ->
                 if (setting == Headline.FIVE_HOUR) WindowKind.SESSION else WindowKind.WEEKLY

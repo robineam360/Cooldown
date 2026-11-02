@@ -132,6 +132,8 @@ struct V20FixtureTests {
             let elapsed = (c.flag("hasResetClock") ?? true) ? c.num("elapsedPct") : nil
             let got = PaceText.vsPaceFigure(usedPct: c.num("usedPct"), elapsedPct: elapsed)
             #expect(got == c.str("expected"), "\(c.str("name") ?? "?"): \(got)")
+            let tone = PaceText.vsPaceTone(usedPct: c.num("usedPct"), elapsedPct: elapsed)
+            #expect(tone.rawValue == c.str("tone"), "\(c.str("name") ?? "?"): \(tone)")
         }
     }
 

@@ -37,24 +37,15 @@ object SummaryRows {
     }
 
     /**
-     * The 5h companion on line 1: "5h 34%" (usage, bare in Left mode), "5h 93% · back 3:40 PM"
-     * while it holds the row (drawn loud), "no 5h" on an account without one; none on a
-     * spent or unread row.
+     * Line 3 of a row its binding 5h holds (CCRM-103 (Hybrid Notification), shape grammar
+     * rev D S1, Product): "Held · back at 3:40 PM · resets Fri". The ring at the row's left
+     * replaced line 1's "5h 93% · back 3:40 PM" companion, so the reason moved here. Without
+     * a 5h reset clock, "Held"; without a weekly reset, no "resets" clause.
      */
-    fun companion(
-        group: SummaryRank.Group,
-        session: UsageWindow?,
-        hasSession: Boolean,
-        mode: PaceText.Mode,
-        use24h: Boolean,
-    ): String? {
-        if (group == SummaryRank.Group.SPENT || group == SummaryRank.Group.NO_READING) return null
-        if (!hasSession) return "no 5h"
-        val pct = session?.percent ?: return null
-        val base = "5h ${Fmt.usageInt(pct, mode == PaceText.Mode.LEFT)}%"
-        if (group != SummaryRank.Group.HELD) return base
-        val back = session.resetsAt ?: return base
-        return base + DOT + "back " + Fmt.timeOnly(back, use24h)
+    fun heldWords(session: UsageWindow?, weekly: UsageWindow?, use24h: Boolean): String {
+        val back = session?.resetsAt?.let { DOT + "back at " + Fmt.timeOnly(it, use24h) } ?: ""
+        val resets = weekly?.resetsAt?.let { DOT + "resets " + Fmt.weekday(it) } ?: ""
+        return "Held$back$resets"
     }
 
     /** The compact row's one word (S2): the band, "5h · 3:40 PM", "Out · Thu", "No reading". */

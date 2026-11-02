@@ -108,7 +108,9 @@ object Pace {
      */
     fun markTime(usedPct: Double?, msUntilReset: Long?, windowLengthMs: Long, nowMs: Long): MarkTime? {
         if (usedPct == null || msUntilReset == null || windowLengthMs <= 0L || isSpent(usedPct)) return null
-        val elapsedPct = (windowLengthMs - msUntilReset) * 100.0 / windowLengthMs
+        // The side is §6's elapsed percent, clamped 0…100 as the caption's is, so a reading
+        // cached past its reset can never say "behind" where the caption says "on it".
+        val elapsedPct = ((windowLengthMs - msUntilReset) * 100.0 / windowLengthMs).coerceIn(0.0, 100.0)
         if (abs(elapsedPct - usedPct) < 1.0) return MarkTime.On
         val startMs = nowMs + msUntilReset - windowLengthMs
         val atMs = startMs + Math.round(usedPct / 100.0 * windowLengthMs)

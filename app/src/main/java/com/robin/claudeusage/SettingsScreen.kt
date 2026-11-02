@@ -13,6 +13,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import com.robin.claudeusage.ui.appDark
+import com.robin.claudeusage.ui.GrammarRingBox
+import com.robin.claudeusage.ui.LocalUsageEndMark
+import com.robin.claudeusage.ui.UsageEndMark
+import com.robin.claudeusage.data.StatusIconChoice
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,6 +100,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -199,6 +204,9 @@ fun SettingsScreen(
      */
     usageMode: PaceText.Mode,
     onUsageMode: (PaceText.Mode) -> Unit,
+    /** CCRM-103 (Hybrid Notification): Appearance › Usage end mark, hoisted like [usageMode]. */
+    usageEndMark: UsageEndMark,
+    onUsageEndMark: (UsageEndMark) -> Unit,
     /** CCRM-23 (Reset Display) — same hoisting for which reset form leads. */
     resetClock: Boolean,
     onResetClock: (Boolean) -> Unit,
@@ -694,13 +702,20 @@ fun SettingsScreen(
             when (usageMode) {
                 PaceText.Mode.LEFT -> "Shows \"53% left\" — what remains of each window."
                 // CCRM-100 (Vs Pace Display), wireframe §1 A1.
+                // Unsigned since the shape grammar (rev D §7b): the colour says the side.
                 PaceText.Mode.VS_PACE ->
-                    "Shows \"+10%\" — how far under the pace mark you are (\"−20%\": over it)."
+                    "Shows \"10%\" — how far from the pace mark you are: green under it, red over it."
                 PaceText.Mode.USED -> "Shows \"47% used\" — what each window has consumed."
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        RowDivider()
+        UsageEndMarkGroup(usageEndMark) {
+            onUsageEndMark(it)
+            cacheSettings.setUsageEndMark(it)
+            com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
+        }
         RowDivider()
         // CCRM-98 (Summary Tab), wireframe P2: shown only with two or more accounts, on by
         // default. The All tab is always there with 2+ accounts; this decides where the
@@ -3843,6 +3858,7 @@ private fun AccountHeadlineSheet(
     val data = remember(profile) { repo.snapshot(profile).data }
     var headline by remember(profile) { mutableStateOf(cache.headline(profile)) }
     var showLimits by remember(profile) { mutableStateOf(cache.showModelLimits(profile)) }
+    var statusIcon by remember(profile) { mutableStateOf(cache.statusIcon(profile)) }
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -3857,6 +3873,18 @@ private fun AccountHeadlineSheet(
                 onChange = {
                     headline = it
                     cache.setHeadline(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                },
+            )
+            // CCRM-103 (Hybrid Notification), shape grammar rev D §4b: between Headline and Model limits.
+            Spacer(Modifier.height(18.dp))
+            StatusIconGroup(
+                choice = statusIcon,
+                hasSession = data?.session != null,
+                accent = Palette.color(Palette.accentName(cache, profile), appDark()),
+                onChange = {
+                    statusIcon = it
+                    cache.setStatusIcon(profile, it)
                     com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
                 },
             )
@@ -3886,7 +3914,8 @@ internal fun HeadlineGroup(headline: Headline, hasSession: Boolean, onChange: (H
     val dim = if (hasSession) 1f else 0.45f
     Column(Modifier.alpha(dim)) {
         Text(
-            "What the notification, status-bar gauge, new widgets and the card order lead with",
+            // Since the shape grammar (rev D §4b) the Headline no longer picks the status-bar window.
+            "What the notification, new widgets and the card order lead with",
             style = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(8.dp))
@@ -3905,6 +3934,66 @@ internal fun HeadlineGroup(headline: Headline, hasSession: Boolean, onChange: (H
         Spacer(Modifier.height(7.dp))
         Text(
             headlineCaption(hasSession),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * CCRM-103 (Hybrid Notification), rev D §4b: the account's Status-bar icon, "5h ring" (the
+ * default) or "Weekly bar", each option carrying its glyph at 16 dp. A plan with no 5h
+ * shows it greyed at "Weekly bar" with its reason, as the Headline group is greyed.
+ */
+@Composable
+internal fun StatusIconGroup(
+    choice: StatusIconChoice,
+    hasSession: Boolean,
+    accent: androidx.compose.ui.graphics.Color,
+    onChange: (StatusIconChoice) -> Unit,
+) {
+    SectionLabel("Status-bar icon")
+    val dim = if (hasSession) 1f else 0.45f
+    val shown = if (hasSession) choice else StatusIconChoice.WEEKLY_BAR
+    val context = LocalContext.current
+    val dark = appDark()
+    Column(Modifier.alpha(dim)) {
+        Text("What the status bar shows for this account", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(8.dp))
+        val options = listOf(
+            Triple(StatusIconChoice.RING, "5h ring", com.robin.claudeusage.data.StatusGlyph.RING),
+            Triple(StatusIconChoice.WEEKLY_BAR, "Weekly bar", com.robin.claudeusage.data.StatusGlyph.WEEKLY_BAR),
+        )
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            options.forEachIndexed { i, (value, text, glyph) ->
+                // The page's sample: Teams' 5h at 34% against 53%, or its Weekly at 52% against 39%.
+                val bmp = remember(glyph, dark, accent) {
+                    val pct = if (glyph == com.robin.claudeusage.data.StatusGlyph.RING) 34.0 else 52.0
+                    val gone = if (glyph == com.robin.claudeusage.data.StatusGlyph.RING) 53.3 else 38.9
+                    com.robin.claudeusage.ui.UsageIcon.drawGlyph(
+                        context, glyph, pct, false, gone,
+                        com.robin.claudeusage.ui.Palette.barColor(pct, accent, dark).toArgb(), dark, true,
+                    ).asImageBitmap()
+                }
+                SegmentedButton(
+                    selected = shown == value,
+                    onClick = { onChange(value) },
+                    enabled = hasSession,
+                    shape = SegmentedButtonDefaults.itemShape(i, options.size),
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.foundation.Image(bmp, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(text)
+                        }
+                    },
+                )
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+        Text(
+            if (hasSession) "Either turns to a red cross while you are out."
+            else "This plan has no 5-hour window, so the status bar always shows the Weekly bar.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -4018,4 +4107,47 @@ internal object SettingsTabs {
     /** Every title, plus its padding, fits an equal share of the row. All in px. */
     fun fit(titleWidths: List<Float>, share: Float, padding: Float): Boolean =
         titleWidths.all { it + padding <= share }
+}
+
+/**
+ * CCRM-103 (Hybrid Notification), shape grammar rev D §1e: Appearance › Usage end mark,
+ * after Usage display. Three choices, Line the default; each preview is an over-pace ring
+ * and bar (64% against a 52% mark) drawn with that choice.
+ */
+@Composable
+internal fun UsageEndMarkGroup(selected: UsageEndMark, onChange: (UsageEndMark) -> Unit) {
+    Text("Usage end mark", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+    Text(
+        "How a bar or ring ends at your usage",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(6.dp))
+    val choices = listOf(UsageEndMark.ROUND to "Round", UsageEndMark.LINE to "Line", UsageEndMark.PACE to "Pace colour")
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for ((value, text) in choices) {
+            FilterChip(selected = selected == value, onClick = { onChange(value) }, label = { Text(text) })
+        }
+    }
+    Spacer(Modifier.height(10.dp))
+    val accent = MaterialTheme.colorScheme.primary
+    Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+        for ((value, _) in choices) {
+            androidx.compose.runtime.CompositionLocalProvider(LocalUsageEndMark provides value) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GrammarRingBox(
+                        size = 36.dp, pct = 64.0, elapsed = 52.0, accent = accent, figure = null,
+                        description = "",
+                        surface = MaterialTheme.colorScheme.surface,
+                    )
+                    Box(Modifier.width(54.dp)) {
+                        UsageBarLine(
+                            percent = 64.0, fillColor = barFill(64.0), height = 8.dp, elapsedPercent = 52.0,
+                            surface = MaterialTheme.colorScheme.surface,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

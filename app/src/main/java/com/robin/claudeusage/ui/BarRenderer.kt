@@ -68,6 +68,11 @@ object BarRenderer {
         dark: Boolean,
         showOverPace: Boolean = true,
         tick: Tick? = null,
+        /** CCRM-103 (Hybrid Notification), rev D §1e: how the fill ends at the usage. */
+        endMark: UsageEndMark = UsageEndMark.ROUND,
+        /** The surface under the bar, for the end mark's gap; null clears it. */
+        surfaceArgb: Int? = null,
+        density: Float = 1f,
     ): Bitmap {
         val padX = sidePadding(heightPx, tick)
         val over = BarGeometry.tickOverhang(heightPx)
@@ -95,7 +100,17 @@ object BarRenderer {
             if (end > left) {
                 fillRight = end.coerceAtLeast(left + heightPx).coerceAtMost(right)
                 paint.color = fill.toArgb()
-                canvas.drawRoundRect(RectF(left, top, fillRight, bottom), radius, radius, paint)
+                if (endMark == UsageEndMark.ROUND) {
+                    canvas.drawRoundRect(RectF(left, top, fillRight, bottom), radius, radius, paint)
+                } else {
+                    // Square at the usage: round only at the bar's start.
+                    canvas.drawPath(Path().apply {
+                        addRoundRect(
+                            RectF(left, top, fillRight, bottom),
+                            floatArrayOf(radius, radius, 0f, 0f, 0f, 0f, radius, radius), Path.Direction.CW,
+                        )
+                    }, paint)
+                }
             }
         }
 
@@ -119,6 +134,17 @@ object BarRenderer {
                 paint.color = Palette.barColor(100.0, accent, dark).toArgb()
                 canvas.drawRect(RectF(segLeft, top, fillRight, bottom), paint)
                 canvas.restore()
+            }
+        }
+
+        // 3b · the usage end mark (rev D §1e), under the tick
+        if (percent != null && percent > 0.0 && fillRight != null) {
+            val endColor = Grammar.endMarkColor(endMark, percent, elapsedPercent, fill, dark)
+            if (endColor != null) {
+                GrammarBar.paintEndMark(
+                    canvas, fillRight, top, bottom, density, endColor,
+                    surfaceArgb?.let { Color(it) },
+                )
             }
         }
 

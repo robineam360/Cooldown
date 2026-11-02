@@ -22,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +51,11 @@ import com.robin.claudeusage.data.SummaryRank
 import com.robin.claudeusage.data.UsageData
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.ui.AppPace
+import com.robin.claudeusage.ui.Grammar
+import com.robin.claudeusage.ui.GrammarRing
+import com.robin.claudeusage.ui.GrammarRingBox
+import com.robin.claudeusage.ui.grammarDigits
+import com.robin.claudeusage.ui.grammarFigure
 import com.robin.claudeusage.ui.PaceMap
 import com.robin.claudeusage.ui.PaceMapEntry
 import com.robin.claudeusage.ui.PaceMapGeometry
@@ -59,6 +66,7 @@ import com.robin.claudeusage.ui.SummaryRows
 import com.robin.claudeusage.ui.appDark
 import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.hasTwoColumns
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -198,9 +206,12 @@ private fun MapCard(entries: List<PaceMapEntry>, numbered: Boolean, plotHeight: 
 }
 
 /**
- * The full row (C1): mark · name · plan pill · 5h companion · figure; the Weekly bar with
- * its neutral pace tick; the V1 caption; the pace pip and the words. Spent and unread
- * rows draw at half strength.
+ * The full row (C1), with CCRM-103 (Hybrid Notification)'s ring (shape grammar rev D S1,
+ * `srow()`): a 48 dp 5h ring on the left spanning the row — greyed with a cross on a plan
+ * with no 5h, greyed on a spent week — then mark · name · plan pill · figure; the Weekly
+ * bar with its neutral pace tick; the V1 caption; the pace pip and the words. Tapping the
+ * figure swaps line 3 for the pace-mark readout for 3 s (P8). Spent and unread rows draw
+ * line 1, the bar and the words at half strength.
  */
 @Composable
 private fun SummaryRow(
@@ -217,89 +228,117 @@ private fun SummaryRow(
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val dim = if (SummaryRows.dimmed(r.group)) 0.5f else 1f
     val used = r.used
-    val companion = SummaryRows.companion(r.group, r.data?.session, r.data?.session != null, mode, use24h)
-    Column(
+    val session = r.data?.session
+    val sessionElapsed = elapsedPercent(session, Projection.SESSION_MS)
+    // An unread account has no data to say it lacks a 5h: its ring is the bare track and "—".
+    val ringState = if (r.data == null) GrammarRing.State.NORMAL else tileRingState(session, r.weekly)
+    val ringFigure = if (ringState == GrammarRing.State.NOT_APPLICABLE) null
+    else AppPace.figure(session?.percent, sessionElapsed, mode).first
+    val ringTone = PaceText.vsPaceTone(session?.percent, sessionElapsed)
+    val ringFigureColor = if (mode == PaceText.Mode.VS_PACE && ringTone != PaceText.VsTone.USAGE &&
+        ringState == GrammarRing.State.NORMAL
+    ) Grammar.vsColor(ringTone, dark, Grammar.ink(dark), Grammar.ink(dark)) else null
+    var readout by remember(r.profile) { mutableStateOf<String?>(null) }
+    LaunchedEffect(readout) {
+        if (readout != null) {
+            delay(TAP_READOUT_MS)
+            readout = null
+        }
+    }
+    val tapLabel = tapReadout(r.weekly, Projection.WEEKLY_MS, use24h, System.currentTimeMillis())
+    Row(
         Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(top = 9.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(Modifier.alpha(dim), verticalAlignment = Alignment.CenterVertically) {
-            ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
-            Spacer(Modifier.width(7.dp))
-            Text(
-                name,
-                fontSize = 15.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            plan?.let {
+        GrammarRingBox(
+            size = 48.dp,
+            pct = session?.percent,
+            elapsed = sessionElapsed,
+            accent = accent,
+            figure = ringFigure,
+            description = ringDescription(ringState, ringFigure, mode, ringTone),
+            state = ringState,
+            figureColor = ringFigureColor,
+            showOverPace = showOverPace,
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Row(Modifier.alpha(dim), verticalAlignment = Alignment.CenterVertically) {
+                ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
                 Spacer(Modifier.width(7.dp))
                 Text(
-                    it,
-                    fontSize = 11.sp,
-                    color = muted,
+                    name,
+                    fontSize = 15.sp,
                     maxLines = 1,
-                    modifier = Modifier
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 5.dp),
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
-            }
-            companion?.let {
-                val loud = r.group == SummaryRank.Group.HELD
+                plan?.let {
+                    Spacer(Modifier.width(7.dp))
+                    Text(
+                        it,
+                        fontSize = 11.sp,
+                        color = muted,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 5.dp),
+                    )
+                }
+                Spacer(Modifier.weight(1f))
                 Spacer(Modifier.width(7.dp))
-                Text(
-                    it,
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    fontWeight = if (loud) FontWeight.Bold else FontWeight.Normal,
-                    color = if (loud) Palette.barColor(r.data?.session?.percent, accent, dark) else muted,
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            Spacer(Modifier.width(7.dp))
-            if (used == null) {
-                Text("—", fontSize = 17.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = muted)
-            } else {
-                // The Summary figure carries no "vs pace" word (vs-pace wireframe C2);
-                // Left keeps its word, as everywhere.
+                // The figure in the grammar's type (rev D §1c), Vs pace unsigned in its colour
+                // (§7b); Left keeps its word, as today. "—" unread.
                 val (figure, word) = AppPace.figure(used, r.elapsed, mode)
                 Text(
-                    if (word == "left") "$figure left" else figure,
-                    fontSize = 17.sp,
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
+                    buildAnnotatedString {
+                        append(grammarFigure(figure))
+                        if (word == "left") append(" left")
+                    },
+                    style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold).grammarDigits(),
                     maxLines = 1,
-                    color = Palette.barColor(used, accent, dark),
+                    color = grammarFigureColor(used, r.elapsed, mode, accent),
+                    modifier = Modifier.clickable(enabled = tapLabel != null, onClickLabel = tapLabel) {
+                        readout = tapLabel
+                    },
                 )
             }
-        }
-        Spacer(Modifier.height(6.dp))
-        Box(Modifier.alpha(dim)) {
-            UsageBarLine(
-                percent = used,
-                fillColor = if (used == null) muted else Palette.barColor(used, accent, dark),
-                height = 10.dp,
-                elapsedPercent = r.elapsed.takeIf { used != null },
-                showOverPace = showOverPace,
-                dashedRoom = true,
-            )
-        }
-        PaceCaption(mode, used, r.elapsed)
-        Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically) {
-            val pace = if (used != null && r.elapsed != null && !Pace.isSpent(used)) Pace.pace(used, r.elapsed) else null
-            pace?.let {
-                PacePip(it)
-                Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.height(6.dp))
+            Box(Modifier.alpha(dim)) {
+                UsageBarLine(
+                    percent = used,
+                    fillColor = if (used == null) muted else Palette.barColor(used, accent, dark),
+                    height = 10.dp,
+                    elapsedPercent = r.elapsed.takeIf { used != null },
+                    showOverPace = showOverPace,
+                    dashedRoom = true,
+                )
             }
-            Text(
-                SummaryRows.words(r.weekly, r.elapsed, use24h),
-                fontSize = 13.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.alpha(dim),
-            )
+            PaceCaption(mode, used, r.elapsed)
+            Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+                val swapped = readout
+                if (swapped != null) {
+                    // P8: the readout takes line 3's full width for 3 s; the pip steps aside.
+                    SwapText(swapped, 13.sp)
+                } else {
+                    val pace = if (used != null && r.elapsed != null && !Pace.isSpent(used)) Pace.pace(used, r.elapsed) else null
+                    pace?.let {
+                        PacePip(it)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(
+                        if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
+                        else SummaryRows.words(r.weekly, r.elapsed, use24h),
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.alpha(dim),
+                    )
+                }
+            }
         }
     }
 }
@@ -360,12 +399,10 @@ private fun CompactSummaryRow(
         )
         val (figure, _) = AppPace.figure(used, r.elapsed, mode)
         Text(
-            figure,
-            fontSize = 15.sp,
-            fontFamily = FontFamily.Serif,
-            fontWeight = FontWeight.Bold,
+            grammarFigure(figure),
+            style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold).grammarDigits(),
             textAlign = TextAlign.End,
-            color = if (used == null) muted else Palette.barColor(used, accent, dark),
+            color = grammarFigureColor(used, r.elapsed, mode, accent),
             maxLines = 1,
             modifier = Modifier.width(40.dp),
         )

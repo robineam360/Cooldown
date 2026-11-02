@@ -620,45 +620,82 @@ when Open on the summary is on and 2+ accounts; otherwise the last account looke
 own `main_ui` preferences file), else the first. `MainActivity.kt` (`ProfileTabs`, `LastAccount`).
 
 #### §2.4 Cards, in order — Android row
-Default order Weekly, then 5h (Headline 5-hour: 5h first). A layout whose stored order differs from the v1.9
-default counts as reordered and keeps its order. The layout sheet shows the drawn order; only a drag stores an
-order — show/hide/fold keep the stored one, and Reset layout stores the default (the Headline's order again).
-`cardOrderLayout` in `MainCards.kt`, `LayoutSheet.kt`.
+**Shape grammar (CCRM-103 (Hybrid Notification), Step 6d):** the account page has one window card, the account
+tile (below), then Usage credits. The tile takes the 7-day card's slot (`CardId.WEEKLY`): its place, its
+show/hide and its More fold; the 5-hour card is no longer a card of its own, so `dataCards` lists `SESSION` only
+for an account reporting no 7-day window at all (the tile then sits in that slot). The Headline's order rule
+(Weekly first, Headline 5-hour: 5h first) no longer moves anything visible: the ring is always the tile's left.
+A layout whose stored order differs from the v1.9 default counts as reordered and keeps its order; only a drag
+stores an order. `dataCards`, `cardOrderLayout` in `MainCards.kt`, `LayoutSheet.kt`.
 
 #### §2.4.2 Row style — figure
-The figure follows Usage display: Used "52%"; Left "48% left" (unchanged); **Vs pace** "−13%" bold + " vs pace"
-11 sp, regular, muted, sans — falling back to the Used figure with no word when spent, unclocked or unread.
-`FigureText`, `AppPace.figure`.
+Every figure on the tile and the Summary rows is the grammar's figure (shape grammar rev C §1c): the system sans
+with tabular, lining digits (`tnum, lnum`), bold, its "%" at 58% on the baseline (`grammarFigure`,
+`grammarDigits`). Its colour is the usage's severity colour (the account colour, its step above 80). Usage
+display: Used "52%"; Left "48%" on the tile (no word; Summary keeps "48% left"); **Vs pace** the unsigned
+distance to the mark, "13%", green under the mark (dark #9CCC65 / light #2E7D32), red over it (#FF5252 /
+#C62828), onSurface on it, with no "vs pace" word — falling back to the Used figure in its severity colour when
+spent, unclocked or unread. `AppPace.figure`, `grammarFigureColor`, `Grammar.vsColor`.
 
 #### §2.4.3 The usage bar — add
 Under pace (used < mark) the room from the fill to the tick is a dashed outline: 1.3 dp, onSurface 55%, dash
 3 dp / gap 2 dp, inset 1 dp top and bottom, open on the fill side. **V1 caption** under every in-app window bar
-(5h, 7-day All, each cap, Summary rows): 11.5 sp bodySmall in onSurfaceVariant, 5 dp above, 17 dp line (22 dp in
+(the tile's Weekly and each model limit, Summary rows; the 5h is a ring and has none): 11.5 sp bodySmall in onSurfaceVariant, 5 dp above, 17 dp line (22 dp in
 all), starting 5 dp right of the tick or ending 5 dp left of it when it would not fit (`PaceText.captionRightOfMark`).
 Text `PaceText.caption`: "39% pace mark · 13 over" / "· 10 under" / "· on it"; Left "40% pace mark · 10 to spare";
 Vs pace "52% used · mark 39%". The leading value ("39%"; Vs pace "52% used") is onSurface SemiBold. No caption when
 spent, unclocked or unread. Credits bars unchanged. `PaceCaption`, `UsageBarLine(dashedRoom)`.
 
-#### §2.4.4 5-hour card — Android
-Remove the "N% below/above even pace" line. Under the bar: dashed room and the V1 caption. Open: chart, projection
-line ("At this pace: ~69% when the window resets"), reset row. Folded: "Resets in 2h 20m · on track for ~69%";
-when the projection hits 100% before the reset, "Resets in 2h 20m · on track for 100% at 3:25 PM" with that clause
-bold in the orange step; no projection yet, or at 100%: "Resets in 2h 20m".
-**Spent week gate** (CCRM-102 (Spent Week Gate)): while the account's Weekly is spent, the card's title row,
-figure, bar, chart, reset row (open) or reset line (folded) draw at 45% opacity, with no caption and no projection
-(no estimate line, no projected end on the chart); under them a divider and one full-opacity bodySmall SemiBold
-onSurface note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM" (the weekly reset, day and time).
-
-#### §2.4.5 7-day card — Android
-The first line under the chart (was "40% below even pace") is band · allowance until the reset day: "Slow down ·
-≈11%/day until Sun"; under a day "Use before reset · 40% left, 6h"; spent "Out until Sun 9:30 PM"; bold in the orange
-step when over pace (Slow down, Nearly out, spent), else regular onSurfaceVariant. It follows the charted series
-(All or the cap chip). The signed Pace is never printed. Projection line and reset row unchanged. Folded: "Slow down
-· ≈11%/day · resets Sun" with the band · allowance bold orange when over pace; spent "Out until Sun 9:30 PM"; no
-clock "Starts when a message is sent". Each bar (All, caps) carries the dashed room and V1 caption.
-**Show model limits off** on an account with caps: the plain one-window card — "7-day window" row style with the
-figure (and the Compact chevron) on one row, the bar, caption, chart of All, lines; no cap rows, no chips, no two
-columns. Accounts without caps keep the v1.9 title-plus-"All"-row card.
+#### §2.4.4 + §2.4.5 The account tile — Android (replaces the 5-hour and 7-day cards)
+Shape grammar rev D §1–§2, §7 (`design/2026-11-02-shape-grammar.html`), CCRM-103 (Hybrid Notification). One card
+(the card shell, 16 dp padding). **Tile:** a row, centred vertically: the **5h ring** (`GrammarRingBox`) 72 dp —
+56 dp under 360 dp of window width, 84 dp from 700 dp — then a 14 dp gap (12 dp under 360 dp), then the **7-day
+bars** stacked with 8 dp between them. The ring is hollow: track onSurface-ink 16%, the arc from 12 o'clock in the
+account colour (its severity step above 80, the 9% minimum fill), the pace tick across the band, the red slice past
+the tick when more than 3 points ahead (per the over-pace toggle), the dashed room from the fill to the tick in
+the account colour at 60%, the usage end mark per Appearance › Usage end mark. In the bore only the figure (0.25 of
+the ring, four characters 0.21, fitted 1.5 dp clear of the band), ink, the severity colour and ExtraBold above 90%,
+the Vs pace colour in Vs pace; **no "5h" text anywhere**. TalkBack: "5-hour window, 34 percent" ("… 66 percent
+left", "… 19 percent under/over pace"; no reading "… no reading yet"). **Bars:** first "Weekly · All models" (just
+"Weekly" when no model limit is shown) — label 13.5 sp onSurface, the figure at the ring's number size (18 sp at
+72 dp, 14 at 56, 21 at 84), bar 10 dp; then each shown model limit — label 12.5 sp onSurfaceVariant, figure 14 sp,
+bar 7 dp. Label and figure share a 20 dp row (label ellipsises), 5 dp above the bar; every bar carries the dashed
+room and the V1 caption (§2.4.3).
+**Closed (Compact, the default fold):** under the tile, 10 dp below, the **band line** 13.5 sp SemiBold onSurface
+(`AppPace.weeklyFolded`: "Slow down · ≈11%/day · resets Sun", the band · allowance bold in the orange step when over
+pace; spent "Out until Sun 9:30 PM"; no clock "Starts when a message is sent"); 2 dp below, the **5h line** 13.5 sp
+onSurfaceVariant led by a 12 dp ring glyph (the status-bar ring geometry, the severity colour, red slice, × at 100%)
+and a 4 dp gap instead of the word "5h": "resets in 2h 20m · on track for ~69%" (on course to run out: "resets in
+1h 30m · on track for 100% at 3:25 PM", that clause bold orange; no projection: "resets in 2h 20m"); no 5h line
+before the 5h has a reading and a clock. Lines wrap rather than ellipsise. No chevron: the whole card is the tap
+target and opens the tile.
+**Open (Comfortable, or a tapped Compact tile):** no lines under the tile; 12 dp below it the chips **All ·
+<model> · 5h** (FilterChips, 8 dp apart; "5h" only on an account with a 5h, model chips only while model limits
+show; no chips with neither) and the chosen series under them. All or a model: the Weekly chart as before (§3), then
+the band · allowance line ("Slow down · ≈11%/day until Sun", bold orange over pace), the projection line, a divider
+and the reset row. **5h:** the 5h chart, "At this pace: ~69% when the window resets · 15.0%/h ⓘ", a divider and the
+5h reset row, and the ring draws its **projection**: a dotted arc (0.4 of the band, the fill colour at 75%) from
+just past the fill to the projected end (~69%, or 100% when it gets there first) — only while the 5h chip is
+chosen. Tapping the ring on an open tile chooses the 5h chip. The 5h chip is not stored (session only); the series
+choice still is. Inner screen (≥ 700 dp) with a model limit shown and All or a model chosen: two chart columns, All
+left and the chosen model (All → the first) right, each with its lines and reset row; the tile's bars above, not
+repeated.
+**Tap a figure (rev D §2b, form b):** the ring's figure, the Weekly figure or a model figure. For 3 s the figure's
+own line swaps to the readout (`PaceText.markReadout(Pace.markTime(…))`): "Pace catches up Thu 5 Nov, 12:50 PM"
+over the mark, "1d 4h behind pace" under it, "On the pace mark" within a point — a bar's V1 caption (from the
+bar's start), or for the ring the 5h line after its glyph (closed tile). Swapped text: onSurface SemiBold,
+underlined 2 dp in the accent at 70%. Spent, unclocked or unread: the tap does nothing. Works in every Usage
+display mode (the readout is about the usage). TalkBack: the readout is the figure's click label.
+**States.** No reading yet: the ring's track and "—" (ink 50%), a bare bar with "—" (onSurfaceVariant). **A plan
+with no 5h** (rev C §7): the ring slot stays, grey track (ink 22%) and a cross (0.12 of the ring each way, ink
+45%), no figure, label "No 5-hour window"; no 5h line, no 5h chip. **Spent week** (CCRM-102 (Spent Week Gate)):
+the ring greys (track only, no arc, no tick), its figure at 45%; the band line says "Out until …" and the 5h line
+becomes the note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM" (13.5 sp onSurfaceVariant, full
+opacity, no glyph); the ring's tap reads nothing out. With the 5h chip chosen on a spent week, the 5h chart, its
+lines and reset row draw at 45% with no projection, then a divider and the same note in bodySmall SemiBold
+onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. `AccountTile`, `TileBarRow`,
+`tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct` in `MainCards.kt`;
+`AppPace.fiveHourLine`.
 
 #### §2.6 Notices above the cards — add
 "Weekly now leads" (CCRM-96 F1), in the crash-card slot above the tabs (in the page column at compact height),
@@ -670,16 +707,24 @@ marks it shown. "Keep 5h first" sets every account's Headline to 5-hour, re-post
 
 #### New §2.8 The Summary (All tab) — Android
 List card "Weekly" (titleSmall) · "most room first" (bodySmall muted), rows by `SummaryRank`, hairline dividers,
-each row tappable (opens that account's tab). Full row: mark 18 dp in the accent · name 15 sp (ellipsised) · plan
-pill 11 sp (outlineVariant border, 6 dp radius) · companion 12 sp muted ("5h 34%", Left bare "5h 66%", "no 5h";
-held "5h 93% · back 3:40 PM" bold in the 5h's severity colour; none when spent or unread) · figure 17 sp serif bold
-in the severity colour (Usage display; Left "48% left"; Vs pace without the word; "—" unread); bar 10 dp with neutral
-tick, red past it per the toggle, dashed room; V1 caption; line 3: pace pip (40 × 12 dp scale, centre mark, 4 dp dot
-at the Pace: green-grey #8FBF9A room, #BDB8B3 on pace, amber #F2B45A over, #FF6B5B nearly out; absent when spent,
-unread or unclocked) + 13 sp words ("Room to spare · ≈22%/day · resets Fri", "Out until Thu 8:00 AM", "Not started
-yet", "No reading yet"). Spent and unread rows: line 1, bar and words at 50%. From six accounts, one-line rows:
-17 dp rank disc in the accent (number 10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down",
-"5h · 3:40 PM" in the 5h colour, "Out · Thu", "No reading"), figure 15 sp serif 40 dp right-aligned.
+each row tappable (opens that account's tab). Full row (shape grammar rev D S1, CCRM-103 (Hybrid Notification)):
+a **48 dp 5h ring** on the left, centred on the row, then a 12 dp gap and the three lines. The ring is §2.4.4's
+ring at 48 dp (band 0.10 of the ring, figure up to 0.29 fitted to the bore, the account colour and its step, the
+held row's ring loud above 90%), not tappable (the row is); a plan with no 5h: the grey ring with a cross, so every
+row has the same frame; a spent week: greyed, figure dim; an unread account: the track and "—". The ring is not
+dimmed with the row. Line 1: mark 18 dp in the accent · name 15 sp (ellipsised) · plan pill 11 sp (outlineVariant
+border, 6 dp radius) · figure 17 sp bold in the grammar's type (§2.4.2) in the severity colour (Usage display;
+Left "48% left"; Vs pace unsigned in green/red/onSurface; "—" unread). **No companion text** — the ring replaced
+"5h 34%" and "no 5h". Bar 10 dp with neutral tick, red past it per the toggle, dashed room; V1 caption; line 3:
+pace pip (40 × 12 dp scale, centre mark, 4 dp dot at the Pace: green-grey #8FBF9A room, #BDB8B3 on pace, amber
+#F2B45A over, #FF6B5B nearly out; absent when spent, unread or unclocked) + 13 sp words ("Room to spare · ≈22%/day ·
+resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at
+3:40 PM · resets Fri", `SummaryRows.heldWords`). **Tap the figure** (P8): line 3 becomes the Weekly's readout
+(§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined 2 dp in the accent at 70%;
+nothing when spent, unclocked or unread; TalkBack: the readout is the figure's click label. Spent and unread rows:
+line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp rank disc in the accent (number
+10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", "5h · 3:40 PM" in the 5h colour,
+"Out · Thu", "No reading"), figure 15 sp bold in the grammar's type, 40 dp right-aligned.
 Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
 30/10/12/26 dp; over-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
 dashed even-pace diagonal in the 80% step, "even pace" along it; "over pace" / "room to spare" 10.5 sp ink 55%;
@@ -691,7 +736,10 @@ shows its × instead of the number); unread: off the map; an unclocked week sits
 tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/SummaryRows.kt`.
 
 #### §4.1 Layout sheet — add
-Rows show the drawn order (Headline order for an untouched layout); see §2.4.
+Rows show the drawn order (Headline order for an untouched layout); see §2.4. Since the account tile, an account
+with a 7-day window lists one window row (still labelled "7-day window") and no "5-hour window" row; the ⋮'s
+"Main screen layout" item needs two cards, so an account without a credits card no longer shows it (Share
+snapshot stays).
 
 #### §6.2 Accounts — Android
 The account card's ⋮ gains **"Headline…"** (signed-in accounts, after "Accent colour…"), opening a bottom sheet:

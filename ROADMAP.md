@@ -1876,7 +1876,9 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   for a plan with no 5h or an account that picks it in its ⋮ › Headline… sheet (Android only). **Building**,
   RUNBOOK-v2.0 Step 6d: Android data and tests done (`markTime` and its readout words, the `usageEndMark`
   and per-account `statusIcon` prefs, the status-glyph rule; spec/mobile §5 and fixtures); Android
-  surfaces and iOS next.
+  surfaces built (account tile, Summary rows, notification H4 and Duet, status-bar glyphs, the four widget
+  faces, Appearance › Usage end mark, the Status-bar icon group, tabular figures, Vs pace unsigned and
+  coloured); iOS next.
 - **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
   ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
   take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.

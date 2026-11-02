@@ -55,16 +55,25 @@ object PaceText {
     }
 
     /**
-     * The big figure in Vs pace mode: "+10%", "−20%", "0%"; falls back to the Used
-     * figure when spent or unclocked, "—" with no reading.
+     * The figure in Vs pace mode, unsigned since the shape grammar (rev D §7b, CCRM-103
+     * (Hybrid Notification)): "10%", "20%", "0%" — [vsPaceTone] carries the side as a
+     * colour. Falls back to the Used figure when spent or unclocked, "—" with no reading.
      */
     fun vsPaceFigure(usedPct: Double?, elapsedPct: Double?): String {
         if (usedPct == null) return "—"
         val d = Pace.vsPace(usedPct, elapsedPct) ?: return "${usedPct.toInt()}%"
+        return "${abs(d)}%"
+    }
+
+    /** Which colour a Vs pace figure takes. [USAGE]: the fallback usage figure, in its severity colours. */
+    enum class VsTone { UNDER, OVER, ON, USAGE }
+
+    fun vsPaceTone(usedPct: Double?, elapsedPct: Double?): VsTone {
+        val d = Pace.vsPace(usedPct, elapsedPct) ?: return VsTone.USAGE
         return when {
-            d > 0 -> "+$d%"
-            d < 0 -> "$MINUS${-d}%"
-            else -> "0%"
+            d > 0 -> VsTone.UNDER
+            d < 0 -> VsTone.OVER
+            else -> VsTone.ON
         }
     }
 

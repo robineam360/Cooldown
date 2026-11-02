@@ -116,18 +116,20 @@ class WidgetFaceTest {
 
     @Test
     fun ring() {
+        // CCRM-103 (Hybrid Notification)'s shape grammar (rev D §5): the 1×1 is the 5h ring
+        // over a bare Weekly bar; the 2×2 the ring, the name and the Weekly row.
         assertEquals("38%", joined(Bucket.RING_1X1, StateId.S1))
-        // Rev H: rev D's 2×2 frame fills with name and reset; the stamp needs more height.
-        assertEquals("38% | Pro | Resets 9:10 PM", joined(Bucket.RING_2X2, StateId.S1))
-        // At 100% the × replaces the figure, on both sizes (Q10).
-        assertEquals("", joined(Bucket.RING_1X1, StateId.S3))
-        assertEquals("Pro | Resets 9:10 PM", joined(Bucket.RING_2X2, StateId.S3))
-        assertTrue(joined(Bucket.RING_2X2, StateId.S4).startsWith("31% | ChatGPT · Weekly"))
-        // S5: the reset line says it, so the name line doesn't repeat it.
-        assertTrue(joined(Bucket.RING_2X2, StateId.S5).startsWith("— | Pro | Starts when a message is sent"))
+        assertEquals("38% | Pro | Weekly | 20%", joined(Bucket.RING_2X2, StateId.S1))
+        // At 100% the ring keeps its figure (the page's ring() draws no cross).
+        assertEquals("100%", joined(Bucket.RING_1X1, StateId.S3))
+        assertEquals("100% | Pro | Weekly | 20%", joined(Bucket.RING_2X2, StateId.S3))
+        // B1: a weekly-only account's Weekly figure where the ring would be, and its row.
+        assertEquals("31% | ChatGPT · Weekly | Weekly | 31%", joined(Bucket.RING_2X2, StateId.S4))
+        // S5: rev D's 2×2 has no reset line, so the name says it.
+        assertTrue(joined(Bucket.RING_2X2, StateId.S5).startsWith("— | Pro · not started | Weekly | 20%"))
         assertTrue(joined(Bucket.RING_2X2, StateId.S6).startsWith("— | Pro |"))
         // Rev H (Q4): no "(unassigned)" on the name.
-        assertTrue(joined(Bucket.RING_2X2, StateId.S10).startsWith("38% | Pro | Resets"))
+        assertTrue(joined(Bucket.RING_2X2, StateId.S10).startsWith("38% | Pro | Weekly"))
         assertTrue(joined(Bucket.RING_2X2, StateId.S11).startsWith("62% | Pro · left"))
         assertEquals("Account removed\ntap to choose", joined(Bucket.RING_1X1, StateId.S9))
         assertEquals("No usage\non this plan", joined(Bucket.RING_2X2, StateId.S12))
@@ -146,64 +148,82 @@ class WidgetFaceTest {
 
     @Test
     fun number() {
-        assertEquals("Pro · 5h | 38%", joined(Bucket.NUMBER_2X1, StateId.S1))
-        assertEquals("Pro · 5h | 38% | Resets 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
+        // The shape grammar (rev D §5): the 5h ring at the left of the Weekly name, figure and
+        // bar; the 2×1 stacks the name over the figure, the 4×1 keeps "Pro · Weekly".
+        assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S1))
+        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
+        // The window chips went (both windows show); the cycler stays.
         assertEquals(
-            "Pro · 5h | 38% | Resets 9:10 PM | as of 6:26 PM | 5h | Weekly | Pro ⇄",
+            "38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:26 PM | Pro ⇄",
             joined(Bucket.NUMBER_4X2, StateId.S1),
         )
-        // 2×1: a weekly-only account's name, with "Weekly" as its own second line.
+        // B1: a weekly-only account keeps today's face, no ring — on 2×1 its name, with
+        // "Weekly" as its own second line.
         assertEquals("ChatGPT | Weekly | 31%", joined(Bucket.NUMBER_2X1, StateId.S4))
         assertEquals(
-            "ChatGPT · Weekly | 31% | Resets Sat 9:10 PM | as of 6:26 PM | Weekly | ChatGPT ⇄",
+            "ChatGPT · Weekly | 31% | Resets Sat 9:10 PM | as of 6:26 PM | ChatGPT ⇄",
             joined(Bucket.NUMBER_4X2, StateId.S4),
         )
-        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S5).contains("Starts when a message is sent"))
-        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S6).contains("— | Reset 6:19 PM"))
-        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S7).contains("Resets 9:10 PM")) // S7 keeps it
+        // The 5h's states land on the ring.
+        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S5).startsWith("— | Pro · Weekly | 20%"))
+        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S6).startsWith("— | Pro · Weekly | 20%"))
+        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S7).contains("Resets Sat 9:10 PM")) // S7 keeps it
         assertTrue(joined(Bucket.NUMBER_4X1, StateId.S8).contains("| Stale |"))
         assertEquals("Account removed · tap to choose", joined(Bucket.NUMBER_4X1, StateId.S9))
-        assertEquals("UNASSIGNED | Pro | 38%", joined(Bucket.NUMBER_2X1, StateId.S10))
+        // Rev D's 84 dp 2×1 beside the ring has no height for the pill; the tap opens the config.
+        assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S10))
         // Rev H (Q4): the stamp slot says how to choose, the name stays whole.
-        assertEquals("Pro · 5h | 38% | Resets 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
+        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
         // Left: the bare figure flips at 2×1; the LEFT caption from 4×1 up.
-        assertEquals("Pro · 5h | 62%", joined(Bucket.NUMBER_2X1, StateId.S11))
-        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S11).startsWith("Pro · 5h | 62% | LEFT"))
+        assertEquals("62% | Pro | 80%", joined(Bucket.NUMBER_2X1, StateId.S11))
+        assertTrue(joined(Bucket.NUMBER_4X1, StateId.S11).startsWith("62% | Pro · Weekly | 80% | LEFT"))
         assertEquals("No usage on this plan", joined(Bucket.NUMBER_4X2, StateId.S12))
         assertEquals("Update Cooldown", joined(Bucket.NUMBER_2X1, StateId.S14))
         assertEquals("Unavailable in this version · update Cooldown", joined(Bucket.NUMBER_4X1, StateId.S14))
     }
 
+    /** Q "Ring widget's window choice" and rev D §5: a stored window is kept and ignored. */
     @Test
-    fun number4x2_chipsFollowTheWindowAndTheCyclerNamesTheAccount() {
-        val weekly = FaceStates.of(forState(Face.NUMBER, StateId.S1).copy(window = FaceWindow.WEEKLY))
-        val all = texts(inflate(Bucket.NUMBER_4X2, weekly)).joinToString(" | ")
-        assertTrue(all, all.startsWith("Pro · Weekly | 20% | Resets Sat 9:10 PM"))
-        assertEquals(FaceWindow.WEEKLY, weekly.cells.single().window)
+    fun theStoredWindowIsIgnored_ringIs5hNumberIsWeekly() {
+        for (window in FaceWindow.entries) {
+            val n = FaceStates.of(forState(Face.NUMBER, StateId.S1).copy(window = window))
+            assertEquals(FaceWindow.WEEKLY, n.cells.single().window)
+            assertEquals(FaceWindow.SESSION, n.cells.single().companion!!.window)
+            val all = texts(inflate(Bucket.NUMBER_4X2, n)).joinToString(" | ")
+            assertTrue(all, all.startsWith("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM"))
+            val r = FaceStates.of(forState(Face.RING, StateId.S1).copy(window = window))
+            assertEquals(FaceWindow.SESSION, r.cells.single().window)
+            assertEquals(FaceWindow.WEEKLY, r.cells.single().companion!!.window)
+        }
+        // The Countdown keeps its window.
+        val cd = FaceStates.of(forState(Face.COUNTDOWN, StateId.S1).copy(window = FaceWindow.WEEKLY))
+        assertEquals(FaceWindow.WEEKLY, cd.cells.single().window)
+        assertNull(cd.cells.single().companion)
     }
 
     @Test
     fun countdown() {
-        assertEquals("5h reset | <live> | at 9:10 PM | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S1))
-        assertEquals(
-            "5h reset | <live> | at 9:10 PM | 38% | Pro · 5h | as of 6:26 PM",
-            joined(Bucket.COUNTDOWN_2X2, StateId.S1),
-        )
+        // A 5h countdown leads with the ring in place of the "5h reset" caption (rev D §5).
+        assertEquals("38% | <live> | at 9:10 PM | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S1))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S1).startsWith("38% | <live> | at 9:10 PM | Pro"))
         // The estimate only where the projection says the window runs dry first (Q2).
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S2).contains("62% | ~ runs out 7:54 PM"))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S2).contains("~ runs out 7:54 PM"))
         assertFalse(joined(Bucket.COUNTDOWN_2X2, StateId.S3).contains("runs out"))
-        // Weekly outside the last 24 h: absolute, no chronometer.
+        // Weekly outside the last 24 h: absolute, no chronometer — today's face, no ring.
         assertEquals("Weekly reset | Sat 9:10 PM | ChatGPT · Weekly", joined(Bucket.COUNTDOWN_2X1, StateId.S4))
-        assertEquals("5h reset | Starts when a message is sent | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S5))
-        assertEquals("5h reset | Reset 6:19 PM | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S6))
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S6).contains("Reset 6:19 PM | — |"))
-        assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S8).startsWith("Stale | <live>"))
-        // Rev H (Q4): the 2×1's caption says how to choose; the 2×2's stamp slot does.
-        assertEquals("5h reset · tap to choose | <live> | at 9:10 PM | Pro · 5h", joined(Bucket.COUNTDOWN_2X1, StateId.S10))
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S10).endsWith("Pro · 5h | tap to choose account"))
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S11).contains("62% | LEFT"))
-        assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S11).endsWith("Pro · 5h · left"))
+        assertEquals("— | Not started | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S5))
+        assertEquals("— | Reset 6:19 PM | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S6))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S6).startsWith("— | Reset 6:19 PM"))
+        // The ring took the caption, so the account line says "Stale" and "tap to choose".
+        assertEquals("38% | <live> | at 9:10 PM | Pro · Stale", joined(Bucket.COUNTDOWN_2X1, StateId.S8))
+        assertEquals("38% | <live> | at 9:10 PM | Pro · tap to choose", joined(Bucket.COUNTDOWN_2X1, StateId.S10))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S10).contains("Pro · tap to choose"))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S11).contains("Pro · left"))
+        assertTrue(joined(Bucket.COUNTDOWN_2X1, StateId.S11).endsWith("Pro · left"))
         assertEquals("Update Cooldown", joined(Bucket.COUNTDOWN_2X1, StateId.S14))
+        // A Weekly countdown keeps its caption, figure row and bar.
+        val weekly = FaceStates.of(forState(Face.COUNTDOWN, StateId.S1).copy(window = FaceWindow.WEEKLY))
+        assertTrue(texts(inflate(Bucket.COUNTDOWN_2X2, weekly)).joinToString(" | ").startsWith("Weekly reset | Sat 9:10 PM | 20%"))
     }
 
     @Test
@@ -212,7 +232,7 @@ class WidgetFaceTest {
             x.copy(accounts = x.accounts.mapIndexed { n, a -> if (n == 0) a.copy(fetchedAt = NOW_MS - 7 * 60 * WidgetFixtures.MIN) else a })
         }
         assertEquals(
-            "Stale | Starts when a message is sent | Pro · 5h",
+            "— | Not started | Pro · Stale",
             texts(inflate(Bucket.COUNTDOWN_2X1, FaceStates.of(i))).joinToString(" | "),
         )
     }
@@ -220,14 +240,17 @@ class WidgetFaceTest {
     @Test
     fun bars_areDrawnAtTheirViewsSize() {
         for (bucket in listOf(Bucket.NUMBER_2X1, Bucket.NUMBER_4X1, Bucket.NUMBER_4X2, Bucket.COUNTDOWN_2X2)) {
-            val v = inflate(bucket, FaceStates.of(forState(bucket.face, StateId.S1)))
+            // A 5h Countdown has no bar (the 5h is a ring): the Weekly one has.
+            val input = forState(bucket.face, StateId.S1).let { if (bucket.face == Face.COUNTDOWN) it.copy(window = FaceWindow.WEEKLY) else it }
+            val v = inflate(bucket, FaceStates.of(input))
             val id = if (bucket.face == Face.NUMBER) com.robin.claudeusage.R.id.num_bar else com.robin.claudeusage.R.id.cd_bar
             val bar = v.findViewById<ImageView>(id)
             val bmp = (bar.drawable as BitmapDrawable).bitmap
             assertEquals("$bucket", bmp.width, bar.layoutParams.width)
             assertEquals("$bucket", bmp.height, bar.layoutParams.height)
-            val inner = (bucket.innerWidthDp * context.resources.displayMetrics.density).toInt()
-            assertTrue("$bucket ${bmp.width} vs $inner", kotlin.math.abs(bmp.width - inner) <= 1)
+            // The Number's bar spans the Weekly column beside the ring; the Countdown's the inner width.
+            val width = (WidgetFace.bar(bucket)!!.width * context.resources.displayMetrics.density).toInt()
+            assertTrue("$bucket ${bmp.width} vs $width", kotlin.math.abs(bmp.width - width) <= 1)
         }
     }
 
@@ -253,30 +276,37 @@ class WidgetFaceTest {
 
     @Test
     fun strip() {
+        // The shape grammar (rev D §5): each account a 5h ring over its Weekly bar — no Weekly
+        // digits at 4×1 (Q "Strip 4×1 Weekly digits"); ChatGPT (no 5h, B1) its Weekly figure
+        // where the ring would be.
         assertEquals(
-            "38% | Pro | 24% | Teams | 8% | Product | 31% | Weekly | ChatGPT",
+            "38% | Pro | 24% | Teams | 8% | Product | 31% | ChatGPT",
             joined(Bucket.STRIP_4X1, StateId.S1),
         )
+        // 4×2 adds the bar's figure; the short reset is the ring's (the Weekly's for B1).
         assertEquals(
-            "38% | Pro | 9:10 PM | 24% | Teams | 9:10 PM | 8% | Product | 9:10 PM | " +
-                "31% | Weekly | ChatGPT | Sat 9:10 PM | as of 6:26 PM",
+            "38% | 20% | Pro | 9:10 PM | 24% | 20% | Teams | 9:10 PM | 8% | 20% | Product | 9:10 PM | " +
+                "31% | 31% | ChatGPT | Sat 9:10 PM | as of 6:26 PM",
             joined(Bucket.STRIP_4X2, StateId.S1),
         )
         // A state lands on one ring (Teams); the others keep their own readings.
-        assertTrue(joined(Bucket.STRIP_4X2, StateId.S6).contains("— | Teams | Reset 6:19 PM"))
-        assertTrue(joined(Bucket.STRIP_4X2, StateId.S5).contains("— | Teams | Not started"))
-        assertTrue(joined(Bucket.STRIP_4X2, StateId.S8).contains("24% | Teams | Stale"))
+        assertTrue(joined(Bucket.STRIP_4X2, StateId.S6).contains("— | 20% | Teams | Reset 6:19 PM"))
+        assertTrue(joined(Bucket.STRIP_4X2, StateId.S5).contains("— | 20% | Teams | Not started"))
+        assertTrue(joined(Bucket.STRIP_4X2, StateId.S8).contains("24% | 20% | Teams | Stale"))
         assertTrue(joined(Bucket.STRIP_4X2, StateId.S12).contains("Teams | Free"))
-        // At 100% the × replaces the figure.
-        assertTrue(joined(Bucket.STRIP_4X1, StateId.S3).contains("38% | Pro | Teams | 8%"))
+        // At 100% the ring keeps its figure.
+        assertTrue(joined(Bucket.STRIP_4X1, StateId.S3).contains("38% | Pro | 100% | Teams | 8%"))
         assertTrue(joined(Bucket.STRIP_4X1, StateId.S11).contains("Pro · left"))
         assertEquals("Open Cooldown to sign in", joined(Bucket.STRIP_4X1, StateId.S10))
         assertEquals("Unavailable in this version · update Cooldown", joined(Bucket.STRIP_4X1, StateId.S14))
-        // Weekly under the × at 100% on 4×2 only.
+        // No "Weekly" tag in a bore any more: a weekly-only account is its figure (B1).
         val full = WidgetFixtures.CHATGPT.copy(data = WidgetFixtures.weeklyOnly(100.0))
         val s = FaceStates.of(WidgetFixtures.input(Face.STRIP, listOf(WidgetFixtures.pro(), full), null))
-        assertTrue(texts(inflate(Bucket.STRIP_4X2, s)).contains("Weekly"))
-        assertFalse(texts(inflate(Bucket.STRIP_4X1, s)).contains("Weekly"))
+        for (bucket in listOf(Bucket.STRIP_4X1, Bucket.STRIP_4X2)) {
+            val t = texts(inflate(bucket, s))
+            assertTrue("$bucket $t", "100%" in t)
+            assertFalse("$bucket $t", "Weekly" in t)
+        }
     }
 
     @Test
@@ -369,20 +399,23 @@ class WidgetFaceTest {
     @Test
     fun revH_theHeroFillsTheFrame() {
         fun ring(w: Float, h: Float) = WidgetFace.ring(Frame.at(Face.RING, w, h))!!.diameter
-        assertEquals(68f, ring(84f, 108f))            // 1×1, was Ø64
-        assertEquals(84f, ring(156f, 108f))           // 2×1, the ring alone
-        assertEquals(132f, ring(156f, 237f))          // 2×2
+        assertEquals(68f, ring(84f, 108f))            // 1×1, its Weekly bar under it
+        assertEquals(68f, ring(156f, 108f))           // 2×1, the ring over its bar
+        assertEquals(129f, ring(156f, 237f))          // 2×2, name and Weekly row under it
         assertEquals(160f, ring(333f, 366f))          // 4×3, at the cap
         assertEquals(160f, ring(510f, 237f))          // 6×2, beside its lines
-        // The companion Weekly ring (Q1) where the frame has the room, and only there.
-        assertNotNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 366f), companion = true).companionRing)
-        assertNotNull(WidgetFace.ringLayout(Frame.at(Face.RING, 510f, 237f), companion = true).companionRing)
-        assertNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 237f), companion = true).companionRing)
-        assertNull(WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 366f), companion = false).companionRing)
-        assertTrue(WidgetFace.ringLayout(Frame.at(Face.RING, 244f, 108f), companion = false).horizontal)
+        // The shape grammar (rev D §5): rev H's companion ring is now the Weekly bar — on the
+        // 1×1's column the bar alone, as wide as the ring; elsewhere the row.
+        val one = WidgetFace.ringLayout(Bucket.RING_1X1.frame).weekly
+        assertTrue(one.barOnly)
+        assertEquals(52f, one.bar.width)
+        assertEquals(160f, WidgetFace.ringLayout(Frame.at(Face.RING, 333f, 366f)).weekly.rowDp)
+        assertEquals(150f, WidgetFace.ringLayout(Bucket.RING_2X2.frame).weekly.rowDp)
+        assertTrue(WidgetFace.ringLayout(Frame.at(Face.RING, 244f, 108f)).horizontal)
         // Number, Countdown, Strip.
         assertEquals(72f, WidgetFace.numberFigSp(Frame.at(Face.NUMBER, 510f, 237f)))
-        assertEquals(44f, WidgetFace.numberFigSp(Frame.at(Face.NUMBER, 156f, 108f)))
+        // With the 5h ring at its left (rev D §5) the 2×1's figure fits what the ring leaves.
+        assertEquals(29f, WidgetFace.numberFigSp(Frame.at(Face.NUMBER, 156f, 108f)))
         assertTrue(WidgetFace.numberTall(Frame.at(Face.NUMBER, 156f, 237f)))
         assertTrue(WidgetFace.numberControls(Frame.at(Face.NUMBER, 156f, 237f)))
         assertEquals(80f, WidgetFace.countSp(Frame.at(Face.COUNTDOWN, 510f, 237f)))
@@ -391,22 +424,36 @@ class WidgetFaceTest {
         assertEquals(120f, WidgetFace.ring(Frame.at(Face.STRIP, 510f, 237f), 3)!!.diameter)
         // The Strip's row is a centred group: each cell the ring plus 40 dp, not a third.
         assertEquals(160f, WidgetFace.stripPitch(Frame.at(Face.STRIP, 510f, 237f), 3, overflow = false))
-        // Rev D's own frames: a 1×1 at 91×84 is Ø67 now, the 4×1 figure stays 32, the count 26.
-        assertEquals(67f, WidgetFace.ring(Bucket.RING_1X1)!!.diameter)
+        // Rev D's own frames, the shape grammar's numbers (§5): Ring 1×1 Ø52, Number 4×1 Ø60
+        // and 2×1 Ø52 (28 sp), Countdown 2×1 Ø44 (24 sp), Strip 4×1 Ø42 and 4×2 Ø64.
+        assertEquals(52f, WidgetFace.ring(Bucket.RING_1X1)!!.diameter)
+        assertEquals(97f, WidgetFace.ring(Bucket.RING_2X2)!!.diameter)
+        assertEquals(60f, WidgetFace.ring(Bucket.NUMBER_4X1)!!.diameter)
+        assertEquals(52f, WidgetFace.ring(Bucket.NUMBER_2X1)!!.diameter)
+        assertEquals(28f, WidgetFace.numberFigSp(Bucket.NUMBER_2X1.frame))
         assertEquals(32f, WidgetFace.numberFigSp(Bucket.NUMBER_4X1.frame))
+        assertEquals(44f, WidgetFace.ring(Bucket.COUNTDOWN_2X1)!!.diameter)
+        assertEquals(24f, WidgetFace.countSp(Bucket.COUNTDOWN_2X1.frame, ring = true))
         assertEquals(26f, WidgetFace.countSp(Bucket.COUNTDOWN_2X1.frame))
+        assertEquals(42f, WidgetFace.ring(Bucket.STRIP_4X1, 4)!!.diameter)
+        assertEquals(64f, WidgetFace.ring(Bucket.STRIP_4X2, 4)!!.diameter)
+        // The 110 dp minimum Countdown has no room for the ring: today's caption face.
+        assertNull(WidgetFace.ring(Frame.at(Face.COUNTDOWN, 110f, 84f)))
     }
 
-    /** Rev H: the companion ring draws the other window, in the bore its word. */
+    /** The shape grammar: a Ring's companion is its Weekly bar; the Number's its 5h ring. */
     @Test
-    fun revH_theRingsCompanionIsTheOtherWindow() {
+    fun theCompanionIsTheOtherWindow() {
         val s = FaceStates.of(forState(Face.RING, StateId.S1))
-        assertEquals(FaceWindow.WEEKLY, s.companion!!.window)
+        assertEquals(FaceWindow.WEEKLY, s.cells.single().companion!!.window)
         val v = WidgetFace.render(context, Face.RING, Frame.at(Face.RING, 333f, 366f), s).apply(context, FrameLayout(context))
         val t = texts(v).joinToString(" | ")
-        assertTrue(t, t.endsWith("Weekly"))
+        assertTrue(t, t.startsWith("38% | Pro | Weekly | 20% | Resets 9:10 PM"))
         // A one-window account has no companion.
-        assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).companion)
+        assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).cells.single().companion)
+        // The Strip: every account's ring carries its Weekly.
+        val strip = FaceStates.of(forState(Face.STRIP, StateId.S1))
+        assertEquals(listOf(FaceWindow.WEEKLY, FaceWindow.WEEKLY, FaceWindow.WEEKLY, null), strip.cells.map { it.companion?.window })
     }
 
     /** Rev H: a stacked 3×2 Number has no row for LEFT, so its label says it; a synthetic
@@ -415,7 +462,8 @@ class WidgetFaceTest {
     fun revH_stackedLeftAndTheRibbonedEstimate() {
         val s = FaceStates.of(forState(Face.NUMBER, StateId.S11))
         val v = WidgetFace.render(context, Face.NUMBER, Frame.at(Face.NUMBER, 244f, 237f), s).apply(context, FrameLayout(context))
-        assertTrue(texts(v).joinToString(" | "), texts(v).first().endsWith("· left"))
+        // The ring's figure first, then the label.
+        assertTrue(texts(v).joinToString(" | "), texts(v)[1].endsWith("· left"))
         val synth = FaceStates.of(forState(Face.RING, StateId.S13))
         val density = context.resources.displayMetrics.density
         for ((w, h) in listOf(300f to 230f, 250f to 210f, 333f to 366f, 190f to 175f, 200f to 190f, 220f to 185f)) {
@@ -425,7 +473,7 @@ class WidgetFaceTest {
         }
     }
 
-    /** Rev H: the Number 2×2 carries the chips and a cycler on its own row. */
+    /** Rev H: the Number 2×2 carries a cycler on its own row; the chips went (shape grammar). */
     @Test
     fun revH_theNumber2x2HasItsControls() {
         val s = FaceStates.of(forState(Face.NUMBER, StateId.S1))
@@ -433,20 +481,22 @@ class WidgetFaceTest {
         val v = WidgetFace.render(context, Face.NUMBER, frame, s).apply(context, FrameLayout(context))
         assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.num_cycler2)))
         assertFalse(shown(v.findViewById(com.robin.claudeusage.R.id.num_cycler)))
+        assertFalse(shown(v.findViewById(com.robin.claudeusage.R.id.num_ctrl_row)))
         assertEquals(com.robin.claudeusage.R.id.num_cycler2, WidgetFace.cycler(frame))
-        assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.num_chip_w)))
+        assertTrue(shown(v.findViewById(com.robin.claudeusage.R.id.num_ring)))
     }
 
     @Test
     fun r10_theEstimateIsWhatRenderDraws() {
         val density = context.resources.displayMetrics.density
         assertEquals(2.625f, density)
-        val four = listOf(WidgetFixtures.pro(), WidgetFixtures.TEAMS, WidgetFixtures.PRODUCT, WidgetFixtures.CHATGPT)
+        // Four accounts with both windows: the Strip's worst case, four rings and four bars.
+        val four = listOf(WidgetFixtures.pro(), WidgetFixtures.TEAMS, WidgetFixtures.PRODUCT, WidgetFixtures.RESEARCH)
         for (bucket in Bucket.entries) {
             val state = if (bucket.face == Face.STRIP) FaceStates.of(WidgetFixtures.input(Face.STRIP, four, null))
             else FaceStates.of(forState(bucket.face, StateId.S1))
             val drawn = bitmaps(inflate(bucket, state))
-            assertTrue("$bucket: at most five bitmaps", drawn.size <= 5)
+            assertTrue("$bucket: at most eight bitmaps", drawn.size <= 8)
             // Exact on a short face; on a tall one the estimate also covers the ribboned draw.
             if (bucket.tall) assertTrue("$bucket", drawn.sumOf { it.toLong() } <= WidgetFace.bucketBytes(bucket, density))
             else assertEquals("$bucket", WidgetFace.bucketBytes(bucket, density), drawn.sumOf { it.toLong() })

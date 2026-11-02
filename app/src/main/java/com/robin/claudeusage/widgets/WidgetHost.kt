@@ -138,7 +138,6 @@ object WidgetHost {
                 sessionRunsOutAtMs = sessionOut,
                 weeklyRunsOutAtMs = weeklyOut,
                 synthetic = s.synthetic,
-                stripWindow = headlineWindow(cache, p.key),
             )
         }
     }
@@ -164,6 +163,8 @@ object WidgetHost {
                 accounts = accounts(context, cache, dark, withEstimates = face == Face.COUNTDOWN),
                 usageLeft = cache.usageLeft(),
                 usageVsPace = cache.usageMode() == com.robin.claudeusage.ui.PaceText.Mode.VS_PACE,
+                // CCRM-103 (Hybrid Notification): Appearance › Usage end mark, on rings and bars.
+                usageEndMark = cache.usageEndMark(),
                 showOverPace = cache.showOverPace(),
                 // R8 (CCRM-15 (Above-Pace Verification)): the marker follows the one
                 // process-wide switch the cache's snapshots already honour.
@@ -348,17 +349,13 @@ object WidgetHost {
 
     /**
      * The face's own tap: S9 opens this widget's config (R5, "tap to choose"); anything
-     * else opens Cooldown on the account it shows. The Number's chips and cycler (4×2, and
-     * rev H's 2×2) go to [WidgetActionReceiver] with an identity unique per widget and action.
+     * else opens Cooldown on the account it shows. The Number's cycler (4×2, and rev H's 2×2)
+     * goes to [WidgetActionReceiver] with an identity unique per widget and action. The
+     * window chips went with CCRM-103 (Hybrid Notification): the face shows both windows.
      */
     private fun wire(context: Context, rv: RemoteViews, id: Int, frame: Frame, state: FaceState) {
         rv.setOnClickPendingIntent(R.id.w_root, faceTap(context, id, state))
         if (WidgetFace.numberControls(frame) && state.message == null) {
-            val c = state.cells.single()
-            if (c.hasBothWindows) {
-                rv.setOnClickPendingIntent(WidgetFace.CHIP_SESSION, WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.WINDOW_5H))
-                rv.setOnClickPendingIntent(WidgetFace.CHIP_WEEKLY, WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.WINDOW_WEEKLY))
-            }
             rv.setOnClickPendingIntent(WidgetFace.cycler(frame), WidgetActionReceiver.intent(context, id, WidgetActionReceiver.Action.CYCLE))
         }
     }

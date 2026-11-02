@@ -15,11 +15,27 @@ internal object LeadLines {
 
     private const val DOT = " · "
 
-    /** The 5h companion's own text, "5h 34%" — its loud styling is the caller's. */
-    fun companion(session: UsageWindow?, left: Boolean): String? {
-        val pct = session?.percent ?: return null
-        return "5h ${Fmt.usageInt(pct, left)}%"
-    }
+    /**
+     * CCRM-103 (Hybrid Notification), shape grammar rev D §3: the header's label names the
+     * Weekly whatever leads — the shapes never swap, the ring is the 5h.
+     */
+    fun headerTitle(accountLabel: String): String = "$accountLabel${DOT}Weekly"
+
+    /** Rev D §3 Q6: the sub line while the Weekly has no reading or no reset clock yet. */
+    const val WEEKLY_NOT_STARTED = "Weekly not started"
+
+    /** Rev D §3 Q7: nothing fetched yet (single and Duet alike). */
+    const val NO_READING = "No reading yet"
+
+    /**
+     * The ring's spoken label — there is no "5h" text anywhere in the grammar, so the
+     * accessibility label carries the window: "5-hour window, 34 percent".
+     */
+    fun ringDescription(figure: String): String =
+        "5-hour window, " + if (figure == "—") "no reading" else figure.replace("%", " percent")
+
+    /** Rev D §3 N2: the 5h's time left under the expanded ring, "in 2h 20m"; null without a clock. */
+    fun ringTimeLeft(session: UsageWindow?): String? = session?.resetsAt?.let { Fmt.relIn(it) }
 
     /** "Out until Sun 9:30 PM · in 3d 4h" — a spent week, no band, no allowance. */
     fun outUntil(weekly: UsageWindow, use24h: Boolean): String =
@@ -107,11 +123,20 @@ internal object LeadLines {
         else -> "${Fmt.usageInt(pct, mode == PaceText.Mode.LEFT)}%"
     }
 
-    /** The small caption under a figure: "LEFT", "VS PACE", or none. */
+    /**
+     * The small caption under a figure: "LEFT", or in Vs pace the side the unsigned figure's
+     * colour shows — "UNDER PACE", "OVER PACE", "ON PACE" (shape grammar rev D §7b, its
+     * colour-blind cue) — or none.
+     */
     fun figureCaption(pct: Double?, elapsed: Double?, mode: PaceText.Mode): String? = when {
         pct == null -> null
         mode == PaceText.Mode.LEFT -> "LEFT"
-        mode == PaceText.Mode.VS_PACE && Pace.vsPace(pct, elapsed) != null -> "VS PACE"
+        mode == PaceText.Mode.VS_PACE -> when (PaceText.vsPaceTone(pct, elapsed)) {
+            PaceText.VsTone.UNDER -> "UNDER PACE"
+            PaceText.VsTone.OVER -> "OVER PACE"
+            PaceText.VsTone.ON -> "ON PACE"
+            PaceText.VsTone.USAGE -> null
+        }
         else -> null
     }
 }

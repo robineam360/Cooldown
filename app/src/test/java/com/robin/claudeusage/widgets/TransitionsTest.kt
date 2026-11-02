@@ -75,13 +75,17 @@ class TransitionsTest {
         assertNull(next(listOf(Placed(Face.COUNTDOWN, "pro", FaceWindow.WEEKLY)), old))
     }
 
-    /** Rev H (CCBG-44 (Widget Fill)): a Ring may draw the other window as its companion. */
+    /**
+     * CCRM-103 (Hybrid Notification)'s shape grammar: a Ring draws the Weekly bar under its 5h
+     * ring and a Number the 5h ring beside its Weekly, so both count both windows.
+     */
     @Test
-    fun aRingCountsBothWindows() {
+    fun aRingAndANumberCountBothWindows() {
         val s = Snapshot("pro", data(now + 5 * h, now + 3 * h), fetchedAt = now)
         assertEquals(now + 3 * h, next(listOf(Placed(Face.RING, "pro", FaceWindow.SESSION)), s))
-        // …a Number on 5h still waits for its own window.
-        assertEquals(now + 5 * h, next(listOf(Placed(Face.NUMBER, "pro", FaceWindow.SESSION)), s))
+        assertEquals(now + 3 * h, next(listOf(Placed(Face.NUMBER, "pro", FaceWindow.SESSION)), s))
+        // …a Countdown still waits for its own window.
+        assertEquals(now + 5 * h, next(listOf(Placed(Face.COUNTDOWN, "pro", FaceWindow.SESSION)), s))
     }
 
     @Test

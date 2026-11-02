@@ -90,6 +90,17 @@ object AppPace {
     }
 
     /**
+     * CCRM-103 (Hybrid Notification): the account tile's 5h line (shape grammar rev D §1),
+     * [sessionFolded]'s words after a ring glyph that stands for "5h": "resets in 2h 20m ·
+     * on track for ~69%". Null — no line — before the window has a reading and a clock.
+     */
+    fun fiveHourLine(window: UsageWindow?, estimate: Projection.Estimate?, use24h: Boolean): Line? {
+        if (window?.resetsAt == null || window.percent == null) return null
+        val line = sessionFolded(window, estimate, use24h)
+        return line.copy(text = line.text.replaceFirstChar { it.lowercaseChar() })
+    }
+
+    /**
      * CCRM-102 (Spent Week Gate): the one full-opacity note under a greyed 5h card,
      * "Weekly limit reached — 5h can't be used until Sun 9:30 PM".
      */
@@ -98,14 +109,15 @@ object AppPace {
 
     /**
      * A card or row figure in the Usage display mode, and the small word after it:
-     * Used "52%"; Left "48%" + "left"; Vs pace "+10%" + "vs pace", falling back to the
-     * Used figure (and no word) when spent, unclocked or unread.
+     * Used "52%"; Left "48%" + "left"; Vs pace "10%" and no word — its colour
+     * ([PaceText.vsPaceTone]) says the side since the shape grammar (rev D §7b) — falling
+     * back to the Used figure when spent, unclocked or unread.
      */
     fun figure(pct: Double?, elapsed: Double?, mode: PaceText.Mode): Pair<String, String?> = when {
         pct == null -> "—" to null
         mode == PaceText.Mode.LEFT -> "${Fmt.usageInt(pct, true)}%" to "left"
         mode == PaceText.Mode.VS_PACE && Pace.vsPace(pct, elapsed) != null ->
-            PaceText.vsPaceFigure(pct, elapsed) to "vs pace"
+            PaceText.vsPaceFigure(pct, elapsed) to null
         else -> "${pct.toInt()}%" to null
     }
 }

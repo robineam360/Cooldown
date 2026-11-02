@@ -501,3 +501,34 @@ As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
 - **§4.5 / copy, new iOS rows:**
   | Weekly spent, 5h shown | card: figure, bar, chart (no projection) and reset line at 45%, no caption; one full-ink line "Weekly limit reached — 5h can't be used until Thu 10:21 pm" (weekly reset, `dayClock`) | widgets/faces showing the 5h: dimmed to 45%, stamp "Weekly spent" at full opacity |
   Source: `CardContent.weekGateNote`, `CardContent.weekSpentStamp`, `WindowCard.weekGate`.
+
+## The shape grammar — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
+
+Frozen 2026-11-02 at rev D of `design/2026-11-02-shape-grammar.html`. It supersedes the per-window shapes above
+wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar").
+
+- **Two shapes, one meaning each.** The 5-hour window is a hollow ring, always on the left; the 7-day windows are
+  bars, always on the right. No "5h" text anywhere; a ring's accessibility label is "5-hour window, 34 percent"
+  ("No 5-hour window" for the cross).
+- **The ring** (Android `ui/ShapeGrammar.kt GrammarRing`): centre-line radius 0.39 S; band 0.13 S, 0.10 S at 48 dp
+  and under (never under 3 dp); track ink 16% (22% greyed); fill the account colour with the §1.4 step, round cap
+  only under Round, at least 9% when non-zero; the red slice from the tick to the fill tip more than 3 points over;
+  the pace tick a radial line from R − band to R + band at max(1.5, S/32) dp, ink 90%; the dashed room under the mark
+  from the fill's visible end to the tick, in the account colour at 60%, line max(1, S/60), dashes max(1.6, S/26),
+  dropped under 28 dp; the open app tile's dotted projection arc. The figure is a real text: 0.25 S (0.29 S at 48 and
+  under; four characters 0.21 / 0.24 S), fitted to clear the band's inner edge by 1.5 dp; ink, or the severity colour
+  above 90. States: greyed (a spent week, CCRM-102 (Spent Week Gate)): the track only, the figure at 45%; not
+  applicable (a plan with no 5h): the track and a cross (arms 0.12 S, ink 45%), no figure; no reading: the track and
+  "—".
+- **Figures** (rev C §1c, rev B §1b): the system sans with tabular, lining digits (`tnum`, `lnum`; iOS
+  `.monospacedDigit()`), the "%" at 58% of the digits' size on the baseline.
+- **Usage end mark** (rev D §1e): Round (E0, the pre-v2.0 cap) · Line (E1, default) · Pace colour (E2b). Line and Pace
+  colour end the fill square at the usage and add a short line: on a bar 1.5 dp wide, 1.5 dp past each edge; on a
+  ring a radial line 0.35 of the band past each edge, max(1.3, S/40) dp; both over a 1 dp gap in the surface colour.
+  Line is the fill's colour; Pace colour is ink inside the ±5 on-pace band, green under, red over.
+- **Vs pace colours** (rev D §7b): figures are unsigned; green under the mark (dark #9CCC65, light #2E7D32), red over
+  it (#FF5252 / #C62828, the bar's red), plain ink at 0%; a fallback usage figure keeps its severity colour. Where a
+  caption exists it names the side: the notification's "UNDER PACE" / "OVER PACE" / "ON PACE".
+- **Status-bar glyphs** (Android, rev D §4): the 5h ring (unchanged geometry, §3.3); a red cross alone (arms 7 of 24
+  units, stroke 3.4) while out; the ring greyed (track 30%, arc 40%, no needle) while the week is spent; N3, the
+  Weekly as a 21 × 10-unit capsule with its tick in a cleared halo.

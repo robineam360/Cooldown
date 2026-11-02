@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark. markReadout (CCRM-103 (Hybrid Notification), shape grammar rev D section 2b and C4): the words a tapped figure's line shows for 3 s, from core section 6.3 markTime. zone is the IANA zone the instant is written in; the day and time follow the app's Time format, 12-hour or 24-hour; the 12-hour cases are written in en-US (AM/PM), and a client prints its platform locale's own marker. Durations are Xd Yh, under a day Xh Ym, under an hour Ym, every part rounded down. expected null = the tap does nothing."
+    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark. markReadout (CCRM-103 (Hybrid Notification), shape grammar rev D section 2b and C4): the words a tapped figure's line shows for 3 s, from core section 6.3 markTime. zone is the IANA zone the instant is written in; the day and time follow the app's Time format, 12-hour or 24-hour; the 12-hour cases are written in en-US (AM/PM), and a client prints its platform locale's own marker. Durations are Xd Yh, under a day Xh Ym, under an hour Ym, every part rounded down. expected null = the tap does nothing. vsPaceFigure, rev D of the shape grammar (Robin, 2026-11-02, CCRM-103 (Hybrid Notification) section 7b): the figure carries no sign; tone carries it: under = green (the usage is under the mark), over = red, on = plain ink at 0%, usage = the fallback usage figure in its severity colours (spent, unclocked) or a dash. The number is unchanged: |floor(elapsed - used)|."
   },
   "vsPaceFigure": [
     {
@@ -8,32 +8,36 @@
       "usedPct": 50,
       "elapsedPct": 60,
       "hasResetClock": true,
-      "expected": "+10%",
-      "why": "floor(60 - 50) = +10"
+      "expected": "10%",
+      "why": "floor(60 - 50) = +10",
+      "tone": "under"
     },
     {
       "name": "over the mark",
       "usedPct": 80,
       "elapsedPct": 60,
       "hasResetClock": true,
-      "expected": "−20%",
-      "why": "floor(60 - 80) = -20, printed with U+2212"
+      "expected": "20%",
+      "why": "floor(60 - 80) = -20, printed with U+2212",
+      "tone": "over"
     },
     {
       "name": "rounded down: room is never overstated",
       "usedPct": 50.4,
       "elapsedPct": 60.9,
       "hasResetClock": true,
-      "expected": "+10%",
-      "why": "floor(10.5) = 10"
+      "expected": "10%",
+      "why": "floor(10.5) = 10",
+      "tone": "under"
     },
     {
       "name": "rounded down over the mark",
       "usedPct": 60.2,
       "elapsedPct": 60.0,
       "hasResetClock": true,
-      "expected": "−1%",
-      "why": "floor(-0.2) = -1"
+      "expected": "1%",
+      "why": "floor(-0.2) = -1",
+      "tone": "over"
     },
     {
       "name": "exactly on the mark",
@@ -41,15 +45,17 @@
       "elapsedPct": 42,
       "hasResetClock": true,
       "expected": "0%",
-      "why": "no sign on zero"
+      "why": "no sign on zero",
+      "tone": "on"
     },
     {
       "name": "first hours of a window",
       "usedPct": 0.4,
       "elapsedPct": 1.7,
       "hasResetClock": true,
-      "expected": "+1%",
-      "why": "floor(1.3) = 1"
+      "expected": "1%",
+      "why": "floor(1.3) = 1",
+      "tone": "under"
     },
     {
       "name": "week spent falls back to usage",
@@ -57,7 +63,8 @@
       "elapsedPct": 89.8,
       "hasResetClock": true,
       "expected": "100%",
-      "why": "the usage figure, as Used mode"
+      "why": "the usage figure, as Used mode",
+      "tone": "usage"
     },
     {
       "name": "spent threshold 99.5",
@@ -65,7 +72,8 @@
       "elapsedPct": 95.0,
       "hasResetClock": true,
       "expected": "99%",
-      "why": "usedPct >= 99.5 is spent: the usage figure, truncated as Used mode"
+      "why": "usedPct >= 99.5 is spent: the usage figure, truncated as Used mode",
+      "tone": "usage"
     },
     {
       "name": "no reset clock falls back to usage",
@@ -73,7 +81,8 @@
       "elapsedPct": null,
       "hasResetClock": false,
       "expected": "0%",
-      "why": "window not started: no pace mark"
+      "why": "window not started: no pace mark",
+      "tone": "usage"
     },
     {
       "name": "no reading",
@@ -81,15 +90,17 @@
       "elapsedPct": 50,
       "hasResetClock": true,
       "expected": "—",
-      "why": "an em dash, as every mode"
+      "why": "an em dash, as every mode",
+      "tone": "usage"
     },
     {
       "name": "binary float edge: 2.3 - 0.3",
       "usedPct": 0.3,
       "elapsedPct": 2.3,
       "hasResetClock": true,
-      "expected": "+2%",
-      "why": "2.3 - 0.3 is 1.9999999999999998 in binary floats; floor after adding 1e-9 gives +2"
+      "expected": "2%",
+      "why": "2.3 - 0.3 is 1.9999999999999998 in binary floats; floor after adding 1e-9 gives +2",
+      "tone": "under"
     },
     {
       "name": "binary float edge on the mark",
@@ -97,7 +108,8 @@
       "elapsedPct": 17.0,
       "hasResetClock": true,
       "expected": "0%",
-      "why": "(1 - 0.83) x 100 against an even 17: 0%, not -1%"
+      "why": "(1 - 0.83) x 100 against an even 17: 0%, not -1%",
+      "tone": "on"
     }
   ],
   "caption": [
@@ -358,6 +370,50 @@
       "use24h": false,
       "expected": null,
       "why": ""
+    },
+    {
+      "name": "past its reset: clamped, on the mark",
+      "usedPct": 99.2,
+      "msUntilReset": -3024000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "On the pace mark",
+      "why": "elapsed is clamped to 100 as core section 6 says, as the caption's is: 99.2 is under a point from it"
+    },
+    {
+      "name": "past its reset: under",
+      "usedPct": 50.0,
+      "msUntilReset": -3600000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "3d 13h behind pace",
+      "why": "clamped elapsed 100 puts it under; the mark passed 50% at start + 3.5 days, 3d 13h ago (302400000 + 3600000 ms)"
+    },
+    {
+      "name": "exactly one point apart is not on",
+      "usedPct": 40.0,
+      "msUntilReset": 356832000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "1h 40m behind pace",
+      "why": "elapsed exactly 41.0 against 40.0 used: |d| = 1 is not under 1, so the side is under; 0.01 x 604800000 = 6048000 ms"
+    },
+    {
+      "name": "used 0: the mark passed it at the start",
+      "usedPct": 0.0,
+      "msUntilReset": 302400000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "3d 12h behind pace",
+      "why": "half the week gone, nothing used"
     }
   ]
 }

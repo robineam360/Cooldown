@@ -159,7 +159,10 @@ spare · pace mark 40% · resets Fri" / "20 over · pace mark 40% · resets Fri"
 **Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
 value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
-The minus is U+2212. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
+**Since the shape grammar (rev D §7b, 2026-11-02) the figure is unsigned** — "10%", "20%", "0%" — and its colour
+says the side: green under the mark, red over it, plain ink on it; the fallback usage figure keeps its severity
+colour (fixture field `tone`). The notification's caption under the figure says "UNDER PACE" / "OVER PACE" /
+"ON PACE"; the app's figures carry no "vs pace" word. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
 
 **Spent week gate** (CCRM-102 (Spent Week Gate), approved 2026-11-02): while the Weekly window is spent
 (core §6.1), the 5h is shown disabled on every account — figure, bar and reset line at 45% opacity, no pace
@@ -188,7 +191,9 @@ readers say "5-hour window, 34 percent").
   100) is a red cross alone until it resets; a spent week (core §6.1) greys the ring, outranking the
   cross. With the Weekly bar, or on a plan with no 5h whatever is stored: the Weekly as a small bar with its
   pace tick; a full Weekly, or a full 5h on a plan that has one, is the red cross. In a Duet the icon
-  belongs to the account the "Status-bar ring shows" setting picks, and that account's choice draws it.
+  belongs to the account the "Status-bar ring shows" setting picks, and that account's choice draws it;
+  "Whichever is higher" compares the window each account's glyph stands for (the 5h for the ring, the Weekly
+  for the bar or a plan with no 5h).
   Cases in [`fixtures/status-icon/cases.json`](fixtures/status-icon/cases.json). An absent or unknown value
   reads as `ring`; v1.9 does not read the key.
 

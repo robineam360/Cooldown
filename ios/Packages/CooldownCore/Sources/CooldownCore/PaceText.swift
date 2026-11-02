@@ -44,14 +44,22 @@ public enum PaceText {
         return words + dot + Self.allowance(allowance)
     }
 
-    /// The big figure in Vs pace mode: "+10%", "−20%", "0%"; falls back to the Used figure when spent or unclocked,
-    /// "—" with no reading.
+    /// The figure in Vs pace mode, unsigned since the shape grammar (rev D §7b, CCRM-103 (Hybrid Notification)):
+    /// "10%", "20%", "0%" — `vsPaceTone` carries the side as a colour. Falls back to the Used figure when spent or
+    /// unclocked, "—" with no reading.
     public static func vsPaceFigure(usedPct: Double?, elapsedPct: Double?) -> String {
         guard let usedPct else { return "—" }
         guard let d = Pace.vsPace(usedPct: usedPct, elapsedPct: elapsedPct) else { return "\(Int(usedPct))%" }
-        if d > 0 { return "+\(d)%" }
-        if d < 0 { return "\(minus)\(-d)%" }
-        return "0%"
+        return "\(abs(d))%"
+    }
+
+    /// Which colour a Vs pace figure takes: green under the mark, red over it, ink on it; `.usage` = the fallback
+    /// usage figure in its severity colours.
+    public enum VsTone: String, Sendable, Equatable { case under, over, on, usage }
+
+    public static func vsPaceTone(usedPct: Double?, elapsedPct: Double?) -> VsTone {
+        guard let d = Pace.vsPace(usedPct: usedPct, elapsedPct: elapsedPct) else { return .usage }
+        return d > 0 ? .under : d < 0 ? .over : .on
     }
 
     static func halfUp(_ x: Double) -> Int { Int((x + 0.5 + Pace.edgeEpsilon).rounded(.down)) }

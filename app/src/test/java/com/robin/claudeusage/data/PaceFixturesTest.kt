@@ -78,7 +78,6 @@ class PaceFixturesTest {
     fun `headline resolution matches every mobile case`() {
         val surfaces = mapOf(
             "notification" to HeadlineSurface.NOTIFICATION,
-            "statusGauge" to HeadlineSurface.STATUS_GAUGE,
             "newWidget" to HeadlineSurface.NEW_WIDGET,
         )
         for (c in load("mobile/fixtures/headline/cases.json").getJSONArray("cases").objects()) {
@@ -141,6 +140,11 @@ class PaceFixturesTest {
         for (c in fx.getJSONArray("vsPaceFigure").objects()) {
             val g = if (c.getBoolean("hasResetClock")) c.dbl("elapsedPct") else null
             assertEquals(c.getString("name"), c.getString("expected"), PaceText.vsPaceFigure(c.dbl("usedPct"), g))
+            assertEquals(
+                c.getString("name"),
+                PaceText.VsTone.valueOf(c.getString("tone").uppercase()),
+                PaceText.vsPaceTone(c.dbl("usedPct"), g),
+            )
         }
         for (c in fx.getJSONArray("caption").objects()) {
             val g = if (c.getBoolean("hasResetClock")) c.dbl("elapsedPct") else null

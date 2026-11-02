@@ -7,13 +7,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color as AndroidColor
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.SpannableString
-import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.util.TypedValue
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
@@ -26,6 +26,9 @@ import com.robin.claudeusage.R
 import com.robin.claudeusage.data.AccountRead
 import com.robin.claudeusage.data.AuthState
 import com.robin.claudeusage.data.HeadlineSurface
+import com.robin.claudeusage.data.StatusGlyph
+import com.robin.claudeusage.data.StatusIconChoice
+import com.robin.claudeusage.data.StatusIconRule
 import com.robin.claudeusage.data.HistoryStore
 import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.data.Profile
@@ -38,18 +41,22 @@ import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.data.WindowKind
 import com.robin.claudeusage.ui.BarGeometry
 import com.robin.claudeusage.ui.BarRenderer
-import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.Grammar
+import com.robin.claudeusage.ui.GrammarRing
 import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.UsageEndMark
 import com.robin.claudeusage.ui.UsageIcon
 import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.providerMarkRes
+import kotlin.math.ceil
 
 /**
- * The optional always-on notification: an account's 5-hour usage as the largest
- * number the collapsed row can hold, plus a full bar panel (expanded). It's silent
- * and ongoing, and re-renders on every poll so the percentage and countdown stay
- * live.
+ * The optional always-on notification: an account's Weekly usage as the largest
+ * number the collapsed row can hold, its 5h as the shape grammar's ring at the left
+ * (CCRM-103 (Hybrid Notification), `design/2026-11-02-shape-grammar.html` rev D §3),
+ * plus a panel (expanded). It's silent and ongoing, and re-renders on every poll so
+ * the percentage and countdown stay live.
  *
  * Since CCRM-67 (Pin Service) the drawing here is only half the story: [update] no
  * longer just posts a notification, it also keeps [PinnedService] running for as
@@ -91,14 +98,10 @@ object PinnedNotification {
      */
     private const val PANEL_WIDTH_DP = 340f
 
-    /**
-     * The nominal width of one Duet half's bar (CCRM-62 (Duet Notification)): a
-     * 360 dp card, less 16 dp of system padding a side, less the 16 dp gutter, split
-     * two ways. Drawn at its own width rather than at [PANEL_WIDTH_DP] for the reason
-     * in [drawBarBitmap]'s note — a bar squeezed 2× horizontally keeps its tick's
-     * *position* but flattens its shape and skews the fill→red boundary off vertical.
-     */
-    private const val HALF_WIDTH_DP = 156f
+    // A Duet half's bar is drawn at its own nominal width ([Duet.barDp]) rather than at
+    // [PANEL_WIDTH_DP] for the reason in [drawBarBitmap]'s note — a bar squeezed 2×
+    // horizontally keeps its tick's *position* but flattens its shape and skews the
+    // fill→red boundary off vertical.
 
     // Not private any more (CCRM-67 (Pin Service)): [PinnedService] posts and
     // cancels under this same id so the notification it's bound to via
@@ -240,7 +243,7 @@ object PinnedNotification {
             .addAction(0, "Refresh", refresh)
     }
 
-    // --- one account (today's layout, unchanged) ------------------------------------
+    // --- one account (CCRM-103 (Hybrid Notification): H4, the 5h ring at the left) ----
 
     private fun singleNotification(
         context: Context,
@@ -254,6 +257,8 @@ object PinnedNotification {
         showOverPace: Boolean,
     ): NotificationCompat.Builder {
         val h = half(context, cache, profile, dark, mode, use24h, resetClock, duet = false)
+        // CCRM-103 (Hybrid Notification), rev D §1e: Appearance › Usage end mark, on the bars and the ring.
+        val endMark = cache.usageEndMark()
 
         // CCRM-49 (Glyph Legibility): the status bar keeps colour, so the glyph wears
         // the same severity colour as the gauge below it — one source of truth, and the
@@ -262,10 +267,10 @@ object PinnedNotification {
         // Notification) took the weekly window off the glyph altogether — it was a flag
         // dot in the needle's hub, and the hollow it sat in is what the ring needed back
         // for legibility.
-        // CCRM-96 (Weekly First): the gauge draws Weekly until the 5h blocks (its Headline
-        // Weekly behaves as Auto there), so its input is its own window, not the figure's.
+        // CCRM-103 (Hybrid Notification): the glyph is the account's own (rev D §4), so its
+        // input is its own window, not the figure's.
         val smallIcon = drawStatusIcon(
-            context, h.gaugePct, left, h.gaugeElapsed, h.gaugeFill.toArgb(), dark, showOverPace,
+            context, h.gaugeGlyph, h.gaugePct, left, h.gaugeElapsed, h.gaugeFill.toArgb(), dark, showOverPace,
         )
 
         // CCRM-44 (One Surface): this panel carries every *condition* for every account
@@ -292,35 +297,27 @@ object PinnedNotification {
         // Not gated on data any more: a condition is worth showing even before the first
         // successful fetch, which is exactly when a sign-in problem is most likely.
         val panel = PanelSpec(
-            // The panel's first row is the window the header does not lead with (rev A
-            // S2/L3): the 5h under a Weekly lead, the Weekly under a 5h lead, so no number
-            // prints twice. Model caps follow unless the account hides them (CCRM-99).
-            bars = buildList {
-                companionRow(h, null, resetClock, use24h)?.let { add(it) }
-                if (cache.showModelLimits(profile)) addAll(capRows(h.data, null, h.accent))
-            },
+            // CCRM-103 (Hybrid Notification), rev D §3 N2: no companion row any more — the
+            // 5h is the ring with its time left (the grammar has no 5h bars) and the Weekly is
+            // the header whatever leads. Model caps stay unless the account hides them (CCRM-99).
+            bars = if (cache.showModelLimits(profile)) capRows(h.data, null, h.accent) else emptyList(),
             theme = h.accent, dark = dark, mode = mode, showOverPace = showOverPace,
             conditions = panelState.strips, overflow = panelState.overflow,
+            endMark = endMark,
         )
 
         // Custom views: the largest number the collapsed row can hold. Collapsed has no
         // height for the synthetic band (rev E §9c), so it shows the violet dot instead.
         builder.setCustomContentView(
             bigNumberView(
-                context, R.layout.notif_big_number, h.pctText, h.title, collapsedText,
-                h.pct, h.elapsed, h.fill, h.accent, dark, showOverPace, null, panelState.stale,
-                profile.provider,
-                caption = h.caption,
+                context, R.layout.notif_big_number, h, collapsedText,
+                dark, showOverPace, endMark, null, panelState.stale, expanded = false,
             ).apply { showSyntheticDot(R.id.synth_dot) }
         )
         builder.setCustomBigContentView(synthetic(context,
             bigNumberView(
-                context, R.layout.notif_big_number_expanded,
-                h.pctText, h.title, expandedText,
-                h.pct, h.elapsed, h.fill, h.accent, dark, showOverPace, panel, panelState.stale,
-                profile.provider,
-                caption = h.caption,
-                sub2 = h.sub2,
+                context, R.layout.notif_big_number_expanded, h, expandedText,
+                dark, showOverPace, endMark, panel, panelState.stale, expanded = true,
             )
         ))
         builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
@@ -344,6 +341,7 @@ object PinnedNotification {
         val first = half(context, cache, firstProfile, dark, mode, use24h, resetClock, duet = true)
         val second = half(context, cache, secondProfile, dark, mode, use24h, resetClock, duet = true)
         val panelState = Conditions.panelFor(context, cache, firstProfile, secondProfile)
+        val endMark = cache.usageEndMark()
 
         // One glyph, two accounts: "Status-bar ring shows" picks which. Its colour is
         // now the account identity as much as the severity, which is the whole reason a
@@ -353,8 +351,9 @@ object PinnedNotification {
             Duet.Slot.FIRST -> first
             Duet.Slot.SECOND -> second
         }
+        // That account's own Status-bar icon draws it (rev D §4b).
         val smallIcon = drawStatusIcon(
-            context, ring.gaugePct, left, ring.gaugeElapsed, ring.gaugeFill.toArgb(), dark, showOverPace,
+            context, ring.gaugeGlyph, ring.gaugePct, left, ring.gaugeElapsed, ring.gaugeFill.toArgb(), dark, showOverPace,
         )
 
         // The plain strings still matter: the lock screen, TalkBack, and any skin that
@@ -374,17 +373,14 @@ object PinnedNotification {
             contentIntent = firstTap, accent = ring.fill,
         )
 
-        // Panel order: each account's companion row — its 5h under a Weekly lead, its
-        // Weekly under a 5h lead (rev A D2), so no number prints twice; an account with no
-        // 5h (ChatGPT Pro) has none. No model caps on a Duet (CCBG-26 (Panel Scaling)): two
-        // header blocks leave the panel ~120 dp, which two rows and one strip fill — the
-        // same 78 dp the two Weekly rows took before v2.0.
+        // CCRM-103 (Hybrid Notification), rev D §3 D4: the companion rows are gone — each 5h
+        // is its header's ring with its time left, each Weekly its header — so the panel
+        // carries only the condition strip. Still no model caps on a Duet (CCBG-26 (Panel
+        // Scaling)).
         val panel = PanelSpec(
-            bars = listOfNotNull(
-                companionRow(first, first.label, resetClock, use24h),
-                companionRow(second, second.label, resetClock, use24h),
-            ),
+            bars = emptyList(),
             theme = first.accent, dark = dark, mode = mode, showOverPace = showOverPace,
+            endMark = endMark,
             // CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic band spends
             // ~19 dp of the cap the one strip was priced against, so under synthetic the
             // expanded Duet draws no strip. The collapsed halves keep their condition dots.
@@ -396,13 +392,13 @@ object PinnedNotification {
         val update = Conditions.hasUpdate(context, cache)
         builder.setCustomContentView(
             duetView(
-                context, R.layout.notif_duet, first, second, dark, left, showOverPace,
+                context, R.layout.notif_duet, first, second, dark, showOverPace, endMark,
                 update, panel = null, expanded = false, firstTap = firstTap, secondTap = secondTap,
             )
         )
         builder.setCustomBigContentView(synthetic(context,
             duetView(
-                context, R.layout.notif_duet_expanded, first, second, dark, left, showOverPace,
+                context, R.layout.notif_duet_expanded, first, second, dark, showOverPace, endMark,
                 update, panel = panel, expanded = true, firstTap = firstTap, secondTap = secondTap,
             )
         ))
@@ -465,14 +461,18 @@ object PinnedNotification {
         val accent: Color,
         val data: UsageData?,
         /**
-         * The window this account leads with is Weekly: CCRM-96 (Weekly First)'s Headline
-         * (spec/mobile BEHAVIOR-MOBILE §5), and always for an account with no 5h.
+         * CCRM-103 (Hybrid Notification), rev D §3 Q2: the 5h's words lead the sub line —
+         * CCRM-96 (Weekly First)'s Headline picked the 5h (5-hour, or Auto while it binds).
+         * The shapes never swap: the figure and the bar stay the Weekly, the ring the 5h.
          */
-        val headlineWeekly: Boolean,
+        val takeover: Boolean,
+        /** The Weekly's used percent — the figure and the bar, whatever leads. */
         val pct: Double?,
         val pctText: String,
-        /** [Palette.barColor] of [pct] over [accent] — the figure's hue. */
+        /** [Palette.barColor] of [pct] over [accent] — the bar's and the shade accent's hue. */
         val fill: Color,
+        /** The figure's colour: [fill], or in Vs pace green / red / ink (rev D §7b). */
+        val figureColor: Color,
         val elapsed: Double?,
         /** "Personal · Weekly", on the single row and a Duet alike (CCBG-45 (Single Panel Wording)). */
         val title: String,
@@ -480,12 +480,16 @@ object PinnedNotification {
         val sub: String,
         /** The single expanded header's second line, or null. */
         val sub2: String?,
-        /** The single collapsed row's line, with the 5h companion. */
+        /** The single collapsed row's line: the pace words, or the 5h's words in a takeover. */
         val collapsedSub: CharSequence,
+        /** The 5h ring, or null for a plan with no 5h (B1: no ring at all). */
+        val ring: Ring?,
         /** "LEFT", "VS PACE" or null, under the figure. */
         val caption: String?,
         /** The status-bar gauge's window — Weekly behaves as Auto there. */
         val gaugePct: Double?,
+        /** CCRM-103: what the status bar draws for this account; [gaugePct] is that glyph's window. */
+        val gaugeGlyph: StatusGlyph,
         val gaugeElapsed: Double?,
         val gaugeFill: Color,
         /** core §6.2: the 5h is the limit about to stop this account. */
@@ -493,6 +497,25 @@ object PinnedNotification {
         val stale: Boolean,
         /** A sign-in that stopped working or a stale reading — the condition dot's cue. */
         val fault: Boolean,
+    )
+
+    /**
+     * CCRM-103 (Hybrid Notification), shape grammar rev D §3: one account's 5h ring, drawn
+     * by [GrammarRing.paint] with its figure a real TextView in the bore.
+     */
+    private data class Ring(
+        val pct: Double?,
+        val elapsed: Double?,
+        /** "34%", "66%" (Left), "19%" (Vs pace) or "—". */
+        val figure: String,
+        /** The figure's colour; null = the ink, or the severity colour above 90 ([GrammarRing.loud]). */
+        val figureColor: Color?,
+        /** [GrammarRing.State.GREY] while the week is spent (CCRM-102 (Spent Week Gate)). */
+        val state: GrammarRing.State,
+        /** "in 2h 20m" under the expanded ring, or null. */
+        val timeLeft: String?,
+        /** "5-hour window, 34 percent". */
+        val description: String,
     )
 
     private fun half(
@@ -520,78 +543,103 @@ object PinnedNotification {
         val setting = cache.headline(profile)
         val headlineWeekly =
             AccountRead.lead(setting, HeadlineSurface.NOTIFICATION, data, binding) == WindowKind.WEEKLY
-        val gaugeWeekly =
-            AccountRead.lead(setting, HeadlineSurface.STATUS_GAUGE, data, binding) == WindowKind.WEEKLY
-        val window = if (headlineWeekly) data?.weekly else data?.session
+        // CCRM-103 (Hybrid Notification), shape grammar rev D §4: the Headline no longer picks
+        // the status-bar window. The ring is always the 5h; the account's Status-bar icon (or a
+        // plan with no 5h) makes it the Weekly bar; a full window is the red cross, a spent week
+        // greys the ring. No reading yet keeps the account's choice.
+        val iconChoice = cache.statusIcon(profile)
+        val iconHasSession = data == null || data.session != null
+        val glyph = StatusIconRule.glyph(
+            iconChoice, iconHasSession, sessionPct = data?.session?.percent, weeklyPct = data?.weekly?.percent,
+        )
+        // The window the glyph stands for — the Weekly for the bar (and its cross), else the
+        // 5h — is also what a Duet's "Whichever is higher" compares (BEHAVIOR-MOBILE §5).
+        val gaugeWeekly = !iconHasSession || iconChoice == StatusIconChoice.WEEKLY_BAR
+        // CCRM-103 (Hybrid Notification), rev D §3: the shapes never swap. The figure, the bar
+        // and the label are the Weekly whatever leads; the Headline only decides whose words
+        // the sub line carries (Q2, Auto takeover). An account with no 5h always leads Weekly.
+        val takeover = !headlineWeekly
         // CCRM-62 (Duet Notification): on a Duet half a broken sign-in reads as no
         // reading at all — the placeholder figure and an empty track with no tick — so
         // the 6 dp dot and the panel strip are what say why, and the *other* half stays
         // crisp. The single layout is untouched by this: with one account there is
         // nothing to contrast against, and it keeps showing what was last cached.
         val broken = duet && snapshot.authState == AuthState.REAUTH_NEEDED
-        val pct = if (broken) null else window?.percent
-        val elapsed =
-            if (broken) null
-            else elapsedPercent(
-                window, if (headlineWeekly) Projection.WEEKLY_MS else Projection.SESSION_MS,
-            )
-        // "5h" and "Weekly" on every surface, never "5-hour window" / "7-day" (ROADMAP's
-        // v1.8 R1). The Duet needed them first, since two accounts doubled every label;
-        // CCBG-45 (Single Panel Wording) brought the single row in line, as approved as-is.
-        val windowName = windowName(headlineWeekly)
-        val resetsAt = window?.resetsAt
-        val left = mode == PaceText.Mode.LEFT
         val weekly = data?.weekly
+        val session = data?.session
+        val pct = if (broken) null else weekly?.percent
+        val elapsed = if (broken) null else elapsedPercent(weekly, Projection.WEEKLY_MS)
         val weeklyElapsed = elapsedPercent(weekly, Projection.WEEKLY_MS)
         val weeklySpent = Pace.isSpent(weekly?.percent)
+        // Rev D §3 Q6/Q7: "No reading yet" with nothing fetched (single and Duet alike now),
+        // "Weekly not started" without a Weekly clock; a takeover keeps today's line for a
+        // 5h with no clock.
         val fallback = when {
-            duet && (broken || data == null) -> "No reading yet"
-            resetsAt == null -> "Not started yet"
+            broken || data == null -> LeadLines.NO_READING
+            takeover && session?.resetsAt == null -> "Not started yet"
+            !takeover && (weekly?.percent == null || weekly.resetsAt == null) -> LeadLines.WEEKLY_NOT_STARTED
             else -> null
         }
-        // Weekly leads: "band · allowance" (rev A §2), a spent week "Out until …"; 5h leads:
-        // the reset line, "Back at …" while it binds. The words carry no colour here.
-        val headerSub = fallback ?: if (headlineWeekly) {
-            if (weeklySpent) LeadLines.outUntil(weekly!!, use24h)
-            else LeadLines.paceWords(weekly, weeklyElapsed, toLast = !duet) ?: ""
+        // Weekly leads: "band · allowance" (rev A §2), a spent week "Out until …"; a takeover:
+        // the 5h's reset line, "Back at …" while it binds. The words carry no colour here.
+        val headerSub = fallback ?: if (takeover) {
+            LeadLines.sessionLine(session, binding, resetClock, use24h) ?: ""
+        } else if (weeklySpent) {
+            LeadLines.outUntil(weekly!!, use24h)
         } else {
-            LeadLines.sessionLine(window, binding, resetClock, use24h) ?: ""
+            LeadLines.paceWords(weekly, weeklyElapsed, toLast = !duet) ?: ""
         }
-        val duetSub = if (fallback == null && headlineWeekly && !weeklySpent) {
+        val duetSub = if (fallback == null && !takeover && !weeklySpent) {
             listOfNotNull(headerSub.ifEmpty { null }, LeadLines.resetsDay(weekly)).joinToString(" · ")
         } else headerSub
+        // Line 2 keeps today's text (rev D C3: no pace readout in the notification).
         val sub2 = when {
             duet || fallback != null -> null
-            headlineWeekly -> if (weeklySpent) null else LeadLines.weeklySecondLine(weekly, weeklyElapsed, mode)
-            else -> LeadLines.sessionSecondLine(hitsAt, use24h)
+            takeover -> LeadLines.sessionSecondLine(hitsAt, use24h)
+            weeklySpent -> null
+            else -> LeadLines.weeklySecondLine(weekly, weeklyElapsed, mode)
         }
+        // Rev D §3 N1: the collapsed line is the pace words only — the ring replaced the
+        // "· 5h 34%" companion. An account with no 5h keeps today's "· resets Sun" (B1).
         val collapsedSub: CharSequence = when {
             fallback != null -> fallback
-            headlineWeekly && weeklySpent -> headerSub
-            headlineWeekly -> {
-                // The 5h companion, or the reset day on an account with no 5h. While the
-                // 5h binds it takes the bar colour's step and bold (rev A L1).
-                val base = LeadLines.paceWords(weekly, weeklyElapsed) ?: ""
-                val comp = LeadLines.companion(data?.session, left)
-                SpannableStringBuilder(base).apply {
-                    val tail = comp ?: LeadLines.resetsDay(weekly)
-                    if (tail != null) {
-                        if (isNotEmpty()) append(" · ")
-                        val start = length
-                        append(tail)
-                        if (comp != null && binding) {
-                            val hue = Palette.barColor(data?.session?.percent, accent, dark).toArgb()
-                            setSpan(ForegroundColorSpan(hue), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                            setSpan(StyleSpan(Typeface.BOLD), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        }
-                    }
-                }
-            }
-            // 5h leads: Weekly rides along, as "Weekly 52%".
+            takeover || weeklySpent -> headerSub
             else -> listOfNotNull(
-                headerSub.ifEmpty { null },
-                weekly?.percent?.let { "Weekly ${Fmt.usageInt(it, left)}%" },
+                LeadLines.paceWords(weekly, weeklyElapsed),
+                if (session == null) LeadLines.resetsDay(weekly) else null,
             ).joinToString(" · ")
+        }
+        val fill = Palette.barColor(pct, accent, dark)
+        val ink = Grammar.ink(dark)
+        val figureColor =
+            if (mode == PaceText.Mode.VS_PACE && pct != null) {
+                Grammar.vsColor(PaceText.vsPaceTone(pct, elapsed), dark, onInk = ink, usage = fill)
+            } else fill
+        // B1: a plan with no 5h has no ring at all. No reading yet keeps one (the plan is
+        // unknown, as the status-bar icon assumes).
+        val ring = if (data != null && session == null) null else {
+            val rPct = if (broken) null else session?.percent
+            val rElapsed = if (broken) null else elapsedPercent(session, Projection.SESSION_MS)
+            val grey = !broken && weeklySpent
+            val rFigure = LeadLines.figure(rPct, rElapsed, mode)
+            val tone = if (mode == PaceText.Mode.VS_PACE && rPct != null) PaceText.vsPaceTone(rPct, rElapsed) else null
+            Ring(
+                pct = rPct,
+                elapsed = rElapsed,
+                figure = rFigure,
+                // Vs pace first (rev D §7b), then the binding 5h's ladder colour (Q1/Q2: "the
+                // figure in that colour"), else the ink, loud above 90.
+                figureColor = when {
+                    rPct == null || grey -> null
+                    tone != null && tone != PaceText.VsTone.USAGE ->
+                        Grammar.vsColor(tone, dark, onInk = ink, usage = ink)
+                    binding -> Palette.barColor(rPct, accent, dark)
+                    else -> null
+                },
+                state = if (grey) GrammarRing.State.GREY else GrammarRing.State.NORMAL,
+                timeLeft = if (broken || grey) null else LeadLines.ringTimeLeft(session),
+                description = LeadLines.ringDescription(rFigure),
+            )
         }
         val gaugeWindow = if (gaugeWeekly) weekly else data?.session
         val gaugePct = if (broken) null else gaugeWindow?.percent
@@ -600,17 +648,20 @@ object PinnedNotification {
             label = label,
             accent = accent,
             data = data,
-            headlineWeekly = headlineWeekly,
+            takeover = takeover,
             pct = pct,
             pctText = LeadLines.figure(pct, elapsed, mode),
-            fill = Palette.barColor(pct, accent, dark),
+            fill = fill,
+            figureColor = figureColor,
             elapsed = elapsed,
-            title = "$label · $windowName",
+            title = LeadLines.headerTitle(label),
             sub = if (duet) duetSub else headerSub,
             sub2 = sub2,
             collapsedSub = collapsedSub,
+            ring = ring,
             caption = LeadLines.figureCaption(pct, elapsed, mode),
             gaugePct = gaugePct,
+            gaugeGlyph = glyph,
             gaugeElapsed = if (broken) null else elapsedPercent(
                 gaugeWindow, if (gaugeWeekly) Projection.WEEKLY_MS else Projection.SESSION_MS,
             ),
@@ -669,41 +720,44 @@ object PinnedNotification {
     private fun bigNumberView(
         context: Context,
         layout: Int,
-        pctText: String,
-        title: String,
+        h: Half,
         sub: CharSequence,
-        pct: Double?,
-        elapsed: Double?,
-        fill: Color,
-        theme: Color,
         dark: Boolean,
         showOverPace: Boolean,
+        endMark: UsageEndMark,
         panel: PanelSpec?,
         stale: Boolean,
-        provider: Provider,
-        /** CCRM-22 / CCRM-100: "LEFT" or "VS PACE" under the number, or none. */
-        caption: String? = null,
-        /** CCRM-96 (Weekly First): the expanded header's second line; the layout must have `sub2`. */
-        sub2: String? = null,
+        /** The expanded layout: `sub2` and the ring's time line exist there. */
+        expanded: Boolean,
     ): RemoteViews = RemoteViews(context.packageName, layout).apply {
-        setImageViewResource(R.id.provider_mark, providerMarkRes(provider))
-        setInt(R.id.provider_mark, "setColorFilter", theme.toArgb())
-        setTextViewText(R.id.pct, pctText)
-        setTextColor(R.id.pct, fill.toArgb())
+        setImageViewResource(R.id.provider_mark, providerMarkRes(h.profile.provider))
+        setInt(R.id.provider_mark, "setColorFilter", h.accent.toArgb())
+        // CCRM-103 (Hybrid Notification), rev D §1b/§7b: the "%" at 58%, Vs pace coloured.
+        setTextViewText(R.id.pct, Grammar.smallPercent(h.pctText))
+        setTextColor(R.id.pct, h.figureColor.toArgb())
+        // CCRM-22 / CCRM-100: "LEFT", or "UNDER PACE" / "OVER PACE" / "ON PACE", under the number.
         setViewVisibility(
             R.id.pct_caption,
-            if (caption != null) android.view.View.VISIBLE else android.view.View.GONE,
+            if (h.caption != null) android.view.View.VISIBLE else android.view.View.GONE,
         )
-        if (caption != null) setTextViewText(R.id.pct_caption, caption)
-        setTextViewText(R.id.title, title)
+        if (h.caption != null) setTextViewText(R.id.pct_caption, h.caption)
+        setTextViewText(R.id.title, h.title)
         setTextViewText(R.id.sub, sub)
-        if (sub2 != null) {
-            setTextViewText(R.id.sub2, sub2)
+        // CCRM-96 (Weekly First): the expanded header's second line.
+        if (expanded && h.sub2 != null) {
+            setTextViewText(R.id.sub2, h.sub2)
             setViewVisibility(R.id.sub2, android.view.View.VISIBLE)
         }
         setImageViewBitmap(
-            R.id.bar, drawBarBitmap(context, pct, elapsed, theme, dark, showOverPace),
+            R.id.bar, drawBarBitmap(context, h.pct, h.elapsed, h.accent, dark, showOverPace, endMark),
         )
+        // Rev D §3 N1/N2: the 44 dp 5h ring on the left; the time left under it, expanded.
+        if (h.ring != null) {
+            fillRing(
+                context, RingIds(R.id.ring_box, R.id.ring_img, R.id.ring_fig, if (expanded) R.id.ring_time else null),
+                h.ring, HEADER_RING_DP, h.accent, dark, showOverPace, endMark, stale,
+            )
+        }
         if (panel != null) fillPanel(context, panel)
         // CCBG-12 (Status Icon Swap): a stale reading drawn as crisply as a live one is the
         // actual hazard — the old separate alert said "stale" somewhere else in the shade
@@ -715,7 +769,97 @@ object PinnedNotification {
         }
     }
 
-    /** The view ids one Duet half owns. Both Duet layouts use the same set. */
+    /** Rev D §3: the header ring, single and Duet expanded (the figure 0.29 × 44 ≈ 12.8 sp before fitting). */
+    private const val HEADER_RING_DP = 44f
+
+    /** `notif_duet_expanded.xml`'s label bound, the full-width header's. */
+    private const val EXPANDED_LABEL_DP = 200f
+
+    /** The view ids of one ring: its box (shown or gone), bitmap, figure and optional time line. */
+    private class RingIds(val box: Int, val img: Int, val fig: Int, val time: Int?)
+
+    /**
+     * Fills one ring's views: the bitmap from [GrammarRing.paint] at [sizeDp], the figure
+     * a TextView fitted to the bore ([GrammarRing.figureDp], [GrammarRing.fitFigure], sized
+     * in dp so font scale cannot push it into the band), and the time line under it.
+     */
+    private fun RemoteViews.fillRing(
+        context: Context,
+        ids: RingIds,
+        r: Ring,
+        sizeDp: Float,
+        accent: Color,
+        dark: Boolean,
+        showOverPace: Boolean,
+        endMark: UsageEndMark,
+        stale: Boolean,
+    ) {
+        setViewVisibility(ids.box, android.view.View.VISIBLE)
+        setContentDescription(ids.box, r.description)
+        setImageViewBitmap(ids.img, drawRingBitmap(context, sizeDp, r, accent, dark, showOverPace, endMark))
+        setTextViewText(ids.fig, Grammar.smallPercent(r.figure))
+        setTextViewTextSize(ids.fig, TypedValue.COMPLEX_UNIT_DIP, ringFigureDp(context, sizeDp, r.figure))
+        setTextColor(ids.fig, ringFigureColor(r, accent, dark).toArgb())
+        if (ids.time != null) {
+            setViewVisibility(ids.time, if (r.timeLeft == null) android.view.View.GONE else android.view.View.VISIBLE)
+            if (r.timeLeft != null) setTextViewText(ids.time, r.timeLeft)
+        }
+        if (stale) {
+            setFloat(ids.img, "setAlpha", 0.45f)
+            setFloat(ids.fig, "setAlpha", 0.5f)
+        }
+    }
+
+    /** The ring figure's colour, as `GrammarRingBox` draws it: dimmed grey / no reading, else its own, loud, or ink. */
+    private fun ringFigureColor(r: Ring, accent: Color, dark: Boolean): Color {
+        val ink = Grammar.ink(dark)
+        return when {
+            r.state == GrammarRing.State.GREY -> ink.copy(alpha = 0.45f)
+            r.pct == null -> ink.copy(alpha = 0.5f)
+            r.figureColor != null -> r.figureColor
+            GrammarRing.loud(r.pct) -> Palette.barColor(r.pct, accent, dark)
+            else -> ink
+        }
+    }
+
+    /** [GrammarRing.figureDp] fitted to the bore by the figure's measured width (tabular, small "%"). */
+    private fun ringFigureDp(context: Context, sizeDp: Float, figure: String): Float {
+        val density = context.resources.displayMetrics.density
+        val base = GrammarRing.figureDp(sizeDp, figure)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.DEFAULT_BOLD
+            textSize = base * density
+            fontFeatureSettings = Grammar.FIGURE_FEATURES
+            letterSpacing = -0.02f
+        }
+        val small = figure.length >= 2 && figure.last() == '%' && figure[figure.length - 2].isDigit()
+        val widthPx =
+            if (small) paint.measureText(figure.dropLast(1)) + Grammar.PCT_SCALE * paint.measureText("%")
+            else paint.measureText(figure)
+        return GrammarRing.fitFigure(sizeDp, base, widthPx / density)
+    }
+
+    /** The ring bitmap at [sizeDp]: transparent, so the end mark's gap is cleared to the shade. */
+    private fun drawRingBitmap(
+        context: Context,
+        sizeDp: Float,
+        r: Ring,
+        accent: Color,
+        dark: Boolean,
+        showOverPace: Boolean,
+        endMark: UsageEndMark,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val px = ceil(sizeDp * density).toInt().coerceAtLeast(1)
+        return Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888).also {
+            GrammarRing.paint(
+                Canvas(it), 0f, 0f, px.toFloat(), density, r.pct, r.elapsed, accent, dark,
+                state = r.state, endMark = endMark, showOverPace = showOverPace, surface = null,
+            )
+        }
+    }
+
+    /** The view ids one Duet half owns. Both Duet layouts use the same set; [line], [bareRing] and [ringTime] exist in one each. */
     private class HalfIds(
         val root: Int,
         val mark: Int,
@@ -725,6 +869,15 @@ object PinnedNotification {
         val pct: Int,
         val sub: Int,
         val caption: Int,
+        val ringBox: Int,
+        val ring: Int,
+        val ringFig: Int,
+        /** Expanded only. */
+        val ringTime: Int,
+        /** Collapsed only: the label line, padded at its end for the bare ring. */
+        val line: Int,
+        /** Collapsed only: the bare 14 dp ring (D3). */
+        val bareRing: Int,
     )
 
     private val FIRST_IDS = HalfIds(
@@ -732,6 +885,8 @@ object PinnedNotification {
         label = R.id.duet_label_first, dot = R.id.duet_dot_first,
         bar = R.id.duet_bar_first, pct = R.id.duet_pct_first,
         sub = R.id.duet_sub_first, caption = R.id.duet_caption_first,
+        ringBox = R.id.duet_ring_box_first, ring = R.id.duet_ring_first, ringFig = R.id.duet_ring_fig_first,
+        ringTime = R.id.duet_ring_time_first, line = R.id.duet_line_first, bareRing = R.id.duet_bare_ring_first,
     )
 
     private val SECOND_IDS = HalfIds(
@@ -739,6 +894,8 @@ object PinnedNotification {
         label = R.id.duet_label_second, dot = R.id.duet_dot_second,
         bar = R.id.duet_bar_second, pct = R.id.duet_pct_second,
         sub = R.id.duet_sub_second, caption = R.id.duet_caption_second,
+        ringBox = R.id.duet_ring_box_second, ring = R.id.duet_ring_second, ringFig = R.id.duet_ring_fig_second,
+        ringTime = R.id.duet_ring_time_second, line = R.id.duet_line_second, bareRing = R.id.duet_bare_ring_second,
     )
 
     /**
@@ -753,8 +910,8 @@ object PinnedNotification {
         first: Half,
         second: Half,
         dark: Boolean,
-        usageLeft: Boolean,
         showOverPace: Boolean,
+        endMark: UsageEndMark,
         /** App-global (CCRM-44), so it dots the First half only. */
         updateAvailable: Boolean,
         panel: PanelSpec?,
@@ -766,7 +923,7 @@ object PinnedNotification {
         // accent for the app-global update strip. Either way it means "there is a strip
         // for this in the expanded panel".
         fillHalf(
-            context, FIRST_IDS, first, dark, usageLeft, showOverPace, expanded, firstTap,
+            context, FIRST_IDS, first, dark, showOverPace, endMark, expanded, firstTap,
             dotHue = when {
                 first.fault -> conditionHue(error = true, theme = first.accent, dark = dark)
                 updateAvailable -> conditionHue(error = false, theme = first.accent, dark = dark)
@@ -777,7 +934,7 @@ object PinnedNotification {
         )
         if (!expanded) showSyntheticDot(R.id.duet_synth_dot)
         fillHalf(
-            context, SECOND_IDS, second, dark, usageLeft, showOverPace, expanded, secondTap,
+            context, SECOND_IDS, second, dark, showOverPace, endMark, expanded, secondTap,
             dotHue = if (second.fault) {
                 conditionHue(error = true, theme = second.accent, dark = dark)
             } else {
@@ -792,8 +949,8 @@ object PinnedNotification {
         ids: HalfIds,
         h: Half,
         dark: Boolean,
-        usageLeft: Boolean,
         showOverPace: Boolean,
+        endMark: UsageEndMark,
         expanded: Boolean,
         tap: PendingIntent,
         dotHue: Int?,
@@ -806,21 +963,60 @@ object PinnedNotification {
         setImageViewResource(ids.mark, providerMarkRes(h.profile.provider))
         setInt(ids.mark, "setColorFilter", h.accent.toArgb())
         setTextViewText(ids.label, if (expanded) h.title else h.label)
+        // CCRM-103 (Hybrid Notification), rev D §3 D1–D4: the 5h ring. Expanded, every header
+        // with a 5h takes the 44 dp ring and its time left; collapsed, the half's ring follows
+        // its width (36 dp with its figure, or the bare 14 dp one). None for no 5h (B1).
+        val halfRing =
+            if (expanded) Duet.HalfRing.NONE
+            else Duet.halfRing(h.ring != null, Duet.NOMINAL_HALF_DP)
+        if (expanded) {
+            if (h.ring != null) {
+                fillRing(
+                    context, RingIds(ids.ringBox, ids.ring, ids.ringFig, ids.ringTime),
+                    h.ring, HEADER_RING_DP, h.accent, dark, showOverPace, endMark, h.stale,
+                )
+                // The layout's 200 dp label bound assumed the full 328 dp row; the ring and
+                // its 14 dp gap take 58 of it, so the dot after the label stays on screen.
+                setInt(ids.label, "setMaxWidth", dp(context, EXPANDED_LABEL_DP - HEADER_RING_DP - 14f).toInt())
+            }
+        } else if (h.ring != null) {
+            when (halfRing) {
+                Duet.HalfRing.FULL -> fillRing(
+                    context, RingIds(ids.ringBox, ids.ring, ids.ringFig, null),
+                    h.ring, Duet.RING_DP, h.accent, dark, showOverPace, endMark, h.stale,
+                )
+                Duet.HalfRing.BARE -> {
+                    // D3: no digits, at the end of the label line; the line gives it its room.
+                    setViewVisibility(ids.bareRing, android.view.View.VISIBLE)
+                    setContentDescription(ids.bareRing, h.ring.description)
+                    setImageViewBitmap(
+                        ids.bareRing,
+                        drawRingBitmap(context, Duet.BARE_RING_DP, h.ring, h.accent, dark, showOverPace, endMark),
+                    )
+                    setViewPadding(ids.line, 0, 0, dp(context, Duet.ringTakesDp(halfRing)).toInt(), 0)
+                    if (h.stale) setFloat(ids.bareRing, "setAlpha", 0.45f)
+                }
+                Duet.HalfRing.NONE -> Unit
+            }
+        }
         if (!expanded) {
-            // The collapsed clamp: the label's own line, less the dots after it (rev G).
-            // The expanded header's bound is in the layout: it has the full card width.
+            // The collapsed clamp: the label's own line, less the ring and the dots after it
+            // (rev G). The expanded header's bound is in the layout: it has the full card width.
             val clamp = Duet.labelClampDp(
                 dots = (if (dotHue != null) 1 else 0) + (if (synthDot) 1 else 0),
+                ring = halfRing,
             )
             setInt(ids.label, "setMaxWidth", dp(context, clamp.toFloat()).toInt())
+            // D1: the Weekly figure drops to 28 sp beside the 36 dp ring.
+            setTextViewTextSize(ids.pct, TypedValue.COMPLEX_UNIT_SP, Duet.figureSp(halfRing))
         }
-        setTextViewText(ids.pct, h.pctText)
-        setTextColor(ids.pct, h.fill.toArgb())
+        setTextViewText(ids.pct, Grammar.smallPercent(h.pctText))
+        setTextColor(ids.pct, h.figureColor.toArgb())
         setImageViewBitmap(
             ids.bar,
             drawBarBitmap(
-                context, h.pct, h.elapsed, h.accent, dark, showOverPace,
-                widthDp = if (expanded) PANEL_WIDTH_DP else HALF_WIDTH_DP,
+                context, h.pct, h.elapsed, h.accent, dark, showOverPace, endMark,
+                widthDp = if (expanded) PANEL_WIDTH_DP else Duet.barDp(halfRing),
             ),
         )
         if (expanded) {
@@ -864,6 +1060,8 @@ object PinnedNotification {
         theme: Color,
         dark: Boolean,
         showOverPace: Boolean,
+        /** CCRM-103 (Hybrid Notification), rev D §1e: Appearance › Usage end mark. */
+        endMark: UsageEndMark,
         widthDp: Float = PANEL_WIDTH_DP,
     ): Bitmap = BarRenderer.draw(
         widthPx = dp(context, widthDp),
@@ -873,6 +1071,10 @@ object PinnedNotification {
         accent = theme,
         dark = dark,
         showOverPace = showOverPace,
+        endMark = endMark,
+        // The bitmap is transparent: a null surface clears the mark's gap to the shade.
+        surfaceArgb = null,
+        density = context.resources.displayMetrics.density,
     )
 
     private fun isNightMode(context: Context): Boolean =
@@ -894,6 +1096,7 @@ object PinnedNotification {
      */
     private fun drawStatusIcon(
         context: Context,
+        glyph: StatusGlyph,
         pct: Double?,
         left: Boolean,
         sessionElapsed: Double?,
@@ -901,7 +1104,7 @@ object PinnedNotification {
         dark: Boolean,
         showOverPace: Boolean,
     ): IconCompat = IconCompat.createWithBitmap(
-        UsageIcon.draw(context, pct, left, sessionElapsed, fillArgb, dark, showOverPace)
+        UsageIcon.drawGlyph(context, glyph, pct, left, sessionElapsed, fillArgb, dark, showOverPace)
     )
 
     /**
@@ -941,86 +1144,20 @@ object PinnedNotification {
     }
 
     /**
-     * One bar row of the expanded panel.
+     * One bar row of the expanded panel — since CCRM-103 (Hybrid Notification) a model cap
+     * only: the 5h is the header's ring (the grammar has no 5h bars) and the Weekly is the
+     * header itself, so the companion rows of CCRM-96 (Weekly First) are gone.
      *
-     * [accent] is per row, not per panel: a Duet's two Weekly rows belong to different
-     * accounts and each draws in its own colour, which is what lets the panel be read
-     * without a legend.
+     * [accent] is per row, not per panel, so a row always draws in its account's colour.
      */
-    /** The headline window's name, on the single row and a Duet alike. */
-    internal fun windowName(headlineWeekly: Boolean): String = if (headlineWeekly) "Weekly" else "5h"
-
-    /** The weekly panel row's label: bare with one account, prefixed with two. */
-    internal fun weeklyLabel(accountLabel: String?): String =
-        if (accountLabel == null) "Weekly" else "$accountLabel · Weekly"
-
     private data class PanelBar(
         val label: String,
         val window: UsageWindow?,
         val sub: String,
         val accent: Color,
-        /** What the row's pace mark measures against: 7 days, or 5 h for a 5h row. */
+        /** What the row's pace mark measures against: 7 days. */
         val lengthMs: Long = Projection.WEEKLY_MS,
-        /** CCRM-102 (Spent Week Gate): label, figure and bar at 45%; the sub (the note) stays full. */
-        val dimmed: Boolean = false,
     )
-
-    /**
-     * CCRM-96 (Weekly First): the row for the window the header does *not* lead with — the
-     * 5h under a Weekly lead, the Weekly under a 5h lead — or null (no 5h, no data).
-     */
-    private fun companionRow(h: Half, label: String?, resetClock: Boolean, use24h: Boolean): PanelBar? {
-        val data = h.data ?: return null
-        return if (h.headlineWeekly) {
-            val session = data.session ?: return null
-            // CCRM-102 (Spent Week Gate): a spent week disables the 5h — still drawn, greyed,
-            // with the note as its sub.
-            val spentWeek = data.weekly?.takeIf { Pace.isSpent(it.percent) }
-            PanelBar(
-                label = if (label == null) "5h" else "$label · 5h",
-                window = session,
-                sub = spentWeek?.let { LeadLines.spentWeekNote(it, use24h) }
-                    ?: LeadLines.sessionLine(session, binding = h.binding, resetClock = resetClock, use24h = use24h)
-                    ?: "",
-                accent = h.accent,
-                lengthMs = Projection.SESSION_MS,
-                dimmed = spentWeek != null,
-            )
-        } else {
-            weeklyRow(data, label, h.accent, resetClock, use24h)?.let { row ->
-                val words = LeadLines.weeklyRowSub(data.weekly, elapsedPercent(data.weekly, Projection.WEEKLY_MS), use24h)
-                if (words == null) row else row.copy(sub = words)
-            }
-        }
-    }
-
-    /**
-     * The weekly row for one account, or null when there is no data at all.
-     *
-     * [label] null is the single layout, which has one account and therefore no need to
-     * say whose window this is; non-null prefixes it, because with two accounts in the
-     * header a bare window name no longer says.
-     */
-    private fun weeklyRow(
-        data: UsageData?,
-        label: String?,
-        accent: Color,
-        resetClock: Boolean,
-        use24h: Boolean,
-    ): PanelBar? {
-        if (data == null) return null
-        return PanelBar(
-            label = weeklyLabel(label),
-            window = data.weekly,
-            // CCRM-23 (Reset Display): both forms, chosen first. The panel
-            // has the room, and a 7-day clock needs its weekday to be honest.
-            sub = data.weekly?.resetsAt?.let {
-                if (resetClock) "Resets ${Fmt.dayTime(it, use24h)} · ${Fmt.relIn(it)}"
-                else "Resets ${Fmt.relIn(it)} · ${Fmt.dayTime(it, use24h)}"
-            } ?: "",
-            accent = accent,
-        )
-    }
 
     /** One account's per-model cap rows, prefixed with its label on a Duet. */
     private fun capRows(data: UsageData?, label: String?, accent: Color): List<PanelBar> =
@@ -1061,6 +1198,8 @@ object PinnedNotification {
         val conditions: List<Conditions.Condition>,
         val overflow: Int = 0,
         val compact: Boolean = false,
+        /** CCRM-103 (Hybrid Notification), rev D §1e: Appearance › Usage end mark. */
+        val endMark: UsageEndMark = UsageEndMark.DEFAULT,
     )
 
     private class StripIds(val slot: Int, val bg: Int, val dot: Int, val title: Int, val detail: Int, val more: Int)
@@ -1141,7 +1280,16 @@ object PinnedNotification {
             val pct = bar.window?.percent
             val elapsed = elapsedPercent(bar.window, bar.lengthMs)
             setTextViewText(ids.label, bar.label)
-            setTextViewText(ids.value, LeadLines.figure(pct, elapsed, s.mode))
+            setTextViewText(ids.value, Grammar.smallPercent(LeadLines.figure(pct, elapsed, s.mode)))
+            // Rev D §7b: an unsigned Vs pace figure says its side by colour — green under the
+            // mark, red over. On the mark, or fallen back to usage, it keeps the row's ink.
+            if (s.mode == PaceText.Mode.VS_PACE && pct != null) {
+                when (PaceText.vsPaceTone(pct, elapsed)) {
+                    PaceText.VsTone.UNDER -> setTextColor(ids.value, Grammar.vsUnder(s.dark).toArgb())
+                    PaceText.VsTone.OVER -> setTextColor(ids.value, Grammar.vsOver(s.dark).toArgb())
+                    else -> Unit
+                }
+            }
             // The layout decides which of the two sub slots is visible (inline on the
             // Duet, under the bar on the single layout); both get the text, and an empty
             // sub — a model cap — hides whichever is in use.
@@ -1151,17 +1299,11 @@ object PinnedNotification {
                 setViewVisibility(ids.sub, gone)
                 setViewVisibility(ids.below, gone)
             }
-            // Each row measures its pace against its own window: 7 days for the weekly
-            // windows and model caps, 5 h for the 5h companion row (CCRM-96).
+            // Each row measures its pace against its own window (7 days for a model cap).
             setImageViewBitmap(
                 ids.bar,
-                drawBarBitmap(context, pct, elapsed, bar.accent, s.dark, s.showOverPace),
+                drawBarBitmap(context, pct, elapsed, bar.accent, s.dark, s.showOverPace, s.endMark),
             )
-            if (bar.dimmed) {
-                setFloat(ids.label, "setAlpha", 0.45f)
-                setFloat(ids.value, "setAlpha", 0.45f)
-                setFloat(ids.bar, "setAlpha", 0.45f)
-            }
         }
 
         setViewVisibility(

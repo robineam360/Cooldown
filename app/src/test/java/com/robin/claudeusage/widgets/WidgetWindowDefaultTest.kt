@@ -64,14 +64,6 @@ class WidgetWindowDefaultTest {
     }
 
     @Test
-    fun `each Strip ring follows its account's Headline live`() {
-        val first = cache.registry().first()
-        assertEquals(FaceWindow.WEEKLY, WidgetHost.accounts(context, cache, dark = true, withEstimates = false).first().stripWindow)
-        cache.setHeadline(first, Headline.FIVE_HOUR)
-        assertEquals(FaceWindow.SESSION, WidgetHost.accounts(context, cache, dark = true, withEstimates = false).first().stripWindow)
-    }
-
-    @Test
     fun `a saved window always wins`() {
         prefs.save(106, null, FaceWindow.SESSION, FaceBackground.SOLID)
         assertEquals(FaceWindow.SESSION, WidgetHost.config(context, cache, 106).window)

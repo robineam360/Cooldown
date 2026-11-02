@@ -92,6 +92,25 @@ class AppPaceTest {
         assertFalse(AppPace.sessionFolded(w(80.0, resets), null, false).text.contains("·"))
     }
 
+    @Test fun `the tile's 5h line is the folded words after the glyph, lower-cased`() {
+        val resets = Instant.now().plusSeconds(2 * 3600 + 20 * 60)
+        val est = Projection.Estimate(ratePctPerHour = 15.0, hitsLimitAtMs = null, pctAtReset = 69.4)
+        val line = AppPace.fiveHourLine(w(34.0, resets), est, false)!!
+        assertTrue(line.text, line.text.startsWith("resets in 2h"))
+        assertTrue(line.text.endsWith(" · on track for ~69%"))
+        assertFalse(line.text.contains("5h"))
+        val hits = Instant.parse("2026-11-04T15:25:00Z").toEpochMilli()
+        val binding = AppPace.fiveHourLine(w(80.0, resets), est.copy(hitsLimitAtMs = hits, pctAtReset = 100.0), false)!!
+        assertEquals("on track for 100% at 3:25 PM", binding.emphasis)
+        assertTrue(binding.text.endsWith(binding.emphasis!!))
+    }
+
+    @Test fun `no 5h line before a reading and a clock (T8)`() {
+        assertNull(AppPace.fiveHourLine(null, null, false))
+        assertNull(AppPace.fiveHourLine(w(null, sun), null, false))
+        assertNull(AppPace.fiveHourLine(w(0.0, null), null, false))
+    }
+
     @Test fun `spent week note names the weekly reset`() {
         assertEquals(
             "Weekly limit reached — 5h can’t be used until Sun 9:30 PM",
@@ -104,8 +123,8 @@ class AppPaceTest {
     @Test fun `figure follows the usage display`() {
         assertEquals("52%" to null, AppPace.figure(52.0, 39.0, PaceText.Mode.USED))
         assertEquals("48%" to "left", AppPace.figure(52.0, 39.0, PaceText.Mode.LEFT))
-        assertEquals("−13%" to "vs pace", AppPace.figure(52.0, 39.0, PaceText.Mode.VS_PACE))
-        assertEquals("+10%" to "vs pace", AppPace.figure(50.0, 60.0, PaceText.Mode.VS_PACE))
+        assertEquals("13%" to null, AppPace.figure(52.0, 39.0, PaceText.Mode.VS_PACE))
+        assertEquals("10%" to null, AppPace.figure(50.0, 60.0, PaceText.Mode.VS_PACE))
     }
 
     @Test fun `vs pace falls back to usage, without its word`() {
@@ -123,14 +142,12 @@ class AppPaceTest {
         assertEquals("Not started yet", SummaryRows.words(w(0.0, null), null, false, now))
     }
 
-    @Test fun `companion per group`() {
+    @Test fun `a held row's line 3 says why (shape grammar S1, the companion gone)`() {
         val s5 = w(93.0, Instant.parse("2026-11-04T15:40:00Z"))
-        assertEquals("5h 93% · back 3:40 PM", SummaryRows.companion(SummaryRank.Group.HELD, s5, true, PaceText.Mode.USED, false))
-        assertEquals("5h 34%", SummaryRows.companion(SummaryRank.Group.ELIGIBLE, w(34.0, sun), true, PaceText.Mode.USED, false))
-        assertEquals("5h 66%", SummaryRows.companion(SummaryRank.Group.ELIGIBLE, w(34.0, sun), true, PaceText.Mode.LEFT, false))
-        assertEquals("no 5h", SummaryRows.companion(SummaryRank.Group.ELIGIBLE, null, false, PaceText.Mode.USED, false))
-        assertNull(SummaryRows.companion(SummaryRank.Group.SPENT, s5, true, PaceText.Mode.USED, false))
-        assertNull(SummaryRows.companion(SummaryRank.Group.NO_READING, null, false, PaceText.Mode.USED, false))
+        assertEquals("Held · back at 3:40 PM · resets Fri", SummaryRows.heldWords(s5, w(30.0, fri), false))
+        assertEquals("Held · back at 15:40 · resets Fri", SummaryRows.heldWords(s5, w(30.0, fri), true))
+        assertEquals("Held · resets Fri", SummaryRows.heldWords(w(93.0, null), w(30.0, fri), false))
+        assertEquals("Held", SummaryRows.heldWords(null, null, false))
     }
 
     @Test fun `compact words (S2) and the six-account switch`() {

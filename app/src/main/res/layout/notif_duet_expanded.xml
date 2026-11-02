@@ -16,7 +16,12 @@
     figure fits inside that height), the gap between them 10 dp, and the gap before
     the panel another 10 dp. That is 136 dp of chrome and leaves about 120 dp for
     the panel, which is why drawPanel's Duet rows are recut and why the condition
-    strip cap falls to two (Duet.maxStrips).
+    strip cap falls to one (Duet.maxStrips).
+
+    CCRM-103 (Hybrid Notification), shape grammar rev D §3 D4: a header with a 5h now
+    leads with the 44 dp ring and its time left (60 dp, so that header is 60 dp, not 58),
+    and the panel's companion rows are gone — the 5h has its ring, the Weekly is the
+    header — so the panel carries only the condition strip, well inside its budget.
 
     Wording here is "5h" and "Weekly", never "5-hour window" / "7-day": two
     accounts doubled every label in this view and the account prefix has to come
@@ -42,6 +47,55 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <!-- CCRM-103 (Hybrid Notification), shape grammar rev D §3 D4: a header whose
+             account has a 5h leads with the 44 dp ring and the 5h's time left under it,
+             as the single header does (60 dp, centred). Gone for no 5h (B1). -->
+        <LinearLayout
+            android:id="@+id/duet_ring_box_first"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp">
+
+                <ImageView
+                    android:id="@+id/duet_ring_first"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/duet_ring_fig_first"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:fontFeatureSettings="tnum,lnum"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:importantForAccessibility="no" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/duet_ring_time_first"
+                style="@android:style/TextAppearance.Material.Notification.Info"
+                android:layout_width="wrap_content"
+                android:layout_height="13dp"
+                android:layout_marginTop="3dp"
+                android:textSize="11sp"
+                android:fontFeatureSettings="tnum,lnum"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -127,6 +181,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="36sp"
                 android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
 
@@ -151,6 +207,52 @@
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <LinearLayout
+            android:id="@+id/duet_ring_box_second"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp">
+
+                <ImageView
+                    android:id="@+id/duet_ring_second"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/duet_ring_fig_second"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:fontFeatureSettings="tnum,lnum"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:importantForAccessibility="no" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/duet_ring_time_second"
+                style="@android:style/TextAppearance.Material.Notification.Info"
+                android:layout_width="wrap_content"
+                android:layout_height="13dp"
+                android:layout_marginTop="3dp"
+                android:textSize="11sp"
+                android:fontFeatureSettings="tnum,lnum"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -224,6 +326,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="36sp"
                 android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
 

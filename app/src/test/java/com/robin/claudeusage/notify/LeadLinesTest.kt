@@ -39,19 +39,32 @@ class LeadLinesTest {
     }
 
     @Test
-    fun `companion is the bare usage in Used and Left`() {
-        assertEquals("5h 34%", LeadLines.companion(w(34.0, hour), left = false))
-        assertEquals("5h 66%", LeadLines.companion(w(34.0, hour), left = true))
-        assertNull(LeadLines.companion(null, left = false))
+    fun `the ring says its window aloud, since no 5h text is drawn`() {
+        // CCRM-103 (Hybrid Notification), shape grammar rev D: the ring replaced "· 5h 34%".
+        assertEquals("5-hour window, 34 percent", LeadLines.ringDescription("34%"))
+        assertEquals("5-hour window, no reading", LeadLines.ringDescription("—"))
+    }
+
+    @Test
+    fun `the expanded ring's time line is the 5h's countdown, none without a clock`() {
+        val line = LeadLines.ringTimeLeft(UsageWindow(34.0, Instant.now().plusSeconds(2 * 3600 + 20 * 60 + 30), null))
+        assertEquals("in 2h 20m", line)
+        assertNull(LeadLines.ringTimeLeft(w(34.0, null)))
+        assertNull(LeadLines.ringTimeLeft(null))
+    }
+
+    @Test
+    fun `the header names the Weekly whatever leads`() {
+        assertEquals("Teams · Weekly", LeadLines.headerTitle("Teams"))
     }
 
     @Test
     fun `figures follow the three display modes`() {
         assertEquals("52%", LeadLines.figure(52.0, 38.9, PaceText.Mode.USED))
         assertEquals("48%", LeadLines.figure(52.0, 38.9, PaceText.Mode.LEFT))
-        assertEquals("−14%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE))
+        assertEquals("14%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE))
         assertEquals("—", LeadLines.figure(null, 38.9, PaceText.Mode.VS_PACE))
-        assertEquals("VS PACE", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.VS_PACE))
+        assertEquals("OVER PACE", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.VS_PACE))
         assertNull(LeadLines.figureCaption(100.0, 80.0, PaceText.Mode.VS_PACE))
         assertEquals("LEFT", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.LEFT))
         assertNull(LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.USED))
