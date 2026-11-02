@@ -698,8 +698,9 @@ opacity, no glyph); the ring's tap reads nothing out. With the 5h chip chosen on
 lines and reset row draw at 45% with no projection, then a divider and the same note in bodySmall SemiBold
 onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. **Saved layouts** (judge F2):
 the tile follows its own sheet row, "Usage" (its place and its fold); the sheet hides or shows both window ids
-together. A v1.9/v2.0 layout that hid only that card while keeping the other window's still shows the tile, where
-the other stood — it is hidden only when the stored layout hides **both**. And the sheet's never-blank rule (§4)
+together. A v1.9/v2.0 layout that hid only the reported window card while keeping the other is read as the tile
+shown, folded as the other was (`tileLayout`, which the sheet and the screen both read through, so the row's switch
+always matches the screen); the order is left alone — it is hidden only when the stored layout hides **both**. And the sheet's never-blank rule (§4)
 holds whatever was stored: if nothing would be drawn while the account reports cards, the tile shows
 (`drawnCards`).
 `AccountTile`, `TileBarRow`, `tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct`,

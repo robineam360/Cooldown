@@ -4,31 +4,28 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc + Gemini — Step 7, the device passes (written 2026-11-02)
+## ▶ v2.0 arc + Gemini — Step 7, the device passes (written 2026-11-02, after Robin's 6d calls)
 
 **State.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`), PR
-robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 1–6 and 6a–6d ticked. **Step 6d, CCRM-103
-(Hybrid Notification), is built** to the frozen `design/2026-11-02-shape-grammar.html` rev D on Android and iOS —
-5e11545 (data), 0a3c502 + f873e9c (Android surfaces), 9591e03 + ec4cce9 (iOS) — each with a fresh Opus judge
-(concerns, adopted; table in the Step 6d log) and a Fable fit-call ruling. Checks: both flavors' unit tests (836)
-and lint, `swift test` 127, iOS app tests 53. **Two calls wait for Robin:** the layout sheet's row for the merged
-tile (Android labels it "7-day window", iOS still lists separate 5-hour and 7-day rows), and the iOS lock-screen
-circular for a plan with no 5h (today's Weekly ring with "W", a 7-day ring the grammar forbids: Weekly digits alone,
-or the N3 bar glyph?). spec/core main is fba3d8e; d491f06 (§6.3 `markTime`) is on the branch only and lands on main
-only with Robin's OK (then send the desktop its sha). Sub-agents run on the claude-product account
+robineam360/Cooldown#21, held off main by Gate G0; origin/main (0951dae, spec/core §6.3 `markTime`) is merged in.
+RUNBOOK-v2.0 Steps 1–6 and 6a–6d ticked. **Step 6d, CCRM-103 (Hybrid Notification), is built** to the frozen
+`design/2026-11-02-shape-grammar.html` rev D on Android and iOS, with Robin's calls of 2026-11-02: the merged tile is
+one layout-sheet row "Usage" on both platforms; the iOS lock circular for a plan with no 5h is the Weekly-bar glyph
+under the Used figure; the Vs pace Settings description stands; Step 7's captures stand in for Step 5's Compose
+previews. Every commit was judged (fresh Opus on claude-product; findings and fixes in the Step 6d log). Checks: both
+flavors' unit tests and lint, `swift test` 127, iOS app tests 55. Sub-agents run on the claude-product account
 (`model-mesh-review worker … --account ~/.claude-product`); workers can't run gradle or xcodebuild, so the seat runs
 tests and commits.
 
 New session in this worktree, model Opus 5.5:
 
 > Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 7, the Step 6d log) and this block of HANDOVER.md;
-> load the model-mesh skill; run the git gate. First settle Robin's two open calls from Step 6d (the merged tile's
-> layout-sheet row on both platforms; the iOS lock circular for a no-5h plan) and build what he picks, one commit,
-> judge, tests. Then Step 7 when G0 allows and Robin connects the Fold 7 and the iPad: record each device's starting
-> state, then the passes the step lists plus the 6d checks in its log (the Duet's bare ring on the Fold 7 inner shade
-> and the 36 dp ring on the cover, the picker previews, the 12 × 6 dp Weekly-bar glyph, the compact held word, the
-> tap readout, the end-mark setting, the status-bar icon choice); Gemini sign-in is Robin's. File every defect in
-> BUGS.md; Robin decides what blocks. Stop at Step 8's release go. Before stopping, replace this block.
+> load the model-mesh skill; run the git gate. Step 7 waits on G0 and on Robin connecting the Fold 7 and the iPad —
+> ask him first. Then record each device's starting state, run the passes the step lists plus the 6d checks in its
+> log (the Duet's bare ring on the Fold 7 inner shade and the 36 dp ring on the cover, the picker previews, the
+> 12 × 6 dp Weekly-bar glyph, the compact "Held · 3:40 PM" in its 90 dp column, the tap readout, the end-mark setting,
+> the status-bar icon choice, the "Usage" layout row, the iOS no-5h lock circular); Gemini sign-in is Robin's. File
+> every defect in BUGS.md; Robin decides what blocks. Stop at Step 8's release go. Before stopping, replace this block.
 
 ## ▶ (superseded by the block above) v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
 

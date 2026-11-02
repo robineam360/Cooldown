@@ -248,4 +248,36 @@ class MainCardsTest {
         assertEquals(69.4, tileProjectionPct(Projection.Estimate(15.0, null, 69.4))!!, 1e-9)
         assertEquals(100.0, tileProjectionPct(Projection.Estimate(30.0, 1L, 100.0))!!, 1e-9)
     }
+
+    // --- 6ee08e6 judge: the one "Usage" row and the screen agree in every stored state ---
+
+    @Test
+    fun `a legacy layout that hid the reported id reads as the tile shown, folded as the other was`() {
+        val legacy = CardLayout(order, hidden = setOf(CardId.WEEKLY), more = setOf(CardId.SESSION))
+        val present = setOf(CardId.WEEKLY, CardId.CREDITS)
+        val seen = tileLayout(legacy, present)
+        // The row (WEEKLY) reads shown and folded, exactly as the screen draws the tile.
+        assertFalse(CardId.WEEKLY in seen.hidden)
+        assertTrue(CardId.WEEKLY in seen.more)
+        assertEquals(order, seen.order)
+        assertEquals(DrawnCards(listOf(CardId.CREDITS), listOf(CardId.WEEKLY)), drawnCards(legacy, present))
+        // Folding the tile back above More, the credits switch may hide again (the tile counts as shown).
+        assertTrue(CardLayout.canHide(seen.copy(more = emptySet()), CardId.CREDITS, present))
+        // Nothing to migrate in a consistent layout.
+        val plain = CardLayout(order, hidden = emptySet(), more = emptySet())
+        assertEquals(plain, tileLayout(plain, present))
+        val both = CardLayout(order, hidden = setOf(CardId.SESSION, CardId.WEEKLY), more = emptySet())
+        assertEquals(both, tileLayout(both, present))
+    }
+
+    @Test
+    fun `the Usage row hides and shows both window ids`() {
+        val shown = CardLayout(order, hidden = emptySet(), more = emptySet())
+        val hidden = hideOrShow(shown, CardId.WEEKLY, show = false)
+        assertTrue(hidden.hidden.containsAll(setOf(CardId.SESSION, CardId.WEEKLY)))
+        assertEquals(DrawnCards(listOf(CardId.CREDITS), emptyList()), drawnCards(hidden, setOf(CardId.WEEKLY, CardId.CREDITS)))
+        val back = hideOrShow(hidden, CardId.WEEKLY, show = true)
+        assertTrue(back.hidden.none { it == CardId.SESSION || it == CardId.WEEKLY })
+        assertEquals(setOf(CardId.CREDITS), hideOrShow(shown, CardId.CREDITS, show = false).hidden)
+    }
 }

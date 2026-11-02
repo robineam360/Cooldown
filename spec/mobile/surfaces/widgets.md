@@ -772,7 +772,7 @@ Medium Overview with one account is the Strip (as before).
    side (a 5h card would be a 5h bar).
 3. **Lock circular for a plan with no 5h** (Robin, 2026-11-02: "Let's do what we did for Android"): no ring and no
    "W" — the Weekly as Android's no-5h status-bar glyph (N3, `WeeklyBarGlyph`: the 21 × 10-unit capsule with its pace
-   tick in a cleared halo, red past the tick, the red cross when full), 40 × 22 pt, under the Used figure (17 pt,
+   tick in a cleared halo, red past the tick, the red cross when full), 40 × 28 pt (its unit fits both ways, so the tick is never clipped), under the Used figure (17 pt,
    small "%", "MAX" when spent, "—" signed out), all in the lock tint. VoiceOver: "Weekly, 50 percent".
 4. **Ring band on the lock-screen circular**: ruled (Fable E1.2) and built — 5 pt at its 64 pt size, as the page's
    `wring` (`GrammarRing.bandOverride`, `FaceRing.bandRatio` 5 / 64; the figure is fitted to that bore).

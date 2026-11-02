@@ -201,7 +201,23 @@ data class DrawnCards(val main: List<CardId>, val folded: List<CardId>)
  * blank" rule holds whatever was stored: when nothing would be drawn while the account reports
  * cards, the tile (else the first reported card) shows.
  */
-fun drawnCards(layout: CardLayout, present: Set<CardId>): DrawnCards {
+/**
+ * The stored [layout] as the tile's one "Usage" row sees it (6ee08e6 judge F1): when a layout
+ * saved before the tile hid the id the account reports ([present]) but kept the other window
+ * card, the reported id takes the other's shown state and fold, and the other takes the hidden
+ * flag. The order is left alone (a Headline-ordered layout stays untouched). The sheet and
+ * [drawnCards] both read through this, so the row's switch, fold and place are the screen's.
+ */
+fun tileLayout(layout: CardLayout, present: Set<CardId>): CardLayout {
+    val tile = present.firstOrNull { it == CardId.SESSION || it == CardId.WEEKLY } ?: return layout
+    val other = if (tile == CardId.WEEKLY) CardId.SESSION else CardId.WEEKLY
+    if (tile !in layout.hidden || other in layout.hidden) return layout
+    val more = layout.more - tile - other + (if (other in layout.more) setOf(tile) else emptySet())
+    return layout.copy(hidden = layout.hidden - tile + other, more = more)
+}
+
+fun drawnCards(stored: CardLayout, present: Set<CardId>): DrawnCards {
+    val layout = tileLayout(stored, present)
     val windows = setOf(CardId.SESSION, CardId.WEEKLY)
     val tile = present.firstOrNull { it in windows }
     val slot = tile?.takeIf { it !in layout.hidden }
@@ -222,8 +238,9 @@ fun drawnCards(layout: CardLayout, present: Set<CardId>): DrawnCards {
 
 /**
  * The open tile's first chip (rev D §2, Fable A5; as iOS): 5h when the drawn order leads with
- * the 5-hour card (Headline 5-hour via [cardOrderLayout], or reordered in the sheet) and the
- * account has a 5h; All otherwise. The choice itself stays session-only.
+ * the 5-hour card (Headline 5-hour via [cardOrderLayout]) and the account has a 5h; All
+ * otherwise. The sheet's one "Usage" row cannot reorder the two windows against each other, so
+ * the Headline (or a layout reordered before the tile) decides. The choice stays session-only.
  */
 fun tileStartsOnFive(layout: CardLayout, hasSession: Boolean): Boolean =
     hasSession && layout.order.firstOrNull { it != CardId.CREDITS } == CardId.SESSION

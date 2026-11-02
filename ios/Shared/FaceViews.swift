@@ -881,7 +881,7 @@ struct LockFace: View {
                         .foregroundStyle(.white)
                         .lineLimit(1).minimumScaleFactor(0.6)
                     WeeklyBarGlyph(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, mono: .white)
-                        .frame(width: 40, height: 22)
+                        .frame(width: 40, height: 28)
                 }
                 .padding(.horizontal, 6)
             }

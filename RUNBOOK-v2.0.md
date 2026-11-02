@@ -61,12 +61,12 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☑ |
 | 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☑ |
 | 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☑ |
-| 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☑ (no Compose previews; Step 7 captures stand in, Robin to confirm) |
+| 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☑ (no Compose previews; Step 7 captures stand in, Robin confirmed 2026-11-02) |
 | 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☑ |
 | 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☑ |
 | 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☑ |
 | 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☑ |
-| 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra call 3 (accept) | ☑ (two calls for Robin: the layout sheet's label for the merged tile; the iOS lock circular for a plan with no 5h) |
+| 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra call 3 (accept) | ☑ (Robin's two calls built, see the log) |
 | 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6d, G0 | ☐ |
 | 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
 
@@ -256,3 +256,15 @@ weekly.
   lock-screen circular for a plan with no 5h (today's Weekly ring with "W" — a 7-day ring). **Step 7 must check:**
   the Duet's bare ring on the Fold 7 inner shade and the 36 dp ring on the cover; the picker previews; the 12 × 6 dp
   Weekly-bar glyph (C6); the held compact word "Held · 3:40 PM" in its 90 dp column.
+- **2026-11-02 · Step 6d, Robin's calls** (relayed by the arc session). (1) The merged tile is one layout-sheet row,
+  **"Usage"**, on both platforms; (2) the iOS lock circular for a plan with no 5h is Android's N3 Weekly-bar glyph
+  under the Used figure — no ring, no "W"; (3) the Vs pace Settings description ("Shows "10%" — how far from the pace
+  mark you are: green under it, red over it.") is approved as is on both platforms; (4) Step 5's Compose previews:
+  the Step 7 device captures stand in (confirmed). Built in 6ee08e6; one fresh Opus judge: **concerns**, four, all
+  adopted in the next commit — Android's row now reads the stored layout through `tileLayout` (a legacy layout that
+  hid the reported window id reads as the tile shown, so the row's switch, fold and place match the screen), the iOS
+  glyph's unit fits its 40 × 28 pt frame (the tick is no longer clipped), pure tests for the row's hide/show
+  (Android) and move pairing (iOS), and the `tileStartsOnFive` doc. Checks: Android 838 tests on both flavors and
+  lint; iOS app tests 55. Also merged origin/main 0951dae (spec/core §6.3 `markTime` wording, the 99.6 spent case),
+  which both clients already met.
+

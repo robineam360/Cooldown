@@ -89,18 +89,24 @@ struct LayoutSheet: View {
     /// Reorders within one section; the other section's cards keep their places in the shared order. The Usage row's
     /// second window id travels right behind it.
     private func move(within behindMore: Bool, _ source: IndexSet, _ destination: Int) {
-        let layout = model.drawnLayout(accountKey)
-        let sheet = Self.sheetCards(layout, available)
+        model.setLayout(Self.moved(model.drawnLayout(accountKey), available, behindMore, source, destination), for: accountKey)
+    }
+
+    /// The reorder itself, pure: the sheet's rows of one section move; the Usage row's other window id travels right
+    /// behind it.
+    nonisolated static func moved(_ layout: CardLayout, _ available: Set<CardID>, _ behindMore: Bool,
+                                  _ source: IndexSet, _ destination: Int) -> CardLayout {
+        let sheet = sheetCards(layout, available)
         var section = layout.order.filter { sheet.contains($0) && layout.more.contains($0) == behindMore }
         section.move(fromOffsets: source, toOffset: destination)
         var it = section.makeIterator()
-        let rep = Self.usageID(layout)
+        let rep = usageID(layout)
         var copy = layout
         copy.order = layout.order.filter { $0 == rep || $0 == .credits }
             .map { sheet.contains($0) && layout.more.contains($0) == behindMore ? (it.next() ?? $0) : $0 }
-            .flatMap { $0 == rep ? [rep, Self.other(rep)] : [$0] }
+            .flatMap { $0 == rep ? [rep, other(rep)] : [$0] }
         copy.reordered = true
-        model.setLayout(copy, for: accountKey)
+        return copy
     }
 
     // MARK: CCRM-103 (Hybrid Notification): the two window cards are one row, "Usage"

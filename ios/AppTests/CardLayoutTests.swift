@@ -77,4 +77,14 @@ struct CardLayoutTests {
         let folded = LayoutSheet.both(.session, .standard) { $0.folding($1) }
         #expect(folded.folded == [.session, .weekly])
     }
+
+    /// Moving the Usage row carries its other window id right behind it (6ee08e6 judge F3).
+    @Test func movingTheUsageRowKeepsTheWindowsTogether() {
+        let all: Set<CardID> = [.session, .weekly, .credits]
+        // Rows: [Usage (session), credits]; move credits to the top.
+        let up = LayoutSheet.moved(.standard, all, false, IndexSet(integer: 1), 0)
+        #expect(up.order == [.credits, .session, .weekly] && up.reordered == true)
+        let back = LayoutSheet.moved(up, all, false, IndexSet(integer: 0), 2)
+        #expect(back.order == [.session, .weekly, .credits])
+    }
 }

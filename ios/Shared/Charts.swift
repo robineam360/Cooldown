@@ -509,17 +509,19 @@ struct WeeklyBarGlyph: View {
 
     var body: some View {
         Canvas { ctx, size in
-            let u = size.width / 24, ink = mono ?? (scheme == .dark ? Color.white : Color.black)
-            let cy = size.height / 2
+            // The tick spans 16 units of height (3 past each edge of the 10-unit capsule), so the unit fits both ways
+            // and the glyph centres in its frame; nothing is clipped at any aspect.
+            let u = min(size.width / 24, size.height / 17), ink = mono ?? (scheme == .dark ? Color.white : Color.black)
+            let cy = size.height / 2, ox = (size.width - 24 * u) / 2
             if let pct, Int(pct) >= 100 {
-                let a = 7 * u, c = CGPoint(x: size.width / 2, y: cy)
+                let a = min(7 * u, size.height / 2 - 1.7 * u), c = CGPoint(x: size.width / 2, y: cy)
                 var x = Path()
                 x.move(to: CGPoint(x: c.x - a, y: c.y - a)); x.addLine(to: CGPoint(x: c.x + a, y: c.y + a))
                 x.move(to: CGPoint(x: c.x + a, y: c.y - a)); x.addLine(to: CGPoint(x: c.x - a, y: c.y + a))
                 ctx.stroke(x, with: .color(mono ?? p.red), style: StrokeStyle(lineWidth: 3.4 * u, lineCap: .round))
                 return
             }
-            let x0 = 1.5 * u, w = 21 * u, h = 10 * u, y0 = cy - h / 2, rr = h / 2
+            let x0 = ox + 1.5 * u, w = 21 * u, h = 10 * u, y0 = cy - h / 2, rr = h / 2
             let capsule = Path(roundedRect: CGRect(x: x0, y: y0, width: w, height: h), cornerRadius: rr)
             ctx.fill(capsule, with: .color(ink.opacity(0.16)))
             if let pct {

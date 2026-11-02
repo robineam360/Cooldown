@@ -99,7 +99,8 @@ fun LayoutSheet(
     // in the Headline's order. Only a drag makes the order the user's; show, hide, fold
     // and Reset keep (or hand back) the Headline's.
     val headline = remember(profile) { cache.headline(profile) }
-    var layout by remember(profile) { mutableStateOf(cardOrderLayout(cache.layout(profile), headline)) }
+    // CCRM-103: read through tileLayout, so the "Usage" row is the window id the screen draws.
+    var layout by remember(profile) { mutableStateOf(tileLayout(cardOrderLayout(cache.layout(profile), headline), present)) }
     var showReset by remember { mutableStateOf(false) }
     val dark = appDark()
     val accent = Palette.color(Palette.accentName(cache, profile), dark)
@@ -112,7 +113,7 @@ fun LayoutSheet(
             else -> next
         }
         cache.setLayout(profile, toStore)
-        layout = cardOrderLayout(toStore, headline)
+        layout = tileLayout(cardOrderLayout(toStore, headline), present)
         onChanged()
     }
 
@@ -362,7 +363,7 @@ private fun cardLabel(id: CardId): String = when (id) {
 }
 
 /** The tile's two ids move together, so a stored flag on the other can never contradict the row. */
-private fun hideOrShow(layout: CardLayout, id: CardId, show: Boolean): CardLayout {
+internal fun hideOrShow(layout: CardLayout, id: CardId, show: Boolean): CardLayout {
     val ids = if (id == CardId.CREDITS) listOf(id) else listOf(CardId.SESSION, CardId.WEEKLY)
     return ids.fold(layout) { l, i -> if (show) CardLayout.show(l, i) else CardLayout.hide(l, i) }
 }
