@@ -52,7 +52,7 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | Step | What | Gated on | Status |
 |---|---|---|---|
 | 1 | Cross-family review of this plan, findings adopted, plan FROZEN | — | ☑ |
-| 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☐ |
+| 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☑ |
 | 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☐ |
 | 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☐ |
 | 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
@@ -148,3 +148,12 @@ WidgetKit's refresh budget showing a Vs pace figure that moves with time even wi
 - Downgrade test: v2.0-written preferences through v1.9's accessors (Step 3)
 - Fresh Opus judge per code step; Sol cross-check and Robin's recorded go before the release
 - Device pass checklist (Step 7); release checklist in RELEASING.md (Step 8)
+
+## Log
+
+- **2026-11-02 · Step 2.** `spec/mobile/fixtures/summary/cases.json` (9 rankings, 3 tab cases) and
+  `display/cases.json` (10 Vs pace figures, 14 captions, 4 caption sides), written by script from the rules and
+  checked against the wireframes' worked examples (C1: Personal −34 first, Product held, Side spent).
+  BEHAVIOR-MOBILE §5 gains the caption's rounding; §6 is new (the Summary rule). Seat calls, recorded: the mark and
+  the distance round half up; Left mode words over-pace as "20 over" (the wireframe showed only "to spare"); with
+  the toggle off launch opens the last account looked at (the wireframe's P2 copy). `check_no_code.sh` passes.

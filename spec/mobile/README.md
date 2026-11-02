@@ -7,9 +7,9 @@ Desktop clients have their own layer in the desktop repo and are not bound by an
 
 | File | What it pins down |
 |---|---|
-| [BEHAVIOR-MOBILE.md](BEHAVIOR-MOBILE.md) | Polling cadence, reset pings, the conditions a client shows as a state, and the surfaces each platform has |
+| [BEHAVIOR-MOBILE.md](BEHAVIOR-MOBILE.md) | Polling cadence, reset pings, the conditions a client shows as a state, the surfaces each platform has, the headline and pace wording, the Summary tab |
 | [surfaces/](surfaces/README.md) | The as-shipped design of every surface: foundations, app, notification, widgets |
-| [fixtures/](fixtures/) | Mobile-layer cases both apps test against: `headline/cases.json` (§5) |
+| [fixtures/](fixtures/) | Mobile-layer cases both apps test against: `headline/cases.json` and `display/cases.json` (§5), `summary/cases.json` (§6) |
 
 Where Android and iOS cannot do the same thing (iOS has no background polling and no persistent
 notification), the rule says what each does, and the iOS half is settled with CCRM-94 (iOS App)'s

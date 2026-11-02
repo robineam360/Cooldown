@@ -1,0 +1,235 @@
+{
+  "_meta": {
+    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark."
+  },
+  "vsPaceFigure": [
+    {
+      "name": "under the mark",
+      "usedPct": 50,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "+10%",
+      "why": "floor(60 - 50) = +10"
+    },
+    {
+      "name": "over the mark",
+      "usedPct": 80,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "−20%",
+      "why": "floor(60 - 80) = -20, printed with U+2212"
+    },
+    {
+      "name": "rounded down: room is never overstated",
+      "usedPct": 50.4,
+      "elapsedPct": 60.9,
+      "hasResetClock": true,
+      "expected": "+10%",
+      "why": "floor(10.5) = 10"
+    },
+    {
+      "name": "rounded down over the mark",
+      "usedPct": 60.2,
+      "elapsedPct": 60.0,
+      "hasResetClock": true,
+      "expected": "−1%",
+      "why": "floor(-0.2) = -1"
+    },
+    {
+      "name": "exactly on the mark",
+      "usedPct": 42,
+      "elapsedPct": 42,
+      "hasResetClock": true,
+      "expected": "0%",
+      "why": "no sign on zero"
+    },
+    {
+      "name": "first hours of a window",
+      "usedPct": 0.4,
+      "elapsedPct": 1.7,
+      "hasResetClock": true,
+      "expected": "+1%",
+      "why": "floor(1.3) = 1"
+    },
+    {
+      "name": "week spent falls back to usage",
+      "usedPct": 100,
+      "elapsedPct": 89.8,
+      "hasResetClock": true,
+      "expected": "100%",
+      "why": "the usage figure, as Used mode"
+    },
+    {
+      "name": "spent threshold 99.5",
+      "usedPct": 99.6,
+      "elapsedPct": 95.0,
+      "hasResetClock": true,
+      "expected": "99%",
+      "why": "usedPct >= 99.5 is spent: the usage figure, truncated as Used mode"
+    },
+    {
+      "name": "no reset clock falls back to usage",
+      "usedPct": 0,
+      "elapsedPct": null,
+      "hasResetClock": false,
+      "expected": "0%",
+      "why": "window not started: no pace mark"
+    },
+    {
+      "name": "no reading",
+      "usedPct": null,
+      "elapsedPct": 50,
+      "hasResetClock": true,
+      "expected": "—",
+      "why": "an em dash, as every mode"
+    }
+  ],
+  "caption": [
+    {
+      "name": "Used, under",
+      "mode": "used",
+      "usedPct": 50,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "60% pace mark · 10 under"
+    },
+    {
+      "name": "Used, over",
+      "mode": "used",
+      "usedPct": 80,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "60% pace mark · 20 over"
+    },
+    {
+      "name": "Used, under by less than 1 is on it",
+      "mode": "used",
+      "usedPct": 59.4,
+      "elapsedPct": 60.2,
+      "hasResetClock": true,
+      "expected": "60% pace mark · on it"
+    },
+    {
+      "name": "Used, over by exactly 1",
+      "mode": "used",
+      "usedPct": 61,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "60% pace mark · 1 over"
+    },
+    {
+      "name": "Used, distance rounds half up",
+      "mode": "used",
+      "usedPct": 50,
+      "elapsedPct": 60.5,
+      "hasResetClock": true,
+      "expected": "61% pace mark · 11 under"
+    },
+    {
+      "name": "Used, mark rounds half up",
+      "mode": "used",
+      "usedPct": 30,
+      "elapsedPct": 38.5,
+      "hasResetClock": true,
+      "expected": "39% pace mark · 9 under"
+    },
+    {
+      "name": "Left, under: remaining terms",
+      "mode": "left",
+      "usedPct": 50,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "40% pace mark · 10 to spare"
+    },
+    {
+      "name": "Left, over",
+      "mode": "left",
+      "usedPct": 80,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "40% pace mark · 20 over"
+    },
+    {
+      "name": "Left, on it",
+      "mode": "left",
+      "usedPct": 60.3,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": "40% pace mark · on it"
+    },
+    {
+      "name": "Vs pace: the caption carries the usage",
+      "mode": "vsPace",
+      "usedPct": 52,
+      "elapsedPct": 39,
+      "hasResetClock": true,
+      "expected": "52% used · mark 39%"
+    },
+    {
+      "name": "Vs pace, usage truncated",
+      "mode": "vsPace",
+      "usedPct": 52.9,
+      "elapsedPct": 38.6,
+      "hasResetClock": true,
+      "expected": "52% used · mark 39%"
+    },
+    {
+      "name": "spent: no caption",
+      "mode": "used",
+      "usedPct": 100,
+      "elapsedPct": 89.8,
+      "hasResetClock": true,
+      "expected": null
+    },
+    {
+      "name": "no reset clock: no caption",
+      "mode": "used",
+      "usedPct": 0,
+      "elapsedPct": 0,
+      "hasResetClock": false,
+      "expected": null
+    },
+    {
+      "name": "no reading: no caption",
+      "mode": "used",
+      "usedPct": null,
+      "elapsedPct": 50,
+      "hasResetClock": true,
+      "expected": null
+    }
+  ],
+  "captionSide": [
+    {
+      "name": "room to the right",
+      "barWidthDp": 351,
+      "markPct": 60,
+      "captionWidthDp": 120,
+      "expectedSide": "right",
+      "why": "mark at 210.6 dp; the right side needs 335.6 <= 351"
+    },
+    {
+      "name": "mark near the end flips left",
+      "barWidthDp": 351,
+      "markPct": 80,
+      "captionWidthDp": 120,
+      "expectedSide": "left",
+      "why": "mark at 280.8 dp; the right side needs 405.8 <= 351"
+    },
+    {
+      "name": "exactly fits",
+      "barWidthDp": 351,
+      "markPct": 50,
+      "captionWidthDp": 170.5,
+      "expectedSide": "right",
+      "why": "mark at 175.5 dp; the right side needs 351 <= 351"
+    },
+    {
+      "name": "half a dp short flips",
+      "barWidthDp": 351,
+      "markPct": 50,
+      "captionWidthDp": 171.0,
+      "expectedSide": "left",
+      "why": "mark at 175.5 dp; the right side needs 351.5 <= 351"
+    }
+  ]
+}
