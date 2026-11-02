@@ -12,6 +12,8 @@ usage/       <name>.json          — an /api/oauth/usage response (Claude)
 profile/     <name>.json          — an /api/oauth/profile response, or the usage endpoint's
                                      Free-plan 403 body (CCM-68 [Accounts], CCM-67 [Readout])
 chatgpt/     <name>.json          — a chatgpt.com/backend-api/wham/usage response
+antigravity/ <name>.json, cases.json — Antigravity (Gemini) quota and plan replies, CCRM-55
+                                     (Antigravity Account); see antigravity/README.md
                                      (CCM-76 [Accounts]); see chatgpt/README.md
 projection/  cases.json           — burn-rate estimate cases
 pace/        cases.json           — the Pace number, the allowance and the session-binding

@@ -8,6 +8,12 @@ arc until v1.9 ships; this file is the next arc, and Gate G0 below keeps the two
 Toggle), CCRM-100 (Vs Pace Display), on Android and iPhone/iPad. Shipped together as **v2.0**, one GitHub
 release carrying both the APK and the IPA (CCRM-95 (Dual Release)).
 
+**Amended 2026-11-02 (Robin, in the Step 2–6 session):** CCRM-55 (Antigravity Account) joins v2.0 on Android
+and iOS ("let's build the Gemini/Antigravity option as well in this build"; wireframe rev B approved), with
+CCRM-102 (Spent Week Gate) from its review. Steps 6a–6c are added; Steps 7 and 8 gain their Gemini parts.
+CCRM-101 (Icon v3) is not in this arc unless Robin says so. Delta review: Astra, one call (findings in
+`design/research/2026-11-02-v20-findings.md`).
+
 **Not in this arc:** CCBG-53 (History Footnote), CCBG-54 (Plan Copy Gap) and CCBG-55 (Spec Drift) may ride
 along only if a step touches the same file; "Use next" as a separate card (dropped by Robin); the desktop
 client, which runs its own arc from the prompt in HANDOVER.md.
@@ -57,7 +63,10 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☑ |
 | 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
 | 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☐ |
-| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed | 4, 5, 6, G0 | ☐ |
+| 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☐ |
+| 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☐ |
+| 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☐ |
+| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6c, G0 | ☐ |
 | 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
 
 ## Steps
@@ -96,18 +105,39 @@ tests, Compose previews of every wireframe state, judge. Reversal: revert.
 page, widgets, lock screen, Live Activity, Summary, notice, per rev B. Check: `swift test`, CI's macOS job,
 the render test over every face, judge. Reversal: revert.
 
+**Step 6a · Spent Week Gate.** Per `design/2026-11-02-antigravity-account.html` §3b and BEHAVIOR-MOBILE §5:
+the 5h card greyed with its note on both platforms, the notification's 5h panel row, widget faces showing the
+5h. Check: unit tests for the predicate and copy, both platforms' test suites, judge. Reversal: revert.
+
+**Step 6b · CCRM-55 on Android.** spec/core first (API-CONTRACT §10, BEHAVIOR-SPEC §1.1, `fixtures/antigravity/`);
+then `AntigravitySource` (the parser reads the fixtures), `Credentials.project`, the GET-only guard's two named
+exceptions, the `antigravityClientSecret` Gradle property → `BuildConfig` (absent → the Gemini row hidden; CI
+gets a repository secret, Robin's step), the code-paste sign-in, the Add-account row, the pool's card pair,
+plan pill, the pool-only notice, and the disclaimer lines. Check: both flavors' tests (parser on every fixture,
+UA-version test, secret-wired test), lint, judge. Reversal: revert; no stored data changes for other accounts.
+
+**Step 6c · CCRM-55 on iOS.** The same on CooldownCore (fixtures) and the iOS surfaces (Add sheet, sign-in
+sheet with `ASWebAuthenticationSession`, cards, sidebar, widgets, Live Activity, the disclaimer lines), the
+secret from an uncommitted xcconfig. Check: `swift test`, the CI iOS job, judge. Reversal: revert.
+
 **Step 7 · Device passes.** After G0. **Before:** record each device's starting state in the Step 7 log:
 installed build and flavor, screen timeout, the Cooldown settings that will be changed (Headline per account,
 Usage display, model limits, Open on the summary), placed widgets and lock-screen widgets (a screenshot of each
 home page), any Live Activity. Fold 7 over USB (cover and inner, dark and light, Weekly/Auto/5-hour,
 Vs pace, a no-5h account, a 5h-binding state via the synthetic series) and the iPad (sidebar, widgets, lock
-screen, Live Activity). Captures in `design/research/<date>-v20-device-pass/`; every defect filed in BUGS.md;
+screen, Live Activity). **Gemini (6b–6c):** Robin signs a Gemini Pro account in on each device himself (the
+Google page and the code paste are his; the session never sees the token); check not started, used, Argon,
+the pool hidden/shown, a spent week (6a's grey 5h, via the synthetic series), and a refresh after an hour. The
+expanded single notification under three strips and the synthetic band (Step 4 judge F4) on the cover and
+inner screens. Captures in `design/research/<date>-v20-device-pass/`; every defect filed in BUGS.md;
 Robin decides what blocks. *Always after:* every recorded setting is put back, widgets match the screenshots,
 the screen timeout is restored; the v2.0 candidate build stays installed on purpose (it is what ships), and the
 log says so per device.
 
 **Step 8 · Release v2.0.** Version bump, user docs, release notes, APK and IPA from one commit, per
-RELEASING.md. Fresh judge plus Sol cross-check before publishing (publishes). **Then Robin's go, in chat, for
+RELEASING.md; the README and the guide gain Gemini and its ToS line (Cooldown presents as Google's Antigravity
+CLI; Google can change or close it). Before the build: `antigravityClientSecret` set locally and as a CI
+repository secret (Robin's step), and the release build shows the Gemini row. Fresh judge plus Sol cross-check before publishing (publishes). **Then Robin's go, in chat, for
 the named commit and the APK and IPA sha256s, recorded verbatim in the Step 8 log; no publish without it.**
 Irreversible once published.
 
@@ -120,7 +150,9 @@ v2.0.1.
 
 ## Reserved for Robin
 
-Any visible change beyond the approved wireframes; what blocks after the device pass; the release go.
+Any visible change beyond the approved wireframes; what blocks after the device pass; the release go. Also:
+the Gemini sign-in on each device, putting the client secret into `~/.gradle/gradle.properties`, the iOS
+xcconfig and the CI repository secret, and which CCRM-101 (Icon v3) concept, if any, ships.
 
 ## Failure modes
 
@@ -135,7 +167,10 @@ Any visible change beyond the approved wireframes; what blocks after the device 
 ## UNVERIFIED
 
 The Fold 7 inner-screen two-column Summary at 760 dp; the iPad 11″ two-column Summary at its real height;
-WidgetKit's refresh budget showing a Vs pace figure that moves with time even without a new reading.
+WidgetKit's refresh budget showing a Vs pace figure that moves with time even without a new reading. Gemini:
+the Free and Ultra replies (`g1-ultra-tier` is a guess; Ultra may have no Argon bucket); how long Google keeps
+accepting the `antigravity/cli/1.4.12` token and the client; whether one prompt can move the 5h without the
+weekly.
 
 ## Tests and gates
 
@@ -147,6 +182,8 @@ WidgetKit's refresh budget showing a Vs pace figure that moves with time even wi
 - Summary and display cases: `spec/mobile/fixtures/summary/`, `display/` (Step 2)
 - Downgrade test: v2.0-written preferences through v1.9's accessors (Step 3)
 - Fresh Opus judge per code step; Sol cross-check and Robin's recorded go before the release
+- Antigravity parse and plan cases: `spec/core/fixtures/antigravity/cases.json`; the UA-version test; the
+  secret-wired test (Steps 6b–6c)
 - Device pass checklist (Step 7); release checklist in RELEASING.md (Step 8)
 
 ## Log
@@ -167,3 +204,18 @@ WidgetKit's refresh budget showing a Vs pace figure that moves with time even wi
   `WidgetWindowDefaultTest`); F3 (the Strip's window) asked of Robin; F4 (height of the single expanded view with
   `sub2` under three strips and the synthetic band) moves to **Step 7: capture that worst case on the Fold 7 cover
   and inner screen**.
+- **2026-11-02 · Step 6** (197f020, iOS, built by a delegated Opus builder). `swift test` 113 passed; the CI iOS
+  job reproduced locally, succeeded. Fresh Opus judge: **concerns**. F1 (a weekly-only Number on Weekly shows
+  "—"), F3 (a Left choice lost after a v1.9 round-trip) and F5 (the All tab removed under its own selection) are
+  sent back to the builder, each closed by a test; F2 (a placed v1.9 Number must not flip) is a **Step 7**
+  simulator upgrade check; F4's visible calls went to a Fable judge, which confirmed the builder's twelve fit
+  calls (Bars, Strip and lock rectangular fixed Weekly-first; Overview, lock circular/inline, Live Activity and
+  Island follow the Headline live; iPad portrait "All" tab; launch on the last account; reordered layouts; "Limit
+  reached" at 100%; projection only when it runs out; the Island's Vs pace line; the Density note; the share
+  card keeps its order — a Weekly-first share card needs its own wireframe under CCRM-24 (Share Card); the lock
+  title may scale to 80%; the sidebar's Headline segment). The iOS Countdown stays on 5h in v2.0 (its intent
+  has no window; a tested migration is a follow-up). The Android Strip's window is **Robin's call** (Fable:
+  follow each account's Headline, flipping placed Strips; Step 4 judge F3).
+- **2026-11-02 · Amendment.** CCRM-55 (Antigravity Account) and CCRM-102 (Spent Week Gate) added as Steps
+  6a–6c after Robin approved the CCRM-55 wireframe rev B; spec/core facts and fixtures for CCRM-55 written first.
+  CCRM-101 (Icon v3): ChatGPT (Astra) proposed two concepts, drawn for Robin in `design/2026-11-02-icon-v3.html`.

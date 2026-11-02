@@ -385,7 +385,18 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows from a phone, code-paste sign-in
-- **Status:** Planned (reopened 2026-11-02, Robin's call) · large · after the v2.0 arc
+- **Status:** **Building in v2.0** (Robin, 2026-11-02: "let's build the Gemini/Antigravity option as well in
+  this build"; RUNBOOK-v2.0 Steps 6a–6c) · **wireframe rev B approved 2026-11-02**
+  (`design/2026-11-02-antigravity-account.html`) · spec/core in (API-CONTRACT §10, BEHAVIOR-SPEC §1.1,
+  `fixtures/antigravity/`). **Decided 2026-11-02 (Robin):** the open questions below — (1) the Claude + GPT
+  pool is hidden until used, then a second card pair "Claude + GPT in Antigravity"; (2) only Cooldown's
+  reset copy, never Google's `description`; (3) no new disclosure box: the existing "Unofficial. Not
+  affiliated with …" lines add Google, the README carries the ToS detail; (4) **Android and iOS** in the
+  same release. Rev A review: the provider is named **"Gemini"** (not "Gemini (Antigravity)"); every v2.0
+  rule applies to Gemini unchanged; tiny readings truncate as everywhere ("0%"); the pool-only reply notice
+  as drawn (H); theme colours unchanged (Gemini Blue through "Per provider", option A); a spent week greys
+  the 5h on every account (split out as CCRM-102 (Spent Week Gate)); a new app icon designed with ChatGPT
+  (CCRM-101 (Icon v3)). Earlier text below, kept: Planned (reopened 2026-11-02) · after the v2.0 arc
   (RUNBOOK-v2.0.md) · **wireframe first** (working agreement 2). Robin accepted the ToS posture:
   Cooldown presents as Google's Antigravity CLI (its User-Agent token and its public OAuth
   client), and Google can change or close either at any time. The app says so as plainly as the
@@ -1825,6 +1836,28 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   back to the usage figure. The Huge number's caption reads "VS PACE" where Left mode reads "LEFT".
 - **Why:** the bar already shows usage and the mark; the figure is free to show the one thing the bar
   makes you work out. The sign always agrees with the Pace band (Pace is this gap scaled by what's left).
+
+### CCRM-101 · Icon v3 — a launcher icon about the weekly limit, with all three providers' colours
+- **Status:** Asked by Robin 2026-11-02 (CCRM-55 (Antigravity Account) rev A review: "Can we ask ChatGPT to
+  design a better app icon … with focus on hitting the weekly usage limit and theme of Claude, ChatGPT and
+  Gemini being there"). Concepts requested from ChatGPT (Astra, through model-mesh's fenced transport); to be
+  drawn as a wireframe with the current Pulse beside them, then Robin picks. **Wireframe first**; not in v2.0
+  unless Robin says so — the Pulse ships until a concept is approved.
+- **Constraints:** no provider logos (trademarks); professional, official colours (Claude #D97757, ChatGPT
+  #10A37F/#19C39A, Gemini #4285F4/#8AB4F8); legible at 48 px, in Android's monochrome themed icon and under
+  every mask; one art for Android and iOS. Rejected before: anything that reads as a flag, fun mascots.
+
+### CCRM-102 · Spent Week Gate — a spent week greys the 5h on every account
+- **Status:** Decided and approved 2026-11-02 (Robin, CCRM-55 (Antigravity Account) rev B, §3b of
+  `design/2026-11-02-antigravity-account.html`) · building in v2.0 (RUNBOOK-v2.0 Step 6a).
+- **What:** for Claude, ChatGPT and Gemini alike, while the Weekly window is spent (core §6.1, used ≥ 99.5)
+  the 5h window is shown **disabled, not hidden and not zeroed**: its figure, bar and reset line at 45%
+  opacity, without the pace caption or the "on track" projection, plus one full-opacity note "Weekly limit
+  reached — 5h can't be used until Sat 4:51 pm". The notification's expanded panel 5h row takes the same note
+  as its sub; a widget showing the 5h says "Weekly spent". Matches core §6.2, where a spent week outranks the
+  session.
+- **Why:** a fresh 5h beside a spent week reads as "I can use it now" — the Pro confusion CCRM-55 exists to
+  explain, and it happens on every provider.
 
 ## Next — small, high value, ready to build
 

@@ -161,6 +161,12 @@ value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, s
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
 The minus is U+2212. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
 
+**Spent week gate** (CCRM-102 (Spent Week Gate), approved 2026-11-02): while the Weekly window is spent
+(core §6.1), the 5h is shown disabled on every account — figure, bar and reset line at 45% opacity, no pace
+caption, no projection — with one full-opacity note "Weekly limit reached — 5h can't be used until <weekly
+reset, day and time>". The notification's expanded 5h panel row takes the note as its sub; a widget face
+showing the 5h reads "Weekly spent".
+
 **Model limits** (CCRM-99 (Model Limits Toggle)): per account `showModelLimits`, default true. False hides
 the model-cap rows and chips on the 7-day card and the notification panel; nothing else changes.
 

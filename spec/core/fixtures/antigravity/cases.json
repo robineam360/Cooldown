@@ -1,0 +1,195 @@
+{
+  "_meta": {
+    "note": "CCRM-55 (Antigravity Account): retrieveUserQuotaSummary and loadCodeAssist replies, reconstructed from the 2026-11-02 capture record (design/research/2026-11-02-antigravity-respike.md: values, bucket ids, field names) and the 2026-09-08 captured shape; no live payload is stored here (it would carry the project id and email). captured: false for every file. Parse rules: API-CONTRACT section 10 and BEHAVIOR-SPEC section 1.1.",
+    "tolerance": "Allow 1e-6 on usedPct.",
+    "notStartedRule": "remainingFraction >= 1 and resetTime within 120 s of now + the window's length -> resetsAt null"
+  },
+  "parse": [
+    {
+      "file": "pro-light-use.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 0.23813,
+          "resetsAt": "2026-11-02T09:02:04Z"
+        },
+        "weekly": {
+          "usedPct": 0.15124,
+          "resetsAt": "2026-11-05T16:51:10Z"
+        },
+        "modelCaps": [
+          {
+            "name": "Argon",
+            "usedPct": 1.060104,
+            "resetsAt": "2026-11-09T03:58:44Z"
+          }
+        ],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "weekly": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "shown": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "not-started.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 0.0,
+          "resetsAt": null
+        },
+        "weekly": {
+          "usedPct": 0.0,
+          "resetsAt": null
+        },
+        "modelCaps": [
+          {
+            "name": "Argon",
+            "usedPct": 0.0,
+            "resetsAt": null
+          }
+        ],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "weekly": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "shown": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "pool-used.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 27.0,
+          "resetsAt": "2026-11-02T06:50:00Z"
+        },
+        "weekly": {
+          "usedPct": 18.0,
+          "resetsAt": "2026-11-07T16:51:10Z"
+        },
+        "modelCaps": [],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "weekly": {
+              "usedPct": 6.0,
+              "resetsAt": "2026-11-08T11:15:00Z"
+            },
+            "shown": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "weekly-spent.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 0.0,
+          "resetsAt": null
+        },
+        "weekly": {
+          "usedPct": 100.0,
+          "resetsAt": "2026-11-05T16:51:10Z"
+        },
+        "modelCaps": [],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "weekly": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "shown": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "ua-rejected.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "invalidResponse",
+        "why": "no Gemini group: the User-Agent was rejected or Google changed the reply"
+      }
+    },
+    {
+      "file": "no-groups.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "invalidResponse",
+        "why": "no Gemini group: the User-Agent was rejected or Google changed the reply"
+      }
+    },
+    {
+      "file": "malformed.json",
+      "nowMs": 1793592600000,
+      "nowIso": "2026-11-02T04:10:00Z",
+      "expected": {
+        "status": "unparseable"
+      }
+    }
+  ],
+  "plan": [
+    {
+      "file": "load-code-assist-pro.json",
+      "expected": {
+        "plan": "Pro",
+        "project": "redacted-project-123"
+      }
+    },
+    {
+      "file": "load-code-assist-free.json",
+      "expected": {
+        "plan": "Free",
+        "project": "redacted-project-456"
+      }
+    },
+    {
+      "file": "load-code-assist-ultra.json",
+      "expected": {
+        "plan": "Ultra",
+        "project": "redacted-project-789"
+      },
+      "why": "g1-ultra-tier is UNVERIFIED (no Ultra account seen); constructed by analogy with g1-pro-tier"
+    }
+  ]
+}
