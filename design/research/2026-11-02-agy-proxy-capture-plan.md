@@ -109,3 +109,12 @@ remediation. No step touches system proxy settings, the System keychain, agy's o
   `71:4F:3E:F0:9A:22:B5:A3:4E:81:6A:D7:D5:87:E1:78:D1:34:68:69:26:9B:88:D8:3E:16:1F:5B:92:C9:7D:7A`, SHA-1
   `48:4C:DA:66:58:BF:22:D1:0C:8F:39:ED:10:A5:F8:00:60:D4:CD:06`; key files 0600; `~/.mitmproxy` still absent.
   If this session dies before step 7, remove trust from and delete the login-keychain certificate with this SHA-1.
+- Step 4 (owner) 04:26Z: trust added; T2 fingerprint match (SHA-1 above), trust policy SSL only.
+- Step 5: 11 cloudcode-pa flows captured over HTTP/1.1 through `HTTPS_PROXY`; agy printed its five lines (T4);
+  T3 zero token hits. Result in the respike note's "Proxy capture" section.
+- Step 6: proxy stopped, nothing listening.
+- Step 7 (owner): trust removed and certificate deleted; no trust entry, no certificate with the fingerprint; agy
+  works without the proxy (T4).
+- Step 8: session CA folder, capture files and addon deleted; cask uninstalled; `~/.mitmproxy` still absent;
+  `mitmdump` absent (T5). The machine is back to the recorded starting state.
+- Step 9 (owner ran the script): T6 passed (placeholder refused); the replay returned all three groups. Recorded.

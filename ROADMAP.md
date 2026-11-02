@@ -383,17 +383,19 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows, spike before design
-- **Respike 2026-11-02 — partly reopened, still not Planned.** The `agy` CLI (1.4.11) now shows
-  real, moving Antigravity limits from Google's cloud
-  (`daily-cloudcode-pa…:retrieveUserQuotaSummary`, no IDE, no local RPC): resets anchored to
-  first use, Gemini 4 Argon weekly 100% → 99% after one prompt. From a **plain HTTPS client**
-  (phone-shaped) with the same token: **Gemini 5h** is real via `fetchAvailableModels`
-  (per-model `quotaInfo`, unrounded), and the Claude + GPT pool's 5h + weekly come from the
-  summary; **Gemini weekly and Argon weekly do not** (the summary returns only the 3p group, and
-  Argon is absent from the model list). Four rounds of request-shape guessing did not find agy's
-  difference; next is capturing its request through an intercepting proxy (owner's call: needs a
-  trusted root certificate on the Mac). Auth is unchanged and still the hard blocker. The
-  September "permanent stub" verdict below no longer holds as written. Record:
+- **Respike 2026-11-02 — data blocker closed; auth still blocks; not Planned yet.** Google's
+  cloud quota for Antigravity is real now (the `agy` CLI 1.4.11 reads it with no IDE and no
+  local RPC). A one-off proxy capture of agy (plan
+  `design/research/2026-11-02-agy-proxy-capture-plan.md`, Astra-reviewed, machine restored)
+  showed the only gate is the User-Agent: with a versioned `antigravity/cli/<v>` token in it
+  (any OS, even after an app's own name), a **plain HTTPS client** gets every window from one
+  call — `POST https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary`,
+  body `{"project": <cloudaicompanionProject from loadCodeAssist>}` → `gemini-5h`,
+  `gemini-weekly`, `gemini-argon-wtu-weekly` (Gemini 4 Argon, weekly only, its own limit on Pro)
+  and `3p-5h` / `3p-weekly`, each an unrounded `remainingFraction` and a `resetTime` anchored to
+  first use (sliding to "now + window" while unused). The September "permanent stub" verdict
+  below is superseded. **Still open:** sign-in on a phone (the auth blocker below, unchanged)
+  and the ToS posture of presenting as Google's CLI. Record:
   `design/research/2026-11-02-antigravity-respike.md`.
 - **Status:** Dropped (2026-09-08). A second, decisive round of the spike proved the data
   blocker is not just soft-degraded but absolute: a real, substantial Gemini task run inside
