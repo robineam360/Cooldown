@@ -1856,7 +1856,10 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 ### CCRM-103 · Hybrid Notification — Weekly as the bar, the 5h as a small ring
 - **Status:** Idea from Robin 2026-11-02 ("a bar for 7-day weekly usage and also a small ring for 5-hour usage,
   just like how we show in the menu bar. That'll be cool to look at in the notification shade") · **wireframe
-  first** (`design/2026-11-02-hybrid-notification.html`) · not in v2.0 unless Robin says so after the wireframe.
+  first** (`design/2026-11-02-hybrid-notification.html`) · **in v2.0** (Robin, 2026-11-02, on rev A). Placement
+  not final: Robin liked H3 (an 18 dp ring on the title row) and asked to see H4 first — a bigger hollow ring on
+  the left with the 5h % inside it and its pace line, the right side all Weekly (rev B). The desktop session
+  was asked, in Robin's words, to follow the same standard and hold its build until this is final.
 - **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
   ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
   take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.

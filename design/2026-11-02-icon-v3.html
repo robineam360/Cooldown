@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Icon v3 Wireframe</title>
+<!-- CCRM-101 (Icon v3), rev A, 2026-11-02. Wireframe for Robin's approval (CLAUDE.md section 2).
+     Concepts C1 and C2 are ChatGPT's (GPT, via the model-mesh reviewer, findings 1 and 2), geometry copied
+     number for number on the 108-unit adaptive canvas. Pulse is a port of ic_launcher_foreground.xml,
+     ic_launcher_background.xml and ic_launcher_monochrome.xml. No provider logos anywhere: colour only. -->
+<style>
+  :root { --bg:#FAF8F6; --ink:#26211E; --muted:#6E6660; --accent:#C15F3C; --hair:#E7E1DC; --card:#FFFFFF; --warn:#9A6B1E; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#171513; --ink:#EDE8E4; --muted:#9B928B; --accent:#E59980; --hair:#2C2825; --card:#201D1B; --warn:#D8AC63; } }
+  :root[data-theme="dark"] { --bg:#171513; --ink:#EDE8E4; --muted:#9B928B; --accent:#E59980; --hair:#2C2825; --card:#201D1B; --warn:#D8AC63; }
+  * { box-sizing: border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif; margin:0; padding:48px 16px 96px; line-height:1.5; }
+  .page { max-width:1240px; margin:0 auto; }
+  .eyebrow { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 0 10px; }
+  h1 { font-size:30px; font-weight:700; letter-spacing:-.02em; margin:0 0 8px; }
+  .lede { color:var(--muted); max-width:78ch; margin:0 0 12px; font-size:14px; }
+  h2 { font-size:19px; font-weight:650; margin:48px 0 4px; }
+  h3 { font-size:15px; font-weight:650; margin:0 0 2px; }
+  .sub { color:var(--muted); font-size:13px; max-width:84ch; margin:0 0 18px; }
+  b { font-weight:650; color:var(--ink); }
+  code { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; background:color-mix(in srgb,var(--hair) 55%,transparent); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere; }
+  blockquote { margin:10px 0; padding:8px 14px; border-left:3px solid var(--accent); color:var(--muted); font-size:13px; max-width:84ch; }
+  ul { font-size:13.5px; max-width:86ch; padding-left:22px; } li { margin:0 0 6px; }
+  .cols { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; align-items:start; }
+  @media (max-width:980px) { .cols { grid-template-columns:minmax(0,1fr); } }
+  .card { border:1px solid var(--hair); background:var(--card); border-radius:16px; padding:18px; min-width:0; }
+  .cap { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px; }
+  .strip { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+  .strip figure { margin:0; text-align:center; }
+  .strip figcaption { font-size:10.5px; color:var(--muted); margin-top:4px; }
+  svg { display:block; }
+  .canvas192 { background:#000; outline:1px solid var(--hair); }
+  .wall { display:flex; gap:14px; padding:12px 14px; border-radius:14px; align-items:flex-start; width:max-content; max-width:100%; }
+  .wall.dark { background:linear-gradient(160deg,#101826,#2a1d36); color:#E8E8E8; }
+  .wall.light { background:linear-gradient(160deg,#EAD9B8,#9FC2D8); color:#1d1d1d; }
+  .app { width:56px; text-align:center; font-size:10px; line-height:1.2; }
+  .app .ph { width:48px; height:48px; border-radius:50%; margin:0 auto 4px; }
+  .wall.dark .ph { background:#4a4f5c; } .wall.light .ph { background:#f3f3f3; box-shadow:inset 0 0 0 1px #00000018; }
+  .note { font-size:12.5px; color:var(--muted); margin:8px 0 0; }
+  .why { font-size:13px; margin:18px 0 0; padding-top:14px; border-top:1px solid var(--hair); }
+  .tbl-wrap { overflow-x:auto; }
+  table { border-collapse:collapse; font-size:13px; width:100%; max-width:1020px; }
+  th,td { text-align:left; padding:8px 14px 8px 0; border-bottom:1px solid var(--hair); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:650; }
+  .derived { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--warn); border:1px solid var(--warn); border-radius:5px; padding:1px 6px; }
+</style>
+<body><div class="page">
+  <p class="eyebrow">CCRM-101 (Icon v3) · wireframe</p>
+  <h1>Icon v3 Wireframe</h1>
+  <p class="lede">CCRM-101 (Icon v3) · rev A · 2026-11-02 · concepts by ChatGPT, drawn by Cooldown</p>
+
+  <h2>1 · Brief and where the concepts came from</h2>
+  <p class="sub">Robin asked for a better launcher icon. The brief: it is about hitting the <b>weekly</b> usage limit; <b>Claude, ChatGPT and Gemini</b> are all present, by <b>colour only, never logos</b>; professional; legible at <b>48 px</b>; a working <b>monochrome themed icon</b> (Android 13); it survives <b>circle, squircle and rounded-square masks</b>; and the <b>same art</b> goes on iOS.</p>
+  <p class="sub">Both concepts are ChatGPT's (GPT, through the model-mesh reviewer), given as exact geometry on the 108-unit canvas. It judged today's Pulse as concerns:</p>
+  <blockquote>"The described Pulse suggests heart monitoring rather than a usage allowance" and "V1 omits a required service" (Gemini). Weekly vs daily "cannot" be told from the symbol alone, so the app's headline carries the period.</blockquote>
+  <p class="sub">Drawn below from those numbers, not redrawn by taste. The 72-unit safe zone is outlined faintly on each 192 px canvas. Masked and iOS views show the central 72 units, as a launcher does. Squircle is approximated by a 34% radius.</p>
+
+  <h2>2 · The three, side by side</h2>
+  <div class="cols" id="cols"></div>
+
+  <h2>3 · Derived variants <span class="derived">derived, not ChatGPT's</span></h2>
+  <p class="sub">Two small experiments on C1, drawn by Cooldown to answer questions the brief raises. Neither is a ChatGPT proposal.</p>
+  <div class="cols" id="vars"></div>
+
+  <h2>4 · Pick one</h2>
+  <div class="tbl-wrap"><table>
+    <tr><th>Choice</th><th>What it means</th></tr>
+    <tr><td><b>Pulse (keep)</b></td><td>No icon work. Gemini stays absent from the icon; the heart-monitor reading and the cropped apex stay. Nothing to build.</td></tr>
+    <tr><td><b>C1</b> Three meters at a ceiling</td><td>Needs a new adaptive-icon foreground and background, a monochrome layer (ceiling plus three columns, opaque), and an iOS 1024 asset from the same art. The device pass then checks legibility at 48 px and in themed mode.</td></tr>
+    <tr><td><b>C2</b> Three allowances with a reset arrow</td><td>Same assets as C1 (foreground, background, monochrome with tracks dropped, iOS). The device pass checks the 3 px rows and the arrow at 48 px.</td></tr>
+    <tr><td><b>Iterate</b></td><td>Name what to change (order, ceiling style, colour weights) and a rev B is drawn before anything is built.</td></tr>
+  </table></div>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const PLATE = '#1F1B19', CREAM = '#F2E8DF', C = '#D97757', G = '#19C39A', B = '#8AB4F8';
+
+// ---- art: inner SVG in 108-unit coordinates. mono(true) = foreground silhouette, white, no plate ----
+const art = {
+  pulse: (mono) => mono
+    ? `<path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3.9"/>
+       <path d="M12,64 L27,64 L34,50 L41,64 L44,64 L48,72 L54,20 L60,74 L66,64 L71,64 L78,50 L85,64 L96,64" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<rect width="108" height="108" fill="${PLATE}"/>
+       <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" fill="none" stroke="#F3EBE3" stroke-opacity=".72" stroke-width="3.9"/>
+       <path d="M12,64 L27,64 L34,50 L41,64 L44,64" fill="none" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+       <path d="M66,64 L71,64 L78,50 L85,64 L96,64" fill="none" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+       <path d="M44,64 L48,72 L54,20 L60,74 L66,64" fill="none" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`,
+  c1: (mono, o = {}) => {
+    const h = o.order || [38, 49, 57];            // column tops: Claude, ChatGPT, Gemini
+    const col = (x, top, f) => `<rect x="${x}" y="${top}" width="11" height="${75 - top}" rx="3" fill="${mono ? '#fff' : f}"/>`;
+    const ceil = `<line x1="32" y1="32" x2="76" y2="32" stroke="${mono ? '#fff' : CREAM}" stroke-width="5" stroke-linecap="${o.dash ? 'butt' : 'round'}"${o.dash ? ' stroke-dasharray="6 3.5"' : ''}/>`;
+    return (mono ? '' : `<rect width="108" height="108" fill="${PLATE}"/>`) + ceil + col(32, h[0], C) + col(48.5, h[1], G) + col(65, h[2], B);
+  },
+  c2: (mono) => {
+    const row = (y, end, f) => (mono ? '' : `<rect x="31" y="${y}" width="46" height="7" rx="3.5" fill="#494441"/>`) +
+      `<rect x="31" y="${y}" width="${end - 31}" height="7" rx="3.5" fill="${mono ? '#fff' : f}"/>`;
+    const s = mono ? '#fff' : CREAM;
+    return (mono ? '' : `<rect width="108" height="108" fill="${PLATE}"/>`) + row(43, 73, C) + row(55, 61, G) + row(67, 67, B) +
+      `<path d="M45,32 A9 9 0 0 1 63,32" fill="none" stroke="${s}" stroke-width="4" stroke-linecap="round"/>
+       <polyline points="59,28 63,32 67,28" fill="none" stroke="${s}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+};
+
+const svg = (inner, size, vb, extra = '', label = 'launcher icon') =>
+  `<svg width="${size}" height="${size}" viewBox="${vb}" role="img" aria-label="${label}" style="${extra}">${inner}</svg>`;
+const MASKS = { Circle: '50%', Squircle: '34%', 'Rounded square': '22%' };
+
+function monoPlate(inner, size, radius) {
+  // ink silhouette on tonal plate: render white art, recolour via filter-free substitution
+  const ink = inner.replace(/#fff/g, '#0B1D36');
+  return svg(`<rect width="108" height="108" fill="#D7E3F7"/>` + ink, size, '18 18 72 72', `border-radius:${radius}`, 'themed monochrome icon');
+}
+
+function concept(key, title, tag, mono, why, note, opts) {
+  const full = art[key](false, opts);
+  const m = art[key](true, opts);
+  const safe = `<circle cx="54" cy="54" r="36" fill="none" stroke="#fff" stroke-opacity=".28" stroke-dasharray="2 2"/><rect x="18" y="18" width="72" height="72" fill="none" stroke="#fff" stroke-opacity=".22" stroke-dasharray="2 2"/>`;
+  const masks = Object.entries(MASKS).map(([n, r]) =>
+    `<figure>${svg(full, 96, '18 18 72 72', `border-radius:${r}`)}<figcaption>${n}</figcaption></figure>`).join('');
+  const home = (cls) => `<div class="wall ${cls}">
+      <div class="app"><div class="ph"></div>Mail</div>
+      <div class="app">${svg(full, 48, '18 18 72 72', 'border-radius:50%;margin:0 auto 4px')}Cooldown</div>
+      <div class="app"><div class="ph"></div>Maps</div></div>`;
+  return `<div class="card"><h3>${title}</h3><div class="note" style="margin:0">${tag}</div>
+    <div class="cap">a · 108-unit canvas at 192 px, safe zone outlined</div>
+    <div class="strip">${svg(full + safe, 192, '0 0 108 108', '', 'full canvas').replace('<svg ', '<svg class="canvas192" ')}</div>
+    <div class="cap">b · masks at 96 px</div><div class="strip">${masks}</div>
+    <div class="cap">c · true size, 48 px, on a home screen row</div>
+    <div class="strip"><figure>${home('dark')}<figcaption>dark wallpaper</figcaption></figure><figure>${home('light')}<figcaption>light wallpaper</figcaption></figure></div>
+    <div class="cap">d · Android 13 themed (monochrome layer)</div>
+    <div class="strip"><figure>${monoPlate(m, 96, '50%')}<figcaption>96 px</figcaption></figure><figure>${monoPlate(m, 48, '50%')}<figcaption>48 px</figcaption></figure></div>
+    <p class="note">${mono}</p>
+    <div class="cap">e · iOS 1024, shown at 120 px</div>
+    <div class="strip"><figure>${svg(full, 120, '18 18 72 72', 'border-radius:22.37%')}<figcaption>1024 → 120</figcaption></figure></div>
+    ${why}${note}</div>`;
+}
+const why = (t) => `<p class="why"><b>ChatGPT:</b> ${t}</p>`;
+const mine = (t) => `<p class="note"><b>Cooldown's note:</b> ${t}</p>`;
+const derivedWhy = (t) => `<p class="why"><span class="derived">derived</span> ${t}</p>`;
+
+document.getElementById('cols').innerHTML =
+  concept('pulse', 'Today: Pulse', 'ic_launcher_foreground.xml on the charcoal plate',
+    'Themed keeps the whole trace as one tint plus the 55% ceiling; the Claude, red and green roles collapse to shape.',
+    why('"The described Pulse suggests heart monitoring rather than a usage allowance, and its defining peak lies outside the visible safe zone." Gemini is absent.'),
+    mine('Distinctive and already shipped. The R apex (y 20) pokes outside the 72-unit zone, so every mask clips it, and the red is no provider\'s colour. Reads as a heartbeat at 48 px, not as usage.')) +
+  concept('c1', 'C1: Three meters at a ceiling', 'ChatGPT finding 1 · Claude y38, ChatGPT y49, Gemini y57, ceiling y32',
+    'Themed keeps the ceiling and all three columns as opaque shapes; the provider colours drop, the stepped heights stay.',
+    why('The tallest column approaches the ceiling without merging; about 5 px columns, clear gaps and a continuous ceiling say three allowances nearing a shared limit. The weekly headline sets the period, not the symbol.'),
+    mine('The "bars under a limit" idea reads instantly and everything is inside the safe circle. At 48 px the columns are about 5 px and the 2.5 px gap above the tallest is the thing to check on a device. The weekly meaning is not in the symbol, as ChatGPT concedes.')) +
+  concept('c2', 'C2: Three allowances with a reset arrow', 'ChatGPT finding 2 · tracks y43, y55, y67 · fills to x73, x61, x67 · arrow centre (54,32) r9',
+    'Themed drops the tracks and keeps the three unequal fills and the arrow; three services and their allowances remain, named recognition is colour-only.',
+    why('Roughly 3 px rows stay separated at 48 px and the arrow supplies the reset cue; everything fits the 72-unit safe circle.'),
+    mine('The reset arrow is the only element that hints at "weekly" (a cycle), which C1 lacks. The cost is thin 7-unit rows: about 3 px at 48 px, so the tracks and fill contrast are the risk, and the arrow may read as a generic refresh or upload.'));
+
+document.getElementById('vars').innerHTML =
+  concept('c1', 'C1, Gemini tallest', 'Gemini y38, ChatGPT y49, Claude y57',
+    'Same silhouette as C1 with the order reversed; themed is identical in shape.',
+    derivedWhy('Shows that the order is arbitrary: the symbol means "three allowances", not a ranking, and no provider is meant to lead. Either order is the same icon.'),
+    mine('If Claude leads (as in C1) the icon quietly favours the first provider the app shipped. The order could also follow the user\'s tallest, but an icon cannot change, so pick one on purpose.'),
+    { order: [57, 49, 38] }) +
+  concept('c1', 'C1, dashed ceiling', 'Ceiling as dashes 6 on, 3.5 off',
+    'Themed keeps the dashed ceiling and the columns.',
+    derivedWhy('The even-pace ceiling is dashed in the Pulse, so a dashed ceiling carries that idea across. Fits the brief only as a continuity nod.'),
+    mine('At 48 px a 5 px stroke in about 4 px dashes with 2 px gaps turns to dotted noise, and it weakens the "hard limit" read that ChatGPT wanted. I would not choose it; shown so the question is answered.'),
+    { dash: true });
+</script>
+</html>
