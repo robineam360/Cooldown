@@ -65,8 +65,9 @@ here for whichever fetch path implements it; nothing in `UsageRepository` calls
 Source: `UsageParser.swift` (Claude), `ChatGPTUsageParser.swift` (ChatGPT); cases in
 `fixtures/usage/` and [`fixtures/chatgpt/`](fixtures/chatgpt/README.md).
 
-**Antigravity (Gemini) — CCRM-55 (Antigravity Account), API-CONTRACT §10.** Same `UsageData` shape,
-plus a list of **pools** (a second pair of windows on one account):
+**Antigravity (Gemini) — CCRM-55 (Antigravity Account), API-CONTRACT §10.** Decided 2026-11-02; no
+client implements it yet. Same `UsageData` shape, plus a list of **pools** (a second pair of windows on
+one account):
 
 | Rule | Antigravity |
 |---|---|
