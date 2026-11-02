@@ -383,19 +383,23 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows, spike before design
-- **Respike 2026-11-02 — data blocker closed; auth still blocks; not Planned yet.** Google's
-  cloud quota for Antigravity is real now (the `agy` CLI 1.4.11 reads it with no IDE and no
-  local RPC). A one-off proxy capture of agy (plan
+- **Respike 2026-11-02 — both blockers closed; reopening is the owner's call.** Google's cloud
+  quota for Antigravity is real now (the `agy` CLI 1.4.11 reads it with no IDE and no local
+  RPC). **Data:** a one-off proxy capture of agy (plan
   `design/research/2026-11-02-agy-proxy-capture-plan.md`, Astra-reviewed, machine restored)
   showed the only gate is the User-Agent: with a versioned `antigravity/cli/<v>` token in it
-  (any OS, even after an app's own name), a **plain HTTPS client** gets every window from one
+  (any OS, even after an app's own name), a plain HTTPS client gets every window from one
   call — `POST https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary`,
   body `{"project": <cloudaicompanionProject from loadCodeAssist>}` → `gemini-5h`,
   `gemini-weekly`, `gemini-argon-wtu-weekly` (Gemini 4 Argon, weekly only, its own limit on Pro)
   and `3p-5h` / `3p-weekly`, each an unrounded `remainingFraction` and a `resetTime` anchored to
-  first use (sliding to "now + window" while unused). The September "permanent stub" verdict
-  below is superseded. **Still open:** sign-in on a phone (the auth blocker below, unchanged)
-  and the ToS posture of presenting as Google's CLI. Record:
+  first use (sliding to "now + window" while unused). **Auth:** agy's documented headless
+  sign-in returns to a hosted page, `https://antigravity.google/oauth-callback`, that shows a
+  code to paste — no localhost. Run end to end as a phone would (sign in, paste the code,
+  exchange with the Antigravity client's public secret, read the quota with an Android-shaped
+  UA, refresh): all 200. The September "permanent stub" verdict and the auth blocker below are
+  both superseded. **Still open:** the ToS posture of presenting as Google's CLI with its
+  client — the owner's call before this becomes Planned. Record:
   `design/research/2026-11-02-antigravity-respike.md`.
 - **Status:** Dropped (2026-09-08). A second, decisive round of the spike proved the data
   blocker is not just soft-degraded but absolute: a real, substantial Gemini task run inside

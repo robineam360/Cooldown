@@ -12,7 +12,9 @@ summarised here, not kept.
 shows**: Gemini 5h and weekly, Gemini 4 Argon weekly, and the Claude + GPT pool's 5h and weekly, with unrounded
 fractions and anchored resets. The key is the User-Agent: Google returns the Gemini groups only when it contains a
 versioned `antigravity/cli/<version>` product token. Body and endpoint are what this note already had.
-**Sign-in on a phone is still the September auth blocker**, untouched by this spike.
+**Sign-in works too** (section "Sign-in without localhost", same day): agy's documented headless flow returns to a
+hosted Google page that shows a code to paste, so a phone needs no loopback redirect. Both September blockers are
+closed; what remains is the owner's product and ToS call.
 
 | Window | agy on the Mac | Plain HTTPS with `antigravity/cli/<version>` UA |
 |---|---|---|
@@ -106,25 +108,52 @@ So the gate is a versioned `antigravity/cli/<v>` token anywhere in the UA; the O
 name itself first. **ToS posture:** sending that token is presenting as Google's CLI. It sits with the "highest of
 the three" note in the CCRM-55 entry and must be disclosed as plainly.
 
+## Sign-in without localhost (same day)
+
+agy has a documented headless sign-in for SSH sessions (Google's own install docs): it prints a sign-in URL, the user
+signs in in any browser, the page shows a code, the user pastes it back. Its strings name the hosted callback
+`https://antigravity.google/oauth-callback` and the prompt "paste the authorization code from the sign-in page".
+Google ships no native Antigravity mobile app; its phone answer is Remote Control, a browser dashboard for live
+sessions (Ultra first, August 2026), which hands out no token.
+
+Run once on the Mac exactly as a phone would (scratchpad script, owner signed in; nothing printed but lengths,
+scopes and the quota):
+
+1. `https://accounts.google.com/o/oauth2/v2/auth` with client `1071006060591-…` (Antigravity), `redirect_uri
+   https://antigravity.google/oauth-callback`, PKCE S256, `access_type=offline`, `prompt=consent`, scopes
+   `cloud-platform userinfo.email userinfo.profile openid`. The owner signed in; the callback page showed a 73-char
+   `4/…` code.
+2. `POST https://oauth2.googleapis.com/token`, `grant_type=authorization_code`, the code, the client id, the same
+   redirect, the PKCE verifier and the client's **public installed-app secret** (one of three `GOCSPX-` strings in
+   the agy binary; the first was rejected `invalid_client`, the second accepted; not recorded here, for GitHub push
+   protection) → 200, access token (1 h) and refresh token.
+3. `loadCodeAssist` → project, `paidTier g1-pro-tier`; `retrieveUserQuotaSummary` with
+   `User-Agent: antigravity/cli/1.4.12 (aidev_client; os_type=android; arch=arm64; auth_method=consumer)` → all three
+   groups, same values as agy.
+4. `grant_type=refresh_token` with the same client id and secret → 200, new access token: the phone's steady state.
+
+The tokens were discarded, not revoked (revoking the grant could sign agy out, same client). An anonymous probe of
+the auth URL is no test: Google sends every client/redirect pair to its sign-in page and checks only after
+sign-in.
+
+On a phone: open step 1 in a Custom Tab / `ASWebAuthenticationSession` (Google refuses embedded WebViews), the
+user copies the code, pastes it into Cooldown; the app does steps 2–4 and stores only the refresh token. The same
+shape as the Claude paste path.
+
 ## What it means for CCRM-55 (Antigravity Account)
 
 - **Data: unblocked.** A phone-only build can show all five windows from one call, given a token.
   The shape is three pools, one of them (Argon) weekly-only, which the `lanes` generalisation deferred in
   CCRM-53 (Provider Model) must hold.
-- **Auth (unchanged, still hard):** the token comes from Antigravity's Google OAuth client, whose redirect is a
-  localhost loopback. Options b (refresh-token paste) and c (loopback in a Custom Tab) from the CCRM-55 entry
-  stand as written. agy embeds Go's `deviceauth.go` (`device_code`, `verification_url`), but Google's device
-  flow does not allow the `cloud-platform` scope, so that is likely a vendored library, not a usable route.
-  agy's binary also names `ANTIGRAVITY_IOS` / `ANTIGRAVITY_ANDROID_PRIMES`, so official mobile clients may
-  exist; a mobile sign-in of Google's own would be the best auth lead.
+- **Auth: unblocked** by the hosted-callback code paste above; options b (refresh-token paste) and c (loopback)
+  from the CCRM-55 entry are no longer needed. Still a client we do not own: Google can change it at any time.
 - **Not a Mac relay:** nothing here depends on the Mac at run time; CCRM-59 (Antigravity Mac Relay) stays
   dropped.
 
 ## Next, if pursued
 
 1. ~~Capture and replay agy's request~~ — done, above.
-2. **Auth on a phone** — the one remaining blocker. Check whether an official Antigravity iOS/Android app exists
-   and how it signs in; otherwise choose between option b (refresh-token paste) and c (loopback in a Custom Tab).
-3. Then reopen CCRM-55 (Antigravity Account) as Planned, with the September states list plus **started vs not
+2. ~~Auth on a phone~~ — done, above.
+3. The owner's call on the ToS posture (presenting as Google's CLI, using its client); then reopen CCRM-55 (Antigravity Account) as Planned, with the September states list plus **started vs not
    started** (sliding reset), **a weekly-only per-model pool** (Argon) and **Google's own description line**
    added to the wireframe.
