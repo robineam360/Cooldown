@@ -295,6 +295,7 @@
 </defs></svg>
 <div class="page">
   <p class="eyebrow">CCRM-96 (Weekly First) · CCRM-103 (Hybrid Notification) · rev C · 2026-11-02 · every mobile surface</p>
+  <div class="revnote"><b>Rev D, 2 Nov:</b> you picked <b>E1</b> as the default end mark with an Appearance setting (Round / Line / Pace colour, §1e) and tap readout <b>(b)</b>, the figure's own line swapping for 3 s, not in the notification (§2b). For an account with no 5h you turned down a ring and a bar in the status bar; §4b draws your dot grid (and alternatives). Everything else is rev C.</div>
   <div class="revnote"><b>Rev C, 2 Nov:</b> you approved rev B's grammar with these changes; everything else stays as rev B recommended.
     <b>1</b> every figure is now one clean sans with tabular, lining digits (Roboto on Android, SF Pro with monospaced digits on iOS), so every digit has the same
     height and width; the serif (Georgia, whose old-style digits rise and drop) is gone, the small "%" stays (§1c). <b>2</b> the dashed room between the usage
@@ -684,6 +685,35 @@ function barGlyph(p, g, color, size, o = {}) {
     s += `<line x1="${tx}" y1="${y0 - 3.4 * u}" x2="${tx}" y2="${y0 + h + 3.4 * u}" stroke="${bg}" stroke-width="${4.2 * u}"/><line x1="${tx}" y1="${y0 - 3 * u}" x2="${tx}" y2="${y0 + h + 3 * u}" stroke="rgba(${ink},.95)" stroke-width="${1.8 * u}" stroke-linecap="round"/>`;
   }
   return s + '</svg>';
+}
+// rev D (Robin): the no-5h status glyph as a grid of dots, a 2D bar. n × n dots fill in order (o.order 'col': bottom to
+// top, one column at a time from the left; 'row': left to right, one row at a time from the bottom). Empty dots grey, used
+// dots the account colour, the pace dot pure white, used dots past the pace dot red. Monochrome: the pace dot is a ring.
+function dotGlyph(p, g, color, size, o = {}) {
+  const n = o.n || 5, N = n * n, u = size / 24, dark = !o.light, ink = dark ? '255,255,255' : '0,0,0';
+  const area = 21 * u, pitch = area / n, r = pitch * (o.r || .36), x0 = (size - area) / 2 + pitch / 2;
+  const used = Math.round(Math.min(p, 100) / 100 * N), pace = Math.min(N - 1, Math.max(0, Math.ceil(g / 100 * N) - 1));
+  const white = dark ? '#FFFFFF' : '#000000', full = o.mono ? `rgba(${ink},.95)` : color, grey = `rgba(${ink},${o.mono ? .3 : .22})`;
+  let s = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto;display:block">`;
+  for (let i = 0; i < N; i++) {
+    const a = Math.floor(i / n), b = i % n, col = o.order === 'row' ? b : a, rowB = o.order === 'row' ? a : b;
+    const cx = x0 + col * pitch, cy = size - (x0 + rowB * pitch);
+    if (i === pace) {
+      s += o.mono ? `<circle cx="${cx}" cy="${cy}" r="${r * .82}" fill="none" stroke="rgba(${ink},.95)" stroke-width="${r * .36}"/>`
+        : `<circle cx="${cx}" cy="${cy}" r="${r * 1.12}" fill="${white}"/>`;
+      continue;
+    }
+    const f = i < used ? (i > pace && !o.mono ? RED : full) : grey;
+    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}"/>`;
+  }
+  return s + '</svg>';
+}
+// rev D: an alternative to the dots, the Weekly's figure itself in the glyph (green under the mark, red over it, white monochrome)
+function numGlyph(p, g, size, o = {}) {
+  const dark = !o.light, ink = dark ? '255,255,255' : '0,0,0';
+  const c = o.mono ? `rgba(${ink},.95)` : (p > g + 3 ? RED : (dark ? '#81C784' : '#2E7D32'));
+  const t = p >= 100 ? '99' : String(Math.round(p)).padStart(2, '0'), fs = size * .66;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto;display:block"><text x="${size / 2}" y="${size * .5 + fs * .36}" text-anchor="middle" font-family="${ANDF}" font-weight="700" font-size="${fs}" letter-spacing="${-size * .03}" fill="${c}" style="font-variant-numeric:tabular-nums lining-nums">${t}</text></svg>`;
 }
 // ---------- the bar (v2.0), with the dashed room under the mark (pace-line-label V1) ----------
 function bar(p, tick, color, h = 13, o = {}) {
@@ -1207,7 +1237,31 @@ revc('sbar', () => {
       <div class="zoom"><figure><div class="tile0">${s.G(72, {})}</div><figcaption>×5 dark</figcaption></figure><figure><div class="tile0">${s.G(72, { mono: true })}</div><figcaption>monochrome</figcaption></figure></div></div>`;
   const box = (cap, cls, list) => `<div class="sbopt"><p class="cap ${cls}">${cap}</p><div class="row" style="gap:18px">${list.map(cellSB).join('')}</div></div>`;
   return col('', '', box('The 5h ring only · Teams (Claude Max)', 'good', ST), 'Normal and binding are v2.0\'s ring, now always the 5h. Full: a red cross alone (3.4 of 24 units thick, arms 8 dp at true size), no circle; monochrome it is a white cross like any status icon. Week spent: the ring\'s 5h arc at 40% ink with no needle, since the 5h cannot be used until the week resets.')
-    + col('', '', box('An account with no 5h · Personal (ChatGPT Pro, Weekly 50%, mark 67%)', 'warn', NO), 'N1 keeps a ring but it means the Weekly (breaks the rule in the one place you look most). N2 says only "Cooldown is running": the three arcs are about 1.4 dp strokes at true size. N3 is A1\'s bar, about 12 × 6 dp: the one option that keeps the grammar. Recommended N3 (open questions).');
+    + col('', '', box('Rev C · an account with no 5h · Personal (ChatGPT Pro, Weekly 50%, mark 67%) · not taken', 'bad', NO), 'Robin (rev D): not a ring (it means the 5h), and a bar is no use in a slot this small. Kept for reference; the dot grid below replaces them.')
+    + `<h3 style="margin-top:26px;flex:0 0 100%">4b · An account with no 5h: the dot grid (rev D)</h3>`
+    + `<p class="sub" style="max-width:96ch;flex:0 0 100%">Robin's idea: the Weekly as a 2D bar of dots. Grey dots fill with the account colour as the usage grows, the pace mark is <b>one pure white dot</b>, and used dots past it turn <b>red</b>. Fill order D1 to D3: <b>by column</b>, bottom to top, one column at a time from the left, so the fill still moves left to right like a bar. Each dot is 1/N of the week (5 × 5: 4% a dot). Two states per option: <b>under</b> (50% against a 67% mark) and <b>over</b> (80% against 67%). Monochrome (the system's flattening, and the QS tile) has no red or white: the pace dot becomes a ring, and over pace reads only from where the fill passes it. Full (100%) is the same red cross as the 5h.</p>`
+    + col('', '', box('D1 · 5 × 5 dots, by column (Robin\'s)', 'good', [
+      { cap: 'Under · 50 vs 67', G: (sz, o) => dotGlyph(50, 67, GP, sz, o) },
+      { cap: 'Over · 80 vs 67', G: (sz, o) => dotGlyph(80, 67, GP, sz, o) },
+      { cap: 'Weekly full · the red cross', G: (sz, o) => cross(sz, o) },
+    ]), '25 dots, 4% each; at true size a dot is about 1.7 dp on a 2.3 dp pitch (≈4.5 px on the Fold 7). The white pace dot is drawn 12% larger so it holds against the colour around it.')
+    + col('', '', box('D2 · 4 × 4 dots, by column (bigger dots)', 'good', [
+      { cap: 'Under · 50 vs 67', G: (sz, o) => dotGlyph(50, 67, GP, sz, { ...o, n: 4 }) },
+      { cap: 'Over · 80 vs 67', G: (sz, o) => dotGlyph(80, 67, GP, sz, { ...o, n: 4 }) },
+    ]), '16 dots, 6.25% each, about 2.2 dp: easier to read at a glance, coarser steps.')
+    + col('', '', box('D3 · 6 × 6 dots, by column (finer)', 'warn', [
+      { cap: 'Under · 50 vs 67', G: (sz, o) => dotGlyph(50, 67, GP, sz, { ...o, n: 6 }) },
+      { cap: 'Over · 80 vs 67', G: (sz, o) => dotGlyph(80, 67, GP, sz, { ...o, n: 6 }) },
+    ]), '36 dots, under 3% each, about 1.4 dp: close to a texture at true size.')
+    + col('', '', box('D4 · 5 × 5 dots, by row (fills like water rising)', 'warn', [
+      { cap: 'Under · 50 vs 67', G: (sz, o) => dotGlyph(50, 67, GP, sz, { ...o, order: 'row' }) },
+      { cap: 'Over · 80 vs 67', G: (sz, o) => dotGlyph(80, 67, GP, sz, { ...o, order: 'row' }) },
+    ]), 'Bottom row first, left to right, then up. Reads as a level rather than a bar.')
+    + col('', '', box('D5 · another way: the figure itself', 'warn', [
+      { cap: 'Under · 50 vs 67', G: (sz, o) => numGlyph(50, 67, sz, o) },
+      { cap: 'Over · 80 vs 67', G: (sz, o) => numGlyph(80, 67, sz, o) },
+    ]), 'The Weekly\'s two digits, green under the mark and red over (Vs pace colours), 99 at most. Exact, but no pace position, and monochrome it is only a number.')
+    + `<div class="recbox" style="flex:0 0 100%"><b>Recommended: D1</b> (your 5 × 5 by column). It keeps the grammar's reading (a bar fills left to right) and shows the pace mark's position; D2 if the Fold 7 shows D1's dots running together. Judge on the device before building.</div>`;
 });
 </script>
 <script>
@@ -1254,7 +1308,7 @@ const Q = [
   ['C3 · the readout in the notification.', 'The notification has no tap-to-reveal. Its expanded line 2 ("Resets Sun 9:30 pm · in 4d 6h") could carry "Pace catches up Thu 5 Nov, 12:50 pm" instead (drawn in §2b).', 'Recommend no</span>: at 12 sp it ellipsizes in the 186 dp beside the figure (measured), and the reset is the line the notification exists for. A tap on the notification opens the app, where the readout is one more tap.'],
   ['C4 · durations under a day.', 'Robin\'s form is "Xd Yh"; under a day this page writes "14h 57m", under an hour "57m", all rounded down.', 'Recommend these</span>; the words are family layer (spec/core §6.3 fixes only the instant).'],
   ['C5 · tapping the ring.', 'Rev B made a tap on the ring select the 5h chip on the open tile; rev C makes the ring\'s figure a readout target.', 'Recommend both on one tap</span>: on a Compact tile the tap swaps the 5h line; on an open tile it also selects the 5h chip.'],
-  ['C6 · status bar, an account with no 5h (rev C, §4).', 'N1 the Weekly as a ring after all, N2 a neutral glyph (the Shared pace mark), N3 the Weekly as A1\'s bar.', 'Recommend N3</span>: it is the one option that keeps the grammar (a ring is the 5h, a bar the 7-day), it still carries usage and the pace tick, and the bar only appears for plans that have no ring to show. N1 breaks the rule in the one place you look most; N2 says nothing about usage. Judge N3 on the Fold 7 (≈12 × 6 dp) before building.'],
+  ['C6 · status bar, an account with no 5h (rev D, §4b).', 'Robin turned down N1 to N3 (no ring, and a bar is no use this small) and proposed a dot grid: grey dots fill, the pace mark a white dot, past it red. Drawn as D1 5 × 5 by column, D2 4 × 4, D3 6 × 6, D4 by row, and D5 the figure.', 'Recommend D1</span>, D2 if the dots run together on the Fold 7.'],
   ['C7 · status bar, the 5h full.', 'Rev C draws a red cross alone (24-unit box, 3.4-unit stroke); monochrome it is a white cross.', 'Recommend</span> keep it until the 5h resets, then return to the ring; while the Weekly is spent the greyed ring outranks it (the 5h cannot be used).'],
   ['The desktop\'s "5H" labels.', 'The desktop draws "5H" under the ring, "NO 5H" on the grey ring and "5h 93%" beside the menu-bar ring. Your rule came after it.', 'Recommend the desktop drops them too</span> (a task for the desktop session, not done here); this page has none.'],
   ['The widget mode header.', 'The desktop\'s widgets name the mode in the header ("PERSONAL · USED"); mobile\'s say "Teams · Weekly".', 'Recommend keep mobile\'s</span> (approved v2.0 labels); revisit if the desktop\'s header proves clearer in Vs pace.'],
