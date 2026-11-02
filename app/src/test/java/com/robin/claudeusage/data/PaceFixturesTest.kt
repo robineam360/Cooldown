@@ -158,6 +158,39 @@ class PaceFixturesTest {
     }
 
     @Test
+    fun `core distance numbers match every case`() {
+        val fx = load("core/fixtures/pace-distance/cases.json")
+        for (c in fx.getJSONArray("vsPace").objects()) {
+            val g = if (c.getBoolean("hasResetClock")) c.dbl("elapsedPct") else null
+            val exp = if (c.isNull("expected")) null else c.getInt("expected")
+            assertEquals(c.getString("name"), exp, Pace.vsPace(c.dbl("usedPct"), g))
+        }
+        for (c in fx.getJSONArray("markDistance").objects()) {
+            val u = c.dbl("usedPct")
+            val g = if (c.getBoolean("hasResetClock")) c.dbl("elapsedPct") else null
+            val cap = PaceText.caption(PaceText.Mode.USED, u, g)
+            if (c.isNull("expected")) {
+                assertNull(c.getString("name"), cap)
+                continue
+            }
+            val e = c.getJSONObject("expected")
+            val words = when (e.getString("side")) {
+                "on" -> "on it"
+                "under" -> "${e.getInt("points")} under"
+                else -> "${e.getInt("points")} over"
+            }
+            assertEquals(c.getString("name"), "${e.getInt("markPct")}% pace mark · $words", cap)
+        }
+    }
+
+    @Test
+    fun `mobile ranking cases are the core ranking cases`() {
+        val core = load("core/fixtures/ranking/cases.json").getJSONArray("ranking").toString()
+        val mobile = load("mobile/fixtures/summary/cases.json").getJSONArray("ranking").toString()
+        assertEquals(core, mobile)
+    }
+
+    @Test
     fun `pace words and allowance copy`() {
         assertEquals("Slow down · ≈11%/day", PaceText.tight(Pace.Band.SLOW_DOWN, Pace.Allowance.PerDay(11.22)))
         assertEquals("<1%/day", PaceText.allowance(Pace.Allowance.PerDay(0.6)))

@@ -399,6 +399,41 @@ Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `sessionBind
 
 ---
 
+## 6.3 Distance from the pace mark — numbers
+
+**Status:** decided 2026-11-02 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)); promoted from the mobile
+layer the same day because every family shows it. Words and layout stay family layer.
+
+For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), not spent (§6.1):
+
+- **Vs pace figure** = `floor(elapsedPct − usedPct + 1e-9)`, an integer, signed (positive = under the mark,
+  room). Spent, no reset clock or no reading → no figure (a surface falls back to the usage figure, or a dash).
+- **The mark** = `elapsedPct` rounded half up; the **distance** = `|elapsedPct − usedPct|` rounded half up;
+  **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
+- Every floor and half-up adds 1e-9 first, so binary float edges (`2.3 − 0.3`) land on the decimal answer.
+
+Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`.
+
+---
+
+## 6.4 Ranking accounts by room to spare
+
+**Status:** decided 2026-11-02 (CCRM-98 (Summary Tab)); promoted from the mobile layer the same day. Which
+surface shows the ranking, and how, is family layer.
+
+Each account's Weekly window falls in one group, in this order:
+
+1. **Eligible** — a reading, not spent (§6.1), and §6.2's `sessionBinding` false. By §6.1's pace, lowest first;
+   a tie goes to the earlier weekly reset. A reading with no reset clock has no pace and ranks after every
+   clocked eligible account.
+2. **Held** by a binding 5h — soonest 5h reset first.
+3. **Spent** — soonest weekly reset first.
+4. **No reading** — in the family's own account order.
+
+A spent week is never held. Cases in [`fixtures/ranking/cases.json`](fixtures/ranking/cases.json).
+
+---
+
 ## 7. History
 
 Two separate stores with different retention. Keep them separate; they answer different

@@ -17,6 +17,8 @@ antigravity/ <name>.json, cases.json — Antigravity (Gemini) quota and plan rep
                                      (CCM-76 [Accounts]); see chatgpt/README.md
 projection/  cases.json           — burn-rate estimate cases
 pace/        cases.json           — the Pace number, the allowance and the session-binding
+pace-distance/ cases.json         — the Vs pace figure and the distance from the pace mark (§6.3)
+ranking/     cases.json           — accounts ranked by room to spare (§6.4)
                                      predicate (BEHAVIOR-SPEC §6.1–6.2), spec-first
 history/     cases.json           — bar-building and week-grouping cases
 ```
