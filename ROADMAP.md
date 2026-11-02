@@ -1631,6 +1631,60 @@ it carries the umbrella CCRM-7 (iOS).
   an iOS-only release (the Android update check reads `releases/latest`).
 - **Done when:** RELEASING.md covers both platforms and a release ships both assets.
 
+## Weekly first — the week is the budget · **decided 2026-11-02**
+
+**Why now:** the weekly window is the only limit every plan of all three providers carries; the 5-hour
+window is a gate that the top plans no longer have. Claude **Ultra** (the renamed Max 20x) dropped the
+5-hour limit for verified accounts on 2026-10-30 and keeps a weekly all-models limit plus a weekly Fable
+cap; ChatGPT **Pro** has had no 5-hour limit since 2026-07-12 (Plus got it back in late August);
+Antigravity Pro and Ultra refresh every 5 hours *until* a weekly cap stops them. A 5-hour figure as the
+headline answers "can I keep going this afternoon", while the weekly figure is the one that locks a user
+out for days. This follows the ModelMesh rule that the short window is only a gate, never part of the
+score. Robin's decisions, 2026-11-02, one question at a time:
+
+1. **Headline: Weekly, with a 5h companion.** Every surface leads with the weekly window; the 5-hour
+   window rides along small where it fits ("5h 34% · 2h 10m") and disappears when the account has none.
+2. **Pace in words: band + daily allowance** — "Slow down · ≈11%/day to last". The signed number lives
+   in the app card's detail only.
+3. **Status-bar ring (and later the desktop menu-bar item): Weekly, and 5h takes over while it blocks**
+   — 5h ≥ 90%, spent, or projected to hit 100% before its reset; back to Weekly when it resets.
+4. **"Use next" ranking across accounts: later**, its own item under CCRM-6 (Multi-Account).
+5. **Even pace spans all 7 days** — no weekdays-only option for now.
+6. **The Headline setting is per account**: Weekly (default) · 5-hour · Auto.
+
+Logic lands in `spec/core/` first (formula, bands, the Auto rule, fixtures), then Android and iOS; the
+desktop repo picks it up with its pinned core. Every visible change waits for an approved wireframe (§2).
+
+### CCRM-96 · Weekly First — the weekly window heads every surface, 5h is the companion
+- **Status:** Decided 2026-11-02 · wireframes next.
+- **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
+  the pinned notification (both halves), the QS tile, the widgets' default window, the iOS Live Activity
+  and lock-screen widgets, and the in-app card order. **Auto** = Weekly, except while 5h is ≥ 90%, spent,
+  or projected (§3) to hit 100% before its reset. The status-bar ring always follows the Auto rule.
+  An account with no 5h shows Weekly whatever the setting says. Widgets keep their own per-widget
+  window choice. Replaces CCRM-54's "headline = `session` if present, else `weekly`".
+- **Spec:** the Auto rule and the "no 5h → Weekly" fallback go into `spec/core/BEHAVIOR-SPEC.md` with
+  fixtures; the setting is per-client presentation.
+- **Done when:** wireframes for every surface and state (5h present/absent, Auto switched to 5h, spent,
+  above pace, narrow widths) are approved, both apps match them, and the Fold 7 and iPad passes are clean.
+
+### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
+- **Status:** Decided 2026-11-02 · spec and wireframes next.
+- **What:** adopt the ModelMesh
+  [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md) —
+  `pace = (r − q) / max(r, q) × 100`, `q` = % of quota left, `r` = % of time left — on the weekly window
+  and the weekly model caps (Fable, Spark). Not on 5h: a 5-hour window swings too hard near its reset.
+  Wording: the band ("On pace" within ±5, "Room to spare", "Use before reset" below −50, "Slow down",
+  "Nearly out" above +50) plus the daily allowance (`q ÷ days left`, "≈11%/day to last"); the signed
+  number appears in the app card's detail only. It **replaces** today's gap verdict ("12% above pace",
+  used − elapsed, 3-point dead zone, BEHAVIOR-SPEC §5) so the app never shows two different "% pace"
+  figures; the even-pace tick on bars and the chart's diagonal (§6) are geometry and stay.
+- **Spec:** a new BEHAVIOR-SPEC section with the ModelMesh scenarios as fixtures (window start, exhausted,
+  reset reached, band edges); §5's dead zone is rewritten to the ±5 band. CooldownMac follows from its
+  pinned core.
+- **Done when:** the spec section and fixtures are in, both apps pass them, the wording is on every surface
+  per the approved wireframes, and no surface still shows the gap verdict.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
@@ -2900,6 +2954,8 @@ keys) would still make this a different product. Not filed, not an open question
   for the gauge and for ranking accounts. Compare it with the shared contract first
   (CooldownMac `contract/BEHAVIOR-SPEC.md` §3.1 severity, §5 dead zone, §6 even-pace line);
   any change lands in the contract, then in both apps. One source — don't copy the spec here.
+  **2026-11-02:** the gauge half is CCRM-97 (Pace Number); ranking accounts ("Use next") stays
+  here, deferred by Robin until the number has lived on devices.
 - **Why:** `Profile` was a hard-coded `PERSONAL`/`WORK` enum, wired through credentials,
   cache keys, notification IDs, widgets and alerts. Users with 3+ accounts (multiple work
   orgs, side projects) couldn't be served — and the driver was real, not hypothetical.
