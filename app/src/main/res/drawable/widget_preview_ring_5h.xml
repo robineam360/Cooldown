@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-103 (Hybrid Notification): a static picker-preview 5h ring in the shape grammar
+     (design/2026-11-02-shape-grammar.html rev D §5) as GrammarRing.paint draws it at Ø110:
+     the track, 38% filled, the usage end mark (Line, the default) and the pace tick at 35%.
+     Preview only — every placed face draws its ring through GrammarRing at bucket size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp" android:height="110dp"
+    android:viewportWidth="100" android:viewportHeight="100">
+    <!-- track: radius 0.39 S, band 0.13 S, 16% ink -->
+    <path android:strokeColor="#29ECECEC" android:strokeWidth="13"
+        android:pathData="M50,11 A39,39 0 1,1 49.99,11" />
+    <!-- fill to 38% -->
+    <path android:strokeColor="#FFE59980" android:strokeWidth="13"
+        android:pathData="M50,11 A39,39 0 0,1 76.70,78.43" />
+    <!-- end mark: its gap in the card colour, then the mark in the fill colour -->
+    <path android:strokeColor="#FF1A1A1A" android:strokeWidth="4.32"
+        android:pathData="M69.13,70.38 L84.26,86.49" />
+    <path android:strokeColor="#FFE59980" android:strokeWidth="2.5" android:strokeLineCap="round"
+        android:pathData="M69.13,70.38 L84.26,86.49" />
+    <!-- pace tick at 35%, across the band, 90% ink -->
+    <path android:strokeColor="#E6ECECEC" android:strokeWidth="3.13" android:strokeLineCap="round"
+        android:pathData="M71.03,65.28 L92.07,80.57" />
+</vector>

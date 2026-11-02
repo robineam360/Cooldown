@@ -50,12 +50,24 @@ TalkBack text says "5-hour window"). Every ring is `GrammarRing` (`ui/ShapeGramm
 (0.10 at 48 dp and under), the pace tick across the band, the red slice past the mark, the dashed room from the fill to
 the tick (28 dp and up), the usage end mark (Appearance › Usage end mark), no projection arc. A spent week (CCRM-102
 (Spent Week Gate)) draws the 5h ring grey. A plan with no 5h (B1) shows no ring: its Weekly figure stands where the ring
-would be (Ring, Strip) or the face keeps its pre-grammar layout (Number). Every figure is bold with tabular lining digits
+would be (Ring, Strip) or the face keeps its pre-grammar layout (Number). A plan with only a 5h never gets a 5h bar:
+the ring alone, its Weekly slot left empty (Ring: no Weekly bar or row; Number: no figure or bar beside the ring — Fable
+C5). Every figure is bold with tabular lining digits
 (`fontFeatureSettings="tnum,lnum"`) and its "%" at 58% size (`Grammar.smallPercent`).
 
 Source: `app/src/main/res/xml/{ring,number,countdown,strip}_widget_info.xml`; class names `W/WidgetHost.kt:21`.
 All four: resizable both ways, `updatePeriodMillis` 0 (no periodic redraw), reconfigurable by long-press, a config
 activity opens on add (no `configuration_optional`, CCBG-43 (Widget Settings Hidden)), category home screen.
+
+**Picker previews** (`res/layout/widget_preview_{ring,number,countdown,strip}.xml`, static views and vector drawables
+`widget_preview_ring_5h*`, `widget_preview_bar_*`; the picker inflates them with no code; Fable C6): a Solid, dark, S1
+face in the shape grammar, filling whatever box the picker gives. Ring: the 5h ring (38%), "Pro", the Weekly row
+("Weekly", bar, "20%"). Number: the 5h ring at the left (square, as tall as the box, ≤96 dp), "Pro · Weekly" with "20%"
+(32 sp), the Weekly bar, "Resets Sat 9:10 PM" · "as of 6:29 PM". Countdown: the ring and the count share the width 2 : 3,
+the count "2:41:07" auto-sized 10–24 sp, "at 9:10 PM", "Pro". Strip: Pro 38% and Work 62% rings, ChatGPT's Weekly "20%"
+where its ring would be (B1), each over its Weekly bar, then the name (10 sp). No window chips anywhere. Rings are drawn
+as `GrammarRing` draws them (track, fill, Line end mark, pace tick behind the fill, so no dashed room); bars as
+`BarRenderer` (track, square fill, Line end mark, 3 dp tick in its halo).
 
 ## 1.2 Per-widget configuration
 
@@ -64,7 +76,7 @@ Stored per widget in `widget_prefs` as `w<id>.account`, `.window`, `.bg`, `.v` (
 | Setting | Choices | Default | Applies to | Notes |
 |---|---|---|---|---|
 | Account | Any signed-in account (chips with the provider mark, in the account's accent) | **Unassigned**: the face draws the first account in registry order and says "tap to choose account" | Ring, Number, Countdown; **not Strip** (the Strip carries every account) | Save is the only thing that assigns. A deleted account becomes S9 |
-| Window | **5h** / **Weekly** | v2.0 (CCRM-96 (Weekly First)): the account's Headline — Weekly, or 5h when the Headline is 5-hour (Auto starts on Weekly); the chip follows the account pick until touched, and a widget placed without config stores the window of its first draw. Widgets drawn before v2.0 keep theirs (one never configured keeps 5h). Before v2.0: 5h | Countdown. Stored for every face (the keys are permanent), but since the shape grammar the **Ring always draws the 5h** and the **Number always the Weekly** (both windows show), so the stored window is ignored there (Q "Ring widget's window choice"); the Strip has no window | Row hidden with a note when the account has one window ("<name> has one window — no control needed."); a weekly-only account is always Weekly (S4) |
+| Window | **5h** / **Weekly** | v2.0 (CCRM-96 (Weekly First)): the account's Headline — Weekly, or 5h when the Headline is 5-hour (Auto starts on Weekly); the chip follows the account pick until touched, and a widget placed without config stores the window of its first draw. Widgets drawn before v2.0 keep theirs (one never configured keeps 5h). Before v2.0: 5h | Countdown. Stored for every face (the keys are permanent), but since the shape grammar the **Ring always draws the 5h** and the **Number always the Weekly** (both windows show), so the stored window is ignored there (Q "Ring widget's window choice"); the Strip has no window | **Countdown:** chips, or a note in their place when the account has one window ("<name> has one window — no control needed."); a weekly-only account is always Weekly (S4). **Ring and Number:** no Window row at all (it would be a dead control — Fable C6, `windowRowShown`); the pref is still saved as before (the chip's starting value) and ignored. **Strip:** the row carries its note |
 | Background | **Solid** / **Gradient** / **Transparent** | Solid | All four | See 1.3 |
 
 On-face controls (Number only, tall sizes): an account cycler writes the account pref without opening the config; see
@@ -79,9 +91,9 @@ removes the widget and backing out of a reconfigure changes nothing.
 |---|---|---|
 | Title row | Back arrow 22 dp, title 17 sp semibold, 16 dp side padding | "Add widget" (new) or "Widget settings" (placed; decided by `placed()`, CCBG-48 (Reconfigure Label)) |
 | Live preview | The very render the launcher gets, at the widget's current frame, scaled down only if wider than the screen; omitted if it fails to draw | — |
-| Row labels | 11 sp, uppercase, letter-spacing 0.66 sp, 65% ink; 14 dp vertical padding; 1 dp divider at 8% ink | "ACCOUNT", "WINDOW", "BACKGROUND"; on the Strip "Account — not shown, the Strip carries every account" |
+| Row labels | 11 sp, uppercase, letter-spacing 0.66 sp, 65% ink; 14 dp vertical padding; 1 dp divider at 8% ink | "ACCOUNT", "WINDOW" (Countdown and Strip only), "BACKGROUND"; on the Strip "Account — not shown, the Strip carries every account" |
 | Account chips | 34 dp tall, 17 dp radius, 14 dp horizontal padding, 8 dp gap, wrap; selected = filled with the account's accent, unselected = 1 dp outline | label = account name; 14 dp provider mark leads |
-| Window chips | Same chip, accent of the chosen account | "5h", "Weekly"; Strip note "Fixed to each account's headline window — no control here." |
+| Window chips | Same chip, accent of the chosen account; Countdown only (no Window row on the Ring and Number) | "5h", "Weekly"; Strip note "Fixed to each account's headline window — no control here." |
 | Background chips | Same chip | "Solid", "Gradient", "Transparent" |
 | Primary button | 44 dp tall pill, 22 dp radius, accent fill, 14.5 sp bold, 16 dp margin | "Add widget" or "Save changes" |
 
@@ -197,6 +209,7 @@ companion ring became that bar (rev D §5 `awRing22`, `awRing11`).
 | Reset line | The sub (see 1.5; "Weekly spent" while the week is spent) at 12 sp (13 roomy), 78% ink (50% dim) |
 | Stamp line | "as of 9:10 PM", or "tap to choose account" when unassigned; 10 sp 55% |
 | No 5h (B1) | No ring: the Weekly figure at 0.4 Ø dp in its bar colour where the ring would be, then the same Weekly bar / row |
+| No Weekly (5h only) | The ring and its lines; no Weekly bar (1×1) or row — its room stays empty, so the ring is the same size |
 | Corner dot | S7 on a ring with no lines: red dot in the top corner |
 
 ### 1.6.1 Sizes and drop rules
@@ -219,7 +232,10 @@ Taps: no chips on the Ring. S5 on a Ring that has dropped its reset line says "�
 
 The shape grammar's tile (rev D §5 `awNum41`, `awNum21`): the **5h ring at the left of the Weekly** label, figure, bar
 and reset. Both windows show at once, so the window chips went and the stored window is ignored. A weekly-only account
-(B1) has no ring and keeps the pre-grammar face (label and figure on one row on 2×1, "Weekly" as its second line).
+(B1) has no ring and keeps the pre-grammar face (label and figure on one row on 2×1, "Weekly" as its second line). An
+account with only a 5h (Fable C5) is the ring alone: the label is the name alone at every size (no face writes "5h"),
+the sub row (the 5h's reset), stamp and controls as usual, and the Weekly slot — figure and bar — laid out but empty, so
+the face keeps the two-window geometry and never draws a 5h bar.
 
 | Element | Size · colour · rule |
 |---|---|
@@ -671,3 +687,4 @@ As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
   value "Weekly spent". Weekly-led faces (the default) are unchanged: the spent Weekly already drops the 5h companion.
 - **CCRM-55:** every face, the lock screen, the Live Activity and the Control Center draw a Gemini account as any other,
   in Gemini Blue with its mark; the pool is never on a widget.
+

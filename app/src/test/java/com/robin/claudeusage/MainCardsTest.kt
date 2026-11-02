@@ -1,6 +1,8 @@
 package com.robin.claudeusage
 
 import com.robin.claudeusage.data.CardId
+import com.robin.claudeusage.data.CardLayout
+import com.robin.claudeusage.data.Headline
 import com.robin.claudeusage.data.ModelCap
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.SpendCredits
@@ -9,6 +11,7 @@ import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.ui.GrammarRing
 import com.robin.claudeusage.ui.PaceText
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -115,6 +118,71 @@ class MainCardsTest {
                 creditsVisible = true,
             ),
         )
+    }
+
+    // --- drawnCards: saved layouts never hide the 5h or blank the page (judge F2) ---
+
+    private val order = listOf(CardId.SESSION, CardId.WEEKLY, CardId.CREDITS)
+
+    @Test
+    fun `a layout that hid only the 7-day card still shows the tile`() {
+        val l = CardLayout(order, hidden = setOf(CardId.WEEKLY), more = emptySet())
+        assertEquals(DrawnCards(listOf(CardId.WEEKLY), emptyList()), drawnCards(l, setOf(CardId.WEEKLY)))
+        // SESSION un-hidden too, with credits: the tile sits in the 5-hour card's place.
+        assertEquals(
+            DrawnCards(listOf(CardId.WEEKLY, CardId.CREDITS), emptyList()),
+            drawnCards(l, setOf(CardId.WEEKLY, CardId.CREDITS)),
+        )
+    }
+
+    @Test
+    fun `a layout that hid only the 5-hour card still shows the tile`() {
+        val l = CardLayout(order, hidden = setOf(CardId.SESSION), more = emptySet())
+        assertEquals(DrawnCards(listOf(CardId.WEEKLY), emptyList()), drawnCards(l, setOf(CardId.WEEKLY)))
+    }
+
+    @Test
+    fun `the tile sits where the first un-hidden window card stood, folded if it was`() {
+        val credFirst = CardLayout(listOf(CardId.CREDITS, CardId.SESSION, CardId.WEEKLY), emptySet(), setOf(CardId.SESSION))
+        assertEquals(
+            DrawnCards(listOf(CardId.CREDITS), listOf(CardId.WEEKLY)),
+            drawnCards(credFirst, setOf(CardId.WEEKLY, CardId.CREDITS)),
+        )
+        val split = CardLayout(listOf(CardId.SESSION, CardId.CREDITS, CardId.WEEKLY), setOf(CardId.SESSION), emptySet())
+        assertEquals(
+            DrawnCards(listOf(CardId.CREDITS, CardId.WEEKLY), emptyList()),
+            drawnCards(split, setOf(CardId.WEEKLY, CardId.CREDITS)),
+        )
+    }
+
+    @Test
+    fun `both window cards hidden hides the tile`() {
+        val l = CardLayout(order, hidden = setOf(CardId.SESSION, CardId.WEEKLY), more = emptySet())
+        assertEquals(
+            DrawnCards(listOf(CardId.CREDITS), emptyList()),
+            drawnCards(l, setOf(CardId.WEEKLY, CardId.CREDITS)),
+        )
+    }
+
+    @Test
+    fun `all hidden with credits off still shows the tile - never blank`() {
+        val l = CardLayout(order, hidden = order.toSet(), more = emptySet())
+        assertEquals(DrawnCards(listOf(CardId.WEEKLY), emptyList()), drawnCards(l, setOf(CardId.WEEKLY)))
+        // A no-7-day account keeps the tile under SESSION.
+        assertEquals(DrawnCards(listOf(CardId.SESSION), emptyList()), drawnCards(l, setOf(CardId.SESSION)))
+        assertEquals(DrawnCards(emptyList(), emptyList()), drawnCards(l, emptySet()))
+    }
+
+    // --- tileStartsOnFive (Fable A5) ---
+
+    @Test
+    fun `the tile starts on 5h only when the drawn order leads with the 5-hour card`() {
+        assertTrue(tileStartsOnFive(CardLayout.DEFAULT, hasSession = true))
+        assertFalse(tileStartsOnFive(CardLayout.DEFAULT, hasSession = false))
+        assertFalse(tileStartsOnFive(cardOrderLayout(CardLayout.DEFAULT, Headline.WEEKLY), hasSession = true))
+        assertTrue(tileStartsOnFive(cardOrderLayout(CardLayout.DEFAULT, Headline.FIVE_HOUR), hasSession = true))
+        val credFirst = CardLayout(listOf(CardId.CREDITS, CardId.SESSION, CardId.WEEKLY), emptySet(), emptySet())
+        assertTrue(tileStartsOnFive(credFirst, hasSession = true))
     }
 
     // --- the account tile (CCRM-103 (Hybrid Notification), shape grammar rev D) ---

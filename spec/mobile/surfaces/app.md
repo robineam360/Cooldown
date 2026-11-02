@@ -676,14 +676,17 @@ the band · allowance line ("Slow down · ≈11%/day until Sun", bold orange ove
 and the reset row. **5h:** the 5h chart, "At this pace: ~69% when the window resets · 15.0%/h ⓘ", a divider and the
 5h reset row, and the ring draws its **projection**: a dotted arc (0.4 of the band, the fill colour at 75%) from
 just past the fill to the projected end (~69%, or 100% when it gets there first) — only while the 5h chip is
-chosen. Tapping the ring on an open tile chooses the 5h chip. The 5h chip is not stored (session only); the series
-choice still is. Inner screen (≥ 700 dp) with a model limit shown and All or a model chosen: two chart columns, All
+chosen. Tapping the ring on an open tile chooses the 5h chip **and** swaps the 5h chart's projection line for the
+ring's readout for 3 s (rev D C5, "both on one tap"). The 5h chip is not stored (session only); the tile starts on
+5h when the drawn card order leads with the 5h (Headline 5-hour, or the 5-hour card dragged first; credits don't
+count), else on All — as iOS (`tileStartsOnFive`). The series choice is still stored. Inner screen (≥ 700 dp) with a model limit shown and All or a model chosen: two chart columns, All
 left and the chosen model (All → the first) right, each with its lines and reset row; the tile's bars above, not
 repeated.
 **Tap a figure (rev D §2b, form b):** the ring's figure, the Weekly figure or a model figure. For 3 s the figure's
 own line swaps to the readout (`PaceText.markReadout(Pace.markTime(…))`): "Pace catches up Thu 5 Nov, 12:50 PM"
 over the mark, "1d 4h behind pace" under it, "On the pace mark" within a point — a bar's V1 caption (from the
-bar's start), or for the ring the 5h line after its glyph (closed tile). Swapped text: onSurface SemiBold,
+bar's start), or for the ring the 5h line after its glyph (closed tile) or the projection line under the 5h chart
+(open tile, bodySmall). Swapped text: onSurface SemiBold,
 underlined 2 dp in the accent at 70%. Spent, unclocked or unread: the tap does nothing. Works in every Usage
 display mode (the readout is about the usage). TalkBack: the readout is the figure's click label.
 **States.** No reading yet: the ring's track and "—" (ink 50%), a bare bar with "—" (onSurfaceVariant). **A plan
@@ -693,9 +696,13 @@ the ring greys (track only, no arc, no tick), its figure at 45%; the band line s
 becomes the note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM" (13.5 sp onSurfaceVariant, full
 opacity, no glyph); the ring's tap reads nothing out. With the 5h chip chosen on a spent week, the 5h chart, its
 lines and reset row draw at 45% with no projection, then a divider and the same note in bodySmall SemiBold
-onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. `AccountTile`, `TileBarRow`,
-`tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct` in `MainCards.kt`;
-`AppPace.fiveHourLine`.
+onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. **Saved layouts** (judge F2):
+the tile carries both windows, so it is hidden only when the stored layout hides **both** "5-hour window" and
+"7-day window" — a v1.9/v2.0 layout that hid one of them still shows it. It sits where the first un-hidden of the
+two stood, behind More if that card was. And the sheet's never-blank rule (§4) holds whatever was stored: if nothing
+would be drawn while the account reports cards, the tile shows (`drawnCards`). The sheet's labels are unchanged.
+`AccountTile`, `TileBarRow`, `tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct`,
+`drawnCards`, `tileStartsOnFive` in `MainCards.kt`; `AppPace.fiveHourLine`.
 
 #### §2.6 Notices above the cards — add
 "Weekly now leads" (CCRM-96 F1), in the crash-card slot above the tabs (in the page column at compact height),
@@ -723,8 +730,9 @@ resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row
 (§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined 2 dp in the accent at 70%;
 nothing when spent, unclocked or unread; TalkBack: the readout is the figure's click label. Spent and unread rows:
 line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp rank disc in the accent (number
-10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", "5h · 3:40 PM" in the 5h colour,
-"Out · Thu", "No reading"), figure 15 sp bold in the grammar's type, 40 dp right-aligned.
+10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", a held row "Held · 3:40 PM"
+in the 5h colour — the full row's words without "resets", never "5h" (judge F3); "Held" with no 5h clock — "Out ·
+Thu", "No reading"), figure 15 sp bold in the grammar's type, 40 dp right-aligned.
 Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
 30/10/12/26 dp; over-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
 dashed even-pace diagonal in the 80% step, "even pace" along it; "over pace" / "room to spare" 10.5 sp ink 55%;
@@ -758,3 +766,4 @@ subtitle "With two or more accounts, start on the All tab. Off: start on the las
 
 #### §8 Share card — Android
 Unchanged in this step (share/ not touched): Vs pace renders the share card as Used.
+

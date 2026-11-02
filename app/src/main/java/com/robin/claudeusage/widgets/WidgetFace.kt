@@ -1267,7 +1267,10 @@ object WidgetFace {
         val big = bucket == Bucket.NUMBER_4X2
         val tall = numberTall(frame)
         // The 5h ring: the companion of the Weekly reading (none for a weekly-only account).
-        val five = c.companion?.takeIf { it.window == FaceWindow.SESSION }
+        // Fable C5: an account with only a 5h is the ring alone — never a 5h bar — its Weekly
+        // slot (figure and bar) kept empty, as the Ring face keeps its Weekly row.
+        val noWeekly = c.window == FaceWindow.SESSION
+        val five = c.companion?.takeIf { it.window == FaceWindow.SESSION } ?: c.takeIf { noWeekly }
         val ring = five != null
         val colDp = numberColDp(frame, ring)
         if (five != null) {
@@ -1285,7 +1288,9 @@ object WidgetFace {
         val labelSp = if (big || tall) (if (frame.roomy) 15f else 14f) else 13f
 
         mark(rv, R.id.num_mark, c)
-        rv.setTextViewText(R.id.num_label, if (numberCompact(frame)) c.name else numberLabel(c, frame))
+        // A 5h-only face names the account alone: the ring is the 5h, and no face writes "5h".
+        val nameOnly = numberCompact(frame) || noWeekly
+        rv.setTextViewText(R.id.num_label, if (nameOnly) c.name else numberLabel(c, frame))
         rv.setTextViewTextSize(R.id.num_label, TypedValue.COMPLEX_UNIT_SP, labelSp)
         rv.setTextColor(R.id.num_label, ink(s.dark, if (c.dim) DIM_FIGURE else 1f))
         if (c.brokenDot) dot(rv, R.id.num_dot, s.dark)
@@ -1301,7 +1306,7 @@ object WidgetFace {
         figure(rv, R.id.num_fig, c, s.dark, figSp)
         // Below 4×1 the LEFT caption drops and the bare figure flips; a stacked figure has
         // no row beside it for the caption either.
-        val leftCap = c.left && c.pct != null && bucket != Bucket.NUMBER_2X1 && !stacked
+        val leftCap = c.left && c.pct != null && bucket != Bucket.NUMBER_2X1 && !stacked && !noWeekly
         if (leftCap) {
             rv.setViewVisibility(R.id.num_leftcap, View.VISIBLE)
             rv.setTextColor(R.id.num_leftcap, ink(s.dark, 0.75f))
@@ -1316,7 +1321,15 @@ object WidgetFace {
         if (stacked) stackNumberLabel(rv, frame, s, c, d, figSp, pill, colDp, ring)
 
         val b = bar(frame, ring)!!
-        barInto(context, rv, R.id.num_bar, b, s, c)
+        if (noWeekly) {
+            // The slot keeps its geometry, so the face is the same size as a two-window one.
+            rv.setViewVisibility(if (stacked) R.id.num_fig_below else R.id.num_fig, View.INVISIBLE)
+            rv.setViewVisibility(R.id.num_bar, View.INVISIBLE)
+            rv.setViewLayoutWidth(R.id.num_bar, b.width, TypedValue.COMPLEX_UNIT_DIP)
+            rv.setViewLayoutHeight(R.id.num_bar, b.height, TypedValue.COMPLEX_UNIT_DIP)
+        } else {
+            barInto(context, rv, R.id.num_bar, b, s, c)
+        }
 
         if (bucket == Bucket.NUMBER_2X1 && !tall) return
         rv.setViewVisibility(R.id.num_subrow, View.VISIBLE)
@@ -1386,7 +1399,8 @@ object WidgetFace {
             c.vsPace -> " · vs pace"
             else -> ""
         }
-        val nameOnly = pill || (ring && frame.bucket == Bucket.NUMBER_2X1 && !numberTall(frame))
+        val nameOnly = pill || c.window == FaceWindow.SESSION ||
+            (ring && frame.bucket == Bucket.NUMBER_2X1 && !numberTall(frame))
         rv.setTextViewText(R.id.num_label, if (nameOnly) c.name else "${c.name} · ${c.window.word}$left")
         rv.setViewVisibility(R.id.num_weekly2, View.GONE)
         val labelDp = colDp - 14f - 4f - (if (c.brokenDot) 10f else 0f)

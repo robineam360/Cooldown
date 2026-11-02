@@ -186,6 +186,45 @@ fun cardOrderLayout(layout: CardLayout, headline: Headline): CardLayout {
     return layout.copy(order = layout.order.map { if (it in windows) windows[i++] else it })
 }
 
+/** The cards a page draws: [main] above More, [folded] under it, each in order. */
+data class DrawnCards(val main: List<CardId>, val folded: List<CardId>)
+
+/**
+ * CCRM-103 (Hybrid Notification): what the page draws from a stored [layout] (already through
+ * [cardOrderLayout]) and the cards the account reports ([present], from [dataCards]).
+ *
+ * The tile carries both windows, so a layout saved before it (v1.9/v2.0) that hid only one of
+ * "5-hour window" and "7-day window" still shows it — the tile hides only when **both** are
+ * hidden. It sits where the first un-hidden of the two stood, folded behind More if that card
+ * was. And the sheet's "never blank" rule holds whatever was stored: when nothing would be
+ * drawn while the account reports cards, the tile (else the first reported card) shows.
+ */
+fun drawnCards(layout: CardLayout, present: Set<CardId>): DrawnCards {
+    val windows = setOf(CardId.SESSION, CardId.WEEKLY)
+    val tile = present.firstOrNull { it in windows }
+    val slot = layout.order.firstOrNull { it in windows && it !in layout.hidden }
+    val main = mutableListOf<CardId>()
+    val folded = mutableListOf<CardId>()
+    for (id in layout.order) {
+        val drawn = when {
+            id in windows -> tile?.takeIf { id == slot }
+            id in present && id !in layout.hidden -> id
+            else -> null
+        } ?: continue
+        if (id in layout.more) folded += drawn else main += drawn
+    }
+    if (main.isEmpty() && folded.isEmpty() && present.isNotEmpty()) main += tile ?: present.first()
+    return DrawnCards(main, folded)
+}
+
+/**
+ * The open tile's first chip (rev D §2, Fable A5; as iOS): 5h when the drawn order leads with
+ * the 5-hour card (Headline 5-hour via [cardOrderLayout], or reordered in the sheet) and the
+ * account has a 5h; All otherwise. The choice itself stays session-only.
+ */
+fun tileStartsOnFive(layout: CardLayout, hasSession: Boolean): Boolean =
+    hasSession && layout.order.firstOrNull { it != CardId.CREDITS } == CardId.SESSION
+
 /** The tile's ring: 56 dp under 360 dp of width, 84 dp from 700 dp, else 72 dp (rev D §2, A1/A4/A5). */
 fun tileRingDp(windowWidthDp: Float): Int = when {
     windowWidthDp >= 700f -> 84
@@ -558,6 +597,11 @@ internal fun TrendBlock(
     paceLine: AppPace.Line? = null,
     /** CCRM-102 (Spent Week Gate): a greyed 5h draws no projection, on the chart or below it. */
     gated: Boolean = false,
+    /**
+     * CCRM-103 (Hybrid Notification), rev D §2b C5: the ring's tap readout, shown for
+     * [TAP_READOUT_MS] in place of the projection line under the 5h chart.
+     */
+    readout: String? = null,
 ) {
     val resetMs = window.resetsAt?.toEpochMilli() ?: return
     if (samples.size < 2) {
@@ -568,6 +612,10 @@ internal fun TrendBlock(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         PaceWordsLine(paceLine)
+        if (readout != null) {
+            Spacer(Modifier.height(2.dp))
+            SwapText(readout, MaterialTheme.typography.bodySmall.fontSize)
+        }
         return
     }
     val est = Projection.estimate(samples, resetMs)
@@ -602,6 +650,11 @@ internal fun TrendBlock(
         )
     }
     PaceWordsLine(paceLine)
+    if (readout != null) {
+        Spacer(Modifier.height(2.dp))
+        SwapText(readout, MaterialTheme.typography.bodySmall.fontSize)
+        return
+    }
     if (est == null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         Text(
@@ -698,6 +751,8 @@ internal fun AccountTile(
     chartSize: ChartSize,
     chartOrientation: ChartOrientation,
     showModelLimits: Boolean = true,
+    /** The chip the tile starts on: 5h when the drawn order leads with it ([tileStartsOnFive]). */
+    startOnFive: Boolean = false,
 ) {
     val open = !compact || expanded
     val caps = if (showModelLimits) data.modelCaps else emptyList()
@@ -710,7 +765,8 @@ internal fun AccountTile(
     val gapDp = tileRingGapDp(widthDp)
 
     // Session-only: the 5h chip is not stored with the series (CCRM-73's pref keeps a cap name).
-    var fiveChip by remember { mutableStateOf(false) }
+    // It starts on 5h when the drawn order leads with the 5h (Fable A5, as iOS).
+    var fiveChip by remember(startOnFive) { mutableStateOf(startOnFive) }
     val showFive = open && fiveChip && session != null
     var readout by remember { mutableStateOf<Pair<String, String>?>(null) }
     LaunchedEffect(readout) {
@@ -751,8 +807,10 @@ internal fun AccountTile(
                     enabled = ringTappable,
                     onClickLabel = ringReadout ?: "Show the 5-hour chart",
                 ) {
+                    // C5 "both on one tap": open, it also picks the 5h chip, and the readout
+                    // swaps the 5h chart's projection line; folded, it swaps the 5h line.
                     if (open) fiveChip = true
-                    if (!open && ringReadout != null) readout = TAP_RING to ringReadout
+                    if (ringReadout != null) readout = TAP_RING to ringReadout
                 },
                 state = ringState,
                 figureColor = ringFigureColor,
@@ -859,6 +917,7 @@ internal fun AccountTile(
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
                     gated = gate != null,
+                    readout = readoutFor(TAP_RING),
                 )
                 Spacer(Modifier.height(2.dp))
                 HorizontalDivider()

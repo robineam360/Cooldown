@@ -182,6 +182,69 @@ class WidgetFaceTest {
         assertEquals("Unavailable in this version · update Cooldown", joined(Bucket.NUMBER_4X1, StateId.S14))
     }
 
+    /**
+     * Fable C5: an account with only a 5h never gets a 5h bar. The Number draws the ring
+     * alone, its Weekly slot (figure and bar) empty, as the Ring face leaves its Weekly row.
+     */
+    @Test
+    fun fiveHourOnly_isTheRingAlone_neverA5hBar() {
+        val fiveOnly = com.robin.claudeusage.data.UsageData(
+            session = com.robin.claudeusage.data.UsageWindow(38.0, WidgetFixtures.RESET_5H, null),
+            weekly = null, modelCaps = emptyList(),
+        )
+        for (window in FaceWindow.entries) {
+            val n = FaceStates.of(WidgetFixtures.input(Face.NUMBER, listOf(WidgetFixtures.pro(fiveOnly)), window = window))
+            assertEquals(FaceWindow.SESSION, n.cells.single().window)
+            assertNull(n.cells.single().companion)
+            for (bucket in Bucket.of(Face.NUMBER)) {
+                val v = inflate(bucket, n)
+                assertTrue("$bucket ring", shown(v.findViewById(com.robin.claudeusage.R.id.num_ring_box)))
+                assertFalse("$bucket bar", shown(v.findViewById(com.robin.claudeusage.R.id.num_bar)))
+                assertFalse("$bucket fig", shown(v.findViewById(com.robin.claudeusage.R.id.num_fig)))
+                assertFalse("$bucket fig below", shown(v.findViewById(com.robin.claudeusage.R.id.num_fig_below)))
+                // The 5h figure appears once — in the ring's bore, nowhere else.
+                val t = texts(v)
+                assertEquals("$bucket $t", 1, t.count { it == "38%" })
+                assertFalse("$bucket $t", t.any { it.contains("Weekly") })
+                // No face writes "5h" (rev D §5): the ring is the 5h, the label the name alone.
+                assertFalse("$bucket $t", t.any { it.contains("5h") })
+            }
+            assertEquals("38% | Pro", texts(inflate(Bucket.NUMBER_2X1, n)).joinToString(" | "))
+            assertTrue(texts(inflate(Bucket.NUMBER_4X1, n)).joinToString(" | ").startsWith("38% | Pro | Resets "))
+        }
+        // The Ring face already leaves its Weekly row empty.
+        val r = FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.pro(fiveOnly))))
+        for (bucket in Bucket.of(Face.RING)) {
+            val t = texts(inflate(bucket, r))
+            assertFalse("$bucket $t", t.any { it.contains("Weekly") })
+            assertEquals("$bucket $t", 1, t.count { it == "38%" })
+        }
+    }
+
+    /** Fable C6: the Ring and Number's window is fixed, so the config screen has no Window row for them. */
+    @Test
+    fun configWindowRow_isHiddenForRingAndNumber() {
+        assertFalse(windowRowShown(Face.RING))
+        assertFalse(windowRowShown(Face.NUMBER))
+        assertTrue(windowRowShown(Face.COUNTDOWN))
+        assertTrue(windowRowShown(Face.STRIP))
+    }
+
+    /**
+     * Fable C6: the picker previews are the §5 faces — a 5h ring, a Weekly bar, no window
+     * chips — and inflate as plain RemoteViews, with no code, the way the picker inflates them.
+     */
+    @Test
+    fun pickerPreviews_areTheShapeGrammarFaces() {
+        fun preview(id: Int) = texts(
+            android.widget.RemoteViews(context.packageName, id).apply(context, FrameLayout(context)),
+        ).joinToString(" | ")
+        assertEquals("38% | Pro | Weekly | 20%", preview(com.robin.claudeusage.R.layout.widget_preview_ring))
+        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:29 PM", preview(com.robin.claudeusage.R.layout.widget_preview_number))
+        assertEquals("38% | 2:41:07 | at 9:10 PM | Pro", preview(com.robin.claudeusage.R.layout.widget_preview_countdown))
+        assertEquals("38% | Pro | 62% | Work | 20% | ChatGPT", preview(com.robin.claudeusage.R.layout.widget_preview_strip))
+    }
+
     /** Q "Ring widget's window choice" and rev D §5: a stored window is kept and ignored. */
     @Test
     fun theStoredWindowIsIgnored_ringIs5hNumberIsWeekly() {

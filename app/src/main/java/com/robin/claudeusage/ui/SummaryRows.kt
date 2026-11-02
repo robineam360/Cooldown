@@ -48,7 +48,11 @@ object SummaryRows {
         return "Held$back$resets"
     }
 
-    /** The compact row's one word (S2): the band, "5h · 3:40 PM", "Out · Thu", "No reading". */
+    /**
+     * The compact row's one word (S2): the band, "Held · 3:40 PM", "Out · Thu", "No
+     * reading". A held row says "Held" where v2.0 said "5h" — the shape grammar never writes
+     * "5h" (judge F3) — and keeps the bare time so it fits the 90 dp word column.
+     */
     fun compactWord(
         group: SummaryRank.Group,
         weekly: UsageWindow?,
@@ -58,7 +62,8 @@ object SummaryRows {
     ): String = when (group) {
         SummaryRank.Group.NO_READING -> "No reading"
         SummaryRank.Group.SPENT -> "Out · ${Fmt.weekday(weekly?.resetsAt)}"
-        SummaryRank.Group.HELD -> "5h · ${Fmt.timeOnly(session?.resetsAt, use24h)}"
+        SummaryRank.Group.HELD ->
+            session?.resetsAt?.let { "Held$DOT${Fmt.timeOnly(it, use24h)}" } ?: "Held"
         SummaryRank.Group.ELIGIBLE ->
             Pace.bandOrNull(weekly?.percent, elapsed)?.let { PaceText.bandWords(it) } ?: "Not started"
     }

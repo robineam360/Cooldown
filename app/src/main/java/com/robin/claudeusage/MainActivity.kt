@@ -922,9 +922,12 @@ private fun ProfileScreen(
         val layout = remember(profile, layoutTick) { cardOrderLayout(cache.layout(profile), cache.headline(profile)) }
         // CCRM-99 (Model Limits Toggle): per account, read with the layout.
         val showModelLimits = remember(profile, layoutTick) { cache.showModelLimits(profile) }
-        val shown = layout.order.filter { it in present && it !in layout.hidden }
-        val mainCards = shown.filter { it !in layout.more }
-        val foldedCards = shown.filter { it in layout.more }
+        // CCRM-103 (Hybrid Notification): the tile hides only when both window cards are
+        // hidden, sits in the first un-hidden one's place, and the page is never blank.
+        val drawn = drawnCards(layout, present)
+        val mainCards = drawn.main
+        val foldedCards = drawn.folded
+        val startOnFive = tileStartsOnFive(layout, hasSession = data.session != null)
         // Session-only, collapsed by default (wireframe §7e): folding a card is the
         // persistent decision, peeking under the disclosure is not.
         var moreOpen by remember(profile) { mutableStateOf(false) }
@@ -985,6 +988,7 @@ private fun ProfileScreen(
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
                     showModelLimits = showModelLimits,
+                    startOnFive = startOnFive,
                 )
                 CardId.CREDITS -> credits?.let { CreditsCard(it, mode == PaceText.Mode.LEFT, serifHeadline) }
             }

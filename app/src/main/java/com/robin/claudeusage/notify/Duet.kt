@@ -94,6 +94,22 @@ object Duet {
     const val NOMINAL_HALF_DP = HALF_DP
 
     /**
+     * A Duet half on a large screen's fixed-width shade panel: CCBG-39 measured about 101 dp
+     * on the Fold 7's inner screen (smallest width 600 dp and up).
+     */
+    const val PANEL_HALF_DP = 101f
+
+    /**
+     * The half's width as far as a notification can know it (Fable fit call, Step 6d): the
+     * configuration bucket the shade was measured in. A large screen's shade is a fixed
+     * panel with narrow halves, so it takes rev D §3's bare 14 dp ring (D3); a phone's shade
+     * takes the 36 dp ring. The service re-posts on a configuration change, so folding and
+     * unfolding the Fold 7 redraws the right one.
+     */
+    fun halfDp(smallestScreenWidthDp: Int): Float =
+        if (smallestScreenWidthDp >= 600) PANEL_HALF_DP else NOMINAL_HALF_DP
+
+    /**
      * How many condition strips the expanded panel may draw.
      *
      * Android caps the expanded custom view; two Duet header blocks and their gaps spend

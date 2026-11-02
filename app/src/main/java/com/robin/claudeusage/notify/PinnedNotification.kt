@@ -968,7 +968,7 @@ object PinnedNotification {
         // its width (36 dp with its figure, or the bare 14 dp one). None for no 5h (B1).
         val halfRing =
             if (expanded) Duet.HalfRing.NONE
-            else Duet.halfRing(h.ring != null, Duet.NOMINAL_HALF_DP)
+            else Duet.halfRing(h.ring != null, Duet.halfDp(context.resources.configuration.smallestScreenWidthDp))
         if (expanded) {
             if (h.ring != null) {
                 fillRing(

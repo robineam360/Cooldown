@@ -152,7 +152,12 @@ class AppPaceTest {
 
     @Test fun `compact words (S2) and the six-account switch`() {
         val s5 = w(93.0, Instant.parse("2026-11-04T15:40:00Z"))
-        assertEquals("5h · 3:40 PM", SummaryRows.compactWord(SummaryRank.Group.HELD, w(30.0, fri), 72.0, s5, false))
+        // Judge F3: the page never writes "5h"; a held compact row says the full row's words.
+        val held = SummaryRows.compactWord(SummaryRank.Group.HELD, w(30.0, fri), 72.0, s5, false)
+        assertEquals("Held · 3:40 PM", held)
+        assertFalse(held.contains("5h"))
+        assertEquals("Held · 15:40", SummaryRows.compactWord(SummaryRank.Group.HELD, w(30.0, fri), 72.0, s5, true))
+        assertEquals("Held", SummaryRows.compactWord(SummaryRank.Group.HELD, w(30.0, fri), 72.0, null, false))
         assertEquals("Out · Thu", SummaryRows.compactWord(SummaryRank.Group.SPENT, w(100.0, Instant.parse("2026-11-05T08:00:00Z")), 89.8, null, false))
         assertEquals("No reading", SummaryRows.compactWord(SummaryRank.Group.NO_READING, null, null, null, false))
         assertEquals("Slow down", SummaryRows.compactWord(SummaryRank.Group.ELIGIBLE, w(52.0, sun), 38.9, null, false))

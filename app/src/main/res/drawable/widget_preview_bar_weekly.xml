@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-103 (Hybrid Notification): a static picker-preview Weekly bar (rev D §5) as
+     BarRenderer draws a widget bar: a 10 dp track in the fill colour at 25%, 20% filled with
+     the square end and the Line end mark, the 3 dp pace tick at 30% in its 1 dp halo. Wider
+     than any Number column, so the preview's ImageView scales it down to the column.
+     Preview only — placed faces draw through BarRenderer. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp" android:height="16dp"
+    android:viewportWidth="300" android:viewportHeight="16">
+    <path android:fillColor="#40E59980" android:pathData="M7.5,3 L292.5,3 A5,5 0 0,1 292.5,13 L7.5,13 A5,5 0 0,1 7.5,3 Z" />
+    <path android:fillColor="#FFE59980" android:pathData="M7.5,3 L61.5,3 L61.5,13 L7.5,13 A5,5 0 0,1 7.5,3 Z" />
+    <path android:fillColor="#FF1A1A1A" android:pathData="M59.75,0.5 L63.25,0.5 L63.25,15.5 L59.75,15.5 Z" />
+    <path android:strokeColor="#FFE59980" android:strokeWidth="1.5" android:strokeLineCap="round"
+        android:pathData="M61.5,2.25 L61.5,13.75" />
+    <path android:strokeColor="#FF1A1A1A" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M91,2.5 L91,13.5" />
+    <path android:strokeColor="#E6EDE8E4" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M91,2.5 L91,13.5" />
+</vector>
