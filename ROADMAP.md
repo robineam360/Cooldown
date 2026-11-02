@@ -1666,6 +1666,11 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   §6.2: past 90%, or projected (§3) to hit 100% before its reset, unless the week is spent). The status-bar ring always follows the Auto rule.
   An account with no 5h shows Weekly whatever the setting says. Widgets keep their own per-widget
   window choice. Replaces CCRM-54's "headline = `session` if present, else `weekly`".
+  **5h first stays one switch away (Robin, 2026-11-02):** Headline 5-hour also restores the 5h card
+  above Weekly in the app (a layout reordered in the sheet wins either way), and installs that had an
+  account before the update see a one-time "Weekly now leads" notice with "Keep Weekly" / "Keep 5h
+  first" (the latter sets every account's Headline to 5-hour). Drawn in
+  `design/2026-11-02-vs-pace-display.html` §6, awaiting approval.
 - **Spec:** the Auto rule and the "no 5h → Weekly" fallback go into `spec/core/BEHAVIOR-SPEC.md` with
   fixtures; the setting is per-client presentation.
 - **Done when:** wireframes for every surface and state (5h present/absent, Auto switched to 5h, spent,
@@ -1673,9 +1678,12 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
 - **Status:** Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
-  wireframe rev A approved 2026-11-02; iOS rev B drawn (`design/2026-11-02-ios-weekly-first.html`),
-  awaiting approval · Robin then asked for the pace mark's position on every meter: three variants in
-  `design/2026-11-02-pace-line-label.html`, awaiting his pick.
+  wireframe rev A approved 2026-11-02; **iOS rev B approved 2026-11-02**
+  (`design/2026-11-02-ios-weekly-first.html`, with its listed interpretations) · **pace-mark caption V1
+  chosen 2026-11-02** (`design/2026-11-02-pace-line-label.html`): under the app and Summary bars, mode-aware
+  (Used/Left: "60% pace mark · 10 under"; Vs pace, CCRM-100 (Vs Pace Display): "50% used · mark 60%"),
+  the room drawn dashed, the notification's expanded line 2 "10 under the pace mark (60%) · resets Fri";
+  the signed "Pace +21%" detail line is dropped, so the signed Pace is never printed.
 - **What:** adopt the ModelMesh
   [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md) —
   `pace = (r − q) / max(r, q) × 100`, `q` = % of quota left, `r` = % of time left — on the weekly window
@@ -1712,13 +1720,25 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-99 · Model Limits Toggle — hide an account's per-model weekly limits
 - **Status:** Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
-  awaiting approval.
+  **approved 2026-11-02**.
 - **What:** a per-account "Show model limits" switch (default on) on the account's page under
   Headline, listing what it hides ("Fable · 30% this week"). Off removes the model rows and the
   All/model chips from the 7-day card, and the model rows from the notification's expanded panel; iOS
   drops the 7-day card's model half. The limits are still parsed and stored, so switching back is
   instant and history is untouched. No group at all on a plan that reports none.
 - **Spec:** BEHAVIOR-MOBILE gains `showModelLimits` per account; nothing in the core.
+
+### CCRM-100 · Vs Pace Display — the big figure shows the distance from the pace mark
+- **Status:** Asked by Robin 2026-11-02 · option A chosen · wireframe
+  `design/2026-11-02-vs-pace-display.html` awaiting approval.
+- **What:** a third value on CCRM-22 (Used or Left)'s global "Usage display": **Used · Left · Vs pace**.
+  Vs pace shows `elapsed − used` in points, signed and floored so room is never overstated: "+10%" is
+  room under the pace mark, "−20%" is over it. Every big figure follows it (notification, widgets, app
+  cards, iPad sidebar, Summary rows); bars, colours and the pace tick still key on used percent, so the
+  figure keeps the bar's colour. A spent window, a window with no reset clock and a missing reading fall
+  back to the usage figure. The Huge number's caption reads "VS PACE" where Left mode reads "LEFT".
+- **Why:** the bar already shows usage and the mark; the figure is free to show the one thing the bar
+  makes you work out. The sign always agrees with the Pace band (Pace is this gap scaled by what's left).
 
 ## Next — small, high value, ready to build
 
