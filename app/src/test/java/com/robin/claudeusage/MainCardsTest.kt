@@ -15,6 +15,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.robin.claudeusage.data.Provider
+import androidx.compose.ui.unit.dp
 import java.time.Instant
 
 /**
@@ -279,5 +281,12 @@ class MainCardsTest {
         val back = hideOrShow(hidden, CardId.WEEKLY, show = true)
         assertTrue(back.hidden.none { it == CardId.SESSION || it == CardId.WEEKLY })
         assertEquals(setOf(CardId.CREDITS), hideOrShow(shown, CardId.CREDITS, show = false).hidden)
+    }
+
+    /** Robin, 2026-11-02: the title's three marks need 76 dp of marks and gaps beside the measured text. */
+    @Test
+    fun `the title's three marks and their fallback width`() {
+        assertEquals(listOf(Provider.CLAUDE, Provider.CHATGPT, Provider.ANTIGRAVITY), AppTitleMarks.providers)
+        assertEquals(176f, AppTitleMarks.width(100.dp).value, 0.01f)
     }
 }

@@ -1,5 +1,10 @@
 package com.robin.claudeusage
 
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.material3.LocalTextStyle
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -396,21 +401,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                             // CCRM-60 (Dual Identity), decision 3: the main screen only —
                             // Settings, History and the Guide keep a plain text title.
                             if (screen == Screen.MAIN) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    ProviderMark(
-                                        Provider.CLAUDE,
-                                        size = 20.dp,
-                                        tint = Palette.color(Provider.CLAUDE.themeName, dark),
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    ProviderMark(
-                                        Provider.CHATGPT,
-                                        size = 20.dp,
-                                        tint = Palette.color(Provider.CHATGPT.themeName, dark),
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Cooldown")
-                                }
+                                AppTitle(dark)
                             } else {
                                 Text(
                                     when (screen) {
@@ -1173,4 +1164,48 @@ private fun SharePreview(bmp: Bitmap, onShare: () -> Unit, onDismiss: () -> Unit
         confirmButton = { TextButton(onClick = onShare) { Text("Share") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+/**
+ * The main screen's title (Robin, 2026-11-02): the app's identity — the Claude, ChatGPT and Gemini marks, always
+ * all three, at the marks' own optical sizes (20 dp boxes, 4 dp apart), then "Cooldown". Where the three do not
+ * fit beside the title in the width the top bar leaves, the app's own "Shared pace" tile (CCRM-101 (Icon v3),
+ * `ic_app_mark`) stands in for them. The width is measured, not guessed.
+ */
+@Composable
+private fun AppTitle(dark: Boolean) {
+    val style = LocalTextStyle.current
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints {
+        val textDp = with(LocalDensity.current) { measurer.measure("Cooldown", style).size.width.toDp() }
+        val fitsThree = maxWidth >= AppTitleMarks.width(textDp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (fitsThree) {
+                AppTitleMarks.providers.forEachIndexed { i, p ->
+                    if (i > 0) Spacer(Modifier.width(AppTitleMarks.GAP))
+                    ProviderMark(p, size = AppTitleMarks.MARK, tint = Palette.color(p.themeName, dark))
+                }
+            } else {
+                Image(
+                    painterResource(R.drawable.ic_app_mark),
+                    contentDescription = null,
+                    modifier = Modifier.size(AppTitleMarks.TILE),
+                )
+            }
+            Spacer(Modifier.width(AppTitleMarks.TEXT_GAP))
+            Text("Cooldown", maxLines = 1, softWrap = false)
+        }
+    }
+}
+
+/** The title's sizes, and the width the three marks need beside "Cooldown" ([width]); tested. */
+internal object AppTitleMarks {
+    val providers = listOf(Provider.CLAUDE, Provider.CHATGPT, Provider.ANTIGRAVITY)
+    val MARK = 20.dp
+    val GAP = 4.dp
+    val TEXT_GAP = 8.dp
+    val TILE = 24.dp
+
+    fun width(textWidth: androidx.compose.ui.unit.Dp): androidx.compose.ui.unit.Dp =
+        MARK * providers.size + GAP * (providers.size - 1) + TEXT_GAP + textWidth
 }

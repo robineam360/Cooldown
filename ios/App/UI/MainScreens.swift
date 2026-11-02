@@ -142,11 +142,23 @@ struct RootView: View {
 struct AppTitle: View {
     var size: CGFloat = 34
     @Environment(\.colorScheme) private var scheme
+    /// Robin, 2026-11-02: the title is the app's identity — Claude, ChatGPT and Gemini, always all three, at one
+    /// optical size (the marks' own sizing, as on Android); where the three do not fit beside "Cooldown" the app's own
+    /// "Shared pace" tile (CCRM-101 (Icon v3)) stands in. `ViewThatFits` measures, nothing is guessed.
     var body: some View {
-        HStack(spacing: 8) {
-            ProviderMark(provider: .claude, size: size * 0.76)
-            ProviderMark(provider: .chatgpt, size: size * 0.76)
-            Text("Cooldown").font(.system(size: size, weight: .bold))
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) {
+                HStack(spacing: size * 0.12) {
+                    ProviderMark(provider: .claude, size: size * 0.76)
+                    ProviderMark(provider: .chatgpt, size: size * 0.76)
+                    ProviderMark(provider: .antigravity, size: size * 0.76)
+                }
+                Text("Cooldown").font(.system(size: size, weight: .bold)).fixedSize()
+            }
+            HStack(spacing: 8) {
+                Image("AppMark").resizable().frame(width: size * 0.82, height: size * 0.82)
+                Text("Cooldown").font(.system(size: size, weight: .bold)).lineLimit(1).minimumScaleFactor(0.8)
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Cooldown")

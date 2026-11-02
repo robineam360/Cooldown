@@ -345,4 +345,11 @@ weekly.
   visible consequences of native tabs listed in app.md (no swipe on iPhone, system-tinted marks, "All" in the sidebar
   and VoiceOver, More past five, no title with the landscape sidebar collapsed, the iPhone title scrolling with the
   page); F5, the Pace map's numbered labels follow the chosen Summary order.
+- **2026-11-02 · Title marks** (Robin): the main title shows the Claude, ChatGPT and Gemini marks, always all three,
+  at one optical size; where they do not fit beside "Cooldown" (measured) the app's "Shared pace" tile stands in
+  (Android `ic_app_mark`, iOS `AppMark`, from design/icon-v3/shared-pace.svg). iOS's ChatGPT mark was off-centre at
+  69% (the Android re-centring and 1.35 scale had never reached its SVG); the iOS SVGs now carry Android's exact
+  transforms (Claude 0.82, ChatGPT re-centred ×1.35), so the tab icons match too. Simulator check: iPhone 17e and iPad
+  Pro 13″ show the three at one size. The "Shared pace" mark was not in the iOS app before (the arc session's note
+  said it was); the new `AppMark` asset adds it.
 
