@@ -5,7 +5,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,9 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -222,7 +219,8 @@ private fun MapCard(entries: List<PaceMapEntry>, numbered: Boolean, plotHeight: 
  * The full row (C1), with CCRM-103 (Hybrid Notification)'s ring (shape grammar rev D S1,
  * `srow()`): a 48 dp 5h ring on the left spanning the row — greyed with a cross on a plan
  * with no 5h, greyed on a spent week — then mark · name · plan pill · figure; the Weekly
- * bar with its neutral pace tick; the V1 caption; the pace pip and the words. Tapping the
+ * bar with its neutral pace tick; the V1 caption; the words (no pace pip since 2026-11-02 —
+ * Robin: the bar above already shows where the usage stands against the mark). Tapping the
  * figure swaps line 3 for the pace-mark readout for 3 s (P8). Spent and unread rows draw
  * line 1, the bar and the words at half strength.
  */
@@ -341,14 +339,9 @@ private fun SummaryRow(
             Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically) {
                 val swapped = readout
                 if (swapped != null) {
-                    // P8: the readout takes line 3's full width for 3 s; the pip steps aside.
+                    // P8: the readout takes line 3's full width for 3 s.
                     SwapText(swapped, 13.sp)
                 } else {
-                    val pace = if (used != null && r.elapsed != null && !Pace.isSpent(used)) Pace.pace(used, r.elapsed) else null
-                    pace?.let {
-                        PacePip(it)
-                        Spacer(Modifier.width(8.dp))
-                    }
                     val full = if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
                     else SummaryRows.words(r.weekly, r.elapsed, use24h)
                     // CCBG-60: under the measured width "resets <day>" goes first; keyed on the
@@ -462,30 +455,6 @@ private fun RankBadge(rank: Int, accent: Color) {
         contentAlignment = Alignment.Center,
     ) {
         Text("$rank", fontSize = 10.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
-    }
-}
-
-/**
- * The pace pip (rev B §2, line 3): a 40 dp scale with a centre mark, its dot at the
- * account's Pace — left = room, right = over. In-app only.
- */
-@Composable
-private fun PacePip(pace: Double) {
-    val ink = MaterialTheme.colorScheme.onSurface
-    val card = MaterialTheme.colorScheme.surfaceContainer
-    val tone = when (SummaryRows.pipTone(pace)) {
-        SummaryRows.PipTone.ROOM -> Color(0xFF8FBF9A)
-        SummaryRows.PipTone.ON_PACE -> Color(0xFFBDB8B3)
-        SummaryRows.PipTone.OVER -> Color(0xFFF2B45A)
-        SummaryRows.PipTone.NEARLY_OUT -> Color(0xFFFF6B5B)
-    }
-    Canvas(Modifier.size(width = 40.dp, height = 12.dp)) {
-        val u = size.width / 40f
-        drawLine(ink.copy(alpha = 0.35f), Offset(3 * u, 6 * u), Offset(37 * u, 6 * u), 1.5f * u)
-        drawLine(ink.copy(alpha = 0.6f), Offset(20 * u, 1.5f * u), Offset(20 * u, 10.5f * u), 1.5f * u)
-        val c = Offset(size.width * SummaryRows.pipFraction(pace), 6 * u)
-        drawCircle(tone, 4 * u, c)
-        drawCircle(card, 4 * u, c, style = Stroke(1.5f * u))
     }
 }
 

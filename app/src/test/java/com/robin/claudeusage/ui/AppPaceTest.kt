@@ -167,15 +167,6 @@ class AppPaceTest {
         assertFalse(SummaryRows.dimmed(SummaryRank.Group.HELD))
     }
 
-    @Test fun `pace pip sits left for room, centre on pace, right when over`() {
-        assertEquals(3f / 40f, SummaryRows.pipFraction(-100.0), 1e-6f)
-        assertEquals(0.5f, SummaryRows.pipFraction(0.0), 1e-6f)
-        assertEquals(37f / 40f, SummaryRows.pipFraction(150.0), 1e-6f)
-        assertEquals(SummaryRows.PipTone.ROOM, SummaryRows.pipTone(Pace.pace(50.0, 67.0)))
-        assertEquals(SummaryRows.PipTone.OVER, SummaryRows.pipTone(Pace.pace(52.0, 38.9)))
-        assertEquals(SummaryRows.PipTone.ON_PACE, SummaryRows.pipTone(4.0))
-        assertEquals(SummaryRows.PipTone.NEARLY_OUT, SummaryRows.pipTone(60.0))
-    }
 
     // --- the Pace map ---
 

@@ -1800,7 +1800,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   per the approved wireframes, and no surface still shows the gap verdict.
 
 ### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
-- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe **2026-11-02 (Robin):** Appearance › Summary order — Your order (default), Most room first (the ranking), Resets
+- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe **2026-11-02 (Robin):** Appearance › Summary order — Your order (default), Most room first (the ranking), Resets **2026-11-02 (Robin):** the pace pip leaves line 3 (the bar already shows the pace); the words start the line.
   soonest, Most used — on both platforms, built on the v2.0 branch; the header names the choice.
   `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
   the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
@@ -1813,7 +1813,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   eligible and sorts after, with its reason. (3) A **Pace map**: one plot of every account against
   its own week (across = share of its week gone, up = % used, the even-pace diagonal), each account
   its accent dot with this week's trail.
-- **What:** the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
+- **What:** the ranked Weekly list (bar with neutral pace tick, band ·
   allowance · reset day, the 5h companion), the Pace map; one-line rows and numbered dots from six
   accounts; two columns on the Fold inner screen and iPad. Never a summed or combined figure.
 - **Spec:** BEHAVIOR-MOBILE gains the ranking and the toggle, with `fixtures/summary/cases.json`.

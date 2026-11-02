@@ -70,20 +70,4 @@ object SummaryRows {
         SummaryRank.Group.ELIGIBLE ->
             Pace.bandOrNull(weekly?.percent, elapsed)?.let { PaceText.bandWords(it) } ?: "Not started"
     }
-
-    /**
-     * The pace pip's dot, 0…1 across its 40 dp scale: the Pace −100…+100 mapped onto the
-     * wireframe's 3…37 of 40, so a column of rows reads left = room, right = over.
-     */
-    fun pipFraction(pace: Double): Float = ((3.0 + 34.0 * (pace.coerceIn(-100.0, 100.0) + 100.0) / 200.0) / 40.0).toFloat()
-
-    enum class PipTone { ROOM, ON_PACE, OVER, NEARLY_OUT }
-
-    /** Green-grey under pace, neutral on pace, amber over, red when nearly out. */
-    fun pipTone(pace: Double): PipTone = when {
-        kotlin.math.abs(pace) <= 5.0 -> PipTone.ON_PACE
-        pace < 0 -> PipTone.ROOM
-        pace > 50 -> PipTone.NEARLY_OUT
-        else -> PipTone.OVER
-    }
 }

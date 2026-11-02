@@ -725,14 +725,15 @@ dimmed with the row. Line 1: mark 18 dp in the accent · name 15 sp (ellipsised)
 border, 6 dp radius) · figure 17 sp bold in the grammar's type (§2.4.2) in the severity colour (Usage display;
 Left "48% left"; Vs pace unsigned in green/red/onSurface; "—" unread). **No companion text** — the ring replaced
 "5h 34%" and "no 5h". Bar 10 dp with neutral tick, red past it per the toggle, dashed room; V1 caption; line 3:
-pace pip (40 × 12 dp scale, centre mark, 4 dp dot at the Pace: green-grey #8FBF9A room, #BDB8B3 on pace, amber
-#F2B45A over, #FF6B5B nearly out; absent when spent, unread or unclocked) + 13 sp words ("Room to spare · ≈22%/day ·
+13 sp words, starting at the row's text edge — no pace pip since 2026-11-02 (Robin: "what is the point of showing
+that indicator … just below the actual bar which also shows that anyway"; the freed 48 dp goes to the words, so
+"resets <day>" survives on narrower widths) ("Room to spare · ≈22%/day ·
 resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at
 3:40 PM · resets Fri", `SummaryRows.heldWords`); under the measured width line 3 drops "· resets <day>" first
 (CCBG-60 (Summary Line Clip)); the name gives way before the plan pill, which keeps its place beside it (the pill
 reads `Fmt.planLabel`, as Settings: "Pro 100", CCBG-62 (Plan Pill Case), API-CONTRACT §11). **Tap the figure** (P8): its own
 80 × 48 dp target over the figure and the bar's end (CCBG-56 (Summary Readout Tap)) — line 3 becomes the Weekly's
-readout (§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined (the font's own underline,
+readout (§2.4.4) for 3 s, at the line's full width, underlined (the font's own underline,
 CCBG-57 (Readout Underline Clip)); the target exists only while there is a readout (Fable F7), so a spent,
 unclocked or unread row's figure opens the account like the rest of the row; TalkBack: the figure carries the readout
 as its click action. Spent and unread rows:

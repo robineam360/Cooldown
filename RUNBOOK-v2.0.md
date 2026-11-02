@@ -367,4 +367,7 @@ weekly.
   the stored forms differ by platform; the plans fixture marks its inferred and unverified rows (9edb717, spec/core
   only — land it with 57968bd). Not checked live: the cited pricing and rename pages (Robin confirmed the names);
   Gemini's plan is read only at sign-in, so an existing Gemini account keeps its label until it signs in again.
+- **2026-11-02 · Pace pip dropped** (Robin): line 3 of a Summary row starts with the band words; only Android's full
+  row drew the pip (the compact rows and iOS never did; the P8 readout never aligned to it). The desktop drops it
+  from its menu-bar rows too.
 

@@ -220,7 +220,8 @@ off, launch opens the last account looked at, as today. The toggle is shown only
 4. **No reading**, in tab order.
 
 A spent week is never held. Below the list, the **Pace map** plots each account with a reading at (its week gone,
-its Weekly used); a spent account's dot carries an ×. Rows use the §5 band words and allowance, the pace-mark
+its Weekly used); a spent account's dot carries an ×. Rows draw no pace pip (Robin, 2026-11-02: the bar above
+already shows the pace); line 3 starts with the words. Rows use the §5 band words and allowance, the pace-mark
 caption and the account's figure in the Usage display mode; the Pace still ranks in every mode. No combined or
 summed figure (CCRM-6 (Multi-Account)), no Summary widget, no 5h on the map.
 
