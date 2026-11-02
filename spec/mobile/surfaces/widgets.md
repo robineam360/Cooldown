@@ -581,3 +581,40 @@ Big number colour: severity, secondary when signIn or older than 30 min. **Final
   footnote (`FaceViews.swift:103-128` against `Faces.swift:46`). Not confirmed on a device.
 - iOS `FaceFootnote` plan copy reads "No usage on the  plan" (a double space) for a ChatGPT account; Claude's reads "No usage on the Free plan".
 - The lock-screen widgets show no stale or Free-plan state; whether they should is a design call.
+
+## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6 (Part 2, iOS)
+
+As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the face it amends, which still describes v1.9.
+
+
+- **Headline rule per face** (mobile §5): Number — a new widget's window is seeded from the default account's
+  Headline (`HeadlineWindowOptions.defaultResult`: weekly/auto → Weekly, fiveHour → 5h), stored with the widget;
+  nothing stored reads as 5h (v1.9's default) so a placed Number never changes. **Countdown unchanged** (5h, see
+  open item). Bars, Strip, lock rectangular: fixed Weekly-first. Overview big number, lock circular and inline,
+  Live Activity rows, Island: follow the Headline live (Auto takes over while the 5h binds). Control Center:
+  unchanged (5h).
+- **Bars (small)**: "Teams · Weekly", 28 pt figure, 8 pt bar, footnote "Resets Sun 9:30 pm" (spent "Limit · Sun
+  9:30 pm" red); then "5h" row (15 pt figure, heavy and in its colour step while binding) with a 6 pt bar, no reset
+  line. Too short: the footnote goes and the day joins the header ("Teams · Weekly · Sun"). Spent or no 5h: no 5h row.
+- **Strip (medium)**: "Teams · Weekly" + 34 pt figure, bar, the reset line ("Limit reached · resets …" when spent);
+  bottom row "5h" bar figure (loud while binding); no 5h reset clock on the Strip.
+- **Overview**: title "Teams · Weekly" (or "· 5h") down to Regular; Weekly lead line A "Resets Sun 9:30 pm · in 4d
+  6h" (spent "Limit · resets in 3d 4h" red), line B band words (red over pace) plus " · ~ runs out Sat 3:10 am" only
+  when the projection runs out; a cell under 300 pt words the band alone. Second row = the other window: under a
+  Weekly lead "5h" with "Resets in 2h 20m · on track for ~69%" (binding: orange, live countdown, "runs out ~3:25
+  pm"; narrow "Resets 5:10 pm · ~69%"); under a 5h lead "Weekly" with "Resets Sun 9:30 pm · Slow down". Spent: no
+  second row, "Out until Sun 9:30 pm". Compact/Mini: lead bar first, then the companion. Extra Large, one account:
+  Weekly card left, 5h card right.
+- **Lock screen**: rectangular "Teams · Weekly 52%" (title scales to 80%), bar, "Resets Sun · 5h 34%" (5h bold while
+  binding; weekly-only "Resets Fri 10:18 pm"; spent "Limit · resets Sun 9:30 pm", no 5h). Circular: the Headline
+  window's figure without "%", sublabel "W" or "5h"; spent "MAX". Inline: "Teams Weekly 52% · resets Sun" (5h:
+  "· resets 3:40 pm"), falling back without the reset.
+- **Live Activity**: each row leads with its Headline window: "Teams · Weekly · Sun 9:30 pm", big figure, thin "5h"
+  line (bold in its colour step while binding); Auto binding: "Teams · 5h · runs out …", thin "Weekly" line; spent:
+  "· out · Sun 9:30 pm" red, no thin line. Row state gains optional `companionLoud`, `spent`, `projection` (older
+  states decode). Stale date = the earliest of every shown window's reset, the 5h companion included.
+- **Dynamic Island**: expanded line "Resets Sun 9:30 pm · 5h 34%" (Vs pace: "52% used (mark 39%) · resets Sun ·
+  5h 34%"); Auto binding "~ runs out 3:25 pm · resets in 0:50:12 · Weekly 52%". Compact and minimal follow the lead
+  window (Weekly: "4d 6h", not live).
+- Gallery descriptions: Bars "One account's Weekly and 5h, each with its bar."; Strip "One account: Weekly big,
+  with 5h under it."; Lock "One account's Weekly and 5h on the lock screen."

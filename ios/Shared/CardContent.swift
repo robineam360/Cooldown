@@ -10,8 +10,11 @@ struct WindowContent: Equatable {
     /// Even-pace position in percent (elapsed share of the window), for the tick.
     var pace: Double?
     var chart: TrendChart.Model?
-    /// First line under the chart: "On even pace" / "22% below even pace" / "22% above even pace" / "Limit reached".
+    /// First line under the chart. CCRM-97 (Pace Number): on a weekly window the band and allowance in words
+    /// ("Slow down · ≈11%/day"), or "Out until Sun 9:30 pm" when spent; on the 5h window empty (its line is the
+    /// projection), or "Limit reached" at 100%.
     var paceLine: String
+    /// Red: a weekly band over pace (Slow down, Nearly out) or spent; the 5h at its limit or projected to run out.
     var paceLineAlarm: Bool
     /// Second line: the projection, or why there isn't one.
     var projectionLine: String?
@@ -22,8 +25,23 @@ struct WindowContent: Equatable {
     /// No reset time yet: the window hasn't started (CCBG-30 (Phantom Window)). The card keeps its bar and says
     /// "Starts when a message is sent", with no chart or pace — as Android's `ResetRow` does.
     var notStarted = false
+    /// CCRM-97 (Pace Number), weekly windows: the band (nil with no verdict), and the reset's weekday for
+    /// "… until Sun" / "… · resets Sun".
+    var band: Pace.Band? = nil
+    var resetDay: String = ""
+    /// The 5h window's folded projection: "on track for ~69%" / "runs out ~3:25 pm"; nil when there is none.
+    var projectionFold: String? = nil
+    var isWeekly = false
+
+    /// The weekly pace line at full width: "Room to spare · ≈22%/day until Fri" (rev B); halves drop " until …".
+    var paceLineFull: String {
+        guard isWeekly, let band, band != .spent, !paceLine.isEmpty, !resetDay.isEmpty else { return paceLine }
+        return "\(paceLine) until \(resetDay)"
+    }
 
     var over: Bool { (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false }
+    /// The V1 pace-mark caption under an in-app bar (spec mobile §5), in the current Usage display mode.
+    var caption: String? { notStarted ? nil : PaceText.caption(mode: Display.mode, usedPct: pct, elapsedPct: pace) }
 
     /// Settings → Reset time: the form that leads ("Resets in 3h 0m", or "Resets at Sat 7:43 pm" with Clock time) and
     /// the other form for the second slot ("Resets at Sat 7:43 pm", or "in 3h 0m").
@@ -77,18 +95,29 @@ enum CardContent {
             startLabel: axisLabel(start, kind: kind, use24h: use24h, timeZone: timeZone),
             endLabel: axisLabel(reset, kind: kind, use24h: use24h, timeZone: timeZone))
 
-        let paceLine: String
+        var paceLine: String
         var alarm = false
         var projectionLine: String?
         var projectionShort: String?
-        if (pct ?? 0) >= 100 {
+        var projectionFold: String?
+        let weeklyKind = kind == HistoryStats.weeklyKind
+        let band = weeklyKind ? Pace.band(usedPct: pct, elapsedPct: pace) : nil
+        if weeklyKind && Pace.isSpent(pct) {
+            // Core §6.1's spent line (99.5): "Out until Sun 9:30 pm", no pace, no projection.
+            paceLine = "Out until \(dayClock(reset, nowMs, use24h, timeZone))"; alarm = true
+            projectionLine = "Opens again when the window resets"
+        } else if (pct ?? 0) >= 100 {
             paceLine = "Limit reached"; alarm = true
             projectionLine = "Opens again when the window resets"
         } else {
-            let delta = (pct ?? 0) - (pace ?? 0)
-            if abs(delta) <= 3 { paceLine = "On even pace" }
-            else if delta < 0 { paceLine = "\(Int((-delta).rounded()))% below even pace" }
-            else { paceLine = "\(Int(delta.rounded()))% above even pace"; alarm = true }
+            if let band {
+                let allowance = Pace.allowance(usedPct: pct ?? 0, msUntilReset: reset - nowMs)
+                paceLine = PaceText.tight(band, allowance) ?? ""
+                alarm = PaceText.isOverPace(band)
+            } else {
+                // The 5h session gets no Pace (spec mobile §5): its line is the projection.
+                paceLine = ""
+            }
             if let suppression = outlook.suppression {
                 projectionLine = suppression.explanation
             } else if let estimate {
@@ -98,9 +127,12 @@ enum CardContent {
                         ? dayClock(hits, nowMs, use24h, timeZone) : clock(hits, use24h, timeZone)
                     projectionLine = "At this pace: runs out ~\(when) · \(rate)"
                     projectionShort = "~ runs out \(when)"
+                    projectionFold = "runs out ~\(when)"
+                    if !weeklyKind { alarm = true }
                 } else {
                     projectionLine = "At this pace: ~\(Int(estimate.pctAtReset.rounded()))% when the window resets · \(rate)"
                     projectionShort = "~\(Int(estimate.pctAtReset.rounded()))% at reset"
+                    projectionFold = "on track for ~\(Int(estimate.pctAtReset.rounded()))%"
                 }
             }
         }
@@ -109,16 +141,22 @@ enum CardContent {
             projectionLine: projectionLine, projectionShort: projectionShort,
             // Android's countdown collapses to "resets soon" inside five minutes.
             resetsIn: reset - nowMs < 5 * 60_000 ? "Resets soon" : "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
-            resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))")
+            resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))",
+            band: band, resetDay: weekday(reset, timeZone), projectionFold: projectionFold, isWeekly: weeklyKind)
     }
 
     static let notStartedLine = "Starts when a message is sent"
 
-    /// A folded card's one line: "Resets in 1h 57m · 22% below pace" (Android's Compact card).
+    /// A folded card's one line (rev B): Weekly "Slow down · ≈11%/day · resets Sun" or "Out until Sun 9:30 pm";
+    /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 pm".
     static func compactLine(_ c: WindowContent) -> String {
         if c.notStarted { return notStartedLine }
-        let pace = c.paceLine.replacingOccurrences(of: "even pace", with: "pace")
-        return "\(c.leadReset) · \(pace == "On pace" ? "on pace" : pace)"
+        if c.isWeekly {
+            if c.band == .spent || c.paceLine.hasPrefix("Out until") || c.paceLine.isEmpty { return c.paceLine.isEmpty ? c.leadReset : c.paceLine }
+            return "\(c.paceLine) · resets \(c.resetDay)"
+        }
+        if (c.pct ?? 0) >= 100 { return "\(c.leadReset) · Limit reached" }
+        return c.projectionFold.map { "\(c.leadReset) · \($0)" } ?? c.leadReset
     }
 
     /// "$123.90 / $400.00" with its percent, or "$4.20 balance"; nil when there's nothing to report.
@@ -158,7 +196,7 @@ enum CardContent {
         return clock(ms, use24h, timeZone)
     }
 
-    private static func weekday(_ ms: Int64, _ tz: TimeZone) -> String {
+    static func weekday(_ ms: Int64, _ tz: TimeZone) -> String {
         let f = DateFormatter()
         f.timeZone = tz
         f.locale = Locale(identifier: "en_US_POSIX")

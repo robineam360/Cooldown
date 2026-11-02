@@ -120,8 +120,8 @@ struct RootView: View {
                 case .addAccount: AddAccountSheet(sheet: $sheet)
                 case .claudeSignIn: ClaudeSignInSheet()
                 case .chatGPTSignIn: ChatGPTSignInSheet()
-                case .layout: LayoutSheet(accountKey: model.selectedKey ?? model.accounts.first?.key ?? "")
-                case .share: ShareSheet(accountKey: model.selectedKey ?? model.accounts.first?.key ?? "")
+                case .layout: LayoutSheet(accountKey: model.currentAccountKey ?? "")
+                case .share: ShareSheet(accountKey: model.currentAccountKey ?? "")
                 }
             }
             .environment(model)
@@ -168,12 +168,34 @@ struct AppTitle: View {
 struct AccountTabs: View {
     let accounts: [Account]
     @Binding var selected: String?
+    /// CCRM-98 (Summary Tab): an "All" tab first (with two or more accounts).
+    var showsAll = false
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
+
+    private var count: Int { accounts.count + (showsAll ? 1 : 0) }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
+                if showsAll {
+                    let on = selected == AppModel.summaryKey
+                    Button { withAnimation { selected = AppModel.summaryKey } } label: {
+                        HStack(spacing: 7) {
+                            Image(systemName: "text.alignleft").font(.system(size: 15, weight: .semibold))
+                            Text("All").font(.system(size: 16, weight: .medium))
+                        }
+                        .foregroundStyle(on ? p.ink : p.sub)
+                        .padding(.horizontal, 12)
+                        .frame(height: 46)
+                        .frame(minWidth: count <= 3 ? nil : 80)
+                        .overlay(alignment: .bottom) { if on { Capsule().fill(p.ink).frame(height: 3) } }
+                    }
+                    .buttonStyle(.plain)
+                    .containerRelativeFrame(.horizontal, count: max(min(count, 3), 1), spacing: 0)
+                    .accessibilityLabel("All accounts")
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                }
                 ForEach(accounts) { account in
                     let on = account.key == selected
                     Button { withAnimation { selected = account.key } } label: {
@@ -184,18 +206,18 @@ struct AccountTabs: View {
                         .foregroundStyle(on ? p.ink : p.sub)
                         .padding(.horizontal, 12)
                         .frame(height: 46)
-                        .frame(minWidth: accounts.count <= 3 ? nil : 110)
+                        .frame(minWidth: count <= 3 ? nil : 110)
                         .overlay(alignment: .bottom) {
                             if on { Capsule().fill(account.accent(scheme)).frame(height: 3) }
                         }
                     }
                     .buttonStyle(.plain)
-                    .containerRelativeFrame(.horizontal, count: max(min(accounts.count, 3), 1), spacing: 0)
+                    .containerRelativeFrame(.horizontal, count: max(min(count, 3), 1), spacing: 0)
                     .accessibilityAddTraits(on ? .isSelected : [])
                 }
             }
         }
-        .scrollDisabled(accounts.count <= 3)
+        .scrollDisabled(count <= 3)
         .overlay(alignment: .bottom) { Rectangle().fill(p.line).frame(height: 1) }
     }
 }
@@ -228,8 +250,20 @@ struct PhoneMain: View {
         @Bindable var model = model
         VStack(spacing: 0) {
             AppTitle().frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 16).padding(.bottom, 4)
-            AccountTabs(accounts: model.accounts, selected: $model.selectedKey)
+            let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
+            AccountTabs(accounts: model.accounts, selected: $model.selectedKey, showsAll: showsAll)
             TabView(selection: $model.selectedKey) {
+                if showsAll {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            SummaryView()
+                            Footer()
+                        }
+                        .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 24)
+                    }
+                    .refreshable { await model.refresh(manual: true) }
+                    .tag(Optional(AppModel.summaryKey))
+                }
                 ForEach(model.accounts) { account in
                     ScrollView {
                         VStack(spacing: 12) {
@@ -256,16 +290,19 @@ struct IPadLandscape: View {
     @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
     /// Which window the sidebar's bars show, remembered (design/2026-10-24-ios-sidebar-window.html, approved 24 Oct).
-    @AppStorage("sidebarWindow") private var sidebarWindow = "5h"
+    /// CCRM-96 (Weekly First) rev B: a first segment, Headline, is the new default — each row shows its own account's
+    /// Headline window (Auto takes over while the 5h binds), named. A stored "5h" or "weekly" keeps today's switch.
+    @AppStorage("sidebarWindow") private var sidebarWindow = "headline"
 
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 AppTitle(size: 30).padding(.horizontal, 18).padding(.bottom, 10)
                 Picker("Window", selection: $sidebarWindow) {
-                    Text("5h").tag("5h"); Text("Weekly").tag("weekly")
+                    Text("Headline").tag("headline"); Text("Weekly").tag("weekly"); Text("5h").tag("5h")
                 }
                 .pickerStyle(.segmented).padding(.horizontal, 18).padding(.bottom, 10)
+                if SummaryRank.tabShown(accountCount: model.accounts.count) { allRow }
                 ForEach(model.accounts) { account in sidebarRow(account) }
                 Text("Touch and hold an account to pin it to the top.")
                     .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.horizontal, 22).padding(.top, 12)
@@ -277,10 +314,15 @@ struct IPadLandscape: View {
             .overlay(alignment: .trailing) { Rectangle().fill(p.line).frame(width: 1) }
             ScrollView {
                 VStack(spacing: 12) {
+                    if model.showsSummary && SummaryRank.tabShown(accountCount: model.accounts.count) {
+                        Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
+                        SummaryView(wide: true)
+                    } else {
                     if let pinned = model.account(model.pinnedKey) { half(pinned, pinned: true) }
                     if let selected = model.account(bottomKey), selected.key != model.pinnedKey {
                         Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 2)
                         half(selected, pinned: false)
+                    }
                     }
                 }
                 .padding(20)
@@ -303,12 +345,32 @@ struct IPadLandscape: View {
         }
     }
 
+    /// CCRM-98 (Summary Tab) W2: "All accounts" tops the sidebar, with the account count instead of a figure.
+    private var allRow: some View {
+        let on = model.showsSummary
+        return Button { model.selectedKey = AppModel.summaryKey } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "text.alignleft").font(.system(size: 17, weight: .semibold)).frame(width: 22)
+                Text("All accounts").font(.system(size: 16, weight: on ? .semibold : .regular))
+                Spacer()
+                Text("\(model.accounts.count)").font(.system(size: 15)).foregroundStyle(p.sub)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(on ? p.fill : .clear, in: RoundedRectangle(cornerRadius: 10))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain).foregroundStyle(p.ink).padding(.horizontal, 10)
+    }
+
     private func sidebarRow(_ account: Account) -> some View {
         let usage = model.usage(account.key)
+        let led = sidebarWindow == "headline" ? model.face(account.key)?.lead(for: .notification) : nil
         // The switch picks the window; a weekly-only plan has no 5h, so it always shows Weekly — labelled, so the row
-        // doesn't read as a 5h figure.
-        let weekly = sidebarWindow == "weekly" || usage?.session == nil
+        // doesn't read as a 5h figure. Under Headline every row names its window.
+        let weekly = led.map(\.leadsWeekly) ?? (sidebarWindow == "weekly" || usage?.session == nil)
         let forcedWeekly = sidebarWindow == "5h" && usage?.session == nil && usage?.weekly != nil
+        let tag: String? = led != nil ? (weekly ? "Weekly" : "5h") : (forcedWeekly ? "Weekly" : nil)
+        let loud = led.map { !$0.leadsWeekly && $0.sessionBinding } ?? false
         let main = weekly ? usage?.weekly : usage?.session
         let pct = main?.percent
         let pace = main?.resetsAtMs.flatMap {
@@ -316,7 +378,7 @@ struct IPadLandscape: View {
                                nowMs: model.nowMs)
         }
         let accent = account.accent(scheme)
-        let selected = account.key == bottomKey
+        let selected = account.key == bottomKey && !model.showsSummary
         return Button { model.selectedKey = account.key } label: {
             HStack(spacing: 10) {
                 ProviderMark(provider: account.provider, size: 22)
@@ -329,8 +391,10 @@ struct IPadLandscape: View {
                     UsageBar(pct: pct, pace: pace, accent: accent, height: 5)
                 }
                 VStack(alignment: .trailing, spacing: 1) {
-                    Display.pctText(pct, size: 16).font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
-                    if forcedWeekly { Text("Weekly").font(.system(size: 11)).foregroundStyle(p.sub) }
+                    Display.pctText(pct, pace: pace, size: 16).font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
+                    if let tag {
+                        Text(tag).font(.system(size: 11, weight: loud ? .bold : .regular)).foregroundStyle(loud ? p.orange : p.sub)
+                    }
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
@@ -356,6 +420,7 @@ struct PinnedAndTabs: View {
         } else {
             let others = model.accounts.filter { $0.key != model.pinnedKey }
             let selected = others.first { $0.key == model.selectedKey } ?? others.first
+            let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     AppTitle()
@@ -364,9 +429,12 @@ struct PinnedAndTabs: View {
                         AccountCards(account: pinned, twoAcross: true, cardWidth: 356, onSignIn: { signIn(pinned) })
                     }
                     if !others.isEmpty {
-                        AccountTabs(accounts: others, selected: Binding(get: { selected?.key }, set: { model.selectedKey = $0 }))
+                        AccountTabs(accounts: others, selected: Binding(get: { model.showsSummary && showsAll ? AppModel.summaryKey : selected?.key },
+                                                                        set: { model.selectedKey = $0 }), showsAll: showsAll)
                             .padding(.horizontal, -22)
-                        if let selected {
+                        if model.showsSummary && showsAll {
+                            SummaryView(wide: width >= 900)
+                        } else if let selected {
                             AccountHeader(account: selected, pinned: false)
                             AccountCards(account: selected, twoAcross: true, cardWidth: 356, onSignIn: { signIn(selected) })
                         }

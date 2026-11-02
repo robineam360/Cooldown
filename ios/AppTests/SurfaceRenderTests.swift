@@ -15,7 +15,8 @@ struct SurfaceRenderTests {
 
     func face(_ label: String, _ provider: Provider, pct: Double?, pace: Double?, minutes: Double = 95,
               runOut: Double? = nil, status: Face.Status = .fresh, fetchedMinutesAgo: Double = 3,
-              weeklyPct: Double = 18, weeklyPace: Double = 43, weeklyOnly: Bool = false, notStarted: Bool = false) -> Face {
+              weeklyPct: Double = 18, weeklyPace: Double = 43, weeklyOnly: Bool = false, notStarted: Bool = false,
+              headline: Headline = .weekly, binding: Bool? = nil) -> Face {
         // A unique key per sample: rows and rings are identified by account key.
         let reset = now.addingTimeInterval(minutes * 60), weeklyReset = now.addingTimeInterval((1 - weeklyPace / 100) * 7 * 86_400)
         var f = Face(account: Account(key: "\(label)-\(Int(pct ?? -1))-\(status)-\(weeklyOnly)", label: label, provider: provider),
@@ -39,6 +40,11 @@ struct SurfaceRenderTests {
         f.attachContent(sessionWindow: weeklyOnly ? nil : UsageWindow(percent: notStarted ? 0 : pct, resetsAtMs: notStarted ? nil : reset.ms, serverSeverity: nil),
                         weeklyWindow: UsageWindow(percent: weeklyPct, resetsAtMs: weeklyReset.ms, serverSeverity: nil),
                         history: history, nowMs: now.ms)
+        // v2.0 (CCRM-96 (Weekly First)): what Face.build sets from the Headline and core §6.2.
+        f.headline = headline
+        f.hasSessionWindow = !weeklyOnly
+        f.sessionBinding = binding ?? Pace.sessionBinding(sessionPct: weeklyOnly ? nil : pct, weeklyPct: weeklyPct,
+                                                         sessionHitsLimitBeforeReset: runOut != nil)
         return f
     }
 

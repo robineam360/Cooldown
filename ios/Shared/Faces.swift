@@ -32,6 +32,11 @@ struct Face: Equatable, Sendable {
     /// nil when the window is absent (a weekly-only plan has no 5h).
     var session: WindowContent? = nil
     var weekly: WindowContent? = nil
+    /// CCRM-96 (Weekly First): the account's Headline, core §6.2's `sessionBinding`, and whether the plan has a 5h
+    /// window at all — set by `build`, kept through `leading` and `lead`.
+    var headline: Headline = .default
+    var sessionBinding = false
+    var hasSessionWindow = false
 
     /// A plan with no 5h window at all (OpenAI's weekly-only plans): Weekly leads.
     var weeklyOnly: Bool { pct == nil && weeklyPct != nil && status != .noData && status != .signIn }
@@ -49,8 +54,46 @@ struct Face: Equatable, Sendable {
                      weeklyPct: nil, weeklyPace: nil, weeklyReset: nil, fetchedAt: fetchedAt, status: status)
         f.session = weekly
         f.leadsWeekly = true
+        f.carry(self)
         return f
     }
+
+    /// CCRM-96 (Weekly First): the face with `kind` in the main slot. Leading with Weekly moves the 5h window into
+    /// the second slot (the `companion…` names below), so every face draws "main, then companion" either way.
+    func lead(_ kind: WindowKind) -> Face {
+        if weeklyOnly || leadsWeekly { return leading }
+        guard kind == .weekly, weeklyPct != nil else { return self }
+        var f = Face(account: account, pct: weeklyPct, pace: weeklyPace, reset: weeklyReset, runOut: nil,
+                     weeklyPct: pct, weeklyPace: pace, weeklyReset: reset, fetchedAt: fetchedAt, status: status)
+        f.session = weekly
+        f.weekly = session
+        f.leadsWeekly = true
+        f.carry(self)
+        return f
+    }
+
+    /// The face as `surface` leads it, from the account's Headline (spec mobile §5).
+    func lead(for surface: HeadlineSurface) -> Face {
+        lead(HeadlineRule.lead(setting: headline, surface: surface, hasSession: hasSessionWindow, sessionBinding: sessionBinding))
+    }
+
+    private mutating func carry(_ from: Face) {
+        headline = from.headline
+        sessionBinding = from.sessionBinding
+        hasSessionWindow = from.hasSessionWindow
+    }
+
+    // The second slot: Weekly under a 5h lead, 5h under a Weekly lead (nil on a weekly-only plan).
+    var companionPct: Double? { weeklyPct }
+    var companionPace: Double? { weeklyPace }
+    var companionReset: Date? { weeklyReset }
+    var companionContent: WindowContent? { weekly }
+    var companionLabel: String { leadsWeekly ? "5h" : "Weekly" }
+    /// The 5h companion while it binds: the bar colour's step and bold (spec mobile §5).
+    var companionLoud: Bool { leadsWeekly && sessionBinding && companionPct != nil }
+    /// A Weekly lead that is spent: the 5h companion is dropped (rev B: spent drops the 5h row).
+    var leadSpent: Bool { leadsWeekly && Pace.isSpent(pct) }
+    var showsCompanion: Bool { companionPct != nil && !leadSpent }
 
     /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
     func resetClock(_ date: Date) -> String {
@@ -84,14 +127,24 @@ struct Face: Equatable, Sendable {
             let age = nowMs - snapshot.fetchedAtMs
             status = age > Notice.staleMs ? .stale : age > agingMs ? .aging : .fresh
         } else { status = .noData }
+        // Core §6.2: past 90%, or projected to hit the limit before its reset (whatever the pace).
+        var sessionHits = false
+        if let reset = sessionReset, let pct, pct < 100 {
+            let samples = Projection.sessionSamples(history: history, resetAtMs: reset, windowLengthMs: HistoryStats.sessionMs)
+            sessionHits = Projection.estimate(samples: samples, resetAtMs: reset)?.hitsLimitAtMs != nil
+        }
+        let weeklyNow = weekly.map { weeklyReset == nil ? 0 : ($0.percent ?? 0) }
         var face = Face(
             account: account, pct: pct, pace: pace, reset: sessionReset.map(Date.init(ms:)), runOut: runOut,
-            weeklyPct: weekly.map { weeklyReset == nil ? 0 : ($0.percent ?? 0) },
+            weeklyPct: weeklyNow,
             weeklyPace: weeklyReset.flatMap { Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.weekMs, nowMs: nowMs) },
             weeklyReset: weeklyReset.map(Date.init(ms:)), fetchedAt: snapshot.map { Date(ms: $0.fetchedAtMs) }, status: status)
         face.attachContent(sessionWindow: session.map { sessionReset == nil ? UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil) : $0 },
                            weeklyWindow: weekly.map { weeklyReset == nil ? UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil) : $0 },
                            history: history, nowMs: nowMs)
+        face.headline = Prefs.headline(account.key)
+        face.hasSessionWindow = session != nil
+        face.sessionBinding = Pace.sessionBinding(sessionPct: pct, weeklyPct: weeklyNow, sessionHitsLimitBeforeReset: sessionHits)
         return face
     }
 
@@ -136,6 +189,33 @@ enum Prefs {
     }
     static func setResetMode(_ key: String, weekly: Bool, _ mode: String) {
         defaults.set(mode, forKey: "ping.\(key).\(weekly ? "weekly" : "session")")
+    }
+
+    // MARK: v2.0 — every key is new, so v1.9 ignores them after a downgrade (RUNBOOK-v2.0 Step 3).
+
+    /// CCRM-96 (Weekly First): per account, "weekly" (default) · "fiveHour" · "auto".
+    static func headline(_ key: String) -> Headline { Headline(key: defaults.string(forKey: "headline.\(key)")) }
+    static func setHeadline(_ key: String, _ value: Headline) { defaults.set(value.rawValue, forKey: "headline.\(key)") }
+
+    /// CCRM-99 (Model Limits Toggle): per account, default on.
+    static func showModelLimits(_ key: String) -> Bool { defaults.object(forKey: "modelLimits.\(key)") as? Bool ?? true }
+    static func setShowModelLimits(_ key: String, _ on: Bool) { defaults.set(on, forKey: "modelLimits.\(key)") }
+
+    /// CCRM-98 (Summary Tab): Appearance › Open on the summary, default on.
+    static var openOnSummary: Bool {
+        get { defaults.object(forKey: "openOnSummary") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "openOnSummary") }
+    }
+    /// The last account looked at, for launch with Open on the summary off (or one account).
+    static var lastAccountKey: String? {
+        get { defaults.string(forKey: "lastAccount") }
+        set { defaults.set(newValue, forKey: "lastAccount") }
+    }
+    /// CCRM-96 (Weekly First): the one-time notice — nil until the first v2.0 launch settles it, then
+    /// `WeeklyFirstNotice.pending` or `.done`.
+    static var weeklyFirstNotice: String? {
+        get { defaults.string(forKey: "weeklyFirstNotice") }
+        set { defaults.set(newValue, forKey: "weeklyFirstNotice") }
     }
 
     /// The Live Activity switch, and which accounts it shows (default: the first two in your order).
@@ -184,8 +264,22 @@ struct AccountWidgetIntent: WidgetConfigurationIntent {
 struct AccountWindowWidgetIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Account and window"
     @Parameter(title: "Account") var account: AccountEntity?
-    @Parameter(title: "Window", default: .fiveHour) var window: WindowChoice
+    /// CCRM-96 (Weekly First): a new Number starts on its account's Headline (`HeadlineWindowOptions`, Auto → Weekly);
+    /// the value is then stored with the widget. Placed widgets keep what they stored; nil (nothing stored) reads as
+    /// 5h, today's default, so an already placed widget can never change window by itself.
+    @Parameter(title: "Window", optionsProvider: HeadlineWindowOptions()) var window: WindowChoice?
     init() {}
+}
+
+/// Seeds a new widget's window from the default account's Headline (spec mobile §5, "a new widget's window choice").
+struct HeadlineWindowOptions: DynamicOptionsProvider {
+    func results() async throws -> [WindowChoice] { [.weekly, .fiveHour] }
+    func defaultResult() async -> WindowChoice? {
+        guard let account = AccountsStore(storage: Shared.storage).load().first else { return .weekly }
+        let kind = HeadlineRule.lead(setting: Prefs.headline(account.key), surface: .newWidget,
+                                     hasSession: true, sessionBinding: false)
+        return kind == .session ? .fiveHour : .weekly
+    }
 }
 
 /// Opens the app on an account — the Control Center control's action.

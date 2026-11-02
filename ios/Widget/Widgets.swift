@@ -57,7 +57,7 @@ struct FaceProvider<Intent: WidgetConfigurationIntent>: AppIntentTimelineProvide
 struct NumberWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: "Number", intent: AccountWindowWidgetIntent.self,
-                               provider: FaceProvider<AccountWindowWidgetIntent>(key: { $0.account?.id }, window: { $0.window })) { entry in
+                               provider: FaceProvider<AccountWindowWidgetIntent>(key: { $0.account?.id }, window: { $0.window ?? .fiveHour })) { entry in
             WidgetFrame(key: entry.face?.account.key) { NumberFace(entry: entry) }
         }
         .configurationDisplayName("Number")
@@ -89,7 +89,7 @@ struct BarsWidget: Widget {
             WidgetFrame(key: entry.face?.account.key) { BarsFace(entry: entry) }
         }
         .configurationDisplayName("Bars")
-        .description("One account's 5h and Weekly, each with its bar and reset.")
+        .description("One account's Weekly and 5h, each with its bar.")
         .supportedFamilies([.systemSmall])
     }
 }
@@ -103,7 +103,7 @@ struct StripWidget: Widget {
             WidgetFrame(key: entry.face?.account.key) { StripFace(entry: entry) }
         }
         .configurationDisplayName("Strip")
-        .description("One account: 5h big, with Weekly under it.")
+        .description("One account: Weekly big, with 5h under it.")
         .supportedFamilies([.systemMedium])
     }
 }
@@ -152,7 +152,7 @@ struct LockWidget: Widget {
                 .widgetURL(entry.face.map { DeepLink.account($0.account.key) })
         }
         .configurationDisplayName("Cooldown")
-        .description("One account's 5h on the lock screen.")
+        .description("One account's Weekly and 5h on the lock screen.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }

@@ -1,3 +1,4 @@
+import CooldownCore
 import Foundation
 import SwiftUI
 
@@ -20,6 +21,32 @@ struct CardLayout: Codable, Equatable {
     var order: [CardID]
     var hidden: Set<CardID>
     var more: Set<CardID>
+    /// CCRM-96 (Weekly First): set once the order is moved in the layout sheet, so that order beats the Headline's
+    /// default. nil on a layout saved before v2.0 (v1.9 decodes past the extra key), where any order other than the
+    /// standard one counts as reordered.
+    var reordered: Bool? = nil
+
+    init(order: [CardID], hidden: Set<CardID>, more: Set<CardID>, reordered: Bool? = nil) {
+        self.order = order
+        self.hidden = hidden
+        self.more = more
+        self.reordered = reordered
+    }
+
+    /// Whether the user chose this order (rather than taking the default).
+    var userOrdered: Bool { reordered ?? (order != CardLayout.standard.order) }
+
+    /// The layout as drawn: a user's order as it is; otherwise the Headline's default (spec mobile §5, "the app's
+    /// default card order") — 5h first under Headline 5-hour, Weekly first otherwise. Credits keep their place.
+    func ordered(by headline: Headline) -> CardLayout {
+        guard !userOrdered else { return self }
+        var copy = self
+        let windows: [CardID] = HeadlineRule.lead(setting: headline, surface: .cardOrder, hasSession: true, sessionBinding: false) == .session
+            ? [.session, .weekly] : [.weekly, .session]
+        var it = windows.makeIterator()
+        copy.order = order.map { $0 == .credits ? $0 : (it.next() ?? $0) }
+        return copy
+    }
 
     /// Every card shown, in declaration order.
     static let standard = CardLayout(order: CardID.allCases, hidden: [], more: [])
@@ -41,12 +68,13 @@ struct CardLayout: Codable, Equatable {
             hidden.remove(first)
             more.remove(first)
         }
-        return CardLayout(order: order, hidden: hidden, more: more)
+        return CardLayout(order: order, hidden: hidden, more: more, reordered: reordered)
     }
 
     func moving(fromOffsets source: IndexSet, toOffset destination: Int) -> CardLayout {
         var copy = self
         copy.order.move(fromOffsets: source, toOffset: destination)
+        copy.reordered = true
         return copy.normalized
     }
     func hiding(_ id: CardID) -> CardLayout { var c = self; c.hidden.insert(id); return c.normalized }

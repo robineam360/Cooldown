@@ -451,3 +451,32 @@ chart note carries one generic line plus a separate "not enough history" line. S
    build story in user-facing copy.
 7. **Tracker IDs in the doc**: CLAUDE.md section 1 applies to every tracker ID, epic name
    in brackets on first use.
+
+## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6
+
+As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amends, which still describes v1.9.
+
+#### §4.2 Used / Left (the Mode table) — add a row and two notes
+| Vs pace | "−13%" / "+10%" / "0%" (minus U+2212) | `floor(elapsed − used + 1e-9)`; falls back to the Used figure when spent (≥ 99.5), unclocked or unread (core §6.1, mobile §5) |
+
+- iOS stores Vs pace as its own Bool `display.usageVsPace` (App Group); choosing it clears `display.usageLeft`, so a
+  v1.9 downgrade reads Used. `Display.mode`, `Display.setMode`, `ios/Shared/Display.swift`.
+- iOS: in Vs pace mode a headline figure carries a small "vs pace" where Left puts "left" (42% of the size, min
+  10 pt); bare figures (rings, Summary rows, Island compact) show the signed figure alone. **Companions always show
+  usage**, bare in Left mode ("5h 66%"), never a distance (`Display.usage`).
+
+#### §4.5 Pace phrase family — iOS column replaced (the ±3 dead-zone phrases are retired on iOS)
+| State | iOS open card | iOS folded line |
+|---|---|---|
+| Weekly, a band | "Slow down · ≈11%/day until Sun" (halves drop " until …") | "Slow down · ≈11%/day · resets Sun" |
+| Weekly over pace (Slow down, Nearly out) | whole line red | whole line red |
+| Weekly spent (≥ 99.5) | "Out until Sun 9:30 pm" red + "Opens again when the window resets" | "Out until Sun 9:30 pm" |
+| Allowance | "≈11%/day", "<1%/day", "40% left, 6h", "40% left, <1h" (under 30 min) | same |
+| 5h | no pace line; the "At this pace …" projection line stays; "Limit reached" at 100 | "Resets in 2h 20m · on track for ~69%" / "· runs out ~3:25 pm" (red) / "· Limit reached" |
+| Pace-mark caption (V1), under every in-app bar (5h, Weekly, model half, Summary row) | "39% pace mark · 13 over" / "· 19 under" / "· on it"; Left "61% pace mark · 13 over" / "· 10 to spare"; Vs pace "52% used · mark 39%"; 11.5 pt (10.5 in a half), first word bold; starts 5 pt right of the mark, else ends 5 pt left; none when spent, unclocked or unread | none |
+| Dashed room | under pace by ≥ 1 point, a 1 pt dashed outline (sub at 80%) from the fill to the mark, in-app bars only | |
+Source: `ios/Shared/CardContent.swift`, `ios/Shared/Charts.swift` (`UsageBar.showsRoom`, `PaceCaption`),
+`ios/Packages/CooldownCore/Sources/CooldownCore/PaceText.swift`. The signed Pace is never printed on iOS.
+
+#### Bars (§ "Height, app card" row) — append
+"Summary row bar 10 pt; one-line Summary row (6+ accounts) 7 pt, 50–110 pt wide."

@@ -9,6 +9,9 @@ struct UsageBar: View {
     let accent: Color
     var height: CGFloat = 8
     var dimmed = false
+    /// CCRM-97 (Pace Number) V1, in-app bars only: under pace, the room between the fill and the mark is drawn as a
+    /// dashed outline (spec mobile §5). Widgets have no caption and keep the plain bar.
+    var showsRoom = false
     @Environment(\.palette) private var p
 
     var body: some View {
@@ -29,6 +32,15 @@ struct UsageBar: View {
                         .fill(p.red).frame(width: max(fill - pw, 0)).offset(x: pw)
                 } else if fill > 0 {
                     Capsule().fill(colour).frame(width: fill)
+                }
+                if showsRoom, let pace, let pct, pct < pace - 1, !Pace.isSpent(pct) {
+                    let from = max(fill, 0), to = w * pace / 100
+                    if to - from > 2 {
+                        Rectangle()
+                            .strokeBorder(p.sub.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                            .frame(width: to - from, height: height)
+                            .offset(x: from)
+                    }
                 }
                 if let pace, pct != nil {
                     let ext = max(3, height * 0.45)
@@ -219,7 +231,7 @@ struct UsageRing: View {
                         .rotationEffect(.degrees(pace / 100 * 360))
                 }
                 VStack(spacing: 0) {
-                    Text(label ?? Display.number(pct))
+                    Text(label ?? Display.number(pct, pace: pace))
                         .font(.system(size: fontSize ?? s * 0.22, weight: .bold)).monospacedDigit()
                         .foregroundStyle(mono ?? (pct == nil ? p.sub : colour))
                         .minimumScaleFactor(0.6).lineLimit(1)
@@ -240,5 +252,43 @@ struct UsageRing: View {
 
     private func arc(_ from: Double, _ to: Double) -> some Shape {
         Circle().trim(from: from, to: to).rotation(.degrees(-90))
+    }
+}
+
+/// CCRM-97 (Pace Number) V1: the pace-mark caption under an in-app bar — "39% pace mark · 13 over", the mark's
+/// figure bold — starting 5 pt right of the mark, or ending 5 pt left of it when it would not fit (spec mobile §5,
+/// `PaceText.captionRightOfMark`).
+struct PaceCaption: View {
+    let text: String
+    let markPct: Double
+    var size: CGFloat = 11.5
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        CaptionLayout(markPct: markPct) { styled.font(.system(size: size)).foregroundStyle(p.txt).lineLimit(1).fixedSize() }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(text)
+    }
+
+    /// The first word ("39%", or "52%" in Vs pace mode) bold, the rest regular.
+    private var styled: Text {
+        guard let space = text.firstIndex(of: " ") else { return Text(text).bold() }
+        return Text(text[..<space]).bold() + Text(text[space...])
+    }
+}
+
+private struct CaptionLayout: Layout {
+    let markPct: Double
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let size = subviews.first?.sizeThatFits(.unspecified) ?? .zero
+        return CGSize(width: proposal.width ?? size.width, height: size.height)
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let caption = subviews.first else { return }
+        let size = caption.sizeThatFits(.unspecified)
+        let mark = bounds.width * markPct / 100
+        let right = PaceText.captionRightOfMark(barWidth: bounds.width, markPct: markPct, captionWidth: size.width)
+        let x = right ? mark + 5 : max(0, mark - 5 - size.width)
+        caption.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY), proposal: .unspecified)
     }
 }

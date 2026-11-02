@@ -18,7 +18,8 @@ struct SettingsScreen: View {
     @State private var colouring: Account?
     @State private var clearing: Account?
     @AppStorage(Display.Key.timeFormat, store: Prefs.defaults) private var timeFormat = "system"
-    @AppStorage(Display.Key.usageLeft, store: Prefs.defaults) private var usageLeft = false
+    @State private var usageMode = Display.mode.rawValue
+    @State private var openOnSummary = Prefs.openOnSummary
     @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
     @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
     @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
@@ -29,6 +30,9 @@ struct SettingsScreen: View {
             List {
                 Section("Accounts") {
                     ForEach(model.accounts) { account in
+                        // CCRM-96 (Weekly First) rev B §2: the row pushes the account's page (Plan, Accent colour,
+                        // Headline, Model limits, Details, Clear history); the touch-and-hold menu stays.
+                        NavigationLink { AccountPage(account: account) } label: {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
                             Text(account.label)
@@ -38,6 +42,7 @@ struct SettingsScreen: View {
                             let needsSignIn = model.states[account.key]?.reauthNeeded == true
                             Text(needsSignIn ? "Sign in again" : "Signed in").font(.system(size: 14))
                                 .foregroundStyle(needsSignIn ? p.orange : p.sub)
+                        }
                         }
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { newName = account.label; renaming = account }
@@ -93,16 +98,28 @@ struct SettingsScreen: View {
                     }
                     choice("Time format", $timeFormat, [("System", "system"), ("12-hour", "12"), ("24-hour", "24")],
                            note: "Times shown like \(CardContent.dayClock(Self.sampleTime, Self.sampleTime, Display.use24h, .current)).")
-                    choice("Usage display", $usageLeft, [("Used", false), ("Left", true)],
+                    // CCRM-100 (Vs Pace Display): a third value. Stored as Display.setMode writes it (v1.9 then reads Used).
+                    choice("Usage display", Binding(get: { usageMode }, set: { usageMode = $0; Display.setMode(PaceText.Mode(rawValue: $0) ?? .used) }),
+                           [("Used", PaceText.Mode.used.rawValue), ("Left", PaceText.Mode.left.rawValue), ("Vs pace", PaceText.Mode.vsPace.rawValue)],
                            note: "How percentages read on every surface. Bars and colours always show what's spent. "
-                               + (usageLeft ? "Shows “53% left”: what remains of each window." : "Shows “47% used”: what each window has consumed."))
+                               + (usageMode == PaceText.Mode.left.rawValue ? "Shows “53% left”: what remains of each window."
+                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “+10%” — how far under the pace mark you are (“−20%”: over it)."
+                                  : "Shows “47% used”: what each window has consumed."))
+                    // CCRM-98 (Summary Tab) P2: shown only with two or more accounts, on by default.
+                    if SummaryRank.tabShown(accountCount: model.accounts.count) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Toggle("Open on the summary", isOn: Binding(get: { openOnSummary }, set: { openOnSummary = $0; Prefs.openOnSummary = $0 }))
+                            Text("With two or more accounts, start on the All tab. Off: start on the last account you looked at.")
+                                .font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                    }
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Density")
                         Picker("Density", selection: $density) {
                             Text("Comfortable").tag(Density.comfortable.rawValue); Text("Compact").tag(Density.compact.rawValue)
                         }
                         .pickerStyle(.segmented)
-                        Text("Comfortable opens the 5-hour chart and keeps the rest a tap away. Compact folds each card to a title, bar and one line — tap it to open the chart in place.")
+                        Text("Comfortable opens the first card's chart and keeps the rest a tap away. Compact folds each card to a title, bar and one line — tap it to open the chart in place.")
                             .font(.system(size: 13)).foregroundStyle(p.sub)
                     }
                     VStack(alignment: .leading, spacing: 8) {
@@ -173,6 +190,95 @@ extension SettingsScreen {
             .pickerStyle(.segmented)
             .onChange(of: value.wrappedValue) { model.displayChanged() }
             Text(note).font(.system(size: 13)).foregroundStyle(p.sub)
+        }
+    }
+}
+
+/// CCRM-96 (Weekly First) rev B §2 and CCRM-99 (Model Limits Toggle): one account's page — Plan, Accent colour,
+/// Headline (Weekly · 5-hour · Auto; greyed with its reason on a plan with no 5h), Show model limits (only while the
+/// plan reports one), Details and Clear usage history.
+struct AccountPage: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+    let account: Account
+    @State private var headline = Headline.default
+    @State private var modelLimits = true
+    @State private var colouring = false
+    @State private var details = false
+    @State private var clearing = false
+
+    var body: some View {
+        let usage = model.usage(account.key)
+        let hasSession = usage?.session != nil || usage == nil
+        let caps = usage?.modelCaps ?? []
+        List {
+            Section("Account") {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Plan")
+                    Text(model.states[account.key]?.plan ?? "—").font(.system(size: 15)).foregroundStyle(p.sub)
+                }
+                Button { colouring = true } label: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Accent colour…").foregroundStyle(p.ink)
+                        Circle().fill(account.accent(scheme)).frame(width: 12, height: 12)
+                    }
+                }
+            }
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Lead with")
+                    Text("What widgets, the lock screen, the Live Activity, the iPad sidebar and the card order show first.")
+                        .font(.system(size: 13)).foregroundStyle(p.sub)
+                    Picker("Lead with", selection: Binding(get: { hasSession ? headline : .weekly }, set: { new in
+                        headline = new
+                        Prefs.setHeadline(account.key, new)
+                        model.displayChanged()
+                    })) {
+                        Text("Weekly").tag(Headline.weekly); Text("5-hour").tag(Headline.fiveHour); Text("Auto").tag(Headline.auto)
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(!hasSession)
+                }
+            } header: { Text("Headline") } footer: {
+                Text(hasSession ? "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets."
+                     : "This plan has no 5-hour window, so Weekly is always the headline.")
+            }
+            if !caps.isEmpty {
+                let names = caps.map { $0.modelName.replacingOccurrences(of: "Claude ", with: "") }
+                Section("Model limits") {
+                    Toggle(isOn: Binding(get: { modelLimits }, set: { on in
+                        modelLimits = on
+                        Prefs.setShowModelLimits(account.key, on)
+                        model.displayChanged()
+                    })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Show model limits")
+                            Text(modelLimits
+                                 ? caps.map { "\($0.modelName.replacingOccurrences(of: "Claude ", with: "")) · \(Int($0.window.percent ?? 0))% this week" }.joined(separator: ", ")
+                                 : "Hidden: \(names.joined(separator: ", ")). The limit still applies to that model; Cooldown just stops drawing it.")
+                                .font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                    }
+                }
+            }
+            Section("Usage") {
+                Button("Details…") { details = true }.foregroundStyle(p.ink)
+                Button("Clear usage history…") { clearing = true }.foregroundStyle(p.red)
+            }
+        }
+        .navigationTitle(account.label)
+        .onAppear {
+            headline = Prefs.headline(account.key)
+            modelLimits = Prefs.showModelLimits(account.key)
+        }
+        .sheet(isPresented: $colouring) { AccentSheet(account: account) }
+        .sheet(isPresented: $details) { AccountDetailsSheet(account: account) }
+        .alert("Clear usage history?", isPresented: $clearing) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear", role: .destructive) { model.clearHistory(account.key) }
+        } message: {
+            Text("This clears, for “\(account.label)” only:\n•  8 days of trend history\n•  a year of session and weekly history\n\nCurrent readings and the sign-in stay.")
         }
     }
 }

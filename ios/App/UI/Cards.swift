@@ -30,8 +30,11 @@ struct WindowCard: View {
     var body: some View {
         CardBox {
             header
-            UsageBar(pct: content.pct, pace: content.pace, accent: accent, height: 11, dimmed: dimmed)
+            UsageBar(pct: content.pct, pace: content.pace, accent: accent, height: 11, dimmed: dimmed, showsRoom: true)
                 .padding(.top, 12)
+            if let caption = content.caption, let mark = content.pace {
+                PaceCaption(text: caption, markPct: mark).padding(.top, 1)
+            }
             if expanded || !collapsible {
                 if let chart = content.chart {
                     TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
@@ -41,9 +44,11 @@ struct WindowCard: View {
                 if content.notStarted {
                     Text(content.resetsIn).font(.system(size: 14.5)).foregroundStyle(p.sub).padding(.top, 10)
                 } else {
-                    Text(content.paceLine)
-                        .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
-                        .font(.system(size: 14.5)).padding(.top, 6)
+                    if !content.paceLine.isEmpty {
+                        Text(content.paceLineFull)
+                            .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
+                            .font(.system(size: 14.5)).padding(.top, 6)
+                    }
                     if let line = content.projectionLine {
                         Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
                     }
@@ -68,7 +73,7 @@ struct WindowCard: View {
             HStack(spacing: 8) {
                 Text(content.title).foregroundStyle(p.txt)
                 Spacer()
-                Display.pctText(content.pct, size: 19)
+                Display.pctText(content.pct, pace: content.pace, size: 19)
                     .font(.system(size: 19, weight: .bold)).monospacedDigit()
                     .foregroundStyle(dimmed ? p.sub : ((content.pct ?? 0) >= 100 ? p.red : p.ink))
                 if collapsible {
@@ -127,18 +132,23 @@ struct WeeklyCard: View {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Display.pctText(c.pct, size: 17).font(.system(size: 17, weight: .bold)).monospacedDigit()
-                    .foregroundStyle(dimmed ? p.sub : p.ink)
+                Display.pctText(c.pct, pace: c.pace, size: 17).font(.system(size: 17, weight: .bold)).monospacedDigit()
+                    .foregroundStyle(dimmed ? p.sub : (Pace.isSpent(c.pct) ? p.red : p.ink))
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
             .font(.system(size: 16))
-            UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 9, dimmed: dimmed).padding(.top, 10)
+            UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 9, dimmed: dimmed, showsRoom: true).padding(.top, 10)
+            if let caption = c.caption, let mark = c.pace {
+                PaceCaption(text: caption, markPct: mark, size: short ? 10.5 : 11.5).padding(.top, 1)
+            }
             if expanded || !collapsible {
                 if let chart = c.chart {
                     TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
                         .frame(height: chartHeight).padding(.top, 10)
                 }
-                if !c.notStarted {
-                    Text(c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5)).padding(.top, 6)
+                if !c.notStarted, !c.paceLine.isEmpty {
+                    Text(short ? c.paceLine : c.paceLineFull).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5))
+                        .fixedSize(horizontal: false, vertical: true).padding(.top, 6)
                 }
                 if let line = c.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 13.5)).padding(.top, 3)
@@ -171,6 +181,32 @@ struct CreditsCard: View {
             }
             .font(.system(size: 16))
         }
+    }
+}
+
+/// CCRM-96 (Weekly First) F1: shown once above the cards after the update, on installs that had an account before it.
+struct WeeklyFirstNoticeView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Weekly now leads").font(.system(size: 15, weight: .semibold)).foregroundStyle(p.ink)
+            Text("The weekly limit is the one every plan has, so it's now the big number everywhere, with 5h beside it. Prefer 5h on top?")
+                .font(.system(size: 14)).foregroundStyle(p.txt)
+            HStack(spacing: 10) {
+                Button("Keep Weekly") { model.answerNotice(keepFiveHourFirst: false) }
+                    .padding(.horizontal, 14).padding(.vertical, 7)
+                    .background(Provider.claude.accent(scheme), in: Capsule()).foregroundStyle(.black)
+                Button("Keep 5h first") { model.answerNotice(keepFiveHourFirst: true) }
+                    .padding(.horizontal, 14).padding(.vertical, 7)
+                    .overlay(Capsule().stroke(p.line, lineWidth: 1)).foregroundStyle(p.ink)
+            }
+            .font(.system(size: 14.5, weight: .semibold)).buttonStyle(.plain).padding(.top, 8)
+        }
+        .padding(.horizontal, 13).padding(.vertical, 11)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(p.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 
@@ -216,11 +252,14 @@ struct AccountCards: View {
     @State private var open: Set<CardID>?
     @State private var moreOpen = false
 
+    /// Comfortable opens the first window card and folds the second on iPhone (both open on iPad); since CCRM-96
+    /// (Weekly First) the first is Weekly unless the Headline is 5-hour or the cards were reordered.
     private var defaultOpen: Set<CardID> {
         if Density(rawValue: density) == .compact { return [] }
         // A weekly-only plan has no 5h card: its Weekly card opens in its place.
         if model.usage(account.key)?.session == nil { return [.weekly] }
-        return twoAcross ? [.session, .weekly] : [.session]
+        if twoAcross { return [.session, .weekly] }
+        return Set(model.drawnLayout(account.key).order.filter { $0 != .credits }.prefix(1))
     }
 
     var body: some View {
@@ -228,8 +267,9 @@ struct AccountCards: View {
         let state = model.states[account.key] ?? AccountState()
         let snapshot = model.snapshots[account.key]
         let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs)
-        let layout = model.layout(account.key)
+        let layout = model.drawnLayout(account.key)
         VStack(spacing: 12) {
+            if model.noticeOwed { WeeklyFirstNoticeView() }
             if let notice { NoticeView(notice: notice, onAction: onSignIn) }
             if state.lastKind != "plan", model.usage(account.key) != nil {
                 if twoAcross {
@@ -281,7 +321,8 @@ struct AccountCards: View {
         case .weekly:
             if let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,
                                             history: history, nowMs: model.nowMs, use24h: Display.use24h) {
-                let cap = usage?.modelCaps.first.flatMap {
+                // CCRM-99 (Model Limits Toggle): hidden, All takes the card's full width.
+                let cap = usage?.modelCaps.first.flatMap { Prefs.showModelLimits(account.key) ? $0 : nil }.flatMap {
                     CardContent.window(title: $0.modelName.replacingOccurrences(of: "Claude ", with: ""), window: $0.window,
                                        kind: HistoryStats.weeklyKind, history: [], nowMs: model.nowMs, use24h: Display.use24h)
                 }

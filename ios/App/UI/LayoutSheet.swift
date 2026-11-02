@@ -1,3 +1,4 @@
+import CooldownCore
 import SwiftUI
 
 /// CCRM-94 (iOS App): the layout sheet, ported from Android's (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)) as an iOS
@@ -10,7 +11,7 @@ struct LayoutSheet: View {
     let accountKey: String
 
     var body: some View {
-        let layout = model.layout(accountKey)
+        let layout = model.drawnLayout(accountKey)
         let available = self.available
         NavigationStack {
             List {
@@ -41,7 +42,7 @@ struct LayoutSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Reset layout") { model.setLayout(.standard, for: accountKey) }
+                    Button("Reset layout") { var reset = CardLayout.standard; reset.reordered = false; model.setLayout(reset, for: accountKey) }
                 }
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
@@ -86,12 +87,13 @@ struct LayoutSheet: View {
 
     /// Reorders within one section; the other section's cards keep their places in the shared order.
     private func move(within behindMore: Bool, _ source: IndexSet, _ destination: Int) {
-        let layout = model.layout(accountKey)
+        let layout = model.drawnLayout(accountKey)
         var section = layout.order.filter { layout.more.contains($0) == behindMore }
         section.move(fromOffsets: source, toOffset: destination)
         var it = section.makeIterator()
         var copy = layout
         copy.order = layout.order.map { layout.more.contains($0) == behindMore ? (it.next() ?? $0) : $0 }
+        copy.reordered = true
         model.setLayout(copy, for: accountKey)
     }
 }

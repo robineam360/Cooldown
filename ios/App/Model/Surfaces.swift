@@ -29,7 +29,9 @@ enum LiveActivities {
     /// running, or a sign-in to fix.
     static func rows(_ faces: [Face]) -> [CooldownActivityAttributes.Row] {
         let keys = Prefs.liveActivityKeys ?? faces.prefix(2).map(\.account.key)
-        return faces.map(\.leading).filter { keys.contains($0.account.key) && ($0.reset != nil || $0.status == .signIn) }
+        // CCRM-96 (Weekly First): each row leads with its account's Headline (Weekly by default; Auto takes over
+        // while the 5h binds), the other window as the thin line.
+        return faces.map { $0.lead(for: .notification) }.filter { keys.contains($0.account.key) && ($0.reset != nil || $0.status == .signIn) }
             .prefix(2).map(CooldownActivityAttributes.Row.init)
     }
 
@@ -63,8 +65,11 @@ enum LiveActivities {
             }
             return
         }
-        // Stale when the first window resets, so iOS greys it if the app hasn't refreshed by then.
-        let stale = rows.compactMap(\.reset).min()
+        // Stale when the first window resets (the 5h companion's included), so iOS greys it if the app hasn't
+        // refreshed by then.
+        let companionResets = faces.map { $0.lead(for: .notification) }.filter { f in rows.contains { $0.key == f.account.key } }
+            .compactMap(\.companionReset)
+        let stale = (rows.compactMap(\.reset) + companionResets).filter { $0 > .now }.min()
         let content = ActivityContent(state: CooldownActivityAttributes.ContentState(rows: rows, ended: nil), staleDate: stale)
         if let activity = running.first {
             await activity.update(content)

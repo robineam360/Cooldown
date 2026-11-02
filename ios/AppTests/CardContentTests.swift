@@ -20,16 +20,18 @@ struct CardContentTests {
                            history: history, nowMs: now, timeZone: utc)
     }
 
-    @Test("within 3 points of the even-pace line is on pace; beyond it, below or above")
+    /// CCRM-97 (Pace Number): the 5h session gets no Pace and no pace-gap line (spec mobile §5) — its line is the
+    /// projection; the bar keeps its red slice past the mark (`over`, core §5's 3 points).
+    @Test("the 5h card has no pace line; the bar still turns red past the mark")
     func paceLine() throws {
-        #expect(try #require(content(48, elapsed: 0.46)).paceLine == "On even pace")
+        #expect(try #require(content(48, elapsed: 0.46)).paceLine.isEmpty)
         let below = try #require(content(24, elapsed: 0.46))
-        #expect(below.paceLine == "22% below even pace")
-        #expect(!below.paceLineAlarm)
+        #expect(below.paceLine.isEmpty && !below.paceLineAlarm && !below.over)
+        #expect(below.caption == "46% pace mark · 22 under")
         let above = try #require(content(62, elapsed: 0.40))
-        #expect(above.paceLine == "22% above even pace")
-        #expect(above.paceLineAlarm)
+        #expect(above.paceLine.isEmpty)
         #expect(above.over)
+        #expect(above.caption == "40% pace mark · 22 over")
     }
 
     @Test("a window with no reset time hasn't started: the card stays, saying so; a missing window drops the card")

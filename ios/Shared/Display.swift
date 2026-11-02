@@ -10,7 +10,10 @@ enum Display {
 
     enum Key {
         static let timeFormat = "display.timeFormat"     // "system" | "12" | "24"
-        static let usageLeft = "display.usageLeft"       // Bool
+        static let usageLeft = "display.usageLeft"       // Bool — v1.9's key, still read by v1.9 after a downgrade
+        /// RUNBOOK-v2.0 Step 3's iOS storage rule: Vs pace is its own Bool, so v1.9 (which reads only `usageLeft`)
+        /// sees Used when it is on — choosing Vs pace clears `usageLeft`.
+        static let usageVsPace = "display.usageVsPace"   // Bool
         static let chartDown = "display.chartDown"       // Bool
         static let clockFirst = "display.clockFirst"     // Bool
         static let redPastPace = "display.redPastPace"   // Bool, default true
@@ -28,7 +31,16 @@ enum Display {
         default: !(DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "h a").contains("a")
         }
     }
-    static var usageLeft: Bool { defaults.bool(forKey: Key.usageLeft) }
+    /// CCRM-100 (Vs Pace Display): Used · Left · Vs pace.
+    static var mode: PaceText.Mode {
+        if defaults.bool(forKey: Key.usageVsPace) { return .vsPace }
+        return defaults.bool(forKey: Key.usageLeft) ? .left : .used
+    }
+    static func setMode(_ mode: PaceText.Mode) {
+        defaults.set(mode == .left, forKey: Key.usageLeft)
+        defaults.set(mode == .vsPace, forKey: Key.usageVsPace)
+    }
+    static var usageLeft: Bool { mode == .left }
     static var chartDown: Bool { defaults.bool(forKey: Key.chartDown) }
     static var clockFirst: Bool { defaults.bool(forKey: Key.clockFirst) }
     static var redPastPace: Bool { defaults.object(forKey: Key.redPastPace) as? Bool ?? true }
@@ -39,24 +51,37 @@ enum Display {
     static func creditsVisible(_ key: String) -> Bool { defaults.object(forKey: Key.credits(key)) as? Bool ?? true }
     static func setCreditsVisible(_ on: Bool, for key: String) { defaults.set(on, forKey: Key.credits(key)) }
 
-    // MARK: Used / Left — the words flip, the bars never do (they always show what's spent)
+    // MARK: Used / Left / Vs pace — the words flip, the bars never do (they always show what's spent)
 
-    /// The figure a readout shows: what's used, or what's left.
+    /// The usage figure alone, in Used or Left terms (never a distance): 62 or 38. The 5h and Weekly companions
+    /// always show usage, bare in Left mode (spec mobile §5).
     static func value(_ pct: Double?) -> Int? {
         pct.map { usageLeft ? max(0, 100 - Int($0)) : Int($0) }
     }
-    /// "62%" or "38% left" as a plain string, for text-only surfaces.
-    static func pct(_ pct: Double?) -> String {
+    /// Whether the figure for (`pct`, `pace`) is a distance from the pace mark (Vs pace mode and not a fallback).
+    static func isDistance(_ pct: Double?, pace: Double?) -> Bool {
+        mode == .vsPace && Pace.vsPace(usedPct: pct, elapsedPct: pace) != nil
+    }
+    /// The figure without any word: "62%", "38%" (Left), "+10%" / "−20%" (Vs pace; the usage when it falls back).
+    static func number(_ pct: Double?, pace: Double?) -> String {
+        if mode == .vsPace { return PaceText.vsPaceFigure(usedPct: pct, elapsedPct: pace) }
+        return usage(pct)
+    }
+    /// A companion's figure: always usage ("5h 34%"), bare in Left mode.
+    static func usage(_ pct: Double?) -> String { value(pct).map { "\($0)%" } ?? "—" }
+    /// "62%", "38% left" or "−13% vs pace" as a plain string, for text-only surfaces.
+    static func pct(_ pct: Double?, pace: Double?) -> String {
+        if isDistance(pct, pace: pace) { return "\(number(pct, pace: pace)) vs pace" }
         guard let v = value(pct) else { return "—" }
         return usageLeft ? "\(v)% left" : "\(v)%"
     }
-    /// The figure without the word, for a secondary readout beside a headline that already says "left".
-    static func number(_ pct: Double?) -> String { value(pct).map { "\($0)%" } ?? "—" }
-    /// A headline figure: "62%", or "38%" with a smaller "left" after it so big numbers keep their size.
-    static func pctText(_ pct: Double?, size: CGFloat) -> Text {
+    /// A headline figure: "62%", or "38%" with a smaller "left" (or "vs pace") after it so big numbers keep their size.
+    static func pctText(_ pct: Double?, pace: Double?, size: CGFloat) -> Text {
+        let small = Font.system(size: max(10, size * 0.42), weight: .semibold)
+        if isDistance(pct, pace: pace) { return Text("\(number(pct, pace: pace))\(Text(" vs pace").font(small))") }
         guard let v = value(pct) else { return Text("—") }
         guard usageLeft else { return Text("\(v)%") }
-        return Text("\(v)%\(Text(" left").font(.system(size: max(10, size * 0.42), weight: .semibold)))")
+        return Text("\(v)%\(Text(" left").font(small))")
     }
 
     // MARK: Accent: the account's own, else the theme colour, else the provider's (Android's three levels)

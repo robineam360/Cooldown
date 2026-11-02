@@ -503,3 +503,72 @@ Differs from Android: iOS has no synthetic band, and a weekly-only plan swaps th
 | Share card | `A/share/ShareCard.kt`, `A/share/ChartBitmap.kt` | `I/App/UI/ShareCard.swift` |
 
 Shared numbers (severity breakpoints, projection, pace, dead zone, history) are in `spec/core/BEHAVIOR-SPEC.md`; cadence, reset pings and conditions are in `spec/mobile/BEHAVIOR-MOBILE.md`.
+
+## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6
+
+As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amends, which still describes v1.9.
+
+#### §2.3 Account tabs — add
+iOS: with two or more accounts an **"All"** tab comes first (icon `text.alignleft`, ink underline, counts as one tab
+for the three-across / scroll rule). iPad landscape: an **"All accounts"** row tops the sidebar (count on the right,
+fill when selected). iPad portrait (pinned + tabs): "All" is the first of the tabs below the pinned account and
+shows the Summary there. Launch: All when Open on the summary is on and 2+ accounts; otherwise the last account
+looked at (stored `lastAccount`), else the first. `ios/App/UI/MainScreens.swift`, `AppModel.launchKey`.
+
+#### §2.4 Cards, in order — iOS row
+"Default order: Weekly, then 5h (Headline 5-hour: 5h first); a layout moved in the sheet keeps its order (flag
+`reordered` in the stored layout; a v1.9 layout with a non-standard order counts as moved). Show/hide/fold never
+make the order the user's; Reset layout hands it back to the Headline. Comfortable opens the first window card on
+iPhone (both on iPad)." `CardLayout.ordered(by:)`, `AppModel.drawnLayout`.
+
+#### §2.4.4 5-hour card — iOS
+Remove "N% below/above even pace" / "On even pace". Under the bar: the V1 caption and dashed room. Open: the
+projection line, then the reset row. Folded: "Resets in 2h 20m · on track for ~69%" (red with "runs out ~3:25 pm").
+
+#### §2.4.5 7-day card — iOS
+Each half (All, model cap): bar, V1 caption, chart, band line ("Slow down · ≈11%/day", full width "… until Fri"),
+projection line, reset. Spent: red figure, "Out until Sun 9:30 pm", no caption. **Show model limits off**
+(per account, default on): no model half, All takes the full width.
+
+#### §2.6 Notices above the cards — add
+"Weekly now leads" (CCRM-96 F1): title 15 pt semibold, body "The weekly limit is the one every plan has, so it's
+now the big number everywhere, with 5h beside it. Prefer 5h on top?", buttons "Keep Weekly" (Claude-accent capsule,
+black text) and "Keep 5h first" (outlined). Card on `fill`, 14 pt radius. Shown above the cards and above the
+Summary until answered; settled at the first v2.0 launch (`weeklyFirstNotice` = pending only when accounts
+existed). "Keep 5h first" sets every account's Headline to 5-hour.
+
+#### New §2.8 The Summary (All tab) — iOS
+List card "Weekly · most room first", rows by `SummaryRank` (eligible by Pace, held, spent, no reading). Row: mark
+18 · name 15 · plan chip · companion 12 ("no 5h" / "5h 34%" / held "5h 93% · back 3:40 pm" bold orange) · figure
+17 bold in the severity colour (Usage display mode, no "vs pace" word); bar 10 pt with dashed room; V1 caption;
+"Room to spare · ≈22%/day · resets Fri" 13 pt (spent "Out until Thu 8:00 am", row at 60%; "No reading"). From
+six accounts, one-line rows: rank disc 16 pt in the accent, name, bar, word ("Slow down", "5h · 3:40 pm",
+"Out · Thu", "No reading"), figure. Pace map card below (iPhone 230 pt; iPad two columns, list left, map 340 pt
+right, title "All accounts" 30 pt bold): over-pace triangle red 8%, 0/50/100% lines, dashed even-pace diagonal
+labelled "even pace", "over pace"/"room to spare", axis "week start · each account's own week · reset"; per account
+its week's trail (accent 70%, 1.4 pt) and a 9 pt dot named in bold 11 pt; spent: ring with ×; 6+: numbered dots;
+no reading: off the map. Tapping a row opens that account. `ios/App/UI/Summary.swift`.
+
+#### §2.2 iPad sidebar
+Segments "Headline · Weekly · 5h", default Headline (a stored v1.9 choice is kept). Headline: each row shows its
+account's lead window (Auto takes over while 5h binds) and names it under the figure ("Weekly"/"5h"; a binding 5h
+tag is bold orange). Weekly and 5h segments as v1.9.
+
+#### §6.2 Accounts — iOS
+The row pushes an account page: **Account** (Plan; Accent colour… with its dot), **Headline** ("Lead with",
+caption "What widgets, the lock screen, the Live Activity, the iPad sidebar and the card order show first.",
+segmented Weekly · 5-hour · Auto; footer "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to
+run out before it resets."; a plan with no 5h: control greyed, footer "This plan has no 5-hour window, so Weekly is
+always the headline."), **Model limits** (only while the reading has a model cap: "Show model limits", subtitle
+"Fable · 30% this week" / "Hidden: Fable. The limit still applies to that model; Cooldown just stops drawing it."),
+**Usage** (Details…, Clear usage history… in red). The touch-and-hold menu is unchanged.
+
+#### §6.4 Appearance — iOS
+Usage display: "Used · Left · Vs pace", Vs pace note "Shows “+10%” — how far under the pace mark you are (“−20%”:
+over it)." New "Open on the summary" switch (2+ accounts only, default on), subtitle "With two or more accounts,
+start on the All tab. Off: start on the last account you looked at." Density note now "Comfortable opens the first
+card's chart and keeps the rest a tap away. …"
+
+#### §8 Share card — iOS
+The 5h row's line is now its projection ("On track for ~69%"); the Weekly row reads the band words. Layout otherwise
+unchanged (5h row still above Weekly — not in any v2.0 wireframe).
