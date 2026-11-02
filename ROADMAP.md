@@ -1647,7 +1647,8 @@ score. Robin's decisions, 2026-11-02, one question at a time:
 2. **Pace in words: band + daily allowance** — "Slow down · ≈11%/day to last". The signed number lives
    in the app card's detail only.
 3. **Status-bar ring (and later the desktop menu-bar item): Weekly, and 5h takes over while it blocks**
-   — 5h ≥ 90%, spent, or projected to hit 100% before its reset; back to Weekly when it resets.
+   — 5h past 90% (the orange step), spent, or projected to hit 100% before its reset; back to
+   Weekly when it resets. The rule is BEHAVIOR-SPEC §6.2's `sessionBinding`.
 4. **"Use next" ranking across accounts: later**, its own item under CCRM-6 (Multi-Account).
 5. **Even pace spans all 7 days** — no weekdays-only option for now.
 6. **The Headline setting is per account**: Weekly (default) · 5-hour · Auto.
@@ -1659,8 +1660,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Status:** Decided 2026-11-02 · wireframes next.
 - **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
   the pinned notification (both halves), the QS tile, the widgets' default window, the iOS Live Activity
-  and lock-screen widgets, and the in-app card order. **Auto** = Weekly, except while 5h is ≥ 90%, spent,
-  or projected (§3) to hit 100% before its reset. The status-bar ring always follows the Auto rule.
+  and lock-screen widgets, and the in-app card order. **Auto** = Weekly, except while 5h binds (BEHAVIOR-SPEC
+  §6.2: past 90%, or projected (§3) to hit 100% before its reset, unless the week is spent). The status-bar ring always follows the Auto rule.
   An account with no 5h shows Weekly whatever the setting says. Widgets keep their own per-widget
   window choice. Replaces CCRM-54's "headline = `session` if present, else `weekly`".
 - **Spec:** the Auto rule and the "no 5h → Weekly" fallback go into `spec/core/BEHAVIOR-SPEC.md` with

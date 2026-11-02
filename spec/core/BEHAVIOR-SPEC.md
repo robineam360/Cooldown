@@ -288,6 +288,9 @@ counts as above or below it. Shared by the chart's wash and the pace readout so 
 never disagree — without it, the verdict and its colour flip on every poll while usage
 hovers on the line.
 
+On weekly-length windows this verdict is to be retired by §6.1's Pace bands (CCRM-97 (Pace
+Number)); it stays live until a client ships that section, and stays on the 5-hour session.
+
 Source: `Palette.kt:22-63, 192-201`.
 
 ---
@@ -304,6 +307,81 @@ Source: `Palette.kt:192-201`.
 
 How each platform draws the line, the overshoot and a spent window is presentation and lives in
 that platform's design, not here.
+
+---
+
+## 6.1 The Pace number — where a weekly window stands against even burn
+
+**Status:** decided 2026-11-02 (CCRM-97 (Pace Number)); no client implements it yet. Until one
+does, §5's 3-point dead zone stays the live verdict; when a client ships this section it retires
+that verdict **on weekly-length windows only**, so a surface never shows two different "% pace"
+figures. The even-pace line (§6) and the chart's amber wash are geometry and stay as they are.
+Origin: the ModelMesh [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md),
+chosen there by simulation over the ratio and the gap.
+
+**Applies to** the weekly window and the weekly model caps (7-day length). **Not** to the 5-hour
+session: near its reset it swings too hard to be read, and the session is a gate, not a budget
+(§6.2).
+
+**Inputs:** `usedPct` (null = no reading), `elapsedPct` from §6, `msUntilReset`.
+With `q = 100 − usedPct` (quota left) and `r = 100 − elapsedPct` (time left):
+
+    pace = (r − q) ÷ max(r, q) × 100        q ≤ 0 → +100        r ≤ 0 → −100
+
+Bounded −100…+100, 0 is even burn, positive is over pace. `q ≤ 0` is checked first.
+
+**Bands**, first match wins:
+
+| Band | Rule |
+|---|---|
+| `spent` | `usedPct ≥ 99.5` (§7.2's exhausted line), whatever the pace |
+| `onPace` | `|pace| ≤ 5` — inclusive |
+| `useBeforeReset` | `pace < −50` — strict |
+| `roomToSpare` | `−50 ≤ pace < −5` |
+| `nearlyOut` | `pace > +50` — strict |
+| `slowDown` | `+5 < pace ≤ +50` |
+
+The band names are identifiers; each family words them (mobile: BEHAVIOR-MOBILE §5).
+
+**The allowance** — the even rate that lands on exactly 100% at the reset:
+
+| Case | Result |
+|---|---|
+| `spent`, or `msUntilReset ≤ 0` | none |
+| `msUntilReset < 24 h` | `hours` mode: `pctLeft = q`, `msLeft = msUntilReset` |
+| otherwise | `perDay` mode: `pctPerDay = q ÷ (msUntilReset ÷ 86 400 000)` |
+
+**No verdict** when there is no reading (`usedPct` null) or no reset instant (the window has not
+started, §1.1's phantom rule). There is deliberately **no young-window floor**: unlike §3.1's
+projection, Pace is calm at a window's start (2% used two hours in is `onPace`), so a weekly line
+never goes silent while a reading exists.
+
+Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `pace`, `allowance`.
+
+---
+
+## 6.2 The session as a gate — when the 5-hour window binds
+
+**Status:** decided 2026-11-02 (CCRM-96 (Weekly First)); no client implements it yet.
+
+The weekly window is the only limit every plan of every provider carries; the 5-hour session is
+absent on several (Claude Ultra since 2026-10-30, ChatGPT Pro since 2026-07-12). So surfaces lead
+with Weekly, and the session matters only while it is **binding** — the limit about to stop the
+user. A surface with room for one window (a menu-bar item, a status-bar gauge) switches to the
+session exactly while this predicate holds; how each family exposes it is family layer.
+
+`sessionBinding` is true when **all** of:
+
+1. the account has a session window with a reading, and
+2. the weekly window is **not** `spent` (§6.1) — a spent week outranks the session, which cannot
+   be used anyway, and
+3. **either** session `percent > 90` (strict, the orange step in §5, so the switch and the colour
+   change coincide; a spent session is included), **or** §3's `hitsLimitAtMs` is non-null for the
+   session.
+
+A missing weekly reading does not block the predicate (condition 2 reads it as not spent).
+
+Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `sessionBinding`.
 
 ---
 

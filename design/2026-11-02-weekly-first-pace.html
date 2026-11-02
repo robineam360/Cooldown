@@ -190,7 +190,7 @@
   <p class="sub">
     5h at 93%, back at 3:40 pm. With the Headline on <b>Weekly</b> (default), the companion takes the bar
     colour's severity and bold, so it can't be missed. With the Headline on <b>Auto</b>, the 5h becomes the
-    headline until it resets. The rule is: 5h ≥ 90%, spent, or projected to hit 100% before its reset.
+    headline until it resets. The rule is: 5h past 90%, or projected to hit 100% before its reset (unless the week is spent).
   </p>
   <div class="row" id="loud"></div>
 
@@ -214,7 +214,7 @@
     The gauge geometry is untouched (CCRM-83 (Ring Renderer): extent, usage, red slice, hub, needle, spent ×).
     Only its input changes: <b>Weekly, until 5h blocks</b>. The needle is the clock of whichever window it draws,
     so a takeover shows as the needle jumping from Wednesday's position to "5h nearly over". By the rule, 5h is
-    always ≥ 90% (orange or red) or on course to run out when it takes over. That colour is the signal, and the
+    always past 90% (orange or red) or on course to run out when it takes over. That colour is the signal, and the
     notification title names the window. No extra glyph fits in ~14 dp, and none is proposed.
     If the account's Headline is set to <b>5-hour</b>, the gauge shows 5h throughout.
   </p>
@@ -292,7 +292,7 @@ function allowance(used, hoursLeft) {
   const d = q / (hoursLeft / 24);
   return d < 1 ? '<1%/day' : `≈${Math.round(d)}%/day`;
 }
-function sev(p, accent) { return p >= 100 ? '#FF5252' : p >= 90 ? '#FFA726' : p >= 80 ? '#F5D35A' : accent; }
+function sev(p, accent) { return p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : accent; } // spec §5: ≥100, >90, >80
 const mark = (id, color, s = 14) => `<svg width="${s}" height="${s}" style="color:${color};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
 function bar(p, tick, color, h = 13, light = false) {
   const track = light ? '#D6D6D6' : '#3A3A3A';
@@ -342,7 +342,7 @@ function nc({ light = false, mk = 'mkClaude', ac = CL, title, pct, tick, sub, su
 const crow = (l, r, v, tick, ac) => `<div class="crow"><div class="ch"><span class="cl">${l}</span><span class="cr">${r}</span><span class="cv">${v}%</span></div>${bar(v, tick, sev(v, ac))}</div>`;
 const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p>${body}${note ? `<p class="note">${note}</p>` : ''}</div>`;
 const T5_GONE = 53.3; // 5h: 2h 20m left of 5h
-const companion = (p, ac) => p >= 90 ? `<span class="c5" style="color:${sev(p, ac)}">5h ${p}%</span>` : `5h ${p}%`;
+const companion = (p, ac) => p > 90 ? `<span class="c5" style="color:${sev(p, ac)}">5h ${p}%</span>` : `5h ${p}%`;
 
 document.getElementById('single').innerHTML = [
   col('S1 · collapsed · over pace, 5h fine', 'good',
@@ -362,7 +362,7 @@ document.getElementById('single').innerHTML = [
 document.getElementById('loud').innerHTML = [
   col('L1 · Headline Weekly · 5h at 93%', 'warn',
     nc({ title: 'Teams · Weekly', pct: 52, tick: T_GONE, sub: `${band(52, T_GONE)} · ${allowance(52, 102.7)} · ${companion(93, CL)}` }),
-    'The companion takes the bar colour\'s step (orange at 90, red at 100) and bold. Nothing else moves.'),
+    'The companion takes the bar colour\'s step (orange past 90, red at 100) and bold. Nothing else moves.'),
   col('L2 · Headline Auto · 5h takes over', 'bad',
     nc({ title: 'Teams · 5h', pct: 93, tick: 83.3, sub: 'Back at 3:40 pm · in 50m · Weekly 52%' }),
     'The row becomes today\'s 5h row, with Weekly as the companion. At 3:40 pm the 5h resets and the row goes back to S1 by itself. The status-bar gauge does this whatever the setting is (§4).'),
@@ -507,7 +507,7 @@ function settings(nm, mk, ac, plan, has5h) {
     <div class="grp">Headline <span class="tag">new</span></div>
     <div class="it">What the notification, status-bar gauge, tile and new widgets lead with
       <div class="seg ${has5h ? '' : 'off'}"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div>
-      <div class="d" style="margin-top:7px">${has5h ? 'Auto shows Weekly, and switches to 5h while 5h is at 90% or more, spent, or on course to run out before it resets.' : 'This plan has no 5-hour window, so Weekly is always the headline.'}</div></div>
+      <div class="d" style="margin-top:7px">${has5h ? 'Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets.' : 'This plan has no 5-hour window, so Weekly is always the headline.'}</div></div>
     <div class="grp">Usage</div>
     <div class="it">Details…</div>
     <div class="it">Clear usage history…</div></div>`;

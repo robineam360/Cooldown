@@ -14,6 +14,8 @@ profile/     <name>.json          — an /api/oauth/profile response, or the usa
 chatgpt/     <name>.json          — a chatgpt.com/backend-api/wham/usage response
                                      (CCM-76 [Accounts]); see chatgpt/README.md
 projection/  cases.json           — burn-rate estimate cases
+pace/        cases.json           — the Pace number, the allowance and the session-binding
+                                     predicate (BEHAVIOR-SPEC §6.1–6.2), spec-first
 history/     cases.json           — bar-building and week-grouping cases
 ```
 
