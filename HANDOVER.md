@@ -4,28 +4,31 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc + Gemini — Step 6d, the shape grammar build (written 2026-11-02)
+## ▶ v2.0 arc + Gemini — Step 7, the device passes (written 2026-11-02)
 
 **State.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`), PR
-robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 1–6 and 6a–6c ticked (Step 5 without
-Compose previews; Step 7 captures stand in, Robin to confirm). The new app icon "Shared pace" (CCRM-101 (Icon v3)) is
-built. **CCRM-103 (Hybrid Notification) is frozen** at `design/2026-11-02-shape-grammar.html` rev D (Robin, with
-the open-question recommendations C3–C8). Step 6d was added and Astra call 3 accepted it (Robin's exception).
-The desktop session ("Mobile arc setup and shared spec sync") has the full frozen package. spec/core main is
-fba3d8e; d491f06 (§6.3 `markTime`) is on the branch only and lands on main only with Robin's OK (then send the
-desktop its sha). Sub-agents run on the claude-product account (`model-mesh-review worker … --account
-~/.claude-product`); those workers can't run gradle here, so the seat runs tests and commits.
+robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 1–6 and 6a–6d ticked. **Step 6d, CCRM-103
+(Hybrid Notification), is built** to the frozen `design/2026-11-02-shape-grammar.html` rev D on Android and iOS —
+5e11545 (data), 0a3c502 + f873e9c (Android surfaces), 9591e03 + ec4cce9 (iOS) — each with a fresh Opus judge
+(concerns, adopted; table in the Step 6d log) and a Fable fit-call ruling. Checks: both flavors' unit tests (836)
+and lint, `swift test` 127, iOS app tests 53. **Two calls wait for Robin:** the layout sheet's row for the merged
+tile (Android labels it "7-day window", iOS still lists separate 5-hour and 7-day rows), and the iOS lock-screen
+circular for a plan with no 5h (today's Weekly ring with "W", a 7-day ring the grammar forbids: Weekly digits alone,
+or the N3 bar glyph?). spec/core main is fba3d8e; d491f06 (§6.3 `markTime`) is on the branch only and lands on main
+only with Robin's OK (then send the desktop its sha). Sub-agents run on the claude-product account
+(`model-mesh-review worker … --account ~/.claude-product`); workers can't run gradle or xcodebuild, so the seat runs
+tests and commits.
 
 New session in this worktree, model Opus 5.5:
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 6d, Log) and this block of HANDOVER.md; load the
-> model-mesh skill; run the git gate. Build Step 6d to the frozen page (rev D, its open-questions table is the
-> decided list): Android data + tests (markTime and its words, the end-mark and per-account status-bar-icon
-> prefs, the status-icon choice), then Android surfaces (tile in place of the two cards, Summary rows, the
-> notification H4 and Duet, status bar, widgets, Settings rows, tabular figures), then iOS, each a commit with
-> spec/mobile, surfaces and ROADMAP updated, and one fresh Opus judge per commit (workers on claude-product).
-> Stop and ask Robin at anything visible beyond the frozen page, at Step 7 (Fold 7 + iPad; Gemini sign-in is
-> his), and at Step 8's release go. Before stopping, replace this block.
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 7, the Step 6d log) and this block of HANDOVER.md;
+> load the model-mesh skill; run the git gate. First settle Robin's two open calls from Step 6d (the merged tile's
+> layout-sheet row on both platforms; the iOS lock circular for a no-5h plan) and build what he picks, one commit,
+> judge, tests. Then Step 7 when G0 allows and Robin connects the Fold 7 and the iPad: record each device's starting
+> state, then the passes the step lists plus the 6d checks in its log (the Duet's bare ring on the Fold 7 inner shade
+> and the 36 dp ring on the cover, the picker previews, the 12 × 6 dp Weekly-bar glyph, the compact held word, the
+> tap readout, the end-mark setting, the status-bar icon choice); Gemini sign-in is Robin's. File every defect in
+> BUGS.md; Robin decides what blocks. Stop at Step 8's release go. Before stopping, replace this block.
 
 ## ▶ (superseded by the block above) v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
 

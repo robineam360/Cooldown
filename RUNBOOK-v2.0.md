@@ -66,7 +66,7 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☑ |
 | 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☑ |
 | 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☑ |
-| 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra call 3 (accept) | ☐ |
+| 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra call 3 (accept) | ☑ (two calls for Robin: the layout sheet's label for the merged tile; the iOS lock circular for a plan with no 5h) |
 | 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6d, G0 | ☐ |
 | 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
 
@@ -236,3 +236,23 @@ weekly.
   has no per-account page). Robin also chose ChatGPT's "Shared pace" launcher icon (`design/icon-v3/`) for
   CCRM-101 (Icon v3), asked that every "%" sign be drawn smaller than its number, and that Vs pace drop its sign
   for green (under) / red (over) — both in the shape-grammar page for approval.
+- **2026-11-02 · Step 6d** (CCRM-103 (Hybrid Notification), three pieces). **Piece 1** 5e11545: core §6.3
+  `markTime`, the readout words (`spec/mobile/fixtures/display` → `markReadout`), the `usageEndMark` and per-account
+  `statusIcon` prefs (downgrade-tested), `StatusIconRule` (`spec/mobile/fixtures/status-icon`). Judge: concerns,
+  three — the side now uses §6's clamped elapsed (edge fixtures added), the Headline's `statusGauge` cases retired, a
+  Duet's "Whichever is higher" compares each account's drawn window (seat call). **Piece 2** 0a3c502 + f873e9c: the
+  shared painter (`ui/ShapeGrammar.kt`) by the seat, then the app, notification and widgets by three delegated Opus
+  builders on claude-product; Vs pace unsigned and coloured (fixture `tone`). Judge: concerns, five — the Duet's bare
+  ring on a large screen's shade panel (sw ≥ 600, re-posted on a configuration change), saved layouts never hide the
+  5h or blank the page, no "5h" in the compact Summary row, `ShapeGrammarTest`; a Fable judge ruled the builders' 25
+  fit calls (8 changed: the open tile's ring readout, the 5h chip default, the 5h-only Number, the dead Window row,
+  the picker previews, the iOS held row, the iOS model-limit bars, the lock band; the rest kept).
+  `tools/widget_layouts.py` regenerates the layouts byte for byte. **Piece 3** 9591e03 + ec4cce9: CooldownCore
+  (`MarkTime`, readout, `UsageEndMark`, same fixtures), then the app and the widgets/lock/Live Activity by two
+  delegated Opus builders. Judge: concerns, four — the Live Activity's stale date and ended peak (tested), the small
+  5h glyph as the page's `gauge()`, the Overview tile's model row, the lock bore. Checks: both flavors' unit tests (836)
+  and lint, `swift test` 127, the iOS app tests 53 on the iPhone 17 Pro simulator. **Open for Robin:** the layout
+  sheet's row for the merged tile (Android labels it "7-day window"; iOS still lists two rows) and the iOS
+  lock-screen circular for a plan with no 5h (today's Weekly ring with "W" — a 7-day ring). **Step 7 must check:**
+  the Duet's bare ring on the Fold 7 inner shade and the 36 dp ring on the cover; the picker previews; the 12 × 6 dp
+  Weekly-bar glyph (C6); the held compact word "Held · 3:40 PM" in its 90 dp column.
