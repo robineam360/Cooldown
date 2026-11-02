@@ -172,6 +172,7 @@ off, launch opens the last account looked at, as today. The toggle is shown only
 1. **Eligible** — a reading, the week not spent (core §6.1, `usedPct ≥ 99.5`), and core §6.2's
    `sessionBinding` false. Ranked by core §6.1's Pace, lowest first (the most quota that would otherwise go
    unused); a tie goes to the earlier weekly reset. The top row is the one to use next; nothing else marks it.
+   A week with a reading but no reset clock (not started) has no Pace and ranks after every clocked one.
 2. **Held** by a binding 5h, soonest 5h reset first. The row says when it is back.
 3. **Spent**, soonest weekly reset first.
 4. **No reading**, in tab order.

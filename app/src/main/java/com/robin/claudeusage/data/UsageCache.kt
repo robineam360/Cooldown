@@ -6,6 +6,7 @@ import com.robin.claudeusage.data.source.Sources
 import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
 import com.robin.claudeusage.ui.Density
+import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.Palette
 
 enum class AuthState { NO_CREDENTIALS, OK, REAUTH_NEEDED }
@@ -103,6 +104,8 @@ class UsageCache(context: Context) {
             // layout, weekly-chart choice and per-card expanded state.
             "layout", "weeklyChart",
             "expanded.session", "expanded.weekly", "expanded.credits",
+            // v2.0: CCRM-96 (Weekly First) Headline, CCRM-99 (Model Limits Toggle).
+            "headline", "showModelLimits",
         )
     }
 
@@ -532,6 +535,53 @@ class UsageCache(context: Context) {
 
     /** The flag render sites actually branch on. */
     fun usageLeft(): Boolean = usageDisplay() == "left"
+
+    /**
+     * CCRM-100 (Vs Pace Display): the token's third value is written into the same
+     * `usageDisplay` string, so a downgrade to v1.9 — whose [usageLeft] is true only for
+     * "left" — reads it as Used.
+     */
+    fun usageMode(): PaceText.Mode = PaceText.Mode.fromKey(usageDisplay())
+
+    // --- v2.0: CCRM-96 (Weekly First), CCRM-98 (Summary Tab), CCRM-99 (Model Limits Toggle) ---
+
+    /** Per account; Weekly by default. */
+    fun headline(profile: Profile): Headline = Headline.fromKey(prefs.getString(k(profile, "headline"), null))
+
+    fun setHeadline(profile: Profile, headline: Headline) {
+        prefs.edit().putString(k(profile, "headline"), headline.key).apply()
+    }
+
+    /** Per account; false hides the model-cap rows and chips on the 7-day card and the notification panel. */
+    fun showModelLimits(profile: Profile): Boolean = prefs.getBoolean(k(profile, "showModelLimits"), true)
+
+    fun setShowModelLimits(profile: Profile, show: Boolean) {
+        prefs.edit().putBoolean(k(profile, "showModelLimits"), show).apply()
+    }
+
+    /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */
+    fun openOnSummary(): Boolean = prefs.getBoolean("openOnSummary", true)
+
+    fun setOpenOnSummary(on: Boolean) {
+        prefs.edit().putBoolean("openOnSummary", on).apply()
+    }
+
+    /**
+     * The one-time "Weekly now leads" notice. Settled at the first v2.0 process start:
+     * an install with any account that has ever fetched is owed it; a fresh one never
+     * is, however many accounts it adds later.
+     */
+    fun weeklyFirstNotice(): String? = prefs.getString("weeklyFirstNotice", null)
+
+    fun settleWeeklyFirstNotice() {
+        if (prefs.contains("weeklyFirstNotice")) return
+        val hadAccounts = registry.all().any { prefs.getLong(k(it, "fetchedAt"), 0L) > 0L }
+        prefs.edit().putString("weeklyFirstNotice", WeeklyFirstNotice.settle(hadAccounts)).apply()
+    }
+
+    fun markWeeklyFirstNoticeShown() {
+        prefs.edit().putString("weeklyFirstNotice", WeeklyFirstNotice.DONE).apply()
+    }
 
     // CCRM-34 (Diagnostics Log): the app log's minimum level. "info" default;
     // "debug" only while someone is chasing something — a user-facing setting,

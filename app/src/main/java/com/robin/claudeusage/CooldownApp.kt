@@ -2,6 +2,7 @@ package com.robin.claudeusage
 
 import android.app.Application
 import android.content.Context
+import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.diag.CrashHandler
 import com.robin.claudeusage.diag.CrashStore
 
@@ -26,6 +27,13 @@ class CooldownApp : Application() {
             CrashStore.fileLast(this)
         } catch (_: Exception) {
             // Never a launch crash from the crash reporter.
+        }
+        try {
+            // CCRM-96 (Weekly First): decide once, before any account can be added,
+            // whether this install predates v2.0 and is owed the notice.
+            UsageCache(this).settleWeeklyFirstNotice()
+        } catch (_: Exception) {
+            // Undecided stays undecided; the next start tries again.
         }
     }
 }

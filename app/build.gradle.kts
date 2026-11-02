@@ -68,6 +68,9 @@ android {
     sourceSets {
         getByName("test") {
             resources.directories.add("../spec/core/fixtures/captured")
+            // v2.0 (RUNBOOK-v2.0 Step 3): the pace, headline, summary and display cases,
+            // loaded as "core/fixtures/…" and "mobile/fixtures/…".
+            resources.directories.add("../spec")
         }
     }
 
