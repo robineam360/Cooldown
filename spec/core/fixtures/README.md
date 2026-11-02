@@ -21,6 +21,7 @@ pace/        cases.json           — the Pace number, the allowance and the ses
 pace-distance/ cases.json         — the Vs pace figure and the distance from the pace mark (§6.3)
 ranking/     cases.json           — accounts ranked by room to spare (§6.4)
 history/     cases.json           — bar-building and week-grouping cases
+plans/       cases.json           — the label for each provider's plan code (API-CONTRACT §11)
 ```
 
 Each `usage/*.json` carries a `_meta` key describing its provenance. **`_meta` is not part of

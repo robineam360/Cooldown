@@ -1,0 +1,246 @@
+{
+  "_meta": {
+    "note": "API-CONTRACT section 11, plan names (Robin, 2026-11-02): the label every client shows for a provider's plan code. Two families must agree. claude: the /api/oauth/profile fields (organization_type, seat_tier, rate_limit_tier, has_claude_max, has_claude_pro) -> label, null = no plan. chatgpt: plan_type (any case) -> label. gemini: loadCodeAssist paidTier.id and paidTier.name -> label (no paidTier = Free).",
+    "sources": "see API-CONTRACT section 11"
+  },
+  "claude": [
+    {
+      "organizationType": "claude_free",
+      "seatTier": null,
+      "rateLimitTier": "default_claude_ai",
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Free"
+    },
+    {
+      "organizationType": "claude_pro",
+      "seatTier": null,
+      "rateLimitTier": "default_claude_pro",
+      "hasMax": false,
+      "hasPro": true,
+      "expected": "Pro"
+    },
+    {
+      "organizationType": "claude_max",
+      "seatTier": null,
+      "rateLimitTier": "default_claude_max_5x",
+      "hasMax": true,
+      "hasPro": false,
+      "expected": "Max"
+    },
+    {
+      "organizationType": "claude_max",
+      "seatTier": null,
+      "rateLimitTier": "default_claude_max_20x",
+      "hasMax": true,
+      "hasPro": false,
+      "expected": "Ultra"
+    },
+    {
+      "organizationType": "claude_max",
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": true,
+      "hasPro": false,
+      "expected": "Max"
+    },
+    {
+      "organizationType": "claude_team",
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Team"
+    },
+    {
+      "organizationType": "claude_team",
+      "seatTier": "team_standard",
+      "rateLimitTier": "default_raven",
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Team Standard"
+    },
+    {
+      "organizationType": "claude_team",
+      "seatTier": "team_tier_1",
+      "rateLimitTier": "default_claude_max_5x",
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Team Premium"
+    },
+    {
+      "organizationType": "claude_enterprise",
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Enterprise"
+    },
+    {
+      "organizationType": null,
+      "seatTier": null,
+      "rateLimitTier": "default_claude_max_20x",
+      "hasMax": true,
+      "hasPro": false,
+      "expected": "Ultra"
+    },
+    {
+      "organizationType": null,
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": true,
+      "hasPro": false,
+      "expected": "Max"
+    },
+    {
+      "organizationType": null,
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": false,
+      "hasPro": true,
+      "expected": "Pro"
+    },
+    {
+      "organizationType": null,
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": false,
+      "hasPro": false,
+      "expected": null
+    },
+    {
+      "organizationType": "claude_ultra",
+      "seatTier": null,
+      "rateLimitTier": null,
+      "hasMax": false,
+      "hasPro": false,
+      "expected": "Ultra"
+    }
+  ],
+  "chatgpt": [
+    {
+      "planType": "free",
+      "expected": "Free"
+    },
+    {
+      "planType": "go",
+      "expected": "Go"
+    },
+    {
+      "planType": "plus",
+      "expected": "Plus"
+    },
+    {
+      "planType": "prolite",
+      "expected": "Pro 100"
+    },
+    {
+      "planType": "pro",
+      "expected": "Pro 200"
+    },
+    {
+      "planType": "promax",
+      "expected": "Pro 500"
+    },
+    {
+      "planType": "team",
+      "expected": "Team"
+    },
+    {
+      "planType": "business",
+      "expected": "Business"
+    },
+    {
+      "planType": "self_serve_business_prolite",
+      "expected": "Business"
+    },
+    {
+      "planType": "self_serve_business_usage_based",
+      "expected": "Business"
+    },
+    {
+      "planType": "enterprise",
+      "expected": "Enterprise"
+    },
+    {
+      "planType": "ent26",
+      "expected": "Enterprise"
+    },
+    {
+      "planType": "enterprise_cbp_usage_based",
+      "expected": "Enterprise"
+    },
+    {
+      "planType": "edu",
+      "expected": "Edu"
+    },
+    {
+      "planType": "edu_plus",
+      "expected": "Edu Plus"
+    },
+    {
+      "planType": "edu_pro",
+      "expected": "Edu Pro"
+    },
+    {
+      "planType": "sci",
+      "expected": "Sci"
+    },
+    {
+      "planType": "sci_plus",
+      "expected": "Sci Plus"
+    },
+    {
+      "planType": "unknown",
+      "expected": "Unknown"
+    },
+    {
+      "planType": "PROLITE",
+      "expected": "Pro 100"
+    },
+    {
+      "planType": "Prolite",
+      "expected": "Pro 100"
+    },
+    {
+      "planType": "future_tier_x",
+      "expected": "Future Tier X"
+    },
+    {
+      "planType": "pro-lite",
+      "expected": "Pro Lite"
+    }
+  ],
+  "gemini": [
+    {
+      "paidTierId": "g1-pro-tier",
+      "paidTierName": "Google AI Pro",
+      "expected": "Pro"
+    },
+    {
+      "paidTierId": "g1-ultra-lite-tier",
+      "paidTierName": "Google AI Ultra",
+      "expected": "Ultra 5x"
+    },
+    {
+      "paidTierId": "g1-ultra-tier",
+      "paidTierName": "Google AI Ultra",
+      "expected": "Ultra 20x"
+    },
+    {
+      "paidTierId": "g1-plus-tier",
+      "paidTierName": "Google AI Plus",
+      "expected": "Plus"
+    },
+    {
+      "paidTierId": "g1-something-tier",
+      "paidTierName": null,
+      "expected": "G1 Something Tier"
+    },
+    {
+      "paidTierId": null,
+      "paidTierName": null,
+      "expected": "Free"
+    }
+  ]
+}
