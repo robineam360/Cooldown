@@ -142,11 +142,11 @@ object AntigravitySource : UsageSource {
     /** `paidTier.id` names the plan; `currentTier` reads free on a Pro account, so never it. */
     fun parseCodeAssist(body: String): CodeAssist? = try {
         val o = JSONObject(body)
-        val plan = when (o.optJSONObject("paidTier")?.optString("id")) {
-            "g1-pro-tier" -> "Pro"
-            "g1-ultra-tier" -> "Ultra"
-            else -> "Free"
-        }
+        // API-CONTRACT §11's labels (Pro, Ultra 5x, Ultra 20x, else the tier's own name).
+        val paid = o.optJSONObject("paidTier")
+        val plan = com.robin.claudeusage.data.PlanNames.gemini(
+            paid?.optString("id")?.ifEmpty { null }, paid?.optString("name")?.ifEmpty { null },
+        )
         CodeAssist(o.optString("cloudaicompanionProject").ifEmpty { null }, plan)
     } catch (_: Exception) {
         null

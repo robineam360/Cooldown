@@ -149,6 +149,19 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   red) after Usage display had gone back to Used, then switched to 51% / 36%: the display change did not reach the
   running activity until its next update.
 
+### CCBG-73 · Plan Names — "Prolite" for ChatGPT Pro 100, and "Max 5x / 20x" outdated since 30 Oct
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; device recheck pending). Reported by Robin, who saw "Prolite"
+  on his ChatGPT account and asked to "find the right plan names for ChatGPT, Claude, and Gemini from the internet
+  right now and use the right names"; he confirmed "ChatGPT has Free, Go, Plus, Pro 100, Pro 200, Pro 500. Claude has
+  Free, Pro, Max, Ultra." spec/core API-CONTRACT §11 (57968bd) now names every provider's codes, with sources; both
+  clients read it through one mapper (`PlanNames`, Android and CooldownCore) on the core fixtures
+  (`fixtures/plans/`), at parse time and again when a stored plan is shown, so an older stored "Prolite" or 20x
+  "Max" reads right at once. No multiplier is appended any more.
+- **Severity:** Low
+- **Symptom:** the ChatGPT plan pill read "Prolite" (the raw `prolite` code capitalised); Claude Max showed "Max 5x" /
+  "Max 20x" (Android) or "Max" for both (iOS), names Anthropic retired on 2026-10-30 ("Max" and "Ultra"); iOS read
+  "business" as "Team"; Gemini's Ultra could not tell 5x from 20x.
+
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
 - **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
   persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh

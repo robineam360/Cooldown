@@ -401,7 +401,7 @@ struct AccountHeader: View {
         HStack(spacing: 9) {
             ProviderMark(provider: account.provider, size: 22)
             Text(account.label).font(.system(size: 21, weight: .bold))
-            PlanChip(plan: model.states[account.key]?.plan, size: 12)
+            PlanChip(provider: account.provider, plan: model.states[account.key]?.plan, tier: model.states[account.key]?.tier, size: 12)
             Spacer()
             if let credits = CardContent.credits(model.usage(account.key)?.credits) {
                 Group {
@@ -418,13 +418,17 @@ struct AccountHeader: View {
     }
 }
 
+/// The plan pill: API-CONTRACT §11's name for the provider's stored plan ("Pro 100", "Ultra", "Ultra 5x"), so a label an
+/// older build stored ("Prolite", a 20x "Max") reads right before the next plan read; never a multiplier.
 struct PlanChip: View {
+    let provider: Provider
     let plan: String?
+    var tier: String?
     var size: CGFloat = 11
     @Environment(\.palette) private var p
     var body: some View {
         if let plan {
-            Text(plan).font(.system(size: size, weight: .semibold))
+            Text(PlanNames.display(provider, plan, tier: tier)).font(.system(size: size, weight: .semibold))
                 .padding(.horizontal, 7).padding(.vertical, 2)
                 .background(p.fill, in: RoundedRectangle(cornerRadius: 6)).foregroundStyle(p.sub)
         }

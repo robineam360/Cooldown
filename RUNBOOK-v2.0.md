@@ -357,4 +357,9 @@ weekly.
   Robin's own words: the fallback tile ("put the Cooldown app's own logo instead") and Gemini always in the title
   ("always all three, as the app's identity"), even in a build without the Gemini secret. Fold and iPad recheck:
   the title, and the tile at a narrow width (a 320 dp phone, an iPad Split View third).
+- **2026-11-02 · Plan names** (Robin): spec/core API-CONTRACT §11 (57968bd, spec/core only, for main and the desktop
+  once Robin agrees) names every provider's plan codes with sources; both clients map through it — CCBG-73 (Plan
+  Names). Claude Max 20x → "Ultra", 5x → "Max"; ChatGPT prolite → "Pro 100" (confirmed by Robin's account), pro /
+  promax → "Pro 200" / "Pro 500" (inferred); Gemini g1-ultra-lite-tier → "Ultra 5x" (inferred), g1-ultra-tier →
+  "Ultra 20x" (unverified).
 

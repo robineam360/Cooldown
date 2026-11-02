@@ -38,7 +38,8 @@ struct SettingsScreen: View {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
                             Text(account.label)
-                            PlanChip(plan: model.states[account.key]?.plan)
+                            PlanChip(provider: account.provider, plan: model.states[account.key]?.plan,
+                                     tier: model.states[account.key]?.tier)
                             Spacer()
                             let needsSignIn = model.states[account.key]?.reauthNeeded == true
                             Text(needsSignIn ? "Sign in again" : "Signed in").font(.system(size: 14))

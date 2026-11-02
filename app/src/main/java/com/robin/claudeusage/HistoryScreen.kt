@@ -95,15 +95,10 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
         repo.snapshot(profile).lastStatusKind == ErrorKind.PLAN.key
     }
     val planFitReading = remember(records) { PlanFit.compute(records, records) }
-    // The account's already-known live plan (e.g. "Max 5x") — used only as the header's
+    // The account's already-known live plan (e.g. "Max", "Pro 100") — used only as the header's
     // fallback for a brand-new account with zero closed weeks, see PlanFitCopy.build.
     val planFitFallback = remember(profile, fetchedAt) {
-        repo.plan(profile)?.let { plan ->
-            val multiplier = if (profile.provider == Provider.CLAUDE && plan.startsWith("Max")) {
-                Fmt.tierMultiplier(repo.tier(profile))
-            } else null
-            Fmt.planLabel(plan) + (multiplier?.let { " $it" } ?: "")
-        }
+        repo.plan(profile)?.let { plan -> Fmt.planLabel(profile.provider, plan, repo.tier(profile)) }
     }
 
     fun openBar(kind: String): HistoryStats.Bar? {

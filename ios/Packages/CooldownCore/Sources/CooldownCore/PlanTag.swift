@@ -53,7 +53,7 @@ public struct PlanTag: Sendable, Equatable, Codable {
             hasMax: account["has_claude_max"].bool ?? false,
             hasPro: account["has_claude_pro"].bool ?? false)
         else { return nil }
-        return PlanTag(plan: plan, tier: tier, organizationType: orgType)
+        return PlanTag(plan: PlanNames.claude(plan, rateLimitTier: tier), tier: tier, organizationType: orgType)
     }
 
     /// Team seats: `"team_standard"` is the Standard seat; any other named seat on a Team
@@ -91,17 +91,8 @@ public struct PlanTag: Sendable, Equatable, Codable {
     /// `organizationType` carry no ChatGPT equivalent, so both stay nil; `nil` in, `nil` out.
     public static func fromChatGPT(planType: String?) -> PlanTag? {
         guard let planType, !planType.isEmpty else { return nil }
-        let plan: String
-        switch planType.lowercased() {
-        case "plus": plan = "Plus"
-        case "pro": plan = "Pro"
-        case "team", "business": plan = "Team"
-        case "free": plan = "Free"
-        default:
-            guard let first = planType.first else { return nil }
-            plan = first.uppercased() + planType.dropFirst()
-        }
-        return PlanTag(plan: plan, tier: nil, organizationType: nil)
+        // API-CONTRACT §11's names ("prolite" → "Pro 100", "business" → "Business").
+        return PlanTag(plan: PlanNames.chatgpt(planType), tier: nil, organizationType: nil)
     }
 
     /// Whether a 403 body is the usage refusal this app parks on — `error.details.error_code

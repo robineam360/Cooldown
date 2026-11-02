@@ -446,12 +446,11 @@ object Fmt {
      * runs at render time only.
      */
     /**
-     * CCBG-62 (Plan Pill Case): the one plan name every surface prints — the server's plan with
-     * its first letter capitalised ("pro" → "Pro", "prolite" → "Prolite"), and the tier's
-     * multiplier when it parses ("Max 20x").
+     * CCBG-62 (Plan Pill Case) and API-CONTRACT §11: the one plan name every surface prints, for the
+     * [provider]'s stored plan ("prolite" → "Pro 100", a 20x Claude Max → "Ultra"); never a multiplier.
      */
-    fun planLabel(plan: String, tier: String? = null): String =
-        plan.replaceFirstChar { it.uppercase() } + (tierMultiplier(tier)?.let { " $it" } ?: "")
+    fun planLabel(provider: com.robin.claudeusage.data.Provider, plan: String, tier: String? = null): String =
+        com.robin.claudeusage.data.PlanNames.display(provider, plan, tier)
 
     fun tierMultiplier(tier: String?): String? {
         tier ?: return null

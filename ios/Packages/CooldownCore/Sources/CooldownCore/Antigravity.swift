@@ -57,11 +57,9 @@ public enum Antigravity {
         guard let data = body.data(using: .utf8),
               let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return nil }
         let json = JSON(object)
-        let plan = switch json["paidTier"]["id"].string {
-        case "g1-pro-tier": "Pro"
-        case "g1-ultra-tier": "Ultra"
-        default: "Free"
-        }
+        // API-CONTRACT §11's labels (Pro, Ultra 5x, Ultra 20x, else the tier's own name).
+        let plan = PlanNames.gemini(paidTierId: json["paidTier"]["id"].nonEmptyString,
+                                    paidTierName: json["paidTier"]["name"].nonEmptyString)
         return CodeAssist(project: json["cloudaicompanionProject"].nonEmptyString, plan: plan)
     }
 }

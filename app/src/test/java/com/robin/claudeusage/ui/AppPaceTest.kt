@@ -209,8 +209,9 @@ class AppPaceTest {
         assertEquals("Use before reset · ≈31%/day", SummaryRows.withoutReset("Use before reset · ≈31%/day · resets Fri"))
         assertEquals("Held · back at 3:40 PM", SummaryRows.withoutReset("Held · back at 3:40 PM · resets Fri"))
         assertEquals("Out until Thu 8:00 AM", SummaryRows.withoutReset("Out until Thu 8:00 AM"))
-        assertEquals("Prolite", Fmt.planLabel("prolite"))
-        assertEquals("Max 20x", Fmt.planLabel("max", "default_claude_max_20x"))
-        assertEquals("Pro", Fmt.planLabel("Pro"))
+        // API-CONTRACT §11 replaced the capitalising fallback (2026-11-02).
+        assertEquals("Pro 100", Fmt.planLabel(com.robin.claudeusage.data.Provider.CHATGPT, "prolite"))
+        assertEquals("Ultra", Fmt.planLabel(com.robin.claudeusage.data.Provider.CLAUDE, "Max", "default_claude_max_20x"))
+        assertEquals("Pro", Fmt.planLabel(com.robin.claudeusage.data.Provider.CLAUDE, "Pro"))
     }
 }

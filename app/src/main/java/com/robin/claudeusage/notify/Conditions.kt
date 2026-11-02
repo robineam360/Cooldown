@@ -180,7 +180,7 @@ object Conditions {
     private fun plan(cache: UsageCache, profile: Profile): Condition? {
         val snapshot = cache.snapshot(profile)
         if (snapshot.lastStatusKind != com.robin.claudeusage.data.ErrorKind.PLAN.key) return null
-        val plan = com.robin.claudeusage.ui.Fmt.planLabel(cache.plan(profile) ?: "Free")
+        val plan = com.robin.claudeusage.ui.Fmt.planLabel(profile.provider, cache.plan(profile) ?: "Free", cache.tier(profile))
         return Condition(
             short = "No usage on the $plan plan",
             title = "Usage isn't available on the $plan plan",

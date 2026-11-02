@@ -66,6 +66,7 @@ import com.robin.claudeusage.ui.PaceMapEntry
 import com.robin.claudeusage.ui.PaceMapGeometry
 import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.ProviderMark
 import com.robin.claudeusage.ui.SummaryRows
 import com.robin.claudeusage.ui.appDark
@@ -113,7 +114,12 @@ internal fun SummaryScreen(
                     if (compact) {
                         CompactSummaryRow(r, i + 1, accent, mode, use24h, showOverPace) { onOpen(r.profile) }
                     } else {
-                        SummaryRow(r, accent, r.name, repo.plan(r.profile), mode, use24h, showOverPace) {
+                        SummaryRow(
+                            r, accent, r.name,
+                            // API-CONTRACT §11's name, as Settings shows it.
+                            repo.plan(r.profile)?.let { Fmt.planLabel(r.profile.provider, it, repo.tier(r.profile)) },
+                            mode, use24h, showOverPace,
+                        ) {
                             onOpen(r.profile)
                         }
                     }
@@ -290,7 +296,7 @@ private fun SummaryRow(
                     plan?.let {
                         Spacer(Modifier.width(7.dp))
                         Text(
-                            com.robin.claudeusage.ui.Fmt.planLabel(it),
+                            it,
                             fontSize = 11.sp,
                             color = muted,
                             maxLines = 1,

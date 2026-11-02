@@ -22,7 +22,7 @@ object PlanFitCopy {
     )
 
     /**
-     * @param fallbackPlan the account's already-known live plan label (e.g. "Max 5x"),
+     * @param fallbackPlan the account's already-known live plan label (e.g. "Max", "Pro 100"),
      *   used only for the brand-new-account case — zero closed weeks, where
      *   [PlanFit.Reading.currentPlan] is null by construction (nothing has closed yet to
      *   carry a `pl` tag) even though the plan itself is already known from sign-in

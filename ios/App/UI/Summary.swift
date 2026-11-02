@@ -7,6 +7,7 @@ import SwiftUI
 struct SummaryEntry: Identifiable, Equatable {
     let account: Account
     let face: Face
+    /// The plan's name as API-CONTRACT §11 gives it (mapped with the account's tier when the list is built).
     let plan: String?
     let group: SummaryRank.Group
     let rank: Int
@@ -52,7 +53,10 @@ struct SummaryView: View {
         let entries = SummaryEntry.build(
             accounts: model.accounts,
             faces: Dictionary(uniqueKeysWithValues: model.accounts.compactMap { a in model.face(a.key).map { (a.key, $0) } }),
-            plans: model.states.compactMapValues(\.plan), histories: model.histories, nowMs: model.nowMs)
+            plans: Dictionary(uniqueKeysWithValues: model.accounts.compactMap { a in
+                model.states[a.key]?.plan.map { (a.key, PlanNames.display(a.provider, $0, tier: model.states[a.key]?.tier)) }
+            }),
+            histories: model.histories, nowMs: model.nowMs)
         VStack(alignment: .leading, spacing: 12) {
             if model.noticeOwed { WeeklyFirstNoticeView() }
             if wide {
@@ -170,7 +174,7 @@ struct SummaryRow: View {
                     ProviderMark(provider: entry.account.provider, size: 18)
                     // CCBG-60 (Summary Line Clip): the name gives way before the pill and the figure.
                     Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
-                    PlanChip(plan: entry.plan).fixedSize()
+                    PlanChip(provider: entry.account.provider, plan: entry.plan).fixedSize()
                     Spacer(minLength: 6)
                     // CCBG-56 (Summary Readout Tap): the figure's own target, at least 48 pt wide and 12 pt past it
                     // above and below, so the row's tap (open the account) never takes it.

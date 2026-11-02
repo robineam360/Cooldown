@@ -38,7 +38,7 @@ enum DemoData {
 
         // Product: above pace (62% at 40% elapsed), unless the scenario breaks it.
         let productReset = now + Int64(0.6 * 5 * 3600) * 1000
-        add(model, key: "product", provider: .claude, plan: "Max 5×", sessionPct: 62, sessionReset: productReset,
+        add(model, key: "product", provider: .claude, plan: "Max", sessionPct: 62, sessionReset: productReset,
             curve: [(0, 0), (0.05, 6), (0.10, 13), (0.15, 21), (0.20, 30), (0.25, 38), (0.30, 47), (0.36, 55)],
             weeklyPct: 64, weeklyElapsed: 0.43, opus: nil, credits: false, now: now,
             stale: scenario == .stale, signin: scenario == .signin, plan_: scenario == .plan)

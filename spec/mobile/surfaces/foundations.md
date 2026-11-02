@@ -410,7 +410,7 @@ chart note carries one generic line plus a separate "not enough history" line. S
 - **Duet**: the pinned notification carrying two accounts. **Strip**: a condition strip, or the
   widget that lists up to four accounts and "+N".
 - **Credits**: pay-as-you-go spend, a row with no clock and so no tick. **Plan tag**: the plan name
-  beside an account, with its multiplier ("Max 5x").
+  beside an account, by spec/core API-CONTRACT §11's names ("Max", "Ultra", "Pro 100"); no multiplier since 2026-11-02.
 
 ## 5. Icons
 

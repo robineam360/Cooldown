@@ -1697,16 +1697,8 @@ private fun TokenCard(
                     }
                     if (hasToken && plan != null) {
                         Spacer(Modifier.width(6.dp))
-                        // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
-                        // grammar. No multiplier is invented for OpenAI or Google, so a
-                        // non-Claude account passes null and renders the bare plan.
-                        // CCRM-64 (Claude Plan Tag): the multiplier is only meaningful on
-                        // Max ("Max 5x"); a Team premium seat also reports a `_5x` tier,
-                        // and "Team Premium 5x" would read as a third plan.
-                        PlanChip(
-                            plan,
-                            tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") },
-                        )
+                        // API-CONTRACT §11 (2026-11-02): no multipliers; a 20x Claude tier names the plan "Ultra".
+                        PlanChip(profile.provider, plan, tier)
                     }
                 }
                 if (busy) {
@@ -2836,12 +2828,12 @@ private fun SignInActionRow(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun PlanChip(plan: String, tier: String?) {
+private fun PlanChip(provider: Provider, plan: String, tier: String?) {
     val color = MaterialTheme.colorScheme.primary
-    // "Max 20x" when the tier parses, bare "Max" otherwise (CCRM-38). A tier
-    // with no plan renders no chip at all — the caller's gate is on the plan.
+    // API-CONTRACT §11: the provider's own plan name ("Pro 100", "Ultra"), never a multiplier. A tier with
+    // no plan renders no chip at all — the caller's gate is on the plan.
     Text(
-        Fmt.planLabel(plan, tier),
+        Fmt.planLabel(provider, plan, tier),
         style = MaterialTheme.typography.labelSmall,
         color = color,
         modifier = Modifier
@@ -3199,7 +3191,7 @@ private fun ReorderRow(
         // Absent when not signed in — nothing to show a plan for yet.
         if (signedIn && plan != null) {
             Spacer(Modifier.width(8.dp))
-            PlanChip(plan, tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") })
+            PlanChip(profile.provider, plan, tier)
         }
         DragHandle(
             dragKey = profile.key,
