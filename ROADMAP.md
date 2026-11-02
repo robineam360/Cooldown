@@ -1844,7 +1844,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   unchanged (presentation only). Drawn in `design/2026-11-02-shape-grammar.html`; built after approval.
 
 ### CCRM-101 · Icon v3 — a launcher icon about the weekly limit, with all three providers' colours
-- **Status:** Asked by Robin 2026-11-02 (CCRM-55 (Antigravity Account) rev A review: "Can we ask ChatGPT to
+- **Status:** **Built on the v2.0 branch** — Robin chose ChatGPT's "Shared pace" (`design/icon-v3/`, 2026-11-02), now the Android adaptive + monochrome icon, About and the iOS 1024; device check at Step 7. Earlier: asked by Robin 2026-11-02 (CCRM-55 (Antigravity Account) rev A review: "Can we ask ChatGPT to
   design a better app icon … with focus on hitting the weekly usage limit and theme of Claude, ChatGPT and
   Gemini being there"). Concepts requested from ChatGPT (Astra, through model-mesh's fenced transport); to be
   drawn as a wireframe with the current Pulse beside them, then Robin picks. **Wireframe first**; not in v2.0

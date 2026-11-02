@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 100 100">
+  <title>Cooldown — Shared pace</title>
+  <rect id="plate" width="100" height="100" fill="#1F1B19"/>
+  <g id="mark" fill="none" stroke-linecap="round">
+    <g id="tracks" stroke="#524944" stroke-width="2.5">
+      <path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/>
+      <path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163"/>
+      <path d="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494"/>
+    </g>
+    <g stroke-width="6.1">
+      <path id="claude" stroke="#D97757" d="M 76.1347 72.5059 A 33 33 0 1 1 69.9731 22.3239"/>
+      <path id="over-pace" stroke="#FF5252" d="M 69.9731 22.3239 A 33 33 0 0 1 78.0044 29.6832"/>
+      <path id="chatgpt" stroke="#19C39A" d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526"/>
+      <path id="gemini" stroke="#8AB4F8" d="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193"/>
+    </g>
+    <path stroke="#1F1B19" stroke-width="6" d="M 58.5357 39.9360 L 72.1516 18.9692"/>
+    <path stroke="#FF5252" stroke-width="3.3" d="M 58.5357 39.9360 L 72.1516 18.9692"/>
+  </g>
+</svg>

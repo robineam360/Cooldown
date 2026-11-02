@@ -414,7 +414,15 @@ chart note carries one generic line plus a separate "not enough history" line. S
 
 ## 5. Icons
 
-- **Launcher: Pulse.** An ECG trace on a flat charcoal plate `#1F1B19`: terracotta `#D97757` P bump,
+- **Launcher (v2.0 branch): Shared pace** — CCRM-101 (Icon v3), designed by ChatGPT, chosen by Robin
+  2026-11-02; master `design/icon-v3/shared-pace.svg` (README there). Three clockwise arcs in an open C on
+  the charcoal plate `#1F1B19`, common centre (52, 50) in the master's 100-unit box: outer Claude `#D97757`
+  (its excess past the pace line in red `#FF5252`), middle ChatGPT `#19C39A` meeting the line, inner Gemini
+  `#8AB4F8` short of it; tracks `#524944`; a red pace line with a plate-coloured halo. Android: the mark scaled
+  0.81 into the 66-unit safe circle (`ic_launcher_foreground.xml`), monochrome with tracks at α 0.4 and a real
+  gap in the Claude arc at the line (no halo); About's `drawable/ic_launcher.xml` the same; iOS `icon-1024.png`
+  flattened on the plate. Replaces the Pulse below on that branch.
+- **Launcher (v1.9): Pulse.** An ECG trace on a flat charcoal plate `#1F1B19`: terracotta `#D97757` P bump,
   red `#FF5252` Q-R-S beat (red is only ever the beat), green `#10A37F` T bump, a dashed cream
   `#F3EBE3` ceiling, stroke 9, baseline y 64 (108 units), seven butt-capped dashes at pitch 12.5.
   Android ships the adaptive layers plus a monochrome silhouette; the iOS app icon is a single
