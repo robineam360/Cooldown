@@ -3,7 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shape Grammar Wireframe</title>
-<!-- CCRM-96 (Weekly First) and CCRM-103 (Hybrid Notification), rev A, 2026-11-02. Wireframe for approval (CLAUDE.md section 2).
+<!-- CCRM-96 (Weekly First) and CCRM-103 (Hybrid Notification), rev C, 2026-11-02 (rev C edited in place: one tabular sans for figures,
+     dashed room on rings, usage end marks E0 to E3, tap a figure for when the mark meets the usage, no-5h grey ring with a cross,
+     status bar = the 5h ring only, the Shared pace app icon). Wireframe for approval (CLAUDE.md section 2).
      Robin's rule: rings are the 5h window, bars are the 7-day window, on every mobile surface. Presentation only: the numbers and
      words are spec/core section 6.1 to 6.4 and spec/mobile/BEHAVIOR-MOBILE.md section 5 to 6, unchanged. 1 CSS px = 1 dp (Android) or 1 pt (iOS).
      Ring drawing reused from 2026-11-02-hybrid-notification.html (H4), bars and captions from -antigravity-account.html and
@@ -88,7 +90,8 @@
   .brow { min-width: 0; }
   .brow .bh { display: flex; align-items: baseline; gap: 6px; height: 20px; margin-bottom: 5px; font-size: 12.5px; color: #CFC9C4 !important; white-space: nowrap; color: #E6E1DE; }
   .brow .bh .bl { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .brow .bh b { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 20px; }
+  .brow .bh { position: relative; }
+  .brow .bh b { margin-left: auto; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 20px; }
   .brow.lead .bh { font-size: 13.5px; color: #E6E1DE !important; }
   .ios .brow.lead .bh { font-size: 15px; color: #F2F2F2 !important; }
   .tline { font-size: 13.5px; color: #E6E1DE; margin-top: 10px; font-weight: 600; line-height: 18px; }
@@ -106,7 +109,7 @@
   .tabs span.on { color: #EDE8E4; border-bottom: 3px solid #E59980; }
   .card { background: #232120; border-radius: 18px; padding: 15px 14px 14px; margin: 0 0 10px; }
   .card .t { display: flex; align-items: baseline; font-size: 15.5px; color: #E6E1DE; margin: 0 0 10px; gap: 6px; }
-  .card .t .v { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; }
+  .card .t .v { margin-left: auto; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 17px; }
   .card .ln { font-size: 13.5px; color: #CFC9C4; margin: 0 0 3px; }
   .card .ln.m { color: #A7A19C; }
   .card .ln b { color: #EDE8E4; font-weight: 600; }
@@ -122,9 +125,9 @@
   .srow { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #34302D; }
   .srow:last-child { border-bottom: 0; }
   .sr-r { flex: 1; min-width: 0; }
-  .sr1 { display: flex; align-items: center; gap: 6px; height: 22px; margin-bottom: 6px; white-space: nowrap; }
+  .sr1 { display: flex; align-items: center; gap: 6px; height: 22px; margin-bottom: 6px; white-space: nowrap; position: relative; }
   .sr1 .nm { font-size: 15px; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .sr1 b { margin-left: auto; font-family: Georgia, serif; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .sr1 b { margin-left: auto; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 17px; font-variant-numeric: tabular-nums; }
   .sr3 { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #CFC9C4; margin-top: 7px; white-space: nowrap; }
   .sr3 .tx { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .pip { position: relative; width: 40px; height: 10px; flex: 0 0 auto; }
@@ -249,13 +252,57 @@
   .dk-mb i { position: absolute; top: 0; bottom: 0; width: 1.5px; background: #1c1c1e; }
   .pct { font-size: .58em; letter-spacing: 0; margin-left: .03em; }
   .pct.sup { vertical-align: .52em; }
+
+  /* ---------- rev C ---------- */
+  /* 1 · one clean sans with tabular, lining figures for every drawn figure (Android: Roboto; iOS: SF Pro, monospaced digits) */
+  .phone, .shade, .nc, .aw, .awall, .iw, .wall, .iph, .side, .lock, .la, .island, .isx, .card, .lgdraw, .tile, .ecell, .sbar, .zoom, svg text {
+    font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1, "lnum" 1; }
+  /* 3 · usage end marks on bars: the line (E1/E2/E3) and E3's dot */
+  .bar > em { position: absolute; top: -1.5px; bottom: -1.5px; width: 1.5px; transform: translateX(-.75px); border-radius: 1px; z-index: 1; }
+  .bar > em.dt { top: 50%; bottom: auto; transform: translate(-50%, -50%); border-radius: 50%; box-sizing: border-box; }
+  .egrid { display: grid; grid-template-columns: 150px repeat(3, 248px); gap: 8px; align-items: stretch; }
+  .egrid .eh { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); align-self: end; }
+  .egrid .ev { font-size: 12.5px; color: var(--ink); align-self: center; }
+  .egrid .ev small { display: block; color: var(--muted); font-size: 11px; }
+  .ecell { border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .erow { display: flex; align-items: center; gap: 10px; }
+  .eset { background: #232120; color: #E6E1DE; border-radius: 18px; padding: 14px; width: 379px; font-family: Roboto, Arial, sans-serif; }
+  .eset .seg { display: flex; border: 1px solid #5A5552; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+  .eset .seg span { flex: 1; text-align: center; padding: 6px 0; font-size: 13px; border-left: 1px solid #5A5552; }
+  .eset .seg span:first-child { border-left: 0; } .eset .seg span.on { background: #46404F; }
+  /* 4 · tap a figure: the target, the popover, the swapped line */
+  .tapt { outline: 1.5px dashed rgba(229,153,128,.95); outline-offset: 3px; border-radius: 4px; }
+  .tapon { background: rgba(255,255,255,.12); border-radius: 6px; box-shadow: 0 0 0 3px rgba(255,255,255,.12); }
+  .tl-ring { position: relative; }
+  .pop { position: absolute; bottom: calc(100% + 8px); right: 0; z-index: 3; background: #3E3834; color: #F4EFEC; font: 600 12px/16px Roboto, Arial, sans-serif; padding: 6px 10px; border-radius: 9px; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
+  .pop:after { content: ""; position: absolute; top: 100%; right: 12px; border: 6px solid transparent; border-top-color: #3E3834; }
+  .pop.l { right: auto; left: 0; } .pop.l:after { right: auto; left: 24px; }
+  .ios .pop { background: #3A3A3C; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; } .ios .pop:after { border-top-color: #3A3A3C; }
+  .swap { color: #F4EFEC !important; font-weight: 600; border-bottom: 2px solid rgba(229,153,128,.7); padding-bottom: 1px; }
+  .capt .swap { position: absolute; top: 0; left: 0; line-height: 14px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  /* 1 · figure-font comparison */
+  .fbox { background: #232120; color: #EDE8E4; border-radius: 12px; padding: 12px 14px; width: 380px; max-width: 100%; }
+  .fbox.ios { background: #1C1C1E; }
+  .fstack { display: flex; flex-direction: column; align-items: flex-end; font-size: 22px; font-weight: 700; line-height: 1.15; margin-top: 8px; }
 </style>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol><symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.98" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></symbol>
 <symbol id="mkGem" viewBox="0 0 24 24"><path fill="currentColor" d="M11.04,19.32 Q12,21.51 12,24 q0,-2.49 0.93,-4.68 0.96,-2.19 2.58,-3.81 t3.81,-2.55 Q21.51,12 24,12 q-2.49,0 -4.68,-0.93 a12.3,12.3 0 0 1 -3.81,-2.58 a12.3,12.3 0 0 1 -2.58,-3.81 Q12,2.49 12,0 q0,2.49 -0.96,4.68 -0.93,2.19 -2.55,3.81 a12.3,12.3 0 0 1 -3.81,2.58 Q2.49,12 0,12 q2.49,0 4.68,0.96 2.19,0.93 3.81,2.55 t2.55,3.81 Z"/></symbol>
+<!-- rev C: the approved app icon, "Shared pace" (design/icon-v3/shared-pace.svg). appIcon = the rounded tile; appMark = the mark alone, cropped; appMarkMono = the mark in currentColor -->
+<symbol id="appIcon" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1F1B19"/><g fill="none" stroke-linecap="round"><g stroke="#524944" stroke-width="2.5"><path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/><path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163"/><path d="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494"/></g><g stroke-width="6.1"><path stroke="#D97757" d="M 76.1347 72.5059 A 33 33 0 1 1 69.9731 22.3239"/><path stroke="#FF5252" d="M 69.9731 22.3239 A 33 33 0 0 1 78.0044 29.6832"/><path stroke="#19C39A" d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526"/><path stroke="#8AB4F8" d="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193"/></g><path stroke="#1F1B19" stroke-width="6" d="M 58.5357 39.9360 L 72.1516 18.9692"/><path stroke="#FF5252" stroke-width="3.3" d="M 58.5357 39.9360 L 72.1516 18.9692"/></g></symbol>
+<symbol id="appMark" viewBox="14 14 72 72"><g fill="none" stroke-linecap="round"><g stroke="#524944" stroke-width="2.5"><path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/><path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163"/><path d="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494"/></g><g stroke-width="6.1"><path stroke="#D97757" d="M 76.1347 72.5059 A 33 33 0 1 1 69.9731 22.3239"/><path stroke="#FF5252" d="M 69.9731 22.3239 A 33 33 0 0 1 78.0044 29.6832"/><path stroke="#19C39A" d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526"/><path stroke="#8AB4F8" d="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193"/></g><path style="stroke:var(--gap, #1F1B19)" stroke-width="6" d="M 58.5357 39.9360 L 72.1516 18.9692"/><path stroke="#FF5252" stroke-width="3.3" d="M 58.5357 39.9360 L 72.1516 18.9692"/></g></symbol>
+<symbol id="appMarkMono" viewBox="14 14 72 72"><g fill="none" stroke-linecap="round"><g stroke="currentColor" stroke-opacity=".35" stroke-width="2.5"><path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/><path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163"/><path d="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494"/></g><g stroke="currentColor" stroke-width="6.1"><path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/><path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526"/><path d="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193"/></g><path style="stroke:var(--gap, #000)" stroke-width="6" d="M 58.5357 39.9360 L 72.1516 18.9692"/><path stroke="currentColor" stroke-width="3.3" d="M 58.5357 39.9360 L 72.1516 18.9692"/></g></symbol>
 </defs></svg>
 <div class="page">
-  <p class="eyebrow">CCRM-96 (Weekly First) · CCRM-103 (Hybrid Notification) · rev B · 2026-11-02 · every mobile surface</p>
+  <p class="eyebrow">CCRM-96 (Weekly First) · CCRM-103 (Hybrid Notification) · rev C · 2026-11-02 · every mobile surface</p>
+  <div class="revnote"><b>Rev C, 2 Nov:</b> you approved rev B's grammar with these changes; everything else stays as rev B recommended.
+    <b>1</b> every figure is now one clean sans with tabular, lining digits (Roboto on Android, SF Pro with monospaced digits on iOS), so every digit has the same
+    height and width; the serif (Georgia, whose old-style digits rise and drop) is gone, the small "%" stays (§1c). <b>2</b> the dashed room between the usage
+    and the pace mark is drawn on every ring too, in the account colour (§1d). <b>3</b> four usage end marks, E0 to E3, on a bar and a ring, under, near and over
+    pace, dark and light, at tile and notification size, with a recommendation (§1e). <b>4</b> tap a figure to see when the pace mark meets the usage, in three
+    forms on the app tile, Summary and the iOS card (§2b). <b>5</b> a plan with no 5h keeps a greyed ring with a cross on the app tile, Summary and the iPad
+    sidebar; the notification, Duet and small widgets stay without (§7). <b>6</b> the status bar shows the 5h ring only; full is a red cross; two options (and a
+    third) for an account with no 5h (§4). <b>7</b> the Shared pace app icon wherever the page shows the app icon. §8 and the open questions are updated.</div>
   <div class="revnote"><b>Rev B, 2 Nov:</b> every drawn percentage now has its "%" at 58% of the digits' size, on the baseline, so the number is the central piece (Robin); §1b compares baseline with top-aligned. Everything else is rev A.</div>
   <h1>Shape Grammar Wireframe</h1>
   <div class="revnote"><b>The rule, in your words (2 Nov):</b> "My mind always sees the bars as weekly limits and rings as 5h limits." Here it is applied to every
@@ -296,8 +343,9 @@
     <tr><td>Pace-mark caption under a bar</td><td>None in the tile; on Summary rows</td><td>On app bars (V1, approved); none on the notification, widgets, lock screen</td><td>V1 was approved for the app; the always-on surfaces have no height</td></tr>
     <tr><td>Vs pace figures</td><td>Signed: "+19" in the ring, "+19%" on bars</td><td>Unsigned, coloured: "19%" green under the mark, red over, ink at 0% (§7b)</td><td>Robin's decision of 2 Nov, after the desktop drew. <b>The desktop should follow</b></td></tr>
     <tr><td>Spent week</td><td>Ring greys, figure kept dim</td><td class="ok">Same</td><td>CCRM-102 (Spent Week Gate)</td></tr>
-    <tr><td>No-5h plan</td><td>Grey ring "—"</td><td>Both drawn (§7): B1 hidden, B2 grey</td><td>Robin asked to see both; the desktop chose B2</td></tr>
-    <tr><td>One-window glyph</td><td>Bar, becomes the ring while the 5h binds</td><td>Both drawn (§4): A1 = the desktop's rule, A2 = today's ring</td><td>Status-bar slot is about 15 dp square and carries no text</td></tr>
+    <tr><td>No-5h plan</td><td>Grey ring "—"</td><td>Rev C (Robin): grey ring with a cross (×) on the app tile, Summary and iPad sidebar; hidden on the notification, Duet and small widgets</td><td>Every row keeps the same frame; "—" stays for a 5h with no reading</td></tr>
+    <tr><td>One-window glyph</td><td>Bar, becomes the ring while the 5h binds</td><td class="no">Rev C (Robin): the 5h ring only; the 7-day stays in the notification (§4)</td><td>Status-bar slot is about 15 dp square and carries no text</td></tr>
+    <tr><td>Figures</td><td>System sans</td><td class="ok">Rev C: one tabular, lining sans (Roboto / SF Pro)</td><td>Rev B's serif figures had uneven digit heights</td></tr>
     <tr><td>Notification</td><td>—</td><td>Ring 44 inside today's 55 dp row; the pace words stay in the sub line, no lines under</td><td>Collapsed height is fixed by Android (about 53 to 64 dp)</td></tr>
     <tr><td>Duet</td><td>—</td><td>Ring 36 in a 156 dp half; under 150 dp a bare 14 dp ring, no digits</td><td>Half width (spec notification §2.1)</td></tr>
     <tr><td>Widgets</td><td>Small: ring 54 + bars; header names the mode ("PERSONAL · USED")</td><td>Ring + bars on every face; the header keeps "Teams · Weekly"</td><td>Android buckets (spec widgets §1.4) and iOS families; the mode header is a question</td></tr>
@@ -318,6 +366,30 @@
     every mock on this page. It reads as one number with a small unit, keeps the figure's bottom edge level with the label beside it, and keeps a ring's figure
     optically centred. Top-aligned reads as a footnote mark, and in a 36 dp ring it climbs toward the band.</p>
   <div class="row" id="pctcmp"></div>
+
+  <h3>1c · The figure font (rev C)</h3>
+  <p class="sub">Robin: "the percentage number font used is weird and it makes each number not fit within the same vertical height. Use a proper neat readable
+    font." Rev B set the bar and Summary figures in Georgia, whose old-style digits rise and drop (3, 4, 5, 7 and 9 hang below the line, 6 and 8 climb). Rev C sets
+    <b>every figure</b> (ring centres, bar figures, notification, widgets, Summary, iOS) in one sans with <b>tabular, lining figures</b>: Android Roboto with
+    <code>tnum</code> and <code>lnum</code>, iOS SF Pro with monospaced digits. Every digit sits on the baseline at cap height and takes the same width, so figures
+    stacked in a column line up. The small "%" (58%, baseline) stays. The ring figures are re-fitted to the bore with the tabular widths (fit log below).</p>
+  <div class="row" id="fontcmp"></div>
+
+  <h3>1d · The dashed room on the rings (rev C)</h3>
+  <p class="sub">Rev B drew the dashed room (between the usage and the pace mark) on bars only. Rev C draws it on <b>every ring</b>: the arc segment from the fill's end
+    to the pace tick, outlined dashed in the account colour at reduced alpha, open at the fill's end as on the bar. It shows only under the mark; over it, the red
+    slice shows instead. Every ring on this page now carries it. Sizes from 96 dp down; under 28 dp it is dropped.</p>
+  <div class="row" id="ringroom"></div>
+
+  <h3>1e · The usage end mark: E0 to E3 (rev C)</h3>
+  <p class="sub">Today (E0) the fill ends in a round cap, which also draws the fill half a band further than the usage: about 2.7% of the circle on a 72 dp ring, so near
+    the mark the cap can look past the tick when the usage is not. The variants end the fill square at the usage and add a short perpendicular line,
+    thinner and shorter than the pace tick (bar: 1.5 dp, 1.5 dp past each edge; ring: 0.35 of the band past each edge), with a hairline gap in the surface colour so it
+    stays visible on the red slice. <b>E2</b> colours the line by pace state, Vs pace's green and red, with two readings of "near": <b>E2a</b> on the mark
+    (|d| &lt; 1 point), <b>E2b</b> the ±5 on-pace band of the band words. <b>E3</b> keeps the line neutral and puts a pace-coloured dot on it. Fixtures: under 34% against
+    a 53% mark; near 50% against 52% (2 under: green in E2a, ink in E2b); over 64% against 52%. In each cell: tile size (ring 72, bar 10 dp) above,
+    notification size (ring 44, bar 13 dp) below.</p>
+  <div id="endgrid"></div>
   <hr class="hr">
   <h2>2 · Android app</h2>
   <p class="sub"><b>The two cards become one.</b> Today the account page is a "7-day window" card and a "5-hour window" card. With the grammar they are one tile: the
@@ -330,6 +402,16 @@
   <p class="sub"><b>Proposal: yes, rings.</b> Each row gets a 48 dp ring on its left (the desktop Summary's size) in place of the "5h 34%" companion text at the end of line 3. The rank, the pip,
     the band words and the held/spent reasons are unchanged. The Pace map below the list is unchanged (not redrawn): it plots the Weekly only.</p>
   <div class="row" id="summary"></div>
+
+  <h3>2b · Tap a figure: when the pace mark meets the usage (rev C)</h3>
+  <p class="sub">spec/core §6.3 "When the mark meets the usage" (fixtures <code>pace-distance/cases.json</code> → <code>markTime</code>): the pace mark passes the usage
+    at <code>windowStart + used ÷ 100 × windowLength</code>. <b>Over pace</b>, tapping the figure shows that instant, ahead: "Pace catches up Thu 5 Nov, 12:50 pm"
+    (absolute day, date and time). <b>Under pace</b>, it shows how far the usage trails, as a duration: "1d 4h behind pace" (Xd Yh; under a day Xh Ym, under an hour
+    Ym, all rounded down). <b>On the mark</b> (&lt; 1 point): "On the pace mark". Spent, no clock or no reading: the tap does nothing. The page's moment is Wed 4 Nov,
+    2:50 pm. The tap target is the figure, the ring's figure included (on the ring the tap also selects the 5h chip, rev B). It works in every Usage display mode:
+    the readout is about the usage, whatever the figure shows. Three forms: <b>(a)</b> a popover above the figure, <b>(b)</b> the figure's own line swaps its text for
+    3 s (a bar's caption, the ring's 5h line, a Summary row's line 3), <b>(c)</b> an always-on extra line. <b>Recommended: (b).</b></p>
+  <div class="row" id="tapx"></div>
 
   <hr class="hr">
   <h2>3 · Android notification</h2>
@@ -346,10 +428,12 @@
   <div class="row" id="nduet"></div>
 
   <hr class="hr">
-  <h2>4 · Status-bar icon: A1 bar then ring, or A2 ring always</h2>
-  <p class="sub">The icon is a 24 dp bitmap fitted into a slot about 15 dp wide (spec notification §4.1: square is optimal, a wide bitmap shrinks by its width). One glyph,
-    one window. <b>A1</b> follows the grammar literally: while the Weekly leads, the icon is a bar (inside the same square box); when the 5h binds it becomes the
-    ring. <b>A2</b> is today's v2.0 glyph: always the ring, drawing whichever window leads. Drawn at true size in a status bar and at ×6.9.</p>
+  <h2>4 · Status-bar icon: the 5h ring only (rev C)</h2>
+  <p class="sub">The icon is a 24 dp bitmap fitted into a slot about 15 dp wide (spec notification §4.1: square is optimal, a wide bitmap shrinks by its width).
+    <b>Rev C (Robin):</b> the status bar shows <b>the 5h ring only</b>, whichever window leads; A1's bar is dropped and the 7-day stays in the notification. When the 5h
+    is full (100%) the glyph is <b>just a red cross</b>, no circle. A spent week greys the ring (the 5h cannot be used). For an account with <b>no 5h</b> there is no
+    5h ring to show: <b>N1</b> the Weekly as a ring after all, <b>N2</b> a neutral glyph (the Shared pace mark), and a third, <b>N3</b>, the Weekly as A1's bar. Each at
+    true size (14 dp in a 40 dp bar, dark and light), at ×5, and monochrome (as the system flattens it).</p>
   <div class="row" id="sbar"></div>
 
   <hr class="hr">
@@ -370,10 +454,11 @@
   <div class="row" id="ila" style="margin-top:22px"></div>
 
   <hr class="hr">
-  <h2>7 · A plan with no 5h: B1 hidden, or B2 a grey ring</h2>
-  <p class="sub"><b>B1</b> follows your rule of September, "a window an account doesn't have is not shown": no ring, and the bars take the full width. <b>B2</b> keeps
-    every account's frame the same: a hairline ring with "—" in it (the desktop chose grey). Your addition rules out a "NO 5H" word in the ring, so B2's ring is
-    the hairline and the dash only. Personal (ChatGPT Pro) is drawn both ways on four surfaces.</p>
+  <h2>7 · A plan with no 5h: a greyed ring with a cross, where rows must match</h2>
+  <p class="sub"><b>Rev C (Robin, 2 Nov):</b> keep the ring slot on every Summary row, <b>greyed out with a cross (×)</b> so it reads as "not applicable" and every row has
+    the same frame; the same on the <b>app tile</b> and the <b>iPad sidebar</b>. The <b>notification, Duet and small widgets stay hidden</b> (B1, rev B's mixed rule). The
+    cross replaces rev B's "—", which stays for a 5h that has no reading yet (T8), so "not applicable" and "not read" no longer look alike. Below, Personal (ChatGPT Pro)
+    on each surface with the rule that now applies.</p>
   <div class="row" id="nofive"></div>
 
   <hr class="hr">
@@ -454,7 +539,8 @@ const pct = v => v == null ? '—' : Math.round(v) + '%';
 // Rev B (Robin, 2 Nov): the "%" is drawn at 58% of the digits' size so the number is the central piece. PCT_MODE 'base' (baseline, recommended) or 'sup'.
 const PCT = 0.58; let PCT_MODE = 'base';
 function svgPct(t, fs, mode = PCT_MODE) { return /\d%$/.test(t) ? `${t.slice(0, -1)}<tspan font-size="${(fs * PCT).toFixed(2)}"${mode === 'sup' ? ` dy="${(-0.30 * fs).toFixed(2)}"` : ''}>%</tspan>` : t; }
-function textW(t, fs, font) { cctx.font = `700 ${fs}px ${font}`; return /\d%$/.test(t) ? cctx.measureText(t.slice(0, -1)).width + PCT * cctx.measureText('%').width : cctx.measureText(t).width; }
+// rev C: figures are tabular, so every digit is measured as a "0" (the tabular advance); canvas ignores font-feature-settings
+function textW(t, fs, font) { cctx.font = `700 ${fs}px ${font}`; const z = s => s.replace(/\d/g, '0'); return /\d%$/.test(t) ? cctx.measureText(z(t.slice(0, -1))).width + PCT * cctx.measureText('%').width : cctx.measureText(z(t)).width; }
 // Vs pace (Robin, 2 Nov): no sign; the distance to the pace mark, green when under it (room), red when over, ink on it (0%).
 // Falls back to the usage figure (severity colours) when spent, unclocked or unread.
 const VS = { gD: '#9CCC65', rD: '#FF5252', gL: '#2E7D32', rL: '#C62828' };
@@ -463,6 +549,26 @@ function vp(u, g, light) {
   const d = g - u, n = Math.floor(Math.abs(d) + 0.5);
   if (n === 0) return { txt: '0%', col: null, word: 'ON PACE' };
   return d > 0 ? { txt: n + '%', col: light ? VS.gL : VS.gD, word: 'UNDER PACE' } : { txt: n + '%', col: light ? VS.rL : VS.rD, word: 'OVER PACE' };
+}
+// rev C · the usage end mark's colour. E0 round cap (no line), E1 the fill's colour, E2a/E2b by pace state (near = |d| < 1, or the ±5 on-pace band), E3 neutral line
+function endCol(end, u, g, c, light) {
+  if (end === 'E0' || end === 'E1') return c;
+  const ink = light ? '#1F1F1F' : '#ECECEC';
+  if (u == null || g == null) return ink;
+  const near = end === 'E2a' ? Math.abs(g - u) < 1 : Math.abs(pace(u, g)) <= 5;
+  return near ? ink : g > u ? (light ? VS.gL : VS.gD) : (light ? VS.rL : VS.rD);
+}
+// rev C · when the mark meets the usage (spec/core §6.3, fixtures pace-distance → markTime). The page's moment: Wed 4 Nov 2026, 2:50 pm.
+const NOW = new Date(2026, 10, 4, 14, 50);
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fmtAbs(d) { const h = d.getHours(), m = d.getMinutes(); return `${DAYS[d.getDay()]} ${d.getDate()} ${MONS[d.getMonth()]}, ${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`; }
+function fmtDur(hrs) { const mins = Math.floor(hrs * 60 + 1e-9), d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60; return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`; }
+function markRead(u, g, lenH) {
+  if (u == null || g == null || u >= 99.5) return null;
+  if (Math.abs(g - u) < 1) return { side: 'on', txt: 'On the pace mark' };
+  const dh = (u - g) / 100 * lenH;   // hours from now until the mark reaches the usage; negative = it passed it that long ago
+  if (dh > 0) { const t = new Date(NOW.getTime() + Math.round(dh * 60) * 60000); return { side: 'over', txt: `Pace catches up ${fmtAbs(t)}` }; }
+  return { side: 'under', txt: `${fmtDur(-dh)} behind pace` };
 }
 const mark = (id, color, s = 14) => `<svg width="${s}" height="${s}" style="color:${color};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
 const trk = (ac, light) => light ? '#DDD6D2' : ac === GP ? '#2E3E39' : ac === GM ? '#36445A' : ac === BL ? '#353B4F' : ac === PU ? '#3E3548' : '#4A3A35';
@@ -509,11 +615,30 @@ function ring(r, S, o = {}) {
   // fit the figure to the bore: keep 1.5 dp clear of the band's inner edge
   cctx.font = `700 ${fs}px ${o.font || ANDF}`;
   const tw0 = textW(txt2, fs, o.font || ANDF), d0 = Math.hypot(tw0 / 2, 0.36 * fs), fsf = d0 > ri - 1.5 ? fs * (ri - 1.5) / d0 : fs;
-  let s = `<svg class="rg" data-ri="${ri.toFixed(2)}" data-fs="${fsf.toFixed(2)}" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" style="flex:0 0 auto;display:block" role="img" aria-label="5-hour window, ${txt}">`;
+  const na = !!(r && r.na);   // rev C: a plan with no 5h: grey track and a cross, no figure
+  let s = `<svg class="rg" data-ri="${ri.toFixed(2)}" data-fs="${fsf.toFixed(2)}" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" style="flex:0 0 auto;display:block" role="img" aria-label="${na ? 'No 5-hour window' : `5-hour window, ${txt}`}">`;
   s += `<circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="${grey ? `rgba(${ink},.22)` : `rgba(${ink},.16)`}" stroke-width="${sw.toFixed(2)}"/>`;
-  if (f > 0) s += `<path d="${arc(0, f)}" fill="none" stroke="${col}" stroke-width="${sw.toFixed(2)}" stroke-linecap="${red ? 'butt' : 'round'}"/>`;
+  if (na) { const k = 0.12 * S; return s + `<path d="M${(c - k).toFixed(2)},${(c - k).toFixed(2)}L${(c + k).toFixed(2)},${(c + k).toFixed(2)}M${(c + k).toFixed(2)},${(c - k).toFixed(2)}L${(c - k).toFixed(2)},${(c + k).toFixed(2)}" stroke="rgba(${ink},.45)" stroke-width="${Math.max(1.5, S / 28).toFixed(2)}" stroke-linecap="round"/></svg>`; }
+  const end = o.end || 'E0', capRound = end === 'E0' && !red, bgc = o.bg || (light ? '#F7F7F7' : '#232120');
+  if (f > 0) s += `<path d="${arc(0, f)}" fill="none" stroke="${col}" stroke-width="${sw.toFixed(2)}" stroke-linecap="${capRound ? 'round' : 'butt'}"/>`;
+  // rev C: the dashed room from the fill's visible end (past the round cap, if any) to the pace tick, outlined in the account colour; dropped under 28 dp
+  if (has && g != null && r.u < r.g && (S >= 28 || o.forceRoom) && o.room !== false) {
+    const a0 = f + (capRound && f > 0 ? sw / 2 / (2 * Math.PI * R) : 0), lw = Math.max(1, S / 60);
+    if (g - a0 > 0.01) {
+      const ro = R + sw / 2 - lw / 2, rn = R - sw / 2 + lw / 2, P = (rad, fr) => `${(c + rad * Math.sin(2 * Math.PI * fr)).toFixed(2)},${(c - rad * Math.cos(2 * Math.PI * fr)).toFixed(2)}`, lg = g - a0 > .5 ? 1 : 0, dash = Math.max(1.6, S / 26);
+      s += `<path class="room" d="M${P(ro, a0)} A${ro.toFixed(2)},${ro.toFixed(2)} 0 ${lg} 1 ${P(ro, g)} L${P(rn, g)} A${rn.toFixed(2)},${rn.toFixed(2)} 0 ${lg} 0 ${P(rn, a0)}" fill="none" stroke="${r.ac}" stroke-opacity=".6" stroke-width="${lw.toFixed(2)}" stroke-dasharray="${dash.toFixed(2)} ${(dash * .75).toFixed(2)}"/>`;
+    }
+  }
   if (o.proj && has && o.proj / 100 > f) s += `<path d="${arc(f + .03, Math.min(o.proj, 100) / 100)}" fill="none" stroke="${col}" stroke-opacity=".75" stroke-width="${(sw * .4).toFixed(2)}" stroke-dasharray="0.1 ${(sw * .8).toFixed(2)}" stroke-linecap="round"/>`;
   if (red) s += `<path d="${arc(g, f)}" fill="none" stroke="${RED}" stroke-width="${sw.toFixed(2)}"/>`;
+  // rev C: the usage end mark (E1 to E3): a short radial line at the fill's end, 0.35 of the band past each edge, with a gap in the surface colour
+  if (end !== 'E0' && has && f > 0) {
+    const a = 2 * Math.PI * f, e0 = R - sw * .85, e1 = R + sw * .85, lw = Math.max(1.3, S / 40);
+    const Q = rad => [(c + rad * Math.sin(a)).toFixed(2), (c - rad * Math.cos(a)).toFixed(2)], [x0, y0] = Q(e0), [x1, y1] = Q(e1);
+    const ec = end === 'E3' ? `rgba(${ink},.92)` : endCol(end, r.u, r.g, col, light);
+    s += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${bgc}" stroke-width="${(lw + 2).toFixed(2)}"/><line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${ec}" stroke-width="${lw.toFixed(2)}" stroke-linecap="round"/>`;
+    if (end === 'E3') { const [dx, dy] = Q(R); s += `<circle cx="${dx}" cy="${dy}" r="${(sw * .42).toFixed(2)}" fill="${endCol('E2b', r.u, r.g, col, light)}" stroke="${bgc}" stroke-width="1"/>`; }
+  }
   if (has && g != null && r.u > 0) {
     const a = 2 * Math.PI * g, r0 = R - sw, r1 = R + sw;
     s += `<line x1="${(c + r0 * Math.sin(a)).toFixed(2)}" y1="${(c - r0 * Math.cos(a)).toFixed(2)}" x2="${(c + r1 * Math.sin(a)).toFixed(2)}" y2="${(c - r1 * Math.cos(a)).toFixed(2)}" stroke="rgba(${ink},.9)" stroke-width="${Math.max(1.5, S / 32).toFixed(2)}" stroke-linecap="round"/>`;
@@ -563,11 +688,19 @@ function barGlyph(p, g, color, size, o = {}) {
 // ---------- the bar (v2.0), with the dashed room under the mark (pace-line-label V1) ----------
 function bar(p, tick, color, h = 13, o = {}) {
   const track = o.track ?? (o.light ? '#D6D6D6' : '#3A3A3A');
-  const has = p != null;
-  const red = has && tick != null && p > tick + 3 ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:${RED}"></o>` : '';
+  const has = p != null, end = o.end || 'E0', butt = end !== 'E0';
+  const red = has && tick != null && p > tick + 3 ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:${RED}${butt ? ';border-radius:0' : ''}"></o>` : '';
   const room = o.room && has && tick != null && p < tick ? `<u style="left:${p}%;width:${tick - p}%"></u>` : '';
   const tk = tick != null && has && p > 0 ? `<s style="left:${tick}%;background:${o.light ? 'rgba(31,31,31,.6)' : (o.tick || 'rgba(236,236,236,.75)')}"></s>` : '';
-  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${track}${o.w ? `;width:${o.w}px;flex:0 0 auto` : ''}"><i style="width:${Math.min(p ?? 0, 100)}%;background:${color}"></i>${room}${red}${tk}</div>`;
+  // rev C: the usage end mark (E1 to E3): a square fill end and a short line, thinner and shorter than the pace tick, with a 1 dp gap in the surface colour
+  let em = '';
+  if (butt && has && p > 0) {
+    const bgc = o.bg || (o.light ? '#F7F7F7' : '#232120'), x = Math.min(p, 100);
+    const ec = end === 'E3' ? (o.light ? 'rgba(31,31,31,.88)' : 'rgba(236,236,236,.92)') : endCol(end, p, tick, color, !!o.light);
+    em = `<em style="left:${x}%;background:${ec};box-shadow:0 0 0 1px ${bgc}"></em>`;
+    if (end === 'E3') { const d = Math.max(4, Math.round(h * .7)); em += `<em class="dt" style="left:${x}%;width:${d}px;height:${d}px;background:${endCol('E2b', p, tick, color, !!o.light)};border:1px solid ${bgc}"></em>`; }
+  }
+  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${track}${o.w ? `;width:${o.w}px;flex:0 0 auto` : ''}"><i style="width:${Math.min(p ?? 0, 100)}%;background:${color}${butt ? `;border-radius:${h / 2}px 0 0 ${h / 2}px` : ''}"></i>${room}${red}${em}${tk}</div>`;
 }
 function capt(u, m, w, font = '11.5px Roboto, Arial, sans-serif') {
   cctx.font = font;
@@ -584,7 +717,10 @@ function capt(u, m, w, font = '11.5px Roboto, Arial, sans-serif') {
 const fiveLine = a => a.f && a.f.inT && a.f.u != null ? `${glyph(a.ac, a.f.u, a.f.g)}resets in ${a.f.inT}${a.f.proj ? ` · on track for ~${a.f.proj}%` : ''}` : null;
 function tile(a, o = {}) {
   const W = o.W, S = o.S ?? 72, gap = o.gap ?? 14, light = !!o.light, ios = !!o.ios;
-  const five = !!a.f && !o.noRing, B2 = !a.f && o.B === 'B2', ringOn = five || B2;
+  const five = !!a.f && !o.noRing, B2 = !a.f && o.B !== 'B1' && !o.noRing, ringOn = five || B2;   // rev C: the app tile keeps a greyed ring with a cross for a plan with no 5h
+  const tap = o.tap || null;   // rev C: { t: 'w' | 'm' | 'r', form: 'a' popover | 'b' line swap | 'c' extra line }
+  const rdOf = t => !tap ? null : t === 'r' ? (five ? markRead(a.f.u, a.f.g, 5) : null) : t === 'w' ? markRead(a.w.u, a.w.g, 168) : a.m ? markRead(a.m.u, a.m.g, 168) : null;
+  const rdT = tap ? rdOf(tap.t) : null;
   const RW = ringOn ? W - S - gap : W;
   const showM = !!a.m && o.models !== false;
   const rows = [{ label: showM ? 'Weekly · All models' : (o.wLabel || 'Weekly'), lead: 1, ...a.w, txt: o.wTxt }];
@@ -594,12 +730,21 @@ function tile(a, o = {}) {
   const rowH = r => {
     const has = r.u != null, c = sev(r.u, a.ac), vv = o.vs ? vp(r.u, r.g, light) : null;
     if (vv) r = { ...r, txt: vv.txt, vcol: vv.col || (ios ? '#F2F2F2' : light ? '#1F1F1F' : '#E6E1DE') };
-    const cap = o.caption !== false && has && r.u < 99.5 && r.g != null ? capt(r.u, r.g, bw, capFont) : '';
-    return `<div class="brow${r.lead ? ' lead' : ''}" style="width:${bw}px"><div class="bh"><span class="bl el">${r.label}</span><b style="color:${r.vcol || (has ? c : '#A7A19C')}${r.lead ? `;font-size:${fz}px` : ''}">${r.txt ?? pct(r.u)}</b></div>${bar(r.u, r.g, c, r.lead ? (o.bh ?? (ios ? 8 : 10)) : (ios ? 6 : 7), { room: true, track: o.track ?? (ios ? '#2C2C2E' : trk(a.ac, light)), tick: ios ? '#C7C7CC' : undefined })}${cap}</div>`;
+    const key = r.lead ? 'w' : 'm', on = tap && tap.t === key && rdT;
+    let cap = o.caption !== false && has && r.u < 99.5 && r.g != null ? capt(r.u, r.g, bw, capFont) : '';
+    if (on && tap.form === 'b') cap = `<div class="capt"><span class="swap el">${rdT.txt}</span></div>`;
+    const pop = on && tap.form === 'a' ? `<span class="pop">${rdT.txt}</span>` : '';
+    const bcls = on ? ' class="tapon"' : o.tapt ? ' class="tapt"' : '';
+    return `<div class="brow${r.lead ? ' lead' : ''}" style="width:${bw}px"><div class="bh"><span class="bl el">${r.label}</span><b${bcls} style="color:${r.vcol || (has ? c : '#A7A19C')}${r.lead ? `;font-size:${fz}px` : ''}">${r.txt ?? pct(r.u)}</b>${pop}</div>${bar(r.u, r.g, c, r.lead ? (o.bh ?? (ios ? 8 : 10)) : (ios ? 6 : 7), { room: true, track: o.track ?? (ios ? '#2C2C2E' : trk(a.ac, light)), tick: ios ? '#C7C7CC' : undefined, end: o.end })}${cap}</div>`;
   };
-  const rr = five ? { ...a.f, ac: a.ac, dim: o.dim5 } : { grey: true };
-  const ringPart = ringOn ? `<div class="tl-ring" style="width:${S}px;margin-right:${gap}px">${ring(rr, S, { light, vs: o.vs, txt: five ? o.fTxt : undefined, proj: o.proj && five ? a.f.proj : null, font: ios ? IOSF : ANDF, ink: ios ? '242,242,242' : null })}</div>` : '';
-  const dl = o.lines ?? [wline(a.w), five && !o.dim5 ? fiveLine(a) : null].filter(Boolean);
+  const rr = five ? { ...a.f, ac: a.ac, dim: o.dim5 } : { grey: true, na: true };
+  const onR = tap && tap.t === 'r' && rdT;
+  const rpop = onR && tap.form === 'a' ? `<span class="pop l">${rdT.txt}</span>` : '';
+  const ringSvg = ring(rr, S, { light, vs: o.vs, txt: five ? o.fTxt : undefined, proj: o.proj && five ? a.f.proj : null, font: ios ? IOSF : ANDF, ink: ios ? '242,242,242' : null, end: o.end });
+  const ringPart = ringOn ? `<div class="tl-ring" style="width:${S}px;margin-right:${gap}px"><div${onR ? ' class="tapon" style="border-radius:50%"' : o.tapt && five ? ' class="tapt" style="border-radius:50%"' : ''}>${ringSvg}</div>${rpop}</div>` : '';
+  let dl = o.lines ?? [wline(a.w), five && !o.dim5 ? fiveLine(a) : null].filter(Boolean);
+  if (onR && tap.form === 'b' && !o.lines) dl = [wline(a.w), `${glyph(a.ac, a.f.u, a.f.g)}<span class="swap">${rdT.txt}</span>`];
+  if (tap && tap.form === 'c') { const w = rdOf('w'); if (w) dl = dl.concat(w.txt); }   // (c): one always-on line, the lead window's readout
   const lines = dl.map((t, i) => `<div class="tline el${i ? ' m' : ''}">${t}</div>`).join('');
   return `<div style="width:${W}px"><div class="tile">${ringPart}<div class="tl-right"><div class="bars">${rows.map(rowH).join('')}</div></div></div>${lines}</div>`;
 }
@@ -611,7 +756,7 @@ document.getElementById('legend').innerHTML = `
   <div class="lg"><h4>Ring = the 5h window</h4><div class="lgdraw">${ring({ ...TE.f, ac: CL }, 72)}${ring({ ...TEB.f, ac: CL }, 72)}${ring({ ...TE.f, ac: CL }, 72, { vs: true })}</div>
     <ul><li><b>Hollow</b>, the figure centred in the bore: Used "34%", Left "66%" or Vs pace "19%" in green (under the mark) or red (over), the same setting as every figure. <b>No "5h" word</b>, anywhere.</li>
     <li><b>Arc</b> from 12 o'clock, the account colour, the severity step above 80 (yellow, orange above 90, red at 100). The figure takes the step above 90.</li>
-    <li><b>Tick on the rim</b> = the 5h clock (the pace mark), as the desktop draws it. <b>Red slice</b> from the tick to the tip when you are more than 3 points ahead (mobile only).</li>
+    <li><b>Tick on the rim</b> = the 5h clock (the pace mark), as the desktop draws it. <b>Red slice</b> from the tick to the tip when you are more than 3 points ahead (mobile only). <b>Dashed room</b> from the fill's end to the tick when under it (rev C, as on the bars).</li>
     <li><b>Proportions = the desktop's:</b> band 0.13 of the diameter, figure 0.25 (four characters 0.21). Sizes: 72 dp app (84 on wide, the desktop's big tile), 56 at 320 dp, 48 Summary, 44 notification, 36 Duet, 40 to 96 widgets. Under 28: no digits (the status-bar glyph).</li></ul></div>
   <div class="lg"><h4>Bar = a 7-day window</h4><div class="lgdraw" style="display:block">${tile(TE, { W: 320, noRing: true, lines: [] })}</div>
     <ul><li>"Weekly · All models" first, then a model limit (Fable, Argon) which is also 7-day, so also a bar. Without model limits the label is just "Weekly".</li>
@@ -629,7 +774,7 @@ document.getElementById('tiles').innerHTML = [
   col('T5 · Left mode', 'good', T1(TE, { fit: 'T5|379|', fTxt: '66%', wTxt: '48%', mTxt: '70%' }), 'Every figure is the remainder; every shape still draws the spend.'),
   col('T6 · Gemini Pro with Argon, and its pool', 'good', T1(GE, { fit: 'T6|379|' }) + T1({ ...POOL }, { fit: 'T6b|379|', wLabel: 'Weekly', lines: [wline(POOL.w), fiveLine(POOL), 'Claude + GPT in Antigravity'] }),
     'Gemini\'s own 5h ring, its Weekly and Argon bars. The pool is the second tile, same anatomy, its name on the second line. 4% draws the 9% minimum arc.'),
-  col('T7 · Personal · ChatGPT Pro, no 5h (B1)', 'good', T1(PE, { fit: 'T7|379|' }), 'B1: no ring, the bar takes the whole width. B2 is drawn in §7.'),
+  col('T7 · Personal · ChatGPT Pro, no 5h (rev C: grey ring ×)', 'good', T1(PE, { fit: 'T7|379|' }), 'Rev C: the ring slot stays, greyed, with a cross: "this plan has no 5h". The bar keeps the same start as every other tile.'),
   col('T8 · not started, no reading', 'warn', T1({ ...TE, w: { u: null }, f: { grey: true }, m: null }, { fit: 'T8|379|', lines: ['Weekly not started'] }), 'Grey ring with "—", a bare bar with no tick. Never a fake 0%.'),
 ].join('');
 
@@ -665,30 +810,34 @@ const openTile = (sel) => card(tile(TE, { W: 351, S: 72, proj: sel === '5h', lin
   + (sel === 'All' ? wkChart + `<div class="ln" style="margin-top:8px"><b>Slow down · ≈11%/day until Sun</b></div><div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div><div class="rs"><span>Resets in 4d 6h</span><span>Resets at Sun 9:30 pm</span></div>`
     : fvChart + `<div class="ln m" style="margin-top:8px">At this pace: ~69% when the window resets · 15.0%/h ⓘ</div><div class="rs"><span>Resets in 2h 20m</span><span>Resets at Wed 5:10 pm</span></div>`));
 document.getElementById('app').innerHTML = [
-  col('A1 · Compact · Fold cover 411 dp', 'good', phone(card(tile(TE, { W: 351, S: 72 })) + credits() + `<p class="cap" style="margin:14px 0 6px;color:#9C9894">Personal tab (no 5h, B1)</p>` + card(tile(PE, { W: 351 })), { fit: 'A1' }),
+  col('A1 · Compact · Fold cover 411 dp', 'good', phone(card(tile(TE, { W: 351, S: 72 })) + credits() + `<p class="cap" style="margin:14px 0 6px;color:#9C9894">Personal tab (no 5h: grey ring ×)</p>` + card(tile(PE, { W: 351 })), { fit: 'A1' }),
     'One tile replaces the 7-day and 5-hour cards, the desktop\'s tile at mobile size. The 5h\'s folded line keeps its words ("resets in 2h 20m · on track for ~69%"), led by the ring glyph instead of "5h".'),
   col('A2 · Comfortable · open, chip All', 'good', phone(openTile('All'), { fit: 'A2' }),
     'The chart is today\'s Weekly chart (guides, diagonal, dots, projection, axis). The chips gain "5h", the only place on this page the word appears on its own: it names a chip, not the ring.'),
   col('A3 · Comfortable · ring tapped, chip 5h', 'good', phone(openTile('5h'), { fit: 'A3' }),
     'Same tile, chart switched to the 5h window, with today\'s 5h lines under it. The ring draws its projection: a dotted arc from 34% to ~69%.'),
-  col('A4 · Fold inner 760 dp', 'good', phone(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${card(tile(TE, { W: 331, S: 84 }))}${card(tile(GE, { W: 331, S: 84 }))}</div>` + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${card(tile(PE, { W: 331 }))}${credits()}</div>`, { fit: 'A4', w: 760, n: 4 }),
+  col('A4 · Fold inner 760 dp', 'good', phone(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${card(tile(TE, { W: 331, S: 84 }))}${card(tile(GE, { W: 331, S: 84 }))}</div>` + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${card(tile(PE, { W: 331, S: 84 }))}${credits()}</div>`, { fit: 'A4', w: 760, n: 4 }),
     'Two tiles a row, each 331 dp inside the card, with the desktop\'s big ring (84 dp). The bars stay stacked as on the desktop (rev A of this page put them side by side here; dropped to match).'),
-  col('A5 · the narrowest, 320 dp', 'warn', phone(card(tile(TE, { W: 260, S: 56, gap: 12 })) + card(tile(PE, { W: 260 })), { fit: 'A5', w: 320 }),
+  col('A5 · the narrowest, 320 dp', 'warn', phone(card(tile(TE, { W: 260, S: 56, gap: 12 })) + card(tile(PE, { W: 260, S: 56, gap: 12 })), { fit: 'A5', w: 320 }),
     'Ring 56 dp. The line wraps to a second line instead of ellipsizing; the caption sits right of the mark and still fits.'),
 ].join('');
 
 // ---------- Summary rows ----------
 function srow(a, o = {}) {
   const w = a.w, c = sev(w.u, a.ac), p = w.u >= 99.5 ? 100 : pace(w.u, w.g), dot = p > 50 ? RED : p > 5 ? '#E8A33A' : p >= -5 ? '#CFC9C4' : '#8FB39A';
-  const txt = o.txt || wline(w);
-  const rg = a.f ? ring({ ...a.f, ac: a.ac, dim: w.u >= 99.5 }, 48) : (o.B === 'B2' ? ring({ grey: true }, 48) : '');
-  return `<div class="srow">${rg ? `<div style="flex:0 0 48px">${rg}</div>` : ''}<div class="sr-r"><div class="sr1">${mark(a.mk, a.ac, 18)}<span class="nm el">${a.name}</span><span class="pill">${a.plan}</span><b style="color:${c}">${pct(w.u)}</b></div>
-    ${bar(w.u, w.g, c, 10, { room: true, track: trk(a.ac) })}<div class="sr3"><span class="pip"><i style="left:${20 + Math.max(-100, Math.min(100, p)) / 5}px;background:${dot}"></i></span><span class="tx el">${txt}</span></div></div></div>`;
+  const rd = o.tap ? markRead(w.u, w.g, 168) : null;   // rev C: tap the row's figure
+  const txt = rd && o.tap === 'b' ? `<span class="swap">${rd.txt}</span>` : (o.txt || wline(w));
+  const rg = a.f ? ring({ ...a.f, ac: a.ac, dim: w.u >= 99.5 }, 48) : (o.B === 'B1' ? '' : ring({ grey: true, na: true }, 48));   // rev C: no 5h = grey ring ×
+  const bcls = rd ? ' class="tapon"' : o.tapt ? ' class="tapt"' : '';
+  const line4 = rd && o.tap === 'c' ? `<div class="sr3" style="margin-top:3px"><span class="tx el">${rd.txt}</span></div>` : '';
+  const pipEl = rd && o.tap === 'b' ? '' : `<span class="pip"><i style="left:${20 + Math.max(-100, Math.min(100, p)) / 5}px;background:${dot}"></i></span>`;   // (b): the readout takes line 3's full width for 3 s
+  return `<div class="srow">${rg ? `<div style="flex:0 0 48px">${rg}</div>` : ''}<div class="sr-r"><div class="sr1">${mark(a.mk, a.ac, 18)}<span class="nm el">${a.name}</span><span class="pill">${a.plan}</span><b${bcls} style="color:${c}">${pct(w.u)}</b>${rd && o.tap === 'a' ? `<span class="pop">${rd.txt}</span>` : ''}</div>
+    ${bar(w.u, w.g, c, 10, { room: true, track: trk(a.ac) })}<div class="sr3">${pipEl}<span class="tx el">${txt}</span></div>${line4}</div></div>`;
 }
-const sList = (W, B) => `<div class="card" style="padding:6px 14px">${srow(GE)}${srow(PE, { B })}${srow(TE)}${srow(PR, { txt: 'Held · back at 3:40 pm · resets Fri' })}${srow(SI, { txt: 'Spent · back Thu 8:00 am' })}</div>`;
+const sList = (W, B, tp = {}) => `<div class="card" style="padding:6px 14px">${srow(GE, { tap: tp.GE })}${srow(PE, { B, tap: tp.PE })}${srow(TE, { tap: tp.TE })}${srow(PR, { txt: 'Held · back at 3:40 pm · resets Fri' })}${srow(SI, { txt: 'Spent · back Thu 8:00 am' })}</div>`;
 document.getElementById('summary').innerHTML = [
   col('S1 · Summary rows · Fold cover 411 dp', 'good', phone(`<p class="cap" style="color:#9C9894;margin:0 0 8px">Weekly, most room first</p>` + sList(351) + `<div class="card" style="color:#A7A19C;font-size:13px">Pace map (unchanged, not redrawn)</div>`, { fit: 'S1', n: 4 }),
-    'Ring 48 dp (the desktop Summary\'s size) at the left of each row, spanning the three lines (row 58 dp tall, the ring centred). Product is held by its binding 5h: the ring is loud, line 3 says why. Side is spent: its ring greyed. Personal has no 5h (B1: no ring, the row starts at the mark).'),
+    'Ring 48 dp (the desktop Summary\'s size) at the left of each row, spanning the three lines (row 58 dp tall, the ring centred). Product is held by its binding 5h: the ring is loud, line 3 says why. Side is spent: its ring greyed. Personal has no 5h: rev C keeps its ring slot, greyed with a cross, so every row has the same frame.'),
   col('S2 · Summary rows · 320 dp', 'warn', phone(sList(260), { fit: 'S2', w: 320, n: 4 }),
     'At 320 the line-3 words ellipsize as they do today (measured below); the ring costs 60 dp of every row.'),
 ].join('');
@@ -701,7 +850,7 @@ function nc(o) {
   const vv = o.vs ? vp(p, g, light) : null;
   const c = vv ? (vv.col || (light ? '#1F1F1F' : '#ECECEC')) : sev(p, ac), ft = vv ? vv.txt : (figTxt ?? pct(p));
   const cap2 = vv ? vv.word : cap;
-  const rg = (r || grey) ? `<div class="rg4">${ring(r ? { ...r, ac } : { grey: true }, 44, { light, txt: o.rTxt, vs: o.vs })}${under ? `<div class="ru">${under}</div>` : ''}</div>` : '';
+  const rg = (r || grey) ? `<div class="rg4">${ring(r ? { ...r, ac } : { grey: true, na: true }, 44, { light, txt: o.rTxt, vs: o.vs })}${under ? `<div class="ru">${under}</div>` : ''}</div>` : '';
   return `<div class="shade ${light ? 'light' : ''}"><div class="nc" data-fit="${fit}|360|" ${expanded ? '' : 'data-coll="1"'}>
     <div class="apphdr">${mark('ring42', ac, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">${expanded ? '⌃' : '⌄'}</span></div>
     <div class="hb">${rg}<div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl el" style="font-size:${expanded ? 14 : 13}px">${title}</span></div>${bar(p, g, sev(p, ac), 13, { light })}
@@ -722,7 +871,7 @@ document.getElementById('notif').innerHTML = [
 const bind = R5({ u: 93, g: 83.3 });
 document.getElementById('nstates').innerHTML = [
   col('Q1 · 5h binding, Headline Weekly', 'warn', nc({ ...wk, sub: Wd, r: bind, fit: 'Q1' }), 'Orange arc, red slice 83% to 93%, the figure orange. It replaces the loud companion text of v2.0.'),
-  col('Q2 · Auto takeover: what leads', 'bad', nc({ ...wk, sub: 'Back at 3:40 pm · in 50m', r: bind, fit: 'Q2' }), 'Proposal: no swap. The ring is loud, the sub line is the 5h\'s words; the label and the trailing figure stay Weekly. The status-bar icon (§4) is what changes shape.'),
+  col('Q2 · Auto takeover: what leads', 'bad', nc({ ...wk, sub: 'Back at 3:40 pm · in 50m', r: bind, fit: 'Q2' }), 'Proposal: no swap. The ring is loud, the sub line is the 5h\'s words; the label and the trailing figure stay Weekly. The status-bar ring (§4, rev C: always the 5h) turns loud with it.'),
   col('Q3 · Weekly spent: the 5h greyed', 'bad', nc({ title: 'Teams · Weekly', p: 100, g: 55, sub: 'Out until Sun 9:30 pm · in 3d 4h', r: R5({ dim: true }), fit: 'Q3' }), 'The ring at 45%, still "34%"; nothing says it is usable. The bar is the full red week.'),
   col('Q4 · Vs pace', 'good', nc({ ...wk, vs: true, sub: Wd, r: R5(), fit: 'Q4' }), 'Robin\'s colours: ring "19%" green (room), figure "13%" red (over). The caption under the figure says which ("OVER PACE"), the word fallback for colour-blind reading (open question).'),
   col('Q5 · Left mode', 'good', nc({ ...wk, figTxt: '48%', cap: 'LEFT', sub: Wd, r: R5(), rTxt: '66%', fit: 'Q5' }), 'Ring "66%", figure "48%" over LEFT. The ring has no caption of its own: Left is the setting for both.'),
@@ -733,7 +882,7 @@ document.getElementById('nstates').innerHTML = [
 // Duet
 function halfR(o, hw) {
   const { mk, ac, name, p, g, r, light, dot } = o, c = sev(p, ac);
-  const rg = r ? ring({ ...r, ac }, 36, { light }) : (o.B === 'B2' ? ring({ grey: true }, 36, { light }) : '');
+  const rg = r ? ring({ ...r, ac }, 36, { light }) : (o.B === 'B2' ? ring({ grey: true, na: true }, 36, { light }) : '');
   return `<div class="half" style="flex:0 0 ${hw}px;width:${hw}px;display:flex;align-items:center;gap:8px">${rg}<div style="flex:1;min-width:0"><div class="dl">${mark(mk, ac)}<span class="lbl el" style="font-size:12px">${name}</span>${dot ? '<i class="dot6"></i>' : ''}</div>
     <div class="db">${bar(p, g, c, 8, { light })}<div class="fig" style="font-size:${rg ? 28 : 30}px;color:${c}">${pct(p)}</div></div></div></div>`;
 }
@@ -765,23 +914,7 @@ document.getElementById('nduet').innerHTML = [
 ].join('');
 
 // ---------- §4 status bar ----------
-const SB = [
-  { cap: 'Weekly leads · 52%', lead: 'w', p: 52, g: 38.9, c: CL },
-  { cap: '5h binds · 93% (Auto)', lead: '5', p: 93, g: 83.3, c: '#FFA726' },
-  { cap: 'Weekly spent · 100%', lead: 'w', p: 100, g: 55, c: RED },
-];
-function sbOpt(opt) {
-  return `<div class="sbopt"><p class="cap ${opt === 'A1' ? 'good' : 'warn'}">${opt === 'A1' ? 'A1 · bar while Weekly leads, ring when the 5h binds' : 'A2 · ring always (v2.0 today)'}</p><div class="row" style="gap:18px">` + SB.map(s => {
-    const isBar = opt === 'A1' && s.lead === 'w';
-    const G = (sz, o = {}) => isBar ? barGlyph(s.p, s.g, s.c, sz, o) : gauge(s.p, s.g, s.c, sz, o);
-    return `<div style="width:220px"><p class="cap">${s.cap}</p>
-      <div class="sbar" style="width:220px"><span>2:50</span>${G(14)}<span style="margin-left:auto;opacity:.8;font-size:12px">▲ ▮▮ 67</span></div>
-      <div class="sbar light" style="width:220px;margin-top:6px"><span>2:50</span>${G(14, { light: true })}<span style="margin-left:auto;opacity:.7;font-size:12px">▲ ▮▮ 67</span></div>
-      <div class="zoom"><figure><div class="tile0">${G(72)}</div><figcaption>×5 dark</figcaption></figure><figure><div class="tile0">${G(72, { mono: true })}</div><figcaption>monochrome</figcaption></figure></div></div>`;
-  }).join('') + '</div></div>';
-}
-document.getElementById('sbar').innerHTML = col('', '', sbOpt('A1'), 'A1: the bar is 21 × 10 units of the 24 box, so about 12 × 6 dp on the Fold 7. It reads as a bar, the tick (with a cleared halo) still shows in monochrome, but the red-past-the-tick part is lost when the system flattens the icon (the ring loses it the same way). The change of shape is itself the takeover signal.')
-  + col('', '', sbOpt('A2'), 'A2: one shape, always the ring, its needle the clock of whichever window it draws (spec notification §4, unchanged). Breaks the grammar only here: a ring that can mean the Weekly.');
+// rev C: §4 is drawn in the rev C block below (the 5h ring only; A1 and A2 retired)
 
 // ---------- §5 Android widgets ----------
 const awf = (cap, W, H, inner, o = {}) => `<div class="col" data-col="1" style="max-width:${Math.max(W, 200)}px"><p class="cap" style="color:#F1ECF5">${cap}</p><div class="aw ${o.light ? 'light' : ''}" data-fit="${o.fit}|${W}|${H}" style="width:${W}px;height:${H}px;${o.style || ''}">${inner}</div>${o.note ? `<p class="note" style="color:#E6DDE8">${o.note}</p>` : ''}</div>`;
@@ -794,7 +927,7 @@ function awRing22() {
 const awRing11 = () => `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:5px">${ring({ ...TE.f, ac: CL }, 52)}${wbar(TE, 5, 52)}</div>`;
 function awNum41(a, o = {}) {
   const vv = o.vs ? vp(a.w.u, a.w.g, o.light) : null, c = vv ? (vv.col || '#ECECEC') : sev(a.w.u, a.ac);
-  const rg = a.f ? ring({ ...a.f, ac: a.ac }, 60, { vs: o.vs, light: o.light }) : (o.B === 'B2' ? ring({ grey: true }, 60) : '');
+  const rg = a.f ? ring({ ...a.f, ac: a.ac }, 60, { vs: o.vs, light: o.light }) : (o.B === 'B2' ? ring({ grey: true, na: true }, 60) : '');
   return `<div style="display:flex;align-items:center;gap:12px;height:100%">${rg}<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;height:32px">${nmL(a, ' · Weekly')}<b style="margin-left:auto;font-size:32px;line-height:1;color:${c}">${vv ? vv.txt : pct(a.w.u)}</b></div>
     <div style="margin:4px 0 5px">${bar(a.w.u, a.w.g, sev(a.w.u, a.ac), 8, { track: 'rgba(236,236,236,.16)' })}</div><div class="sm el">${wline(a.w)}</div></div></div>`;
 }
@@ -802,7 +935,7 @@ const awNum21 = () => `<div style="display:flex;align-items:center;gap:8px;heigh
 const awCd21 = () => `<div style="display:flex;align-items:center;gap:8px;height:100%">${ring({ ...TE.f, ac: CL }, 44)}<div style="flex:1;min-width:0"><b style="display:block;font-size:24px;line-height:28px">2:20:14</b><div class="sm">at 5:10 pm</div><div style="margin-top:3px">${nmL(TE, '', 12)}</div></div></div>`;
 function stripCell(a, S, o = {}) {
   const pitch = o.pitch, c = sev(a.w.u, a.ac);
-  const rg = a.f ? ring({ ...a.f, ac: a.ac }, S) : o.B === 'B2' ? ring({ grey: true }, S) : `<div style="height:${S}px;display:flex;align-items:center;justify-content:center"><b style="font-size:${Math.round(S * .4)}px;color:${c}">${pct(a.w.u)}</b></div>`;
+  const rg = a.f ? ring({ ...a.f, ac: a.ac }, S) : o.B === 'B2' ? ring({ grey: true, na: true }, S) : `<div style="height:${S}px;display:flex;align-items:center;justify-content:center"><b style="font-size:${Math.round(S * .4)}px;color:${c}">${pct(a.w.u)}</b></div>`;
   const wrow = o.big ? `<div style="display:flex;align-items:center;gap:4px;width:${pitch - 8}px">${bar(a.w.u, a.w.g, c, 5, { track: 'rgba(236,236,236,.16)' })}<b style="font-size:11px;color:${c}">${pct(a.w.u)}</b></div>` : bar(a.w.u, a.w.g, c, 4, { track: 'rgba(236,236,236,.16)', w: S });
   return `<div style="width:${pitch}px;display:flex;flex-direction:column;align-items:center;gap:3px">${rg}${wrow}<div class="nmL" style="font-size:${o.big ? 11 : 10}px;max-width:${pitch}px">${mark(a.mk, a.ac, o.big ? 11 : 10)}<span class="el">${a.name}</span></div>${o.big ? `<div class="st">${a.f ? a.f.rs || '' : a.w.day}</div>` : ''}</div>`;
 }
@@ -822,17 +955,18 @@ document.getElementById('aw').innerHTML = [
 // ---------- §6 iOS ----------
 const iring = (r, S, o = {}) => ring(r, S, { font: IOSF, ink: o.light ? '20,20,20' : '242,242,242', ...o });
 const itile = (a, W, S, o = {}) => `<div class="ios">${tile(a, { W, S, ios: true, under: a.f ? `in ${a.f.inT}` : null, ...o })}</div>`;
-const iph = (body, fit) => `<div class="iph ios" data-fit="${fit}|393|"><div class="ltt">${mark('mkClaude', CL, 26)}Cooldown</div><div class="itabs"><span class="on">${mark('mkClaude', CL, 16)}Teams</span><span>${mark('mkGem', GM, 16)}Gemini</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>${body}</div>`;
+const appIc = s => `<svg width="${s}" height="${s}" style="flex:0 0 auto;display:block" aria-label="Cooldown"><use href="#appIcon"/></svg>`;   // rev C: the Shared pace app icon
+const iph = (body, fit) => `<div class="iph ios" data-fit="${fit}|393|"><div class="ltt">${appIc(28)}Cooldown</div><div class="itabs"><span class="on">${mark('mkClaude', CL, 16)}Teams</span><span>${mark('mkGem', GM, 16)}Gemini</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>${body}</div>`;
 const icard = (x) => `<div class="icard">${x}</div>`;
 function sideRow(a, on, B) {
-  const c = sev(a.w.u, a.ac), rg = a.f ? iring({ ...a.f, ac: a.ac }, 40) : B === 'B2' ? iring({ grey: true }, 40) : '<div style="width:40px"></div>';
+  const c = sev(a.w.u, a.ac), rg = a.f ? iring({ ...a.f, ac: a.ac }, 40) : B === 'B1' ? '<div style="width:40px"></div>' : iring({ grey: true, na: true }, 40);   // rev C: grey ring × by default
   return `<div class="acc${on ? ' on' : ''}">${rg}<div class="mid"><div class="nmx">${mark(a.mk, a.ac, 16)}<span class="el" style="overflow:hidden;text-overflow:ellipsis">${a.name}</span></div>${bar(a.w.u, a.w.g, c, 4, { track: '#2C2C2E', tick: '#C7C7CC' })}</div><div class="pc" style="color:${c}">${pct(a.w.u)}</div></div>`;
 }
 document.getElementById('iosapp').innerHTML = [
   col('I1 · iPhone · the account page', 'good', iph(icard(itile(TE, 329, 72)) + icard(itile(GE, 329, 72)) + icard(itile(POOL, 329, 72, { wLabel: 'Weekly', lines: [wline(POOL.w), 'Claude + GPT in Antigravity'] })), 'I1'),
     'One tile per account, iOS type (15 pt labels, 19 pt figures, 8 pt bars). Gemini and its pool shown as the second and third card.'),
-  col('I2 · iPad sidebar (300 pt)', 'good', `<div class="side ios" data-fit="I2|300|"><div style="font-size:28px;font-weight:700;padding:0 18px 10px">Cooldown</div>${sideRow(PE, false)}${sideRow(TE, true)}${sideRow(GE, false)}${sideRow(PR, false)}</div>`,
-    'Row: ring 40 pt (the 5h), name over a 4 pt Weekly bar, the Weekly figure. Personal has no 5h (B1): the ring slot is kept empty so names align. The v2.0 "figure follows the Headline" becomes: the figure is the Weekly, the ring the 5h.'),
+  col('I2 · iPad sidebar (300 pt)', 'good', `<div class="side ios" data-fit="I2|300|"><div style="font-size:28px;font-weight:700;padding:0 18px 10px;display:flex;align-items:center;gap:8px">${appIc(30)}Cooldown</div>${sideRow(PE, false)}${sideRow(TE, true)}${sideRow(GE, false)}${sideRow(PR, false)}</div>`,
+    'Row: ring 40 pt (the 5h), name over a 4 pt Weekly bar, the Weekly figure. Personal has no 5h: rev C greys its ring with a cross, so every row has the same frame. The title carries the Shared pace app icon. The v2.0 "figure follows the Headline" becomes: the figure is the Weekly, the ring the 5h.'),
 ].join('');
 // widgets
 const iwf = (cap, W, H, inner, o = {}) => `<div class="col" data-col="1" style="max-width:${Math.max(W, 180)}px"><p class="cap" style="color:#F1ECF5">${cap}</p><div class="iw ios ${o.light ? 'light' : ''}" data-fit="${o.fit}|${W}|${H}" style="width:${W}px;height:${H}px">${inner}</div>${o.note ? `<p class="note" style="color:#F1ECF5">${o.note}</p>` : ''}</div>`;
@@ -840,7 +974,7 @@ const ihdr = (a, t, s = 14) => `<div class="hdr" style="font-size:${s}px">${mark
 const ibar = (a, h, light) => bar(a.w.u, a.w.g, sev(a.w.u, a.ac), h, { track: light ? '#E5E5EA' : '#2C2C2E', tick: light ? '#8E8E93' : '#C7C7CC', light });
 function iBars(a, o = {}) {
   const light = o.light, vv = o.vs ? vp(a.w.u, a.w.g, light) : null, c = vv ? (vv.col || (light ? '#000' : '#F2F2F2')) : sev(a.w.u, a.ac);
-  const rg = a.f ? iring({ ...a.f, ac: a.ac }, 50, { light, vs: o.vs }) : o.B === 'B2' ? iring({ grey: true }, 50, { light }) : '';
+  const rg = a.f ? iring({ ...a.f, ac: a.ac }, 50, { light, vs: o.vs }) : o.B === 'B2' ? iring({ grey: true, na: true }, 50, { light }) : '';
   const m = a.m ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;white-space:nowrap"><span style="width:38px">${a.m.name}</span>${bar(a.m.u, a.m.g, sev(a.m.u, a.ac), 5, { track: light ? '#E5E5EA' : '#2C2C2E', tick: light ? '#8E8E93' : '#C7C7CC', light })}<b style="width:28px;text-align:right${o.vs && vp(a.m.u, a.m.g, light) ? ';color:' + (vp(a.m.u, a.m.g, light).col || 'inherit') : ''}">${o.vs && vp(a.m.u, a.m.g, light) ? vp(a.m.u, a.m.g, light).txt : pct(a.m.u)}</b></div>` : '';
   return `${ihdr(a, 'Weekly')}<div style="display:flex;align-items:center;gap:10px;margin-top:8px">${rg}<div style="flex:1;min-width:0"><div class="big" style="font-size:28px;color:${c}">${vv ? vv.txt : pct(a.w.u)}</div><div style="margin-top:5px">${ibar(a, 8, light)}</div></div></div>
     <div class="ft el" style="margin-top:6px">Resets ${a.w.rs}</div>${m}`;
@@ -974,27 +1108,134 @@ window.pctPass = function () {
 })();
 </script>
 <script>
+// ---------- rev C sections: 1c figure font, 1d ring room, 1e end marks, 2b tap readout, §4 status bar ----------
+// Each section draws into its own container; a failure is printed in place (and logged) instead of blanking the page.
+function revc(id, fn) { const el = document.getElementById(id); try { el.innerHTML = fn(); } catch (e) { el.innerHTML = `<p class="meas no">rev C drawing failed: ${e.message}</p>`; console.error(e); } }
+
+// 1c · figure font
+revc('fontcmp', () => {
+  const GEO = "Georgia, 'Times New Roman', serif";
+  const guide = (font, feat, fill) => {
+    const fs = 34, w = 352, base = 44, cap = base - 0.71 * fs;
+    return `<svg width="${w}" height="${base + 14}" viewBox="0 0 ${w} ${base + 14}" style="display:block"><line x1="0" x2="${w}" y1="${cap}" y2="${cap}" stroke="#E59980" stroke-opacity=".7" stroke-dasharray="3 3"/><line x1="0" x2="${w}" y1="${base}" y2="${base}" stroke="#E59980" stroke-opacity=".7" stroke-dasharray="3 3"/>`
+      + `<text x="2" y="${base}" font-family="${font}" font-size="${fs}" font-weight="700" fill="${fill}" style="font-variant-numeric:${feat === 'normal' ? 'normal' : 'tabular-nums lining-nums'};font-feature-settings:${feat}">0123456789</text></svg>`;
+  };
+  const stack = (font, feat) => `<div class="fstack" style="font-family:${font};font-variant-numeric:${feat === 'normal' ? 'normal' : 'tabular-nums lining-nums'};font-feature-settings:${feat}">${['100', '52', '34', '18', '7'].map(n => `<span>${n}<span class="pct">%</span></span>`).join('')}</div>`;
+  const TN = '"tnum" 1, "lnum" 1';
+  return [
+    col('Rev B · Georgia (retired)', 'bad', `<div class="fbox">${guide(GEO, 'normal', '#EDE8E4')}${stack(GEO, 'normal')}</div>`, 'Old-style digits: 3, 4, 5, 7, 9 hang below the baseline, 6 and 8 rise above the others, and the widths differ, so a column of figures does not line up.'),
+    col('Rev C · Android: Roboto, tabular + lining', 'good', `<div class="fbox">${guide(ANDF, TN, '#EDE8E4')}${stack(ANDF, TN)}</div>`, 'Every digit sits on the baseline at cap height (the two dashed lines) and takes one width, so 100%, 52% and 7% align on the right.'),
+    col('Rev C · iOS: SF Pro, monospaced digits', 'good', `<div class="fbox ios">${guide(IOSF, TN, '#F2F2F2')}${stack(IOSF, TN)}</div>`, 'SF Pro\'s digits are proportional by default; the app asks for monospaced digits (SwiftUI .monospacedDigit()). On a Mac without Roboto the Android drawings fall back to Helvetica Neue, also lining and tabular.'),
+  ].join('');
+});
+
+// 1d · the dashed room on rings
+revc('ringroom', () => {
+  const sizes = [96, 84, 72, 64, 56, 48, 44, 40, 36, 30];
+  const strip = light => `<div class="${light ? 'light' : ''}" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;background:${light ? '#F7F7F7' : '#232120'};border-radius:12px;padding:12px;max-width:760px">${sizes.map(S => `<figure style="margin:0;text-align:center;font-size:10.5px;color:${light ? '#5C5C5C' : '#A7A19C'}">${ring({ ...TE.f, ac: CL }, S, { light })}<figcaption>${S}</figcaption></figure>`).join('')}<figure style="margin:0;text-align:center;font-size:10.5px;color:${light ? '#5C5C5C' : '#A7A19C'}">${ring({ ...TEB.f, ac: CL }, 56, { light })}<figcaption>over: no room</figcaption></figure></div>`;
+  const z = (S, k) => ring({ ...TE.f, ac: CL }, S, { forceRoom: true, txt: '' }).replace(`width="${S}" height="${S}"`, `width="${S * k}" height="${S * k}"`);
+  const small = `<div style="display:flex;gap:16px;align-items:flex-end;background:#232120;border-radius:12px;padding:12px;color:#A7A19C;font-size:10.5px">${[24, 20].map(S => `<figure style="margin:0;text-align:center">${z(S, 1)}<figcaption>${S}</figcaption></figure><figure style="margin:0;text-align:center">${z(S, 4)}<figcaption>${S} at ×4</figcaption></figure>`).join('')}</div>`;
+  return col('The Teams 5h (34% against a 53% mark) at every ring size, dark', 'good', strip(false), 'The outline runs from the fill\'s visible end to the tick, open at the fill as on the bar, in the account colour at 60%. Line 1 dp (S/60 above 60 dp), dashes S/26.')
+    + col('Light', 'good', strip(true), 'Same alpha on the light surface; the dashes stay distinct from the 16% track.')
+    + col('Under 28 dp: dropped', 'warn', small, 'Forced on here to show why: at 24 and 20 dp the two 1 dp edges sit 1 dp apart across a 3 dp band and read as a grey seam, not a room. Every ring under 28 dp in the product (the status-bar glyph, the narrow Duet\'s 14 dp ring, the lock-screen inline glyph, band ≈ 2.3 dp) drops it.');
+});
+
+// 1e · usage end marks
+revc('endgrid', () => {
+  const EV = [['E0', 'Round cap', 'today'], ['E1', 'Square end + line', 'in the fill\'s colour'], ['E2a', 'Line by pace state', 'near = on the mark (|d| &lt; 1)'], ['E2b', 'Line by pace state', 'near = the ±5 on-pace band'], ['E3', 'Neutral line + dot', 'the dot by pace state (E2b)']];
+  const ES = [['Under · 34% vs 53%', 34, 53.3], ['Near · 50% vs 52%', 50, 52], ['Over · 64% vs 52%', 64, 52]];
+  const cell = (ev, u, g, light) => {
+    const bg = light ? '#F7F7F7' : '#232120', r = { u, g, ac: CL }, c = sev(u, CL);
+    return `<div class="ecell${light ? ' light' : ''}" style="background:${bg}"><div class="erow">${ring(r, 72, { light, end: ev, bg })}${bar(u, g, c, 10, { light, end: ev, bg, room: true, w: 146, track: trk(CL, light) })}</div>`
+      + `<div class="erow" style="padding-left:14px">${ring(r, 44, { light, end: ev, bg })}<span style="width:14px;flex:0 0 auto"></span>${bar(u, g, c, 13, { light, end: ev, bg, room: true, w: 146 })}</div></div>`;
+  };
+  const grid = light => `<div class="scroll"><div class="egrid"><div class="eh">${light ? 'Light' : 'Dark'}</div>${ES.map(s => `<div class="eh">${s[0]}</div>`).join('')}${EV.map(([id, n, d]) => `<div class="ev"><b>${id}</b> · ${n}<small>${d}</small></div>${ES.map(s => cell(id, s[1], s[2], light)).join('')}`).join('')}</div></div>`;
+  const set = `<div class="eset"><div style="font-size:15.5px">Usage end mark</div><div style="font-size:12.5px;color:#A7A19C;margin-top:2px">How a bar or ring ends at your usage</div><div class="seg"><span>Round</span><span class="on">Line</span><span>Pace colour</span></div>`
+    + `<div style="display:flex;gap:18px;margin-top:12px;align-items:center">${['E0', 'E1', 'E2b'].map(e => `<div style="display:flex;align-items:center;gap:8px">${ring({ u: 64, g: 52, ac: CL }, 36, { end: e })}${bar(64, 52, CL, 8, { end: e, w: 54, track: trk(CL) })}</div>`).join('')}</div></div>`;
+  return `<p class="cap">Dark · in each cell: tile size (ring 72, bar 10 dp), then notification size (ring 44, bar 13 dp)</p>${grid(false)}<p class="note" style="max-width:90ch">Near pace is where they differ: E2a calls 2 under "under" (green), E2b calls it "on pace" (ink), as the band words do. Over pace, E1\'s line in the account colour sits past the red slice; E2\'s red line keeps its 1 dp gap so it does not vanish into the slice.</p>`
+    + `<p class="cap" style="margin-top:22px">Light</p>${grid(true)}<p class="note" style="max-width:90ch">Light greens and reds (#2E7D32, #C62828) and ink #1F1F1F; the gap is the light surface.</p>`
+    + `<div class="row" style="margin-top:22px">${col('Appearance › Usage end mark (proposed setting)', 'good', set, 'After Usage display. Three choices, Line the default; each preview is an over-pace ring and bar.')}</div>`
+    + `<div class="recbox"><b>Recommended:</b> <b>E1 as the default</b> (the fill ends exactly at the usage, no new colour), with <b>Round (E0)</b> and <b>Pace colour (E2b)</b> as the other two choices of the setting. E2a is not offered (it flips colour at 1 point); E3 is not offered (its dot is a fourth colour, 4 to 9 dp at notification size).</div>`;
+});
+
+// 2b · tap a figure
+revc('tapx', () => {
+  const TV = { W: 351, S: 72 };
+  const C = (fit, inner, style) => card(inner, { fit: fit + '|379', style });
+  return [
+    col('P0 · the tap targets', 'good', C('P0', tile(TE, { ...TV, vs: true, tapt: true })), 'Dashed: the figures that take a tap: the ring (its figure), Weekly and Fable. Vs pace mode here, so red says over and green under.'),
+    col('P1 · (a) popover · Weekly tapped (over)', 'warn', C('P1', tile(TE, { ...TV, vs: true, tap: { t: 'w', form: 'a' } }), 'margin-top:34px'), 'A bubble above the figure, the figure pressed. It covers what is above and needs a tap elsewhere (or a timeout) to close.'),
+    col('P2 · (a) popover · ring tapped (under)', 'warn', C('P2', tile(TE, { ...TV, vs: true, tap: { t: 'r', form: 'a' } }), 'margin-top:34px'), '"57m behind pace": the 5h usage (34%) is where the mark was 57 minutes ago.'),
+    col('P3 · (b) the caption swaps · Weekly (recommended)', 'good', C('P3', tile(TE, { ...TV, vs: true, tap: { t: 'w', form: 'b' } })), 'The bar\'s pace-mark caption becomes the readout for 3 s (underlined while it shows), then returns. No height added, nothing covered.'),
+    col('P4 · (b) the 5h line swaps · ring', 'good', C('P4', tile(TE, { ...TV, vs: true, tap: { t: 'r', form: 'b' } })), 'The ring has no caption; its glyph-led 5h line under the tile carries the readout.'),
+    col('P5 · (b) Fable tapped (under)', 'good', C('P5', tile(TE, { ...TV, vs: true, tap: { t: 'm', form: 'b' } })), '"14h 57m behind pace": Fable is 8.9 points under its 7-day mark.'),
+    col('P6 · (c) an always-on line', 'warn', C('P6', tile(TE, { ...TV, vs: true, tap: { form: 'c' } })), 'The Weekly\'s readout as a third line under the tile, always. 18 dp on every tile; the 5h and Fable would each need one more.'),
+    col('P7 · Summary · (a) popover on Teams', 'warn', phone(sList(351, undefined, { TE: 'a' }), { fit: 'P7', n: 4 }), 'The bubble covers the Personal row above it.'),
+    col('P8 · Summary · (b) line 3 swaps (recommended)', 'good', phone(sList(351, undefined, { TE: 'b' }), { fit: 'P8', n: 4 }), 'Teams\' line 3 becomes "Pace catches up Thu 5 Nov, 12:50 pm" for 3 s; the pip steps aside so the readout has the line\'s full width.'),
+    col('P9 · Summary · (c) a fourth line on every row', 'warn', phone(sList(351, undefined, { GE: 'c', PE: 'c', TE: 'c' }), { fit: 'P9', n: 4 }), 'Every clocked row grows by 17 dp: Gemini "2d 15h behind pace", Personal "1d 4h behind pace", Teams the catch-up time.'),
+    col('P10 · iOS card · (a) popover', 'warn', iph(icard(itile(TE, 329, 72, { vs: true, tap: { t: 'w', form: 'a' } })), 'P10'), 'iOS type; the bubble is the system\'s dark material.'),
+    col('P11 · iOS card · (b) swap (recommended)', 'good', iph(icard(itile(TE, 329, 72, { vs: true, tap: { t: 'w', form: 'b' } })), 'P11'), 'The caption swaps as on Android, at 12.5 pt in a 243 pt bar (measured below).'),
+    col('P12 · iOS card · (c) an extra line', 'warn', iph(icard(itile(TE, 329, 72, { vs: true, tap: { form: 'c' } })), 'P12'), 'As P6, in iOS type.'),
+    col('P13 · every Usage display mode, form (b)', 'good', [['Used', {}], ['Left', { fTxt: '66%', wTxt: '48%', mTxt: '70%' }], ['Vs pace', { vs: true }]].map(([m, x]) => `<p class="cap" style="margin:8px 0 4px">${m}</p>` + C('P13' + m[0], tile(TE, { ...TV, ...x, tap: { t: 'w', form: 'b' } }))).join(''), 'The readout is about the usage, so it is the same whether the figure says 52% (Used), 48% (Left) or a red 13% (Vs pace).'),
+    col('P14 · on the mark', 'good', C('P14', tile({ ...TE, w: { ...TE.w, u: 39 } }, { ...TV, vs: true, tap: { t: 'w', form: 'b' } })), '"On the pace mark": Weekly 39% against a 39% mark (under 1 point apart).'),
+    col('P15 · notification · expanded line 2 carrying it (not recommended)', 'warn', nc({ ...wk, expanded: true, fig: 44, sub: `${Wd} to last`, sub2: 'Pace catches up Thu 5 Nov, 12:50 pm', r: R5(), under: 'in 2h 20m', panel: crow('Fable', 'Resets Sun 9:30 pm', 30, 38.9, CL), fit: 'P15' }), 'The notification has no tap-to-reveal. Carrying the readout costs its reset line, and at 12 sp it ellipsizes beside the figure (measured).'),
+  ].join('');
+});
+
+// §4 · status bar: the 5h ring only
+revc('sbar', () => {
+  const arcP = (cx, R, a, b) => { if (b - a >= 0.9999) b = a + 0.9999; const p = f => [cx + R * Math.sin(2 * Math.PI * f), cx - R * Math.cos(2 * Math.PI * f)]; const [x0, y0] = p(a), [x1, y1] = p(b); return `M${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${b - a > .5 ? 1 : 0} 1 ${x1.toFixed(2)},${y1.toFixed(2)}`; };
+  const svgO = size => `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto;display:block">`;
+  const greyed = (p, size, o = {}) => { const u = size / 24, cx = size / 2, R = 9.2 * u, ink = o.light ? '0,0,0' : '255,255,255'; return `${svgO(size)}<circle cx="${cx}" cy="${cx}" r="${R}" fill="none" stroke="rgba(${ink},.3)" stroke-width="${(1.493 * u).toFixed(2)}"/><path d="${arcP(cx, R, 0, Math.max(p / 100, .09))}" fill="none" stroke="rgba(${ink},.4)" stroke-width="${(4 * u).toFixed(2)}"/></svg>`; };
+  const cross = (size, o = {}) => { const u = size / 24, a = 7 * u, cx = size / 2, ink = o.light ? '0,0,0' : '255,255,255'; return `${svgO(size)}<path d="M${cx - a},${cx - a}L${cx + a},${cx + a}M${cx + a},${cx - a}L${cx - a},${cx + a}" stroke="${o.mono ? `rgba(${ink},.95)` : RED}" stroke-width="${(3.4 * u).toFixed(2)}" stroke-linecap="round"/></svg>`; };
+  const appG = (size, o = {}) => { const ink = o.light ? '0,0,0' : '255,255,255', bg = o.light ? '#F2F2F2' : '#000', pad = size / 24 * 1.2, s = size - 2 * pad; return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto;display:block;--gap:${bg};color:rgba(${ink},.95)"><use href="#${o.mono ? 'appMarkMono' : 'appMark'}" x="${pad}" y="${pad}" width="${s}" height="${s}"/></svg>`; };
+  const ST = [
+    { cap: 'Normal · 5h 34%', G: (sz, o) => gauge(34, 53.3, CL, sz, o) },
+    { cap: 'Binding · 5h 93%', G: (sz, o) => gauge(93, 83.3, '#FFA726', sz, o) },
+    { cap: '5h full · just a red cross', G: (sz, o) => cross(sz, o) },
+    { cap: 'Week spent · the 5h greyed', G: (sz, o) => greyed(34, sz, o) },
+  ];
+  const NO = [
+    { cap: 'N1 · the Weekly as a ring', G: (sz, o) => gauge(50, 67, GP, sz, o) },
+    { cap: 'N2 · neutral: the Shared pace mark', G: (sz, o) => appG(sz, o) },
+    { cap: 'N3 · the Weekly as a bar', G: (sz, o) => barGlyph(50, 67, GP, sz, o) },
+  ];
+  const tail = light => `<span style="margin-left:auto;opacity:${light ? .7 : .8};font-size:12px">▲ ▮▮ 67</span>`;
+  const cellSB = s => `<div style="width:220px"><p class="cap">${s.cap}</p>
+      <div class="sbar" style="width:220px"><span>2:50</span>${s.G(14, {})}${tail(false)}</div>
+      <div class="sbar light" style="width:220px;margin-top:6px"><span>2:50</span>${s.G(14, { light: true })}${tail(true)}</div>
+      <div class="zoom"><figure><div class="tile0">${s.G(72, {})}</div><figcaption>×5 dark</figcaption></figure><figure><div class="tile0">${s.G(72, { mono: true })}</div><figcaption>monochrome</figcaption></figure></div></div>`;
+  const box = (cap, cls, list) => `<div class="sbopt"><p class="cap ${cls}">${cap}</p><div class="row" style="gap:18px">${list.map(cellSB).join('')}</div></div>`;
+  return col('', '', box('The 5h ring only · Teams (Claude Max)', 'good', ST), 'Normal and binding are v2.0\'s ring, now always the 5h. Full: a red cross alone (3.4 of 24 units thick, arms 8 dp at true size), no circle; monochrome it is a white cross like any status icon. Week spent: the ring\'s 5h arc at 40% ink with no needle, since the 5h cannot be used until the week resets.')
+    + col('', '', box('An account with no 5h · Personal (ChatGPT Pro, Weekly 50%, mark 67%)', 'warn', NO), 'N1 keeps a ring but it means the Weekly (breaks the rule in the one place you look most). N2 says only "Cooldown is running": the three arcs are about 1.4 dp strokes at true size. N3 is A1\'s bar, about 12 × 6 dp: the one option that keeps the grammar. Recommended N3 (open questions).');
+});
+</script>
+<script>
 // ---------- §7 no 5h: B1 hidden vs B2 grey ring ----------
 const pPE = { mk: 'mkGpt', ac: GP, title: 'Personal · Weekly', p: 50, g: 67, sub: `${band(50, 67)} · ${allowance(50, 55.5)} · resets Fri` };
 document.getElementById('nofive').innerHTML = [
-  col('B1 · app tile · hidden', 'good', card(tile(PE, { W: 351 }), { fit: 'B1-tile|379|' }), 'The bar runs the full 351 dp.'),
-  col('B2 · app tile · grey ring', 'warn', card(tile(PE, { W: 351, B: 'B2' }), { fit: 'B2-tile|379|' }), 'Hairline ring, "—" at half ink. The bar loses 86 dp to a ring that never fills.'),
-  col('B1 · notification', 'good', nc({ ...pPE, fit: 'B1-nc' }), 'Today\'s row exactly.'),
-  col('B2 · notification', 'warn', nc({ ...pPE, grey: true, fit: 'B2-nc' }), 'Same height; the bar is 58 dp shorter.'),
-  col('B1 · Strip widget 4×1', 'good', `<div class="awall" style="padding:12px">${awf('', 363, 84, awStrip(42, false), { fit: 'B1-strip' })}</div>`, 'Personal shows its Weekly figure where a ring would be.'),
-  col('B2 · Strip widget 4×1', 'warn', `<div class="awall" style="padding:12px">${awf('', 363, 84, `<div style="display:flex;justify-content:center;align-items:center;height:100%">${[TE, PR, PE, GE].map(a => stripCell(a, 42, { pitch: 84, B: 'B2' })).join('')}</div>`, { fit: 'B2-strip' })}</div>`, 'Four identical cells; Personal\'s says "—" in the ring and has no Weekly digits.'),
-  col('B1 · iOS Bars (small)', 'good', `<div class="wall" style="padding:12px">${iwf('', 158, 158, iBars(PE), { fit: 'B1-iBars' })}</div>`, 'The Weekly figure and bar take the width.'),
-  col('B2 · iOS Bars (small)', 'warn', `<div class="wall" style="padding:12px">${iwf('', 158, 158, iBars(PE, { B: 'B2' }), { fit: 'B2-iBars' })}</div>`, 'A 50 pt grey ring beside the figure.'),
+  col('App tile · grey ring × (rev C)', 'good', card(tile(PE, { W: 351 }), { fit: 'B2-tile|379|' }), 'The ring slot stays, grey track and a cross at 45% ink; the bar starts where every other account\'s does.'),
+  col('Summary rows · grey ring × (rev C)', 'good', `<div class="card" style="padding:6px 14px;width:379px" data-fit="B2-sum|379|">${srow(PE)}${srow(TE)}</div>`, 'Personal and Teams share one frame: ring, mark and name, figure, bar, line 3.'),
+  col('iPad sidebar row · grey ring × (rev C)', 'good', `<div class="side ios" data-fit="B2-side|300|" style="padding:8px 0">${sideRow(PE, false)}${sideRow(TE, true)}</div>`, 'The 40 pt ring slot greyed with a cross, names aligned.'),
+  col('Not applicable × vs not read —', 'good', `<div class="lgdraw">${ring({ grey: true, na: true }, 72)}${ring({ grey: true }, 72)}${ring({ grey: true, na: true }, 48)}${ring({ grey: true }, 48)}</div>`, 'Left: a plan with no 5h (×). Right: a 5h with no reading yet ("—", T8). At 72 and 48 dp.'),
+  col('Notification · hidden (B1, unchanged)', 'good', nc({ ...pPE, fit: 'B1-nc' }), 'Today\'s row exactly: a grey ring here would cost the bar 58 dp for nothing.'),
+  col('Strip widget 4×1 · hidden (B1, unchanged)', 'good', `<div class="awall" style="padding:12px">${awf('', 363, 84, awStrip(42, false), { fit: 'B1-strip' })}</div>`, 'Personal shows its Weekly figure where a ring would be.'),
+  col('iOS Bars (small) · hidden (B1, unchanged)', 'good', `<div class="wall" style="padding:12px">${iwf('', 158, 158, iBars(PE), { fit: 'B1-iBars' })}</div>`, 'The Weekly figure and bar take the width.'),
 ].join('');
 
 // ---------- §8 table ----------
 const T = [
   ['Surface', 'Today (approved v2.0)', 'With the grammar', 'What changes', 'Fit / height (measured)'],
-  ['App · account page (Android, iOS)', '7-day card (All, Fable bars, chart) then 5-hour card (bar, chart)', 'One tile: ring 72 (56 at 320, 88 at 760) left; Weekly · All models and Fable bars right; band line', 'Two cards become one; the 5h chart moves to a third chip; projection as a dotted arc on the open ring', 'Tile fits 351, 260 and 700 dp; no ellipsis at 411 (§2 log)'],
-  ['App · Summary rows', 'Line 3 ends "5h 34%"', 'Ring 40 at the row\'s left', 'Companion text removed', 'Row 58 dp; line 3 ellipsizes at 320 as today'],
+  ['Figures, every surface (rev C)', 'Bar and Summary figures in Georgia (old-style digits of uneven height)', 'One sans with tabular, lining digits: Roboto (tnum, lnum) on Android, SF Pro with monospaced digits on iOS; the small baseline "%" kept', 'Every digit one height and one width; no serif figure anywhere', 'Ring figures re-fitted to the bore with tabular widths (fit log)'],
+  ['App · account page (Android, iOS)', '7-day card (All, Fable bars, chart) then 5-hour card (bar, chart)', 'One tile: ring 72 (56 at 320, 84 at 760) left; Weekly · All models and Fable bars right; band line. No 5h: the ring slot greyed with a cross (rev C)', 'Two cards become one; the 5h chart moves to a third chip; projection as a dotted arc on the open ring', 'Tile fits 351, 260 and 700 dp; no ellipsis at 411 (§2 log)'],
+  ['App · Summary rows', 'Line 3 ends "5h 34%"', 'Ring 48 at the row\'s left; no 5h: grey ring with a cross (rev C)', 'Companion text removed; every row has the same frame', 'Row 58 dp; line 3 ellipsizes at 320 as today'],
+  ['Rings, every size (rev C)', 'Dashed room on bars only', 'The dashed room on every ring of 28 dp and up, in the account colour', 'Under the mark a ring now shows its room as a bar does', 'Dropped under 28 dp (status bar, narrow Duet, lock-screen inline)'],
+  ['Usage end mark (rev C)', 'Round cap', 'Recommended E1 (square end and a short line); E0 and E2b as an Appearance option', 'The fill ends at the usage, not half a band past it', 'Line 1.5 dp on bars; 0.35 band past each edge on rings'],
+  ['Tap a figure (rev C)', '—', 'The figure\'s own line swaps for 3 s: "Pace catches up Thu 5 Nov, 12:50 pm" / "1d 4h behind pace" / "On the pace mark"', 'New; spec/core §6.3, fixtures markTime', 'No height added (form b)'],
   ['Notification · single', 'Weekly bar, "· 5h 34%" in the sub line', 'H4 ring 44 left, figure 13 sp, no label', 'Sub line is the pace words only; expanded panel loses its 5h row (−43 dp), time left goes under the ring', 'Collapsed Δ 0 against N0; expanded header 71 dp holds 60'],
   ['Notification · Duet', '14 dp label line, bar, 30 sp figure', 'Ring 36 left (half ≥150 dp); bare 14 dp ring under 150', 'Teams\' bar 86 → about 47 dp', 'Halves ≤ 52 dp'],
-  ['Status-bar icon', 'Ring, Weekly until the 5h binds', 'A1 bar then ring, or A2 ring always', 'A1: a new bar glyph in the 24 dp box', '≈12 × 6 dp bar at true size'],
+  ['Status-bar icon (rev C)', 'Ring, Weekly until the 5h binds; full = red ring with a white cross', 'The 5h ring only; full = a red cross alone; spent week = the ring greyed; no 5h = N1, N2 or N3 (§4)', 'The 7-day leaves the status bar (it stays in the notification)', '24 dp box, ≈15 dp slot'],
+  ['Notification · Duet · small widgets, no 5h', 'No ring', 'Unchanged: no ring (B1)', 'None', 'As today'],
   ['Android Ring widget', 'Ring for the chosen window, companion ring', '5h ring, Weekly bar under it', 'Companion ring → bar; the Weekly choice of a Ring face goes (see questions)', '2×2 and 1×1 within frame'],
   ['Android Number', 'Figure, bar, chips 5h | Weekly', 'Ring 60 / 52 left of the Weekly figure and bar', 'Chips go (both shown)', '4×1, 2×1 within frame'],
   ['Android Countdown', '"5h reset" caption + count', 'Ring 44 + count', 'Caption → ring; Weekly countdown unchanged', '2×1 within frame'],
@@ -1008,8 +1249,13 @@ document.getElementById('tbl').innerHTML = T.map((r, i) => `<tr>${r.map(c => i ?
 
 // ---------- open questions ----------
 const Q = [
-  ['A · the status-bar icon.', 'A1 (bar while the Weekly leads, ring when the 5h binds) or A2 (ring always).', 'Recommend A1</span>, which is also the desktop\'s menu-bar rule: the grammar everywhere, and the change of shape is the takeover signal at 14 dp, where colour is lost in monochrome. Risk: the bar is about 12 × 6 dp; judge it on the Fold 7 before building (memory: status-bar icon true size).'],
-  ['B · a plan with no 5h.', 'B1 hidden or B2 grey ring. The desktop chose B2.', 'Recommend B2 on the app tile, Summary and iPad sidebar, to match the desktop and keep columns aligned; B1 on the notification, Duet and small widgets</span>, where B2 costs the bar 58 to 86 dp for a ring that never fills (and ellipsizes the pace words, measured in §7). If you want one rule everywhere, B2 (the desktop\'s).'],
+  ['C1 · the usage end mark (rev C, §1e).', 'E0 round cap (today), E1 square end and a line in the fill\'s colour, E2 the line by pace state (E2a near = on the mark, E2b near = the ±5 band), E3 a neutral line with a pace-coloured dot.', 'Recommend E1 as the default</span>: the fill ends exactly at the usage (E0\'s cap draws it up to 2.7% of the circle further), and it adds no colour. Offer one setting, Appearance › "Usage end mark": Round (E0) · Line (E1, default) · Pace colour (E2b). E2b, not E2a, because its "near" is the band words\' "On pace", so the line and the words agree; E2a turns green or red at 1 point, which flickers. E3 not offered: at notification size the dot is 4 to 9 dp and reads as a bead, a fourth colour beside the ladder, Vs pace and the account colour.'],
+  ['C2 · the tap readout form (rev C, §2b).', '(a) popover above the figure, (b) the figure\'s own line swaps for 3 s, (c) an always-on extra line.', 'Recommend (b)</span>: no added height, nothing covered, and the readout lands where the pace-mark caption already talks about the mark; the 5h ring swaps its 5h line, a Summary row its line 3. (a) covers the row above and needs a dismiss; (c) costs 18 to 20 dp on every tile and every row for a number you want now and then. TalkBack: the readout is the figure\'s action hint, read on double-tap.'],
+  ['C3 · the readout in the notification.', 'The notification has no tap-to-reveal. Its expanded line 2 ("Resets Sun 9:30 pm · in 4d 6h") could carry "Pace catches up Thu 5 Nov, 12:50 pm" instead (drawn in §2b).', 'Recommend no</span>: at 12 sp it ellipsizes in the 186 dp beside the figure (measured), and the reset is the line the notification exists for. A tap on the notification opens the app, where the readout is one more tap.'],
+  ['C4 · durations under a day.', 'Robin\'s form is "Xd Yh"; under a day this page writes "14h 57m", under an hour "57m", all rounded down.', 'Recommend these</span>; the words are family layer (spec/core §6.3 fixes only the instant).'],
+  ['C5 · tapping the ring.', 'Rev B made a tap on the ring select the 5h chip on the open tile; rev C makes the ring\'s figure a readout target.', 'Recommend both on one tap</span>: on a Compact tile the tap swaps the 5h line; on an open tile it also selects the 5h chip.'],
+  ['C6 · status bar, an account with no 5h (rev C, §4).', 'N1 the Weekly as a ring after all, N2 a neutral glyph (the Shared pace mark), N3 the Weekly as A1\'s bar.', 'Recommend N3</span>: it is the one option that keeps the grammar (a ring is the 5h, a bar the 7-day), it still carries usage and the pace tick, and the bar only appears for plans that have no ring to show. N1 breaks the rule in the one place you look most; N2 says nothing about usage. Judge N3 on the Fold 7 (≈12 × 6 dp) before building.'],
+  ['C7 · status bar, the 5h full.', 'Rev C draws a red cross alone (24-unit box, 3.4-unit stroke); monochrome it is a white cross.', 'Recommend</span> keep it until the 5h resets, then return to the ring; while the Weekly is spent the greyed ring outranks it (the 5h cannot be used).'],
   ['The desktop\'s "5H" labels.', 'The desktop draws "5H" under the ring, "NO 5H" on the grey ring and "5h 93%" beside the menu-bar ring. Your rule came after it.', 'Recommend the desktop drops them too</span> (a task for the desktop session, not done here); this page has none.'],
   ['The widget mode header.', 'The desktop\'s widgets name the mode in the header ("PERSONAL · USED"); mobile\'s say "Teams · Weekly".', 'Recommend keep mobile\'s</span> (approved v2.0 labels); revisit if the desktop\'s header proves clearer in Vs pace.'],
   ['Auto takeover.', 'With rings fixed to the 5h, the H4 swap (ring shows Weekly) is gone.', 'Recommend no swap</span>: the ring turns loud and the sub line takes the 5h\'s words; the trailing figure stays the Weekly. Alternative: the trailing figure becomes the 5h figure during a takeover, which then appears twice (ring and figure).'],
