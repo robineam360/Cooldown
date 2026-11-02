@@ -413,7 +413,14 @@ For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), n
   **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
 - Every floor and half-up adds 1e-9 first, so binary float edges (`2.3 − 0.3`) land on the decimal answer.
 
-Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`.
+- **When the mark meets the usage** (Robin, 2026-11-02; any clocked window, not spent, a reading): the pace
+  mark passes `usedPct` at `windowStart + usedPct ÷ 100 × windowLength` (`windowStart` = reset − length).
+  Over the mark that instant is ahead — how long to slow down for the mark to catch up; under the mark it is
+  behind — how much the usage trails the mark, as a duration. On the mark (`< 1` point), spent, no reset clock
+  or no reading → none. Words and where it shows are family layer.
+
+Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`,
+`markTime`.
 
 ---
 
