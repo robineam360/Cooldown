@@ -34,7 +34,8 @@
       "rateLimitTier": "default_claude_max_20x",
       "hasMax": true,
       "hasPro": false,
-      "expected": "Ultra"
+      "expected": "Ultra",
+      "why": "Anthropic renamed Max 20x to Ultra on 2026-10-30"
     },
     {
       "organizationType": "claude_max",
@@ -82,7 +83,8 @@
       "rateLimitTier": "default_claude_max_20x",
       "hasMax": true,
       "hasPro": false,
-      "expected": "Ultra"
+      "expected": "Ultra",
+      "why": "Anthropic renamed Max 20x to Ultra on 2026-10-30"
     },
     {
       "organizationType": null,
@@ -132,15 +134,18 @@
     },
     {
       "planType": "prolite",
-      "expected": "Pro 100"
+      "expected": "Pro 100",
+      "why": "confirmed by Robin's account (2026-11-02)"
     },
     {
       "planType": "pro",
-      "expected": "Pro 200"
+      "expected": "Pro 200",
+      "why": "INFERRED from the codes' order (lite / base / max against 100 / 200 / 500)"
     },
     {
       "planType": "promax",
-      "expected": "Pro 500"
+      "expected": "Pro 500",
+      "why": "INFERRED from the codes' order"
     },
     {
       "planType": "team",
@@ -220,17 +225,20 @@
     {
       "paidTierId": "g1-ultra-lite-tier",
       "paidTierName": "Google AI Ultra",
-      "expected": "Ultra 5x"
+      "expected": "Ultra 5x",
+      "why": "captured 2026-10-17 (jiran-monitor PR #23); \"Ultra 5x\" INFERRED (the lower of Google's two Ultra plans)"
     },
     {
       "paidTierId": "g1-ultra-tier",
       "paidTierName": "Google AI Ultra",
-      "expected": "Ultra 20x"
+      "expected": "Ultra 20x",
+      "why": "UNVERIFIED: no Ultra 20x account seen anywhere"
     },
     {
       "paidTierId": "g1-plus-tier",
       "paidTierName": "Google AI Plus",
-      "expected": "Plus"
+      "expected": "Plus",
+      "why": "an id this build has never seen (no Plus id is known): paidTier.name less \"Google AI \""
     },
     {
       "paidTierId": "g1-something-tier",
