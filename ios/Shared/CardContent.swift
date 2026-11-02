@@ -147,6 +147,14 @@ enum CardContent {
 
     static let notStartedLine = "Starts when a message is sent"
 
+    /// CCRM-102 (Spent Week Gate): the one full-opacity line under a disabled 5h (spec mobile §5).
+    static func weekGateNote(weeklyResetMs: Int64?, nowMs: Int64, use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> String {
+        let until = weeklyResetMs.map { dayClock($0, nowMs, use24h, timeZone) } ?? "the weekly reset"
+        return "Weekly limit reached — 5h can't be used until \(until)"
+    }
+    /// A widget face showing the 5h while the week is spent.
+    static let weekSpentStamp = "Weekly spent"
+
     /// A folded card's one line (rev B): Weekly "Slow down · ≈11%/day · resets Sun" or "Out until Sun 9:30 pm";
     /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 pm".
     static func compactLine(_ c: WindowContent) -> String {
@@ -212,8 +220,17 @@ struct Notice: Equatable {
     let body: String
     let action: String?
     let tone: Tone
+    /// A raw detail under the title ("Reply held 1 of 3 groups").
+    var evidence: String? = nil
 
-    static func forAccount(label: String, state: AccountState, snapshot: Snapshot?, nowMs: Int64) -> Notice? {
+    static func forAccount(label: String, state: AccountState, snapshot: Snapshot?, nowMs: Int64,
+                           provider: Provider = .claude) -> Notice? {
+        // CCRM-55 (H): Google answered without the Gemini groups. Never 0% or 100%: the last good cards stay.
+        if provider == .antigravity, state.lastKind == "invalidResponse" {
+            return Notice(title: "Google changed something — usage unavailable",
+                          body: "Cooldown won’t guess. An app update may be needed.", action: nil, tone: .warning,
+                          evidence: state.lastMessage.hasPrefix("Reply held") ? state.lastMessage : nil)
+        }
         if state.lastKind == "plan" {
             let plan = state.plan ?? "Free"
             return Notice(title: "Usage isn’t available on the \(plan) plan",

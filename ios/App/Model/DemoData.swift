@@ -70,6 +70,11 @@ enum DemoData {
                 fields.append(#""spend":{"used":{"amount_minor":12390,"currency":"USD","exponent":2},"limit":{"amount_minor":40000,"currency":"USD","exponent":2},"percent":31,"severity":"normal","enabled":true}"#)
             }
             body = "{" + fields.joined(separator: ",") + "}"
+        case .antigravity:
+            func bucket(_ id: String, _ used: Double, _ reset: Int64) -> String {
+                #"{"bucketId":"\#(id)","remainingFraction":\#(1 - used / 100),"resetTime":"\#(iso(reset))"}"#
+            }
+            body = #"{"groups":[{"displayName":"Gemini Models","buckets":[\#(bucket("gemini-5h", sessionPct, sessionReset)),\#(bucket("gemini-weekly", weeklyPct, weeklyReset))]}]}"#
         case .chatgpt:
             body = #"{"plan_type":"plus","rate_limit":{"allowed":true,"limit_reached":false,"primary_window":{"used_percent":\#(Int(sessionPct)),"limit_window_seconds":18000,"reset_after_seconds":\#((sessionReset - now) / 1000),"reset_at":\#(sessionReset / 1000)},"secondary_window":{"used_percent":\#(Int(weeklyPct)),"limit_window_seconds":604800,"reset_after_seconds":\#((weeklyReset - now) / 1000),"reset_at":\#(weeklyReset / 1000)}},"credits":{"has_credits":true,"unlimited":false,"balance":"4.20"}}"#
         }

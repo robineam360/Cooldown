@@ -28,6 +28,8 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var companionLoud: Bool?
         var spent: Bool?
         var projection: String?
+        /// CCRM-102: a 5h row while the week is spent (dimmed, "Weekly spent").
+        var weekGated: Bool?
 
         var providerValue: Provider { Provider(rawValue: provider) ?? .claude }
         var leadsWeekly: Bool { weeklyLeads ?? false }
@@ -36,6 +38,7 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var windowLabel: String { leadsWeekly ? "Weekly" : "5h" }
         var companionLabel: String { leadsWeekly ? "5h" : "Weekly" }
         var isSpent: Bool { spent ?? false }
+        var isWeekGated: Bool { weekGated ?? false }
         /// The window has reset since the app last wrote this row (the activity went stale at that moment).
         var hasReset: Bool { reset.map { $0 <= .now } ?? false }
         /// What the number shows: a window that has reset is back at 0%.
@@ -61,6 +64,7 @@ struct CooldownActivityAttributes: ActivityAttributes {
             weeklyLeads = face.leadsWeekly ? true : nil
             companionLoud = face.companionLoud ? true : nil
             spent = face.leadSpent ? true : nil
+            weekGated = face.weekGated ? true : nil
             projection = face.leadsWeekly ? nil : face.session?.projectionShort.flatMap { $0.hasPrefix("~ runs out") ? $0 : nil }
         }
     }

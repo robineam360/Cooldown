@@ -480,3 +480,16 @@ Source: `ios/Shared/CardContent.swift`, `ios/Shared/Charts.swift` (`UsageBar.sho
 
 #### Bars (§ "Height, app card" row) — append
 "Summary row bar 10 pt; one-line Summary row (6+ accounts) 7 pt, 50–110 pt wide."
+
+## Gemini and the spent-week gate on iOS — CCRM-55, CCRM-102
+
+As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
+
+- **§1.2 Providers table, Antigravity row:** replace "**Android only: iOS ships Claude and ChatGPT**" with "iOS: `GeminiMark`
+  (asset `ios/Shared/Assets.xcassets/GeminiMark.imageset`, the same spark as `ic_provider_gemini`, template-rendered,
+  drawn at 100% of the box); Gemini Blue `#4285F4` light / `#8AB4F8` dark (`ios/Shared/Theme.swift`)". The provider's
+  display name is "Gemini" everywhere on iOS.
+- **Theme colour, "Per provider" swatch (iOS):** three equal bands (Claude, ChatGPT, Gemini), was two (rev B §6 default).
+- **§4.5 / copy, new iOS rows:**
+  | Weekly spent, 5h shown | card: figure, bar, chart (no projection) and reset line at 45%, no caption; one full-ink line "Weekly limit reached — 5h can't be used until Thu 10:21 pm" (weekly reset, `dayClock`) | widgets/faces showing the 5h: dimmed to 45%, stamp "Weekly spent" at full opacity |
+  Source: `CardContent.weekGateNote`, `CardContent.weekSpentStamp`, `WindowCard.weekGate`.

@@ -618,3 +618,16 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the face it amends,
   window (Weekly: "4d 6h", not live).
 - Gallery descriptions: Bars "One account's Weekly and 5h, each with its bar."; Strip "One account: Weekly big,
   with 5h under it."; Lock "One account's Weekly and 5h on the lock screen."
+
+## Gemini and the spent-week gate on iOS — CCRM-55, CCRM-102
+
+As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
+
+- **CCRM-102 gate on faces showing the 5h:** Number (window 5h) — label, figure and bar at 45%, the footnote replaced by
+  "Weekly spent" (12.5 pt, ink). Countdown — the timer at 45%, "Weekly spent" in place of "at 5:10 pm". Overview with a 5h
+  lead (Headline 5-hour) — header, bar, line A and chart at 45% (no projection), line B "Weekly spent". Lock circular
+  (5h lead) — ring dimmed; inline (5h lead) — "Teams 5h · Weekly spent". Live Activity / Island row with a 5h lead — bar
+  and big figure dimmed, the line reads "Weekly spent" (row state gains optional `weekGated`). Control Center (5h) —
+  value "Weekly spent". Weekly-led faces (the default) are unchanged: the spent Weekly already drops the 5h companion.
+- **CCRM-55:** every face, the lock screen, the Live Activity and the Control Center draw a Gemini account as any other,
+  in Gemini Blue with its mark; the pool is never on a widget.

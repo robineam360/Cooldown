@@ -35,6 +35,10 @@ final class AppModel {
     let isDemo: Bool
 
     init(demo: DemoScenario? = DemoScenario.fromLaunchArguments()) {
+        // The User-Agent's version, and CCRM-55's client secret from the uncommitted xcconfig (never logged).
+        AppInfo.configure(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                          build: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String, commit: nil)
+        Antigravity.configure(clientSecret: Bundle.main.object(forInfoDictionaryKey: "AntigravityClientSecret") as? String)
         api = APIClient()
         if let demo {
             isDemo = true
@@ -244,6 +248,45 @@ final class AppModel {
             }
             try await addAccount(provider: .claude, grant: grant)
             claudePending = nil
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
+    // MARK: - Gemini sign-in (CCRM-55: Google's page in an ASWebAuthenticationSession, then a pasted 4/ code)
+
+    private var antigravityPending: AntigravitySignIn.Pending?
+
+    /// A fresh attempt; "Start again" calls this again, so an older page's code is refused by its state.
+    func beginAntigravitySignIn() -> URL {
+        let (url, pending) = AntigravitySignIn.begin()
+        antigravityPending = pending
+        return url
+    }
+
+    static let antigravityCodeFailed = "That code didn’t work — it may have expired or been copied wrong. Start again."
+    static let antigravityOtherSignIn = "That code is for a different sign-in — start again."
+
+    /// Returns an error sentence (rev B I4/I5), or nil when the account was added. Never logs the code or a token.
+    func completeAntigravitySignIn(pasted: String) async -> String? {
+        guard let pending = antigravityPending else { return "Start again — open the sign-in page first." }
+        let code: String
+        switch AntigravitySignIn.parsePaste(pasted, expectedState: pending.state) {
+        case .code(let c): code = c
+        case .otherSignIn: return Self.antigravityOtherSignIn
+        case .unreadable: return Self.antigravityCodeFailed
+        }
+        if isDemo { return Self.antigravityCodeFailed }
+        do {
+            let response = try await api.exchangeAntigravityCode(code: code, verifier: pending.verifier)
+            guard response.code == 200,
+                  let grant = TokenGrant.antigravity(body: response.body, previous: nil, nowMs: Self.clock()),
+                  !grant.credentials.refreshToken.isEmpty
+            else { return Self.antigravityCodeFailed }
+            let assist = try? await api.loadCodeAssist(accessToken: grant.credentials.accessToken).1
+            try await addAccount(provider: .antigravity, grant: grant.withAntigravity(project: assist?.project, plan: assist?.plan))
+            antigravityPending = nil
             return nil
         } catch {
             return error.localizedDescription

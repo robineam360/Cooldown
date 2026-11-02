@@ -6,14 +6,26 @@ import Foundation
 public enum Provider: String, Codable, Sendable {
     case claude
     case chatgpt
+    /// CCRM-55 (Antigravity Account): Google's Gemini windows, read through Antigravity (API-CONTRACT §10).
+    case antigravity
 
     /// CCM-126 [Readout]: the company whose servers answer — "Couldn't reach Anthropic/OpenAI".
     /// Two CLIs ("Claude Code"/"Codex"), two services (these); product names are for accounts
     /// and plans.
-    public var serviceName: String { self == .chatgpt ? "OpenAI" : "Anthropic" }
+    public var serviceName: String {
+        switch self {
+        case .claude: "Anthropic"
+        case .chatgpt: "OpenAI"
+        case .antigravity: "Google"
+        }
+    }
 
     /// CCM-126 [Readout]: the service's status page, for "Check status" links.
     public var statusPageURL: String {
-        self == .chatgpt ? "https://status.openai.com" : "https://status.anthropic.com"
+        switch self {
+        case .claude: "https://status.anthropic.com"
+        case .chatgpt: "https://status.openai.com"
+        case .antigravity: "https://status.cloud.google.com"
+        }
     }
 }

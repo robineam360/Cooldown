@@ -572,3 +572,38 @@ card's chart and keeps the rest a tap away. …"
 #### §8 Share card — iOS
 The 5h row's line is now its projection ("On track for ~69%"); the Weekly row reads the band words. Layout otherwise
 unchanged (5h row still above Weekly — not in any v2.0 wireframe).
+
+## Gemini and the spent-week gate on iOS — CCRM-55, CCRM-102
+
+As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
+
+- **§2.4.4 5-hour card — iOS, add (CCRM-102 (Spent Week Gate)):** while the account's Weekly is spent (≥ 99.5) the 5h
+  card is disabled, not hidden: header, bar (no dashed room), chart without its projection and the reset line(s) at 45%
+  ("on track for ~N%" and the V1 caption dropped); folded it shows the reset line alone; the note above sits under it
+  at full opacity (14.5 pt, ink), wrapping. Same rule inside the Gemini pool pair. `ios/App/UI/Cards.swift`.
+- **§2.4 Cards, add (CCRM-55):** a Gemini account's cards are the shipped ones in Gemini Blue; Argon is the 7-day card's
+  model half ("Argon", hidden by Show model limits); once the Claude + GPT pool has been used (a reset clock or a reading
+  above 0), a group label "Claude + GPT in Antigravity" (15 pt semibold, `txt`) and a second pair (7-day, then 5h, the same
+  anatomy, folded by default, no history so no chart samples) follow the account's cards. Untouched: nothing drawn.
+- **§2.6 Notices, add (H):** Gemini only, after a 200 without the Gemini groups: title "Google changed something — usage
+  unavailable", evidence line in 12.5 pt monospaced `sub` "Reply held 1 of 3 groups", body "Cooldown won’t guess. An
+  app update may be needed."; warning tone (cards dim as under any notice); the last good cards stay; no cards and the
+  notice alone when there was never a reading. No action button on iOS (no update channel).
+- **§2.7 First launch (L3):** a third mark and a third 260 pt capsule "Add a Gemini account" in Gemini Blue; body "…for
+  Claude, ChatGPT and Gemini."; footnote "Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are
+  trademarks of Google LLC." (centred). Without the client secret the Gemini mark, capsule and body mention are hidden.
+- **§6.4/6.5 About (L2), iOS:** "Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of
+  Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC."
+- **§7 Sign-in flows, new §7.3 Gemini (iOS, I1–I5):** Add account gains a third row (32 pt mark, "Gemini", "Signs in with
+  Google in your browser, then paste the code back."), hidden on a build without the secret; the sheet's footnote reads
+  "Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain.
+  Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC."; the sheet
+  now opens at medium and large. Sign-in sheet: "Sign in to Gemini", steps "1. Sign in with Google and approve Cooldown.
+  2. Copy the code Google shows you and paste it here.", Gemini-Blue capsule "Sign in with Google" opening an
+  `ASWebAuthenticationSession` (shared browser session; it never auto-completes, the user closes it). Then: "Copy the code
+  Google shows you and paste it here.", a field (no autocapitalisation, placeholder "4/…"), helper "The code starts with
+  4/. You can also paste the whole address.", buttons Cancel · Continue (Continue disabled while empty). Errors: red line
+  under the field and the line "That code didn’t work — it may have expired or been copied wrong. Start again." or "That
+  code is for a different sign-in — start again."; the left button becomes "Start again" (a fresh PKCE attempt).
+- **§2.2 iPad sidebar / §6.2 Accounts:** a Gemini account is an ordinary row (mark, name, plan pill Free · Pro · Ultra from
+  `loadCodeAssist`'s `paidTier.id`); re-sign-in opens the Gemini sheet.

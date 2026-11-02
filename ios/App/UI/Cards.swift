@@ -25,16 +25,57 @@ struct WindowCard: View {
     var linesOnly = false
     var dimmed = false
     var rightResetLine: String?
+    /// CCRM-102 (Spent Week Gate): the week is spent, so this 5h is disabled — figure, bar, chart and reset line at
+    /// 45%, no caption, no projection — and this note sits under it at full opacity.
+    var weekGate: String? = nil
     @Environment(\.palette) private var p
 
     var body: some View {
         CardBox {
-            header
-            UsageBar(pct: content.pct, pace: content.pace, accent: accent, height: 11, dimmed: dimmed, showsRoom: true)
-                .padding(.top, 12)
-            if let caption = content.caption, let mark = content.pace {
-                PaceCaption(text: caption, markPct: mark).padding(.top, 1)
+            Group {
+                header
+                UsageBar(pct: content.pct, pace: content.pace, accent: accent, height: 11, dimmed: dimmed, showsRoom: weekGate == nil)
+                    .padding(.top, 12)
+                if weekGate == nil, let caption = content.caption, let mark = content.pace {
+                    PaceCaption(text: caption, markPct: mark).padding(.top, 1)
+                }
+                if weekGate != nil {
+                    gatedBody
+                } else {
+                    openOrFolded
+                }
             }
+            .opacity(weekGate == nil ? 1 : 0.45)
+            if let weekGate {
+                Text(weekGate).font(.system(size: 14.5)).foregroundStyle(p.ink).padding(.top, 8)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(content.title), \(content.pct.map { "\(Int($0)) percent" } ?? "no reading"). \(weekGate ?? content.paceLine). \(content.resetsIn).")
+    }
+
+    /// Greyed: the chart when open, and the reset line alone (rev B §3b: "on track for ~N%" dropped).
+    @ViewBuilder private var gatedBody: some View {
+        if expanded || !collapsible, let chart = content.chart {
+            TrendChart(model: chart.withoutProjection, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
+                .frame(height: chartHeight).padding(.top, 12)
+        }
+        if content.notStarted {
+            Text(content.resetsIn).font(.system(size: 14.5)).foregroundStyle(p.sub).padding(.top, 10)
+        } else if expanded || !collapsible {
+            HStack {
+                Text(content.leadReset)
+                Spacer(minLength: 8)
+                Text(rightResetLine ?? content.secondReset)
+            }
+            .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
+        } else {
+            Text(content.leadReset).font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
+        }
+    }
+
+    @ViewBuilder private var openOrFolded: some View {
             if expanded || !collapsible {
                 if let chart = content.chart {
                     TrendChart(model: chart, accent: accent, dimmed: dimmed, linesOnly: linesOnly)
@@ -63,9 +104,6 @@ struct WindowCard: View {
                 Text(CardContent.compactLine(content))
                     .font(.system(size: 14.5)).foregroundStyle(content.paceLineAlarm ? p.red : p.txt).padding(.top, 10)
             }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(content.title), \(content.pct.map { "\(Int($0)) percent" } ?? "no reading"). \(content.paceLine). \(content.resetsIn).")
     }
 
     private var header: some View {
@@ -217,6 +255,9 @@ struct NoticeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(notice.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(p.ink)
+            if let evidence = notice.evidence {
+                Text(evidence).font(.system(size: 12.5).monospaced()).foregroundStyle(p.sub)
+            }
             Text(notice.body).font(.system(size: 14)).foregroundStyle(p.txt)
             if let action = notice.action {
                 Button(action, action: onAction)
@@ -266,7 +307,8 @@ struct AccountCards: View {
         let accent = account.accent(scheme)
         let state = model.states[account.key] ?? AccountState()
         let snapshot = model.snapshots[account.key]
-        let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs)
+        let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs,
+                                       provider: account.provider)
         let layout = model.drawnLayout(account.key)
         VStack(spacing: 12) {
             if model.noticeOwed { WeeklyFirstNoticeView() }
@@ -294,8 +336,43 @@ struct AccountCards: View {
                         if moreOpen { ForEach(layout.folded) { card($0, accent: accent, notice: notice, folded: true) } }
                     }
                 }
+                // CCRM-55 (E2): the Claude + GPT pool inside Antigravity, only once it has been used.
+                if let pool = model.usage(account.key)?.pools.first(where: \.shown) {
+                    poolCards(pool, accent: accent, notice: notice)
+                }
             }
         }
+    }
+
+    /// The pool's own pair, Weekly then 5h, the same anatomy under a group label. No history is kept for it.
+    @ViewBuilder
+    private func poolCards(_ pool: UsagePool, accent: Color, notice: Notice?) -> some View {
+        let dimmed = notice?.tone == .error || notice?.tone == .warning
+        let weekly = CardContent.window(title: "All", window: pool.weekly, kind: HistoryStats.weeklyKind, history: [],
+                                        nowMs: model.nowMs, use24h: Display.use24h)
+        let five = CardContent.window(title: "5-hour window", window: pool.session, kind: HistoryStats.sessionKind, history: [],
+                                      nowMs: model.nowMs, use24h: Display.use24h)
+        Text(pool.name).font(.system(size: 15, weight: .semibold)).foregroundStyle(p.txt)
+            .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 2).padding(.top, 4)
+        if let weekly {
+            WeeklyCard(all: weekly, cap: nil, accent: accent, expanded: poolBinding("w"), dimmed: dimmed)
+        }
+        if let five {
+            WindowCard(content: five, accent: accent, expanded: poolBinding("s"), dimmed: dimmed,
+                       weekGate: Pace.isSpent(pool.weekly?.percent)
+                           ? CardContent.weekGateNote(weeklyResetMs: pool.weekly?.resetsAtMs, nowMs: model.nowMs) : nil)
+        }
+    }
+
+    @State private var poolOpen: Set<String> = []
+    private func poolBinding(_ id: String) -> Binding<Bool> {
+        Binding(get: { poolOpen.contains(id) }, set: { if $0 { poolOpen.insert(id) } else { poolOpen.remove(id) } })
+    }
+
+    /// CCRM-102: the note for the 5h card while the week is spent, else nil.
+    static func weekGate(_ usage: UsageData?, nowMs: Int64) -> String? {
+        guard let weekly = usage?.weekly, Pace.isSpent(weekly.percent), let reset = weekly.resetsAtMs, reset > nowMs else { return nil }
+        return CardContent.weekGateNote(weeklyResetMs: reset, nowMs: nowMs)
     }
 
     @ViewBuilder
@@ -316,7 +393,8 @@ struct AccountCards: View {
                                              history: history, nowMs: model.nowMs, use24h: Display.use24h) {
                 WindowCard(content: five, accent: accent, expanded: binding, chartHeight: height,
                            linesOnly: size.linesOnly, dimmed: dimmed,
-                           rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, Display.use24h, .current))" : nil)
+                           rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, Display.use24h, .current))" : nil,
+                           weekGate: Self.weekGate(usage, nowMs: model.nowMs))
             }
         case .weekly:
             if let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,

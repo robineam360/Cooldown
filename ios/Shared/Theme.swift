@@ -37,11 +37,26 @@ extension Provider {
         switch self {
         case .claude: scheme == .dark ? Color(hex: 0xE59980) : Color(hex: 0xD97757)
         case .chatgpt: scheme == .dark ? Color(hex: 0x19C39A) : Color(hex: 0x10A37F)
+        // CCRM-55 (Antigravity Account): Gemini Blue (foundations §1.2).
+        case .antigravity: scheme == .dark ? Color(hex: 0x8AB4F8) : Color(hex: 0x4285F4)
         }
     }
 
-    var markAsset: String { self == .claude ? "ClaudeMark" : "ChatGPTMark" }
-    var displayName: String { self == .claude ? "Claude" : "ChatGPT" }
+    var markAsset: String {
+        switch self {
+        case .claude: "ClaudeMark"
+        case .chatgpt: "ChatGPTMark"
+        case .antigravity: "GeminiMark"
+        }
+    }
+    /// The provider is "Gemini" everywhere (CCRM-55 rev B); "Antigravity" only in the trademark line.
+    var displayName: String {
+        switch self {
+        case .claude: "Claude"
+        case .chatgpt: "ChatGPT"
+        case .antigravity: "Gemini"
+        }
+    }
 }
 
 /// The provider's own mark, tinted (CCRM-56: logos, not dots).

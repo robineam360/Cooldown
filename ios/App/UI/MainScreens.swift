@@ -63,8 +63,17 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 extension Notification.Name { static let openAccount = Notification.Name("cooldown.openAccount") }
 
 enum Sheet: String, Identifiable {
-    case settings, addAccount, claudeSignIn, chatGPTSignIn, layout, share
+    case settings, addAccount, claudeSignIn, chatGPTSignIn, geminiSignIn, layout, share
     var id: String { rawValue }
+
+    /// The sign-in sheet for an account's provider.
+    static func signIn(for provider: Provider) -> Sheet {
+        switch provider {
+        case .claude: .claudeSignIn
+        case .chatgpt: .chatGPTSignIn
+        case .antigravity: .geminiSignIn
+        }
+    }
 }
 
 struct RootView: View {
@@ -120,6 +129,7 @@ struct RootView: View {
                 case .addAccount: AddAccountSheet(sheet: $sheet)
                 case .claudeSignIn: ClaudeSignInSheet()
                 case .chatGPTSignIn: ChatGPTSignInSheet()
+                case .geminiSignIn: GeminiSignInSheet()
                 case .layout: LayoutSheet(accountKey: model.currentAccountKey ?? "")
                 case .share: ShareSheet(accountKey: model.currentAccountKey ?? "")
                 }
@@ -141,6 +151,7 @@ struct RootView: View {
         case "addAccount": sheet = .addAccount
         case "claude": sheet = .claudeSignIn
         case "chatgpt": sheet = .chatGPTSignIn
+        case "gemini": sheet = .geminiSignIn
         case "layout": sheet = .layout
         case "share": sheet = .share
         default: break
@@ -280,7 +291,7 @@ struct PhoneMain: View {
         }
     }
 
-    private func signIn(_ account: Account) { sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn }
+    private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
 }
 
 /// iPad landscape: the sidebar lists every account; the pinned one fills the top half, the selected one the bottom.
@@ -341,7 +352,7 @@ struct IPadLandscape: View {
         VStack(alignment: .leading, spacing: 10) {
             AccountHeader(account: account, pinned: pinned)
             AccountCards(account: account, twoAcross: true, cardWidth: 396,
-                         onSignIn: { sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn })
+                         onSignIn: { sheet = Sheet.signIn(for: account.provider) })
         }
     }
 
@@ -447,7 +458,7 @@ struct PinnedAndTabs: View {
         }
     }
 
-    private func signIn(_ account: Account) { sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn }
+    private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
 }
 
 /// An iPad half's header: mark, name, plan chip, "Pinned", and the account's credits on the right.
@@ -505,18 +516,25 @@ struct EmptyStateView: View {
             Text("Cooldown").font(.system(size: 34, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
             Spacer()
-            HStack(spacing: 14) { ProviderMark(provider: .claude, size: 54); ProviderMark(provider: .chatgpt, size: 54) }
+            HStack(spacing: 14) {
+                ProviderMark(provider: .claude, size: 54); ProviderMark(provider: .chatgpt, size: 54)
+                if Antigravity.available { ProviderMark(provider: .antigravity, size: 54) }
+            }
             Text("Track your usage windows").font(.system(size: 22, weight: .bold)).padding(.top, 22)
-            Text("See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude and ChatGPT.")
+            Text(Antigravity.available
+                 ? "See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude, ChatGPT and Gemini."
+                 : "See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude and ChatGPT.")
                 .font(.system(size: 15.5)).foregroundStyle(p.txt).multilineTextAlignment(.center).padding(.top, 8)
                 .padding(.horizontal, 32)
             VStack(spacing: 12) {
                 addButton("Add a Claude account", .claude) { sheet = .claudeSignIn }
                 addButton("Add a ChatGPT account", .chatgpt) { sheet = .chatGPTSignIn }
+                if Antigravity.available { addButton("Add a Gemini account", .antigravity) { sheet = .geminiSignIn } }
             }
             .padding(.top, 28)
             Spacer()
-            Text("Not affiliated with Anthropic or OpenAI.").font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.bottom, 24)
+            Text("Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
+                .font(.system(size: 12.5)).foregroundStyle(p.sub).multilineTextAlignment(.center).padding(.horizontal, 24).padding(.bottom, 24)
         }
     }
 

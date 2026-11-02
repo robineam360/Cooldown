@@ -1,0 +1,6 @@
+// CCRM-55 (Antigravity Account): the Antigravity CLI's public installed-app OAuth client secret (spec core
+// API-CONTRACT §10.1). Public by design, but GitHub push protection rejects it, so it never enters the repo:
+// copy Antigravity.secrets.xcconfig.example to Antigravity.secrets.xcconfig (git-ignored) and fill it in.
+// Without it the build still succeeds and the Gemini row is hidden.
+ANTIGRAVITY_CLIENT_SECRET =
+#include? "Antigravity.secrets.xcconfig"

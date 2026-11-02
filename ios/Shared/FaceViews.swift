@@ -113,7 +113,10 @@ struct NumberFace: View {
             let weekly = entry.window == .weekly && !face.leadsWeekly
             let pct = weekly ? face.weeklyPct : face.pct
             let pace = weekly ? face.weeklyPace : face.pace
+            // CCRM-102: a 5h Number while the week is spent — the face dimmed, the stamp "Weekly spent" at full opacity.
+            let gated = !weekly && face.weekGated
             VStack(alignment: .leading, spacing: 0) {
+                Group {
                 FaceLabel(face: face, suffix: weekly ? "Weekly" : face.windowLabel)
                 Spacer(minLength: 6)
                 (face.status == .signIn || face.status == .plan ? Text("—") : Display.pctText(pct, pace: pace, size: (pct ?? 0) >= 100 ? 40 : 46))
@@ -123,7 +126,13 @@ struct NumberFace: View {
                 Spacer(minLength: 6)
                 UsageBar(pct: face.status == .signIn ? nil : pct, pace: pace, accent: face.account.accent(colorSchemeFor(p)),
                          height: 8, dimmed: face.isDimmed)
-                FaceFootnote(face: face, weekly: weekly).font(.system(size: 12.5)).padding(.top, 8)
+                }
+                .opacity(gated ? 0.45 : 1)
+                if gated {
+                    Text(CardContent.weekSpentStamp).font(.system(size: 12.5)).foregroundStyle(p.ink).padding(.top, 8)
+                } else {
+                    FaceFootnote(face: face, weekly: weekly).font(.system(size: 12.5)).padding(.top, 8)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else {
@@ -148,8 +157,13 @@ struct CountdownFace: View {
                         .font(.system(size: 35, weight: .bold)).monospacedDigit()
                         .foregroundStyle(p.ink).lineLimit(1).minimumScaleFactor(0.6)
                         .padding(.top, 8)
-                    Text(face.atLimit ? "Limit · opens \(face.resetClock(reset))" : "at \(face.resetClock(reset))")
-                        .font(.system(size: 13.5)).foregroundStyle(face.atLimit ? p.red : p.sub)
+                        .opacity(face.weekGated ? 0.45 : 1)
+                    if face.weekGated {
+                        Text(CardContent.weekSpentStamp).font(.system(size: 13.5)).foregroundStyle(p.ink)
+                    } else {
+                        Text(face.atLimit ? "Limit · opens \(face.resetClock(reset))" : "at \(face.resetClock(reset))")
+                            .font(.system(size: 13.5)).foregroundStyle(face.atLimit ? p.red : p.sub)
+                    }
                 } else {
                     Text("—:—").font(.system(size: 35, weight: .bold)).foregroundStyle(p.sub).padding(.top, 8)
                     FaceFootnote(face: face).font(.system(size: 13.5))
@@ -404,15 +418,23 @@ struct AccountCard: View {
 
     // MARK: Full, Chart-narrow, Regular
 
+    /// CCRM-102: a 5h lead while the week is spent.
+    private var gated: Bool { face.weekGated }
+
     private var tall: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header(mark: 16, name: 15, number: tier == .full ? 40 : tier == .chartNarrow ? 30 : 34, foot: false)
-            UsageBar(pct: blank ? nil : pct, pace: pace, accent: accent, height: 8, dimmed: face.isDimmed).padding(.top, 6)
-            lineA.font(.system(size: 12.5)).lineLimit(1).padding(.top, 2)
+            Group {
+                header(mark: 16, name: 15, number: tier == .full ? 40 : tier == .chartNarrow ? 30 : 34, foot: false)
+                UsageBar(pct: blank ? nil : pct, pace: pace, accent: accent, height: 8, dimmed: face.isDimmed).padding(.top, 6)
+                lineA.font(.system(size: 12.5)).lineLimit(1).padding(.top, 2)
+            }
+            .opacity(gated ? 0.45 : 1)
             if let b = lineB { b.font(.system(size: 12.5)).lineLimit(1).padding(.top, 2) }
             if tier != .regular {
-                TrendChart(model: blank ? Self.emptyChart : (content?.chart ?? Self.emptyChart), accent: accent,
-                           dimmed: face.isDimmed || blank, linesOnly: tier == .chartNarrow)
+                // Greyed with the 5h while the week is spent, and no projection for a window that can't be used.
+                TrendChart(model: blank ? Self.emptyChart : gated ? (content?.chart ?? Self.emptyChart).withoutProjection
+                               : (content?.chart ?? Self.emptyChart), accent: accent,
+                           dimmed: face.isDimmed || blank || gated, linesOnly: tier == .chartNarrow)
                     .frame(minHeight: 60, maxHeight: 170)
                     .padding(.top, 8)
             }
@@ -486,6 +508,7 @@ struct AccountCard: View {
     /// "Out until …"; 5h: its projection ("~ runs out 3:25 pm").
     private var lineB: Text? {
         guard !blank, let c = content, !c.notStarted else { return nil }
+        if gated { return Text(CardContent.weekSpentStamp).foregroundStyle(p.ink) }
         if leadsWeekly {
             if spent { return Text(c.paceLine.hasPrefix("Out until") ? c.paceLine : "Out until \(c.resetsAt.replacingOccurrences(of: "Resets at ", with: ""))").foregroundStyle(p.red) }
             let words = narrow ? (c.band.flatMap(PaceText.bandWords) ?? "") : c.paceLine
@@ -617,7 +640,7 @@ struct LockFace: View {
                     UsageRing(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, lineWidth: 5,
                               label: face.status == .signIn ? "—" : (face.atLimit || face.leadSpent) ? "MAX"
                                   : Display.number(face.pct, pace: face.pace).replacingOccurrences(of: "%", with: ""),
-                              sublabel: face.leadsWeekly ? "W" : "5h", fontSize: 19, mono: .white)
+                              sublabel: face.leadsWeekly ? "W" : "5h", fontSize: 19, mono: .white, dimmed: face.weekGated)
                         .padding(2)
                 }
             case .accessoryRectangular:
@@ -659,6 +682,7 @@ struct LockFace: View {
     }
 
     private func inline(_ face: Face, withReset: Bool) -> String {
+        if face.weekGated { return "\(face.account.label) 5h · \(CardContent.weekSpentStamp)" }
         let pct = face.status == .signIn ? "—" : Display.pct(face.pct, pace: face.pace)
         let when = face.reset.map { face.leadsWeekly ? CardContent.weekday($0.ms, .current) : shortClock($0) }
         let tail = withReset ? (when.map { " · resets \($0)" } ?? "") : ""
@@ -708,7 +732,8 @@ struct LockPanel: View {
                     // crashed the extension's layout (the two-account panel never appeared). RowLine bounds its timer.
                     RowLine(row: row, long: false).font(.system(size: 12)).lineLimit(1).layoutPriority(1)
                 }
-                UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 7, dimmed: row.asOf != nil)
+                UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 7,
+                         dimmed: row.asOf != nil || row.isWeekGated)
                 companionLine(row, width: 42, barHeight: 4, size: 11.5)
             }
             BigNumber(row: row, size: (row.pct ?? 0) >= 100 ? 32 : 38).frame(width: 84, alignment: .trailing)
@@ -740,7 +765,8 @@ struct LockPanel: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 7) {
                     HStack(spacing: 6) { ProviderMark(provider: row.providerValue, size: 15); Text("\(row.label) · \(row.windowLabel)").font(.system(size: 15)) }
-                    UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 8, dimmed: row.asOf != nil)
+                    UsageBar(pct: row.signIn ? nil : row.shownPct, pace: row.hasReset ? nil : row.pace, accent: accent, height: 8,
+                             dimmed: row.asOf != nil || row.isWeekGated)
                     RowLine(row: row, long: true).font(.system(size: 12.5))
                 }
                 BigNumber(row: row, size: 52)
@@ -761,6 +787,8 @@ struct RowLine: View {
             Text(long ? "Sign-in stopped working · open Cooldown" : "sign in again").foregroundStyle(p.orange)
         } else if let asOf = row.asOf {
             Text("as of \(shortClock(asOf))").foregroundStyle(p.orange)
+        } else if row.isWeekGated, !row.hasReset {
+            Text(CardContent.weekSpentStamp).foregroundStyle(p.ink)
         } else if row.hasReset, let reset = row.reset {
             // Drawn when iOS marks the activity stale at the first reset: the window is over, so no 0:00.
             Text(long ? "\(row.windowLabel) reset at \(row.clock(reset)) · back at 0%" : "reset · 0%").foregroundStyle(p.txt)
@@ -799,6 +827,7 @@ struct BigNumber: View {
         (row.signIn ? Text("—") : Display.pctText(row.shownPct, pace: row.hasReset ? nil : row.pace, size: size))
             .font(.system(size: size, weight: .semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
             .foregroundStyle(row.signIn || row.asOf != nil ? p.sub : p.severity(row.shownPct, accent: row.accent))
+            .opacity(row.isWeekGated ? 0.45 : 1)
     }
 }
 

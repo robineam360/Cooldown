@@ -87,7 +87,8 @@ struct AccountControlProvider: AppIntentControlValueProvider {
         case .signIn: value = "Sign in again"
         case .plan: value = "No usage on this plan"
         case .stale, .aging: value = "\(Display.pct(face.pct, pace: face.pace)) · as of \(face.fetchedAt.map(shortClock) ?? "—")"
-        default: value = face.atLimit ? "Limit reached" : Display.pct(face.pct, pace: face.pace)
+        default: value = face.weekGated ? CardContent.weekSpentStamp
+            : face.atLimit ? "Limit reached" : Display.pct(face.pct, pace: face.pace)
         }
         return AccountControlValue(key: face.account.key, title: "\(face.account.label) · \(face.windowLabel)", value: value)
     }

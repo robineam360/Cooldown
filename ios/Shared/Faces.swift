@@ -94,6 +94,8 @@ struct Face: Equatable, Sendable {
     /// A Weekly lead that is spent: the 5h companion is dropped (rev B: spent drops the 5h row).
     var leadSpent: Bool { leadsWeekly && Pace.isSpent(pct) }
     var showsCompanion: Bool { companionPct != nil && !leadSpent }
+    /// CCRM-102 (Spent Week Gate): the main slot is the 5h while the week is spent — drawn dimmed, "Weekly spent".
+    var weekGated: Bool { !leadsWeekly && pct != nil && Pace.isSpent(weeklyPct) }
 
     /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
     func resetClock(_ date: Date) -> String {

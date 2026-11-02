@@ -50,7 +50,7 @@ struct SettingsScreen: View {
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
-                                sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn
+                                sheet = Sheet.signIn(for: account.provider)
                             }
                             Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
                             Button("Remove", systemImage: "trash", role: .destructive) { Task { await model.remove(account.key) } }
@@ -145,7 +145,7 @@ struct SettingsScreen: View {
                 } header: { Text("Appearance") }
                 Section {
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
-                    Text("Unofficial. Not affiliated with Anthropic or OpenAI. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI.")
+                    Text("Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.")
                         .font(.system(size: 13)).foregroundStyle(p.sub)
                 } header: { Text("About") } footer: {
                     Text("Touch and hold an account to rename, pin, sign in again or remove it. Drag to reorder: the order is the same everywhere.")
@@ -308,9 +308,12 @@ struct ColourGrid: View {
                 } else {
                     switch first {
                     case .perProvider:
-                        Circle().fill(AngularGradient(colors: [Provider.claude.accent(scheme), Provider.claude.accent(scheme),
-                                                              Provider.chatgpt.accent(scheme), Provider.chatgpt.accent(scheme)],
-                                                      center: .center))
+                        // Three equal bands since CCRM-55 (rev B §6 default).
+                        Circle().fill(AngularGradient(stops: [
+                            .init(color: Provider.claude.accent(scheme), location: 0), .init(color: Provider.claude.accent(scheme), location: 1 / 3),
+                            .init(color: Provider.chatgpt.accent(scheme), location: 1 / 3), .init(color: Provider.chatgpt.accent(scheme), location: 2 / 3),
+                            .init(color: Provider.antigravity.accent(scheme), location: 2 / 3), .init(color: Provider.antigravity.accent(scheme), location: 1),
+                        ], center: .center))
                     case .provider(let provider):
                         Circle().fill(provider.accent(scheme))
                     }

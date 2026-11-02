@@ -125,6 +125,8 @@ public struct Snapshot: Sendable, Equatable, Codable {
         switch provider {
         case .claude: UsageParser.parse(body)
         case .chatgpt: ChatGPTUsageParser.parse(body, nowMs: nowMs)
+        // Judged at the fetch time: an untouched window's reset slides with every call (API-CONTRACT §10.3).
+        case .antigravity: AntigravityUsageParser.parse(body, nowMs: fetchedAtMs)
         }
     }
 }

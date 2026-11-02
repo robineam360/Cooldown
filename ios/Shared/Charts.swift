@@ -292,3 +292,12 @@ private struct CaptionLayout: Layout {
         caption.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY), proposal: .unspecified)
     }
 }
+
+extension TrendChart.Model {
+    /// CCRM-102 (Spent Week Gate): a greyed 5h draws no projection — it can't be used before the weekly reset.
+    var withoutProjection: TrendChart.Model {
+        var copy = self
+        copy.projection = nil
+        return copy
+    }
+}
