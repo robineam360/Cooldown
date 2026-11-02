@@ -362,4 +362,9 @@ weekly.
   Names). Claude Max 20x → "Ultra", 5x → "Max"; ChatGPT prolite → "Pro 100" (confirmed by Robin's account), pro /
   promax → "Pro 200" / "Pro 500" (inferred); Gemini g1-ultra-lite-tier → "Ultra 5x" (inferred), g1-ultra-tier →
   "Ultra 20x" (unverified).
+  Fresh Opus judge on 57968bd + 6b5ce0e: **concerns**, four, adopted — iOS ChatGPT sign-in names the plan by §11 (it
+  said "Prolite"), the iOS Plan row and Details map the stored plan as the pill does, the surfaces lines, CCBG-73 notes
+  the stored forms differ by platform; the plans fixture marks its inferred and unverified rows (9edb717, spec/core
+  only — land it with 57968bd). Not checked live: the cited pricing and rename pages (Robin confirmed the names);
+  Gemini's plan is read only at sign-in, so an existing Gemini account keeps its label until it signs in again.
 

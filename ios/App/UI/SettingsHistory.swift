@@ -268,7 +268,9 @@ struct AccountPage: View {
             Section("Account") {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Plan")
-                    Text(model.states[account.key]?.plan ?? "—").font(.system(size: 15)).foregroundStyle(p.sub)
+                    // API-CONTRACT §11's name, as the pill shows it.
+                    Text(model.states[account.key]?.plan.map { PlanNames.display(account.provider, $0, tier: model.states[account.key]?.tier) } ?? "—")
+                        .font(.system(size: 15)).foregroundStyle(p.sub)
                 }
                 Button { colouring = true } label: {
                     VStack(alignment: .leading, spacing: 6) {
@@ -420,7 +422,9 @@ struct AccountDetailsSheet: View {
         let state = model.states[account.key]
         NavigationStack {
             List {
-                if let plan = state?.plan { LabeledContent("Plan", value: plan) }
+                if let plan = state?.plan {
+                    LabeledContent("Plan", value: PlanNames.display(account.provider, plan, tier: state?.tier))
+                }
                 if let email = state?.email { LabeledContent("Email", value: email) }
                 LabeledContent("Last checked", value: stamp(state?.lastAttemptAtMs ?? 0))
                 LabeledContent("Last successful check", value: stamp(state?.lastSuccessAtMs ?? 0))

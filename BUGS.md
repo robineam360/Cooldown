@@ -156,7 +156,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Free, Pro, Max, Ultra." spec/core API-CONTRACT §11 (57968bd) now names every provider's codes, with sources; both
   clients read it through one mapper (`PlanNames`, Android and CooldownCore) on the core fixtures
   (`fixtures/plans/`), at parse time and again when a stored plan is shown, so an older stored "Prolite" or 20x
-  "Max" reads right at once. No multiplier is appended any more.
+  "Max" reads right at once. No multiplier is appended any more. The stored form differs by platform, the names do
+  not: Android keeps ChatGPT's raw `plan_type` and names it at display; iOS stores the name at parse and re-maps at
+  display (iOS sign-in, the Plan row and Details included).
 - **Severity:** Low
 - **Symptom:** the ChatGPT plan pill read "Prolite" (the raw `prolite` code capitalised); Claude Max showed "Max 5x" /
   "Max 20x" (Android) or "Max" for both (iOS), names Anthropic retired on 2026-10-30 ("Max" and "Ultra"); iOS read

@@ -359,7 +359,8 @@ units at most ("3d 4h", "2h 14m", "9m"). Source: `ui/Palette.kt:259-330`,
   the currency's exponent (0-6): "$9.57", "$1,234.00"; unknown code falls back to "CODE ". Billing
   figures read the same everywhere. A window and a credits percent can differ by one point on one
   screen; that is intended.
-- Rate: one decimal, "1.8%/h". Plan multiplier from a tier string: "default_5x" becomes "5x".
+- Rate: one decimal, "1.8%/h". Plan names: spec/core API-CONTRACT §11 ("Max", "Ultra", "Pro 100", "Ultra 5x"); no
+  multiplier is appended since 2026-11-02.
 - Dates: "Jul 16, 2026", "Aug 13, 8:30 PM", "23 Jul". Relative past: "just now", "12m ago", "2h 10m
   ago", "never".
 

@@ -340,7 +340,8 @@ final class AppModel {
                           let grant = TokenGrant.chatGPT(body: exchange.body, previous: nil, nowMs: Self.clock())
                     else { return .stage(.denied, detail: "HTTP \(exchange.code)") }
                     try await addAccount(provider: .chatgpt, grant: grant)
-                    return .done(label: accounts.last?.label ?? "ChatGPT", plan: grant.plan?.capitalized)
+                    // API-CONTRACT §11's name ("prolite" → "Pro 100"), never the raw code capitalised.
+                    return .done(label: accounts.last?.label ?? "ChatGPT", plan: grant.plan.map(PlanNames.chatgpt))
                 } catch {
                     return .stage(.failed, detail: error.localizedDescription)
                 }

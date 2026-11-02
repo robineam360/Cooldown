@@ -730,7 +730,7 @@ pace pip (40 × 12 dp scale, centre mark, 4 dp dot at the Pace: green-grey #8FBF
 resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at
 3:40 PM · resets Fri", `SummaryRows.heldWords`); under the measured width line 3 drops "· resets <day>" first
 (CCBG-60 (Summary Line Clip)); the name gives way before the plan pill, which keeps its place beside it (the pill
-reads `Fmt.planLabel`, as Settings: "Prolite", CCBG-62 (Plan Pill Case)). **Tap the figure** (P8): its own
+reads `Fmt.planLabel`, as Settings: "Pro 100", CCBG-62 (Plan Pill Case), API-CONTRACT §11). **Tap the figure** (P8): its own
 80 × 48 dp target over the figure and the bar's end (CCBG-56 (Summary Readout Tap)) — line 3 becomes the Weekly's
 readout (§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined (the font's own underline,
 CCBG-57 (Readout Underline Clip)); the target exists only while there is a readout (Fable F7), so a spent,
