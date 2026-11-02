@@ -403,7 +403,8 @@ Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `sessionBind
 ## 6.3 Distance from the pace mark — numbers
 
 **Status:** decided 2026-11-02 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)); promoted from the mobile
-layer the same day because every family shows it. Words and layout stay family layer.
+layer the same day because every family shows it; `markTime` added the same day (Robin). Words and layout stay
+family layer.
 
 For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), not spent (§6.1):
 
@@ -416,8 +417,15 @@ For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), n
 - **When the mark meets the usage** (Robin, 2026-11-02; any clocked window, not spent, a reading): the pace
   mark passes `usedPct` at `windowStart + usedPct ÷ 100 × windowLength` (`windowStart` = reset − length).
   Over the mark that instant is ahead — how long to slow down for the mark to catch up; under the mark it is
-  behind — how much the usage trails the mark, as a duration. On the mark (`< 1` point), spent, no reset clock
-  or no reading → none. Words and where it shows are family layer.
+  behind — how much the usage trails the mark, as a duration. The result is one of:
+  - **over** (`usedPct − elapsedPct ≥ 1`): `markReachesUsedAtMs` (that instant, epoch ms) and
+    `inMs` = `markReachesUsedAtMs − now`;
+  - **under** (`elapsedPct − usedPct ≥ 1`): `markWasAtUsedAgoMs` = `now − that instant`;
+  - **on** (`|elapsedPct − usedPct| < 1`): side only, no instant (nothing to show);
+  - **none** (null): spent (§6.1, used ≥ 99.5), no reset clock or no reading.
+
+  Instants and durations are whole milliseconds, rounded half up. Words and where it shows are family layer;
+  no client implements `markTime` yet.
 
 Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`,
 `markTime`.
