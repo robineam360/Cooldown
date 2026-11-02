@@ -186,10 +186,26 @@
     {
       "file": "load-code-assist-ultra.json",
       "expected": {
-        "plan": "Ultra",
+        "plan": "Ultra 20x",
         "project": "redacted-project-789"
       },
-      "why": "g1-ultra-tier is UNVERIFIED (no Ultra account seen); constructed by analogy with g1-pro-tier"
+      "why": "g1-ultra-tier is UNVERIFIED (no Ultra 20x account seen anywhere); API-CONTRACT §11"
+    },
+    {
+      "file": "load-code-assist-ultra-lite.json",
+      "expected": {
+        "plan": "Ultra 5x",
+        "project": "redacted-project-790"
+      },
+      "why": "g1-ultra-lite-tier, captured 2026-10-17 (jiran-monitor PR #23): the lower Ultra plan; \"Ultra 5x\" is INFERRED (Google sells Ultra 5x and 20x); API-CONTRACT §11"
+    },
+    {
+      "file": "load-code-assist-plus-guess.json",
+      "expected": {
+        "plan": "Plus",
+        "project": "redacted-project-791"
+      },
+      "why": "an id this build has never seen: paidTier.name, \"Google AI \" stripped; API-CONTRACT §11"
     }
   ]
 }

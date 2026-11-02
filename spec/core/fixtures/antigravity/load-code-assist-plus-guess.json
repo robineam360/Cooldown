@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "captured": false,
+    "why": "an unknown paid tier: the label is paidTier.name less a leading \"Google AI \" (no Plus id is known)"
+  },
+  "cloudaicompanionProject": "redacted-project-791",
+  "currentTier": {
+    "id": "standard-tier"
+  },
+  "paidTier": {
+    "id": "g1-plus-tier",
+    "name": "Google AI Plus"
+  }
+}

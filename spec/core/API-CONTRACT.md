@@ -471,12 +471,12 @@ Undocumented and unversioned like §3 — treat every field as optional. Capture
 |---|---|---|
 | `claude_free` | — | Free |
 | `claude_pro` | — | Pro |
-| `claude_max` | — | Max |
+| `claude_max` | — | Max, or **Ultra** when `rate_limit_tier` names 20x (§11) |
 | `claude_enterprise` | — | Enterprise |
 | `claude_team` | `null` | Team |
 | `claude_team` | `"team_standard"` | Team Standard |
 | `claude_team` | anything else | Team Premium |
-| `null` | — | Max if `has_claude_max`, else Pro if `has_claude_pro`, else no plan (nil) |
+| `null` | — | Max (Ultra on a 20x `rate_limit_tier`, §11) if `has_claude_max`, else Pro if `has_claude_pro`, else no plan (nil) |
 | anything else | — | that type's name, `claude_` stripped, `_` → space, **only the first character of the whole string capitalized** — not each word (`"claude_something_new"` → `"Something new"`) |
 
 **Free-plan detection.** `PlanTag.isBlockedPlan(plan)` is `plan == "Free"` — the one label
@@ -528,8 +528,8 @@ uncommitted xcconfig). A build without it hides the Gemini row in Add account in
 
 `POST https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist`, body
 `{"metadata":{"ideType":"ANTIGRAVITY"}}`, headers as 10.3. Reads `cloudaicompanionProject` (cache it
-with the credentials; fetch again on any 4xx from 10.3) and `paidTier.id`: `g1-pro-tier` → Pro,
-`g1-ultra-tier` → Ultra (**unverified** — no Ultra account seen), absent → Free. **Never
+with the credentials; fetch again on any 4xx from 10.3) and `paidTier.id` (with `paidTier.name`), labelled
+per §11's table (`g1-pro-tier` → Pro, `g1-ultra-lite-tier` → Ultra 5x, `g1-ultra-tier` → Ultra 20x), absent → Free. **Never
 `currentTier`**: it reads `free-tier` on a Pro account. Cases: `fixtures/antigravity/` → `plan`.
 
 ### 10.3 Usage — `retrieveUserQuotaSummary`
@@ -577,3 +577,58 @@ windows is BEHAVIOR-SPEC §1.1; cases `fixtures/antigravity/cases.json` → `par
 | 429 / 5xx | as the other providers (§6) | backoff |
 
 Source: `design/research/2026-11-02-antigravity-respike.md`, `-agy-proxy-capture-plan.md`.
+
+---
+
+## 11. Plan names — every provider (Robin, 2026-11-02)
+
+**Status:** decided 2026-11-02. The label a client shows for a plan, from the code the provider sends. Two families
+must agree, so this table is core. Cases: [`fixtures/plans/cases.json`](fixtures/plans/cases.json) (and
+`fixtures/antigravity/cases.json` → `plan`). No multiplier is appended to any label ("Max 5x" / "Max 20x" are gone).
+
+**Claude** — §9's fields; source: claude.com/pricing (fetched 2026-11-02) — Free, Pro, Max ($100, "5x Pro usage"),
+Ultra ($200, "10x Pro usage every week", no 5-hour limit for verified accounts); Anthropic renamed "Max 5x" to "Max"
+and "Max 20x" to "Ultra" on 2026-10-30 (thenextweb.com, "claude-ultra-max-plan-rename-five-hour-limit"). Team seats are
+Standard and Premium. Confirmed by Robin 2026-11-02 ("Claude has Free, Pro, Max, Ultra").
+
+| Profile | Label |
+|---|---|
+| `organization_type` `claude_max` (or none with `has_claude_max`) and `rate_limit_tier` containing `max_20x` | Ultra |
+| `organization_type` `claude_max` (or none with `has_claude_max`), any other or no `rate_limit_tier` (`…max_5x`) | Max |
+| everything else | §9's table, unchanged (Free, Pro, Team, Team Standard, Team Premium, Enterprise; an unseen type by its own name, so a future `claude_ultra` reads "Ultra") |
+
+An Ultra account with no `five_hour` window is the existing no-5h case.
+
+**ChatGPT** — `plan_type` (matched in any case, so a label stored by an older build re-maps); codes from OpenAI's Codex
+source, `codex-rs/protocol/src/account.rs` (main, fetched 2026-11-02); names from OpenAI's help article "About ChatGPT
+Pro tiers" (help.openai.com/en/articles/9793128: "Pro 100", "Pro 200", "Pro 500") and Robin, 2026-11-02 ("ChatGPT
+has Free, Go, Plus, Pro 100, Pro 200, Pro 500").
+
+| `plan_type` | Label |
+|---|---|
+| `free` | Free |
+| `go` | Go |
+| `plus` | Plus |
+| `prolite` | Pro 100 — **confirmed by Robin's account** (it reports `prolite` and is on Pro 100) |
+| `pro` | Pro 200 — **inferred** from the codes' order (lite / base / max against 100 / 200 / 500) |
+| `promax` | Pro 500 — **inferred**, as `pro` |
+| `team` | Team |
+| `business`, `self_serve_business_prolite`, `self_serve_business_usage_based` | Business |
+| `enterprise`, `ent26`, any `enterprise_cbp_…` | Enterprise |
+| `edu` / `edu_plus` / `edu_pro` | Edu / Edu Plus / Edu Pro |
+| any other (`sci`, `sci_plus`, `unknown`, a new code) | its words title-cased, split on `_` and `-` — "Sci Plus", never glued ("Pro Lite", not "Prolite") |
+
+**Gemini** — `loadCodeAssist`'s `paidTier` (§10.2); no Google document lists the ids. Plans sold: "Google AI Plus",
+"Google AI Pro", "Google AI Ultra 5x", "Google AI Ultra 20x" (one.google.com/about/google-ai-plans, fetched
+2026-11-02); the pill drops "Google AI ".
+
+| `paidTier` | Label | Evidence |
+|---|---|---|
+| `g1-pro-tier` | Pro | our account (2026-11-02) and four in github.com/IGNGserver/jiran-monitor/pull/23 |
+| `g1-ultra-lite-tier` (name "Google AI Ultra") | Ultra 5x | captured 2026-10-17 in that PR; the 5x reading is **inferred** (the lower of Google's two Ultra plans) |
+| `g1-ultra-tier` | Ultra 20x | **UNVERIFIED** — no Ultra 20x account seen anywhere |
+| any other id | `paidTier.name` less a leading "Google AI " ("Google AI Plus" → Plus); with no name, the id's words title-cased | no Plus id is known |
+| no `paidTier` | Free | |
+
+`currentTier` is never read (it says `free-tier` or `standard-tier` on paid accounts, §10.2).
+

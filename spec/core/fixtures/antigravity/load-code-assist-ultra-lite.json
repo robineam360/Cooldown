@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "captured": false,
+    "why": "g1-ultra-lite-tier as captured 2026-10-17 in github.com/IGNGserver/jiran-monitor/pull/23 (paidTier.name \"Google AI Ultra\"); the project id is ours, redacted"
+  },
+  "cloudaicompanionProject": "redacted-project-790",
+  "currentTier": {
+    "id": "free-tier"
+  },
+  "paidTier": {
+    "id": "g1-ultra-lite-tier",
+    "name": "Google AI Ultra"
+  }
+}
