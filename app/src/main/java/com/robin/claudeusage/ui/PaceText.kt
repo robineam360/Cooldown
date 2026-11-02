@@ -1,6 +1,10 @@
 package com.robin.claudeusage.ui
 
 import com.robin.claudeusage.data.Pace
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -107,6 +111,40 @@ object PaceText {
             mode == Mode.LEFT -> "${if (d > 0) "$n to spare" else "$n over"}${DOT}pace mark $shown%"
             d > 0 -> "$n under the pace mark ($shown%)"
             else -> "$n over the pace mark ($shown%)"
+        }
+    }
+
+    /**
+     * CCRM-103 (Hybrid Notification)'s tap readout (shape grammar rev D §2b, C4): what a
+     * tapped figure's own line says for 3 s. "Pace catches up Thu 5 Nov, 12:50 PM" over the
+     * mark, "1d 4h behind pace" under it, "On the pace mark" within a point. Null — the tap
+     * does nothing — when [Pace.markTime] is null.
+     */
+    fun markReadout(
+        mt: Pace.MarkTime?,
+        use24h: Boolean,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): String? =
+        when (mt) {
+            null -> null
+            Pace.MarkTime.On -> "On the pace mark"
+            is Pace.MarkTime.Over -> {
+                val pattern = if (use24h) "EEE d MMM, HH:mm" else "EEE d MMM, h:mm a"
+                "Pace catches up " + DateTimeFormatter.ofPattern(pattern, locale).withZone(zone).format(Instant.ofEpochMilli(mt.atMs))
+            }
+            is Pace.MarkTime.Under -> "${behind(mt.agoMs)} behind pace"
+        }
+
+    /** "1d 4h", under a day "14h 57m", under an hour "57m"; every part rounded down. */
+    fun behind(ms: Long): String {
+        val m = ms / 60_000L
+        val d = m / 1_440L
+        val h = m % 1_440L / 60L
+        return when {
+            d > 0 -> "${d}d ${h}h"
+            h > 0 -> "${h}h ${m % 60L}m"
+            else -> "${m}m"
         }
     }
 

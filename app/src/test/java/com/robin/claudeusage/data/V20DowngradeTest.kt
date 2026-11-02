@@ -3,6 +3,7 @@ package com.robin.claudeusage.data
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.robin.claudeusage.ui.PaceText
+import com.robin.claudeusage.ui.UsageEndMark
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -36,6 +37,8 @@ class V20DowngradeTest {
         cache.setOpenOnSummary(false)
         cache.settleWeeklyFirstNotice()
         cache.markWeeklyFirstNoticeShown()
+        cache.setUsageEndMark(UsageEndMark.PACE)
+        cache.setStatusIcon(profile, StatusIconChoice.WEEKLY_BAR)
 
         // v1.9 reads Vs pace as Used: usageLeft() is true only for "left".
         assertFalse(cache.usageLeft())
@@ -44,9 +47,11 @@ class V20DowngradeTest {
         assertEquals(v19LayoutBefore, cache.layout(profile))
         assertEquals(v19CreditsBefore, cache.creditsVisible(profile))
         val prefs = context.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
-        val v20Keys = setOf("openOnSummary", "weeklyFirstNotice", "usageDisplay")
-        val perAccount = prefs.all.keys.filter { it.endsWith("headline") || it.endsWith("showModelLimits") }
-        assertEquals(2, perAccount.size)
+        val v20Keys = setOf("openOnSummary", "weeklyFirstNotice", "usageDisplay", "usageEndMark")
+        val perAccount = prefs.all.keys.filter {
+            it.endsWith("headline") || it.endsWith("showModelLimits") || it.endsWith("statusIcon")
+        }
+        assertEquals(3, perAccount.size)
         assertTrue(prefs.all.keys.containsAll(v20Keys))
 
         // And v2.0 reads them back.
@@ -55,6 +60,8 @@ class V20DowngradeTest {
         assertFalse(cache.showModelLimits(profile))
         assertFalse(cache.openOnSummary())
         assertEquals(WeeklyFirstNotice.DONE, cache.weeklyFirstNotice())
+        assertEquals(UsageEndMark.PACE, cache.usageEndMark())
+        assertEquals(StatusIconChoice.WEEKLY_BAR, cache.statusIcon(profile))
     }
 
     @Test
@@ -65,6 +72,8 @@ class V20DowngradeTest {
         assertEquals(Headline.WEEKLY, cache.headline(profile))
         assertTrue(cache.showModelLimits(profile))
         assertTrue(cache.openOnSummary())
+        assertEquals(UsageEndMark.LINE, cache.usageEndMark())
+        assertEquals(StatusIconChoice.RING, cache.statusIcon(profile))
         cache.settleWeeklyFirstNotice()
         assertEquals(WeeklyFirstNotice.DONE, cache.weeklyFirstNotice())
     }
@@ -90,13 +99,17 @@ class V20DowngradeTest {
         val legacy = cache.registry().all().first { it.key == Profile.LEGACY_KEY }
         cache.setHeadline(legacy, Headline.FIVE_HOUR)
         cache.setShowModelLimits(legacy, false)
+        cache.setStatusIcon(legacy, StatusIconChoice.WEEKLY_BAR)
         cache.setUsageDisplay(PaceText.Mode.VS_PACE.key)
         cache.setOpenOnSummary(false)
+        cache.setUsageEndMark(UsageEndMark.ROUND)
         cache.clearProfile(legacy)
         assertEquals(Headline.WEEKLY, cache.headline(legacy))
         assertTrue(cache.showModelLimits(legacy))
+        assertEquals(StatusIconChoice.RING, cache.statusIcon(legacy))
         assertEquals(PaceText.Mode.VS_PACE, cache.usageMode())
         assertFalse(cache.openOnSummary())
+        assertEquals(UsageEndMark.ROUND, cache.usageEndMark())
     }
 
     @Test
@@ -105,8 +118,10 @@ class V20DowngradeTest {
         val added = cache.registry().add("Second")
         cache.setHeadline(added, Headline.AUTO)
         cache.setShowModelLimits(added, false)
+        cache.setStatusIcon(added, StatusIconChoice.WEEKLY_BAR)
         cache.clearProfile(added)
         assertEquals(Headline.WEEKLY, cache.headline(added))
         assertTrue(cache.showModelLimits(added))
+        assertEquals(StatusIconChoice.RING, cache.statusIcon(added))
     }
 }

@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark."
+    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark. markReadout (CCRM-103 (Hybrid Notification), shape grammar rev D section 2b and C4): the words a tapped figure's line shows for 3 s, from core section 6.3 markTime. zone is the IANA zone the instant is written in; the day and time follow the app's Time format, 12-hour or 24-hour; the 12-hour cases are written in en-US (AM/PM), and a client prints its platform locale's own marker. Durations are Xd Yh, under a day Xh Ym, under an hour Ym, every part rounded down. expected null = the tap does nothing."
   },
   "vsPaceFigure": [
     {
@@ -246,6 +246,118 @@
       "captionWidthDp": 171.0,
       "expectedSide": "left",
       "why": "mark at 175.5 dp; the right side needs 351.5 <= 351"
+    }
+  ],
+  "markReadout": [
+    {
+      "name": "over pace: the instant, 12-hour",
+      "usedPct": 52.0,
+      "msUntilReset": 369720000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "Pace catches up Tue 3 Nov, 9:53 AM",
+      "why": "core markTime over case: 1793699616000 is Tue 3 Nov 09:53:36 UTC"
+    },
+    {
+      "name": "over pace: the instant, 24-hour",
+      "usedPct": 52.0,
+      "msUntilReset": 369720000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": true,
+      "expected": "Pace catches up Tue 3 Nov, 09:53",
+      "why": "the Time format chip's 24-hour form"
+    },
+    {
+      "name": "over pace: the 5h, local zone",
+      "usedPct": 93.0,
+      "msUntilReset": 2988000,
+      "windowLengthMs": 18000000,
+      "nowMs": 1793620200000,
+      "zone": "Asia/Kolkata",
+      "use24h": false,
+      "expected": "Pace catches up Mon 2 Nov, 5:48 PM",
+      "why": "1793621928000 is 12:18:48 UTC, 17:48 IST; the day and date stay even under a day away"
+    },
+    {
+      "name": "under pace: days and hours",
+      "usedPct": 50.0,
+      "msUntilReset": 199800000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "1d 4h behind pace",
+      "why": "the mark was at 50% 102600000 ms ago, rounded down"
+    },
+    {
+      "name": "under pace: hours and minutes",
+      "usedPct": 30.0,
+      "msUntilReset": 369720000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "14h 54m behind pace",
+      "why": "the mark was at 30% 53640000 ms ago, rounded down"
+    },
+    {
+      "name": "under pace: minutes",
+      "usedPct": 34.0,
+      "msUntilReset": 8400000,
+      "windowLengthMs": 18000000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "58m behind pace",
+      "why": "the mark was at 34% 3480000 ms ago, rounded down"
+    },
+    {
+      "name": "on the mark",
+      "usedPct": 39.0,
+      "msUntilReset": 369720000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": "On the pace mark",
+      "why": "under a point apart"
+    },
+    {
+      "name": "spent: nothing",
+      "usedPct": 100.0,
+      "msUntilReset": 180000000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": null,
+      "why": "Out until <reset> already says it"
+    },
+    {
+      "name": "no reset clock: nothing",
+      "usedPct": 10.0,
+      "msUntilReset": null,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": null,
+      "why": ""
+    },
+    {
+      "name": "no reading: nothing",
+      "usedPct": null,
+      "msUntilReset": 180000000,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "zone": "UTC",
+      "use24h": false,
+      "expected": null,
+      "why": ""
     }
   ]
 }

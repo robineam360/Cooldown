@@ -7,6 +7,7 @@ import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
 import com.robin.claudeusage.ui.Density
 import com.robin.claudeusage.ui.PaceText
+import com.robin.claudeusage.ui.UsageEndMark
 import com.robin.claudeusage.ui.Palette
 
 enum class AuthState { NO_CREDENTIALS, OK, REAUTH_NEEDED }
@@ -109,6 +110,8 @@ class UsageCache(context: Context) {
             "expanded.session", "expanded.weekly", "expanded.credits",
             // v2.0: CCRM-96 (Weekly First) Headline, CCRM-99 (Model Limits Toggle).
             "headline", "showModelLimits",
+            // v2.0: CCRM-103 (Hybrid Notification) Status-bar icon.
+            "statusIcon",
         )
     }
 
@@ -560,6 +563,21 @@ class UsageCache(context: Context) {
 
     fun setShowModelLimits(profile: Profile, show: Boolean) {
         prefs.edit().putBoolean(k(profile, "showModelLimits"), show).apply()
+    }
+
+    /** CCRM-103 (Hybrid Notification): per account, the ⋮ › Headline… sheet's Status-bar icon; the 5h ring by default. */
+    fun statusIcon(profile: Profile): StatusIconChoice =
+        StatusIconChoice.fromKey(prefs.getString(k(profile, "statusIcon"), null))
+
+    fun setStatusIcon(profile: Profile, choice: StatusIconChoice) {
+        prefs.edit().putString(k(profile, "statusIcon"), choice.key).apply()
+    }
+
+    /** CCRM-103: Appearance › Usage end mark, global; Line (E1) by default. */
+    fun usageEndMark(): UsageEndMark = UsageEndMark.fromKey(prefs.getString("usageEndMark", null))
+
+    fun setUsageEndMark(mark: UsageEndMark) {
+        prefs.edit().putString("usageEndMark", mark.key).apply()
     }
 
     /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */

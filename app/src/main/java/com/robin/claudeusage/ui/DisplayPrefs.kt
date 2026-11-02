@@ -63,3 +63,23 @@ enum class ChartOrientation(val key: String) {
         fun fromKey(key: String?): ChartOrientation = entries.firstOrNull { it.key == key } ?: DEFAULT
     }
 }
+
+/**
+ * CCRM-103 (Hybrid Notification): Appearance › Usage end mark — how a bar or ring ends at
+ * the usage (shape grammar rev D §1e, C1). [ROUND] is E0, the round cap every fill had
+ * before v2.0; [LINE] (E1, the default) ends the fill square at the usage with a short
+ * line in the fill's colour; [PACE] (E2b) colours that line by pace state, green under the
+ * ±5 on-pace band, red over it, ink inside it.
+ */
+enum class UsageEndMark(val key: String) {
+    ROUND("round"),
+    LINE("line"),
+    PACE("pace"),
+    ;
+
+    companion object {
+        val DEFAULT = LINE
+
+        fun fromKey(key: String?): UsageEndMark = entries.firstOrNull { it.key == key } ?: DEFAULT
+    }
+}

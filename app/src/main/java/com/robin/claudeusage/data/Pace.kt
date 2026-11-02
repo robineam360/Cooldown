@@ -89,6 +89,33 @@ object Pace {
     }
 
     /**
+     * §6.3 "When the mark meets the usage" (CCRM-103 (Hybrid Notification)'s tap readout):
+     * the pace mark passes [usedPct] at `windowStart + usedPct ÷ 100 × windowLength`.
+     * Ahead of now when over the mark, behind it when under.
+     */
+    sealed interface MarkTime {
+        /** Over the mark: the mark reaches the usage at [atMs], [inMs] from now. */
+        data class Over(val atMs: Long, val inMs: Long) : MarkTime
+        /** Under the mark: the mark was at the usage [agoMs] ago. */
+        data class Under(val agoMs: Long) : MarkTime
+        /** Under a point apart. */
+        data object On : MarkTime
+    }
+
+    /**
+     * Any clocked window; null when spent, with no reset clock ([msUntilReset] null) or
+     * no reading. Cases: `spec/core/fixtures/pace-distance/cases.json` → `markTime`.
+     */
+    fun markTime(usedPct: Double?, msUntilReset: Long?, windowLengthMs: Long, nowMs: Long): MarkTime? {
+        if (usedPct == null || msUntilReset == null || windowLengthMs <= 0L || isSpent(usedPct)) return null
+        val elapsedPct = (windowLengthMs - msUntilReset) * 100.0 / windowLengthMs
+        if (abs(elapsedPct - usedPct) < 1.0) return MarkTime.On
+        val startMs = nowMs + msUntilReset - windowLengthMs
+        val atMs = startMs + Math.round(usedPct / 100.0 * windowLengthMs)
+        return if (usedPct > elapsedPct) MarkTime.Over(atMs, atMs - nowMs) else MarkTime.Under(nowMs - atMs)
+    }
+
+    /**
      * Added before every floor and half-up rounding of a percentage difference: binary
      * floats put `2.3 − 0.3` at 1.9999999999999998, which would floor to 1 (the spec's
      * display cases pin "+2%").
