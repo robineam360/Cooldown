@@ -4,7 +4,33 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
+## ▶ v2.0 arc + Gemini — continue (written 2026-11-02, session stopped at its usage limit)
+
+**State.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`), PR
+robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 2, 3, 4, 6 ticked; 6a/6b/6c (CCRM-102
+(Spent Week Gate), CCRM-55 (Antigravity Account)) partly built: Android data layer 4aa6e0b, the gate on Android's
+notification and widgets 5c6b2ef, iOS Gemini + gate 886d4dd (its Opus judge was still running). Spec-only
+fba3d8e is on main (Robin's go) — send that sha to the desktop session to pin. **Uncommitted in the worktree**
+(builders were still running): Step 5's Android app files, `design/2026-11-02-shape-grammar.html`,
+`-hybrid-notification.html` rev B, maybe `-icon-v3.html` rev B. **Robin's open decisions:** the shape grammar
+(bars = 7-day, rings = 5h; ring left, only its figure inside, no "5h" label; align with the desktop's rev B) on
+every mobile surface, with both-ways options for the status-bar icon and a no-5h plan; CCRM-101 (Icon v3)'s ten
+ring concepts (`design/research/2026-11-02-icon-v3-ring-concepts-fable.md`). The desktop session ("Mobile arc
+setup and shared spec sync") is holding its build for the final standard.
+
+New session in this worktree, model Opus 5.5:
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Log) and this block of HANDOVER.md; load the model-mesh
+> skill; run the git gate. Review every uncommitted file: Step 5's Android app work (both flavors' tests and lint,
+> one fresh Opus judge, commit with its ROADMAP status and surfaces/app.md update) and the design pages (polish
+> pass, commit; draw icon-v3 rev B from the ten concepts if missing). Put the shape-grammar wireframe and the ten
+> icons to Robin one question at a time; after approval add Step 6d (the grammar) to RUNBOOK-v2.0 and rebuild the
+> cards, notification, widgets and iOS surfaces to it, finish Step 6b's Android Gemini screens, and judge each
+> step. Send the desktop session the final standard and main sha fba3d8e. Stop and ask Robin at anything visible
+> beyond approved wireframes, at Step 7 (Fold 7 + iPad; Gemini sign-in is his), and at Step 8's release go.
+> Before stopping, replace this block.
+
+## ▶ (superseded by the block above) v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
 
 New session in `~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**:
 
