@@ -78,6 +78,13 @@ internal object LeadLines {
         }
     }
 
+    /**
+     * CCRM-102 (Spent Week Gate): the note a disabled 5h carries while the week is spent —
+     * "Weekly limit reached — 5h can't be used until Sat 4:51 PM".
+     */
+    fun spentWeekNote(weekly: UsageWindow, use24h: Boolean): String =
+        "Weekly limit reached — 5h can’t be used until ${Fmt.dayTime(weekly.resetsAt, use24h)}"
+
     /** The expanded header's second line under a 5h lead: "Projected to hit 100% at 3:25 PM". */
     fun sessionSecondLine(hitsLimitAtMs: Long?, use24h: Boolean): String? =
         hitsLimitAtMs?.let { "Projected to hit 100% at ${Fmt.timeOnly(Instant.ofEpochMilli(it), use24h)}" }

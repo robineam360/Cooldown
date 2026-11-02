@@ -961,6 +961,8 @@ object PinnedNotification {
         val accent: Color,
         /** What the row's pace mark measures against: 7 days, or 5 h for a 5h row. */
         val lengthMs: Long = Projection.WEEKLY_MS,
+        /** CCRM-102 (Spent Week Gate): label, figure and bar at 45%; the sub (the note) stays full. */
+        val dimmed: Boolean = false,
     )
 
     /**
@@ -971,12 +973,18 @@ object PinnedNotification {
         val data = h.data ?: return null
         return if (h.headlineWeekly) {
             val session = data.session ?: return null
+            // CCRM-102 (Spent Week Gate): a spent week disables the 5h — still drawn, greyed,
+            // with the note as its sub.
+            val spentWeek = data.weekly?.takeIf { Pace.isSpent(it.percent) }
             PanelBar(
                 label = if (label == null) "5h" else "$label · 5h",
                 window = session,
-                sub = LeadLines.sessionLine(session, binding = h.binding, resetClock = resetClock, use24h = use24h) ?: "",
+                sub = spentWeek?.let { LeadLines.spentWeekNote(it, use24h) }
+                    ?: LeadLines.sessionLine(session, binding = h.binding, resetClock = resetClock, use24h = use24h)
+                    ?: "",
                 accent = h.accent,
                 lengthMs = Projection.SESSION_MS,
+                dimmed = spentWeek != null,
             )
         } else {
             weeklyRow(data, label, h.accent, resetClock, use24h)?.let { row ->
@@ -1149,6 +1157,11 @@ object PinnedNotification {
                 ids.bar,
                 drawBarBitmap(context, pct, elapsed, bar.accent, s.dark, s.showOverPace),
             )
+            if (bar.dimmed) {
+                setFloat(ids.label, "setAlpha", 0.45f)
+                setFloat(ids.value, "setAlpha", 0.45f)
+                setFloat(ids.bar, "setAlpha", 0.45f)
+            }
         }
 
         setViewVisibility(

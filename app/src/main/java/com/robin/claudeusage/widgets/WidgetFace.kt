@@ -274,8 +274,10 @@ data class Cell(
     val estimate: String?,
     /** CCRM-100 (Vs Pace Display): the figure is a distance, so labels say so, as Left mode does. */
     val vsPace: Boolean = false,
+    /** CCRM-102 (Spent Week Gate): a 5h shown while the week is spent — drawn, dimmed, "Weekly spent". */
+    val weekGated: Boolean = false,
 ) {
-    val dim: Boolean get() = StateId.S7 in states || StateId.S8 in states
+    val dim: Boolean get() = StateId.S7 in states || StateId.S8 in states || weekGated
     val brokenDot: Boolean get() = StateId.S7 in states
     val unassigned: Boolean get() = StateId.S10 in states
     val left: Boolean get() = StateId.S11 in states
@@ -436,8 +438,10 @@ object FaceStates {
         if (states.none { it in READING_STATES } && pct != null) states += StateId.S1
 
         val clock = resetsAt?.let { Fmt.widgetClock(it, now, input.zone) }
+        val weekGated = window == FaceWindow.SESSION && com.robin.claudeusage.data.Pace.isSpent(data?.weekly?.percent)
         val sub = when {
             StateId.S8 in states -> "Stale"
+            weekGated -> WEEK_SPENT
             resetPassed -> "Reset $clock"
             notStarted -> NOT_STARTED
             data == null -> NO_READING
@@ -446,6 +450,7 @@ object FaceStates {
         }
         val shortReset = when {
             StateId.S8 in states -> "Stale"
+            weekGated -> WEEK_SPENT
             resetPassed -> "Reset $clock"
             notStarted -> "Not started"
             // A signed-in account with no payload yet (Fable call, Step 4): the ring would
@@ -461,7 +466,7 @@ object FaceStates {
         }
         val runsOut = if (window == FaceWindow.WEEKLY) a.weeklyRunsOutAtMs else a.sessionRunsOutAtMs
         val estimate = runsOut
-            ?.takeIf { pct != null && StateId.S3 !in states && it > now }
+            ?.takeIf { pct != null && StateId.S3 !in states && !weekGated && it > now }
             ?.let { "~ runs out ${Fmt.widgetClock(Instant.ofEpochMilli(it), now, input.zone)}" }
 
         return Cell(
@@ -476,6 +481,7 @@ object FaceStates {
             fillArgb = barColor(pct, a.accentArgb, input.dark), resetsAt = resetsAt,
             sub = sub, shortReset = shortReset, countForm = countForm, estimate = estimate,
             vsPace = input.usageVsPace && pct != null && com.robin.claudeusage.data.Pace.vsPace(pct, elapsed) != null,
+            weekGated = weekGated,
         )
     }
 
@@ -502,6 +508,9 @@ object FaceStates {
 
     /** No payload yet on a signed-in account — the notification's own wording. */
     const val NO_READING = "No reading yet"
+
+    /** CCRM-102 (Spent Week Gate): a 5h face while the week is spent. */
+    const val WEEK_SPENT = "Weekly spent"
 
     /** Rev H (Q4): an unassigned face's stamp slot — the tap opens its config (CCBG-43 (Widget Settings Hidden)). */
     const val TAP_TO_CHOOSE = "tap to choose account"
