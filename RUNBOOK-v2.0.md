@@ -267,4 +267,21 @@ weekly.
   (Android) and move pairing (iOS), and the `tileStartsOnFive` doc. Checks: Android 838 tests on both flavors and
   lint; iOS app tests 55. Also merged origin/main 0951dae (spec/core §6.3 `markTime` wording, the 99.6 spent case),
   which both clients already met.
+- **2026-11-02 · Step 7, Fold 7 (part 1).** **G0 lifted for the device pass only, Robin's call in chat** ("Yes, run
+  Step 7 now"); app code still stays off main. Wireless adb (USB answered "not responding"). **Before:** v1.9
+  (versionCode 25, github release) installed; screen timeout 300 000 ms; always-on notification **off**, every reset
+  ping off; Appearance: theme System, time System, Usage display Used, density Comfortable; seven Cooldown widgets on
+  the cover's fifth home page (Number 4×1, Strip 4×2, Ring 2×2 ×2, Countdown 2×2, Number 2×1 ×2; home pages captured
+  to the session scratchpad only — they show other apps' private widgets). **Installed** the release-signed github
+  build of 5636bde over v1.9 (`install -r`; accounts kept). **Checked** on the cover and inner screens, dark and
+  light: the Summary (rings, grey × for Personal, Vs pace unsigned green/red), the tile (dashed room, E1 end line,
+  chips), the tap readout on a bar ("Pace catches up Wed 4 Nov, 6:37 am") and on the ring (5h chip + "1h 22m behind
+  pace"), the account sheet's Status-bar icon (switches; restored), the notification collapsed and expanded on both
+  screens (OVER/UNDER PACE captions), the status bar's N3 Weekly-bar glyph for Personal, the seven widgets. **Filed**
+  CCBG-56 (Summary Readout Tap, Medium) and CCBG-57 to CCBG-66 (Low; CCBG-64 and CCBG-66 are Robin's call).
+  **Unverified:** Headline 5-hour/Auto on a live 5h (Claude's 5h had not started), a binding or full 5h, a spent week
+  (the release build has no synthetic series), the 4×2 widget picker previews. **Restored:** notification off (gone
+  from the shade), Usage display Used, theme System, Work's and Claude's Headline Weekly and status icon 5h ring; the
+  v2.0 candidate stays installed on purpose. **Still open:** Gemini (needs `antigravityClientSecret`, Robin's step,
+  then a rebuild and his sign-in), the screen timeout (restored at disconnect), and the iPad.
 
