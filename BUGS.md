@@ -164,6 +164,23 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Max 20x" (Android) or "Max" for both (iOS), names Anthropic retired on 2026-10-30 ("Max" and "Ultra"); iOS read
   "business" as "Team"; Gemini's Ultra could not tell 5x from 20x.
 
+### CCBG-74 · iPad ChatGPT Free — the iPad's ChatGPT account reads "Free", "No reading", "—" at 4a0d23f
+- **Status:** **Open — no code cause found; device evidence needed** (2026-11-02). Seen on the iPad (Debug build of
+  4a0d23f) an hour after 9970332 read the same account "Prolite" 51%; the Fold on 4a0d23f reads it "Pro 100", 51%.
+  Investigated: no iOS change between 9970332 and 4a0d23f touches the ChatGPT fetch, parse or storage path (only the
+  plan's name, API-CONTRACT §11); a new end-to-end test feeds the captured ChatGPT reply with each plan code
+  (`prolite`, `pro`, `promax`, `plus`, `free`, an unknown one and none) through the iOS repository — every reading
+  lands and its snapshot re-parses, so no plan code can blank the usage. "Free" can only come from a reply's
+  `plan_type: "free"` (or a sign-in grant saying so), and "No reading" with "—" is what a 200 reply with no
+  `rate_limit` block parses to (`fixtures/chatgpt/no-rate-limit.json`, tolerant by design) — together, the shape of a
+  free ChatGPT account's reply. So the iPad's request most likely reached a free account or workspace: a different
+  sign-in on the iPad, or a token renewal whose id_token named another `chatgpt_account_id` (both platforms prefer
+  the renewed id_token's account id over the stored one). **Next (iPad):** Settings › Accounts › ChatGPT › Details —
+  the email (same as the Fold's?), Plan and Last checked; pull to refresh once. If the email differs, sign in again
+  with the Pro account; if it is the same, the renewal's account id is the suspect and gets its own fix.
+- **Severity:** Medium (one platform's reading for one account)
+- **Symptom:** All accounts Summary: ChatGPT "Free", "No reading", ring "—", empty bar.
+
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
 - **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
   persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh

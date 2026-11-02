@@ -222,6 +222,27 @@ struct UsageRepositoryTests {
         #expect(await h.repo.refresh("teams", manual: false).outcome == .success)
     }
 
+    /// The iPad recheck of 4a0d23f (2026-11-02): every ChatGPT plan code goes through the iOS source end to end — the
+    /// reading lands, its snapshot re-parses, and the plan takes API-CONTRACT §11's name; an unknown code never blanks
+    /// the usage.
+    @Test("each ChatGPT plan code keeps the reading and takes its §11 name", arguments: [
+        ("prolite", "Pro 100"), ("pro", "Pro 200"), ("promax", "Pro 500"), ("plus", "Plus"), ("free", "Free"),
+        ("some_new_tier", "Some New Tier"), ("", nil),
+    ])
+    func chatGPTPlanCodes(code: String, label: String?) async throws {
+        let h = Harness(provider: .chatgpt)
+        var body = try Fixtures.text("captured/chatgpt-usage-2026-09.json")
+        let range = try #require(body.range(of: #""plan_type"\s*:\s*"[^"]*""#, options: .regularExpression))
+        body.replaceSubrange(range, with: "\"plan_type\": \"\(code)\"")
+        h.clock.advance(seconds: (1_788_712_966_000 - 8_798_000 - t0) / 1000)
+        h.api.queueUsage(HTTPResult(code: 200, body: body))
+        #expect(await h.repo.refresh("teams", manual: false).outcome == .success, "\(code)")
+        let snap = try #require(await h.repo.snapshot("teams"))
+        #expect(snap.usage(nowMs: h.clock.now)?.weekly?.percent == 79, "\(code)")
+        #expect(snap.lastKind == "success")
+        #expect(await h.repo.state("teams").plan == label, "\(code)")
+    }
+
     @Test("a ChatGPT snapshot is saved without email, user_id or account_id (spec core §9.6)")
     func chatGPTRedaction() async throws {
         let h = Harness(provider: .chatgpt)
