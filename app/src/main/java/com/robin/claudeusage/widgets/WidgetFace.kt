@@ -266,6 +266,8 @@ data class Cell(
     val countForm: CountForm,
     /** "~ runs out 4:20 PM" (CCRM-30 (Estimate Honesty)'s "~"), or null. */
     val estimate: String?,
+    /** CCRM-100 (Vs Pace Display): the figure is a distance, so labels say so, as Left mode does. */
+    val vsPace: Boolean = false,
 ) {
     val dim: Boolean get() = StateId.S7 in states || StateId.S8 in states
     val brokenDot: Boolean get() = StateId.S7 in states
@@ -466,6 +468,7 @@ object FaceStates {
             },
             fillArgb = barColor(pct, a.accentArgb, input.dark), resetsAt = resetsAt,
             sub = sub, shortReset = shortReset, countForm = countForm, estimate = estimate,
+            vsPace = input.usageVsPace && pct != null && com.robin.claudeusage.data.Pace.vsPace(pct, elapsed) != null,
         )
     }
 
@@ -1111,6 +1114,7 @@ object WidgetFace {
         append(c.name)
         if (c.weeklyTagged) append(" · Weekly")
         if (c.left) append(" · left")
+        if (c.vsPace) append(" · vs pace")
         if (StateId.S5 in c.states && !withReset) append(" · not started")
     }
 
@@ -1237,7 +1241,12 @@ object WidgetFace {
     ) {
         // A stacked 4×2 has no row for the LEFT caption, so the label says it (rev D's 2×1
         // rule — the bare figure flips — stays for the 2×1 and 2×2).
-        val left = if (c.left && frame.bucket == Bucket.NUMBER_4X2) " · left" else ""
+        val left = when {
+            frame.bucket != Bucket.NUMBER_4X2 -> ""
+            c.left -> " · left"
+            c.vsPace -> " · vs pace"
+            else -> ""
+        }
         rv.setTextViewText(R.id.num_label, if (pill) c.name else "${c.name} · ${c.window.word}$left")
         rv.setViewVisibility(R.id.num_weekly2, View.GONE)
         val labelDp = frame.innerWidthDp - 14f - 4f - (if (c.brokenDot) 10f else 0f)
@@ -1428,6 +1437,7 @@ object WidgetFace {
         append(c.name)
         append(" · ").append(c.window.word)
         if (c.left) append(" · left")
+        if (c.vsPace) append(" · vs pace")
     }
 
     // ---- Strip (CCRM-82) ------------------------------------------------------------
@@ -1536,7 +1546,11 @@ object WidgetFace {
             setSpan(ForegroundColorSpan(ink(dark, 0.72f)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
 
-    fun stripLabel(c: Cell): String = if (c.left) "${c.name} · left" else c.name
+    fun stripLabel(c: Cell): String = when {
+        c.left -> "${c.name} · left"
+        c.vsPace -> "${c.name} · vs pace"
+        else -> c.name
+    }
 
     /**
      * A 4×1 frame at least 100 dp tall — One UI's cover gives 108 and then draws it at 71 %,

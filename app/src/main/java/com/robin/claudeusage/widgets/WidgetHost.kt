@@ -73,10 +73,11 @@ object WidgetHost {
     /**
      * CCRM-96 (Weekly First): a new widget's window starts on its account's Headline —
      * Weekly unless the Headline is 5-hour (Auto starts on Weekly). An unassigned widget
-     * starts on Weekly.
+     * follows the account it draws, the first in registry order.
      */
     fun headlineWindow(cache: UsageCache, accountKey: String?): FaceWindow {
-        val profile = cache.registry().byKey(accountKey) ?: return FaceWindow.WEEKLY
+        val profile = cache.registry().byKey(accountKey) ?: cache.registry().all().firstOrNull()
+            ?: return FaceWindow.WEEKLY
         val lead = AccountRead.lead(cache.headline(profile), HeadlineSurface.NEW_WIDGET, cache.snapshot(profile).data, binding = false)
         return if (lead == WindowKind.SESSION) FaceWindow.SESSION else FaceWindow.WEEKLY
     }

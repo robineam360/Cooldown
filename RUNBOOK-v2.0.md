@@ -157,3 +157,13 @@ WidgetKit's refresh budget showing a Vs pace figure that moves with time even wi
   BEHAVIOR-MOBILE §5 gains the caption's rounding; §6 is new (the Summary rule). Seat calls, recorded: the mark and
   the distance round half up; Left mode words over-pace as "20 over" (the wireframe showed only "to spare"); with
   the toggle off launch opens the last account looked at (the wireframe's P2 copy). `check_no_code.sh` passes.
+- **2026-11-02 · Step 3** (d9dbab3). Pace, HeadlineRule, SummaryRank, PaceText, prefs, the notice settle; tests
+  read every fixture; downgrade test. Fresh Opus judge: **concerns**, five findings, all adopted in 9440a6b
+  (unclocked-row fixture, 1e-9 float-edge epsilon with fixtures, legacy-key sweep test; Left-mode line 2 and "<1h"
+  went to a Fable judge, whose six copy calls are now in BEHAVIOR-MOBILE §5 — none major).
+- **2026-11-02 · Step 4** (9440a6b + judge fixes). Notification single and Duet, status-bar gauge, widget window
+  default and Vs pace figures. Fresh Opus judge: **concerns**, four findings. F1 adopted (" · vs pace" where Left
+  says " · left", as the approved wireframe draws); F2 adopted (an unassigned widget follows the first account;
+  `WidgetWindowDefaultTest`); F3 (the Strip's window) asked of Robin; F4 (height of the single expanded view with
+  `sub2` under three strips and the synthetic band) moves to **Step 7: capture that worst case on the Fold 7 cover
+  and inner screen**.
