@@ -1,0 +1,115 @@
+{
+  "_meta": {
+    "note": "Headline window resolution (BEHAVIOR-MOBILE section 5, CCRM-96 (Weekly First)). setting is the per-account Headline: weekly (default) | fiveHour | auto. sessionBinding is core BEHAVIOR-SPEC section 6.2's predicate. expected is the window the surface leads with. Spec-first, written 2026-11-02."
+  },
+  "cases": [
+    {
+      "name": "default leads with Weekly",
+      "setting": "weekly",
+      "surface": "notification",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "weekly",
+      "why": ""
+    },
+    {
+      "name": "Weekly stays Weekly while 5h binds",
+      "setting": "weekly",
+      "surface": "notification",
+      "hasSession": true,
+      "sessionBinding": true,
+      "expected": "weekly",
+      "why": "The 5h companion turns loud instead."
+    },
+    {
+      "name": "Auto, 5h fine",
+      "setting": "auto",
+      "surface": "notification",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "weekly",
+      "why": ""
+    },
+    {
+      "name": "Auto, 5h binds",
+      "setting": "auto",
+      "surface": "notification",
+      "hasSession": true,
+      "sessionBinding": true,
+      "expected": "session",
+      "why": ""
+    },
+    {
+      "name": "5-hour is literal",
+      "setting": "fiveHour",
+      "surface": "notification",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "session",
+      "why": ""
+    },
+    {
+      "name": "5-hour on a plan without 5h",
+      "setting": "fiveHour",
+      "surface": "notification",
+      "hasSession": false,
+      "sessionBinding": false,
+      "expected": "weekly",
+      "why": "An absent session always means Weekly."
+    },
+    {
+      "name": "Auto on a plan without 5h",
+      "setting": "auto",
+      "surface": "notification",
+      "hasSession": false,
+      "sessionBinding": false,
+      "expected": "weekly",
+      "why": ""
+    },
+    {
+      "name": "gauge follows Auto under Weekly",
+      "setting": "weekly",
+      "surface": "statusGauge",
+      "hasSession": true,
+      "sessionBinding": true,
+      "expected": "session",
+      "why": "The status-bar gauge has no room for a companion, so Weekly behaves as Auto there."
+    },
+    {
+      "name": "gauge, Weekly, 5h fine",
+      "setting": "weekly",
+      "surface": "statusGauge",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "weekly",
+      "why": ""
+    },
+    {
+      "name": "gauge, 5-hour",
+      "setting": "fiveHour",
+      "surface": "statusGauge",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "session",
+      "why": ""
+    },
+    {
+      "name": "new widget default under Auto",
+      "setting": "auto",
+      "surface": "newWidget",
+      "hasSession": true,
+      "sessionBinding": true,
+      "expected": "weekly",
+      "why": "A widget's window is a stored choice; Auto has no meaning there, so it starts on Weekly."
+    },
+    {
+      "name": "new widget default under 5-hour",
+      "setting": "fiveHour",
+      "surface": "newWidget",
+      "hasSession": true,
+      "sessionBinding": false,
+      "expected": "session",
+      "why": ""
+    }
+  ]
+}

@@ -1645,6 +1645,115 @@ it carries the umbrella CCRM-7 (iOS).
   an iOS-only release (the Android update check reads `releases/latest`).
 - **Done when:** RELEASING.md covers both platforms and a release ships both assets.
 
+## Weekly first — the week is the budget · **decided 2026-11-02**
+
+**Why now:** the weekly window is the only limit every plan of all three providers carries; the 5-hour
+window is a gate that the top plans no longer have. Claude **Ultra** (the renamed Max 20x) dropped the
+5-hour limit for verified accounts on 2026-10-30 and keeps a weekly all-models limit plus a weekly Fable
+cap; ChatGPT **Pro** has had no 5-hour limit since 2026-07-12 (Plus got it back in late August);
+Antigravity Pro and Ultra refresh every 5 hours *until* a weekly cap stops them. A 5-hour figure as the
+headline answers "can I keep going this afternoon", while the weekly figure is the one that locks a user
+out for days. This follows the ModelMesh rule that the short window is only a gate, never part of the
+score. Robin's decisions, 2026-11-02, one question at a time:
+
+1. **Headline: Weekly, with a 5h companion.** Every surface leads with the weekly window; the 5-hour
+   window rides along small where it fits ("5h 34% · 2h 10m") and disappears when the account has none.
+2. **Pace in words: band + daily allowance** — "Slow down · ≈11%/day to last". The signed number lives
+   in the app card's detail only.
+3. **Status-bar ring (and later the desktop menu-bar item): Weekly, and 5h takes over while it blocks**
+   — 5h past 90% (the orange step), spent, or projected to hit 100% before its reset; back to
+   Weekly when it resets. The rule is BEHAVIOR-SPEC §6.2's `sessionBinding`.
+4. **"Use next" ranking across accounts: later**, its own item under CCRM-6 (Multi-Account).
+5. **Even pace spans all 7 days** — no weekdays-only option for now.
+6. **The Headline setting is per account**: Weekly (default) · 5-hour · Auto.
+
+Logic lands in `spec/core/` first (formula, bands, the Auto rule, fixtures), then Android and iOS; the
+desktop repo picks it up with its pinned core. Every visible change waits for an approved wireframe (§2).
+
+### CCRM-96 · Weekly First — the weekly window heads every surface, 5h is the companion
+- **Status:** Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
+  (`design/2026-11-02-weekly-first-pace.html`; the 5h card's line is the §3 projection, "on track
+  for ~69%") · iOS faces to be drawn as rev B before iOS is built (Robin).
+- **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
+  the pinned notification (both halves), the widgets' default window, the iOS Live Activity
+  and lock-screen widgets, and the in-app card order. **Auto** = Weekly, except while 5h binds (BEHAVIOR-SPEC
+  §6.2: past 90%, or projected (§3) to hit 100% before its reset, unless the week is spent). The status-bar ring always follows the Auto rule.
+  An account with no 5h shows Weekly whatever the setting says. Widgets keep their own per-widget
+  window choice. Replaces CCRM-54's "headline = `session` if present, else `weekly`".
+  **5h first stays one switch away (Robin, 2026-11-02):** Headline 5-hour also restores the 5h card
+  above Weekly in the app (a layout reordered in the sheet wins either way), and installs that had an
+  account before the update see a one-time "Weekly now leads" notice with "Keep Weekly" / "Keep 5h
+  first" (the latter sets every account's Headline to 5-hour). Drawn in
+  `design/2026-11-02-vs-pace-display.html` §6, **approved 2026-11-02**.
+- **Spec:** the Auto rule and the "no 5h → Weekly" fallback go into `spec/core/BEHAVIOR-SPEC.md` with
+  fixtures; the setting is per-client presentation.
+- **Done when:** wireframes for every surface and state (5h present/absent, Auto switched to 5h, spent,
+  above pace, narrow widths) are approved, both apps match them, and the Fold 7 and iPad passes are clean.
+
+### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
+- **Status:** Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
+  wireframe rev A approved 2026-11-02; **iOS rev B approved 2026-11-02**
+  (`design/2026-11-02-ios-weekly-first.html`, with its listed interpretations) · **pace-mark caption V1
+  chosen 2026-11-02** (`design/2026-11-02-pace-line-label.html`): under the app and Summary bars, mode-aware
+  (Used/Left: "60% pace mark · 10 under"; Vs pace, CCRM-100 (Vs Pace Display): "50% used · mark 60%"),
+  the room drawn dashed, the notification's expanded line 2 "10 under the pace mark (60%) · resets Fri";
+  the signed "Pace +21%" detail line is dropped, so the signed Pace is never printed.
+- **What:** adopt the ModelMesh
+  [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md) —
+  `pace = (r − q) / max(r, q) × 100`, `q` = % of quota left, `r` = % of time left — on the weekly window
+  and the weekly model caps (Fable, Spark). Not on 5h: a 5-hour window swings too hard near its reset.
+  Wording: the band ("On pace" within ±5, "Room to spare", "Use before reset" below −50, "Slow down",
+  "Nearly out" above +50) plus the daily allowance (`q ÷ days left`, "≈11%/day to last"); the signed
+  number appears in the app card's detail only. It **replaces** today's gap verdict ("12% above pace",
+  used − elapsed, 3-point dead zone, BEHAVIOR-SPEC §5) so the app never shows two different "% pace"
+  figures; the even-pace tick on bars and the chart's diagonal (§6) are geometry and stay.
+- **Spec:** a new BEHAVIOR-SPEC section with the ModelMesh scenarios as fixtures (window start, exhausted,
+  reset reached, band edges); §5's dead zone is rewritten to the ±5 band. CooldownMac follows from its
+  pinned core.
+- **Done when:** the spec section and fixtures are in, both apps pass them, the wording is on every surface
+  per the approved wireframes, and no surface still shows the gap verdict.
+
+### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
+- **Status:** Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
+  `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
+  the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
+  CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.
+- **Decisions:** (1) an **"All" tab first** in the account tabs (iPad: an "All accounts" row at the
+  top of the sidebar); with 2+ accounts the app opens on it, and Settings › Appearance › "Open on the
+  summary" (on by default) turns that off. (2) **Use next = the most unused quota for its time
+  left**: rank eligible accounts by weekly Pace (BEHAVIOR-SPEC §6.1), lowest first, tie to the
+  earlier reset; an account whose 5h binds (§6.2), whose week is spent or with no reading is not
+  eligible and sorts after, with its reason. (3) A **Pace map**: one plot of every account against
+  its own week (across = share of its week gone, up = % used, the even-pace diagonal), each account
+  its accent dot with this week's trail.
+- **What:** the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
+  allowance · reset day, the 5h companion), the Pace map; one-line rows and numbered dots from six
+  accounts; two columns on the Fold inner screen and iPad. Never a summed or combined figure.
+- **Spec:** BEHAVIOR-MOBILE gains the ranking and the toggle, with `fixtures/summary/cases.json`.
+- **Done when:** the wireframe is approved, both apps match it, and the ranking fixtures pass.
+
+### CCRM-99 · Model Limits Toggle — hide an account's per-model weekly limits
+- **Status:** Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
+  **approved 2026-11-02**.
+- **What:** a per-account "Show model limits" switch (default on) on the account's page under
+  Headline, listing what it hides ("Fable · 30% this week"). Off removes the model rows and the
+  All/model chips from the 7-day card, and the model rows from the notification's expanded panel; iOS
+  drops the 7-day card's model half. The limits are still parsed and stored, so switching back is
+  instant and history is untouched. No group at all on a plan that reports none.
+- **Spec:** BEHAVIOR-MOBILE gains `showModelLimits` per account; nothing in the core.
+
+### CCRM-100 · Vs Pace Display — the big figure shows the distance from the pace mark
+- **Status:** Asked by Robin 2026-11-02 · option A chosen · wireframe
+  `design/2026-11-02-vs-pace-display.html` **approved 2026-11-02**.
+- **What:** a third value on CCRM-22 (Used or Left)'s global "Usage display": **Used · Left · Vs pace**.
+  Vs pace shows `elapsed − used` in points, signed and floored so room is never overstated: "+10%" is
+  room under the pace mark, "−20%" is over it. Every big figure follows it (notification, widgets, app
+  cards, iPad sidebar, Summary rows); bars, colours and the pace tick still key on used percent, so the
+  figure keeps the bar's colour. A spent window, a window with no reset clock and a missing reading fall
+  back to the usage figure. The Huge number's caption reads "VS PACE" where Left mode reads "LEFT".
+- **Why:** the bar already shows usage and the mark; the figure is free to show the one thing the bar
+  makes you work out. The sign always agrees with the Pace band (Pace is this gap scaled by what's left).
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
@@ -2914,6 +3023,8 @@ keys) would still make this a different product. Not filed, not an open question
   for the gauge and for ranking accounts. Compare it with the shared contract first
   (CooldownMac `contract/BEHAVIOR-SPEC.md` §3.1 severity, §5 dead zone, §6 even-pace line);
   any change lands in the contract, then in both apps. One source — don't copy the spec here.
+  **2026-11-02:** the gauge half is CCRM-97 (Pace Number); ranking accounts ("Use next") stays
+  here, deferred by Robin until the number has lived on devices.
 - **Why:** `Profile` was a hard-coded `PERSONAL`/`WORK` enum, wired through credentials,
   cache keys, notification IDs, widgets and alerts. Users with 3+ accounts (multiple work
   orgs, side projects) couldn't be served — and the driver was real, not hypothetical.

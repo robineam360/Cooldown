@@ -1,0 +1,150 @@
+# Runbook — the v2.0 arc: Weekly first, the Pace in words, the Summary tab
+
+**Plan status: FROZEN 2026-11-02.** Cross-family review: Astra at high, one call, verdict blocking; all three
+findings adopted (table in `design/research/2026-11-02-v20-findings.md`). RUNBOOK.md stays the v1.9
+arc until v1.9 ships; this file is the next arc, and Gate G0 below keeps the two apart.
+
+**Items:** CCRM-96 (Weekly First), CCRM-97 (Pace Number), CCRM-98 (Summary Tab), CCRM-99 (Model Limits
+Toggle), CCRM-100 (Vs Pace Display), on Android and iPhone/iPad. Shipped together as **v2.0**, one GitHub
+release carrying both the APK and the IPA (CCRM-95 (Dual Release)).
+
+**Not in this arc:** CCBG-53 (History Footnote), CCBG-54 (Plan Copy Gap) and CCBG-55 (Spec Drift) may ride
+along only if a step touches the same file; "Use next" as a separate card (dropped by Robin); the desktop
+client, which runs its own arc from the prompt in HANDOVER.md.
+
+## Closed decisions (Robin, 2026-11-02; every wireframe approved)
+
+1. Weekly leads every surface; 5h is the companion. Per-account **Headline**: Weekly (default), 5-hour,
+   Auto. Auto and the status-bar gauge switch to 5h while it binds (BEHAVIOR-SPEC §6.2). Headline 5-hour
+   also restores the 5h card on top; installs that had an account before v2.0 see a one-time "Weekly now
+   leads" notice offering "Keep 5h first". Placed widgets keep their stored window.
+2. Pace (BEHAVIOR-SPEC §6.1) on weekly-length windows only, worded as band + allowance; the signed number
+   is never printed. The 5h line is the §3 projection.
+3. Pace-mark caption V1 under app and Summary bars, mode-aware; dashed room under pace; the notification's
+   expanded line 2 carries the distance.
+4. Summary: an "All" tab first with 2+ accounts, opened at launch (toggle), ranked by Pace with
+   5h-binding, spent and unread accounts held back; the Pace map. No Use next card.
+5. "Show model limits" per account, default on.
+6. Usage display gains **Vs pace**: the figure is `floor(mark − used)` signed, falling back to usage when
+   spent, unclocked or unread.
+7. v1.9 ships first (Robin): see G0.
+
+Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-first.html` (iOS),
+`-pace-line-label.html` (V1), `-summary-tab.html` (rev B), `-model-limits-toggle.html`,
+`-vs-pace-display.html`. Rules: BEHAVIOR-SPEC §6.1–6.2, BEHAVIOR-MOBILE §5. As-shipped layouts:
+`spec/mobile/surfaces/`.
+
+## Conventions
+
+- Delegation per the `model-mesh` skill (CLAUDE.md §4): the seat builds; Sonnet builders only for
+  independent pieces with a written spec; **one fresh Opus judge round per code step**, then tests decide.
+- Code, its ROADMAP/BUGS status and its `spec/mobile/surfaces/` update land in one commit.
+- Anything visible beyond an approved wireframe stops and goes to Robin (CLAUDE.md §2); small fit calls go
+  to a Fable judge.
+- Each session ticks Progress, replaces HANDOVER's next-session block, and lands per WORKTREE.md.
+- **The prompt for every step:** "Read CLAUDE.md, WORKTREE.md and RUNBOOK-v2.0.md, then do the first
+  unticked step of RUNBOOK-v2.0.md, and stop when its check passes."
+- **Gate G0:** no app-code commit of this arc reaches `main` until RUNBOOK.md's v1.9 Step 8 is ticked.
+  Before that, code steps live on their session branch with an open PR; the docs/spec of Step 2 may land.
+
+## Progress
+
+| Step | What | Gated on | Status |
+|---|---|---|---|
+| 1 | Cross-family review of this plan, findings adopted, plan FROZEN | — | ☑ |
+| 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☐ |
+| 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☐ |
+| 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☐ |
+| 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
+| 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☐ |
+| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed | 4, 5, 6, G0 | ☐ |
+| 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
+
+## Steps
+
+**Step 1 · Review and freeze.** The plan below goes to Astra at high. Every finding is dispositioned in
+`design/research/2026-11-02-v20-findings.md`; a blocking one is closed by a named test, dry run or evidence.
+Check: findings table complete. Reversal: none needed (docs).
+
+**Step 2 · Spec completion.** Add `spec/mobile/fixtures/summary/cases.json` (rank orders for the wireframe's
+states, the held/spent/unread order, tie to the earlier reset) and `spec/mobile/fixtures/display/cases.json`
+(Vs pace figure incl. every fallback; caption text in Used, Left and Vs pace modes; the flip side of the
+mark). Check: `spec/tools/check_no_code.sh` passes and each case's numbers re-derive by the formulas.
+Reversal: one revert. May land on main before G0.
+
+**Step 3 · Android logic.** Pure Kotlin beside `Projection`: pace, band, allowance, sessionBinding,
+headline resolution, Summary ranking, Vs pace figure, caption text. Prefs: per-account `headline` and
+`showModelLimits`, `openOnSummary`, the notice's shown flag and its "had accounts before 2.0" test. **Vs pace
+storage:** Android writes `vsPace` into the existing `usageDisplay` string, which v1.9 reads as Used (its
+`usageLeft()` is true only for `left`); iOS adds a separate Bool key `display.usageVsPace` and leaves
+`display.usageLeft` as it is. Tests read `spec/core/fixtures/pace/` and `spec/mobile/fixtures/*` directly, plus a
+**downgrade test**: preferences written by v2.0 (every new key, `vsPace` included) read through v1.9's accessors
+give v1.9's defaults. Check: both flavors' unit tests green; fresh Opus judge. Reversal: revert the step's
+commits; a downgrade shows Used and Weekly-by-default behaviour of v1.9.
+
+**Step 4 · Android always-on surfaces.** Notification single and Duet (Weekly headline, companion, loud
+companion, Auto takeover, expanded lines, model rows hidden, Vs pace figure and its caption), the status-bar
+gauge takeover, widgets' default window and figure. Check: unit tests, the surfaces' render tests, the
+Duet height budget unchanged, judge. Reversal: revert.
+
+**Step 5 · Android app.** Card order by Headline, the Weekly and 5h lines, the V1 caption with dashed room,
+Settings (account page Headline and model limits; Appearance Usage display and Open on the summary), the
+All tab, Summary list and Pace map (two columns on the inner screen), the one-time notice. Check: unit
+tests, Compose previews of every wireframe state, judge. Reversal: revert.
+
+**Step 6 · iOS.** CooldownCore first (Swift tests on the same fixtures), then app, iPad sidebar, Settings
+page, widgets, lock screen, Live Activity, Summary, notice, per rev B. Check: `swift test`, CI's macOS job,
+the render test over every face, judge. Reversal: revert.
+
+**Step 7 · Device passes.** After G0. **Before:** record each device's starting state in the Step 7 log:
+installed build and flavor, screen timeout, the Cooldown settings that will be changed (Headline per account,
+Usage display, model limits, Open on the summary), placed widgets and lock-screen widgets (a screenshot of each
+home page), any Live Activity. Fold 7 over USB (cover and inner, dark and light, Weekly/Auto/5-hour,
+Vs pace, a no-5h account, a 5h-binding state via the synthetic series) and the iPad (sidebar, widgets, lock
+screen, Live Activity). Captures in `design/research/<date>-v20-device-pass/`; every defect filed in BUGS.md;
+Robin decides what blocks. *Always after:* every recorded setting is put back, widgets match the screenshots,
+the screen timeout is restored; the v2.0 candidate build stays installed on purpose (it is what ships), and the
+log says so per device.
+
+**Step 8 · Release v2.0.** Version bump, user docs, release notes, APK and IPA from one commit, per
+RELEASING.md. Fresh judge plus Sol cross-check before publishing (publishes). **Then Robin's go, in chat, for
+the named commit and the APK and IPA sha256s, recorded verbatim in the Step 8 log; no publish without it.**
+Irreversible once published.
+
+## Whole-plan reversal
+
+Steps 2–6 are commits: `git revert` of the arc's commits restores v1.9 behaviour, and no stored data is
+migrated destructively (new prefs only, downgrade-tested in Step 3). Step 7 changes the Fold 7 and the iPad,
+restored by its *Always after* against the recorded starting state (only the candidate build stays). Step 8 cannot be undone once published; a defect then is fixed forward in
+v2.0.1.
+
+## Reserved for Robin
+
+Any visible change beyond the approved wireframes; what blocks after the device pass; the release go.
+
+## Failure modes
+
+- v1.9 slips: G0 holds the code on branches; branches rebase by merging main when it moves.
+- A fixture disagrees with a formula: the spec is fixed first, then both clients (spec leads).
+- An existing user loses their 5h-first view: the notice and Headline 5-hour cover it; the device pass
+  checks an upgrade from v1.9 with two accounts.
+- Notification height: the expanded single gains a 16 dp line; the Duet budget must stay inside ~120 dp.
+- Widget fit: "−20%" must fit wherever "100%" does; the render tests check every bucket.
+- iOS and Android drift: both read the same fixtures; any copy difference is recorded in the surfaces spec.
+
+## UNVERIFIED
+
+The Fold 7 inner-screen two-column Summary at 760 dp; the iPad 11″ two-column Summary at its real height;
+WidgetKit's refresh budget showing a Vs pace figure that moves with time even without a new reading.
+
+## Tests and gates
+
+- `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest` (every code step)
+- `swift test --package-path ios/Packages/CooldownCore` and CI's macOS job (Step 6)
+- `sh spec/tools/check_no_code.sh` (Step 2)
+- Pace, allowance, sessionBinding cases: `spec/core/fixtures/pace/cases.json`
+- Headline cases: `spec/mobile/fixtures/headline/cases.json`
+- Summary and display cases: `spec/mobile/fixtures/summary/`, `display/` (Step 2)
+- Downgrade test: v2.0-written preferences through v1.9's accessors (Step 3)
+- Fresh Opus judge per code step; Sol cross-check and Robin's recorded go before the release
+- Device pass checklist (Step 7); release checklist in RELEASING.md (Step 8)

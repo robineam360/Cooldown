@@ -1,0 +1,360 @@
+{
+  "_meta": {
+    "note": "Pace number cases (BEHAVIOR-SPEC section 6.1, CCRM-97 (Pace Number)) and the session-binding predicate (section 6.2, CCRM-96 (Weekly First)). Spec-first: written 2026-11-02 before any client implements them, so the expectations are computed from the formulas in section 6.1 (scripted, not by hand), not ported from passing tests. The pace cases include the six ModelMesh docs/pace-metric.md scenarios.",
+    "tolerance": "Allow 0.01 on pace and pctPerDay.",
+    "inputs": "elapsedPct is section 6's elapsedPercent (0..100). usedPct null means no reading. msUntilReset is reset instant minus now."
+  },
+  "pace": [
+    {
+      "name": "owner's example, A",
+      "usedPct": 60,
+      "elapsedPct": 50,
+      "expected": {
+        "pace": 20.0,
+        "band": "slowDown"
+      },
+      "why": "Used 60 at mid-window: 40% left for 50% of the time. Slow down by a fifth."
+    },
+    {
+      "name": "owner's example, B",
+      "usedPct": 75,
+      "elapsedPct": 99,
+      "expected": {
+        "pace": -96.0,
+        "band": "useBeforeReset"
+      },
+      "why": "25% left with 1% of the window to go: almost all of it would expire."
+    },
+    {
+      "name": "fresh, early",
+      "usedPct": 1,
+      "elapsedPct": 0.5,
+      "expected": {
+        "pace": 0.5025,
+        "band": "onPace"
+      },
+      "why": "Ratio (used/elapsed) reads 200% here; Pace stays near zero."
+    },
+    {
+      "name": "same +10 gap, early",
+      "usedPct": 15,
+      "elapsedPct": 5,
+      "expected": {
+        "pace": 10.5263,
+        "band": "slowDown"
+      },
+      "why": "Gap +10, but 85% left for 95% of the week: mild."
+    },
+    {
+      "name": "same +10 gap, late",
+      "usedPct": 90,
+      "elapsedPct": 80,
+      "expected": {
+        "pace": 50.0,
+        "band": "slowDown"
+      },
+      "why": "Gap +10, but 10% left for 20% of the week: exactly the slowDown/nearlyOut edge (50 is slowDown)."
+    },
+    {
+      "name": "both behind, A",
+      "usedPct": 20,
+      "elapsedPct": 50,
+      "expected": {
+        "pace": -37.5,
+        "band": "roomToSpare"
+      },
+      "why": ""
+    },
+    {
+      "name": "both behind, B",
+      "usedPct": 40,
+      "elapsedPct": 90,
+      "expected": {
+        "pace": -83.3333,
+        "band": "useBeforeReset"
+      },
+      "why": "60% left expires in a tenth of the window."
+    },
+    {
+      "name": "daily vs weekly, A",
+      "usedPct": 10,
+      "elapsedPct": 50,
+      "expected": {
+        "pace": -44.4444,
+        "band": "roomToSpare"
+      },
+      "why": ""
+    },
+    {
+      "name": "daily vs weekly, B",
+      "usedPct": 40,
+      "elapsedPct": 75,
+      "expected": {
+        "pace": -58.3333,
+        "band": "useBeforeReset"
+      },
+      "why": ""
+    },
+    {
+      "name": "one exhausted",
+      "usedPct": 100,
+      "elapsedPct": 80,
+      "expected": {
+        "pace": 100.0,
+        "band": "spent"
+      },
+      "why": "Nothing left: +100, and the band is spent."
+    },
+    {
+      "name": "on the diagonal",
+      "usedPct": 50,
+      "elapsedPct": 50,
+      "expected": {
+        "pace": 0.0,
+        "band": "onPace"
+      },
+      "why": ""
+    },
+    {
+      "name": "window start",
+      "usedPct": 0,
+      "elapsedPct": 0,
+      "expected": {
+        "pace": 0.0,
+        "band": "onPace"
+      },
+      "why": "0/0 is the sweet spot, never a division by zero."
+    },
+    {
+      "name": "reset reached with quota left",
+      "usedPct": 30,
+      "elapsedPct": 100,
+      "expected": {
+        "pace": -100.0,
+        "band": "useBeforeReset"
+      },
+      "why": "No time left: -100, the window resets now."
+    },
+    {
+      "name": "reset reached, untouched",
+      "usedPct": 0,
+      "elapsedPct": 100,
+      "expected": {
+        "pace": -100.0,
+        "band": "useBeforeReset"
+      },
+      "why": ""
+    },
+    {
+      "name": "band edge +5 is onPace",
+      "usedPct": 5,
+      "elapsedPct": 0,
+      "expected": {
+        "pace": 5.0,
+        "band": "onPace"
+      },
+      "why": "|pace| <= 5 inclusive."
+    },
+    {
+      "name": "band edge -5 is onPace",
+      "usedPct": 0,
+      "elapsedPct": 5,
+      "expected": {
+        "pace": -5.0,
+        "band": "onPace"
+      },
+      "why": ""
+    },
+    {
+      "name": "band edge -50 is roomToSpare",
+      "usedPct": 20,
+      "elapsedPct": 60,
+      "expected": {
+        "pace": -50.0,
+        "band": "roomToSpare"
+      },
+      "why": "-50 inclusive stays roomToSpare; useBeforeReset is strictly below -50."
+    },
+    {
+      "name": "band edge +50 is slowDown",
+      "usedPct": 95,
+      "elapsedPct": 90,
+      "expected": {
+        "pace": 50.0,
+        "band": "slowDown"
+      },
+      "why": "+50 inclusive stays slowDown; nearlyOut is strictly above +50."
+    },
+    {
+      "name": "nearlyOut",
+      "usedPct": 85,
+      "elapsedPct": 40,
+      "expected": {
+        "pace": 75.0,
+        "band": "nearlyOut"
+      },
+      "why": "15% left for 60% of the week."
+    },
+    {
+      "name": "spent line",
+      "usedPct": 99.5,
+      "elapsedPct": 60,
+      "expected": {
+        "pace": 98.75,
+        "band": "spent"
+      },
+      "why": "usedPct >= 99.5 is spent whatever the pace (BEHAVIOR-SPEC section 7.2's exhausted line)."
+    },
+    {
+      "name": "just under the spent line",
+      "usedPct": 99.4,
+      "elapsedPct": 60,
+      "expected": {
+        "pace": 98.5,
+        "band": "nearlyOut"
+      },
+      "why": ""
+    }
+  ],
+  "allowance": [
+    {
+      "name": "over pace, four days left",
+      "usedPct": 52,
+      "msUntilReset": 369600120,
+      "expected": {
+        "mode": "perDay",
+        "pctPerDay": 11.2208
+      },
+      "why": "48% left over 4.28 days."
+    },
+    {
+      "name": "under pace, two days left",
+      "usedPct": 50,
+      "msUntilReset": 199680120,
+      "expected": {
+        "mode": "perDay",
+        "pctPerDay": 21.6346
+      },
+      "why": ""
+    },
+    {
+      "name": "exactly one day left counts as days",
+      "usedPct": 70,
+      "msUntilReset": 86400000,
+      "expected": {
+        "mode": "perDay",
+        "pctPerDay": 30.0
+      },
+      "why": "The switch to hours is strictly under 24 h."
+    },
+    {
+      "name": "last day switches to hours",
+      "usedPct": 60,
+      "msUntilReset": 21600000,
+      "expected": {
+        "mode": "hours",
+        "pctLeft": 40.0,
+        "msLeft": 21600000
+      },
+      "why": "40% at 160%/day is true but useless; say 40% left for 6 h."
+    },
+    {
+      "name": "spent has no allowance",
+      "usedPct": 99.5,
+      "msUntilReset": 180000000,
+      "expected": null,
+      "why": "Nothing left to pace; the surface says when it comes back instead."
+    },
+    {
+      "name": "reset reached has no allowance",
+      "usedPct": 30,
+      "msUntilReset": 0,
+      "expected": null,
+      "why": ""
+    },
+    {
+      "name": "window start, full week",
+      "usedPct": 0,
+      "msUntilReset": 604800000,
+      "expected": {
+        "mode": "perDay",
+        "pctPerDay": 14.2857
+      },
+      "why": "An even week is 14.2857%/day."
+    }
+  ],
+  "sessionBinding": [
+    {
+      "name": "5h past 90",
+      "sessionPct": 93,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": true,
+      "why": "The orange step (BEHAVIOR-SPEC section 5) is where 5h becomes the limit about to stop you."
+    },
+    {
+      "name": "5h at exactly 90",
+      "sessionPct": 90,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": false,
+      "why": "Strict, like the orange step: 90.0 is still yellow."
+    },
+    {
+      "name": "5h just past 90",
+      "sessionPct": 90.1,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": true,
+      "why": ""
+    },
+    {
+      "name": "5h projected to hit before its reset",
+      "sessionPct": 60,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": true,
+      "expected": true,
+      "why": "Section 3's hitsLimitAtMs is non-null."
+    },
+    {
+      "name": "5h fine",
+      "sessionPct": 60,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": false,
+      "why": ""
+    },
+    {
+      "name": "5h spent",
+      "sessionPct": 100,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": true,
+      "why": ""
+    },
+    {
+      "name": "no 5h window on the plan",
+      "sessionPct": null,
+      "weeklyPct": 52,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": false,
+      "why": "ChatGPT Pro, Claude Ultra: the session is absent, never binding."
+    },
+    {
+      "name": "week spent outranks the 5h",
+      "sessionPct": 95,
+      "weeklyPct": 100,
+      "sessionHitsLimitBeforeReset": true,
+      "expected": false,
+      "why": "With the week spent the 5h cannot be used; Weekly stays the headline."
+    },
+    {
+      "name": "no weekly reading still lets 5h bind",
+      "sessionPct": 95,
+      "weeklyPct": null,
+      "sessionHitsLimitBeforeReset": false,
+      "expected": true,
+      "why": ""
+    }
+  ]
+}

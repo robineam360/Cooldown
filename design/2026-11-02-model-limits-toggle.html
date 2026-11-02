@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model Limits Toggle</title>
+<!-- CCRM-99 (Model Limits Toggle), rev A, 2026-11-02. Wireframe for Robin's approval (CLAUDE.md §2).
+     1 CSS px = 1 dp. Fixtures as design/2026-11-02-weekly-first-pace.html. -->
+<style>
+  :root { --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C; --hair: #E7E1DC; --good: #2F6D44; --warn: #9A6B1E; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; } }
+  :root[data-theme="dark"] { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+  h2 { font-size: 19px; font-weight: 650; margin: 50px 0 4px; }
+  .lede, .sub { color: var(--muted); max-width: 86ch; font-size: 13.5px; margin: 0 0 14px; }
+  .lede b, .sub b, .note b { color: var(--ink); font-weight: 650; }
+  .hr { height: 1px; background: var(--hair); margin: 44px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.good { color: var(--good); } .cap.warn { color: var(--warn); }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .col { flex: 0 1 411px; min-width: 0; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 411px; margin: 10px 0 0; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; max-width: 980px; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 16px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .set .h { font-size: 20px; margin: 0 0 12px; display: flex; gap: 8px; align-items: center; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .it .d { font-size: 12.5px; color: #A7A19C; margin-top: 2px; }
+  .set .it.sw { display: flex; gap: 12px; align-items: center; }
+  .tg { width: 46px; height: 26px; border-radius: 13px; position: relative; flex: 0 0 auto; margin-left: auto; }
+  .tg::after { content: ""; position: absolute; top: 3px; width: 20px; height: 20px; border-radius: 50%; }
+  .tg.on { background: #E59980; } .tg.on::after { right: 3px; background: #3B1F15; }
+  .tg.off { background: #3A3532; border: 2px solid #8C8580; } .tg.off::after { left: 3px; top: 1px; background: #8C8580; }
+  .seg { display: flex; border: 1px solid #5A5552; border-radius: 20px; overflow: hidden; margin-top: 9px; }
+  .seg span { flex: 1; text-align: center; padding: 7px 0; font-size: 14px; border-left: 1px solid #5A5552; }
+  .seg span:first-child { border-left: 0; }
+  .seg span.on { background: #4A3A35; color: #F4D9CF; font-weight: 600; }
+  .new { font-family: ui-monospace, monospace; font-size: 9.5px; letter-spacing: .06em; color: #D8AC63; border: 1px solid #6B5428; border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+
+  .card { background: #232120; border-radius: 18px; padding: 15px 14px 13px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; margin: 0 0 9px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, serif; font-weight: 700; font-size: 17px; }
+  .bar { position: relative; height: 10px; border-radius: 5px; background: #4A3A35; margin: 0 0 12px; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: 5px; } .bar > o { background: #FF5252; border-radius: 0 5px 5px 0; }
+  .bar > s { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: #CFC9C4; }
+  .chips { display: flex; gap: 8px; margin: 2px 0 10px; }
+  .chips span { border: 1px solid #5A5552; border-radius: 9px; padding: 4px 14px; font-size: 14px; }
+  .chips span.on { background: #46404F; border-color: #46404F; }
+  .chart { height: 120px; border-radius: 8px; background: repeating-linear-gradient(0deg, transparent 0 29px, rgba(255,255,255,.05) 29px 30px); position: relative; margin: 0 0 8px; }
+  .chart::after { content: "trend chart, unchanged"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #77716C; }
+  .ln { font-size: 13.5px; color: #CFC9C4; } .ln.m { color: #A7A19C; }
+
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, Arial, sans-serif; }
+  .crow { margin: 0 0 8px; } .crow .ch { display: flex; gap: 6px; font-size: 13.5px; margin-bottom: 4px; white-space: nowrap; }
+  .crow .cr { flex: 1; color: #9E9E9E; overflow: hidden; text-overflow: ellipsis; } .crow .cv { font-weight: 700; }
+  .nbar { position: relative; height: 13px; border-radius: 6.5px; background: #3A3A3A; }
+  .nbar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6.5px; }
+  .nbar > s { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(236,236,236,.7); }
+  .hd { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .hd .l { flex: 1; } .hd .lbl { font-size: 13px; font-weight: 600; margin-bottom: 3px; } .hd .hs { font-size: 12px; color: #9E9E9E; margin-top: 4px; line-height: 16px; }
+  .hd .fig { font-size: 44px; font-weight: 700; color: #E59980; }
+  .acts { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; font-weight: 650; color: #E59980; }
+</style>
+
+<div class="page">
+  <p class="eyebrow">CCRM-99 (Model Limits Toggle) · rev A · 2026-11-02 · Android and iPhone/iPad</p>
+  <h1>Hide the model limits on an account</h1>
+  <p class="lede">
+    Your ask: an <b>account-level</b> switch that turns off the per-model weekly limits (Claude's Fable, ChatGPT's
+    Spark), because you rarely use those models and Weekly, then 5h, is what matters. <b>Default: shown</b>,
+    so nothing changes until you turn it off. Hiding only stops Cooldown <b>drawing</b> them: the limit still applies
+    to that model, and the caption says so.
+  </p>
+
+  <h2>1 · The switch: the account's page, under Headline</h2>
+  <div class="row">
+    <div class="col"><p class="cap good">G1 · Teams (Claude Max) · default, shown</p><div class="scroll"><div class="phone set">
+      <div class="h">‹ Teams</div>
+      <div class="grp">Headline</div>
+      <div class="it">What the notification, status-bar gauge and new widgets lead with<div class="seg"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div></div>
+      <div class="grp">Model limits <span class="new">NEW</span></div>
+      <div class="it sw"><div>Show model limits<div class="d">Fable · 30% this week</div></div><span class="tg on"></span></div>
+      <div class="grp">Usage</div><div class="it">Details…</div><div class="it">Clear usage history…</div>
+    </div></div><p class="note">The subtitle names the account's limits and their reading, so you can see what you're hiding.</p></div>
+    <div class="col"><p class="cap warn">G2 · switched off</p><div class="scroll"><div class="phone set">
+      <div class="h">‹ Teams</div>
+      <div class="grp">Headline</div>
+      <div class="it">What the notification, status-bar gauge and new widgets lead with<div class="seg"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div></div>
+      <div class="grp">Model limits <span class="new">NEW</span></div>
+      <div class="it sw"><div>Show model limits<div class="d">Hidden: Fable. The limit still applies to that model; Cooldown just stops drawing it.</div></div><span class="tg off"></span></div>
+      <div class="grp">Usage</div><div class="it">Details…</div><div class="it">Clear usage history…</div>
+    </div></div></div>
+    <div class="col"><p class="cap">G3 · an account with no model limits</p><div class="scroll"><div class="phone set">
+      <div class="h">‹ Personal</div>
+      <div class="grp">Headline</div>
+      <div class="it" style="opacity:.45">What the notification, status-bar gauge and new widgets lead with<div class="seg"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div><div class="d" style="margin-top:7px">This plan has no 5-hour window, so Weekly is always the headline.</div></div>
+      <div class="grp">Usage</div><div class="it">Details…</div><div class="it">Clear usage history…</div>
+    </div></div><p class="note">No "Model limits" group at all while the plan reports none. It appears if the provider adds one, and the stored choice comes back with it.</p></div>
+  </div>
+
+  <hr class="hr">
+  <h2>2 · What it removes</h2>
+  <p class="sub">The 7-day card loses its model rows and the All/Fable chips: the card's first row and the chart both
+    show All. On the notification, the expanded panel loses its model rows, which frees space for one more condition strip.</p>
+  <div class="row">
+    <div class="col"><p class="cap good">C1 · 7-day card, shown (today)</p><div class="scroll"><div class="phone">
+      <div class="card"><div class="t">7-day window ⌃</div>
+        <div class="t" style="margin:0 0 7px">All<span class="v" style="color:#E59980">52%</span></div><div class="bar"><i style="width:52%;background:#E59980"></i><o style="left:39%;width:13%"></o><s style="left:39%"></s></div>
+        <div class="t" style="margin:0 0 7px">Fable<span class="v" style="color:#E59980">30%</span></div><div class="bar"><i style="width:30%;background:#E59980"></i><s style="left:39%"></s></div>
+        <div class="chips"><span class="on">All</span><span>Fable</span></div><div class="chart"></div>
+        <div class="ln"><b>Slow down · ≈11%/day until Sun</b></div><div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div></div></div></div></div>
+    <div class="col"><p class="cap warn">C2 · 7-day card, hidden</p><div class="scroll"><div class="phone">
+      <div class="card"><div class="t">7-day window<span class="v" style="color:#E59980">52%</span></div><div class="bar"><i style="width:52%;background:#E59980"></i><o style="left:39%;width:13%"></o><s style="left:39%"></s></div>
+        <div class="chart"></div>
+        <div class="ln"><b>Slow down · ≈11%/day until Sun</b></div><div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div></div></div></div>
+      <p class="note">The card becomes the plain one-window card the 5-hour card already is: title and figure on one row, then the bar, the chart and the lines. The pace-mark caption (if you pick that variant) sits under the bar as usual.</p></div>
+    <div class="col"><p class="cap warn">N1 · notification, expanded, hidden</p><div class="scroll"><div class="shade"><div class="nc">
+      <div class="hd"><div class="l"><div class="lbl">Teams · Weekly</div><div class="nbar"><i style="width:52%;background:#E59980"></i><s style="left:39%"></s></div><div class="hs">Slow down · ≈11%/day to last</div><div class="hs">Resets Sun 9:30 pm · in 4d 6h</div></div><div class="fig">52%</div></div>
+      <div class="crow"><div class="ch"><span>5h</span><span class="cr">Resets in 2h 20m · 5:10 pm</span><span class="cv">34%</span></div><div class="nbar"><i style="width:34%;background:#E59980"></i><s style="left:53%"></s></div></div>
+      <div class="acts">Refresh</div></div></div></div>
+      <p class="note">Rev A's S2 had a Fable row under the 5h row; it's gone. Shown, the panel is exactly rev A.</p></div>
+  </div>
+
+  <hr class="hr">
+  <h2>3 · Everywhere else</h2>
+  <table>
+    <tr><th>Surface</th><th>Hidden means</th></tr>
+    <tr><td>Android 7-day card (Comfortable and Compact)</td><td>No model rows and no chips; the chart is All's.</td></tr>
+    <tr><td>Android notification, expanded panel</td><td>No model rows (single and Duet).</td></tr>
+    <tr><td>iOS 7-day card</td><td>No model half: All takes the card's full width.</td></tr>
+    <tr><td>iOS account page</td><td>The same "Show model limits" switch, under Headline.</td></tr>
+    <tr><td>Summary tab, Pace map, widgets, status-bar gauge, reset alerts</td><td>Unchanged: none of them draws model limits today.</td></tr>
+    <tr><td>History, Plan Fit</td><td>Unchanged: they read past weeks, where "hit the Fable cap" is still the honest reading.</td></tr>
+  </table>
+  <p class="sub">Spec: BEHAVIOR-MOBILE gains a per-account <code>showModelLimits</code> (default true). Nothing changes in the core: the limits are still parsed and stored, so switching back shows them at once, history included.</p>
+</div>
+</html>

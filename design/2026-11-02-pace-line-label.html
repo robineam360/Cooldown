@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pace Mark Label</title>
+<!-- CCRM-97 (Pace Number), rev C addendum, 2026-11-02: Robin asked to see the pace mark's own position
+     (and the distance to it) on or near every usage meter. Three variants for his pick (CLAUDE.md §2).
+     1 CSS px = 1 dp. -->
+<style>
+  :root { --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C; --hair: #E7E1DC; --good: #2F6D44; --warn: #9A6B1E; --bad: #B3402A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; --bad: #E08268; } }
+  :root[data-theme="dark"] { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; --bad: #E08268; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+  h2 { font-size: 19px; font-weight: 650; margin: 50px 0 4px; }
+  .lede, .sub { color: var(--muted); max-width: 86ch; font-size: 13.5px; margin: 0 0 14px; }
+  .lede b, .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; }
+  .hr { height: 1px; background: var(--hair); margin: 44px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.good { color: var(--good); } .cap.warn { color: var(--warn); }
+  .pending { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 5px; padding: 1px 6px; vertical-align: 3px; }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .col { flex: 0 1 411px; min-width: 0; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 411px; margin: 10px 0 0; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; max-width: 980px; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 16px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; --card: #232120; --mu: #A7A19C; --tr: #3A3532; }
+  .card { background: var(--card); border-radius: 18px; padding: 15px 14px 13px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; margin: 0 0 9px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; }
+  .card .t .pm { font-size: 12.5px; color: var(--mu); font-family: Roboto, Arial, sans-serif; font-weight: 400; }
+  .card .ln { font-size: 13.5px; color: #CFC9C4; margin: 8px 0 0; }
+  .card .ln.m { color: var(--mu); margin-top: 2px; }
+  .card .ln b { color: #EDE8E4; font-weight: 600; }
+  .meter { position: relative; }
+  .bar { position: relative; height: 10px; border-radius: 5px; background: #4A3A35; }
+  .bar > i, .bar > o, .bar > u { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: 5px; }
+  .bar > o { border-radius: 0 5px 5px 0; background: #FF5252; }
+  .bar > u { border: 1.3px dashed rgba(230,225,222,.55); border-left: 0; border-radius: 0 3px 3px 0; top: 1px; bottom: 1px; }
+  .bar > s { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: #CFC9C4; transform: translateX(-1.5px); }
+  .capt { position: relative; height: 17px; margin-top: 5px; font-size: 11.5px; color: var(--mu); white-space: nowrap; }
+  .capt span { position: absolute; top: 0; }
+  .capt b { color: #E6E1DE; font-weight: 600; }
+  .capt .tk { display: inline-block; width: 1.5px; height: 8px; background: #CFC9C4; vertical-align: 0; margin: 0 4px 0 0; }
+
+  /* notification (Huge number, expanded header only) */
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, Arial, sans-serif; }
+  .nc .hb { display: flex; align-items: center; gap: 14px; }
+  .nc .lft { flex: 1; min-width: 0; }
+  .nc .lbl { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .nc .bar { height: 13px; border-radius: 6.5px; background: #3A3A3A; }
+  .nc .bar > s { background: rgba(236,236,236,.7); width: 2px; top: -2px; bottom: -2px; transform: translateX(-1px); }
+  .nc .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+  .nc .hsub + .hsub { margin-top: 0; }
+  .nc .fig { font-size: 44px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+</style>
+
+<div class="page">
+  <p class="eyebrow">CCRM-97 (Pace Number) · pace mark label · 2026-11-02 <span class="pending">pick one</span></p>
+  <h1>Where the pace mark sits, and how far you are from it</h1>
+  <p class="lede">
+    Your ask: "my usage is 50% while the pace line is at 60%, so I have 10% more breathing space", and the
+    reverse, 80% against a 60% mark. Every bar already draws the pace mark; none says <b>where</b> it is. Three
+    ways to say it. All use <b>points</b> (60 − 50 = 10), the plain distance on the bar, and the words
+    "pace mark", as the existing setting "Show red past the pace mark" does.
+  </p>
+  <p class="lede"><b>One knock-on, recommended with every variant:</b> the Weekly card's detail line from rev A,
+    "Pace +21% · an even week is 39% by now", <b>goes</b>. The distance in points replaces it, so the app never
+    shows two different "% from pace" numbers. The signed Pace still sorts the Summary list and picks the band
+    word; it just isn't printed.</p>
+  <p class="lede">Examples: <b>A</b>, under: 50% used, mark at 60%, 2.8 days left: "Room to spare · ≈18%/day".
+    <b>B</b>, over: 80% used, mark at 60%: "Slow down · ≈7%/day".</p>
+
+  <hr class="hr">
+  <h2>V1 · A caption at the mark <span class="pending">recommended</span></h2>
+  <p class="sub">One 11.5 sp line under the bar, starting <b>at the pace mark</b>, so it points at what it names:
+    "60% pace mark · 10 under" or "· 20 over", beginning just right of the mark so the mark itself points at
+    it. When there isn't room to the right of the mark, it ends just left of it instead. Under pace, the gap between your fill and the mark is drawn as a <b>dashed outline</b>: the room
+    you have left. Over pace, the existing red slice is that gap. Costs 22 dp per bar.</p>
+  <div class="row" id="v1"></div>
+
+  <h2>V2 · In the title row, next to the figure</h2>
+  <p class="sub">No new line, no new marks: the title row reads "50% <span style="opacity:.7">of 60% pace</span>".
+    It is the cheapest, but you subtract it yourself, and the number is far from the mark it describes.</p>
+  <div class="row" id="v2"></div>
+
+  <h2>V3 · A flag on the mark</h2>
+  <p class="sub">A small flag above the mark carries the mark's value; the distance goes in the pace words
+    ("Room to spare · 10 under · ≈18%/day"). The flag reads well, but it collides with the title row's figure
+    whenever the mark is near the right end, and that happens every week, near the reset.</p>
+  <div class="row" id="v3"></div>
+
+  <hr class="hr">
+  <h2>V1 on every surface it touches</h2>
+  <p class="sub"><b>The 5h bars too</b>: the mark is plain geometry, not the Pace verdict. <b>Summary rows</b> take
+    the caption in place of nothing (the pip stays). <b>The notification</b> has no height for a caption, so its
+    <b>expanded</b> header's second line carries it: "10 under the pace mark (60%) · resets Fri". The collapsed
+    row is unchanged. Widgets are unchanged: they have no room, and the tick is already there.</p>
+  <div class="row" id="all"></div>
+
+  <h2>V1 edge states</h2>
+  <div class="row" id="edges"></div>
+  <table>
+    <tr><th>State</th><th>Caption</th></tr>
+    <tr><td>distance under 1 point</td><td>"60% pace mark · on it"</td></tr>
+    <tr><td>mark past ~70% of the width</td><td>right-aligned, ending at the mark</td></tr>
+    <tr><td>spent (100%)</td><td>none: "Out until …" already says it</td></tr>
+    <tr><td>no reset clock / no reading</td><td>none, as the tick itself is withheld (spec §6)</td></tr>
+    <tr><td>Used/Left set to Left</td><td>the mark flips too: "40% pace mark · 10 to spare" (remaining terms)</td></tr>
+  </table>
+</div>
+
+<script>
+const CL = '#E59980', GP = '#19C39A';
+const sev = (p, ac) => p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : ac;
+const W = 351; // card inner width on the Fold cover
+const ctx = document.createElement('canvas').getContext('2d'); ctx.font = '11.5px Roboto, Arial, sans-serif';
+const tw = t => ctx.measureText(t).width;
+function bar(u, m, ac, { dashed = true, h = 10 } = {}) {
+  const gap = u < m && dashed ? `<u style="left:${u}%;width:${m - u}%"></u>` : '';
+  const red = u > m ? `<o style="left:${m}%;width:${Math.min(u, 100) - m}%"></o>` : '';
+  return `<div class="bar" style="height:${h}px"><i style="width:${Math.min(u, 100)}%;background:${sev(u, ac)}"></i>${gap}${red}<s style="left:${m}%"></s></div>`;
+}
+function dist(u, m) { const d = Math.round(u - m); return d === 0 ? 'on it' : d < 0 ? `${-d} under` : `${d} over`; }
+function caption(u, m, w = W) {
+  // starts 5 dp right of the mark (the mark itself points at it); flips to end 5 dp left of it when short of room
+  const txt = `${m}% pace mark · ${dist(u, m)}`, x = w * m / 100;
+  const html = `<b>${m}%</b> pace mark · ${dist(u, m)}`;
+  return x + 5 + tw(txt) <= w ? `<div class="capt"><span style="left:${x + 5}px">${html}</span></div>`
+    : `<div class="capt"><span style="right:${w - x + 5}px">${html}</span></div>`;
+}
+function card(title, u, m, ac, lines, { variant = 1, w = W, mk = '' } = {}) {
+  const figExtra = variant === 2 ? ` <span class="pm">of ${m}% pace</span>` : '';
+  const flag = variant === 3 ? `<div style="position:relative;height:16px"><span style="position:absolute;left:${w * m / 100}px;transform:translateX(-50%);font-size:11px;background:#46404F;color:#EDE8E4;border-radius:4px;padding:0 4px;line-height:15px">${m}%</span></div>` : '';
+  return `<div class="card"><div class="t">${mk}${title}<span class="v" style="color:${sev(u, ac)}">${u}%${figExtra}</span></div>
+    ${flag}<div class="meter">${bar(u, m, ac, { dashed: variant === 1 })}${variant === 1 ? caption(u, m, w) : ''}</div>
+    ${lines}</div>`;
+}
+const phone = inner => `<div class="phone">${inner}</div>`;
+const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p><div class="scroll">${body}</div>${note ? `<p class="note">${note}</p>` : ''}</div>`;
+const LA = '<div class="ln"><b>Room to spare · ≈18%/day until Fri</b></div><div class="ln m">At this pace: ~78% when the window resets · 0.5%/h</div>';
+const LB = '<div class="ln"><b>Slow down · ≈7%/day until Fri</b></div><div class="ln m">At this pace: hits 100% Thu 6 pm · 0.8%/h</div>';
+const LA3 = '<div class="ln"><b>Room to spare · 10 under · ≈18%/day</b></div><div class="ln m">At this pace: ~78% when the window resets · 0.5%/h</div>';
+const LB3 = '<div class="ln"><b>Slow down · 20 over · ≈7%/day</b></div><div class="ln m">At this pace: hits 100% Thu 6 pm · 0.8%/h</div>';
+
+for (const v of [1, 2, 3]) {
+  document.getElementById('v' + v).innerHTML = [
+    col(`V${v} · A · under pace`, 'good', phone(card('7-day window', 50, 60, CL, v === 3 ? LA3 : LA, { variant: v }))),
+    col(`V${v} · B · over pace`, 'warn', phone(card('7-day window', 80, 60, CL, v === 3 ? LB3 : LB, { variant: v }))),
+  ].join('');
+}
+
+// V1 everywhere
+(function () {
+  const mark = (c) => `<svg width="18" height="18" style="color:${c};flex:0 0 auto"><circle cx="9" cy="9" r="6" fill="currentColor"/></svg>`;
+  const fiveH = card('5-hour window', 34, 53, CL, '<div class="ln m">At this pace: ~69% when the window resets · 15.0%/h ⓘ</div>');
+  const weekly = card('7-day window', 52, 39, CL, '<div class="ln"><b>Slow down · ≈11%/day until Sun</b></div><div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div>');
+  const sumRow = (nm, ac, u, m, words) => `<div style="padding:9px 0 8px;border-top:1px solid #3A3532"><div style="display:flex;align-items:center;gap:7px;margin:0 0 6px">${mark(ac)}<span style="font-size:15px">${nm}</span><span style="margin-left:auto;font-family:Georgia,serif;font-weight:700;font-size:17px;color:${sev(u, ac)}">${u}%</span></div>${bar(u, m, ac)}${caption(u, m, 323)}<div style="font-size:13px;margin-top:2px">${words}</div></div>`;
+  const summary = `<div class="card"><div class="t">Weekly<span style="margin-left:auto;font-size:12.5px;color:#A7A19C">most room first</span></div>
+    ${sumRow('Personal', GP, 50, 67, 'Room to spare · ≈22%/day · resets Fri')}${sumRow('Teams', CL, 52, 39, 'Slow down · ≈11%/day · resets Sun')}</div>`;
+  const notif = `<div class="shade"><div class="nc"><div class="hb"><div class="lft"><div class="lbl">Personal · Weekly</div>${bar(50, 67, GP, { dashed: false, h: 13 }).replace('class="bar"', 'class="bar" style="background:#3A3A3A;height:13px"')}
+    <div class="hsub">Room to spare · ≈22%/day to last</div><div class="hsub" style="color:#ECECEC">17 under the pace mark (67%) · resets Fri</div></div><div class="fig" style="color:${GP}">50%</div></div></div></div>`;
+  document.getElementById('all').innerHTML = [
+    col('App · Weekly card first, then 5h', 'good', phone(weekly + fiveH), 'Teams: 52% with the mark at 39%, 13 over, the red slice. 5h: 34% against 53%, 19 under, the dashed room.'),
+    col('Summary rows', 'good', phone(summary), 'The caption sits between the bar and the words; the pip in rev A\'s row moves into the caption\'s place (the words already carry the band), so rows grow by only 5 dp.'),
+    col('Notification, expanded header', 'good', `<div class="scroll">${notif}</div>`, 'Line 2 was "Resets Fri 10:18 pm · in 2d 7h"; it now leads with the distance and keeps the reset day. The collapsed row is unchanged.'),
+  ].join('');
+})();
+
+document.getElementById('edges').innerHTML = [
+  col('E1 · mark near the end · caption flips left', 'warn', phone(card('7-day window', 60, 96, CL, '<div class="ln"><b>Use before reset · 40% left, 6h</b></div>'))),
+  col('E2 · right on the mark', 'good', phone(card('7-day window', 38, 38, CL, '<div class="ln"><b>On pace · ≈14%/day until Sun</b></div>'))),
+  col('E3 · start of the week', 'good', phone(card('7-day window', 2, 4, CL, '<div class="ln"><b>On pace · ≈14%/day until Sun</b></div>'))),
+].join('');
+</script>
+</html>

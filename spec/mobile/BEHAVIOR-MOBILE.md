@@ -80,7 +80,8 @@ Source: `notify/Conditions.kt`, `alerts/Alerts.kt` (`STALE_DATA_MS`) (Android).
 
 ## 4. Surfaces
 
-Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframes).
+Listed here; each one's layout, sizes, states and copy as shipped are in [surfaces/](surfaces/README.md),
+and changes still go through a wireframe first (CLAUDE.md §2).
 
 | Android | iPhone and iPad |
 |---|---|
@@ -88,7 +89,65 @@ Listed, not specified — each platform designs its own (CLAUDE.md §2 wireframe
 | Always-on pinned notification and its status-bar ring | — (iOS has no persistent notification) |
 | Home-screen widgets | Home-screen widgets, plus a Large face |
 | — | Lock-screen widgets |
-| Quick Settings tile | Control Center control |
+| — (the Quick Settings tile went with CCRM-61 (Settings Diet)) | Control Center control |
 | Reset-ping notifications | Reset alerts, scheduled ahead |
 | — | Live Activity: two accounts' 5h and Weekly (lock screen; Dynamic Island on iPhone) |
 | Share card | Share card (to decide with CCRM-94 (iOS App)) |
+
+---
+
+## 5. Headline window and pace wording — CCRM-96 (Weekly First), CCRM-97 (Pace Number)
+
+**Status:** decided 2026-11-02; wireframes approved 2026-11-02 (`design/2026-11-02-weekly-first-pace.html`
+Android, `-ios-weekly-first.html` iOS, `-pace-line-label.html` V1, `-vs-pace-display.html`); no client
+implements it yet. Until one does, today's rule stands: the headline
+is the session if present, else the weekly window.
+
+**The Headline setting is per account:** `weekly` (default) · `fiveHour` · `auto`.
+
+| Surface | Leads with |
+|---|---|
+| Pinned notification (each Duet half follows its own account), iOS Overview big number | `weekly` → Weekly · `fiveHour` → 5h · `auto` → 5h while core §6.2's `sessionBinding`, else Weekly |
+| Status-bar gauge (one window, no room for a companion) | as above, except `weekly` behaves as `auto` |
+| A new widget's window choice (stored per widget afterwards) | `weekly` and `auto` → Weekly · `fiveHour` → 5h |
+| The app's default card order (a layout reordered in the sheet wins) | `fiveHour` → 5h card first · otherwise Weekly first |
+
+An account with no session window always leads with Weekly, whatever the setting. Placed widgets
+keep their stored window. Cases in [`fixtures/headline/cases.json`](fixtures/headline/cases.json).
+
+**The 5h companion.** Where Weekly leads and the account has a session, the 5h figure rides along
+as "5h 34%". While `sessionBinding` holds it takes the bar colour's step (core §5) and bold.
+
+**Pace words** for core §6.1's bands:
+
+| Band | Words |
+|---|---|
+| `onPace` | "On pace" |
+| `roomToSpare` | "Room to spare" |
+| `useBeforeReset` | "Use before reset" |
+| `slowDown` | "Slow down" |
+| `nearlyOut` | "Nearly out" |
+| `spent` | no band: "Out until <reset>" |
+
+Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h".
+Tight form (notification, folded card): "Slow down · ≈11%/day". The signed number appears only in
+the app card's detail: "Pace +21% · an even week is 39% by now" — **superseded 2026-11-02**: the signed
+Pace is never printed; instead each app and Summary bar carries the pace-mark caption (below). On always-on surfaces the words carry no
+colour; in the app the folded line keeps today's over-pace emphasis (Android: the band clause bold in
+the orange step; iOS: the whole line red). The 5-hour session gets no Pace; its line is core §3's projection: folded "Resets in 2h 20m · on
+track for ~69%", and open the existing "At this pace: ~69% when the window resets" line.
+
+**Pace-mark caption** (in-app bars and Summary rows; `design/2026-11-02-pace-line-label.html` V1): one
+line under the bar, starting just right of the pace mark (ending just left of it when short of room). It
+shows what the figure does not: in Used or Left mode "60% pace mark · 10 under" / "· 20 over" / "· on it"
+(points, `elapsed − used`, |d| < 1 is "on it"); in Vs pace mode "50% used · mark 60%". Under pace the gap
+from the fill to the mark is drawn as a dashed outline; over pace the existing red slice is the gap. None
+when the window is spent, has no reset clock or no reading. The notification's expanded header line 2
+reads "10 under the pace mark (60%) · resets Fri".
+
+**Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
+value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
+falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
+
+**Model limits** (CCRM-99 (Model Limits Toggle)): per account `showModelLimits`, default true. False hides
+the model-cap rows and chips on the 7-day card and the notification panel; nothing else changes.

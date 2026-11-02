@@ -31,6 +31,9 @@ Anything that changes what the user sees — a new screen, card, notification la
 style, chart element, settings section, or a visible change to an existing one — needs a
 **wireframe reviewed and approved before implementation starts**. Not after. Not alongside.
 
+- **Start from [`spec/mobile/surfaces/`](spec/mobile/surfaces/README.md)**, the as-shipped layouts,
+  sizes, states and copy of every surface, instead of re-reading the code and old wireframes;
+  wireframe only the delta, and update that folder in the same commit as the build.
 - A wireframe is enough: ASCII/markdown sketch, an SVG, or a described layout with real
   numbers (dp sizes, text sizes, what's above what, what happens at each width class).
   Fidelity is not the point; agreeing on the layout before code exists is.
@@ -58,7 +61,7 @@ parsing, scheduling, tests, docs, or a bug fix that restores an already-approved
   session, the prompt to paste, and what "done" means. Tick steps off there; statuses still
   live in the tracker files.
 - [HANDOVER.md](HANDOVER.md) — the paste-ready prompt for the next session; each session that
-  ends with a next step replaces its "Next session" block (as CooldownMac does).
+  ends with a next step replaces its "Next session" block (as CooldownDesktop does).
 - `release/docs/` — the user-facing guide and brochure (HTML → headless Chrome; sources in
   `docs/src/`).
 
@@ -66,7 +69,7 @@ This repo holds the **Android app (repo root) and the iPhone/iPad app (`ios/`)**
 the platform-neutral `spec/` (Markdown and JSON only) and sharing no code — decided 2026-10-23,
 plan in [docs/ios/PLAN.md](docs/ios/PLAN.md), CCRM-7 (iOS). **Two repos by product family**
 (decided 2026-10-23, [docs/REPO-STRUCTURE.md](docs/REPO-STRUCTURE.md)): this one is mobile; the
-desktop repo (CooldownMac) holds the Mac client and, later, Linux and Windows. No desktop client
+desktop repo (CooldownDesktop, formerly CooldownMac) holds the Mac client and, later, Linux and Windows. No desktop client
 joins this repo. Because the GitHub `releases/latest` stream is repo-wide and the Android update
 check reads it, **every release that carries an IPA also carries the APK under the same version
 — never an iOS-only release**.

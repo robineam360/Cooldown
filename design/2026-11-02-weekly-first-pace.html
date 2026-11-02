@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly First and Pace</title>
+<!-- CCRM-96 (Weekly First) and CCRM-97 (Pace Number), rev A, 2026-11-02. Wireframe for Robin's approval
+     (CLAUDE.md §2). Drawn in the grammar of duet-panel-fit-wireframe.html: 1 CSS px = 1 dp, notification
+     card 360 dp, Huge number style first. Every number on the page comes from the fixtures in the
+     script at the bottom, so the states agree with each other. -->
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 76ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -.01em; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  .sub b, .note b, .lede b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.bad { color: var(--bad); } .cap.good { color: var(--good); } .cap.warn { color: var(--warn); }
+  .row { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .col { flex: 0 1 384px; min-width: 0; }
+  .col.wide { flex-basis: 435px; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 384px; margin: 10px 0 0; }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tbl-wrap { overflow-x: auto; }
+  ol.dec, ul.inv { font-size: 13.5px; max-width: 86ch; padding-left: 22px; }
+  ol.dec li, ul.inv li { margin: 0 0 9px; }
+  ol.dec li b, ul.inv li b { font-weight: 650; }
+  .q { border: 1px solid var(--warn); border-radius: 12px; padding: 12px 16px; margin: 14px 0; max-width: 86ch; font-size: 13.5px; }
+  .q b { color: var(--warn); }
+  .pending { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 5px; padding: 1px 6px; vertical-align: 2px; }
+
+  /* ---------- Android shade + notification (same grammar as duet-panel-fit-wireframe.html) ---------- */
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .shade.light { background: #E4E4E4; border-color: #CFCFCF; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .shade.light .nc { background: #F7F7F7; color: #1F1F1F; }
+  .nc .apphdr { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9E9E9E; margin: 0 0 10px; font-weight: 600; }
+  .shade.light .apphdr { color: #5C5C5C; }
+  .nc .apphdr .sp { opacity: .7; }
+  .hl { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .lbl { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fig { font-weight: 700; letter-spacing: -.02em; line-height: 1; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .bar { position: relative; overflow: visible; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: inherit; }
+  .bar > o { border-radius: 0 6px 6px 0; }
+  .bar > s { position: absolute; top: -2px; bottom: -2px; width: 2px; }
+  .hb { display: flex; align-items: center; gap: 14px; margin: 0 0 10px; }
+  .hb:last-child { margin-bottom: 0; }
+  .hb .lft { flex: 1; min-width: 0; }
+  .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+  .hsub + .hsub { margin-top: 0; }
+  .shade.light .hsub { color: #5C5C5C; }
+  .hsub .c5 { font-weight: 700; }
+  .figwrap { flex: 0 0 auto; text-align: center; }
+  .acts { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; font-weight: 650; color: #E59980; }
+  .shade.light .acts { border-top-color: rgba(0,0,0,.08); color: #D97757; }
+  .pnl { margin-top: 10px; }
+  .crow { margin: 0 0 8px; }
+  .crow:last-child { margin-bottom: 0; }
+  .crow .ch { display: flex; align-items: baseline; gap: 6px; height: 18px; margin-bottom: 4px; font-size: 13.5px; white-space: nowrap; }
+  .crow .cl { flex: 0 0 auto; }
+  .crow .cr { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #9E9E9E; }
+  .shade.light .crow .cr { color: #5C5C5C; }
+  .crow .cv { flex: 0 0 auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Duet collapsed: two halves side by side */
+  .duet { display: flex; gap: 16px; }
+  .duet > div { flex: 1; min-width: 0; }
+  .duet .dl { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .duet .db { display: flex; align-items: center; gap: 8px; }
+  .duet .db .bar { flex: 1; }
+  .tag { display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: #7FC08F; border: 1px solid #3B5A43; border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+  .tag.chg { color: #D8AC63; border-color: #6B5428; }
+
+  /* ---------- the app (Fold 7 cover, 411 dp) ---------- */
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 18px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #3a3a3a; margin: 0 -16px 14px; font-size: 15px; }
+  .tabs span { flex: 1; text-align: center; padding: 8px 0 9px; color: #9C9894; display: flex; gap: 6px; justify-content: center; align-items: center; }
+  .tabs span.on { color: #EDE8E4; border-bottom: 3px solid #E59980; }
+  .card { background: #232120; border-radius: 18px; padding: 15px 14px 14px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; color: #E6E1DE; margin: 0 0 10px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; }
+  .card .t .chev { font-size: 12px; color: #BDB8B3; }
+  .card .bar { height: 10px; border-radius: 5px; background: #4A3A35; margin: 0 0 12px; }
+  .card .bar > s { background: #CFC9C4; width: 3px; top: -4px; bottom: -4px; border-radius: 2px; }
+  .card .ln { font-size: 13.5px; color: #CFC9C4; margin: 0 0 3px; }
+  .card .ln.m { color: #A7A19C; }
+  .card .ln b { color: #EDE8E4; font-weight: 600; }
+  .card .rs { display: flex; justify-content: space-between; border-top: 1px solid #3A3532; padding-top: 7px; margin-top: 8px; font-size: 13.5px; color: #CFC9C4; }
+  .chips { display: flex; gap: 8px; margin: 2px 0 6px; }
+  .chips span { border: 1px solid #5A5552; border-radius: 9px; padding: 4px 14px; font-size: 14px; }
+  .chips span.on { background: #46404F; border-color: #46404F; }
+  .chk { font-size: 13px; color: #A7A19C; margin: 6px 2px 0; }
+
+  /* settings */
+  .set { width: 411px; background: #121212; border-radius: 26px; padding: 18px 16px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .set .h { font-size: 20px; margin: 0 0 14px; display: flex; gap: 8px; align-items: center; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .it .d { font-size: 12.5px; color: #A7A19C; margin-top: 2px; }
+  .seg { display: flex; border: 1px solid #5A5552; border-radius: 20px; overflow: hidden; margin-top: 9px; }
+  .seg span { flex: 1; text-align: center; padding: 7px 0; font-size: 14px; border-left: 1px solid #5A5552; }
+  .seg span:first-child { border-left: 0; }
+  .seg span.on { background: #4A3A35; color: #F4D9CF; font-weight: 600; }
+  .seg.off { opacity: .42; }
+
+  /* status-bar strip */
+  .sbar { width: 384px; height: 40px; border-radius: 12px; background: #000; display: flex; align-items: center; padding: 0 14px; gap: 7px; color: #fff; font: 600 14px Roboto, Arial, sans-serif; }
+  .zoom { display: flex; gap: 18px; align-items: center; margin-top: 12px; }
+  .zoom figure { margin: 0; text-align: center; font-size: 11.5px; color: var(--muted); }
+  .zoom .tile { background: #000; border-radius: 14px; padding: 10px; display: inline-block; }
+
+  /* pace scale */
+  .scale { max-width: 760px; margin: 18px 0 6px; }
+  .scale .track { position: relative; height: 34px; border-radius: 8px; overflow: hidden; display: flex; }
+  .scale .track > div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: #1d1a18; text-align: center; line-height: 1.15; }
+  .scale .ax { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 4px; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol><symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.98" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></symbol></defs></svg>
+
+<div class="page">
+  <p class="eyebrow">CCRM-96 (Weekly First) · CCRM-97 (Pace Number) · rev A · 2026-11-02</p>
+  <h1>Weekly first, and the Pace in words</h1>
+  <p class="lede">
+    Your six decisions of 2 Nov, drawn on every surface they touch. <b>Weekly leads</b>, and 5h comes along small.
+    <b>Pace on weekly-length windows reads as a band plus a daily allowance</b>, "Slow down · ≈11%/day". The
+    <b>Headline</b> setting is per account (Weekly · 5-hour · Auto). The <b>status-bar gauge</b> shows Weekly
+    until 5h is the thing about to stop you. Notification mocks use your Huge number style. Nothing on any card
+    is removed: the bars keep their pace tick and red slice, and the chart keeps its guides, diagonal, dots,
+    projection and axis.
+  </p>
+  <p class="lede">Fixtures (one moment, used everywhere): <b>Wednesday 2:50 pm</b>. <b>Teams</b> (Claude Max): Weekly
+    52%, resets Sun 9:30 pm (39% of the week gone); 5h 34%, resets 5:10 pm; Fable 30%. <b>Personal</b>
+    (ChatGPT Pro, no 5h window): Weekly 50%, resets Fri 10:18 pm (67% gone).</p>
+
+  <hr class="hr">
+  <h2>1 · The words: one ladder, every surface</h2>
+  <p class="sub">
+    <code>pace = (time left − quota left) ÷ max(time left, quota left) × 100</code>, in −100…+100.
+    Only on weekly-length windows: Weekly and the weekly model caps (Fable, Spark). The band is the word.
+    The allowance is quota left ÷ days left, which is the even rate that lands on exactly 100% at the reset.
+    The signed number appears in one place only, the app card's detail line (§5).
+  </p>
+  <div class="scale" id="scale"></div>
+  <div class="tbl-wrap"><table id="ladder">
+    <tr><th>State</th><th>Rule</th><th>Example (used · week gone)</th><th>Pace</th><th>Tight form (notification, compact card)</th></tr>
+  </table></div>
+  <p class="sub" style="margin-top:14px">
+    <b>Why the allowance switches to hours on the last day:</b> "40% ≈ 160%/day" is true but useless with 6 hours
+    left. Under 24 h the clause becomes "40% left, 6h". <b>Why there is no "too early" floor:</b> unlike today's
+    projection, Pace is calm at a window's start (2% used two hours in reads as on pace), so the weekly line never
+    goes silent while a reading exists.
+  </p>
+
+  <hr class="hr">
+  <h2>2 · Pinned notification, one account, Huge number</h2>
+  <p class="sub">
+    <b>Collapsed:</b> the title is the headline window ("Teams · Weekly"), the bar and figure are Weekly, and
+    the one line reads <b>band · allowance · 5h companion</b>. <b>Expanded:</b> the header gets two lines (pace,
+    then the weekly reset), and the panel's first row becomes the <b>5h row</b> (it used to be the Weekly row).
+    The model-cap rows and condition strips are unchanged. With no 5h on the account, the companion becomes "resets Sun".
+  </p>
+  <div class="row" id="single"></div>
+
+  <h3>Where 5h matters: the companion turns loud, or (on Auto) takes the headline</h3>
+  <p class="sub">
+    5h at 93%, back at 3:40 pm. With the Headline on <b>Weekly</b> (default), the companion takes the bar
+    colour's severity and bold, so it can't be missed. With the Headline on <b>Auto</b>, the 5h becomes the
+    headline until it resets. The rule is: 5h past 90%, or projected to hit 100% before its reset (unless the week is spent).
+  </p>
+  <div class="row" id="loud"></div>
+
+  <h3>The week's edges</h3>
+  <div class="row" id="edges"></div>
+
+  <hr class="hr">
+  <h2>3 · Duet, two accounts</h2>
+  <p class="sub">
+    The structure is unchanged; what changes is which window sits where. <b>Collapsed:</b> both halves show Weekly,
+    with no sub line, as today. <b>Expanded:</b> each header block is Weekly, with its sub
+    "band · allowance · resets day". The panel's rows become the <b>5h rows</b> (an account with no 5h, like
+    ChatGPT Pro, has none). The panel budget is unchanged: two rows take the 78 dp the two Weekly rows took, so
+    CCBG-26 (Panel Scaling)'s one-strip cap still holds.
+  </p>
+  <div class="row" id="duet"></div>
+
+  <hr class="hr">
+  <h2>4 · Status-bar gauge (and the desktop menu-bar item later)</h2>
+  <p class="sub">
+    The gauge geometry is untouched (CCRM-83 (Ring Renderer): extent, usage, red slice, hub, needle, spent ×).
+    Only its input changes: <b>Weekly, until 5h blocks</b>. The needle is the clock of whichever window it draws,
+    so a takeover shows as the needle jumping from Wednesday's position to "5h nearly over". By the rule, 5h is
+    always past 90% (orange or red) or on course to run out when it takes over. That colour is the signal, and the
+    notification title names the window. No extra glyph fits in ~14 dp, and none is proposed.
+    If the account's Headline is set to <b>5-hour</b>, the gauge shows 5h throughout.
+  </p>
+  <div id="gauges"></div>
+
+  <hr class="hr">
+  <h2>5 · The app: Weekly card first</h2>
+  <p class="sub">
+    The default card order becomes <b>Weekly, then 5h</b>, and a layout you have reordered in the sheet keeps your order.
+    The Weekly card's first line under the chart, today "40% below even pace", becomes <b>band · allowance until
+    the reset day</b>. A new detail line carries the <b>signed Pace</b> with what it is measured against. The
+    projection line and the reset row are unchanged. The chips switch the chart <i>and</i> the pace lines between
+    All and Fable, as today.
+  </p>
+  <div class="row" id="app"></div>
+
+  <div class="q"><b>Question for you (5h's line).</b> The 5h window gets no Pace (decision 2), so "22% below pace"
+    there would be the old gap metric beside the new one. Recommended: <b>5h shows the projection instead</b>.
+    Folded, that reads "Resets in 2h 20m · on track for ~69%". Open, the "below even pace" line goes and the
+    existing "At this pace: ~69% when the window resets" line stays. The alternative is the band word with no number,
+    "Resets in 2h 20m · under pace". Both are drawn above, the recommended one in the cards.</div>
+
+  <hr class="hr">
+  <h2>6 · Settings: Headline, per account</h2>
+  <p class="sub">
+    The setting sits in the account's own page (Settings › Accounts › the account), under its colour, and reads
+    "what the notification, status-bar gauge and new widgets lead with". On an account with no 5h window it
+    is shown but greyed out, with its reason.
+  </p>
+  <div class="row" id="settings"></div>
+
+  <hr class="hr">
+  <h2>7 · Widgets, iPhone/iPad, desktop</h2>
+  <div class="tbl-wrap"><table>
+    <tr><th>Surface</th><th>Change</th><th>Unchanged</th></tr>
+    <tr><td>Android widgets (Ring, Number, Countdown, Strip)</td><td>A new widget's window chip starts on the account's Headline (Auto starts on Weekly). Today it always starts on 5h.</td><td>Placed widgets keep their stored window. Every face, size and state stays as approved in v1.8; no face prints a pace sentence today, and none will.</td></tr>
+    <tr><td>iOS Overview (T1–T3 account cards)</td><td>The big number is the Headline window. The pace line becomes the band words: "Slow down · ≈11%/day" (T1), "Slow down" (T3 narrow).</td><td>Tiers, bars, ticks, trend chart (T1).</td></tr>
+    <tr><td>iOS small Bars, Strip, Medium</td><td>Weekly block on top, 5h under (order swap only).</td><td>Sizes, the reset-line drop rules.</td></tr>
+    <tr><td>iOS Number, Countdown, lock-screen circular/inline</td><td>Default window = the Headline (Auto → Weekly).</td><td>Per-widget window choice.</td></tr>
+    <tr><td>iOS lock-screen rectangular, Live Activity Duet</td><td>Weekly line first, 5h second.</td><td>Both windows shown, Dynamic Island.</td></tr>
+    <tr><td>Reset alerts</td><td>None.</td><td>5h "If busy", Weekly "Always".</td></tr>
+    <tr><td>CooldownMac (later)</td><td>Picks up the Pace rule, bands and the takeover rule from its pinned <code>spec/core</code>; the menu-bar item follows §4.</td><td>Its own layout.</td></tr>
+  </table></div>
+  <p class="sub" style="margin-top:12px">The iOS faces are an order swap and a copy swap inside approved layouts. I'll draw them as rev B after this page is approved, if you'd rather see them than read them.</p>
+
+  <hr class="hr">
+  <h2>8 · What changes in <code>spec/core</code></h2>
+  <ul class="inv">
+    <li><b>New §6.1 Pace number:</b> formula, the five bands and the spent state, the allowance, the switch to hours under 24 h, the suppressions (no reset, not started, no reading), and fixtures: the six ModelMesh scenarios plus window start, exhausted, reset reached and every band edge.</li>
+    <li><b>§5 dead zone:</b> the 3-point gap verdict is retired on weekly-length windows in favour of the ±5 band. The chart's amber wash past the diagonal is geometry and stays.</li>
+    <li><b>§1 headline rule:</b> "session if present, else weekly" becomes the Headline setting. Weekly is the default, 5-hour is literal, and the takeover rule applies to Auto and the gauge. An absent 5h always means Weekly.</li>
+  </ul>
+</div>
+
+<script>
+// ---------- fixtures ----------
+const NOW = 'now';
+const CL = '#E59980', GP = '#19C39A';
+const T_GONE = 38.9;   // Teams: Wed 2:50 pm, week ends Sun 9:30 pm → 4d 6h 40m left of 168 h
+const P_GONE = 67.0;   // Personal: resets Fri 10:18 pm → 2d 7h 28m left
+function pace(used, gone) { const q = 100 - used, r = 100 - gone; const m = Math.max(r, q); return m === 0 ? 0 : (r - q) / m * 100; }
+function band(used, gone) {
+  if (used >= 99.5) return 'Spent';
+  const p = pace(used, gone);
+  if (Math.abs(p) <= 5) return 'On pace';
+  if (p < -50) return 'Use before reset';
+  if (p < 0) return 'Room to spare';
+  if (p > 50) return 'Nearly out';
+  return 'Slow down';
+}
+function allowance(used, hoursLeft) {
+  const q = 100 - used;
+  if (hoursLeft < 24) return `${Math.round(q)}% left, ${Math.round(hoursLeft)}h`;
+  const d = q / (hoursLeft / 24);
+  return d < 1 ? '<1%/day' : `≈${Math.round(d)}%/day`;
+}
+function sev(p, accent) { return p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : accent; } // spec §5: ≥100, >90, >80
+const mark = (id, color, s = 14) => `<svg width="${s}" height="${s}" style="color:${color};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
+function bar(p, tick, color, h = 13, light = false) {
+  const track = light ? '#D6D6D6' : '#3A3A3A';
+  const red = p != null && tick != null && p > tick ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:#FF5252"></o>` : '';
+  const tk = tick != null && p != null ? `<s style="left:${tick}%;background:${light ? 'rgba(31,31,31,.6)' : 'rgba(236,236,236,.7)'}"></s>` : '';
+  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${track}"><i style="width:${Math.min(p ?? 0, 100)}%;background:${color}"></i>${red}${tk}</div>`;
+}
+
+// ---------- §1 scale + ladder ----------
+(function () {
+  const segs = [['Use before reset', 25, '#7FC08F'], ['Room to spare', 22.5, '#A9D3A0'], ['On pace', 5, '#E7E1DC'], ['Slow down', 22.5, '#F2C27A'], ['Nearly out', 25, '#E08268']];
+  document.getElementById('scale').innerHTML =
+    `<div class="track">${segs.map(s => `<div style="width:${s[1]}%;background:${s[2]}">${s[0]}</div>`).join('')}</div>
+     <div class="ax"><span>−100 all left goes unused</span><span>−50</span><span>0 even</span><span>+50</span><span>+100 nothing left</span></div>
+     <p class="note" style="max-width:760px">Reference only: no surface draws this scale. The colours here are for reading the table; the words carry no colour of their own, and the always-on surfaces stay monochrome until 80% (spec §5).</p>`;
+  const rows = [
+    ['On pace', '|pace| ≤ 5', 38, T_GONE, 102.7],
+    ['Room to spare', '−50 ≤ pace < −5', 50, P_GONE, 55.5],
+    ['Use before reset', 'pace < −50', 12, 60, 67.2],
+    ['Slow down', '5 < pace ≤ 50', 52, T_GONE, 102.7],
+    ['Nearly out', 'pace > 50', 85, 40, 100.8],
+    ['Last day', 'under 24 h left', 60, 96.4, 6],
+    ['Spent', 'used ≥ 99.5', 100, 55, 75.6],
+  ];
+  const t = document.getElementById('ladder');
+  for (const [name, rule, u, g, h] of rows) {
+    const p = pace(u, g);
+    const tight = u >= 99.5 ? 'Out until Sun 9:30 pm' : `${band(u, g)} · ${allowance(u, h)}`;
+    t.insertAdjacentHTML('beforeend', `<tr><td><b>${name}</b></td><td>${rule}</td><td class="n">${u}% · ${g}%</td><td class="n">${u >= 99.5 ? '+100' : (p > 0 ? '+' : '') + Math.round(p)}</td><td>${tight}</td></tr>`);
+  }
+  t.insertAdjacentHTML('beforeend', `<tr><td><b>Not started</b></td><td>no reset time yet</td><td class="n">—</td><td class="n">—</td><td>Weekly not started</td></tr>
+    <tr><td><b>No reading</b></td><td>never fetched / sign-in broken</td><td class="n">—</td><td class="n">—</td><td>No reading yet (today's copy)</td></tr>`);
+})();
+
+// ---------- notification builder ----------
+function nc({ light = false, mk = 'mkClaude', ac = CL, title, pct, tick, sub, sub2, fig = 32, panel = '', expanded = false, tag = '' }) {
+  const col = sev(pct, ac);
+  return `<div class="scroll"><div class="shade ${light ? 'light' : ''}"><div class="nc">
+    <div class="apphdr">${mark('ring42', ac, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span>${expanded ? '<span class="sp">⌃</span>' : '<span class="sp">⌄</span>'}</div>
+    <div class="hb"><div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl">${title}</span></div>${bar(pct, tick, col, 13, light)}
+      <div class="hsub">${sub}</div>${sub2 ? `<div class="hsub">${sub2}</div>` : ''}</div>
+      <div class="figwrap"><div class="fig" style="font-size:${fig}px;color:${col}">${pct}%</div></div></div>
+    ${panel ? `<div class="pnl">${panel}</div>` : ''}
+    ${expanded ? '<div class="acts">Refresh</div>' : ''}
+  </div></div></div>`;
+}
+const crow = (l, r, v, tick, ac) => `<div class="crow"><div class="ch"><span class="cl">${l}</span><span class="cr">${r}</span><span class="cv">${v}%</span></div>${bar(v, tick, sev(v, ac))}</div>`;
+const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p>${body}${note ? `<p class="note">${note}</p>` : ''}</div>`;
+const T5_GONE = 53.3; // 5h: 2h 20m left of 5h
+const companion = (p, ac) => p > 90 ? `<span class="c5" style="color:${sev(p, ac)}">5h ${p}%</span>` : `5h ${p}%`;
+
+document.getElementById('single').innerHTML = [
+  col('S1 · collapsed · over pace, 5h fine', 'good',
+    nc({ title: 'Teams · Weekly', pct: 52, tick: T_GONE, sub: `${band(52, T_GONE)} · ${allowance(52, 102.7)} · ${companion(34, CL)}` }),
+    'Today this row read "Teams · 5h · 34% · Resets in 2h 20m · 5:10 pm". The figure turns colour only past 80, as now; the red slice from the tick to 52 is the existing "red past the pace mark" toggle.'),
+  col('S2 · expanded · the 5h row moves into the panel', 'good',
+    nc({ expanded: true, fig: 44, title: 'Teams · Weekly', pct: 52, tick: T_GONE, sub: `${band(52, T_GONE)} · ${allowance(52, 102.7)} to last`, sub2: 'Resets Sun 9:30 pm · in 4d 6h',
+      panel: crow('5h', 'Resets in 2h 20m · 5:10 pm', 34, T5_GONE, CL) + crow('Fable', 'Resets Sun 9:30 pm', 30, T_GONE, CL) }),
+    'Header sub goes to two lines (+16 dp). The single layout can afford it: it has one header, not the Duet\'s two. The 5h row says when it resets, which the companion has no room for.'),
+  col('S3 · no 5h window (ChatGPT Pro, Claude Ultra)', 'good',
+    nc({ mk: 'mkGpt', ac: GP, title: 'Personal · Weekly', pct: 50, tick: P_GONE, sub: `${band(50, P_GONE)} · ${allowance(50, 55.5)} · resets Fri` }),
+    'Under pace: 50% left for 2.3 days. The companion slot carries the reset day instead. Expanded, the panel simply starts at the caps/strips. Same as today\'s weekly-only accounts, now worded.'),
+  col('S4 · light shade', 'good',
+    nc({ light: true, title: 'Teams · Weekly', pct: 52, tick: T_GONE, sub: `${band(52, T_GONE)} · ${allowance(52, 102.7)} · ${companion(34, CL)}` }), ''),
+].join('');
+
+document.getElementById('loud').innerHTML = [
+  col('L1 · Headline Weekly · 5h at 93%', 'warn',
+    nc({ title: 'Teams · Weekly', pct: 52, tick: T_GONE, sub: `${band(52, T_GONE)} · ${allowance(52, 102.7)} · ${companion(93, CL)}` }),
+    'The companion takes the bar colour\'s step (orange past 90, red at 100) and bold. Nothing else moves.'),
+  col('L2 · Headline Auto · 5h takes over', 'bad',
+    nc({ title: 'Teams · 5h', pct: 93, tick: 83.3, sub: 'Back at 3:40 pm · in 50m · Weekly 52%' }),
+    'The row becomes today\'s 5h row, with Weekly as the companion. At 3:40 pm the 5h resets and the row goes back to S1 by itself. The status-bar gauge does this whatever the setting is (§4).'),
+  col('L3 · Headline Auto · expanded', 'bad',
+    nc({ expanded: true, fig: 44, title: 'Teams · 5h', pct: 93, tick: 83.3, sub: 'Back at 3:40 pm · in 50m', sub2: 'Projected to hit 100% at 3:25 pm',
+      panel: crow('Weekly', 'Slow down · ≈11%/day · Sun', 52, T_GONE, CL) + crow('Fable', 'Resets Sun 9:30 pm', 30, T_GONE, CL) }),
+    'Here the panel\'s first row is the Weekly one, carrying its pace words where today\'s Weekly row carried its reset.'),
+].join('');
+
+document.getElementById('edges').innerHTML = [
+  col('E1 · the last day · use it or lose it', 'warn',
+    nc({ title: 'Teams · Weekly', pct: 60, tick: 96.4, sub: `${band(60, 96.4)} · ${allowance(60, 6)} · 5h 12%` }),
+    'Sunday 3:30 pm: 40% of the week left, 6 hours to use it. The allowance switches to hours.'),
+  col('E2 · nearly out', 'bad',
+    nc({ title: 'Teams · Weekly', pct: 85, tick: 40, sub: `${band(85, 40)} · ${allowance(85, 100.8)} · 5h 8%` }),
+    '85% used with 60% of the week left: 15% must last 4.2 days, ≈4%/day. Yellow past 80, as today.'),
+  col('E3 · spent', 'bad',
+    nc({ title: 'Teams · Weekly', pct: 100, tick: 55, sub: 'Out until Sun 9:30 pm · in 3d 4h' }),
+    'No band and no allowance: there is nothing left to pace. The 5h companion is dropped, since 5h can\'t be used while the week is spent.'),
+].join('');
+
+// ---------- Duet ----------
+function duetCollapsed() {
+  const half = (mk, ac, nm, p, tick) => `<div><div class="dl">${mark(mk, ac)}<span>${nm}</span></div><div class="db">${bar(p, tick, sev(p, ac))}<div class="fig" style="font-size:30px;color:${sev(p, ac)}">${p}%</div></div></div>`;
+  return `<div class="scroll"><div class="shade"><div class="nc"><div class="apphdr">${mark('ring42', CL, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">⌄</span></div>
+    <div class="duet">${half('mkClaude', CL, 'Teams', 52, T_GONE)}${half('mkGpt', GP, 'Personal', 50, P_GONE)}</div></div></div></div>`;
+}
+function duetExpanded() {
+  const hb = (mk, ac, title, p, tick, sub) => `<div class="hb"><div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl">${title}</span></div>${bar(p, tick, sev(p, ac))}<div class="hsub">${sub}</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:${sev(p, ac)}">${p}%</div></div></div>`;
+  return `<div class="scroll"><div class="shade"><div class="nc"><div class="apphdr">${mark('ring42', CL, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">⌃</span></div>
+    ${hb('mkClaude', CL, 'Teams · Weekly', 52, T_GONE, 'Slow down · ≈11%/day · resets Sun')}
+    ${hb('mkGpt', GP, 'Personal · Weekly', 50, P_GONE, 'Room to spare · ≈22%/day · resets Fri')}
+    <div class="pnl">${crow('Teams · 5h', 'Resets in 2h 20m · 5:10 pm', 34, T5_GONE, CL)}</div>
+    <div class="acts">Refresh</div></div></div></div>`;
+}
+document.getElementById('duet').innerHTML = [
+  col('D1 · collapsed', 'good', duetCollapsed(), 'Identical layout; the figures and bars are now Weekly. Each half follows its own account\'s Headline. Set to Auto, a half shows its 5h while that 5h blocks.'),
+  col('D2 · expanded', 'good', duetExpanded(), 'Personal has no 5h, so there is one panel row. With two 5h accounts there are two rows, 78 dp, the same budget the Weekly rows used.'),
+].join('');
+
+// ---------- gauges ----------
+function gauge(p, gone, color, size, dark = true) {
+  const u = size / 24, cx = size / 2, R = 9.2 * u, ink = dark ? '255,255,255' : '0,0,0';
+  const pt = f => [cx + R * Math.sin(2 * Math.PI * f), cx - R * Math.cos(2 * Math.PI * f)];
+  const arc = (a, b) => { if (b - a >= 0.9999) b = a + 0.9999; const [x0, y0] = pt(a), [x1, y1] = pt(b); return `M${x0},${y0} A${R},${R} 0 ${b - a > .5 ? 1 : 0} 1 ${x1},${y1}`; };
+  const f = Math.min(p, 100) / 100, g = gone / 100;
+  let s = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${cx}" cy="${cx}" r="${R}" fill="none" stroke="rgba(${ink},.5)" stroke-width="${1.493 * u}"/>`;
+  if (f > 0) s += `<path d="${arc(0, f)}" fill="none" stroke="${color}" stroke-width="${4 * u}"/>`;
+  if (f > g) s += `<path d="${arc(g, f)}" fill="none" stroke="#FF5252" stroke-width="${4 * u}"/>`;
+  const ang = 2 * Math.PI * g, rim = 11.2 * u;
+  s += `<line x1="${cx}" y1="${cx}" x2="${cx + rim * Math.sin(ang)}" y2="${cx - rim * Math.cos(ang)}" stroke="rgba(${ink},.95)" stroke-width="${1.792 * u}" stroke-linecap="round"/><circle cx="${cx}" cy="${cx}" r="${1.344 * u * 1.4}" fill="rgba(${ink},.95)"/>`;
+  if (p >= 99.5) { const a = 4.2 * u; s += `<path d="M${cx - a},${cx - a}L${cx + a},${cx + a}M${cx + a},${cx - a}L${cx - a},${cx + a}" stroke="rgba(${ink},.9)" stroke-width="${2 * u}"/>`; }
+  return s + '</svg>';
+}
+(function () {
+  const states = [
+    ['Weekly 52%, 5h fine', 52, T_GONE, CL],
+    ['5h hits 93%: 5h takes over', 93, 83.3, '#FFA726'],
+    ['3:40 pm, 5h reset: back to Weekly', 52, 39.0, CL],
+    ['Weekly spent', 100, 55, '#FF5252'],
+  ];
+  document.getElementById('gauges').innerHTML =
+    `<div class="row">${states.map(([cap, p, g, c]) => `<div class="col" style="flex-basis:260px"><p class="cap">${cap}</p>
+      <div class="sbar" style="width:250px"><span>2:50</span>${gauge(p, g, c, 14)}<span style="margin-left:auto;opacity:.8">▲ ▮▮ 67</span></div>
+      <div class="zoom"><figure><div class="tile">${gauge(p, g, c, 96)}</div><figcaption>×6.9 of the 14 dp slot</figcaption></figure></div></div>`).join('')}</div>
+     <p class="note" style="max-width:860px">The 14 dp row is drawn at its true size. Per the status-bar memo, judge legibility on the phone, not here; the geometry is the shipped CCRM-83 (Ring Renderer) one, so nothing new needs a legibility check.</p>`;
+})();
+
+// ---------- app cards ----------
+function chart({ w = 355, h = 150, gone, pts, now, label, proj, accent = CL }) {
+  const L = 0, R = w - 8, T = 16, B = h - 22, H = B - T;
+  const X = f => L + (R - L) * f / 100, Y = v => B - H * v / 100;
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;font-family:Roboto,Arial,sans-serif">`;
+  for (const [v, c] of [[100, '#E55B4D'], [90, '#E8A33A'], [80, '#D7C25A']]) s += `<line x1="0" x2="${w}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-opacity=".75" stroke-dasharray="2 3"/><text x="${w - 2}" y="${Y(v) - 1}" fill="${c}" font-size="9.5" text-anchor="end">${v}%</text>`;
+  s += `<line x1="2" x2="20" y1="${Y(100) + 9}" y2="${Y(100) + 9}" stroke="#F5D35A" stroke-width="2.4" stroke-dasharray="3 2.5"/><text x="25" y="${Y(100) + 12.5}" fill="#F5D35A" font-size="10.5">even pace</text>`;
+  // amber wash where usage sits above the diagonal
+  const poly = pts.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ');
+  s += `<polygon points="${X(pts[0][0])},${B} ${poly} ${X(pts[pts.length - 1][0])},${B}" fill="${accent}" fill-opacity=".22"/>`;
+  s += `<clipPath id="ab${gone}"><polygon points="${X(0)},${Y(0)} ${X(100)},${Y(100)} ${X(100)},${T - 10} ${X(0)},${T - 10}"/></clipPath>`;
+  s += `<polygon clip-path="url(#ab${gone})" points="${X(pts[0][0])},${B} ${poly} ${X(pts[pts.length - 1][0])},${B}" fill="#C88A1E" fill-opacity=".45"/>`;
+  s += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(100)}" stroke="#F5D35A" stroke-width="2.2" stroke-dasharray="3 2.5"/>`;
+  s += `<line x1="${X(gone)}" x2="${X(gone)}" y1="${T}" y2="${B}" stroke="#8a8582" stroke-width="1"/>`;
+  s += `<polyline points="${poly}" fill="none" stroke="${accent}" stroke-width="2.4" stroke-linejoin="round"/>`;
+  for (const [x, y] of pts.slice(0, -1)) s += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.6" fill="${accent}"/>`;
+  const [lx, ly] = pts[pts.length - 1];
+  if (proj) { s += `<line x1="${X(lx)}" y1="${Y(ly)}" x2="${X(proj[0])}" y2="${Y(proj[1])}" stroke="${accent}" stroke-opacity=".8" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(proj[0])}" cy="${Y(proj[1])}" r="5" fill="none" stroke="${accent}" stroke-width="2"/><text x="${X(proj[0]) - 6}" y="${Y(proj[1]) + 16}" fill="#E6E1DE" font-size="11" font-weight="700" text-anchor="end">${proj[2]}</text>`; }
+  s += `<circle cx="${X(lx)}" cy="${Y(ly)}" r="5" fill="${accent}"/><text x="${X(lx) - 8}" y="${Y(ly) - 8}" fill="#fff" font-size="12" font-weight="700" text-anchor="end">${label}</text>`;
+  s += `<line x1="0" x2="${w}" y1="${B}" y2="${B}" stroke="#55504c"/>`;
+  s += `<text x="0" y="${h - 6}" fill="#CFC9C4" font-size="10.5">${now[0]}</text><text x="${X(gone)}" y="${h - 6}" fill="#CFC9C4" font-size="10.5" text-anchor="middle">now</text><text x="${w}" y="${h - 6}" fill="#CFC9C4" font-size="10.5" text-anchor="end">${now[1]}</text>`;
+  return s + '</svg>';
+}
+const cbar = (p, tick, ac = CL) => bar(p, tick, sev(p, ac), 10).replace('background:#3A3A3A', 'background:#4A3A35');
+function appComfortable() {
+  const wk = chart({ gone: T_GONE, pts: [[0, 0], [5, 4], [9, 9], [13, 15], [17, 20], [22, 27], [26, 33], [30, 40], [34, 46], [38.9, 52]], now: ['1 Nov', '8 Nov'], label: '52%', proj: [74.8, 100, 'Sat'] });
+  const s5 = chart({ gone: T5_GONE, pts: [[0, 0], [8, 2], [16, 6], [24, 11], [32, 17], [40, 23], [46, 28], [53.3, 34]], now: ['12:10 pm', '5:10 pm'], label: '34%', proj: [100, 69, '~69%'], w: 355 });
+  return `<div class="phone">
+    <div class="tabs"><span class="on">${mark('mkClaude', CL, 16)}Teams</span><span>${mark('mkClaude', CL, 16)}Product</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>
+    <div class="card"><div class="t">7-day window <span class="chev">⌃</span><span class="tag chg">first now</span></div>
+      <div class="t" style="margin:0 0 7px">All<span class="v">52%</span></div>${cbar(52, T_GONE)}
+      <div class="t" style="margin:0 0 7px">Fable<span class="v">30%</span></div>${cbar(30, T_GONE)}
+      <div class="chips"><span class="on">All</span><span>Fable</span></div>
+      ${wk}
+      <div class="ln" style="margin-top:8px"><b>Slow down · ≈11%/day until Sun</b> <span class="tag chg">new</span></div>
+      <div class="ln m">Pace +21% · an even week is 39% by now <span class="tag chg">new</span></div>
+      <div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div>
+      <div class="rs"><span>Resets in 4d 6h</span><span>Resets at Sun 9:30 pm</span></div></div>
+    <div class="card"><div class="t">5-hour window<span class="v">34%</span></div>${cbar(34, T5_GONE)}
+      ${s5}
+      <div class="ln m" style="margin-top:8px">At this pace: ~69% when the window resets · 15.0%/h ⓘ</div>
+      <div class="rs"><span>Resets in 2h 20m</span><span>Resets at Wed 5:10 pm</span></div></div>
+    <div class="chk">Checked 1m ago ⟳</div></div>`;
+}
+function appCompact() {
+  return `<div class="phone">
+    <div class="tabs"><span class="on">${mark('mkClaude', CL, 16)}Teams</span><span>${mark('mkClaude', CL, 16)}Product</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>
+    <div class="card"><div class="t">7-day window<span class="v">52%</span><span class="chev">⌄</span></div>${cbar(52, T_GONE)}
+      <div class="ln">Slow down · ≈11%/day · resets Sun</div></div>
+    <div class="card"><div class="t">5-hour window<span class="v">34%</span><span class="chev">⌄</span></div>${cbar(34, T5_GONE)}
+      <div class="ln">Resets in 2h 20m · on track for ~69%</div></div>
+    <div class="card"><div class="t">Usage credits <span style="color:#CFC9C4">$123.90 / $400.00</span><span class="v">31%</span></div>${cbar(31, null)}
+      <div class="ln">$276.10 left · covers you when you hit your plan limits</div></div>
+    <p class="cap" style="margin:16px 0 6px;color:#9C9894">Personal tab (no 5h)</p>
+    <div class="card"><div class="t">7-day window<span class="v">50%</span><span class="chev">⌄</span></div>${cbar(50, P_GONE, GP).replace(/#4A3A35/, '#2E3E39')}
+      <div class="ln">Room to spare · ≈22%/day · resets Fri</div></div>
+    <p class="cap" style="margin:16px 0 6px;color:#9C9894">Alternative 5h line (not recommended)</p>
+    <div class="card"><div class="t">5-hour window<span class="v">34%</span><span class="chev">⌄</span></div>${cbar(34, T5_GONE)}
+      <div class="ln">Resets in 2h 20m · under pace</div></div></div>`;
+}
+document.getElementById('app').innerHTML = [
+  `<div class="col wide"><p class="cap good">A1 · Comfortable · Weekly expanded, 5h under it</p><div class="scroll">${appComfortable()}</div>
+   <p class="note">Weekly line 1 replaces "40% below even pace"; line 2 is new; line 3 and the reset row are today's. On the 5h card, the "22% below even pace" line goes and the projection line stays (see the question below).</p></div>`,
+  `<div class="col wide"><p class="cap good">A2 · Compact · folded lines</p><div class="scroll">${appCompact()}</div>
+   <p class="note">Weekly folded: "band · allowance · resets day", replacing "Resets in 3d 1h · 40% below pace". The weekday is enough here, and the card opens to the full reset row.</p></div>`,
+].join('');
+
+// ---------- settings ----------
+function settings(nm, mk, ac, plan, has5h) {
+  return `<div class="set"><div class="h">‹ ${mark(mk, ac, 20)} ${nm}</div>
+    <div class="grp">Account</div>
+    <div class="it">Plan<div class="d">${plan}</div></div>
+    <div class="it">Colour<div class="d">Provider colour</div></div>
+    <div class="grp">Headline <span class="tag">new</span></div>
+    <div class="it">What the notification, status-bar gauge and new widgets lead with
+      <div class="seg ${has5h ? '' : 'off'}"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div>
+      <div class="d" style="margin-top:7px">${has5h ? 'Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets.' : 'This plan has no 5-hour window, so Weekly is always the headline.'}</div></div>
+    <div class="grp">Usage</div>
+    <div class="it">Details…</div>
+    <div class="it">Clear usage history…</div></div>`;
+}
+document.getElementById('settings').innerHTML = [
+  col('G1 · Teams (Claude Max) · default Weekly', 'good', `<div class="scroll">${settings('Teams', 'mkClaude', CL, 'Max', true)}</div>`, 'One row with three segments, no sub-screen. The surrounding rows (plan, colour, details, clear history) are today\'s.'),
+  col('G2 · Personal (ChatGPT Pro) · no 5h', 'good', `<div class="scroll">${settings('Personal', 'mkGpt', GP, 'Pro', false)}</div>`, 'Shown greyed out, not hidden: it explains why this account never shows 5h. If OpenAI brings the 5h back, the row comes back to life with the account\'s stored choice.'),
+].join('');
+</script>
+</html>

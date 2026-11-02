@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vs Pace Display</title>
+<!-- CCRM-100 (Vs Pace Display) rev A, plus "5h first for those who want it" for CCRM-96 (Weekly First),
+     2026-11-02. Wireframe for Robin's approval (CLAUDE.md §2). 1 CSS px = 1 dp. Fixtures as rev A:
+     Wednesday 2:50 pm; Teams Weekly 52% (mark 39%), 5h 34% (mark 53%); Personal Weekly 50% (mark 67%). -->
+<style>
+  :root { --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C; --hair: #E7E1DC; --good: #2F6D44; --warn: #9A6B1E; --bad: #B3402A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; --bad: #E08268; } }
+  :root[data-theme="dark"] { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --good: #7FC08F; --warn: #D8AC63; --bad: #E08268; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+  h2 { font-size: 19px; font-weight: 650; margin: 50px 0 4px; }
+  .lede, .sub { color: var(--muted); max-width: 86ch; font-size: 13.5px; margin: 0 0 14px; }
+  .lede b, .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; }
+  .hr { height: 1px; background: var(--hair); margin: 44px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.good { color: var(--good); } .cap.warn { color: var(--warn); } .cap.bad { color: var(--bad); }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .col { flex: 0 1 411px; min-width: 0; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 411px; margin: 10px 0 0; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; max-width: 980px; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+
+  /* notification */
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, Arial, sans-serif; }
+  .apphdr { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9E9E9E; margin: 0 0 10px; font-weight: 600; }
+  .hb { display: flex; align-items: center; gap: 14px; }
+  .lft { flex: 1; min-width: 0; }
+  .lbl { font-size: 13px; font-weight: 600; margin-bottom: 3px; display: flex; gap: 4px; align-items: center; }
+  .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+  .hsub + .hsub { margin-top: 0; }
+  .figw { flex: 0 0 auto; text-align: center; }
+  .fig { font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .fcap { font-size: 10px; letter-spacing: .08em; color: #9E9E9E; margin-top: 2px; }
+  .crow { margin: 10px 0 0; } .crow .ch { display: flex; gap: 6px; font-size: 13.5px; margin-bottom: 4px; white-space: nowrap; }
+  .crow .cr { flex: 1; color: #9E9E9E; overflow: hidden; text-overflow: ellipsis; } .crow .cv { font-weight: 700; }
+  .duet { display: flex; gap: 16px; } .duet > div { flex: 1; min-width: 0; }
+  .duet .dl { display: flex; gap: 4px; align-items: center; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .duet .db { display: flex; gap: 8px; align-items: center; } .duet .db .bar { flex: 1; }
+  .acts { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; font-weight: 650; color: #E59980; }
+
+  /* bars */
+  .bar { position: relative; border-radius: 6px; }
+  .bar > i, .bar > o, .bar > u { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: inherit; }
+  .bar > o { background: #FF5252; border-radius: 0 6px 6px 0; }
+  .bar > u { border: 1.3px dashed rgba(230,225,222,.55); border-left: 0; border-radius: 0 3px 3px 0; top: 1px; bottom: 1px; }
+  .bar > s { position: absolute; top: -3px; bottom: -3px; width: 2.5px; border-radius: 2px; background: rgba(236,236,236,.75); transform: translateX(-1.25px); }
+
+  /* app */
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 16px; border: 1px solid #2A2C31; font-family: Roboto, Arial, sans-serif; color: #E6E1DE; }
+  .card { background: #232120; border-radius: 18px; padding: 15px 14px 13px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; margin: 0 0 9px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, serif; font-weight: 700; font-size: 17px; }
+  .card .t .w { font-size: 11.5px; color: #A7A19C; font-family: Roboto, Arial, sans-serif; font-weight: 400; margin-left: 2px; }
+  .capt { position: relative; height: 17px; margin-top: 5px; font-size: 11.5px; color: #A7A19C; white-space: nowrap; }
+  .capt span { position: absolute; top: 0; } .capt b { color: #E6E1DE; font-weight: 600; }
+  .ln { font-size: 13.5px; color: #CFC9C4; margin: 6px 0 0; } .ln b { color: #EDE8E4; font-weight: 600; } .ln.m { color: #A7A19C; margin-top: 2px; }
+  .notice { background: #2E2A27; border: 1px solid #4A423C; border-radius: 16px; padding: 13px 14px; margin: 0 0 10px; font-size: 13.5px; }
+  .notice .tt { font-size: 15px; font-weight: 600; margin: 0 0 4px; color: #EDE8E4; }
+  .notice .bt { display: flex; gap: 10px; margin-top: 10px; }
+  .notice .bt span { border-radius: 18px; padding: 6px 14px; font-size: 13.5px; font-weight: 600; }
+  .set .h { font-size: 20px; margin: 0 0 12px; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .d { font-size: 12.5px; color: #A7A19C; margin-top: 4px; }
+  .chips { display: flex; gap: 8px; margin-top: 8px; }
+  .chips span { border: 1px solid #5A5552; border-radius: 9px; padding: 5px 14px; font-size: 14px; }
+  .chips span.on { background: #46404F; border-color: #46404F; font-weight: 600; }
+  .new { font-family: ui-monospace, monospace; font-size: 9.5px; color: #D8AC63; border: 1px solid #6B5428; border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+
+  /* widgets */
+  .wall { padding: 18px; border-radius: 22px; background: linear-gradient(135deg, #3b3550, #6b4f6e 60%, #8a5f63); display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .wg { background: #1E1C1B; border-radius: 22px; color: #EDE8E4; font-family: Roboto, Arial, sans-serif; position: relative; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol>
+</defs></svg>
+
+<div class="page">
+  <p class="eyebrow">CCRM-100 (Vs Pace Display) · rev A · and "5h first" for CCRM-96 (Weekly First) · 2026-11-02</p>
+  <h1>The big figure as distance from the pace mark</h1>
+  <p class="lede">
+    Your option A: <b>Settings › Appearance › Usage display</b> gains a third value: <b>Used · Left · Vs pace</b>.
+    In Vs pace every big figure shows the <b>pace mark minus usage</b>, in points: "<b>+10%</b>" means 10 under the
+    mark (room), "<b>−20%</b>" means 20 over. It is rounded down, so room is never overstated. Bars, ticks and colours
+    don't change: they still key on usage, so a "+5%" drawn in orange means on pace but 92% used. The pace-mark
+    caption (V1, chosen) flips to show what the figure no longer does, the usage. Mocks use your Huge number style.
+    Only the figure and its caption change.
+  </p>
+
+  <h2>1 · The setting</h2>
+  <div class="row" id="settings"></div>
+
+  <h2>2 · Notification</h2>
+  <p class="sub">The figure becomes the distance. The caption slot under it, which reads "LEFT" in Left mode, reads <b>VS PACE</b>.
+    The sub line and the panel rows are rev A's, except that each panel row's own figure is a distance too. The expanded
+    line 2, where V1's distance went in Used mode, carries the usage instead.</p>
+  <div class="row" id="notif"></div>
+
+  <h2>3 · App cards and Summary rows</h2>
+  <p class="sub">The card figure gets a small "vs pace" word after it, in the slot where Left mode puts "left". The V1 caption
+    under the bar reads "<b>52% used</b> · mark 39%". The Summary keeps its order (Pace still ranks), and its figures become distances.</p>
+  <div class="row" id="app"></div>
+
+  <h2>4 · Widgets, the gauge and iOS</h2>
+  <p class="sub">Every figure in a ring bore, Number face, iPad sidebar row or lock-screen circular follows the token, as
+    Left already does. The status-bar gauge has no figure, so nothing changes there. The faces' sizes, rings and
+    drop rules are as shipped; "+10%" and "−20%" are no wider than "100%", so no fit changes.</p>
+  <div class="wall" id="widgets"></div>
+
+  <h2>5 · When it falls back to the usage figure</h2>
+  <table>
+    <tr><th>State</th><th>Figure in Vs pace mode</th><th>Why</th></tr>
+    <tr><td>Week spent (used ≥ 99.5)</td><td>"100%" with the spent ×, as Used mode</td><td>"−2%" would hide that nothing is left</td></tr>
+    <tr><td>No reset clock (window not started)</td><td>"0%", the usage, with "Not started yet"</td><td>no pace mark exists to measure from</td></tr>
+    <tr><td>No reading</td><td>"—"</td><td>as every mode</td></tr>
+    <tr><td>First hours of a window</td><td>"+1%", "0%"</td><td>honest: nothing banked yet</td></tr>
+    <tr><td>Exactly on the mark</td><td>"0%"</td><td>no sign on zero</td></tr>
+  </table>
+
+  <hr class="hr">
+  <h2>6 · Keeping 5h first, for those who prefer it</h2>
+  <p class="sub">Weekly leads by default, and <b>5h first stays one switch away, per account</b>: the account's
+    <b>Headline</b> set to <b>5-hour</b> puts 5h back at the top of everything it touches. That covers the
+    notification, the status-bar gauge and new widgets, and, new here, <b>the app's card order</b>: the 5h card
+    sits above Weekly, as today, unless you've reordered cards in the layout sheet, where your order wins.
+    Existing users also get a <b>one-time notice</b> after the update, so nobody is surprised.</p>
+  <div class="row" id="five"></div>
+</div>
+
+<script>
+const CL = '#E59980', GP = '#19C39A';
+const sev = (p, ac) => p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : ac;
+const vs = (u, m) => { const d = Math.floor(m - u); return d > 0 ? `+${d}%` : d < 0 ? `−${-d}%` : '0%'; };
+const dot = (c, s = 14) => `<svg width="${s}" height="${s}" style="color:${c};flex:0 0 auto"><use href="#${c === GP ? 'mkGpt' : 'mkClaude'}"/></svg>`; // provider mark by account
+function bar(u, m, ac, h, dashed = false) {
+  const gap = dashed && u < m ? `<u style="left:${u}%;width:${m - u}%"></u>` : '';
+  const red = u > m ? `<o style="left:${m}%;width:${Math.min(u, 100) - m}%"></o>` : '';
+  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${h > 11 ? '#3A3A3A' : '#4A3A35'}"><i style="width:${Math.min(u, 100)}%;background:${sev(u, ac)}"></i>${gap}${red}<s style="left:${m}%"></s></div>`;
+}
+const ctx = document.createElement('canvas').getContext('2d'); ctx.font = '11.5px Roboto, Arial, sans-serif';
+function caption(html, txt, m, w = 351) {
+  const x = w * m / 100;
+  return x + 5 + ctx.measureText(txt).width <= w ? `<div class="capt"><span style="left:${x + 5}px">${html}</span></div>` : `<div class="capt"><span style="right:${w - x + 5}px">${html}</span></div>`;
+}
+const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p><div class="scroll">${body}</div>${note ? `<p class="note">${note}</p>` : ''}</div>`;
+const hdr = `<div class="apphdr">${dot(CL, 16)}<span>Cooldown</span><span style="opacity:.7">· now</span></div>`;
+
+// 1 · settings
+const setting = (on, line) => `<div class="phone set"><div class="h">Appearance</div><div class="grp">Numbers</div>
+  <div class="it">Usage display<div class="chips">${['Used', 'Left', 'Vs pace'].map(x => `<span class="${x === on ? 'on' : ''}">${x}</span>`).join('')}</div>
+  <div class="d">How percentages read on every surface. Bars and colours always show what's spent.</div><div class="d">${line}</div></div>
+  <div class="it">Time format<div class="d">12-hour</div></div><div class="it">Reset time<div class="d">Countdown first</div></div></div>`;
+document.getElementById('settings').innerHTML = [
+  col('A1 · Vs pace chosen', 'good', setting('Vs pace', 'Shows "+10%" — how far under the pace mark you are ("−20%": over it).'), 'The third chip is the only addition; the note\'s first line and the other two chips\' second lines are today\'s copy.'),
+  col('A2 · today, for comparison', '', setting('Used', 'Shows "47% used" — what each window has consumed.')),
+].join('');
+
+// 2 · notification
+function single({ title, u, m, sub, sub2, fig = 32, expanded = false, panel = '' }) {
+  return `<div class="shade"><div class="nc">${hdr}<div class="hb"><div class="lft"><div class="lbl">${dot(CL)}${title}</div>${bar(u, m, CL, 13)}
+    <div class="hsub">${sub}</div>${sub2 ? `<div class="hsub">${sub2}</div>` : ''}</div>
+    <div class="figw"><div class="fig" style="font-size:${fig}px;color:${sev(u, CL)}">${u >= 99.5 ? '100%' : vs(u, m)}</div><div class="fcap">${u >= 99.5 ? '' : 'VS PACE'}</div></div></div>${panel}${expanded ? '<div class="acts">Refresh</div>' : ''}</div></div>`;
+}
+const crow = (l, r, u, m) => `<div class="crow"><div class="ch"><span>${l}</span><span class="cr">${r}</span><span class="cv">${vs(u, m)}</span></div>${bar(u, m, CL, 10)}</div>`;
+const duet = `<div class="shade"><div class="nc">${hdr}<div class="duet">
+  <div><div class="dl">${dot(CL)}Teams</div><div class="db">${bar(52, 39, CL, 8)}<div class="fig" style="font-size:30px;color:${CL}">${vs(52, 39)}</div></div></div>
+  <div><div class="dl">${dot(GP)}Personal</div><div class="db">${bar(50, 67, GP, 8)}<div class="fig" style="font-size:30px;color:${GP}">${vs(50, 67)}</div></div></div></div></div></div>`;
+document.getElementById('notif').innerHTML = [
+  col('N1 · collapsed · over pace', 'warn', single({ title: 'Teams · Weekly', u: 52, m: 39, sub: 'Slow down · ≈11%/day · 5h 34%' }), 'Weekly 52% against a mark at 39%: "−13%", 13 over. The colour is still the bar\'s (accent below 80).'),
+  col('N2 · expanded', 'good', single({ title: 'Teams · Weekly', u: 52, m: 39, fig: 44, expanded: true, sub: 'Slow down · ≈11%/day to last', sub2: '52% used (mark 39%) · resets Sun', panel: crow('5h', 'Resets in 2h 20m · 5:10 pm', 34, 53) + crow('Fable', 'Resets Sun 9:30 pm', 30, 39) }),
+    'Line 2 carries the usage the figure no longer shows. The 5h row reads "+19%" (34% against 53%); Fable "+9%".'),
+  col('N3 · Duet collapsed', 'good', duet, 'Teams −13%, Personal +17%. With two accounts side by side, the signs alone say which one has room.'),
+  col('N4 · spent · falls back', 'bad', single({ title: 'Teams · Weekly', u: 100, m: 55, sub: 'Out until Sun 9:30 pm · in 3d 4h' }), 'No "VS PACE" caption: the figure is the usage again.'),
+].join('');
+
+// 3 · app
+function card(title, u, m, ac, lines) {
+  const html = `<b>${u}% used</b> · mark ${m}%`, txt = `${u}% used · mark ${m}%`;
+  return `<div class="card"><div class="t">${title}<span class="v" style="color:${sev(u, ac)}">${vs(u, m)}<span class="w">vs pace</span></span></div>${bar(u, m, ac, 10, true)}${caption(html, txt, m)}${lines}</div>`;
+}
+const srow = (nm, ac, u, m, words) => `<div style="padding:9px 0 8px;border-top:1px solid #3A3532"><div style="display:flex;align-items:center;gap:7px;margin:0 0 6px">${dot(ac, 16)}<span style="font-size:15px">${nm}</span><span style="margin-left:auto;font-family:Georgia,serif;font-weight:700;font-size:17px;color:${sev(u, ac)}">${vs(u, m)}</span></div>${bar(u, m, ac, 10, true)}${caption(`<b>${u}% used</b> · mark ${m}%`, `${u}% used · mark ${m}%`, m, 323)}<div style="font-size:13px;margin-top:2px">${words}</div></div>`;
+document.getElementById('app').innerHTML = [
+  col('C1 · Weekly first, then 5h', 'good', `<div class="phone">${card('7-day window', 52, 39, CL, '<div class="ln"><b>Slow down · ≈11%/day until Sun</b></div><div class="ln m">At this pace: hits 100% Sat 3:10 am · 0.8%/h</div>')}${card('5-hour window', 34, 53, CL, '<div class="ln m">At this pace: ~69% when the window resets · 15.0%/h ⓘ</div>')}</div>`),
+  col('C2 · Summary rows', 'good', `<div class="phone"><div class="card"><div class="t">Weekly<span style="margin-left:auto;font-size:12.5px;color:#A7A19C">most room first</span></div>${srow('Personal', GP, 50, 67, 'Room to spare · ≈22%/day · resets Fri')}${srow('Teams', CL, 52, 39, 'Slow down · ≈11%/day · resets Sun')}</div></div>`,
+    'The list is ranked by Pace, not by this figure. The two agree on the sign, but two accounts with the same distance can still sort apart: the one with less time left ranks by how much would go unused.'),
+].join('');
+
+// 4 · widgets
+function ring(d, u, m, ac, fig, label) {
+  const r = d / 2 - 6, c = 2 * Math.PI * r, f = Math.min(u, 100) / 100;
+  const tick = 2 * Math.PI * m / 100;
+  return `<div class="wg" style="width:${d + 40}px;height:${d + 58}px;display:flex;flex-direction:column;align-items:center;justify-content:center"><svg width="${d}" height="${d}" style="display:block"><circle cx="${d / 2}" cy="${d / 2}" r="${r}" fill="none" stroke="#3A3532" stroke-width="9"/>
+    <circle cx="${d / 2}" cy="${d / 2}" r="${r}" fill="none" stroke="${sev(u, ac)}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${c * f} ${c}" transform="rotate(-90 ${d / 2} ${d / 2})"/>
+    <line x1="${d / 2 + (r - 7) * Math.sin(tick)}" y1="${d / 2 - (r - 7) * Math.cos(tick)}" x2="${d / 2 + (r + 7) * Math.sin(tick)}" y2="${d / 2 - (r + 7) * Math.cos(tick)}" stroke="#EDE8E4" stroke-opacity=".9" stroke-width="3.5" stroke-linecap="round"/>
+    <text x="${d / 2}" y="${d / 2 + 9}" text-anchor="middle" font-size="26" font-weight="700" fill="${sev(u, ac)}" font-family="Roboto,Arial">${fig}</text></svg>
+    <div style="font-size:12px;margin-top:6px;display:flex;gap:4px;align-items:center">${dot(ac, 12)}${label}</div></div>`;
+}
+const numberW = (u, m, ac, nm) => `<div class="wg" style="width:181px;height:84px;padding:10px 12px"><div style="font-size:12px;display:flex;gap:4px;align-items:center">${dot(ac, 12)}${nm} · Weekly</div><div style="font-size:34px;font-weight:700;color:${sev(u, ac)};line-height:1.1">${vs(u, m)}</div><div style="font-size:11px;color:#A7A19C">vs pace · resets Sun</div></div>`;
+const ipadRow = (nm, ac, u, m) => `<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:16px;font-family:-apple-system,system-ui;color:#F2F2F2">${dot(ac, 20)}${nm}<span style="margin-left:auto;font-weight:600;color:${sev(u, ac)}">${vs(u, m)}</span></div>`;
+document.getElementById('widgets').innerHTML = ring(110, 52, 39, CL, vs(52, 39), 'Teams') + ring(110, 50, 67, GP, vs(50, 67), 'Personal') + numberW(52, 39, CL, 'Teams') +
+  `<div class="wg" style="width:300px;padding:10px 6px;background:#161618"><div style="font-size:12px;color:#98989F;padding:0 10px 4px;font-family:-apple-system,system-ui">iPad sidebar</div>${ipadRow('Teams', CL, 52, 39)}${ipadRow('Personal', GP, 50, 67)}</div>`;
+
+// 6 · 5h first
+const notice = `<div class="notice"><div class="tt">Weekly now leads</div>The weekly limit is the one every plan has, so it's now the big number everywhere, with 5h beside it. Prefer 5h on top?
+  <div class="bt"><span style="background:#E59980;color:#2B140C">Keep Weekly</span><span style="border:1px solid #5A5552">Keep 5h first</span></div></div>`;
+const head = (on) => `<div class="phone set"><div class="h">‹ Teams</div><div class="grp">Headline</div><div class="it">What the notification, status-bar gauge, new widgets and the card order lead with
+  <div class="chips" style="border-radius:20px">${['Weekly', '5-hour', 'Auto'].map(x => `<span class="${x === on ? 'on' : ''}">${x}</span>`).join('')}</div></div>
+  <div class="grp">Model limits</div><div class="it">Show model limits<div class="d">Fable · 30% this week</div></div></div>`;
+document.getElementById('five').innerHTML = [
+  col('F1 · one-time notice, existing users', 'warn', `<div class="phone">${notice}<div class="card"><div class="t">7-day window<span class="v" style="color:${CL}">52%</span></div>${bar(52, 39, CL, 10, true)}${caption('<b>39%</b> pace mark · 13 over', '39% pace mark · 13 over', 39)}</div></div>`,
+    'Shown once, above the cards, after the update, on installs that had an account before it. "Keep 5h first" sets every account\'s Headline to 5-hour; either button dismisses it for good. New installs never see it.'),
+  col('F2 · Headline 5-hour on the account page', 'good', head('5-hour'), 'The Headline caption now names the card order too. It is the same per-account setting approved in rev A, so nothing new to learn.'),
+  col('F3 · the app with Headline 5-hour', 'good', `<div class="phone"><div class="card"><div class="t">5-hour window<span class="v" style="color:${CL}">34%</span></div>${bar(34, 53, CL, 10, true)}${caption('<b>53%</b> pace mark · 19 under', '53% pace mark · 19 under', 53)}<div class="ln m">At this pace: ~69% when the window resets · 15.0%/h ⓘ</div></div>
+    <div class="card"><div class="t">7-day window<span class="v" style="color:${CL}">52%</span></div>${bar(52, 39, CL, 10, true)}${caption('<b>39%</b> pace mark · 13 over', '39% pace mark · 13 over', 39)}<div class="ln"><b>Slow down · ≈11%/day until Sun</b></div></div></div>`,
+    'Today\'s order, kept. A layout you reordered in the sheet beats the Headline either way.'),
+].join('');
+</script>
+</html>
