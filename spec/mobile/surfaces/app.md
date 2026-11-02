@@ -60,7 +60,7 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 
 | Class | Android | iPhone | iPad |
 |---|---|---|---|
-| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar plus pinned half plus selected half. Portrait or Split View ≥ 700 pt: pinned account on top, tabs for the others, selected below. Narrower than 700 pt: the iPhone layout |
+| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar ("All accounts" plus one row per account) and the Summary or only the tapped account, full width. Portrait or Split View ≥ 700 pt: the phone's model, tabs for All and every account, one page at a time. Narrower than 700 pt: the iPhone layout. No pinned account since 2026-11-02 (Robin) |
 | Cards per account | one column at every width; the 7-day card runs two stacks side by side when the card has a model cap and the window is ≥ 700 dp (`hasTwoColumns`) | one column; 7-day card pairs All with the first cap side by side | `twoAcross`: the account's windows sit side by side in a row |
 | Chart width | cover ≈ 339 dp (411 − 40 − 32); inner ≈ 678 dp (750 − 40 − 32), or ≈ 331 dp per stack in the two-stack 7-day card | card width, Large height keyed to it | card width 356 (portrait) or 396 (landscape) |
 
@@ -75,9 +75,9 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 | Selection | keyed on the account key, not position, so reordering accounts in Settings keeps the same account on screen | `selectedKey` | `A/MainActivity.kt:557-600` |
 | Reduce motion | tab tap jumps instead of animating when the system animator scale is 0 | `withAnimation` | `A/ui/Adaptive.kt:Motion` |
 
-iPad sidebar (landscape, 300 pt wide): large title 30 pt, a segmented "5h" / "Weekly" switch (remembered), one row per account (mark 22 pt, name 16 pt, plan chip 11 pt, pin glyph if pinned, 5 pt-high bar with pace tick, right-aligned percent in the severity colour), selected row tinted with the account accent at 18%, the note "Touch and hold an account to pin it to the top.", the Footer at the bottom. A plan with no 5-hour window always shows Weekly and labels the percentage "Weekly". Context menu: "Pin to the top". Approved by `design/2026-10-24-ios-sidebar-window.html`.
+iPad sidebar (landscape, 300 pt wide): large title 30 pt, a segmented "5h" / "Weekly" switch (remembered), one row per account (mark 22 pt, name 16 pt, plan chip 11 pt, 5 pt-high bar with pace tick, right-aligned percent in the severity colour), selected row tinted with the account accent at 18%, the Footer at the bottom. A plan with no 5-hour window always shows Weekly and labels the percentage "Weekly". Approved by `design/2026-10-24-ios-sidebar-window.html`; the pin glyph, the "Touch and hold an account to pin it to the top." note and the "Pin to the top" menu are gone since 2026-11-02 (Robin: no pinned account), and the shape grammar rows below supersede the switch.
 
-iPad half header (21 pt bold name, mark 22 pt, plan chip 12 pt, "Pinned" label with pin glyph, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). The pinned half is on top; a 1 pt divider separates it from the selected half; when the selected account is the pinned one, the bottom half shows the next account.
+iPad account page header (21 pt bold name, mark 22 pt, plan chip 12 pt, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). Since 2026-11-02 the iPad shows one account at a time, full width, or the Summary — no pinned half, no "Pinned" label, no divider.
 
 ### 2.4 Cards, in order
 
@@ -382,7 +382,7 @@ iOS section order (`I/App/UI/SettingsHistory.swift:7`): Accounts, Usage credits 
 | Part | Android | iOS |
 |---|---|---|
 | Degraded notice | `DegradedStoreNotice` at the top of the page (2.6) | none |
-| Account card | `Card`, 16 dp padding. Header row: provider mark 20 dp in the account accent, 6 dp, name (titleMedium, one line, ellipsis), 8 dp, 8 dp status dot (green `#188038` light / `#81C995` dark "Active", or error colour "Needs re-auth"; only with a token), 6 dp, plan chip (labelSmall in accent on accent at 14%, 10 dp radius; Claude Max adds the tier multiplier: "Max 5x"), spinner 18 dp while busy, ⋮ ("Account options", 28 dp button) | list row: mark 20 pt, name, plan chip, pin glyph if pinned, right text "Signed in" (sub) or "Sign in again" (orange); touch and hold opens the menu |
+| Account card | `Card`, 16 dp padding. Header row: provider mark 20 dp in the account accent, 6 dp, name (titleMedium, one line, ellipsis), 8 dp, 8 dp status dot (green `#188038` light / `#81C995` dark "Active", or error colour "Needs re-auth"; only with a token), 6 dp, plan chip (labelSmall in accent on accent at 14%, 10 dp radius; Claude Max adds the tier multiplier: "Max 5x"), spinner 18 dp while busy, ⋮ ("Account options", 28 dp button) | list row: mark 20 pt, name, plan chip, right text "Signed in" (sub) or "Sign in again" (orange); touch and hold opens the menu |
 | Email line | under the header, 26 dp indent, bodySmall muted, local part truncates before the domain; shown only when it adds something beyond the name | Details sheet only |
 | Menu | "Details…" (with a token), "Clear usage history…", "Rename…", "Accent colour…", "Remove account" (error colour; only with two or more accounts) | "Rename", "Pin to the top", "Details…", "Accent colour…", "Sign in again", "Clear usage history…", "Remove" (destructive) |
 | Claude, signed out | "Not signed in" (bodySmall muted), filled button "Sign in on this phone", then "Opens Claude's sign-in in your browser — no computer needed. Needs a paid plan: Claude reports no usage for Free accounts." | taps open the Claude sign-in sheet |
@@ -511,8 +511,8 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amen
 #### §2.3 Account tabs — add
 iOS: with two or more accounts an **"All"** tab comes first (icon `text.alignleft`, ink underline, counts as one tab
 for the three-across / scroll rule). iPad landscape: an **"All accounts"** row tops the sidebar (count on the right,
-fill when selected). iPad portrait (pinned + tabs): "All" is the first of the tabs below the pinned account and
-shows the Summary there. Launch: All when Open on the summary is on and 2+ accounts; otherwise the last account
+fill when selected); it is the default detail. iPad portrait: "All" is the first tab, as on the iPhone, and shows
+the Summary. Launch: All when Open on the summary is on and 2+ accounts; otherwise the last account
 looked at (stored `lastAccount`), else the first. `ios/App/UI/MainScreens.swift`, `AppModel.launchKey`.
 
 #### §2.4 Cards, in order — iOS row
@@ -872,7 +872,26 @@ behind it, so the stored layout can never contradict the row. "Usage credits" is
 - **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
   way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
   "Held · 3:40 pm" (never "5h").
-- **iPad sidebar** (CCBG-67 (iPad Sidebar Tap), CCBG-68 (iPad Plan Chip Wrap)): the highlighted row is the one
-  tapped, the pinned account included; every tap scrolls the detail to that account's half; the plan chip stays on
-  one line and the name truncates first.
+- **iPad sidebar** (CCBG-68 (iPad Plan Chip Wrap)): the plan chip stays on one line and gives way to the name.
+  CCBG-67 (iPad Sidebar Tap)'s highlight-and-scroll is superseded by the layout below.
+
+### iPad: the Summary and one account at a time (Robin, 2026-11-02)
+
+"Drop the 'pinned' account as it's confusing here … make the summary/all as the default one … only on tap of the
+individual account, we'll show the details as we have the whole space … should be same for the phones" — Robin
+picked "Only that account" over "All stacked, scroll to it".
+
+- **Landscape** (≥ 1000 pt): the 300 pt sidebar is "All accounts" (the Summary; the default detail when "Open on the
+  summary" applies, and whenever no account is chosen) and one row per account; the highlighted row is the detail's.
+  A tap on an account shows only that account's page at the detail's full width (`IPadLandscape.shownKey`); "All
+  accounts" returns to the Summary. Each new page starts at its top. With one account there is no Summary row and
+  that account shows.
+- **Portrait / Split View ≥ 700 pt:** the phone's model — the title, tabs for All and every account, one page at a
+  time; no pinned section.
+- **Gone everywhere:** the pinned half, "Pinned" in the header, the pin glyph in the sidebar and in Settings ›
+  Accounts, "Touch and hold an account to pin it to the top.", and "Pin to the top" (sidebar and Settings menus).
+  The stored `pinned` flag is still decoded and never read (stored keys are never reused).
+- **Phones:** unchanged; neither the iPhone nor Android ever pinned an account in the main screen (on the iPhone the
+  only trace was the Settings › Accounts pin glyph and its "Pin to the top" item, now removed with the concept).
+
 

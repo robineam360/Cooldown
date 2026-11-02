@@ -313,4 +313,12 @@ weekly.
   of CCBG-56 to CCBG-71: six KEEP, one CHANGE — the Summary figure's target exists only while there is a readout
   (both platforms). Recheck items: the Fold 7 cover tile shows "Weekly · All models" whole; All tab → a spent row's
   figure opens it; iPad 300 pt sidebar; small Number title; All accounts → tap an account scrolls to it.
+- **2026-11-02 · Step 7 recheck and Robin's iPad layout.** Recheck of ae27988 (Fold 7 release build, cover and inner;
+  iPad Debug): CCBG-56 to CCBG-66 and CCBG-67, -68, -71 verified; CCBG-69 not reproduced (closed); CCBG-70 stays
+  Robin's (remove the old Ring widget). Captures 30–37 committed. New: CCBG-72 (Live Activity Stale Mode, Low) — the
+  activity's content state now carries the Usage display and end mark, so a change is a new state iOS redraws.
+  Robin's change: the iPad drops the pinned account — landscape is "All accounts" plus one row per account, the
+  Summary by default and only the tapped account full width; portrait is the phone's tabs; the pin glyph, hint and
+  menus are gone (Settings › Accounts included), the stored flag unread; phones unchanged. Supersedes CCBG-67's
+  highlight-and-scroll.
 

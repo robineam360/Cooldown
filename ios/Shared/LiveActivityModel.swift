@@ -98,6 +98,19 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var rows: [Row]
         /// The final frame at a reset: "Teams · 5h reset — Usage is back at 0%. The last window peaked at 87%."
         var ended: Ended?
+        /// CCBG-72 (Live Activity Stale Mode): the Usage display and end mark the activity is drawn with. The view reads
+        /// them from the shared settings, so they ride in the state only to make a display change a new state, which
+        /// iOS redraws at once. Optional, so older states still decode.
+        var display: String?
+
+        init(rows: [Row], ended: Ended?, display: String? = Self.currentDisplay) {
+            self.rows = rows
+            self.ended = ended
+            self.display = display
+        }
+
+        /// "vsPace·line": the mode and the end mark as the settings hold them now.
+        static var currentDisplay: String { "\(Display.mode.rawValue)·\(Display.usageEndMark.rawValue)" }
     }
 
     struct Ended: Codable, Hashable {

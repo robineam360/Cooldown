@@ -88,17 +88,27 @@ struct CardLayoutTests {
         #expect(back.order == [.session, .weekly, .credits])
     }
 
-    /// CCBG-67 (iPad Sidebar Tap): the highlight follows the tapped row, the pinned one included.
-    @Test func theSidebarHighlightFollowsTheTap() {
-        // Two accounts: Claude pinned on top, Personal below.
-        #expect(IPadLandscape.highlightedKey(selectedKey: "claude", pinnedKey: "claude", bottomKey: "personal",
-                                             showsSummary: false) == "claude")
-        #expect(IPadLandscape.highlightedKey(selectedKey: "personal", pinnedKey: "claude", bottomKey: "personal",
-                                             showsSummary: false) == "personal")
-        // Nothing chosen yet: the bottom half's account.
-        #expect(IPadLandscape.highlightedKey(selectedKey: nil, pinnedKey: "claude", bottomKey: "personal",
-                                             showsSummary: false) == "personal")
-        #expect(IPadLandscape.highlightedKey(selectedKey: "claude", pinnedKey: "claude", bottomKey: "personal",
-                                             showsSummary: true) == nil)
+    /// Robin's iPad layout (2026-11-02, superseding CCBG-67 (iPad Sidebar Tap)): the detail is the Summary by default and
+    /// on "All accounts", else only the tapped account; with one account (no Summary) that account.
+    @MainActor @Test func theIPadShowsTheSummaryOrOneAccount() {
+        let keys = ["claude", "personal"]
+        #expect(IPadLandscape.shownKey(selectedKey: nil, accountKeys: keys, summaryShown: true) == nil)
+        #expect(IPadLandscape.shownKey(selectedKey: AppModel.summaryKey, accountKeys: keys, summaryShown: true) == nil)
+        #expect(IPadLandscape.shownKey(selectedKey: "claude", accountKeys: keys, summaryShown: true) == "claude")
+        #expect(IPadLandscape.shownKey(selectedKey: "personal", accountKeys: keys, summaryShown: true) == "personal")
+        #expect(IPadLandscape.shownKey(selectedKey: "gone", accountKeys: keys, summaryShown: true) == nil)
+        #expect(IPadLandscape.shownKey(selectedKey: nil, accountKeys: ["claude"], summaryShown: false) == "claude")
+    }
+
+    /// CCBG-72 (Live Activity Stale Mode): a Usage display change makes a new content state, which iOS redraws.
+    @Test func aDisplayChangeIsANewLiveActivityState() {
+        let before = Display.mode
+        defer { Display.setMode(before) }
+        Display.setMode(.vsPace)
+        let vs = CooldownActivityAttributes.ContentState(rows: [], ended: nil)
+        Display.setMode(.used)
+        let used = CooldownActivityAttributes.ContentState(rows: [], ended: nil)
+        #expect(vs != used)
+        #expect(used.display?.hasPrefix("used") == true)
     }
 }

@@ -2,8 +2,8 @@ import CooldownCore
 import SwiftUI
 import UserNotifications
 
-/// CCRM-94 (iOS App): the app's entry and the main screens of wireframe rev B — iPhone tabs (§1), iPad pinned +
-/// selected (§2), and the first-launch screen.
+/// CCRM-94 (iOS App): the app's entry and the main screens of wireframe rev B — iPhone tabs (§1), the iPad (§2; since
+/// 2026-11-02 the Summary and one account at a time, no pinned account), and the first-launch screen.
 @main
 struct CooldownApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
@@ -294,92 +294,71 @@ struct PhoneMain: View {
     private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
 }
 
-/// iPad landscape: the sidebar lists every account; the pinned one fills the top half, the selected one the bottom.
+/// iPad landscape (Robin, 2026-11-02: "drop the 'pinned' account … make the summary/all as the default one … only on tap
+/// of the individual account, we'll show the details as we have the whole space"): the sidebar is "All accounts" (the
+/// Summary, where the app opens per "Open on the summary") and one row per account; the detail shows the Summary or
+/// only the tapped account, full width. No pinned half, no pin hint or menu; the stored pinned flag is left unread.
 struct IPadLandscape: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
-    /// CCBG-67: every sidebar tap, even on the row already shown, asks the detail to scroll to that account.
-    @State private var scrollRequest: ScrollRequest?
-    private struct ScrollRequest: Equatable { let key: String; let id = UUID() }
     /// CCRM-103 (Hybrid Notification) rev D I2: the row's figure is always the Weekly and its ring always the 5h, so the
     /// Headline · Weekly · 5h switch (CCRM-96 (Weekly First) rev B) has nothing left to pick and is gone; its stored
     /// "sidebarWindow" value is left unread.
 
     var body: some View {
+        let shown = Self.shownKey(selectedKey: model.selectedKey, accountKeys: model.accounts.map(\.key),
+                                  summaryShown: SummaryRank.tabShown(accountCount: model.accounts.count))
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 AppTitle(size: 30).padding(.horizontal, 18).padding(.bottom, 10)
-                if SummaryRank.tabShown(accountCount: model.accounts.count) { allRow }
-                ForEach(model.accounts) { account in sidebarRow(account) }
-                Text("Touch and hold an account to pin it to the top.")
-                    .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.horizontal, 22).padding(.top, 12)
+                if SummaryRank.tabShown(accountCount: model.accounts.count) { allRow(on: shown == nil) }
+                ForEach(model.accounts) { account in sidebarRow(account, selected: account.key == shown) }
                 Spacer()
                 Footer().padding(.horizontal, 22).padding(.bottom, 16)
             }
             .frame(width: 300)
             .background(scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9))
             .overlay(alignment: .trailing) { Rectangle().fill(p.line).frame(width: 1) }
-            // CCBG-67 (iPad Sidebar Tap): a tap scrolls the detail to that account's half, so with the two halves
-            // already on screen the tap still visibly lands.
-            ScrollViewReader { proxy in
-            ScrollView {
-                VStack(spacing: 12) {
-                    if model.showsSummary && SummaryRank.tabShown(accountCount: model.accounts.count) {
-                        Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
-                        SummaryView(wide: true)
-                    } else {
-                    if let pinned = model.account(model.pinnedKey) { half(pinned, pinned: true).id(pinned.key) }
-                    if let selected = model.account(bottomKey), selected.key != model.pinnedKey {
-                        Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 2)
-                        half(selected, pinned: false).id(selected.key)
+            GeometryReader { geo in
+                ScrollView {
+                    VStack(spacing: 12) {
+                        if let key = shown, let account = model.account(key) {
+                            page(account, width: geo.size.width - 40)
+                        } else {
+                            Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
+                            SummaryView(wide: true)
+                        }
                     }
-                    }
+                    .padding(20)
                 }
-                .padding(20)
-            }
-            .refreshable { await model.refresh(manual: true) }
-            .onChange(of: scrollRequest) { _, request in
-                guard let key = request?.key else { return }
-                // After the update that may insert the target's half (from All accounts, or a third account
-                // replacing the bottom half), so its id exists when the scroll runs.
-                Task { @MainActor in
-                    await Task.yield()
-                    withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(key, anchor: .top) }
-                }
-            }
+                .refreshable { await model.refresh(manual: true) }
+                // A new page starts at its top.
+                .id(shown ?? AppModel.summaryKey)
             }
         }
     }
 
-    /// CCBG-67 (iPad Sidebar Tap): the sidebar row that is highlighted — the tapped one, the pinned row included (the
-    /// pinned account is selected when `selectedKey` is it); else the bottom half's account. None on the Summary.
-    nonisolated static func highlightedKey(selectedKey: String?, pinnedKey: String?, bottomKey: String?,
-                                           showsSummary: Bool) -> String? {
-        if showsSummary { return nil }
-        if let selectedKey, selectedKey == pinnedKey { return pinnedKey }
-        return bottomKey
+    /// The detail: nil = the Summary — chosen, or by default (no account chosen yet) when it is shown at all; else the
+    /// chosen account, or the first one when there is no Summary (one account).
+    nonisolated static func shownKey(selectedKey: String?, accountKeys: [String], summaryShown: Bool) -> String? {
+        if let selectedKey, accountKeys.contains(selectedKey) { return selectedKey }
+        return summaryShown ? nil : accountKeys.first
     }
 
-    /// The bottom half shows the selected account, or the next one when the pinned account is selected.
-    private var bottomKey: String? {
-        if let s = model.selectedKey, s != model.pinnedKey { return s }
-        return model.accounts.first { $0.key != model.pinnedKey }?.key
-    }
-
-    private func half(_ account: Account, pinned: Bool) -> some View {
+    /// One account's page, the detail's full width.
+    private func page(_ account: Account, width: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            AccountHeader(account: account, pinned: pinned)
-            AccountCards(account: account, twoAcross: true, cardWidth: 396,
+            AccountHeader(account: account)
+            AccountCards(account: account, twoAcross: true, cardWidth: max(396, width),
                          onSignIn: { sheet = Sheet.signIn(for: account.provider) })
         }
     }
 
     /// CCRM-98 (Summary Tab) W2: "All accounts" tops the sidebar, with the account count instead of a figure.
-    private var allRow: some View {
-        let on = model.showsSummary
-        return Button { model.selectedKey = AppModel.summaryKey } label: {
+    private func allRow(on: Bool) -> some View {
+        Button { model.selectedKey = AppModel.summaryKey } label: {
             HStack(spacing: 10) {
                 Image(systemName: "text.alignleft").font(.system(size: 17, weight: .semibold)).frame(width: 22)
                 Text("All accounts").font(.system(size: 16, weight: on ? .semibold : .regular))
@@ -395,7 +374,7 @@ struct IPadLandscape: View {
 
     /// CCRM-103 rev D I2 (`sideRow`): the 5h ring (40 pt; greyed while the week is spent, a cross for a plan with no 5h,
     /// so the names line up), the mark and name over a 4 pt Weekly bar, the Weekly figure.
-    private func sidebarRow(_ account: Account) -> some View {
+    private func sidebarRow(_ account: Account, selected: Bool) -> some View {
         let usage = model.usage(account.key)
         let session = usage?.session
         let pct = usage?.weekly?.percent
@@ -409,13 +388,8 @@ struct IPadLandscape: View {
         }
         let ringState: GrammarRing.State = session == nil ? .notApplicable : Pace.isSpent(pct) ? .grey : .normal
         let accent = account.accent(scheme)
-        let selected = account.key == Self.highlightedKey(selectedKey: model.selectedKey, pinnedKey: model.pinnedKey,
-                                                          bottomKey: bottomKey, showsSummary: model.showsSummary)
         let surface = scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9)
-        return Button {
-            model.selectedKey = account.key
-            scrollRequest = ScrollRequest(key: account.key)
-        } label: {
+        return Button { model.selectedKey = account.key } label: {
             HStack(spacing: 10) {
                 GrammarRing(pct: fivePct, pace: fivePace, accent: accent,
                             figure: session == nil ? nil : Display.number(fivePct, pace: fivePace),
@@ -426,7 +400,7 @@ struct IPadLandscape: View {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
                         ProviderMark(provider: account.provider, size: 16)
-                        Text(account.label).font(.system(size: 16, weight: selected || account.key == model.pinnedKey ? .semibold : .regular))
+                        Text(account.label).font(.system(size: 16, weight: selected ? .semibold : .regular))
                             .lineLimit(1).layoutPriority(1)
                         // CCBG-68 (iPad Plan Chip Wrap): the chip stays on one line, and gives way to the name — shown
                         // whole when it fits beside it, else left out (never "Team / Premiu / m", never "C…").
@@ -434,7 +408,6 @@ struct IPadLandscape: View {
                             PlanChip(plan: model.states[account.key]?.plan).lineLimit(1).fixedSize()
                             Color.clear.frame(width: 0, height: 0)
                         }
-                        if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
                     }
                     GrammarBar(pct: pct, pace: pace, accent: accent, height: 4, showsRoom: false, surface: surface)
                 }
@@ -451,11 +424,11 @@ struct IPadLandscape: View {
         .buttonStyle(.plain)
         .foregroundStyle(p.ink)
         .padding(.horizontal, 10)
-        .contextMenu { Button("Pin to the top", systemImage: "pin") { model.pin(account.key) } }
     }
 }
 
-/// iPad portrait and Split View wider than ~700 pt: the pinned account on top, tabs for the others, the selected one below.
+/// iPad portrait and Split View wider than ~700 pt: the phone's model (Robin, 2026-11-02) — tabs for All and every
+/// account, one page at a time, the Summary by default; no pinned section.
 struct PinnedAndTabs: View {
     @Environment(AppModel.self) private var model
     let width: CGFloat
@@ -465,26 +438,21 @@ struct PinnedAndTabs: View {
         if width < 700 {
             PhoneMain(sheet: $sheet)
         } else {
-            let others = model.accounts.filter { $0.key != model.pinnedKey }
-            let selected = others.first { $0.key == model.selectedKey } ?? others.first
             let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
+            let shown = IPadLandscape.shownKey(selectedKey: model.selectedKey, accountKeys: model.accounts.map(\.key),
+                                               summaryShown: showsAll)
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     AppTitle()
-                    if let pinned = model.account(model.pinnedKey) {
-                        AccountHeader(account: pinned, pinned: true)
-                        AccountCards(account: pinned, twoAcross: true, cardWidth: 356, onSignIn: { signIn(pinned) })
-                    }
-                    if !others.isEmpty {
-                        AccountTabs(accounts: others, selected: Binding(get: { model.showsSummary && showsAll ? AppModel.summaryKey : selected?.key },
-                                                                        set: { model.selectedKey = $0 }), showsAll: showsAll)
-                            .padding(.horizontal, -22)
-                        if model.showsSummary && showsAll {
-                            SummaryView(wide: width >= 900)
-                        } else if let selected {
-                            AccountHeader(account: selected, pinned: false)
-                            AccountCards(account: selected, twoAcross: true, cardWidth: 356, onSignIn: { signIn(selected) })
-                        }
+                    AccountTabs(accounts: model.accounts,
+                                selected: Binding(get: { shown ?? AppModel.summaryKey }, set: { model.selectedKey = $0 }),
+                                showsAll: showsAll)
+                        .padding(.horizontal, -22)
+                    if let key = shown, let account = model.account(key) {
+                        AccountHeader(account: account)
+                        AccountCards(account: account, twoAcross: true, cardWidth: 356, onSignIn: { signIn(account) })
+                    } else {
+                        SummaryView(wide: width >= 900)
                     }
                     Footer()
                 }
@@ -497,21 +465,17 @@ struct PinnedAndTabs: View {
     private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
 }
 
-/// An iPad half's header: mark, name, plan chip, "Pinned", and the account's credits on the right.
+/// An iPad account page's header: mark, name, plan chip, and the account's credits on the right.
 struct AccountHeader: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     let account: Account
-    let pinned: Bool
 
     var body: some View {
         HStack(spacing: 9) {
             ProviderMark(provider: account.provider, size: 22)
             Text(account.label).font(.system(size: 21, weight: .bold))
             PlanChip(plan: model.states[account.key]?.plan, size: 12)
-            if pinned {
-                Label("Pinned", systemImage: "pin.fill").font(.system(size: 13)).foregroundStyle(p.sub).padding(.leading, 4)
-            }
             Spacer()
             if let credits = CardContent.credits(model.usage(account.key)?.credits) {
                 Group {

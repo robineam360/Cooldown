@@ -38,7 +38,6 @@ struct SettingsScreen: View {
                             ProviderMark(provider: account.provider, size: 20)
                             Text(account.label)
                             PlanChip(plan: model.states[account.key]?.plan)
-                            if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
                             Spacer()
                             let needsSignIn = model.states[account.key]?.reauthNeeded == true
                             Text(needsSignIn ? "Sign in again" : "Signed in").font(.system(size: 14))
@@ -47,7 +46,6 @@ struct SettingsScreen: View {
                         }
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { newName = account.label; renaming = account }
-                            Button("Pin to the top", systemImage: "pin") { model.pin(account.key) }
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {

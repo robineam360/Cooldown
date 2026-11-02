@@ -139,7 +139,6 @@ final class AppModel {
         layouts[key] = layout.normalized
         if !isDemo { CardLayout.save(layout, key) }
     }
-    var pinnedKey: String? { accounts.first(where: \.pinned)?.key ?? accounts.first?.key }
     var lastCheckedMs: Int64? { states.values.map(\.lastAttemptAtMs).filter { $0 > 0 }.max() }
 
     func usage(_ key: String) -> UsageData? { snapshots[key]?.usage(nowMs: nowMs) }
@@ -165,11 +164,6 @@ final class AppModel {
 
     /// Settings changes that only the surfaces read (reset alert modes, the Live Activity switch).
     func surfacesChanged() { Task { await Surfaces.update(self) } }
-
-    func pin(_ key: String) {
-        for i in accounts.indices { accounts[i].pinned = accounts[i].key == key }
-        save()
-    }
 
     func move(from source: IndexSet, to destination: Int) {
         accounts.move(fromOffsets: source, toOffset: destination)

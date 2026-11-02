@@ -22,72 +22,72 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > which block the release.
 
 ### CCBG-56 · Summary Readout Tap — tapping a Summary row's figure opens the account instead of the readout
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): the figure has its own 80 × 48 dp target over the figure and the bar end that consumes the tap (line 3 swaps; nothing without a readout); iOS: a ≥ 48 pt target, 12 pt past the figure
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: the figure has its own 80 × 48 dp target over the figure and the bar end that consumes the tap (line 3 swaps; nothing without a readout); iOS: a ≥ 48 pt target, 12 pt past the figure
 - **Severity:** Medium (the frozen page's P8 is not met)
 - **Symptom:** on the All tab, tapping Work's figure (21%) opened Work's page (`14-cover-tap-readout-work.png`).
   The page has row line 3 swap to "Pace catches up …" for 3 s; the row-wide tap wins over the figure's.
 - **Fix:** give the figure its own tap target (≥ 48 dp) that consumes the tap and swaps line 3.
 
 ### CCBG-57 · Readout Underline Clip — the 3-second readout's underline cuts through its letters
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): the font's own underline (`TextDecoration.Underline`), as iOS · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: the font's own underline (`TextDecoration.Underline`), as iOS · **Severity:** Low
 - **Symptom:** "Pace catches up Wed 4 Nov, 6:37 am" on the Work tile shows its underline across the lower part
   of the glyphs; descenders are cut (`15-cover-tap-readout-weekly.png`).
 - **Fix:** draw the underline below the text's descent, or use `TextDecoration.Underline`.
 
 ### CCBG-58 · Tile Title Clip — "Weekly · All mo…" on the cover screen
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): the label takes the width the figure leaves; a lead label that still does not fit drops " · All models"; iOS the same · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: the label takes the width the figure leaves; a lead label that still does not fit drops " · All models"; iOS the same · **Severity:** Low
 - **Symptom:** at the cover's 411 dp the tile's Weekly title ellipsizes to "Weekly · All mo…" beside its figure
   (`03-cover-work-tile.png`); the page draws "Weekly · All models" in full.
 - **Fix:** let the title take the width the figure leaves, or drop "· All models" under a measured width.
 
 ### CCBG-59 · Model Figure Alignment — the Fable figure is not right-aligned with the Weekly figure
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): every bar row's figure flush right on one edge (one weighted label); iOS already was · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: every bar row's figure flush right on one edge (one weighted label); iOS already was · **Severity:** Low
 - **Symptom:** on the tile, Fable's "8%" sits mid-row while Weekly's "34%" is flush right (`03-cover-work-tile.png`).
 - **Fix:** right-align every bar row's figure to the same edge, as the page draws.
 
 ### CCBG-60 · Summary Line Clip — Summary line 3 and narrow-column names ellipsize
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): the name gives way before the pill; line 3 drops "· resets <day>" first under the measured width; iOS the same, and its six-account held word is "Held · 3:40 pm" · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: the name gives way before the pill; line 3 drops "· resets <day>" first under the measured width; iOS the same, and its six-account held word is "Held · 3:40 pm" · **Severity:** Low
 - **Symptom:** cover All tab: "Use before reset · ≈31%/day · reset…" (`01-cover-app-launch.png`); inner two-column
   Summary: "Prod…" and every line 3 cut (`22-inner-summary.png`).
 - **Fix:** shorten line 3 under a measured width (drop "resets <day>" first), and keep the name before the plan pill.
 
 ### CCBG-61 · Duet Line Clip — the expanded notification's second line ellipsizes on the cover
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): an expanded Duet header with the 44 dp ring takes the tight form ("Use before reset · ≈31%/day") · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: an expanded Duet header with the 44 dp ring takes the tight form ("Use before reset · ≈31%/day") · **Severity:** Low
 - **Symptom:** Claude's half reads "Use before reset · ≈31%/day · res…" on the cover (`10-cover-notification-expanded.png`);
   the inner screen fits it.
 - **Fix:** the tight form ("Use before reset · ≈31%/day") under the measured width.
 
 ### CCBG-62 · Plan Pill Case — "prolite" on the Summary, "Prolite" in Settings
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): one formatter, `Fmt.planLabel`, on the Summary pill, Settings, History and the plan condition (iOS already capitalises at the source) · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: one formatter, `Fmt.planLabel`, on the Summary pill, Settings, History and the plan condition (iOS already capitalises at the source) · **Severity:** Low
 - **Symptom:** the Personal (ChatGPT) plan pill is lowercase on the All tab and capitalised in Settings.
 - **Fix:** one plan-name formatter for every surface.
 
 ### CCBG-63 · Status Ring Wording — Alerts still says "ring" though the icon can be the Weekly bar
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): Robin's wording: "Status-bar icon shows", its caption and the switch subtitle's "status-bar icon" · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: Robin's wording: "Status-bar icon shows", its caption and the switch subtitle's "status-bar icon" · **Severity:** Low
 - **Symptom:** Settings › Alerts: "Status-bar ring shows" and "A clean ring for the 5h window…", and the
   switch's "with a status-bar ring", although rev D adds the Weekly bar (no 5h, or by choice).
 - **Fix:** "Status-bar icon shows" and wording that covers both; copy to Robin before shipping.
 
 ### CCBG-64 · Inner Duet Ring — on the inner screen the 5h ring shrinks to a 14 dp dot above the figure
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): Robin's call: the 36 dp ring on the inner shade too (its halves measure about 180 dp) · **Severity:** Low · **Robin's call**
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: Robin's call: the 36 dp ring on the inner shade too (its halves measure about 180 dp) · **Severity:** Low · **Robin's call**
 - **Symptom:** collapsed Duet on the inner screen: Claude's 5h ring is a 14 dp glyph at the top right, apart from
   its bar (`23-inner-notification.png`); the cover draws a 36 dp ring. Built as the 6d log expected (width bucket),
   but it reads as a status dot.
 - **Fix (proposal):** use the 36 dp ring wherever the half's width allows it.
 
 ### CCBG-65 · Sheet Under Taskbar — the account sheet's last rows sit under the inner screen's taskbar
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): the sheet scrolls and pads for the taskbar's tappable-element inset · **Severity:** Low
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: the sheet scrolls and pads for the taskbar's tappable-element inset · **Severity:** Low
 - **Symptom:** inner screen ⋮ › Headline…: "Model limits" is covered by the taskbar until scrolled.
 - **Fix:** apply the navigation-bar / taskbar insets to the sheet's content padding.
 
 ### CCBG-66 · Countdown Ring Small — the Countdown 2×2 face shows a small ring in an empty face
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; Fold 7 recheck pending): Robin's call: on the 5h Countdown 2×2 the count sits above and the 5h ring is centred below it, sized from the face (Ø61 at 181×168, up to Ø160) · **Severity:** Low · **Robin's call**
+- **Status:** **Verified on the Fold 7 2026-11-02** (release build of ae27988, cover and inner; captures 30–37) · fixed in code on the v2.0 branch: Robin's call: on the 5h Countdown 2×2 the count sits above and the 5h ring is centred below it, sized from the face (Ø61 at 181×168, up to Ø160) · **Severity:** Low · **Robin's call**
 - **Symptom:** Countdown 2×2 (Product): "4:18:02 at 12:00 AM", a ≈27 dp 5h ring left of centre and much empty
   space (`21-cover-widgets.png`).
 - **Fix (proposal):** scale the ring to the face as the Ring face does.
 
 ### CCBG-67 · iPad Sidebar Tap — with two accounts a sidebar tap changes nothing visible
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending). Reported by Robin in the Step 7 iPad
+- **Status:** **Verified on the iPad 2026-11-02** (Debug build of ae27988), then **superseded the same day** by Robin's iPad layout change (no pinned half: the sidebar is "All accounts" plus one row per account, a tap shows only that account; RUNBOOK-v2.0 Step 7 log). Fixed in code before that: Reported by Robin in the Step 7 iPad
   pass (iPad Pro M4, landscape, Debug build of c8ef050): "when I select the left side … I don't think it is
   registering my tap." The highlight now follows the tapped row, the pinned one included
   (`IPadLandscape.highlightedKey`, `CardLayoutTests.theSidebarHighlightFollowsTheTap`), and every tap — even on the row
@@ -98,14 +98,16 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `ios/App/UI/MainScreens.swift`), and tapping the other row re-selected what was already shown.
 
 ### CCBG-68 · iPad Plan Chip Wrap — "Team Premium" wraps onto three lines in the sidebar
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending): the sidebar's chip is one line
+- **Status:** **Verified on the iPad 2026-11-02** (Debug build of ae27988) · fixed in code on the v2.0 branch: the sidebar's chip is one line
   (`lineLimit(1)` + `fixedSize`) and gives way to the name — whole beside it when it fits, else left out — since
   truncating the name first left "C…" beside "Team Premium" in the 300 pt sidebar (judge on 225f87c).
 - **Severity:** Low
 - **Symptom:** in the 300 pt sidebar, Claude's chip read "Team / Premiu / m".
 
 ### CCBG-69 · Lock Widgets Redacted — the locked iPad's lock-screen widgets show "??%" and "?d ??h"
-- **Status:** **Open — no cause in the app's code; device check needed** (investigated 2026-11-02). Not a v2.0
+- **Status:** **Closed — not reproduced** (iPad recheck 2026-11-02, Debug build of ae27988: the lock-screen widgets
+  read while locked, the N3 Weekly-bar circular included; the one "??" sighting came right after the install, when
+  iOS had not yet rendered a timeline). Investigated 2026-11-02: Not a v2.0
   regression: the lock-screen widgets read the same files since CCRM-94 (iOS App). What the code shows: no view is
   marked `.privacySensitive()`, nothing applies `.redacted`, and the app never prints "?" — so the "??%" / "?d ??h"
   is iOS's own redaction of the widget while locked, not our placeholder. The app group's files carry no explicit
@@ -133,10 +135,19 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** one small widget showed "9%, as of 4:32 pm" while every other widget was current at 8:08 pm.
 
 ### CCBG-71 · iPad Number Title Clip — the small Number widget's title reads "ChatGPT · We…"
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending): the title is "ChatGPT · Weekly"
+- **Status:** **Verified on the iPad 2026-11-02** (Debug build of ae27988) · fixed in code on the v2.0 branch: the title is "ChatGPT · Weekly"
   when it fits, else the name alone (shrinking to 85% at most) — the face's figure and bar already say the window.
 - **Severity:** Low
 - **Symptom:** the small Number widget's title ellipsized to "ChatGPT · We…".
+
+### CCBG-72 · Live Activity Stale Mode — the running Live Activity keeps the old Usage display after a change
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending). Found in the Step 7 iPad recheck
+  (Debug build of ae27988). The Live Activity is now pushed a fresh content state whenever Appearance › Usage display
+  or Usage end mark changes, as after a fetch.
+- **Severity:** Low
+- **Symptom:** on the iPad's lock-screen wake, the Live Activity first showed Vs pace figures (ChatGPT 22%, Claude 23%,
+  red) after Usage display had gone back to Used, then switched to 51% / 36%: the display change did not reach the
+  running activity until its next update.
 
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
 - **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in

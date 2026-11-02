@@ -1681,7 +1681,8 @@ it carries the umbrella CCRM-7 (iOS).
   to Robin before anything else is built.
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
-- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the
+- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the **2026-11-02 (Robin):** the iPad drops the pinned account — the sidebar (landscape) or the tabs (portrait) open on
+  "All accounts" and show one account at a time; built on the v2.0 branch (RUNBOOK-v2.0 Step 7 log).
   lock-screen widget picker not reopening for a second widget) · CI builds the app and runs its app-hosted tests on
   a simulator from 0a6b6fb · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
   iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
