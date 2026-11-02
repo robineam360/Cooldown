@@ -91,26 +91,23 @@ class ContractCopyTest {
     @Test
     fun `the About disclaimer names both marks and both owners`() {
         for (claim in listOf(
-            "Not affiliated with, endorsed by, or supported by Anthropic or OpenAI.",
+            "Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google.",
             "\\\"Claude\\\" is a trademark of Anthropic, PBC.",
             "\\\"ChatGPT\\\" is a trademark of OpenAI.",
+            "“Gemini” and “Antigravity” are trademarks of Google LLC.",
         )) {
             assertTrue("About disclaimer lost: $claim", about.contains(claim))
         }
     }
 
     /**
-     * Google dropped clean: CCRM-55 (Antigravity Account) is dropped, not deferred, so
-     * the disclaimer no longer names a provider the app doesn't track. Guards against
-     * the Google/Gemini/Antigravity line drifting back in during a future copy edit.
+     * CCRM-55 (Antigravity Account) was reopened 2026-11-02, so the disclaimer names
+     * Google again — the vendor and both of its marks.
      */
     @Test
-    fun `the disclaimer no longer names Google, Gemini or Antigravity`() {
-        for (dropped in listOf("Google", "Gemini", "Antigravity")) {
-            assertTrue(
-                "disclaimer should not mention $dropped",
-                !disclaimer.contains(dropped),
-            )
+    fun `the disclaimer names Google, Gemini and Antigravity again`() {
+        for (named in listOf("Google", "Gemini", "Antigravity")) {
+            assertTrue("disclaimer should mention $named", disclaimer.contains(named))
         }
     }
 

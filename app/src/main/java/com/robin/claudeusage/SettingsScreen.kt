@@ -131,6 +131,7 @@ import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.SignInExpiry
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
+import com.robin.claudeusage.data.source.AntigravitySource
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.ui.AccountStatusLine
 import com.robin.claudeusage.ui.ChartOrientation
@@ -1772,6 +1773,15 @@ private fun TokenCard(
                 AccountEmailLine(email!!, Modifier.padding(start = 26.dp))
             }
 
+            // CCRM-55 (Antigravity Account): Gemini's card body, own paste sign-in.
+            if (profile.provider == Provider.ANTIGRAVITY) {
+                GeminiAccountBody(
+                    repo, profile, label,
+                    autoStart = autoStartSignIn,
+                ) { stateKey++ }
+                return@Column
+            }
+
             // The sign-in completion step takes over the card while active, for
             // either a brand-new sign-in or a re-sign-in of an existing account.
             if (awaitingCode) {
@@ -2329,6 +2339,217 @@ private fun ChatGptAccountBody(
 }
 
 /**
+ * CCRM-55 (Antigravity Account): a Gemini account's body under the shared header.
+ * Sign-in is the Claude-style paste flow with Google's copy: a Custom Tab (never a
+ * WebView — Google refuses them), then the `4/…` code pasted back. design
+ * 2026-11-02-antigravity-account.html rev B §2 F2–F7. Nothing here logs a code.
+ */
+@Composable
+private fun GeminiAccountBody(
+    repo: UsageRepository,
+    profile: Profile,
+    label: String,
+    autoStart: Boolean = false,
+    onStateChanged: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val clipboard = LocalClipboardManager.current
+    val openWithPicker = rememberBrowserOpener(label, profile.provider)
+    var tick by remember { mutableIntStateOf(0) }
+    val storeHealthy = CredentialStoreOpener.state.collectAsState().value.healthy
+    LaunchedEffect(storeHealthy) { tick++ }
+    val hasToken = remember(tick) { repo.hasCredentials(profile) }
+    val snapshot = remember(tick) { repo.snapshot(profile) }
+    var busy by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
+    var awaiting by remember { mutableStateOf(repo.hasPendingAntigravitySignIn(profile)) }
+    var input by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var authUrl by remember { mutableStateOf<String?>(null) }
+
+    fun bump() {
+        tick++
+        onStateChanged()
+    }
+
+    fun begin() {
+        message = null
+        error = null
+        input = ""
+        awaiting = true
+        val url = repo.startAntigravitySignIn(profile)
+        authUrl = url
+        openWithPicker(url)
+    }
+
+    fun finish() {
+        scope.launch {
+            busy = true
+            message = null
+            error = null
+            val result = repo.completeAntigravitySignIn(profile, input)
+            if (result.message == "OK") {
+                Polling.schedulePeriodic(context, repo.cacheSettings().pollIntervalMinutes())
+                message = GeminiSignIn.successLine(label)
+                awaiting = false
+                input = ""
+            } else {
+                error = result.message
+            }
+            busy = false
+            bump()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (autoStart && !hasToken && !awaiting) begin()
+    }
+
+    if (awaiting) {
+        Spacer(Modifier.height(10.dp))
+        Text(GeminiSignIn.PASTE_TITLE, style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(6.dp))
+        Text(
+            GeminiSignIn.PASTE_BODY,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(10.dp))
+        OutlinedTextField(
+            value = input,
+            onValueChange = { input = it; error = null },
+            label = { Text(GeminiSignIn.PASTE_LABEL) },
+            isError = error != null,
+            supportingText = { Text(error ?: GeminiSignIn.PASTE_HELPER) },
+            singleLine = true,
+            enabled = !busy,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                TextButton(
+                    onClick = { clipboard.getText()?.text?.let { input = it.trim(); error = null } },
+                    enabled = !busy,
+                ) { Text("Paste") }
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+        SignInActionRow {
+            Button(
+                enabled = GeminiSignIn.continueEnabled(input, busy, error != null),
+                onClick = { finish() },
+            ) { Text("Continue") }
+            if (error != null) {
+                OutlinedButton(enabled = !busy, onClick = { begin() }) { Text(GeminiSignIn.START_AGAIN) }
+            }
+            TextButton(enabled = !busy, onClick = { authUrl?.let { openWithPicker(it) } ?: begin() }) {
+                Text("Reopen page")
+            }
+            TextButton(enabled = !busy, onClick = {
+                repo.cancelAntigravitySignIn()
+                awaiting = false
+                input = ""
+                error = null
+                message = null
+            }) { Text("Cancel") }
+        }
+        return
+    }
+
+    Spacer(Modifier.height(8.dp))
+    if (!hasToken) {
+        Text(
+            "Not signed in",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(12.dp))
+        Button(enabled = !busy, onClick = { begin() }) { Text(GeminiSignIn.NOT_SIGNED_IN_BUTTON) }
+        Spacer(Modifier.height(2.dp))
+        Text(
+            GeminiSignIn.NOT_SIGNED_IN_HELP,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        val now = System.currentTimeMillis()
+        val backoffUntil = remember(tick) { repo.cacheSettings().backoffUntil(profile) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                AccountStatusLine.chatGpt(snapshot.lastAttemptAt, busy, now),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            RefreshIconButton(
+                enabled = !busy,
+                onClick = {
+                    scope.launch {
+                        busy = true
+                        val result = repo.refreshNow(profile, manual = true)
+                        message = if (result.message == "OK") "Checked — working." else result.message
+                        busy = false
+                        bump()
+                    }
+                },
+            )
+        }
+        // G1: the shared re-auth state, in Gemini's words.
+        if (snapshot.authState == AuthState.REAUTH_NEEDED) {
+            Text(
+                "Sign-in stopped working — sign in with Google below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        if (backoffUntil > now) {
+            Text(
+                "Rate-limited — next try in ${Fmt.dhm(backoffUntil)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        RowDivider()
+        Row(Modifier.fillMaxWidth()) {
+            ActionCell(
+                icon = R.drawable.ic_action_key,
+                label = GeminiSignIn.NOT_SIGNED_IN_BUTTON,
+                tint = if (snapshot.authState == AuthState.REAUTH_NEEDED) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                enabled = !busy,
+                emphasized = snapshot.authState == AuthState.REAUTH_NEEDED,
+                onClick = { begin() },
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_sign_out,
+                label = "Clear",
+                tint = MaterialTheme.colorScheme.error,
+                enabled = !busy,
+                onClick = {
+                    repo.clearCredentials(profile)
+                    message = StoreCopy.clearedMessage(label, repo.storeDegraded())
+                    bump()
+                },
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_open_new,
+                label = "Dashboard",
+                tint = MaterialTheme.colorScheme.primary,
+                enabled = !busy,
+                onClick = { openWithPicker(QuickLinks.accountUrl(profile.provider)) },
+            )
+        }
+    }
+
+    message?.let {
+        Spacer(Modifier.height(6.dp))
+        Text(it, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+/**
  * The device-code sheet (CCRM-54 (ChatGPT Account) part 2), built to
  * `design/provider-identity-wireframe.html` section 5. One bottom sheet, five
  * states, all of them the same three parts: the sentence, the code (when there is
@@ -2711,10 +2932,9 @@ private fun providerOnlySwatch(dark: Boolean): Brush = Brush.sweepGradient(
 /**
  * CCRM-56 (Provider Identity), decision 5: "+ Add account" opens this sheet
  * instead of minting a Claude profile directly. Only Claude and ChatGPT are
- * listed — CCRM-55 (Antigravity Account) was dropped 2026-09-08 (Google never
- * exposes real usage outside a live Antigravity session, to anyone), so
- * Antigravity gets no row here, same as Cursor, Copilot or any other
- * out-of-scope provider.
+ * listed — CCRM-55 (Antigravity Account) was dropped 2026-09-08 and reopened
+ * 2026-11-02: Gemini's row is the third, shown only when [AntigravitySource.available].
+ * Cursor, Copilot and any other out-of-scope provider get no row.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2735,6 +2955,16 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
                     "device. ${DeviceCodeCopy.PREREQUISITE}",
                 onClick = { onPick(Provider.CHATGPT) },
             )
+            // CCRM-55 (Antigravity Account): the third row, only in a build that carries
+            // the client secret — without it today's two rows.
+            if (Provider.ANTIGRAVITY in GeminiSignIn.addRowProviders(AntigravitySource.available)) {
+                Spacer(Modifier.height(14.dp))
+                AddAccountRow(
+                    Provider.ANTIGRAVITY,
+                    GeminiSignIn.ROW_SUBTITLE,
+                    onClick = { onPick(Provider.ANTIGRAVITY) },
+                )
+            }
         }
     }
 }
@@ -3088,8 +3318,9 @@ private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI. " +
-                    "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI.",
+                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google. " +
+                    "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI. " +
+                    "“Gemini” and “Antigravity” are trademarks of Google LLC.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
