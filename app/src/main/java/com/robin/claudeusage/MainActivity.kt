@@ -1178,7 +1178,7 @@ private fun AppTitle(dark: Boolean) {
     val measurer = rememberTextMeasurer()
     BoxWithConstraints {
         val textDp = with(LocalDensity.current) { measurer.measure("Cooldown", style).size.width.toDp() }
-        val fitsThree = maxWidth >= AppTitleMarks.width(textDp)
+        val fitsThree = AppTitleMarks.fits(maxWidth, textDp)
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (fitsThree) {
                 AppTitleMarks.providers.forEachIndexed { i, p ->
@@ -1208,4 +1208,7 @@ internal object AppTitleMarks {
 
     fun width(textWidth: androidx.compose.ui.unit.Dp): androidx.compose.ui.unit.Dp =
         MARK * providers.size + GAP * (providers.size - 1) + TEXT_GAP + textWidth
+
+    /** The three marks show when the title slot holds them beside the text; else the tile. */
+    fun fits(slot: androidx.compose.ui.unit.Dp, textWidth: androidx.compose.ui.unit.Dp): Boolean = slot >= width(textWidth)
 }

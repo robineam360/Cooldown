@@ -288,5 +288,12 @@ class MainCardsTest {
     fun `the title's three marks and their fallback width`() {
         assertEquals(listOf(Provider.CLAUDE, Provider.CHATGPT, Provider.ANTIGRAVITY), AppTitleMarks.providers)
         assertEquals(176f, AppTitleMarks.width(100.dp).value, 0.01f)
+        // The top bar's title slot is the width less 16 dp of start inset and three 48 dp actions; "Cooldown" in
+        // titleLarge (22 sp) measures about 103 dp. A 320 dp phone (160 dp slot) takes the tile; 360 dp (200) and the
+        // Fold cover's 411 dp (251) show the three marks.
+        val text = 103.dp
+        assertFalse(AppTitleMarks.fits(160.dp, text))
+        assertTrue(AppTitleMarks.fits(200.dp, text))
+        assertTrue(AppTitleMarks.fits(251.dp, text))
     }
 }

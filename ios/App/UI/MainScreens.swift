@@ -156,7 +156,8 @@ struct AppTitle: View {
                 Text("Cooldown").font(.system(size: size, weight: .bold)).fixedSize()
             }
             HStack(spacing: 8) {
-                Image("AppMark").resizable().frame(width: size * 0.82, height: size * 0.82)
+                // 1.2 × the mark size, as Android's 24 dp tile beside 20 dp marks.
+                Image("AppMark").resizable().frame(width: size * 0.91, height: size * 0.91)
                 Text("Cooldown").font(.system(size: size, weight: .bold)).lineLimit(1).minimumScaleFactor(0.8)
             }
         }

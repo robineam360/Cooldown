@@ -352,4 +352,9 @@ weekly.
   transforms (Claude 0.82, ChatGPT re-centred ×1.35), so the tab icons match too. Simulator check: iPhone 17e and iPad
   Pro 13″ show the three at one size. The "Shared pace" mark was not in the iOS app before (the arc session's note
   said it was); the new `AppMark` asset adds it.
+  Fresh Opus judge on 7651b2f: **concerns**, four — adopted: the Android fit is a tested predicate (a 320 dp phone
+  takes the tile; 360 dp and the Fold cover show the three), the iOS tile is 1.2 × a mark as on Android. Kept on
+  Robin's own words: the fallback tile ("put the Cooldown app's own logo instead") and Gemini always in the title
+  ("always all three, as the app's identity"), even in a build without the Gemini secret. Fold and iPad recheck:
+  the title, and the tile at a narrow width (a 320 dp phone, an iPad Split View third).
 
