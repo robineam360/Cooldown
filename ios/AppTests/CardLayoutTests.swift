@@ -102,13 +102,24 @@ struct CardLayoutTests {
 
     /// CCBG-72 (Live Activity Stale Mode): a Usage display change makes a new content state, which iOS redraws.
     @Test func aDisplayChangeIsANewLiveActivityState() {
-        let before = Display.mode
-        defer { Display.setMode(before) }
-        Display.setMode(.vsPace)
-        let vs = CooldownActivityAttributes.ContentState(rows: [], ended: nil)
-        Display.setMode(.used)
-        let used = CooldownActivityAttributes.ContentState(rows: [], ended: nil)
+        // The display passed explicitly, so the test never touches the shared setting other suites change.
+        let vs = CooldownActivityAttributes.ContentState(rows: [], ended: nil, display: "vsPace·line")
+        let used = CooldownActivityAttributes.ContentState(rows: [], ended: nil, display: "used·line")
         #expect(vs != used)
-        #expect(used.display?.hasPrefix("used") == true)
+        // A state written before CCBG-72 (no "display" key) still decodes.
+        let old = try? JSONDecoder().decode(CooldownActivityAttributes.ContentState.self, from: Data(#"{"rows":[]}"#.utf8))
+        #expect(old != nil && old?.display == nil && old?.rows.isEmpty == true)
+    }
+
+    /// Robin's iPad layout: removing the account on screen, or an unknown selection, falls back to the All tab where it
+    /// shows (2+ accounts), else the first account.
+    @MainActor @Test func aLostSelectionFallsBackToTheSummary() {
+        let three = [Account(key: "a", label: "A", provider: .claude), Account(key: "b", label: "B", provider: .chatgpt),
+                     Account(key: "c", label: "C", provider: .claude)]
+        #expect(AppModel.validSelection("gone", accounts: three) == AppModel.summaryKey)
+        #expect(AppModel.validSelection(nil, accounts: three) == AppModel.summaryKey)
+        #expect(AppModel.validSelection("b", accounts: three) == "b")
+        #expect(AppModel.validSelection("gone", accounts: [three[0]]) == "a")
+        #expect(AppModel.validSelection(AppModel.summaryKey, accounts: [three[0]]) == "a")
     }
 }

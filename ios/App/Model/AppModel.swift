@@ -107,11 +107,13 @@ final class AppModel {
     }
 
     /// The selection, kept to something on screen: the All tab only while it shows (2+ accounts), an account only
-    /// while it exists; otherwise the first account.
+    /// while it exists; otherwise the All tab where it shows (the default since 2026-11-02, Robin: "make the
+    /// summary/all as the default one"), else the first account.
     static func validSelection(_ key: String?, accounts: [Account]) -> String? {
-        if key == summaryKey { return SummaryRank.tabShown(accountCount: accounts.count) ? key : accounts.first?.key }
+        let summary = SummaryRank.tabShown(accountCount: accounts.count)
+        if key == summaryKey { return summary ? key : accounts.first?.key }
         if let key, accounts.contains(where: { $0.key == key }) { return key }
-        return accounts.first?.key
+        return summary ? summaryKey : accounts.first?.key
     }
 
     /// Demo mode fills these directly.
@@ -197,7 +199,7 @@ final class AppModel {
     func remove(_ key: String) async {
         await repo?.forget(key)
         accounts.removeAll { $0.key == key }
-        if selectedKey == key { selectedKey = accounts.first?.key }
+        // The account on screen went: the All tab where it shows, else the first account (validSelection).
         selectedKey = Self.validSelection(selectedKey, accounts: accounts)
         save()
         reload()

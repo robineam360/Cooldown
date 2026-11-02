@@ -93,7 +93,7 @@ struct RootView: View {
                         if geo.size.width > geo.size.height && geo.size.width >= 1000 {
                             IPadLandscape(sheet: $sheet)
                         } else {
-                            PinnedAndTabs(width: geo.size.width, sheet: $sheet)
+                            IPadTabs(width: geo.size.width, sheet: $sheet)
                         }
                     }
                 } else {
@@ -429,7 +429,7 @@ struct IPadLandscape: View {
 
 /// iPad portrait and Split View wider than ~700 pt: the phone's model (Robin, 2026-11-02) — tabs for All and every
 /// account, one page at a time, the Summary by default; no pinned section.
-struct PinnedAndTabs: View {
+struct IPadTabs: View {
     @Environment(AppModel.self) private var model
     let width: CGFloat
     @Binding var sheet: Sheet?

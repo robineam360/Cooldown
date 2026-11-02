@@ -321,4 +321,8 @@ weekly.
   Summary by default and only the tapped account full width; portrait is the phone's tabs; the pin glyph, hint and
   menus are gone (Settings › Accounts included), the stored flag unread; phones unchanged. Supersedes CCBG-67's
   highlight-and-scroll.
+  Fresh Opus judge on 1bc093f: **concerns**, four, all adopted — the Settings menu row in app.md; a lost selection
+  (the account on screen removed, or unknown) falls back to the All tab where it shows (tested); the CCBG-72 test
+  passes its display explicitly and decodes a pre-CCBG-72 state. For Robin to confirm: with "Open on the summary" off,
+  launch still opens the last account viewed (as Settings says).
 
