@@ -338,4 +338,11 @@ weekly.
   bottom on iPhone 17 Pro, floating at the top with the sidebar toggle on iPad Pro 13″ portrait). Consequences listed
   for Robin in app.md: no swipe between accounts on iPhone, system-tinted tab icons, "All" not "All accounts", More
   past five tabs on iPhone, no title with the landscape sidebar collapsed.
+  Fresh Opus judge on 6cdd451 + 6dac5e9: **concerns**, five. F1 closed by a simulator check: a fresh install on the
+  iPad Pro 13″ in landscape opens on the native sidebar with the app title, the Summary headed "All accounts" and
+  "your order". F3 fixed: History is open per tab (opening it on one tab never pops or dismisses another's). F2 (an
+  account under iPhone's More, then History) needs 5+ accounts — the device recheck. **For Robin:** F4, the six
+  visible consequences of native tabs listed in app.md (no swipe on iPhone, system-tinted marks, "All" in the sidebar
+  and VoiceOver, More past five, no title with the landscape sidebar collapsed, the iPhone title scrolling with the
+  page); F5, the Pace map's numbered labels follow the chosen Summary order.
 

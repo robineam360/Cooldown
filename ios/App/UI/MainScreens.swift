@@ -243,7 +243,10 @@ struct MainTabs: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.palette) private var p
     @Binding var sheet: Sheet?
+    /// A History request from outside the tabs (the `-screen history` launch argument): taken into `historyOpen`.
     @Binding var historyKey: String?
+    /// The tabs whose own stack shows History. Per tab, so opening it on one tab never pops or dismisses another's.
+    @State private var historyOpen: Set<String> = []
     @State private var window: CGSize = .zero
 
     /// `historyKey` for "open History on whichever tab is selected" (the `-screen history` launch argument).
@@ -264,7 +267,7 @@ struct MainTabs: View {
         TabView(selection: selection) {
             if showsAll {
                 Tab("All", systemImage: "text.alignleft", value: AppModel.summaryKey) {
-                    stack(AppModel.summaryKey, selected: selection.wrappedValue) {
+                    stack(AppModel.summaryKey) {
                         TabPage(account: nil, showsTitle: !sidebarLayout, sheet: $sheet)
                     }
                 }
@@ -273,7 +276,7 @@ struct MainTabs: View {
                 // The provider mark is a 24 × 24 template SVG in the asset catalog, so the system tab bar and sidebar
                 // draw it like a symbol, in their own tint.
                 Tab(account.label, image: account.provider.markAsset, value: account.key) {
-                    stack(account.key, selected: selection.wrappedValue) {
+                    stack(account.key) {
                         TabPage(account: account, showsTitle: !sidebarLayout, sheet: $sheet)
                     }
                 }
@@ -282,6 +285,11 @@ struct MainTabs: View {
         .tabViewStyle(.sidebarAdaptable)
         .tabViewSidebarHeader { AppTitle(size: 30) }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { window = $0 }
+        .onChange(of: historyKey, initial: true) { _, request in
+            guard let request else { return }
+            historyOpen.insert(request == Self.currentTab ? selection.wrappedValue : request)
+            historyKey = nil
+        }
     }
 
     /// The tab's content: chosen, or by default (no account chosen yet) the Summary — nil — when it is shown at all;
@@ -292,8 +300,7 @@ struct MainTabs: View {
     }
 
     /// Each tab keeps its own navigation stack (Apple's tab pattern), with the toolbar RootView had and History.
-    private func stack<Content: View>(_ key: String, selected: String,
-                                      @ViewBuilder _ content: () -> Content) -> some View {
+    private func stack<Content: View>(_ key: String, @ViewBuilder _ content: () -> Content) -> some View {
         NavigationStack {
             content()
                 // A display choice changed in Settings: redraw with it.
@@ -302,15 +309,15 @@ struct MainTabs: View {
                 .toolbar { toolbar(key) }
                 .tint(p.ink)
                 .navigationDestination(isPresented: Binding(
-                    get: { historyKey == key || (historyKey == Self.currentTab && key == selected) },
-                    set: { if !$0 { historyKey = nil } })) { HistoryScreen() }
+                    get: { historyOpen.contains(key) },
+                    set: { if $0 { historyOpen.insert(key) } else { historyOpen.remove(key) } })) { HistoryScreen() }
         }
     }
 
     @ToolbarContentBuilder
     private func toolbar(_ key: String) -> some ToolbarContent {
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button { historyKey = key } label: { Image(systemName: "calendar") }
+            Button { historyOpen.insert(key) } label: { Image(systemName: "calendar") }
                 .accessibilityLabel("Usage history")
             Button { sheet = .settings } label: { Image(systemName: "gearshape") }
                 .accessibilityLabel("Settings")
