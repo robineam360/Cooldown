@@ -186,6 +186,12 @@ data class AccountInput(
     val weeklyRunsOutAtMs: Long? = null,
     /** R8: [data] is [com.robin.claudeusage.data.SyntheticSeries]' numbers (the snapshot's own flag). */
     val synthetic: Boolean = false,
+    /**
+     * The Strip's ring for this account: its Headline under the new-widget rule (Weekly; 5h
+     * when the Headline is 5-hour), followed live — the Strip has no window of its own
+     * (Robin, 2026-11-02). Before v2.0 every Strip ring drew the 5h.
+     */
+    val stripWindow: FaceWindow = FaceWindow.SESSION,
 )
 
 /** What one placed widget is asked to draw. */
@@ -336,7 +342,8 @@ object FaceStates {
         if (input.face == Face.STRIP) {
             val shown = input.accounts.take(STRIP_MAX)
             // Each ring on its own headline window (CCRM-82 (Accounts Strip)).
-            val cells = shown.map { cell(input, it, FaceWindow.SESSION, unassigned = false) }
+            // v2.0: each ring follows its own account's Headline (Robin, 2026-11-02, CCRM-96 (Weekly First)).
+            val cells = shown.map { cell(input, it, it.stripWindow, unassigned = false) }
             val newest = shown.maxOf { it.fetchedAt }
             return FaceState(
                 face = input.face, background = input.background, dark = input.dark,

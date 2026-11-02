@@ -1847,6 +1847,20 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   #10A37F/#19C39A, Gemini #4285F4/#8AB4F8); legible at 48 px, in Android's monochrome themed icon and under
   every mask; one art for Android and iOS. Rejected before: anything that reads as a flag, fun mascots.
 
+- **Round 2 (Robin, 2026-11-02):** neither column concept; he asked for **at least ten ring-based designs**,
+  the ring filled with all three colours somehow, echoing the notification's ring — named ideas: three
+  concentric rings against one common pace line (one over pace, one on it, one well under), and a three-way
+  split nodding to the providers' logos and usage. Formal and professional. Concepts from ChatGPT (Astra) and a
+  Fable expert, drawn in `design/2026-11-02-icon-v3.html` rev B. Logo echoes stay abstract (trademarks).
+
+### CCRM-103 · Hybrid Notification — Weekly as the bar, the 5h as a small ring
+- **Status:** Idea from Robin 2026-11-02 ("a bar for 7-day weekly usage and also a small ring for 5-hour usage,
+  just like how we show in the menu bar. That'll be cool to look at in the notification shade") · **wireframe
+  first** (`design/2026-11-02-hybrid-notification.html`) · not in v2.0 unless Robin says so after the wireframe.
+- **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
+  ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
+  take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.
+
 ### CCRM-102 · Spent Week Gate — a spent week greys the 5h on every account
 - **Status:** Decided and approved 2026-11-02 (Robin, CCRM-55 (Antigravity Account) rev B, §3b of
   `design/2026-11-02-antigravity-account.html`) · building in v2.0 (RUNBOOK-v2.0 Step 6a).

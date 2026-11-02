@@ -138,6 +138,7 @@ object WidgetHost {
                 sessionRunsOutAtMs = sessionOut,
                 weeklyRunsOutAtMs = weeklyOut,
                 synthetic = s.synthetic,
+                stripWindow = headlineWindow(cache, p.key),
             )
         }
     }
