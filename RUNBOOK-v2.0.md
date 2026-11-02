@@ -219,3 +219,8 @@ weekly.
 - **2026-11-02 · Amendment.** CCRM-55 (Antigravity Account) and CCRM-102 (Spent Week Gate) added as Steps
   6a–6c after Robin approved the CCRM-55 wireframe rev B; spec/core facts and fixtures for CCRM-55 written first.
   CCRM-101 (Icon v3): ChatGPT (Astra) proposed two concepts, drawn for Robin in `design/2026-11-02-icon-v3.html`.
+- **2026-11-02 · Step 5** (26c1075, Android app, built by a delegated Opus builder). Both flavors' tests and lint
+  pass. Robin approved the Headline settings' place: a sheet from the account card's ⋮ menu, "Headline…" (Android
+  has no per-account page). Robin also chose ChatGPT's "Shared pace" launcher icon (`design/icon-v3/`) for
+  CCRM-101 (Icon v3), asked that every "%" sign be drawn smaller than its number, and that Vs pace drop its sign
+  for green (under) / red (over) — both in the shape-grammar page for approval.
