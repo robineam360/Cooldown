@@ -4,6 +4,50 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
+## ▶ v2.0 arc — starts after v1.9 ships (written 2026-11-02)
+
+> Read CLAUDE.md, WORKTREE.md and RUNBOOK-v2.0.md, then do the first unticked step of RUNBOOK-v2.0.md, and stop
+> when its check passes. (Step 2, spec completion, may run now; its code steps reach `main` only after
+> RUNBOOK.md's v1.9 Step 8 is ticked — Gate G0.)
+
+## ▶ Desktop repo — paste into a session in `~/Projects/CooldownMac` (written 2026-11-02)
+
+> Read CLAUDE.md, WORKTREE.md, notes/README.md and HANDOVER.md; load the model-mesh skill; run the git gate and the
+> sweeper. Call Astra with `CODEX_BIN=/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex`.
+>
+> **Context.** The mobile repo (`~/Projects/Cooldown`) decided and approved a new arc on 2026-11-02 for Android
+> and iOS: CCRM-96 (Weekly First), CCRM-97 (Pace Number), CCRM-98 (Summary Tab), CCRM-99 (Model Limits Toggle),
+> CCRM-100 (Vs Pace Display). Why: the weekly window is the only limit every plan carries (Claude Ultra dropped the
+> 5-hour limit for verified accounts on 2026-10-30; ChatGPT Pro has had none since 2026-07-12). The shared maths is
+> in Cooldown's master spec: `spec/core/BEHAVIOR-SPEC.md` §6.1 (the Pace number: formula, bands, allowance) and
+> §6.2 (when the 5-hour session binds), cases in `spec/core/fixtures/pace/cases.json`. The mobile product choices
+> are in `spec/mobile/BEHAVIOR-MOBILE.md` §5, and the approved mobile wireframes are Cooldown's
+> `design/2026-11-02-*.html` (weekly-first-pace, pace-line-label, summary-tab, model-limits-toggle,
+> vs-pace-display, ios-weekly-first). Read them as the reference; the desktop's own layer decides its surfaces.
+>
+> **1. Bring in the shared spec** — Cooldown `docs/REPO-STRUCTURE.md` step 3 (Astra-reviewed 2026-10-23). Pin
+> Cooldown commit `27929a239692c772bb615cbc96c7ef614ef948e3` (on Cooldown `main`). `contract/` becomes `spec/`:
+> `spec/core/` = a verbatim copy of Cooldown's `spec/core/` at that commit (`git -C ~/Projects/Cooldown fetch`,
+> then `git -C ~/Projects/Cooldown archive <sha> spec/core | tar -x`), with a `spec/core/PIN` naming it; and
+> `spec/desktop/` = everything the core cut that is desktop's (alerts §8, polling cadence, gauge geometry, Mac
+> surfaces, §9.3–9.5, §11 Ledger, and the ledger/logins/pricing/alerts fixtures). Diff the Mac's current
+> `contract/` against the pinned core first: anything the Mac has that the core lacks is either desktop layer or a
+> core fix that goes to Cooldown first, through a worker rooted there. Move the tests' fixture paths, add the pull
+> script and the pin test the plan names; tests green before and after; gate it per model-mesh.
+>
+> **2. Decide the desktop version of the arc, one question at a time, wireframe first** (CLAUDE.md §1). Weekly
+> leads the menu-bar item and the popover, with 5h as the companion; a per-account Headline (Weekly · 5-hour ·
+> Auto), and the §6.2 takeover for the single-window menu-bar item; Pace words (band · allowance) on weekly-length
+> windows replacing the gap verdict, the signed Pace never printed; the pace-mark caption under bars; Vs pace as a
+> third Used/Left value; a Summary view of all accounts ranked by room to spare, with a Pace map; a per-account
+> "Show model limits" switch; and a 5h-first path for existing users. Map each onto the Mac's own surfaces
+> (menu-bar item, popover/panel, widget, Settings, Usage pane) and draw Mac wireframes with every state — layouts
+> may differ from mobile; the numbers may not.
+>
+> **3. Then** file the CCM items with [Epic] names, write the desktop rules into `spec/desktop/` (fixtures where a
+> desktop number exists), and write the desktop runbook for Astra review. Anything shared that looks wrong goes to
+> Cooldown's `spec/core/` first.
+
 ## ▶ iOS track — a separate session, runs beside v1.9 (written 2026-10-24, after the iPad device check)
 
 > CCRM-94 (iOS App) is built and on main (last 0a6b6fb): the app, widgets rev C (Bars small; the Overview as

@@ -1,5 +1,8 @@
 # Runbook — the v1.9 arc: Play-ready and steady
 
+> **Next arc:** [RUNBOOK-v2.0.md](RUNBOOK-v2.0.md) (Weekly First, Pace, Summary; FROZEN 2026-11-02). Its code reaches
+> `main` only after this file's Step 8 is ticked (its Gate G0).
+
 **Plan status: FROZEN 2026-09-27.** Cross-family review: Astra at xhigh. Rounds 1 and 2 were blocking, and round 3 returned **concerns**. All thirteen findings are adopted. Q4 (the Play account type) stays open by Robin's choice and gates only Step 9. See Step 1's Log.
 
 This runbook takes `main` as of 2026-09-27 (v1.8 shipped, versionCode 24) to a released v1.9, and
