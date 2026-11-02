@@ -491,10 +491,13 @@ Source: `ApiClient.kt:39-50`, `data/source/ClaudePlan.kt`, `UsageRepository.kt:4
 
 ## 10. Google Antigravity (Gemini) — CCRM-55 (Antigravity Account)
 
+**Status:** decided 2026-11-02; no client implements it yet — until one ships, the Gemini row stays
+greyed out ("coming") as it is today.
+
 **Posture — the highest of the three.** Cooldown presents as Google's Antigravity CLI: its public
 installed-app OAuth client and a versioned `antigravity/cli/<v>` token in the User-Agent. Neither is
-ours; Google can change or close either at any time. Robin accepted this on 2026-11-02. Disclosed as
-plainly as the Anthropic posture above (README, About). Every line below was tested end to end on
+ours; Google can change or close either at any time. Robin accepted this on 2026-11-02. To be disclosed
+as plainly as the Anthropic posture above (README, About) when a client ships it. Every line below was tested end to end on
 2026-11-02 (`design/research/2026-11-02-antigravity-respike.md`).
 
 ### 10.1 Sign-in — PKCE with a hosted code page (no localhost)
