@@ -62,7 +62,7 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☑ |
 | 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☑ |
 | 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
-| 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☐ |
+| 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☑ |
 | 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☐ |
 | 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☐ |
 | 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☐ |
