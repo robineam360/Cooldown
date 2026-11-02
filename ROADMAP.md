@@ -1754,7 +1754,7 @@ Logic lands in `spec/core/` first (formula, bands, the Auto rule, fixtures), the
 desktop repo picks it up with its pinned core. Every visible change waits for an approved wireframe (§2).
 
 ### CCRM-96 · Weekly First — the weekly window heads every surface, 5h is the companion
-- **Status:** **Building** (RUNBOOK-v2.0; Android logic and prefs in, Step 3; notification, status-bar gauge and widget defaults in, Step 4; iOS built, Step 6) · Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
+- **Status:** **Building** (RUNBOOK-v2.0; Android logic and prefs in, Step 3; notification, status-bar gauge and widget defaults in, Step 4; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
   (`design/2026-11-02-weekly-first-pace.html`; the 5h card's line is the §3 projection, "on track
   for ~69%") · iOS faces to be drawn as rev B before iOS is built (Robin).
 - **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
@@ -1774,7 +1774,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   above pace, narrow widths) are approved, both apps match them, and the Fold 7 and iPad passes are clean.
 
 ### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
-- **Status:** **Building** (RUNBOOK-v2.0; Android logic in, Step 3; notification pace words, Step 4; iOS built, Step 6) · Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
+- **Status:** **Building** (RUNBOOK-v2.0; Android logic in, Step 3; notification pace words, Step 4; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
   wireframe rev A approved 2026-11-02; **iOS rev B approved 2026-11-02**
   (`design/2026-11-02-ios-weekly-first.html`, with its listed interpretations) · **pace-mark caption V1
   chosen 2026-11-02** (`design/2026-11-02-pace-line-label.html`): under the app and Summary bars, mode-aware
@@ -1797,7 +1797,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   per the approved wireframes, and no surface still shows the gap verdict.
 
 ### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
-- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
+- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
   `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
   the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
   CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.
@@ -1816,7 +1816,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Done when:** the wireframe is approved, both apps match it, and the ranking fixtures pass.
 
 ### CCRM-99 · Model Limits Toggle — hide an account's per-model weekly limits
-- **Status:** **Building** (RUNBOOK-v2.0; Android pref in, Step 3; notification panel honours it, Step 4; iOS built, Step 6) · Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
+- **Status:** **Building** (RUNBOOK-v2.0; Android pref in, Step 3; notification panel honours it, Step 4; iOS built, Step 6; Android app built, Step 5) · Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
   **approved 2026-11-02**.
 - **What:** a per-account "Show model limits" switch (default on) on the account's page under
   Headline, listing what it hides ("Fable · 30% this week"). Off removes the model rows and the
@@ -1826,7 +1826,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Spec:** BEHAVIOR-MOBILE gains `showModelLimits` per account; nothing in the core.
 
 ### CCRM-100 · Vs Pace Display — the big figure shows the distance from the pace mark
-- **Status:** **Building** (RUNBOOK-v2.0; Android figure, caption and pref in, Step 3; notification and widget figures, Step 4; iOS built, Step 6) · Asked by Robin 2026-11-02 · option A chosen · wireframe
+- **Status:** **Building** (RUNBOOK-v2.0; Android figure, caption and pref in, Step 3; notification and widget figures, Step 4; iOS built, Step 6; Android app built, Step 5) · Asked by Robin 2026-11-02 · option A chosen · wireframe
   `design/2026-11-02-vs-pace-display.html` **approved 2026-11-02**.
 - **What:** a third value on CCRM-22 (Used or Left)'s global "Usage display": **Used · Left · Vs pace**.
   Vs pace shows `elapsed − used` in points, signed and floored so room is never overstated: "+10%" is

@@ -44,6 +44,9 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
+import com.robin.claudeusage.data.Headline
+import com.robin.claudeusage.data.SummaryRank
+import com.robin.claudeusage.ui.PaceText
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -189,9 +192,12 @@ fun SettingsScreen(
     /** CCRM-29 (Display Mode): "system" / "12" / "24", hoisted likewise. */
     timeFormat: String,
     onTimeFormat: (String) -> Unit,
-    /** CCRM-22 (Used or Left) — hoisted like use24h so the main screen recomposes. */
-    usageLeft: Boolean,
-    onUsageLeft: (Boolean) -> Unit,
+    /**
+     * CCRM-22 (Used or Left), grown by CCRM-100 (Vs Pace Display) to three values —
+     * hoisted like use24h so the main screen recomposes.
+     */
+    usageMode: PaceText.Mode,
+    onUsageMode: (PaceText.Mode) -> Unit,
     /** CCRM-23 (Reset Display) — same hoisting for which reset form leads. */
     resetClock: Boolean,
     onResetClock: (Boolean) -> Unit,
@@ -667,12 +673,14 @@ fun SettingsScreen(
         )
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for ((value, text) in listOf("used" to "Used", "left" to "Left")) {
+            for ((value, text) in listOf(
+                PaceText.Mode.USED to "Used", PaceText.Mode.LEFT to "Left", PaceText.Mode.VS_PACE to "Vs pace",
+            )) {
                 FilterChip(
-                    selected = if (value == "left") usageLeft else !usageLeft,
+                    selected = usageMode == value,
                     onClick = {
-                        onUsageLeft(value == "left")
-                        cacheSettings.setUsageDisplay(value)
+                        onUsageMode(value)
+                        cacheSettings.setUsageDisplay(value.key)
                         // Re-post so the change lands without waiting for a poll.
                         com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     },
@@ -682,12 +690,33 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            if (usageLeft) "Shows \"53% left\" — what remains of each window."
-            else "Shows \"47% used\" — what each window has consumed.",
+            when (usageMode) {
+                PaceText.Mode.LEFT -> "Shows \"53% left\" — what remains of each window."
+                // CCRM-100 (Vs Pace Display), wireframe §1 A1.
+                PaceText.Mode.VS_PACE ->
+                    "Shows \"+10%\" — how far under the pace mark you are (\"−20%\": over it)."
+                PaceText.Mode.USED -> "Shows \"47% used\" — what each window has consumed."
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         RowDivider()
+        // CCRM-98 (Summary Tab), wireframe P2: shown only with two or more accounts, on by
+        // default. The All tab is always there with 2+ accounts; this decides where the
+        // app opens.
+        if (SummaryRank.tabShown(repo.configuredProfiles().size)) {
+            var openOnSummary by remember { mutableStateOf(cacheSettings.openOnSummary()) }
+            ToggleRow(
+                title = "Open on the summary",
+                subtitle = "With two or more accounts, start on the All tab. Off: start on " +
+                    "the last account you looked at.",
+                checked = openOnSummary,
+            ) {
+                openOnSummary = it
+                cacheSettings.setOpenOnSummary(it)
+            }
+            RowDivider()
+        }
         // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
         // Comfortable stays the default — Compact is opt-in, so nobody's screen changes
         // under them. No Surfaces.refresh: these three are in-app only.
@@ -1661,6 +1690,15 @@ private fun TokenCard(
                 // history; Remove destroys it. Side by side, that is a fat-finger disaster.
                 var menuOpen by remember { mutableStateOf(false) }
                 var showAccentPicker by remember { mutableStateOf(false) }
+                var showHeadlineSheet by remember { mutableStateOf(false) }
+                if (showHeadlineSheet) {
+                    AccountHeadlineSheet(
+                        repo = repo,
+                        profile = profile,
+                        label = label,
+                        onDismiss = { showHeadlineSheet = false },
+                    )
+                }
                 Box {
                     IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(28.dp)) {
                         Icon(
@@ -1694,6 +1732,15 @@ private fun TokenCard(
                             text = { Text("Accent colour…") },
                             onClick = { menuOpen = false; showAccentPicker = true },
                         )
+                        // CCRM-96 (Weekly First) and CCRM-99 (Model Limits Toggle): the
+                        // account's Headline and model-limits groups. Android has no
+                        // per-account page, so they open as a sheet from here.
+                        if (hasToken) {
+                            DropdownMenuItem(
+                                text = { Text("Headline…") },
+                                onClick = { menuOpen = false; showHeadlineSheet = true },
+                            )
+                        }
                         // Hidden on the last remaining card: the registry always keeps one
                         // account, which is what makes the zero-configured fallback work.
                         if (canRemove) {
@@ -3531,6 +3578,112 @@ private fun AppLogCard(cache: UsageCache) {
                 refreshTick++
             }) { Text("Clear") }
         }
+    }
+}
+
+/**
+ * CCRM-96 (Weekly First), CCRM-99 (Model Limits Toggle): the account's Headline group
+ * (`design/2026-11-02-weekly-first-pace.html` §6 G1/G2, caption per `-vs-pace-display.html`
+ * F2) and its Model limits group (`-model-limits-toggle.html` G1–G3), in a sheet.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AccountHeadlineSheet(
+    repo: UsageRepository,
+    profile: Profile,
+    label: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val cache = repo.cacheSettings()
+    val data = remember(profile) { repo.snapshot(profile).data }
+    var headline by remember(profile) { mutableStateOf(cache.headline(profile)) }
+    var showLimits by remember(profile) { mutableStateOf(cache.showModelLimits(profile)) }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProviderMark(profile.provider, size = 20.dp, tint = Palette.color(Palette.accentName(cache, profile), appDark()))
+                Spacer(Modifier.width(8.dp))
+                Text(label, style = MaterialTheme.typography.titleMedium)
+            }
+            Spacer(Modifier.height(16.dp))
+            HeadlineGroup(
+                headline = headline,
+                hasSession = data?.session != null,
+                onChange = {
+                    headline = it
+                    cache.setHeadline(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                },
+            )
+            val caps = data?.modelCaps.orEmpty()
+            // G3: no Model limits group while the plan reports none.
+            if (caps.isNotEmpty()) {
+                Spacer(Modifier.height(18.dp))
+                SectionLabel("Model limits")
+                ToggleRow(
+                    title = "Show model limits",
+                    subtitle = modelLimitsSubtitle(caps.map { it.modelName to it.window.percent }, showLimits),
+                    checked = showLimits,
+                ) {
+                    showLimits = it
+                    cache.setShowModelLimits(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                }
+            }
+        }
+    }
+}
+
+/** The segmented Weekly · 5-hour · Auto row, greyed with its reason on an account with no 5h (G2). */
+@Composable
+internal fun HeadlineGroup(headline: Headline, hasSession: Boolean, onChange: (Headline) -> Unit) {
+    SectionLabel("Headline")
+    val dim = if (hasSession) 1f else 0.45f
+    Column(Modifier.alpha(dim)) {
+        Text(
+            "What the notification, status-bar gauge, new widgets and the card order lead with",
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Spacer(Modifier.height(8.dp))
+        val options = listOf(Headline.WEEKLY to "Weekly", Headline.FIVE_HOUR to "5-hour", Headline.AUTO to "Auto")
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            options.forEachIndexed { i, (value, text) ->
+                SegmentedButton(
+                    selected = headline == value,
+                    onClick = { onChange(value) },
+                    enabled = hasSession,
+                    shape = SegmentedButtonDefaults.itemShape(i, options.size),
+                    label = { Text(text) },
+                )
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+        Text(
+            headlineCaption(hasSession),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** G1's Auto explanation, or G2's reason the row is greyed. */
+internal fun headlineCaption(hasSession: Boolean): String =
+    if (hasSession) "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets."
+    else "This plan has no 5-hour window, so Weekly is always the headline."
+
+/**
+ * The switch's subtitle: shown, the limits with their reading ("Fable · 30% this week");
+ * hidden, what is hidden and that the limit still applies.
+ */
+internal fun modelLimitsSubtitle(caps: List<Pair<String, Double?>>, shown: Boolean): String {
+    val names = caps.joinToString(", ") { it.first }
+    return if (shown) {
+        caps.joinToString(", ") { (name, pct) -> "$name · ${(pct ?: 0.0).toInt()}% this week" }
+    } else if (caps.size == 1) {
+        "Hidden: $names. The limit still applies to that model; Cooldown just stops drawing it."
+    } else {
+        "Hidden: $names. The limits still apply to those models; Cooldown just stops drawing them."
     }
 }
 

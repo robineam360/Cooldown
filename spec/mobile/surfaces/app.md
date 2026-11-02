@@ -607,3 +607,106 @@ As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
   code is for a different sign-in — start again."; the left button becomes "Start again" (a fresh PKCE attempt).
 - **§2.2 iPad sidebar / §6.2 Accounts:** a Gemini account is an ordinary row (mark, name, plan pill Free · Pro · Ultra from
   `loadCodeAssist`'s `paidTier.id`); re-sign-in opens the Gemini sheet.
+## v2.0 on Android — CCRM-96…100, CCRM-102, RUNBOOK-v2.0 Step 5
+
+As built on the v2.0 branch; each entry names the section it amends, which still describes v1.9.
+
+#### §2.3 Account tabs — add
+Android: with two or more signed-in accounts an **"All"** tab comes first (a three-bar glyph, 20 dp, in ink, then
+"All"); it counts as one tab for the fixed/scrollable rule (fixed ≤ 3 tabs, so two accounts + All stay fixed).
+While All is showing the shell takes Settings' neutral scheme (global accent, no room tint) and the top bar's ⋮
+(layout, share) is hidden. Launch: a notification or shortcut naming an account opens that account; otherwise All
+when Open on the summary is on and 2+ accounts; otherwise the last account looked at (stored `lastAccount` in its
+own `main_ui` preferences file), else the first. `MainActivity.kt` (`ProfileTabs`, `LastAccount`).
+
+#### §2.4 Cards, in order — Android row
+Default order Weekly, then 5h (Headline 5-hour: 5h first). A layout whose stored order differs from the v1.9
+default counts as reordered and keeps its order. The layout sheet shows the drawn order; only a drag stores an
+order — show/hide/fold keep the stored one, and Reset layout stores the default (the Headline's order again).
+`cardOrderLayout` in `MainCards.kt`, `LayoutSheet.kt`.
+
+#### §2.4.2 Row style — figure
+The figure follows Usage display: Used "52%"; Left "48% left" (unchanged); **Vs pace** "−13%" bold + " vs pace"
+11 sp, regular, muted, sans — falling back to the Used figure with no word when spent, unclocked or unread.
+`FigureText`, `AppPace.figure`.
+
+#### §2.4.3 The usage bar — add
+Under pace (used < mark) the room from the fill to the tick is a dashed outline: 1.3 dp, onSurface 55%, dash
+3 dp / gap 2 dp, inset 1 dp top and bottom, open on the fill side. **V1 caption** under every in-app window bar
+(5h, 7-day All, each cap, Summary rows): 11.5 sp bodySmall in onSurfaceVariant, 5 dp above, 17 dp line (22 dp in
+all), starting 5 dp right of the tick or ending 5 dp left of it when it would not fit (`PaceText.captionRightOfMark`).
+Text `PaceText.caption`: "39% pace mark · 13 over" / "· 10 under" / "· on it"; Left "40% pace mark · 10 to spare";
+Vs pace "52% used · mark 39%". The leading value ("39%"; Vs pace "52% used") is onSurface SemiBold. No caption when
+spent, unclocked or unread. Credits bars unchanged. `PaceCaption`, `UsageBarLine(dashedRoom)`.
+
+#### §2.4.4 5-hour card — Android
+Remove the "N% below/above even pace" line. Under the bar: dashed room and the V1 caption. Open: chart, projection
+line ("At this pace: ~69% when the window resets"), reset row. Folded: "Resets in 2h 20m · on track for ~69%";
+when the projection hits 100% before the reset, "Resets in 2h 20m · on track for 100% at 3:25 PM" with that clause
+bold in the orange step; no projection yet, or at 100%: "Resets in 2h 20m".
+**Spent week gate** (CCRM-102 (Spent Week Gate)): while the account's Weekly is spent, the card's title row,
+figure, bar, chart, reset row (open) or reset line (folded) draw at 45% opacity, with no caption and no projection
+(no estimate line, no projected end on the chart); under them a divider and one full-opacity bodySmall SemiBold
+onSurface note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM" (the weekly reset, day and time).
+
+#### §2.4.5 7-day card — Android
+The first line under the chart (was "40% below even pace") is band · allowance until the reset day: "Slow down ·
+≈11%/day until Sun"; under a day "Use before reset · 40% left, 6h"; spent "Out until Sun 9:30 PM"; bold in the orange
+step when over pace (Slow down, Nearly out, spent), else regular onSurfaceVariant. It follows the charted series
+(All or the cap chip). The signed Pace is never printed. Projection line and reset row unchanged. Folded: "Slow down
+· ≈11%/day · resets Sun" with the band · allowance bold orange when over pace; spent "Out until Sun 9:30 PM"; no
+clock "Starts when a message is sent". Each bar (All, caps) carries the dashed room and V1 caption.
+**Show model limits off** on an account with caps: the plain one-window card — "7-day window" row style with the
+figure (and the Compact chevron) on one row, the bar, caption, chart of All, lines; no cap rows, no chips, no two
+columns. Accounts without caps keep the v1.9 title-plus-"All"-row card.
+
+#### §2.6 Notices above the cards — add
+"Weekly now leads" (CCRM-96 F1), in the crash-card slot above the tabs (in the page column at compact height),
+after the store and crash cards: card on surfaceContainer, 12 dp radius, outlineVariant border; title bodyMedium
+SemiBold "Weekly now leads"; body bodySmall muted "The weekly limit is the one every plan has, so it's now the big
+number everywhere, with 5h beside it. Prefer 5h on top?"; a filled "Keep Weekly" and an outlined "Keep 5h first".
+Shown while `weeklyFirstNotice` is pending, on every tab including All, until a button is tapped; either button
+marks it shown. "Keep 5h first" sets every account's Headline to 5-hour, re-posts the surfaces and re-reads the order.
+
+#### New §2.8 The Summary (All tab) — Android
+List card "Weekly" (titleSmall) · "most room first" (bodySmall muted), rows by `SummaryRank`, hairline dividers,
+each row tappable (opens that account's tab). Full row: mark 18 dp in the accent · name 15 sp (ellipsised) · plan
+pill 11 sp (outlineVariant border, 6 dp radius) · companion 12 sp muted ("5h 34%", Left bare "5h 66%", "no 5h";
+held "5h 93% · back 3:40 PM" bold in the 5h's severity colour; none when spent or unread) · figure 17 sp serif bold
+in the severity colour (Usage display; Left "48% left"; Vs pace without the word; "—" unread); bar 10 dp with neutral
+tick, red past it per the toggle, dashed room; V1 caption; line 3: pace pip (40 × 12 dp scale, centre mark, 4 dp dot
+at the Pace: green-grey #8FBF9A room, #BDB8B3 on pace, amber #F2B45A over, #FF6B5B nearly out; absent when spent,
+unread or unclocked) + 13 sp words ("Room to spare · ≈22%/day · resets Fri", "Out until Thu 8:00 AM", "Not started
+yet", "No reading yet"). Spent and unread rows: line 1, bar and words at 50%. From six accounts, one-line rows:
+17 dp rank disc in the accent (number 10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down",
+"5h · 3:40 PM" in the 5h colour, "Out · Thu", "No reading"), figure 15 sp serif 40 dp right-aligned.
+Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
+30/10/12/26 dp; over-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
+dashed even-pace diagonal in the 80% step, "even pace" along it; "over pace" / "room to spare" 10.5 sp ink 55%;
+axis "week start · each account's own week · reset". Per account with a reading: its real trail this week (history
+samples, accent 55%, 1.6 dp) to a 5.5 dp dot with a 2 dp card ring, named 11.5 sp SemiBold (left of the dot past 70%
+of the week, under it above 92% used); spent: × on the dot; 6+ accounts: 8 dp dots numbered by rank (a spent dot
+shows its × instead of the number); unread: off the map; an unclocked week sits at week gone 0. Inner screen
+(≥ 700 dp): two columns, list left, square map right. Footer: the status line with the stalest account's check;
+tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/SummaryRows.kt`.
+
+#### §4.1 Layout sheet — add
+Rows show the drawn order (Headline order for an untouched layout); see §2.4.
+
+#### §6.2 Accounts — Android
+The account card's ⋮ gains **"Headline…"** (signed-in accounts, after "Accent colour…"), opening a bottom sheet:
+mark 20 dp + the account name (titleMedium); **HEADLINE** label; "What the notification, status-bar gauge, new
+widgets and the card order lead with" (bodyLarge); segmented Weekly · 5-hour · Auto; caption "Auto shows Weekly,
+and switches to 5h while 5h is past 90% or on course to run out before it resets."; an account with no 5h: the group
+at 45%, segments disabled, caption "This plan has no 5-hour window, so Weekly is always the headline.". **MODEL
+LIMITS** (only while the reading has a cap): switch "Show model limits", subtitle "Fable · 30% this week" / "Hidden:
+Fable. The limit still applies to that model; Cooldown just stops drawing it." (two or more: "The limits still
+apply to those models; Cooldown just stops drawing them."). Each change re-posts the surfaces.
+
+#### §6.4 Appearance — Android
+Usage display chips "Used · Left · Vs pace"; Vs pace note "Shows "+10%" — how far under the pace mark you are
+("−20%": over it)." New switch row "Open on the summary" after Usage display (2+ signed-in accounts only, default on),
+subtitle "With two or more accounts, start on the All tab. Off: start on the last account you looked at."
+
+#### §8 Share card — Android
+Unchanged in this step (share/ not touched): Vs pace renders the share card as Used.

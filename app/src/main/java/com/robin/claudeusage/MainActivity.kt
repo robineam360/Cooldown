@@ -124,6 +124,10 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import com.robin.claudeusage.data.CardId
+import com.robin.claudeusage.data.Headline
+import com.robin.claudeusage.data.SummaryRank
+import com.robin.claudeusage.data.WeeklyFirstNotice
+import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
 import com.robin.claudeusage.ui.Density
@@ -138,7 +142,7 @@ class MainActivity : ComponentActivity() {
         // CCRM-24 (Share Card): the last share's snapshot never outlives the process.
         ShareCard.Files.clear(this)
         val startProfile =
-            ProfileRegistry(this).resolve(intent?.getStringExtra("profile"))
+            ProfileRegistry(this).resolve(intent?.getStringExtra("profile") ?: LastAccount.get(this))
         // CCRM-33 (App Shortcuts): the "Refresh now" shortcut opens the app with
         // this extra — a manual poll of every signed-in account, the same path
         // the pinned notification's Refresh action takes.
@@ -150,11 +154,29 @@ class MainActivity : ComponentActivity() {
         Shortcuts.publish(this)
         // Measured at the root so every screen sees the same window width, and so
         // it re-measures on a fold/unfold without the activity being torn down.
-        setContent { ProvideWidthClass { App(startProfile) } }
+        // CCRM-98 (Summary Tab): a launch that names an account (a notification or a
+        // shortcut) opens that account; only a plain launch may open on the All tab.
+        val explicitProfile = intent?.getStringExtra("profile") != null
+        setContent { ProvideWidthClass { App(startProfile, explicitProfile) } }
     }
 }
 
 private enum class Screen { MAIN, SETTINGS, HISTORY }
+
+/**
+ * CCRM-98 (Summary Tab): with Open on the summary off (or one account), launch opens the
+ * last account looked at (spec/mobile surfaces app.md, the iOS `lastAccount` call). Kept
+ * in its own small preferences file so a v1.9 downgrade never reads it.
+ */
+internal object LastAccount {
+    private const val FILE = "main_ui"
+    private const val KEY = "lastAccount"
+    fun get(context: android.content.Context): String? =
+        context.getSharedPreferences(FILE, android.content.Context.MODE_PRIVATE).getString(KEY, null)
+    fun set(context: android.content.Context, key: String) {
+        context.getSharedPreferences(FILE, android.content.Context.MODE_PRIVATE).edit().putString(KEY, key).apply()
+    }
+}
 
 /**
  * CCRM-6 (Multi-Account): profile tab strips stay a fixed [TabRow] up to this many accounts
@@ -166,7 +188,7 @@ internal const val FIXED_TAB_LIMIT = 3
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun App(startProfile: Profile) {
+private fun App(startProfile: Profile, explicitProfile: Boolean) {
     val context = LocalContext.current
     // CCBG-46 (Keystore Wedge): the one repository allowed to reset an unreadable
     // credential store — opening the app is the only path that may sign accounts out.
@@ -180,6 +202,12 @@ private fun App(startProfile: Profile) {
     // History — MaterialTheme.primary follows it there, so a ChatGPT tab tints
     // the whole shell green even when the global theme is "Per provider".
     var selectedProfile by remember { mutableStateOf(startProfile) }
+    // CCRM-98 (Summary Tab): the All tab is showing — no single account to theme from,
+    // share or lay out, so Main takes Settings' neutral shell while it is up.
+    var onSummary by remember { mutableStateOf(false) }
+    val startOnSummary = remember {
+        !explicitProfile && SummaryRank.opensOnSummary(repo.configuredProfiles().size, cache.openOnSummary())
+    }
     // CCRM-29 (Display Mode): the two three-way modes, hoisted so the Settings
     // chips recompose the whole app; the booleans every render site reads are
     // derived below.
@@ -188,7 +216,8 @@ private fun App(startProfile: Profile) {
     val use24h = resolve24h(timeFormat, DateFormat.is24HourFormat(context))
     // CCRM-22 (Used or Left): hoisted like use24h so flipping the chips in
     // Settings recomposes every readout behind them.
-    var usageLeft by remember { mutableStateOf(cache.usageLeft()) }
+    // CCRM-100 (Vs Pace Display): the token's third value, Vs pace.
+    var usageMode by remember { mutableStateOf(cache.usageMode()) }
     // CCRM-23 (Reset Display): same hoisting for which reset form leads.
     var resetClock by remember { mutableStateOf(cache.resetClock()) }
     // Hoisted like use24h so flipping the toggle in Settings recomposes the bars
@@ -264,7 +293,7 @@ private fun App(startProfile: Profile) {
 
     // CCRM-24 (Share Card): a card needs a reading to show. Every account with two cards
     // has one, so the ⋮ shows exactly when this is true and Share is never disabled.
-    val canShare = remember(selectedProfile, tick) { repo.snapshot(selectedProfile).data != null }
+    val canShare = remember(selectedProfile, tick) { repo.snapshot(selectedProfile).data != null } && !onSummary
 
     val dark = resolveDark(themeMode, isSystemInDarkTheme())
     // A forced theme diverges from the system theme that the manifest's
@@ -284,7 +313,9 @@ private fun App(startProfile: Profile) {
     // global choice, with "Per provider" resolving to the plain default there —
     // there is no single account to resolve it against on that screen.
     val effectiveAccent = when (screen) {
-        Screen.MAIN, Screen.HISTORY -> Palette.accentName(cache, selectedProfile)
+        Screen.MAIN, Screen.HISTORY ->
+            if (screen == Screen.MAIN && onSummary) themeName.takeIf { it != Palette.PER_PROVIDER } ?: Palette.DEFAULT
+            else Palette.accentName(cache, selectedProfile)
         else -> themeName.takeIf { it != Palette.PER_PROVIDER } ?: Palette.DEFAULT
     }
     val baseScheme = when {
@@ -307,7 +338,7 @@ private fun App(startProfile: Profile) {
     // — the DYNAMIC branch's own scheme is otherwise untouched — so every branch
     // gets the room's tokens the same way instead of threading them through three
     // different constructor calls.
-    val scheme = if (screen == Screen.MAIN || screen == Screen.HISTORY) {
+    val scheme = if ((screen == Screen.MAIN && !onSummary) || screen == Screen.HISTORY) {
         val room = Rooms.forProvider(selectedProfile.provider)
         val roomSurface = Color(if (dark) room.surfaceDark else room.surfaceLight)
         val roomCard = Color(if (dark) room.cardDark else room.cardLight)
@@ -436,7 +467,10 @@ private fun App(startProfile: Profile) {
                                                     val profile = selectedProfile
                                                     scope.launch {
                                                         shareCard = withContext(Dispatchers.Default) {
-                                                            renderShareCard(context, cache, profile, dark, usageLeft, showOverPace)
+                                                            renderShareCard(
+                                                                context, cache, profile, dark,
+                                                                usageMode == PaceText.Mode.LEFT, showOverPace,
+                                                            )
                                                         }
                                                     }
                                                 },
@@ -463,11 +497,17 @@ private fun App(startProfile: Profile) {
                 when (screen) {
                     Screen.MAIN ->
                         ProfileTabs(
-                            repo, use24h, usageLeft, resetClock, showOverPace,
+                            repo, use24h, usageMode, resetClock, showOverPace,
                             density, chartSize, chartOrientation, layoutTick, tick,
                             startProfile, { screen = Screen.SETTINGS },
                             Modifier.padding(innerPadding),
-                            onProfileChange = { selectedProfile = it },
+                            onProfileChange = {
+                                selectedProfile = it
+                                LastAccount.set(context, it.key)
+                            },
+                            startOnSummary = startOnSummary,
+                            onSummaryChange = { onSummary = it },
+                            onLayoutChanged = { layoutTick++ },
                         )
                     // CCRM-61 (Settings Diet): its own branch, not the shared
                     // ContentColumn below — a HorizontalPager needs a bounded height,
@@ -482,8 +522,8 @@ private fun App(startProfile: Profile) {
                             onThemeMode = { themeMode = it },
                             timeFormat = timeFormat,
                             onTimeFormat = { timeFormat = it },
-                            usageLeft = usageLeft,
-                            onUsageLeft = { usageLeft = it },
+                            usageMode = usageMode,
+                            onUsageMode = { usageMode = it },
                             resetClock = resetClock,
                             onResetClock = { resetClock = it },
                             showOverPace = showOverPace,
@@ -539,11 +579,14 @@ private fun App(startProfile: Profile) {
     }
 }
 
+/** CCRM-98 (Summary Tab): the All tab's key in the selection, never a profile key. */
+private const val ALL_KEY = "__all__"
+
 @Composable
 private fun ProfileTabs(
     repo: UsageRepository,
     use24h: Boolean,
-    usageLeft: Boolean,
+    mode: PaceText.Mode,
     resetClock: Boolean,
     showOverPace: Boolean,
     density: Density,
@@ -555,52 +598,61 @@ private fun ProfileTabs(
     onOpenSettings: () -> Unit,
     modifier: Modifier,
     onProfileChange: (Profile) -> Unit,
+    startOnSummary: Boolean = false,
+    onSummaryChange: (Boolean) -> Unit = {},
+    onLayoutChanged: () -> Unit = {},
 ) {
     // CCRM-6 (Multi-Account): only accounts with a token get a tab. Someone with one
     // account sees no strip at all and gains its ~48 dp; a new account appears the moment
     // its token lands. Signing in stays in Settings, so a tab is never the route to it.
     // At zero we fall back to the registry's first account, which shows its own empty state.
     val profiles = repo.configuredProfiles().ifEmpty { listOf(repo.registry().first()) }
+    // CCRM-98 (Summary Tab): with two or more accounts an "All" tab comes first. A null
+    // page is the All tab; every other page is its account.
+    val summary = SummaryRank.tabShown(repo.configuredProfiles().size)
+    val pages: List<Profile?> = (if (summary) listOf<Profile?>(null) else emptyList()) + profiles
     // CCRM-71 (Account Order): the selected tab is keyed on the account's stable
     // `profile.key`, never on its position — a HorizontalPager only understands page
     // *indices*, so the index the key currently resolves to is recomputed on every
     // render and the pager is nudged onto it, rather than trusting whatever index it
     // was last sitting on. Without this, reordering accounts in the sheet would leave
     // the pager on the same raw index and silently swap which account is on screen.
-    var selectedKey by rememberSaveable { mutableStateOf(startProfile.key) }
-    // Falls back to the first configured profile — the same fallback `profiles` itself
-    // already falls back to (`registry().first()`) when nothing else resolves — when the
-    // selected key has been removed or hasn't been assigned yet.
-    val selectedIndex = profiles.indexOfFirst { it.key == selectedKey }.let { if (it >= 0) it else 0 }
+    var selectedKey by rememberSaveable { mutableStateOf(if (startOnSummary) ALL_KEY else startProfile.key) }
+    // Falls back to the first page when the selected key has been removed (or the All tab
+    // went away with the second account) or hasn't been assigned yet.
+    val selectedIndex = pages.indexOfFirst { (it?.key ?: ALL_KEY) == selectedKey }.let { if (it >= 0) it else 0 }
     // One profile at a time at every width, tabs and swipe included. A wide window used
     // to split into two side-by-side profile panes, on the theory that both accounts at
     // once was the point — but each pane then drew a chart no wider than the one on the
     // cover screen, so unfolding cost a gesture and bought nothing. The question you
     // open this app with is how much is left on the account you're about to spend, and
     // both-at-once already has a better home in the always-on notification, CCRM-62
-    // (Duet Notification).
+    // (Duet Notification) — and, since v2.0, the All tab.
     val pagerState = rememberPagerState(
         initialPage = selectedIndex,
-        pageCount = { profiles.size },
+        pageCount = { pages.size },
     )
     // Keeps the pager's raw page index honest whenever the *key's* resolved index moves
     // out from under it — a reorder, an account signing out, or the list shrinking —
-    // without waiting for a swipe. A no-op whenever the pager is already there, which is
-    // the case for every tap/swipe-driven change (those update selectedKey below, which
-    // recomputes selectedIndex right back to pagerState.currentPage).
+    // without waiting for a swipe.
     LaunchedEffect(selectedIndex) {
         if (pagerState.currentPage != selectedIndex) {
             pagerState.scrollToPage(selectedIndex)
         }
     }
     // CCRM-56 (Provider Identity): reports the visible tab's account up so the app
-    // shell can theme from it — a swipe counts the same as a tab tap. Also the other
-    // direction of the key/index sync above: this is what turns a user-driven page
-    // change into the new selectedKey.
-    LaunchedEffect(pagerState.currentPage, profiles) {
-        profiles.getOrNull(pagerState.currentPage.coerceIn(0, profiles.lastIndex))?.let {
-            selectedKey = it.key
-            onProfileChange(it)
+    // shell can theme from it — a swipe counts the same as a tab tap. The All tab
+    // reports itself instead (CCRM-98 (Summary Tab)).
+    LaunchedEffect(pagerState.currentPage, pages) {
+        val page = pagerState.currentPage.coerceIn(0, pages.lastIndex)
+        val profile = pages.getOrNull(page)
+        if (profile == null && pages.isNotEmpty()) {
+            selectedKey = ALL_KEY
+            onSummaryChange(true)
+        } else if (profile != null) {
+            selectedKey = profile.key
+            onSummaryChange(false)
+            onProfileChange(profile)
         }
     }
     val scope = rememberCoroutineScope()
@@ -608,6 +660,17 @@ private fun ProfileTabs(
     // system animation setting while the app is open, and the very next tab press
     // must honour the new answer.
     val motionContext = LocalContext.current
+    fun goTo(index: Int) {
+        scope.launch {
+            // The zero-duration limit of the same page turn — identical
+            // landing, no travel — per CCRM-32 (Reduce Motion).
+            if (Motion.reduced(Motion.scale(motionContext))) {
+                pagerState.scrollToPage(index)
+            } else {
+                pagerState.animateScrollToPage(index)
+            }
+        }
+    }
 
     // CCRM-85 (Crash Capture), wireframe rev B §1: one app-wide card above the tabs and
     // outside the pager, so it never repeats per page. At compact height (a phone in
@@ -617,6 +680,29 @@ private fun ProfileTabs(
     // CCBG-50 (Degraded Store Notice): read here so the account list above re-reads the
     // store when it degrades, recovers or takes a write.
     val store by CredentialStoreOpener.state.collectAsState()
+
+    // CCRM-96 (Weekly First): the one-time "Weekly now leads" notice, in the same slot.
+    val context = LocalContext.current
+    val cache = remember { repo.cacheSettings() }
+    var noticePending by remember { mutableStateOf(cache.weeklyFirstNotice() == WeeklyFirstNotice.PENDING) }
+    val notice: @Composable (Modifier) -> Unit = { slot ->
+        if (noticePending) {
+            WeeklyFirstNoticeCard(
+                onKeepWeekly = {
+                    cache.markWeeklyFirstNoticeShown()
+                    noticePending = false
+                },
+                onKeep5hFirst = {
+                    for (p in repo.profiles()) cache.setHeadline(p, Headline.FIVE_HOUR)
+                    cache.markWeeklyFirstNoticeShown()
+                    noticePending = false
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                    onLayoutChanged()
+                },
+                modifier = slot,
+            )
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         if (!compactHeight) {
@@ -630,53 +716,36 @@ private fun ProfileTabs(
                 DegradedStoreNotice(use24h, slot)
                 StoreChangeCard(repo, use24h, onOpenSettings, slot)
                 CrashCard(use24h, slot)
+                notice(slot)
             }
         }
         // One tab is no choice, so the strip disappears entirely rather than showing a lone
         // tab with nothing to switch to.
-        if (profiles.size > 1) {
+        if (pages.size > 1) {
             // Clamped at the call site as well as in the effect above: the effect runs
             // after this composition, so for one frame after an account disappears the
             // pager's page can still be past the end — and TabRow's indicator indexes
             // straight into its tab positions with whatever it is handed.
-            val selected = pagerState.currentPage.coerceIn(0, profiles.lastIndex)
+            val selected = pagerState.currentPage.coerceIn(0, pages.lastIndex)
             // The strip's own text/indicator colour stays neutral, never the swiped-to
-            // profile's accent — MaterialTheme.colorScheme.primary is that accent, and
-            // it flips mid-drag (CCRM-56 (Provider Identity)'s onProfileChange effect
-            // above tracks pagerState.currentPage), so leaving Tab/TabRow at their
-            // defaults meant every label's hue crossfaded during a swipe, not just the
-            // selected one. Only the mark icon keeps its own per-profile tint.
+            // profile's accent — see CCRM-56 (Provider Identity) above.
             val tabContentColor = MaterialTheme.colorScheme.onSurface
             val tabs: @Composable () -> Unit = {
-                profiles.forEachIndexed { index, profile ->
+                pages.forEachIndexed { index, profile ->
                     Tab(
                         selected = selected == index,
-                        onClick = {
-                            scope.launch {
-                                // The zero-duration limit of the same page turn — identical
-                                // landing, no travel — per CCRM-32 (Reduce Motion).
-                                if (Motion.reduced(Motion.scale(motionContext))) {
-                                    pagerState.scrollToPage(index)
-                                } else {
-                                    pagerState.animateScrollToPage(index)
-                                }
-                            }
+                        onClick = { goTo(index) },
+                        text = {
+                            if (profile == null) AllTabLabel() else ProviderTabLabel(repo.cacheSettings(), profile)
                         },
-                        text = { ProviderTabLabel(repo.cacheSettings(), profile) },
                         selectedContentColor = tabContentColor,
                         unselectedContentColor = tabContentColor.copy(alpha = 0.6f),
                     )
                 }
             }
             // CCRM-6 (Multi-Account): fixed up to three, scrollable at four or more, at
-            // every width. Three tabs get ~133 dp on a 400 dp screen and a 16-character
-            // label needs ~110, so it fits; four would get 82 dp on the cover screen and
-            // every label — including the selected one — would truncate. One rule at both
-            // widths deliberately, so the strip doesn't change shape when the phone unfolds.
-            // The labels stay neutral to avoid the mid-swipe crossfade (see
-            // tabContentColor above); the indicator now follows the accent by
-            // decision, CCRM-60 (Dual Identity) — one of the two rooms' tells,
-            // alongside the surface tint and the serif headline.
+            // every width; "All" counts as one (CCRM-98 (Summary Tab), rev B §2). The
+            // indicator follows the accent by decision, CCRM-60 (Dual Identity).
             val tabIndicator: @Composable (List<TabPosition>) -> Unit = { tabPositions ->
                 TabRowDefaults.run {
                     SecondaryIndicator(
@@ -685,7 +754,7 @@ private fun ProfileTabs(
                     )
                 }
             }
-            if (profiles.size <= FIXED_TAB_LIMIT) {
+            if (pages.size <= FIXED_TAB_LIMIT) {
                 TabRow(
                     selectedTabIndex = selected,
                     contentColor = tabContentColor,
@@ -712,17 +781,47 @@ private fun ProfileTabs(
                     DegradedStoreNotice(use24h, slot)
                     StoreChangeCard(repo, use24h, onOpenSettings, slot)
                     CrashCard(use24h, slot)
+                    notice(slot)
                 }
-                // A new store state is a new answer to "has this account a token".
-                key(store.version) {
-                    ProfileScreen(
-                        repo, profiles[page], use24h, usageLeft, resetClock, showOverPace,
-                        density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
+                val profile = pages.getOrNull(page)
+                if (profile == null) {
+                    SummaryScreen(
+                        repo, profiles, mode, use24h, showOverPace, tick,
+                        onOpen = { p -> pages.indexOf(p).takeIf { it >= 0 }?.let { goTo(it) } },
                     )
+                } else {
+                    // A new store state is a new answer to "has this account a token".
+                    key(store.version) {
+                        ProfileScreen(
+                            repo, profile, use24h, mode, resetClock, showOverPace,
+                            density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
+                        )
+                    }
                 }
                 Spacer(Modifier.height(24.dp))
             }
         }
+    }
+}
+
+/** The All tab's label: three bars of different lengths, then "All" (rev B's mark). */
+@Composable
+private fun AllTabLabel() {
+    val ink = MaterialTheme.colorScheme.onSurface
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.foundation.Canvas(Modifier.size(20.dp)) {
+            val u = size.width / 24f
+            for ((y, w) in listOf(5f to 18f, 10.5f to 12f, 16f to 15f)) {
+                drawRoundRect(
+                    ink,
+                    topLeft = androidx.compose.ui.geometry.Offset(3 * u, y * u),
+                    size = androidx.compose.ui.geometry.Size(w * u, 3 * u),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.5f * u),
+                )
+            }
+        }
+        Spacer(Modifier.width(6.dp))
+        Text("All")
     }
 }
 
@@ -731,10 +830,11 @@ private fun ProfileScreen(
     repo: UsageRepository,
     profile: Profile,
     use24h: Boolean,
-    usageLeft: Boolean,
+    /** CCRM-22 (Used or Left) and CCRM-100 (Vs Pace Display): the Usage display token. */
+    mode: PaceText.Mode,
     resetClock: Boolean,
     showOverPace: Boolean,
-    /** CCRM-72 (Main Screen Redesign): Comfortable / Compact, hoisted like [usageLeft]. */
+    /** CCRM-72 (Main Screen Redesign): Comfortable / Compact, hoisted like [mode]. */
     density: Density,
     /** CCRM-75 (Chart Height) and CCRM-77 (Transposed Chart), hoisted the same way. */
     chartSize: ChartSize,
@@ -813,7 +913,10 @@ private fun ProfileScreen(
         // CCRM-25 (Card Layout): order, visibility and the fold, per account. Cards with
         // no data drop out here exactly as they always did — the layout only ever
         // arranges what the account actually reports.
-        val layout = remember(profile, layoutTick) { cache.layout(profile) }
+        // CCRM-96 (Weekly First): an untouched layout takes the Headline's order.
+        val layout = remember(profile, layoutTick) { cardOrderLayout(cache.layout(profile), cache.headline(profile)) }
+        // CCRM-99 (Model Limits Toggle): per account, read with the layout.
+        val showModelLimits = remember(profile, layoutTick) { cache.showModelLimits(profile) }
         val shown = layout.order.filter { it in present && it !in layout.hidden }
         val mainCards = shown.filter { it !in layout.more }
         val foldedCards = shown.filter { it in layout.more }
@@ -864,12 +967,13 @@ private fun ProfileScreen(
                         expanded = isOpen(id, folded),
                         onToggle = { toggle(id, folded) },
                         use24h = use24h,
-                        usageLeft = usageLeft,
+                        mode = mode,
                         resetClock = resetClock,
                         showOverPace = showOverPace,
                         serifHeadline = serifHeadline,
                         chartSize = chartSize,
                         chartOrientation = chartOrientation,
+                        spentWeekly = data.weekly,
                     )
                 }
                 CardId.WEEKLY -> WeeklyCard(
@@ -884,14 +988,15 @@ private fun ProfileScreen(
                         cache.setWeeklyChart(profile, name)
                     },
                     use24h = use24h,
-                    usageLeft = usageLeft,
+                    mode = mode,
                     resetClock = resetClock,
                     showOverPace = showOverPace,
                     serifHeadline = serifHeadline,
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
+                    showModelLimits = showModelLimits,
                 )
-                CardId.CREDITS -> credits?.let { CreditsCard(it, usageLeft, serifHeadline) }
+                CardId.CREDITS -> credits?.let { CreditsCard(it, mode == PaceText.Mode.LEFT, serifHeadline) }
             }
         }
 

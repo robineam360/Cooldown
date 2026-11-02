@@ -52,6 +52,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.robin.claudeusage.data.CardId
+import com.robin.claudeusage.data.CardLayout
+import com.robin.claudeusage.data.Pace
+import androidx.compose.ui.draw.alpha
+import com.robin.claudeusage.data.Headline
+import com.robin.claudeusage.data.HeadlineRule
+import com.robin.claudeusage.data.HeadlineSurface
+import com.robin.claudeusage.data.WindowKind
+import com.robin.claudeusage.ui.AppPace
+import com.robin.claudeusage.ui.PaceText
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.offset
 import com.robin.claudeusage.data.HistoryPoint
 import com.robin.claudeusage.data.ModelCap
 import com.robin.claudeusage.data.Projection
@@ -61,20 +77,16 @@ import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.ui.BarGeometry
 import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
-import com.robin.claudeusage.ui.CompactLine
 import com.robin.claudeusage.ui.EstimateLine
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.LocalWindowHeight
-import com.robin.claudeusage.ui.PACE_DEAD_ZONE
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProvenanceNote
 import com.robin.claudeusage.ui.UsageSparkline
 import com.robin.claudeusage.ui.appDark
 import com.robin.claudeusage.ui.chartHeight
-import com.robin.claudeusage.ui.compactLine
 import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.hasTwoColumns
-import com.robin.claudeusage.ui.pacePhrase
 import com.robin.claudeusage.ui.statusLine
 import java.time.Instant
 import java.util.Locale
@@ -128,6 +140,21 @@ fun dataCards(data: UsageData?, creditsVisible: Boolean): Set<CardId> {
     return ids
 }
 
+/**
+ * CCRM-96 (Weekly First): the layout as drawn. A layout reordered in the sheet keeps its
+ * order; an untouched one (the stored order is still [CardLayout.DEFAULT]'s) takes the
+ * Headline's default — 5h first under Headline 5-hour, Weekly first otherwise
+ * (spec/mobile BEHAVIOR-MOBILE §5). Credits keep their place.
+ */
+fun cardOrderLayout(layout: CardLayout, headline: Headline): CardLayout {
+    if (layout.order != CardLayout.DEFAULT.order) return layout
+    val lead = HeadlineRule.lead(headline, HeadlineSurface.CARD_ORDER, hasSession = true, sessionBinding = false)
+    if (lead == WindowKind.SESSION) return layout
+    val windows = listOf(CardId.WEEKLY, CardId.SESSION)
+    var i = 0
+    return layout.copy(order = layout.order.map { if (it in windows) windows[i++] else it })
+}
+
 // --- shared pieces ---
 
 @Composable
@@ -155,6 +182,11 @@ internal fun UsageBarLine(
     height: Dp = 12.dp,
     elapsedPercent: Double? = null,
     showOverPace: Boolean = true,
+    /**
+     * CCRM-97 (Pace Number), V1 (`design/2026-11-02-pace-line-label.html`): under pace, the
+     * room from the fill to the mark drawn as a dashed outline. In-app bars only.
+     */
+    dashedRoom: Boolean = false,
 ) {
     val fraction = ((percent ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
     val overhang = height * 0.3f
@@ -204,7 +236,28 @@ internal fun UsageBarLine(
         // `tick` already means elapsedPercent is non-null; saying so again here is what
         // lets the Canvas read it without a `!!`.
         if (tick && elapsedPercent != null) {
+            val roomColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+            val room = dashedRoom && percent != null && percent < elapsedPercent
             Canvas(modifier = Modifier.fillMaxSize()) {
+                if (room) {
+                    val stroke = 1.3.dp.toPx()
+                    val x0 = size.width * fraction
+                    val x1 = size.width * BarGeometry.tickFraction(elapsedPercent)
+                    val top = overhang.toPx() + 1.dp.toPx() + stroke / 2f
+                    val bottom = overhang.toPx() + height.toPx() - 1.dp.toPx() - stroke / 2f
+                    if (x1 - x0 > stroke) {
+                        drawPath(
+                            Path().apply {
+                                moveTo(x0, top); lineTo(x1, top); lineTo(x1, bottom); lineTo(x0, bottom)
+                            },
+                            color = roomColor,
+                            style = Stroke(
+                                width = stroke,
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(3.dp.toPx(), 2.dp.toPx())),
+                            ),
+                        )
+                    }
+                }
                 val w = BarGeometry.tickWidth(height.toPx())
                 val cx = size.width * BarGeometry.tickFraction(elapsedPercent)
                 drawRoundRect(
@@ -260,7 +313,8 @@ internal fun ResetRow(window: UsageWindow?, use24h: Boolean, resetClock: Boolean
 private fun SubRow(
     label: String,
     percent: Double?,
-    usageLeft: Boolean,
+    elapsed: Double?,
+    mode: PaceText.Mode,
     serifHeadline: Boolean,
     trailing: (@Composable () -> Unit)? = null,
 ) {
@@ -271,19 +325,98 @@ private fun SubRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.weight(1f))
-        Text(
-            // CCRM-74 (Chart Polish) item 2: "14%", not "14% used" — the word survives
-            // only under the Left setting, where it carries the flipped meaning.
-            Fmt.usageShort(percent, usageLeft),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
-        )
+        FigureText(percent, elapsed, mode, serifHeadline)
         trailing?.let {
             Spacer(Modifier.width(6.dp))
             it()
         }
+    }
+}
+
+/**
+ * A card figure in the Usage display mode. CCRM-74 (Chart Polish) item 2: "14%", not
+ * "14% used"; Left keeps today's "53% left"; CCRM-100 (Vs Pace Display) puts a small
+ * "vs pace" in the slot where Left puts "left" (`design/2026-11-02-vs-pace-display.html` §3).
+ */
+@Composable
+internal fun FigureText(
+    percent: Double?,
+    elapsed: Double?,
+    mode: PaceText.Mode,
+    serifHeadline: Boolean,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    // A row with no reading reads "0%" in Used and Left, as v1.9 did.
+    val (figure, word) = AppPace.figure(percent ?: 0.0, elapsed, mode)
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        buildAnnotatedString {
+            append(figure)
+            when (word) {
+                null -> {}
+                "left" -> append(" left")
+                else -> withStyle(
+                    SpanStyle(
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = muted,
+                        fontFamily = FontFamily.Default,
+                    ),
+                ) { append(" $word") }
+            }
+        },
+        style = style,
+        fontWeight = FontWeight.Bold,
+        color = color,
+        fontFamily = if (serifHeadline) FontFamily.Serif else FontFamily.Default,
+        maxLines = 1,
+    )
+}
+
+/**
+ * CCRM-97 (Pace Number), V1 (`design/2026-11-02-pace-line-label.html`): one 11.5 sp line
+ * under an in-app bar, starting 5 dp right of the pace mark, or ending 5 dp left of it
+ * when there is no room ([PaceText.captionRightOfMark]). Its leading value is drawn in
+ * the strong ink: the mark ("60% pace mark · 10 under") or, in Vs pace, the usage ("52%
+ * used · mark 39%"). Nothing when [PaceText.caption] has nothing to say (spent, unclocked,
+ * unread). Costs 22 dp.
+ */
+@Composable
+internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?) {
+    val text = PaceText.caption(mode, percent, elapsed) ?: return
+    if (elapsed == null) return
+    val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
+    val annotated = buildAnnotatedString {
+        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
+            append(strongPart)
+        }
+        append(text.removePrefix(strongPart))
+    }
+    val style = MaterialTheme.typography.bodySmall.copy(
+        fontSize = 11.5.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    val measurer = rememberTextMeasurer()
+    val gap = with(LocalDensity.current) { 5.dp.toPx() }
+    BoxWithConstraints(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 5.dp)
+            .height(17.dp),
+    ) {
+        val width = constraints.maxWidth.toFloat()
+        val textWidth = measurer.measure(annotated, style).size.width.toFloat()
+        val mark = width * BarGeometry.tickFraction(elapsed)
+        val right = PaceText.captionRightOfMark(width, elapsed, textWidth, gap)
+        val x = (if (right) mark + gap else mark - gap - textWidth).coerceAtLeast(0f)
+        Text(
+            annotated,
+            style = style,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.offset { androidx.compose.ui.unit.IntOffset(x.toInt(), 0) },
+        )
     }
 }
 
@@ -296,21 +429,24 @@ private fun SubRow(
 internal fun SubBar(
     label: String,
     window: UsageWindow?,
-    usageLeft: Boolean,
+    mode: PaceText.Mode,
     showOverPace: Boolean = true,
     // CCRM-60 (Dual Identity), decision 4: the Claude room's serif headline,
     // threaded down from ProfileScreen — every "· 7-day" row shares the style.
     serifHeadline: Boolean = false,
 ) {
     val percent = window?.percent
-    SubRow(label, percent, usageLeft, serifHeadline)
+    val elapsed = elapsedPercent(window, WEEKLY_MS)
+    SubRow(label, percent, elapsed, mode, serifHeadline)
     Spacer(Modifier.height(4.dp))
     UsageBarLine(
         percent = percent,
         fillColor = barFill(percent),
-        elapsedPercent = elapsedPercent(window, WEEKLY_MS),
+        elapsedPercent = elapsed,
         showOverPace = showOverPace,
+        dashedRoom = true,
     )
+    PaceCaption(mode, percent, elapsed)
     Spacer(Modifier.height(10.dp))
 }
 
@@ -326,28 +462,30 @@ private fun CardChevron(expanded: Boolean) {
 }
 
 /**
- * The folded card's one line — "Resets in 2h 41m · 32% below pace" (wireframe §3/§4).
- * Above pace, the pace clause alone goes bold in the warning colour; the reset clause
- * stays muted, so the emphasis lands on the fact that changed.
+ * The folded card's one line — "Slow down · ≈11%/day · resets Sun" (Weekly), "Resets in
+ * 2h 20m · on track for ~69%" (5h). The emphasised clause goes bold in the warning colour
+ * (today's over-pace emphasis); the rest stays muted.
  */
 @Composable
-private fun CompactStatusLine(line: CompactLine) {
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val warn = barFill(95.0)
+private fun CompactStatusLine(line: AppPace.Line) {
     Text(
-        if (line.boldClause == null) {
-            AnnotatedString(line.text)
-        } else {
-            buildAnnotatedString {
-                append(line.text.removeSuffix(line.boldClause))
-                withStyle(SpanStyle(color = warn, fontWeight = FontWeight.Bold)) {
-                    append(line.boldClause)
-                }
-            }
-        },
+        emphasised(line),
         style = MaterialTheme.typography.bodySmall,
-        color = muted,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+@Composable
+private fun emphasised(line: AppPace.Line): AnnotatedString {
+    val warn = barFill(95.0)
+    val e = line.emphasis
+    val at = e?.let { line.text.indexOf(it) } ?: -1
+    if (e == null || at < 0) return AnnotatedString(line.text)
+    return buildAnnotatedString {
+        append(line.text.substring(0, at))
+        withStyle(SpanStyle(color = warn, fontWeight = FontWeight.Bold)) { append(e) }
+        append(line.text.substring(at + e.length))
+    }
 }
 
 /**
@@ -371,6 +509,14 @@ internal fun TrendBlock(
     usageLeft: Boolean,
     chartSize: ChartSize,
     chartOrientation: ChartOrientation,
+    /**
+     * CCRM-97 (Pace Number): the Weekly card's band · allowance line, drawn under the
+     * chart where "40% below even pace" was; null on the 5h card, whose "below even pace"
+     * line goes (decision 2: no Pace on the session).
+     */
+    paceLine: AppPace.Line? = null,
+    /** CCRM-102 (Spent Week Gate): a greyed 5h draws no projection, on the chart or below it. */
+    gated: Boolean = false,
 ) {
     val resetMs = window.resetsAt?.toEpochMilli() ?: return
     if (samples.size < 2) {
@@ -380,6 +526,7 @@ internal fun TrendBlock(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        PaceWordsLine(paceLine)
         return
     }
     val est = Projection.estimate(samples, resetMs)
@@ -400,7 +547,7 @@ internal fun TrendBlock(
             // the same moment and the divider walks with the mark instead of waiting for
             // the next poll (CCRM-74 (Chart Polish) item 1).
             nowMs = System.currentTimeMillis(),
-            projectedEnd = est?.let { e ->
+            projectedEnd = est?.takeIf { !gated }?.let { e ->
                 if (e.hitsLimitAtMs != null) e.hitsLimitAtMs to 100.0 else resetMs to e.pctAtReset
             },
             color = barFill(window.percent),
@@ -413,23 +560,8 @@ internal fun TrendBlock(
                 .height(chartHeight(maxWidth, windowHeight, chartSize)),
         )
     }
-    // The pace readout: what the retired "Days elapsed" bar used to say, as a
-    // number rather than a row. A ±3 point dead zone around the line stops it
-    // flapping between above and below — with its colour — on every poll.
-    elapsedPercent(window, windowLengthMs)?.let { elapsed ->
-        val delta = (window.percent ?: 0.0) - elapsed
-        val above = delta > PACE_DEAD_ZONE
-        Spacer(Modifier.height(6.dp))
-        Text(
-            // CCRM-74 (Chart Polish) item 4: "%" not "points", shared with the chart's
-            // own short label so the two can never disagree.
-            pacePhrase(delta),
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = if (above) FontWeight.Bold else FontWeight.Normal,
-            color = if (above) barFill(95.0) else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-    if (est == null && !atLimit) {
+    PaceWordsLine(paceLine)
+    if (est == null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         Text(
             "Usage hasn't moved enough yet to project a pace",
@@ -437,7 +569,7 @@ internal fun TrendBlock(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-    if (est != null && !atLimit) {
+    if (est != null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         val hits = est.hitsLimitAtMs
         val rate = " · ${String.format(Locale.US, "%.1f", est.ratePctPerHour)}%/h"
@@ -455,6 +587,23 @@ internal fun TrendBlock(
             else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/**
+ * The open Weekly card's first line under the chart, "Slow down · ≈11%/day until Sun":
+ * bold in the warning colour when over pace, as the old pace readout was above pace.
+ */
+@Composable
+private fun PaceWordsLine(line: AppPace.Line?) {
+    line ?: return
+    val over = line.emphasis != null
+    Spacer(Modifier.height(6.dp))
+    Text(
+        line.text,
+        style = MaterialTheme.typography.bodySmall,
+        fontWeight = if (over) FontWeight.Bold else FontWeight.Normal,
+        color = if (over) barFill(95.0) else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 // --- the cards ---
@@ -485,63 +634,89 @@ internal fun SessionCard(
     expanded: Boolean,
     onToggle: () -> Unit,
     use24h: Boolean,
-    usageLeft: Boolean,
+    mode: PaceText.Mode,
     resetClock: Boolean,
     showOverPace: Boolean,
     serifHeadline: Boolean,
     chartSize: ChartSize,
     chartOrientation: ChartOrientation,
+    /**
+     * CCRM-102 (Spent Week Gate): the Weekly window, when it is spent. The card is then
+     * shown disabled — figure, bar and reset line at 45% opacity, no pace caption, no
+     * projection — with one full-opacity note saying when the 5h can be used again
+     * (`design/2026-11-02-antigravity-account.html` §3b).
+     */
+    spentWeekly: UsageWindow? = null,
 ) {
     val open = !compact || expanded
+    val gate = spentWeekly?.takeIf { Pace.isSpent(it.percent) }
+    val elapsed = elapsedPercent(window, SESSION_MS)
+    val samples = window.resetsAt?.let {
+        Projection.sessionSamples(history, it.toEpochMilli(), SESSION_MS)
+    } ?: emptyList()
     CardShell(onToggle.takeIf { compact }) {
+        Column(Modifier.alpha(if (gate != null) 0.45f else 1f)) {
         SubRow(
-            "5-hour window", window.percent, usageLeft, serifHeadline,
+            "5-hour window", window.percent, elapsed, mode, serifHeadline,
             trailing = if (compact) ({ CardChevron(expanded) }) else null,
         )
         Spacer(Modifier.height(8.dp))
         UsageBarLine(
             percent = window.percent,
             fillColor = barFill(window.percent),
-            elapsedPercent = elapsedPercent(window, SESSION_MS),
+            elapsedPercent = elapsed,
             showOverPace = showOverPace,
+            dashedRoom = true,
         )
+        // V1 on the 5h bar too: the mark is plain geometry, not the Pace verdict.
+        if (gate == null) PaceCaption(mode, window.percent, elapsed)
         if (open) {
             TrendBlock(
                 window = window,
-                samples = window.resetsAt?.let {
-                    Projection.sessionSamples(history, it.toEpochMilli(), SESSION_MS)
-                } ?: emptyList(),
+                samples = samples,
                 windowLengthMs = SESSION_MS,
                 use24h = use24h,
-                usageLeft = usageLeft,
+                usageLeft = mode == PaceText.Mode.LEFT,
                 chartSize = chartSize,
                 chartOrientation = chartOrientation,
+                gated = gate != null,
             )
             Spacer(Modifier.height(8.dp))
             ResetRow(window, use24h, resetClock)
         } else {
             Spacer(Modifier.height(8.dp))
-            CompactStatusLine(compactLineFor(window, SESSION_MS))
+            val estimate = window.resetsAt?.let { Projection.estimate(samples, it.toEpochMilli()) }
+                ?.takeIf { gate == null }
+            CompactStatusLine(AppPace.sessionFolded(window, estimate, use24h))
+        }
+        }
+        gate?.let { weekly ->
+            HorizontalDivider(Modifier.padding(top = 8.dp))
+            Text(
+                AppPace.spentWeekNote(weekly, use24h),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 7.dp),
+            )
         }
     }
-}
-
-/** The folded line for [window], reading its own clock — pure copy, live numbers. */
-private fun compactLineFor(window: UsageWindow?, windowLengthMs: Long): CompactLine {
-    val resets = window?.resetsAt ?: return compactLine(null, null)
-    val elapsed = elapsedPercent(window, windowLengthMs)
-    return compactLine(Fmt.relIn(resets), elapsed?.let { (window.percent ?: 0.0) - it })
 }
 
 /**
  * The 7-day card. Its `SubBar`s draw in **both** densities (the roadmap's own rule), so
  * collapsed it is the title row, every bar, and one line for the All window; expanded it
  * adds CCRM-73 (Model Cap Chart)'s toggle chips, the chart for the selected series, its
- * pace readout, its estimate line and its reset row.
+ * pace words, its estimate line and its reset row.
  *
  * On a two-pane width with at least one cap, the open card runs two chart columns instead
  * — All on the left, the cap on the right (wireframe §8), which is the one place
  * Comfortable deliberately differs from v1.6.
+ *
+ * CCRM-99 (Model Limits Toggle): with [showModelLimits] off on an account that has caps,
+ * the card becomes the plain one-window card the 5-hour card is — title and figure on one
+ * row, the bar, the chart and the lines, with no cap rows and no chips
+ * (`design/2026-11-02-model-limits-toggle.html` C2).
  */
 @Composable
 internal fun WeeklyCard(
@@ -553,15 +728,17 @@ internal fun WeeklyCard(
     selectedCap: String?,
     onSelectCap: (String?) -> Unit,
     use24h: Boolean,
-    usageLeft: Boolean,
+    mode: PaceText.Mode,
     resetClock: Boolean,
     showOverPace: Boolean,
     serifHeadline: Boolean,
     chartSize: ChartSize,
     chartOrientation: ChartOrientation,
+    showModelLimits: Boolean = true,
 ) {
     val open = !compact || expanded
-    val caps = data.modelCaps
+    val caps = if (showModelLimits) data.modelCaps else emptyList()
+    val plain = !showModelLimits && data.modelCaps.isNotEmpty()
     // The card splits its *own* content, so the threshold is the one Adaptive keeps for
     // exactly that (700dp, [hasTwoColumns]) rather than the 600dp two-pane breakpoint:
     // between the two, each column would be ~260dp and the pace and estimate lines under
@@ -569,30 +746,49 @@ internal fun WeeklyCard(
     // ~750dp inner screen is on the two-column side of both, so wireframe §8 is unchanged.
     val twoColumns = open && caps.isNotEmpty() && hasTwoColumns()
     CardShell(onToggle.takeIf { compact }) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("7-day window", style = MaterialTheme.typography.titleSmall)
-            if (compact) {
-                Spacer(Modifier.width(4.dp))
-                CardChevron(expanded)
-            }
-        }
-        Spacer(Modifier.height(10.dp))
-        if (twoColumns) {
-            WeeklyColumns(
-                data, history, caps, selectedCap, onSelectCap, use24h, usageLeft,
-                resetClock, showOverPace, serifHeadline, chartSize, chartOrientation,
+        if (plain) {
+            val elapsed = elapsedPercent(data.weekly, WEEKLY_MS)
+            SubRow(
+                "7-day window", data.weekly?.percent, elapsed, mode, serifHeadline,
+                trailing = if (compact) ({ CardChevron(expanded) }) else null,
             )
-            return@CardShell
-        }
-        // CCRM-73 (Model Cap Chart): the bars never change with the toggle — All plus
-        // one row per cap, whichever series is charted below them.
-        SubBar("All", data.weekly, usageLeft, showOverPace, serifHeadline)
-        for (cap in caps) {
-            SubBar(cap.modelName, cap.window, usageLeft, showOverPace, serifHeadline)
+            Spacer(Modifier.height(8.dp))
+            UsageBarLine(
+                percent = data.weekly?.percent,
+                fillColor = barFill(data.weekly?.percent),
+                elapsedPercent = elapsed,
+                showOverPace = showOverPace,
+                dashedRoom = true,
+            )
+            PaceCaption(mode, data.weekly?.percent, elapsed)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("7-day window", style = MaterialTheme.typography.titleSmall)
+                if (compact) {
+                    Spacer(Modifier.width(4.dp))
+                    CardChevron(expanded)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            if (twoColumns) {
+                WeeklyColumns(
+                    data, history, caps, selectedCap, onSelectCap, use24h, mode,
+                    resetClock, showOverPace, serifHeadline, chartSize, chartOrientation,
+                )
+                return@CardShell
+            }
+            // CCRM-73 (Model Cap Chart): the bars never change with the toggle — All plus
+            // one row per cap, whichever series is charted below them.
+            SubBar("All", data.weekly, mode, showOverPace, serifHeadline)
+            for (cap in caps) {
+                SubBar(cap.modelName, cap.window, mode, showOverPace, serifHeadline)
+            }
         }
         if (!open) {
             Spacer(Modifier.height(8.dp))
-            CompactStatusLine(compactLineFor(data.weekly, WEEKLY_MS))
+            CompactStatusLine(
+                AppPace.weeklyFolded(data.weekly, elapsedPercent(data.weekly, WEEKLY_MS), use24h),
+            )
             return@CardShell
         }
         if (caps.isNotEmpty()) {
@@ -612,9 +808,10 @@ internal fun WeeklyCard(
                 samples = weeklySamplesFor(history, cap, w),
                 windowLengthMs = WEEKLY_MS,
                 use24h = use24h,
-                usageLeft = usageLeft,
+                usageLeft = mode == PaceText.Mode.LEFT,
                 chartSize = chartSize,
                 chartOrientation = chartOrientation,
+                paceLine = AppPace.weeklyOpen(w, elapsedPercent(w, WEEKLY_MS), use24h),
             )
         }
         Spacer(Modifier.height(2.dp))
@@ -638,7 +835,7 @@ private fun WeeklyColumns(
     selectedCap: String?,
     onSelectCap: (String?) -> Unit,
     use24h: Boolean,
-    usageLeft: Boolean,
+    mode: PaceText.Mode,
     resetClock: Boolean,
     showOverPace: Boolean,
     serifHeadline: Boolean,
@@ -653,16 +850,17 @@ private fun WeeklyColumns(
         horizontalArrangement = Arrangement.spacedBy(ColumnGutter),
     ) {
         Column(Modifier.weight(1f)) {
-            SubBar("All", data.weekly, usageLeft, showOverPace, serifHeadline)
+            SubBar("All", data.weekly, mode, showOverPace, serifHeadline)
             data.weekly?.let { w ->
                 TrendBlock(
                     window = w,
                     samples = weeklySamplesFor(history, null, w),
                     windowLengthMs = WEEKLY_MS,
                     use24h = use24h,
-                    usageLeft = usageLeft,
+                    usageLeft = mode == PaceText.Mode.LEFT,
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
+                    paceLine = AppPace.weeklyOpen(w, elapsedPercent(w, WEEKLY_MS), use24h),
                 )
             }
             Spacer(Modifier.height(2.dp))
@@ -671,7 +869,7 @@ private fun WeeklyColumns(
             ResetRow(data.weekly, use24h, resetClock)
         }
         Column(Modifier.weight(1f)) {
-            SubBar(cap.modelName, cap.window, usageLeft, showOverPace, serifHeadline)
+            SubBar(cap.modelName, cap.window, mode, showOverPace, serifHeadline)
             if (caps.size > 1) {
                 CapChips(
                     caps = caps,
@@ -686,9 +884,10 @@ private fun WeeklyColumns(
                 samples = weeklySamplesFor(history, cap, cap.window),
                 windowLengthMs = WEEKLY_MS,
                 use24h = use24h,
-                usageLeft = usageLeft,
+                usageLeft = mode == PaceText.Mode.LEFT,
                 chartSize = chartSize,
                 chartOrientation = chartOrientation,
+                paceLine = AppPace.weeklyOpen(cap.window, elapsedPercent(cap.window, WEEKLY_MS), use24h),
             )
             Spacer(Modifier.height(2.dp))
             HorizontalDivider()

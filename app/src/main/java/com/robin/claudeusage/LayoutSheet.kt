@@ -95,17 +95,25 @@ fun LayoutSheet(
     onChanged: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var layout by remember(profile) { mutableStateOf(cache.layout(profile)) }
+    // CCRM-96 (Weekly First): the sheet shows the order as drawn — an untouched layout
+    // in the Headline's order. Only a drag makes the order the user's; show, hide, fold
+    // and Reset keep (or hand back) the Headline's.
+    val headline = remember(profile) { cache.headline(profile) }
+    var layout by remember(profile) { mutableStateOf(cardOrderLayout(cache.layout(profile), headline)) }
     var showReset by remember { mutableStateOf(false) }
     val dark = appDark()
     val accent = Palette.color(Palette.accentName(cache, profile), dark)
 
-    fun apply(next: CardLayout) {
-        if (next !== layout) {
-            layout = next
-            cache.setLayout(profile, next)
-            onChanged()
+    fun apply(next: CardLayout, reset: Boolean = false) {
+        if (next === layout && !reset) return
+        val toStore = when {
+            reset -> CardLayout.DEFAULT
+            next.order == layout.order -> next.copy(order = cache.layout(profile).order)
+            else -> next
         }
+        cache.setLayout(profile, toStore)
+        layout = cardOrderLayout(toStore, headline)
+        onChanged()
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -209,7 +217,7 @@ fun LayoutSheet(
             accent = accent,
             onDismiss = { showReset = false },
             onConfirm = {
-                apply(CardLayout.DEFAULT)
+                apply(CardLayout.DEFAULT, reset = true)
                 showReset = false
             },
         )
