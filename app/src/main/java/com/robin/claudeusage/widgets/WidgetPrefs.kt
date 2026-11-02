@@ -54,6 +54,17 @@ class WidgetPrefs(context: Context) {
     fun placed(id: Int): Boolean =
         prefs.getInt(key(id, VERSION), 0) > 0 || prefs.getInt(key(id, DRAWN), 0) == 1
 
+    /** Whether a window was ever stored — absent on a widget the launcher placed without config. */
+    fun hasWindow(id: Int): Boolean = prefs.contains(key(id, WINDOW))
+
+    /**
+     * CCRM-96 (Weekly First): a widget's first draw stores the window it drew, so the
+     * Headline-derived default becomes the widget's own and never moves with the setting.
+     */
+    fun pinWindowIfAbsent(id: Int, window: FaceWindow) {
+        if (!hasWindow(id)) prefs.edit().putString(key(id, WINDOW), encode(window)).apply()
+    }
+
     /** Called after every successful draw; writes only the first time. */
     fun markDrawn(id: Int) {
         if (prefs.getInt(key(id, DRAWN), 0) != 1) prefs.edit().putInt(key(id, DRAWN), 1).apply()

@@ -30,7 +30,7 @@ object SummaryRank {
         val read = entries.filter { it.usedPct != null }
         val spent = read.filter { Pace.isSpent(it.usedPct) }
         val live = read - spent.toSet()
-        // No reset clock means no Pace: such a row sorts after every clocked one, as on pace.
+        // No reset clock means no Pace: such a row stays eligible and sorts after every clocked one.
         val eligible = live.filter { !it.sessionBinding }.sortedWith(
             compareBy<Entry>({ e -> e.elapsedPct?.let { Pace.pace(e.usedPct!!, it) } ?: Double.MAX_VALUE },
                 { it.msUntilReset ?: Long.MAX_VALUE }),

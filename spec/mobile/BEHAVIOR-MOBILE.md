@@ -129,7 +129,9 @@ as "5h 34%". While `sessionBinding` holds it takes the bar colour's step (core �
 | `nearlyOut` | "Nearly out" |
 | `spent` | no band: "Out until <reset>" |
 
-Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h".
+Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h" (hours
+rounded; under 30 minutes "40% left, <1h"). The notification's expanded first line adds " to last" after a
+per-day allowance only ("Slow down · ≈11%/day to last").
 Tight form (notification, folded card): "Slow down · ≈11%/day". The signed number appears only in
 the app card's detail: "Pace +21% · an even week is 39% by now" — **superseded 2026-11-02**: the signed
 Pace is never printed; instead each app and Summary bar carries the pace-mark caption (below). On always-on surfaces the words carry no
@@ -147,8 +149,12 @@ reads "10 under the pace mark (60%) · resets Fri".
 Numbers (Step 2 of RUNBOOK-v2.0, 2026-11-02): the mark is `elapsedPct` rounded half up; the distance is
 `|elapsedPct − usedPct|` rounded half up, "on it" below 1. Left mode states the mark in remaining terms
 (`100 − mark`) and words the distance "10 to spare" under the mark, "20 over" past it. Vs pace mode's usage is
-the Used-mode figure (truncated). Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) →
-`caption`, `captionSide`.
+the Used-mode figure (truncated). Every floor and half-up rounding of a difference adds 1e-9 first, so binary
+float edges (`2.3 − 0.3` = 1.9999999999999998) land on the decimal answer. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) →
+`caption`, `captionSide`. The notification's line 2 in the other modes (Fable judge, 2026-11-02): Left "10 to
+spare · pace mark 40% · resets Fri" / "20 over · pace mark 40% · resets Fri"; under 1 point "On the pace mark (60%)
+· resets Fri"; Vs pace "52% used (mark 39%) · resets Sun". The 5h companion always shows usage, bare in Left mode
+("5h 66%"); under a 5h lead the companion is "Weekly 52%".
 
 **Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
 value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");

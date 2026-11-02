@@ -94,10 +94,22 @@ Weekly row).
 
 ### 1.4 What each text line says (single account)
 
-Headline window: the 5h window when the account has one, **else the Weekly window** (CCRM-54 (ChatGPT
-Account): a ChatGPT Plus or Pro account has no 5h window). When the headline is Weekly the label says
-"Weekly", pace is measured over 7 days, and the panel drops its Weekly row so the same number is not
-printed twice.
+**v2.0 (CCRM-96 (Weekly First), CCRM-97 (Pace Number), CCRM-100 (Vs Pace Display); built on the v2.0
+branch, `design/2026-11-02-weekly-first-pace.html` §2–4, copy calls in BEHAVIOR-MOBILE §5).** The headline
+window is the account's **Headline** (BEHAVIOR-MOBILE §5): Weekly by default; 5-hour; Auto = 5h while core §6.2's
+`sessionBinding` holds. An account with no 5h always leads with Weekly. Lines (`notify/LeadLines.kt`):
+
+| Lead | Collapsed line | Expanded line 1 / line 2 | Panel first row |
+|---|---|---|---|
+| Weekly | "Slow down · ≈11%/day · 5h 34%" (no 5h: "· resets Sun"); while 5h binds the companion takes the bar colour's step and bold | "Slow down · ≈11%/day to last" / "13 over the pace mark (39%) · resets Sun" (Left: "10 to spare · pace mark 40% · resets Sun"; Vs pace: "52% used (mark 39%) · resets Sun") | "5h", today's 5h reset line ("Back at 3:40 PM · in 50m" while it binds) |
+| Weekly, spent | "Out until Sun 9:30 PM · in 3d 4h" (no companion) | same / none | the 5h row |
+| 5h (5-hour, or Auto taking over) | today's reset line, "Back at 3:40 PM · in 50m" while it binds, then "· Weekly 52%" | the reset line / "Projected to hit 100% at 3:25 PM" when §3 projects a hit | "Weekly", "Slow down · ≈11%/day · Sun" |
+
+Line 2 is the new `sub2` view in `notif_big_number_expanded.xml` (12 sp, 2 dp margin, gone when empty). Model-cap
+rows follow only while the account's "Show model limits" is on (CCRM-99). The figure follows Used / Left / Vs pace;
+in Vs pace the caption under it reads "VS PACE" (none when the figure falls back to usage), and panel row figures
+are distances too. Before v2.0: the headline was the 5h window when the account had one, else Weekly, and the
+panel's first row was the Weekly row.
 
 Figure text: Used mode, the percentage truncated ("99.7" shows "99%"); Left mode, the remainder floored
 ("99.7 used" shows "0%"), never negative. No reading shows "—". The warning ladder and fills always key
@@ -168,6 +180,12 @@ about 12.8 dp tall, so 13 dp shows it 1:1 while 10 dp and 8 dp scale it down ver
 
 Two accounts side by side collapsed, two stacked header blocks expanded. Chosen by one value (Second not
 None); an install that never sets Second never sees any of this.
+
+**v2.0:** each half leads with its own account's Headline (above); collapsed halves have no sub line, as before.
+An expanded header's sub is "Slow down · ≈11%/day · resets Sun" under a Weekly lead, today's reset line under a 5h
+lead. The panel rows are each account's companion row — its 5h under a Weekly lead, its Weekly under a 5h lead; an
+account with no 5h has none — so two rows still take the 78 dp the two Weekly rows took (2.1's budget unchanged).
+The status-bar ring's "Whichever is higher" compares the gauge windows (4).
 
 ### 2.1 Width and height budget
 
@@ -288,6 +306,10 @@ caps; the code and `notif_duet_expanded.xml` comment line "falls to two" is stal
 The notification's small icon. One window (the headline 5h one, or Weekly when that is the headline), one
 account, no numbers. Drawn by `ui/RingRenderer.kt` (NEEDLE) via `ui/UsageIcon.kt`; the widgets and share
 card share the same renderer with a different mark (TICK, specified in their own files).
+
+**v2.0 (CCRM-96 (Weekly First)):** the ring draws the window `HeadlineSurface.STATUS_GAUGE` picks — Weekly until
+the 5h binds, when it switches to 5h (Headline Weekly behaves as Auto here); Headline 5-hour draws 5h throughout.
+Geometry unchanged; the needle is the clock of whichever window it draws.
 
 ### 4.1 Real size
 

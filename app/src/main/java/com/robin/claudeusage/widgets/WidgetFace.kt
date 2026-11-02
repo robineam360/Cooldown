@@ -22,6 +22,7 @@ import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.ui.BarRenderer
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.PACE_DEAD_ZONE
+import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.RingRenderer
 import com.robin.claudeusage.ui.Rooms
 import com.robin.claudeusage.ui.providerMarkRes
@@ -206,6 +207,11 @@ data class FaceInput(
     val unavailable: Boolean,
     val nowMs: Long,
     val zone: ZoneId = ZoneId.systemDefault(),
+    /**
+     * CCRM-100 (Vs Pace Display): figures show the distance from the pace mark ("+10%"),
+     * falling back to usage; "+10%" and "−20%" are no wider than "100%", so no fit changes.
+     */
+    val usageVsPace: Boolean = false,
 )
 
 /** A face-wide message that replaces every reading. */
@@ -453,7 +459,11 @@ object FaceStates {
             key = a.key, name = a.label, provider = a.provider, accentArgb = a.accentArgb,
             cardArgb = card, states = states, window = window,
             hasBothWindows = hasSession && hasWeekly, pct = pct, elapsed = elapsed,
-            figure = pct?.let { "${Fmt.usageInt(it, input.usageLeft)}%" } ?: "—",
+            figure = when {
+                pct == null -> "—"
+                input.usageVsPace -> PaceText.vsPaceFigure(pct, elapsed)
+                else -> "${Fmt.usageInt(pct, input.usageLeft)}%"
+            },
             fillArgb = barColor(pct, a.accentArgb, input.dark), resetsAt = resetsAt,
             sub = sub, shortReset = shortReset, countForm = countForm, estimate = estimate,
         )

@@ -266,6 +266,12 @@ object Fmt {
         return DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault()).format(instant)
     }
 
+    /** "Sun" — the weekly reset's day where the pace words leave room for nothing more (CCRM-97). */
+    fun weekday(instant: Instant?): String {
+        instant ?: return ""
+        return DateTimeFormatter.ofPattern("EEE").withZone(ZoneId.systemDefault()).format(instant)
+    }
+
     /**
      * "11:45 PM" or "23:45" — no day part. Only for the 5-hour window, which is
      * always a few hours out at most, so the day is never in question.

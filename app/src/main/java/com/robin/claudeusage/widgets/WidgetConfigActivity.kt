@@ -99,7 +99,13 @@ class WidgetConfigActivity : ComponentActivity() {
                 mutableStateOf((profiles.firstOrNull { it.key == stored.accountKey } ?: profiles.firstOrNull())?.key)
             }
             val account = profiles.firstOrNull { it.key == accountKey }
-            var windowPick by rememberSaveable { mutableStateOf(stored.window) }
+            // CCRM-96 (Weekly First): a new widget's chip starts on its account's Headline
+            // and follows the account pick until the window chip is touched.
+            val fresh = !reconfigure && !prefs.hasWindow(id)
+            var windowTouched by rememberSaveable { mutableStateOf(!fresh) }
+            var windowPick by rememberSaveable {
+                mutableStateOf(if (fresh) WidgetHost.headlineWindow(cache, accountKey) else stored.window)
+            }
             var bg by rememberSaveable { mutableStateOf(stored.background) }
 
             ConfigScreen(
@@ -111,8 +117,14 @@ class WidgetConfigActivity : ComponentActivity() {
                 window = windowPick,
                 background = bg,
                 reconfigure = reconfigure,
-                onAccount = { accountKey = it.key },
-                onWindow = { windowPick = it },
+                onAccount = {
+                    accountKey = it.key
+                    if (!windowTouched) windowPick = WidgetHost.headlineWindow(cache, it.key)
+                },
+                onWindow = {
+                    windowPick = it
+                    windowTouched = true
+                },
                 onBackground = { bg = it },
                 onBack = { finish() },
                 preview = {

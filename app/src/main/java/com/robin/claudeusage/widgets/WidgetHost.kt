@@ -14,10 +14,13 @@ import android.widget.RemoteViews
 import androidx.compose.ui.graphics.toArgb
 import com.robin.claudeusage.MainActivity
 import com.robin.claudeusage.R
+import com.robin.claudeusage.data.AccountRead
 import com.robin.claudeusage.data.ErrorKind
+import com.robin.claudeusage.data.HeadlineSurface
 import com.robin.claudeusage.data.HistoryStore
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.UsageCache
+import com.robin.claudeusage.data.WindowKind
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.ui.Palette
 
@@ -60,11 +63,34 @@ object WidgetHost {
 
     /** What [Transitions.nextTransitionAt] needs about every placed widget. */
     fun placed(context: Context): List<Transitions.Placed> {
-        val prefs = WidgetPrefs(context)
+        val cache = UsageCache(context)
         return placedIds(context).map { (id, face) ->
-            val c = prefs.read(id)
+            val c = config(context, cache, id)
             Transitions.Placed(face, c.accountKey, c.window)
         }
+    }
+
+    /**
+     * CCRM-96 (Weekly First): a new widget's window starts on its account's Headline —
+     * Weekly unless the Headline is 5-hour (Auto starts on Weekly). An unassigned widget
+     * starts on Weekly.
+     */
+    fun headlineWindow(cache: UsageCache, accountKey: String?): FaceWindow {
+        val profile = cache.registry().byKey(accountKey) ?: return FaceWindow.WEEKLY
+        val lead = AccountRead.lead(cache.headline(profile), HeadlineSurface.NEW_WIDGET, cache.snapshot(profile).data, binding = false)
+        return if (lead == WindowKind.SESSION) FaceWindow.SESSION else FaceWindow.WEEKLY
+    }
+
+    /**
+     * A widget's stored config, with one v2.0 default: a widget that has neither a stored
+     * window nor ever been drawn is new, so its window is [headlineWindow]. One drawn
+     * before v2.0 without a window keeps the 5h it has always shown (placed widgets keep
+     * their window).
+     */
+    fun config(context: Context, cache: UsageCache, id: Int): WidgetPrefs.Config {
+        val prefs = WidgetPrefs(context)
+        val c = prefs.read(id)
+        return if (!prefs.hasWindow(id) && !prefs.placed(id)) c.copy(window = headlineWindow(cache, c.accountKey)) else c
     }
 
     fun snapshots(cache: UsageCache): List<Transitions.Snapshot> =
@@ -123,7 +149,7 @@ object WidgetHost {
         face: Face,
         unavailable: Boolean,
         nowMs: Long = System.currentTimeMillis(),
-        config: WidgetPrefs.Config = WidgetPrefs(context).read(appWidgetId),
+        config: WidgetPrefs.Config = config(context, cache, appWidgetId),
     ): FaceState {
         val dark = systemDark(context)
         return FaceStates.of(
@@ -135,6 +161,7 @@ object WidgetHost {
                 dark = dark,
                 accounts = accounts(context, cache, dark, withEstimates = face == Face.COUNTDOWN),
                 usageLeft = cache.usageLeft(),
+                usageVsPace = cache.usageMode() == com.robin.claudeusage.ui.PaceText.Mode.VS_PACE,
                 showOverPace = cache.showOverPace(),
                 // R8 (CCRM-15 (Above-Pace Verification)): the marker follows the one
                 // process-wide switch the cache's snapshots already honour.
@@ -277,6 +304,7 @@ object WidgetHost {
         face: Face,
         unavailable: Boolean,
     ): SafeUpdate.Outcome {
+        val window = config(context, cache, appWidgetId).window
         val state = try {
             state(context, cache, appWidgetId, face, unavailable)
         } catch (e: Exception) {
@@ -286,6 +314,9 @@ object WidgetHost {
         return SafeUpdate.update(
             updater = { id, views ->
                 mgr.updateAppWidget(id, views)
+                // CCRM-96 (Weekly First): the window it drew becomes its own, before the
+                // drawn flag makes it count as placed.
+                WidgetPrefs(context).pinWindowIfAbsent(id, window)
                 // CCBG-48 (Reconfigure Label): drawn means placed, config or not.
                 WidgetPrefs(context).markDrawn(id)
             },

@@ -435,6 +435,58 @@
       "why": ""
     },
     {
+      "name": "a week with a reading but no reset clock ranks after every clocked one",
+      "accounts": [
+        {
+          "name": "Unclocked",
+          "usedPct": 0,
+          "elapsedPct": null,
+          "msUntilReset": null,
+          "sessionPct": 5,
+          "sessionMsUntilReset": 16200000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Design",
+          "usedPct": 70,
+          "elapsedPct": 55.0,
+          "msUntilReset": 272160000,
+          "sessionPct": 12,
+          "sessionMsUntilReset": 10800000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "Design",
+          "group": "eligible"
+        },
+        {
+          "name": "Unclocked",
+          "group": "eligible"
+        }
+      ],
+      "paceForReference": {
+        "Unclocked": null,
+        "Design": 33.33,
+        "Personal": -34.0
+      },
+      "why": "No reset clock means no Pace; the row stays eligible and sorts last among eligible rows."
+    },
+    {
       "name": "a spent week is never held",
       "accounts": [
         {

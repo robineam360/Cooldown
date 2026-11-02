@@ -85,6 +85,13 @@ object Pace {
     /** CCRM-100 (Vs Pace Display): `floor(elapsed − used)`; null when it falls back to usage. */
     fun vsPace(usedPct: Double?, elapsedPct: Double?): Int? {
         if (usedPct == null || elapsedPct == null || isSpent(usedPct)) return null
-        return kotlin.math.floor(elapsedPct - usedPct).toInt()
+        return kotlin.math.floor(elapsedPct - usedPct + EDGE_EPSILON).toInt()
     }
+
+    /**
+     * Added before every floor and half-up rounding of a percentage difference: binary
+     * floats put `2.3 − 0.3` at 1.9999999999999998, which would floor to 1 (the spec's
+     * display cases pin "+2%").
+     */
+    const val EDGE_EPSILON = 1e-9
 }

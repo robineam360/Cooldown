@@ -55,7 +55,7 @@ Stored per widget in `widget_prefs` as `w<id>.account`, `.window`, `.bg`, `.v` (
 | Setting | Choices | Default | Applies to | Notes |
 |---|---|---|---|---|
 | Account | Any signed-in account (chips with the provider mark, in the account's accent) | **Unassigned**: the face draws the first account in registry order and says "tap to choose account" | Ring, Number, Countdown; **not Strip** (the Strip carries every account) | Save is the only thing that assigns. A deleted account becomes S9 |
-| Window | **5h** / **Weekly** | 5h | Ring, Number, Countdown; Strip is fixed to each account's headline window | Row hidden with a note when the account has one window ("<name> has one window — no control needed."); a weekly-only account is always Weekly (S4) |
+| Window | **5h** / **Weekly** | v2.0 (CCRM-96 (Weekly First)): the account's Headline — Weekly, or 5h when the Headline is 5-hour (Auto starts on Weekly); the chip follows the account pick until touched, and a widget placed without config stores the window of its first draw. Widgets drawn before v2.0 keep theirs (one never configured keeps 5h). Before v2.0: 5h | Ring, Number, Countdown; Strip is fixed to each account's headline window | Row hidden with a note when the account has one window ("<name> has one window — no control needed."); a weekly-only account is always Weekly (S4) |
 | Background | **Solid** / **Gradient** / **Transparent** | Solid | All four | See 1.3 |
 
 On-face controls (Number only, tall sizes): window chips and an account cycler write the same prefs without opening
@@ -157,6 +157,7 @@ Source: `WidgetFace.kt:371` (`FaceStates.cell`). A cell can carry several states
 | S9 account removed | Saved account no longer exists | Whole face replaced by a message; tap opens config | "Account removed · tap to choose" (Ring: "Account removed" over a smaller 75% "tap to choose") |
 | S10 unassigned / no accounts | No saved account (draws the first), or no accounts / never signed in | Unassigned: a normal reading plus the stamp slot reading "tap to choose account" (Number 2×1: an "UNASSIGNED" pill, 8 sp; Countdown 2×1 caption gains " · tap to choose"). No accounts: message | "Open Cooldown to sign in" (Ring: two lines "Open Cooldown" / "to sign in") |
 | S11 Left mode | "Usage display: Left" setting | Figures flip ("62%" instead of "38%"); bars and rings do not flip | Name lines gain " · left"; a small "LEFT" caption beside the figure where room allows |
+| (v2.0) Vs pace | "Usage display: Vs pace" (CCRM-100 (Vs Pace Display)) | Figures show the distance from the pace mark, "+10%" / "−20%" / "0%", falling back to usage when spent or unclocked; bars and rings do not change | No caption or name-line word on widgets (no room); "+10%" is no wider than "100%", so no fit changes |
 | S12 Free plan | Provider reports no usage on the plan | Whole face replaced by a message (Strip: that one ring shows the empty extent, its name and "Free") | "No usage on this plan" (Ring: "No usage" / "on this plan"); Strip "Free" |
 | S13 synthetic | Process-wide synthetic series is on | Marker per 1.3 | "● SYNTHETIC" |
 | S14 unavailable | A face pulled in a later version (switch exists, off in v1.8) | Recovery message | "Update Cooldown" (Ring 1×1: "Update" / "Cooldown"; 2×1: same one line); "Unavailable in this version · update Cooldown" on wider faces (Ring 2×2: two lines) |

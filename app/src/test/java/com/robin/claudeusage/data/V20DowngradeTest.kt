@@ -85,6 +85,21 @@ class V20DowngradeTest {
     }
 
     @Test
+    fun `removing the legacy account sweeps its bare v2 keys and nothing app-wide`() {
+        val cache = UsageCache(context)
+        val legacy = cache.registry().all().first { it.key == Profile.LEGACY_KEY }
+        cache.setHeadline(legacy, Headline.FIVE_HOUR)
+        cache.setShowModelLimits(legacy, false)
+        cache.setUsageDisplay(PaceText.Mode.VS_PACE.key)
+        cache.setOpenOnSummary(false)
+        cache.clearProfile(legacy)
+        assertEquals(Headline.WEEKLY, cache.headline(legacy))
+        assertTrue(cache.showModelLimits(legacy))
+        assertEquals(PaceText.Mode.VS_PACE, cache.usageMode())
+        assertFalse(cache.openOnSummary())
+    }
+
+    @Test
     fun `removing an account sweeps its v2 keys`() {
         val cache = UsageCache(context)
         val added = cache.registry().add("Second")

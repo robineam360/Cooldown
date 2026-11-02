@@ -71,6 +71,19 @@
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
+
+            <!-- CCRM-96 (Weekly First): the header's second line (the distance from the
+                 pace mark and the reset day, or the 5h projection); gone when empty. -->
+            <TextView
+                android:id="@+id/sub2"
+                style="@android:style/TextAppearance.Material.Notification.Info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- CCRM-22 (Used or Left): in Left mode the number is the remainder and the

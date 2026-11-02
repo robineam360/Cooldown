@@ -38,8 +38,10 @@ object PaceText {
     fun allowance(a: Pace.Allowance): String = when (a) {
         is Pace.Allowance.PerDay ->
             if (a.pctPerDay < 1.0) "<1%/day" else "≈${a.pctPerDay.roundToInt()}%/day"
-        is Pace.Allowance.Hours ->
-            "${a.pctLeft.roundToInt()}% left, ${(a.msLeft / 3_600_000.0).roundToInt()}h"
+        is Pace.Allowance.Hours -> {
+            val h = (a.msLeft / 3_600_000.0).roundToInt()
+            "${a.pctLeft.roundToInt()}% left, ${if (h < 1) "<1" else "$h"}h"
+        }
     }
 
     /** The tight form: "Slow down · ≈11%/day"; the band alone when there is no allowance. */
@@ -62,7 +64,7 @@ object PaceText {
         }
     }
 
-    private fun halfUp(x: Double): Int = floor(x + 0.5).toInt()
+    private fun halfUp(x: Double): Int = floor(x + 0.5 + Pace.EDGE_EPSILON).toInt()
 
     /** The pace mark's own value, as the caption names it. */
     fun markPct(elapsedPct: Double): Int = halfUp(elapsedPct)
@@ -94,14 +96,16 @@ object PaceText {
      */
     fun notificationDistance(mode: Mode, usedPct: Double?, elapsedPct: Double?): String? {
         if (usedPct == null || elapsedPct == null || Pace.isSpent(usedPct)) return null
-        if (mode == Mode.VS_PACE) return "${usedPct.toInt()}% used"
         val m = markPct(elapsedPct)
+        if (mode == Mode.VS_PACE) return "${usedPct.toInt()}% used (mark $m%)"
         val d = elapsedPct - usedPct
         val n = halfUp(abs(d))
         val shown = if (mode == Mode.LEFT) 100 - m else m
         return when {
             abs(d) < 1.0 -> "On the pace mark ($shown%)"
-            d > 0 -> "$n ${if (mode == Mode.LEFT) "to spare" else "under"} the pace mark ($shown%)"
+            // Left mode turns the V1 caption round, which also fits the 12 sp line (Fable, 2026-11-02).
+            mode == Mode.LEFT -> "${if (d > 0) "$n to spare" else "$n over"}${DOT}pace mark $shown%"
+            d > 0 -> "$n under the pace mark ($shown%)"
             else -> "$n over the pace mark ($shown%)"
         }
     }

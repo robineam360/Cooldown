@@ -82,6 +82,22 @@
       "hasResetClock": true,
       "expected": "—",
       "why": "an em dash, as every mode"
+    },
+    {
+      "name": "binary float edge: 2.3 - 0.3",
+      "usedPct": 0.3,
+      "elapsedPct": 2.3,
+      "hasResetClock": true,
+      "expected": "+2%",
+      "why": "2.3 - 0.3 is 1.9999999999999998 in binary floats; floor after adding 1e-9 gives +2"
+    },
+    {
+      "name": "binary float edge on the mark",
+      "usedPct": 17.000000000000004,
+      "elapsedPct": 17.0,
+      "hasResetClock": true,
+      "expected": "0%",
+      "why": "(1 - 0.83) x 100 against an even 17: 0%, not -1%"
     }
   ],
   "caption": [
