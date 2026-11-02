@@ -44,6 +44,8 @@ an account and signs into that one; everything downstream already works per acco
    entry below. The greyed "coming" row is now stale copy describing a state that will never
    arrive; changing it (to permanently absent, or to a different reason) is a visible UI change
    and needs its own wireframe review per working agreement 2 before anyone touches it.
+   *Superseded again 2026-11-02:* CCRM-55 (Antigravity Account) is Planned; the Gemini row
+   comes back through its wireframe.
 6. **Repo not renamed.** *Reversed 2026-09-07 at Robin's call — see CCRM-58 (Repo Rename); the
    second half of this decision stands unchanged.* And a new rule: **a window the account does
    not have is not shown at all** — no placeholder card, no dash, on any surface.
@@ -382,8 +384,77 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   Anthropic one (our own token, the official CLI's client id, an internal endpoint, read-only,
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
-### CCRM-55 · Antigravity Account — Gemini windows, spike before design
-- **Respike 2026-11-02 — both blockers closed; reopening is the owner's call.** Google's cloud
+### CCRM-55 · Antigravity Account — Gemini windows from a phone, code-paste sign-in
+- **Status:** Planned (reopened 2026-11-02, Robin's call) · large · after the v2.0 arc
+  (RUNBOOK-v2.0.md) · **wireframe first** (working agreement 2). Robin accepted the ToS posture:
+  Cooldown presents as Google's Antigravity CLI (its User-Agent token and its public OAuth
+  client), and Google can change or close either at any time. The app says so as plainly as the
+  Anthropic box does. Android first; iOS ships Claude and ChatGPT today
+  (`spec/mobile/surfaces/foundations.md`) and gets Gemini only by a separate call.
+- **Protocol** (every line tested 2026-11-02, record in
+  `design/research/2026-11-02-antigravity-respike.md`):
+  1. *Sign in:* Custom Tab (never a WebView — Google refuses them) on
+     `https://accounts.google.com/o/oauth2/v2/auth`, `client_id
+     1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com`, `redirect_uri
+     https://antigravity.google/oauth-callback`, `response_type=code`, PKCE S256,
+     `access_type=offline`, `prompt=consent`, `state`, scopes `cloud-platform userinfo.email
+     userinfo.profile openid` (full `https://www.googleapis.com/auth/…` URLs for the first three).
+     The hosted page shows a `4/…` code; the user pastes it (or the whole callback URL — accept
+     both, check `state` when present).
+  2. *Exchange:* form POST `https://oauth2.googleapis.com/token`, `grant_type=authorization_code`,
+     code, client id, the same redirect, `code_verifier`, and the client's **public installed-app
+     secret** (`GOCSPX-…`, the second of three in agy 1.4.11; the first is `invalid_client`). →
+     access (1 h) + refresh token; keep only the refresh token and the email from `id_token`.
+  3. *Refresh:* `grant_type=refresh_token`, same client id and secret.
+  4. *Project and plan:* `POST https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist`,
+     body `{"metadata":{"ideType":"ANTIGRAVITY"}}` → `cloudaicompanionProject` (cache it with the
+     credentials; fetch again on any 4xx from step 5) and `paidTier.id` (`g1-pro-tier` = Pro;
+     Ultra / free by the same field — **`currentTier` is wrong**, it reads free on a Pro account).
+  5. *Usage:* `POST …/v1internal:retrieveUserQuotaSummary`, body `{"project": <id>}`, headers
+     `Authorization: Bearer`, `Content-Type: application/json`, and a User-Agent containing a
+     **versioned `antigravity/cli/<v>`** token — `Cooldown/<app version>
+     antigravity/cli/1.4.12 (aidev_client; os_type=android; arch=arm64; auth_method=consumer)`.
+     Without the version Google returns only the Claude + GPT group.
+- **Build — the secret.** It is public by design but GitHub push protection rejects it, so it
+  never enters the repo: a Gradle property `antigravityClientSecret` (in `~/.gradle/gradle.properties`
+  locally, a repository secret in CI) becomes a `BuildConfig` field. A build without it hides the
+  Gemini row in Add account instead of failing; a unit test asserts the field is wired, not its value.
+- **Build — `AntigravitySource`** (`data/source/`), replacing the `NotImplementedError` in
+  `Sources.of`. `fetchUsage` is a **POST read** — `ApiClient.ProbeHost`'s GET-only rule gains a
+  named exception for these two `v1internal` reads and nothing else. `Credentials` gains
+  `project: String?`. Mapping: `used = (1 − remainingFraction) × 100`, unrounded; `gemini-weekly`
+  → `weekly`; `gemini-5h` → `session`; `gemini-argon-wtu-weekly` → a `ModelCap("Argon")` (so
+  CCRM-99 (Model Limits Toggle) hides it like any per-model limit); the `3p-*` pool per open
+  question 1. **Not started:** fraction 1 and a `resetTime` within 2 minutes of "now + window" →
+  the window has no reset to show (it slides on every call). The User-Agent version is one
+  constant, with a test that it contains `antigravity/cli/` followed by a digit.
+- **Build — sign-in.** The Claude paste path's shape: Custom Tab, then a paste field, in
+  `SignInScreen` with the provider's copy. Logs never carry the code, a token or the secret.
+- **Spec first** (CLAUDE.md §3): the endpoint, body, bucket ids, the not-started rule and a
+  redacted capture as a fixture land in `spec/core/` before Android code; the parser test reads
+  that fixture.
+- **Open questions for the wireframe round, one at a time:**
+  1. The Claude + GPT pool (`3p-5h`, `3p-weekly`): hide it while untouched (review decision 6),
+     show it as a second card pair, or build the `lanes` generalisation CCRM-53 (Provider Model)
+     deferred. Its 5h window is what forces lanes.
+  2. Whether to show Google's own `description` line on a used bucket ("…fully refresh in 3 days,
+     12 hours"), or only our own reset copy.
+  3. The disclosure copy and where it sits (Add-account sheet, sign-in screen, or both).
+  4. The Add-account sheet's Gemini row — the row was removed when this was dropped.
+- **States the wireframe must show:** signed in with every window **not started**; Gemini 5h
+  used, weekly not; **weekly spent while 5h is fresh** (the Pro confusion this item exists to
+  explain); Argon used and hidden by CCRM-99; the 3p pool untouched and used; plan Free / Pro /
+  Ultra; token dead (re-sign-in); Google returns only the 3p group (UA rejected — say "Google
+  changed something", never 0 % or 100 %); and the narrowest width.
+- **Steps:** (1) wireframe and Robin's approval; (2) `spec/core/` facts and fixture; (3)
+  `AntigravitySource`, credentials, the secret and sign-in, with tests; (4) every surface the
+  Claude and ChatGPT accounts already reach (CCRM-6 (Multi-Account) loops over accounts, so this
+  is mostly the parser plus the states above); (5) a device pass on the Fold 7 with a real Pro
+  account; (6) docs and the ToS line in README and the guide.
+- **Interacts with:** CCRM-96 (Weekly First) — Gemini weekly leads like every account; CCRM-17
+  (Window Pings) stays Claude-only; CCRM-59 (Antigravity Mac Relay) stays dropped — nothing here
+  needs the Mac at run time.
+- **Respike 2026-11-02 — both blockers closed.** Google's cloud
   quota for Antigravity is real now (the `agy` CLI 1.4.11 reads it with no IDE and no local
   RPC). **Data:** a one-off proxy capture of agy (plan
   `design/research/2026-11-02-agy-proxy-capture-plan.md`, Astra-reviewed, machine restored)
@@ -398,10 +469,9 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   code to paste — no localhost. Run end to end as a phone would (sign in, paste the code,
   exchange with the Antigravity client's public secret, read the quota with an Android-shaped
   UA, refresh): all 200. The September "permanent stub" verdict and the auth blocker below are
-  both superseded. **Still open:** the ToS posture of presenting as Google's CLI with its
-  client — the owner's call before this becomes Planned. Record:
+  both superseded. The ToS posture was the owner's call; Robin accepted it the same day. Record:
   `design/research/2026-11-02-antigravity-respike.md`.
-- **Status:** Dropped (2026-09-08). A second, decisive round of the spike proved the data
+- *(Status 2026-09-08 to 2026-11-02, superseded above, kept for the record):* Dropped. A second, decisive round of the spike proved the data
   blocker is not just soft-degraded but absolute: a real, substantial Gemini task run inside
   Antigravity moved the app's own local usage view from 100%/100% to 99%/98% (screenshot in
   `design/research/2026-09-08-antigravity-spike.md`), but the exact same moment, queried
@@ -420,10 +490,8 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   never reused, never renumbered.**
 - **Full record:** `design/research/2026-09-06-openquota-antigravity.md` (original protocol
   research) and `design/research/2026-09-08-antigravity-spike.md` (both spike rounds, verdict).
-- **Open follow-up, not done here:** the Add-account sheet's Antigravity row still reads
-  "coming" (review decision 3/5 above) — that copy is now wrong and needs a wireframe-reviewed
-  change (working agreement 2) to either remove the row or reword it, whenever that surface is
-  next touched.
+- *(Superseded 2026-11-02 — the row was since removed; its return is open question 4 above):*
+  the Add-account sheet's Antigravity row still reads "coming" (review decision 3/5 above).
 - *(Original filing, superseded above, kept for the record):* large · filed 2026-09-06 · after
   CCRM-54 (ChatGPT Account) · shown greyed in Add account meanwhile (review decision 5)
 - **What the data is** (OpenQuota `providers/antigravity/*`, corroborated by CodexBar and
@@ -4363,7 +4431,9 @@ the machine it runs on:**
   *cloud* fallback (`cloudcode-pa.googleapis.com` `v1internal:*`) is reachable from a phone,
   and it is the degraded one — confirmed 2026-09-08 by measurement, not just structural
   reasoning: a real Gemini task moved Antigravity's own local usage view but never moved this
-  cloud endpoint's numbers at all — see CCRM-55 (Antigravity Account), now dropped.
+  cloud endpoint's numbers at all — see CCRM-55 (Antigravity Account). *Superseded
+  2026-11-02:* with a versioned `antigravity/cli/<v>` User-Agent the cloud endpoint returns the
+  real numbers, and CCRM-55 (Antigravity Account) is Planned again.
 - **Auto-detecting installed tools**, drag-reorderable provider cards, a fixed 320 px popup,
   the tray composite — desktop shapes.
 - The **nine other providers** (Cursor, Copilot, Devin, Grok, OpenCode, OpenRouter, Z.ai,

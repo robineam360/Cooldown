@@ -154,6 +154,6 @@ shape as the Claude paste path.
 
 1. ~~Capture and replay agy's request~~ — done, above.
 2. ~~Auth on a phone~~ — done, above.
-3. The owner's call on the ToS posture (presenting as Google's CLI, using its client); then reopen CCRM-55 (Antigravity Account) as Planned, with the September states list plus **started vs not
+3. ~~The owner's call on the ToS posture~~ — Robin accepted it 2026-11-02; CCRM-55 (Antigravity Account) is Planned, with the September states list plus **started vs not
    started** (sliding reset), **a weekly-only per-model pool** (Argon) and **Google's own description line**
    added to the wireframe.
