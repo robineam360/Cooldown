@@ -95,7 +95,9 @@ internal fun SummaryScreen(
     // the tick still re-runs the time maths.
     val fetchedAts = profiles.map { repo.snapshot(it).fetchedAt }
     val histories = remember(profiles, fetchedAts) { profiles.associateWith { repo.history().points(it) } }
-    val rows = remember(profiles, tick, histories) { summaryRows(repo, profiles, histories) }
+    // Appearance › Summary order (Robin, 2026-11-02): keyed so a change re-sorts at once.
+    val order = cache.summaryOrder()
+    val rows = remember(profiles, tick, histories, order) { summaryRows(repo, profiles, histories) }
     val compact = SummaryRows.compact(profiles.size)
     val mapEntries = remember(rows, dark) {
         rows.mapIndexedNotNull { i, r -> r.mapEntry(i + 1, Palette.color(Palette.accentName(cache, r.profile), dark)) }
@@ -103,7 +105,7 @@ internal fun SummaryScreen(
     val list: @Composable () -> Unit = {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
-                CardHeader("Weekly", "most room first")
+                CardHeader("Weekly", order.header)
                 Spacer(Modifier.height(6.dp))
                 rows.forEachIndexed { i, r ->
                     if (i > 0) HorizontalDivider()
@@ -184,7 +186,7 @@ private fun summaryRows(
         } ?: emptyList()
         p.key to Triple(p, entry, Pair(data, Pair(elapsed, samples)))
     }
-    return SummaryRank.rank(read.values.map { it.second }).map { ranked ->
+    return SummaryRank.ordered(read.values.map { it.second }, cache.summaryOrder()).map { ranked ->
         val (p, _, rest) = read.getValue(ranked.entry.key)
         SummaryRowModel(p, cache.profileLabel(p), rest.first, rest.second.first, ranked.group, rest.second.second)
     }

@@ -21,6 +21,7 @@ struct SettingsScreen: View {
     @State private var usageMode = Display.mode.rawValue
     @State private var endMark = Display.usageEndMark
     @State private var openOnSummary = Prefs.openOnSummary
+    @State private var summaryOrder = Prefs.summaryOrder
     @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
     @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
     @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
@@ -127,6 +128,14 @@ struct SettingsScreen: View {
                             Toggle("Open on the summary", isOn: Binding(get: { openOnSummary }, set: { openOnSummary = $0; Prefs.openOnSummary = $0 }))
                             Text("With two or more accounts, start on the All tab. Off: start on the last account you looked at.")
                                 .font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                        // Robin, 2026-11-02: the All tab's order, beside Open on the summary and shown with it.
+                        Picker("Summary order", selection: Binding(get: { summaryOrder }, set: { order in
+                            summaryOrder = order
+                            Prefs.summaryOrder = order
+                            model.displayChanged()
+                        })) {
+                            ForEach(SummaryOrder.allCases, id: \.self) { Text($0.label).tag($0) }
                         }
                     }
                     VStack(alignment: .leading, spacing: 8) {

@@ -124,6 +124,29 @@ struct V20FixtureTests {
         #expect(got.allSatisfy { $0.group == .eligible })
     }
 
+    @Test("Summary order, every case")
+    func summaryOrder() throws {
+        for c in try cases(Fixtures.mobileJSON("summary/cases.json"), "order") {
+            let accounts = try #require(c["accounts"] as? [[String: Any]])
+            let entries = accounts.map {
+                SummaryRank.Entry(key: $0.str("name") ?? "", usedPct: $0.num("usedPct"), elapsedPct: nil,
+                                  msUntilReset: ($0["msUntilReset"] as? NSNumber)?.int64Value, sessionBinding: false,
+                                  sessionMsUntilReset: nil)
+            }
+            let expected = try #require(c["expected"] as? [String: [String]])
+            for (key, order) in [("yours", SummaryOrder.yours), ("resets", .resets), ("used", .used)] {
+                #expect(SummaryRank.ordered(entries, order).map(\.entry.key) == expected[key], "\(c.str("name") ?? "?") · \(key)")
+            }
+            #expect(SummaryRank.ordered(entries, .room) == SummaryRank.rank(entries))
+            let groups = Dictionary(uniqueKeysWithValues: SummaryRank.rank(entries).map { ($0.entry.key, $0.group) })
+            for order in SummaryOrder.allCases {
+                for r in SummaryRank.ordered(entries, order) { #expect(groups[r.entry.key] == r.group) }
+            }
+        }
+        #expect(SummaryOrder(key: nil) == .yours && SummaryOrder(key: "alphabetical") == .yours)
+        #expect(SummaryOrder.allCases.map(\.header) == ["your order", "most room first", "resets soonest", "most used"])
+    }
+
     // MARK: mobile §5 — display
 
     @Test("Vs pace figure, every case")

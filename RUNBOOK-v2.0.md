@@ -325,4 +325,12 @@ weekly.
   (the account on screen removed, or unknown) falls back to the All tab where it shows (tested); the CCBG-72 test
   passes its display explicitly and decodes a pre-CCBG-72 state. For Robin to confirm: with "Open on the summary" off,
   launch still opens the last account viewed (as Settings says).
+- **2026-11-02 · Step 7 recheck of 9970332 and Gemini live.** The iPad opens on All accounts; landscape shows one
+  account per tap; portrait shows the All/ChatGPT/Claude tabs; nothing pins — done. Gemini is live on both devices
+  (Robin signed in himself; the secret from ~/.cooldown-private by a script that never prints it): Fold release build —
+  Summary row "Gemini Pro 0%", the tab Weekly 0% (56% pace mark), Argon 1% (7% mark), chips All/Argon/5h, "Resets at
+  Thu 10:21 pm" (capture 40); iPad Debug the same plus its sidebar row. Still to check in Step 7: the pool shown only
+  once used, a spent week, a refresh after an hour.
+- **2026-11-02 · Summary order** (Robin's four choices): Appearance › Summary order on both platforms, `summaryOrder`
+  additive and downgrade-tested, `fixtures/summary/cases.json` → `order` (family layer).
 

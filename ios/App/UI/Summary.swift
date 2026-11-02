@@ -2,7 +2,7 @@ import CooldownCore
 import SwiftUI
 
 /// CCRM-98 (Summary Tab), wireframe design/2026-11-02-summary-tab.html rev B with the V1 caption
-/// (design/2026-11-02-pace-line-label.html): every account's week on one page, most room first (spec mobile §6),
+/// (design/2026-11-02-pace-line-label.html): every account's week on one page, in the Summary order (spec mobile §6),
 /// then the Pace map. No combined figure, no 5h on the map.
 struct SummaryEntry: Identifiable, Equatable {
     let account: Account
@@ -20,14 +20,14 @@ struct SummaryEntry: Identifiable, Equatable {
 
     /// Builds and ranks the list from each account's face (the same numbers the widgets draw).
     static func build(accounts: [Account], faces: [String: Face], plans: [String: String], histories: [String: [HistoryPoint]],
-                      nowMs: Int64) -> [SummaryEntry] {
+                      nowMs: Int64, order: SummaryOrder = Prefs.summaryOrder) -> [SummaryEntry] {
         let entries = accounts.compactMap { a -> SummaryRank.Entry? in
             guard let f = faces[a.key] else { return nil }
             return SummaryRank.Entry(key: a.key, usedPct: f.weeklyPct, elapsedPct: f.weeklyPace,
                                      msUntilReset: f.weeklyReset.map { $0.ms - nowMs }, sessionBinding: f.sessionBinding,
                                      sessionMsUntilReset: f.reset.map { $0.ms - nowMs })
         }
-        return SummaryRank.rank(entries).enumerated().compactMap { i, ranked in
+        return SummaryRank.ordered(entries, order).enumerated().compactMap { i, ranked in
             guard let account = accounts.first(where: { $0.key == ranked.entry.key }), let face = faces[account.key] else { return nil }
             var trail: [CGPoint] = []
             if let reset = face.weeklyReset {
@@ -47,6 +47,8 @@ struct SummaryView: View {
     var wide = false
 
     var body: some View {
+        // Read so a Settings change (the Summary order) re-sorts at once.
+        let _ = model.displayStamp
         let entries = SummaryEntry.build(
             accounts: model.accounts,
             faces: Dictionary(uniqueKeysWithValues: model.accounts.compactMap { a in model.face(a.key).map { (a.key, $0) } }),
@@ -68,7 +70,7 @@ struct SummaryView: View {
     private func open(_ key: String) { withAnimation { model.selectedKey = key } }
 }
 
-/// "Weekly · most room first", then a row per account. From six accounts rows go to one line (rev B S2).
+/// "Weekly · your order" (the Summary order's name, Robin 2026-11-02), then a row per account. From six accounts rows go to one line (rev B S2).
 struct SummaryList: View {
     let entries: [SummaryEntry]
     let nowMs: Int64
@@ -80,7 +82,7 @@ struct SummaryList: View {
             HStack {
                 Text("Weekly").font(.system(size: 17)).foregroundStyle(p.ink)
                 Spacer()
-                Text("most room first").font(.system(size: 13)).foregroundStyle(p.sub)
+                Text(Prefs.summaryOrder.header).font(.system(size: 13)).foregroundStyle(p.sub)
             }
             .padding(.bottom, 4)
             ForEach(entries) { entry in

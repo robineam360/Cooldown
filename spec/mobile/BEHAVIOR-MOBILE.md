@@ -225,3 +225,13 @@ caption and the account's figure in the Usage display mode; the Pace still ranks
 summed figure (CCRM-6 (Multi-Account)), no Summary widget, no 5h on the map.
 
 Cases in [`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `ranking`, `tab`.
+
+**Summary order** (Robin, 2026-11-02): Appearance › **Summary order**, next to Open on the summary and shown with it
+(two or more accounts), global `summaryOrder`: **Your order** (`yours`, the default — Settings › Account order),
+**Most room first** (`room`, the ranking above), **Resets soonest** (`resets`: the Weekly that resets next on top, ties
+and accounts with no reset clock in your order, the clockless last), **Most used** (`used`: the highest Weekly % on
+top, ties in your order, unread accounts last in your order). The list's header names the choice in lower case:
+"your order", "most room first", "resets soonest", "most used". Every row keeps its group's words and styling (held,
+spent, no reading) whatever the order; the Pace map is unaffected; widgets that list accounts keep their own order.
+An absent or unknown value reads as `yours`; v1.9 does not read the key. Cases in
+[`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `order`.

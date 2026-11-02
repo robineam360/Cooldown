@@ -39,6 +39,7 @@ class V20DowngradeTest {
         cache.markWeeklyFirstNoticeShown()
         cache.setUsageEndMark(UsageEndMark.PACE)
         cache.setStatusIcon(profile, StatusIconChoice.WEEKLY_BAR)
+        cache.setSummaryOrder(SummaryOrder.MOST_USED)
 
         // v1.9 reads Vs pace as Used: usageLeft() is true only for "left".
         assertFalse(cache.usageLeft())
@@ -47,7 +48,7 @@ class V20DowngradeTest {
         assertEquals(v19LayoutBefore, cache.layout(profile))
         assertEquals(v19CreditsBefore, cache.creditsVisible(profile))
         val prefs = context.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
-        val v20Keys = setOf("openOnSummary", "weeklyFirstNotice", "usageDisplay", "usageEndMark")
+        val v20Keys = setOf("openOnSummary", "weeklyFirstNotice", "usageDisplay", "usageEndMark", "summaryOrder")
         val perAccount = prefs.all.keys.filter {
             it.endsWith("headline") || it.endsWith("showModelLimits") || it.endsWith("statusIcon")
         }
@@ -62,6 +63,7 @@ class V20DowngradeTest {
         assertEquals(WeeklyFirstNotice.DONE, cache.weeklyFirstNotice())
         assertEquals(UsageEndMark.PACE, cache.usageEndMark())
         assertEquals(StatusIconChoice.WEEKLY_BAR, cache.statusIcon(profile))
+        assertEquals(SummaryOrder.MOST_USED, cache.summaryOrder())
     }
 
     @Test
@@ -74,6 +76,7 @@ class V20DowngradeTest {
         assertTrue(cache.openOnSummary())
         assertEquals(UsageEndMark.LINE, cache.usageEndMark())
         assertEquals(StatusIconChoice.RING, cache.statusIcon(profile))
+        assertEquals(SummaryOrder.YOURS, cache.summaryOrder())
         cache.settleWeeklyFirstNotice()
         assertEquals(WeeklyFirstNotice.DONE, cache.weeklyFirstNotice())
     }

@@ -196,15 +196,20 @@ struct V20SurfaceTests {
          r.face("Side", .claude, pct: 0, pace: 10, weeklyPct: 100, weeklyPace: 89.8)]
     }
 
-    func entries(_ faces: [Face]) -> [SummaryEntry] {
+    /// The C1 cases read the ranking ("Most room first"); "Your order" is the Summary's default since 2026-11-02.
+    func entries(_ faces: [Face], order: SummaryOrder = .room) -> [SummaryEntry] {
         SummaryEntry.build(accounts: faces.map(\.account), faces: Dictionary(uniqueKeysWithValues: faces.map { ($0.account.key, $0) }),
-                           plans: [:], histories: [:], nowMs: now.ms)
+                           plans: [:], histories: [:], nowMs: now.ms, order: order)
     }
 
     @Test("the Summary ranks the wireframe's four accounts as C1")
     func summaryOrder() {
         let e = entries(four)
         #expect(e.map(\.account.label) == ["Personal", "Teams", "Product", "Side"])
+        // Your order keeps the accounts as listed, each row still in its group.
+        let yours = entries(four, order: .yours)
+        #expect(yours.map(\.account.label) == four.map(\.account.label))
+        #expect(Set(yours.map(\.group)) == Set(e.map(\.group)))
         #expect(e.map(\.group) == [.eligible, .eligible, .held, .spent])
         // CCRM-103 (Hybrid Notification): the ring replaced "5h 93%" and "no 5h"; only the held reason's time stays.
         #expect(SummaryWords.companion(e[2])?.hasPrefix("back ") == true)

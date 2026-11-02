@@ -894,4 +894,14 @@ picked "Only that account" over "All stacked, scroll to it".
 - **Phones:** unchanged; neither the iPhone nor Android ever pinned an account in the main screen (on the iPhone the
   only trace was the Settings › Accounts pin glyph and its "Pin to the top" item, now removed with the concept).
 
+### Summary order (Robin, 2026-11-02; Android and iOS)
+
+Appearance › **Summary order**, right after "Open on the summary" and shown with it (two or more accounts):
+Android a wrapping row of four FilterChips — "Your order" (default) · "Most room first" · "Resets soonest" · "Most
+used" — under the bodyLarge SemiBold title, no subtitle; iOS a Picker row "Summary order" with the same four labels.
+The All tab's list header names the choice in lower case on the right of "Weekly": "your order", "most room first",
+"resets soonest", "most used". Rows keep their group's words and styling (held, spent, no reading) in every order;
+the rank number on a one-line row and the Pace map's labels follow the list's order. The Pace map's dots are
+unaffected; widgets that list accounts (Android Strip, iOS Overview) keep their own order (`SummaryRank.ordered`,
+BEHAVIOR-MOBILE §6).
 

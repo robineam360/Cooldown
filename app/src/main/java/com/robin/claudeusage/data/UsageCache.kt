@@ -580,6 +580,13 @@ class UsageCache(context: Context) {
         prefs.edit().putString("usageEndMark", mark.key).apply()
     }
 
+    /** Appearance › Summary order (Robin, 2026-11-02), global; Your order by default. */
+    fun summaryOrder(): SummaryOrder = SummaryOrder.fromKey(prefs.getString("summaryOrder", null))
+
+    fun setSummaryOrder(order: SummaryOrder) {
+        prefs.edit().putString("summaryOrder", order.key).apply()
+    }
+
     /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */
     fun openOnSummary(): Boolean = prefs.getBoolean("openOnSummary", true)
 

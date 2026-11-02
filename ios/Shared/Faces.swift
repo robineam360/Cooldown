@@ -257,6 +257,11 @@ enum Prefs {
         get { defaults.object(forKey: "openOnSummary") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "openOnSummary") }
     }
+    /// Appearance › Summary order (Robin, 2026-11-02), default Your order; v1.9 never reads the key.
+    static var summaryOrder: SummaryOrder {
+        get { SummaryOrder(key: defaults.string(forKey: "summaryOrder")) }
+        set { defaults.set(newValue.rawValue, forKey: "summaryOrder") }
+    }
     /// The last account looked at, for launch with Open on the summary off (or one account).
     static var lastAccountKey: String? {
         get { defaults.string(forKey: "lastAccount") }

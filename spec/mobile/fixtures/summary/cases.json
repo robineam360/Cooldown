@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "Summary tab ranking (BEHAVIOR-MOBILE section 6, CCRM-98 (Summary Tab), wireframe design/2026-11-02-summary-tab.html rev B). Spec-first, written 2026-11-02 by script from the rule, not ported from code. Each account gives its Weekly reading (usedPct null = no reading), core section 6's elapsedPct, the weekly msUntilReset, and its 5h: sessionPct, sessionMsUntilReset (null = no clock) and sessionBinding, core section 6.2's predicate already evaluated (a client computes it; these cases test the ranking). expected lists names in display order with each one's group. paceForReference is core section 6.1's pace rounded to 0.01, for reading the order by eye.",
+    "note": "Summary tab ranking (BEHAVIOR-MOBILE section 6, CCRM-98 (Summary Tab), wireframe design/2026-11-02-summary-tab.html rev B). Spec-first, written 2026-11-02 by script from the rule, not ported from code. Each account gives its Weekly reading (usedPct null = no reading), core section 6's elapsedPct, the weekly msUntilReset, and its 5h: sessionPct, sessionMsUntilReset (null = no clock) and sessionBinding, core section 6.2's predicate already evaluated (a client computes it; these cases test the ranking). expected lists names in display order with each one's group. paceForReference is core section 6.1's pace rounded to 0.01, for reading the order by eye. order (Robin, 2026-11-02, Appearance › Summary order; family layer): the list's order for each choice other than room (the ranking above). accounts are in your order (Settings › Account order); yours = that order; resets = the soonest weekly msUntilReset first, ties in your order, no reset clock (null) last in your order; used = the highest weekly usedPct first, ties in your order, no reading (null) last in your order. A row's group (and its words) does not change with the order.",
     "rule": "eligible = a reading, usedPct < 99.5, not sessionBinding; by pace ascending, a tie to the smaller msUntilReset. Then held (sessionBinding, week not spent) by sessionMsUntilReset ascending; then spent (usedPct >= 99.5) by msUntilReset ascending; then no reading, in tab order. A spent week is never held."
   },
   "ranking": [
@@ -549,6 +549,156 @@
       "expectedTabShown": true,
       "expectedToggleShown": true,
       "expectedOpensOn": "lastViewedAccount"
+    }
+  ],
+  "order": [
+    {
+      "name": "four accounts",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "msUntilReset": 369720000
+        },
+        {
+          "name": "Product",
+          "usedPct": 30,
+          "msUntilReset": 169200000
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "msUntilReset": 199800000
+        },
+        {
+          "name": "Side",
+          "usedPct": 100,
+          "msUntilReset": 61920000
+        }
+      ],
+      "expected": {
+        "yours": [
+          "Teams",
+          "Product",
+          "Personal",
+          "Side"
+        ],
+        "resets": [
+          "Side",
+          "Product",
+          "Personal",
+          "Teams"
+        ],
+        "used": [
+          "Side",
+          "Teams",
+          "Personal",
+          "Product"
+        ]
+      }
+    },
+    {
+      "name": "ties keep your order",
+      "accounts": [
+        {
+          "name": "A",
+          "usedPct": 40,
+          "msUntilReset": 360000000
+        },
+        {
+          "name": "B",
+          "usedPct": 40,
+          "msUntilReset": 360000000
+        },
+        {
+          "name": "C",
+          "usedPct": 60,
+          "msUntilReset": 180000000
+        }
+      ],
+      "expected": {
+        "yours": [
+          "A",
+          "B",
+          "C"
+        ],
+        "resets": [
+          "C",
+          "A",
+          "B"
+        ],
+        "used": [
+          "C",
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "name": "no reading and no clock go last, in your order",
+      "accounts": [
+        {
+          "name": "Unread",
+          "usedPct": null,
+          "msUntilReset": null
+        },
+        {
+          "name": "Fresh",
+          "usedPct": 0,
+          "msUntilReset": null
+        },
+        {
+          "name": "Live",
+          "usedPct": 20,
+          "msUntilReset": 108000000
+        },
+        {
+          "name": "Late",
+          "usedPct": 10,
+          "msUntilReset": null
+        }
+      ],
+      "expected": {
+        "yours": [
+          "Unread",
+          "Fresh",
+          "Live",
+          "Late"
+        ],
+        "resets": [
+          "Live",
+          "Unread",
+          "Fresh",
+          "Late"
+        ],
+        "used": [
+          "Live",
+          "Late",
+          "Fresh",
+          "Unread"
+        ]
+      }
+    },
+    {
+      "name": "one account",
+      "accounts": [
+        {
+          "name": "Solo",
+          "usedPct": 12,
+          "msUntilReset": 144000000
+        }
+      ],
+      "expected": {
+        "yours": [
+          "Solo"
+        ],
+        "resets": [
+          "Solo"
+        ],
+        "used": [
+          "Solo"
+        ]
+      }
     }
   ]
 }

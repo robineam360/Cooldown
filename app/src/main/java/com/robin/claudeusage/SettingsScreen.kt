@@ -741,6 +741,9 @@ fun SettingsScreen(
                 cacheSettings.setOpenOnSummary(it)
             }
             RowDivider()
+            // Robin, 2026-11-02: the All tab's order, beside Open on the summary and shown with it.
+            SummaryOrderGroup(cacheSettings)
+            RowDivider()
         }
         // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
         // Comfortable stays the default — Compact is opt-in, so nobody's screen changes
@@ -4166,6 +4169,32 @@ internal fun UsageEndMarkGroup(selected: UsageEndMark, onChange: (UsageEndMark) 
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Appearance › Summary order (Robin, 2026-11-02; BEHAVIOR-MOBILE §6): Your order (default) · Most room
+ * first · Resets soonest · Most used, as wrapping chips like the other Appearance choices.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+internal fun SummaryOrderGroup(cache: com.robin.claudeusage.data.UsageCache) {
+    var order by remember { mutableStateOf(cache.summaryOrder()) }
+    Text("Summary order", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+    Spacer(Modifier.height(6.dp))
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        for (value in com.robin.claudeusage.data.SummaryOrder.entries) {
+            FilterChip(
+                selected = order == value,
+                onClick = {
+                    order = value
+                    cache.setSummaryOrder(value)
+                },
+                label = { Text(value.label) },
+            )
         }
     }
 }

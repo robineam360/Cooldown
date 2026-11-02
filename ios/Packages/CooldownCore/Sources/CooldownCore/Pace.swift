@@ -186,6 +186,22 @@ public enum SummaryRank {
         }.map(\.element)
     }
 
+    /// Appearance › Summary order (Robin, 2026-11-02; spec mobile §6): the list in `order`. Every row keeps the group
+    /// `rank` gives it; only the order changes. `entries` are in your order. Cases: `summary/cases.json` → `order`.
+    public static func ordered(_ entries: [Entry], _ order: SummaryOrder) -> [Ranked] {
+        let ranked = rank(entries)
+        if order == .room { return ranked }
+        let group = Dictionary(uniqueKeysWithValues: ranked.map { ($0.entry.key, $0.group) })
+        let sorted: [Entry]
+        switch order {
+        case .yours, .room: sorted = entries
+        // Stable: ties keep your order; no clock / no reading go last, in your order.
+        case .resets: sorted = stable(entries) { ($0.msUntilReset ?? .max) < ($1.msUntilReset ?? .max) }
+        case .used: sorted = stable(entries) { ($0.usedPct ?? -.infinity) > ($1.usedPct ?? -.infinity) }
+        }
+        return sorted.map { Ranked(entry: $0, group: group[$0.key] ?? .noReading) }
+    }
+
     /// The All tab exists with two or more accounts; so does its Appearance toggle.
     public static func tabShown(accountCount: Int) -> Bool { accountCount >= 2 }
 
@@ -204,4 +220,24 @@ public enum WeeklyFirstNotice {
 
     /// The value written at the first v2.0 launch.
     public static func settle(hadAccountsBefore: Bool) -> String { hadAccountsBefore ? pending : done }
+}
+
+/// Appearance › Summary order (Robin, 2026-11-02): `yours` (default) the account order; `room` the §6 ranking;
+/// `resets` the Weekly that resets next first; `used` the highest Weekly first. An absent or unknown value is `yours`.
+public enum SummaryOrder: String, Sendable, Equatable, CaseIterable {
+    case yours, room, resets, used
+    public static let `default` = SummaryOrder.yours
+    public init(key: String?) { self = key.flatMap(SummaryOrder.init(rawValue:)) ?? .default }
+
+    public var label: String {
+        switch self {
+        case .yours: "Your order"
+        case .room: "Most room first"
+        case .resets: "Resets soonest"
+        case .used: "Most used"
+        }
+    }
+
+    /// How the list's header names it.
+    public var header: String { label.lowercased() }
 }

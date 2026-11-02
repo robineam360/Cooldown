@@ -1798,7 +1798,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   per the approved wireframes, and no surface still shows the gap verdict.
 
 ### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
-- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
+- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe **2026-11-02 (Robin):** Appearance › Summary order — Your order (default), Most room first (the ranking), Resets
+  soonest, Most used — on both platforms, built on the v2.0 branch; the header names the choice.
   `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
   the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
   CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.

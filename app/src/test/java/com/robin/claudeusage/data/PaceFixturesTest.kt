@@ -217,4 +217,34 @@ class PaceFixturesTest {
         assertEquals(WeeklyFirstNotice.PENDING, WeeklyFirstNotice.settle(true))
         assertEquals(WeeklyFirstNotice.DONE, WeeklyFirstNotice.settle(false))
     }
+
+    /** Appearance › Summary order (Robin, 2026-11-02): `spec/mobile/fixtures/summary/cases.json` → `order`. */
+    @Test
+    fun `summary order matches every mobile case`() {
+        val orders = mapOf(
+            "yours" to SummaryOrder.YOURS, "resets" to SummaryOrder.RESETS_SOONEST, "used" to SummaryOrder.MOST_USED,
+        )
+        for (c in load("mobile/fixtures/summary/cases.json").getJSONArray("order").objects()) {
+            val entries = c.getJSONArray("accounts").objects().map {
+                SummaryRank.Entry(
+                    key = it.getString("name"), usedPct = it.dbl("usedPct"), elapsedPct = null,
+                    msUntilReset = it.lng("msUntilReset"), sessionBinding = false, sessionMsUntilReset = null,
+                )
+            }
+            val exp = c.getJSONObject("expected")
+            for ((k, order) in orders) {
+                val want = exp.getJSONArray(k).let { a -> (0 until a.length()).map { a.getString(it) } }
+                assertEquals("${c.getString("name")} · $k", want, SummaryRank.ordered(entries, order).map { it.entry.key })
+            }
+            // Most room first is the ranking itself, and every order keeps each row's group.
+            assertEquals(SummaryRank.rank(entries), SummaryRank.ordered(entries, SummaryOrder.MOST_ROOM))
+            val groups = SummaryRank.rank(entries).associate { it.entry.key to it.group }
+            for (order in SummaryOrder.entries) {
+                SummaryRank.ordered(entries, order).forEach { assertEquals(groups[it.entry.key], it.group) }
+            }
+        }
+        assertEquals(SummaryOrder.YOURS, SummaryOrder.fromKey(null))
+        assertEquals(SummaryOrder.YOURS, SummaryOrder.fromKey("alphabetical"))
+        assertEquals(listOf("your order", "most room first", "resets soonest", "most used"), SummaryOrder.entries.map { it.header })
+    }
 }
