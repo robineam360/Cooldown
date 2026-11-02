@@ -53,8 +53,8 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 |---|---|---|---|
 | 1 | Cross-family review of this plan, findings adopted, plan FROZEN | — | ☑ |
 | 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☑ |
-| 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☐ |
-| 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☐ |
+| 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☑ |
+| 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☑ |
 | 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
 | 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☐ |
 | 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed | 4, 5, 6, G0 | ☐ |
