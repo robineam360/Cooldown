@@ -518,8 +518,12 @@ struct BarsFace: View {
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
                 ProviderMark(provider: face.account.provider, size: 15)
-                Text("\(face.account.label) · Weekly" + (footnote ? "" : day ?? ""))
-                    .lineLimit(1).minimumScaleFactor(0.7)
+                // CCBG-71's rule, as FaceLabel: the full title, else without the day, else the name alone.
+                ViewThatFits(in: .horizontal) {
+                    Text("\(face.account.label) · Weekly" + (footnote ? "" : day ?? "")).lineLimit(1).fixedSize()
+                    Text("\(face.account.label) · Weekly").lineLimit(1).fixedSize()
+                    Text(face.account.label).lineLimit(1).minimumScaleFactor(0.85)
+                }
             }
             .font(.system(size: 14)).foregroundStyle(p.txt)
             HStack(spacing: 10) {

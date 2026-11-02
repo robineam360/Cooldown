@@ -178,7 +178,9 @@ struct SummaryRow: View {
                         .fixedSize()
                         .frame(minWidth: 48, alignment: .trailing)
                         .contentShape(Rectangle().inset(by: -12))
-                        .onTapGesture { show(readout) }
+                        // Only while there is a readout (Fable F7): otherwise the figure opens the account with the row.
+                        .onTapGesture(count: 1, perform: { show(readout) })
+                        .allowsHitTesting(readout != nil)
                 }
                 GrammarBar(pct: used, pace: pace, accent: accent, height: 10, surface: p.card).padding(.top, 6)
                 if let caption = PaceText.caption(mode: Display.mode, usedPct: used, elapsedPct: pace), let mark = pace {

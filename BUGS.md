@@ -99,7 +99,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-68 · iPad Plan Chip Wrap — "Team Premium" wraps onto three lines in the sidebar
 - **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending): the sidebar's chip is one line
-  (`lineLimit(1)` + `fixedSize`), so the name truncates first.
+  (`lineLimit(1)` + `fixedSize`) and gives way to the name — whole beside it when it fits, else left out — since
+  truncating the name first left "C…" beside "Team Premium" in the 300 pt sidebar (judge on 225f87c).
 - **Severity:** Low
 - **Symptom:** in the 300 pt sidebar, Claude's chip read "Team / Premiu / m".
 
@@ -110,7 +111,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   is iOS's own redaction of the widget while locked, not our placeholder. The app group's files carry no explicit
   data protection (`Storage` writes with the default, readable after the first unlock), the entitlements set no
   `com.apple.developer.default-data-protection`, and the widget reads files only (no Keychain, no network), so the
-  timeline can read while locked. **Next (Step 7, on the iPad):** note whether the figures show on the lock screen
+  timeline can read while locked. A failed read would show "Add an account", not "??". The judge (225f87c) adds:
+  no *lock-screen* face prints a d/h duration (the rectangular prints "Weekly · <day>"); "Xd Yh" comes only from the
+  home faces (Number, Countdown, Overview), so which widget showed "?d ??h" is not yet known. **Next (Step 7, on the
+  iPad):** note the redacted widget's kind and family (and whether it offers "Edit Widget"), note whether the figures show on the lock screen
   after a Face ID look (unlocked but on the lock screen) and only redact while fully locked, and check the iPad's
   Settings › Face ID & Passcode › Allow Access When Locked list; if iOS redacts there by policy, it is the user's
   setting, not a fix in the app.
@@ -118,7 +122,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** with the iPad locked, the lock-screen widgets show "??%" and "?d ??h" in place of figures.
 
 ### CCBG-70 · Stale Ring Widget — a dropped "Ring" widget keeps its last snapshot on the home screen
-- **Status:** **Not a code defect — Robin's action** (identified 2026-11-02). The small ChatGPT ring ("9%, as of 4:32
+- **Status:** **Not a code defect — Robin's action** (identified 2026-11-02; before removing it, check it offers no
+  "Edit Widget", which confirms the orphaned kind). The small ChatGPT ring ("9%, as of 4:32
   pm") is the **Ring** widget kind, removed from the bundle in 5b79b42 (CCRM-94 iOS widgets rev C, 2026-10-24: "D1
   Ring goes"). A widget whose kind no longer exists is never asked for a timeline again, so WidgetKit keeps drawing
   its last snapshot — stale, and a ring for a 7-day window the grammar no longer allows. **Robin:** remove it from the

@@ -306,4 +306,11 @@ weekly.
   title does not fit. CCBG-69 (Lock Widgets Redacted): no cause in the app's code — iOS's redaction while locked;
   device check listed in its entry. CCBG-70 (Stale Ring Widget): the dropped "Ring" kind's last snapshot — Robin
   removes it and adds Bars. Checks: `swift test` 127, iOS app tests 56.
+  Fresh Opus judge on 225f87c: **concerns**, five — adopted: the sidebar name keeps priority and the chip is left out
+  when it cannot fit (no "C…"); the scroll runs after the target half exists; the Bars title takes CCBG-71's
+  fallback; CCBG-69's entry records that no lock-screen face prints a d/h duration (which widget redacted is to be
+  noted on the iPad); CCBG-70's "Edit Widget" check. One Fable fit-call ruling on the seven text-fit and tap fallbacks
+  of CCBG-56 to CCBG-71: six KEEP, one CHANGE — the Summary figure's target exists only while there is a readout
+  (both platforms). Recheck items: the Fold 7 cover tile shows "Weekly · All models" whole; All tab → a spent row's
+  figure opens it; iPad 300 pt sidebar; small Number title; All accounts → tap an account scrolls to it.
 

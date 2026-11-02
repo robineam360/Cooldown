@@ -733,8 +733,9 @@ resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row
 reads `Fmt.planLabel`, as Settings: "Prolite", CCBG-62 (Plan Pill Case)). **Tap the figure** (P8): its own
 80 × 48 dp target over the figure and the bar's end (CCBG-56 (Summary Readout Tap)) — line 3 becomes the Weekly's
 readout (§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined (the font's own underline,
-CCBG-57 (Readout Underline Clip)); the target consumes the tap even when spent, unclocked or unread (then nothing
-shows), so it never opens the account; TalkBack: the readout is the target's click label. Spent and unread rows:
+CCBG-57 (Readout Underline Clip)); the target exists only while there is a readout (Fable F7), so a spent,
+unclocked or unread row's figure opens the account like the rest of the row; TalkBack: the figure carries the readout
+as its click action. Spent and unread rows:
 line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp rank disc in the accent (number
 10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", a held row "Held · 3:40 PM"
 in the 5h colour — the full row's words without "resets", never "5h" (judge F3); "Held" with no 5h clock — "Out ·

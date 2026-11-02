@@ -342,7 +342,12 @@ struct IPadLandscape: View {
             .refreshable { await model.refresh(manual: true) }
             .onChange(of: scrollRequest) { _, request in
                 guard let key = request?.key else { return }
-                withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(key, anchor: .top) }
+                // After the update that may insert the target's half (from All accounts, or a third account
+                // replacing the bottom half), so its id exists when the scroll runs.
+                Task { @MainActor in
+                    await Task.yield()
+                    withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(key, anchor: .top) }
+                }
             }
             }
         }
@@ -422,9 +427,13 @@ struct IPadLandscape: View {
                     HStack(spacing: 6) {
                         ProviderMark(provider: account.provider, size: 16)
                         Text(account.label).font(.system(size: 16, weight: selected || account.key == model.pinnedKey ? .semibold : .regular))
-                            .lineLimit(1)
-                        // CCBG-68 (iPad Plan Chip Wrap): the chip stays on one line; the name truncates first.
-                        PlanChip(plan: model.states[account.key]?.plan).lineLimit(1).fixedSize()
+                            .lineLimit(1).layoutPriority(1)
+                        // CCBG-68 (iPad Plan Chip Wrap): the chip stays on one line, and gives way to the name — shown
+                        // whole when it fits beside it, else left out (never "Team / Premiu / m", never "C…").
+                        ViewThatFits(in: .horizontal) {
+                            PlanChip(plan: model.states[account.key]?.plan).lineLimit(1).fixedSize()
+                            Color.clear.frame(width: 0, height: 0)
+                        }
                         if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
                     }
                     GrammarBar(pct: pct, pace: pace, accent: accent, height: 4, showsRoom: false, surface: surface)

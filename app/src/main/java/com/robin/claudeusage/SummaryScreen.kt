@@ -362,14 +362,18 @@ private fun SummaryRow(
         // CCBG-56 (Summary Readout Tap): the figure's own target, 80 × 48 dp over the figure
         // and the bar's end, consumes the tap (P8: line 3 swaps; nothing when there is no
         // readout) so the row's tap — open the account — never takes it. A plain gesture, no
-        // ripple and no node of its own for TalkBack (the figure carries the action).
+        // ripple and no node of its own for TalkBack (the figure carries the action). Only
+        // while there is a readout (Fable F7): a spent, unread or unclocked row's figure opens
+        // the account like the rest of the row, rather than being a dead zone.
         val currentTap by rememberUpdatedState(tapLabel)
-        Box(
-            Modifier
-                .align(Alignment.TopEnd)
-                .size(width = 80.dp, height = 48.dp)
-                .pointerInput(Unit) { detectTapGestures { currentTap?.let { readout = it } } },
-        )
+        if (tapLabel != null) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .size(width = 80.dp, height = 48.dp)
+                    .pointerInput(Unit) { detectTapGestures { currentTap?.let { readout = it } } },
+            )
+        }
         }
     }
 }
