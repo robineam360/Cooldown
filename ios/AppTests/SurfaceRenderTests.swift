@@ -297,4 +297,22 @@ struct SurfaceRenderTests {
         save("la-ended", LockPanel(state: .init(rows: [], ended: .init(label: "Teams", provider: "claude", peak: 87))),
              width: 370, height: 110, background: bg)
     }
+
+    @Test("Live Activity: stale at the first Weekly or 5h reset; the ended frame's peak is the 5h's")
+    func liveActivityStaleAndPeak() {
+        let now = Date(timeIntervalSince1970: 1_793_620_200)
+        var row = CooldownActivityAttributes.Row(states[0].1)
+        row.weeklyLeads = true
+        row.pct = 52
+        row.weeklyPct = 93
+        row.reset = now.addingTimeInterval(4 * 86_400)
+        row.fiveReset = now.addingTimeInterval(50 * 60)
+        #expect(CooldownActivityAttributes.staleDate([row], now: now) == now.addingTimeInterval(50 * 60))
+        row.fiveReset = now.addingTimeInterval(-60)
+        #expect(CooldownActivityAttributes.staleDate([row], now: now) == now.addingTimeInterval(4 * 86_400))
+        // The frame is drawn after the 5h has reset: the peak is still the 93 it reached.
+        #expect(CooldownActivityAttributes.endedPeak(row) == 93)
+        row.weeklyPct = nil
+        #expect(CooldownActivityAttributes.endedPeak(row) == 52)
+    }
 }

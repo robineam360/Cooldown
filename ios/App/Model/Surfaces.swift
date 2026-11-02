@@ -59,17 +59,19 @@ enum LiveActivities {
             // a fetch sees a new window.
             for activity in running {
                 let last = activity.content.state.rows.first
-                let ended = last.map { CooldownActivityAttributes.Ended(label: $0.label, provider: $0.provider, peak: Int($0.pct ?? 0)) }
+                // CCRM-103: rows are Weekly-led; the final frame names the 5h's reset, so its peak is the 5h's.
+                let ended = last.map {
+                    CooldownActivityAttributes.Ended(label: $0.label, provider: $0.provider,
+                                                     peak: CooldownActivityAttributes.endedPeak($0))
+                }
                 await activity.end(ActivityContent(state: .init(rows: [], ended: ended), staleDate: nil),
                                    dismissalPolicy: .after(.now.addingTimeInterval(5 * 60)))
             }
             return
         }
-        // Stale when the first window resets (the 5h companion's included), so iOS greys it if the app hasn't
-        // refreshed by then.
-        let companionResets = faces.map { $0.lead(for: .notification) }.filter { f in rows.contains { $0.key == f.account.key } }
-            .compactMap(\.companionReset)
-        let stale = (rows.compactMap(\.reset) + companionResets).filter { $0 > .now }.min()
+        // Stale when the first window resets — the Weekly the row leads with, or its 5h ring (CCRM-103: every row is
+        // Weekly-led, the 5h's reset rides in `fiveReset`) — so iOS greys it if the app hasn't refreshed by then.
+        let stale = CooldownActivityAttributes.staleDate(rows)
         let content = ActivityContent(state: CooldownActivityAttributes.ContentState(rows: rows, ended: nil), staleDate: stale)
         if let activity = running.first {
             await activity.update(content)

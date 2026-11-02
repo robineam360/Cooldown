@@ -642,7 +642,7 @@ struct AccountTile: View {
                 .fixedSize(horizontal: false, vertical: true).padding(.top, weekly == nil ? 10 : 2)
         } else if let five {
             HStack(alignment: .center, spacing: 4) {
-                GrammarRing(pct: five.pct, pace: five.pace, accent: accent, surface: p.card)
+                FiveGlyph(pct: five.pct, pace: five.pace, accent: accent)
                     .frame(width: 12, height: 12)
                     .accessibilityHidden(true)
                 if reveal == .ring, let r = ringReadout {

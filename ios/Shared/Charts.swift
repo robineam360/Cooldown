@@ -341,7 +341,7 @@ struct GrammarRing: View {
                     Display.grammarFigure(figure, size: base, weight: loud && figureColour == nil ? .heavy : .bold)
                         .foregroundStyle(textColour)
                         .lineLimit(1).minimumScaleFactor(0.5)
-                        .frame(width: max(1, 2 * (Self.bore(s) - 1.5) * 0.92))
+                        .frame(width: max(1, 2 * (0.39 * s - (bandOverride ?? Self.band(s)) / 2 - 1.5) * 0.92))
                 }
             }
             .frame(width: s, height: s)
@@ -435,5 +435,61 @@ struct GrammarRing: View {
             tick.move(to: pt(g, r - sw)); tick.addLine(to: pt(g, r + sw))
             ctx.stroke(tick, with: .color(ink.opacity(0.9)), style: StrokeStyle(lineWidth: max(1.5, s / 32), lineCap: .round))
         }
+    }
+}
+
+/// CCRM-103 (Hybrid Notification): the small 5h glyph — the 12 pt lead of the 5h line, the lock-screen inline image —
+/// drawn as the page's `gauge()`, the Android status-bar ring's geometry (24ths of the box: hairline 1.493 at radius 9.2,
+/// band 4, the needle from the hub to 11.2, the hub, a cross from 99.5), so it matches Android's glyph. Greyed (a spent
+/// week): the arc at 40% ink and no needle. No text, no label of its own.
+struct FiveGlyph: View {
+    let pct: Double?
+    let pace: Double?
+    let accent: Color
+    var greyed = false
+    var mono: Color?
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        Canvas { ctx, size in
+            let s = min(size.width, size.height), u = s / 24, c = CGPoint(x: s / 2, y: s / 2), r = 9.2 * u
+            let ink = mono ?? (scheme == .dark ? Color.white : Color.black)
+            func arc(_ a: Double, _ b: Double) -> Path {
+                var path = Path()
+                path.addArc(center: c, radius: r, startAngle: .degrees(-90 + a * 360), endAngle: .degrees(-90 + min(b, 0.9999) * 360),
+                            clockwise: false)
+                return path
+            }
+            ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)),
+                       with: .color(ink.opacity(greyed ? 0.3 : 0.5)), lineWidth: 1.493 * u)
+            guard let pct else { return }
+            if greyed {
+                ctx.stroke(arc(0, max(min(pct, 100) / 100, 0.09)), with: .color(ink.opacity(0.4)), lineWidth: 4 * u)
+                return
+            }
+            let f = pct > 0 ? max(min(pct, 100) / 100, 0.09) : 0
+            if f > 0 { ctx.stroke(arc(0, f), with: .color(mono ?? p.severity(pct, accent: accent)), lineWidth: 4 * u) }
+            if let pace, pct > pace + 3, Display.redPastPace {
+                ctx.stroke(arc(min(max(pace / 100, 0), 1), f), with: .color(mono ?? p.red), lineWidth: 4 * u)
+            }
+            if let pace {
+                let a = 2 * Double.pi * min(max(pace / 100, 0), 1), rim = 11.2 * u
+                var needle = Path()
+                needle.move(to: c)
+                needle.addLine(to: CGPoint(x: c.x + rim * sin(a), y: c.y - rim * cos(a)))
+                ctx.stroke(needle, with: .color(ink.opacity(0.95)), style: StrokeStyle(lineWidth: 1.792 * u, lineCap: .round))
+                let hub = 1.344 * u * 1.4
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - hub, y: c.y - hub, width: 2 * hub, height: 2 * hub)), with: .color(ink.opacity(0.95)))
+            }
+            if pct >= 99.5 {
+                let k = 4.2 * u
+                var x = Path()
+                x.move(to: CGPoint(x: c.x - k, y: c.y - k)); x.addLine(to: CGPoint(x: c.x + k, y: c.y + k))
+                x.move(to: CGPoint(x: c.x + k, y: c.y - k)); x.addLine(to: CGPoint(x: c.x - k, y: c.y + k))
+                ctx.stroke(x, with: .color(ink.opacity(0.9)), style: StrokeStyle(lineWidth: 2 * u, lineCap: .round))
+            }
+        }
+        .accessibilityHidden(true)
     }
 }

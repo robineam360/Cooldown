@@ -265,7 +265,7 @@ struct FaceRing: View {
                         Display.grammarFigure(text, size: size, weight: loud(state) && vsColour == nil ? .heavy : .bold)
                             .foregroundStyle(ownColour(state))
                             .lineLimit(1).minimumScaleFactor(0.5)
-                            .frame(width: max(1, 2 * (GrammarRing.bore(s) - 1.5) * 0.92))
+                            .frame(width: max(1, 2 * (0.39 * s - (bandRatio.map { $0 * s } ?? GrammarRing.band(s)) / 2 - 1.5) * 0.92))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .accessibilityHidden(true)
@@ -754,12 +754,19 @@ struct AccountCard: View {
                         figure((0.25 * s).rounded())
                     }
                     bar(8).padding(.top, 6)
+                    // The tile's model limit (itile's Fable row): 6 pt bar, as the app's tile.
+                    if !blank, let limit = face.modelLimit {
+                        FaceModelRow(limit: limit, accent: accent, fontSize: 13, labelWidth: 44, barHeight: 6, figureWidth: 32,
+                                     dimmed: face.isDimmed)
+                            .padding(.top, 8)
+                    }
                 }
             }
             FaceWeeklyLine(face: face).font(.system(size: 14.5, weight: .semibold)).padding(.top, 10)
             if let five = face.fiveHour, let line = fiveLine(five) {
                 HStack(spacing: 4) {
-                    FaceRing(five: five, accent: accent, figure: .none, greyed: face.fiveGreyed, blank: blank).frame(width: 12, height: 12)
+                    FiveGlyph(pct: blank ? nil : five.pct, pace: five.pace, accent: accent, greyed: face.fiveGreyed)
+                        .frame(width: 12, height: 12)
                     line.lineLimit(1)
                 }
                 .font(.system(size: 14.5)).padding(.top, 2)
@@ -930,7 +937,7 @@ struct LockFace: View {
 
     /// The ring glyph as an image: the inline slot takes one image and one line of text.
     @MainActor private func glyph(_ five: Face.FiveHour, greyed: Bool) -> Image? {
-        let renderer = ImageRenderer(content: FaceRing(five: five, accent: .white, figure: .none, greyed: greyed, surface: .clear, mono: .white)
+        let renderer = ImageRenderer(content: FiveGlyph(pct: five.pct, pace: five.pace, accent: .white, greyed: greyed, mono: .white)
             .frame(width: 16, height: 16)
             .environment(\.colorScheme, .dark))
         renderer.scale = 3

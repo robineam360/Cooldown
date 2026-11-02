@@ -757,6 +757,9 @@ Medium Overview with one account is the Strip (as before).
 - **Island expanded**: ring **48** left (14 gap); "Teams · Weekly" (mark 18, 15 pt semibold) with the figure **34 pt**;
   8 pt bar; "Resets Sun 9:30 pm · in 4d 6h" (13 pt; spent "Out until …").
 - **Minimal**: the bare ring (provider mark with no 5h).
+- **The small 5h glyph** (the 5h line's 12 pt lead, the inline lock image at 16 pt) is `FiveGlyph`, the page's
+  `gauge()` — the Android status-bar ring's geometry (needle, hub, the cross from 99.5; greyed: the arc at 40%, no
+  needle) — not a small grammar ring.
 - Model: `CooldownActivityAttributes.Row` is now always built Weekly-led (`Face.grammar`), the 5h in the companion
   fields; new optional fields `fiveReset`, `weeklyLine`, `weeklyWords` (older states still decode).
 
@@ -765,12 +768,11 @@ Medium Overview with one account is the Strip (as before).
 1. **Model limits (Fable, Argon) on Bars and Strip**: settled (Fable E1.1) — `Face.modelLimit` carries the account's
    first model cap (honouring Model limits, as the app's tile), drawn as above. A cap whose reset has passed reads 0%.
 2. **Overview tile header**: the page's `itile` has no account name; the widget tile names it in the bar's label row
-   (mark + "Teams · Weekly"). Extra Large with one account now draws one tile, not today's 5h and Weekly cards side by
+   (mark + "Teams · Weekly"). The tile draws its first model limit under the Weekly bar (6 pt), as `itile` does. Extra Large with one account now draws one tile, not today's 5h and Weekly cards side by
    side (a 5h card would be a 5h bar).
 3. **Lock circular for a plan with no 5h**: not on the page; today's Weekly ring with "W" kept.
-4. **Ring band on the lock-screen circular**: ruled (Fable E1.2) — 5 pt at its 64 pt size, as the page's `wring`.
-   Not yet built: `GrammarRing` (`ios/Shared/Charts.swift`) derives its band from the size alone (0.13 × 64 ≈ 8 pt) and
-   needs a band override parameter (used by `band` and `bore`) before `LockFace.circular` can pass 5 / 64 of its size.
+4. **Ring band on the lock-screen circular**: ruled (Fable E1.2) and built — 5 pt at its 64 pt size, as the page's
+   `wring` (`GrammarRing.bandOverride`, `FaceRing.bandRatio` 5 / 64; the figure is fitted to that bore).
 5. **Mini row and Live Activity rows show no status line** for sign-in / stale beyond the dimmed "—" (Mini) — as drawn.
 6. **Gallery descriptions** (`Widgets.swift`) reworded for Bars ("One account's Weekly bar, with its 5h ring.") and
    Strip ("One account: the 5h ring, with the Weekly beside it."); the Control Center control still says "Teams · 5h"

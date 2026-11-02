@@ -106,3 +106,16 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var peak: Int
     }
 }
+
+// MARK: CCRM-103 (Hybrid Notification): every row is Weekly-led, the 5h rides in its ring fields
+
+extension CooldownActivityAttributes {
+    /// When iOS should grey the activity: the first future reset among the rows' Weekly and their 5h rings.
+    static func staleDate(_ rows: [Row], now: Date = .now) -> Date? {
+        (rows.compactMap(\.reset) + rows.compactMap(\.fiveReset)).filter { $0 > now }.min()
+    }
+
+    /// The final frame names the 5h's reset, so its peak is the 5h's last reading — the stored companion, not `five`,
+    /// which reads 0% once that reset has passed — or the Weekly's on a plan with no 5h.
+    static func endedPeak(_ row: Row) -> Int { Int((row.leadsWeekly ? row.weeklyPct : nil) ?? row.pct ?? 0) }
+}
