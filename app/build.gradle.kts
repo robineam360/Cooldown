@@ -24,6 +24,12 @@ android {
         targetSdk = 36
         versionCode = 25
         versionName = "1.9"
+        // CCRM-55 (Antigravity Account): the Antigravity client's public installed-app secret.
+        // Public by design, but GitHub push protection rejects it, so it never enters the repo:
+        // set `antigravityClientSecret` in ~/.gradle/gradle.properties (CI: a repository secret).
+        // Empty → the Gemini row is hidden in Add account; the build never fails over it.
+        val antigravitySecret = (project.findProperty("antigravityClientSecret") as String?).orEmpty()
+        buildConfigField("String", "ANTIGRAVITY_CLIENT_SECRET", "\"$antigravitySecret\"")
     }
 
     // CCRM-87 (Update Channel): one app, two distribution channels, one commit. Both share

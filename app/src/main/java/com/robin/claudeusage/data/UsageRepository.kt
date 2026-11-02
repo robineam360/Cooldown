@@ -2,6 +2,7 @@ package com.robin.claudeusage.data
 
 import android.content.Context
 import com.robin.claudeusage.alerts.Alerts
+import com.robin.claudeusage.data.source.AntigravitySource
 import com.robin.claudeusage.data.source.ChatGptSource
 import com.robin.claudeusage.data.source.ClaudePlan
 import com.robin.claudeusage.data.source.Sources
@@ -102,6 +103,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         credStore.clear(profile)
         OAuthSignIn.clearPending(context)
         CodexDeviceSignIn.clearPending(context)
+        AntigravitySignIn.clearPending(context)
         // CCBG-50 (Degraded Store Notice), wireframe rev B's first build rule: a Clear made
         // while degraded is undone at restart, when the file brings the token back, so the
         // cache keeps what it had rather than a plan and sign-in flags that would be wrong.
@@ -191,6 +193,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
         credStore.clear(profile)
         if (OAuthSignIn.pending(context)?.profile == profile) OAuthSignIn.clearPending(context)
+        if (AntigravitySignIn.pending(context)?.profileKey == profile.key) AntigravitySignIn.clearPending(context)
         if (CodexDeviceSignIn.pending(context)?.profileKey == profile.key) {
             CodexDeviceSignIn.clearPending(context)
         }
@@ -397,6 +400,70 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         Alerts.evaluate(context, cache)
         result
     }
+
+    // --- Google Antigravity sign-in (CCRM-55 (Antigravity Account)) ---
+
+    fun hasPendingAntigravitySignIn(profile: Profile): Boolean =
+        AntigravitySignIn.pending(context)?.profileKey == profile.key
+
+    /** The Google authorize URL for a Custom Tab (never a WebView — Google refuses them). */
+    fun startAntigravitySignIn(profile: Profile): String = AntigravitySignIn.begin(context, profile)
+
+    fun cancelAntigravitySignIn() = AntigravitySignIn.clearPending(context)
+
+    /**
+     * Completes the Antigravity sign-in: the pasted `4/…` code (or the whole callback
+     * address) is exchanged with the client's public secret, `loadCodeAssist` names the
+     * Cloud project and the plan, and only the refresh token, the project and the email
+     * are kept. Mirrors [completeDeviceSignIn]; Google's family has no fixed life we know
+     * of, so `refreshExpiresAt` stays 0. Logs never carry the code, a token or the secret.
+     */
+    suspend fun completeAntigravitySignIn(profile: Profile, pasted: String): FetchResult =
+        withContext(Dispatchers.IO) {
+            val result = mutex.withLock {
+                val pending = AntigravitySignIn.pending(context)?.takeIf { it.profileKey == profile.key }
+                    ?: return@withLock FetchResult.Error("Sign-in expired — tap Sign in with Google again")
+                val code = when (val p = AntigravitySignIn.parsePaste(pasted, pending.state)) {
+                    is AntigravitySignIn.Paste.Code -> p.code
+                    AntigravitySignIn.Paste.OtherSignIn ->
+                        return@withLock FetchResult.Error("That code is for a different sign-in — start again.")
+                    AntigravitySignIn.Paste.Unreadable ->
+                        return@withLock FetchResult.Error("That code didn't work — it may have expired or been copied wrong. Start again.")
+                }
+                val resp = try {
+                    AntigravitySource.exchangeCode(code, pending.verifier)
+                } catch (e: IOException) {
+                    return@withLock FetchResult.Error(e.message ?: "network error")
+                }
+                if (resp.code != 200) {
+                    AppLog.log(context, AppLog.Level.WARN, "auth", profile, "Google sign-in exchange failed: HTTP ${resp.code}")
+                    return@withLock FetchResult.Error(
+                        "That code didn't work — it may have expired or been copied wrong. Start again.",
+                    )
+                }
+                val grant = AntigravitySource.parseTokenResponse(resp.body, null)
+                    ?.takeIf { it.creds.refreshToken.isNotEmpty() }
+                    ?: return@withLock FetchResult.Error("Sign-in response was missing a token")
+                val assist = try {
+                    AntigravitySource.loadCodeAssist(grant.creds.accessToken).second
+                } catch (_: IOException) {
+                    null
+                }
+                credStore.save(profile, grant.creds.copy(accountId = assist?.project), stampAdded = true)
+                cache.setAuthState(profile, AuthState.OK)
+                cache.setTokenMeta(profile, 0L, assist?.plan, null)
+                cache.setEmail(profile, grant.email)
+                cache.setRefreshExpiryEstimated(profile, false)
+                cache.setNativeSignIn(profile, true)
+                cache.setLastRenewedAt(profile, 0L)
+                cache.setFirstRefreshFailAt(profile, 0L)
+                AntigravitySignIn.clearPending(context)
+                AppLog.log(context, AppLog.Level.INFO, "auth", profile, "Google sign-in completed")
+                doFetch(profile, manual = false, ignoreGates = true)
+            }
+            Alerts.evaluate(context, cache)
+            result
+        }
 
     /**
      * Debug-only endpoint probe (CCBG-6). GETs [path] on [host] with this profile's

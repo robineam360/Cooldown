@@ -26,6 +26,13 @@ interface UsageSource {
     fun parseUsage(body: String): UsageData?
 
     /**
+     * [parseUsage] for a body fetched at [fetchedAtMs] — what a cached reply is re-parsed
+     * with. Antigravity needs it: an untouched window's reset is "fetch time + window", so
+     * judging it against a later clock would read every untouched window as started.
+     */
+    fun parseUsage(body: String, fetchedAtMs: Long): UsageData? = parseUsage(body)
+
+    /**
      * The plan named by the *usage* payload, when the provider reports one there —
      * ChatGPT does, and its live value beats the one the id_token carried at sign-in
      * (CCRM-54 (ChatGPT Account)). Null by default, so Claude writes nothing and its
@@ -44,6 +51,6 @@ object Sources {
     fun of(provider: Provider): UsageSource = when (provider) {
         Provider.CLAUDE -> ClaudeSource
         Provider.CHATGPT -> ChatGptSource
-        Provider.ANTIGRAVITY -> throw NotImplementedError("Antigravity source lands in CCRM-55 (Antigravity Account)")
+        Provider.ANTIGRAVITY -> AntigravitySource
     }
 }

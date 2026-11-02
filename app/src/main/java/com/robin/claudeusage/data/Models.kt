@@ -132,7 +132,19 @@ data class UsageData(
     val weekly: UsageWindow?,
     val modelCaps: List<ModelCap>,
     val credits: SpendCredits? = null,
+    /** CCRM-55 (Antigravity Account): a second pair of windows on one account; empty elsewhere. */
+    val pools: List<UsagePool> = emptyList(),
 )
+
+/**
+ * A second pool of windows on one account — Antigravity's Claude + GPT pool (spec/core
+ * BEHAVIOR-SPEC §1.1). Parsed whenever present, [shown] only once either window has
+ * started; never read by the notification, widgets or the status-bar ring.
+ */
+data class UsagePool(val name: String, val session: UsageWindow?, val weekly: UsageWindow?) {
+    val shown: Boolean
+        get() = listOfNotNull(session, weekly).any { it.resetsAt != null || (it.percent ?: 0.0) > 0.0 }
+}
 
 /**
  * Parses the /api/oauth/usage response. The schema is undocumented and contains

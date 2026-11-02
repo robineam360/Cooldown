@@ -40,10 +40,13 @@ data class Snapshot(
     val data: UsageData? by lazy {
         if (synthetic) return@lazy syntheticData
         rawJson?.let {
-            // A provider with no source yet (Antigravity, CCRM-55) must read as "no
-            // data", never as a crash on a lazy the whole UI touches.
+            // Parsed against the fetch time, not now (CCRM-55 (Antigravity Account): an
+            // untouched window's reset slides with the clock it was read at). A provider
+            // with no source must read as "no data", never as a crash on a lazy the whole
+            // UI touches.
             try {
-                Sources.of(provider).parseUsage(it)
+                if (fetchedAt > 0) Sources.of(provider).parseUsage(it, fetchedAt)
+                else Sources.of(provider).parseUsage(it)
             } catch (_: NotImplementedError) {
                 null
             }
