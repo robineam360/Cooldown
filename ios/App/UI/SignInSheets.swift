@@ -72,12 +72,13 @@ struct GeminiSignInSheet: View {
             } else {
                 Text("Copy the code Google shows you and paste it here.").font(.system(size: 15)).foregroundStyle(p.txt)
                     .padding(.bottom, 14)
-                TextField("4/…", text: $code)
+                TextField(Self.placeholder, text: $code)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                     .lineLimit(1).truncationMode(.tail)
                     .padding(.horizontal, 14).padding(.vertical, 13)
                     .background(p.fill, in: RoundedRectangle(cornerRadius: 12))
                     .overlay(alignment: .bottom) { if error != nil { Rectangle().fill(p.red).frame(height: 2).padding(.horizontal, 6) } }
+                    .onChange(of: code) { error = nil }
                 if let error {
                     Text(error).font(.system(size: 13.5)).foregroundStyle(p.red).padding(.top, 8)
                 } else {
@@ -99,8 +100,8 @@ struct GeminiSignInSheet: View {
                         }
                     }
                     .buttonStyle(Pill(fill: p.ink, ink: p.bg))
-                    .disabled(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || working)
-                    .opacity(code.isEmpty ? 0.45 : 1)
+                    .disabled(!Self.canContinue(code: code, error: error, working: working))
+                    .opacity(Self.canContinue(code: code, error: error, working: working) ? 1 : 0.45)
                 }
                 .padding(.top, 16)
             }
@@ -109,6 +110,21 @@ struct GeminiSignInSheet: View {
         .padding(.horizontal, 20).padding(.top, 24)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+
+    /// The field's label, as decided (rev B §5).
+    static let placeholder = "Paste the code from the sign-in page"
+
+    /// Continue needs a code, no error showing (editing the field clears it), and no exchange in flight.
+    static func canContinue(code: String, error: String?, working: Bool) -> Bool {
+        !code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && error == nil && !working
+    }
+
+    /// Test seam: the sheet as it stands after a paste that failed (I4).
+    init(code: String = "", opened: Bool = false, error: String? = nil) {
+        _code = State(initialValue: code)
+        _opened = State(initialValue: opened)
+        _error = State(initialValue: error)
     }
 
     /// Opens Google's page. The session never "completes" — the page ends on Google's own address, not ours — so

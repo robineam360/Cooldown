@@ -148,10 +148,13 @@ enum CardContent {
     static let notStartedLine = "Starts when a message is sent"
 
     /// CCRM-102 (Spent Week Gate): the one full-opacity line under a disabled 5h (spec mobile §5).
+    /// Exactly Android's (`LeadLines.kt`): "Weekly limit reached — 5h can’t be used until Sat 4:51 pm"; with no reset
+    /// clock still ahead it can't name a time, so it reads "Weekly limit reached".
     static func weekGateNote(weeklyResetMs: Int64?, nowMs: Int64, use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> String {
-        let until = weeklyResetMs.map { dayClock($0, nowMs, use24h, timeZone) } ?? "the weekly reset"
-        return "Weekly limit reached — 5h can't be used until \(until)"
+        guard let reset = weeklyResetMs, reset > nowMs else { return weekGateShort }
+        return "Weekly limit reached — 5h can’t be used until \(dayClock(reset, nowMs, use24h, timeZone))"
     }
+    static let weekGateShort = "Weekly limit reached"
     /// A widget face showing the 5h while the week is spent.
     static let weekSpentStamp = "Weekly spent"
 

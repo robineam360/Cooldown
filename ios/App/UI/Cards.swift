@@ -371,8 +371,9 @@ struct AccountCards: View {
 
     /// CCRM-102: the note for the 5h card while the week is spent, else nil.
     static func weekGate(_ usage: UsageData?, nowMs: Int64) -> String? {
-        guard let weekly = usage?.weekly, Pace.isSpent(weekly.percent), let reset = weekly.resetsAtMs, reset > nowMs else { return nil }
-        return CardContent.weekGateNote(weeklyResetMs: reset, nowMs: nowMs)
+        // The same predicate as the faces (`Face.weekGated`) and Android: spent alone gates.
+        guard let weekly = usage?.weekly, Pace.isSpent(weekly.percent) else { return nil }
+        return CardContent.weekGateNote(weeklyResetMs: weekly.resetsAtMs, nowMs: nowMs)
     }
 
     @ViewBuilder

@@ -24,7 +24,7 @@ struct GeminiAndGateTests {
     func gateRule() throws {
         let reset = now.ms + 3 * 86_400_000
         let note = CardContent.weekGateNote(weeklyResetMs: reset, nowMs: now.ms)
-        #expect(note.hasPrefix("Weekly limit reached — 5h can't be used until "))
+        #expect(note.hasPrefix("Weekly limit reached — 5h can’t be used until "))
         #expect(note.hasSuffix(CardContent.dayClock(reset, now.ms, Display.use24h, .current)))
         let spent = UsageData(session: UsageWindow(percent: 34, resetsAtMs: now.ms + 3_600_000, serverSeverity: nil),
                               weekly: UsageWindow(percent: 99.5, resetsAtMs: reset, serverSeverity: nil), modelCaps: [], credits: nil)
@@ -65,6 +65,38 @@ struct GeminiAndGateTests {
                width: 104, height: 104, background: wall)
         r.save("v21-gate-la", LockPanel(state: .init(rows: [.init(fiveLed.lead(for: .notification)), .init(r.face("Personal", .chatgpt, pct: nil, pace: nil, weeklyPct: 50, weeklyPace: 67, weeklyOnly: true).leading)], ended: nil)),
                width: 370, height: 160, background: Color(hex: 0x1C1C1E))
+    }
+
+    @Test("judge fixes: the exact note, the short form without a clock, card and face agree on spent alone")
+    func gateCopyAndAgreement() {
+        let reset = now.ms + 3 * 86_400_000
+        let when = CardContent.dayClock(reset, now.ms, Display.use24h, .current)
+        #expect(CardContent.weekGateNote(weeklyResetMs: reset, nowMs: now.ms) == "Weekly limit reached — 5h can’t be used until \(when)")
+        #expect(CardContent.weekGateNote(weeklyResetMs: nil, nowMs: now.ms) == "Weekly limit reached")
+        #expect(CardContent.weekGateNote(weeklyResetMs: now.ms - 60_000, nowMs: now.ms) == "Weekly limit reached")
+        let session = UsageWindow(percent: 34, resetsAtMs: now.ms + 3_600_000, serverSeverity: nil)
+        for weeklyReset in [nil, now.ms - 60_000] as [Int64?] {
+            let usage = UsageData(session: session, weekly: UsageWindow(percent: 100, resetsAtMs: weeklyReset, serverSeverity: nil),
+                                  modelCaps: [], credits: nil)
+            #expect(AccountCards.weekGate(usage, nowMs: now.ms) == "Weekly limit reached")
+            let face = Face(account: Account(key: "g", label: "T", provider: .claude), pct: 34, pace: 50, reset: Date(ms: now.ms + 3_600_000),
+                            runOut: nil, weeklyPct: 100, weeklyPace: nil, weeklyReset: weeklyReset.flatMap { $0 > now.ms ? Date(ms: $0) : nil },
+                            fetchedAt: now, status: .fresh)
+            #expect(face.weekGated, "card and face agree: spent alone gates")
+        }
+    }
+
+    @Test("judge fixes: the decided placeholder; Continue is off while an error shows")
+    func pasteField() {
+        #expect(GeminiSignInSheet.placeholder == "Paste the code from the sign-in page")
+        #expect(GeminiSignInSheet.canContinue(code: "4/0AVMBt8kQ2xLpR7wZ", error: nil, working: false))
+        #expect(!GeminiSignInSheet.canContinue(code: "4/0AVMBt8kQ2xLpR7wZ", error: AppModel.antigravityCodeFailed, working: false))
+        #expect(!GeminiSignInSheet.canContinue(code: "  ", error: nil, working: false))
+        #expect(!GeminiSignInSheet.canContinue(code: "4/0AVMBt8kQ2xLpR7wZ", error: nil, working: true))
+        let model = AppModel(demo: .standard)
+        r.save("v21-gemini-paste-empty", GeminiSignInSheet(opened: true).environment(model), width: 393, height: 360, background: .black)
+        r.save("v21-gemini-paste-error", GeminiSignInSheet(code: "4/0AVMBt8kQ2xLpR7wZ", opened: true, error: AppModel.antigravityCodeFailed)
+            .environment(model), width: 393, height: 360, background: .black)
     }
 
     // MARK: - 6c · Gemini
