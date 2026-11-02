@@ -61,12 +61,13 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 2 | Spec completion: mobile fixtures for the Summary ranking, Vs pace figure and caption text | 1 | ☑ |
 | 3 | Android logic and settings (pure functions, prefs, migration), tests on every fixture | 1, 2 | ☑ |
 | 4 | Android always-on surfaces: notification, status-bar gauge, widgets | 3 | ☑ |
-| 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☐ |
+| 5 | Android app: cards, caption, Settings, Summary tab and Pace map, the notice | 3 | ☑ (no Compose previews; Step 7 captures stand in, Robin to confirm) |
 | 6 | iOS: CooldownCore logic on the same fixtures, then every iOS surface per rev B | 2 | ☑ |
-| 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☐ |
-| 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☐ |
-| 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☐ |
-| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6c, G0 | ☐ |
+| 6a | CCRM-102 (Spent Week Gate): the 5h greyed while the week is spent, Android and iOS | 4, 5, 6 | ☑ |
+| 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☑ |
+| 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☑ |
+| 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra delta | ☐ |
+| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6d, G0 | ☐ |
 | 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
 
 ## Steps
@@ -119,6 +120,17 @@ UA-version test, secret-wired test), lint, judge. Reversal: revert; no stored da
 **Step 6c · CCRM-55 on iOS.** The same on CooldownCore (fixtures) and the iOS surfaces (Add sheet, sign-in
 sheet with `ASWebAuthenticationSession`, cards, sidebar, widgets, Live Activity, the disclaimer lines), the
 secret from an uncommitted xcconfig. Check: `swift test`, the CI iOS job, judge. Reversal: revert.
+
+**Step 6d · Shape grammar, CCRM-103 (Hybrid Notification).** Per `design/2026-11-02-shape-grammar.html` rev D,
+frozen 2026-11-02: the 5h a hollow ring on the left and the 7-day windows bars on the right on every mobile
+surface (app tile in place of the two cards, Summary rows, notification H4 and Duet, widgets, iOS app, widgets,
+lock screen, Live Activity); no "5h" label; tabular sans figures with the small "%"; dashed room on rings
+≥ 28 dp; usage end mark E1 plus Appearance › Usage end mark; the tap readout (core §6.3 `markTime`, both
+platforms, words per the page's C4); the no-5h greyed ring with a cross; the status bar's 5h ring, red cross,
+greyed ring, the Weekly bar for no 5h and the per-account Status-bar icon choice (Android). spec/mobile and
+the surfaces folder updated in the same commits. Split into Android data + tests, Android surfaces, iOS, each
+a commit. Check: unit tests (markTime fixtures, end-mark and status-icon choice, the new prefs' downgrade),
+both flavors' tests, lint, `swift test`, judge per commit. Reversal: revert; the new prefs are additive.
 
 **Step 7 · Device passes.** After G0. **Before:** record each device's starting state in the Step 7 log:
 installed build and flavor, screen timeout, the Cooldown settings that will be changed (Headline per account,

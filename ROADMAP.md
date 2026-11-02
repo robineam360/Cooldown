@@ -1866,6 +1866,15 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   not final: Robin liked H3 (an 18 dp ring on the title row) and asked to see H4 first — a bigger hollow ring on
   the left with the 5h % inside it and its pace line, the right side all Weekly (rev B). The desktop session
   was asked, in Robin's words, to follow the same standard and hold its build until this is final.
+  **Frozen 2026-11-02 (Robin, rev D of `design/2026-11-02-shape-grammar.html`)** — it grew into the shape
+  grammar for every mobile surface: the 5h is always a hollow ring on the left, the 7-day windows always bars
+  on the right, with no "5h" label; tabular sans figures with a small "%"; the dashed room on rings ≥ 28 dp;
+  usage end mark E1 by default with an Appearance setting (Round / Line / Pace colour); tap a figure to see
+  when the pace mark meets the usage (the figure's own line swaps for 3 s, core §6.3 `markTime`, not in the
+  notification); a plan with no 5h keeps a greyed ring with a cross on the tile, Summary and iPad sidebar;
+  the status bar shows the 5h ring (a red cross while out, greyed while the week is spent), or the Weekly bar
+  for a plan with no 5h or an account that picks it in its ⋮ › Headline… sheet (Android only). **Next:** the
+  build, RUNBOOK-v2.0 Step 6d.
 - **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
   ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
   take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.
