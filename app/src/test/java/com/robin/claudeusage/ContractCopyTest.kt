@@ -94,7 +94,7 @@ class ContractCopyTest {
             "Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google.",
             "\\\"Claude\\\" is a trademark of Anthropic, PBC.",
             "\\\"ChatGPT\\\" is a trademark of OpenAI.",
-            "“Gemini” and “Antigravity” are trademarks of Google LLC.",
+            "\\\"Gemini\\\" and \\\"Antigravity\\\" are trademarks of Google LLC.",
         )) {
             assertTrue("About disclaimer lost: $claim", about.contains(claim))
         }
