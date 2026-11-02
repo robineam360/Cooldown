@@ -1673,7 +1673,9 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
 - **Status:** Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
-  wireframe rev A approved 2026-11-02; iOS rev B pending.
+  wireframe rev A approved 2026-11-02; iOS rev B drawn (`design/2026-11-02-ios-weekly-first.html`),
+  awaiting approval · Robin then asked for the pace mark's position on every meter: three variants in
+  `design/2026-11-02-pace-line-label.html`, awaiting his pick.
 - **What:** adopt the ModelMesh
   [Pace metric](https://github.com/robineam360/ModelMesh/blob/main/docs/pace-metric.md) —
   `pace = (r − q) / max(r, q) × 100`, `q` = % of quota left, `r` = % of time left — on the weekly window
@@ -1691,7 +1693,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
 - **Status:** Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
-  rev A `design/2026-11-02-summary-tab.html` awaiting approval. Pulls the "Use next" ranking that
+  `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
+  the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
   CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.
 - **Decisions:** (1) an **"All" tab first** in the account tabs (iPad: an "All accounts" row at the
   top of the sidebar); with 2+ accounts the app opens on it, and Settings › Appearance › "Open on the
@@ -1701,11 +1704,21 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   eligible and sorts after, with its reason. (3) A **Pace map**: one plot of every account against
   its own week (across = share of its week gone, up = % used, the even-pace diagonal), each account
   its accent dot with this week's trail.
-- **What:** the Use next card, the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
+- **What:** the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
   allowance · reset day, the 5h companion), the Pace map; one-line rows and numbered dots from six
   accounts; two columns on the Fold inner screen and iPad. Never a summed or combined figure.
 - **Spec:** BEHAVIOR-MOBILE gains the ranking and the toggle, with `fixtures/summary/cases.json`.
 - **Done when:** the wireframe is approved, both apps match it, and the ranking fixtures pass.
+
+### CCRM-99 · Model Limits Toggle — hide an account's per-model weekly limits
+- **Status:** Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
+  awaiting approval.
+- **What:** a per-account "Show model limits" switch (default on) on the account's page under
+  Headline, listing what it hides ("Fable · 30% this week"). Off removes the model rows and the
+  All/model chips from the 7-day card, and the model rows from the notification's expanded panel; iOS
+  drops the 7-day card's model half. The limits are still parsed and stored, so switching back is
+  instant and history is untouched. No group at all on a plan that reports none.
+- **Spec:** BEHAVIOR-MOBILE gains `showModelLimits` per account; nothing in the core.
 
 ## Next — small, high value, ready to build
 

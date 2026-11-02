@@ -129,6 +129,8 @@ as "5h 34%". While `sessionBinding` holds it takes the bar colour's step (core �
 
 Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h".
 Tight form (notification, folded card): "Slow down · ≈11%/day". The signed number appears only in
-the app card's detail: "Pace +21% · an even week is 39% by now". The words carry no colour of
-their own. The 5-hour session gets no Pace; its line is core §3's projection: folded "Resets in 2h 20m · on
+the app card's detail: "Pace +21% · an even week is 39% by now" (under review: the pace-mark caption,
+`design/2026-11-02-pace-line-label.html`, would replace it). On always-on surfaces the words carry no
+colour; in the app the folded line keeps today's over-pace emphasis (Android: the band clause bold in
+the orange step; iOS: the whole line red). The 5-hour session gets no Pace; its line is core §3's projection: folded "Resets in 2h 20m · on
 track for ~69%", and open the existing "At this pace: ~69% when the window resets" line.

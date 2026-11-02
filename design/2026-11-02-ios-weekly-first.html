@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iOS Weekly First and Pace</title>
+<!-- CCRM-96 (Weekly First) and CCRM-97 (Pace Number), iOS/iPadOS faces, rev B, 2026-11-02. The Android rev A
+     (design/2026-11-02-weekly-first-pace.html) is approved; the owner asked to see the iOS faces drawn before iOS is
+     built (CLAUDE.md §2). Same grammar as 2026-10-24-ios-widgets.html: 1 CSS px = 1 pt, marks from the shared script.
+     Shipped faces: spec/mobile/surfaces/{widgets,app,foundations}.md. Every number comes from the fixtures in the script. -->
+<script src="2026-10-23-ios-wireframes-marks.js"></script>
+<style>
+:root{--page:#121214;--ptxt:#E5E5EA;--bg:#0E0E0E;--card:#1C1C1E;--ink:#F2F2F2;--txt:#D1D1D6;--sub:#98989F;--line:#38383A;--fill:#2C2C2E;
+  --yellow:#FDD663;--orange:#FFA726;--red:#FF5252;--pace:#FDD663;--tick:#C7C7CC;--cl:#E59980;--gp:#19C39A;--new:#FDD663}
+.light{--bg:#F2F2F7;--card:#FFFFFF;--ink:#000;--txt:#3A3A3C;--sub:#6C6C70;--line:#D1D1D6;--fill:#E5E5EA;
+  --yellow:#F9A825;--orange:#F57C00;--red:#C62828;--pace:#E0A000;--tick:#8E8E93;--cl:#D97757;--gp:#10A37F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ptxt);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+main{max-width:1240px;margin:0 auto;padding:28px 16px 80px}
+.eyebrow{font:11px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#E59980}
+h1{font-size:26px;margin:4px 0 6px}h2{font-size:20px;margin:46px 0 6px;padding-top:18px;border-top:1px solid #2a2a2e}
+h3{font-size:15px;margin:22px 0 8px;color:#bdbdc4;font-weight:600}
+p,li{color:#b8b8bf;max-width:900px}p b,li b,.dec b{color:#fff}code{background:#232327;padding:1px 5px;border-radius:4px;font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start;margin:10px 0 4px}
+.shot{display:flex;flex-direction:column;gap:7px;margin:0}
+.cap{font-size:12.5px;color:#9a9aa2;max-width:400px;line-height:1.4}.cap b{color:#d6d6dc}
+.wall{padding:22px;border-radius:26px;background:linear-gradient(135deg,#5b4f8f 0%,#9a6aa8 55%,#d8899a 100%);overflow-x:auto;max-width:100%}
+.wall .cap{color:#f1ecf5}.wall .cap b{color:#fff}
+.dec{background:#18181d;border:1px solid #2c2c33;border-radius:12px;padding:12px 16px;margin:10px 0;max-width:900px}
+table{border-collapse:collapse;font-size:13px;margin:8px 0;width:100%}td,th{border:1px solid #2c2c33;padding:6px 9px;text-align:left;color:#c9c9cf;vertical-align:top}th{color:#fff;background:#1a1a1f}
+.tw{overflow-x:auto}.new{font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:#1a1400;background:var(--new);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+/* shared pieces */
+.mk{display:inline-block;vertical-align:-2px;flex:none}
+.bar{position:relative;width:100%}.bar .tr{position:absolute;inset:0;border-radius:99px;overflow:hidden}
+.bar .tk{position:absolute;top:50%;transform:translate(-50%,-50%);border-radius:2px;background:var(--tick)}
+.sub{color:var(--sub)}.alarm{color:var(--red)}.warn{color:var(--orange)}
+/* widgets */
+.w{background:var(--card);border-radius:22px;padding:16px;overflow:hidden;color:var(--txt);font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.hdr{display:flex;align-items:baseline;gap:6px;white-space:nowrap;min-width:0}
+.nm{overflow:hidden;text-overflow:ellipsis}.big{font-weight:700;line-height:1;margin-left:auto}
+.wrow{display:flex;align-items:center;gap:8px;white-space:nowrap}.cell{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+/* app */
+.phone{width:393px;background:var(--bg);color:var(--ink);border-radius:30px;padding:10px 16px 18px;border:1px solid #2a2a2e;font-variant-numeric:tabular-nums}
+.tb{display:flex;justify-content:flex-end;gap:22px;height:30px;align-items:center;color:var(--ink);font-size:18px}
+.ltt{display:flex;align-items:center;gap:7px;font-size:34px;font-weight:700;height:50px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:4px -16px 14px}
+.tab{flex:1;display:flex;gap:7px;align-items:center;justify-content:center;height:44px;font-size:16px;font-weight:500;position:relative;color:var(--sub)}
+.tab.on{color:var(--ink)}.tab.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--ac)}
+.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px}
+.ch{display:flex;align-items:center;gap:8px;font-size:17px}.ch .t{flex:1;color:var(--txt)}.ch b{font-size:19px}.chev{color:var(--sub);font-size:15px}
+.ln{font-size:14.5px;line-height:1.35;margin-top:5px;color:var(--txt)}.ln.m{color:var(--sub)}
+.rs{display:flex;justify-content:space-between;font-size:14.5px;margin-top:10px;color:var(--txt)}
+.sub2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.foot{font-size:15px;color:var(--sub);padding:2px 2px 0}
+/* settings */
+.set{width:393px;background:#000;color:var(--ink);border-radius:30px;padding:12px 16px 20px;border:1px solid #2a2a2e}.set.light{background:var(--bg)}
+.set .hd{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:.3px;margin:18px 16px 6px}
+.grp{background:var(--card);border-radius:12px;overflow:hidden}.set .cell{padding:11px 16px;border-bottom:1px solid var(--line);display:block}.set .cell:last-child{border:0}
+.set .fn{font-size:13px;color:var(--sub);margin:6px 16px 0;line-height:1.35}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;font-size:13px;margin-top:9px}.seg span{flex:1;text-align:center;padding:5px 0;border-radius:7px;color:var(--txt)}.seg .on{background:#636366;color:#fff;font-weight:600}
+.seg.off{opacity:.4}.light .seg .on{background:#fff;color:#000;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+/* sidebar */
+.side{width:300px;background:#161617;border-radius:14px;padding:16px 0 18px;border:1px solid #2a2a2e}.light .side{background:#E9E9EE}
+.acc{display:flex;align-items:center;gap:10px;margin:0 6px;padding:10px 12px;border-radius:10px}
+.pct{text-align:right;line-height:1.1}.pct b{font-size:16px;display:block}.pct small{font-size:11px;color:var(--sub)}
+.chip{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+/* lock screen, Live Activity */
+.lock{background:linear-gradient(170deg,#4e5487,#8a6a92 55%,#c58a6b);border-radius:26px;padding:20px;color:#fff;overflow-x:auto;max-width:100%}
+.lock .cap{color:#f1ecf5}.lock .cap b{color:#fff}
+.lk{overflow:hidden;background:rgba(255,255,255,.14);border-radius:14px;padding:6px 10px;width:172px;height:76px;color:#fff;font-variant-numeric:tabular-nums}
+.la{width:370px;border-radius:24px;padding:12px 16px 11px;background:rgba(28,28,30,.86);color:#F2F2F2;font-variant-numeric:tabular-nums;--txt:#D1D1D6;--sub:#98989F}
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">CCRM-96 (Weekly First) · CCRM-97 (Pace Number) · iOS / iPadOS · rev B · 2026-11-02</p>
+<h1>Weekly first and the Pace in words, on iPhone and iPad</h1>
+<p>The Android wireframe, <code>2026-11-02-weekly-first-pace.html</code> rev A, is <b>approved</b>. This is the iOS half, drawn so you can see it before iOS is built.
+Every face below is today's shipped one (<code>spec/mobile/surfaces/</code>) with only the decision applied: <b>Weekly leads</b>, 5h comes along small; Weekly's pace line is the
+<b>band · allowance</b> in words; the signed Pace appears only in the app card's detail line; 5h shows its projection instead; and the <b>Headline</b> setting (Weekly · 5-hour · Auto) is per account.
+Nothing is simplified: bars keep the pace tick and red slice, the chart keeps guides, diagonal, dots, projection and axis. Yellow tags mark what is new. Real points (1 px = 1 pt); the iPad is shown at 72%.</p>
+<p><b>Fixtures, one moment: Wednesday 2:50 pm.</b> <b>Teams</b> (Claude Max): Weekly 52%, resets Sun 9:30 pm, 38.9% of the week gone; 5h 34%, resets 5:10 pm (53.3% gone); Fable 30%.
+<b>Personal</b> (ChatGPT Pro, no 5h): Weekly 50%, resets Fri 10:18 pm, 67% gone. 5h-binding state: 5h at 93%, back at 3:40 pm. Last day: 60% used, 6h left. Spent: 100%.</p>
+
+<h2>1 · The app</h2>
+<p>Default card order becomes <b>Weekly, then 5h</b>; a layout you reordered keeps your order. iOS Comfortable opens the first card and folds the second on iPhone (both open on iPad), so the Weekly card now opens first.
+The Weekly halves (All, Fable) each get the pace line and the signed-Pace detail line; the 5h card's "below even pace" line goes and its projection line stays; the folded 5h line reads the projection.</p>
+<div class="row" id="ph1"></div>
+<div class="row" id="ph2"></div>
+<h3>iPad, landscape (sidebar, pinned Personal on top, selected Teams below)</h3>
+<div class="row" id="ipad"></div>
+<h3>iPad sidebar: the figure follows the Headline</h3>
+<p>The sidebar's remembered 5h / Weekly switch gains a first segment, <b>Headline</b> (the new default): each row shows its own account's headline window, tagged with that window's name. <b>Weekly</b> and <b>5h</b> keep today's behaviour exactly (a no-5h plan shows Weekly, tagged).</p>
+<div class="row" id="side"></div>
+
+<h2>2 · Settings: the Headline, per account</h2>
+<p>iOS has no per-account page today (a row, and a touch-and-hold menu). The row now pushes a small page with Plan, Accent colour (the menu's Accent colour… still works) and the new <b>Headline</b> group. Alternative if you'd rather not add a page: a "Headline…" item in the touch-and-hold menu opening this group as a sheet.</p>
+<div class="row" id="set"></div>
+
+<h2>3 · Home widgets</h2>
+<p><b>New widgets start on the account's Headline</b> (Auto starts on Weekly); a <b>placed widget keeps its stored window</b> (first two faces below show both). Bars, Strip and Overview have fixed or headline-led structure as drawn.</p>
+<h3>Number and Countdown (small)</h3><div class="wall"><div class="row" id="w1"></div></div>
+<h3>Bars (small): Weekly block on top, 5h under</h3><div class="wall"><div class="row" id="w2"></div></div>
+<h3>Strip (medium)</h3><div class="wall"><div class="row" id="w3"></div></div>
+<h3>Overview (Large): T1 and T3, with the band words</h3><div class="wall"><div class="row" id="w4"></div></div>
+
+<h2>4 · Lock screen and Live Activity</h2>
+<p>The system tints lock-screen widgets, so colour cannot carry the loud 5h; size and weight do (bold). The Live Activity is dark always.</p>
+<div class="lock"><div class="row" id="l1"></div></div>
+<h3>Live Activity Duet (Teams and Personal) and the Dynamic Island</h3>
+<div class="lock"><div class="row" id="l2"></div></div>
+
+<h2>5 · What changes, what does not</h2>
+<div class="tw"><table id="tbl"><tr><th>Surface</th><th>Changes</th><th>Unchanged</th></tr></table></div>
+
+<h2>Points I interpreted (confirm or correct)</h2>
+<div class="dec"><ol id="ints"></ol></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const mk=(p,s,c)=>{const k=p==='cl'?'claude':'chatgpt',sc=p==='cl'?.82:1,o=12*(1-sc);
+  return `<svg class="mk" width="${s}" height="${s}" viewBox="0 0 24 24"><g transform="translate(${o} ${o}) scale(${sc})"><path d="${MARK[k]}" fill="${c||`var(--${p})`}"/></g></svg>`};
+const sev=(p,a)=>p==null?'var(--txt)':p>=100?'var(--red)':p>90?'var(--orange)':p>80?'var(--yellow)':`var(--${a})`;
+const NEW='<span class="new">new</span>';
+// ---- pace rules (rev A / spec core 6.1) ----
+const mn=n=>n<0?'−'+Math.abs(n):'+'+n;
+function pace(u,g){const q=100-u,r=100-g,m=Math.max(r,q);return m?(r-q)/m*100:0}
+function band(u,g){if(u>=99.5)return'Spent';const p=pace(u,g);if(Math.abs(p)<=5)return'On pace';if(p<-50)return'Use before reset';if(p<0)return'Room to spare';if(p>50)return'Nearly out';return'Slow down'}
+function allow(u,h){const q=100-u;if(h<24)return`${Math.round(q)}% left, ${Math.round(h)}h`;const d=q/(h/24);return d<1?'<1%/day':`≈${Math.round(d)}%/day`}
+const words=w=>w.used>=99.5?`Out until ${w.rs}`:`${band(w.used,w.gone)} · ${allow(w.used,w.hrs)}`;
+const bandOnly=w=>w.used>=99.5?`Out until ${w.rs}`:band(w.used,w.gone);
+const hot=w=>['Slow down','Nearly out'].includes(band(w.used,w.gone))||w.used>=99.5;
+const signed=w=>`Pace ${mn(Math.round(pace(w.used,w.gone)))}% · an even week is ${Math.round(w.gone)}% by now`;
+const W={ tw:{used:52,gone:38.9,hrs:102.7,rs:'Sun 9:30 pm',day:'Sun',inT:'4d 6h'},
+  fb:{used:30,gone:38.9,hrs:102.7,rs:'Sun 9:30 pm',day:'Sun',inT:'4d 6h'},
+  pw:{used:50,gone:67,hrs:55.5,rs:'Fri 10:18 pm',day:'Fri',inT:'2d 7h'},
+  t5:{used:34,gone:53.3,rs:'5:10 pm',inT:'2h 20m',proj:'~69%'},
+  b5:{used:93,gone:83.3,rs:'3:40 pm',inT:'0:50:00',run:'3:25 pm'},
+  ld:{used:60,gone:96.4,hrs:6,rs:'Sun 9:30 pm',day:'Sun',inT:'6h'},
+  sp:{used:100,gone:55,hrs:75.6,rs:'Sun 9:30 pm',day:'Sun',inT:'3d 4h'} };
+const SR={ tw:{s:[[0,0],[.05,4],[.09,9],[.13,15],[.17,20],[.22,27],[.26,33],[.30,40],[.34,46],[.389,52]],nowX:.389,projY:134,start:'1 Nov',end:'8 Nov',over:true},
+  t5:{s:[[0,0],[.08,2],[.16,6],[.24,11],[.32,17],[.40,23],[.46,28],[.533,34]],nowX:.533,projY:69,start:'12:10 pm',end:'5:10 pm'},
+  pw:{s:[[0,0],[.1,6],[.2,13],[.3,20],[.4,27],[.5,35],[.67,50]],nowX:.67,projY:75,start:'30 Oct',end:'6 Nov'} };
+// ---- bar and chart (the shipped drawing, as in 2026-10-24-ios-widgets.html) ----
+function bar(a,pct,gone,h){const p=Math.min(pct??0,100),c=`var(--${a})`,fill=sev(pct,a),over=gone!=null&&p<100&&p>gone+3;
+  let i=`<div style="position:absolute;inset:0;background:${c};opacity:.28"></div>`;
+  if(over)i+=`<div style="position:absolute;left:0;top:0;bottom:0;width:${gone}%;background:${fill}"></div><div style="position:absolute;left:${gone}%;top:0;bottom:0;width:${p-gone}%;background:var(--red)"></div>`;
+  else if(p>0)i+=`<div style="position:absolute;left:0;top:0;bottom:0;width:${Math.max(p,1.5)}%;background:${fill};border-radius:99px"></div>`;
+  const th=h+2*Math.max(3,h*.45),tw=Math.max(2.5,h*.38);
+  return `<div class="bar" style="height:${h}px;margin:${(th-h)/2}px 0"><div class="tr">${i}</div>${gone!=null?`<div class="tk" style="left:${gone}%;width:${tw}px;height:${th}px"></div>`:''}</div>`}
+function chart(a,Wd,H,w,lines){const top=lines?4:18,base=H-(lines?4:18),X=v=>v*Wd,Y=v=>base-v/100*(base-top);
+  let s=`<svg width="${Wd}" height="${H}" style="display:block;overflow:visible">`;
+  [[80,'yellow'],[90,'orange'],[100,'red']].forEach(([v,c])=>s+=`<line x1="0" x2="${Wd}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--${c})" stroke-opacity=".7" stroke-dasharray="2 4"/>`);
+  if(!lines){s+=`<text x="${Wd}" y="${Y(100)-4}" fill="var(--red)" font-size="10" text-anchor="end">100%</text><line x1="0" x2="13" y1="${Y(95)}" y2="${Y(95)}" stroke="var(--pace)" stroke-width="2.6" stroke-dasharray="4 3"/><text x="18" y="${Y(95)+3.5}" fill="var(--pace)" font-size="10.5">even pace</text>`}
+  s+=`<line x1="0" x2="${Wd}" y1="${base}" y2="${base}" stroke="var(--line)"/><line x1="0" y1="${Y(0)}" x2="${Wd}" y2="${Y(100)}" stroke="var(--pace)" stroke-width="2.4" stroke-dasharray="5 4"/>`;
+  if(w){const pts=w.s.map(([x,y])=>[X(x),Y(y)]),c=`var(--${a})`,lc=w.over?'var(--red)':c,last=w.s[w.s.length-1],lp=pts[pts.length-1];
+    s+=`<line x1="${X(w.nowX)}" x2="${X(w.nowX)}" y1="${top-4}" y2="${base}" stroke="var(--sub)" stroke-opacity=".7"/><path d="M${pts[0][0]},${base} L${pts.map(p=>p.join(',')).join(' L')} L${lp[0]},${base}Z" fill="${c}" fill-opacity=".24"/>`;
+    if(w.projY!=null&&last[1]<100){const pr=w.projY,ex=pr>100?last[0]+(1-last[0])*(100-last[1])/(pr-last[1]):1,ey=Y(Math.min(pr,100));
+      s+=`<line x1="${lp[0]}" y1="${lp[1]}" x2="${X(ex)-(ex>=1?4:0)}" y2="${ey}" stroke="${c}" stroke-opacity=".75" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(ex)-(ex>=1?4:0)}" cy="${ey}" r="4" fill="none" stroke="${pr>=100?'var(--red)':c}" stroke-width="1.8"/>`;
+      if(pr<100&&!lines)s+=`<text x="${X(1)-30}" y="${ey+(pr>=60?14:-8)}" fill="var(--txt)" font-size="11.5" font-weight="700" text-anchor="end">~${pr}%</text>`}
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${lc}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    pts.slice(0,-1).forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.4" fill="${c}"/>`);
+    s+=`<circle cx="${lp[0]}" cy="${lp[1]}" r="5" fill="${lc}"/>`;
+    if(!lines){s+=`<text x="${lp[0]-8}" y="${lp[1]-9}" fill="var(--ink)" font-size="12" font-weight="700" text-anchor="end">${last[1]}%</text><text x="0" y="${base+14}" fill="var(--sub)" font-size="11">${w.start}</text>`;
+      if(X(w.nowX)>52&&X(w.nowX)<Wd-52)s+=`<text x="${X(w.nowX)}" y="${base+14}" fill="var(--sub)" font-size="11" text-anchor="middle">now</text>`;
+      s+=`<text x="${Wd}" y="${base+14}" fill="var(--sub)" font-size="11" text-anchor="end">${w.end}</text>`}}
+  return s+'</svg>'}
+const fig=(inner,cap,cls)=>`<figure class="shot ${cls||''}" style="margin:0">${inner}<div class="cap">${cap}</div></figure>`;
+const ba=(b,a)=>`<b>Before:</b> ${b}<br><b>After:</b> ${a}`;
+
+// ================= 1 · app =================
+const chev=o=>`<span class="chev">${o?'⌃':'⌄'}</span>`;
+const pl=(w,txt)=>`<div class="ln" style="font-size:13.5px;${hot(w)?'color:var(--red)':''}">${txt}</div>`;
+function half(a,x,Wd,open,two){const w=x.w;
+  let s=`<div style="min-width:0"><div class="ch" style="font-size:${two?16:17}px"><span class="t">${x.name}</span><b style="font-size:17px">${w.used}%</b></div><div style="margin-top:12px">${bar(a,w.used,w.gone,9)}</div>`;
+  if(open){s+=`<div style="margin-top:12px">${chart(a,Wd,two?120:150,x.ser)}</div>`;
+    s+=pl(w,w.used>=99.5?`Out until ${w.rs}`:words(w)+(two?'':` until ${w.day}`)+(w.used>=99.5?'':' ')+NEW);
+    if(w.used<99.5)s+=`<div class="ln m" style="font-size:13.5px">${signed(w)} ${NEW}</div>`;
+    s+=w.used>=99.5?`<div class="ln m" style="font-size:13.5px">Opens again when the window resets</div>`:x.proj?`<div class="ln m" style="font-size:13.5px">${x.proj}</div>`:'';
+    s+=two?`<div class="ln" style="font-size:13.5px">Resets in ${w.inT}</div>`:`<div class="rs"><span>Resets in ${w.inT}</span><span>Resets at ${w.rs}</span></div>`}
+  return s+'</div>'}
+function wkCard(a,hs,open,cw){const two=hs.length>1,Wd=two?(cw-16)/2:cw,w=hs[0].w;
+  let h=`<div class="card"><div class="ch"><span class="t">7-day window</span>${chev(open)}</div><div style="margin-top:10px" class="${two?'sub2':''}">${hs.map(x=>half(a,x,Wd,open,two)).join('')}</div>`;
+  if(!open)h+=`<div class="ln" style="font-size:13.5px;margin-top:8px;${hot(w)?'color:var(--red)':''}">${w.used>=99.5?`Out until ${w.rs}`:`${words(w)} · resets ${w.day}`} ${NEW}</div>`;
+  return h+'</div>'}
+function fCard(open,cw,w,ser,a,tail,o={}){ // 5h card: no pace, projection instead
+  let h=`<div class="card"><div class="ch"><span class="t">5-hour window</span><b>${w.used}%</b>${chev(open)}</div><div style="margin-top:12px">${bar(a,w.used,w.gone,11)}</div>`;
+  if(open){h+=`<div style="margin-top:12px">${chart(a,cw,150,ser)}</div><div class="ln">${o.proj||`At this pace: ${w.proj} when the window resets · 15.0%/h`} ${NEW}</div><div class="rs"><span>Resets in ${w.inT}</span><span>Resets at ${w.rs}</span></div>`}
+  else h+=`<div class="ln" style="${o.hot?'color:var(--red)':''}">Resets in ${w.inT} · ${tail} ${NEW}</div>`;
+  return h+'</div>'}
+const credits=`<div class="card" style="display:flex;align-items:center;gap:8px;font-size:16px"><span style="font-weight:600">Usage credits</span><span style="color:var(--txt)">$123.90 / $400.00</span><b style="margin-left:auto">31%</b></div>`;
+const tab=(a,n,on)=>`<div class="tab${on?' on':''}" style="--ac:var(--${a})">${mk(a,20)}${n}</div>`;
+const topbar=sel=>`<div class="tb"><span>▦</span><span>⚙</span><span>⋯</span></div><div class="ltt">${mk('cl',26)}${mk('gp',26)}<span>Cooldown</span></div><div class="tabs">${tab('cl','Teams',sel==='cl')}${tab('gp','Personal',sel==='gp')}</div>`;
+const phone=(body,sel,light,status)=>`<div class="phone${light?' light':''}">${topbar(sel)}${body}<div class="foot">${status||'Checked 1m ago ⟳'}</div></div>`;
+const TW=[{name:'All',w:W.tw,ser:SR.tw,proj:'At this pace: runs out ~Sat 3:10 am · 0.8%/h'},{name:'Fable',w:W.fb}];
+const CW=329, t5tail='on track for ~69%';
+$('ph1').innerHTML=[
+ fig(phone(wkCard('cl',TW,true,CW)+fCard(false,CW,W.t5,null,'cl',t5tail)+credits,'cl'),ba('7-day folded, 5h open; the first line read "40% below even pace"; 5h line "22% below even pace".','Weekly opens first: band · allowance, the signed Pace detail, projection; 5h folds to "Resets in 2h 20m · on track for ~69%". Fable half draws only its guides and pace line, as shipped (iOS passes it no history).')),
+ fig(phone(wkCard('cl',TW,false,CW)+fCard(true,CW,W.t5,SR.t5,'cl')+credits,'cl'),ba('Folded 7-day line "Resets in 3d 1h · 8% below pace".','Folded 7-day line is "Slow down · ≈11%/day · resets Sun" (whole line red, since the band is above pace); 5h opened shows the existing "At this pace" line and loses the pace-gap line.')),
+ fig(phone(wkCard('gp',[{name:'All',w:W.pw,ser:SR.pw,proj:'At this pace: ~75% when the window resets · 0.9%/h'}],true,CW),'gp','', 'Checked 1m ago ⟳'),ba('A no-5h account: 7-day card already first and open; "33% below even pace".','"Room to spare · ≈22%/day until Fri", "Pace −34% · an even week is 67% by now". No 5h card, nothing else changes.'))
+].join('');
+const fold=(w,a,tail)=>wkCard(a,[{name:'All',w}],false,CW);
+$('ph2').innerHTML=[
+ fig(phone(wkCard('cl',TW,true,CW),'cl',true),ba('Light, same card.','Light mode of the first phone above (Weekly card open).')),
+ fig(`<div class="phone">${[
+   wkCard('cl',[{name:'All',w:W.ld}],false,CW),
+   wkCard('cl',[{name:'All',w:W.sp}],false,CW),
+   fCard(false,CW,{...W.b5,proj:'',inT:'50m'},null,'cl','runs out ~3:25 pm',{hot:true})].join('')}</div>`,
+  'States, folded: <b>last day</b> (60% used, 6h left: "Use before reset · 40% left, 6h · resets Sun"), <b>spent</b> ("Out until Sun 9:30 pm"), and <b>5h at 93%</b> (folded line turns red: "Resets in 50m · runs out ~3:25 pm").'),
+ fig(phone(wkCard('cl',[{name:'All',w:W.sp,ser:{...SR.tw,s:[...SR.tw.s.slice(0,-1),[.55,100]],nowX:.55,projY:null,over:true}},{name:'Fable',w:W.fb}],true,CW),'cl'),ba('"Limit reached" red + "Opens again when the window resets".','Open and spent: red figure and bar, "Out until Sun 9:30 pm", no signed Pace, no projection.'))
+].join('');
+
+// ---- sidebar ----
+function sidebar(mode,rows,light){let h=`<div class="side"><div style="display:flex;align-items:center;gap:6px;font-size:30px;font-weight:700;padding:0 18px 10px">${mk('cl',22)}${mk('gp',22)} Cooldown</div>
+  <div class="seg" style="margin:0 18px 10px">${['Headline','Weekly','5h'].map(s=>`<span class="${s===mode?'on':''}">${s}</span>${s==='Headline'?'':''}`).join('')}</div>`;
+  for(const r of rows){const w=r.w;h+=`<div class="acc" style="${r.sel?`background:color-mix(in srgb,var(--${r.a}) 18%,transparent)`:''}">${mk(r.a,22)}<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:16px">${r.n} <span class="chip">${r.plan}</span>${r.pin?'<span style="font-size:11px">📌</span>':''}</div>${bar(r.a,w.used,w.gone,5)}</div><div class="pct"><b style="color:${sev(w.used,r.a)}">${w.used}%</b>${r.tag?`<small style="${r.loud?'color:var(--orange);font-weight:700':''}">${r.tag}</small>`:''}</div></div>`}
+  return h+'<div style="font-size:12.5px;color:var(--sub);padding:12px 22px 0">Touch and hold an account to pin it to the top.</div></div>'}
+const PR=(w,tag)=>({a:'gp',n:'Personal',plan:'Pro',pin:true,w,tag}),TR=(w,tag,loud)=>({a:'cl',n:'Teams',plan:'Max 5×',sel:true,w,tag,loud});
+$('side').innerHTML=[
+ fig(sidebar('Headline',[PR(W.pw,'Weekly'),TR(W.tw,'Weekly')]),ba('Segments "5h | Weekly", default 5h: Teams 34%, Personal 50% tagged "Weekly".','New first segment "Headline", default. Each row shows its account\'s headline window and names it. Teams on Weekly: 52%.')),
+ fig(sidebar('Headline',[PR(W.pw,'Weekly'),TR(W.b5,'5h',true)]),'<b>Teams on Auto, 5h binding:</b> the row leads with 5h (93%, red slice from its tick) and says so in bold orange, until 3:40 pm. Personal has no 5h, so Weekly.'),
+ fig(sidebar('5h',[PR(W.pw,'Weekly'),TR(W.t5,'')]),'<b>5h</b> segment: exactly today\'s switch. The Weekly segment is today\'s Weekly; it forces every row to Weekly.')
+].join('');
+
+// ---- iPad ----
+function ipadHalf(title,acc,mkp,plan,pinned,cards){return `<div style="padding:10px 16px 0;flex:1;min-height:0;overflow:hidden"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">${mk(mkp,22)}<span style="font-size:21px;font-weight:700">${title}</span><span class="chip">${plan}</span>${pinned?'<span class="sub" style="font-size:12px">📌 Pinned</span>':''}</div><div style="display:flex;gap:16px;align-items:flex-start">${cards}</div></div>`}
+const IW=364;
+const ipadBody=`<div style="display:flex;width:1210px;height:960px;background:var(--bg);color:var(--ink);border-radius:22px;overflow:hidden">
+ ${sidebar('Headline',[PR(W.pw,'Weekly'),TR(W.tw,'Weekly')]).replace('class="side"','class="side" style="border-radius:0;width:300px;height:100%;border:0;border-right:1px solid #2a2a2e"')}
+ <div style="flex:1;display:flex;flex-direction:column;padding-top:28px;min-width:0">
+ ${ipadHalf('Personal','gp','gp','Pro',true,`<div style="width:396px">${wkCard('gp',[{name:'All',w:W.pw,ser:SR.pw,proj:'At this pace: ~75% when the window resets · 0.9%/h'}],true,IW)}</div>`)}
+ <div style="height:1px;background:var(--line)"></div>
+ ${ipadHalf('Teams','cl','cl','Max 5×',false,`<div style="width:396px">${wkCard('cl',TW,true,IW)}</div><div style="width:396px">${fCard(true,IW,W.t5,SR.t5,'cl')}</div>`)}
+ </div></div>`;
+$('ipad').innerHTML=fig(`<div style="zoom:.72">${ipadBody}</div>`,ba('Pinned Personal on top, Teams selected below; two cards across (5h left, 7-day right); sidebar on 5h.','Weekly card leads (left), 5h second; same pace lines as the phone. The bottom half scrolls on the device; drawn on a 960 pt tall canvas (the iPad\'s is 834 pt) so both halves show whole; each half scrolls on the device. Sidebar on Headline.'),'');
+
+// ================= 2 · settings =================
+function setPage(n,a,plan,has5h,sel,light,only){
+  const g=`<div class="hd">Headline${NEW}</div><div class="grp"><div class="cell"><div style="font-size:16px">Lead with</div><div class="sub" style="font-size:13px;margin-top:2px">What widgets, the lock screen, the Live Activity and the iPad sidebar show first.</div>
+   <div class="seg${has5h?'':' off'}">${['Weekly','5-hour','Auto'].map(s=>`<span class="${s===sel?'on':''}">${s}</span>`).join('')}</div></div></div>
+   <div class="fn">${has5h?'Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets.':'This plan has no 5-hour window, so Weekly is always the headline.'}</div>`;
+  if(only)return `<div class="set${light?' light':''}">${g}</div>`;
+  return `<div class="set${light?' light':''}"><div style="display:flex;align-items:center;gap:6px;color:var(--${a});font-size:17px;height:34px">‹ Accounts</div><div style="display:flex;align-items:center;gap:8px;font-size:34px;font-weight:700;margin:4px 0 6px">${mk(a,28)}${n}</div>
+   <div class="hd">Account</div><div class="grp"><div class="cell" style="display:flex;justify-content:space-between"><span>Plan</span><span class="sub">${plan}</span></div><div class="cell" style="display:flex;justify-content:space-between"><span>Accent colour…</span><span style="color:var(--${a})">●</span></div></div>${g}
+   <div class="hd">Usage</div><div class="grp"><div class="cell">Details…</div><div class="cell" style="color:var(--red)">Clear usage history…</div></div></div>`}
+$('set').innerHTML=[
+ fig(setPage('Teams','cl','Max 5×',true,'Weekly'),ba('Account row only (Rename, Pin, Details…, Accent colour…).','The account page with the Headline group: segmented Weekly (default) · 5-hour · Auto and its caption.')),
+ fig(setPage('Personal','gp','Pro',false,'Weekly'),'<b>No 5h (ChatGPT Pro, Claude Ultra):</b> shown greyed, not hidden, with its reason in place of the Auto caption. If a 5h window returns, the stored choice comes back.'),
+ `<div style="display:flex;flex-direction:column;gap:22px">${fig(setPage('Teams','cl','',true,'Auto',false,true),'<b>Auto selected</b>: same row, Auto highlighted.')}${fig(setPage('Teams','cl','',true,'5-hour',true,true),'<b>Light</b>, 5-hour selected.')}</div>`
+].join('');
+
+// ================= 3 · widgets =================
+const wid=(Wd,H,inner,cap,light)=>`<div class="shot" style="width:${Math.max(Wd,170)}px"><div class="w${light?' light':''}" style="width:${Wd}px;height:${H}px">${inner}</div><div class="cap">${cap}</div></div>`;
+function numberW(a,n,label,w,foot,cap,light){return wid(160,160,`<div class="hdr" style="font-size:${(n+label).length>13?12.5:14}px">${mk(a,15)}<span class="nm">${n} · ${label}</span></div>
+  <div style="margin:auto 0;font-size:46px;font-weight:700;line-height:1;color:${sev(w.used,a)}">${w.used}%</div>${bar(a,w.used,w.gone,8)}<div class="sub" style="font-size:12.5px;margin-top:2px">${foot}</div>`,cap,light)}
+function cdW(a,n,cap1,count,under,cap,light){return wid(160,160,`<div style="font-size:14px">${cap1}</div><div style="font-size:35px;font-weight:700;color:var(--ink);margin-top:8px;line-height:1.05">${count}</div><div class="sub" style="font-size:13.5px">${under}</div><div style="margin-top:auto;display:flex;gap:6px;align-items:center;font-size:13px">${mk(a,14)}${n}</div>`,cap,light)}
+$('w1').innerHTML=[
+ numberW('cl','Teams','Weekly',W.tw,'Resets Sun 9:30 pm',ba('New Number: "Teams · 5h", 34%, "Resets 5:10 pm".','New Number starts on the Headline (Weekly): label, figure, bar with tick and red slice, Weekly footnote.')+' '+NEW),
+ numberW('cl','Teams','5h',W.t5,'Resets 5:10 pm','<b>Placed widget:</b> keeps its stored window (5h). Unchanged, pixel for pixel. Auto never swaps a Number live; it only picks the starting window.'),
+ numberW('gp','Personal','Weekly',W.pw,'Resets Fri 10:18 pm','<b>No 5h plan:</b> already Weekly; unchanged.'),
+ numberW('cl','Teams','Weekly',W.tw,'Resets Sun 9:30 pm','<b>Light.</b> Same face.',true),
+ cdW('cl','Teams','Weekly reset','4d 6h','at Sun 9:30 pm',ba('"5h reset" 2:20:00 live, "at 5:10 pm".','A new Countdown starts on the Headline: "Weekly reset", days and hours (not live), "at Sun 9:30 pm".')+' '+NEW),
+ cdW('cl','Teams','5h reset','2:20:00','at 5:10 pm','<b>Placed Countdown</b> keeps its stored 5h window; unchanged.'),
+ cdW('gp','Personal','Weekly reset','2d 7h','at Fri 10:18 pm','<b>No 5h plan:</b> already Weekly; unchanged.')
+].join('');
+function barsW(a,n,top,bot,ih,cap,light,Wd){ // top/bot: {label,w,foot,clock}
+  const f1=ih>=119,f2=ih>=136;
+  let h=`<div class="hdr" style="font-size:${!f1||(n+top.label).length>13?12.5:14}px">${mk(a,15)}<span class="nm">${n} · ${top.label}${!f1&&top.clock?` · <span class="sub">${top.clock}</span>`:''}</span></div>
+  <div style="font-size:28px;font-weight:700;line-height:30px;margin-top:2px;color:${sev(top.w.used,a)}">${top.w.used}%</div><div style="margin-top:3px">${bar(a,top.w.used,top.w.gone,8)}</div>`;
+  if(f1)h+=`<div class="${top.fcls||'sub'}" style="font-size:11.5px;margin-top:2px;white-space:nowrap">${top.foot}</div>`;
+  if(bot){h+=`<div class="wrow" style="margin-top:${f1?8:6}px;font-size:13px"><span>${bot.label}</span><span style="margin-left:auto;font-size:15px;font-weight:${bot.loud?800:600};color:${bot.loud?sev(bot.w.used,a):'var(--txt)'}">${bot.w.used}%</span></div><div style="margin-top:3px">${bar(a,bot.w.used,bot.w.gone,6)}</div>`;
+    if(f2)h+=`<div class="sub" style="font-size:11.5px;margin-top:2px;white-space:nowrap">${bot.foot}</div>`}
+  return wid(Wd||160,Wd||160,h,cap,light)}
+const T1={label:'Weekly',w:W.tw,foot:'Resets Sun 9:30 pm',clock:'Sun'},B1={label:'5h',w:W.t5,foot:'Resets 5:10 pm'};
+$('w2').innerHTML=[
+ barsW('cl','Teams',T1,B1,128,ba('5h block on top ("Teams · 5h" 34%, "Resets 5:10 pm"), Weekly under it.','Weekly block on top, 5h under. At 160 pt the second block\'s footnote drops first (it was the Weekly one).')+' '+NEW),
+ barsW('cl','Teams',T1,{...B1,w:W.b5,loud:true},128,'<b>5h at 93%:</b> the 5h figure is already orange from the ladder; it also goes extra bold. Bar orange, red from its tick.'),
+ barsW('gp','Personal',{label:'Weekly',w:W.pw,foot:'Resets Fri 10:18 pm'},null,128,'<b>No 5h plan:</b> unchanged (Weekly alone, no second row).'),
+ barsW('cl','Teams',{...T1,w:W.sp,foot:'Limit · Sun 9:30 pm',fcls:'alarm'},null,128,'<b>Spent:</b> red 100%, "Limit · Sun 9:30 pm" ("resets" dropped to fit); the 5h row is dropped (as rev A drops the companion), so it reads as the weekly-only layout.'),
+ barsW('cl','Teams',{...T1,w:W.ld},{...B1,w:{...W.t5,used:12}},128,'<b>Last day</b> (60%, 6h left; 5h 12%). Small faces print no pace sentence; the tick shows it.'),
+ barsW('cl','Teams',T1,B1,128,'<b>Light.</b>',true),
+ barsW('cl','Teams',T1,B1,135,'<b>iPhone, 135 pt inside (151 widget):</b> same as 160.',false,151),
+ barsW('cl','Teams',T1,B1,109,'<b>iPhone SE, 109 inside (141 widget):</b> Weekly footnote goes; its clock moves into the header as the day ("· Sun"), since "Sun 9:30 pm" will not fit at 70% scale.',false,141)
+].join('');
+function stripW(a,n,top,bot,line,cap,light,lcls){return wid(346,157,`<div class="hdr" style="font-size:15px">${mk(a,16)}<span class="nm">${n} · ${top.label}</span><span class="big" style="font-size:34px;color:${sev(top.w.used,a)}">${top.w.used}%</span></div>
+  <div style="margin-top:6px">${bar(a,top.w.used,top.w.gone,8)}</div><div class="${lcls||'sub'}" style="font-size:12.5px;margin-top:6px">${line}</div>
+  ${bot?`<div class="wrow" style="margin-top:auto;font-size:13px"><span style="width:52px">${bot.label}</span><div style="flex:1">${bar(a,bot.w.used,bot.w.gone,6)}</div><span style="width:40px;text-align:right;font-weight:${bot.loud?800:600};color:${bot.loud?sev(bot.w.used,a):'var(--txt)'}">${bot.w.used}%</span></div>`:''}`,cap,light)}
+$('w3').innerHTML=[
+ stripW('cl','Teams',{label:'Weekly',w:W.tw},{label:'5h',w:W.t5},'Resets Sun 9:30 pm · in 4d 6h',ba('"Teams · 5h" 34%, line "Resets in 2h 20m · 5:10 pm", Weekly row at the bottom.','Weekly leads (34 pt figure, bar, Weekly line); the bottom row is 5h. The 5h reset clock leaves the Strip (it has no line of its own); the tick stays on both bars.')+' '+NEW),
+ stripW('cl','Teams',{label:'Weekly',w:W.tw},{label:'5h',w:W.b5,loud:true},'Resets Sun 9:30 pm · in 4d 6h','<b>5h at 93%:</b> the bottom 5h row goes bold and orange.'),
+ stripW('gp','Personal',{label:'Weekly',w:W.pw},null,'Resets Fri 10:18 pm · in 2d 7h','<b>No 5h plan:</b> unchanged.'),
+ stripW('cl','Teams',{label:'Weekly',w:W.sp},null,'<span class="alarm">Limit reached</span> · resets Sun 9:30 pm','<b>Spent:</b> as rev A, no 5h row.')
+].join('');
+// ---- Overview card ----
+function ov(a,n,Wd,H,o){const lead=o.lead||'wk',wk=o.wk,five=o.five,dm=o.narrow;let h,lw=lead==='5h'?five:wk,title=n+' · '+(lead==='5h'?'5h':'Weekly');
+  const sp=wk&&wk.used>=99.5;
+  h=`<div class="hdr">${mk(a,16)}<span class="nm" style="font-size:15px">${title}</span><span class="big" style="font-size:${o.t1?40:dm?28:34}px;color:${sev(lw.used,a)}">${lw.used}%</span></div><div style="margin-top:6px">${bar(a,lw.used,lw.gone,8)}</div>`;
+  if(lead==='wk'){h+=`<div class="${sp?'alarm':'sub'}" style="font-size:12.5px;margin-top:2px;white-space:nowrap">${sp?`Limit · resets in ${wk.inT}`:`Resets ${wk.rs} · in ${wk.inT}`}</div>
+    <div style="font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span class="${hot(wk)?'alarm':''}">${dm?bandOnly(wk):words(wk)}</span>${o.proj&&!dm?` <span class="sub">· ${o.proj}</span>`:''} ${o.nw||''}</div>`;
+    if(o.t1){const ch=Math.max(70,H-40-110-(five?38:0));h+=`<div style="margin-top:8px">${chart(a,Wd,ch,SR.tw)}</div>`}
+    if(five)h+=`<div class="wrow" style="margin-top:8px;font-size:13px"><span style="width:52px">5h</span><div style="flex:1">${bar(a,five.used,five.gone,6)}</div><span style="width:40px;text-align:right;font-weight:${o.loud?800:600};color:${o.loud?sev(five.used,a):'var(--txt)'}">${five.used}%</span></div>
+      <div class="${o.loud?'warn':'sub'}" style="font-size:11.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.loud?`Resets in ${five.inT} · runs out ~${five.run}`:dm?`Resets ${five.rs} · ~69%`:`Resets in ${five.inT} · on track for ~69%`}</div>`}
+  else{h+=`<div class="sub" style="font-size:12.5px;margin-top:2px">Resets in ${five.inT} · ${five.rs}</div><div class="alarm" style="font-size:12.5px;margin-top:1px">~ runs out ${five.run}</div>
+    <div class="wrow" style="margin-top:8px;font-size:13px"><span style="width:52px">Weekly</span><div style="flex:1">${bar(a,wk.used,wk.gone,6)}</div><span style="width:40px;text-align:right;font-weight:600">${wk.used}%</span></div><div class="sub" style="font-size:11.5px;margin-top:3px">Resets ${wk.rs} · ${bandOnly(wk)}</div>`}
+  return `<div class="cell" style="width:${Wd}px;height:${H}px">${h}</div>`}
+const ovw=(Wd,H,cards,cap,light)=>wid(Wd,H,`<div style="display:flex;flex-direction:column;gap:12px">${cards.join('')}</div>`,cap,light);
+$('w4').innerHTML=[
+ ovw(346,346,[ov('cl','Teams',314,314,{wk:W.tw,five:W.t5,t1:true,proj:'~ runs out Sat 3:10 am'})],ba('T1: "Teams", big 5h 34%, "On even pace"/"22% above even pace" line, 5h chart, Weekly row.','T1 leads with Weekly: big 52%, "Slow down · ≈11%/day · ~ runs out Sat 3:10 am", the Weekly chart (guides, diagonal, dots, projection, axis), then the 5h row with "on track for ~69%".')),
+ ovw(346,346,[ov('gp','Personal',314,151,{wk:W.pw}),ov('cl','Teams',314,151,{wk:W.tw,five:W.t5,proj:'~ runs out Sat 3:10 am'})],'<b>T3, two accounts (your widget).</b> Personal is weekly-only: "Room to spare · ≈22%/day". Teams: band words, then the 5h row.'),
+ ovw(311,321,[ov('gp','Personal',279,138,{wk:W.pw,narrow:true}),ov('cl','Teams',279,138,{wk:W.tw,five:W.t5,narrow:true})],'<b>T3 narrow</b> (iPhone SE Large, cell under 300 pt): band only, "Slow down"; the 5h line shortens to "Resets 5:10 pm · ~69%".'),
+ ovw(346,346,[ov('cl','Teams',314,151,{wk:W.tw,five:W.b5,loud:true,proj:'~ runs out Sat 3:10 am'}),ov('cl','Teams',314,151,{wk:W.ld,five:{...W.t5,used:12},proj:''})],'<b>Headline Weekly, 5h at 93%</b> (top): the 5h row goes bold orange with "runs out ~3:25 pm". <b>Last day</b> (bottom): "Use before reset · 40% left, 6h".'),
+ ovw(346,346,[ov('cl','Teams',314,151,{lead:'5h',wk:W.tw,five:W.b5}),ov('cl','Teams',314,151,{wk:W.sp,five:null})],'<b>Auto, 5h binding</b> (top): the card leads with 5h until 3:40 pm, Weekly becomes the second row. <b>Spent</b> (bottom): "Limit · resets in 3d 4h", "Out until Sun 9:30 pm", no 5h row.'),
+ ovw(346,346,[ov('gp','Personal',314,151,{wk:W.pw}),ov('cl','Teams',314,151,{wk:W.tw,five:W.t5,proj:'~ runs out Sat 3:10 am'})],'<b>Light</b> T3.',true)
+].join('');
+
+// ================= 4 · lock screen / Live Activity =================
+const mb=(p,g,h,Wd)=>{const e=Math.max(3,h*.45);return `<div class="bar" style="height:${h}px;width:${Wd}px;margin:${e}px 0"><div class="tr" style="background:rgba(255,255,255,.32)"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.max(Math.min(p,100),3)}%;background:#fff"></div></div><div class="tk" style="left:${g}%;width:3px;height:${h+2*e}px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.4)"></div></div>`};
+function lkRect(a,n,label,w,line,cap){return fig(`<div class="lk"><div style="display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:${(n+label).length>13?12.5:14}px;font-weight:600">${mk(a,14,'#fff')}${n} · ${label}<span style="margin-left:auto;font-size:17px;font-weight:700">${w.used}%</span></div><div style="margin:5px 0 4px">${mb(w.used,w.gone,6,150)}</div><div style="font-size:13px;opacity:.88;white-space:nowrap">${line}</div></div>`,cap)}
+function lkCirc(p,g,label,sub,cap){const s=66,sw=5.5,r=(s-sw)/2-2,c=s/2,C=2*Math.PI*r,ang=2*Math.PI*g/100;
+  return fig(`<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center"><svg width="${s}" height="${s}"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,.32)" stroke-width="${sw}"/><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#fff" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${C*Math.min(p,100)/100} ${C}" transform="rotate(-90 ${c} ${c})"/><line x1="${c+(r-sw*.95)*Math.sin(ang)}" y1="${c-(r-sw*.95)*Math.cos(ang)}" x2="${c+(r+sw*.95)*Math.sin(ang)}" y2="${c-(r+sw*.95)*Math.cos(ang)}" stroke="#fff" stroke-width="2.2" style="filter:drop-shadow(0 0 1px rgba(0,0,0,.6))"/><text x="${c}" y="${c+3}" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">${label}</text><text x="${c}" y="${c+15}" text-anchor="middle" font-size="9.5" fill="#fff" opacity=".85">${sub}</text></svg></div>`,cap)}
+const inl=(t,cap)=>fig(`<div style="font-size:15px;font-weight:600;color:#fff;background:rgba(255,255,255,.14);border-radius:10px;padding:4px 10px;white-space:nowrap">${t}</div>`,cap);
+$('l1').innerHTML=[
+ lkRect('cl','Teams','Weekly',W.tw,'Resets Sun · <b>5h 34%</b>'.replace('<b>','').replace('</b>',''),ba('"Teams · 5h" 46%, "Resets in 1h 35m".','Weekly line first: figure 52%, bar with tick, line "Resets Sun · 5h 34%" (the 5h rides in the existing line slot; still 76 pt tall).')+' '+NEW),
+ lkRect('cl','Teams','Weekly',W.tw,'Resets Sun · <b>5h 93%</b>','<b>5h binding:</b> colour is stripped, so the companion goes bold ("5h 93%").'),
+ lkRect('gp','Personal','Weekly',W.pw,'Resets Fri 10:18 pm','<b>No 5h plan:</b> Weekly alone, reset day and clock in the line (as today\'s weekly-only copy).'),
+ lkRect('cl','Teams','Weekly',W.sp,'Limit · resets Sun 9:30 pm','<b>Spent:</b> existing "Limit · resets" copy; no 5h.'),
+ lkCirc(52,38.9,'52','W',ba('Ring 5h, figure 46, sublabel "5h".','Default = Headline: Weekly 52, sublabel "W" (the label weekly-only plans already use). No window choice on the lock screen, so it follows the Headline live.')),
+ lkCirc(93,83.3,'93','5h','<b>Auto, 5h binding:</b> takes over live: 93, sublabel "5h", until 3:40 pm.'),
+ lkCirc(100,55,'MAX','W','<b>Spent:</b> "MAX", sublabel "W" (existing 100% copy).'),
+ inl('Teams Weekly 52% · resets Sun',ba('"Teams 5h 46% · resets 5:50 pm".','"Teams Weekly 52% · resets Sun" (falls back to "Teams Weekly 52%" when it does not fit).')),
+ inl('Teams 5h 93% · resets 3:40 pm','<b>Auto, 5h binding:</b> inline takes over.')
+].join('');
+function duetRow(a,n,t,s){return `<div style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap">${mk(a,14)}${n} · ${t.label}<span style="color:var(--txt);font-size:12.5px">· ${t.tail}</span></div><div style="margin:4px 0 3px">${bar(a,t.w.used,t.w.gone,7)}</div>
+  ${s?`<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--txt)"><span style="width:40px">${s.label}</span><div style="width:146px">${bar(a,s.w.used,s.w.gone,4)}</div><span style="margin-left:auto;font-weight:${s.loud?800:400};color:${s.loud?sev(s.w.used,a):'var(--txt)'}">${s.w.used}%</span></div>`:''}</div>
+  <div style="width:96px;text-align:right;font-size:${t.w.used>=100?34:40}px;font-weight:600;letter-spacing:-.5px;color:${sev(t.w.used,a)}">${t.w.used}%</div></div>`}
+const duet=(rows,cap)=>fig(`<div class="la">${rows.join('<div style="height:8px"></div>')}</div>`,cap);
+const wkT=(w,tail)=>({label:'Weekly',w,tail:tail||w.rs}),PT={label:'Weekly',w:W.pw,tail:'Fri 10:18 pm'};
+const isl=(kind,inner,cap)=>fig(kind==='exp'?`<div style="width:384px;border-radius:44px;background:#000;color:#F2F2F2;padding:16px 24px 18px;--txt:#D1D1D6;--sub:#98989F">${inner}</div>`:inner,cap);
+$('l2').innerHTML=[
+ duet([duetRow('cl','Teams',wkT(W.tw),{label:'5h',w:W.t5}),duetRow('gp','Personal',PT,null)],ba('Rows "Teams · 5h · 1:35:12" with a thin Weekly line; Personal weekly-only.','Weekly first: label "Teams · Weekly · Sun 9:30 pm", big 52%, thin line is 5h (34%). Personal unchanged. Same 160 pt budget.')+' '+NEW),
+ duet([duetRow('cl','Teams',wkT(W.tw),{label:'5h',w:W.b5,loud:true}),duetRow('gp','Personal',PT,null)],'<b>5h binding, Headline Weekly:</b> the thin 5h line goes bold, orange 93%, bar orange.'),
+ duet([duetRow('cl','Teams',{label:'5h',w:W.b5,tail:'runs out 3:25 pm'},{label:'Weekly',w:W.tw}),duetRow('gp','Personal',PT,null)],'<b>Auto, 5h binding:</b> Teams row leads with 5h (today\'s 5h row, "runs out 3:25 pm"), Weekly becomes the thin line.'),
+ duet([duetRow('cl','Teams',{label:'Weekly',w:W.sp,tail:'out · Sun 9:30 pm'},null),duetRow('gp','Personal',PT,null)],'<b>Spent:</b> "out · Sun 9:30 pm", no 5h line; the other account is untouched.'),
+ isl('exp',`<div style="display:flex;align-items:center;gap:7px;font-size:15px">${mk('cl',18)}Teams · Weekly<span style="margin-left:auto;font-size:34px;font-weight:600;color:${sev(52,'cl')}">52%</span></div><div style="margin:8px 0">${bar('cl',52,38.9,8)}</div><div style="font-size:13px;color:var(--txt)">Resets Sun 9:30 pm · 5h 34%</div>`,ba('"Teams · 5h" 46%, "Resets in 1:35:12 · 9:50 pm".','Expanded: Weekly first, bar with tick, long line "Resets Sun 9:30 pm · 5h 34%" (5h bold when binding).')+' '+NEW),
+ isl('exp',`<div style="display:flex;align-items:center;gap:7px;font-size:15px">${mk('cl',18)}Teams · 5h<span style="margin-left:auto;font-size:34px;font-weight:600;color:var(--orange)">93%</span></div><div style="margin:8px 0">${bar('cl',93,83.3,8)}</div><div style="font-size:13px;color:var(--txt)">~ runs out 3:25 pm · resets in <b style="font-weight:500">0:50:12</b> · Weekly 52%</div>`,'<b>Auto, 5h binding:</b> expanded leads with 5h.'),
+ isl('c',`<div style="width:300px;height:37px;border-radius:20px;background:#000;display:flex;align-items:center;padding:0 14px;color:#fff;font-weight:600;font-size:15px">${mk('cl',16)}<span style="margin-left:6px;color:var(--cl)">52%</span><span style="margin-left:auto">4d 6h</span></div>`,ba('Compact: mark + 46%, live timer "1:35".','Compact: mark + Weekly 52%, trailing the short duration "4d 6h" (not live, as the weekly-only rule already is). On Auto 5h binding: "93%" and live "0:50".')),
+ isl('m',`<div style="width:37px;height:37px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center"><svg width="28" height="28"><circle cx="14" cy="14" r="11.3" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="3.4"/><circle cx="14" cy="14" r="11.3" fill="none" stroke="#E59980" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="${71*.52} 71" transform="rotate(-90 14 14)"/><line x1="${14+8*Math.sin(2.444)}" y1="${14-8*Math.cos(2.444)}" x2="${14+14.5*Math.sin(2.444)}" y2="${14-14.5*Math.cos(2.444)}" stroke="#fff" stroke-width="1.6"/></svg></div>`,'<b>Minimal:</b> the same ring, now Weekly (52% with the tick at 38.9%).')
+].join('');
+
+// ================= 5 · tables =================
+const rows=[
+['App, Weekly card','Weekly first and open on iPhone; first line "band · allowance until Sun"; new detail line "Pace +21% · an even week is 39% by now"; folded: "band · allowance · resets Sun"','Halves (All, Fable), chart, projection line, reset row, both bars with tick and red slice'],
+['App, 5h card','"Below even pace" line goes; folded line "Resets in 2h 20m · on track for ~69%"','Bar, chart, "At this pace" line, reset row'],
+['iPad sidebar','New "Headline" segment (default); rows follow each account\'s headline and name it','5h and Weekly segments, pin, bars with tick'],
+['Settings','Account page with Headline: Weekly · 5-hour · Auto; greyed with the reason on no-5h plans','Account row, touch-and-hold menu, every other row'],
+['Number, Countdown','New widgets start on the Headline (Auto → Weekly)','Placed widgets keep their stored window; faces and sizes'],
+['Bars (small)','Weekly block on top, 5h under; the second block\'s footnote now drops first','Sizes, tick on both bars, weekly-only layout'],
+['Strip (medium)','Weekly header and line; bottom row is 5h','Sizes, bars, weekly-only layout'],
+['Overview T1–T3','Big number = Headline window; pace line is the band words ("Slow down · ≈11%/day", narrow "Slow down"); 5h second row with its projection','Tiers, bars, ticks, T1 chart; T4/T5 take the same swap'],
+['Lock screen','Rectangular: Weekly first, 5h in the line slot; circular and inline follow the Headline','Size, tint rules, no-colour severity (bold instead)'],
+['Live Activity, Island','Duet: Weekly first, 5h thin line; Island expanded and compact lead with Weekly','160 pt budget, final frame, stale rules'],
+['Reset alerts, Control Center','None','5h "If busy", Weekly "Always"; the control\'s own window copy']];
+$('tbl').insertAdjacentHTML('beforeend',rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(''));
+$('ints').innerHTML=[
+'<b>Card opening:</b> iOS opens the first card and folds the second on iPhone; I drew Weekly open and 5h folded.',
+'<b>Sidebar:</b> a third "Headline" segment (default), rows tagged with their window. The alternative is no new segment: the existing switch simply defaults to Weekly.',
+'<b>Settings:</b> a new per-account page (iOS has only a row plus menu); a sheet from the menu is the alternative.',
+'<b>Auto on iOS:</b> Number and Countdown only seed their window (Auto → Weekly) and never swap live; the lock circular and inline, the Overview big number and the sidebar have no window choice and follow the Headline live, so Auto\'s takeover applies there. Bars, Strip, rectangular and Duet are fixed Weekly-first.',
+'<b>Loud companion:</b> iOS companions are real figures already in the severity colour, so "loud" adds only bold (and on the tinted lock screen, bold alone).',
+'<b>Small faces and the band words:</b> only Overview, the app and the Duet name the band; Number, Bars and Strip print no pace sentence, as on Android.',
+'<b>Spent:</b> the 5h block or row is dropped on Bars, Strip, Overview and Duet (rev A drops the companion); the red Weekly line stays.',
+'<b>Whole folded Weekly line red</b> when the band is Slow down or Nearly out, because iOS already reddens a folded line above pace.',
+'<b>Not reproduced exactly:</b> the shipped lock rectangular is single-window; the 5h companion in its line slot is mine. The Fable half draws no samples, as shipped.'
+].map(t=>`<li>${t}</li>`).join('');
+</script>
+</body>
+</html>
