@@ -29,6 +29,13 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 # (No longer copied into release/ or committed.)
 ```
 
+**The Gemini secret, from v2.0** (CCRM-55 (Antigravity Account)). A build without the Antigravity client
+secret succeeds and silently hides Gemini, so check it before building any release: Android needs
+`antigravityClientSecret` in `~/.gradle/gradle.properties` (and the CI repository secret), iOS needs
+`ios/Config/Antigravity.secrets.xcconfig` (git-ignored). After the build, confirm the APK's
+`BuildConfig.ANTIGRAVITY_CLIENT_SECRET` and the IPA's Info.plist `AntigravityClientSecret` are non-empty
+(e.g. the release build shows the Gemini row in Add account) — never print the value.
+
 **Two flavors since v1.9** (CCRM-87 (Update Channel)). `github` is the APK on the Releases
 page and keeps the *Check for updates* path; `play` is the Google Play build and has none.
 The GitHub asset is always the **github** flavor, copied to the file name `app-release.apk`
