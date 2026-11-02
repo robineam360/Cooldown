@@ -1670,7 +1670,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   above Weekly in the app (a layout reordered in the sheet wins either way), and installs that had an
   account before the update see a one-time "Weekly now leads" notice with "Keep Weekly" / "Keep 5h
   first" (the latter sets every account's Headline to 5-hour). Drawn in
-  `design/2026-11-02-vs-pace-display.html` §6, awaiting approval.
+  `design/2026-11-02-vs-pace-display.html` §6, **approved 2026-11-02**.
 - **Spec:** the Auto rule and the "no 5h → Weekly" fallback go into `spec/core/BEHAVIOR-SPEC.md` with
   fixtures; the setting is per-client presentation.
 - **Done when:** wireframes for every surface and state (5h present/absent, Auto switched to 5h, spent,
@@ -1730,7 +1730,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-100 · Vs Pace Display — the big figure shows the distance from the pace mark
 - **Status:** Asked by Robin 2026-11-02 · option A chosen · wireframe
-  `design/2026-11-02-vs-pace-display.html` awaiting approval.
+  `design/2026-11-02-vs-pace-display.html` **approved 2026-11-02**.
 - **What:** a third value on CCRM-22 (Used or Left)'s global "Usage display": **Used · Left · Vs pace**.
   Vs pace shows `elapsed − used` in points, signed and floored so room is never overstated: "+10%" is
   room under the pace mark, "−20%" is over it. Every big figure follows it (notification, widgets, app

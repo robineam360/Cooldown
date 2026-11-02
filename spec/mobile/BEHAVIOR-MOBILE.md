@@ -98,8 +98,9 @@ and changes still go through a wireframe first (CLAUDE.md §2).
 
 ## 5. Headline window and pace wording — CCRM-96 (Weekly First), CCRM-97 (Pace Number)
 
-**Status:** decided 2026-11-02, wireframe `design/2026-11-02-weekly-first-pace.html` (rev A,
-Android approved 2026-11-02; iOS rev B pending); no client implements it yet. Until one does, today's rule stands: the headline
+**Status:** decided 2026-11-02; wireframes approved 2026-11-02 (`design/2026-11-02-weekly-first-pace.html`
+Android, `-ios-weekly-first.html` iOS, `-pace-line-label.html` V1, `-vs-pace-display.html`); no client
+implements it yet. Until one does, today's rule stands: the headline
 is the session if present, else the weekly window.
 
 **The Headline setting is per account:** `weekly` (default) · `fiveHour` · `auto`.
@@ -144,7 +145,7 @@ from the fill to the mark is drawn as a dashed outline; over pace the existing r
 when the window is spent, has no reset clock or no reading. The notification's expanded header line 2
 reads "10 under the pace mark (60%) · resets Fri".
 
-**Usage display: Vs pace** (CCRM-100 (Vs Pace Display), awaiting its wireframe's approval): the third
+**Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
 value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
 
