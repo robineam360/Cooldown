@@ -122,6 +122,48 @@ struct V20SurfaceTests {
         // display.usageVsPace) and v1.9 never reads it; the sidebar's "headline" tag reads as v1.9's 5h.
     }
 
+    // MARK: - Judge findings F1, F3, F5
+
+    @Test("F1: a Number set to Weekly on a weekly-only account shows the weekly reading, not —")
+    func numberWeeklyOnly() {
+        let wk = personal
+        let face = wk.leading
+        #expect(face.leadsWeekly && face.pct == 50 && face.weeklyPct == nil)
+        let entry = FaceEntry(date: now, faces: [wk], key: wk.account.key, window: .weekly)
+        // What NumberFace reads for .weekly on this face.
+        let weekly = entry.window == .weekly && !face.leadsWeekly
+        #expect((weekly ? face.weeklyPct : face.pct) == 50)
+        r.save("v20-number-weeklyonly-weekly", NumberFace(entry: entry), width: 170, height: 170)
+        r.save("v20-number-weekly", NumberFace(entry: FaceEntry(date: now, faces: [teams()], key: nil, window: .weekly)), width: 170, height: 170)
+    }
+
+    @Test("F3: Vs pace in v2.0, Left chosen in v1.9, re-upgrade reads Left and clears the stale flag")
+    func modeRoundTrip() {
+        let d = Prefs.defaults
+        withMode(.vsPace) {
+            #expect(Display.mode == .vsPace)
+            d.set(true, forKey: "display.usageLeft")   // v1.9's Left: it writes only this key
+            #expect(Display.mode == .left)
+            Display.repairMode()
+            #expect(!d.bool(forKey: Display.Key.usageVsPace) && Display.mode == .left)
+            Display.setMode(.vsPace)
+            #expect(Display.mode == .vsPace && !d.bool(forKey: "display.usageLeft"))
+        }
+        #expect(Display.mode(left: true, vsPace: true) == .left)
+        #expect(Display.mode(left: false, vsPace: true) == .vsPace)
+        #expect(Display.mode(left: false, vsPace: false) == .used)
+    }
+
+    @Test("F5: the All tab selection falls back to an account once fewer than two remain")
+    func selectionAfterRemove() {
+        let a = Account(key: "a", label: "A", provider: .claude), b = Account(key: "b", label: "B", provider: .chatgpt)
+        #expect(AppModel.validSelection(AppModel.summaryKey, accounts: [a, b]) == AppModel.summaryKey)
+        #expect(AppModel.validSelection(AppModel.summaryKey, accounts: [a]) == "a")
+        #expect(AppModel.validSelection(AppModel.summaryKey, accounts: []) == nil)
+        #expect(AppModel.validSelection("b", accounts: [a]) == "a")
+        #expect(AppModel.validSelection("a", accounts: [a, b]) == "a")
+    }
+
     // MARK: - Card order, launch
 
     @Test("card order follows the Headline unless the user reordered; hide and fold keep it the Headline's")

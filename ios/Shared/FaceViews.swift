@@ -108,7 +108,9 @@ struct NumberFace: View {
     @Environment(\.palette) private var p
     var body: some View {
         if let face = entry.face?.leading {
-            let weekly = entry.window == .weekly
+            // A weekly-only plan is already led by Weekly (`leading` moved it into the main slot), so .weekly reads
+            // the main slot there; only a 5h-led face reads its second slot.
+            let weekly = entry.window == .weekly && !face.leadsWeekly
             let pct = weekly ? face.weeklyPct : face.pct
             let pace = weekly ? face.weeklyPace : face.pace
             VStack(alignment: .leading, spacing: 0) {

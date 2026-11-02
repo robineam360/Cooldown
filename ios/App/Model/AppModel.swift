@@ -54,6 +54,7 @@ final class AppModel {
                 Prefs.weeklyFirstNotice = WeeklyFirstNotice.settle(hadAccountsBefore: !accounts.isEmpty)
             }
             noticeOwed = Prefs.weeklyFirstNotice == WeeklyFirstNotice.pending && !accounts.isEmpty
+            Display.repairMode()
             selectedKey = Self.launchKey(accounts: accounts, openOnSummary: Prefs.openOnSummary, last: Prefs.lastAccountKey)
             reload()
         }
@@ -98,6 +99,15 @@ final class AppModel {
             layouts[account.key] = CardLayout.load(account.key)
         }
         nowMs = Self.clock()
+        selectedKey = Self.validSelection(selectedKey, accounts: accounts)
+    }
+
+    /// The selection, kept to something on screen: the All tab only while it shows (2+ accounts), an account only
+    /// while it exists; otherwise the first account.
+    static func validSelection(_ key: String?, accounts: [Account]) -> String? {
+        if key == summaryKey { return SummaryRank.tabShown(accountCount: accounts.count) ? key : accounts.first?.key }
+        if let key, accounts.contains(where: { $0.key == key }) { return key }
+        return accounts.first?.key
     }
 
     /// Demo mode fills these directly.
@@ -190,6 +200,7 @@ final class AppModel {
         await repo?.forget(key)
         accounts.removeAll { $0.key == key }
         if selectedKey == key { selectedKey = accounts.first?.key }
+        selectedKey = Self.validSelection(selectedKey, accounts: accounts)
         save()
         reload()
     }

@@ -32,9 +32,18 @@ enum Display {
         }
     }
     /// CCRM-100 (Vs Pace Display): Used · Left · Vs pace.
-    static var mode: PaceText.Mode {
-        if defaults.bool(forKey: Key.usageVsPace) { return .vsPace }
-        return defaults.bool(forKey: Key.usageLeft) ? .left : .used
+    static var mode: PaceText.Mode { mode(left: defaults.bool(forKey: Key.usageLeft), vsPace: defaults.bool(forKey: Key.usageVsPace)) }
+
+    /// `setMode` never writes both keys true, so both true means v1.9 (which writes only `usageLeft`) chose Left
+    /// after v2.0 chose Vs pace — a downgrade and re-upgrade: Left wins, the user's latest choice.
+    static func mode(left: Bool, vsPace: Bool) -> PaceText.Mode {
+        if left { return .left }
+        return vsPace ? .vsPace : .used
+    }
+
+    /// Clears a stale Vs pace flag left behind by that round trip; run at launch.
+    static func repairMode() {
+        if defaults.bool(forKey: Key.usageLeft) && defaults.bool(forKey: Key.usageVsPace) { setMode(.left) }
     }
     static func setMode(_ mode: PaceText.Mode) {
         defaults.set(mode == .left, forKey: Key.usageLeft)
