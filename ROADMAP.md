@@ -1836,6 +1836,12 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   back to the usage figure. The Huge number's caption reads "VS PACE" where Left mode reads "LEFT".
 - **Why:** the bar already shows usage and the mark; the figure is free to show the one thing the bar
   makes you work out. The sign always agrees with the Pace band (Pace is this gap scaled by what's left).
+- **Revision asked by Robin, 2026-11-02 (pending the shape-grammar wireframe):** "avoid the plus or minus and
+  show it in green or red … A green percentage means the usage is behind the baseline by that percent — I have
+  that space … Red means it's going beyond … Zero is the sweet spot." So the Vs pace figure becomes the
+  unsigned distance coloured green under the mark, red over it, neutral at 0%; the fallbacks stay. This drops
+  the approved "figure keeps the bar's colour" rule for Vs pace mode only. Core §6.3's signed number is
+  unchanged (presentation only). Drawn in `design/2026-11-02-shape-grammar.html`; built after approval.
 
 ### CCRM-101 · Icon v3 — a launcher icon about the weekly limit, with all three providers' colours
 - **Status:** Asked by Robin 2026-11-02 (CCRM-55 (Antigravity Account) rev A review: "Can we ask ChatGPT to
