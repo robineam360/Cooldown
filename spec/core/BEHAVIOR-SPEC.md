@@ -65,6 +65,20 @@ here for whichever fetch path implements it; nothing in `UsageRepository` calls
 Source: `UsageParser.swift` (Claude), `ChatGPTUsageParser.swift` (ChatGPT); cases in
 `fixtures/usage/` and [`fixtures/chatgpt/`](fixtures/chatgpt/README.md).
 
+**Antigravity (Gemini) — CCRM-55 (Antigravity Account), API-CONTRACT §10.** Same `UsageData` shape,
+plus a list of **pools** (a second pair of windows on one account):
+
+| Rule | Antigravity |
+|---|---|
+| Classified by | `bucketId`, never by group order: `gemini-5h` → session, `gemini-weekly` → weekly, `gemini-argon-wtu-weekly` → a model cap named "Argon", `3p-5h` / `3p-weekly` → the session / weekly of a pool named "Claude + GPT in Antigravity". Unknown ids are ignored |
+| Percent | `used = (1 − remainingFraction) × 100`, unrounded (Google sends only fractions) |
+| Reset field | `resetTime`, ISO-8601 UTC |
+| Not started | Google slides an untouched window's reset to "now + window" on every call: `remainingFraction ≥ 1` **and** `resetTime` within 120 s of now + the window's length (5 h or 7 d) → `resetsAt` null |
+| Pools | The Claude + GPT pool is parsed whenever its buckets exist and **shown only once either window has started** (a reading above 0 or a reset clock); hidden while both are untouched. It never feeds the notification, widgets or the status-bar ring |
+| Unusable reply | No `gemini-*` bucket at all (the User-Agent was rejected, or Google changed the reply) → `invalidResponse`, worded "Google changed something — usage unavailable"; keep the last good reading, **never** a confident 0% or 100%. Not JSON → unparseable |
+
+Cases: [`fixtures/antigravity/cases.json`](fixtures/antigravity/README.md).
+
 ---
 
 ## 2. Usage credits (pay-as-you-go)
@@ -382,6 +396,41 @@ session exactly while this predicate holds; how each family exposes it is family
 A missing weekly reading does not block the predicate (condition 2 reads it as not spent).
 
 Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `sessionBinding`.
+
+---
+
+## 6.3 Distance from the pace mark — numbers
+
+**Status:** decided 2026-11-02 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)); promoted from the mobile
+layer the same day because every family shows it. Words and layout stay family layer.
+
+For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), not spent (§6.1):
+
+- **Vs pace figure** = `floor(elapsedPct − usedPct + 1e-9)`, an integer, signed (positive = under the mark,
+  room). Spent, no reset clock or no reading → no figure (a surface falls back to the usage figure, or a dash).
+- **The mark** = `elapsedPct` rounded half up; the **distance** = `|elapsedPct − usedPct|` rounded half up;
+  **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
+- Every floor and half-up adds 1e-9 first, so binary float edges (`2.3 − 0.3`) land on the decimal answer.
+
+Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`.
+
+---
+
+## 6.4 Ranking accounts by room to spare
+
+**Status:** decided 2026-11-02 (CCRM-98 (Summary Tab)); promoted from the mobile layer the same day. Which
+surface shows the ranking, and how, is family layer.
+
+Each account's Weekly window falls in one group, in this order:
+
+1. **Eligible** — a reading, not spent (§6.1), and §6.2's `sessionBinding` false. By §6.1's pace, lowest first;
+   a tie goes to the earlier weekly reset. A reading with no reset clock has no pace and ranks after every
+   clocked eligible account.
+2. **Held** by a binding 5h — soonest 5h reset first.
+3. **Spent** — soonest weekly reset first.
+4. **No reading** — in the family's own account order.
+
+A spent week is never held. Cases in [`fixtures/ranking/cases.json`](fixtures/ranking/cases.json).
 
 ---
 

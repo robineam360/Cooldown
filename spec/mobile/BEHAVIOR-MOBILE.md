@@ -129,7 +129,9 @@ as "5h 34%". While `sessionBinding` holds it takes the bar colour's step (core �
 | `nearlyOut` | "Nearly out" |
 | `spent` | no band: "Out until <reset>" |
 
-Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h".
+Allowance: `perDay` → "≈11%/day" (rounded; below 1 → "<1%/day"); `hours` → "40% left, 6h" (hours
+rounded; under 30 minutes "40% left, <1h"). The notification's expanded first line adds " to last" after a
+per-day allowance only ("Slow down · ≈11%/day to last").
 Tight form (notification, folded card): "Slow down · ≈11%/day". The signed number appears only in
 the app card's detail: "Pace +21% · an even week is 39% by now" — **superseded 2026-11-02**: the signed
 Pace is never printed; instead each app and Summary bar carries the pace-mark caption (below). On always-on surfaces the words carry no
@@ -144,10 +146,52 @@ shows what the figure does not: in Used or Left mode "60% pace mark · 10 under"
 from the fill to the mark is drawn as a dashed outline; over pace the existing red slice is the gap. None
 when the window is spent, has no reset clock or no reading. The notification's expanded header line 2
 reads "10 under the pace mark (60%) · resets Fri".
+Numbers (Step 2 of RUNBOOK-v2.0, 2026-11-02): the mark is `elapsedPct` rounded half up; the distance is
+`|elapsedPct − usedPct|` rounded half up, "on it" below 1. Left mode states the mark in remaining terms
+(`100 − mark`) and words the distance "10 to spare" under the mark, "20 over" past it. Vs pace mode's usage is
+the Used-mode figure (truncated). Every floor and half-up rounding of a difference adds 1e-9 first, so binary
+float edges (`2.3 − 0.3` = 1.9999999999999998) land on the decimal answer. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) →
+`caption`, `captionSide`. The notification's line 2 in the other modes (Fable judge, 2026-11-02): Left "10 to
+spare · pace mark 40% · resets Fri" / "20 over · pace mark 40% · resets Fri"; under 1 point "On the pace mark (60%)
+· resets Fri"; Vs pace "52% used (mark 39%) · resets Sun". The 5h companion always shows usage, bare in Left mode
+("5h 66%"); under a 5h lead the companion is "Weekly 52%".
 
 **Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
 value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
+The minus is U+2212. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
+
+**Spent week gate** (CCRM-102 (Spent Week Gate), approved 2026-11-02): while the Weekly window is spent
+(core §6.1), the 5h is shown disabled on every account — figure, bar and reset line at 45% opacity, no pace
+caption, no projection — with one full-opacity note "Weekly limit reached — 5h can't be used until <weekly
+reset, day and time>". The notification's expanded 5h panel row takes the note as its sub; a widget face
+showing the 5h reads "Weekly spent".
 
 **Model limits** (CCRM-99 (Model Limits Toggle)): per account `showModelLimits`, default true. False hides
 the model-cap rows and chips on the 7-day card and the notification panel; nothing else changes.
+
+## 6. The Summary tab — CCRM-98 (Summary Tab)
+
+**Status:** decided 2026-11-02; wireframe approved (`design/2026-11-02-summary-tab.html` rev B); no client
+implements it yet.
+
+**When it exists:** with two or more accounts an **All** tab comes first in the account tabs (on iPad an "All
+accounts" row tops the sidebar). Appearance › **Open on the summary** (default on) opens the app on it at launch;
+off, launch opens the last account looked at, as today. The toggle is shown only with two or more accounts.
+
+**The Weekly list, most room first.** Each account's Weekly window, in four groups:
+
+1. **Eligible** — a reading, the week not spent (core §6.1, `usedPct ≥ 99.5`), and core §6.2's
+   `sessionBinding` false. Ranked by core §6.1's Pace, lowest first (the most quota that would otherwise go
+   unused); a tie goes to the earlier weekly reset. The top row is the one to use next; nothing else marks it.
+   A week with a reading but no reset clock (not started) has no Pace and ranks after every clocked one.
+2. **Held** by a binding 5h, soonest 5h reset first. The row says when it is back.
+3. **Spent**, soonest weekly reset first.
+4. **No reading**, in tab order.
+
+A spent week is never held. Below the list, the **Pace map** plots each account with a reading at (its week gone,
+its Weekly used); a spent account's dot carries an ×. Rows use the §5 band words and allowance, the pace-mark
+caption and the account's figure in the Usage display mode; the Pace still ranks in every mode. No combined or
+summed figure (CCRM-6 (Multi-Account)), no Summary widget, no 5h on the map.
+
+Cases in [`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `ranking`, `tab`.

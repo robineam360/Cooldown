@@ -486,3 +486,91 @@ have charged, and it is what CCM-67 polls once the 403 has been seen once.
 
 Source: `ApiClient.kt:39-50`, `data/source/ClaudePlan.kt`, `UsageRepository.kt:410-448,
 505-542` (Android); `PlanTag.swift`, `UsageRepository.swift` (Mac).
+
+---
+
+## 10. Google Antigravity (Gemini) — CCRM-55 (Antigravity Account)
+
+**Posture — the highest of the three.** Cooldown presents as Google's Antigravity CLI: its public
+installed-app OAuth client and a versioned `antigravity/cli/<v>` token in the User-Agent. Neither is
+ours; Google can change or close either at any time. Robin accepted this on 2026-11-02. Disclosed as
+plainly as the Anthropic posture above (README, About). Every line below was tested end to end on
+2026-11-02 (`design/research/2026-11-02-antigravity-respike.md`).
+
+### 10.1 Sign-in — PKCE with a hosted code page (no localhost)
+
+1. Open in a Custom Tab / `ASWebAuthenticationSession` (never a WebView — Google refuses them):
+   `https://accounts.google.com/o/oauth2/v2/auth` with `client_id
+   1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com`, `redirect_uri
+   https://antigravity.google/oauth-callback`, `response_type=code`, PKCE `S256`,
+   `access_type=offline`, `prompt=consent`, `state`, and the scopes
+   `https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email
+   https://www.googleapis.com/auth/userinfo.profile openid`.
+2. Google's hosted page shows a `4/…` code. The user pastes either the code or the whole callback URL;
+   from a URL take `code`, and when it carries `state` it must equal the one this attempt sent
+   (mismatch → refuse, never exchange).
+3. Exchange: form POST `https://oauth2.googleapis.com/token` with `grant_type=authorization_code`,
+   `code`, `client_id`, the same `redirect_uri`, `code_verifier`, and the client's **public
+   installed-app secret** (`GOCSPX-…`, the second of three in agy 1.4.11; the first answers
+   `invalid_client`). → access token (~1 h), refresh token, `id_token`. Keep only the refresh token
+   and the email from the `id_token`'s payload.
+4. Refresh: same endpoint, `grant_type=refresh_token`, `refresh_token`, `client_id`, the secret.
+   `invalid_grant` → the token is dead: re-auth.
+
+**The secret never enters this repo** (GitHub push protection rejects it, public as it is): each client
+takes it from build configuration (Android: Gradle property `antigravityClientSecret`; iOS: an
+uncommitted xcconfig). A build without it hides the Gemini row in Add account instead of failing.
+
+### 10.2 Project and plan — `loadCodeAssist`
+
+`POST https://daily-cloudcode-pa.googleapis.com/v1internal:loadCodeAssist`, body
+`{"metadata":{"ideType":"ANTIGRAVITY"}}`, headers as 10.3. Reads `cloudaicompanionProject` (cache it
+with the credentials; fetch again on any 4xx from 10.3) and `paidTier.id`: `g1-pro-tier` → Pro,
+`g1-ultra-tier` → Ultra (**unverified** — no Ultra account seen), absent → Free. **Never
+`currentTier`**: it reads `free-tier` on a Pro account. Cases: `fixtures/antigravity/` → `plan`.
+
+### 10.3 Usage — `retrieveUserQuotaSummary`
+
+```
+POST https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary
+Authorization: Bearer <access_token>
+Content-Type: application/json
+User-Agent: Cooldown/<version> antigravity/cli/1.4.12 (aidev_client; os_type=<android|ios>; arch=arm64; auth_method=consumer)
+
+{"project": "<cloudaicompanionProject>"}
+```
+
+**The User-Agent rule.** Google returns the Gemini groups only when the UA contains a **versioned**
+`antigravity/cli/<version>` token (anywhere; the OS does not matter, and the app may name itself
+first). Without the version — or with `antigravity` alone — only the Claude + GPT group comes back.
+The version is one constant per client, with a test that it reads `antigravity/cli/` then a digit.
+It is a **read** sent as POST: a client's GET-only guard names these two `v1internal` calls as its
+only exceptions.
+
+Response (field names as captured; treat each as optional):
+
+```json
+{ "groups": [ { "displayName": "Gemini Models", "description": "…",
+                "buckets": [ { "bucketId": "gemini-weekly", "window": "weekly",
+                               "resetTime": "2026-11-05T16:51:10Z", "remainingFraction": 0.9984876,
+                               "description": "…fully refresh in 3 days, 12 hours." } ] } ],
+  "description": "…" }
+```
+
+Bucket ids: `gemini-5h`, `gemini-weekly` (the Gemini pool: Flash and Pro share it),
+`gemini-argon-wtu-weekly` (Gemini 4 Argon, weekly only, its own limit on Pro), `3p-5h`, `3p-weekly`
+(the Claude + GPT pool inside Antigravity). Fractions are **remaining** and unrounded. A bucket's
+`description` is Google's own words and is never shown (Robin, 2026-11-02). How a reply maps to
+windows is BEHAVIOR-SPEC §1.1; cases `fixtures/antigravity/cases.json` → `parse`.
+
+### 10.4 Errors
+
+| Reply | Meaning | Client does |
+|---|---|---|
+| Refresh `400 invalid_grant` | token dead | re-auth (the existing "Sign-in stopped working" state) |
+| 401 on 10.3 | access token expired | refresh once, retry |
+| 4xx on 10.3 after a fresh token | project id stale | read 10.2 again, retry once |
+| 200 with no `gemini-*` bucket | the UA was rejected, or Google changed the reply | `invalidResponse`, worded "Google changed something — usage unavailable"; keep the last good reading; **never 0% or 100%** |
+| 429 / 5xx | as the other providers (§6) | backoff |
+
+Source: `design/research/2026-11-02-antigravity-respike.md`, `-agy-proxy-capture-plan.md`.

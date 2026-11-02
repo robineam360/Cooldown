@@ -1,0 +1,554 @@
+{
+  "_meta": {
+    "note": "Summary tab ranking (BEHAVIOR-MOBILE section 6, CCRM-98 (Summary Tab), wireframe design/2026-11-02-summary-tab.html rev B). Spec-first, written 2026-11-02 by script from the rule, not ported from code. Each account gives its Weekly reading (usedPct null = no reading), core section 6's elapsedPct, the weekly msUntilReset, and its 5h: sessionPct, sessionMsUntilReset (null = no clock) and sessionBinding, core section 6.2's predicate already evaluated (a client computes it; these cases test the ranking). expected lists names in display order with each one's group. paceForReference is core section 6.1's pace rounded to 0.01, for reading the order by eye.",
+    "rule": "eligible = a reading, usedPct < 99.5, not sessionBinding; by pace ascending, a tie to the smaller msUntilReset. Then held (sessionBinding, week not spent) by sessionMsUntilReset ascending; then spent (usedPct >= 99.5) by msUntilReset ascending; then no reading, in tab order. A spent week is never held."
+  },
+  "ranking": [
+    {
+      "name": "four accounts (wireframe C1)",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "elapsedPct": 38.9,
+          "msUntilReset": 369720000,
+          "sessionPct": 34,
+          "sessionMsUntilReset": 9000000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Product",
+          "usedPct": 30,
+          "elapsedPct": 72.0,
+          "msUntilReset": 169200000,
+          "sessionPct": 93,
+          "sessionMsUntilReset": 2988000,
+          "sessionBinding": true
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "Side",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 61920000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "Teams",
+          "group": "eligible"
+        },
+        {
+          "name": "Product",
+          "group": "held"
+        },
+        {
+          "name": "Side",
+          "group": "spent"
+        }
+      ],
+      "paceForReference": {
+        "Teams": 21.44,
+        "Product": -60.0,
+        "Personal": -34.0,
+        "Side": 100.0
+      },
+      "why": "Personal -34 tops; Product -60 would rank higher but its 5h binds, so it is held; Side is spent."
+    },
+    {
+      "name": "two accounts, the common case (S1)",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "elapsedPct": 38.9,
+          "msUntilReset": 369720000,
+          "sessionPct": 34,
+          "sessionMsUntilReset": 9000000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "Teams",
+          "group": "eligible"
+        }
+      ],
+      "paceForReference": {
+        "Teams": 21.44,
+        "Personal": -34.0
+      },
+      "why": ""
+    },
+    {
+      "name": "seven accounts (S2)",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "elapsedPct": 38.9,
+          "msUntilReset": 369720000,
+          "sessionPct": 34,
+          "sessionMsUntilReset": 9000000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Product",
+          "usedPct": 30,
+          "elapsedPct": 72.0,
+          "msUntilReset": 169200000,
+          "sessionPct": 93,
+          "sessionMsUntilReset": 2988000,
+          "sessionBinding": true
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "Side",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 61920000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "Lab",
+          "usedPct": 20,
+          "elapsedPct": 25.0,
+          "msUntilReset": 453600000,
+          "sessionPct": 5,
+          "sessionMsUntilReset": 16200000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Design",
+          "usedPct": 70,
+          "elapsedPct": 55.0,
+          "msUntilReset": 272160000,
+          "sessionPct": 12,
+          "sessionMsUntilReset": 10800000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Ops",
+          "usedPct": null,
+          "elapsedPct": 40,
+          "msUntilReset": 360000000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "Lab",
+          "group": "eligible"
+        },
+        {
+          "name": "Teams",
+          "group": "eligible"
+        },
+        {
+          "name": "Design",
+          "group": "eligible"
+        },
+        {
+          "name": "Product",
+          "group": "held"
+        },
+        {
+          "name": "Side",
+          "group": "spent"
+        },
+        {
+          "name": "Ops",
+          "group": "noReading"
+        }
+      ],
+      "paceForReference": {
+        "Teams": 21.44,
+        "Product": -60.0,
+        "Personal": -34.0,
+        "Side": 100.0,
+        "Lab": -6.25,
+        "Design": 33.33,
+        "Ops": null
+      },
+      "why": "Ops has no reading: last, in tab order."
+    },
+    {
+      "name": "nobody has room (S3)",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 100,
+          "elapsedPct": 38.9,
+          "msUntilReset": 369720000,
+          "sessionPct": 34,
+          "sessionMsUntilReset": 9000000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Product",
+          "usedPct": 30,
+          "elapsedPct": 72.0,
+          "msUntilReset": 169200000,
+          "sessionPct": 93,
+          "sessionMsUntilReset": 2988000,
+          "sessionBinding": true
+        },
+        {
+          "name": "Side",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 61920000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Product",
+          "group": "held"
+        },
+        {
+          "name": "Side",
+          "group": "spent"
+        },
+        {
+          "name": "Teams",
+          "group": "spent"
+        }
+      ],
+      "paceForReference": {
+        "Teams": 100.0,
+        "Product": -60.0,
+        "Side": 100.0
+      },
+      "why": "Held first (soonest back), then spent by soonest reset."
+    },
+    {
+      "name": "tie on Pace goes to the earlier reset",
+      "accounts": [
+        {
+          "name": "Late",
+          "usedPct": 40,
+          "elapsedPct": 50,
+          "msUntilReset": 302400000,
+          "sessionPct": 5,
+          "sessionMsUntilReset": 16200000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Early",
+          "usedPct": 40,
+          "elapsedPct": 50,
+          "msUntilReset": 216000000,
+          "sessionPct": 5,
+          "sessionMsUntilReset": 16200000,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Early",
+          "group": "eligible"
+        },
+        {
+          "name": "Late",
+          "group": "eligible"
+        }
+      ],
+      "paceForReference": {
+        "Late": -16.67,
+        "Early": -16.67
+      },
+      "why": "Equal Pace -16.67: the earlier weekly reset ranks first."
+    },
+    {
+      "name": "two held, soonest 5h back first",
+      "accounts": [
+        {
+          "name": "SlowBack",
+          "usedPct": 30,
+          "elapsedPct": 72.0,
+          "msUntilReset": 169200000,
+          "sessionPct": 93,
+          "sessionMsUntilReset": 10800000,
+          "sessionBinding": true
+        },
+        {
+          "name": "FastBack",
+          "usedPct": 30,
+          "elapsedPct": 72.0,
+          "msUntilReset": 169200000,
+          "sessionPct": 93,
+          "sessionMsUntilReset": 3600000,
+          "sessionBinding": true
+        }
+      ],
+      "expected": [
+        {
+          "name": "FastBack",
+          "group": "held"
+        },
+        {
+          "name": "SlowBack",
+          "group": "held"
+        }
+      ],
+      "paceForReference": {
+        "SlowBack": -60.0,
+        "FastBack": -60.0
+      },
+      "why": ""
+    },
+    {
+      "name": "two spent, soonest reset first",
+      "accounts": [
+        {
+          "name": "Later",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 144000000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "Sooner",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 18000000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Sooner",
+          "group": "spent"
+        },
+        {
+          "name": "Later",
+          "group": "spent"
+        }
+      ],
+      "paceForReference": {
+        "Later": 100.0,
+        "Sooner": 100.0
+      },
+      "why": ""
+    },
+    {
+      "name": "two unread keep tab order",
+      "accounts": [
+        {
+          "name": "B",
+          "usedPct": null,
+          "elapsedPct": 40,
+          "msUntilReset": 360000000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "A",
+          "usedPct": null,
+          "elapsedPct": 40,
+          "msUntilReset": 360000000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "B",
+          "group": "noReading"
+        },
+        {
+          "name": "A",
+          "group": "noReading"
+        }
+      ],
+      "paceForReference": {
+        "B": null,
+        "A": null,
+        "Personal": -34.0
+      },
+      "why": ""
+    },
+    {
+      "name": "a week with a reading but no reset clock ranks after every clocked one",
+      "accounts": [
+        {
+          "name": "Unclocked",
+          "usedPct": 0,
+          "elapsedPct": null,
+          "msUntilReset": null,
+          "sessionPct": 5,
+          "sessionMsUntilReset": 16200000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Design",
+          "usedPct": 70,
+          "elapsedPct": 55.0,
+          "msUntilReset": 272160000,
+          "sessionPct": 12,
+          "sessionMsUntilReset": 10800000,
+          "sessionBinding": false
+        },
+        {
+          "name": "Personal",
+          "usedPct": 50,
+          "elapsedPct": 67.0,
+          "msUntilReset": 199800000,
+          "sessionPct": null,
+          "sessionMsUntilReset": null,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Personal",
+          "group": "eligible"
+        },
+        {
+          "name": "Design",
+          "group": "eligible"
+        },
+        {
+          "name": "Unclocked",
+          "group": "eligible"
+        }
+      ],
+      "paceForReference": {
+        "Unclocked": null,
+        "Design": 33.33,
+        "Personal": -34.0
+      },
+      "why": "No reset clock means no Pace; the row stays eligible and sorts last among eligible rows."
+    },
+    {
+      "name": "a spent week is never held",
+      "accounts": [
+        {
+          "name": "Side",
+          "usedPct": 100,
+          "elapsedPct": 89.8,
+          "msUntilReset": 61920000,
+          "sessionPct": 0,
+          "sessionMsUntilReset": 3600000,
+          "sessionBinding": true
+        },
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "elapsedPct": 38.9,
+          "msUntilReset": 369720000,
+          "sessionPct": 34,
+          "sessionMsUntilReset": 9000000,
+          "sessionBinding": false
+        }
+      ],
+      "expected": [
+        {
+          "name": "Teams",
+          "group": "eligible"
+        },
+        {
+          "name": "Side",
+          "group": "spent"
+        }
+      ],
+      "paceForReference": {
+        "Side": 100.0,
+        "Teams": 21.44
+      },
+      "why": "Defensive: core 6.2 condition 2 already makes sessionBinding false when the week is spent; a client that passes true anyway still lists it as spent."
+    }
+  ],
+  "tab": [
+    {
+      "name": "one account: no All tab, no toggle",
+      "accountCount": 1,
+      "openOnSummary": true,
+      "expectedTabShown": false,
+      "expectedToggleShown": false,
+      "expectedOpensOn": "lastViewedAccount"
+    },
+    {
+      "name": "two accounts: All tab first, opened at launch",
+      "accountCount": 2,
+      "openOnSummary": true,
+      "expectedTabShown": true,
+      "expectedToggleShown": true,
+      "expectedOpensOn": "summary"
+    },
+    {
+      "name": "toggle off: All tab still shown, launch opens the last account looked at",
+      "accountCount": 4,
+      "openOnSummary": false,
+      "expectedTabShown": true,
+      "expectedToggleShown": true,
+      "expectedOpensOn": "lastViewedAccount"
+    }
+  ]
+}

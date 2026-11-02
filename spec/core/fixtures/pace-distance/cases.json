@@ -1,0 +1,226 @@
+{
+  "_meta": {
+    "note": "BEHAVIOR-SPEC section 6.3 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)): the distance from the pace mark as numbers. Promoted from spec/mobile on 2026-11-02 at the desktop family's request: two installs must agree. Generated from the same inputs as spec/mobile/fixtures/display/cases.json, whose strings are the mobile wording of these numbers. expected null = no distance (spent, no reset clock or no reading).",
+    "tolerance": "exact integers"
+  },
+  "vsPace": [
+    {
+      "name": "under the mark",
+      "usedPct": 50,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": 10,
+      "why": "floor(60 - 50) = +10 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "over the mark",
+      "usedPct": 80,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": -20,
+      "why": "floor(60 - 80) = -20, printed with U+2212 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "rounded down: room is never overstated",
+      "usedPct": 50.4,
+      "elapsedPct": 60.9,
+      "hasResetClock": true,
+      "expected": 10,
+      "why": "floor(10.5) = 10 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "rounded down over the mark",
+      "usedPct": 60.2,
+      "elapsedPct": 60.0,
+      "hasResetClock": true,
+      "expected": -1,
+      "why": "floor(-0.2) = -1 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "exactly on the mark",
+      "usedPct": 42,
+      "elapsedPct": 42,
+      "hasResetClock": true,
+      "expected": 0,
+      "why": "no sign on zero (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "first hours of a window",
+      "usedPct": 0.4,
+      "elapsedPct": 1.7,
+      "hasResetClock": true,
+      "expected": 1,
+      "why": "floor(1.3) = 1 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "week spent falls back to usage",
+      "usedPct": 100,
+      "elapsedPct": 89.8,
+      "hasResetClock": true,
+      "expected": null,
+      "why": "the usage figure, as Used mode (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "spent threshold 99.5",
+      "usedPct": 99.6,
+      "elapsedPct": 95.0,
+      "hasResetClock": true,
+      "expected": null,
+      "why": "usedPct >= 99.5 is spent: the usage figure, truncated as Used mode (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "no reset clock falls back to usage",
+      "usedPct": 0,
+      "elapsedPct": null,
+      "hasResetClock": false,
+      "expected": null,
+      "why": "window not started: no pace mark (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "no reading",
+      "usedPct": null,
+      "elapsedPct": 50,
+      "hasResetClock": true,
+      "expected": null,
+      "why": "an em dash, as every mode (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "binary float edge: 2.3 - 0.3",
+      "usedPct": 0.3,
+      "elapsedPct": 2.3,
+      "hasResetClock": true,
+      "expected": 2,
+      "why": "2.3 - 0.3 is 1.9999999999999998 in binary floats; floor after adding 1e-9 gives +2 (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "binary float edge on the mark",
+      "usedPct": 17.000000000000004,
+      "elapsedPct": 17.0,
+      "hasResetClock": true,
+      "expected": 0,
+      "why": "(1 - 0.83) x 100 against an even 17: 0%, not -1% (null = the surface falls back to the usage figure, or a dash with no reading)"
+    }
+  ],
+  "markDistance": [
+    {
+      "name": "under",
+      "usedPct": 50,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 60,
+        "points": 10,
+        "side": "under"
+      }
+    },
+    {
+      "name": "over",
+      "usedPct": 80,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 60,
+        "points": 20,
+        "side": "over"
+      }
+    },
+    {
+      "name": "under by less than 1 is on it",
+      "usedPct": 59.4,
+      "elapsedPct": 60.2,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 60,
+        "points": 1,
+        "side": "on"
+      }
+    },
+    {
+      "name": "over by exactly 1",
+      "usedPct": 61,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 60,
+        "points": 1,
+        "side": "over"
+      }
+    },
+    {
+      "name": "distance rounds half up",
+      "usedPct": 50,
+      "elapsedPct": 60.5,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 61,
+        "points": 11,
+        "side": "under"
+      }
+    },
+    {
+      "name": "mark rounds half up",
+      "usedPct": 30,
+      "elapsedPct": 38.5,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 39,
+        "points": 9,
+        "side": "under"
+      }
+    },
+    {
+      "name": "on it",
+      "usedPct": 60.3,
+      "elapsedPct": 60,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 60,
+        "points": 0,
+        "side": "on"
+      }
+    },
+    {
+      "name": "vs pace: the caption carries the usage",
+      "usedPct": 52,
+      "elapsedPct": 39,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 39,
+        "points": 13,
+        "side": "over"
+      }
+    },
+    {
+      "name": "vs pace, usage truncated",
+      "usedPct": 52.9,
+      "elapsedPct": 38.6,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 39,
+        "points": 14,
+        "side": "over"
+      }
+    },
+    {
+      "name": "spent: no caption",
+      "usedPct": 100,
+      "elapsedPct": 89.8,
+      "hasResetClock": true,
+      "expected": null
+    },
+    {
+      "name": "no reset clock: no caption",
+      "usedPct": 0,
+      "elapsedPct": 0,
+      "hasResetClock": false,
+      "expected": null
+    },
+    {
+      "name": "no reading: no caption",
+      "usedPct": null,
+      "elapsedPct": 50,
+      "hasResetClock": true,
+      "expected": null
+    }
+  ]
+}

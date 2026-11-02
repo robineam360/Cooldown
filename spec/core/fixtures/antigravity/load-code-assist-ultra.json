@@ -1,0 +1,10 @@
+{
+  "cloudaicompanionProject": "redacted-project-789",
+  "currentTier": {
+    "id": "free-tier"
+  },
+  "paidTier": {
+    "id": "g1-ultra-tier",
+    "name": "Google AI Ultra"
+  }
+}
