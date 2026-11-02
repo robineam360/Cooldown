@@ -37,6 +37,17 @@ struct Face: Equatable, Sendable {
     var headline: Headline = .default
     var sessionBinding = false
     var hasSessionWindow = false
+    /// CCRM-103 (Hybrid Notification) rev D §6 iBars/iStrip: the account's first model limit (Fable, Argon …) as the
+    /// app's tile shows it — nil when the plan reports none or Model limits is off for the account (CCRM-99 (Model
+    /// Limits Toggle)). Not a window: it stays put through `leading` and `lead`.
+    var modelLimit: ModelLimit? = nil
+
+    /// One model limit's reading: its name ("Claude " dropped, as the app's tile), used % and the week gone.
+    struct ModelLimit: Equatable, Sendable {
+        let name: String
+        let pct: Double?
+        let pace: Double?
+    }
 
     /// A plan with no 5h window at all (OpenAI's weekly-only plans): Weekly leads.
     var weeklyOnly: Bool { pct == nil && weeklyPct != nil && status != .noData && status != .signIn }
@@ -81,6 +92,7 @@ struct Face: Equatable, Sendable {
         headline = from.headline
         sessionBinding = from.sessionBinding
         hasSessionWindow = from.hasSessionWindow
+        modelLimit = from.modelLimit
     }
 
     // The second slot: Weekly under a 5h lead, 5h under a Weekly lead (nil on a weekly-only plan).
@@ -96,6 +108,32 @@ struct Face: Equatable, Sendable {
     var showsCompanion: Bool { companionPct != nil && !leadSpent }
     /// CCRM-102 (Spent Week Gate): the main slot is the 5h while the week is spent — drawn dimmed, "Weekly spent".
     var weekGated: Bool { !leadsWeekly && pct != nil && Pace.isSpent(weeklyPct) }
+
+    // MARK: CCRM-103 (Hybrid Notification) — the shape grammar: the 5h a ring on the left, the Weekly a bar on the right
+
+    /// The 5h window's reading, wherever the face carries it.
+    struct FiveHour: Equatable {
+        let pct: Double?
+        let pace: Double?
+        let reset: Date?
+        var content: WindowContent? = nil
+    }
+
+    /// The face the grammar draws, whatever the Headline: Weekly in the main slot (the bars and the text), the 5h as
+    /// the companion (the ring). A plan with no 5h is Weekly-led with no companion.
+    var grammar: Face { lead(.weekly) }
+
+    /// The 5h: the companion of a Weekly-led face, the main slot otherwise; nil on a plan with no 5h (B1).
+    var fiveHour: FiveHour? {
+        if leadsWeekly {
+            guard companionPct != nil else { return nil }
+            return FiveHour(pct: companionPct, pace: companionPace, reset: companionReset, content: companionContent)
+        }
+        return FiveHour(pct: pct, pace: pace, reset: reset, content: session)
+    }
+
+    /// CCRM-102 (Spent Week Gate): the 5h ring greys while the week is spent, on a Weekly-led face or a 5h-led one.
+    var fiveGreyed: Bool { leadsWeekly ? leadSpent && companionPct != nil : weekGated }
 
     /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
     func resetClock(_ date: Date) -> String {
@@ -147,7 +185,18 @@ struct Face: Equatable, Sendable {
         face.headline = Prefs.headline(account.key)
         face.hasSessionWindow = session != nil
         face.sessionBinding = Pace.sessionBinding(sessionPct: pct, weeklyPct: weeklyNow, sessionHitsLimitBeforeReset: sessionHits)
+        face.modelLimit = limit(usage?.modelCaps.first, show: Prefs.showModelLimits(account.key), nowMs: nowMs)
         return face
+    }
+
+    /// The face's model limit from the account's first cap; a cap whose reset has passed reads 0%, as the windows do.
+    static func limit(_ cap: ModelCap?, show: Bool, nowMs: Int64) -> ModelLimit? {
+        guard show, let cap else { return nil }
+        let reset = cap.window.resetsAtMs.flatMap { $0 > nowMs ? $0 : nil }
+        let passed = cap.window.resetsAtMs != nil && reset == nil
+        return ModelLimit(name: cap.modelName.replacingOccurrences(of: "Claude ", with: ""),
+                          pct: passed ? 0 : cap.window.percent,
+                          pace: reset.flatMap { Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.weekMs, nowMs: nowMs) })
     }
 
     /// Builds the card content for both windows; a window whose reset has passed arrives as "not started".

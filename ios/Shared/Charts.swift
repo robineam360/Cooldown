@@ -301,3 +301,139 @@ extension TrendChart.Model {
         return copy
     }
 }
+
+/// CCRM-103 (Hybrid Notification), the shape grammar's ring (`design/2026-11-02-shape-grammar.html` rev D `ring()`;
+/// Android's `GrammarRing`): the 5h, always. Centre-line radius 0.39 S; band 0.13 S (0.10 S at 48 pt and under, never
+/// under 3); track ink 16% (22% greyed); the fill the account colour's severity step, at least 9% when non-zero, a round
+/// cap only under the Round end mark; the red slice from the tick to the fill tip more than 3 points over; the dashed
+/// room under the mark (≥ 28 pt); the usage end mark; the pace tick across the band; the open tile's dotted projection.
+/// The figure is SF Pro with monospaced digits (0.25 S, 0.29 S at 48 and under), fitted to the bore. No "5h" text; the
+/// accessibility label says "5-hour window, 34 percent".
+struct GrammarRing: View {
+    enum State { case normal, grey, notApplicable }
+
+    let pct: Double?
+    let pace: Double?
+    let accent: Color
+    /// nil = no figure (the bare small ring); otherwise the text in the bore (`Display.number`).
+    var figure: String?
+    var figureColour: Color?
+    var state: State = .normal
+    var projection: Double?
+    var endMark: UsageEndMark = Display.usageEndMark
+    /// The surface under the ring, for the end mark's gap.
+    var surface: Color = .clear
+    /// The lock screen tints widgets: draw in one colour.
+    var mono: Color?
+    /// A fixed band in pt, where the page sets one (the lock circular's `wring`, sw 5); nil = the proportional band.
+    var bandOverride: CGFloat?
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
+            ZStack {
+                Canvas { ctx, size in draw(ctx, s: min(size.width, size.height)) }
+                if let figure, state != .notApplicable {
+                    let small = s <= 48
+                    let base = s * (figure.count >= 4 ? (small ? 0.24 : 0.21) : (small ? 0.29 : 0.25))
+                    Display.grammarFigure(figure, size: base, weight: loud && figureColour == nil ? .heavy : .bold)
+                        .foregroundStyle(textColour)
+                        .lineLimit(1).minimumScaleFactor(0.5)
+                        .frame(width: max(1, 2 * (Self.bore(s) - 1.5) * 0.92))
+                }
+            }
+            .frame(width: s, height: s)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .accessibilityElement()
+        .accessibilityLabel(state == .notApplicable ? "No 5-hour window"
+                            : pct.map { "5-hour window, \(Int($0)) percent" } ?? "5-hour window, no reading")
+    }
+
+    static func band(_ s: CGFloat) -> CGFloat { max(3, (s <= 48 ? 0.10 : 0.13) * s) }
+    static func bore(_ s: CGFloat) -> CGFloat { 0.39 * s - band(s) / 2 }
+
+    private var ink: Color { mono ?? (scheme == .dark ? Color(hex: 0xECECEC) : Color(hex: 0x1F1F1F)) }
+    private var loud: Bool { state == .normal && (pct ?? 0) > 90 }
+    private var textColour: Color {
+        if state == .grey { return ink.opacity(0.45) }
+        if pct == nil { return ink.opacity(0.5) }
+        if let figureColour { return mono ?? figureColour }
+        return loud ? (mono ?? p.severity(pct, accent: accent)) : ink
+    }
+
+    private func draw(_ ctx: GraphicsContext, s: CGFloat) {
+        let sw = bandOverride ?? Self.band(s), r = 0.39 * s, c = CGPoint(x: s / 2, y: s / 2)
+        func arc(_ a: Double, _ b: Double, radius: CGFloat = r) -> Path {
+            var path = Path()
+            path.addArc(center: c, radius: radius, startAngle: .degrees(-90 + a * 360), endAngle: .degrees(-90 + b * 360),
+                        clockwise: false)
+            return path
+        }
+        func pt(_ f: Double, _ radius: CGFloat) -> CGPoint {
+            CGPoint(x: c.x + radius * sin(2 * .pi * f), y: c.y - radius * cos(2 * .pi * f))
+        }
+        ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)),
+                   with: .color(ink.opacity(state == .normal ? 0.16 : 0.22)), lineWidth: sw)
+        if state == .notApplicable {
+            let k = 0.12 * s
+            var x = Path()
+            x.move(to: CGPoint(x: c.x - k, y: c.y - k)); x.addLine(to: CGPoint(x: c.x + k, y: c.y + k))
+            x.move(to: CGPoint(x: c.x + k, y: c.y - k)); x.addLine(to: CGPoint(x: c.x - k, y: c.y + k))
+            ctx.stroke(x, with: .color(ink.opacity(0.45)), style: StrokeStyle(lineWidth: max(1.5, s / 28), lineCap: .round))
+            return
+        }
+        guard state == .normal, let pct else { return }
+        let f = pct <= 0 ? 0 : max(min(pct, 100) / 100, 0.09)
+        let fill = mono ?? p.severity(pct, accent: accent)
+        let red = Display.redPastPace && (pace.map { pct > $0 + 3 } ?? false)
+        let roundCap = endMark == .round && !red
+        if f > 0 {
+            ctx.stroke(arc(0, min(f, 0.9999)), with: .color(fill), style: StrokeStyle(lineWidth: sw, lineCap: roundCap ? .round : .butt))
+        }
+        if let pace, pct < pace, s >= 28 {
+            let g = min(max(pace / 100, 0), 1)
+            let a0 = f + (roundCap && f > 0 ? Double(sw / 2 / (2 * .pi * r)) : 0)
+            if g - a0 > 0.01 {
+                let lw = max(1, s / 60), ro = r + sw / 2 - lw / 2, rn = r - sw / 2 + lw / 2, dash = max(1.6, s / 26)
+                var room = arc(a0, g, radius: ro)
+                room.addLine(to: pt(g, rn))
+                room.addArc(center: c, radius: rn, startAngle: .degrees(-90 + g * 360), endAngle: .degrees(-90 + a0 * 360), clockwise: true)
+                ctx.stroke(room, with: .color((mono ?? accent).opacity(0.6)), style: StrokeStyle(lineWidth: lw, dash: [dash, dash * 0.75]))
+            }
+        }
+        if let projection, projection / 100 > f {
+            let a = f + 0.03, b = min(projection, 100) / 100
+            if b > a {
+                ctx.stroke(arc(a, b), with: .color(fill.opacity(0.75)),
+                           style: StrokeStyle(lineWidth: sw * 0.4, lineCap: .round, dash: [0.1, sw * 0.8]))
+            }
+        }
+        if red, let pace {
+            ctx.stroke(arc(min(max(pace / 100, 0), 1), min(f, 0.9999)), with: .color(mono ?? p.red), lineWidth: sw)
+        }
+        if let role = endMark.role(usedPct: pct, elapsedPct: pace), f > 0 {
+            let colour: Color = mono ?? {
+                switch role {
+                case .fill: return fill
+                case .ink: return ink
+                case .under: return Display.vsUnder(scheme)
+                case .over: return Display.vsOver(scheme)
+                }
+            }()
+            var line = Path()
+            line.move(to: pt(f, r - sw * 0.85)); line.addLine(to: pt(f, r + sw * 0.85))
+            let lw = max(1.3, s / 40)
+            ctx.stroke(line, with: .color(surface), lineWidth: lw + 2)
+            ctx.stroke(line, with: .color(colour), style: StrokeStyle(lineWidth: lw, lineCap: .round))
+        }
+        if let pace, pct > 0 {
+            let g = min(max(pace / 100, 0), 1)
+            var tick = Path()
+            tick.move(to: pt(g, r - sw)); tick.addLine(to: pt(g, r + sw))
+            ctx.stroke(tick, with: .color(ink.opacity(0.9)), style: StrokeStyle(lineWidth: max(1.5, s / 32), lineCap: .round))
+        }
+    }
+}

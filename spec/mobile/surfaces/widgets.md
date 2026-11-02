@@ -688,3 +688,90 @@ As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
 - **CCRM-55:** every face, the lock screen, the Live Activity and the Control Center draw a Gemini account as any other,
   in Gemini Blue with its mark; the pool is never on a widget.
 
+
+## The shape grammar on iOS — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
+
+CCRM-103 (Hybrid Notification), frozen design
+`design/2026-11-02-shape-grammar.html` rev D §6, §7 (B1), §7b, §8; rules in `spec/mobile/BEHAVIOR-MOBILE.md` §5
+"Shape grammar". Code: `ios/Shared/FaceViews.swift`, `ios/Shared/Faces.swift`, `ios/Shared/LiveActivityModel.swift`,
+`ios/Widget/LiveAndControl.swift`, `ios/Widget/Widgets.swift` (gallery descriptions only).
+
+### Rules every face follows
+
+- **The 5h is a ring on the left, the Weekly a bar on the right**, whatever the account's Headline (CCRM-96 (Weekly
+  First)): every face draws `Face.grammar` (Weekly in the main slot, the 5h as `fiveHour`). No "5h" word on any face
+  this note covers. The ring is `GrammarRing` (through `FaceRing`); its VoiceOver label is "5-hour window, 34 percent".
+- **Figures** (`FaceFigure`): SF Pro, monospaced digits, the "%" at 58% (`Display.grammarFigure`); the Usage display's
+  figure (Used "52%", Left "48%", Vs pace the unsigned distance, green under the mark / red over it / ink on it via
+  `Display.figureColour`; no "left" or "vs pace" word after it). Dimmed or no reading: secondary grey.
+- **Bars** (`FaceBar`) end per Appearance › Usage end mark: Round = today's capsule (`UsageBar`); Line (default) and
+  Pace colour = the fill ends square at the usage, a 1.5 pt line 1.5 pt past each edge over a 1 pt gap in the surface
+  colour, coloured per `UsageEndMark.role` (fill colour; or green / red / ink by the ±5 band). Red past the pace tick and
+  the tick are as before. Widgets draw no dashed room (no caption on widgets).
+- **Spent week** (CCRM-102 (Spent Week Gate)): the ring greys (grey track, no arc, no tick, its figure kept dim). Where
+  a face shows the 5h on its own (Number 5h, Countdown, the tile's 5h line) the line reads "Weekly spent" at full
+  opacity, as before.
+- **No 5h (B1)**: Bars, Number, Countdown, Strip, lock screen and Live Activity draw no ring (the Weekly takes the width;
+  the Live Activity keeps an empty slot so bars line up). Overview tiles (T1–T3) keep the slot as the greyed ring with a
+  cross (rev C, the tile default); Compact (T4) aligns flush left; Mini (T5) keeps an empty 30 pt slot.
+- **Sign-in / no reading**: grey ring with "—", figure "—".
+
+### Home widgets (iPhone small 158, medium 338 × 158, large 338 × 354 pt; 16 pt padding)
+
+| Face | Layout | States |
+|---|---|---|
+| **Bars** (small) | Mark 15 + "Teams · Weekly" (14 pt); 8 pt below, ring **50** left (10 gap) of the Weekly figure **28 pt** over its **8 pt** bar (5 pt gap); 6 pt below, the Weekly reset "Resets Sun 9:30 pm" (11.5 pt); 6 pt below, the first model limit (`FaceModelRow`): name (12 pt, 38 pt wide, "Claude " dropped), its **5 pt** bar with the end mark, figure 12 pt (28 pt wide), 6 gaps. iPhone SE (141): the reset line goes and " · Sun" joins the header. | Spent: "Limit · Sun 9:30 pm" red; sign in / stale / no data as `FaceFootnote`. No 5h: no ring. No model limit (none reported, or Model limits off for the account), sign in or no usage on the plan: no model row. |
+| **Number**, window 5h | Mark + "Teams" (no "· 5h"); the ring hero **84 pt**, figure **24 pt**, centred; "Resets in 2h 20m · 5:10 pm" (Clock first: "Resets at 5:10 pm · in 2h 20m"), 12.5 pt. | Runs out / limit / stale / sign in: `FaceFootnote`. Spent week: grey ring, "Weekly spent" (ink). No 5h: the Weekly face below. |
+| **Number**, window Weekly | Unchanged layout: "Teams · Weekly", figure 46 pt (40 at 100%), 8 pt bar, "Resets Sun 9:30 pm". Grammar figure and bar end. | As before. |
+| **Countdown** (small) | Ring **40** + "Resets" (13 pt, grey); 10 pt below the live count **35 pt** bold; "at 5:10 pm" 13.5 pt; the account (mark + name, 13 pt) at the foot. | Limit: "Limit · opens 5:10 pm" red. Spent week: grey ring, count dimmed, "Weekly spent". No 5h / sign in / no window: today's face ("Weekly reset", days-and-hours count). |
+| **Strip** (medium) | Ring **84** (figure **22 pt**) left, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) with the Weekly figure **30 pt** right-aligned; **8 pt** bar (6 below); the Weekly line "Slow down · ≈11%/day · resets Sun" (12.5 pt, red when over pace or spent: "Out until Sun 9:30 pm"); 10 pt below, the first model limit: name (13 pt, 44 pt wide), its **6 pt** bar with the end mark, figure 13 pt (36 pt wide), 8 gaps. The 5h row under the Weekly is gone. | States replace the line (`FaceWeeklyLine`). No 5h: no ring. No model limit, sign in or no usage on the plan: no model row. |
+| **Overview** T1 Full / T2 Chart-narrow / T3 Regular | The tile: ring **72** (cell ≥ 300 pt) or **64**, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) and the Weekly figure (0.25 × ring: 18 / 16 pt), 8 pt bar. Under the tile: the Weekly line (14.5 pt semibold), then the 5h line led by a **12 pt ring glyph**: "resets in 2h 20m · on track for ~69%" (14.5 pt; orange while it binds or runs out, red at the limit). T1/T2 add the Weekly's trend chart (60–170 pt; T2 lines only). Stale / aging: "as of …" under. | No 5h: greyed ring with a cross, no 5h line. Spent week: grey ring; the 5h line "Weekly spent". |
+| **Overview** T4 Compact | Ring **46**, 10 gap; mark 14 + name (14 pt) with the Weekly figure **20 pt** right; **7 pt** bar (5 below); the Weekly line 12 pt (stale: "as of 3:10 pm" orange). | No 5h: flush left. |
+| **Overview** T5 Mini | One 42 pt row: ring **30** with "34" (**11 pt**, no "%"), mark 13, name (13 pt, 58 pt wide), the Weekly's **5 pt** bar, its figure **12 pt** (30 pt wide). | No 5h: an empty 30 pt slot. |
+| **Overview** Extra Large, one account | One tile (≤ 420 pt wide) instead of the two side-by-side window cards — see "needs a decision". | |
+
+Medium Overview with one account is the Strip (as before).
+
+### Lock screen (tinted by iOS: the Used figure whatever the Usage display)
+
+- **Circular** (72 pt): the accessory background, the ring (64 pt, mono white) with the **digits only** ("34", 19 pt; no
+  "5h" sublabel); "MAX" at 100% (as before); greyed for a spent week; "—" for sign in. No 5h: today's Weekly ring
+  (see "needs a decision").
+- **Rectangular** (172 × 76): ring **44** (mono, "34%"), 8 gap; right: mark 13 + "Teams" (13 pt semibold) with the
+  Weekly figure **17 pt** right; **6 pt** bar (5 above, 4 below); "Weekly · Sun" (12 pt, 88%). Spent: "Limit · resets
+  Sun 9:30 pm"; sign in: "Sign in again". No 5h: no ring, the Weekly takes the width.
+- **Inline**: the ring glyph rendered as an image (16 pt, no digits), then **"34% · Teams Weekly 52%"**; where that does
+  not fit "34% · Weekly 52%" with the glyph, then the text alone. No 5h: "Personal Weekly 50%".
+
+### Live Activity and Dynamic Island (≤ 160 pt)
+
+- **One account**: ring **48** left (12 gap); "Teams · Weekly" (mark 15, 15 pt semibold), **8 pt** bar (6 below), two
+  12.5 pt lines "Slow down · ≈11%/day" / "Resets Sun 9:30 pm"; the Weekly figure **44 pt** semibold right.
+- **Duet**: per row ring **36**, one line "Slow down · Sun 9:30 pm", figure **36 pt**; rows 10 apart. No 5h: an empty
+  36 pt slot. The thin companion line is gone.
+- Lines' states: "Sign in again" (one account: "Sign-in stopped working · open Cooldown") orange; "as of 3:10 pm"
+  orange; "Out until Sun 9:30 pm" red; a Weekly that reset "Weekly reset · 0%"; "Weekly not started". A 5h that reset
+  since the row was written reads 0% in its ring (`Row.fiveReset`).
+- **Island compact**: leading ring **30** with "34" (11 pt, no "%"); trailing the Weekly figure (15 pt semibold,
+  coloured). No 5h: the provider mark leads.
+- **Island expanded**: ring **48** left (14 gap); "Teams · Weekly" (mark 18, 15 pt semibold) with the figure **34 pt**;
+  8 pt bar; "Resets Sun 9:30 pm · in 4d 6h" (13 pt; spent "Out until …").
+- **Minimal**: the bare ring (provider mark with no 5h).
+- Model: `CooldownActivityAttributes.Row` is now always built Weekly-led (`Face.grammar`), the 5h in the companion
+  fields; new optional fields `fiveReset`, `weeklyLine`, `weeklyWords` (older states still decode).
+
+### Needs a decision (left as noted)
+
+1. **Model limits (Fable, Argon) on Bars and Strip**: settled (Fable E1.1) — `Face.modelLimit` carries the account's
+   first model cap (honouring Model limits, as the app's tile), drawn as above. A cap whose reset has passed reads 0%.
+2. **Overview tile header**: the page's `itile` has no account name; the widget tile names it in the bar's label row
+   (mark + "Teams · Weekly"). Extra Large with one account now draws one tile, not today's 5h and Weekly cards side by
+   side (a 5h card would be a 5h bar).
+3. **Lock circular for a plan with no 5h**: not on the page; today's Weekly ring with "W" kept.
+4. **Ring band on the lock-screen circular**: ruled (Fable E1.2) — 5 pt at its 64 pt size, as the page's `wring`.
+   Not yet built: `GrammarRing` (`ios/Shared/Charts.swift`) derives its band from the size alone (0.13 × 64 ≈ 8 pt) and
+   needs a band override parameter (used by `band` and `bore`) before `LockFace.circular` can pass 5 / 64 of its size.
+5. **Mini row and Live Activity rows show no status line** for sign-in / stale beyond the dimmed "—" (Mini) — as drawn.
+6. **Gallery descriptions** (`Widgets.swift`) reworded for Bars ("One account's Weekly bar, with its 5h ring.") and
+   Strip ("One account: the 5h ring, with the Weekly beside it."); the Control Center control still says "Teams · 5h"
+   (not in this piece's brief).

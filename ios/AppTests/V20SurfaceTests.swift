@@ -88,7 +88,7 @@ struct V20SurfaceTests {
         #expect(CardContent.compactLine(spent).hasPrefix("Out until "))
         withMode(.vsPace) {
             #expect(w.caption == "52% used · mark 39%")
-            #expect(Display.number(52, pace: 38.9) == "−14%")  // floor(38.9 − 52) = −14
+            #expect(Display.number(52, pace: 38.9) == "14%")  // |floor(38.9 − 52)|, red: unsigned since rev D §7b
             #expect(Display.number(100, pace: 89.8) == "100%")
             #expect(Display.usage(34) == "34%")
         }
@@ -206,10 +206,73 @@ struct V20SurfaceTests {
         let e = entries(four)
         #expect(e.map(\.account.label) == ["Personal", "Teams", "Product", "Side"])
         #expect(e.map(\.group) == [.eligible, .eligible, .held, .spent])
-        #expect(SummaryWords.companion(e[2])?.hasPrefix("5h 93% · back ") == true)
-        #expect(SummaryWords.companion(e[0]) == "no 5h")
+        // CCRM-103 (Hybrid Notification): the ring replaced "5h 93%" and "no 5h"; only the held reason's time stays.
+        #expect(SummaryWords.companion(e[2])?.hasPrefix("back ") == true)
+        #expect(SummaryWords.companion(e[0]) == nil && SummaryWords.companion(e[1]) == nil)
         #expect(SummaryWords.line(e[3], nowMs: now.ms).hasPrefix("Out until "))
         #expect(SummaryWords.line(e[0], nowMs: now.ms).hasPrefix("Room to spare · ≈"))
+        // §2b: the Weekly figure's tap readout — under (Personal 50 vs 67), over (Teams 52 vs 38.9), none when spent.
+        #expect(SummaryWords.readout(e[0], nowMs: now.ms)?.hasSuffix(" behind pace") == true)
+        #expect(SummaryWords.readout(e[1], nowMs: now.ms)?.hasPrefix("Pace catches up ") == true)
+        #expect(SummaryWords.readout(e[3], nowMs: now.ms) == nil)
+    }
+
+    // MARK: - CCRM-103 (Hybrid Notification): the account tile, rev D §2, §6, §7
+
+    @Test("tile readouts: each figure's own words, none for an unclocked or spent window")
+    func tileReadouts() throws {
+        let f = teams()
+        let w = try #require(f.weekly), five = try #require(f.session)
+        #expect(w.readout()?.hasPrefix("Pace catches up ") == true)   // 52% against a 38.9% mark: over
+        #expect(five.readout()?.hasSuffix(" behind pace") == true)    // 34% against 53.3%: under
+        #expect(try #require(teams(weekly: 100).weekly).readout() == nil)
+        #expect(try #require(r.face("Idle", .claude, pct: 0, pace: nil, notStarted: true).session).readout() == nil)
+    }
+
+    @Test("tile renders: folded and open on each chip, no 5h, spent week, no reading, binding; Used, Left, Vs pace; end marks")
+    func tiles() throws {
+        let f = teams()
+        let accent = f.account.accent(.dark)
+        let w = try #require(f.weekly), five = try #require(f.session)
+        let fable = try #require(CardContent.window(title: "Fable", window: UsageWindow(percent: 30, resetsAtMs: f.weeklyReset?.ms, serverSeverity: nil),
+                                                    kind: HistoryStats.weeklyKind, history: [], nowMs: now.ms))
+        func shoot(_ tag: String) {
+            r.save("v21-tile-folded-\(tag)", AccountTile(weekly: w, cap: fable, five: five, accent: accent, open: .constant(false)),
+                   width: 393, height: 230, background: .black)
+            r.save("v21-tile-open-all-\(tag)", AccountTile(weekly: w, cap: fable, five: five, accent: accent, open: .constant(true)),
+                   width: 393, height: 520, background: .black)
+            r.save("v21-tile-open-5h-\(tag)", AccountTile(weekly: w, cap: fable, five: five, accent: accent, open: .constant(true), defaultChip: .five),
+                   width: 393, height: 520, background: .black)
+        }
+        shoot("used")
+        withMode(.left) { shoot("left") }
+        withMode(.vsPace) { shoot("vspace") }
+        let pw = try #require(personal.weekly)
+        r.save("v21-tile-no5h", AccountTile(weekly: pw, five: nil, accent: personal.account.accent(.dark), open: .constant(false)),
+               width: 393, height: 200, background: .black)
+        let spent = teams(weekly: 100)
+        r.save("v21-tile-spent", AccountTile(weekly: try #require(spent.weekly), five: try #require(spent.session), accent: accent,
+                                             open: .constant(false),
+                                             weekGate: CardContent.weekGateNote(weeklyResetMs: spent.weeklyReset?.ms, nowMs: now.ms)),
+               width: 393, height: 220, background: .black)
+        let binding = teams(93, minutes: 50, runOut: 35)
+        r.save("v21-tile-binding", AccountTile(weekly: try #require(binding.weekly), cap: fable, five: try #require(binding.session),
+                                               accent: accent, open: .constant(false)),
+               width: 393, height: 230, background: .black)
+        let unread = try #require(CardContent.window(title: "All", window: UsageWindow(percent: nil, resetsAtMs: nil, serverSeverity: nil),
+                                                     kind: HistoryStats.weeklyKind, history: [], nowMs: now.ms))
+        r.save("v21-tile-noreading", AccountTile(weekly: unread, five: nil, accent: accent, open: .constant(false)),
+               width: 393, height: 200, background: .black)
+        r.save("v21-tile-light", AccountTile(weekly: w, cap: fable, five: five, accent: f.account.accent(.light), open: .constant(false)),
+               width: 393, height: 230, scheme: .light)
+        let d = Prefs.defaults, before = d.object(forKey: Display.Key.usageEndMark)
+        defer { d.set(before, forKey: Display.Key.usageEndMark) }
+        for mark in UsageEndMark.allCases {
+            Display.setUsageEndMark(mark)
+            r.save("v21-tile-end-\(mark.rawValue)", AccountTile(weekly: w, cap: fable, five: five, accent: accent, open: .constant(false)),
+                   width: 393, height: 230, background: .black)
+        }
+        r.save("v21-settings-endmark", EndMarkPreviews(), width: 393, height: 90)
     }
 
     // MARK: - Renders: every new state

@@ -300,19 +300,14 @@ struct IPadLandscape: View {
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
-    /// Which window the sidebar's bars show, remembered (design/2026-10-24-ios-sidebar-window.html, approved 24 Oct).
-    /// CCRM-96 (Weekly First) rev B: a first segment, Headline, is the new default — each row shows its own account's
-    /// Headline window (Auto takes over while the 5h binds), named. A stored "5h" or "weekly" keeps today's switch.
-    @AppStorage("sidebarWindow") private var sidebarWindow = "headline"
+    /// CCRM-103 (Hybrid Notification) rev D I2: the row's figure is always the Weekly and its ring always the 5h, so the
+    /// Headline · Weekly · 5h switch (CCRM-96 (Weekly First) rev B) has nothing left to pick and is gone; its stored
+    /// "sidebarWindow" value is left unread.
 
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 AppTitle(size: 30).padding(.horizontal, 18).padding(.bottom, 10)
-                Picker("Window", selection: $sidebarWindow) {
-                    Text("Headline").tag("headline"); Text("Weekly").tag("weekly"); Text("5h").tag("5h")
-                }
-                .pickerStyle(.segmented).padding(.horizontal, 18).padding(.bottom, 10)
                 if SummaryRank.tabShown(accountCount: model.accounts.count) { allRow }
                 ForEach(model.accounts) { account in sidebarRow(account) }
                 Text("Touch and hold an account to pin it to the top.")
@@ -373,40 +368,47 @@ struct IPadLandscape: View {
         .buttonStyle(.plain).foregroundStyle(p.ink).padding(.horizontal, 10)
     }
 
+    /// CCRM-103 rev D I2 (`sideRow`): the 5h ring (40 pt; greyed while the week is spent, a cross for a plan with no 5h,
+    /// so the names line up), the mark and name over a 4 pt Weekly bar, the Weekly figure.
     private func sidebarRow(_ account: Account) -> some View {
         let usage = model.usage(account.key)
-        let led = sidebarWindow == "headline" ? model.face(account.key)?.lead(for: .notification) : nil
-        // The switch picks the window; a weekly-only plan has no 5h, so it always shows Weekly — labelled, so the row
-        // doesn't read as a 5h figure. Under Headline every row names its window.
-        let weekly = led.map(\.leadsWeekly) ?? (sidebarWindow == "weekly" || usage?.session == nil)
-        let forcedWeekly = sidebarWindow == "5h" && usage?.session == nil && usage?.weekly != nil
-        let tag: String? = led != nil ? (weekly ? "Weekly" : "5h") : (forcedWeekly ? "Weekly" : nil)
-        let loud = led.map { !$0.leadsWeekly && $0.sessionBinding } ?? false
-        let main = weekly ? usage?.weekly : usage?.session
-        let pct = main?.percent
-        let pace = main?.resetsAtMs.flatMap {
-            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: weekly ? HistoryStats.weekMs : HistoryStats.sessionMs,
-                               nowMs: model.nowMs)
+        let session = usage?.session
+        let pct = usage?.weekly?.percent
+        let pace = usage?.weekly?.resetsAtMs.flatMap {
+            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.weekMs, nowMs: model.nowMs)
         }
+        // As the faces read it (`Face.build`): a 5h with no reset clock yet reads 0%.
+        let fivePct = session.map { $0.resetsAtMs == nil ? 0 : ($0.percent ?? 0) }
+        let fivePace = session?.resetsAtMs.flatMap {
+            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.sessionMs, nowMs: model.nowMs)
+        }
+        let ringState: GrammarRing.State = session == nil ? .notApplicable : Pace.isSpent(pct) ? .grey : .normal
         let accent = account.accent(scheme)
         let selected = account.key == bottomKey && !model.showsSummary
+        let surface = scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9)
         return Button { model.selectedKey = account.key } label: {
             HStack(spacing: 10) {
-                ProviderMark(provider: account.provider, size: 22)
-                VStack(alignment: .leading, spacing: 6) {
+                GrammarRing(pct: fivePct, pace: fivePace, accent: accent,
+                            figure: session == nil ? nil : Display.number(fivePct, pace: fivePace),
+                            figureColour: ringState == .normal && Display.isDistance(fivePct, pace: fivePace)
+                                ? Display.figureColour(fivePct, pace: fivePace, ink: p.ink, usage: p.ink, scheme) : nil,
+                            state: ringState, surface: surface)
+                    .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
+                        ProviderMark(provider: account.provider, size: 16)
                         Text(account.label).font(.system(size: 16, weight: selected || account.key == model.pinnedKey ? .semibold : .regular))
+                            .lineLimit(1)
                         PlanChip(plan: model.states[account.key]?.plan)
                         if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
                     }
-                    UsageBar(pct: pct, pace: pace, accent: accent, height: 5)
+                    GrammarBar(pct: pct, pace: pace, accent: accent, height: 4, showsRoom: false, surface: surface)
                 }
-                VStack(alignment: .trailing, spacing: 1) {
-                    Display.pctText(pct, pace: pace, size: 16).font(.system(size: 16, weight: .bold)).foregroundStyle(p.severity(pct, accent: accent))
-                    if let tag {
-                        Text(tag).font(.system(size: 11, weight: loud ? .bold : .regular)).foregroundStyle(loud ? p.orange : p.sub)
-                    }
-                }
+                Display.grammarFigure(Display.number(pct, pace: pace), size: 16)
+                    .foregroundStyle(Display.figureColour(pct, pace: pace, ink: p.ink,
+                                                          usage: pct == nil ? p.sub : p.severity(pct, accent: accent), scheme))
+                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .frame(minWidth: 40, alignment: .trailing)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .background(selected ? accent.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 10))

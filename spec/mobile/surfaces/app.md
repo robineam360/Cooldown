@@ -767,3 +767,74 @@ subtitle "With two or more accounts, start on the All tab. Off: start on the las
 #### §8 Share card — Android
 Unchanged in this step (share/ not touched): Vs pace renders the share card as Used.
 
+
+## The shape grammar on iOS — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
+
+CCRM-103 (Hybrid Notification), the shape grammar (`design/2026-11-02-shape-grammar.html` rev D, §1, §2, §2b, §6, §7,
+§7b).
+
+### Account tile (`AccountTile`, `ios/App/UI/Cards.swift`) — replaces the 7-day and 5-hour cards
+
+One card (`CardBox`: 16 pt padding, 18 pt corners, `p.card`) per account, as the page's `itile(a, 329, 72)`:
+
+| Part | As built |
+|---|---|
+| Ring | `GrammarRing`, 72 pt, left, centred against the bars; 14 pt gap to the bars |
+| Lead bar row | "Weekly · All models" (15 pt, ink) when a model limit shows, else "Weekly"; figure 18 pt (0.25 × ring) bold, `Display.grammarFigure` (small "%"); bar 8 pt |
+| Model row | the model name (13.5 pt, `p.txt`), figure 15 pt, bar 6 pt; 8 pt between rows |
+| Captions | each bar's V1 `PaceCaption` at 12.5 pt; the dashed room under the mark (`UsageBar showsRoom`) |
+| Figure colour | Used / Left: the severity colour of the account accent; Vs pace: `Display.figureColour` (green under, red over, ink on the mark), unsigned, no "vs pace" word; dimmed (error/stale notice): `p.sub` |
+| Bar end | `GrammarBar` = `UsageBar` + the Usage end mark: Round = today's capsule; Line / Pace colour = square end, a 1.5 pt line 1.5 pt past each edge over a 1 pt gap in the card colour, coloured per `UsageEndMark.role`; the pace tick on top |
+| Folded lines | line 1: the band line (`CardContent.compactLine` of Weekly) 14.5 pt semibold, red when alarmed; line 2: a 12 pt ring glyph (`GrammarRing`, no figure) then the 5h's folded line ("Resets in 2h 20m · on track for ~69%") 14.5 pt `p.sub` (red when alarmed); 10 pt above line 1, 2 pt between |
+| Open | chips All · <model> · 5h (14 pt, 4 × 14 pt padding, 9 pt corners, selected `p.fill`, others a 1 pt `p.line` outline; 12 pt above, 8 below), then the chosen chart (chart height setting) and its lines: Weekly / model = pace line (with "until <day>"), projection line, reset row (countdown left, clock right); 5h = "Limit reached" when at it, projection line, reset row ("as of …" on the right while dimmed) |
+| Ring projection | the dotted arc to the projection only while the tile is open on the 5h chip |
+| Open / fold | a tap on the tile (not on a figure) toggles; default Comfortable open, Compact folded, behind More folded |
+| Default chip | 5h when the drawn card order leads with the 5h (Headline 5-hour or reordered), else All; the chips row is dropped when only one chip exists |
+
+Layout sheet: `.session` and `.weekly` still order, hide and fold; the tile sits where the first visible one of the two
+does (in More only when both are in More). The iPad halves show the tile at full width (credits stay in the header).
+
+#### Tap readout (form b, §2b)
+
+Tapping a figure swaps that figure's own line for 3 s with `PaceText.markReadout(MarkTime.of(...), use24h:
+Display.use24h)`, semibold, ink, underlined: the lead or model figure → its bar's caption; the ring → the 5h line (folded),
+or the projection line under the 5h chart (open; the ring tap also selects the 5h chip). Nothing happens when the readout
+is nil (spent, not started, no reading) or the 5h is greyed by a spent week. VoiceOver: each bar row and the ring carry the
+readout as their hint; the ring's label stays "5-hour window, N percent".
+
+#### States
+
+| State | Ring | Lines |
+|---|---|---|
+| Normal | 5h ring with figure, tick, red slice / dashed room, end mark | band line, 5h line |
+| No 5h (weekly-only plan) | `.notApplicable`: grey track and cross, no figure; slot kept | band line only |
+| 5h not started | ring at 0% | "Starts when a message is sent" |
+| No reading | ring "—" (the tile with no 5h shows the cross) | as `compactLine` says |
+| Week spent (CCRM-102 (Spent Week Gate)) | `.grey`, figure dim | the spent line, then the gate note ("Weekly limit reached — 5h can’t be used until Sun 9:30 pm") at full opacity, no glyph |
+| Error / stale notice | ring and bars at 45% | unchanged |
+
+Pool (CCRM-55 (Antigravity Account) E2): its own tile, "Weekly" bar and 5h ring, with the pool's name as the last folded
+line (page T6b) instead of the old label above two cards.
+
+### Summary rows (`SummaryRow`, `ios/App/UI/Summary.swift`)
+
+A 48 pt `GrammarRing` (the 5h) left of each row, centred on its lines, 12 pt gap, in place of the "5h 34%" companion;
+every row has the same frame: a plan with no 5h shows the grey cross, a spent week the grey ring, no reading "—". Nothing
+sits beside the name but the plan chip: a held row says why in line 3 only, "Held · back at 3:40 pm · resets Fri"
+(rev D S1, Fable D1), beside its loud ring. The Weekly figure is 17 pt `grammarFigure`,
+Vs pace coloured. Bars take the end mark. Tapping the figure swaps line 3 for the readout for 3 s; tapping elsewhere
+opens the account. Rows of the one-line form (six accounts or more) are unchanged.
+
+### iPad sidebar (`IPadLandscape.sidebarRow`, `ios/App/UI/MainScreens.swift`)
+
+Row (`sideRow`): ring 40 pt (the 5h; grey while the week is spent, grey cross for no 5h, so names align), then the mark
+(16 pt) and name (16 pt) with the plan chip and pin as before, over a 4 pt Weekly bar (no room, end mark on); the Weekly
+figure 16 pt bold right (min 40 pt). The figure is always the Weekly and the ring the 5h, so the Headline · Weekly · 5h
+segmented switch is removed.
+
+### Settings › Appearance (`SettingsScreen`, `ios/App/UI/SettingsHistory.swift`)
+
+"Usage end mark" right after Usage display: subtitle "How a bar or ring ends at your usage" (13 pt `p.sub`), a segmented
+Round · Line · Pace colour (Line default), writing `Display.setUsageEndMark`, then three previews 18 pt apart, each a
+36 pt ring (64% against 52%, over pace) and a 54 × 8 pt bar, drawn Round, Line and Pace colour. iOS has no status-bar
+icon: no Status-bar icon row anywhere.

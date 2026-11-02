@@ -34,6 +34,22 @@ struct CardContentTests {
         #expect(above.caption == "40% pace mark · 22 over")
     }
 
+    /// CCRM-103 (Hybrid Notification) §2b: the window keeps its clock for the tap readout (core §6.3 `markTime`).
+    @Test("a window carries its clock for the tap readout: under, on, over; none when not started")
+    func readout() throws {
+        // 24% with 46% of the 5h gone: the mark was at 24% 66 minutes ago.
+        let under = try #require(content(24, elapsed: 0.46))
+        guard case .under(let ago)? = under.markTime else { Issue.record("expected under, got \(String(describing: under.markTime))"); return }
+        #expect(abs(ago - 3_960_000) <= 1)   // the helper's reset clock truncates to the millisecond
+        #expect(under.readout(use24h: false, timeZone: utc) == "1h 6m behind pace")
+        #expect(try #require(content(46, elapsed: 0.46)).readout(timeZone: utc) == "On the pace mark")
+        #expect(try #require(content(62, elapsed: 0.40)).readout(timeZone: utc)?.hasPrefix("Pace catches up ") == true)
+        let idle = try #require(CardContent.window(
+            title: "5-hour window", window: UsageWindow(percent: 0, resetsAtMs: nil, serverSeverity: nil),
+            kind: HistoryStats.sessionKind, history: [], nowMs: now, timeZone: utc))
+        #expect(idle.markTime == nil && idle.readout() == nil)
+    }
+
     @Test("a window with no reset time hasn't started: the card stays, saying so; a missing window drops the card")
     func notStartedAndAbsent() throws {
         let idle = try #require(CardContent.window(

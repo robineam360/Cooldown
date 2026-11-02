@@ -1878,7 +1878,9 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   and per-account `statusIcon` prefs, the status-glyph rule; spec/mobile §5 and fixtures); Android
   surfaces built (account tile, Summary rows, notification H4 and Duet, status-bar glyphs, the four widget
   faces, Appearance › Usage end mark, the Status-bar icon group, tabular figures, Vs pace unsigned and
-  coloured); iOS next.
+  coloured); iOS built (CooldownCore `MarkTime`, readout and `UsageEndMark` on the same fixtures; the account
+  tile, Summary rows, iPad sidebar, Settings row, home widgets, lock screen, Live Activity and Island). Device
+  check at Step 7.
 - **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
   ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
   take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.

@@ -4,7 +4,8 @@ import Foundation
 import SwiftUI
 
 /// CCRM-94 (iOS App): the Live Activity's data — the Duet with Weekly (wireframe rev B §6, Robin's Q2): up to two
-/// accounts, each with its 5h row and a thin Weekly line, under iOS's 160 pt cap.
+/// accounts under iOS's 160 pt cap. CCRM-103 (Hybrid Notification): each row is the 5h ring on the left and the
+/// Weekly stack on the right.
 struct CooldownActivityAttributes: ActivityAttributes {
     struct Row: Codable, Hashable {
         var key: String
@@ -28,8 +29,13 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var companionLoud: Bool?
         var spent: Bool?
         var projection: String?
-        /// CCRM-102: a 5h row while the week is spent (dimmed, "Weekly spent").
+        /// CCRM-102: the 5h can't be used while the week is spent — its ring greys.
         var weekGated: Bool?
+        /// CCRM-103 (Hybrid Notification): the 5h's own reset (the ring reads 0% once it passes), and the Weekly's words
+        /// — the full line ("Slow down · ≈11%/day") and the band alone ("Slow down"). Optional, so older states decode.
+        var fiveReset: Date?
+        var weeklyLine: String?
+        var weeklyWords: String?
 
         var providerValue: Provider { Provider(rawValue: provider) ?? .claude }
         var leadsWeekly: Bool { weeklyLeads ?? false }
@@ -47,9 +53,24 @@ struct CooldownActivityAttributes: ActivityAttributes {
             leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, Display.use24h, .current) : shortClock(date)
         }
 
-        /// `source` as already led (`Face.lead(for:)`); an unled face is drawn as today (5h, or Weekly when there is no 5h).
+        /// The 5h for the ring: the companion of a Weekly-led row, the main slot of an older 5h-led state; nil on a
+        /// plan with no 5h (B1). A 5h that has reset since the row was written reads 0%.
+        var five: Face.FiveHour? {
+            if leadsWeekly {
+                guard weeklyPct != nil else { return nil }
+                let gone = fiveReset.map { $0 <= .now } ?? false
+                return Face.FiveHour(pct: gone ? 0 : weeklyPct, pace: gone ? nil : weeklyPace, reset: fiveReset)
+            }
+            return Face.FiveHour(pct: shownPct, pace: hasReset ? nil : pace, reset: reset)
+        }
+        /// The Weekly for the bar: the main slot of a Weekly-led row, nil when the row carries no Weekly lead.
+        var weekPct: Double? { leadsWeekly ? shownPct : nil }
+        var weekPace: Double? { leadsWeekly && !hasReset ? pace : nil }
+
+        /// CCRM-103: whatever the Headline, the row is drawn Weekly-led (the bars), the 5h its companion (the ring) —
+        /// so `source` may be led either way (`Face.lead(for:)`).
         init(_ source: Face) {
-            let face = source.leading
+            let face = source.grammar
             key = face.account.key
             label = face.account.label
             provider = face.account.provider.rawValue
@@ -64,8 +85,12 @@ struct CooldownActivityAttributes: ActivityAttributes {
             weeklyLeads = face.leadsWeekly ? true : nil
             companionLoud = face.companionLoud ? true : nil
             spent = face.leadSpent ? true : nil
-            weekGated = face.weekGated ? true : nil
-            projection = face.leadsWeekly ? nil : face.session?.projectionShort.flatMap { $0.hasPrefix("~ runs out") ? $0 : nil }
+            weekGated = face.fiveGreyed ? true : nil
+            let fiveContent = face.fiveHour?.content
+            projection = fiveContent?.projectionShort.flatMap { $0.hasPrefix("~ runs out") ? $0 : nil }
+            fiveReset = face.fiveHour?.reset
+            weeklyLine = face.leadsWeekly ? face.session.flatMap { $0.paceLine.isEmpty ? nil : $0.paceLine } : nil
+            weeklyWords = face.leadsWeekly ? face.session?.band.flatMap(PaceText.bandWords) : nil
         }
     }
 

@@ -19,6 +19,7 @@ struct SettingsScreen: View {
     @State private var clearing: Account?
     @AppStorage(Display.Key.timeFormat, store: Prefs.defaults) private var timeFormat = "system"
     @State private var usageMode = Display.mode.rawValue
+    @State private var endMark = Display.usageEndMark
     @State private var openOnSummary = Prefs.openOnSummary
     @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
     @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
@@ -103,8 +104,25 @@ struct SettingsScreen: View {
                            [("Used", PaceText.Mode.used.rawValue), ("Left", PaceText.Mode.left.rawValue), ("Vs pace", PaceText.Mode.vsPace.rawValue)],
                            note: "How percentages read on every surface. Bars and colours always show what's spent. "
                                + (usageMode == PaceText.Mode.left.rawValue ? "Shows “53% left”: what remains of each window."
-                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “+10%” — how far under the pace mark you are (“−20%”: over it)."
+                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “10%” — how far from the pace mark you are: green under it, red over it."
                                   : "Shows “47% used”: what each window has consumed."))
+                    // CCRM-103 (Hybrid Notification) rev D §1e: how a bar or ring ends at the usage. Line by default.
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Usage end mark")
+                            Text("How a bar or ring ends at your usage").font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                        Picker("Usage end mark", selection: Binding(get: { endMark }, set: { mark in
+                            endMark = mark
+                            Display.setUsageEndMark(mark)
+                            model.displayChanged()
+                        })) {
+                            Text("Round").tag(UsageEndMark.round); Text("Line").tag(UsageEndMark.line)
+                            Text("Pace colour").tag(UsageEndMark.pace)
+                        }
+                        .pickerStyle(.segmented)
+                        EndMarkPreviews()
+                    }
                     // CCRM-98 (Summary Tab) P2: shown only with two or more accounts, on by default.
                     if SummaryRank.tabShown(accountCount: model.accounts.count) {
                         VStack(alignment: .leading, spacing: 6) {
@@ -191,6 +209,32 @@ extension SettingsScreen {
             .onChange(of: value.wrappedValue) { model.displayChanged() }
             Text(note).font(.system(size: 13)).foregroundStyle(p.sub)
         }
+    }
+}
+
+/// Appearance › Usage end mark's three previews (rev D §1e): each an over-pace ring (36 pt) and bar (54 × 8 pt), 64%
+/// against a 52% mark, drawn Round · Line · Pace colour.
+struct EndMarkPreviews: View {
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        let accent = Provider.claude.accent(scheme)
+        HStack(spacing: 18) {
+            ForEach(UsageEndMark.allCases, id: \.self) { mark in
+                HStack(spacing: 8) {
+                    GrammarRing(pct: 64, pace: 52, accent: accent, figure: Display.number(64, pace: 52),
+                                figureColour: Display.isDistance(64, pace: 52)
+                                    ? Display.figureColour(64, pace: 52, ink: p.ink, usage: p.ink, scheme) : nil,
+                                endMark: mark, surface: p.card)
+                        .frame(width: 36, height: 36)
+                    GrammarBar(pct: 64, pace: 52, accent: accent, height: 8, showsRoom: false, endMark: mark, surface: p.card)
+                        .frame(width: 54)
+                }
+            }
+        }
+        .padding(.top, 4)
+        .accessibilityHidden(true)
     }
 }
 

@@ -89,7 +89,7 @@ struct BarsWidget: Widget {
             WidgetFrame(key: entry.face?.account.key) { BarsFace(entry: entry) }
         }
         .configurationDisplayName("Bars")
-        .description("One account's Weekly and 5h, each with its bar.")
+        .description("One account's Weekly bar, with its 5h ring.")
         .supportedFamilies([.systemSmall])
     }
 }
@@ -103,7 +103,7 @@ struct StripWidget: Widget {
             WidgetFrame(key: entry.face?.account.key) { StripFace(entry: entry) }
         }
         .configurationDisplayName("Strip")
-        .description("One account: Weekly big, with 5h under it.")
+        .description("One account: the 5h ring, with the Weekly beside it.")
         .supportedFamilies([.systemMedium])
     }
 }

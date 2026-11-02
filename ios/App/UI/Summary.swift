@@ -85,34 +85,49 @@ struct SummaryList: View {
             .padding(.bottom, 4)
             ForEach(entries) { entry in
                 Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 8)
-                Button { onOpen(entry.account.key) } label: {
-                    if entries.count >= 6 { SummaryOneLineRow(entry: entry, nowMs: nowMs) } else { SummaryRow(entry: entry, nowMs: nowMs) }
+                if entries.count >= 6 {
+                    Button { onOpen(entry.account.key) } label: { SummaryOneLineRow(entry: entry, nowMs: nowMs) }
+                        .buttonStyle(.plain)
+                } else {
+                    // CCRM-103: not a Button, so a tap on the row's figure can show its readout instead of opening.
+                    SummaryRow(entry: entry, nowMs: nowMs)
+                        .onTapGesture { onOpen(entry.account.key) }
+                        .accessibilityAddTraits(.isButton)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
 }
 
 enum SummaryWords {
-    /// Line 3 of a row: "Room to spare · ≈22%/day · resets Fri", "Out until Thu 8:00 am", "No reading".
+    /// Line 3 of a row: "Room to spare · ≈22%/day · resets Fri", "Held · back at 3:40 pm · resets Fri", "Out until Thu
+    /// 8:00 am", "No reading".
     static func line(_ e: SummaryEntry, nowMs: Int64) -> String {
         let f = e.face
         guard let used = e.usedPct else { return "No reading" }
         guard let reset = f.weeklyReset, let elapsed = e.elapsedPct else { return CardContent.notStartedLine }
         if Pace.isSpent(used) { return "Out until \(CardContent.dayClock(reset.ms, nowMs, Display.use24h, .current))" }
+        // CCRM-103 (Hybrid Notification) rev D S1: a held row says why in line 3 only, beside its loud ring.
+        if e.group == .held, e.hasSession, let back = f.reset {
+            return "Held · back at \(shortClock(back)) · resets \(CardContent.weekday(reset.ms, .current))"
+        }
         let band = Pace.band(usedPct: used, elapsedPct: elapsed)
         let words = PaceText.tight(band, Pace.allowance(usedPct: used, msUntilReset: reset.ms - nowMs)) ?? ""
         return "\(words) · resets \(CardContent.weekday(reset.ms, .current))"
     }
 
-    /// Beside the name: "no 5h", "5h 34%", or — held — "5h 93% · back 3:40 pm".
+    /// The held reason's time, "back 3:40 pm". CCRM-103 (Hybrid Notification) rev D S1: no longer drawn beside the
+    /// name (the held row says it in line 3, `line`); kept for the tests that read it.
     static func companion(_ e: SummaryEntry) -> String? {
-        guard e.usedPct != nil else { return nil }
-        guard e.hasSession else { return "no 5h" }
-        let five = "5h \(Display.usage(e.face.pct))"
-        if e.group == .held, let back = e.face.reset { return "\(five) · back \(shortClock(back))" }
-        return e.group == .spent ? nil : five
+        guard e.usedPct != nil, e.hasSession, e.group == .held, let back = e.face.reset else { return nil }
+        return "back \(shortClock(back))"
+    }
+
+    /// CCRM-103 §2b: the Weekly figure's tap readout, shown in line 3 for 3 s; nil when spent, unclocked or unread.
+    static func readout(_ e: SummaryEntry, nowMs: Int64) -> String? {
+        PaceText.markReadout(MarkTime.of(usedPct: e.usedPct, msUntilReset: e.face.weeklyReset.map { $0.ms - nowMs },
+                                         windowLengthMs: HistoryStats.weekMs, nowMs: nowMs),
+                             use24h: Display.use24h)
     }
 
     /// The one-line row's word: the band, "5h · 3:40 pm" when held, "Out · Thu" when spent.
@@ -126,40 +141,79 @@ enum SummaryWords {
     }
 }
 
+/// CCRM-103 (Hybrid Notification) rev D §2 S1: a 48 pt ring (the 5h) on the row's left, spanning its lines, in place of
+/// the "5h 34%" companion; a plan with no 5h keeps the slot, greyed with a cross, so every row has the same frame.
 struct SummaryRow: View {
     let entry: SummaryEntry
     let nowMs: Int64
+    @State private var revealed = false
+    @State private var revealToken = 0
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         let accent = entry.account.accent(scheme)
         let spent = entry.group == .spent
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 7) {
-                ProviderMark(provider: entry.account.provider, size: 18)
-                Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
-                PlanChip(plan: entry.plan)
-                if let companion = SummaryWords.companion(entry) {
-                    Text(companion).font(.system(size: 12, weight: entry.group == .held ? .bold : .regular))
-                        .foregroundStyle(entry.group == .held ? p.orange : p.sub).lineLimit(1)
+        let readout = SummaryWords.readout(entry, nowMs: nowMs)
+        let used = entry.usedPct, pace = entry.elapsedPct
+        HStack(alignment: .center, spacing: 12) {
+            ring(accent: accent)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 7) {
+                    ProviderMark(provider: entry.account.provider, size: 18)
+                    Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
+                    PlanChip(plan: entry.plan)
+                    Spacer(minLength: 6)
+                    Display.grammarFigure(Display.number(used, pace: pace), size: 17)
+                        .foregroundStyle(Display.figureColour(used, pace: pace, ink: p.ink,
+                                                              usage: used == nil ? p.sub : p.severity(used, accent: accent), scheme))
+                        .contentShape(Rectangle())
+                        .onTapGesture { show(readout) }
                 }
-                Spacer(minLength: 6)
-                Text(Display.number(entry.usedPct, pace: entry.elapsedPct))
-                    .font(.system(size: 17, weight: .bold)).monospacedDigit()
-                    .foregroundStyle(p.severity(entry.usedPct, accent: accent))
+                GrammarBar(pct: used, pace: pace, accent: accent, height: 10, surface: p.card).padding(.top, 6)
+                if let caption = PaceText.caption(mode: Display.mode, usedPct: used, elapsedPct: pace), let mark = pace {
+                    PaceCaption(text: caption, markPct: mark).padding(.top, 1)
+                }
+                if revealed, let readout {
+                    Text(readout).font(.system(size: 13, weight: .semibold)).underline().foregroundStyle(p.ink)
+                        .padding(.top, 4).lineLimit(1)
+                } else {
+                    Text(SummaryWords.line(entry, nowMs: nowMs)).font(.system(size: 13))
+                        .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4).lineLimit(1)
+                }
             }
-            UsageBar(pct: entry.usedPct, pace: entry.elapsedPct, accent: accent, height: 10, showsRoom: true).padding(.top, 6)
-            if let caption = PaceText.caption(mode: Display.mode, usedPct: entry.usedPct, elapsedPct: entry.elapsedPct),
-               let mark = entry.elapsedPct {
-                PaceCaption(text: caption, markPct: mark).padding(.top, 1)
-            }
-            Text(SummaryWords.line(entry, nowMs: nowMs)).font(.system(size: 13))
-                .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4).lineLimit(1)
         }
         .opacity(spent ? 0.6 : 1)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+        .accessibilityHint(readout ?? "")
+    }
+
+    /// The 5h ring: greyed while the week is spent (CCRM-102 (Spent Week Gate)), a cross for a plan with no 5h, "—"
+    /// with no reading.
+    private func ring(accent: Color) -> some View {
+        let f = entry.face
+        let state: GrammarRing.State = entry.group == .noReading ? .normal
+            : !entry.hasSession ? .notApplicable : entry.group == .spent ? .grey : .normal
+        let pct = state == .notApplicable ? nil : f.pct
+        return GrammarRing(
+            pct: pct, pace: f.pace, accent: accent,
+            figure: state == .notApplicable ? nil : Display.number(pct, pace: f.pace),
+            figureColour: state == .normal && Display.isDistance(pct, pace: f.pace)
+                ? Display.figureColour(pct, pace: f.pace, ink: p.ink, usage: p.ink, scheme) : nil,
+            state: state, surface: p.card)
+            .frame(width: 48, height: 48)
+    }
+
+    private func show(_ readout: String?) {
+        guard readout != nil else { return }
+        revealed = true
+        revealToken += 1
+        let token = revealToken
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: AccountTile.readoutSeconds * 1_000_000_000)
+            if revealToken == token { revealed = false }
+        }
     }
 }
 

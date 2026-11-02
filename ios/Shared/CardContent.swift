@@ -32,6 +32,20 @@ struct WindowContent: Equatable {
     /// The 5h window's folded projection: "on track for ~69%" / "runs out ~3:25 pm"; nil when there is none.
     var projectionFold: String? = nil
     var isWeekly = false
+    /// CCRM-103 (Hybrid Notification) §2b: the window's reset clock, its length and the moment this was built, for the
+    /// tap readout (core §6.3 `markTime`). nil reset = not started.
+    var resetMs: Int64? = nil
+    var windowMs: Int64 = 0
+    var builtAtMs: Int64 = 0
+
+    /// When the pace mark meets the usage; nil — the tap does nothing — when spent, unclocked or unread.
+    var markTime: MarkTime? {
+        MarkTime.of(usedPct: pct, msUntilReset: resetMs.map { $0 - builtAtMs }, windowLengthMs: windowMs, nowMs: builtAtMs)
+    }
+    /// The tap readout's words: "Pace catches up Thu 5 Nov, 12:50 PM", "1h 6m behind pace", "On the pace mark".
+    func readout(use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> String? {
+        PaceText.markReadout(markTime, use24h: use24h, timeZone: timeZone)
+    }
 
     /// The weekly pace line at full width: "Room to spare · ≈22%/day until Fri" (rev B); halves drop " until …".
     var paceLineFull: String {
@@ -142,7 +156,8 @@ enum CardContent {
             // Android's countdown collapses to "resets soon" inside five minutes.
             resetsIn: reset - nowMs < 5 * 60_000 ? "Resets soon" : "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))",
-            band: band, resetDay: weekday(reset, timeZone), projectionFold: projectionFold, isWeekly: weeklyKind)
+            band: band, resetDay: weekday(reset, timeZone), projectionFold: projectionFold, isWeekly: weeklyKind,
+            resetMs: reset, windowMs: length, builtAtMs: nowMs)
     }
 
     static let notStartedLine = "Starts when a message is sent"
