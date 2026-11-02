@@ -383,6 +383,18 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows, spike before design
+- **Respike 2026-11-02 — partly reopened, still not Planned.** The `agy` CLI (1.4.11) now shows
+  real, moving Antigravity limits from Google's cloud
+  (`daily-cloudcode-pa…:retrieveUserQuotaSummary`, no IDE, no local RPC): resets anchored to
+  first use, Gemini 4 Argon weekly 100% → 99% after one prompt. From a **plain HTTPS client**
+  (phone-shaped) with the same token: **Gemini 5h** is real via `fetchAvailableModels`
+  (per-model `quotaInfo`, unrounded), and the Claude + GPT pool's 5h + weekly come from the
+  summary; **Gemini weekly and Argon weekly do not** (the summary returns only the 3p group, and
+  Argon is absent from the model list). Four rounds of request-shape guessing did not find agy's
+  difference; next is capturing its request through an intercepting proxy (owner's call: needs a
+  trusted root certificate on the Mac). Auth is unchanged and still the hard blocker. The
+  September "permanent stub" verdict below no longer holds as written. Record:
+  `design/research/2026-11-02-antigravity-respike.md`.
 - **Status:** Dropped (2026-09-08). A second, decisive round of the spike proved the data
   blocker is not just soft-degraded but absolute: a real, substantial Gemini task run inside
   Antigravity moved the app's own local usage view from 100%/100% to 99%/98% (screenshot in
