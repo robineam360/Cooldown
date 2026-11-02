@@ -10,8 +10,9 @@ enum CardID: String, CaseIterable, Codable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .session: "5-hour window"
-        case .weekly: "7-day window"
+        // CCRM-103 (Hybrid Notification): one account tile carries both windows; the layout sheet shows it as one
+        // row, "Usage" (Robin, 2026-11-02).
+        case .session, .weekly: "Usage"
         case .credits: "Usage credits"
         }
     }

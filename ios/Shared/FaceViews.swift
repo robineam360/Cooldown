@@ -872,14 +872,21 @@ struct LockFace: View {
                     .padding(4)
             }
         } else {
-            // A plan with no 5h: today's Weekly ring (not drawn on the page).
+            // A plan with no 5h (Robin, 2026-11-02): no ring — the Weekly as Android's no-5h status-bar glyph, the small
+            // Weekly bar with its pace tick (the red cross when full), the Used figure above it. No "W".
             ZStack {
                 AccessoryWidgetBackground()
-                UsageRing(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, lineWidth: 5,
-                          label: face.status == .signIn ? "—" : face.leadSpent ? "MAX" : face.pct.map { "\(Int($0))" } ?? "—",
-                          sublabel: "W", fontSize: 19, mono: .white)
-                    .padding(2)
+                VStack(spacing: 2) {
+                    Display.grammarFigure(face.status == .signIn ? "—" : face.leadSpent ? "MAX" : used(face.pct, face), size: 17)
+                        .foregroundStyle(.white)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                    WeeklyBarGlyph(pct: face.status == .signIn ? nil : face.pct, pace: face.pace, accent: .white, mono: .white)
+                        .frame(width: 40, height: 22)
+                }
+                .padding(.horizontal, 6)
             }
+            .accessibilityElement()
+            .accessibilityLabel(face.status == .signIn ? "Weekly, no reading" : "Weekly, \(face.pct.map { "\(Int($0)) percent" } ?? "no reading")")
         }
     }
 

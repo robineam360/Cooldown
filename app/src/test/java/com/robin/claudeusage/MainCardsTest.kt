@@ -142,11 +142,18 @@ class MainCardsTest {
     }
 
     @Test
-    fun `the tile sits where the first un-hidden window card stood, folded if it was`() {
+    fun `the tile follows its own Usage row, else the other window card's place`() {
+        // Its own row decides place and fold (the sheet shows that row): a stored fold on the
+        // other window id is not what the user sees, so it does not fold the tile.
         val credFirst = CardLayout(listOf(CardId.CREDITS, CardId.SESSION, CardId.WEEKLY), emptySet(), setOf(CardId.SESSION))
         assertEquals(
-            DrawnCards(listOf(CardId.CREDITS), listOf(CardId.WEEKLY)),
+            DrawnCards(listOf(CardId.CREDITS, CardId.WEEKLY), emptyList()),
             drawnCards(credFirst, setOf(CardId.WEEKLY, CardId.CREDITS)),
+        )
+        val ownFold = CardLayout(listOf(CardId.SESSION, CardId.WEEKLY, CardId.CREDITS), emptySet(), setOf(CardId.WEEKLY))
+        assertEquals(
+            DrawnCards(listOf(CardId.CREDITS), listOf(CardId.WEEKLY)),
+            drawnCards(ownFold, setOf(CardId.WEEKLY, CardId.CREDITS)),
         )
         val split = CardLayout(listOf(CardId.SESSION, CardId.CREDITS, CardId.WEEKLY), setOf(CardId.SESSION), emptySet())
         assertEquals(

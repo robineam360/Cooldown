@@ -493,3 +493,57 @@ struct FiveGlyph: View {
         .accessibilityHidden(true)
     }
 }
+
+/// CCRM-103 (Hybrid Notification): the Weekly as a small bar — Android's no-5h status-bar glyph (N3, the page's
+/// `barGlyph()`): a 21 × 10-unit capsule in a 24-unit box (scaled to the frame's width), the fill clipped to it (at
+/// least 9% when non-zero), red past the tick when more than 3 points over, a 1.2-unit outline at 50%, and the pace
+/// tick (1.8 units at 95%) in a cleared 4.2-unit halo. At a truncated 100 it is the red cross alone, as on Android.
+/// Used on the lock-screen circular for a plan with no 5h (Robin, 2026-11-02).
+struct WeeklyBarGlyph: View {
+    let pct: Double?
+    let pace: Double?
+    let accent: Color
+    var mono: Color?
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        Canvas { ctx, size in
+            let u = size.width / 24, ink = mono ?? (scheme == .dark ? Color.white : Color.black)
+            let cy = size.height / 2
+            if let pct, Int(pct) >= 100 {
+                let a = 7 * u, c = CGPoint(x: size.width / 2, y: cy)
+                var x = Path()
+                x.move(to: CGPoint(x: c.x - a, y: c.y - a)); x.addLine(to: CGPoint(x: c.x + a, y: c.y + a))
+                x.move(to: CGPoint(x: c.x + a, y: c.y - a)); x.addLine(to: CGPoint(x: c.x - a, y: c.y + a))
+                ctx.stroke(x, with: .color(mono ?? p.red), style: StrokeStyle(lineWidth: 3.4 * u, lineCap: .round))
+                return
+            }
+            let x0 = 1.5 * u, w = 21 * u, h = 10 * u, y0 = cy - h / 2, rr = h / 2
+            let capsule = Path(roundedRect: CGRect(x: x0, y: y0, width: w, height: h), cornerRadius: rr)
+            ctx.fill(capsule, with: .color(ink.opacity(0.16)))
+            if let pct {
+                let fw = w * max(min(pct, 100), pct > 0 ? 9 : 0) / 100
+                var clip = ctx
+                clip.clip(to: capsule)
+                clip.fill(Path(CGRect(x: x0, y: y0, width: fw, height: h)), with: .color(mono.map { $0.opacity(0.95) } ?? p.severity(pct, accent: accent)))
+                if let pace, pct > pace + 3, Display.redPastPace {
+                    let tx = w * min(max(pace, 0), 100) / 100
+                    clip.fill(Path(CGRect(x: x0 + tx, y: y0, width: max(fw - tx, 0), height: h)), with: .color(mono.map { $0.opacity(0.95) } ?? p.red))
+                }
+            }
+            ctx.stroke(Path(roundedRect: CGRect(x: x0 + 0.6 * u, y: y0 + 0.6 * u, width: w - 1.2 * u, height: h - 1.2 * u),
+                            cornerRadius: rr - 0.6 * u), with: .color(ink.opacity(0.5)), lineWidth: 1.2 * u)
+            if let pct, pct > 0, let pace {
+                let tx = x0 + w * min(max(pace, 0), 100) / 100
+                var halo = Path(); halo.move(to: CGPoint(x: tx, y: y0 - 3.4 * u)); halo.addLine(to: CGPoint(x: tx, y: y0 + h + 3.4 * u))
+                var cleared = ctx
+                cleared.blendMode = .clear
+                cleared.stroke(halo, with: .color(.black), lineWidth: 4.2 * u)
+                var tick = Path(); tick.move(to: CGPoint(x: tx, y: y0 - 3 * u)); tick.addLine(to: CGPoint(x: tx, y: y0 + h + 3 * u))
+                ctx.stroke(tick, with: .color(ink.opacity(0.95)), style: StrokeStyle(lineWidth: 1.8 * u, lineCap: .round))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}

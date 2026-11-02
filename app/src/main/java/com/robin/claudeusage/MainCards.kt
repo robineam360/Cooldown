@@ -193,16 +193,19 @@ data class DrawnCards(val main: List<CardId>, val folded: List<CardId>)
  * CCRM-103 (Hybrid Notification): what the page draws from a stored [layout] (already through
  * [cardOrderLayout]) and the cards the account reports ([present], from [dataCards]).
  *
- * The tile carries both windows, so a layout saved before it (v1.9/v2.0) that hid only one of
- * "5-hour window" and "7-day window" still shows it — the tile hides only when **both** are
- * hidden. It sits where the first un-hidden of the two stood, folded behind More if that card
- * was. And the sheet's "never blank" rule holds whatever was stored: when nothing would be
- * drawn while the account reports cards, the tile (else the first reported card) shows.
+ * The tile carries both windows and the layout sheet shows it as one row, "Usage" (Robin,
+ * 2026-11-02), under the id the account reports ([dataCards]). It follows that row — its place,
+ * its fold — and the sheet hides or shows both window ids together. A layout saved before the
+ * tile (v1.9/v2.0) that hid only that card while keeping the other window's still shows it,
+ * where the other stood: the tile hides only when **both** are hidden. And the sheet's "never
+ * blank" rule holds whatever was stored: when nothing would be drawn while the account reports
+ * cards, the tile (else the first reported card) shows.
  */
 fun drawnCards(layout: CardLayout, present: Set<CardId>): DrawnCards {
     val windows = setOf(CardId.SESSION, CardId.WEEKLY)
     val tile = present.firstOrNull { it in windows }
-    val slot = layout.order.firstOrNull { it in windows && it !in layout.hidden }
+    val slot = tile?.takeIf { it !in layout.hidden }
+        ?: layout.order.firstOrNull { it in windows && it !in layout.hidden }
     val main = mutableListOf<CardId>()
     val folded = mutableListOf<CardId>()
     for (id in layout.order) {

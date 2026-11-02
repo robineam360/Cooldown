@@ -697,10 +697,11 @@ becomes the note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM"
 opacity, no glyph); the ring's tap reads nothing out. With the 5h chip chosen on a spent week, the 5h chart, its
 lines and reset row draw at 45% with no projection, then a divider and the same note in bodySmall SemiBold
 onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. **Saved layouts** (judge F2):
-the tile carries both windows, so it is hidden only when the stored layout hides **both** "5-hour window" and
-"7-day window" — a v1.9/v2.0 layout that hid one of them still shows it. It sits where the first un-hidden of the
-two stood, behind More if that card was. And the sheet's never-blank rule (§4) holds whatever was stored: if nothing
-would be drawn while the account reports cards, the tile shows (`drawnCards`). The sheet's labels are unchanged.
+the tile follows its own sheet row, "Usage" (its place and its fold); the sheet hides or shows both window ids
+together. A v1.9/v2.0 layout that hid only that card while keeping the other window's still shows the tile, where
+the other stood — it is hidden only when the stored layout hides **both**. And the sheet's never-blank rule (§4)
+holds whatever was stored: if nothing would be drawn while the account reports cards, the tile shows
+(`drawnCards`).
 `AccountTile`, `TileBarRow`, `tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct`,
 `drawnCards`, `tileStartsOnFive` in `MainCards.kt`; `AppPace.fiveHourLine`.
 
@@ -745,7 +746,8 @@ tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/Summar
 
 #### §4.1 Layout sheet — add
 Rows show the drawn order (Headline order for an untouched layout); see §2.4. Since the account tile, an account
-with a 7-day window lists one window row (still labelled "7-day window") and no "5-hour window" row; the ⋮'s
+lists one window row, **"Usage"** (Robin, 2026-11-02; the calendar glyph), for the tile — never a separate
+"5-hour window" or "7-day window" row — and hiding it hides both window ids; the ⋮'s
 "Main screen layout" item needs two cards, so an account without a credits card no longer shows it (Share
 snapshot stays).
 
@@ -838,3 +840,11 @@ segmented switch is removed.
 Round · Line · Pace colour (Line default), writing `Display.setUsageEndMark`, then three previews 18 pt apart, each a
 36 pt ring (64% against 52%, over pace) and a 54 × 8 pt bar, drawn Round, Line and Pace colour. iOS has no status-bar
 icon: no Status-bar icon row anywhere.
+
+### Layout sheet on iOS (Robin, 2026-11-02)
+
+The tile is one row, **"Usage"** (`CardID.title`), in place of the "5-hour window" and "7-day window" rows. The row
+stands for the window card the tile is drawn under (`LayoutSheet.usageID`: the first shown above More, else behind
+it); showing, hiding, folding and unfolding it applies to both window ids, and reordering carries the other id right
+behind it, so the stored layout can never contradict the row. "Usage credits" is unchanged.
+

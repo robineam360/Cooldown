@@ -307,7 +307,7 @@ private fun CardLayoutRow(
                 checked = checked,
                 enabled = switchEnabled,
                 onCheckedChange = { isChecked ->
-                    onApply(if (isChecked) CardLayout.show(layout, id) else CardLayout.hide(layout, id))
+                    onApply(hideOrShow(layout, id, isChecked))
                 },
             )
             DragHandle(
@@ -352,11 +352,19 @@ private fun CardLayoutRow(
     }
 }
 
-/** "5-hour window" / "7-day window" / "Usage credits". */
+/**
+ * "Usage" / "Usage credits". CCRM-103 (Hybrid Notification): the account tile carries both
+ * windows, so it is one row named "Usage" (Robin, 2026-11-02), whichever id the account reports.
+ */
 private fun cardLabel(id: CardId): String = when (id) {
-    CardId.SESSION -> "5-hour window"
-    CardId.WEEKLY -> "7-day window"
+    CardId.SESSION, CardId.WEEKLY -> "Usage"
     CardId.CREDITS -> "Usage credits"
+}
+
+/** The tile's two ids move together, so a stored flag on the other can never contradict the row. */
+private fun hideOrShow(layout: CardLayout, id: CardId, show: Boolean): CardLayout {
+    val ids = if (id == CardId.CREDITS) listOf(id) else listOf(CardId.SESSION, CardId.WEEKLY)
+    return ids.fold(layout) { l, i -> if (show) CardLayout.show(l, i) else CardLayout.hide(l, i) }
 }
 
 /**

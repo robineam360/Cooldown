@@ -59,4 +59,22 @@ struct CardLayoutTests {
         #expect(ChartSize.medium.height(width: 360) == 120)
         #expect(ChartSize.large.height(width: 360) == 180 && ChartSize.large.height(width: 900) == 300)
     }
+
+    /// CCRM-103 (Hybrid Notification): the layout sheet shows the tile as one "Usage" row (Robin, 2026-11-02).
+    @Test func theTileIsOneUsageRow() {
+        #expect(CardID.session.title == "Usage" && CardID.weekly.title == "Usage" && CardID.credits.title == "Usage credits")
+        let all: Set<CardID> = [.session, .weekly, .credits]
+        // The row stands for the window card the tile is drawn under.
+        #expect(LayoutSheet.usageID(.standard) == .session)
+        #expect(LayoutSheet.sheetCards(.standard, all) == [.session, .credits])
+        let legacy = CardLayout(order: [.session, .weekly, .credits], hidden: [.session], more: [])
+        #expect(LayoutSheet.usageID(legacy) == .weekly)
+        // Hiding or folding the row moves both window ids together.
+        let hidden = LayoutSheet.both(.weekly, .standard) { $0.hiding($1) }
+        #expect(hidden.hidden.isSuperset(of: [.session, .weekly]) && hidden.main == [.credits])
+        let shown = LayoutSheet.both(.weekly, legacy) { $0.showing($1) }
+        #expect(shown.hidden.isEmpty)
+        let folded = LayoutSheet.both(.session, .standard) { $0.folding($1) }
+        #expect(folded.folded == [.session, .weekly])
+    }
 }
