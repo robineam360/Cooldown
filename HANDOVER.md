@@ -4,31 +4,28 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc + Gemini — continue (written 2026-11-02, session stopped at its usage limit)
+## ▶ v2.0 arc + Gemini — Step 6d, the shape grammar build (written 2026-11-02)
 
 **State.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`), PR
-robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 2, 3, 4, 6 ticked; 6a/6b/6c (CCRM-102
-(Spent Week Gate), CCRM-55 (Antigravity Account)) partly built: Android data layer 4aa6e0b, the gate on Android's
-notification and widgets 5c6b2ef, iOS Gemini + gate 886d4dd (its Opus judge was still running). Spec-only
-fba3d8e is on main (Robin's go) — send that sha to the desktop session to pin. **Uncommitted in the worktree**
-(builders were still running): Step 5's Android app files, `design/2026-11-02-shape-grammar.html`,
-`-hybrid-notification.html` rev B, maybe `-icon-v3.html` rev B. **Robin's open decisions:** the shape grammar
-(bars = 7-day, rings = 5h; ring left, only its figure inside, no "5h" label; align with the desktop's rev B) on
-every mobile surface, with both-ways options for the status-bar icon and a no-5h plan; CCRM-101 (Icon v3)'s ten
-ring concepts (`design/research/2026-11-02-icon-v3-ring-concepts-fable.md`). The desktop session ("Mobile arc
-setup and shared spec sync") is holding its build for the final standard.
+robineam360/Cooldown#21, held off main by Gate G0. RUNBOOK-v2.0 Steps 1–6 and 6a–6c ticked (Step 5 without
+Compose previews; Step 7 captures stand in, Robin to confirm). The new app icon "Shared pace" (CCRM-101 (Icon v3)) is
+built. **CCRM-103 (Hybrid Notification) is frozen** at `design/2026-11-02-shape-grammar.html` rev D (Robin, with
+the open-question recommendations C3–C8). Step 6d was added and Astra call 3 accepted it (Robin's exception).
+The desktop session ("Mobile arc setup and shared spec sync") has the full frozen package. spec/core main is
+fba3d8e; d491f06 (§6.3 `markTime`) is on the branch only and lands on main only with Robin's OK (then send the
+desktop its sha). Sub-agents run on the claude-product account (`model-mesh-review worker … --account
+~/.claude-product`); those workers can't run gradle here, so the seat runs tests and commits.
 
 New session in this worktree, model Opus 5.5:
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Log) and this block of HANDOVER.md; load the model-mesh
-> skill; run the git gate. Review every uncommitted file: Step 5's Android app work (both flavors' tests and lint,
-> one fresh Opus judge, commit with its ROADMAP status and surfaces/app.md update) and the design pages (polish
-> pass, commit; draw icon-v3 rev B from the ten concepts if missing). Put the shape-grammar wireframe and the ten
-> icons to Robin one question at a time; after approval add Step 6d (the grammar) to RUNBOOK-v2.0 and rebuild the
-> cards, notification, widgets and iOS surfaces to it, finish Step 6b's Android Gemini screens, and judge each
-> step. Send the desktop session the final standard and main sha fba3d8e. Stop and ask Robin at anything visible
-> beyond approved wireframes, at Step 7 (Fold 7 + iPad; Gemini sign-in is his), and at Step 8's release go.
-> Before stopping, replace this block.
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 6d, Log) and this block of HANDOVER.md; load the
+> model-mesh skill; run the git gate. Build Step 6d to the frozen page (rev D, its open-questions table is the
+> decided list): Android data + tests (markTime and its words, the end-mark and per-account status-bar-icon
+> prefs, the status-icon choice), then Android surfaces (tile in place of the two cards, Summary rows, the
+> notification H4 and Duet, status bar, widgets, Settings rows, tabular figures), then iOS, each a commit with
+> spec/mobile, surfaces and ROADMAP updated, and one fresh Opus judge per commit (workers on claude-product).
+> Stop and ask Robin at anything visible beyond the frozen page, at Step 7 (Fold 7 + iPad; Gemini sign-in is
+> his), and at Step 8's release go. Before stopping, replace this block.
 
 ## ▶ (superseded by the block above) v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
 
