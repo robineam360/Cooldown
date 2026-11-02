@@ -788,3 +788,8 @@ Medium Overview with one account is the Strip (as before).
 6. **Gallery descriptions** (`Widgets.swift`) reworded for Bars ("One account's Weekly bar, with its 5h ring.") and
    Strip ("One account: the 5h ring, with the Weekly beside it."); the Control Center control still says "Teams · 5h"
    (not in this piece's brief).
+
+**iOS face titles** (CCBG-71 (iPad Number Title Clip)): a face's "<name> · <window>" title drops to the name alone
+(shrinking to 85% at most) when it does not fit, never "ChatGPT · We…". **A dropped widget kind** (the iOS "Ring",
+removed in rev C) keeps its last snapshot on a home screen until the user removes it (CCBG-70 (Stale Ring Widget)).
+

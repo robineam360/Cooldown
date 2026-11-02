@@ -86,6 +86,53 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   space (`21-cover-widgets.png`).
 - **Fix (proposal):** scale the ring to the face as the Ring face does.
 
+### CCBG-67 · iPad Sidebar Tap — with two accounts a sidebar tap changes nothing visible
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending). Reported by Robin in the Step 7 iPad
+  pass (iPad Pro M4, landscape, Debug build of c8ef050): "when I select the left side … I don't think it is
+  registering my tap." The highlight now follows the tapped row, the pinned one included
+  (`IPadLandscape.highlightedKey`, `CardLayoutTests.theSidebarHighlightFollowsTheTap`), and every tap — even on the row
+  already shown — scrolls the detail to that account's half (`ScrollViewReader`). No layout change.
+- **Severity:** Medium
+- **Symptom:** landscape puts the pinned account (Claude) in the top half and `bottomKey` in the bottom. With two
+  accounts, tapping the pinned row left the highlight on the other account (`selected = account.key == bottomKey`,
+  `ios/App/UI/MainScreens.swift`), and tapping the other row re-selected what was already shown.
+
+### CCBG-68 · iPad Plan Chip Wrap — "Team Premium" wraps onto three lines in the sidebar
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending): the sidebar's chip is one line
+  (`lineLimit(1)` + `fixedSize`), so the name truncates first.
+- **Severity:** Low
+- **Symptom:** in the 300 pt sidebar, Claude's chip read "Team / Premiu / m".
+
+### CCBG-69 · Lock Widgets Redacted — the locked iPad's lock-screen widgets show "??%" and "?d ??h"
+- **Status:** **Open — no cause in the app's code; device check needed** (investigated 2026-11-02). Not a v2.0
+  regression: the lock-screen widgets read the same files since CCRM-94 (iOS App). What the code shows: no view is
+  marked `.privacySensitive()`, nothing applies `.redacted`, and the app never prints "?" — so the "??%" / "?d ??h"
+  is iOS's own redaction of the widget while locked, not our placeholder. The app group's files carry no explicit
+  data protection (`Storage` writes with the default, readable after the first unlock), the entitlements set no
+  `com.apple.developer.default-data-protection`, and the widget reads files only (no Keychain, no network), so the
+  timeline can read while locked. **Next (Step 7, on the iPad):** note whether the figures show on the lock screen
+  after a Face ID look (unlocked but on the lock screen) and only redact while fully locked, and check the iPad's
+  Settings › Face ID & Passcode › Allow Access When Locked list; if iOS redacts there by policy, it is the user's
+  setting, not a fix in the app.
+- **Severity:** Medium
+- **Symptom:** with the iPad locked, the lock-screen widgets show "??%" and "?d ??h" in place of figures.
+
+### CCBG-70 · Stale Ring Widget — a dropped "Ring" widget keeps its last snapshot on the home screen
+- **Status:** **Not a code defect — Robin's action** (identified 2026-11-02). The small ChatGPT ring ("9%, as of 4:32
+  pm") is the **Ring** widget kind, removed from the bundle in 5b79b42 (CCRM-94 iOS widgets rev C, 2026-10-24: "D1
+  Ring goes"). A widget whose kind no longer exists is never asked for a timeline again, so WidgetKit keeps drawing
+  its last snapshot — stale, and a ring for a 7-day window the grammar no longer allows. **Robin:** remove it from the
+  home screen and add **Bars** (small) in its place. (Re-registering a "Ring" kind that draws the Bars face would
+  migrate it silently; not done — it would keep a dropped name in the gallery.)
+- **Severity:** Low
+- **Symptom:** one small widget showed "9%, as of 4:32 pm" while every other widget was current at 8:08 pm.
+
+### CCBG-71 · iPad Number Title Clip — the small Number widget's title reads "ChatGPT · We…"
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending): the title is "ChatGPT · Weekly"
+  when it fits, else the name alone (shrinking to 85% at most) — the face's figure and bar already say the window.
+- **Severity:** Low
+- **Symptom:** the small Number widget's title ellipsized to "ChatGPT · We…".
+
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
 - **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
   persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh

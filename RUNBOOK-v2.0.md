@@ -300,4 +300,10 @@ weekly.
   frame; One UI's 156 × 237 keeps it, ring Ø108). **Fold 7 recheck closes:** fold and unfold with a shortened label,
   TalkBack on a Summary row, the sheet's insets on the inner screen and a phone-width capture, the Duet halves'
   bounds on the inner shade.
+- **2026-11-02 · Step 7 iPad defects** (iPad Pro M4, landscape, Debug build of c8ef050; filed and fixed in one
+  commit). CCBG-67 (iPad Sidebar Tap, Medium, Robin): the highlight follows the tapped row and the detail scrolls to
+  its half; CCBG-68 (iPad Plan Chip Wrap): one-line chip; CCBG-71 (iPad Number Title Clip): the name alone when the
+  title does not fit. CCBG-69 (Lock Widgets Redacted): no cause in the app's code — iOS's redaction while locked;
+  device check listed in its entry. CCBG-70 (Stale Ring Widget): the dropped "Ring" kind's last snapshot — Robin
+  removes it and adds Bars. Checks: `swift test` 127, iOS app tests 56.
 

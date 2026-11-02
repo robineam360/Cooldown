@@ -78,7 +78,12 @@ struct FaceLabel: View {
     var body: some View {
         HStack(spacing: 6) {
             ProviderMark(provider: face.account.provider, size: size + 1)
-            Text(suffix.map { "\(face.account.label) · \($0)" } ?? face.account.label).lineLimit(1)
+            // CCBG-71 (iPad Number Title Clip): "ChatGPT · Weekly" when it fits, else the name alone (shrunk to fit at
+            // most 85%) rather than "ChatGPT · We…" — the face's figure and bar already say which window.
+            ViewThatFits(in: .horizontal) {
+                Text(suffix.map { "\(face.account.label) · \($0)" } ?? face.account.label).lineLimit(1).fixedSize()
+                Text(face.account.label).lineLimit(1).minimumScaleFactor(0.85)
+            }
         }
         .font(.system(size: size)).foregroundStyle(p.txt)
     }

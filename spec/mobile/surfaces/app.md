@@ -871,4 +871,7 @@ behind it, so the stored layout can never contradict the row. "Usage credits" is
 - **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
   way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
   "Held · 3:40 pm" (never "5h").
+- **iPad sidebar** (CCBG-67 (iPad Sidebar Tap), CCBG-68 (iPad Plan Chip Wrap)): the highlighted row is the one
+  tapped, the pinned account included; every tap scrolls the detail to that account's half; the plan chip stays on
+  one line and the name truncates first.
 

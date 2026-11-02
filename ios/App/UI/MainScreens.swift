@@ -300,6 +300,9 @@ struct IPadLandscape: View {
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
+    /// CCBG-67: every sidebar tap, even on the row already shown, asks the detail to scroll to that account.
+    @State private var scrollRequest: ScrollRequest?
+    private struct ScrollRequest: Equatable { let key: String; let id = UUID() }
     /// CCRM-103 (Hybrid Notification) rev D I2: the row's figure is always the Weekly and its ring always the 5h, so the
     /// Headline · Weekly · 5h switch (CCRM-96 (Weekly First) rev B) has nothing left to pick and is gone; its stored
     /// "sidebarWindow" value is left unread.
@@ -318,23 +321,40 @@ struct IPadLandscape: View {
             .frame(width: 300)
             .background(scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9))
             .overlay(alignment: .trailing) { Rectangle().fill(p.line).frame(width: 1) }
+            // CCBG-67 (iPad Sidebar Tap): a tap scrolls the detail to that account's half, so with the two halves
+            // already on screen the tap still visibly lands.
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 12) {
                     if model.showsSummary && SummaryRank.tabShown(accountCount: model.accounts.count) {
                         Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
                         SummaryView(wide: true)
                     } else {
-                    if let pinned = model.account(model.pinnedKey) { half(pinned, pinned: true) }
+                    if let pinned = model.account(model.pinnedKey) { half(pinned, pinned: true).id(pinned.key) }
                     if let selected = model.account(bottomKey), selected.key != model.pinnedKey {
                         Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 2)
-                        half(selected, pinned: false)
+                        half(selected, pinned: false).id(selected.key)
                     }
                     }
                 }
                 .padding(20)
             }
             .refreshable { await model.refresh(manual: true) }
+            .onChange(of: scrollRequest) { _, request in
+                guard let key = request?.key else { return }
+                withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(key, anchor: .top) }
+            }
+            }
         }
+    }
+
+    /// CCBG-67 (iPad Sidebar Tap): the sidebar row that is highlighted — the tapped one, the pinned row included (the
+    /// pinned account is selected when `selectedKey` is it); else the bottom half's account. None on the Summary.
+    nonisolated static func highlightedKey(selectedKey: String?, pinnedKey: String?, bottomKey: String?,
+                                           showsSummary: Bool) -> String? {
+        if showsSummary { return nil }
+        if let selectedKey, selectedKey == pinnedKey { return pinnedKey }
+        return bottomKey
     }
 
     /// The bottom half shows the selected account, or the next one when the pinned account is selected.
@@ -384,9 +404,13 @@ struct IPadLandscape: View {
         }
         let ringState: GrammarRing.State = session == nil ? .notApplicable : Pace.isSpent(pct) ? .grey : .normal
         let accent = account.accent(scheme)
-        let selected = account.key == bottomKey && !model.showsSummary
+        let selected = account.key == Self.highlightedKey(selectedKey: model.selectedKey, pinnedKey: model.pinnedKey,
+                                                          bottomKey: bottomKey, showsSummary: model.showsSummary)
         let surface = scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9)
-        return Button { model.selectedKey = account.key } label: {
+        return Button {
+            model.selectedKey = account.key
+            scrollRequest = ScrollRequest(key: account.key)
+        } label: {
             HStack(spacing: 10) {
                 GrammarRing(pct: fivePct, pace: fivePace, accent: accent,
                             figure: session == nil ? nil : Display.number(fivePct, pace: fivePace),
@@ -399,7 +423,8 @@ struct IPadLandscape: View {
                         ProviderMark(provider: account.provider, size: 16)
                         Text(account.label).font(.system(size: 16, weight: selected || account.key == model.pinnedKey ? .semibold : .regular))
                             .lineLimit(1)
-                        PlanChip(plan: model.states[account.key]?.plan)
+                        // CCBG-68 (iPad Plan Chip Wrap): the chip stays on one line; the name truncates first.
+                        PlanChip(plan: model.states[account.key]?.plan).lineLimit(1).fixedSize()
                         if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
                     }
                     GrammarBar(pct: pct, pace: pace, accent: accent, height: 4, showsRoom: false, surface: surface)

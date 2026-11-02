@@ -87,4 +87,18 @@ struct CardLayoutTests {
         let back = LayoutSheet.moved(up, all, false, IndexSet(integer: 0), 2)
         #expect(back.order == [.session, .weekly, .credits])
     }
+
+    /// CCBG-67 (iPad Sidebar Tap): the highlight follows the tapped row, the pinned one included.
+    @Test func theSidebarHighlightFollowsTheTap() {
+        // Two accounts: Claude pinned on top, Personal below.
+        #expect(IPadLandscape.highlightedKey(selectedKey: "claude", pinnedKey: "claude", bottomKey: "personal",
+                                             showsSummary: false) == "claude")
+        #expect(IPadLandscape.highlightedKey(selectedKey: "personal", pinnedKey: "claude", bottomKey: "personal",
+                                             showsSummary: false) == "personal")
+        // Nothing chosen yet: the bottom half's account.
+        #expect(IPadLandscape.highlightedKey(selectedKey: nil, pinnedKey: "claude", bottomKey: "personal",
+                                             showsSummary: false) == "personal")
+        #expect(IPadLandscape.highlightedKey(selectedKey: "claude", pinnedKey: "claude", bottomKey: "personal",
+                                             showsSummary: true) == nil)
+    }
 }
