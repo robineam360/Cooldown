@@ -88,16 +88,18 @@ struct CardLayoutTests {
         #expect(back.order == [.session, .weekly, .credits])
     }
 
-    /// Robin's iPad layout (2026-11-02, superseding CCBG-67 (iPad Sidebar Tap)): the detail is the Summary by default and
-    /// on "All accounts", else only the tapped account; with one account (no Summary) that account.
-    @MainActor @Test func theIPadShowsTheSummaryOrOneAccount() {
+    /// Robin's layout (2026-11-02, superseding CCBG-67 (iPad Sidebar Tap)), kept by the native tabs ("Native
+    /// everywhere"): the selected tab is the Summary by default and on "All", else only the tapped account; with one
+    /// account (no Summary) that account.
+    @MainActor @Test func theTabsShowTheSummaryOrOneAccount() {
         let keys = ["claude", "personal"]
-        #expect(IPadLandscape.shownKey(selectedKey: nil, accountKeys: keys, summaryShown: true) == nil)
-        #expect(IPadLandscape.shownKey(selectedKey: AppModel.summaryKey, accountKeys: keys, summaryShown: true) == nil)
-        #expect(IPadLandscape.shownKey(selectedKey: "claude", accountKeys: keys, summaryShown: true) == "claude")
-        #expect(IPadLandscape.shownKey(selectedKey: "personal", accountKeys: keys, summaryShown: true) == "personal")
-        #expect(IPadLandscape.shownKey(selectedKey: "gone", accountKeys: keys, summaryShown: true) == nil)
-        #expect(IPadLandscape.shownKey(selectedKey: nil, accountKeys: ["claude"], summaryShown: false) == "claude")
+        #expect(MainTabs.shownKey(selectedKey: nil, accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: AppModel.summaryKey, accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: "claude", accountKeys: keys, summaryShown: true) == "claude")
+        #expect(MainTabs.shownKey(selectedKey: "personal", accountKeys: keys, summaryShown: true) == "personal")
+        #expect(MainTabs.shownKey(selectedKey: "gone", accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: nil, accountKeys: ["claude"], summaryShown: false) == "claude")
+        #expect(MainTabs.shownKey(selectedKey: AppModel.summaryKey, accountKeys: ["claude"], summaryShown: false) == "claude")
     }
 
     /// CCBG-72 (Live Activity Stale Mode): a Usage display change makes a new content state, which iOS redraws.

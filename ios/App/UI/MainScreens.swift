@@ -2,8 +2,9 @@ import CooldownCore
 import SwiftUI
 import UserNotifications
 
-/// CCRM-94 (iOS App): the app's entry and the main screens of wireframe rev B — iPhone tabs (§1), the iPad (§2; since
-/// 2026-11-02 the Summary and one account at a time, no pinned account), and the first-launch screen.
+/// CCRM-94 (iOS App): the app's entry and the main screens of wireframe rev B — iPhone (§1), the iPad (§2; since
+/// 2026-11-02 the Summary and one account at a time, no pinned account), and the first-launch screen. Since 2026-11-02
+/// ("Native everywhere") both run on one system `TabView` (`MainTabs`).
 @main
 struct CooldownApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
@@ -78,49 +79,26 @@ enum Sheet: String, Identifiable {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.palette) private var p
     @State private var sheet: Sheet?
-    @State private var showHistory = false
+    /// The tab whose navigation stack shows History (each tab has its own stack), nil when none does.
+    @State private var historyKey: String?
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if model.accounts.isEmpty {
+        Group {
+            if model.accounts.isEmpty {
+                NavigationStack {
                     EmptyStateView(sheet: $sheet)
-                } else if sizeClass == .regular {
-                    GeometryReader { geo in
-                        if geo.size.width > geo.size.height && geo.size.width >= 1000 {
-                            IPadLandscape(sheet: $sheet)
-                        } else {
-                            IPadTabs(width: geo.size.width, sheet: $sheet)
+                        .background(p.bg.ignoresSafeArea())
+                        .tint(p.ink)
+                        .navigationDestination(isPresented: Binding(get: { historyKey != nil },
+                                                                    set: { if !$0 { historyKey = nil } })) {
+                            HistoryScreen()
                         }
-                    }
-                } else {
-                    PhoneMain(sheet: $sheet)
                 }
+            } else {
+                MainTabs(sheet: $sheet, historyKey: $historyKey)
             }
-            // A display choice changed in Settings: redraw with it.
-            .id(model.displayStamp)
-            .background(p.bg.ignoresSafeArea())
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    if !model.accounts.isEmpty {
-                        Button { showHistory = true } label: { Image(systemName: "calendar") }
-                            .accessibilityLabel("Usage history")
-                        Button { sheet = .settings } label: { Image(systemName: "gearshape") }
-                            .accessibilityLabel("Settings")
-                        Menu {
-                            Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.refresh(manual: true) } }
-                            Button("Layout", systemImage: "rectangle.3.group") { sheet = .layout }
-                            Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
-                            Button("Add account", systemImage: "plus") { sheet = .addAccount }
-                        } label: { Image(systemName: "ellipsis.circle") }
-                    }
-                }
-            }
-            .tint(p.ink)
-            .navigationDestination(isPresented: $showHistory) { HistoryScreen() }
         }
         .sheet(item: $sheet) { which in
             Group {
@@ -147,7 +125,8 @@ struct RootView: View {
         guard let i = args.firstIndex(of: "-screen"), i + 1 < args.count else { return }
         switch args[i + 1] {
         case "settings": sheet = .settings
-        case "history": showHistory = true
+        // The accounts may not be loaded yet, so History opens on whichever tab ends up selected.
+        case "history": historyKey = MainTabs.currentTab
         case "addAccount": sheet = .addAccount
         case "claude": sheet = .claudeSignIn
         case "chatgpt": sheet = .chatGPTSignIn
@@ -175,7 +154,8 @@ struct AppTitle: View {
     }
 }
 
-/// The account tabs: mark + name, underline in the selected account's accent.
+/// The account tabs: mark + name, underline in the selected account's accent. Since 2026-11-02 ("Native everywhere")
+/// only History's account picker uses this strip; the main screen's tabs are the system `TabView` (`MainTabs`).
 struct AccountTabs: View {
     let accounts: [Account]
     @Binding var selected: String?
@@ -252,214 +232,140 @@ struct Footer: View {
     }
 }
 
-/// iPhone (and iPad Split View narrower than ~700 pt): one account per screen, tabs on top, swipe between.
-struct PhoneMain: View {
+/// The main screen ("Native everywhere", Robin 2026-11-02): one system `TabView` in the sidebar-adaptable style, so
+/// iOS draws its own Liquid Glass chrome — the tab bar at the bottom on iPhone (with the system's More past five
+/// tabs), the floating tab bar at the top in iPad portrait, the sidebar in iPad landscape (which the user can collapse
+/// into the tab bar). Tabs: "All" first (CCRM-98 (Summary Tab), two or more accounts), then the accounts in Settings ›
+/// Account order. The selection is `AppModel.selectedKey`, so deep links, `-tab`, reset alerts and "Open on the
+/// summary" pick the tab exactly as before. The chrome is the system's: never restyled, no hand-drawn glass.
+struct MainTabs: View {
     @Environment(AppModel.self) private var model
-    @Binding var sheet: Sheet?
-
-    var body: some View {
-        @Bindable var model = model
-        VStack(spacing: 0) {
-            AppTitle().frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 16).padding(.bottom, 4)
-            let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
-            AccountTabs(accounts: model.accounts, selected: $model.selectedKey, showsAll: showsAll)
-            TabView(selection: $model.selectedKey) {
-                if showsAll {
-                    ScrollView {
-                        VStack(spacing: 12) {
-                            SummaryView()
-                            Footer()
-                        }
-                        .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 24)
-                    }
-                    .refreshable { await model.refresh(manual: true) }
-                    .tag(Optional(AppModel.summaryKey))
-                }
-                ForEach(model.accounts) { account in
-                    ScrollView {
-                        VStack(spacing: 12) {
-                            AccountCards(account: account, onSignIn: { signIn(account) })
-                            Footer()
-                        }
-                        .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 24)
-                    }
-                    .refreshable { await model.refresh(manual: true) }
-                    .tag(Optional(account.key))
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-        }
-    }
-
-    private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
-}
-
-/// iPad landscape (Robin, 2026-11-02: "drop the 'pinned' account … make the summary/all as the default one … only on tap
-/// of the individual account, we'll show the details as we have the whole space"): the sidebar is "All accounts" (the
-/// Summary, where the app opens per "Open on the summary") and one row per account; the detail shows the Summary or
-/// only the tapped account, full width. No pinned half, no pin hint or menu; the stored pinned flag is left unread.
-struct IPadLandscape: View {
-    @Environment(AppModel.self) private var model
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.palette) private var p
-    @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
-    /// CCRM-103 (Hybrid Notification) rev D I2: the row's figure is always the Weekly and its ring always the 5h, so the
-    /// Headline · Weekly · 5h switch (CCRM-96 (Weekly First) rev B) has nothing left to pick and is gone; its stored
-    /// "sidebarWindow" value is left unread.
+    @Binding var historyKey: String?
+    @State private var window: CGSize = .zero
 
-    var body: some View {
-        let shown = Self.shownKey(selectedKey: model.selectedKey, accountKeys: model.accounts.map(\.key),
-                                  summaryShown: SummaryRank.tabShown(accountCount: model.accounts.count))
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                AppTitle(size: 30).padding(.horizontal, 18).padding(.bottom, 10)
-                if SummaryRank.tabShown(accountCount: model.accounts.count) { allRow(on: shown == nil) }
-                ForEach(model.accounts) { account in sidebarRow(account, selected: account.key == shown) }
-                Spacer()
-                Footer().padding(.horizontal, 22).padding(.bottom, 16)
-            }
-            .frame(width: 300)
-            .background(scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9))
-            .overlay(alignment: .trailing) { Rectangle().fill(p.line).frame(width: 1) }
-            GeometryReader { geo in
-                ScrollView {
-                    VStack(spacing: 12) {
-                        if let key = shown, let account = model.account(key) {
-                            page(account, width: geo.size.width - 40)
-                        } else {
-                            Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
-                            SummaryView(wide: true)
-                        }
-                    }
-                    .padding(20)
-                }
-                .refreshable { await model.refresh(manual: true) }
-                // A new page starts at its top.
-                .id(shown ?? AppModel.summaryKey)
-            }
-        }
+    /// `historyKey` for "open History on whichever tab is selected" (the `-screen history` launch argument).
+    static let currentTab = "__current__"
+
+    /// iPad landscape (today's rule): the sidebar shows, and carries the app title.
+    private var sidebarLayout: Bool {
+        sizeClass == .regular && window.width > window.height && window.width >= 1000
     }
 
-    /// The detail: nil = the Summary — chosen, or by default (no account chosen yet) when it is shown at all; else the
-    /// chosen account, or the first one when there is no Summary (one account).
+    var body: some View {
+        let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
+        let keys = model.accounts.map(\.key)
+        let selection = Binding<String>(
+            get: { Self.shownKey(selectedKey: model.selectedKey, accountKeys: keys, summaryShown: showsAll)
+                ?? AppModel.summaryKey },
+            set: { model.selectedKey = $0 })
+        TabView(selection: selection) {
+            if showsAll {
+                Tab("All", systemImage: "text.alignleft", value: AppModel.summaryKey) {
+                    stack(AppModel.summaryKey, selected: selection.wrappedValue) {
+                        TabPage(account: nil, showsTitle: !sidebarLayout, sheet: $sheet)
+                    }
+                }
+            }
+            ForEach(model.accounts) { account in
+                // The provider mark is a 24 × 24 template SVG in the asset catalog, so the system tab bar and sidebar
+                // draw it like a symbol, in their own tint.
+                Tab(account.label, image: account.provider.markAsset, value: account.key) {
+                    stack(account.key, selected: selection.wrappedValue) {
+                        TabPage(account: account, showsTitle: !sidebarLayout, sheet: $sheet)
+                    }
+                }
+            }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+        .tabViewSidebarHeader { AppTitle(size: 30) }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { window = $0 }
+    }
+
+    /// The tab's content: chosen, or by default (no account chosen yet) the Summary — nil — when it is shown at all;
+    /// else the chosen account, or the first one when there is no Summary (one account).
     nonisolated static func shownKey(selectedKey: String?, accountKeys: [String], summaryShown: Bool) -> String? {
         if let selectedKey, accountKeys.contains(selectedKey) { return selectedKey }
         return summaryShown ? nil : accountKeys.first
     }
 
-    /// One account's page, the detail's full width.
-    private func page(_ account: Account, width: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            AccountHeader(account: account)
-            AccountCards(account: account, twoAcross: true, cardWidth: max(396, width),
-                         onSignIn: { sheet = Sheet.signIn(for: account.provider) })
+    /// Each tab keeps its own navigation stack (Apple's tab pattern), with the toolbar RootView had and History.
+    private func stack<Content: View>(_ key: String, selected: String,
+                                      @ViewBuilder _ content: () -> Content) -> some View {
+        NavigationStack {
+            content()
+                // A display choice changed in Settings: redraw with it.
+                .id(model.displayStamp)
+                .background(p.bg.ignoresSafeArea())
+                .toolbar { toolbar(key) }
+                .tint(p.ink)
+                .navigationDestination(isPresented: Binding(
+                    get: { historyKey == key || (historyKey == Self.currentTab && key == selected) },
+                    set: { if !$0 { historyKey = nil } })) { HistoryScreen() }
         }
     }
 
-    /// CCRM-98 (Summary Tab) W2: "All accounts" tops the sidebar, with the account count instead of a figure.
-    private func allRow(on: Bool) -> some View {
-        Button { model.selectedKey = AppModel.summaryKey } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "text.alignleft").font(.system(size: 17, weight: .semibold)).frame(width: 22)
-                Text("All accounts").font(.system(size: 16, weight: on ? .semibold : .regular))
-                Spacer()
-                Text("\(model.accounts.count)").font(.system(size: 15)).foregroundStyle(p.sub)
-            }
-            .padding(.horizontal, 12).padding(.vertical, 10)
-            .background(on ? p.fill : .clear, in: RoundedRectangle(cornerRadius: 10))
-            .contentShape(Rectangle())
+    @ToolbarContentBuilder
+    private func toolbar(_ key: String) -> some ToolbarContent {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            Button { historyKey = key } label: { Image(systemName: "calendar") }
+                .accessibilityLabel("Usage history")
+            Button { sheet = .settings } label: { Image(systemName: "gearshape") }
+                .accessibilityLabel("Settings")
+            Menu {
+                Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.refresh(manual: true) } }
+                Button("Layout", systemImage: "rectangle.3.group") { sheet = .layout }
+                Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
+                Button("Add account", systemImage: "plus") { sheet = .addAccount }
+            } label: { Image(systemName: "ellipsis.circle") }
         }
-        .buttonStyle(.plain).foregroundStyle(p.ink).padding(.horizontal, 10)
-    }
-
-    /// CCRM-103 rev D I2 (`sideRow`): the 5h ring (40 pt; greyed while the week is spent, a cross for a plan with no 5h,
-    /// so the names line up), the mark and name over a 4 pt Weekly bar, the Weekly figure.
-    private func sidebarRow(_ account: Account, selected: Bool) -> some View {
-        let usage = model.usage(account.key)
-        let session = usage?.session
-        let pct = usage?.weekly?.percent
-        let pace = usage?.weekly?.resetsAtMs.flatMap {
-            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.weekMs, nowMs: model.nowMs)
-        }
-        // As the faces read it (`Face.build`): a 5h with no reset clock yet reads 0%.
-        let fivePct = session.map { $0.resetsAtMs == nil ? 0 : ($0.percent ?? 0) }
-        let fivePace = session?.resetsAtMs.flatMap {
-            Fmt.elapsedPercent(resetsAtMs: $0, windowLengthMs: HistoryStats.sessionMs, nowMs: model.nowMs)
-        }
-        let ringState: GrammarRing.State = session == nil ? .notApplicable : Pace.isSpent(pct) ? .grey : .normal
-        let accent = account.accent(scheme)
-        let surface = scheme == .dark ? Color(hex: 0x161617) : Color(hex: 0xF7F7F9)
-        return Button { model.selectedKey = account.key } label: {
-            HStack(spacing: 10) {
-                GrammarRing(pct: fivePct, pace: fivePace, accent: accent,
-                            figure: session == nil ? nil : Display.number(fivePct, pace: fivePace),
-                            figureColour: ringState == .normal && Display.isDistance(fivePct, pace: fivePace)
-                                ? Display.figureColour(fivePct, pace: fivePace, ink: p.ink, usage: p.ink, scheme) : nil,
-                            state: ringState, surface: surface)
-                    .frame(width: 40, height: 40)
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack(spacing: 6) {
-                        ProviderMark(provider: account.provider, size: 16)
-                        Text(account.label).font(.system(size: 16, weight: selected ? .semibold : .regular))
-                            .lineLimit(1).layoutPriority(1)
-                        // CCBG-68 (iPad Plan Chip Wrap): the chip stays on one line, and gives way to the name — shown
-                        // whole when it fits beside it, else left out (never "Team / Premiu / m", never "C…").
-                        ViewThatFits(in: .horizontal) {
-                            PlanChip(plan: model.states[account.key]?.plan).lineLimit(1).fixedSize()
-                            Color.clear.frame(width: 0, height: 0)
-                        }
-                    }
-                    GrammarBar(pct: pct, pace: pace, accent: accent, height: 4, showsRoom: false, surface: surface)
-                }
-                Display.grammarFigure(Display.number(pct, pace: pace), size: 16)
-                    .foregroundStyle(Display.figureColour(pct, pace: pace, ink: p.ink,
-                                                          usage: pct == nil ? p.sub : p.severity(pct, accent: accent), scheme))
-                    .lineLimit(1).minimumScaleFactor(0.8)
-                    .frame(minWidth: 40, alignment: .trailing)
-            }
-            .padding(.horizontal, 12).padding(.vertical, 10)
-            .background(selected ? accent.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 10))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(p.ink)
-        .padding(.horizontal, 10)
     }
 }
 
-/// iPad portrait and Split View wider than ~700 pt: the phone's model (Robin, 2026-11-02) — tabs for All and every
-/// account, one page at a time, the Summary by default; no pinned section.
-struct IPadTabs: View {
+/// One tab's page: the Summary (`account` nil) or one account. On a regular width of 700 pt or more (iPad, and iPad
+/// Split View that wide) an account is the full-width page — `AccountHeader` over the cards two across — and the
+/// Summary goes wide from 900 pt; narrower (iPhone, narrow Split View) it is the phone's page. The app title tops the
+/// page except where the sidebar carries it (iPad landscape), where the Summary is headed "All accounts" instead.
+struct TabPage: View {
     @Environment(AppModel.self) private var model
-    let width: CGFloat
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    let account: Account?
+    let showsTitle: Bool
     @Binding var sheet: Sheet?
+    @State private var width: CGFloat = 0
+
+    /// Before the first measurement the size class alone decides.
+    private var iPad: Bool { sizeClass == .regular && (width == 0 || width >= 700) }
 
     var body: some View {
-        if width < 700 {
-            PhoneMain(sheet: $sheet)
-        } else {
-            let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
-            let shown = IPadLandscape.shownKey(selectedKey: model.selectedKey, accountKeys: model.accounts.map(\.key),
-                                               summaryShown: showsAll)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    AppTitle()
-                    AccountTabs(accounts: model.accounts,
-                                selected: Binding(get: { shown ?? AppModel.summaryKey }, set: { model.selectedKey = $0 }),
-                                showsAll: showsAll)
-                        .padding(.horizontal, -22)
-                    if let key = shown, let account = model.account(key) {
-                        AccountHeader(account: account)
-                        AccountCards(account: account, twoAcross: true, cardWidth: 356, onSignIn: { signIn(account) })
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                if showsTitle { AppTitle().frame(maxWidth: .infinity, alignment: .leading) }
+                if let account {
+                    if iPad {
+                        VStack(alignment: .leading, spacing: 10) {
+                            AccountHeader(account: account)
+                            AccountCards(account: account, twoAcross: true, cardWidth: max(396, width - 40),
+                                         onSignIn: { signIn(account) })
+                        }
                     } else {
-                        SummaryView(wide: width >= 900)
+                        AccountCards(account: account, onSignIn: { signIn(account) })
                     }
-                    Footer()
+                } else {
+                    if !showsTitle {
+                        Text("All accounts").font(.system(size: 30, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    SummaryView(wide: iPad && width >= 900)
                 }
-                .padding(.horizontal, 22).padding(.vertical, 10)
+                Footer()
             }
-            .refreshable { await model.refresh(manual: true) }
+            .padding(.horizontal, iPad ? 20 : 16).padding(.top, 4).padding(.bottom, 24)
         }
+        .refreshable { await model.refresh(manual: true) }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 
     private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }

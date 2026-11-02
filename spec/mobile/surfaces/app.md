@@ -905,3 +905,58 @@ the rank number on a one-line row and the Pace map's labels follow the list's or
 unaffected; widgets that list accounts (Android Strip, iOS Overview) keep their own order (`SummaryRank.ordered`,
 BEHAVIOR-MOBILE §6).
 
+### Native tabs on iPhone and iPad (Robin, 2026-11-02, "Native everywhere"; `ios/App/UI/MainScreens.swift`)
+
+Supersedes the custom tab strip and the custom iPad sidebar described above (§1 iPad rows, the iPad sidebar
+sections, and the "Summary and one account at a time" layout, whose selection rule it keeps).
+
+
+- **One `TabView`** (`MainTabs`) with `.tabViewStyle(.sidebarAdaptable)` and the iOS 18 `Tab` API (deployment target
+  iOS 18.0). Built with Xcode 27.2, so the chrome is Liquid Glass with no styling of our own: no tint, background or
+  glass is set on the tab bar or sidebar.
+  - **iPhone:** the Liquid Glass tab bar at the bottom. Past five tabs the system adds **More**.
+  - **iPad portrait (and Split View):** the floating Liquid Glass tab bar at the top.
+  - **iPad landscape:** the native sidebar, which the user can collapse into the tab bar. It replaces the custom
+    300 pt sidebar.
+- **Tabs, in order:** **All** (SF Symbol `text.alignleft`, only with two or more accounts, `SummaryRank.tabShown`),
+  then one tab per account in `model.accounts` order (Settings › Account order). Each account tab shows the provider
+  mark and the account label.
+  - **Tab icon:** the provider mark's asset (`ClaudeMark` / `ChatGPTMark` / `GeminiMark`, 24 × 24 template SVGs) via
+    `Tab(_:image:value:)`. The system draws it in its own tint (selected or unselected), **not the account accent**.
+    Claude's 82 % optical scale from `ProviderMark` doesn't apply there.
+  - **Sidebar rows** show the mark and name only. The per-row 5h ring, Weekly bar, Weekly figure and plan chip are
+    gone (Robin accepted this). The "All accounts" row is now titled **All**, with no account count.
+- **Selection:** `AppModel.selectedKey` (`AppModel.summaryKey` for All). The rule stays the pure helper
+  `MainTabs.shownKey` (was `IPadLandscape.shownKey`, tests in `CardLayoutTests.theTabsShowTheSummaryOrOneAccount`):
+  the chosen tab, else All where it shows, else the first account. The following all set the selection as before:
+  deep links (`DeepLink.key`), the `-tab` launch argument, reset-alert taps, `launchKey` ("Open on the summary") and
+  `validSelection`.
+- **Each tab has its own `NavigationStack`** with today's toolbar (History, Settings, the ⋯ menu: Refresh, Layout,
+  Share card, Add account). History is pushed on the tab it was opened from. `-screen history` opens it on whichever
+  tab is selected.
+- **Page content (`TabPage`):**
+  - **Regular width ≥ 700 pt (iPad):** an account is the full-width page, `AccountHeader` over
+    `AccountCards(twoAcross: true, cardWidth: max(396, width − 40))`, 20 pt side margins. The Summary is
+    `SummaryView(wide:)` from 900 pt.
+  - **Narrower (iPhone, narrow Split View):** the phone page, `AccountCards` with 16 pt margins.
+  - Every page has `.refreshable` and the `Footer` at the end.
+  - **App title** (`AppTitle`, 34 pt) tops every page, except in iPad landscape (regular, wider than tall,
+    ≥ 1000 pt). There the sidebar header carries it (`tabViewSidebarHeader`, 30 pt) and the Summary page is headed
+    "All accounts" (30 pt bold), as before.
+- **Unchanged:** the empty state (`EmptyStateView`, in its own stack, no tabs), the sign-in and other sheets, and the
+  one-account case (no All tab, so one tab).
+- **Removed:** `PhoneMain`, `IPadTabs`, `IPadLandscape` (the custom sidebar, its rows and the All row).
+  `AccountTabs` **stays**: History's account picker (`SettingsHistory.swift`) still uses it.
+
+#### Visible consequences, listed for Robin (2026-11-02)
+
+1. **iPhone loses the swipe between accounts** (the old page-style `TabView`). Native tabs switch only by tapping.
+2. **Tab icons follow the system tint**, not the provider accent (the custom strip coloured the selected underline in
+   the account accent).
+3. **The All tab's title is "All"** in both the tab bar and the sidebar. The old sidebar row said "All accounts" with
+   the account count, and the old strip's VoiceOver label said "All accounts".
+4. **Collapsing the sidebar in iPad landscape** leaves no app title on screen: the landscape rule is by window shape,
+   not by whether the sidebar is open.
+5. **iPhone past five tabs (four or more accounts plus All):** the extra accounts sit under the system's More list.
+6. **iPhone page top:** the title is now the first row of the scrolling page (top padding 4 pt), under the navigation
+   bar. It no longer sits above a fixed tab strip.

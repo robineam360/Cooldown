@@ -333,4 +333,9 @@ weekly.
   once used, a spent week, a refresh after an hour.
 - **2026-11-02 · Summary order** (Robin's four choices): Appearance › Summary order on both platforms, `summaryOrder`
   additive and downgrade-tested, `fixtures/summary/cases.json` → `order` (family layer).
+- **2026-11-02 · Native tabs** (Robin, "Native everywhere"): one `TabView` with `.sidebarAdaptable` replaces the
+  custom tab strip and iPad sidebar (built by a delegated Opus builder; simulator check: the Liquid Glass bar at the
+  bottom on iPhone 17 Pro, floating at the top with the sidebar toggle on iPad Pro 13″ portrait). Consequences listed
+  for Robin in app.md: no swipe between accounts on iPhone, system-tinted tab icons, "All" not "All accounts", More
+  past five tabs on iPhone, no title with the landscape sidebar collapsed.
 
