@@ -1689,6 +1689,24 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Done when:** the spec section and fixtures are in, both apps pass them, the wording is on every surface
   per the approved wireframes, and no surface still shows the gap verdict.
 
+### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
+- **Status:** Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
+  rev A `design/2026-11-02-summary-tab.html` awaiting approval. Pulls the "Use next" ranking that
+  CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.
+- **Decisions:** (1) an **"All" tab first** in the account tabs (iPad: an "All accounts" row at the
+  top of the sidebar); with 2+ accounts the app opens on it, and Settings › Appearance › "Open on the
+  summary" (on by default) turns that off. (2) **Use next = the most unused quota for its time
+  left**: rank eligible accounts by weekly Pace (BEHAVIOR-SPEC §6.1), lowest first, tie to the
+  earlier reset; an account whose 5h binds (§6.2), whose week is spent or with no reading is not
+  eligible and sorts after, with its reason. (3) A **Pace map**: one plot of every account against
+  its own week (across = share of its week gone, up = % used, the even-pace diagonal), each account
+  its accent dot with this week's trail.
+- **What:** the Use next card, the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
+  allowance · reset day, the 5h companion), the Pace map; one-line rows and numbered dots from six
+  accounts; two columns on the Fold inner screen and iPad. Never a summed or combined figure.
+- **Spec:** BEHAVIOR-MOBILE gains the ranking and the toggle, with `fixtures/summary/cases.json`.
+- **Done when:** the wireframe is approved, both apps match it, and the ranking fixtures pass.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases

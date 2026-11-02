@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Summary Tab Wireframe</title>
+<!-- CCRM-98 (Summary Tab), rev A, 2026-11-02. Wireframe for Robin's approval (CLAUDE.md §2), built on
+     CCRM-96 (Weekly First) / CCRM-97 (Pace Number) rev A (approved). 1 CSS px = 1 dp (Android) / 1 pt (iOS).
+     Every number comes from the fixtures in the script, computed with BEHAVIOR-SPEC §6.1–6.2. -->
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63; }
+  }
+  :root[data-theme="dark"] { --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980; --hair: #2C2825; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+  h2 { font-size: 19px; font-weight: 650; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  .lede, .sub { color: var(--muted); max-width: 84ch; font-size: 13.5px; margin: 0 0 14px; }
+  .lede b, .sub b, .note b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.good { color: var(--good); } .cap.warn { color: var(--warn); } .cap.bad { color: var(--bad); }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+  .col { flex: 0 1 435px; min-width: 0; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 435px; margin: 10px 0 0; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; max-width: 1000px; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  ol.dec { font-size: 13.5px; max-width: 86ch; padding-left: 22px; } ol.dec li { margin: 0 0 8px; }
+
+  /* ---------- the app, dark (Fold 7 cover 411 dp) ---------- */
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 18px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; --card: #232120; --tx: #E6E1DE; --mu: #A7A19C; --tr: #3A3532; --hl: #EDE8E4; }
+  .phone.inner { width: 760px; }
+  .phone.light { background: #F5EFE8; color: #2A2420; border-color: #DDD3CA; --card: #FCF8F4; --tx: #2A2420; --mu: #6E6660; --tr: #E2D8CF; --hl: #1F1A17; }
+  .phone.ios { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; border-radius: 44px; padding-top: 18px; }
+  .tabs { display: flex; border-bottom: 1px solid #3a3a3a; margin: 0 -16px 14px; font-size: 15px; overflow: hidden; white-space: nowrap; }
+  .phone.light .tabs { border-color: #DDD3CA; }
+  .tabs span { flex: 0 0 auto; padding: 8px 16px 9px; color: #9C9894; display: flex; gap: 6px; align-items: center; }
+  .tabs.fixed span { flex: 1; justify-content: center; padding: 8px 0 9px; }
+  .tabs span.on { color: var(--hl); border-bottom: 3px solid #CFC9C4; }
+  .card { background: var(--card); border-radius: 18px; padding: 14px 14px 12px; margin: 0 0 10px; }
+  .ch { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
+  .ch .tt { font-size: 15.5px; } .ch .st { font-size: 12.5px; color: var(--mu); margin-left: auto; }
+  .bar { position: relative; height: 10px; border-radius: 5px; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: 5px; }
+  .bar > o { border-radius: 0 5px 5px 0; }
+  .bar > s { position: absolute; top: -3px; bottom: -3px; width: 2.5px; border-radius: 2px; }
+  .pill { font-size: 11px; border: 1px solid var(--tr); color: var(--mu); border-radius: 6px; padding: 0 5px; line-height: 16px; }
+  .fig { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ipad .fig, .phone.ios .fig { font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; }
+
+  /* use-next card */
+  .next { border: 1.5px solid; }
+  .next .eb { font-size: 11px; letter-spacing: .1em; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
+  .next .who { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+  .next .who .nm { font-size: 21px; font-weight: 600; }
+  .next .who .open { margin-left: auto; font-size: 13px; color: var(--mu); }
+  .next .big { font-size: 16px; font-weight: 600; margin: 0 0 2px; }
+  .next .why { font-size: 12.5px; color: var(--mu); margin: 6px 0 0; }
+
+  /* list rows */
+  .lr { padding: 9px 0 10px; border-top: 1px solid var(--tr); }
+  .lr:first-of-type { border-top: 0; padding-top: 2px; }
+  .lr .l1 { display: flex; align-items: center; gap: 7px; margin: 0 0 6px; white-space: nowrap; }
+  .lr .l1 .nm { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+  .lr .l1 .fig { margin-left: auto; font-size: 17px; }
+  .lr .l3 { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 13px; white-space: nowrap; }
+  .lr .l3 .w { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .lr .c5 { font-size: 12px; color: var(--mu); flex: 0 0 auto; margin-left: 2px; }
+  .lr.dim .l1, .lr.dim .bar, .lr.dim .l3 .w { opacity: .5; }
+  .lr.compact { padding: 7px 0; }
+  .lr.compact .l1 { margin: 0; gap: 7px; }
+  .lr.compact .bar { height: 8px; }
+  .lr.compact .wd { font-size: 12.5px; flex: 0 0 90px; overflow: hidden; text-overflow: ellipsis; }
+  .rk { display: inline-flex; width: 17px; height: 17px; border-radius: 50%; font-size: 10.5px; font-weight: 700; align-items: center; justify-content: center; color: #121212; flex: 0 0 auto; }
+  .foot { font-size: 13px; color: var(--mu); margin: 6px 2px 0; }
+
+  /* settings */
+  .set { width: 411px; background: #121212; border-radius: 26px; padding: 18px 16px; border: 1px solid #2A2C31; font-family: Roboto, Arial, sans-serif; color: #E6E1DE; }
+  .set .h { font-size: 20px; margin: 0 0 12px; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .it .d { font-size: 12.5px; color: #A7A19C; margin-top: 2px; }
+  .sw { width: 46px; height: 26px; border-radius: 13px; background: #E59980; position: relative; flex: 0 0 auto; margin-left: auto; }
+  .sw::after { content: ""; position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #3B1F15; }
+
+  /* iPad */
+  .ipad { width: 1194px; height: 834px; background: #0E0E0E; border-radius: 30px; border: 1px solid #2A2C31; display: flex; overflow: hidden; font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; color: #E6E1DE; --card: #1C1C1E; --tx: #F2F2F2; --mu: #98989F; --tr: #38383A; --hl: #F2F2F2; }
+  .ipad .side { width: 300px; background: #161618; padding: 22px 14px; border-right: 1px solid #2c2c2e; flex: 0 0 auto; }
+  .ipad .side h4 { font-size: 30px; font-weight: 700; margin: 0 0 14px 6px; }
+  .ipad .sr { display: flex; align-items: center; gap: 9px; padding: 9px 8px; border-radius: 10px; font-size: 16px; }
+  .ipad .sr.on { background: rgba(207,201,196,.16); }
+  .ipad .sr .p { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ipad .main { flex: 1; padding: 26px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start; }
+  .ipad .main h5 { grid-column: 1 / -1; font-size: 28px; font-weight: 700; margin: 0; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol>
+<symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol>
+<symbol id="mkAll" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="3" rx="1.5" fill="currentColor"/><rect x="3" y="10.5" width="12" height="3" rx="1.5" fill="currentColor"/><rect x="3" y="16" width="15" height="3" rx="1.5" fill="currentColor"/></symbol>
+</defs></svg>
+
+<div class="page">
+  <p class="eyebrow">CCRM-98 (Summary Tab) · rev A · 2026-11-02 · Android and iPhone/iPad</p>
+  <h1>Summary: every account's week on one page, and which to use next</h1>
+  <p class="lede">
+    Your three answers: an <b>"All" tab first</b>, opened at launch when there are two or more accounts (a toggle
+    turns that off); <b>"Use next"</b> picks the account with the most unused quota for its time left, skipping
+    any whose 5h is binding or whose week is spent; and a <b>Pace map</b>, which plots every account against its
+    own week on a single chart. Everything reuses CCRM-97 (Pace Number): the same bands, the same words and the
+    same allowance. The pace tick on each bar is neutral ink, the existing rule for any face that shows more than
+    one account.
+  </p>
+  <p class="lede">Fixtures: Wednesday 2:50 pm. <b>Teams</b> (Claude Max), Weekly 52%, Sun 9:30 pm, 5h 34% ·
+    <b>Product</b> (Claude Pro, blue accent), Weekly 30%, resets Fri 1:50 pm, <b>5h 93%, back 3:40 pm</b> ·
+    <b>Personal</b> (ChatGPT Pro, no 5h), Weekly 50%, resets Fri 10:18 pm · <b>Side</b> (Claude Pro, purple),
+    <b>spent</b>, back Thu 8:00 am.</p>
+
+  <h2>1 · The rule, in one table</h2>
+  <ol class="dec">
+    <li><b>Eligible</b>: a reading exists, the week is not spent, and the 5h is not binding (BEHAVIOR-SPEC §6.2).</li>
+    <li><b>Ranked</b> by weekly Pace, lowest first: the most quota that would otherwise go unused. A tie goes to the earlier reset. The first eligible account is <b>Use next</b>.</li>
+    <li><b>Then the rest</b>, in this order: held by a binding 5h (soonest back first), spent (soonest reset first), no reading.</li>
+    <li>When a held account would rank above Use next, the card says so: "Product has more to spare once its 5h is back at 3:40 pm."</li>
+    <li><b>Nobody eligible</b>: the card names the soonest way back instead of a pick.</li>
+  </ol>
+  <table id="rank"><tr><th>Order</th><th>Account</th><th>Weekly</th><th>Week gone</th><th>Pace</th><th>Status</th></tr></table>
+
+  <hr class="hr">
+  <h2>2 · Fold cover (411 dp) · four accounts</h2>
+  <p class="sub">Top to bottom: the <b>Use next</b> card, the <b>Weekly</b> list in rank order, then the <b>Pace map</b>.
+    Tapping the card or a row opens that account's tab. The tab row scrolls from four tabs, as today, and
+    "All" counts as one.</p>
+  <div class="row" id="cover"></div>
+
+  <h3>What each list row is made of</h3>
+  <table>
+    <tr><th>Line</th><th>Content</th><th>Size</th></tr>
+    <tr><td>1</td><td>provider mark in the account accent · name · plan pill · weekly figure (severity colour)</td><td>mark 18, name 15 sp, pill 11 sp, figure 17 sp serif</td></tr>
+    <tr><td>2</td><td>the Weekly bar: accent fill, neutral pace tick, red past the tick when that toggle is on</td><td>10 dp, as the cards</td></tr>
+    <tr><td>3</td><td><b>pace pip</b> (a 40 dp scale with a centre mark; the dot sits at the account's Pace, so a column of rows reads left = room, right = over) · band · allowance · reset day · 5h companion on the right</td><td>13 sp; companion 12 sp</td></tr>
+  </table>
+  <p class="sub">The pip is the only new mark. Its dot is green-grey under pace, neutral on pace, amber over and
+    red when nearly out. It is in-app only, never on the always-on surfaces.</p>
+
+  <hr class="hr">
+  <h2>3 · The states</h2>
+  <div class="row" id="states"></div>
+
+  <hr class="hr">
+  <h2>4 · Wide: Fold inner (760 dp) and iPad</h2>
+  <p class="sub">Two columns: the card and the list on the left, a larger map on the right. On iPad the sidebar gains
+    an <b>All accounts</b> row at the top, above the pinned account; it shows the account count instead of a percentage.</p>
+  <div class="scroll" id="inner"></div>
+  <div class="scroll" id="ipad" style="margin-top:26px"></div>
+
+  <hr class="hr">
+  <h2>5 · iPhone (393 pt) and the setting</h2>
+  <div class="row" id="iphone"></div>
+
+  <hr class="hr">
+  <h2>6 · Spec and scope</h2>
+  <table>
+    <tr><th>Where</th><th>What</th></tr>
+    <tr><td><code>spec/core</code></td><td>Nothing new: the ranking uses §6.1's Pace and §6.2's <code>sessionBinding</code>.</td></tr>
+    <tr><td><code>spec/mobile</code></td><td>BEHAVIOR-MOBILE gains the Summary rule: when the tab exists (2+ accounts), the open-at-launch toggle (default on), the ranking and its tie-break, and the held/spent/no-reading order. Fixture <code>fixtures/summary/cases.json</code> holds rank orders and the card's sentence for each state.</td></tr>
+    <tr><td>Desktop (later)</td><td>Can reuse the ranking as-is; ModelMesh's worker picker already uses the same order.</td></tr>
+    <tr><td>Not in scope</td><td>A Summary widget, combined or summed figures (never, per CCRM-6 (Multi-Account)), and the 5h on the map.</td></tr>
+  </table>
+</div>
+
+<script>
+// ---------- maths (BEHAVIOR-SPEC §6.1-6.2) ----------
+function pace(u, g) { const q = 100 - u, r = 100 - g; if (q <= 0) return 100; if (r <= 0) return -100; return (r - q) / Math.max(r, q) * 100; }
+function band(u, g) { if (u >= 99.5) return 'Spent'; const p = pace(u, g); if (Math.abs(p) <= 5) return 'On pace'; if (p < -50) return 'Use before reset'; if (p < 0) return 'Room to spare'; if (p > 50) return 'Nearly out'; return 'Slow down'; }
+function allow(u, h) { const q = 100 - u; if (h < 24) return `${Math.round(q)}% left, ${Math.round(h)}h`; const d = q / (h / 24); return d < 1 ? '<1%/day' : `≈${Math.round(d)}%/day`; }
+const sev = (p, ac) => p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : ac;
+const CL = '#E59980', GP = '#19C39A', BL = '#8AB4F8', PU = '#CE93D8', TE = '#4DB6AC', AM = '#FDD663', PK = '#F48FB1';
+const mark = (id, c, s = 18) => `<svg width="${s}" height="${s}" style="color:${c};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+// accounts: name, mk, accent, plan, weekly used, week gone %, hours left, reset text, 5h (null = none), 5h back, trail seed
+const A = {
+  teams:    { nm: 'Teams', mk: 'mkClaude', ac: CL, plan: 'Max', u: 52, g: 38.9, h: 102.7, rs: 'Sun', rsl: 'Sun 9:30 pm', s5: 34 },
+  product:  { nm: 'Product', mk: 'mkClaude', ac: BL, plan: 'Pro', u: 30, g: 72.0, h: 47.0, rs: 'Fri', rsl: 'Fri 1:50 pm', s5: 93, back: '3:40 pm' },
+  personal: { nm: 'Personal', mk: 'mkGpt', ac: GP, plan: 'Pro', u: 50, g: 67.0, h: 55.5, rs: 'Fri', rsl: 'Fri 10:18 pm', s5: null },
+  side:     { nm: 'Side', mk: 'mkClaude', ac: PU, plan: 'Pro', u: 100, g: 89.8, h: 17.2, rs: 'Thu', rsl: 'Thu 8:00 am', s5: 0 },
+  lab:      { nm: 'Lab', mk: 'mkClaude', ac: TE, plan: 'Team', u: 20, g: 25.0, h: 126, rs: 'Mon', rsl: 'Mon 8:50 pm', s5: 5 },
+  design:   { nm: 'Design', mk: 'mkGpt', ac: AM, plan: 'Plus', u: 70, g: 55.0, h: 75.6, rs: 'Sat', rsl: 'Sat 6:25 pm', s5: 12 },
+  ops:      { nm: 'Ops', mk: 'mkClaude', ac: PK, plan: 'Max', u: null, g: 40, h: 100, rs: 'Sun', rsl: 'Sun 6:50 pm', s5: null },
+};
+const binding = a => a.s5 != null && a.s5 > 90 && !(a.u >= 99.5);
+function rank(keys) {
+  const L = keys.map(k => ({ k, ...A[k] }));
+  const elig = L.filter(a => a.u != null && a.u < 99.5 && !binding(a)).sort((x, y) => pace(x.u, x.g) - pace(y.u, y.g) || x.h - y.h);
+  const held = L.filter(a => a.u != null && a.u < 99.5 && binding(a));
+  const spent = L.filter(a => a.u != null && a.u >= 99.5).sort((x, y) => x.h - y.h);
+  const none = L.filter(a => a.u == null);
+  return { order: [...elig, ...held, ...spent, ...none], elig, held, spent, none };
+}
+
+// ---------- pieces ----------
+function bar(p, tick, ac, track) {
+  const col = sev(p, ac);
+  const red = p > tick ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:#FF5252"></o>` : '';
+  return `<div class="bar" style="background:${track}"><i style="width:${Math.min(p, 100)}%;background:${col}"></i>${red}<s style="left:${tick}%;background:var(--mu)"></s></div>`;
+}
+function pip(p) {
+  const x = 3 + 34 * (p + 100) / 200;
+  const c = Math.abs(p) <= 5 ? '#BDB8B3' : p < 0 ? '#8FBF9A' : p > 50 ? '#FF6B5B' : '#F2B45A';
+  return `<svg width="40" height="12" style="flex:0 0 auto" aria-hidden="true"><line x1="3" x2="37" y1="6" y2="6" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/><line x1="20" x2="20" y1="1.5" y2="10.5" stroke="currentColor" stroke-opacity=".6" stroke-width="1.5"/><circle cx="${x}" cy="6" r="4" fill="${c}" stroke="var(--card)" stroke-width="1.5"/></svg>`;
+}
+function words(a) {
+  if (a.u == null) return 'No reading yet';
+  if (a.u >= 99.5) return `Out until ${a.rsl}`;
+  return `${band(a.u, a.g)} · ${allow(a.u, a.h)} · resets ${a.rs}`;
+}
+function comp(a) {
+  if (a.u == null || a.u >= 99.5) return '';
+  if (a.s5 == null) return '<span class="c5">no 5h</span>';
+  if (binding(a)) return `<span class="c5" style="color:${sev(a.s5, a.ac)};font-weight:700">5h ${a.s5}% · back ${a.back}</span>`;
+  return `<span class="c5">5h ${a.s5}%</span>`;
+}
+function row(a, i, numbered, light) {
+  const track = light ? '#E6DCD3' : '#3A3532';
+  const dim = a.u == null || a.u >= 99.5;
+  const rk = numbered ? `<span class="rk" style="background:${a.ac}">${i + 1}</span>` : '';
+  const fig = a.u == null ? '—' : `${a.u}%`;
+  return `<div class="lr ${dim ? 'dim' : ''}"><div class="l1">${rk}${mark(a.mk, a.ac)}<span class="nm">${a.nm}</span><span class="pill">${a.plan}</span>${comp(a)}<span class="fig" style="color:${a.u == null ? 'var(--mu)' : sev(a.u, a.ac)}">${fig}</span></div>
+    ${a.u == null ? `<div class="bar" style="background:${track}"></div>` : bar(a.u, a.g, a.ac, track)}
+    <div class="l3">${a.u == null || a.u >= 99.5 ? '' : pip(pace(a.u, a.g))}<span class="w">${words(a)}</span></div></div>`;
+}
+function rowCompact(a, i) {
+  const dim = a.u == null || a.u >= 99.5;
+  const w = a.u == null ? 'No reading' : a.u >= 99.5 ? `Out · ${a.rs}` : binding(a) ? `5h · ${a.back}` : band(a.u, a.g);
+  const wc = a.u == null || a.u >= 99.5 ? 'var(--mu)' : binding(a) ? sev(a.s5, a.ac) : 'var(--tx)';
+  const b = a.u == null ? '<div class="bar" style="background:#3A3532"></div>' : bar(a.u, a.g, a.ac, '#3A3532');
+  return `<div class="lr compact ${dim ? 'dim' : ''}"><div class="l1"><span class="rk" style="background:${a.ac}">${i + 1}</span><span class="nm" style="flex:0 0 64px">${a.nm}</span><div style="flex:1;min-width:0">${b}</div><span class="wd" style="color:${wc}">${w}</span><span class="fig" style="flex:0 0 40px;text-align:right;font-size:15px;color:${a.u == null ? 'var(--mu)' : sev(a.u, a.ac)}">${a.u == null ? '—' : a.u + '%'}</span></div></div>`;
+}
+function nextCard(R) {
+  if (!R.elig.length) {
+    const back = R.held.length ? `${R.held[0].nm}'s 5h is back at ${R.held[0].back}` : '';
+    const sp = R.spent.length ? `${R.spent[0].nm}'s week resets ${R.spent[0].rsl}` : '';
+    return `<div class="card next" style="border-color:var(--tr)"><div class="eb" style="color:var(--mu)">USE NEXT</div>
+      <div class="big">Nothing has room right now</div><div class="why">${[back, sp].filter(Boolean).join('; ')}: that is the soonest way back.</div></div>`;
+  }
+  const a = R.elig[0];
+  const better = R.held.filter(h => pace(h.u, h.g) < pace(a.u, a.g))[0];
+  const allOver = R.elig.every(e => pace(e.u, e.g) > 5);
+  const why = allOver ? 'Every account is over pace; this one is the least over.'
+    : better ? `The most unused quota for its time left. ${better.nm} has more, once its 5h is back at ${better.back}.`
+    : 'The most unused quota for its time left.';
+  return `<div class="card next" style="border-color:${a.ac}99;background:color-mix(in srgb, ${a.ac} 7%, var(--card))">
+    <div class="eb" style="color:${a.ac}">USE NEXT</div>
+    <div class="who">${mark(a.mk, a.ac, 24)}<span class="nm">${a.nm}</span><span class="pill">${a.plan}</span><span class="open">Open ›</span></div>
+    <div class="big">${band(a.u, a.g)} · ${allow(a.u, a.h)}</div>
+    <div style="font-size:13px;color:var(--mu)">${a.u}% used · resets ${a.rsl}${a.s5 != null ? ` · 5h ${a.s5}%` : ''}</div>
+    <div class="why">${why}</div></div>`;
+}
+// trail: a plausible week so far, ending at (g, u)
+function trail(a, n = 9) {
+  const pts = []; let seed = a.nm.length * 7 + a.g;
+  const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  let y = 0;
+  for (let i = 0; i <= n; i++) {
+    const x = a.g * i / n;
+    if (i === n) y = a.u; else if (i > 0) y = Math.min(a.u, Math.max(y, a.u * (i / n) * (0.75 + 0.5 * rnd())));
+    pts.push([x, Math.min(y, 100)]);
+  }
+  return pts;
+}
+function paceMap(keys, { w = 355, h = 255, numbered = false, light = false, title = true } = {}) {
+  const R = rank(keys), L = 30, Rr = w - 10, T = 12, B = h - 26;
+  const X = f => L + (Rr - L) * f / 100, Y = v => B - (B - T) * v / 100;
+  const ink = light ? '42,36,32' : '230,225,222';
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;font-family:Roboto,Arial,sans-serif">`;
+  s += `<polygon points="${X(0)},${Y(0)} ${X(100)},${Y(100)} ${X(0)},${Y(100)}" fill="#FF5252" fill-opacity="${light ? .05 : .07}"/>`;
+  for (const v of [0, 50, 100]) s += `<line x1="${X(0)}" x2="${X(100)}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(${ink},${v === 0 ? .35 : .12})"/><text x="${L - 5}" y="${Y(v) + 3.5}" fill="rgba(${ink},.6)" font-size="10" text-anchor="end">${v}%</text>`;
+  s += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(100)}" stroke="#F5D35A" stroke-width="2" stroke-dasharray="3 2.5"/>`;
+  s += `<text x="${X(3)}" y="${Y(91)}" fill="rgba(${ink},.55)" font-size="10.5">over pace</text><text x="${X(97)}" y="${Y(6)}" fill="rgba(${ink},.55)" font-size="10.5" text-anchor="end">room to spare</text>`;
+  s += `<text x="${X(84)}" y="${Y(79)}" fill="#F5D35A" font-size="10" text-anchor="middle" transform="rotate(${-Math.atan2(Y(0) - Y(100), X(100) - X(0)) * 180 / Math.PI} ${X(84)} ${Y(79)})">even pace</text>`;
+  s += `<text x="${X(0)}" y="${h - 8}" fill="rgba(${ink},.7)" font-size="10.5">week start</text><text x="${X(100)}" y="${h - 8}" fill="rgba(${ink},.7)" font-size="10.5" text-anchor="end">reset</text><text x="${X(50)}" y="${h - 8}" fill="rgba(${ink},.45)" font-size="10" text-anchor="middle">each account's own week</text>`;
+  const shown = R.order.filter(a => a.u != null);
+  shown.forEach(a => { const t = trail(a); s += `<polyline points="${t.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ')}" fill="none" stroke="${a.ac}" stroke-opacity=".55" stroke-width="1.6" stroke-linejoin="round"/>`; });
+  const next = R.elig[0];
+  shown.forEach(a => {
+    const i = R.order.indexOf(a), cx = X(a.g), cy = Y(Math.min(a.u, 100));
+    if (next && a.k === next.k) s += `<circle cx="${cx}" cy="${cy}" r="${numbered ? 12 : 10}" fill="none" stroke="${a.ac}" stroke-width="2"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${numbered ? 8 : 5.5}" fill="${a.ac}" stroke="var(--card)" stroke-width="2"/>`;
+    if (a.u >= 99.5) s += `<path d="M${cx - 3},${cy - 3}L${cx + 3},${cy + 3}M${cx + 3},${cy - 3}L${cx - 3},${cy + 3}" stroke="#121212" stroke-width="1.8"/>`;
+    if (numbered) s += `<text x="${cx}" y="${cy + 3.5}" fill="#121212" font-size="10" font-weight="700" text-anchor="middle">${i + 1}</text>`;
+    else { const left = a.g > 70; s += `<text x="${cx + (left ? -10 : 10)}" y="${cy + (a.u > 92 ? 13 : -7)}" fill="rgba(${ink},.92)" font-size="11.5" font-weight="600" text-anchor="${left ? 'end' : 'start'}">${a.nm}</text>`; }
+  });
+  s += '</svg>';
+  return `<div class="card">${title ? `<div class="ch"><span class="tt">Pace map</span><span class="st">Weekly, where each account stands</span></div>` : ''}${s}</div>`;
+}
+function tabs(keys, { fixed = false, light = false } = {}) {
+  const t = [`<span class="on">${mark('mkAll', light ? '#2A2420' : '#EDE8E4', 16)}All</span>`, ...keys.map(k => `<span>${mark(A[k].mk, A[k].ac, 16)}${A[k].nm}</span>`)];
+  return `<div class="tabs ${fixed ? 'fixed' : ''}">${t.join('')}</div>`;
+}
+function summary(keys, { light = false, numbered = false, compact = false, ios = false, tabsFixed } = {}) {
+  const R = rank(keys);
+  const list = compact ? R.order.map((a, i) => rowCompact(a, i)).join('') : R.order.map((a, i) => row(a, i, numbered, light)).join('');
+  return `<div class="phone ${light ? 'light' : ''} ${ios ? 'ios' : ''}" ${ios ? 'style="width:393px"' : ''}>
+    ${tabs(keys, { fixed: tabsFixed ?? keys.length + 1 <= 3, light })}
+    ${nextCard(R)}
+    <div class="card"><div class="ch"><span class="tt">Weekly</span><span class="st">most room first</span></div>${list}</div>
+    ${paceMap(keys, { numbered, light, w: ios ? 337 : 355 })}
+    <div class="foot">Checked 1m ago ⟳</div></div>`;
+}
+const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p><div class="scroll">${body}</div>${note ? `<p class="note">${note}</p>` : ''}</div>`;
+
+// ---------- §1 table ----------
+(function () {
+  const R = rank(['teams', 'product', 'personal', 'side']);
+  const t = document.getElementById('rank');
+  R.order.forEach((a, i) => {
+    const st = R.elig[0] && a.k === R.elig[0].k ? '<b>Use next</b>' : R.elig.includes(a) ? 'eligible' : binding(a) ? `held: 5h ${a.s5}%, back ${a.back}` : a.u >= 99.5 ? `spent, back ${a.rsl}` : 'no reading';
+    t.insertAdjacentHTML('beforeend', `<tr><td>${i + 1}</td><td>${a.nm}</td><td>${a.u}%</td><td>${a.g}%</td><td>${a.u >= 99.5 ? '+100' : (pace(a.u, a.g) > 0 ? '+' : '') + Math.round(pace(a.u, a.g))}</td><td>${st}</td></tr>`);
+  });
+})();
+
+const FOUR = ['teams', 'product', 'personal', 'side'];
+document.getElementById('cover').innerHTML = [
+  col('C1 · four accounts · dark', 'good', summary(FOUR),
+    'Personal is Use next at −34: half its week is left with two days to go. Product would rank higher (−60) but its 5h is binding, so it is held, and the card says when it frees up. Side is spent, so it is dimmed, sorts last and shows an × on the map.'),
+  col('C2 · light', 'good', summary(FOUR, { light: true }), 'The light room, with the same rows and map.'),
+].join('');
+
+const TWO = ['teams', 'personal'];
+document.getElementById('states').innerHTML = [
+  col('S1 · two accounts, the common case', 'good', summary(TWO), 'With two accounts plus All there are three tabs, so the row is fixed. The card and list still earn their place: the order changes as the week goes on.'),
+  col('S2 · seven accounts · numbered', 'warn', summary(['teams', 'product', 'personal', 'side', 'lab', 'design', 'ops'], { numbered: true, compact: true }),
+    'From six accounts, rows go to one line (rank, name, bar, word, figure; the pip drops, the word carries the band) and the map numbers its dots instead of naming them. Ops has no reading, so it is listed last and kept off the map.'),
+  col('S3 · nobody has room', 'bad', (() => { const save = { ...A.teams }; A.teams = { ...A.teams, u: 100, rsl: 'Sun 9:30 pm' }; const h = summary(['teams', 'product', 'side']); A.teams = save; return h; })(),
+    'Every account is spent or held. The card makes no pick; it names the soonest way back, which here is Product\'s 5h at 3:40 pm.'),
+  col('S4 · everyone is over pace', 'warn', (() => { const s1 = { ...A.personal }; A.personal = { ...A.personal, u: 80 }; const h = summary(['teams', 'personal']); A.personal = s1; return h; })(),
+    'There is still a pick, the least over, and the card says that is all it is.'),
+].join('');
+
+// wide: Fold inner
+(function () {
+  const R = rank(FOUR);
+  document.getElementById('inner').innerHTML = `<p class="cap good">W1 · Fold inner, 760 dp</p><div class="phone inner">${tabs(FOUR, {})}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start"><div>${nextCard(R)}<div class="card"><div class="ch"><span class="tt">Weekly</span><span class="st">most room first</span></div>${R.order.map((a, i) => row(a, i)).join('')}</div></div>
+    <div>${paceMap(FOUR, { w: 336, h: 336 })}</div></div><div class="foot">Checked 1m ago ⟳</div></div>`;
+})();
+// iPad
+(function () {
+  const R = rank(FOUR);
+  const side = `<div class="side"><h4>Cooldown</h4><div style="display:flex;background:#2C2C2E;border-radius:9px;padding:2px;margin:0 6px 12px;font-size:13px;font-weight:600"><span style="flex:1;text-align:center;padding:5px 0;color:#98989F">5h</span><span style="flex:1;text-align:center;padding:5px 0;background:#636366;border-radius:7px">Weekly</span></div><div class="sr on">${mark('mkAll', '#F2F2F2', 22)}All accounts<span class="p" style="color:#98989F;font-weight:400">4</span></div>
+    ${FOUR.map(k => { const a = A[k]; return `<div class="sr">${mark(a.mk, a.ac, 22)}${a.nm}<span class="pill">${a.plan}</span><span class="p" style="color:${sev(a.u, a.ac)}">${a.u}%</span></div>`; }).join('')}
+    <p style="font-size:12.5px;color:#98989F;margin:14px 8px">Touch and hold an account to pin it to the top.</p></div>`;
+  document.getElementById('ipad').innerHTML = `<p class="cap good">W2 · iPad 11″ landscape (1194 × 834 pt)</p><div class="ipad">${side}<div class="main"><h5>All accounts</h5>
+    <div>${nextCard(R)}<div class="card"><div class="ch"><span class="tt">Weekly</span><span class="st">most room first</span></div>${R.order.map((a, i) => row(a, i)).join('')}</div></div>
+    <div>${paceMap(FOUR, { w: 380, h: 380 })}</div></div></div>`;
+})();
+// iPhone + setting
+document.getElementById('iphone').innerHTML = [
+  col('P1 · iPhone, four accounts', 'good', summary(FOUR, { ios: true }), 'The same order and words. The figures use the system font, as iOS cards do today. The tab strip scrolls from four tabs (110 pt minimum each).'),
+  col('P2 · Settings › Appearance (Android shown; iOS the same row)', 'good', `<div class="set"><div class="h">Appearance</div>
+    <div class="grp">Main screen</div>
+    <div class="it"><div>Open on the summary<div class="d">With two or more accounts, start on the All tab. Off: start on the last account you looked at.</div></div><span class="sw"></span></div>
+    <div class="it"><div>Density<div class="d">Comfortable</div></div></div>
+    <div class="it"><div>Chart height<div class="d">Medium</div></div></div></div>`,
+    'Shown only with two or more accounts, on by default. The All tab is always there with 2+ accounts; the toggle decides only where the app opens.'),
+].join('');
+</script>
+</html>
