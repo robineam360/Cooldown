@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Icon v3 Wireframe</title>
-<!-- CCRM-101 (Icon v3), rev A, 2026-11-02. Wireframe for Robin's approval (CLAUDE.md section 2).
+<!-- CCRM-101 (Icon v3), rev B, 2026-11-02 (rev A kept collapsed at the bottom). Wireframe for Robin's approval (CLAUDE.md section 2).
      Concepts C1 and C2 are ChatGPT's (GPT, via the model-mesh reviewer, findings 1 and 2), geometry copied
      number for number on the 108-unit adaptive canvas. Pulse is a port of ic_launcher_foreground.xml,
      ic_launcher_background.xml and ic_launcher_monochrome.xml. No provider logos anywhere: colour only. -->
@@ -24,8 +24,8 @@
   code { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; background:color-mix(in srgb,var(--hair) 55%,transparent); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere; }
   blockquote { margin:10px 0; padding:8px 14px; border-left:3px solid var(--accent); color:var(--muted); font-size:13px; max-width:84ch; }
   ul { font-size:13.5px; max-width:86ch; padding-left:22px; } li { margin:0 0 6px; }
-  .cols { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; align-items:start; }
-  @media (max-width:980px) { .cols { grid-template-columns:minmax(0,1fr); } }
+  .cols { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; align-items:start; }
+  @media (max-width:860px) { .cols { grid-template-columns:minmax(0,1fr); } }
   .card { border:1px solid var(--hair); background:var(--card); border-radius:16px; padding:18px; min-width:0; }
   .cap { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:18px 0 8px; }
   .strip { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
@@ -45,34 +45,33 @@
   table { border-collapse:collapse; font-size:13px; width:100%; max-width:1020px; }
   th,td { text-align:left; padding:8px 14px 8px 0; border-bottom:1px solid var(--hair); vertical-align:top; }
   th { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:650; }
+  .badge { font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.06em; color:var(--warn); border:1px solid var(--warn); border-radius:5px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
+  .rtitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px; }
+  details.round1 { margin-top:48px; border-top:1px solid var(--hair); padding-top:16px; } details.round1 summary { cursor:pointer; font-size:17px; font-weight:650; margin-bottom:10px; }
+  .stripwalls { display:flex; flex-wrap:wrap; gap:14px; } .stripwalls .wall { flex-wrap:wrap; width:auto; } .stripwalls .app { width:56px; }
+  .num { font-family:ui-monospace,Menlo,monospace; font-size:10px; opacity:.85; }
   .derived { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--warn); border:1px solid var(--warn); border-radius:5px; padding:1px 6px; }
 </style>
 <body><div class="page">
   <p class="eyebrow">CCRM-101 (Icon v3) · wireframe</p>
   <h1>Icon v3 Wireframe</h1>
-  <p class="lede">CCRM-101 (Icon v3) · rev A · 2026-11-02 · concepts by ChatGPT, drawn by Cooldown</p>
+  <p class="lede">CCRM-101 (Icon v3) · rev B · 2026-11-02 · ten ring concepts (Fable designer; ChatGPT's reviewer declined to design)</p>
+  <p class="sub">Robin asked for at least ten <b>ring-based</b> launcher icons in which the ring carries all three service colours (Claude, ChatGPT, Gemini; colour only, no logos), including three concentric circles with one pace line (6 Lanes) and a three-way split (7 Split). All ten are drawn from the designer's numbers on the 108-unit adaptive canvas: angles clockwise from 12 o'clock, point = (54 + r&middot;sin&theta;, 54 &minus; r&middot;cos&theta;), the status-bar needle glyph ("Base G") as the grammar, and the needle's halo as a real gap in the band. Each canvas outlines the 72-unit safe circle faintly; masked and iOS views show the central 72 units; squircle is approximated by a 34% radius. At 48 px one unit is 0.667 px. Sibling pairs, so you do not pick twice: <b>1/9</b> (same silhouette and mono), <b>2/7</b> (same gauge), <b>1/4</b> (same ring, run vs. day slots).</p>
 
-  <h2>1 · Brief and where the concepts came from</h2>
-  <p class="sub">Robin asked for a better launcher icon. The brief: it is about hitting the <b>weekly</b> usage limit; <b>Claude, ChatGPT and Gemini</b> are all present, by <b>colour only, never logos</b>; professional; legible at <b>48 px</b>; a working <b>monochrome themed icon</b> (Android 13); it survives <b>circle, squircle and rounded-square masks</b>; and the <b>same art</b> goes on iOS.</p>
-  <p class="sub">Both concepts are ChatGPT's (GPT, through the model-mesh reviewer), given as exact geometry on the 108-unit canvas. It judged today's Pulse as concerns:</p>
-  <blockquote>"The described Pulse suggests heart monitoring rather than a usage allowance" and "V1 omits a required service" (Gemini). Weekly vs daily "cannot" be told from the symbol alone, so the app's headline carries the period.</blockquote>
-  <p class="sub">Drawn below from those numbers, not redrawn by taste. The 72-unit safe zone is outlined faintly on each 192 px canvas. Masked and iOS views show the central 72 units, as a launcher does. Squircle is approximated by a 34% radius.</p>
+  <h2>All ten at true 48 px</h2>
+  <p class="sub">Numbered; circle mask; on a dark and a light wallpaper. Pair marks: &#9679; 1/9 &nbsp; &#9650; 2/7 &nbsp; &#9670; 1/4.</p>
+  <div id="strip"></div>
 
-  <h2>2 · The three, side by side</h2>
+  <h2>The ten concepts</h2>
   <div class="cols" id="cols"></div>
 
-  <h2>3 · Derived variants <span class="derived">derived, not ChatGPT's</span></h2>
-  <p class="sub">Two small experiments on C1, drawn by Cooldown to answer questions the brief raises. Neither is a ChatGPT proposal.</p>
-  <div class="cols" id="vars"></div>
+  <h2>Pick table</h2>
+  <div class="tbl-wrap"><table id="pick"></table></div>
 
-  <h2>4 · Pick one</h2>
-  <div class="tbl-wrap"><table>
-    <tr><th>Choice</th><th>What it means</th></tr>
-    <tr><td><b>Pulse (keep)</b></td><td>No icon work. Gemini stays absent from the icon; the heart-monitor reading and the cropped apex stay. Nothing to build.</td></tr>
-    <tr><td><b>C1</b> Three meters at a ceiling</td><td>Needs a new adaptive-icon foreground and background, a monochrome layer (ceiling plus three columns, opaque), and an iOS 1024 asset from the same art. The device pass then checks legibility at 48 px and in themed mode.</td></tr>
-    <tr><td><b>C2</b> Three allowances with a reset arrow</td><td>Same assets as C1 (foreground, background, monochrome with tracks dropped, iOS). The device pass checks the 3 px rows and the arrow at 48 px.</td></tr>
-    <tr><td><b>Iterate</b></td><td>Name what to change (order, ceiling style, colour weights) and a rev B is drawn before anything is built.</td></tr>
-  </table></div>
+  <details class="round1"><summary>Round 1, not chosen (rev A: Pulse, C1, C2)</summary>
+    <p class="sub">The first round: today's Pulse and two ChatGPT concepts (C1 three meters at a ceiling, C2 three allowances with a reset arrow). Kept for the record; replaced by the ring brief above.</p>
+    <div class="cols" id="r1"></div>
+  </details>
 </div>
 
 <script>
@@ -142,7 +141,210 @@ const why = (t) => `<p class="why"><b>ChatGPT:</b> ${t}</p>`;
 const mine = (t) => `<p class="note"><b>Cooldown's note:</b> ${t}</p>`;
 const derivedWhy = (t) => `<p class="why"><span class="derived">derived</span> ${t}</p>`;
 
-document.getElementById('cols').innerHTML =
+// ================= rev B: ten ring concepts (Fable designer) =================
+const RC = { plate:'#1F1B19', cream:'#F2E8DF', cl:'#D97757', gp:'#19C39A', ge:'#8AB4F8', red:'#FF5252' };
+const f2 = n => +n.toFixed(2);
+const PT = (r, t, c = [54, 54]) => { const a = t * Math.PI / 180; return [c[0] + r * Math.sin(a), c[1] - r * Math.cos(a)]; };
+const ps = (p) => `${f2(p[0])},${f2(p[1])}`;
+// stroked arc, clockwise from a0 to a1 degrees; "A r r 0 L 1 x y", L=1 when > 180 degrees
+const arcD = (r, a0, a1, c) => { const p0 = PT(r, a0, c), p1 = PT(r, a1, c); return `M${ps(p0)} A${r} ${r} 0 ${(a1 - a0) > 180 ? 1 : 0} 1 ${ps(p1)}`; };
+const sArc = (r, a0, a1, col, w, cap = 'butt', op = 1, c) =>
+  `<path d="${arcD(r, a0, a1, c)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="${cap}"${op < 1 ? ` stroke-opacity="${op}"` : ''}/>`;
+const sLine = (p0, p1, col, w, op = 1, cap = 'round') =>
+  `<line x1="${f2(p0[0])}" y1="${f2(p0[1])}" x2="${f2(p1[0])}" y2="${f2(p1[1])}" stroke="${col}" stroke-width="${w}" stroke-linecap="${cap}"${op < 1 ? ` stroke-opacity="${op}"` : ''}/>`;
+const hubC = (m, r = 4.0, c = [54, 54]) => `<circle cx="${c[0]}" cy="${c[1]}" r="${r}" fill="${m ? '#fff' : RC.cream}"${m ? '' : ' fill-opacity=".85"'}/>`;
+const needle = (m, th, rEnd = 33.3, w = 5.4, r0 = 4.0) => sLine(PT(r0, th), PT(rEnd, th), m ? '#fff' : RC.cream, w, m ? 1 : .85);
+const plate = (m) => m ? '' : `<rect width="108" height="108" fill="${RC.plate}"/>`;
+const K = (m, col) => m ? '#fff' : col;
+
+// ---- sweep gradient (9): segmented 1-degree annular sectors, colour interpolated by theta/360 (SVG has no conic fill)
+const SW = [[0, '#D97757'], [.222, '#D97757'], [.306, '#8AB4F8'], [.472, '#8AB4F8'], [.556, '#19C39A'], [.694, '#19C39A'], [1, '#19C39A']];
+const hx = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+function swColor(t) {
+  for (let i = 1; i < SW.length; i++) if (t <= SW[i][0]) {
+    const [t0, c0] = SW[i - 1], [t1, c1] = SW[i]; const u = t1 === t0 ? 0 : (t - t0) / (t1 - t0);
+    const a = hx(c0), b = hx(c1); return '#' + a.map((v, k) => Math.round(v + (b[k] - v) * u).toString(16).padStart(2, '0')).join('');
+  }
+  return SW[SW.length - 1][1];
+}
+function sweepSlices(a0, a1, ro, ri) {
+  let out = ''; const n = Math.ceil(a1 - a0);
+  for (let i = 0; i < n; i++) {
+    const s = a0 + i, e = Math.min(a1, s + 1), eo = Math.min(a1, e + .4);   // .4 deg overlap hides seams
+    const col = swColor(((s + e) / 2) / 360);
+    out += `<path d="M${ps(PT(ro, s))} A${ro} ${ro} 0 0 1 ${ps(PT(ro, eo))} L${ps(PT(ri, eo))} A${ri} ${ri} 0 0 0 ${ps(PT(ri, s))}Z" fill="${col}"/>`;
+  }
+  return out;
+}
+
+const ring = {
+  // 1 Relay
+  relay: (m) => plate(m) + sArc(27.6, 263.9, 236.1 + 360, RC.cream, 4.5, 'butt', m ? .4 : .5) +
+    (m ? sArc(27.6, 0, 236.1, '#fff', 12) : sArc(27.6, 0, 120, RC.cl, 12) + sArc(27.6, 120, 195, RC.gp, 12) + sArc(27.6, 195, 236.1, RC.ge, 12)) +
+    hubC(m) + needle(m, 250),
+  // 2 Thirds
+  thirds: (m) => {
+    const tk = [73.4, 193.4, 313.4], d = 7.13, tr = m ? .4 : .5;
+    const trk = [[4, tk[0] - d], [tk[0] + d, 116], [124, tk[1] - d], [tk[1] + d, 236], [244, tk[2] - d], [tk[2] + d, 356]];
+    return plate(m) + trk.map(([a, b]) => sArc(26.5, a, b, RC.cream, 4.5, 'butt', tr)).join('') +
+      sArc(26.5, 4, 66.3, K(m, RC.cl), 10) + sArc(26.5, 80.5, 98, K(m, RC.red), 10) +
+      sArc(26.5, 124, 189, K(m, RC.gp), 10, 'round') + sArc(26.5, 244, 274, K(m, RC.ge), 10, 'round') +
+      tk.map(t => sLine(PT(19, t), PT(34, t), m ? '#fff' : RC.cream, 3.6, m ? 1 : .9)).join('');
+  },
+  // 3 Trio
+  trio: (m) => {
+    const cs = [[54, 36], [69.59, 63], [38.41, 63]], tr = m ? .4 : .5;
+    const trk = (c) => `<circle cx="${c[0]}" cy="${c[1]}" r="11" fill="none" stroke="${RC.cream}" stroke-width="2.25" stroke-opacity="${tr}"/>`;
+    return plate(m) + cs.map(trk).join('') +
+      sArc(11, 0, 240, K(m, RC.cl), 5.5, 'butt', 1, cs[0]) + sArc(11, 240, 300, K(m, RC.red), 5.5, 'butt', 1, cs[0]) +
+      sArc(11, 0, 215, K(m, RC.gp), 5.5, 'round', 1, cs[1]) + sArc(11, 0, 95, K(m, RC.ge), 5.5, 'round', 1, cs[2]);
+  },
+  // 4 Seven
+  seven: (m) => {
+    const sl = [[3, 48.43], [54.43, 99.86], [105.86, 151.29], [157.29, 202.71], [208.71, 254.14], [260.14, 305.57], [311.57, 357]];
+    const cut = ([a, b]) => { // 9-unit halo about the needle at 300 (+-9.3 deg)
+      const h0 = 300 - 9.3, h1 = 300 + 9.3; if (b <= h0 || a >= h1) return [a, b]; return [a, Math.min(b, h0)]; };
+    const slots = sl.map(cut).map(([a, b]) => sArc(27.6, a, b, RC.cream, 12, 'butt', m ? .3 : .22)).join('');
+    const fl = [[3, 48.43, RC.cl], [54.43, 99.86, RC.cl], [105.86, 151.29, RC.cl], [157.29, 202.71, RC.gp], [208.71, 254.14, RC.gp], [260.14, 290, RC.ge]];
+    return plate(m) + slots + fl.map(([a, b, c]) => sArc(27.6, a, b, K(m, c), 12)).join('') + hubC(m) + needle(m, 300);
+  },
+  // 5 Runners
+  runners: (m) => plate(m) + sArc(27.6, 253.9, 226.1 + 360, RC.cream, 4.5, 'butt', m ? .4 : .5) +
+    sArc(27.6, 266, 288, K(m, RC.cl), 12, 'round') + sArc(27.6, 190, 212, K(m, RC.gp), 12, 'round') + sArc(27.6, 73, 95, K(m, RC.ge), 12, 'round') +
+    hubC(m) + needle(m, 240),
+  // 6 Lanes
+  lanes: (m) => {
+    const tr = m ? .25 : .18, L = [[31.5, 230.45, 249.55], [22.5, 226.6, 253.4], [13.5, 217.7, 262.3]];
+    return plate(m) + L.map(([r, g0, g1]) => sArc(r, g1, g0 + 360, RC.cream, 6, 'butt', tr)).join('') +
+      sArc(31.5, 0, 230.45, K(m, RC.cl), 6) + sArc(31.5, 249.55, 285, K(m, RC.red), 6) +
+      sArc(22.5, 0, 215, K(m, RC.gp), 6, 'round') + sArc(13.5, 0, 95, K(m, RC.ge), 6, 'round') +
+      `<circle cx="54" cy="54" r="3" fill="${m ? '#fff' : RC.cream}"${m ? '' : ' fill-opacity=".85"'}/>` +
+      sLine(PT(3.5, 240), PT(33.5, 240), m ? '#fff' : RC.cream, 4.5, m ? 1 : .9);
+  },
+  // 7 Split (no nod layer unless o.nod; the inset adds it)
+  split: (m, o = {}) => {
+    const w = [['#482F27', '54,54 108,22.8 108,0 0,0 0,22.8'], ['#1E4035', '54,54 54,108 108,108 108,22.8'], ['#373D4A', '54,54 0,22.8 0,108 54,108']];
+    const ground = m ? '' : w.map(([c, pts]) => `<polygon points="${pts}" fill="${c}"/>`).join('') +
+      `<path d="M54,54 L108,22.8 M54,54 L54,108 M54,54 L0,22.8" stroke="${RC.plate}" stroke-width="3" fill="none"/>`;
+    const tk = [14.4, 134.4, 254.4], tr = m ? .4 : .5;
+    const trk = [[21.53, 127.27], [141.53, 247.27], [261.53, 367.27]].map(([a, b]) => sArc(26.5, a, b, RC.cream, 4.5, 'butt', tr)).join('');
+    const nod = o.nod ? [0, 45, 90, 135].map(a => sLine(PT(5, a, [54, 41]), PT(5, a + 180, [54, 41]), RC.cream, 1.6, .3)).join('') +
+      `<polygon points="${[0, 60, 120, 180, 240, 300].map(a => ps(PT(5, a, [65.26, 60.5]))).join(' ')}" fill="none" stroke="${RC.cream}" stroke-opacity=".3" stroke-width="1.6" stroke-linejoin="round"/>` +
+      `<polygon points="${[0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => ps(PT(i % 2 ? 1.4 : 5, a, [42.74, 60.5]))).join(' ')}" fill="${RC.cream}" fill-opacity=".3"/>` : '';
+    return plate(m) + ground + trk +
+      sArc(26.5, 300, 367.27, K(m, RC.cl), 10) + sArc(26.5, 21.53, 36, K(m, RC.red), 10) +
+      sArc(26.5, 60, 124, K(m, RC.gp), 10) + sArc(26.5, 180, 212.4, K(m, RC.ge), 10) +
+      tk.map(t => sLine(PT(19, t), PT(34, t), m ? '#fff' : RC.cream, 3.6, m ? 1 : .9)).join('') + nod;
+  },
+  // 8 Ceiling
+  ceiling: (m) => plate(m) +
+    sArc(27.6, 8.3, 140, K(m, RC.cl), 12) + sArc(27.6, 140, 255, K(m, RC.gp), 12) + sArc(27.6, 255, 286.1, K(m, RC.ge), 12) + sArc(27.6, 313.9, 351.7, K(m, RC.red), 12) +
+    sLine([54, 34.5], [54, 20.7], m ? '#fff' : RC.cream, 5, m ? 1 : .9) + hubC(m) + needle(m, 300),
+  // 9 Sweep
+  sweep: (m) => plate(m) + sArc(27.6, 263.9, 236.1 + 360, RC.cream, 4.5, 'butt', m ? .4 : .5) +
+    (m ? `<path d="M${ps(PT(33.6, 0))} A33.6 33.6 0 1 1 ${ps(PT(33.6, 236.1))} L${ps(PT(21.6, 236.1))} A21.6 21.6 0 1 0 ${ps(PT(21.6, 0))}Z" fill="#fff"/>` : sweepSlices(0, 236.1, 33.6, 21.6)) +
+    hubC(m) + needle(m, 250),
+  // 10 Countdown
+  countdown: (m) => plate(m) +
+    (m ? sArc(27.6, 6, 276.1, '#fff', 12) : sArc(27.6, 6, 120, RC.cl, 12) + sArc(27.6, 120, 210, RC.gp, 12) + sArc(27.6, 210, 276.1, RC.ge, 12)) +
+    [310, 320, 330, 340].map(t => sArc(27.6, t - .5, t + .5, RC.cream, 4.5, 'round', .5)).join('') +
+    `<polyline points="49.51,32.87 53.04,26.42 47.01,21.14" fill="none" stroke="${m ? '#fff' : RC.cream}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"${m ? '' : ' stroke-opacity=".9"'}/>` +
+    hubC(m) + needle(m, 290)
+};
+
+const PAIR = { 1: ['9', '4'], 9: ['1'], 2: ['7'], 7: ['2'], 4: ['1'] };
+const PMARK = { 1: '&#9679;', 9: '&#9679;', 2: '&#9650;', 7: '&#9650;', 4: '&#9670;' };
+const CON = [
+  { n: 1, k: 'relay', name: 'Relay', idea: 'One ring; the week\'s usage is a single clockwise run handed Claude, ChatGPT, Gemini, ending at the pace needle (on pace).',
+    mono: 'Mono: track at 40%; one solid arc 0 to 236.1 deg; hub and needle solid.',
+    p48: '48 px: the status-bar glyph\'s silhouette at 8 px band, 3 px hairline and a 3.6 px needle; the open quarter keeps it from reading as a closed ring.',
+    risk: 'Risk: a three-colour ring is near Chrome\'s mark, so the open quarter must stay; variant R+ would add red 263.9 to 285.',
+    pro: 'Same glyph as the status bar; one ring, one story.', con: 'Three-colour ring is near Chrome.' },
+  { n: 2, k: 'thirds', name: 'Thirds', idea: 'One ring cut into three 112 deg gauges, one per service, each with a pace tick at 62% of its sector: Claude past it (red), ChatGPT just short, Gemini well short.',
+    mono: 'Mono: tracks at 40%; fills and ticks solid; red merges into the fill.',
+    p48: '48 px: 6.7 px fills, 3 px tracks, 2.4 px ticks; three separate gauges are visible as three shapes.',
+    risk: 'Risk: faint trefoil or Mercedes star; reads as a spinner; the ticks vanish first at 48 px.',
+    pro: 'Each service gets its own pace verdict.', con: 'Trefoil/spinner look; ticks fade at 48 px.' },
+  { n: 3, k: 'trio', name: 'Trio', idea: 'Three small full gauges in a triangle (the Mini-Rings face): one over pace, one near, one far under. The rings do not touch.',
+    mono: 'Mono: tracks at 40%; fills solid.',
+    p48: '48 px: each ring is 14.7 px across with a 3.7 px fill and a 1.5 px track, so the track is the first thing to go.',
+    risk: 'Risk: Olympic or Mastercard genericness; pace shows only through the red.',
+    pro: 'Clearest one-ring-per-service read.', con: 'Generic; pace only via red.' },
+  { n: 4, k: 'seven', name: 'Seven', idea: 'The weekly ring: seven day slots; the fill covers the days used and changes colour at day boundaries; the needle is the clock.',
+    mono: 'Mono: slots at 30%; fill solid in the same slots up to 290 deg; hub and needle solid. (Drawn as slot segments, the dashed arc 3 to 290.)',
+    p48: '48 px: 8 px segments with 6 deg gaps (about 2.9 units, 1.9 px, at r 27.6); the seven-day idea is carried by the rhythm of the gaps.',
+    risk: 'Risk: the busiest of the ten; reads as a spinner or dial.',
+    pro: 'Says "weekly" in the symbol itself.', con: 'Busiest; spinner or dial look.' },
+  { n: 5, k: 'runners', name: 'Runners', idea: 'Three runners on one track: only each service\'s leading tip is drawn, as a short pill; one cream needle. Claude is past the needle, ChatGPT within, Gemini well under.',
+    mono: 'Mono: track at 40%; three solid pills; hub and needle solid.',
+    p48: '48 px: three 8 px pills of 22 deg (about 11 px long with caps) on a 3 px track; the needle is the reference.',
+    risk: 'Risk: no amount is shown, only position; the pill shape suggests a spinner.',
+    pro: 'Pace comparison is the whole picture.', con: 'No amount shown; spinner shape.' },
+  { n: 6, k: 'lanes', name: 'Lanes', idea: 'Robin\'s concentric idea: three lanes, outer Claude over pace, middle ChatGPT within, inner Gemini well under; one straight cream pace line through all three.',
+    mono: 'Mono: lanes at 25%; fills, hub and line solid.',
+    p48: '48 px: 4 px bands with 2 px gaps at radii 21, 15, 9 px; the pace line (3 px) crosses all three.',
+    risk: 'Risk: Apple Watch Activity rings likeness; the pace line must be the most visible cream element.',
+    pro: 'Exactly Robin\'s concentric brief; pace in one glance.', con: 'Looks like Activity rings.' },
+  { n: 7, k: 'split', name: 'Split', idea: 'Robin\'s three-way split: the ground is three dim provider-tinted wedges meeting at the centre (seams at 60, 180, 300 deg) under the Thirds gauge. Drawn without the nod layer.',
+    mono: 'Mono: the split vanishes (the ground is not in mono); only the Thirds-style gauge remains.',
+    p48: '48 px: the wedges read as faint coloured fields behind a 6.7 px gauge; the seams are 2 px.',
+    risk: 'Risk: highest flag risk (colour fields); a tri-wedge is near a pie or Mercedes star.',
+    pro: 'Colour on the plate as well as the ring; clearly three services.', con: 'Flag-like fields; mono loses the split.',
+    inset: true },
+  { n: 8, k: 'ceiling', name: 'Ceiling', idea: 'The week is spent: the three-colour fill has gone nearly all the way round and is held by a stop bar at 12; the needle sits at pace (300 deg) and red from needle to tip says it ran out early.',
+    mono: 'Mono: solid arcs 8.3 to 286.1 and 313.9 to 351.7 (red merges); bar, hub, needle solid.',
+    p48: '48 px: 8 px fill all the way round, a 3.3 px stop bar at 12 and an open gap at the needle.',
+    risk: 'Risk: closest to Chrome; an always-spent icon may feel negative.',
+    pro: 'Tells the story the app exists for: hitting the weekly limit.', con: 'Near Chrome; reads negative.' },
+  { n: 9, k: 'sweep', name: 'Sweep', idea: 'Relay\'s ring with the three colours blending smoothly along the fill, ending at the pace needle. Same silhouette and mono as Relay.',
+    mono: 'Mono: identical to Relay (one solid sector 0 to 236.1 deg). Drawn as 1 deg annular sectors with interpolated colour, because SVG has no conic fill; a CSS conic-gradient masked to the sector gives the same look.',
+    p48: '48 px: the same 8 px band as Relay with soft blends; order Claude, Gemini, ChatGPT chosen for clean blends.',
+    risk: 'Risk: gradients read consumer or fun; the provider order differs from the app\'s.',
+    pro: 'Most polished colour story.', con: 'Gradient feels consumer; order differs.' },
+  { n: 10, k: 'countdown', name: 'Countdown', idea: 'The fill runs to the pace needle; the rest of the track is cream dots counting down to a small clockwise chevron at 12 where the window comes round again.',
+    mono: 'Mono: dots at 50%; one solid arc 6 to 276.1 deg; chevron, hub and needle solid.',
+    p48: '48 px: 8 px fill, four 3 px dots and a 3 px chevron; the dots may merge into one bar.',
+    risk: 'Risk: refresh or reload silhouette; the dots read as loading. Quiet variant: a cream disc r 3.5 at (54,26.4) instead of the chevron.',
+    pro: 'Carries the reset: the window comes round again.', con: 'Reads as refresh or loading.' }
+];
+
+function pairBadge(c) {
+  const p = PAIR[c.n]; if (!p) return '';
+  return `<span class="badge">${PMARK[c.n]} sibling of ${p.join(' and ')}</span>`;
+}
+const after = (s) => s.slice(s.indexOf(':') + 1);
+function ringCard(c) {
+  const full = ring[c.k](false), m = ring[c.k](true);
+  const safe = `<circle cx="54" cy="54" r="36" fill="none" stroke="#fff" stroke-opacity=".28" stroke-dasharray="2 2"/>`;
+  const masks = Object.entries(MASKS).map(([n, r]) => `<figure>${svg(full, 96, '18 18 72 72', `border-radius:${r}`)}<figcaption>${n}</figcaption></figure>`).join('');
+  const home = (cls) => `<div class="wall ${cls}"><div class="app"><div class="ph"></div>Mail</div>
+      <div class="app">${svg(full, 48, '18 18 72 72', 'border-radius:50%;margin:0 auto 4px')}Cooldown</div><div class="app"><div class="ph"></div>Maps</div></div>`;
+  const inset = c.inset ? `<div class="cap">optional nod layer (designer recommends NONE), inset at 96 px</div><div class="strip"><figure>${svg(ring.split(false, { nod: true }), 96, '18 18 72 72', 'border-radius:34%')}<figcaption>with nod</figcaption></figure></div>` : '';
+  return `<div class="card" id="c${c.n}"><div class="rtitle"><h3>${c.n} · ${c.name}</h3>${pairBadge(c)}</div><div class="note" style="margin:2px 0 0">${c.idea}</div>
+    <div class="cap">a · 108-unit canvas at 192 px, 72-unit safe circle outlined</div>
+    <div class="strip">${svg(full + safe, 192, '0 0 108 108', '', c.name + ' canvas').replace('<svg ', '<svg class="canvas192" ')}</div>
+    <div class="cap">b · masks at 96 px</div><div class="strip">${masks}</div>
+    <div class="cap">c · true size, 48 px, home-screen row</div>
+    <div class="strip"><figure>${home('dark')}<figcaption>dark wallpaper</figcaption></figure><figure>${home('light')}<figcaption>light wallpaper</figcaption></figure></div>
+    <div class="cap">d · Android 13 themed (tonal plate #D7E3F7, ink #0B1D36)</div>
+    <div class="strip"><figure>${monoPlate(m, 96, '50%')}<figcaption>96 px</figcaption></figure><figure>${monoPlate(m, 48, '50%')}<figcaption>48 px</figcaption></figure></div>
+    <p class="note">${c.mono}</p>
+    <div class="cap">e · iOS, 120 px squircle</div>
+    <div class="strip"><figure>${svg(full, 120, '18 18 72 72', 'border-radius:22.37%')}<figcaption>1024 shown at 120</figcaption></figure></div>${inset}
+    <p class="why"><b>48 px:</b>${after(c.p48)}<br><b>Risk:</b>${after(c.risk)}</p></div>`;
+}
+document.getElementById('cols').innerHTML = CON.map(ringCard).join('');
+
+// strip: all ten at 48 px, dark and light
+(function () {
+  const tile = (c) => `<div class="app"><div class="num">${c.n}${PAIR[c.n] ? ' ' + PMARK[c.n] : ''}</div>${svg(ring[c.k](false), 48, '18 18 72 72', 'border-radius:50%;margin:0 auto 4px')}${c.name}</div>`;
+  document.getElementById('strip').innerHTML = `<div class="stripwalls"><div class="wall dark">${CON.map(tile).join('')}</div><div class="wall light">${CON.map(tile).join('')}</div></div>`;
+})();
+document.getElementById('pick').innerHTML = '<tr><th>#</th><th>Name</th><th>Pro</th><th>Con</th></tr>' +
+  CON.map(c => `<tr><td><b>${c.n}</b></td><td>${c.name}${pairBadge(c)}</td><td>${c.pro}</td><td>${c.con}</td></tr>`).join('');
+
+// ================= rev A, kept collapsed =================
+document.getElementById('r1').innerHTML =
   concept('pulse', 'Today: Pulse', 'ic_launcher_foreground.xml on the charcoal plate',
     'Themed keeps the whole trace as one tint plus the 55% ceiling; the Claude, red and green roles collapse to shape.',
     why('"The described Pulse suggests heart monitoring rather than a usage allowance, and its defining peak lies outside the visible safe zone." Gemini is absent.'),
@@ -156,16 +358,6 @@ document.getElementById('cols').innerHTML =
     why('Roughly 3 px rows stay separated at 48 px and the arrow supplies the reset cue; everything fits the 72-unit safe circle.'),
     mine('The reset arrow is the only element that hints at "weekly" (a cycle), which C1 lacks. The cost is thin 7-unit rows: about 3 px at 48 px, so the tracks and fill contrast are the risk, and the arrow may read as a generic refresh or upload.'));
 
-document.getElementById('vars').innerHTML =
-  concept('c1', 'C1, Gemini tallest', 'Gemini y38, ChatGPT y49, Claude y57',
-    'Same silhouette as C1 with the order reversed; themed is identical in shape.',
-    derivedWhy('Shows that the order is arbitrary: the symbol means "three allowances", not a ranking, and no provider is meant to lead. Either order is the same icon.'),
-    mine('If Claude leads (as in C1) the icon quietly favours the first provider the app shipped. The order could also follow the user\'s tallest, but an icon cannot change, so pick one on purpose.'),
-    { order: [57, 49, 38] }) +
-  concept('c1', 'C1, dashed ceiling', 'Ceiling as dashes 6 on, 3.5 off',
-    'Themed keeps the dashed ceiling and the columns.',
-    derivedWhy('The even-pace ceiling is dashed in the Pulse, so a dashed ceiling carries that idea across. Fits the brief only as a continuity nod.'),
-    mine('At 48 px a 5 px stroke in about 4 px dashes with 2 px gaps turns to dotted noise, and it weakens the "hard limit" read that ChatGPT wanted. I would not choose it; shown so the question is answered.'),
-    { dash: true });
+
 </script>
 </html>

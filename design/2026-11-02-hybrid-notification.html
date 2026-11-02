@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hybrid Notification Wireframe</title>
+<!-- CCRM-103 (Hybrid Notification), rev B, 2026-11-02 (adds H4, ring on the left). Wireframe for approval (CLAUDE.md section 2). 1 CSS px = 1 dp, card 360 dp, Huge number style, v2.0 fixtures. -->
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 76ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -.01em; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  .sub b, .note b, .lede b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.bad { color: var(--bad); } .cap.good { color: var(--good); } .cap.warn { color: var(--warn); }
+  .row { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .col { flex: 0 1 384px; min-width: 0; }
+  .col.wide { flex-basis: 435px; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 384px; margin: 10px 0 0; }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tbl-wrap { overflow-x: auto; }
+  ol.dec, ul.inv { font-size: 13.5px; max-width: 86ch; padding-left: 22px; }
+  ol.dec li, ul.inv li { margin: 0 0 9px; }
+  ol.dec li b, ul.inv li b { font-weight: 650; }
+  .q { border: 1px solid var(--warn); border-radius: 12px; padding: 12px 16px; margin: 14px 0; max-width: 86ch; font-size: 13.5px; }
+  .q b { color: var(--warn); }
+  .pending { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 5px; padding: 1px 6px; vertical-align: 2px; }
+
+  /* ---------- Android shade + notification (same grammar as duet-panel-fit-wireframe.html) ---------- */
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .shade.light { background: #E4E4E4; border-color: #CFCFCF; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .shade.light .nc { background: #F7F7F7; color: #1F1F1F; }
+  .nc .apphdr { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9E9E9E; margin: 0 0 10px; font-weight: 600; }
+  .shade.light .apphdr { color: #5C5C5C; }
+  .nc .apphdr .sp { opacity: .7; }
+  .hl { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .lbl { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fig { font-weight: 700; letter-spacing: -.02em; line-height: 1; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .bar { position: relative; overflow: visible; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: inherit; }
+  .bar > o { border-radius: 0 6px 6px 0; }
+  .bar > s { position: absolute; top: -2px; bottom: -2px; width: 2px; }
+  .hb { display: flex; align-items: center; gap: 14px; margin: 0 0 10px; }
+  .hb:last-child { margin-bottom: 0; }
+  .hb .lft { flex: 1; min-width: 0; }
+  .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+  .hsub + .hsub { margin-top: 0; }
+  .shade.light .hsub { color: #5C5C5C; }
+  .hsub .c5 { font-weight: 700; }
+  .figwrap { flex: 0 0 auto; text-align: center; }
+  .acts { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; font-weight: 650; color: #E59980; }
+  .shade.light .acts { border-top-color: rgba(0,0,0,.08); color: #D97757; }
+  .pnl { margin-top: 10px; }
+  .crow { margin: 0 0 8px; }
+  .crow:last-child { margin-bottom: 0; }
+  .crow .ch { display: flex; align-items: baseline; gap: 6px; height: 18px; margin-bottom: 4px; font-size: 13.5px; white-space: nowrap; }
+  .crow .cl { flex: 0 0 auto; }
+  .crow .cr { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #9E9E9E; }
+  .shade.light .crow .cr { color: #5C5C5C; }
+  .crow .cv { flex: 0 0 auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Duet collapsed: two halves side by side */
+  .duet { display: flex; gap: 16px; }
+  .duet > div { flex: 1; min-width: 0; }
+  .duet .dl { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .duet .db { display: flex; align-items: center; gap: 8px; }
+  .duet .db .bar { flex: 1; }
+  .tag { display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: #7FC08F; border: 1px solid #3B5A43; border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+  .tag.chg { color: #D8AC63; border-color: #6B5428; }
+
+  /* ---------- the app (Fold 7 cover, 411 dp) ---------- */
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 18px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #3a3a3a; margin: 0 -16px 14px; font-size: 15px; }
+  .tabs span { flex: 1; text-align: center; padding: 8px 0 9px; color: #9C9894; display: flex; gap: 6px; justify-content: center; align-items: center; }
+  .tabs span.on { color: #EDE8E4; border-bottom: 3px solid #E59980; }
+  .card { background: #232120; border-radius: 18px; padding: 15px 14px 14px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; color: #E6E1DE; margin: 0 0 10px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; }
+  .card .t .chev { font-size: 12px; color: #BDB8B3; }
+  .card .bar { height: 10px; border-radius: 5px; background: #4A3A35; margin: 0 0 12px; }
+  .card .bar > s { background: #CFC9C4; width: 3px; top: -4px; bottom: -4px; border-radius: 2px; }
+  .card .ln { font-size: 13.5px; color: #CFC9C4; margin: 0 0 3px; }
+  .card .ln.m { color: #A7A19C; }
+  .card .ln b { color: #EDE8E4; font-weight: 600; }
+  .card .rs { display: flex; justify-content: space-between; border-top: 1px solid #3A3532; padding-top: 7px; margin-top: 8px; font-size: 13.5px; color: #CFC9C4; }
+  .chips { display: flex; gap: 8px; margin: 2px 0 6px; }
+  .chips span { border: 1px solid #5A5552; border-radius: 9px; padding: 4px 14px; font-size: 14px; }
+  .chips span.on { background: #46404F; border-color: #46404F; }
+  .chk { font-size: 13px; color: #A7A19C; margin: 6px 2px 0; }
+
+  /* settings */
+  .set { width: 411px; background: #121212; border-radius: 26px; padding: 18px 16px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .set .h { font-size: 20px; margin: 0 0 14px; display: flex; gap: 8px; align-items: center; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .it .d { font-size: 12.5px; color: #A7A19C; margin-top: 2px; }
+  .seg { display: flex; border: 1px solid #5A5552; border-radius: 20px; overflow: hidden; margin-top: 9px; }
+  .seg span { flex: 1; text-align: center; padding: 7px 0; font-size: 14px; border-left: 1px solid #5A5552; }
+  .seg span:first-child { border-left: 0; }
+  .seg span.on { background: #4A3A35; color: #F4D9CF; font-weight: 600; }
+  .seg.off { opacity: .42; }
+
+  /* status-bar strip */
+  .sbar { width: 384px; height: 40px; border-radius: 12px; background: #000; display: flex; align-items: center; padding: 0 14px; gap: 7px; color: #fff; font: 600 14px Roboto, Arial, sans-serif; }
+  .zoom { display: flex; gap: 18px; align-items: center; margin-top: 12px; }
+  .zoom figure { margin: 0; text-align: center; font-size: 11.5px; color: var(--muted); }
+  .zoom .tile { background: #000; border-radius: 14px; padding: 10px; display: inline-block; }
+
+  /* pace scale */
+  .scale { max-width: 760px; margin: 18px 0 6px; }
+  .scale .track { position: relative; height: 34px; border-radius: 8px; overflow: hidden; display: flex; }
+  .scale .track > div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: #1d1a18; text-align: center; line-height: 1.15; }
+  .scale .ax { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 4px; }
+</style>
+<style>
+  .hl { height: 19px; margin-bottom: 3px; }
+  .hl .lbl { min-width: 0; }
+  .hl .rcl { margin-left: auto; display: flex; align-items: center; gap: 3px; font-size: 12px; font-variant-numeric: tabular-nums; flex: 0 0 auto; padding-left: 6px; }
+  .hl .rcl b, .hsub b, .rcol b { font-weight: 700; }
+  .hsub { height: 16px; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+  .hsub + .hsub { margin-top: 0; }
+  .hsub .tx { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .rcol { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; line-height: 11px; color: #9E9E9E; font-variant-numeric: tabular-nums; }
+  .shade.light .rcol { color: #5C5C5C; }
+  .cap2 { font-size: 10px; letter-spacing: .08em; color: #9E9E9E; text-align: center; margin-top: 2px; line-height: 11px; }
+  .shade.light .cap2 { color: #5C5C5C; }
+  .dim { opacity: .45; }
+  .gwrap { display: inline-flex; align-items: center; gap: 3px; }
+  .rec { color: var(--good); font-weight: 700; }
+  .duet .dl .lbl { min-width: 0; flex: 0 1 auto; }
+  .duet .dl .rg { margin-left: auto; flex: 0 0 auto; display: flex; padding-left: 4px; }
+  .dot6 { width: 6px; height: 6px; border-radius: 50%; margin-left: 5px; flex: 0 0 auto; background: #E0705A; }
+  .meas { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--muted); margin-top: 6px; }
+  .ok { color: var(--good); } .no { color: var(--bad); }
+  /* iOS */
+  .lock { width: 393px; background: linear-gradient(160deg,#2b3a55,#1a1f2e 60%,#2d1f2a); border-radius: 30px; padding: 16px; }
+  .la { width: 361px; border-radius: 22px; padding: 12px 16px; background: rgba(28,28,30,.86); color: #F2F2F7; font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; border: 1px solid #2c2c2e; }
+  .la .nm { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; line-height: 18px; }
+  .la .nm .mut { color: #AEAEB2; font-weight: 400; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+  .la .r1 { display: flex; align-items: center; gap: 12px; }
+  .la .r1 > .l { flex: 1; min-width: 0; }
+  .la .bigf { font-weight: 600; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; flex: 0 0 auto; text-align: right; }
+  .la .thin { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #AEAEB2; margin-top: 7px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .la .thin b { color: #F2F2F7; font-weight: 600; }
+  .la .bar { background: #3A3A3C; margin-top: 6px; }
+  .la .line { font-size: 12.5px; color: #AEAEB2; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .island { background: #000; border-radius: 999px; height: 36px; width: 252px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; color: #fff; font: 600 15px -apple-system, system-ui, sans-serif; }
+  .island .gap { width: 110px; }
+  .isx { background: #000; border-radius: 36px; width: 361px; padding: 16px 20px 18px; color: #fff; font-family: -apple-system, system-ui, sans-serif; }
+  .isx .top { display: flex; align-items: center; justify-content: space-between; }
+  .isx .line { font-size: 13px; color: #AEAEB2; margin-top: 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .isx .line b { color: #fff; font-weight: 600; }
+  .isx .bar { height: 8px; border-radius: 4px; background: #3A3A3C; margin-top: 10px; }
+  .recbox { border: 1px solid var(--good); border-radius: 12px; padding: 12px 16px; margin: 14px 0; max-width: 86ch; font-size: 13.5px; }
+  .recbox b { color: var(--good); }
+  .revnote { border: 1px solid var(--accent); border-radius: 12px; padding: 12px 16px; margin: 0 0 16px; max-width: 86ch; font-size: 13.5px; }
+  .revnote b { color: var(--accent); }
+  .rg4 { flex: 0 0 auto; display: flex; align-items: center; }
+  .la .r1 > svg { flex: 0 0 auto; }
+  .meas.ok { color: var(--good); } .meas.no { color: var(--bad); }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol><symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.98" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></symbol></defs></svg>
+
+<div class="page">
+  <p class="eyebrow">CCRM-103 (Hybrid Notification) · rev B · 2026-11-02 · Android notification and iOS Live Activity</p>
+  <h1>Hybrid Notification Wireframe</h1>
+  <div class="revnote"><b>Superseded by design/2026-11-02-shape-grammar.html (rev A) for the decision.</b> This page is kept as the record of H1 to H4.</div>
+  <div class="revnote"><b>Rev B, 2 Nov.</b> New: <b>H4 · ring on the left</b>, your follow-up ("show the ring a little bigger, like H2, but keep it on the left; hollow, the
+    percentage inside, only the colour and the pace line; the right side is the Weekly"). H3 stays, unchanged, beside it everywhere. H4 is drawn in every state (§2), expanded (§3), the Duet with its narrow fallback (§4)
+    and on iOS (§5); a Today / H3 / H4 comparison at true size and 2× opens the page (§0); the tables and the open questions carry H4 too. The numbers under each H4 drawing are measured in the page, not estimated.
+    <b>Pick between H3 and H4: see the green box in §1.</b></div>
+  <p class="lede">
+    Your idea of 2 Nov, drawn: <b>the bar stays the Weekly gauge, and 5h becomes a small ring</b>, the pairing the Mac menu bar
+    already uses ("a bar for 7-day plus a ring for 5-hour"). The ring is the status-bar glyph's geometry (CCRM-83 (Ring Renderer):
+    hairline extent, usage band, red slice past the needle, hub and needle as the window's clock, spent cross) scaled to 14 to 22 dp.
+    It carries the account's <b>other</b> window than the bar: 5h under a Weekly lead, Weekly under a 5h lead.
+    The pace words stay. Nothing is removed from the bar. The panel, strips, tap targets and the status-bar icon are untouched.
+  </p>
+  <p class="lede">Fixtures (one moment, as in the v2.0 mocks): <b>Wednesday 2:50 pm</b>. <b>Teams</b> (Claude Max): Weekly 52%, resets
+    Sun 9:30 pm (38.9% of the week gone); 5h 34%, resets 5:10 pm (53.3% gone); a binding state with 5h at 93%, back at 3:40 pm
+    (83.3% gone). <b>Personal</b> (ChatGPT Pro, no 5h): Weekly 50%, resets Fri 10:18 pm (67% gone).</p>
+
+  <hr class="hr">
+  <h2>0 · Today, H3, H4: side by side</h2>
+  <p class="sub">The same account, the same moment (Teams, Weekly 52%, 5h 34%), the three layouts at true size (1 dp = 1 CSS px) and at 2×. All three are the same height; what changes is where the 5h ring sits and how
+    much of it you can read. The measured lines under H4 say how wide the Weekly bar is left.</p>
+  <div class="row" id="cmp"></div>
+  <div class="row" id="cmp2"></div>
+
+  <hr class="hr">
+  <h2>1 · Where the ring goes: four placements, collapsed, one account</h2>
+  <p class="sub">Collapsed single today is one stack, content about 53 dp (spec §1.2): label line 19 dp, bar 13 dp + 3, sub line 16 dp + 4.
+    The big figure (32 sp) trails and is centred. <b>The rule for all four: the ring lives inside a line or column that already
+    exists, so the row never grows.</b> The ring has no digits, so each variant carries the 5h number as text beside it.</p>
+  <div class="row" id="place"></div>
+  <div class="tbl-wrap"><table>
+    <tr><th></th><th>Ring</th><th>Where, exactly</th><th>What gives</th><th>Height</th></tr>
+    <tr><td><b>H1</b> · companion slot</td><td class="n">16 dp</td><td>Start of the 16 dp sub line, 4 dp gap, "5h 34%" 12 sp, then " · " and the pace words</td><td>Pace words lose about 40 dp of the 256 dp left column; the ring is the smallest of the three</td><td class="n ok">0 (inside the 16 dp line)</td></tr>
+    <tr><td><b>H2</b> · beside the figure</td><td class="n">22 dp</td><td>New 40 dp column between the left column and the figure, ring over a 10 sp "5h 34%" caption (22 + 2 + 11 = 35 dp, centred on the 53 dp row), 14 dp gaps</td><td>Left column drops from 256 to 216 dp (bar 40 dp shorter, the bar bitmap is stretched, so more residual stretch); closest to the Mac pairing, and the ring reads as the figure's twin</td><td class="n ok">0 (inside the figure column)</td></tr>
+    <tr><td><b>H3</b> · label row</td><td class="n">18 dp</td><td>Right end of the 19 dp label line; ring 18 dp, 3 dp gap, "5h 34%" 12 sp; the cluster is about 59 dp ("5h 100%" about 66 dp) and never shrinks, the label ellipsizes first</td><td>Label budget: 328 − 14 − 80 (a 100% figure) − 66 − 6 = 162 dp, enough for about 22 characters at 13 sp</td><td class="n ok">0 (ring 18 inside the 19 dp line)</td></tr>
+    <tr><td><b>H4</b> · ring on the left</td><td class="n">44 dp</td><td>New 44 dp column at the start of the row (the row content is 55 dp, so 5.5 dp above and below), 14 dp gap, then today's stack (label row, Weekly bar, pace words) and the 32 sp figure at the far right. Hollow ring: 4 dp arc on the outer edge, 1.5 dp neutral track, the pace needle across the arc and 2.5 dp into the bore; the 5h percentage in the 36 dp bore (12 sp bold; four characters such as "100%" or "+19%" step down to 11 sp, about 28.5 dp wide, about 1.9 dp clear of the arc), a 7 sp "5h" under it</td><td>The Weekly bar falls from 248 dp (today, 52%, measured) to 190 dp, 58 dp or 23% shorter; with a 100% figure it is 173 dp (measured under each H4 drawing). The label row is free of the ring and keeps its full width; the sub line is the pace words only. It does not crowd the text (the longest line, "Out until Sun 9:30 pm · in 3d 4h", fits at 173 dp); if the shorter bar is a worry, figure 32 → 28 sp gives back about 8 dp (not drawn)</td><td class="n ok">0 (44 inside the 55 dp row)</td></tr>
+  </table></div>
+  <div class="recbox"><b>Rev B pick: H4 for single accounts and for Duet halves of 156 dp (H3's bare 14 dp ring below 150 dp)</b>, because a 44 dp ring with the number inside reads at a glance and demotes nothing,
+    where H3's 18 dp ring needs text beside it to be read; the cost is a Weekly bar 23% shorter (248 → 190 dp) and a Duet half whose bar falls from 86 to 47 dp.<br><br>
+    <b>Rev A's reasoning for H3, kept.</b> The ring sits on the line that carries the identity ("Teams · Weekly") and reads as a badge of the second
+    window; the sub line keeps the whole width for the pace words, which the companion text was already squeezing
+    ("Slow down · ≈11%/day · 5h 34%" is the longest line in the notification); and at 18 dp it is bigger than the 14 dp status-bar
+    ring, whose geometry is already proven legible on a Fold 7. H2 is the most Mac-like but costs the bar 40 dp, and H1's 16 dp ring is the
+    weakest read. <span class="rec">The same cluster works expanded and in the Duet</span> (§3, §4).</div>
+
+  <hr class="hr">
+  <h2>2 · States (H3 and H4, side by side)</h2>
+  <p class="sub">The ring follows the same honesty rules as the status-bar ring (spec §4.3): accent up to 80%, then the ladder colour; a red slice from the
+    needle to the fill tip when used is more than 3 points ahead of the clock; hairline only with no reading; spent cross at 100%.
+    It draws the <b>spend</b> in every Usage display mode; only the text beside it (H3) or in the bore (H4) follows Used, Left or Vs pace. Each state is drawn twice, H3 then H4. H4 differs only in the ring itself:
+    hollow, 44 dp, the number inside, no hub (the bore is for the number), no spent cross (it would sit under the digits: at 100% the arc is full, the red step, and the bore says "100%").</p>
+  <div class="row" id="states"></div>
+  <div class="tbl-wrap"><table>
+    <tr><th>State</th><th>Bar and figure</th><th>H3 · ring and its text</th><th>H4 · ring and its bore</th><th>Sub line (pace words kept)</th></tr>
+    <tr><td>Quiet (Q1)</td><td>Weekly 52%, tick 39%</td><td>5h 34% in the accent, needle at 53%</td><td>Arc 34% in the accent, hairline track, needle at 53%; bore "34%" bold 12 sp, "5h" 7 sp under it</td><td>"Slow down · ≈11%/day"</td></tr>
+    <tr><td>5h binding, Headline Weekly (Q2)</td><td>unchanged</td><td>Takes the ladder step (orange past 90) and bold text; with the needle at 83% the red slice wins from 83% to 93%. This replaces rev A L1's loud companion text</td><td>Orange arc to 93%, red slice 83% to 93%, the bore number turns orange and stays bold. At 44 dp this is far louder than H3</td><td>unchanged</td></tr>
+    <tr><td>Auto takeover (Q3)</td><td>5h leads: bar and figure are 5h 93%</td><td><b>Proposal: the ring swaps to Weekly</b> ("Weekly 52%", needle at the week's 39%), so bar and ring never show the same window</td><td><b>Recommended (A): the ring is always the window the bar is not.</b> Bar and figure go to 5h, the ring goes to Weekly: bore "52%" with "Weekly" under it, needle at 39%, red slice 39% to 52%. Positions never move, only the content. Alternative (B), ring stays 5h and the bar stays Weekly, hides the takeover, rejected</td><td>"Back at 3:40 pm · in 50m", the companion text is gone, the ring carries it</td></tr>
+    <tr><td>Weekly spent (Q4, CCRM-102 (Spent Week Gate))</td><td>100% red, spent cross is the gauge's, bar full red</td><td>5h ring and its text at 45% alpha, the same dimming a stale figure gets; it can still be read, and nothing says it is usable</td><td>The whole ring, arc, needle and "34%", at 45% alpha. Still readable, nothing says it is usable</td><td>"Out until Sun 9:30 pm · in 3d 4h"</td></tr>
+    <tr><td>No 5h on the account (Q5)</td><td>Personal: Weekly 50%, tick 67%</td><td>No ring, no placeholder; the label row ends at the label</td><td>No ring, no 44 dp column: the row is exactly today's, bar at its full 248 dp</td><td>"Room to spare · ≈22%/day · resets Fri"</td></tr>
+    <tr><td>Vs pace (Q6, CCRM-100 (Vs Pace Display))</td><td>Figure "−13%" and a "VS PACE" caption; bar still draws the 52% spend</td><td>Ring still draws 34%; its text is the distance: "5h +19%" (mark 53% minus 34%)</td><td>Arc still the 34% spend; bore "+19%" (four characters, 11 sp like "100%")</td><td>unchanged</td></tr>
+    <tr><td>Not started (Q7)</td><td>"—", bare track, no tick</td><td>Hairline ring alone, "5h —"</td><td>Hairline circle alone, "—" in the bore, no needle</td><td>"Weekly not started"</td></tr>
+    <tr><td>5h spent (Q8)</td><td>unchanged</td><td>Spent cross, "5h 100%" in red (the widest cluster, about 66 dp)</td><td>Full arc in the red step, no cross; "100%" bold at 11 sp in the bore, about 1.9 dp clear of the arc</td><td>unchanged</td></tr>
+    <tr><td>Left mode</td><td>remainder and a "LEFT" caption</td><td>Ring draws the spend, text "5h 66%" with the same remainder rule</td><td>Arc the spend; bore the remainder "66%", "5h" under it</td><td>unchanged</td></tr>
+  </table></div>
+
+  <hr class="hr">
+  <h2>3 · Expanded, one account</h2>
+  <p class="sub"><b>Proposal: the ring stays in the header, and the panel's companion row stays too.</b> They do different jobs: the ring is the glance
+    in the same place as collapsed (so expanding never moves it), and the row is the detail the ring cannot hold: its reset line
+    ("Resets in 2h 20m · 5:10 pm"), its own bar and tick, and the 5h projection. Dropping the row would hand back 43 dp, and nothing needs it. The header
+    text beside the ring drops to the number alone when it would only repeat the row's. Left as drawn here (number repeated) so you can judge it.
+    <b>H4, same proposal:</b> the 44 dp ring stays at the left of the header block, which is 71 dp tall expanded, so it is centred with 13.5 dp spare above and below and sits exactly where collapsed put it (measured, below).
+    The bore carries the number, so there is no text repeat to trim; the panel's 5h row still holds the reset line and projection.</p>
+  <div class="row" id="expanded"></div>
+
+  <hr class="hr">
+  <h2>4 · The Duet (two accounts, 156 dp per half)</h2>
+  <p class="sub">Collapsed halves are two-line blocks with no sub line (spec §2.2), so there is no text to carry a number. <b>Proposal: a bare 14 dp ring at the right
+    end of the label line (14 dp high), no digits.</b> 14 dp is the status-bar ring's true rendered size, so the geometry is already proven. It costs the label ceiling
+    18 dp (138 → 120 dp; with one dot 127 → 109; with two 116 → 98). The bar and the figure are untouched, so a half stays 52 dp. An account with no 5h
+    (Personal) shows no ring. Each ring follows its own account's Headline: Weekly lead → 5h ring, 5h lead → Weekly ring.
+    <b>H4 in the Duet:</b> a 36 dp ring on the left of the half (bore "34%" at 9.8 sp, no tiny label, too small to read), label + bar + a 28 sp figure on the right. It is the expensive one: Teams' bar falls from 86 to 47 dp (measured) while
+    Personal, with no 5h, keeps the full row. <b>Narrow rule:</b> a half under about 150 dp (the Fold 7 inner screen's 101 dp) cannot take it, so the half uses H3's bare 14 dp label ring, and that drops under the 60 dp label rule exactly as in rev A.</p>
+  <div class="row" id="duet"></div>
+
+  <hr class="hr">
+  <h2>5 · iOS: the Live Activity and the Dynamic Island</h2>
+  <p class="sub">iOS has no persistent notification; the Live Activity is the nearest surface. Same idea: the Weekly <b>bar</b> leads, the 5h <b>ring</b>
+    replaces the thin "5h" line (a thin line plus a 5 pt bar, in spec §2.7 and the v2.0 section). Dark palette, #1C1C1E at 86%, 16 pt horizontal and 12 pt vertical padding, as shipped.
+    SwiftUI draws the ring with the same Canvas path as the widgets' ring face, so no new renderer.
+    <b>H4 on iOS:</b> the same hollow ring at the left of the row (44 pt on the Lock Screen, 36 pt in the Duet, 30 pt compact Island, 48 pt expanded Island), the Weekly stack on the right. The thin "5h" line goes away, so the Lock Screen
+    is shorter than H3's (104 pt measured against 160).</p>
+  <div class="row" id="ios"></div>
+
+  <hr class="hr">
+  <h2>6 · What changes, what does not</h2>
+  <div class="tbl-wrap"><table>
+    <tr><th>Changes</th><th>Does not change</th></tr>
+    <tr><td>One new element per account that has a second window: a small ring plus (single layout) its number as text. <b>H4:</b> a 44 dp hollow ring column at the left of the row, its number in the bore, nothing on the label row</td><td>The bar: drawing, pace tick, red slice, severity colours, bitmap widths (340 dp single, 156 dp Duet)</td></tr>
+    <tr><td>The collapsed companion text "· 5h 34%" leaves the sub line; the loud rule (orange, bold) moves onto the ring</td><td>The big figure: size, colour, Used / Left / Vs pace, the caption</td></tr>
+    <tr><td>Auto takeover: the ring swaps to Weekly instead of the companion text "· Weekly 52%" (H4: ring in the same left slot, bore "52%", "Weekly" under it)</td><td>The pace words (band · allowance) and the spent line "Out until Sun 9:30 pm"</td></tr>
+    <tr><td>Spent week: the ring is dimmed to 45% instead of dropping the 5h companion</td><td>The panel: first row, model caps, strips, strip caps, the 78 dp Duet panel budget</td></tr>
+    <tr><td>Duet collapsed: a 14 dp ring at the end of each half's label line (H4: a 36 dp ring at the left of the half, 28 sp figure, bar 86 → 47 dp; under about 150 dp the half uses the 14 dp ring)</td><td>The status-bar ring: still one glyph, still the Headline-gauge window, still square at 14 dp (spec §4)</td></tr>
+    <tr><td>iOS: the thin "5h" line becomes a ring row; the compact Island's leading slot becomes the ring (H4: 44 pt ring left of the row, figure 52 → 44 pt, the 5h reset time dropped from the Lock Screen)</td><td>Tap targets, the "Refresh" action, channel, importance, the plain-string fallback (it keeps "Slow down · ≈11%/day · 5h 34%")</td></tr>
+    <tr><td></td><td>Accounts with no 5h: exactly today's v2.0 layout</td></tr>
+  </table></div>
+  <h3>Height and width budget per layout</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Layout</th><th>Today (v2.0)</th><th>H3 ring</th><th>H4 ring (measured)</th><th>Check</th></tr>
+    <tr><td>Single collapsed</td><td class="n">≈ 53 dp: 19 label + 3 + 13 bar + 16 sub + 4</td><td class="n">≈ 53 dp: ring 18 inside the 19 dp label line</td><td class="n">row 55 dp = today's 55: ring 44 inside; card 115 = 115 (Δ 0). Weekly bar 248 → 190 dp (173 with a 100% figure)</td><td class="ok">Δ 0, ≤ current row</td></tr>
+    <tr><td>Single expanded</td><td class="n">header 19 + 4 + 13 + 4 + 16 + 16, panel as is</td><td class="n">ring 18 inside the 19 dp label line; panel unchanged</td><td class="n">ring 44 inside the 71 dp header block; card 262 dp, panel unchanged. Weekly bar 166 dp</td><td class="ok">Δ 0</td></tr>
+    <tr><td>Duet collapsed, per half (156 dp)</td><td class="n">≈ 52 dp: 14 label + 1 + 35 figure line</td><td class="n">ring 14 inside the 14 dp label line; width: label ceiling 138 → 120 dp</td><td class="n">halves 48 / 48 dp (ring 36 inside); Teams' bar 47 dp (was 86). Needs the half ≥ about 150 dp</td><td class="ok">Δ 0, ≤ 52</td></tr>
+    <tr><td>Duet expanded</td><td class="n">136 dp chrome + 78 dp panel = 214 of the 256 dp cap</td><td class="n">ring 18 in each 19 dp label line</td><td class="n">Teams header block 55 dp with the 44 dp ring inside; card 268 dp, panel and its 78 dp budget unchanged</td><td class="ok">Δ 0, ≤ 256</td></tr>
+    <tr><td>Live Activity, one account (cap 160 pt)</td><td class="n">≈ 106 pt (mock-measured, ring row swapped for a 14 pt line)</td><td class="n">≈ 116 pt (mock-measured): the thin 12.5 pt line becomes a 24 pt ring row (+11)</td><td class="n">104 pt measured: ring 44 pt in a 78 pt row (the thin 5h line is gone)</td><td class="ok">≤ 160 pt</td></tr>
+    <tr><td>Live Activity, Duet (cap 160 pt)</td><td class="n">≈ 140 pt (mock-measured)</td><td class="n">≈ 144 pt (mock-measured): each thin line 14 → 16 for a 16 pt ring (+2 per row)</td><td class="n">148 pt measured: 36 pt ring in 56 pt rows</td><td class="ok">≤ 160 pt</td></tr>
+  </table></div>
+
+  <h2>7 · Open questions</h2>
+  <p class="sub">Each with the recommendation I would take if you say "go".</p>
+  <ol class="dec">
+    <li><b>Placement.</b> H1, H2, H3 or H4? <span class="rec">Recommend H4</span> (rev B: ring on the left, 44 dp, bore number) for single accounts and 156 dp Duet halves, H3's 14 dp ring as the narrow Duet fallback; H3 alone remains the safe choice if the shorter Weekly bar (248 → 190 dp) bothers you. Reasons in §1.</li>
+    <li><b>Digits beside the ring.</b> H3: single layout carries "5h 34%" as text; the Duet halves have none. <span class="rec">Recommend keep the text on single and none on the Duet</span> (the ring alone is a glance; the expanded panel has the number). <b>H4:</b> the number is inside the ring everywhere, so there is no separate text.</li>
+    <li><b>Auto takeover.</b> Ring swaps to Weekly while 5h leads. The alternative is the ring staying 5h, duplicating the bar. <span class="rec">Recommend the swap.</span> <b>H4:</b> the ring stays in its left slot and swaps content (bar and figure 5h, ring Weekly), drawn in Q3 and X2; the other option (ring 5h, bar Weekly) hides the takeover.</li>
+    <li><b>Weekly spent.</b> Dim the 5h ring to 45% (drawn, both variants) or drop it as rev A's E3 dropped the companion. <span class="rec">Recommend dim</span>: it keeps the row's shape and CCRM-102 (Spent Week Gate) already treats 5h as moot then.</li>
+    <li><b>A setting?</b> A "Show 5h ring" switch under "Always-on notification". <span class="rec">Recommend none</span>, in the spirit of CCRM-61 (Settings Diet); no 5h on the account already means no ring. Revisit only if someone asks.</li>
+    <li><b>Expanded duplication.</b> The panel's 5h row repeats what the header ring says. <span class="rec">Recommend keep both</span> for rev A, since the row alone carries the reset line and projection.</li>
+    <li><b>Vs pace text.</b> The ring text is the distance ("+19%"), the ring itself the spend. <span class="rec">Recommend this</span>, consistent with the panel rows.</li>
+    <li><b>Narrow Duet.</b> Drop the ring when the label ceiling would fall under 60 dp (a long label plus a condition dot at 101 dp). Conditions dots keep priority over the ring. <span class="rec">Recommend this rule</span>; at 101 dp with short labels it still fits (D4).</li>
+    <li><b>H4: tiny label in the bore.</b> A 7 sp "5h" (and "Weekly" when the ring is the Weekly) under the number at 44 dp; at 36 dp (Duet) and 30 pt (Island) it is dropped as unreadable, leaving the ring's window implied by the Headline. <span class="rec">Recommend keep it at 44 dp and up, drop below</span>; the alternative is no tiny label anywhere, which saves the crowding at "100%" (about 1.9 dp clear of the arc at 11 sp) but loses the cue on Auto takeover.</li>
+    <li><b>H4: the Weekly figure.</b> It stays 32 sp (66 dp wide) and the bar takes the loss (190 dp). <span class="rec">Recommend keep 32 sp</span>; drop to 28 sp (≈ +8 dp bar) only if the device pass shows the bar crowded. On iOS the Lock Screen figure goes 52 → 44 pt so the text stack fits, already drawn.</li>
+    <li><b>H4: the Duet.</b> The 36 dp ring cuts Teams' bar to 47 dp while Personal keeps 86 dp, so the two halves' bars differ. <span class="rec">Recommend accept for halves of 150 dp and up, H3's 14 dp ring below</span>; if the mismatch looks wrong on the device, use H3's 14 dp ring on every Duet half and keep H4 for the single layouts only.</li>
+    <li><b>Status-bar glyph.</b> Stays one ring. <span class="rec">Recommend no change</span>; a wide twin glyph would shrink to unreadable (spec §4.1).</li>
+    <li><b>Implementation cost.</b> The ring is a second bitmap (RemoteViews cannot host a drawable ring), drawn by the existing <code>RingRenderer</code>; one extra ImageView per account in the layouts. Worth confirming before build that the extra bitmap per poll does not push the notification past its update budget. Not a design question, flagged for the plan.</li>
+  </ol>
+</div>
+<script>
+// ---------- fixtures ----------
+const CL = '#E59980', GP = '#19C39A';
+const T_GONE = 38.9, P_GONE = 67.0, T5_GONE = 53.3, B5_GONE = 83.3;
+function pace(used, gone) { const q = 100 - used, r = 100 - gone; const m = Math.max(r, q); return m === 0 ? 0 : (r - q) / m * 100; }
+function band(used, gone) {
+  if (used >= 99.5) return 'Spent';
+  const p = pace(used, gone);
+  if (Math.abs(p) <= 5) return 'On pace';
+  if (p < -50) return 'Use before reset';
+  if (p < 0) return 'Room to spare';
+  if (p > 50) return 'Nearly out';
+  return 'Slow down';
+}
+function allowance(used, hoursLeft) { const q = 100 - used; if (hoursLeft < 24) return `${Math.round(q)}% left, ${Math.round(hoursLeft)}h`; const d = q / (hoursLeft / 24); return d < 1 ? '<1%/day' : `≈${Math.round(d)}%/day`; }
+function sev(p, accent) { return p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : accent; }
+const mark = (id, color, s = 14) => `<svg width="${s}" height="${s}" style="color:${color};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
+function bar(p, tick, color, h = 13, light = false) {
+  const track = light ? '#D6D6D6' : '#3A3A3A';
+  const red = p != null && tick != null && p > tick ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:#FF5252"></o>` : '';
+  const tk = tick != null && p != null ? `<s style="left:${tick}%;background:${light ? 'rgba(31,31,31,.6)' : 'rgba(236,236,236,.7)'}"></s>` : '';
+  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${track}"><i style="width:${Math.min(p ?? 0, 100)}%;background:${color}"></i>${red}${tk}</div>`;
+}
+// the status-bar ring (weekly-first-pace.html gauge(), CCRM-83 geometry), scaled
+function gauge(p, gone, color, size, dark = true) {
+  const u = size / 24, cx = size / 2, R = 9.2 * u, ink = dark ? '255,255,255' : '0,0,0';
+  const pt = f => [cx + R * Math.sin(2 * Math.PI * f), cx - R * Math.cos(2 * Math.PI * f)];
+  const arc = (a, b) => { if (b - a >= 0.9999) b = a + 0.9999; const [x0, y0] = pt(a), [x1, y1] = pt(b); return `M${x0},${y0} A${R},${R} 0 ${b - a > .5 ? 1 : 0} 1 ${x1},${y1}`; };
+  const f = Math.min(p, 100) / 100, g = gone / 100;
+  let s = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto"><circle cx="${cx}" cy="${cx}" r="${R}" fill="none" stroke="rgba(${ink},.5)" stroke-width="${1.493 * u}"/>`;
+  if (f > 0) s += `<path d="${arc(0, f)}" fill="none" stroke="${color}" stroke-width="${4 * u}"/>`;
+  if (f > g) s += `<path d="${arc(g, f)}" fill="none" stroke="#FF5252" stroke-width="${4 * u}"/>`;
+  const ang = 2 * Math.PI * g, rim = 11.2 * u;
+  s += `<line x1="${cx}" y1="${cx}" x2="${cx + rim * Math.sin(ang)}" y2="${cx - rim * Math.cos(ang)}" stroke="rgba(${ink},.95)" stroke-width="${1.792 * u}" stroke-linecap="round"/><circle cx="${cx}" cy="${cx}" r="${1.344 * u * 1.4}" fill="rgba(${ink},.95)"/>`;
+  if (p >= 99.5) { const a = 4.2 * u; s += `<path d="M${cx - a},${cx - a}L${cx + a},${cx + a}M${cx + a},${cx - a}L${cx - a},${cx + a}" stroke="rgba(${ink},.9)" stroke-width="${2 * u}"/>`; }
+  return s + '</svg>';
+}
+function hair(size, dark) { const u = size / 24, c = size / 2; return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex:0 0 auto"><circle cx="${c}" cy="${c}" r="${9.2 * u}" fill="none" stroke="rgba(${dark ? '255,255,255' : '0,0,0'},.5)" stroke-width="${1.493 * u}"/></svg>`; }
+// ring object: {name, p, gone, ac, dim, txt}
+const ringSvg = (r, size, light) => r.p == null ? hair(size, !light) : gauge(r.p, r.gone, sev(r.p, r.ac), size, !light);
+function rtxt(r) { const v = r.txt ?? (r.p == null ? '—' : r.p + '%'); const loud = r.p > 90; return `${r.name} <b${loud ? ` style="color:${sev(r.p, r.ac)}"` : ''}>${v}</b>`; }
+const wrapDim = (r, s) => r.dim ? `<span class="gwrap dim">${s}</span>` : `<span class="gwrap">${s}</span>`;
+
+// ---------- H4 ring: hollow, big, number in the bore (rev B) ----------
+// canvas S dp; band 4k wide on the outer edge (outer radius S/2); neutral hairline track on the band's centre line; pace mark is a
+// radial needle across the band, reaching 2.5k into the bore (no hub: the bore is for the number); red slice needle to fill tip;
+// at 100% the band is full red-step and the bore keeps the number (no spent cross: it would sit under the digits).
+function ringH4(r, S, light, o = {}) {
+  const k = S / 44, ink = light ? '31,31,31' : '236,236,236';
+  const c = S / 2, sw = 4 * k, R = c - sw / 2, ri = R - sw / 2;
+  const pt = f => [c + R * Math.sin(2 * Math.PI * f), c - R * Math.cos(2 * Math.PI * f)];
+  const arc = (a, b) => { if (b - a >= 0.9999) b = a + 0.9999; const [x0, y0] = pt(a), [x1, y1] = pt(b); return `M${x0},${y0} A${R},${R} 0 ${b - a > .5 ? 1 : 0} 1 ${x1},${y1}`; };
+  const has = r.p != null;
+  const f = has ? Math.min(r.p, 100) / 100 : 0, g = (r.gone ?? 0) / 100;
+  const colr = has ? sev(r.p, r.ac) : null;
+  const tiny = o.tiny ?? k >= 0.95;
+  const txt = o.txt ?? r.txt ?? (has ? Math.round(r.p) + '%' : '—');
+  const fs = o.fs ?? (txt.length >= 4 ? 11 : 12) * k;   // four characters ("100%", "+19%") step down to 11 sp to clear the arc
+  const loud = has && r.p > 90;
+  let s = `<svg class="rng4" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" style="flex:0 0 auto;${r.dim ? 'opacity:.45' : ''}" role="img" aria-label="${r.name} ${txt}"><circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="rgba(${ink},.28)" stroke-width="${Math.max(1, 1.5 * k)}"/>`;
+  if (f > 0) s += `<path d="${arc(0, f)}" fill="none" stroke="${colr}" stroke-width="${sw}"/>`;
+  if (has && f > g) s += `<path d="${arc(g, f)}" fill="none" stroke="#FF5252" stroke-width="${sw}"/>`;
+  if (has && r.gone != null) {
+    const a = 2 * Math.PI * g, r0 = ri - 2.5 * k, r1 = c;
+    s += `<line x1="${c + r0 * Math.sin(a)}" y1="${c - r0 * Math.cos(a)}" x2="${c + r1 * Math.sin(a)}" y2="${c - r1 * Math.cos(a)}" stroke="rgba(${ink},.95)" stroke-width="${Math.max(1.4, 2 * k)}" stroke-linecap="butt"/>`;
+  }
+  const base = tiny ? c + 0.5 * k : c + 0.36 * fs;
+  s += `<text x="${c}" y="${base}" text-anchor="middle" font-family="Roboto, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="${fs}" letter-spacing="${-0.02 * fs}" fill="${loud ? colr : `rgb(${ink})`}">${txt}</text>`;
+  if (tiny) s += `<text x="${c}" y="${c + 10 * k}" text-anchor="middle" font-family="Roboto, Helvetica Neue, Arial, sans-serif" font-weight="600" font-size="${7 * k}" fill="rgba(${ink},.68)">${r.name}</text>`;
+  return s + '</svg>';
+}
+
+// ---------- single card ----------
+function card(o) {
+  const { light = false, mk = 'mkClaude', ac = CL, title, pct, tick, figTxt, cap, sub, sub2, fig = 32, panel = '', expanded = false, ring = null, v = 'H3' } = o;
+  const col = sev(pct, ac);
+  const ft = figTxt ?? (pct == null ? '—' : pct + '%');
+  const rs = 18;
+  const h3 = ring && v === 'H3' ? `<span class="rcl">${wrapDim(ring, ringSvg(ring, rs, light) + `<span>${rtxt(ring)}</span>`)}</span>` : '';
+  const subHtml = ring && v === 'H1'
+    ? `${wrapDim(ring, ringSvg(ring, 16, light) + `<span>${rtxt(ring)}</span>`)}<span class="tx">· ${sub}</span>`
+    : `<span class="tx">${sub}</span>`;
+  const rc = ring && v === 'H2' ? `<div class="rcol ${ring.dim ? 'dim' : ''}">${ringSvg(ring, 22, light)}<span>${rtxt(ring)}</span></div>` : '';
+  const rg4 = ring && v === 'H4' ? `<div class="rg4">${ringH4(ring, 44, light)}</div>` : '';
+  return `<div class="scroll"><div class="shade ${light ? 'light' : ''}"><div class="nc" ${expanded ? '' : 'data-coll="1"'}>
+    <div class="apphdr">${mark('ring42', ac, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">${expanded ? '⌃' : '⌄'}</span></div>
+    <div class="hb">${rg4}<div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl" style="font-size:${expanded ? 14 : 13}px">${title}</span>${h3}</div>${bar(pct, tick, col, 13, light)}
+      <div class="hsub">${subHtml}</div>${sub2 ? `<div class="hsub">${sub2}</div>` : ''}</div>
+      ${rc}<div class="figwrap"><div class="fig" style="font-size:${fig}px;color:${col}">${ft}</div>${cap ? `<div class="cap2">${cap}</div>` : ''}</div></div>
+    ${panel ? `<div class="pnl">${panel}</div>` : ''}
+    ${expanded ? '<div class="acts">Refresh</div>' : ''}
+  </div></div></div>`;
+}
+const crow = (l, r, v, tick, ac) => `<div class="crow"><div class="ch"><span class="cl">${l}</span><span class="cr">${r}</span><span class="cv">${v}%</span></div>${bar(v, tick, sev(v, ac))}</div>`;
+const col = (cap, cls, body, note, basis) => `<div class="col"${basis ? ` style="flex-basis:${basis}px"` : ''}><p class="cap ${cls}">${cap}</p>${body}${note ? `<p class="note">${note}</p>` : ''}</div>`;
+const W = `${band(52, T_GONE)} · ${allowance(52, 102.7)}`;           // "Slow down · ≈11%/day"
+const R5 = (extra = {}) => ({ name: '5h', p: 34, gone: T5_GONE, ac: CL, ...extra });
+const RW = (extra = {}) => ({ name: 'Weekly', p: 52, gone: T_GONE, ac: CL, ...extra });
+const wkTeams = { title: 'Teams · Weekly', pct: 52, tick: T_GONE };
+// H3 and H4 of the same state, one after the other
+const both = (label, cls, o, n3, n4) => col(`H3 · ${label}`, cls, card({ ...o, v: 'H3' }), n3) + col(`H4 · ${label}`, cls, card({ ...o, v: 'H4' }), n4);
+
+// ---------- §0 comparison ----------
+const todayO = { ...wkTeams, sub: `${W} · 5h 34%` };
+document.getElementById('cmp').innerHTML = [
+  col('Today (v2.0) · true size', 'warn', card(todayO), 'Companion text at the end of the pace words.'),
+  col('H3 · ring on the label row · true size', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H3' }), '18 dp ring + "5h 34%" text at the right end of the label line.'),
+  col('H4 · ring on the left · true size', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H4' }), '44 dp hollow ring, the 5h number in the bore; the whole right side is the Weekly.'),
+].join('');
+document.getElementById('cmp2').innerHTML = [
+  col('Today · 2×', 'warn', `<div style="zoom:2">${card(todayO)}</div>`, '', 790),
+  col('H3 · 2×', 'good', `<div style="zoom:2">${card({ ...wkTeams, sub: W, ring: R5(), v: 'H3' })}</div>`, '', 790),
+  col('H4 · 2×', 'good', `<div style="zoom:2">${card({ ...wkTeams, sub: W, ring: R5(), v: 'H4' })}</div>`, '2× is CSS zoom of the same drawing, to read the ring: arc in the accent, hairline track, needle at the 5h clock (53%), "34%" and "5h" in the bore.', 790),
+].join('');
+
+// ---------- §1 placements ----------
+document.getElementById('place').innerHTML = [
+  col('Today (v2.0, no ring)', 'warn', card({ ...wkTeams, sub: `${W} · 5h 34%` }), 'The reference: the companion is text at the end of the pace words.'),
+  col('H1 · ring in the sub line', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H1' }), 'Ring 16 dp, replaces the companion text in place. Pace words follow.'),
+  col('H2 · ring beside the figure', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H2' }), 'Ring 22 dp over a 10 sp caption; a 40 dp column between the bar and the figure.'),
+  col('H3 · ring on the label row', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H3' }), 'Ring 18 dp at the right end of the 19 dp label line; sub line is pace words only.'),
+  col('H4 · ring on the left (new, rev B)', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H4' }), 'Ring 44 dp, a new column at the start of the row; label row, Weekly bar and pace words keep their stack; the figure trails as today.'),
+  col('H3 · light shade', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H3', light: true }), 'The ring ink turns dark with the shade (the status-bar ring does the same); the accent and the ladder colours do not.'),
+  col('H4 · light shade', 'good', card({ ...wkTeams, sub: W, ring: R5(), v: 'H4', light: true }), 'Same rule: ink (needle, bore digits, track) goes dark, the arc keeps the accent.'),
+].join('');
+
+// ---------- §2 states ----------
+const bind5 = R5({ p: 93, gone: B5_GONE });
+document.getElementById('states').innerHTML = [
+  both('Q1 · quiet · 5h 34%', 'good', { ...wkTeams, sub: W, ring: R5() },
+    'Needle at 53% is ahead of the fill at 34%, so no red slice.',
+    'Arc 34% in the accent, needle at 53%, "34%" bold 12 sp with a 7 sp "5h" under it. No red slice.'),
+  both('Q2 · 5h binding (93%) · Headline Weekly', 'warn', { ...wkTeams, sub: W, ring: bind5 },
+    'Orange fill and bold orange text; the needle (83%) is behind the 93% tip, so the slice from 83% to 93% goes red (CCRM-83 (Ring Renderer) rule, it wins over orange).',
+    'Same rules at 44 dp: orange arc to 93%, red slice 83% to 93%, the bore number turns orange. The bigger ring makes the binding state much louder than H3\'s 18 dp one.'),
+  both('Q3 · Auto takeover · 5h leads, ring is Weekly', 'bad',
+    { title: 'Teams · 5h', pct: 93, tick: B5_GONE, sub: 'Back at 3:40 pm · in 50m', ring: RW() },
+    'Bar and figure are 5h; the ring is the other window, with the week\'s needle at 39% and a red slice from 39% to 52%.',
+    'Recommended (A): the ring always shows the window the bar does not. Bar and figure go to 5h, the ring goes to Weekly: bore "52%" with "Weekly" under it, needle at the week\'s 39%, red slice 39% to 52%. Left stays the quiet gauge, the right stays the lead. Alternative (B) keeps the ring on 5h and the bar on Weekly: no takeover is visible, rejected.'),
+  both('Q4 · Weekly spent · 5h ring dimmed to 45%', 'bad',
+    { title: 'Teams · Weekly', pct: 100, tick: 55, sub: 'Out until Sun 9:30 pm · in 3d 4h', ring: R5({ dim: true }) },
+    'The bar is the full red week. The ring and its text are muted rather than removed, so the row keeps its shape.',
+    'The ring (arc, needle, number) at 45% alpha. It stays readable ("34%"), nothing says it is usable. The right side is the full red week and its spent line.'),
+  col('Q5 · no 5h window (ChatGPT Pro) · H3 = H4', 'good',
+    card({ mk: 'mkGpt', ac: GP, title: 'Personal · Weekly', pct: 50, tick: P_GONE, sub: `${band(50, P_GONE)} · ${allowance(50, 55.5)} · resets Fri`, v: 'H4' }),
+    'No ring in either variant: H4 falls back to exactly today\'s row (no 44 dp column, no placeholder), so the bar keeps its full 248 dp and the "resets Fri" companion slot stays.'),
+  both('Q6 · Vs pace mode', 'good', { ...wkTeams, figTxt: '−13%', cap: 'VS PACE', sub: W, ring: R5({ txt: '+19%' }) },
+    'Figure = mark 39% minus 52% used. The ring still draws the 34% spend, its text is mark 53% minus 34%.',
+    'The arc still draws the 34% spend; the bore shows the distance "+19%" (four characters, 11 sp like "100%"), "5h" under it.'),
+  both('Q7 · not started', 'warn', { title: 'Teams · Weekly', pct: null, tick: null, sub: 'Weekly not started', ring: { name: '5h', p: null, ac: CL } },
+    'No reading means hairline only, never a fake 0%. Same rule as the bar and the status-bar ring.',
+    'Hairline circle only, no arc, no needle, "—" in the bore. Never a fake 0%.'),
+  both('Q2 · light shade', 'warn', { ...wkTeams, sub: W, ring: bind5, light: true },
+    'Same state on the light shade (light-theme ladder hues are the code\'s; mock reuses the dark ones).',
+    'Same state on the light shade, dark ink for track, needle and the "5h" under the number.'),
+  both('Q8 · 5h spent (100%)', 'bad', { ...wkTeams, sub: W, ring: R5({ p: 100 }) },
+    'The H3 ring takes the spent cross (CCRM-83 (Ring Renderer)) and "5h 100%" in red, the widest the cluster gets (about 66 dp).',
+    'The worst case for the bore: "100%" bold, stepped down to 11 sp (at 12 sp it is 31 dp wide and touches the arc), red step, arc full. No cross (it would sit under the digits). About 28.5 dp wide in the 36 dp bore, about 1.9 dp clear of the arc.'),
+  both('Left mode · remainder', 'good', { ...wkTeams, figTxt: '48%', cap: 'LEFT', sub: W, ring: R5({ txt: '66%' }) },
+    'Text "5h 66%" with the same remainder rule; the ring draws the spend.',
+    'The bore shows the remainder "66%" (with "5h" under it); the arc still draws the 34% spend, as in every display mode.'),
+].join('');
+
+// ---------- §3 expanded ----------
+const x1 = { expanded: true, fig: 44, ...wkTeams, sub: `${W} to last`, sub2: 'Resets Sun 9:30 pm · in 4d 6h', ring: R5(),
+  panel: crow('5h', 'Resets in 2h 20m · 5:10 pm', 34, T5_GONE, CL) + crow('Fable', 'Resets Sun 9:30 pm', 30, T_GONE, CL) };
+const x2 = { expanded: true, fig: 44, title: 'Teams · 5h', pct: 93, tick: B5_GONE, sub: 'Back at 3:40 pm · in 50m', sub2: 'Projected to hit 100% at 3:25 pm', ring: RW(),
+  panel: crow('Weekly', 'Slow down · ≈11%/day · Sun', 52, T_GONE, CL) + crow('Fable', 'Resets Sun 9:30 pm', 30, T_GONE, CL) };
+document.getElementById('expanded').innerHTML = [
+  both('X1 · expanded · Headline Weekly', 'good', x1,
+    'Header height is unchanged (the ring is inside the 19 dp label line). The panel is today\'s v2.0 panel.',
+    'The 44 dp ring sits at the start of the header block, which is taller when expanded (about 71 dp), so it is centred with room to spare and stays where collapsed put it. Panel unchanged; its 5h row still carries the reset line.'),
+  both('X2 · expanded · Auto, 5h leads', 'bad', x2,
+    'Ring = Weekly, panel row = Weekly with its pace words: the same duplication, mirrored.',
+    'Ring = Weekly (52% in the bore), panel row = Weekly with its pace words: the same mirrored duplication.'),
+  col('X3 · expanded · no 5h · H3 = H4', 'good',
+    card({ expanded: true, fig: 44, mk: 'mkGpt', ac: GP, title: 'Personal · Weekly', pct: 50, tick: P_GONE, sub: `${band(50, P_GONE)} · ${allowance(50, 55.5)} to last`, sub2: 'Resets Fri 10:18 pm · in 2d 7h' }),
+    'Nothing to show: no ring, and the panel starts at caps and strips as today.'),
+].join('');
+
+// ---------- §4 Duet ----------
+function half(o, hw) {
+  const { mk, ac, name, p, tick, ring, dot, light } = o;
+  const col2 = sev(p, ac);
+  const rg = ring ? `<span class="rg">${ringSvg(ring, 14, light)}</span>` : '';
+  return `<div style="flex:0 0 ${hw}px;width:${hw}px"><div class="dl" style="height:14px;margin-bottom:4px">${mark(mk, ac)}<span class="lbl" style="font-size:12px;flex:0 1 auto">${name}</span>${dot ? '<i class="dot6"></i>' : ''}${rg}</div>
+    <div class="db">${bar(p, tick, col2, 8, light)}<div class="fig" style="font-size:30px;color:${col2}">${p}%</div></div></div>`;
+}
+// H4 half: 36 dp ring on the left (bore text 9.8 sp, no tiny label), label + bar + 28 sp figure on the right
+function half4(o, hw) {
+  const { mk, ac, name, p, tick, ring, dot, light } = o;
+  const col2 = sev(p, ac);
+  return `<div style="flex:0 0 ${hw}px;width:${hw}px;display:flex;align-items:center;gap:8px">${ringH4(ring, 36, light, { tiny: false })}<div style="flex:1;min-width:0"><div class="dl" style="height:14px;margin-bottom:4px">${mark(mk, ac)}<span class="lbl" style="font-size:12px;flex:0 1 auto">${name}</span>${dot ? '<i class="dot6"></i>' : ''}</div>
+    <div class="db">${bar(p, tick, col2, 8, light)}<div class="fig" style="font-size:28px;color:${col2}">${p}%</div></div></div></div>`;
+}
+function duet(hw, halves, light = false, v = 'H3') {
+  const nw = 2 * hw + 16 + 32;
+  const pick = h => (v === 'H4' && h.ring && hw >= 150) ? half4({ ...h, light }, hw) : half({ ...h, light, ring: h.ring }, hw);
+  return `<div class="scroll"><div class="shade ${light ? 'light' : ''}" style="width:${nw + 24}px"><div class="nc" style="width:${nw}px"><div class="apphdr">${mark('ring42', CL, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">⌄</span></div>
+    <div class="duet" style="gap:16px">${halves.map(pick).join('')}</div></div></div></div>`;
+}
+const teams = { mk: 'mkClaude', ac: CL, name: 'Teams', p: 52, tick: T_GONE, ring: R5() };
+const personal = { mk: 'mkGpt', ac: GP, name: 'Personal', p: 50, tick: P_GONE };
+function duetExpanded(v) {
+  const hb = (mk, ac, title, p, tick, sub, ring) => {
+    const h3 = v === 'H3' && ring ? `<span class="rcl">${ringSvg(ring, 18, false)}<span>${rtxt(ring)}</span></span>` : '';
+    const rg4 = v === 'H4' && ring ? `<div class="rg4">${ringH4(ring, 44, false)}</div>` : '';
+    return `<div class="hb">${rg4}<div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl" style="font-size:14px">${title}</span>${h3}</div>${bar(p, tick, sev(p, ac), 13)}<div class="hsub">${sub}</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:${sev(p, ac)}">${p}%</div></div></div>`;
+  };
+  return `<div class="scroll"><div class="shade"><div class="nc"><div class="apphdr">${mark('ring42', CL, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">⌃</span></div>
+    ${hb('mkClaude', CL, 'Teams · Weekly', 52, T_GONE, v === 'H4' ? 'Slow down · ≈11%/day' : 'Slow down · ≈11%/day · resets Sun', R5())}
+    ${hb('mkGpt', GP, 'Personal · Weekly', 50, P_GONE, 'Room to spare · ≈22%/day · resets Fri', null)}
+    <div class="pnl">${crow('Teams · 5h', 'Resets in 2h 20m · 5:10 pm', 34, T5_GONE, CL)}</div><div class="acts">Refresh</div></div></div></div>`;
+}
+document.getElementById('duet').innerHTML = [
+  col('D1 · H3 · collapsed · half 156 dp', 'good', duet(156, [teams, personal]), 'Teams: Weekly 52% with a 14 dp 5h ring. Personal has no 5h, so no ring. Both halves stay two lines, 52 dp.'),
+  col('D1 · H4 · collapsed · half 156 dp', 'good', duet(156, [teams, personal], false, 'H4'), 'Teams: 36 dp ring on the left, "34%" in the bore (9.8 sp, no tiny label), label + bar + 28 sp figure on the right. Personal has no 5h and keeps today\'s half (30 sp figure, full-width bar). Cost: Teams\' bar is 47 dp, not 86 (measured).'),
+  col('D2 · H3 · collapsed · light shade', 'good', duet(156, [teams, personal], true), 'Same on the light shade.'),
+  col('D2 · H4 · collapsed · light shade', 'good', duet(156, [teams, personal], true, 'H4'), 'Same on the light shade.'),
+  col('D3 · H3 · 5h binding in the Duet', 'warn', duet(156, [{ ...teams, ring: bind5 }, personal]), 'Ring takes the ladder step and the red slice (needle 83%, tip 93%); the figure still shows Weekly 52%.'),
+  col('D3 · H4 · 5h binding in the Duet', 'warn', duet(156, [{ ...teams, ring: bind5 }, personal], false, 'H4'), 'Orange arc, red slice 83% to 93%, orange "93%" in the bore; the figure still shows Weekly 52%.'),
+  col('D4 · 101 dp (Fold 7 inner) · H3 ring; H4 falls back to it', 'good', duet(101, [teams, personal], false, 'H4'), 'H4 needs the half to be about 150 dp or more (ring 36 + gap 8 + bar ≥ 40 + gap 8 + 28 sp figure 57 = 149). Below that the Duet uses H3\'s bare 14 dp label ring, so this drawing is rev A\'s D4: 101 − 14 − 4 − 18 = 65 dp for "Teams".'),
+  col('D5 · 101 dp, long label + dot · ring squeezes the label (not wanted)', 'bad', duet(101, [{ ...teams, name: 'Product Team', dot: true }, personal]), 'Ceiling would be 101 − 18 − 18 − 11 = 54 dp: "Product Team" truncates to "Prod…". Under the 60 dp rule, so…'),
+  col('D6 · …the fallback: the ring drops, the dot keeps its place', 'good', duet(101, [{ ...teams, name: 'Product Team', dot: true, ring: null }, personal], false, 'H4'), 'Ceiling is 72 dp. The 5h is still one tap away in the expanded panel. Dots outrank the ring. Same under H3 and H4.'),
+  col('D7 · H3 · expanded', 'good', duetExpanded('H3'), 'Ring 18 dp with its number in the Teams header, inside the 19 dp label line. Panel and 78 dp budget unchanged.'),
+  col('D7 · H4 · expanded', 'good', duetExpanded('H4'), 'The 44 dp ring starts the Teams header (about 55 dp tall), so Teams\' bar is shorter than Personal\'s, which has no ring and keeps today\'s row. The header\'s "· resets Sun" leaves the sub line to fit; the panel and its 78 dp budget are unchanged.'),
+].join('');
+
+// ---------- §5 iOS ----------
+function laRow(o) {
+  const { mk, ac, name, lead, p, tick, big, line, ring, thinText, last } = o;
+  const col2 = sev(p, ac);
+  return `<div class="r1" style="${last ? '' : 'margin-bottom:10px'}"><div class="l"><div class="nm">${mark(mk, ac, o.mksz || 15)}<span>${name} · ${lead}</span><span class="mut">${line}</span></div>
+    ${bar(p, tick, col2, o.bh || 8, false)}
+    <div class="thin" style="height:${ring ? o.rs + 2 : 14}px">${ring ? ringSvg(ring, o.rs, false) + `<span>${rtxt(ring)}${thinText ? ' · ' + thinText : ''}</span>` : `<span>${thinText}</span>`}</div></div>
+    <div class="bigf" style="font-size:${big}px;color:${col2}">${p}%</div></div>`;
+}
+// H4: ring at the left of the row, text lines under the bar
+function laRow4(o) {
+  const { mk, ac, name, lead, p, tick, big, ring, rs, lines, last, bh, mksz } = o;
+  const col2 = sev(p, ac);
+  return `<div class="r1" style="${last ? '' : 'margin-bottom:10px'}">${ring ? ringH4(ring, rs, false) : ''}<div class="l"><div class="nm">${mark(mk, ac, mksz || 15)}<span>${name} · ${lead}</span></div>
+    ${bar(p, tick, col2, bh || 8, false)}
+    ${lines.map((t, i) => `<div class="line" style="margin-top:${i ? 2 : 6}px">${t}</div>`).join('')}</div>
+    <div class="bigf" style="font-size:${big}px;color:${col2}">${p}%</div></div>`;
+}
+const laBox = (inner) => `<div class="scroll"><div class="lock"><div class="la">${inner}</div></div></div>`;
+const isl4 = `<div class="scroll" style="background:#1b1b1d;padding:14px;border-radius:20px;width:290px"><div class="island"><span style="display:flex;align-items:center;gap:6px">${ringH4(R5(), 30, false, { fs: 9.5, tiny: false, txt: '34' })}</span><span class="gap"></span><span style="color:${CL}">52%</span></div></div>`;
+document.getElementById('ios').innerHTML = [
+  col('I1 · H3 · Lock Screen · one account', 'good',
+    laBox(laRow({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: 'Weekly', line: 'Sun 9:30 pm', p: 52, tick: T_GONE, big: 52, rs: 24, bh: 8, ring: R5(), thinText: 'resets 5:10 pm', last: true })
+      + `<div class="line">Slow down · ≈11%/day</div>`),
+    'Weekly bar 8 pt with the pace tick, 52 pt figure. The thin "5h" line (48 pt label + 5 pt bar + figure) becomes a 24 pt ring + "5h 34% · resets 5:10 pm". The pace words keep their 12.5 pt line.'),
+  col('I1 · H4 · Lock Screen · one account', 'good',
+    laBox(laRow4({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: 'Weekly', p: 52, tick: T_GONE, big: 44, rs: 44, bh: 8, ring: R5(), lines: ['Slow down · ≈11%/day', 'Resets Sun 9:30 pm'], last: true })),
+    'Ring 44 pt on the left with "34%" and "5h"; the right side is the Weekly: label, 8 pt bar with its tick, two text lines. The figure drops 52 → 44 pt to give the stack room ("Teams · Weekly" and "Sun 9:30 pm" no longer share a line). The 5h reset time ("resets 5:10 pm") has no line here and is dropped; say so if you want it back as a third line.'),
+  col('I2 · H3 · Lock Screen · Duet', 'good',
+    laBox(laRow({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: 'Weekly', line: 'Sun 9:30 pm', p: 52, tick: T_GONE, big: 38, rs: 16, bh: 7, mksz: 14, ring: R5() })
+      + laRow({ mk: 'mkGpt', ac: GP, name: 'Personal', lead: 'Weekly', line: 'Fri 10:18 pm', p: 50, tick: P_GONE, big: 38, rs: 16, bh: 7, mksz: 14, ring: null, thinText: 'no 5h on this plan', last: true })),
+    'Per row: Weekly bar 7 pt, 38 pt figure; the thin line carries a 16 pt ring and "5h 34%". Personal has none, so its thin line says why.'),
+  col('I2 · H4 · Lock Screen · Duet', 'good',
+    laBox(laRow4({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: 'Weekly', p: 52, tick: T_GONE, big: 36, rs: 36, bh: 7, mksz: 14, ring: R5(), lines: ['5h resets 5:10 pm · Sun 9:30 pm'] })
+      + laRow4({ mk: 'mkGpt', ac: GP, name: 'Personal', lead: 'Weekly', p: 50, tick: P_GONE, big: 36, rs: 0, bh: 7, mksz: 14, ring: null, lines: ['no 5h on this plan · Fri 10:18 pm'], last: true })),
+    '36 pt ring (bore number 9.8 pt, no tiny label) at the left of the Teams row; the right is the Weekly stack. Personal has no ring and keeps the plain row. Rows stay under the 160 pt cap.'),
+  col('I3 · H3 · Lock Screen · 5h binding (Auto)', 'bad',
+    laBox(laRow({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: '5h', line: 'runs out 3:25 pm', p: 93, tick: B5_GONE, big: 52, rs: 24, ring: RW(), thinText: 'resets Sun', last: true })
+      + `<div class="line">Back at 3:40 pm · in 0:50:12</div>`),
+    'Auto takeover mirrors the Android rule: the 5h leads the bar, the ring becomes Weekly.'),
+  col('I3 · H4 · Lock Screen · 5h binding (Auto)', 'bad',
+    laBox(laRow4({ mk: 'mkClaude', ac: CL, name: 'Teams', lead: '5h', p: 93, tick: B5_GONE, big: 44, rs: 44, ring: RW(), lines: ['Back at 3:40 pm · in 0:50:12', 'Runs out 3:25 pm'], last: true })),
+    'Bar and figure 5h (93%, orange, red slice from the 83% tick); the ring is the Weekly, "52%" with "Weekly" under it.'),
+  col('I4 · H3 · Dynamic Island · compact', 'good',
+    `<div class="scroll" style="background:#1b1b1d;padding:14px;border-radius:20px;width:290px"><div class="island"><span style="display:flex;align-items:center;gap:6px">${ringSvg(R5(), 20, false)}</span><span class="gap"></span><span style="color:${CL}">52%</span></div></div>`,
+    'Leading: the 5h ring, 20 pt. Trailing: the Weekly figure (today it reads "4d 6h" and is not live). There is no room for a bar here, so the pairing inverts. Centre gap is the camera cut-out (approximate).'),
+  col('I4 · H4 · Dynamic Island · compact', 'good', isl4,
+    'Leading: a 30 pt hollow ring with "34" (no % sign, 9.5 pt) in the bore, so it reads without a second glance; the island is 36 pt tall, so the ring is the biggest thing that fits. Trailing figure unchanged.'),
+  col('I5 · H3 · Dynamic Island · expanded', 'good',
+    `<div class="scroll" style="background:#1b1b1d;padding:14px;border-radius:44px;width:389px"><div class="isx"><div class="top"><div style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600">${mark('mkClaude', CL, 18)}Teams · Weekly</div><div style="font-size:34px;font-weight:600;letter-spacing:-.02em;color:${CL}">52%</div></div>
+      ${bar(52, T_GONE, CL, 8, false).replace('background:#3A3A3A', 'background:#3A3A3C')}
+      <div class="line">Resets Sun 9:30 pm <span>·</span> ${ringSvg(R5(), 16, false)}<b>5h 34%</b></div></div></div>`,
+    'Expanded region: the bottom line already read "Resets Sun 9:30 pm · 5h 34%" in v2.0; the ring (16 pt) replaces the plain "5h" word. Height unchanged.'),
+  col('I5 · H4 · Dynamic Island · expanded', 'good',
+    `<div class="scroll" style="background:#1b1b1d;padding:14px;border-radius:44px;width:389px"><div class="isx"><div style="display:flex;align-items:center;gap:14px">${ringH4(R5(), 48, false)}<div style="flex:1;min-width:0"><div class="top"><div style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600">${mark('mkClaude', CL, 18)}Teams · Weekly</div><div style="font-size:34px;font-weight:600;letter-spacing:-.02em;color:${CL}">52%</div></div>
+      ${bar(52, T_GONE, CL, 8, false).replace('background:#3A3A3A', 'background:#3A3A3C')}
+      <div class="line">Resets Sun 9:30 pm · 5h resets 5:10 pm</div></div></div></div></div>`,
+    'A 48 pt ring takes the left of the expanded region; the right is the Weekly (title, 34 pt figure, bar, one line). The ring is bigger than the 44 pt Lock Screen one because the region is taller than the row; the line carries both reset times.'),
+].join('');
+
+// ---------- measurements (real DOM, printed under each H4 drawing) ----------
+(function measure() {
+  const todayH = document.querySelector('#cmp .nc').offsetHeight;
+  window.__meas = [];
+  document.querySelectorAll('.col').forEach(c => {
+    const r = c.querySelector('.rng4'); if (!r || c.querySelector('[style*=zoom]')) return;
+    const nc = c.querySelector('.nc, .la'); if (!nc) return;
+    const isNc = nc.classList.contains('nc'), u = isNc ? 'dp' : 'pt';
+    const parts = [`ring ${r.getAttribute('width')} ${u}`];
+    const hb = c.querySelector('.hb, .r1');
+    if (hb && !c.querySelector('.duet')) { parts.push(`row ${hb.offsetHeight} ${u}`); const rg = hb.querySelector('.rng4'); if (!c.querySelector('[style*=zoom]') && rg && rg.getBoundingClientRect().height > hb.offsetHeight + 0.5) parts.push('RING TALLER THAN ROW'); }
+    if (c.querySelector('.duet')) { const hs = [...c.querySelectorAll('.duet > div')].map(d => d.offsetHeight); parts.push(`halves ${hs.join(' / ')} dp`); }
+    const bars = [...nc.querySelectorAll('.bar')].filter(b => b.offsetWidth > 20).map(b => Math.round(b.getBoundingClientRect().width));
+    if (bars.length) parts.push(`bar ${bars.slice(0, 2).join(' / ')} ${u}`);
+    parts.push(`${isNc ? 'card' : 'activity'} ${nc.offsetHeight} ${u}`);
+    let cls = '';
+    if (isNc && nc.dataset.coll && !c.querySelector('.duet')) { const d = nc.offsetHeight - todayH; parts.push(`vs Today Δ ${d > 0 ? '+' : ''}${d}`); cls = d <= 0 ? 'ok' : 'no'; }
+    const el = document.createElement('div'); el.className = 'meas ' + cls; el.textContent = 'measured: ' + parts.join(' · ');
+    c.appendChild(el); window.__meas.push(c.querySelector('.cap').textContent + ' => ' + parts.join(' · '));
+  });
+})();
+</script>
+</html>
