@@ -1,5 +1,10 @@
 package com.robin.claudeusage
 
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -306,6 +311,11 @@ private fun SummaryRow(
                     style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold).grammarDigits(),
                     maxLines = 1,
                     color = grammarFigureColor(used, r.elapsed, mode, accent),
+                    // TalkBack reaches the readout on the figure itself (the tap target below
+                    // carries no semantics of its own).
+                    modifier = Modifier.semantics {
+                        if (tapLabel != null) onClick(label = tapLabel) { readout = tapLabel; true }
+                    },
                 )
             }
             Spacer(Modifier.height(6.dp))
@@ -333,27 +343,32 @@ private fun SummaryRow(
                     }
                     val full = if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
                     else SummaryRows.words(r.weekly, r.elapsed, use24h)
-                    // CCBG-60: under the measured width "resets <day>" goes first.
-                    var short by remember(full) { mutableStateOf(false) }
-                    Text(
-                        if (short) SummaryRows.withoutReset(full) else full,
-                        fontSize = 13.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = { if (!short && it.hasVisualOverflow && SummaryRows.withoutReset(full) != full) short = true },
-                        modifier = Modifier.alpha(dim),
-                    )
+                    // CCBG-60: under the measured width "resets <day>" goes first; keyed on the
+                    // width, so a fold or unfold measures again.
+                    BoxWithConstraints(Modifier.weight(1f)) {
+                        var short by remember(full, maxWidth) { mutableStateOf(false) }
+                        Text(
+                            if (short) SummaryRows.withoutReset(full) else full,
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { if (!short && it.hasVisualOverflow && SummaryRows.withoutReset(full) != full) short = true },
+                            modifier = Modifier.alpha(dim),
+                        )
+                    }
                 }
             }
         }
         // CCBG-56 (Summary Readout Tap): the figure's own target, 80 × 48 dp over the figure
         // and the bar's end, consumes the tap (P8: line 3 swaps; nothing when there is no
-        // readout) so the row's tap — open the account — never takes it.
+        // readout) so the row's tap — open the account — never takes it. A plain gesture, no
+        // ripple and no node of its own for TalkBack (the figure carries the action).
+        val currentTap by rememberUpdatedState(tapLabel)
         Box(
             Modifier
                 .align(Alignment.TopEnd)
                 .size(width = 80.dp, height = 48.dp)
-                .clickable(onClickLabel = tapLabel ?: name) { if (tapLabel != null) readout = tapLabel },
+                .pointerInput(Unit) { detectTapGestures { currentTap?.let { readout = it } } },
         )
         }
     }

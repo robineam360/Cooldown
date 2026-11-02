@@ -1017,16 +1017,19 @@ private fun TileBarRow(
             // CCBG-58 (Tile Title Clip), CCBG-59 (Model Figure Alignment): the label takes all
             // the width the figure leaves, so every row's figure sits flush right; a lead
             // label that still does not fit drops " · All models" rather than ellipsizing.
-            var short by remember(label) { mutableStateOf(false) }
-            Text(
-                if (short) label.substringBefore(" · ") else label,
-                fontSize = if (lead) 13.5.sp else 12.5.sp,
-                color = if (lead) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                onTextLayout = { if (lead && !short && it.hasVisualOverflow && " · " in label) short = true },
-                modifier = Modifier.weight(1f),
-            )
+            // Keyed on the width, so a fold or unfold (the activity handles the size change
+            // itself) measures again and the full label comes back where it fits.
+            BoxWithConstraints(Modifier.weight(1f)) {
+                var short by remember(label, maxWidth) { mutableStateOf(false) }
+                Text(
+                    if (short) label.substringBefore(" · ") else label,
+                    fontSize = if (lead) 13.5.sp else 12.5.sp,
+                    color = if (lead) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { if (lead && !short && it.hasVisualOverflow && " · " in label) short = true },
+                )
+            }
             Spacer(Modifier.width(6.dp))
             Text(
                 grammarFigure(figure),

@@ -860,8 +860,14 @@ behind it, so the stored layout can never contradict the row. "Usage credits" is
   " · All models" ("Weekly") rather than ellipsizing. iOS the same (`ViewThatFits`).
 - **The readout's underline** (CCBG-57): the font's own underline on Android (`TextDecoration.Underline`), as iOS's
   `.underline()` — never across the glyphs.
-- **Account sheet** (CCBG-65 (Sheet Under Taskbar)): the ⋮ › Headline… sheet scrolls and pads for a large screen's
-  taskbar (the tappable-element inset the sheet's own insets leave out).
+- **Account sheet** (CCBG-65 (Sheet Under Taskbar)): the ⋮ › Headline… sheet opens fully (never half-expanded),
+  scrolls, and pads for the navigation bar and a large screen's taskbar (only what the sheet's own insets have not
+  consumed, so a phone is not padded twice). Fold 7 recheck: an inset dump and captures on the inner screen and a
+  phone-width capture.
+- **The Summary figure's target** carries no TalkBack node of its own: the figure offers the readout as its click
+  action, and only when there is one; the target shows no ripple.
+- **Shortened labels** (the tile's " · All models", line 3's "· resets <day>") are measured again whenever the width
+  changes, so a fold or unfold brings the full text back where it fits.
 - **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
   way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
   "Held · 3:40 pm" (never "5h").

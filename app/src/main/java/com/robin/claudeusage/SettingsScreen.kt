@@ -1,5 +1,8 @@
 package com.robin.claudeusage
 
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.navigationBars
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -33,10 +36,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.tappableElement
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.widthIn
@@ -3866,14 +3867,15 @@ private fun AccountHeadlineSheet(
     var headline by remember(profile) { mutableStateOf(cache.headline(profile)) }
     var showLimits by remember(profile) { mutableStateOf(cache.showModelLimits(profile)) }
     var statusIcon by remember(profile) { mutableStateOf(cache.statusIcon(profile)) }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        // CCBG-65 (Sheet Under Taskbar): a large screen's taskbar is a tappable element the
-        // sheet's own insets leave out; pad for the part of it they miss, and scroll.
+    // CCBG-65 (Sheet Under Taskbar): the sheet opens fully (a half-open sheet hid its last
+    // rows), scrolls, and pads for the navigation bar and a large screen's taskbar; the padding
+    // takes only what the sheet's own insets have not consumed, so a phone is not padded twice.
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
                 .windowInsetsPadding(
-                    WindowInsets.tappableElement.exclude(WindowInsets.safeDrawing).only(WindowInsetsSides.Bottom),
+                    WindowInsets.navigationBars.union(WindowInsets.tappableElement).only(WindowInsetsSides.Bottom),
                 )
                 .padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
         ) {

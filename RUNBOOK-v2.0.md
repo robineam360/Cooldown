@@ -292,4 +292,12 @@ weekly.
   account sheet pads for the taskbar (65); the Countdown 2×2's 5h ring sized to the face under the count (66, Robin;
   built by a delegated Opus builder). iOS took the same Summary and tile fixes. Checks: both flavors' tests and lint,
   the widget generator byte-identical, iOS app tests 55. Fold 7 recheck pending.
+  Fresh Opus judge on d229df2: **concerns**, five. Adopted: the shortened labels are measured again when the width
+  changes (a fold or unfold); the Summary figure's target has no TalkBack node and no ripple, the figure carries the
+  readout action only when there is one; the account sheet opens fully and pads navigation bar ∪ taskbar net of
+  what the sheet consumed; the inner-half width in notification.md (≈150–180 dp). **For Robin:** the Countdown 2×2
+  drops its "~ runs out …" estimate when keeping it would hold the 5h ring under Ø64 (at the 181 × 168 design
+  frame; One UI's 156 × 237 keeps it, ring Ø108). **Fold 7 recheck closes:** fold and unfold with a shortened label,
+  TalkBack on a Summary row, the sheet's insets on the inner screen and a phone-width capture, the Duet halves'
+  bounds on the inner shade.
 
