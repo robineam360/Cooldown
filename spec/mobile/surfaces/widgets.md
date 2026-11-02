@@ -282,12 +282,18 @@ Number (`numberTall`) is new in rev H; the ring, the Weekly-only figure and the 
 The shape grammar (rev D §5 `awCd21`): a **5h** countdown leads with the 5h ring in place of the "5h reset" caption,
 "at 9:10 PM" under the count and the account line under that, all in the column beside the ring. The 5h is never a bar,
 so a 5h countdown draws no side bar (wide 2×1) and on the 2×2 no figure row and no bar (the ring carries the figure; the
-estimate keeps its own line). A **Weekly** countdown keeps the face below unchanged. A frame too narrow for the ring and
-an 18 sp count (inner width under 106 dp: the 110 dp minimum) keeps the caption face.
+estimate keeps its own line when there is room). A **Weekly** countdown keeps the face below unchanged. A frame too narrow
+for the ring and an 18 sp count (inner width under 106 dp: the 110 dp minimum) keeps the caption face.
+
+**The 5h 2×2 hero** (CCBG-66 (Countdown Ring Small), Robin 2026-11-02 "Scale the ring up"): on a 2×2 frame that is not
+wide (tier T; a tier-W 2×2 keeps the ring beside the count) the count and "at 9:10 PM" sit at the top of the full inner
+width, the 5h ring is centred under them (`cd_hero_box`, 6 dp above it) between two equal gaps, then the estimate if
+kept, and the account line at the bottom. The ring takes the height the other rows leave, as the Ring face's does.
 
 | Element | Size · colour · rule |
 |---|---|
-| 5h ring | `GrammarRing` Ø44 (Ø = min(44, inner width − 78), at least 28), 8 dp before the column, vertically centred; figure per 1.3 |
+| 5h ring | `GrammarRing` Ø44 (Ø = min(44, inner width − 78), at least 28), 8 dp before the column, vertically centred; figure per 1.3. On the 2×2 hero: Ø = min(160, inner width, inner height − reserve), where reserve = ⌈2 + 1.2 × count + 3 + 1.34 × "at" sp + 6 + 4 + 1.34 × 12 + 2⌉ (+ 2 + 1.34 × estimate sp with the estimate) |
+| Estimate under the hero | Kept while the ring with it is still ≥ Ø64 (the Ring 1×1's and Strip 4×2's ring); below that it goes and the ring takes its room |
 | Caption (Weekly, or no room for the ring) | "Weekly reset" / "5h reset" (never "Resets in"); "Stale" at S8; 11 sp default (12 roomy), 75% ink (50% dim); on an unassigned 2×1 "… · tap to choose" |
 | Count (live) | A launcher-ticked chronometer counting down to the reset: H:MM:SS, MM:SS under an hour, a negative duration past zero; bold; sp per table; severity-neutral full ink (50% dim) |
 | "at 9:10 PM" | The absolute reset time beside or under the count, 78% ink; always on the face so the count stays readable when ambiguous and true after zero |
@@ -298,7 +304,7 @@ an 18 sp count (inner width under 106 dp: the 110 dp minimum) keeps the caption 
 | Stamp | "as of …", 10 sp 55%; left off when it and the account line do not fit one row (beside the ring, the column) |
 | Side column (wide 2×1, ≥108 dp tall, Weekly only) | Figure 24 sp over an 8 dp bar, only when ≥95 dp spare beside count and "at" text; width min(160, spare) |
 | 2×2 extras (Weekly) | Figure row (figure 18 sp, 32 when inner height ≥180; "LEFT" caption 10 or 8.5 sp), estimate (12 sp roomy, else 11, 78% ink) beside the figure or on its own line when it will not fit, bar 8 dp (10 when count ≥60 sp), stamp |
-| 2×2 extras (5h) | The estimate on its own line, the stamp ("as of …"; unassigned says it in the account line) |
+| 2×2 extras (5h) | The estimate on its own line (under the hero only when kept, above), the stamp ("as of …"; unassigned says it in the account line) |
 
 ### Sizes
 
@@ -307,7 +313,9 @@ an 18 sp count (inner width under 106 dp: the 110 dp minimum) keeps the caption 
 | 2×1 · 181×84, 5h | 157×68 | Ø44, column 105: min(column/4.3, (inner height−39)/1.17), clamped 18–44 → **24** (rev D §5) | ring; count, "at …" (11 sp, always under), account line |
 | 2×1 · 181×84, Weekly (S-narrow) | 157×68 | min(inner width/4.5, (inner height−37)/1.17), clamped 20–44 → **26** | caption, count + "at …" (inline, 11 sp under the count when it will not fit and height ≥100), account line |
 | 2×1 wide (S-wide), Weekly | wide | min(44, (inner width−66)/4.5, (inner height−37)/1.17), min 20 | + side column when it fits; "at" at 12 sp |
-| 2×2 · 181×168, 5h | 157×144 | Ø44, column 105: min(column/4.3, (inner height−70)/1.17), clamped 18–80 → **24** | ring; count, "at …", estimate, account line, stamp |
+| 2×2 · 181×168, 5h (hero) | 157×144 | min(inner width/4.5, inner height × 0.2), clamped 20–56 → **28**; ring **Ø61** (estimate dropped: Ø44 with it) | count, "at …" (12 sp, 14 roomy), ring, account line, stamp |
+| 2×2 · One UI 156×237, 5h (hero) | 132×213 | **29**; ring **Ø108** with the estimate | count, "at …", ring, estimate, account line, stamp |
+| 2×2 wide (tier W), 5h | wide | Ø44 beside the column: min(column/4.3, (inner height−70)/1.17), clamped 18–80 | ring; count, "at …", estimate, account line, stamp |
 | 2×2 · 181×168, Weekly | 157×144 | min(inner width/4.5, inner height−118), clamped 28–80 → **28** | caption, count, "at …" (always below), figure row, estimate, bar, stamp, account line |
 
 The past tense ("Reset 9:10 PM") steps down from 80% of the count until it fits the column, never under 18 sp (12 beside
@@ -316,7 +324,7 @@ the ring).
 Drop order: the side column and 2×2 rows go below 2×2; the stamp goes when the account line needs the row; "at 9:10 PM"
 drops under the count on a narrow frame with ≥100 dp of height; the estimate drops under the figure on a narrow tall frame;
 the 2×1 on a short frame has caption, count, account line only. A weekly count never ticks until 24 h out (the transition
-alarm fires at reset − 24 h). Source: `WidgetFace.kt` (`countSp`, `cdRing`, `countdownFace`).
+alarm fires at reset − 24 h). Source: `WidgetFace.kt` (`countSp`, `cdRing`, `cdHero`, `cdHeroEstimate`, `countdownFace`).
 
 ## 1.9 Strip (Accounts Strip)
 

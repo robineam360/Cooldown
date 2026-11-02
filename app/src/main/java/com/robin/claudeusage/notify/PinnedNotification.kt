@@ -478,6 +478,12 @@ object PinnedNotification {
         val title: String,
         /** The expanded header's first line (single and Duet). */
         val sub: String,
+        /**
+         * CCBG-61 (Duet Line Clip): the tight form ("Use before reset · ≈31%/day", no
+         * "· resets <day>") for an expanded Duet header that carries the 44 dp ring, where the
+         * full line ellipsized on the Fold 7 cover.
+         */
+        val subTight: String,
         /** The single expanded header's second line, or null. */
         val sub2: String?,
         /** The single collapsed row's line: the pace words, or the 5h's words in a takeover. */
@@ -656,6 +662,7 @@ object PinnedNotification {
             elapsed = elapsed,
             title = LeadLines.headerTitle(label),
             sub = if (duet) duetSub else headerSub,
+            subTight = headerSub,
             sub2 = sub2,
             collapsedSub = collapsedSub,
             ring = ring,
@@ -1020,7 +1027,7 @@ object PinnedNotification {
             ),
         )
         if (expanded) {
-            setTextViewText(ids.sub, h.sub)
+            setTextViewText(ids.sub, if (h.ring != null) h.subTight else h.sub)
             setViewVisibility(
                 ids.caption,
                 if (h.caption != null) android.view.View.VISIBLE else android.view.View.GONE,

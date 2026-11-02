@@ -116,6 +116,11 @@ enum SummaryWords {
         return "\(words) · resets \(CardContent.weekday(reset.ms, .current))"
     }
 
+    /// CCBG-60 (Summary Line Clip): line 3 without its " · resets <day>" clause, for a row too narrow for it.
+    static func withoutReset(_ line: String) -> String {
+        line.range(of: " · resets ").map { String(line[..<$0.lowerBound]) } ?? line
+    }
+
     /// The held reason's time, "back 3:40 pm". CCRM-103 (Hybrid Notification) rev D S1: no longer drawn beside the
     /// name (the held row says it in line 3, `line`); kept for the tests that read it.
     static func companion(_ e: SummaryEntry) -> String? {
@@ -130,11 +135,11 @@ enum SummaryWords {
                              use24h: Display.use24h)
     }
 
-    /// The one-line row's word: the band, "5h · 3:40 pm" when held, "Out · Thu" when spent.
+    /// The one-line row's word: the band, "Held · 3:40 pm" when held (never "5h", as on Android), "Out · Thu" when spent.
     static func word(_ e: SummaryEntry) -> String {
         switch e.group {
         case .noReading: return "No reading"
-        case .held: return "5h · \(e.face.reset.map(shortClock) ?? "")"
+        case .held: return "Held · \(e.face.reset.map(shortClock) ?? "")"
         case .spent: return "Out · \(e.face.weeklyReset.map { CardContent.weekday($0.ms, .current) } ?? "")"
         case .eligible: return Pace.band(usedPct: e.usedPct, elapsedPct: e.elapsedPct).flatMap(PaceText.bandWords) ?? "Not started"
         }
@@ -161,13 +166,18 @@ struct SummaryRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 7) {
                     ProviderMark(provider: entry.account.provider, size: 18)
+                    // CCBG-60 (Summary Line Clip): the name gives way before the pill and the figure.
                     Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
-                    PlanChip(plan: entry.plan)
+                    PlanChip(plan: entry.plan).fixedSize()
                     Spacer(minLength: 6)
+                    // CCBG-56 (Summary Readout Tap): the figure's own target, at least 48 pt wide and 12 pt past it
+                    // above and below, so the row's tap (open the account) never takes it.
                     Display.grammarFigure(Display.number(used, pace: pace), size: 17)
                         .foregroundStyle(Display.figureColour(used, pace: pace, ink: p.ink,
                                                               usage: used == nil ? p.sub : p.severity(used, accent: accent), scheme))
-                        .contentShape(Rectangle())
+                        .fixedSize()
+                        .frame(minWidth: 48, alignment: .trailing)
+                        .contentShape(Rectangle().inset(by: -12))
                         .onTapGesture { show(readout) }
                 }
                 GrammarBar(pct: used, pace: pace, accent: accent, height: 10, surface: p.card).padding(.top, 6)
@@ -178,8 +188,13 @@ struct SummaryRow: View {
                     Text(readout).font(.system(size: 13, weight: .semibold)).underline().foregroundStyle(p.ink)
                         .padding(.top, 4).lineLimit(1)
                 } else {
-                    Text(SummaryWords.line(entry, nowMs: nowMs)).font(.system(size: 13))
-                        .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4).lineLimit(1)
+                    // CCBG-60: under the width, "resets <day>" goes first.
+                    let full = SummaryWords.line(entry, nowMs: nowMs)
+                    ViewThatFits(in: .horizontal) {
+                        Text(full).font(.system(size: 13)).lineLimit(1).fixedSize()
+                        Text(SummaryWords.withoutReset(full)).font(.system(size: 13)).lineLimit(1)
+                    }
+                    .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4)
                 }
             }
         }

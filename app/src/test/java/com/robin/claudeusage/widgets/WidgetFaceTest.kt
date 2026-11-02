@@ -62,6 +62,13 @@ class WidgetFaceTest {
         return texts(inflate(bucket, state)).joinToString(" | ")
     }
 
+    /** [joined] at a reported [frame] rather than its bucket's design size. */
+    private fun joinedAt(frame: Frame, s: StateId): String {
+        val state = FaceStates.of(forState(frame.bucket.face, s))
+        val v = WidgetFace.render(context, frame.bucket.face, frame, state).apply(context, FrameLayout(context))
+        return texts(v).joinToString(" | ")
+    }
+
     // ---- the table: every state × bucket ----------------------------------------------
 
     @Test
@@ -268,15 +275,23 @@ class WidgetFaceTest {
     fun countdown() {
         // A 5h countdown leads with the ring in place of the "5h reset" caption (rev D §5).
         assertEquals("38% | <live> | at 9:10 PM | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S1))
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S1).startsWith("38% | <live> | at 9:10 PM | Pro"))
-        // The estimate only where the projection says the window runs dry first (Q2).
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S2).contains("~ runs out 7:54 PM"))
-        assertFalse(joined(Bucket.COUNTDOWN_2X2, StateId.S3).contains("runs out"))
+        // CCBG-66 (Countdown Ring Small): on the 2×2 the ring is the hero, under the count.
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S1).startsWith("<live> | at 9:10 PM | 38% | Pro"))
+        // The estimate only where the projection says the window runs dry first (Q2), and
+        // under the hero only where the frame keeps room for it: not at rev D's 181×168.
+        val oneUi = Frame.at(Face.COUNTDOWN, 156f, 237f)
+        val s2 = joinedAt(oneUi, StateId.S2)
+        assertTrue(s2, s2.startsWith("<live> | at 9:10 PM | 62% | ~ runs out 7:54 PM | Pro"))
+        assertFalse(joined(Bucket.COUNTDOWN_2X2, StateId.S2).contains("runs out"))
+        assertFalse(joinedAt(oneUi, StateId.S3).contains("runs out"))
+        // A wide 2×2 keeps the ring beside the count, and its estimate.
+        val wide = joinedAt(Frame.at(Face.COUNTDOWN, 510f, 237f), StateId.S2)
+        assertTrue(wide, wide.startsWith("62% | <live> | at 9:10 PM | ~ runs out 7:54 PM"))
         // Weekly outside the last 24 h: absolute, no chronometer — today's face, no ring.
         assertEquals("Weekly reset | Sat 9:10 PM | ChatGPT · Weekly", joined(Bucket.COUNTDOWN_2X1, StateId.S4))
         assertEquals("— | Not started | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S5))
         assertEquals("— | Reset 6:19 PM | Pro", joined(Bucket.COUNTDOWN_2X1, StateId.S6))
-        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S6).startsWith("— | Reset 6:19 PM"))
+        assertTrue(joined(Bucket.COUNTDOWN_2X2, StateId.S6).startsWith("Reset 6:19 PM | —"))
         // The ring took the caption, so the account line says "Stale" and "tap to choose".
         assertEquals("38% | <live> | at 9:10 PM | Pro · Stale", joined(Bucket.COUNTDOWN_2X1, StateId.S8))
         assertEquals("38% | <live> | at 9:10 PM | Pro · tap to choose", joined(Bucket.COUNTDOWN_2X1, StateId.S10))
@@ -502,6 +517,65 @@ class WidgetFaceTest {
         assertEquals(64f, WidgetFace.ring(Bucket.STRIP_4X2, 4)!!.diameter)
         // The 110 dp minimum Countdown has no room for the ring: today's caption face.
         assertNull(WidgetFace.ring(Frame.at(Face.COUNTDOWN, 110f, 84f)))
+    }
+
+    /**
+     * CCBG-66 (Countdown Ring Small), Robin 2026-11-02 "Scale the ring up": a 5h Countdown
+     * 2×2 that is not wide draws the ring as the hero — centred under the count, sized from
+     * the frame as the Ring face's is, up to its Ø160 cap.
+     */
+    @Test
+    fun countdown2x2_theRingIsTheHeroUnderTheCount() {
+        // Rev D's 181×168: Ø61 (Ø44 beside the count before), the estimate line gone.
+        val design = Bucket.COUNTDOWN_2X2.frame
+        assertTrue(WidgetFace.cdHero(design))
+        assertEquals(61f, WidgetFace.ring(design)!!.diameter)
+        assertEquals(28f, WidgetFace.countSp(design, ring = true))
+        assertFalse(WidgetFace.cdHeroEstimate(design))
+        // One UI's cover 2×2 (156×237): Ø108 with the estimate kept; 4×3 at the cap.
+        val oneUi = Frame.at(Face.COUNTDOWN, 156f, 237f)
+        assertEquals(108f, WidgetFace.ring(oneUi)!!.diameter)
+        assertTrue(WidgetFace.cdHeroEstimate(oneUi))
+        assertEquals(160f, WidgetFace.ring(Frame.at(Face.COUNTDOWN, 333f, 366f))!!.diameter)
+        // A wide 2×2 and the 2×1 keep today's Ø44 beside the count.
+        val wide = Frame.at(Face.COUNTDOWN, 510f, 237f)
+        assertFalse(WidgetFace.cdHero(wide))
+        assertEquals(44f, WidgetFace.ring(wide)!!.diameter)
+        assertFalse(WidgetFace.cdHero(Bucket.COUNTDOWN_2X1.frame))
+
+        // Laid out: the count's line ends above the hero, which is centred and drawn at its size.
+        val d = context.resources.displayMetrics.density
+        for (frame in listOf(design, oneUi)) {
+            val host = FrameLayout(context)
+            val state = FaceStates.of(forState(Face.COUNTDOWN, StateId.S1))
+            val root = WidgetFace.render(context, Face.COUNTDOWN, frame, state).apply(context, host)
+            host.addView(root)
+            val w = (frame.widthDp * d).toInt()
+            val h = (frame.heightDp * d).toInt()
+            host.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(h, View.MeasureSpec.EXACTLY))
+            host.layout(0, 0, w, h)
+            val chrono = root.findViewById<Chronometer>(com.robin.claudeusage.R.id.cd_chrono)
+            val box = root.findViewById<View>(com.robin.claudeusage.R.id.cd_hero_box)
+            val ring = root.findViewById<ImageView>(com.robin.claudeusage.R.id.cd_hero)
+            assertTrue("$frame", shown(box))
+            assertFalse("$frame", shown(root.findViewById(com.robin.claudeusage.R.id.cd_ring_box)))
+            assertTrue("$frame", shown(chrono))
+            assertTrue("$frame count ${offset(chrono, root, true) + chrono.height} vs ring ${offset(box, root, true)}",
+                offset(chrono, root, true) + chrono.height <= offset(box, root, true))
+            val dia = WidgetFace.ring(frame)!!.diameter * d
+            assertTrue("$frame ${ring.width} vs $dia", kotlin.math.abs(ring.width - dia) <= 1.5f)
+            assertTrue("$frame ${ring.height} vs $dia", kotlin.math.abs(ring.height - dia) <= 1.5f)
+            val centre = offset(box, root, false) + box.width / 2f
+            assertTrue("$frame centre $centre vs ${w / 2f}", kotlin.math.abs(centre - w / 2f) <= 2f)
+        }
+    }
+
+    /** [v]'s top ([vertical]) or left inside [root], in px. */
+    private fun offset(v: View, root: View, vertical: Boolean): Int {
+        var x = 0
+        var p: View? = v
+        while (p != null && p !== root) { x += if (vertical) p.top else p.left; p = p.parent as? View }
+        return x
     }
 
     /** The shape grammar: a Ring's companion is its Weekly bar; the Number's its 5h ring. */

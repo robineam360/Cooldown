@@ -284,4 +284,12 @@ weekly.
   from the shade), Usage display Used, theme System, Work's and Claude's Headline Weekly and status icon 5h ring; the
   v2.0 candidate stays installed on purpose. **Still open:** Gemini (needs `antigravityClientSecret`, Robin's step,
   then a rebuild and his sign-in), the screen timeout (restored at disconnect), and the iPad.
+- **2026-11-02 · Step 7 fixes** (Robin: "Fix defects first"). CCBG-56 to CCBG-66 from the Fold 7 pass, fixed on the
+  branch: the Summary figure's own tap target (56, Medium); the readout's font underline (57); the tile's label takes
+  the width and drops " · All models" before ellipsizing, figures flush right (58, 59); Summary names give way before
+  the pill and line 3 drops "· resets <day>" first (60); the expanded Duet's tight line beside the ring (61); one plan
+  formatter (62); Robin's wording "Status-bar icon shows" (63); the 36 dp Duet ring on the inner shade (64, Robin); the
+  account sheet pads for the taskbar (65); the Countdown 2×2's 5h ring sized to the face under the count (66, Robin;
+  built by a delegated Opus builder). iOS took the same Summary and tile fixes. Checks: both flavors' tests and lint,
+  the widget generator byte-identical, iOS app tests 55. Fold 7 recheck pending.
 

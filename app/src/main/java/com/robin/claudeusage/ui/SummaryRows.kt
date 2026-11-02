@@ -42,6 +42,9 @@ object SummaryRows {
      * replaced line 1's "5h 93% · back 3:40 PM" companion, so the reason moved here. Without
      * a 5h reset clock, "Held"; without a weekly reset, no "resets" clause.
      */
+    /** CCBG-60 (Summary Line Clip): line 3 without its " · resets <day>" clause, for a row too narrow for it. */
+    fun withoutReset(line: String): String = line.substringBefore(DOT + "resets ")
+
     fun heldWords(session: UsageWindow?, weekly: UsageWindow?, use24h: Boolean): String {
         val back = session?.resetsAt?.let { DOT + "back at " + Fmt.timeOnly(it, use24h) } ?: ""
         val resets = weekly?.resetsAt?.let { DOT + "resets " + Fmt.weekday(it) } ?: ""

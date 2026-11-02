@@ -265,30 +265,35 @@ private fun SummaryRow(
             showOverPace = showOverPace,
         )
         Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
+        Box(Modifier.weight(1f)) {
+        Column(Modifier.fillMaxWidth()) {
             Row(Modifier.alpha(dim), verticalAlignment = Alignment.CenterVertically) {
-                ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
-                Spacer(Modifier.width(7.dp))
-                Text(
-                    name,
-                    fontSize = 15.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                plan?.let {
+                // CCBG-60 (Summary Line Clip): mark, name and pill share every dp the figure
+                // leaves; the name gives way first, and the pill stays beside it.
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
                     Spacer(Modifier.width(7.dp))
                     Text(
-                        it,
-                        fontSize = 11.sp,
-                        color = muted,
+                        name,
+                        fontSize = 15.sp,
                         maxLines = 1,
-                        modifier = Modifier
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
-                            .padding(horizontal = 5.dp),
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
+                    plan?.let {
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            com.robin.claudeusage.ui.Fmt.planLabel(it),
+                            fontSize = 11.sp,
+                            color = muted,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 5.dp),
+                        )
+                    }
                 }
-                Spacer(Modifier.weight(1f))
                 Spacer(Modifier.width(7.dp))
                 // The figure in the grammar's type (rev D §1c), Vs pace unsigned in its colour
                 // (§7b); Left keeps its word, as today. "—" unread.
@@ -301,9 +306,6 @@ private fun SummaryRow(
                     style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold).grammarDigits(),
                     maxLines = 1,
                     color = grammarFigureColor(used, r.elapsed, mode, accent),
-                    modifier = Modifier.clickable(enabled = tapLabel != null, onClickLabel = tapLabel) {
-                        readout = tapLabel
-                    },
                 )
             }
             Spacer(Modifier.height(6.dp))
@@ -329,16 +331,30 @@ private fun SummaryRow(
                         PacePip(it)
                         Spacer(Modifier.width(8.dp))
                     }
+                    val full = if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
+                    else SummaryRows.words(r.weekly, r.elapsed, use24h)
+                    // CCBG-60: under the measured width "resets <day>" goes first.
+                    var short by remember(full) { mutableStateOf(false) }
                     Text(
-                        if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
-                        else SummaryRows.words(r.weekly, r.elapsed, use24h),
+                        if (short) SummaryRows.withoutReset(full) else full,
                         fontSize = 13.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { if (!short && it.hasVisualOverflow && SummaryRows.withoutReset(full) != full) short = true },
                         modifier = Modifier.alpha(dim),
                     )
                 }
             }
+        }
+        // CCBG-56 (Summary Readout Tap): the figure's own target, 80 × 48 dp over the figure
+        // and the bar's end, consumes the tap (P8: line 3 swaps; nothing when there is no
+        // readout) so the row's tap — open the account — never takes it.
+        Box(
+            Modifier
+                .align(Alignment.TopEnd)
+                .size(width = 80.dp, height = 48.dp)
+                .clickable(onClickLabel = tapLabel ?: name) { if (tapLabel != null) readout = tapLabel },
+        )
         }
     }
 }

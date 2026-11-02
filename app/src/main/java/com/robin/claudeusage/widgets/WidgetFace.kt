@@ -867,14 +867,60 @@ object WidgetFace {
      * 110 dp minimum) keeps today's caption face; between, the ring narrows to Ø28.
      */
     fun cdRing(frame: Frame): RingDp? {
+        if (cdHero(frame)) return grammarDp(cdHeroDia(frame, cdHeroEstimate(frame)))
         val dia = kotlin.math.floor(minOf(CD_RING, frame.innerWidthDp - 78f))
         return if (dia >= 28f) grammarDp(dia) else null
     }
 
     private const val CD_RING = 44f
 
-    /** The count's column beside a 5h Countdown's ring. */
-    fun cdColDp(frame: Frame): Float = frame.innerWidthDp - (cdRing(frame)?.let { it.diameter + 8f } ?: 0f)
+    /**
+     * CCBG-66 (Countdown Ring Small), Robin 2026-11-02 "Scale the ring up": a 5h Countdown
+     * 2×2 that is not wide (the Ring face's column tiers; a [Tier.W] frame keeps the ring
+     * beside the count) draws its ring as the hero — the count and "at 9:10 PM" above it,
+     * the ring centred under them taking the height they and the account line leave, as
+     * [ringLayout] sizes the Ring face's, up to the same cap.
+     */
+    fun cdHero(frame: Frame): Boolean = frame.bucket == Bucket.COUNTDOWN_2X2 && frame.tier != Tier.W
+
+    /** The hero's count: the width "−0:00:00" needs (4.5 em), a fifth of the height; 28 sp at rev D's 181×168. */
+    private fun cdHeroCountSp(frame: Frame): Float =
+        kotlin.math.floor(minOf(frame.innerWidthDp / 4.5f, frame.innerHeightDp * 0.2f)).coerceIn(20f, 56f)
+
+    /**
+     * The height the hero's rows take besides the ring: the count's line (1.2× its size, no
+     * font padding) and its 2 dp, "at 9:10 PM" (12 sp, 14 when roomy, at 1.34×) and its 3 dp,
+     * the ring's 6 dp, the 12 sp account line and its 4 dp, 2 dp of air; [estimate] adds the
+     * estimate's line (11 sp, 12 when roomy) and its 2 dp.
+     */
+    private fun cdHeroReserve(frame: Frame, estimate: Boolean): Float {
+        val count = cdHeroCountSp(frame)
+        val at = if (frame.roomy) 14f else 12f
+        val est = if (frame.roomy) 12f else 11f
+        return kotlin.math.ceil(2f + 1.2f * count + 3f + 1.34f * at + CD_HERO_GAP + 4f + 1.34f * 12f + 2f +
+            if (estimate) 2f + 1.34f * est else 0f)
+    }
+
+    private fun cdHeroDia(frame: Frame, estimate: Boolean): Float =
+        kotlin.math.floor(minOf(RING_CAP, frame.innerWidthDp, frame.innerHeightDp - cdHeroReserve(frame, estimate)))
+
+    /**
+     * The hero keeps the 5h 2×2's estimate line while the ring stays at least [CD_HERO_EST_MIN]
+     * with it; below that the line goes and the ring takes its room (rev D's 181×168 drops it:
+     * Ø44 with it, Ø61 without; One UI's 156×237 keeps it at Ø108).
+     */
+    fun cdHeroEstimate(frame: Frame): Boolean = cdHeroDia(frame, estimate = true) >= CD_HERO_EST_MIN
+
+    /** The hero's top margin in the layouts (cd_hero_box). */
+    private const val CD_HERO_GAP = 6f
+
+    /** The Ring 1×1's and the Strip 4×2's ring: the smallest ring the estimate may share the face with. */
+    private const val CD_HERO_EST_MIN = 64f
+
+    /** The count's column beside a 5h Countdown's ring; the whole inner width over the hero. */
+    fun cdColDp(frame: Frame): Float =
+        if (cdHero(frame)) frame.innerWidthDp
+        else frame.innerWidthDp - (cdRing(frame)?.let { it.diameter + 8f } ?: 0f)
 
     /**
      * The count's size (rev H): within the width "−0:00:00" needs (4.5 em) and the height the
@@ -885,6 +931,7 @@ object WidgetFace {
         val w = frame.innerWidthDp
         val h = frame.innerHeightDp
         if (ring && cdRing(frame) != null) {
+            if (cdHero(frame)) return cdHeroCountSp(frame)
             val col = cdColDp(frame)
             val sp = if (frame.bucket == Bucket.COUNTDOWN_2X2) minOf(col / 4.3f, (h - 70f) / 1.17f).coerceIn(18f, 80f)
             // "at 9:10 PM" (11 sp, 17 dp) and the 12 sp account line (20 dp) under it.
@@ -1423,7 +1470,8 @@ object WidgetFace {
      * CCRM-81 (Countdown Face). Under the shape grammar (rev D §5) a 5h countdown leads with
      * the 44 dp ring in place of the "5h reset" caption, "at 9:10 PM" under the count; the
      * 5h is never a bar, so its 2×2 keeps the estimate but no figure row or bar, and its wide
-     * row no side bar. A Weekly countdown keeps today's face.
+     * row no side bar. A Weekly countdown keeps today's face. CCBG-66 (Countdown Ring Small):
+     * on a 2×2 that is not wide ([cdHero]) the ring is the hero, centred under the count.
      */
     private fun countdownFace(context: Context, rv: RemoteViews, frame: Frame, s: FaceState, c: Cell) {
         val bucket = frame.bucket
@@ -1432,13 +1480,20 @@ object WidgetFace {
         val d = context.resources.displayMetrics.density
         val rg = if (c.window == FaceWindow.SESSION) cdRing(frame) else null
         val ring = rg != null
+        val hero = ring && cdHero(frame)
         val count = countSp(frame, ring)
         // The column the count, its words and the account line share.
         val colDp = if (ring) cdColDp(frame) else frame.innerWidthDp
 
         if (rg != null) {
-            rv.setViewVisibility(R.id.cd_ring_box, View.VISIBLE)
-            ringInto(context, rv, R.id.cd_ring, R.id.cd_ring_fig, rg, s, c, d)
+            rv.setViewVisibility(if (hero) R.id.cd_hero_box else R.id.cd_ring_box, View.VISIBLE)
+            if (hero) ringInto(context, rv, R.id.cd_hero, R.id.cd_hero_fig, rg, s, c, d)
+            else ringInto(context, rv, R.id.cd_ring, R.id.cd_ring_fig, rg, s, c, d)
+            // The hero sits between the two gaps, so the account line stays at the bottom.
+            if (hero) {
+                rv.setViewVisibility(R.id.cd_gap1, View.VISIBLE)
+                rv.setViewVisibility(R.id.cd_gap2, View.VISIBLE)
+            }
             rv.setViewVisibility(R.id.cd_caption, View.GONE)
             // Rev D §5's account line beside the ring: 12 sp.
             rv.setTextViewTextSize(R.id.cd_label, TypedValue.COMPLEX_UNIT_SP, 12f)
@@ -1527,8 +1582,8 @@ object WidgetFace {
         rv.setViewVisibility(R.id.cd_gap2, View.VISIBLE)
         if (ring) {
             // The ring carries the 5h's figure: no figure row and no 5h bar, the estimate on
-            // its own line.
-            c.estimate?.let {
+            // its own line — under the hero only where the frame keeps room for it.
+            c.estimate?.takeIf { !hero || cdHeroEstimate(frame) }?.let {
                 rv.setViewVisibility(R.id.cd_est_below, View.VISIBLE)
                 rv.setTextViewText(R.id.cd_est_below, it)
                 rv.setTextViewTextSize(R.id.cd_est_below, TypedValue.COMPLEX_UNIT_SP, if (frame.roomy) 12f else 11f)

@@ -32,6 +32,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.tappableElement
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -404,7 +411,8 @@ fun SettingsScreen(
             }
             ToggleRow(
                 title = "Always-on usage notification",
-                subtitle = "Silent and ongoing, with a status-bar ring. Nothing else " +
+                // CCBG-63 (Status Ring Wording), Robin 2026-11-02: "icon", since rev D's can be the Weekly bar.
+                subtitle = "Silent and ongoing, with a status-bar icon. Nothing else " +
                     "posts on its own except the reset pings below.",
                 checked = pinned,
             ) {
@@ -526,7 +534,7 @@ fun SettingsScreen(
                     )
                 }
                 RowDivider()
-                Text("Status-bar ring shows", style = MaterialTheme.typography.bodyLarge)
+                Text("Status-bar icon shows", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(4.dp))
                 if (second == null) {
                     Text(
@@ -564,8 +572,8 @@ fun SettingsScreen(
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "A clean ring for the 5h window, in that account's own colour, " +
-                            "so the colour tells you which account you are looking at.",
+                        "The 5h ring, or the Weekly bar where the account has no 5h or picks it, " +
+                            "in that account's own colour.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -2828,9 +2836,8 @@ private fun PlanChip(plan: String, tier: String?) {
     val color = MaterialTheme.colorScheme.primary
     // "Max 20x" when the tier parses, bare "Max" otherwise (CCRM-38). A tier
     // with no plan renders no chip at all — the caller's gate is on the plan.
-    val multiplier = Fmt.tierMultiplier(tier)
     Text(
-        plan.replaceFirstChar { it.uppercase() } + (multiplier?.let { " $it" } ?: ""),
+        Fmt.planLabel(plan, tier),
         style = MaterialTheme.typography.labelSmall,
         color = color,
         modifier = Modifier
@@ -3860,7 +3867,16 @@ private fun AccountHeadlineSheet(
     var showLimits by remember(profile) { mutableStateOf(cache.showModelLimits(profile)) }
     var statusIcon by remember(profile) { mutableStateOf(cache.statusIcon(profile)) }
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp)) {
+        // CCBG-65 (Sheet Under Taskbar): a large screen's taskbar is a tappable element the
+        // sheet's own insets leave out; pad for the part of it they miss, and scroll.
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(
+                    WindowInsets.tappableElement.exclude(WindowInsets.safeDrawing).only(WindowInsetsSides.Bottom),
+                )
+                .padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ProviderMark(profile.provider, size = 20.dp, tint = Palette.color(Palette.accentName(cache, profile), appDark()))
                 Spacer(Modifier.width(8.dp))

@@ -244,6 +244,19 @@ cd_ring_box = f'''<FrameLayout
 {ind(T('cd_ring_fig','11', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
 </FrameLayout>'''
 
+# CCBG-66 (Countdown Ring Small): on a 2×2 that is not wide the 5h ring is the hero, centred
+# under the count between the two gaps, sized from the frame as the Ring face's is.
+cd_hero_box = f'''<FrameLayout
+    android:id="@+id/cd_hero_box"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="6dp"
+    android:visibility="gone">
+{ind(I('cd_hero','64dp','64dp'),4)}
+{ind(T('cd_hero_fig','16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
+</FrameLayout>'''
+
 cd_col = ll('cd_col', 'vertical', '\n'.join([
     T('cd_caption','11', N+'    android:singleLine="true"', vis=None),
     ll('cd_countrow', 'horizontal', '\n'.join([
@@ -274,6 +287,7 @@ cd_col = ll('cd_col', 'vertical', '\n'.join([
     T('cd_at_below','12', N+'    android:layout_marginTop="3dp"'+N+'    android:singleLine="true"'),
     T('cd_msg','13.5', N+'    android:includeFontPadding="false"', bold=True),
     spacer('cd_gap1', 'v', vis='gone'),
+    cd_hero_box,
     ll('cd_figrow', 'horizontal', '\n'.join([
         T('cd_fig','18', N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),
         T('cd_leftcap','8.5', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
@@ -341,7 +355,7 @@ strip = ll('strip_col', 'vertical', ll('strip_group', 'vertical', '\n'.join([
 faces = {
   'widget_ring': ("    CCRM-79 (Ring Face), CCRM-103 (Hybrid Notification)'s shape grammar: the 5h as a\n    GrammarRing bitmap with the figure in its bore as real text, the Weekly as a bar under\n    it (ring_wk: \"Weekly\", bar, figure; the bar alone on 1×1); on 2×2 the label lines.", ring),
   'widget_number': ("    CCRM-80 (Number Face), CCRM-103 (Hybrid Notification)'s shape grammar: the 5h ring at\n    the left (num_ring_box) of the Weekly label, figure and bar; the absolute sub-line from\n    4×1, and the account cycler on 4×2 and 2×2 (the window chips went: both windows show).", number),
-  'widget_countdown': ("    CCRM-81 (Countdown Face): caption, the live chronometer or an absolute time, and on\n    2×2 the figure row over a 6 dp bar; the account line at the bottom. CCRM-103 (Hybrid\n    Notification)'s shape grammar: a 5h countdown leads with the 44 dp ring (cd_ring_box)\n    in place of the \"5h reset\" caption.", countdown),
+  'widget_countdown': ("    CCRM-81 (Countdown Face): caption, the live chronometer or an absolute time, and on\n    2×2 the figure row over a 6 dp bar; the account line at the bottom. CCRM-103 (Hybrid\n    Notification)'s shape grammar: a 5h countdown leads with the 44 dp ring (cd_ring_box)\n    in place of the \"5h reset\" caption; a 2×2 that is not wide (CCBG-66 (Countdown Ring\n    Small)) draws it as cd_hero_box instead, centred under the count, filling the face.", countdown),
   'widget_strip': ('    CCRM-82 (Accounts Strip): up to four rings, each its own account in its own accent,\n    and a "+N" cell. Never a sum.', strip),
 }
 for name, (comment, content) in faces.items():

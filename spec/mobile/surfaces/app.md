@@ -409,7 +409,7 @@ Dialogs (`A/SettingsScreen.kt:1165-1430`):
 
 | Section | Rows |
 |---|---|
-| Always-on notification (Android only; details in the notification file) | switch "Always-on usage notification" / "Silent and ongoing, with a status-bar ring. Nothing else posts on its own except the reset pings below."; when on: "Show accounts" (First: chip per account with its mark; Second · optional: "None" plus chips, the first account disabled), "Tapping a number opens" (chips "Cooldown", "That service's app"; note "The <Provider> app isn't installed — taps open Cooldown instead."), "Status-bar ring shows" (chips "First", "Second", "Whichever is higher"; with one account "One account, so there is nothing to choose" and a disabled "First" chip), a link row "System notification settings" / "The two channels left" |
+| Always-on notification (Android only; details in the notification file) | switch "Always-on usage notification" / "Silent and ongoing, with a status-bar icon. Nothing else posts on its own except the reset pings below."; when on: "Show accounts" (First: chip per account with its mark; Second · optional: "None" plus chips, the first account disabled), "Tapping a number opens" (chips "Cooldown", "That service's app"; note "The <Provider> app isn't installed — taps open Cooldown instead."), "Status-bar icon shows" (chips "First", "Second", "Whichever is higher"; with one account "One account, so there is nothing to choose" and a disabled "First" chip), a link row "System notification settings" / "The two channels left" |
 | Reset pings | intro "The one notification that still posts on its own. "If busy" pings only when that window had reached 80% before it reset."; per account its name and two rows "5h reset" and "Weekly reset", each a three-segment control "Off" / "If busy" / "Always" |
 | iOS Reset alerts | one row per account and window: mark 18 pt, "<name> · 5h" or "<name> · Weekly", segmented "Off" / "If busy" / "Always"; footer "“If busy” only alerts when the window that closed peaked at 80% or more. Alerts are set ahead from the reset times Cooldown last saw." Turning one on asks for notification permission |
 | iOS Lock Screen | switch "Live Activity"; a "Shows" row listing the selected accounts (up to two; a third replaces the oldest); footer "Two accounts’ 5h and Weekly on the lock screen while a window runs. iOS keeps it up to 8 hours and it updates when Cooldown checks." or "Live Activities are switched off for Cooldown in the iOS Settings app." |
@@ -728,9 +728,13 @@ Left "48% left"; Vs pace unsigned in green/red/onSurface; "—" unread). **No co
 pace pip (40 × 12 dp scale, centre mark, 4 dp dot at the Pace: green-grey #8FBF9A room, #BDB8B3 on pace, amber
 #F2B45A over, #FF6B5B nearly out; absent when spent, unread or unclocked) + 13 sp words ("Room to spare · ≈22%/day ·
 resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at
-3:40 PM · resets Fri", `SummaryRows.heldWords`). **Tap the figure** (P8): line 3 becomes the Weekly's readout
-(§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined 2 dp in the accent at 70%;
-nothing when spent, unclocked or unread; TalkBack: the readout is the figure's click label. Spent and unread rows:
+3:40 PM · resets Fri", `SummaryRows.heldWords`); under the measured width line 3 drops "· resets <day>" first
+(CCBG-60 (Summary Line Clip)); the name gives way before the plan pill, which keeps its place beside it (the pill
+reads `Fmt.planLabel`, as Settings: "Prolite", CCBG-62 (Plan Pill Case)). **Tap the figure** (P8): its own
+80 × 48 dp target over the figure and the bar's end (CCBG-56 (Summary Readout Tap)) — line 3 becomes the Weekly's
+readout (§2.4.4) for 3 s, the pip steps aside so it has the line's full width, underlined (the font's own underline,
+CCBG-57 (Readout Underline Clip)); the target consumes the tap even when spent, unclocked or unread (then nothing
+shows), so it never opens the account; TalkBack: the readout is the target's click label. Spent and unread rows:
 line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp rank disc in the accent (number
 10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", a held row "Held · 3:40 PM"
 in the 5h colour — the full row's words without "resets", never "5h" (judge F3); "Held" with no 5h clock — "Out ·
@@ -848,4 +852,17 @@ The tile is one row, **"Usage"** (`CardID.title`), in place of the "5-hour windo
 stands for the window card the tile is drawn under (`LayoutSheet.usageID`: the first shown above More, else behind
 it); showing, hiding, folding and unfolding it applies to both window ids, and reordering carries the other id right
 behind it, so the stored layout can never contradict the row. "Usage credits" is unchanged.
+
+### Step 7 pass fixes (2026-11-02, CCBG-56 … CCBG-65)
+
+- **Tile bar rows** (CCBG-58 (Tile Title Clip), CCBG-59 (Model Figure Alignment)): the label takes all the width the
+  figure leaves, so every row's figure is flush right on one edge; a lead label that still does not fit drops
+  " · All models" ("Weekly") rather than ellipsizing. iOS the same (`ViewThatFits`).
+- **The readout's underline** (CCBG-57): the font's own underline on Android (`TextDecoration.Underline`), as iOS's
+  `.underline()` — never across the glyphs.
+- **Account sheet** (CCBG-65 (Sheet Under Taskbar)): the ⋮ › Headline… sheet scrolls and pads for a large screen's
+  taskbar (the tappable-element inset the sheet's own insets leave out).
+- **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
+  way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
+  "Held · 3:40 pm" (never "5h").
 

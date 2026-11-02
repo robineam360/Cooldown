@@ -606,11 +606,17 @@ struct AccountTile: View {
         let usageColour = c.pct == nil ? p.sub : p.severity(c.pct, accent: accent)
         return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(label).font(.system(size: lead ? 15 : 13.5)).foregroundStyle(lead ? p.ink : p.txt).lineLimit(1)
+                // CCBG-58 (Tile Title Clip), as on Android: "Weekly · All models" drops " · All models" rather than
+                // ellipsizing when the row is too narrow.
+                ViewThatFits(in: .horizontal) {
+                    Text(label).fixedSize()
+                    Text(label.components(separatedBy: " · ").first ?? label).lineLimit(1)
+                }
+                .font(.system(size: lead ? 15 : 13.5)).foregroundStyle(lead ? p.ink : p.txt)
                 Spacer(minLength: 4)
                 Display.grammarFigure(Display.number(c.pct, pace: c.pace), size: lead ? (0.25 * ringSize).rounded() : 15)
                     .foregroundStyle(dimmed ? p.sub : Display.figureColour(c.pct, pace: c.pace, ink: p.ink, usage: usageColour, scheme))
-                    .lineLimit(1)
+                    .lineLimit(1).fixedSize()
                     .contentShape(Rectangle())
                     .onTapGesture { show(target, readout) }
             }

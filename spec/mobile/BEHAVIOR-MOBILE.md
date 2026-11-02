@@ -191,7 +191,7 @@ readers say "5-hour window, 34 percent").
   100) is a red cross alone until it resets; a spent week (core §6.1) greys the ring, outranking the
   cross. With the Weekly bar, or on a plan with no 5h whatever is stored: the Weekly as a small bar with its
   pace tick; a full Weekly, or a full 5h on a plan that has one, is the red cross. In a Duet the icon
-  belongs to the account the "Status-bar ring shows" setting picks, and that account's choice draws it;
+  belongs to the account the "Status-bar icon shows" setting picks, and that account's choice draws it;
   "Whichever is higher" compares the window each account's glyph stands for (the 5h for the ring, the Weekly
   for the bar or a plan with no 5h).
   Cases in [`fixtures/status-icon/cases.json`](fixtures/status-icon/cases.json). An absent or unknown value

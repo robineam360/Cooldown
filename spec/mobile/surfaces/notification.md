@@ -25,10 +25,10 @@ Settings that drive this surface (Settings, "Always-on notification" section, pl
 
 | Setting (exact label) | Values | Effect |
 |---|---|---|
-| "Always-on usage notification" | on / off | Off removes the notification and its status-bar ring; subtitle: "Silent and ongoing, with a status-bar ring. Nothing else posts on its own except the reset pings below." |
+| "Always-on usage notification" | on / off | Off removes the notification and its status-bar ring; subtitle: "Silent and ongoing, with a status-bar icon. Nothing else posts on its own except the reset pings below." |
 | "Show accounts" - "First" / "Second · optional" | Second: "None" or any account | "None" = single layout; any account = the Duet (section 2). Second cannot equal First. |
 | "Tapping a number opens" | "Cooldown" / "That service's app" | Per-half tap target (section 1.5). Helper copy when the service app is missing: "The <Provider> app isn't installed — taps open Cooldown instead." |
-| "Status-bar ring shows" | "First" / "Second" / "Whichever is higher" | Which account the one ring shows; with one account the row reads "One account, so there is nothing to choose". |
+| "Status-bar icon shows" | "First" / "Second" / "Whichever is higher" | Which account the one icon shows; caption "The 5h ring, or the Weekly bar where the account has no 5h or picks it, in that account's own colour." (CCBG-63 (Status Ring Wording), Robin 2026-11-02); with one account the row reads "One account, so there is nothing to choose". |
 | Appearance: "Usage display" | "Used" / "Left" | Flips every digit readout (section 1.4). Bars and the ring keep drawing the spend. |
 | Appearance: "Reset time" | "Countdown" / "Clock time" | Which form leads in a reset line (section 1.4). |
 | Appearance: "Show red past the pace mark" | on / off | Gates the red slice past the pace mark on bars and ring; the pace mark itself always draws. |
@@ -213,7 +213,7 @@ no 5h has no ring anywhere on the Duet (B1). The status-bar icon's "Whichever is
 | Collapsed half width | **156 dp** | 360 dp card - 2 x 16 dp system padding = 328 dp; minus one 16 dp gutter = 312; split two ways. The gutter is a start margin on Second so halves stay equal. A skin giving the full card width makes halves 172 dp; real halves run from about 101 dp (Fold 7 inner shade) to 156 dp, which is why the layout is built for the tight case |
 | Collapsed content height | about 52 dp | label line about 14 dp, 1 dp gap, figure about 35 dp (30 sp), plus 1 dp padding each side; collapsed custom views get about 48 to 64 dp depending on skin |
 | Collapsed label ceiling | 138 dp, 127 dp with one dot, 116 dp with two (never below 24 dp); less 44 dp beside the 36 dp ring (94 / 83 / 72), less 18 dp beside the bare 14 dp ring | 156 - ring and its gap - 14 mark - 4 gap - 11 per dot (6 dp dot + 5 dp margin); on narrower halves the layout's weight ellipsizes against the real width (`Duet.labelClampDp`) |
-| Collapsed ring | 36 dp at a half of 150 dp or more; the bare 14 dp ring under 150 | 36 + 8 gap + a 40 dp bar + 8 + a 57 dp figure = 149 (`Duet.halfRing`) |
+| Collapsed ring | 36 dp at a half of 150 dp or more — the cover and the Fold 7 inner shade alike (CCBG-64 (Inner Duet Ring), Robin 2026-11-02: the Step 7 pass measured the inner halves at about 180 dp); the bare 14 dp ring only for a half known to be under 150 | 36 + 8 gap + a 40 dp bar + 8 + a 57 dp figure = 149 (`Duet.halfRing`, `Duet.halfDp`) |
 | Expanded cap | about 256 dp | Android's limit on an expanded custom view |
 | Expanded header chrome | 136 dp, up to 140 dp | two header blocks of 58 dp (label 19, bar 13 + 4 margin, sub 16 + 4 margin; the 36 sp figure fits inside), 60 dp for a header with the 44 dp ring and its time line, 10 dp between them, 10 dp before the panel |
 | Expanded panel budget | about 116 dp (Fold 7 about 132) | 256 - 140 |
@@ -289,7 +289,7 @@ Plain-string fallback title: "<First label> 42% · <Second label> 63%"; text: th
 
 ### 2.6 Status-bar ring on a Duet
 
-One glyph for two accounts. "Status-bar ring shows" picks First, Second or "Whichever is higher"
+One glyph for two accounts. "Status-bar icon shows" picks First, Second or "Whichever is higher"
 (higher means Second only when strictly ahead; ties keep First; a missing reading hands the glyph to the
 other account; both missing falls back to First). The glyph's colour is the account's own accent below 80,
 so the hue says whose number it is; the app-name accent in the shade follows the ring's account. Whichever
@@ -350,7 +350,7 @@ account (`spec/mobile/fixtures/status-icon/`), drawn by `UsageIcon.drawGlyph` in
 The choice is per account, in its ⋮ › Headline… sheet, group "Status-bar icon" between Headline and Model limits:
 "5h ring" · "Weekly bar", each with its 16 dp glyph; caption "Either turns to a red cross while you are out.", or
 for a plan with no 5h the group greyed at 45% on "Weekly bar" with "This plan has no 5-hour window, so the status
-bar always shows the Weekly bar." In a Duet the icon belongs to the account "Status-bar ring shows" picks;
+bar always shows the Weekly bar." In a Duet the icon belongs to the account "Status-bar icon shows" picks;
 "Whichever is higher" compares each account's drawn window (the 5h for the ring, the Weekly for the bar).
 
 ### 4.1 Real size
@@ -458,7 +458,7 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 | settings-diet-wireframe.html section 2, collapsed option 1 | wireframe: one top line (mark, label clamped about 72 dp, bar, 30 sp figure on one row, content about 40 dp). Code: rev G two-line halves, label 12 sp on its own line, ceiling 138 dp, content about 52 dp (design/2026-09-26-v18-gate-fixes.html, CCBG-39 (Inner Duet Squeeze)) |
 | settings-diet-wireframe.html section 2, single row | wireframe: "ChatGPT · 5-hour window", "7-day" row. Code: "<Label> · 5h" and "Weekly" (CCBG-45 (Single Panel Wording)) |
 | settings-diet-wireframe.html section 2, Duet strips | wireframe: two-line strips, cap 2. Code: one-line, cap 1 (CCBG-26 (Panel Scaling)) |
-| 2026-11-02-shape-grammar.html rev D §3 D3 | the bare 14 dp ring for a Duet half under 150 dp is built (`Duet.halfRing`, `notif_duet.xml`) but never selected: RemoteViews cannot learn a half's width, so the choice is made at the nominal 156 dp and every half with a 5h draws the 36 dp ring, which squeezes the bar on the Fold 7's ~101 dp inner halves. Open: how to pick the narrow fallback |
+| 2026-11-02-shape-grammar.html rev D §3 D3 | the bare 14 dp ring for a Duet half under 150 dp is built (`Duet.halfRing`, `notif_duet.xml`); every shade measured so far (the cover, the Fold 7 inner at ~180 dp halves) takes the 36 dp ring (CCBG-64, Robin's call) |
 | 2026-11-02-shape-grammar.html rev D §3 N2 | the page draws line 2 as "Resets Sun 9:30 pm · in 4d 6h"; the code keeps v2.0's distance line ("13 over the pace mark (39%) · resets Sun"), as the build brief said |
 | 2026-11-02-shape-grammar.html rev D §3 D4 | the page's expanded Duet panel shows a model-cap row ("Teams · Fable"); the code keeps the Duet panel free of model caps (CCBG-26 (Panel Scaling)) |
 | rails-gauge-wireframe.html | see section 4.3 |
@@ -478,3 +478,8 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 | Used or Left, Reset display | `ui/Palette.kt` (`Fmt`) | design/display-tokens-wireframe.html (CCRM-22 (Used or Left), CCRM-23 (Reset Display)) |
 | Reset pings | `alerts/Alerts.kt`, `alerts/ResetRollover.kt` | BEHAVIOR-MOBILE.md section 2 |
 | Settings rows | `SettingsScreen.kt` | design/settings-diet-wireframe.html |
+
+**Expanded Duet, a header with the 44 dp ring** (CCBG-61 (Duet Line Clip)): its line is the tight form — "Use before
+reset · ≈31%/day", without "· resets <day>" — which ellipsized on the Fold 7 cover; a header without a ring (a plan
+with no 5h) keeps the full line.
+

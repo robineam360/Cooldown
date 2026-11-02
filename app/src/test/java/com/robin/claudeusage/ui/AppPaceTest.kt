@@ -203,4 +203,14 @@ class AppPaceTest {
         assertFalse(PaceMapGeometry.labelLeft(67.0))
         assertTrue(PaceMapGeometry.labelBelow(100.0))
     }
+
+    /** CCBG-60 (Summary Line Clip) and CCBG-62 (Plan Pill Case), Step 7 pass. */
+    @Test fun `line 3 drops its reset day first, and one plan formatter`() {
+        assertEquals("Use before reset · ≈31%/day", SummaryRows.withoutReset("Use before reset · ≈31%/day · resets Fri"))
+        assertEquals("Held · back at 3:40 PM", SummaryRows.withoutReset("Held · back at 3:40 PM · resets Fri"))
+        assertEquals("Out until Thu 8:00 AM", SummaryRows.withoutReset("Out until Thu 8:00 AM"))
+        assertEquals("Prolite", Fmt.planLabel("prolite"))
+        assertEquals("Max 20x", Fmt.planLabel("max", "default_claude_max_20x"))
+        assertEquals("Pro", Fmt.planLabel("Pro"))
+    }
 }

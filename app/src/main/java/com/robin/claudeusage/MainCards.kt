@@ -53,6 +53,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -495,24 +496,21 @@ internal fun grammarFigureColor(
 
 /**
  * The tap readout in place of a line (rev D §2b form (b), `.swap`): onSurface SemiBold,
- * underlined 2 dp in the accent at 70% while it shows.
+ * underlined while it shows. CCBG-57 (Readout Underline Clip): the font's own underline, placed
+ * below the baseline by the text engine, so it never crosses the glyphs in a fixed-height line
+ * (a hand-drawn line at the box's bottom did, once the 17 dp caption squeezed the text).
  */
 @Composable
 internal fun SwapText(text: String, fontSize: TextUnit, modifier: Modifier = Modifier) {
-    val underline = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
     Text(
         text,
         fontSize = fontSize,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurface,
+        textDecoration = TextDecoration.Underline,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = modifier
-            .drawBehind {
-                val w = 2.dp.toPx()
-                drawLine(underline, Offset(0f, size.height - w / 2f), Offset(size.width, size.height - w / 2f), w)
-            }
-            .padding(bottom = 3.dp),
+        modifier = modifier,
     )
 }
 
@@ -1016,15 +1014,19 @@ private fun TileBarRow(
                 .heightIn(min = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // CCBG-58 (Tile Title Clip), CCBG-59 (Model Figure Alignment): the label takes all
+            // the width the figure leaves, so every row's figure sits flush right; a lead
+            // label that still does not fit drops " · All models" rather than ellipsizing.
+            var short by remember(label) { mutableStateOf(false) }
             Text(
-                label,
+                if (short) label.substringBefore(" · ") else label,
                 fontSize = if (lead) 13.5.sp else 12.5.sp,
                 color = if (lead) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
+                onTextLayout = { if (lead && !short && it.hasVisualOverflow && " · " in label) short = true },
+                modifier = Modifier.weight(1f),
             )
-            Spacer(Modifier.weight(1f))
             Spacer(Modifier.width(6.dp))
             Text(
                 grammarFigure(figure),

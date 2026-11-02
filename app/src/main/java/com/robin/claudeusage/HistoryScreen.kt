@@ -102,7 +102,7 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
             val multiplier = if (profile.provider == Provider.CLAUDE && plan.startsWith("Max")) {
                 Fmt.tierMultiplier(repo.tier(profile))
             } else null
-            plan + (multiplier?.let { " $it" } ?: "")
+            Fmt.planLabel(plan) + (multiplier?.let { " $it" } ?: "")
         }
     }
 

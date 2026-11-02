@@ -445,6 +445,14 @@ object Fmt {
      * caller falls back to the bare plan. The raw tier is stored as-is; this
      * runs at render time only.
      */
+    /**
+     * CCBG-62 (Plan Pill Case): the one plan name every surface prints — the server's plan with
+     * its first letter capitalised ("pro" → "Pro", "prolite" → "Prolite"), and the tier's
+     * multiplier when it parses ("Max 20x").
+     */
+    fun planLabel(plan: String, tier: String? = null): String =
+        plan.replaceFirstChar { it.uppercase() } + (tierMultiplier(tier)?.let { " $it" } ?: "")
+
     fun tierMultiplier(tier: String?): String? {
         tier ?: return null
         val part = tier.split(Regex("[^A-Za-z0-9]+")).firstOrNull {
