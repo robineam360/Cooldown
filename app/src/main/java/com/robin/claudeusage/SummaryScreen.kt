@@ -78,7 +78,11 @@ internal fun SummaryScreen(
 ) {
     val cache = remember { repo.cacheSettings() }
     val dark = appDark()
-    val rows = remember(profiles, tick) { summaryRows(repo, profiles) }
+    // History files are read only when a fetch lands, not on every 5 s tick (Step 5 judge F4);
+    // the tick still re-runs the time maths.
+    val fetchedAts = profiles.map { repo.snapshot(it).fetchedAt }
+    val histories = remember(profiles, fetchedAts) { profiles.associateWith { repo.history().points(it) } }
+    val rows = remember(profiles, tick, histories) { summaryRows(repo, profiles, histories) }
     val compact = SummaryRows.compact(profiles.size)
     val mapEntries = remember(rows, dark) {
         rows.mapIndexedNotNull { i, r -> r.mapEntry(i + 1, Palette.color(Palette.accentName(cache, r.profile), dark)) }
@@ -142,12 +146,16 @@ internal data class SummaryRowModel(
 }
 
 /** Reads every account, ranks them by [SummaryRank], and returns them in display order. */
-private fun summaryRows(repo: UsageRepository, profiles: List<Profile>): List<SummaryRowModel> {
+private fun summaryRows(
+    repo: UsageRepository,
+    profiles: List<Profile>,
+    histories: Map<Profile, List<HistoryPoint>>,
+): List<SummaryRowModel> {
     val now = System.currentTimeMillis()
     val cache = repo.cacheSettings()
     val read = profiles.associate { p ->
         val data = repo.snapshot(p).data
-        val history: List<HistoryPoint> = repo.history().points(p)
+        val history: List<HistoryPoint> = histories[p].orEmpty()
         val elapsed = elapsedPercent(data?.weekly, Projection.WEEKLY_MS)
         val binding = AccountRead.sessionBinding(data, AccountRead.sessionHitsLimitAtMs(data, history))
         val entry = SummaryRank.Entry(

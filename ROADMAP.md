@@ -1872,7 +1872,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 
 ### CCRM-102 · Spent Week Gate — a spent week greys the 5h on every account
 - **Status:** Decided and approved 2026-11-02 (Robin, CCRM-55 (Antigravity Account) rev B, §3b of
-  `design/2026-11-02-antigravity-account.html`) · building in v2.0 (RUNBOOK-v2.0 Step 6a).
+  `design/2026-11-02-antigravity-account.html`) · **built** on the v2.0 branch: Android notification and widgets (5c6b2ef), Android app cards (26c1075), iOS (886d4dd, e11b87f); device check at Step 7.
 - **What:** for Claude, ChatGPT and Gemini alike, while the Weekly window is spent (core §6.1, used ≥ 99.5)
   the 5h window is shown **disabled, not hidden and not zeroed**: its figure, bar and reset line at 45%
   opacity, without the pace caption or the "on track" projection, plus one full-opacity note "Weekly limit
