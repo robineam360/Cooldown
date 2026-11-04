@@ -4,28 +4,60 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc + Gemini — Step 7, the device passes (written 2026-11-02, after Robin's 6d calls)
+## ▶ v2.0 arc + Gemini — finish Step 7, then Step 8 (written 2026-11-04)
 
-**State.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`), PR
-robineam360/Cooldown#21, held off main by Gate G0; origin/main (0951dae, spec/core §6.3 `markTime`) is merged in.
-RUNBOOK-v2.0 Steps 1–6 and 6a–6d ticked. **Step 6d, CCRM-103 (Hybrid Notification), is built** to the frozen
-`design/2026-11-02-shape-grammar.html` rev D on Android and iOS, with Robin's calls of 2026-11-02: the merged tile is
-one layout-sheet row "Usage" on both platforms; the iOS lock circular for a plan with no 5h is the Weekly-bar glyph
-under the Used figure; the Vs pace Settings description stands; Step 7's captures stand in for Step 5's Compose
-previews. Every commit was judged (fresh Opus on claude-product; findings and fixes in the Step 6d log). Checks: both
-flavors' unit tests and lint, `swift test` 127, iOS app tests 55. Sub-agents run on the claude-product account
-(`model-mesh-review worker … --account ~/.claude-product`); workers can't run gradle or xcodebuild, so the seat runs
-tests and commits.
+**Where it stands.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`),
+PR robineam360/Cooldown#21, at bbc19db. **App code stays off main** until v1.9 ships (Gate G0); Robin lifted G0 *for
+the device pass only*. main = 1f7fa0b (spec-only landings: §6.3 `markTime` 0951dae, §11 plan names 1f7fa0b; the
+desktop pins 1f7fa0b). RUNBOOK-v2.0 Steps 1–6d ticked; **Step 7 is mostly done** (log: RUNBOOK-v2.0 "Step 7" entries;
+captures `design/research/2026-11-02-v20-device-pass/`).
+
+**Built and checked on devices since the 6d freeze** (Fold 7 release build, iPad Pro M4 Debug build): the shape
+grammar (rings = 5h, bars = 7-day, no "5h" label), tap readouts, end mark, status-bar icon choice; CCBG-56–68, 71
+fixed and verified; CCBG-69 closed (not reproduced); Robin's later calls — iPad shows one account at a time with no
+pinned account, native iOS/iPadOS `TabView` (Liquid Glass sidebar/tab bar), Appearance › Summary order (Your order
+default · Most room first · Resets soonest · Most used), the title shows Claude/ChatGPT/Gemini marks (or the app mark
+where they don't fit), plan names per spec/core §11 (Claude Free/Pro/Max/Ultra; ChatGPT Free/Go/Plus/Pro 100/200/500;
+Gemini Pro/Ultra 5x/Ultra 20x), no pace pip on Summary rows. **Gemini (CCRM-55) works** on both devices — Robin signed
+in; the client secret is in `~/.gradle/gradle.properties` and `ios/Config/Antigravity.secrets.xcconfig` (both outside
+git, copied from `~/.cooldown-private/gemini-client-secret` without printing it; proven by the Mac sign-in).
+
+**Open, in order:**
+1. **CCBG-74 (iPad ChatGPT Free)** — the iPad's ChatGPT reads "Free / No reading" at 4a0d23f; the Fold reads Pro 100
+   at 51% on the same commit; no code cause found (an end-to-end test rules out the plan names). Ask Robin for the
+   iPad's Settings › Accounts › ChatGPT email/plan and to pull-to-refresh: a different account → re-sign-in; the same
+   account → the token refresh's account switch, fixed on both platforms.
+2. **iPad recheck of bbc19db**: portrait Liquid Glass tab bar, the title marks, the Summary order setting, CCBG-72
+   (Live Activity follows a Usage display change), plan names on the iPad.
+3. **Step 7 leftovers** (RUNBOOK log "Unverified"): a running/binding/full 5h and Headline 5-hour/Auto on it, a spent
+   week, Gemini's pool shown once used and a refresh after an hour, the 4×2 picker previews. CCBG-70: Robin removes
+   the old "Ring" widget on the iPad.
+4. **Step 8 (release v2.0)** per RUNBOOK-v2.0 and RELEASING.md — needs G0 (v1.9 shipped first), a fresh judge plus
+   Sol cross-check, and **Robin's go in chat** for the named commit and the APK/IPA sha256s.
+
+**How the pass was run** (for the next device session): Fold over wireless adb (`adb mdns services`; the Fire TV at
+192.168.0.14 is *not* the phone); USB adb answered "not responding". Keep the screen on (save and restore
+`screen_off_timeout`, normally 300000). Release builds need `keystore.properties` + `ccooldown-release.jks` copied
+from `~/Projects/Cooldown` (git-ignored; delete after). iPad: build from a clean copy (the nested worktree
+`.claude/worktrees/v20-spec-land`, detached at the commit; `xcodegen` then `xcodebuild … DEVELOPMENT_TEAM=546C62BX57
+-allowProvisioningUpdates`), install with `xcrun devicectl device install app`, screenshots with `devicectl device
+capture screenshot`; the session can't tap the iPad, so Robin drives it while a 4-second capture loop runs. Home
+pages, shade and Settings captures show private data: keep them out of the repo, commit only Cooldown crops.
+Sub-agents run on claude-product (`model-mesh-review worker … --account ~/.claude-product`); workers can't run gradle
+or xcodebuild, so the seat runs tests and commits. Robin's design decisions are recorded in the RUNBOOK-v2.0 log and
+the CCBG entries.
 
 New session in this worktree, model Opus 5.5:
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 7, the Step 6d log) and this block of HANDOVER.md;
-> load the model-mesh skill; run the git gate. Step 7 waits on G0 and on Robin connecting the Fold 7 and the iPad —
-> ask him first. Then record each device's starting state, run the passes the step lists plus the 6d checks in its
-> log (the Duet's bare ring on the Fold 7 inner shade and the 36 dp ring on the cover, the picker previews, the
-> 12 × 6 dp Weekly-bar glyph, the compact "Held · 3:40 PM" in its 90 dp column, the tap readout, the end-mark setting,
-> the status-bar icon choice, the "Usage" layout row, the iOS no-5h lock circular); Gemini sign-in is Robin's. File
-> every defect in BUGS.md; Robin decides what blocks. Stop at Step 8's release go. Before stopping, replace this block.
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 7 and its log) and this block of HANDOVER.md; load
+> the model-mesh skill; run the git gate. Work the "Open, in order" list above: ask Robin for the iPad ChatGPT
+> details (CCBG-74) and to connect the devices, recheck bbc19db on the iPad, then the Step 7 leftovers; file every
+> defect in BUGS.md, Robin decides what blocks, then tick Step 7. Stop and ask at anything visible beyond the frozen
+> designs and at Step 8's release go. Before stopping, replace this block.
+
+## ▶ (superseded by the block above) v2.0 arc + Gemini — Step 7, the device passes (written 2026-11-02)
+
+Superseded 2026-11-04: Step 7 ran on the Fold 7 and the iPad (see the block above and the RUNBOOK-v2.0 log).
 
 ## ▶ (superseded by the block above) v2.0 arc — Android, iPhone and iPad (written 2026-11-02)
 
