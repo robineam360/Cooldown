@@ -165,7 +165,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "business" as "Team"; Gemini's Ultra could not tell 5x from 20x.
 
 ### CCBG-74 · iPad ChatGPT Free — the iPad's ChatGPT account reads "Free", "No reading", "—" at 4a0d23f
-- **Status:** **Open — no code cause found; device evidence needed** (2026-11-02). Seen on the iPad (Debug build of
+- **Status:** **Closed — not a defect** (2026-11-04, Robin): his ChatGPT account was briefly downgraded to Free and
+  is back on a paid plan, so the iPad showed a real free-account reply. He also confirmed the account was on Pro 100
+  when the Fold read `plan_type` "prolite", so spec/core §11's prolite → "Pro 100" stands as confirmed.
+- **Was:** **Open — no code cause found; device evidence needed** (2026-11-02). Seen on the iPad (Debug build of
   4a0d23f) an hour after 9970332 read the same account "Prolite" 51%; the Fold on 4a0d23f reads it "Pro 100", 51%.
   Investigated: no iOS change between 9970332 and 4a0d23f touches the ChatGPT fetch, parse or storage path (only the
   plan's name, API-CONTRACT §11); a new end-to-end test feeds the captured ChatGPT reply with each plan code

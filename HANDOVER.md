@@ -22,11 +22,9 @@ Gemini Pro/Ultra 5x/Ultra 20x), no pace pip on Summary rows. **Gemini (CCRM-55) 
 in; the client secret is in `~/.gradle/gradle.properties` and `ios/Config/Antigravity.secrets.xcconfig` (both outside
 git, copied from `~/.cooldown-private/gemini-client-secret` without printing it; proven by the Mac sign-in).
 
-**Open, in order:**
-1. **CCBG-74 (iPad ChatGPT Free)** — the iPad's ChatGPT reads "Free / No reading" at 4a0d23f; the Fold reads Pro 100
-   at 51% on the same commit; no code cause found (an end-to-end test rules out the plan names). Ask Robin for the
-   iPad's Settings › Accounts › ChatGPT email/plan and to pull-to-refresh: a different account → re-sign-in; the same
-   account → the token refresh's account switch, fixed on both platforms.
+**Open, in order** (Robin, 2026-11-04: the device checks run before v1.9 is cut and v2.0 is prepared for release;
+CCBG-74 is closed — his ChatGPT account was briefly Free, and he confirmed prolite = Pro 100):
+1. Connect the Fold 7 and the iPad (ask Robin).
 2. **iPad recheck of bbc19db**: portrait Liquid Glass tab bar, the title marks, the Summary order setting, CCBG-72
    (Live Activity follows a Usage display change), plan names on the iPad.
 3. **Step 7 leftovers** (RUNBOOK log "Unverified"): a running/binding/full 5h and Headline 5-hour/Auto on it, a spent
@@ -50,8 +48,8 @@ the CCBG entries.
 New session in this worktree, model Opus 5.5:
 
 > Read CLAUDE.md, WORKTREE.md, RUNBOOK-v2.0.md (Progress, Step 7 and its log) and this block of HANDOVER.md; load
-> the model-mesh skill; run the git gate. Work the "Open, in order" list above: ask Robin for the iPad ChatGPT
-> details (CCBG-74) and to connect the devices, recheck bbc19db on the iPad, then the Step 7 leftovers; file every
+> the model-mesh skill; run the git gate. Work the "Open, in order" list above: ask Robin to connect the devices,
+> recheck bbc19db on the iPad, then the Step 7 leftovers; file every
 > defect in BUGS.md, Robin decides what blocks, then tick Step 7. Stop and ask at anything visible beyond the frozen
 > designs and at Step 8's release go. Before stopping, replace this block.
 
