@@ -1616,7 +1616,7 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** all three exist, and the row opens the policy.
 
 ### CCRM-90 · Listing Pack — everything the Console asks for, drafted in the repo
-- **Status:** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic: **variant B approved by Robin 2026-10-01**, exported to `release/play/feature-graphic.png` (1024×500, RGB, no alpha) from `design/2026-10-01-play-feature-graphic.html`. Step 6 closed; the FGS demo video is Step 7's · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
+- **Status:** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic: **variant B approved by Robin 2026-10-01**, exported to `release/play/feature-graphic.png` (1024×500, RGB, no alpha) from `design/2026-10-01-play-feature-graphic.html`. Step 6 closed; **the FGS demo video was recorded 2026-11-04** (`release/play/fgs-demo.mp4`, 45 s, Accounts tab cut for its email addresses; not uploaded, since Play work waits until after v2.0) · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
   artefact, not an app screen.
 - **What:** everything goes in `release/play/`:
   - the title and the short and full descriptions, with no provider mark in the title, icon or
@@ -1835,6 +1835,11 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   CCRM-86 (Play Readiness) and CCRM-87–91. v1.9 goes as far as a Console account and the
   internal-testing track (Robin's Q1). The *launch* stays here: it is gated on the provider check
   and it is Robin's decision. The reopening condition below is unchanged.
+  **2026-11-04 — Play work deferred past v2.0, by Robin.** His words: "Till v2.0, let's focus on
+  getting the app out to everyone via the Cooldown repo and TestFlight. After v2.0 is published,
+  let's work to get our apps in the public GooglePlay and Apple App Store (and not now in v1.9 or
+  v2.0)." So v1.9 ships as a GitHub release (APK) only: RUNBOOK Step 9 (Play Console, Q4) is out of
+  scope and Step 8 no longer builds the AAB. The `play` flavor stays in the tree and in CI.
 - **Why it was dropped:** Step 1's research (`design/research/2026-09-16-permission-emails.md`)
   established that Anthropic's own
   [legal and compliance page](https://code.claude.com/docs/en/legal-and-compliance) already

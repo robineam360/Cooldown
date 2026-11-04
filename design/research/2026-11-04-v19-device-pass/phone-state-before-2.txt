@@ -1,0 +1,28 @@
+# Before — 2026-11-04T13:35:43Z, USB adb RZCY70YN0LJ
+settings get system screen_off_timeout: 300000
+settings get global airplane_mode_on: 0
+settings get global auto_time: 1
+settings get global auto_time_zone: 1
+getprop persist.sys.timezone: Asia/Calcutta
+phone date +%s: 1793799343
+host date +%s: 1793799343
+settings get global wifi_on: 1
+settings get global mobile_data: 1
+deviceidle:
+  mForceIdle=false
+  mState=ACTIVE mLightState=ACTIVE
+battery:
+  AC powered: false
+  USB powered: true
+installed:
+    codePath=/data/app/~~FaxO-j2f_f_7_b5K2AzU1Q==/com.robin.claudeusage-fB_fjwkkP4L047BUh5S8Kg==
+    versionCode=25 minSdk=31 targetSdk=36
+    versionName=1.9
+20249a2d1c56f8ccb966863d77d22a92a2b99398ee49b4ec1dee0f5f0bd52176  design/research/2026-11-04-v19-device-pass/installed-before-2.apk
+NOTE: the installed 1.9/25 base.apk (sha above, 29494339 bytes, signer = trusted digest, lastUpdateTime 2026-11-02 21:56) is neither 0e8ac99's nor 3c70538's candidate; likely an install from another session (v2.0 arc). Pulled and kept (git-ignored) as installed-before-2.apk.
+# 2026-11-04T13:35:59Z: screen_off_timeout set to 1800000 for the pass; RESTORE 300000
+fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed  design/research/2026-11-04-v19-device-pass/installed-after-install.apk
+candidate github APK 1f7fa0b installed (expected fcd15940…ad3fed)
+# CCBG-52 timing on 1f7fa0b (reboot issued 19:06:22 IST; Robin unlocked at 20:28:19 IST, 82 min later, because adb stayed offline until unlock)
+user unlocked 20:28:19.6; app process 20:28:36.9 (RingWidgetProvider broadcast); PinBootWorker started 20:28:39.5, SUCCESS 20:28:39.98; PinnedService FGS start 20:28:39.86 (SYSTEM_ALLOW_LISTED)
+=> pin back 20 s after unlock, 3 s after the app process start (was 5 min 45 s). Pin notification id 9100 present.

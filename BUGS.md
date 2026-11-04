@@ -80,7 +80,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. The restart cards after a held sign-in or sign-out are still to see (next session). **2026-10-02:** CI lint had failed on every push since ce2b904 because the main page's "No account yet" card read the store state with `.value` during composition (`StateFlowValueCalledInComposition`); it now collects it, so the card also follows a state change without waiting for the next tick. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. **Restart card verified on the Fold 7 2026-11-04** (github candidate 1f7fa0b): Simulate on, Product signed in and Work cleared while degraded, force-stop and reopen → one card, "2 sign-in changes … weren't kept", "you signed out of Work and signed in to Product", both accounts still signed in; OK removes it (`design/research/2026-11-04-v19-device-pass/01-…` and `02-…`). **2026-10-02:** CI lint had failed on every push since ce2b904 because the main page's "No account yet" card read the store state with `.value` during composition (`StateFlowValueCalledInComposition`); it now collects it, so the card also follows a state change without waiting for the next tick. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator at 360 dp, about 411 dp and 750 dp: the notice, Try again, recovery, the Remove dialog, the
   Debug switch, and the restart card (from a seeded record). The held-change wordings need a real
   sign-in, so Step 7 checks them on the phone: simulate, Clear an account, restart, and the
@@ -124,10 +124,13 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   items it skips. Pure logic, no wireframe; one test in `HeldChangesTest`/`CredentialStoreTest`.
 
 ### CCBG-52 · Boot Pin Delay — after a reboot the always-on notification takes minutes, not seconds, to return
-- **Status:** **Fixed (2026-10-02), not yet seen on the phone** — found 2026-10-01 in RUNBOOK v1.9
+- **Status:** **Verified on the Fold 7 2026-11-04** — found 2026-10-01 in RUNBOOK v1.9
   Step 7 (item 5) on the Fold 7. Robin, 2026-10-02: fix it in v1.9. The boot restart is now an
-  expedited request with no delay (`BootRequestTest`); one reboot on the Fold 7 in the rest of Step 7
-  times the pin. If One UI still holds the job, that is recorded here and the rest goes to Robin.
+  expedited request with no delay (`BootRequestTest`). One reboot on the phone with the pin on
+  (github candidate 1f7fa0b): user unlocked 20:28:19, app process 20:28:36.9, `PinBootWorker` started
+  20:28:39.5, the `specialUse` service started 20:28:39.86 — the pin was back **20 s after unlock**
+  (3 s after the process started), against 5 min 45 s before. The phone sat locked for 82 minutes
+  after the reboot because adb stays offline until unlock, so the clock starts at unlock.
 - **Severity:** Low (the pin does come back on its own; nothing is lost)
 - **Symptom:** after a reboot with the pin on, the notification reappeared **5 min 45 s** after
   boot (boot 18:33:38, unlocked 18:33:45, pin 18:39:30). `PinnedBootReceiver` enqueued

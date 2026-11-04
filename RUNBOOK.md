@@ -98,9 +98,9 @@ begun, run its *Always after* block first.
 | 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☑ |
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
-| 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☐ |
-| 8 | Release v1.9 on GitHub; AAB built from the same commit | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
-| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | ☐ |
+| 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☑ |
+| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
+| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | **Deferred 2026-11-04 until after v2.0** |
 
 ---
 
@@ -521,10 +521,11 @@ deferral accepted in Robin's words. Close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ Items 1–9 are recorded, with shots in the research folder (the private shade is cropped to the
+- ☑ Items 1–9 are recorded, with shots in the research folder (the private shade is cropped to the
   card).
-- ☐ The phone ends on the github build, its sha256 is logged, and the *Always after* diff is empty.
-- ☐ Gate: no High open, and every deferral is accepted by Robin on the record.
+- ☑ The phone ends on the github build, its sha256 is logged, and the *Always after* diff is empty.
+- ☑ Gate: no High open, and every deferral is accepted by Robin on the record (there are none:
+  CCBG-52 was fixed and verified; the Play-side work is deferred past v2.0 in Robin's words, Step 9).
 
 **Reversal:** the *Always after* block restores the phone, and code fixes are `git revert`. The
 phone never loses data in this pass. No uninstall is allowed and no destructive test runs.
@@ -557,6 +558,21 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
   that times the pin on the new candidate wait for the next session.
   CI had been red since ce2b904 (Step 5) on one lint error in the CCBG-50 (Degraded Store Notice)
   card; fixed the same day, so the candidate was rebuilt from the fix (see HANDOVER.md).
+- 2026-11-04 — **Step 7 closed** (seat rung 1; shots and state files in
+  `design/research/2026-11-04-v19-device-pass/`). The old 3c70538 candidate was stale (cf21ffc changed
+  `app/` after it), so a fresh github release candidate was built from main 1f7fa0b: 1.9 / 25, sha256
+  `fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed`, signer = the trusted digest
+  (kept outside git). Before recorded in `phone-state-before-2.txt` (screen timeout was 300000, not
+  the October value); the phone had held a different 1.9 / 25 build from 2026-11-02 (pulled, kept).
+  - **CCBG-52 (Boot Pin Delay): verified.** Pin back 20 s after unlock, 3 s after the process start
+    (was 5 min 45 s).
+  - **CCBG-50 (Degraded Store Notice) restart card: verified.** One card with both items after a
+    force-stop, both accounts still signed in, OK clears it.
+  - **CCRM-90 (Listing Pack) FGS video recorded** (`release/play/fgs-demo.mp4`); the Accounts tab was
+    cut because it shows email addresses; the Play link stays empty.
+  - **Claude mark at 82%** seen on the new build: smaller than the ChatGPT mark beside it, as drawn.
+  - **Always after:** run; installed sha256 `fcd15940…ad3fed`; diff against Before empty; clock offset 0 s.
+  - **Gate:** no High open; no deferral.
 
 ---
 
@@ -573,31 +589,30 @@ Conventions and Step 8; the Status lines Step 7 verified. versionCode 25 / versi
 (Step 7). Docs: USER-GUIDE.md changelog; README bullets (crash reports stay on the phone;
 privacy policy link); guide.html and brochure.html rebuilt with release/docs/build.sh, every
 changed page read in the PDF; release notes (app only — no build story): crash capture, a steadier
-credential store, the privacy policy, the fixes. Then RELEASING.md's order, with both
-artefacts built and verified BEFORE anything is published: commit → push main → **CI green on
+credential store, the privacy policy, the fixes. Then RELEASING.md's order, with the
+APK built and verified BEFORE anything is published: commit → push main → **CI green on
 that exact sha** (gh run list --commit <sha>; pending or failed stops here, and any recommit
-repeats this gate) → build BOTH from it
-(assembleGithubRelease, asset copied to app-release.apk; bundlePlayRelease) → verify the AAB
-(bundletool validate, signer = trusted digest, versionCode 25 / 1.9, the tools/ update-path check
-on a universal APK built from it with the release key, and Play's CURRENT upload requirements read
-on the day — target API level, 16 KB page size, anything new — so a published v1.9 never needs
-replacing before Step 9) → tag and push → draft with --verify-tag →
+repeats this gate) → build it from that sha
+(assembleGithubRelease, asset copied to app-release.apk) → tag and push → draft with --verify-tag →
 download and verify the APK (sha256 equal, signer = trusted digest, versionCode 25 / 1.9) → a
-fresh mesh-judge verdict covering both artefacts → publish with --latest → adb install -r the downloaded published APK on the Fold 7 and check the
+fresh mesh-judge verdict on the APK → stop and ask Robin for the go on the named commit and
+sha256 → publish with --latest → adb install -r the downloaded published APK on the Fold 7 and check the
 installed sha256 equals the asset (the phone already holds a versionCode 25 candidate, so "Check
-for updates" will not replace it; Robin's tap only confirms it reads up to date). Log the AAB's sha256
-and signer here; do not attach it. Any AAB failure stops before the tag: fix, recommit, rebuild
-both. Robin taps Check for updates.
+for updates" will not replace it; Robin's tap only confirms it reads up to date). Robin taps Check for updates.
+**Scope change, Robin 2026-11-04:** no AAB is built, verified or logged in this step, and Play's
+upload requirements are not checked; Play work waits until after v2.0 (Step 9). The `play` flavor
+stays in the tree and in CI.
 Set the shipped items to Shipped v1.9; close out per Convention 4.
 ```
 
 **Done when:**
 - ☐ v1.9 is published and `releases/latest` resolves to it. The phone runs the published APK
   (sha256 checked), and "Check for updates" reads up to date.
-- ☐ Play's current upload requirements were checked against the AAB before publishing.
+- ~~Play's current upload requirements were checked against the AAB before publishing.~~ Dropped
+  from v1.9, Robin 2026-11-04 (Play waits until after v2.0).
 - ☐ CI was green on the exact release commit before the tag.
-- ☐ The AAB was built and verified from the release commit **before publishing**. Its sha256 and
-  signer are logged here, and the file is kept outside git for Step 9.
+- ~~The AAB was built and verified from the release commit before publishing.~~ Dropped from v1.9,
+  Robin 2026-11-04. The APK's sha256 and signer are logged here instead.
 - ☐ Every arc item reads Shipped v1.9, or Deferred with a reason.
 
 **If it goes wrong mid-way:** as in RELEASING.md.
@@ -619,6 +634,11 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 ---
 
 ## Step 9 · Play Console — account, app, existing-key signing, internal testing
+
+> **Deferred 2026-11-04, Robin's words:** "Till v2.0, let's focus on getting the app out to everyone
+> via the Cooldown repo and TestFlight. After v2.0 is published, let's work to get our apps in the
+> public GooglePlay and Apple App Store (and not now in v1.9 or v2.0)." Out of scope for v1.9; Q4
+> stays open and is picked up after v2.0. The `play` flavor stays in the tree and in CI.
 
 **Who:** **Robin at the console, every click his.** The session guides from `release/play/` and
 checks results, and never holds a console login. **Blocked until Q4 (the account type) is answered**,
