@@ -568,8 +568,11 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
     (was 5 min 45 s).
   - **CCBG-50 (Degraded Store Notice) restart card: verified.** One card with both items after a
     force-stop, both accounts still signed in, OK clears it.
-  - **CCRM-90 (Listing Pack) FGS video recorded** (`release/play/fgs-demo.mp4`); the Accounts tab was
-    cut because it shows email addresses; the Play link stays empty.
+  - **CCRM-90 (Listing Pack) FGS video recorded** (`release/play/fgs-demo.mp4`) before the scope
+    change reached this session; the Accounts tab was cut because it shows email addresses; the Play
+    link stays empty. It shows v1.9's notification, so it is **re-recorded on the v2.0 build** before
+    Step 9, and no Play listing screenshot or icon was shot on v1.9 (checklist:
+    `release/play/CHECKLIST.md`, per Robin's 2026-11-04 scope call, to confirm in the morning).
   - **Claude mark at 82%** seen on the new build: smaller than the ChatGPT mark beside it, as drawn.
   - **Always after:** run; installed sha256 `fcd15940…ad3fed`; diff against Before empty; clock offset 0 s.
   - **Gate:** no High open; no deferral.
