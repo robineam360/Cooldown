@@ -1681,6 +1681,7 @@ it carries the umbrella CCRM-7 (iOS).
   to Robin before anything else is built.
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
+- **Parity pass 2026-11-04** (branch off the v2.0 tip, `ios-parity-audit-2026-11-04.md`): Remove asks first, a cleared rename restores the default name, the plan notice names its own provider, CCBG-53 (History Footnote) and CCBG-54 (Plan Copy Gap) fixed on iOS, About footer and the Control Center copy follow Weekly First; privacy manifests and the export-compliance key added for CCRM-95 (Dual Release) phase B. The remaining gaps wait on `design/2026-11-05-ios-parity-*.html`.
 - **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the **2026-11-02 (Robin):** the iPad drops the pinned account — the sidebar (landscape) or the tabs (portrait) open on
   "All accounts" and show one account at a time; built on the v2.0 branch (RUNBOOK-v2.0 Step 7 log). **2026-11-02 (Robin, "Native everywhere"):** the main screen runs on the system's tabs — one SwiftUI `TabView`
   (`.sidebarAdaptable`): the Liquid Glass tab bar at the bottom on iPhone, at the top on iPad portrait, the native

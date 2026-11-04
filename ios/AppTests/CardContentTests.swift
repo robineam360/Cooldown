@@ -130,6 +130,30 @@ struct CardContentTests {
                            lastAttemptAtMs: now, lastKind: "network", lastMessage: "", plan: nil)
         #expect(Notice.forAccount(label: "Teams", state: state, snapshot: old, nowMs: now)?.title.hasPrefix("Stale — nothing since") == true)
     }
+
+    @Test("the plan notice names the account's own provider, not Anthropic")
+    func planNoticeNamesProvider() {
+        var state = AccountState(); state.lastKind = "plan"; state.plan = "Free"
+        for provider in [Provider.claude, .chatgpt, .antigravity] {
+            let notice = Notice.forAccount(label: "A", state: state, snapshot: nil, nowMs: now, provider: provider)
+            #expect(notice?.body.hasPrefix("\(provider.displayName) only reports usage windows") == true)
+            #expect(notice?.body.contains("Anthropic") == false)
+        }
+    }
+
+    @Test("a cleared rename restores the positional default: the provider's name, then \"<name> 2\"")
+    func defaultLabels() {
+        let accounts = [Account(key: "c1", label: "Teams", provider: .claude), Account(key: "g1", label: "Home", provider: .chatgpt),
+                        Account(key: "c2", label: "Work", provider: .claude)]
+        #expect(Account.defaultLabel(for: "c1", in: accounts) == "Claude")
+        #expect(Account.defaultLabel(for: "c2", in: accounts) == "Claude 2")
+        #expect(Account.defaultLabel(for: "g1", in: accounts) == "ChatGPT")
+        #expect(Account.defaultLabel(for: "nope", in: accounts) == "")
+        // Reordered: c2 first, while c1 is still called "Claude" — c2's default must not duplicate it.
+        let moved = [Account(key: "c2", label: "Claude 2", provider: .claude), Account(key: "c1", label: "Claude", provider: .claude)]
+        #expect(Account.defaultLabel(for: "c2", in: moved) == "Claude 2")
+        #expect(Account.defaultLabel(for: "c1", in: moved) == "Claude 3")  // "Claude 2" is c2's
+    }
 }
 
 enum Fixtures {

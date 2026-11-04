@@ -68,7 +68,7 @@ struct CooldownLiveActivity: Widget {
     }
 }
 
-// MARK: - Control Center (wireframe rev B §7): one account's 5h number; tapping opens the app on it.
+// MARK: - Control Center (wireframe rev B §7): one account's headline number (CCRM-96 (Weekly First)); tapping opens the app on it.
 
 struct AccountControlIntent: ControlConfigurationIntent {
     static let title: LocalizedStringResource = "Account"
@@ -84,7 +84,7 @@ struct AccountControlValue: Equatable {
 
 struct AccountControlProvider: AppIntentControlValueProvider {
     func previewValue(configuration: AccountControlIntent) -> AccountControlValue {
-        AccountControlValue(key: nil, title: "Teams · 5h", value: "46%")
+        AccountControlValue(key: nil, title: "Teams · Weekly", value: "52%")
     }
 
     func currentValue(configuration: AccountControlIntent) async throws -> AccountControlValue {
@@ -117,6 +117,6 @@ struct AccountControl: ControlWidget {
             }
         }
         .displayName("Cooldown")
-        .description("One account's 5h number. Tap to open it.")
+        .description("One account's headline number, Weekly or 5h. Tap to open it.")
     }
 }

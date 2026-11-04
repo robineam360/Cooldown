@@ -17,6 +17,7 @@ struct SettingsScreen: View {
     @State private var details: Account?
     @State private var colouring: Account?
     @State private var clearing: Account?
+    @State private var removing: Account?
     @AppStorage(Display.Key.timeFormat, store: Prefs.defaults) private var timeFormat = "system"
     @State private var usageMode = Display.mode.rawValue
     @State private var endMark = Display.usageEndMark
@@ -54,7 +55,7 @@ struct SettingsScreen: View {
                                 sheet = Sheet.signIn(for: account.provider)
                             }
                             Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
-                            Button("Remove", systemImage: "trash", role: .destructive) { Task { await model.remove(account.key) } }
+                            Button("Remove", systemImage: "trash", role: .destructive) { removing = account }
                         }
                     }
                     .onMove { model.move(from: $0, to: $1) }
@@ -174,7 +175,7 @@ struct SettingsScreen: View {
                     Text("Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.")
                         .font(.system(size: 13)).foregroundStyle(p.sub)
                 } header: { Text("About") } footer: {
-                    Text("Touch and hold an account to rename, pin, sign in again or remove it. Drag to reorder: the order is the same everywhere.")
+                    Text("Touch and hold an account to rename it, sign in again or remove it. Drag to reorder: the order is the same everywhere.")
                 }
             }
             .navigationTitle("Settings")
@@ -186,6 +187,14 @@ struct SettingsScreen: View {
                 TextField("Name", text: $newName)
                 Button("Save") { if let r = renaming { model.rename(r.key, to: newName) }; renaming = nil }
                 Button("Cancel", role: .cancel) { renaming = nil }
+            } message: {
+                Text("Used everywhere — tabs, widgets and the Live Activity. Clear the field to go back to “\(renaming.map { model.defaultLabel(for: $0.key) } ?? "")”.")
+            }
+            .alert("Remove “\(removing?.label ?? "")”?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
+                Button("Cancel", role: .cancel) { removing = nil }
+                Button("Remove account", role: .destructive) { if let r = removing { Task { await model.remove(r.key) } }; removing = nil }
+            } message: {
+                Text("This deletes, permanently and only for this account:\n•  the saved sign-in\n•  its cached usage and settings — alerts, credits, reset alerts\n•  8 days of trend history\n•  a year of session and weekly history")
             }
             .alert("Clear usage history?", isPresented: Binding(get: { clearing != nil }, set: { if !$0 { clearing = nil } })) {
                 Button("Cancel", role: .cancel) { clearing = nil }
@@ -549,7 +558,7 @@ struct HistoryScreen: View {
                 .pickerStyle(.segmented).frame(width: 200)
                 .onChange(of: kind) { weekIndex = 0 }
                 if let account { weekCard(account) }
-                Text("History is recorded as each window closes, so it fills in over time. Peak %s are sampled when the app checks.")
+                Text("History is recorded as each window closes, so it fills in over time. Peak \(kind == HistoryStats.sessionKind ? "5h" : "weekly") readings are sampled when the app checks.")
                     .font(.system(size: 13.5)).foregroundStyle(p.txt)
             }
             .padding(.horizontal, 16).padding(.top, 8)

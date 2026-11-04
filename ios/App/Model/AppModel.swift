@@ -190,9 +190,14 @@ final class AppModel {
         surfacesChanged()
     }
 
+    /// What clearing the rename field restores (spec/mobile/surfaces/app.md: "Clear the field to go back to …").
+    func defaultLabel(for key: String) -> String { Account.defaultLabel(for: key, in: accounts) }
+
+    /// A blank name goes back to the default label, as Android's does.
     func rename(_ key: String, to label: String) {
-        guard let i = accounts.firstIndex(where: { $0.key == key }), !label.isEmpty else { return }
-        accounts[i].label = label
+        guard let i = accounts.firstIndex(where: { $0.key == key }) else { return }
+        let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        accounts[i].label = trimmed.isEmpty ? defaultLabel(for: key) : trimmed
         save()
     }
 

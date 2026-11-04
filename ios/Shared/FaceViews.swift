@@ -49,7 +49,7 @@ struct FaceFootnote: View {
         Group {
             switch face.status {
             case .signIn: Text("Sign in again").foregroundStyle(p.orange)
-            case .plan: Text("No usage on the \(face.account.provider == .claude ? "Free" : "") plan").foregroundStyle(p.sub)
+            case .plan: Text(face.account.provider == .claude ? "No usage on the Free plan" : "No usage on this plan").foregroundStyle(p.sub)
             case .stale: Text("as of \(face.fetchedAt.map(shortClock) ?? "—")").foregroundStyle(p.orange)
             case .noData: Text("Open Cooldown to check").foregroundStyle(p.sub)
             case .aging where !weekly: Text("as of \(face.fetchedAt.map(shortClock) ?? "—")").foregroundStyle(p.sub)

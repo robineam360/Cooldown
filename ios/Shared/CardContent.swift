@@ -252,7 +252,7 @@ struct Notice: Equatable {
         if state.lastKind == "plan" {
             let plan = state.plan ?? "Free"
             return Notice(title: "Usage isn’t available on the \(plan) plan",
-                          body: "Anthropic only reports usage windows for paid plans. This account stays signed in and will show numbers if the plan changes.",
+                          body: "\(provider.displayName) only reports usage windows for paid plans. This account stays signed in and will show numbers if the plan changes.",
                           action: nil, tone: .quiet)
         }
         if state.reauthNeeded || state.lastKind == "authNeeded" {

@@ -309,14 +309,14 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   work cannot be delayed); the KDoc no longer promises "a handful of seconds".
 
 ### CCBG-53 · History Footnote — the History screen prints a literal "%s"
-- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
+- **Status:** **iOS fixed 2026-11-04** (the footnote names the window: "Peak 5h readings…", "Peak weekly readings…"); **Android still open** (`HistoryScreen.kt`, v2.0 arc) — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
 - **Severity:** Low (cosmetic, every History visit)
 - **Symptom:** both History footnotes read "Peak %s are sampled at the polling interval." The
   string is never formatted (`HistoryScreen.kt:228`); it should name the window ("Peak 5h
   readings…" / "Peak weekly readings…").
 
 ### CCBG-54 · Plan Copy Gap — iOS widget plan state reads "No usage on the  plan" for ChatGPT
-- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/widgets.md`.
+- **Status:** **Fixed 2026-11-04** (ChatGPT and Antigravity read "No usage on this plan"; Claude keeps "… the Free plan") — was Open — found 2026-11-02 while writing `spec/mobile/surfaces/widgets.md`.
 - **Severity:** Low (cosmetic, a ChatGPT account in the plan state only)
 - **Symptom:** `ios/Shared/FaceViews.swift:45` interpolates "Free" for Claude and an empty string
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.

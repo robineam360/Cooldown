@@ -13,6 +13,19 @@ struct Account: Codable, Identifiable, Equatable, Sendable {
     /// When it was signed in here, for Details… (nil for accounts added before this was recorded).
     var addedAtMs: Int64? = nil
     var id: String { key }
+
+    /// The positional default a cleared rename restores: the provider's name for the first account of that provider
+    /// in the list, "<name> 2" for the second, and so on. Android freezes the label at creation; iOS stores none, so
+    /// the position is the stand-in, and a name another account already carries is skipped so two tabs never read alike.
+    static func defaultLabel(for key: String, in accounts: [Account]) -> String {
+        guard let account = accounts.first(where: { $0.key == key }) else { return "" }
+        let same = accounts.filter { $0.provider == account.provider }
+        let n = (same.firstIndex(where: { $0.key == key }) ?? 0) + 1
+        let taken = Set(accounts.filter { $0.key != key }.map { $0.label.lowercased() })
+        func name(_ k: Int) -> String { k == 1 ? account.provider.displayName : "\(account.provider.displayName) \(k)" }
+        let order = Array(n...(n + accounts.count)) + Array(1..<n)
+        return name(order.first { !taken.contains(name($0).lowercased()) } ?? n)
+    }
 }
 
 struct AccountsStore: Sendable {

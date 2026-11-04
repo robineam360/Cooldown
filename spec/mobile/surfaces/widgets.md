@@ -571,15 +571,15 @@ stacked, recommended), B (numbers with bars), C (upright bars) and **no pick is 
 
 ## 2.6 Control Center control
 
-One control, picker name "Cooldown", description "One account's 5h number. Tap to open it." Configured with an account (default
+One control, picker name "Cooldown", description "One account's headline number, Weekly or 5h. Tap to open it." Configured with an account (default
 the first). Tapping opens the app on that account. `ios/Widget/LiveAndControl.swift:63-111`.
 
 | Element | Content |
 |---|---|
 | Icon | SF Symbol "hourglass" |
-| Title | "<name> · 5h" (or "· Weekly" on a weekly-only plan) |
+| Title | "<name> · <window>": the account's Headline window, "Weekly" or "5h" (CCRM-96 (Weekly First)) |
 | Value | The percentage, per below |
-| Gallery preview | "Teams · 5h" / "46%" |
+| Gallery preview | "Teams · Weekly" / "52%" |
 
 Value copy: "Sign in again"; "No usage on this plan"; stale or aging: "46% · as of 9:50 pm"; at 100%: "Limit reached"; otherwise the percentage
 (Used or Left). No account: title "Cooldown", value "Add an account".
@@ -643,7 +643,7 @@ Big number colour: severity, secondary when signIn or older than 30 min. **Final
 
 - iOS Number on a weekly-only plan with its Window set to Weekly reads the already-moved Weekly fields and would show "—" with no
   footnote (`FaceViews.swift:103-128` against `Faces.swift:46`). Not confirmed on a device.
-- iOS `FaceFootnote` plan copy reads "No usage on the  plan" (a double space) for a ChatGPT account; Claude's reads "No usage on the Free plan".
+- (Fixed 2026-11-04, CCBG-54 (Plan Copy Gap).) iOS `FaceFootnote` plan copy read "No usage on the  plan" for a ChatGPT account; it now reads "No usage on this plan", and Claude's still reads "No usage on the Free plan".
 - The lock-screen widgets show no stale or Free-plan state; whether they should is a design call.
 
 ## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6 (Part 2, iOS)
