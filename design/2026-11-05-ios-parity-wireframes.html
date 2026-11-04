@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iOS Parity Wireframes</title>
+<!-- iOS parity wireframes, rev A, 2026-11-05 (drawn the night of 2026-11-04 for Robin's approval, CLAUDE.md §2). Nothing here is built.
+     Base: spec/mobile/surfaces/app.md and widgets.md as shipped; Android's approved layouts for the gaps (Android 1 dp = 1 px here, iOS 1 pt = 1 px).
+     Source of the gap list: side-session-notes/…/ios-parity-audit-2026-11-04.md §4. Each section ends with "For Robin": the call is yours;
+     the recommended option is marked ★. Say "blanket" and every ★ is taken. Existing cards and charts are not redrawn: where one appears
+     it is a labelled box, because only the delta is being decided. -->
+<style>
+  :root { --bg:#FAF8F6; --ink:#26211E; --muted:#6E6660; --accent:#C15F3C; --hair:#E7E1DC; --card:#FFFFFF; --group:#FFFFFF; --bad:#B3402A; --good:#2F6D44; --warn:#9A6B1E; --blue:#2D6CDF; --sys:#F2F0EE; --ph:#E9E4DF; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#171513; --ink:#EDE8E4; --muted:#9B928B; --accent:#E59980; --hair:#2C2825; --card:#201D1B; --group:#201D1B; --bad:#E08268; --good:#7FC08F; --warn:#D8AC63; --blue:#7AA7FF; --sys:#100E0D; --ph:#2A2623; } }
+  :root[data-theme="dark"] { --bg:#171513; --ink:#EDE8E4; --muted:#9B928B; --accent:#E59980; --hair:#2C2825; --card:#201D1B; --group:#201D1B; --bad:#E08268; --good:#7FC08F; --warn:#D8AC63; --blue:#7AA7FF; --sys:#100E0D; --ph:#2A2623; }
+  * { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif; margin:0; padding:40px 16px 96px; line-height:1.5; }
+  .page { max-width:1240px; margin:0 auto; }
+  .eyebrow { font:11px ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 0 10px; }
+  h1 { font-size:30px; letter-spacing:-.02em; margin:0 0 8px; text-wrap:balance; }
+  h2 { font-size:20px; letter-spacing:-.01em; margin:60px 0 4px; padding-top:22px; border-top:1px solid var(--hair); }
+  h3 { font-size:14px; margin:26px 0 8px; }
+  .lede,.sub { color:var(--muted); font-size:14px; max-width:84ch; margin:0 0 14px; }
+  .sub { font-size:13px; } b { font-weight:650; color:var(--ink); }
+  code { font:12px ui-monospace,"SF Mono",Menlo,monospace; background:color-mix(in srgb,var(--hair) 55%,transparent); padding:1px 5px; border-radius:4px; }
+  .cap { font:10px ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .cap.new { color:var(--accent); } .cap.bad { color:var(--bad); } .cap.good { color:var(--good); } .cap.warn { color:var(--warn); }
+  .row { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+  .col { flex:0 0 auto; min-width:0; max-width:100%; }
+  .note { font-size:12.5px; color:var(--muted); margin:10px 0 0; max-width:390px; }
+  .scroll { overflow-x:auto; max-width:100%; }
+  table { border-collapse:collapse; font-size:13px; width:100%; max-width:1100px; margin:10px 0; }
+  th,td { text-align:left; padding:8px 14px 8px 0; border-bottom:1px solid var(--hair); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .q { border:1px solid var(--warn); border-radius:12px; padding:12px 16px; margin:16px 0; max-width:96ch; font-size:13.5px; }
+  .q h4 { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--warn); }
+  .q ol { margin:6px 0 0; padding-left:20px; } .q li { margin:0 0 8px; }
+  .star::after { content:" ★"; color:var(--accent); }
+  .tag { display:inline-block; font:10px ui-monospace,Menlo,monospace; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--accent); color:var(--accent); border-radius:999px; padding:1px 8px; margin-left:6px; vertical-align:middle; }
+  .tag.built { border-color:var(--good); color:var(--good); }
+
+  /* iOS devices: 1 px = 1 pt */
+  .phone { background:var(--sys); border:1px solid var(--hair); border-radius:38px; padding:14px 0 18px; overflow:hidden; box-shadow:0 1px 0 var(--hair); }
+  .phone.w390 { width:390px; } .phone.w320 { width:320px; } .phone.w540 { width:540px; border-radius:22px; } .phone.w744 { width:744px; border-radius:26px; } .phone.w1000 { width:1000px; border-radius:26px; }
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:6px 16px 6px; font-size:17px; color:var(--blue); min-height:40px; }
+  .nav .t { color:var(--ink); font-weight:650; position:absolute; left:0; right:0; text-align:center; pointer-events:none; }
+  .nav { position:relative; }
+  .ltitle { font-size:32px; font-weight:700; letter-spacing:-.02em; padding:2px 16px 8px; }
+  .gh { font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; padding:14px 32px 6px; }
+  .gf { font-size:12.5px; color:var(--muted); padding:6px 32px 0; }
+  .grp { background:var(--group); border-radius:12px; margin:0 16px; overflow:hidden; }
+  .r { display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:16px; min-height:44px; border-top:.5px solid var(--hair); }
+  .r:first-child { border-top:0; } .r .v { margin-left:auto; color:var(--muted); font-size:15px; } .r .ch::after { content:"›"; color:var(--muted); margin-left:8px; font-size:20px; line-height:1; }
+  .r.acc { color:var(--accent); font-weight:600; } .r.red { color:var(--bad); } .r.ctr { justify-content:center; }
+  .r.stack { flex-direction:column; align-items:flex-start; gap:2px; }
+  .r small,.small { font-size:13px; color:var(--muted); display:block; }
+  .st { padding:11px 16px; font-size:13.5px; color:var(--muted); border-top:.5px solid var(--hair); display:flex; align-items:center; gap:8px; } .st:first-child { border-top:0; }
+  .st.warn { color:var(--warn); } .st.bad { color:var(--bad); }
+  .st .go { margin-left:auto; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; color:var(--blue); font-size:17px; border:1px solid var(--hair); flex:0 0 auto; }
+  .seg { display:flex; background:var(--sys); border-radius:9px; padding:2px; font-size:13px; width:100%; } .seg span { flex:1; text-align:center; padding:5px 0; border-radius:7px; } .seg .on { background:var(--card); box-shadow:0 1px 2px rgba(0,0,0,.14); font-weight:600; }
+  .sw { margin-left:auto; width:46px; height:28px; border-radius:14px; background:var(--good); position:relative; flex:0 0 auto; } .sw::after { content:""; position:absolute; right:2px; top:2px; width:24px; height:24px; border-radius:50%; background:#fff; }
+  .dot { width:12px; height:12px; border-radius:50%; background:var(--accent); display:inline-block; }
+  .mark { width:20px; height:20px; border-radius:6px; background:var(--accent); display:inline-block; flex:0 0 auto; } .mark.g { background:#2B7A4B; } .mark.v { background:#4285F4; }
+  .chip { font-size:11px; font-weight:600; padding:1px 8px; border-radius:10px; color:var(--accent); background:color-mix(in srgb,var(--accent) 14%,transparent); }
+  .newbox { outline:2px dashed var(--accent); outline-offset:3px; border-radius:14px; }
+
+  /* alerts and sheets */
+  .scrim { position:relative; background:color-mix(in srgb,#000 38%,var(--sys)); border-radius:22px; padding:34px 0; display:flex; justify-content:center; }
+  .alert { width:270px; background:color-mix(in srgb,var(--card) 94%,transparent); border-radius:14px; text-align:center; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+  .alert .b { padding:18px 16px 14px; } .alert .b h5 { margin:0 0 3px; font-size:17px; } .alert .b p { margin:0; font-size:13px; text-align:left; } .alert .b p.c { text-align:center; }
+  .alert .fld { margin:10px 0 0; border:1px solid var(--hair); border-radius:7px; padding:6px 8px; font-size:15px; background:var(--sys); text-align:left; display:flex; justify-content:space-between; }
+  .alert .bt { display:flex; border-top:.5px solid var(--hair); } .alert .bt span { flex:1; padding:11px 0; font-size:17px; color:var(--blue); border-left:.5px solid var(--hair); } .alert .bt span:first-child { border-left:0; } .alert .bt .d { color:var(--bad); font-weight:600; } .alert .bt .p { font-weight:600; }
+  .sheetc { width:358px; background:var(--card); border-radius:20px; padding:8px 16px 16px; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+  .sheetc h5 { margin:8px 0 10px; font-size:17px; text-align:center; } .sheetc .fl { border:1px solid var(--hair); border-radius:10px; padding:8px 12px; background:var(--sys); } .sheetc .fl small { font-size:11px; color:var(--muted); display:block; } .sheetc .fl i { font-style:normal; float:right; color:var(--muted); font-size:12px; }
+  .sugg { display:inline-block; border:1px solid var(--hair); border-radius:8px; padding:4px 10px; font-size:12.5px; margin:8px 0 0; }
+
+  /* notices (existing NoticeView grammar: 14 radius, 13/11 padding, title 15, body 14, capsule button) */
+  .tint { padding:11px 13px; border-radius:14px; margin:0 16px; } .tint.o { background:color-mix(in srgb,#E8890C 16%,transparent); } .tint.r { background:color-mix(in srgb,var(--bad) 16%,transparent); } .tint.q2 { background:color-mix(in srgb,var(--muted) 14%,transparent); }
+  .tint h6 { margin:0; font-size:15px; font-weight:650; } .tint p { margin:3px 0 0; font-size:14px; } .tint .ev { font:12px ui-monospace,Menlo,monospace; color:var(--muted); margin-top:4px; }
+  .tint .btn { display:inline-block; margin-top:8px; background:var(--ink); color:var(--bg); font-size:14.5px; font-weight:650; padding:6px 14px; border-radius:999px; }
+  .tile { margin:10px 16px 0; border-radius:16px; background:var(--card); border:1px dashed var(--hair); height:74px; display:grid; place-items:center; font-size:12px; color:var(--muted); text-align:center; padding:0 12px; }
+  .tile.dim { opacity:.45; }
+
+  /* bars and rows */
+  .bar { height:11px; border-radius:6px; background:color-mix(in srgb,var(--muted) 22%,transparent); position:relative; flex:1; } .bar i { position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--accent); }
+  .hrow { display:flex; align-items:center; gap:10px; padding:5px 0; font-size:13px; } .hrow .l { width:104px; flex:0 0 auto; color:var(--muted); font-size:12.5px; } .hrow .p { width:44px; text-align:right; color:var(--muted); font-size:13px; } .hrow .p.red { color:var(--bad); font-weight:600; }
+  .card { background:var(--card); border-radius:16px; margin:10px 16px 0; padding:14px 16px; }
+  .card h6 { margin:0 0 2px; font-size:15px; } .card .cnt { font-size:13px; color:var(--muted); margin-bottom:8px; }
+  .pf { background:color-mix(in srgb,var(--muted) 12%,var(--card)); border-radius:12px; padding:12px; margin:10px 16px 0; } .pf .h { font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); } .pf .rd { font-size:15px; font-weight:650; margin-top:2px; } .pf .ev { font-size:13px; color:var(--muted); margin-top:2px; }
+  .cols { display:flex; gap:16px; padding:0 16px; } .cols > div { flex:1; min-width:0; } .cols h6 { font-size:14px; color:var(--accent); margin:6px 0 0 4px; }
+  .cc { background:var(--card); border-radius:16px; padding:14px 16px; } .cc .t { display:flex; align-items:baseline; gap:6px; font-size:15px; font-weight:650; } .cc .t em { font-style:normal; font-weight:400; color:var(--muted); font-size:14px; } .cc .t b { margin-left:auto; font-size:17px; } .cc .ft { font-size:12.5px; color:var(--muted); margin-top:6px; } .cc .ft.bad { color:var(--bad); }
+  .prov { margin-top:8px; font-size:12px; color:var(--muted); background:color-mix(in srgb,var(--muted) 10%,transparent); border-radius:8px; padding:6px 9px; }
+  .share { width:300px; border-radius:18px; background:var(--card); padding:20px; box-shadow:0 6px 24px rgba(0,0,0,.14); }
+  .share .hd { display:flex; align-items:center; gap:14px; } .ring { width:80px; height:80px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center; font-size:20px; font-weight:700; }
+  .share .nm { font-size:21px; font-weight:700; } .share .as { font-size:13px; color:var(--muted); } .share .rw { margin-top:14px; } .share .rw .a { display:flex; justify-content:space-between; font-size:14px; } .share .rw .a b { font-size:19px; } .share .rw .z { display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin-top:5px; } .share .bar { height:10px; margin-top:6px; flex:none; }
+  .share .tr { margin-top:14px; font-size:13px; color:var(--muted); } .share .tr svg { display:block; margin-top:4px; } .share .ft2 { margin-top:12px; font-size:11px; letter-spacing:.14em; color:var(--muted); font-weight:500; }
+  .ban { margin:0 16px 8px; padding:9px 14px; border-radius:12px; background:color-mix(in srgb,#7C4DFF 16%,transparent); color:var(--ink); font-size:13.5px; display:flex; gap:8px; align-items:center; } .ban b { color:#7C4DFF; } .ban u { margin-left:auto; text-decoration:none; font-weight:650; color:var(--blue); }
+</style>
+<body><div class="page">
+<p class="eyebrow">CLAUDE COOLDOWN · iOS PARITY · REV A · FOR APPROVAL</p>
+<h1>iOS parity wireframes</h1>
+<p class="lede">Eight gaps between the iPhone/iPad app and Android's v2.0 are drawn here, with their states: empty, error, narrow width (320 pt), large type where it matters, and iPad. <b>Nothing is built.</b> Each section says what Android does, what iOS does today, and what changes. The bits already built tonight (Remove asks first, a cleared name restores the default, copy fixes) are tagged <span class="tag built">built</span>. Dashed orange outlines mark what is new.</p>
+<p class="sub">How to answer: each "For Robin" box lists numbered calls; ★ is my recommendation. "Blanket" takes every ★. Ruled out stays out. Whatever you approve gets built exactly as drawn, with <code>spec/mobile/surfaces/</code> updated in the same commit.</p>
+
+<h2 id="s1">1 · Account page: Rename, Sign in again, Remove <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Today:</b> the account page has Plan, Accent, Headline, Model limits, Details, Clear history. Rename, Sign in again and Remove are only in the touch-and-hold menu on the Settings list, so on iPad (and for anyone who never long-presses) they cannot be found. <b>Android:</b> the ⋮ menu and the account card's action row (S/app.md:385-391). <b>Change:</b> an Account section with a Name row, a Sign-in section with the status line and Sign in again, and Remove as the last group. The touch-and-hold menu stays.</p>
+<div class="row" id="r1"></div>
+<h3>Rename: two ways to draw it</h3>
+<div class="row" id="r1b"></div>
+<h3>Remove: the confirmation <span class="tag built">built</span> and the last-account state</h3>
+<div class="row" id="r1c"></div>
+<div class="q"><h4>For Robin · section 1</h4><ol>
+<li><b>Where Rename lives.</b> <span class="star">A name row at the top of the page (tap = rename)</span>; or a "Rename…" button row beside "Accent colour…".</li>
+<li><b>The rename dialog.</b> <span class="star">B: a small sheet like Android's (counter n/16, "Use <email>" chip, help line)</span>; or A: the system alert as built tonight (bare field and help line, no counter or chip, no length limit).</li>
+<li><b>Remove the last account?</b> <span class="star">Allow it; the app returns to the empty screen</span> (Android blocks it, but its empty screen is reached by uninstalling); or block it as Android does.</li>
+<li><b>"Clear" (sign out but keep history), Android's third action.</b> <span class="star">Not on iOS</span> — Remove already deletes the sign-in, and "Clear usage history…" keeps it; a third sign-out-only button would be a fourth way to leave. Or add it.</li>
+<li><b>"Dashboard" link</b> (opens the provider's usage page). <span class="star">Skip</span>; or a row "Open Claude usage" below Sign in again.</li></ol></div>
+
+<h2 id="s2">2 · Account status line and the expiry lines <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Android:</b> under the account name, a muted status line with a refresh button, then red or amber lines as they apply (S/app.md:389-391). <b>iOS today:</b> only "Signed in / Sign in again" on the Settings row. <b>Change:</b> the same lines in the Sign-in section of the account page (drawn above), plus the Settings row keeps its text and gains an amber "Expires in 5d" when the sign-in is within 7 days. The refresh button runs the same fetch as pull-to-refresh and is disabled while one is running.</p>
+<div class="scroll"><table id="t2"></table></div>
+<div class="q"><h4>For Robin · section 2</h4><ol>
+<li><b>Gemini (Antigravity) status copy.</b> <span class="star">Same lines as Claude</span>, because its sign-in renews and expires the same way; I have not found Android's Gemini wording in the spec, so this is the one place the copy is mine. Or leave Gemini without a status line.</li>
+<li><b>Rate-limited line</b> shows <span class="star">the retry time</span> ("next try 3:40 pm") or only "backing off". The fetch layer already knows the time.</li></ol></div>
+
+<h2 id="s3">3 · Fetch-error and expiring notices on the main screen <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Android:</b> seven fetch-error kinds, each with a title, an evidence line and an action, drawn beside the last-good cards (S/app.md:195-209). <b>iOS today:</b> plan, sign-in, stale and Gemini's "Google changed something" only; a network or server error shows nothing but a footer time, so a user cannot tell "Anthropic is down" from "Cooldown is broken". <b>Change:</b> the same <code>NoticeView</code> (14 pt radius, orange or red tint, capsule button), Android's copy with the vendor named, and an "expires soon" notice (BEHAVIOR-MOBILE §3: within 7 days). Last-good cards stay and dim to 45%, as for sign-in today.</p>
+<div class="row" id="r3"></div>
+<h3>States and widths</h3>
+<div class="row" id="r3b"></div>
+<h3>Which notice wins when several are true</h3>
+<div class="scroll"><table>
+<tr><th>Order</th><th>Condition</th><th>Why</th></tr>
+<tr><td>1</td><td>Plan refusal (cards hidden)</td><td>Nothing else is true of an account with no windows.</td></tr>
+<tr><td>2</td><td>Sign-in needed</td><td>Every other failure follows from it; the fix is the same button.</td></tr>
+<tr><td>3</td><td>Fetch error (rate-limited, network, server, invalid reply, internal)</td><td>Names the cause. <b>It absorbs "Stale":</b> its evidence line carries "last reading Thu 9:50 pm · 7 h ago", so one notice, not two.</td></tr>
+<tr><td>4</td><td>Stale (no error recorded, 6 h without a reading)</td><td>As built.</td></tr>
+<tr><td>5</td><td>Sign-in expiring (within 7 days)</td><td>A warning, not a failure: only shown when nothing above is. Quiet tone.</td></tr></table></div>
+<div class="q"><h4>For Robin · section 3</h4><ol>
+<li><b>One notice at a time in that order.</b> <span class="star">Yes</span>; or stack the two most important (Android's notification does up to three).</li>
+<li><b>Invalid-reply notice on a TestFlight build:</b> Android offers "Check for updates" on its GitHub build. <span class="star">No button; the body says "An app update may be needed."</span>; or a button that opens the TestFlight app.</li>
+<li><b>"Check Anthropic status"</b> opens the provider's status page in Safari (the three hosts already in the app). <span class="star">Yes</span>.</li></ol></div>
+
+<h2 id="s4">4 · History: Plan Fit block and the iPad side-by-side <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Android:</b> on the 7-day pane a quiet block above the weekly bars reads how the plan fits your last 8 weeks; at 600 dp and up the 5-hour and 7-day panes sit side by side (S/app.md:340-361). <b>iOS today:</b> one segmented picker, no block. <b>Change:</b> the block on the 7-day pane, and on iPad (portrait and landscape) two columns with the picker gone. The block's logic lives only in Android's Kotlin today, so it is ported to <code>CooldownCore</code> with Android's fixtures before it is drawn on iOS.</p>
+<div class="row" id="r4"></div>
+<h3>Plan Fit readings</h3>
+<div class="row" id="r4b"></div>
+<h3>iPad</h3>
+<div class="row" id="r4c"></div>
+<div class="q"><h4>For Robin · section 4</h4><ol>
+<li><b>Plan Fit on iOS.</b> <span class="star">Yes, as Android</span>; or skip it (it is the least-used part of History).</li>
+<li><b>iPad side-by-side at 600 pt and up</b> (every iPad width, and Split View's wide half). <span class="star">Yes</span>; or keep the picker on iPad portrait.</li></ol></div>
+
+<h2 id="s5">5 · Chart callout and wash, and the credits card <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Android chart:</b> tap a point to pin a callout with the time and "14% · +8% vs pace"; a faint red wash above the pace diagonal; an orange overshoot fill; an ⓘ provenance note on the credits percentage (S/app.md:261-277, 165-170). <b>iOS:</b> none of the four; the rev B promise was "nothing removed from Android's chart", and the tile's tap-a-figure readouts now cover part of the callout's job. <b>Credits card:</b> iOS shows amounts and a percentage only; Android adds a bar, a footer line and the note.</p>
+<div class="row" id="r5"></div>
+<h3>Credits card</h3>
+<div class="row" id="r5b"></div>
+<div class="q"><h4>For Robin · section 5</h4><ol>
+<li><b>The chart.</b> A: all of it (callout, wash, overshoot fill, ⓘ). <span class="star">B: wash and overshoot fill, no callout</span> (the figure readouts already say time and distance, and a pinned pill competes with a thumb on a small chart); C: leave the chart as it ships.</li>
+<li><b>Credits card bar, footer and note.</b> <span class="star">Yes, as Android</span>; the card is small and the footer line explains what credits do.</li></ol></div>
+
+<h2 id="s6">6 · Share card: Weekly first (both platforms) <span class="tag">needs approval</span></h2>
+<p class="sub">Under CCRM-24 (Share Card) a card that leads with Weekly needs its own wireframe (RUNBOOK-v2.0 Step 6). Today both platforms draw the 5h row above Weekly. Spec: Vs pace renders as Used on the card; synthetic band Android only; a weekly-only plan swaps to the weekly trend.</p>
+<div class="row" id="r6"></div>
+<div class="q"><h4>For Robin · section 6</h4><ol>
+<li><b>Order.</b> <span class="star">A: follow the account's Headline</span> (Weekly first by default, 5h first when the Headline is 5-hour, as every other surface); or B: always Weekly first.</li>
+<li><b>The ring.</b> <span class="star">The hero ring shows the headline window's figure, with no "5h" word</span> (the shape grammar: ring = 5h, bar = Weekly). On a Weekly-led card the ring would show Weekly, so it is a bar: <span class="star">the header ring becomes a 5h ring only; the headline figure sits big beside the Weekly bar</span>. Say if you prefer the simpler "ring = headline window".</li>
+<li><b>Trend.</b> <span class="star">Under the headline window</span>; Android and iOS together in one commit.</li></ol></div>
+
+<h2 id="s7">7 · Reviewer sample-data mode <span class="tag">needs approval</span></h2>
+<p class="sub">Beta App Review needs a way into the app without the reviewer's own Claude, ChatGPT or Gemini account (and a TestFlight tester without an account would like one too). The app already has a demo state for screenshots, driven by a launch argument. This makes it a visible, in-app switch.</p>
+<div class="row" id="r7"></div>
+<div class="q"><h4>For Robin · section 7</h4><ol>
+<li><b>A sample-data mode in the build.</b> <span class="star">Yes: "Try with sample data" at the bottom of Add account</span>; or no feature, and the review notes carry a test account's sign-in instead (a real account, a real token in a note, and Claude/Google may lock it).</li>
+<li><b>What it touches.</b> <span class="star">Nothing persistent</span>: no Keychain items, no widgets, Live Activity or alerts, a purple "Sample data" banner with Exit; leaving restores the real accounts untouched.</li></ol></div>
+
+<h2 id="s8">8 · About: Share feedback and Privacy policy <span class="tag">needs approval</span></h2>
+<p class="sub"><b>Android:</b> centred About card with icon, version, "Made by", Share feedback, Privacy policy, disclaimer (S/app.md:442). <b>iOS:</b> a Version row and the disclaimer. A privacy-policy link is required for an external TestFlight build; Share feedback gives testers a way to write to you.</p>
+<div class="row" id="r8"></div>
+<div class="q"><h4>For Robin · section 8</h4><ol>
+<li><b>Rows.</b> <span class="star">Version (with the build number), Share feedback (opens Mail to robin@eam360.com with the version and iOS version filled in), Privacy policy (opens the GitHub page), Made by Robin Richard Rajan</span>. The in-app version text should show "2.0 (14)" so a tester's report names the build.</li>
+<li><b>The privacy URL.</b> The Android policy at github.com/robineam360/Cooldown/blob/main/docs/privacy.md has no iOS section yet; a draft is in <code>release/testflight/privacy-ios-draft.md</code>. Either merge it first, <span class="star">or link the same page and merge the iOS section before the first upload</span>.</li></ol></div>
+
+<h2 id="s9">Not drawn, only decided</h2>
+<div class="scroll"><table>
+<tr><th>Item</th><th>Today</th><th>Options</th></tr>
+<tr><td>Countdown widget and Control Center follow the Headline</td><td>Control Center title already follows it (built; its description now says so). The Countdown stays on the 5h: its intent has no window, and a tested migration is the follow-up recorded in RUNBOOK-v2.0 Step 6.</td><td><b>★ leave the Countdown on 5h for v2.0.</b> Or add a window choice (a migration of placed widgets, needs a simulator upgrade test).</td></tr>
+<tr><td>Degraded Keychain notice (locked before first unlock, restored to a new device)</td><td>No handling; a missing token reads as "Sign in again".</td><td><b>★ nothing:</b> that is what a user should do anyway. Or a Keychain-specific notice.</td></tr>
+<tr><td>Reorder discoverability</td><td>Edit button in Settings drags rows; the footer says it.</td><td><b>★ leave.</b> Or a "Reorder" row.</td></tr>
+<tr><td>Per-widget background (Solid/Gradient/Transparent)</td><td>WidgetKit lets the system tint or clear widgets; no per-widget picker exists.</td><td><b>★ platform limit, no change.</b></td></tr>
+<tr><td>Share diagnostics row</td><td>None; TestFlight collects crash reports.</td><td><b>★ skip.</b> Or a Share-log row if testers need it.</td></tr></table></div>
+
+</div>
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const nav = (t, back, right='') => `<div class="nav"><span>${back?'‹ '+back:''}</span><span class="t">${t}</span><span>${right}</span></div>`;
+const grp = (...rows) => `<div class="grp">${rows.join('')}</div>`;
+const gh = t => `<div class="gh">${t}</div>`, gf = t => `<div class="gf">${t}</div>`;
+const R = (l, v='', cls='', ch=false) => `<div class="r ${cls}"><span>${l}</span>${v?`<span class="v">${v}</span>`:''}${ch?'<span class="ch"></span>':''}</div>`;
+const ST = (t, cls='', go=true) => `<div class="st ${cls}"><span>${t}</span>${go?'<span class="go">↻</span>':''}</div>`;
+const SEG = (a, on) => `<div class="seg">${a.map((x,i)=>`<span class="${i===on?'on':''}">${x}</span>`).join('')}</div>`;
+const col = (cap, capCls, w, body, note='') => `<div class="col"><p class="cap ${capCls}">${cap}</p><div class="phone w${w}">${body}</div>${note?`<p class="note">${note}</p>`:''}</div>`;
+
+/* ---------- 1 · account page ---------- */
+const acctPage = (o) => {
+  const w = o.w||390;
+  return nav(o.title||'Teams','Settings') + `<div class="ltitle" style="font-size:28px">${o.title||'Teams'}</div>` +
+  gh('Account') + `<div class="newbox" style="margin:0 12px">` + grp(R('Name', o.title||'Teams','',true), R('Plan', o.plan||'Max'), R('Accent colour…','<span class="dot"></span>','',true)) + `</div>` +
+  gh('Sign-in') + `<div class="newbox" style="margin:0 12px">` + grp(...o.status, o.signin) + `</div>` + (o.foot?gf(o.foot):'') +
+  gh('Headline') + grp(`<div class="r stack"><span>Lead with</span><small>What widgets, the lock screen and the card order show first.</small>${SEG(['Weekly','5-hour','Auto'],0)}</div>`) +
+  gh('Model limits') + grp(`<div class="r"><span>Show model limits<small>Fable · 31% this week</small></span><span class="sw"></span></div>`) +
+  gh('Usage') + grp(R('Details…','','',true), R('Clear usage history…','','red')) +
+  `<div style="height:14px"></div><div class="newbox" style="margin:0 12px">` + grp(R('Remove account','','red ctr')) + `</div>`;
+};
+$('r1').innerHTML =
+ col('Signed in · iPhone 390','new',390, acctPage({status:[ST('Checked 12m ago · renews in 6h 4m')], signin:R('Sign in again','','acc')}), 'Status line from Android; the ↻ runs a fetch now. "Sign in again" is always there, plain accent text unless it is needed.') +
+ col('Signed out · re-auth needed','bad',390, acctPage({status:[ST('Checked 3h ago'), ST('Sign-in stopped working — sign in again below.','bad',false)], signin:R('Sign in again','','acc')}), 'Red line, row turns filled: the one thing to do. Same as the sign-in notice on the card.') +
+ col('Expiring soon · amber','warn',390, acctPage({status:[ST('Checked 12m ago · renews in 6h 4m'), ST('Sign-in expires in 5d 3h — sign in again to keep polling going.','warn',false)], signin:R('Sign in again','','acc')}), 'Only shown when a known expiry is within 7 days (Claude). Never red.') +
+ col('Rate-limited · Free plan','warn',390, acctPage({plan:'Free', status:[ST('Checked 4m ago'), ST('Rate-limited — next try in 12m','bad',false), ST('Free plan: Claude doesn’t report usage — upgrade to Pro, Max or Team to see numbers.','bad',false)], signin:R('Sign in again','','acc')}), 'Red lines stack in Android\'s order: free plan, renewal dead, expiry, rate-limited.') +
+ col('ChatGPT · signed out','new',390, acctPage({title:'Personal', plan:'Plus', status:[ST('Not signed in','',false)], signin:R('Sign in with a code','','acc'), foot:'Shows a short code to approve at auth.openai.com, on this phone or any other device.'}), 'ChatGPT\'s action reads "Sign in with a code", and Android\'s explanation sits under it.') +
+ col('Narrow · 320 pt','new',320, acctPage({title:'Teams',w:320,status:[ST('Checked 12m ago · renews in 6h 4m')], signin:R('Sign in again','','acc')}), 'Status line wraps to two lines; the ↻ stays at the right edge.') +
+ col('iPad · Settings sheet 540','new',540, acctPage({status:[ST('Checked 12m ago · renews in 6h 4m')], signin:R('Sign in again','','acc')}), 'The page already lives in the Settings form sheet on iPad; nothing else changes.');
+
+/* rename */
+const alertRename = `<div class="scrim"><div class="alert"><div class="b"><h5>Rename account</h5><p class="c">Used everywhere — tabs, widgets and the Live Activity. Clear the field to go back to “Claude”.</p><div class="fld"><span>Teams</span></div></div><div class="bt"><span>Cancel</span><span class="p">Save</span></div></div></div>`;
+const sheetRename = (val, cnt, sugg) => `<div class="scrim" style="padding:26px 0"><div class="sheetc"><h5>Rename account</h5><div class="fl"><small>Name <i>${cnt}/16</i></small>${val}</div>${sugg?`<span class="sugg">Use “Robin” (from robin@eam360.com)</span>`:''}<p class="small" style="margin:10px 0 12px">Used everywhere — tabs, widgets and the Live Activity. Clear the field to go back to “Claude”.</p><div style="display:flex;justify-content:flex-end;gap:18px;color:var(--blue);font-size:17px"><span>Cancel</span><b style="color:var(--blue)">Save</b></div></div></div>`;
+$('r1b').innerHTML =
+ `<div class="col" style="width:390px"><p class="cap">Option A · system alert <span class="tag built">built</span></p>${alertRename}<p class="note">Bare field, the help line, no counter, no chip, no length limit (long names clip in the tabs). A cleared field restores the default (built tonight).</p></div>` +
+ `<div class="col" style="width:390px"><p class="cap new">Option B ★ · small sheet, Android's dialog</p>${sheetRename('Teams','5',true)}<p class="note">Counter n/16 (Android's limit), a "Use <email>" chip when the sign-in reported one, the help line naming the exact default.</p></div>` +
+ `<div class="col" style="width:390px"><p class="cap new">Option B · cleared field, and long type</p>${sheetRename('<span style="color:var(--muted)">Claude</span>','0',false)}<p class="note">An empty field shows the default as placeholder text; Save then restores it. At the largest Dynamic Type the sheet grows downward and scrolls; the buttons stay pinned.</p></div>`;
+
+/* remove */
+const alertRemove = (title, extra) => `<div class="scrim"><div class="alert"><div class="b"><h5>${title}</h5><p>This deletes, permanently and only for this account:<br>•&nbsp; the saved sign-in<br>•&nbsp; its cached usage and settings — alerts, credits, reset alerts<br>•&nbsp; 8 days of trend history<br>•&nbsp; a year of session and weekly history${extra?`<br><br>${extra}`:''}</p></div><div class="bt"><span>Cancel</span><span class="d">Remove account</span></div></div></div>`;
+$('r1c').innerHTML =
+ `<div class="col" style="width:390px"><p class="cap">Remove “Teams”? <span class="tag built">built</span></p>${alertRemove('Remove “Teams”?')}<p class="note">Android's approved copy without its Android-only lines (launcher shortcut, pinned notification) and without "use Clear instead" (iOS has no sign-out). Shown from the touch-and-hold menu today and from the new row.</p></div>` +
+ `<div class="col" style="width:390px"><p class="cap new">Last account</p>${alertRemove('Remove “Claude”?','This is your only account. Cooldown goes back to the empty screen.')}<p class="note">Android blocks removing the last account; here it is allowed with one extra line (decision 3).</p></div>`;
+
+/* ---------- 2 · status lines table ---------- */
+$('t2').innerHTML = `<tr><th>State</th><th>Claude</th><th>ChatGPT</th><th>Tone</th></tr>` + [
+ ['Fetching','Checking…','Checking…','muted'],
+ ['Fresh','Checked 12m ago','Checked 12m ago','muted'],
+ ['With renewal','Checked 12m ago · renews in 6h 4m','(no renewal clock)','muted'],
+ ['Renewal due','Checked 12m ago · renewal due at next check','—','muted'],
+ ['Never fetched','Not checked yet','Not signed in (then "Sign in with a code")','muted'],
+ ['Sign-in stopped','Sign-in stopped working — sign in again below.','Sign-in stopped working — sign in with a code below.','red'],
+ ['Renewal dead','Renewal has stopped working — sign in again below. (day-count variants)','—','red'],
+ ['Expiring','Sign-in expires in 5d 3h — sign in again to keep polling going.','—','amber'],
+ ['Rate-limited','Rate-limited — next try in 12m','Rate-limited — next try in 12m','red'],
+ ['Free plan','Free plan: Claude doesn’t report usage — upgrade to Pro, Max or Team to see numbers.','—','red']
+].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('') + `<tr><td><b>Settings list row</b></td><td colspan="3">"Signed in" (grey), "Sign in again" (orange), new: "Expires in 5d" (amber) — the row keeps one word; the account page carries the sentence.</td></tr>`;
+
+/* ---------- 3 · notices ---------- */
+const NT = (tone, title, body, btn, ev) => `<div class="tint ${tone}"><h6>${title}</h6>${body?`<p>${body}</p>`:''}${ev?`<div class="ev">${ev}</div>`:''}${btn?`<span class="btn">${btn}</span>`:''}</div><div class="tile dim">existing account tile, dimmed to 45% (unchanged)</div>`;
+const nphone = (w, inner) => `<div class="phone w${w}" style="padding-bottom:22px"><div style="height:8px"></div>${inner}</div>`;
+const nc = (cap, capCls, w, inner, note) => `<div class="col"><p class="cap ${capCls}">${cap}</p>${nphone(w, inner)}<p class="note">${note}</p></div>`;
+$('r3').innerHTML =
+ nc('Rate-limited · new','new',390, NT('o','Rate limited — backing off, retries on its own.','','','HTTP 429 · next try ~3:40 pm'), 'No button. The evidence line is monospace, like Android\'s; the retry time is the fetch layer\'s.') +
+ nc('Network · new','new',390, NT('o','Couldn’t reach Anthropic — check your connection, or see if it’s them.','','Check Anthropic status','offline · last reading Thu 9:50 pm · 7 h ago'), 'Names the vendor (Anthropic, OpenAI, Google). Absorbs "Stale": the last-reading time is in the evidence line.') +
+ nc('Server error · new','new',390, NT('o','OpenAI’s server errored — usually theirs, usually brief.','','Check OpenAI status','HTTP 503'), 'Orange: not the user\'s fault, not urgent.') +
+ nc('Changed reply · new','new',390, NT('o','The server answered in a shape this app doesn’t know — an app update may be needed.','',null,'Reply held 1 of 3 groups'), 'Gemini\'s "Google changed something" notice (built) is this kind for Antigravity and keeps its own title.') +
+ nc('Internal · new','new',390, NT('r','Something unexpected went wrong in the app.','',null,'internal · see Settings › About'), 'Red: severe. No action; testers send feedback from About (section 8).') +
+ nc('Expiring soon · new','new',390, NT('q2','Sign-in expires in 5d 3h','Sign in again to keep Cooldown polling.','Sign in again'), 'Quiet grey tint: a warning, shown only when no error applies, cards stay at full strength.').replace('existing account tile, dimmed to 45% (unchanged)','existing account tile (full strength)').replace('tile dim','tile');
+$('r3b').innerHTML =
+ nc('Sign-in stopped · as built','good',390, NT('r','Teams: Sign-in stopped working','The saved sign-in failed and couldn’t renew. The numbers below are the last ones that worked.','Sign in again'), 'Unchanged.') +
+ nc('Plan · copy fixed','built',390, NT('q2','Usage isn’t available on the Free plan','ChatGPT only reports usage windows for paid plans. This account stays signed in and will show numbers if the plan changes.',null), 'Built tonight: names its own provider (was "Anthropic" for all three).').replace(/<div class="tile dim">.*?<\/div>/,'') +
+ nc('Narrow · 320 pt','new',320, NT('o','Couldn’t reach Anthropic — check your connection, or see if it’s them.','','Check Anthropic status','offline · last reading Thu 9:50 pm'), 'Title wraps to three lines, button stays full width of its text; nothing truncates.') +
+ nc('Largest Dynamic Type','new',390, `<div class="tint o" style="font-size:19px"><h6 style="font-size:20px">Couldn’t reach Anthropic — check your connection, or see if it’s them.</h6><div class="ev" style="font-size:15px">offline · last reading Thu 9:50 pm</div><span class="btn" style="font-size:19px">Check Anthropic status</span></div><div class="tile dim">existing account tile, dimmed to 45% (unchanged)</div>`, 'Scales with the system; the notice grows, the tile stays below it.') +
+ nc('iPad · 744 portrait','new',744, NT('o','Couldn’t reach Anthropic — check your connection, or see if it’s them.','','Check Anthropic status','offline · last reading Thu 9:50 pm · 7 h ago'), 'The notice stays one card wide above the single account (the iPad shows one account at a time).');
+
+/* ---------- 4 · history ---------- */
+const bars = (rows) => rows.map(r=>`<div class="hrow"><span class="l">${r[0]}</span><div class="bar"><i style="width:${r[1]}%;${r[1]>=100?'background:var(--bad)':''}"></i></div><span class="p ${r[1]>=100?'red':''}">${r[1]}%</span></div>`).join('');
+const pf = (h, rd, ev, five) => `<div class="pf"><div class="h">${h}</div><div class="rd">${rd}</div><div class="ev">${ev}</div>${five?`<div class="ev">${five}</div>`:''}</div>`;
+const week = (title, cnt, rows) => `<div class="card"><h6>${title}</h6><div class="cnt">${cnt}</div>${bars(rows)}</div>`;
+const foot = k => `<p class="small" style="padding:10px 32px 0">History is recorded as each window closes, so it fills in over time. Peak ${k} readings are sampled when the app checks. <span class="tag built">built</span></p>`;
+const hist = (w, body, pick=true) => `${nav('Usage history','')}<div class="ltitle">Usage history</div>${pick?`<div style="padding:0 16px 8px;width:216px">${SEG(['5-hour','7-day'],1)}</div>`:''}${body}`;
+const wk = week('This week','5 weeks · 1 maxed out',[['Mon 9 Oct',62],['Mon 2 Oct',100],['Mon 25 Sep',48],['Mon 18 Sep',31]]);
+$('r4').innerHTML =
+ col('7-day pane · iPhone 390','new',390, hist(390, `<div class="newbox" style="margin:0 12px">${pf('Plan fit · Max 5x · last 8 weeks','This plan fits how you use it.','Between 25% and 75% most weeks · capped once','5h cap hit 3 times')}</div>${wk}${foot('weekly')}`), 'Block sits above the weekly cards, 12 pt radius, quiet fill — a reading, not an alarm (never accent or warning colour).') +
+ col('Narrow · 320 pt','new',320, hist(320, `<div class="newbox" style="margin:0 12px">${pf('Plan fit · Max 5x','This plan fits how you use it.','Between 25% and 75% most weeks')}</div>${wk}${foot('weekly')}`), 'The period token drops ("· last 8 weeks") and the evidence shortens, as on Android\'s narrow layout.') +
+ col('Empty · new account','new',390, hist(390, `<div class="card"><h6>No closed windows yet.</h6><div class="cnt">History builds up as each window closes — check back later.</div></div>${foot('weekly')}`), 'No block for an account with fewer than a week recorded ("First week in progress." shows instead once a week has begun). A plan-refused account hides the block and the bars entirely.');
+const readings = [['This plan runs out on you.','Hit the cap in 5 of 8 weeks'],['You use a small part of this plan.','Under 25% in 7 of 8 weeks · never capped'],['No use recorded on this account.','The reading starts after four weeks.'],['First week in progress.','The reading starts after four weeks.'],['2 of 4 weeks recorded.','Gaps use "recorded weeks".'],['Changed from Pro 3 weeks ago.','The reading restarts after four weeks on the new plan.']];
+$('r4b').innerHTML = readings.map(r=>`<div class="col" style="width:386px"><div class="phone" style="padding:0 0 14px;border-radius:14px">${pf('Plan fit · Max 5x · last 8 weeks',r[0],r[1])}</div></div>`).join('');
+const twoCol = (w) => `${nav('Usage history','')}<div class="ltitle">Usage history</div><div class="cols"><div><h6>5-hour windows</h6>${week('This week','12 sessions · 2 maxed out',[['Thu 9:50 pm',46],['Thu 4:50 pm',88],['Wed 11:20 am',100],['Wed 6:10 am',22],['Tue 9:00 pm',64]])}</div><div><h6>7-day windows</h6>${pf('Plan fit · Max 5x · last 8 weeks','This plan fits how you use it.','Between 25% and 75% most weeks · capped once','5h cap hit 3 times')}${wk}</div></div>${foot('5h and weekly')}`;
+$('r4c').innerHTML = col('iPad portrait · 744 (≥ 600 pt: two columns, no picker)','new',744, twoCol(744), 'Android\'s rule at 600 dp and wider: two columns, 16 pt gutter, headings "5-hour windows" and "7-day windows" in the accent; Plan Fit tops the right column. Same at 1000 pt landscape beside the sidebar, content capped at 1100 pt.');
+
+/* ---------- 5 · chart ---------- */
+const chart = (o) => {
+  const W=340,H=180,L=8,Rr=8,T=10,B=22, pw=W-L-Rr, ph=H-T-B; const x=t=>L+pw*t, y=v=>T+ph*(1-v);
+  const pts=[[0,0],[.1,.06],[.2,.14],[.3,.22],[.4,.31],[.5,.44],[.58,.62]];
+  const curve=pts.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[1]).toFixed(1)).join(' ');
+  const last=pts[pts.length-1];
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="background:var(--card);border-radius:14px">`;
+  if(o.wash) s+=`<path d="M${x(0)} ${y(0)} L${x(1)} ${y(1)} L${x(0)} ${y(1)} Z" fill="#D93025" opacity=".07"/>`;
+  [[.8,'#C9A227','80%'],[.9,'#E8890C','90%'],[1,'#D93025','100%']].forEach(g=>{s+=`<line x1="${x(0)}" x2="${x(1)}" y1="${y(g[0])}" y2="${y(g[0])}" stroke="${g[1]}" stroke-dasharray="2 4" opacity=".7"/><text x="${x(1)-2}" y="${y(g[0])-3}" font-size="10" text-anchor="end" fill="${g[1]}">${g[2]}</text>`});
+  s+=`<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="#E0A000" stroke-width="2.6" stroke-dasharray="5 4"/><text x="${x(0)+4}" y="${y(.9)+0}" font-size="10.5" fill="var(--muted)">- - even pace</text>`;
+  if(o.over){ s+=`<path d="${curve} L${x(last[0])} ${y(0)} L${x(0)} ${y(0)} Z" fill="var(--accent)" opacity=".24"/><path d="M${x(.5)} ${y(.5)} L${x(.58)} ${y(.58)} L${x(.58)} ${y(.62)} L${x(.5)} ${y(.44)} Z" fill="#E8890C" opacity=".55"/>`; } else s+=`<path d="${curve} L${x(last[0])} ${y(0)} L${x(0)} ${y(0)} Z" fill="var(--accent)" opacity=".24"/>`;
+  s+=`<path d="${curve}" fill="none" stroke="${o.red?'#D93025':'var(--accent)'}" stroke-width="2.2" stroke-linecap="round"/>`;
+  pts.slice(0,-1).forEach(p=>{s+=`<circle cx="${x(p[0])}" cy="${y(p[1])}" r="2.4" fill="var(--accent)"/>`});
+  s+=`<line x1="${x(.6)}" x2="${x(.6)}" y1="${y(1)}" y2="${y(0)}" stroke="var(--muted)" opacity=".7"/>`;
+  s+=`<line x1="${x(last[0])}" y1="${y(last[1])}" x2="${x(.95)}" y2="${y(.9)}" stroke="var(--accent)" stroke-dasharray="4 3" opacity=".75" stroke-width="2"/><circle cx="${x(.95)}" cy="${y(.9)}" r="4" fill="none" stroke="#D93025" stroke-width="1.8"/>`;
+  s+=`<circle cx="${x(last[0])}" cy="${y(last[1])}" r="5" fill="${o.red?'#D93025':'var(--accent)'}"/><text x="${x(last[0])-8}" y="${y(last[1])-8}" font-size="12" font-weight="700" text-anchor="end" fill="var(--ink)">62%</text>`;
+  if(o.callout){ const sx=x(.4), sy=y(.31); s+=`<line x1="${sx}" x2="${sx}" y1="${y(1)}" y2="${y(0)}" stroke="var(--accent)" opacity=".55" stroke-width="1.5"/><circle cx="${sx}" cy="${sy}" r="6.5" fill="var(--card)"/><circle cx="${sx}" cy="${sy}" r="4.5" fill="var(--accent)"/><rect x="${sx+10}" y="${y(.55)}" width="104" height="34" rx="6" fill="var(--card)" stroke="var(--accent)" stroke-opacity=".55"/><text x="${sx+18}" y="${y(.55)+13}" font-size="9.5" fill="var(--muted)">Thu 9:50 am</text><text x="${sx+18}" y="${y(.55)+27}" font-size="11" font-weight="700" fill="#E8890C">31% · +9% vs pace</text>`; }
+  s+=`<text x="${x(0)}" y="${H-7}" font-size="11" fill="var(--muted)">23 Oct</text><text x="${x(.6)}" y="${H-7}" font-size="11" text-anchor="middle" fill="var(--muted)">now</text><text x="${x(1)}" y="${H-7}" font-size="11" text-anchor="end" fill="var(--muted)">30 Oct</text></svg>`;
+  return s;
+};
+const chartCol = (cap, cls, o, note) => `<div class="col" style="width:360px"><p class="cap ${cls}">${cap}</p>${chart(o)}<p class="note">${note}</p></div>`;
+$('r5').innerHTML =
+ chartCol('C · as shipped','', {red:true}, 'Curve and last dot turn red above pace; no wash, no overshoot fill, no callout.') +
+ chartCol('B ★ · wash + overshoot fill, no callout','new', {wash:true,over:true,red:true}, 'Faint red triangle above the pace diagonal (7% light / 10% dark), only when above pace + 3 at the divider; the area above the diagonal is orange at 30%. Guides, label, projection unchanged.') +
+ chartCol('A · everything: callout pinned','new', {wash:true,over:true,red:true,callout:true}, 'Tap a point to pin (tap again to clear; long-press and drag to scrub). Snaps to real samples. "31% · +9% vs pace" orange above pace; Left mode "69% left · …". The pill avoids guide labels. VoiceOver reads the one-line summary either way.');
+const cc = (t, amt, fig, bar, ft, ftCls, extra) => `<div class="col" style="width:360px"><div class="cc"><div class="t">${t}<em>${amt}</em><b>${fig}</b></div>${bar!=null?`<div class="bar" style="margin-top:8px"><i style="width:${bar}%;${bar>=100?'background:var(--bad)':''}"></i></div>`:''}<div class="ft ${ftCls||''}">${ft}</div>${extra||''}</div></div>`;
+$('r5b').innerHTML =
+ cc('Usage credits','$9.57 / $40.00','24% ⓘ',24,'$30.43 left · covers you when you hit your plan limits') +
+ cc('Usage credits','$40.00 / $40.00','100% ⓘ',100,'All credits spent — nothing left to cover plan overruns','bad') +
+ cc('Usage credits','$9.57 spent','No cap',null,'No monthly spend limit — credits cover you when you hit your plan limits') +
+ cc('Usage credits','$12.40 balance','No cap',null,'Covers you when you hit your plan limits') +
+ cc('Usage credits','$9.57 / $40.00','24% ⓘ',24,'$30.43 left · covers you when you hit your plan limits','','<div class="prov">Computed from the exact amounts — finer than the server’s rounded figure, not an estimate.</div>') +
+ `<div class="col" style="width:300px"><p class="note" style="margin-top:0">Fifth card: tapping the percentage toggles the provenance note. Bar fills by severity (red at 100%), no pace tick. The percentage rounds; window figures truncate. At 320 pt the amounts shorten to "$9.57 / $40" and the footer wraps.</p></div>`;
+
+/* ---------- 6 · share card ---------- */
+const mini = `<svg width="260" height="70" viewBox="0 0 260 70" style="background:color-mix(in srgb,var(--muted) 8%,transparent);border-radius:8px"><path d="M4 66 L60 52 L110 40 L160 30 L215 22" fill="none" stroke="var(--accent)" stroke-width="2"/><line x1="4" y1="66" x2="256" y2="6" stroke="#E0A000" stroke-dasharray="5 4"/></svg>`;
+const row = (lbl, fig, pct, pace, left, right) => `<div class="rw"><div class="a"><span>${lbl}</span><b>${fig}</b></div><div class="bar"><i style="width:${pct}%"></i></div><div class="z"><span>${left}</span><span>${right}</span></div></div>`;
+const shareCard = (o) => `<div class="share"><div class="hd"><div class="ring" style="background:conic-gradient(var(--accent) ${o.ringPct*3.6}deg,color-mix(in srgb,var(--muted) 22%,transparent) 0);position:relative"><span style="background:var(--card);width:66px;height:66px;border-radius:50%;display:grid;place-items:center">${o.ring}</span></div><div><div class="nm"><span class="mark" style="width:22px;height:22px;vertical-align:-4px"></span> Teams</div><div class="as">as of 6:26 pm, Thu 23 Oct</div></div></div>${o.rows}<div class="tr">${o.trend}${mini}</div><div class="ft2">COOLDOWN</div></div>`;
+const cardCol = (cap, cls, html, note) => `<div class="col" style="width:322px"><p class="cap ${cls}">${cap}</p>${html}<p class="note" style="max-width:320px">${note}</p></div>`;
+$('r6').innerHTML =
+ cardCol('Today · both platforms','', shareCard({ringPct:34,ring:'34%',rows:row('5h','34%',34,0,'On track for ~69%','Resets Thu 9:50 pm')+row('Weekly','52%',52,0,'Above pace','Resets Sun 9:30 pm'),trend:'5h trend'}), '5h row, then Weekly; the ring is the 5h; the trend is the 5h.') +
+ cardCol('A ★ · Weekly leads (default Headline)','new', shareCard({ringPct:34,ring:'34%',rows:row('Weekly','52%',52,0,'Above pace','Resets Sun 9:30 pm')+row('5h','34%',34,0,'On track for ~69%','Resets Thu 9:50 pm'),trend:'Weekly trend'}), 'Weekly row first and big; the 5h ring stays as the header gauge (shape grammar: ring = 5h, bar = Weekly); the trend follows the lead. The header ring never says "5h".') +
+ cardCol('A · 5h leads (Headline = 5-hour)','new', shareCard({ringPct:34,ring:'34%',rows:row('5h','34%',34,0,'On track for ~69%','Resets Thu 9:50 pm')+row('Weekly','52%',52,0,'Above pace','Resets Sun 9:30 pm'),trend:'5h trend'}), 'Identical to today: a Headline of 5-hour keeps what it shows now.') +
+ cardCol('A · Weekly only (no 5h plan)','new', shareCard({ringPct:52,ring:'52%',rows:row('Weekly','52%',52,0,'Above pace','Resets Sun 9:30 pm'),trend:'Weekly trend'}), 'No 5h ring: the header ring shows the Weekly, as the widgets do (B1).') +
+ cardCol('A · Weekly spent','new', shareCard({ringPct:34,ring:'34%',rows:row('Weekly','100%',100,0,'Weekly limit reached','Resets Sun 9:30 pm')+row('5h','34%',34,0,'5h can’t be used until Sun 9:30 pm','dimmed'),trend:'Weekly trend'}), 'CCRM-102 (Spent Week Gate): the spent week leads in red, the 5h dims, as on every other surface.');
+
+/* ---------- 7 · sample data ---------- */
+const addSheet = `${nav('Add account','','<span style="color:var(--blue)">Cancel</span>')}${gh('Sign in')}${grp(R('<span class="mark"></span>&nbsp; Claude','','',true),R('<span class="mark g"></span>&nbsp; ChatGPT','','',true),R('<span class="mark v"></span>&nbsp; Gemini','','',true))}${gh('No account handy?')}<div class="newbox" style="margin:0 12px">${grp(R('Try with sample data','','acc',true))}</div>${gf('Three made-up accounts to look around. Nothing is saved or sent, and your own accounts are untouched.')}`;
+const mainSample = `<div style="height:8px"></div><div class="ban newbox"><span><b>● Sample data</b> — made-up accounts</span><u>Exit</u></div><div class="tile" style="height:120px">main screen, unchanged, drawing the demo accounts (Teams, Product, Personal)</div><div class="tile" style="height:120px">All tab, tiles, chart: the existing demo scenario</div>`;
+const setSample = `${nav('Settings','')}${gh('Accounts')}${grp(R('<span class="mark"></span>&nbsp; Teams','Sample','',false),R('<span class="mark"></span>&nbsp; Product','Sample'),R('<span class="mark g"></span>&nbsp; Personal','Sample'))}${gf('Display settings work as usual and apply to the sample. Accounts can’t be added, removed or signed in while the sample is open. Exit from the banner.')}${gh('Reset alerts')}${grp(R('Alerts','Off while sample','',false))}`;
+$('r7').innerHTML = col('Add account · new row','new',390,addSheet,'One row at the bottom, below the three providers. Works for reviewers and for a tester without an account.') + col('Main screen · banner','new',390,mainSample,'Purple (the same "synthetic" colour as Android\'s band). Exit returns to the real accounts, or to the empty screen if there are none.') + col('Settings · inside the sample','new',390,setSample,'Nothing persistent: no Keychain writes, no widgets, Live Activity or alert scheduling, no history stored.');
+
+/* ---------- 8 · About ---------- */
+const about = `${nav('Settings','')}${gh('About')}<div class="newbox" style="margin:0 12px">${grp(R('Version','2.0 (14)'),R('Made by','Robin Richard Rajan'),R('Share feedback','','',true),R('Privacy policy','','',true))}</div><div class="gf" style="padding-top:10px">Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.</div>${gf('Touch and hold an account to rename it, sign in again or remove it. Drag to reorder: the order is the same everywhere. <span class="tag built">built</span>')}`;
+const mail = `<div class="scrim"><div class="sheetc" style="font-size:13px;width:340px"><h5>New message</h5><div class="fl" style="margin-bottom:6px"><small>To</small>robin@eam360.com</div><div class="fl" style="margin-bottom:6px"><small>Subject</small>Cooldown 2.0 (14) feedback</div><div class="fl" style="height:120px"><small>Message</small><br>What happened:<br><br><span style="color:var(--muted)">— Cooldown 2.0 (14), iOS 26.1, iPhone 17 Pro</span></div></div></div>`;
+$('r8').innerHTML = col('About · iOS list','new',390,about,'Native grouped rows instead of Android\'s centred card (no icon block: the app icon is the Home Screen\'s).') + `<div class="col" style="width:390px"><p class="cap new">Share feedback opens Mail</p>${mail}<p class="note">Subject and the footer carry version, build, iOS and device model, nothing else. If Mail isn\'t set up, a dialog "Email me at robin@eam360.com", as Android\'s fallback.</p></div>`;
+</script>
+</body></html>
