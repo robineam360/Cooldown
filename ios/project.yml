@@ -53,6 +53,8 @@ targets:
         AppIdentifierPrefix: $(AppIdentifierPrefix)
         UILaunchScreen: {}
         NSSupportsLiveActivities: true
+        # CCRM-95 (Dual Release) phase B: only HTTPS and the OS's SHA-256 for PKCE, both exempt, so TestFlight never asks.
+        ITSAppUsesNonExemptEncryption: false
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIApplicationSupportsIndirectInputEvents: true

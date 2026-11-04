@@ -195,3 +195,51 @@ anything new) so a published GitHub release never has to be replaced before the 
   feature graphic is `release/play/feature-graphic.png`, variant B of
   `design/2026-10-01-play-feature-graphic.html` (approved 2026-10-01); re-export it from that page
   with `?only=b` if the design changes.
+
+## 6. The iOS channel — DRAFT, not in force (CCRM-95 (Dual Release) phase B)
+
+Written 2026-11-04 for the day phase B starts; **nothing here is a step yet**. Robin approves it, and
+settles the open decisions below, before any session follows it. Until v2.0 ships, iOS distribution is
+GitHub plus TestFlight only; Google Play and the public App Store come after v2.0.
+
+**Decisions only Robin can make first** (all in `docs/ios/PLAN.md` phase B): which team publishes (Sedin
+today, EAM360 later) and EAM360's agreement to publish a personal MIT app; his own App Store Connect
+role (App Manager or Developer, by invitation, never a shared login); the Apple Distribution
+certificate route; whether the bundle ids stay on the Sedin team; and the release rule below.
+
+**Release rule for phase B.** A TestFlight build cannot be installed from a GitHub asset, so the rule
+"one release carries the APK and the IPA" becomes: **the GitHub release carries the APK as always, and
+its notes carry the TestFlight public link and the iOS build number**. Still never an iOS-only release
+(the Android update check reads `releases/latest`). If Robin prefers an ad-hoc IPA asset instead, the
+rule stays as `docs/ios/PLAN.md` words it.
+
+**Same version, one number.** The iOS `MARKETING_VERSION` is the Android `versionName` for the release
+(2.0), set in `ios/project.yml` in the release commit (step 1). `CURRENT_PROJECT_VERSION` is the build
+number, +1 for every upload to App Store Connect, even a rejected one; it resets to 1 only with a new
+`MARKETING_VERSION`.
+
+```bash
+SHA=$(git rev-parse HEAD); git status --porcelain       # the build is the release commit, tree clean
+test -s ios/Config/Antigravity.secrets.xcconfig          # the Gemini secret is present (never print it)
+swift test --package-path ios/Packages/CooldownCore
+(cd ios && xcodegen generate)
+xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown -only-testing:CooldownTests \
+   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath ios/.derived
+xcodebuild archive -project ios/Cooldown.xcodeproj -scheme Cooldown -configuration Release \
+   -destination 'generic/platform=iOS' -archivePath ios/out/Cooldown.xcarchive DEVELOPMENT_TEAM=<team>
+```
+
+Check the archive before anything is uploaded: the app's and the widget's `Info.plist` carry the same
+`CFBundleShortVersionString` and `CFBundleVersion`; `AntigravityClientSecret` is non-empty; both
+`PrivacyInfo.xcprivacy` files are inside the bundles; `ITSAppUsesNonExemptEncryption` is `false`; the
+signing identity is the Apple Distribution certificate and the profile is an App Store one.
+
+**Robin uploads** (Xcode Organizer → Distribute App → App Store Connect → Upload, or the same through
+`xcodebuild -exportArchive`): a session never uploads, never touches App Store Connect and never changes
+signing. Then, in App Store Connect, he pastes `release/testflight/whats-to-test.md` and
+`beta-review-notes.md`, fills the privacy-policy URL (the iOS section of `docs/privacy.md` once merged),
+answers App Privacy with *Data Not Collected*, and adds the public link.
+
+**What can go wrong.** Beta App Review may read the Claude sign-in as use of another company's service
+(the CCRM-8 (Mac Menu-Bar) risk): the notes explain it, and a rejection is information, not a failure.
+A build expires after 90 days, so a TestFlight build needs a fresh upload before then.
