@@ -99,44 +99,49 @@ After the move, session in `~/Projects/CooldownDesktop`:
 > through the EAM360 team (TestFlight or ad hoc), which waits on EAM360 agreeing to publish; one GitHub release
 > carries both the APK and the IPA, never an iOS-only one. Separately, in the desktop repo: REPO-STRUCTURE step 3.
 
-## ▶ Next session — start here: finish v1.9 Step 7, then Step 8 (written 2026-10-02)
+## ▶ Next session — v1.9 is ready to release; only Robin's go is missing (written 2026-11-04 night)
 
-**What changed today.** Robin chose to fix CCBG-52 (Boot Pin Delay) in v1.9. The post-boot restart
-is now an expedited WorkManager request with no delay (3c2f4e0, `BootRequestTest`; both flavors'
-tests green). CI had been red since ce2b904 (Step 5) on one lint error in the CCBG-50 (Degraded
-Store Notice) card; 3c70538 fixes it. A new github release candidate was built from 3c70538 and kept
-outside git:
-`design/research/2026-10-01-v19-device-pass/candidate-v1.9-github-3c70538.apk`, 1.9 / 25, sha256
-`89e1b6aa7e4fb475d82f9550d5a3656e5c03d35f9b8dc6689c8e28fecc4f646e`, signer = the trusted digest.
-That APK replaces 0e8ac99's (73a1c1f9…846e) as "the github build" that Always after checks for.
-The phone was not on the cable, so no device work was done today. The phone still runs 0e8ac99's
-candidate.
-Step 8's user docs are drafted ahead and the PDFs built (RUNBOOK Step 8 Log, 2026-10-02); Step 8
-only fills in the release day, and drops the CCBG-52 line if the reboot check fails.
+**What changed today.** Step 7 (Fold 7 device pass) is closed: CCBG-52 (Boot Pin Delay) verified (pin back 20 s
+after unlock, was 5 min 45 s), CCBG-50 (Degraded Store Notice)'s restart card verified, the Claude mark at 82%
+seen, Always after run and the phone locked on the github build. Robin's scope call of 2026-11-04 took Play out of
+v1.9 and v2.0: Step 8 is a GitHub APK release only (no AAB), Step 9 and Q4 wait until after v2.0, and
+`release/play/CHECKLIST.md` lists the Console items for that day. Docs say November 2026; PDFs rebuilt and read.
+The release commit is **`44c65b71c344b95ee5e0886bcc9a296b14305522`** (main). **CI is green on that exact sha** (run 41870554360: build, ios-core and
+ios-app all success; the earlier red on 2426edf was Robolectric's Maven download failing on the runner, and the iOS
+jobs not getting a macOS runner). The release APK built from it: sha256
+`fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed`, 1.9 / 25, signer = the trusted digest
+`8bc21a2a…f64f`, `check_artefact.py --channel github` PASS, byte-identical to what is on the phone. A pre-clearance review of the
+tag-push step (a fresh Fable judge and Sol, on a packet made before CI finished) returned **blocking**, for reasons
+that are now closed or are Robin's: CI pending (now green), no CI headSha in the evidence (re-register it), build
+provenance only claimed (register `git status --porcelain`, `git rev-parse HEAD` and the full aapt badging line), the
+tag absent locally (`git fetch origin tag v1.9` after the push, then check `git rev-parse v1.9^{commit}`), and Robin's
+go missing (by design). That packet is stale (the HANDOVER commit moved HEAD), so the next session builds a fresh
+packet and a fresh judge round that includes Robin's words. Nothing is tagged, drafted or published. PR robineam360/Cooldown#21 (v2.0) and the Dependabot PRs are untouched; Gate G0 holds
+until Step 8 is ticked.
 
 **Robin, before the next session:**
-1. Have the Fold 7 on USB and unlocked, and be ready to sign Product and Work in again in the browser.
-2. Before the video, swipe away your own notifications so the shade shows only Cooldown's.
+1. Say "go" on the commit and sha256 above (or ask for a change). That is the only thing publishing waits on.
+2. Morning questions: (a) the FGS video was recorded on v1.9 before the scope call reached the session. Keep it as
+   a v1.9 artefact and re-record on v2.0, or drop it? (b) The Play feature graphic sits on the v1.9 icon:
+   keep it or redo it after CCRM-101 (Icon v3)? (c) Anything in the CHECKLIST that you want decided now.
 
 Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
 
-> Read CLAUDE.md; RUNBOOK.md Conventions and Step 7 (its 2026-10-01 and 2026-10-02 Log entries and
-> design/research/2026-10-01-v19-device-pass/findings.md); BUGS.md CCBG-52 (Boot Pin Delay). The
-> phone is on USB. Run Before again into phone-state-before-2.txt. The github build is now
-> candidate-v1.9-github-3c70538.apk (sha256 89e1b6aa…646e): adb install -r it and check its sha256.
-> Then:
-> (0) CCBG-52: reboot with the pin on and time the pin from boot. Seconds → mark CCBG-52 verified
-> on the phone. Still minutes → record it in CCBG-52 and ask Robin whether to defer the rest.
-> (a) CCBG-50 (Degraded Store Notice)'s restart cards. Debug → Simulate on. Robin signs Product in
-> through the browser; then Robin signs Work in and I tap Clear on Work. Force-stop, reopen: one card
-> with two items ("back on the sign-in saved before" and "signed in again"), both accounts still
-> signed in. Capture it, tap OK, confirm it is gone.
-> (b) Item 6, the CCRM-90 (Listing Pack) FGS video. screenrecord with --display-id per the memory
-> note, after Robin has cleared his own notifications: switch on, the notification and ring appear,
-> Refresh, switch off. Save to release/play/, watch it for private content, and put the path in
-> fgs-declaration.md.
-> Then Always after (against the 3c70538 sha256), tick Step 7 per Convention 4 (the gate: no High
-> open, and every deferral in Robin's words), and run Step 8's Resume block.
+> Read CLAUDE.md, WORKTREE.md, RELEASING.md and RUNBOOK.md Conventions and Step 8 (its Log); load model-mesh. Robin
+> has said "go" on commit 44c65b71c344b95ee5e0886bcc9a296b14305522 and the APK sha256 fcd15940…ad3fed. Confirm that
+> `gh run list --commit <sha>` is green and rebuild (assembleGithubRelease from that sha, the signing files copied in
+> from the main checkout, never staged) only if `app/build/asset/app-release.apk` is gone or its sha256 differs: the
+> build is reproducible, and a copy sits in the shared notes folder
+> (`candidate-v1.9-github-1f7fa0b.apk`, same bytes). Then, as one reviewed step each (a model-mesh packet per step,
+> Fable judge plus Sol because they publish; register evidence with headSha, `git status --porcelain`,
+> `git rev-parse HEAD` and the full aapt badging line): `git push origin 44c65b71c344b95ee5e0886bcc9a296b14305522:refs/tags/v1.9`
+> (the gate wants the commit named); then `git fetch origin tag v1.9` and check `git rev-parse v1.9^{commit}` equals the sha;
+> `gh release create v1.9 app/build/asset/app-release.apk --draft
+> --verify-tag --title "Cooldown v1.9" --notes-file release/docs/release-notes-v1.9.md`; download the draft asset and
+> check the sha256 equals, the signer equals the trusted digest and aapt shows versionCode 25 / 1.9; a fresh judge
+> on that; `gh release edit v1.9 --draft=false --latest`; `adb install -r` the downloaded asset on the Fold 7 and
+> check the installed sha256; Robin taps Check for updates. Then tick Step 8 and the arc items (Shipped v1.9), lift
+> Gate G0, and hand over to the v2.0 session.
 
 ---
 

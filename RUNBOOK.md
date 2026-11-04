@@ -633,6 +633,16 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
   overflowed once; the 1.8 row was shortened). **Still Step 8's:** the release day in USER-GUIDE.md's
   header; drop CCBG-52 (Boot Pin Delay) from all five places if Step 7's reboot does not confirm it, and
   touch up anything else Step 7 changes; then rebuild with `build.sh` and re-read the changed pages.
+- 2026-11-04 — **Ready, not published** (overnight, Robin asleep; his instruction: everything short of
+  publishing). Docs touch-up done (November 2026 on the guide, brochure and USER-GUIDE; `build.sh` run, cover and
+  brochure read). Release commit **`44c65b71c344b95ee5e0886bcc9a296b14305522`** on main; CI green on that exact sha
+  (run 41870554360: build, ios-core, ios-app). Release APK built from it (no AAB, per the scope change):
+  `app/build/asset/app-release.apk`, sha256 `fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed`
+  (equal to the Step 7 candidate on the phone), signer `8bc21a2a…f64f` = the trusted digest, 1.9 / 25,
+  `tools/check_artefact.py --channel github` PASS. Pre-clearance of the tag-push step: Fable judge and Sol both
+  **blocking** on a packet assembled before CI finished (CI pending, no headSha in the evidence, provenance only
+  claimed, the tag not fetched locally, Robin's go absent); the first and second are now closed (CI green; headSha
+  `44c65b71…`), the rest are done at execution on a fresh packet with Robin's go. Not tagged, drafted or published.
 
 ---
 
