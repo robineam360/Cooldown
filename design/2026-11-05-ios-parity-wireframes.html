@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>iOS Parity Wireframes</title>
-<!-- iOS parity wireframes, rev A, 2026-11-05 (drawn the night of 2026-11-04 for Robin's approval, CLAUDE.md §2). Nothing here is built.
+<!-- iOS parity wireframes, rev B (rev A authored by the seat; rev B decisions drafted by Fable 2026-11-04, reviewed by Astra), 2026-11-05 (drawn the night of 2026-11-04 for Robin's approval, CLAUDE.md §2). Nothing here is built.
      Base: spec/mobile/surfaces/app.md and widgets.md as shipped; Android's approved layouts for the gaps (Android 1 dp = 1 px here, iOS 1 pt = 1 px).
      Source of the gap list: side-session-notes/…/ios-parity-audit-2026-11-04.md §4. Each section ends with "For Robin": the call is yours;
      the recommended option is marked ★. Say "blanket" and every ★ is taken. Existing cards and charts are not redrawn: where one appears
@@ -94,12 +94,30 @@
   .share .nm { font-size:21px; font-weight:700; } .share .as { font-size:13px; color:var(--muted); } .share .rw { margin-top:14px; } .share .rw .a { display:flex; justify-content:space-between; font-size:14px; } .share .rw .a b { font-size:19px; } .share .rw .z { display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin-top:5px; } .share .bar { height:10px; margin-top:6px; flex:none; }
   .share .tr { margin-top:14px; font-size:13px; color:var(--muted); } .share .tr svg { display:block; margin-top:4px; } .share .ft2 { margin-top:12px; font-size:11px; letter-spacing:.14em; color:var(--muted); font-weight:500; }
   .ban { margin:0 16px 8px; padding:9px 14px; border-radius:12px; background:color-mix(in srgb,#7C4DFF 16%,transparent); color:var(--ink); font-size:13.5px; display:flex; gap:8px; align-items:center; } .ban b { color:#7C4DFF; } .ban u { margin-left:auto; text-decoration:none; font-weight:650; color:var(--blue); }
+
+  /* rev B: decisions */
+  .dec { border:1px solid var(--good); border-radius:12px; padding:12px 16px; margin:16px 0; max-width:100ch; font-size:13.5px; background:color-mix(in srgb,var(--good) 5%,transparent); }
+  .dec h4 { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--good); }
+  .dec ul { margin:6px 0 0; padding-left:20px; } .dec li { margin:0 0 6px; } .dec p { margin:6px 0 0; }
+  .deleg { border:1px solid var(--accent); border-radius:12px; padding:12px 16px; margin:16px 0; max-width:100ch; font-size:13.5px; }
+  .deleg h4 { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+  .q.old { border-color:var(--hair); opacity:.8; } .q.old h4 { color:var(--muted); }
 </style>
 <body><div class="page">
-<p class="eyebrow">CLAUDE COOLDOWN · iOS PARITY · REV A · FOR APPROVAL</p>
+<p class="eyebrow">CLAUDE COOLDOWN · iOS PARITY · REV B · APPROVAL DELEGATED TO FABLE + ASTRA</p>
 <h1>iOS parity wireframes</h1>
 <p class="lede">Eight gaps between the iPhone/iPad app and Android's v2.0 are drawn here, with their states: empty, error, narrow width (320 pt), large type where it matters, and iPad. <b>Nothing is built.</b> Each section says what Android does, what iOS does today, and what changes. The bits already built tonight (Remove asks first, a cleared name restores the default, copy fixes) are tagged <span class="tag built">built</span>. Dashed orange outlines mark what is new.</p>
 <p class="sub">How to answer: each "For Robin" box lists numbered calls; ★ is my recommendation. "Blanket" takes every ★. Ruled out stays out. Whatever you approve gets built exactly as drawn, with <code>spec/mobile/surfaces/</code> updated in the same commit.</p>
+
+<div class="deleg"><h4>Delegation record · 2026-11-04</h4>
+<p>CLAUDE.md §2 requires a wireframe approved before a visible change is built. For tonight, <b>Robin delegated that approval to Fable (drafts) plus Astra (cross-family review)</b>, in his own words to this session: <i>“Fable plus Astra may approve the iOS wireframes tonight.”</i> He can still reverse any of it in the morning; every item is a code change on the PR #23 branch, reversible by revert. Process: Fable drew the decisions below from <code>spec/mobile/surfaces/app.md</code> and Android’s approved layouts, the seat polished the page, Astra reviews the batch (at most three calls, by Robin’s exception), then each item is built with tests and one Opus judge round. A wireframe where Fable and Astra cannot agree is parked as a morning question. Anything that needs a choice only Robin can make (TestFlight accounts, signing, version, Apple account actions) is parked, not decided.</p></div>
+<p class="sub">Reading this page: each section keeps the rev A drawing for the layout, then a green <b>Rev B decision</b> box with what is final (and what changed from rev A). The old “For Robin” boxes are kept greyed out for the record; their ★ calls are settled in the green box.</p>
+
+<div class="deleg"><h4>Astra review, call 1 of 3 · verdict “concerns”, four findings, all answered · Fable concurs (one narrow objection on 3, taken) · agreement reached</h4><ul>
+<li><b>1 · Parity departures (last account, no Clear/Dashboard, chart).</b> Each is the spec’s own iOS column, not an invention. <i>Remove last account:</i> the iOS menu already lists “Remove” with no two-account condition (<code>app.md</code> §Account card, Menu row); only Android’s column says “only with two or more”. <i>No Clear / Dashboard:</i> the spec gives iOS the six-item menu and marks the card’s status line and action row “list row only”; adding a third sign-out or a dashboard link is a spec change, so it is left out. <i>Chart:</i> the spec marks the selection callout “Android only”, and says the wash and overshoot fill are the Android reference iOS lacks — this page builds the wash and fill to match, and keeps no callout because the spec says none. The red curve returning to the series colour is the spec’s own “instead”.</li>
+<li><b>2 · Expiring threshold.</b> Checked: Android’s executable rule is <code>SOON_MS = 3 × DAY_MS</code> (<code>SignInExpiry.kt:34</code>); the cross-platform master, <code>BEHAVIOR-MOBILE.md</code> §3, says <b>7 days</b>. iOS follows the master (7 d), with boundary tests at 7 d ± 1 min; the Android mismatch is listed for the v2.0 Android session as a bug to fix on that side, not edited here. If Robin prefers 3 d, it is a one-constant change.</li>
+<li><b>3 · Sample mode excludes features.</b> Accepted in part: <b>Share card stays visible</b> in the sample, with Android’s approved “SAMPLE DATA” band on it (Fable’s one narrow objection, taken). Reset alerts and the Lock Screen section stay hidden because they need notification permission and real widgets; the review notes (parked for Robin) will describe how to see them with a real account.</li>
+<li><b>4 · Version values.</b> Accepted: About and the feedback e-mail read the installed app’s version and build; no number is written into the design. The version number stays Robin’s.</li></ul></div>
 
 <h2 id="s1">1 · Account page: Rename, Sign in again, Remove <span class="tag">needs approval</span></h2>
 <p class="sub"><b>Today:</b> the account page has Plan, Accent, Headline, Model limits, Details, Clear history. Rename, Sign in again and Remove are only in the touch-and-hold menu on the Settings list, so on iPad (and for anyone who never long-presses) they cannot be found. <b>Android:</b> the ⋮ menu and the account card's action row (S/app.md:385-391). <b>Change:</b> an Account section with a Name row, a Sign-in section with the status line and Sign in again, and Remove as the last group. The touch-and-hold menu stays.</p>
@@ -108,7 +126,13 @@
 <div class="row" id="r1b"></div>
 <h3>Remove: the confirmation <span class="tag built">built</span> and the last-account state</h3>
 <div class="row" id="r1c"></div>
-<div class="q"><h4>For Robin · section 1</h4><ol>
+<div class="dec"><h4>Rev B decision · section 1 (all ★ taken)</h4><ul>
+<li><b>AccountPage, top to bottom:</b> “Account” (<b>Name</b> row, tap = rename, value truncates; Plan; Accent colour…) → “Sign-in” (status row 13.5 pt with a 28 pt ↻ “Check now” button, a spinner in its place while refreshing; condition rows from §2; action row “Sign in again” / ChatGPT “Sign in with a code”, 16 pt in the accent, <b>semibold while sign-in is broken</b>) → Headline, Model limits, Usage as built → <b>Remove account</b> (red, centred, own group).</li>
+<li><b>Changed from rev A:</b> no filled button row (not an iOS grouped-list pattern; the red line above is the emphasis); no “ChatGPT · not signed in” state (an iOS account exists only after a grant, so it reads “Not checked yet” until the first attempt).</li>
+<li><b>RenameSheet</b> (one component for the Name row and the touch-and-hold Rename; the system alert is retired): medium-detent sheet, inline title “Rename account”, Cancel / Save (always enabled), one field, counter “n/16” 13 pt, input hard-capped at 16, placeholder = the positional default. The “Use “Robin” (from robin@eam360.com)” row appears only when an e-mail is known and differs from the field. Footer: “Used everywhere — tabs, widgets and the Live Activity. Clear the field to go back to “&lt;default&gt;”.”</li>
+<li><b>Remove</b> the last account is allowed; the alert then adds “This is your only account. Cooldown goes back to its first-launch screen.” No “Clear” action, no Dashboard row.</li>
+<li><b>States:</b> signed in · sign-in broken (red line, semibold action) · expiring (amber) · free plan / rate-limited (red lines) · 320 pt (status wraps, ↻ stays trailing) · iPad (inside the Settings sheet, unchanged) · long name (value truncates; cap 16) · last account · two or more accounts.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 1 · settled in the box above</h4><ol>
 <li><b>Where Rename lives.</b> <span class="star">A name row at the top of the page (tap = rename)</span>; or a "Rename…" button row beside "Accent colour…".</li>
 <li><b>The rename dialog.</b> <span class="star">B: a small sheet like Android's (counter n/16, "Use <email>" chip, help line)</span>; or A: the system alert as built tonight (bare field and help line, no counter or chip, no length limit).</li>
 <li><b>Remove the last account?</b> <span class="star">Allow it; the app returns to the empty screen</span> (Android blocks it, but its empty screen is reached by uninstalling); or block it as Android does.</li>
@@ -118,7 +142,14 @@
 <h2 id="s2">2 · Account status line and the expiry lines <span class="tag">needs approval</span></h2>
 <p class="sub"><b>Android:</b> under the account name, a muted status line with a refresh button, then red or amber lines as they apply (S/app.md:389-391). <b>iOS today:</b> only "Signed in / Sign in again" on the Settings row. <b>Change:</b> the same lines in the Sign-in section of the account page (drawn above), plus the Settings row keeps its text and gains an amber "Expires in 5d" when the sign-in is within 7 days. The refresh button runs the same fetch as pull-to-refresh and is disabled while one is running.</p>
 <div class="scroll"><table id="t2"></table></div>
-<div class="q"><h4>For Robin · section 2</h4><ol>
+<div class="dec"><h4>Rev B decision · section 2 (★ taken, one departure)</h4><ul>
+<li><b>Row order in “Sign-in”:</b> status (muted) · free/no-usage plan (red) · sign-in stopped (red) · expiring (amber) · rate-limited (red).</li>
+<li><b>Status text:</b> “Checking…” while refreshing, else “Not checked yet” or “Checked 12m ago”, plus (Claude and Gemini only, never while sign-in is broken) “ · renews in 6h 4m” or “ · renewal due at next check”. ChatGPT never shows the clause. If the credential’s expiry is unreadable the clause is simply absent.</li>
+<li><b>Gemini</b> gets Claude’s lines minus the ~30-day expiry estimate (Google tokens renew; that estimate is Anthropic-specific). <b>Rate-limited</b> shows the retry time: “Rate-limited — next try in 12m”.</li>
+<li><b>Departure from rev A:</b> iOS has a single “sign-in broken” flag, so there is one red line and no day-count “renewal dead” variants.</li>
+<li><b>Expiring</b> (Claude only): within <b>7 days</b> (BEHAVIOR-MOBILE §3), hidden while sign-in is broken; line “Sign-in expires in 5d 3h — sign in again to keep polling going.” Settings list row: “Sign in again” (orange) › “Expires in 5d” (orange) › “Signed in”.</li>
+<li><b>Copy:</b> “Free plan: Claude doesn’t report usage — upgrade to Pro, Max or Team to see numbers.” · “Sign-in stopped working — sign in again below.” (ChatGPT: “… sign in with a code below.”)</li></ul></div>
+<div class="q old"><h4>Rev A options · section 2 · settled in the box above</h4><ol>
 <li><b>Gemini (Antigravity) status copy.</b> <span class="star">Same lines as Claude</span>, because its sign-in renews and expires the same way; I have not found Android's Gemini wording in the spec, so this is the one place the copy is mine. Or leave Gemini without a status line.</li>
 <li><b>Rate-limited line</b> shows <span class="star">the retry time</span> ("next try 3:40 pm") or only "backing off". The fetch layer already knows the time.</li></ol></div>
 
@@ -135,7 +166,13 @@
 <tr><td>3</td><td>Fetch error (rate-limited, network, server, invalid reply, internal)</td><td>Names the cause. <b>It absorbs "Stale":</b> its evidence line carries "last reading Thu 9:50 pm · 7 h ago", so one notice, not two.</td></tr>
 <tr><td>4</td><td>Stale (no error recorded, 6 h without a reading)</td><td>As built.</td></tr>
 <tr><td>5</td><td>Sign-in expiring (within 7 days)</td><td>A warning, not a failure: only shown when nothing above is. Quiet tone.</td></tr></table></div>
-<div class="q"><h4>For Robin · section 3</h4><ol>
+<div class="dec"><h4>Rev B decision · section 3 (★ taken, tint override)</h4><ul>
+<li><b>One notice at a time</b>, same <code>NoticeView</code>. Precedence: plan refusal › sign-in needed › last fetch’s error (Gemini’s “Google changed something” first for an invalid reply; else rate-limited, network, server, invalid reply, internal) › stale (&gt; 6 h) › expiring (Claude, ≤ 7 d). A fetch-error notice absorbs stale: its evidence line appends “ · last reading Thu 9:50 pm”.</li>
+<li><b>Kinds (tone · title · evidence · button):</b> rate-limited · warning · “Rate limited — backing off, retries on its own.” · message + “next try ~3:40 pm” · none. network · warning · “Couldn’t reach &lt;Vendor&gt; — check your connection, or see if it’s them.” · message · “Check &lt;Vendor&gt; status”. server · warning · “&lt;Vendor&gt;’s server errored — usually theirs, usually brief.” · “HTTP 503” · “Check &lt;Vendor&gt; status”. invalid reply · warning · “The server answered in a shape this app doesn’t know — an app update may be needed.” · message · none. internal · red · “Something unexpected went wrong in the app.” · message · none. expiring · quiet · “Sign-in expires in 5d 3h” + “Sign in again to keep polling going.” · “Sign in again”.</li>
+<li><b>Status button</b> opens the provider’s status page in Safari. Evidence lines 12.5 pt monospaced; no body text on the five error kinds (as Android).</li>
+<li><b>Tint override:</b> “quiet” notices use the grey card fill, not orange. This also recolours the plan-refusal notice from orange to grey (it is not a failure) — a ride-along, called out here so it can be reversed.</li>
+<li><b>Dimming</b> unchanged: last-good cards dim to 45% under error or warning only. A first fetch that failed shows the notice alone. 320 pt: title wraps, button hugs its text.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 3 · settled in the box above</h4><ol>
 <li><b>One notice at a time in that order.</b> <span class="star">Yes</span>; or stack the two most important (Android's notification does up to three).</li>
 <li><b>Invalid-reply notice on a TestFlight build:</b> Android offers "Check for updates" on its GitHub build. <span class="star">No button; the body says "An app update may be needed."</span>; or a button that opens the TestFlight app.</li>
 <li><b>"Check Anthropic status"</b> opens the provider's status page in Safari (the three hosts already in the app). <span class="star">Yes</span>.</li></ol></div>
@@ -147,7 +184,13 @@
 <div class="row" id="r4b"></div>
 <h3>iPad</h3>
 <div class="row" id="r4c"></div>
-<div class="q"><h4>For Robin · section 4</h4><ol>
+<div class="dec"><h4>Rev B decision · section 4 (★ taken, two corrections)</h4><ul>
+<li><b>Corrections to rev A, to match Android:</b> on a single-column pane (every iPhone) the Plan Fit header drops the period token and the evidence says “the last 8 weeks”; the token “· LAST 8 WEEKS” appears only in the two-column layout. The block also shows for a brand-new account (“First week in progress.” / “The reading starts after four weeks.”) and is hidden only for a plan-refused account.</li>
+<li><b>Plan Fit block</b> (above the week card on the 7-day pane): grey card fill, 12 pt radius, 12 pt padding; header 11 pt semibold uppercase; reading 15 pt semibold; evidence 13 pt muted. Never an accent or warning colour. Copy is Android’s <code>PlanFitCopy</code>, ported with its test table first.</li>
+<li><b>Subset tonight</b> (iOS history records carry no plan or model tag): verdicts runs-out / small part / idle / fits / not enough data, the live plan in the header, generic “the cap”. The “Changed from Pro 3 weeks ago.” and “Fable cap” forms wait until records carry those tags — a logged follow-up, not a layout gap.</li>
+<li><b>Two columns at ≥ 600 pt</b>: picker hidden; headings “5-hour windows” / “7-day windows” in the accent; 16 pt gutter; Plan Fit tops the right column; one footnote under both; content capped at 1100 pt. Below 600 (iPhone, narrow Split View): as built plus the block. A plan with no 5h window: one 7-day pane, no picker, at every width.</li>
+<li><b>States:</b> fits · runs out · small part · idle · first week · 2 of 4 weeks · plan-refused (no block) · empty pane (block still shows on the 7-day side) · iPad portrait 744 and landscape · weekly-only plan.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 4 · settled in the box above</h4><ol>
 <li><b>Plan Fit on iOS.</b> <span class="star">Yes, as Android</span>; or skip it (it is the least-used part of History).</li>
 <li><b>iPad side-by-side at 600 pt and up</b> (every iPad width, and Split View's wide half). <span class="star">Yes</span>; or keep the picker on iPad portrait.</li></ol></div>
 
@@ -156,14 +199,23 @@
 <div class="row" id="r5"></div>
 <h3>Credits card</h3>
 <div class="row" id="r5b"></div>
-<div class="q"><h4>For Robin · section 5</h4><ol>
+<div class="dec"><h4>Rev B decision · section 5 (chart B, credits yes)</h4><ul>
+<li><b>Chart B: wash and overshoot fill, no pinned callout, no ⓘ on the projection line</b> — the tile’s tap readouts already give time and distance, and a pill would compete with them. At every size: red wash (7% light / 10% dark) over the triangle above the even-pace diagonal, only while the window is over pace; the curve’s fill splits at the diagonal (below = accent 18/20%, above = orange 30/34%); both flip with “Time down”. <b>Once the wash exists, the red curve and red current dot return to the series colour</b> (spec 3.3 says “instead”); red stays on the bar’s over-pace slice and the pace text.</li>
+<li><b>Credits card:</b> “Usage credits” 16 semibold · amounts 16 (scale to 0.8) · figure 17 bold with an ⓘ that toggles a provenance pill (session-only) · 9 pt bar, no pace tick · footer 12.5 pt. Percent rounds; display mode never changes it (money has no clock).</li>
+<li><b>States:</b> capped, money left — “$9.57 / $40.00” · 24% · “$30.43 left · covers you when you hit your plan limits”; capped, all spent — red bar, red footer “All credits spent — nothing left to cover plan overruns”; balance only — “$12.40 balance” · “No cap” · no bar, no ⓘ. Provenance: “Computed from the exact amounts — finer than the server’s rounded figure, not an estimate.” The invented narrow-width reformat and “No cap, spend” are dropped (not reachable on iOS).</li></ul></div>
+<div class="q old"><h4>Rev A options · section 5 · settled in the box above</h4><ol>
 <li><b>The chart.</b> A: all of it (callout, wash, overshoot fill, ⓘ). <span class="star">B: wash and overshoot fill, no callout</span> (the figure readouts already say time and distance, and a pinned pill competes with a thumb on a small chart); C: leave the chart as it ships.</li>
 <li><b>Credits card bar, footer and note.</b> <span class="star">Yes, as Android</span>; the card is small and the footer line explains what credits do.</li></ol></div>
 
 <h2 id="s6">6 · Share card: Weekly first (both platforms) <span class="tag">needs approval</span></h2>
 <p class="sub">Under CCRM-24 (Share Card) a card that leads with Weekly needs its own wireframe (RUNBOOK-v2.0 Step 6). Today both platforms draw the 5h row above Weekly. Spec: Vs pace renders as Used on the card; synthetic band Android only; a weekly-only plan swaps to the weekly trend.</p>
 <div class="row" id="r6"></div>
-<div class="q"><h4>For Robin · section 6</h4><ol>
+<div class="dec"><h4>Rev B decision · section 6 (follow the Headline; spans both platforms)</h4><ul>
+<li><b>One layout:</b> header (ring = <b>5h always</b>, shape grammar ring = 5h, bar = Weekly; it shows Weekly only when the plan has no 5h window) · <b>lead row</b> (figure 24 pt bold, bar, pace phrase left, “Resets …” right) · second row (19 pt, as today) · hairline · “&lt;Lead&gt; trend” + that window’s chart · COOLDOWN. Rev A’s ring paragraph contradicted itself; this settles it.</li>
+<li><b>Lead = the window the account’s Headline leads with</b> (Weekly by default and under Auto unless 5h binds; 5h when Headline = 5-hour), via the widgets’ own resolver so the card can never disagree with them. Spent week: Weekly leads whatever the Headline, red figure, “Out until Sun 9:30 pm”; the 5h row and ring at 45%, phrase slot empty. Vs pace shows as Used. Weekly-only plan: one row, ring and trend = Weekly.</li>
+<li><b>iOS half (built tonight):</b> the share card takes the lead and second windows and a figure-size per row. <b>Android half (listed for the v2.0 Android session, not edited here):</b> same order rule from the Headline resolver, 24 sp lead figure vs 17 sp, ring stays the 5h gauge, trend follows the lead, 5h row at 45% under a spent week, synthetic band unchanged.</li>
+<li><b>States:</b> Weekly leads · 5h leads · Auto with 5h binding · weekly-only · weekly spent · 5h not started (“Starts when a message is sent”) · no reading (“Nothing to share yet”, built) · light/dark.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 6 · settled in the box above</h4><ol>
 <li><b>Order.</b> <span class="star">A: follow the account's Headline</span> (Weekly first by default, 5h first when the Headline is 5-hour, as every other surface); or B: always Weekly first.</li>
 <li><b>The ring.</b> <span class="star">The hero ring shows the headline window's figure, with no "5h" word</span> (the shape grammar: ring = 5h, bar = Weekly). On a Weekly-led card the ring would show Weekly, so it is a bar: <span class="star">the header ring becomes a 5h ring only; the headline figure sits big beside the Weekly bar</span>. Say if you prefer the simpler "ring = headline window".</li>
 <li><b>Trend.</b> <span class="star">Under the headline window</span>; Android and iOS together in one commit.</li></ol></div>
@@ -171,16 +223,34 @@
 <h2 id="s7">7 · Reviewer sample-data mode <span class="tag">needs approval</span></h2>
 <p class="sub">Beta App Review needs a way into the app without the reviewer's own Claude, ChatGPT or Gemini account (and a TestFlight tester without an account would like one too). The app already has a demo state for screenshots, driven by a launch argument. This makes it a visible, in-app switch.</p>
 <div class="row" id="r7"></div>
-<div class="q"><h4>For Robin · section 7</h4><ol>
+<div class="dec"><h4>Rev B decision · section 7 (approved, minimal; one correction)</h4><ul>
+<li><b>Reuses the existing demo state</b> (<code>AppModel(demo: .standard)</code>: temporary storage, no Keychain, nothing persisted). Chosen over a test account, which would need Robin’s own tokens.</li>
+<li><b>Correction to rev A:</b> a reviewer with no accounts never sees the Add-account sheet (the empty screen’s capsules open sign-in directly), so the entry is in <b>two places</b>: a text button “Try with sample data” on the empty screen, and a fourth row in the Add-account sheet (“Try with sample data” / “Three made-up accounts to look around. Nothing is saved or sent.”).</li>
+<li><b>Inside:</b> banner above each tab page and the Summary — purple 16% fill, “● Sample data — made-up accounts”, trailing “Exit” (on iPad it tops the detail column, not the sidebar). Settings rows read “Sample”; Add account, Reset alerts, Lock Screen and Sign in again / Remove are hidden (they act on real accounts or on system permissions and widgets); <b>Share card stays, carrying Android’s approved synthetic band</b> (16 pt <code>#7C4DFF</code>, “● SAMPLE DATA”, 8.5 pt bold white, top edge — spec §8) so made-up numbers can never pass as a real share; Display settings still apply (they are the user’s own). Exit restores the real accounts untouched, or the empty screen.</li>
+<li><b>Parked (Robin):</b> the Beta Review notes wording for this path and whether a test account is also offered; Apple’s stance on sample-data review is not decidable here.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 7 · settled in the box above</h4><ol>
 <li><b>A sample-data mode in the build.</b> <span class="star">Yes: "Try with sample data" at the bottom of Add account</span>; or no feature, and the review notes carry a test account's sign-in instead (a real account, a real token in a note, and Claude/Google may lock it).</li>
 <li><b>What it touches.</b> <span class="star">Nothing persistent</span>: no Keychain items, no widgets, Live Activity or alerts, a purple "Sample data" banner with Exit; leaving restores the real accounts untouched.</li></ol></div>
 
 <h2 id="s8">8 · About: Share feedback and Privacy policy <span class="tag">needs approval</span></h2>
 <p class="sub"><b>Android:</b> centred About card with icon, version, "Made by", Share feedback, Privacy policy, disclaimer (S/app.md:442). <b>iOS:</b> a Version row and the disclaimer. A privacy-policy link is required for an external TestFlight build; Share feedback gives testers a way to write to you.</p>
 <div class="row" id="r8"></div>
-<div class="q"><h4>For Robin · section 8</h4><ol>
-<li><b>Rows.</b> <span class="star">Version (with the build number), Share feedback (opens Mail to robin@eam360.com with the version and iOS version filled in), Privacy policy (opens the GitHub page), Made by Robin Richard Rajan</span>. The in-app version text should show "2.0 (14)" so a tester's report names the build.</li>
+<div class="dec"><h4>Rev B decision · section 8 (★ taken)</h4><ul>
+<li><b>“About” rows, in order:</b> Version (read from the installed app’s version and build; never typed in — numbering stays Robin’s) · Made by “Robin Richard Rajan” · <b>Share feedback</b> (mailto robin@eam360.com, subject “Cooldown &lt;version&gt; feedback”, body “What happened:” plus a footer with the app version, iOS version and device class; when no mail account exists, an alert “Email me at robin@eam360.com”) · <b>Privacy policy</b> (the existing page on GitHub) · then the disclaimer and footer as built. No “built with” line, no app-icon block.</li>
+<li><b>Corrected:</b> the marketing model name (“iPhone 17 Pro”) is not available from <code>UIDevice</code>; the footer says “iPhone” or “iPad”.</li>
+<li><b>Parked (Robin):</b> merge the iOS privacy section into <code>docs/privacy.md</code> on main before the first external upload (the link resolves to main), and the privacy-URL field in App Store Connect.</li></ul></div>
+<div class="q old"><h4>Rev A options · section 8 · settled in the box above</h4><ol>
+<li><b>Rows.</b> <span class="star">Version (with the build number), Share feedback (opens Mail to robin@eam360.com with the version and iOS version filled in), Privacy policy (opens the GitHub page), Made by Robin Richard Rajan</span>. The in-app version text should show "‹version› (‹build›)" so a tester's report names the build.</li>
 <li><b>The privacy URL.</b> The Android policy at github.com/robineam360/Cooldown/blob/main/docs/privacy.md has no iOS section yet; a draft is in <code>release/testflight/privacy-ios-draft.md</code>. Either merge it first, <span class="star">or link the same page and merge the iOS section before the first upload</span>.</li></ol></div>
+
+<h2 id="park">Parked for Robin</h2>
+<table><tr><th>Item</th><th>Why only he can decide</th></tr>
+<tr><td>TestFlight publishing team, App Store Connect role, signing route, bundle-id home (Sedin vs EAM360), version/build bump to 2.0, the upload itself</td><td>Apple account actions and identity.</td></tr>
+<tr><td>Beta App Review notes wording and whether a test account is also offered</td><td>Depends on the account choice and on how Review treats Claude/Gemini sign-ins.</td></tr>
+<tr><td>Merging the iOS privacy section into main before the first external upload; the privacy-URL field</td><td>Touches main and App Store Connect.</td></tr>
+<tr><td>RELEASING.md rule “IPA asset → TestFlight link”</td><td>Release policy.</td></tr>
+<tr><td>The Android half of the Weekly-first share card</td><td>Belongs to the v2.0 Android session; no decision left.</td></tr>
+<tr><td>Android code comment says the expiring line fires at ≤ 3 days, BEHAVIOR-MOBILE §3 says 7</td><td>iOS follows the spec; the mismatch needs a bug entry on the Android side.</td></tr></table>
 
 <h2 id="s9">Not drawn, only decided</h2>
 <div class="scroll"><table>
@@ -338,8 +408,8 @@ const setSample = `${nav('Settings','')}${gh('Accounts')}${grp(R('<span class="m
 $('r7').innerHTML = col('Add account · new row','new',390,addSheet,'One row at the bottom, below the three providers. Works for reviewers and for a tester without an account.') + col('Main screen · banner','new',390,mainSample,'Purple (the same "synthetic" colour as Android\'s band). Exit returns to the real accounts, or to the empty screen if there are none.') + col('Settings · inside the sample','new',390,setSample,'Nothing persistent: no Keychain writes, no widgets, Live Activity or alert scheduling, no history stored.');
 
 /* ---------- 8 · About ---------- */
-const about = `${nav('Settings','')}${gh('About')}<div class="newbox" style="margin:0 12px">${grp(R('Version','2.0 (14)'),R('Made by','Robin Richard Rajan'),R('Share feedback','','',true),R('Privacy policy','','',true))}</div><div class="gf" style="padding-top:10px">Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.</div>${gf('Touch and hold an account to rename it, sign in again or remove it. Drag to reorder: the order is the same everywhere. <span class="tag built">built</span>')}`;
-const mail = `<div class="scrim"><div class="sheetc" style="font-size:13px;width:340px"><h5>New message</h5><div class="fl" style="margin-bottom:6px"><small>To</small>robin@eam360.com</div><div class="fl" style="margin-bottom:6px"><small>Subject</small>Cooldown 2.0 (14) feedback</div><div class="fl" style="height:120px"><small>Message</small><br>What happened:<br><br><span style="color:var(--muted)">— Cooldown 2.0 (14), iOS 26.1, iPhone 17 Pro</span></div></div></div>`;
+const about = `${nav('Settings','')}${gh('About')}<div class="newbox" style="margin:0 12px">${grp(R('Version','‹version› (‹build›)'),R('Made by','Robin Richard Rajan'),R('Share feedback','','',true),R('Privacy policy','','',true))}</div><div class="gf" style="padding-top:10px">Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.</div>${gf('Touch and hold an account to rename it, sign in again or remove it. Drag to reorder: the order is the same everywhere. <span class="tag built">built</span>')}`;
+const mail = `<div class="scrim"><div class="sheetc" style="font-size:13px;width:340px"><h5>New message</h5><div class="fl" style="margin-bottom:6px"><small>To</small>robin@eam360.com</div><div class="fl" style="margin-bottom:6px"><small>Subject</small>Cooldown ‹version› (‹build›) feedback</div><div class="fl" style="height:120px"><small>Message</small><br>What happened:<br><br><span style="color:var(--muted)">— Cooldown ‹version› (‹build›), iOS 26.1, iPhone 17 Pro</span></div></div></div>`;
 $('r8').innerHTML = col('About · iOS list','new',390,about,'Native grouped rows instead of Android\'s centred card (no icon block: the app icon is the Home Screen\'s).') + `<div class="col" style="width:390px"><p class="cap new">Share feedback opens Mail</p>${mail}<p class="note">Subject and the footer carry version, build, iOS and device model, nothing else. If Mail isn\'t set up, a dialog "Email me at robin@eam360.com", as Android\'s fallback.</p></div>`;
 </script>
 </body></html>
