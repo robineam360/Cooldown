@@ -104,7 +104,9 @@ struct RootView: View {
             Group {
                 switch which {
                 case .settings: SettingsScreen(sheet: $sheet)
-                case .addAccount: AddAccountSheet(sheet: $sheet)
+                case .addAccount:
+                    // Adding an account, not signing one in again: forget any earlier "Sign in again" target.
+                    AddAccountSheet(sheet: $sheet).onAppear { model.reauthTarget = nil }
                 case .claudeSignIn: ClaudeSignInSheet()
                 case .chatGPTSignIn: ChatGPTSignInSheet()
                 case .geminiSignIn: GeminiSignInSheet()
@@ -388,7 +390,7 @@ struct TabPage: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 
-    private func signIn(_ account: Account) { sheet = Sheet.signIn(for: account.provider) }
+    private func signIn(_ account: Account) { sheet = model.signInAgain(account) }
 }
 
 /// An iPad account page's header: mark, name, plan chip, and the account's credits on the right.

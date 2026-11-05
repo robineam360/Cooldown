@@ -13,6 +13,8 @@ struct SettingsScreen: View {
     @AppStorage("density") private var density = Density.comfortable.rawValue
     @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
     @State private var renaming: Account?
+    @State private var noMail = false
+    @Environment(\.openURL) private var openURL
     @State private var details: Account?
     @State private var colouring: Account?
     @State private var clearing: Account?
@@ -27,6 +29,10 @@ struct SettingsScreen: View {
     @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
     @AppStorage(Display.Key.themeColour, store: Prefs.defaults) private var themeColour = ThemeColours.perProvider
 
+    private var chevron: some View {
+        Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(p.sub.opacity(0.7))
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -36,8 +42,7 @@ struct SettingsScreen: View {
                         // Headline, Model limits, Details, Clear history); the touch-and-hold menu stays.
                         NavigationLink {
                             AccountPage(account: account, onRename: { renaming = account },
-                                        onSignIn: { sheet = Sheet.signIn(for: account.provider) },
-                                        onRemove: { removing = account })
+                                        onSignIn: { sheet = model.signInAgain(account) })
                         } label: {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
@@ -55,7 +60,7 @@ struct SettingsScreen: View {
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
-                                sheet = Sheet.signIn(for: account.provider)
+                                sheet = model.signInAgain(account)
                             }
                             Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
                             Button("Remove", systemImage: "trash", role: .destructive) { removing = account }
@@ -174,7 +179,19 @@ struct SettingsScreen: View {
                     }
                 } header: { Text("Appearance") }
                 Section {
-                    LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+                    LabeledContent("Version", value: AboutInfo.version())
+                    LabeledContent("Made by", value: AboutInfo.author)
+                    Button {
+                        guard let url = AboutInfo.currentFeedbackURL() else { return }
+                        openURL(url) { accepted in if !accepted { noMail = true } }
+                    } label: {
+                        HStack { Text("Share feedback").foregroundStyle(p.ink); Spacer(); chevron }
+                    }
+                    if let url = URL(string: AboutInfo.privacyURL) {
+                        Link(destination: url) {
+                            HStack { Text("Privacy policy").foregroundStyle(p.ink); Spacer(); chevron }
+                        }
+                    }
                     Text("Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.")
                         .font(.system(size: 13)).foregroundStyle(p.sub)
                 } header: { Text("About") } footer: {
@@ -187,12 +204,12 @@ struct SettingsScreen: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
             .sheet(item: $renaming) { RenameSheet(account: $0) }
+            .alert("Email me at \(AboutInfo.feedbackAddress)", isPresented: $noMail) { Button("OK", role: .cancel) {} }
             .alert("Remove “\(removing?.label ?? "")”?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
                 Button("Cancel", role: .cancel) { removing = nil }
                 Button("Remove account", role: .destructive) { if let r = removing { Task { await model.remove(r.key) } }; removing = nil }
             } message: {
-                Text("This deletes, permanently and only for this account:\n•  the saved sign-in\n•  its cached usage and settings — alerts, credits, reset alerts\n•  8 days of trend history\n•  a year of session and weekly history"
-                     + (model.accounts.count == 1 ? "\n\nThis is your only account. Cooldown goes back to its first-launch screen." : ""))
+                Text(RemoveCopy.message(accountCount: model.accounts.count))
             }
             .alert("Clear usage history?", isPresented: Binding(get: { clearing != nil }, set: { if !$0 { clearing = nil } })) {
                 Button("Cancel", role: .cancel) { clearing = nil }
@@ -265,7 +282,7 @@ struct AccountPage: View {
     /// The Settings screen owns the rename sheet, the sign-in sheets and the Remove alert; the page asks for them.
     var onRename: () -> Void = {}
     var onSignIn: () -> Void = {}
-    var onRemove: () -> Void = {}
+    @State private var removing = false
     @State private var headline = Headline.default
     @State private var tokenExpiry: Int64?
     @State private var modelLimits = true
@@ -385,7 +402,7 @@ struct AccountPage: View {
             }
             if !model.isDemo {
                 Section {
-                    Button { dismiss(); onRemove() } label: { Text("Remove account").frame(maxWidth: .infinity) }
+                    Button { removing = true } label: { Text("Remove account").frame(maxWidth: .infinity) }
                         .foregroundStyle(p.red)
                 }
             }
@@ -397,6 +414,10 @@ struct AccountPage: View {
             tokenExpiry = model.tokenExpiresAtMs(account.key)
         }
         .onChange(of: model.isRefreshing) { tokenExpiry = model.tokenExpiresAtMs(account.key) }
+        .alert("Remove “\(account.label)”?", isPresented: $removing) {
+            Button("Cancel", role: .cancel) {}
+            Button("Remove account", role: .destructive) { let key = account.key; dismiss(); Task { await model.remove(key) } }
+        } message: { Text(RemoveCopy.message(accountCount: model.accounts.count)) }
         .sheet(isPresented: $colouring) { AccentSheet(account: account) }
         .sheet(isPresented: $details) { AccountDetailsSheet(account: account) }
         .alert("Clear usage history?", isPresented: $clearing) {
@@ -599,47 +620,125 @@ struct LockScreenSection: View {
 }
 
 /// History: Android's screen as shipped — per account, 5-hour / 7-day, week by week.
+/// The Remove alert's message (Android's lines, adapted; the last account adds a line about the first-launch screen).
+enum RemoveCopy {
+    static func message(accountCount: Int) -> String {
+        "This deletes, permanently and only for this account:\n•  the saved sign-in\n•  its cached usage and settings — alerts, credits, reset alerts\n•  8 days of trend history\n•  a year of session and weekly history"
+            + (accountCount == 1 ? "\n\nThis is your only account. Cooldown goes back to its first-launch screen." : "")
+    }
+}
+
+/// CCRM-94 (iOS App) parity wireframes rev B §4: History's layout rules.
+enum HistoryLayout {
+    /// iPad (and a wide Split View) shows 5-hour and 7-day side by side from this width.
+    static let twoColumnWidth: CGFloat = 600
+    static func twoColumns(width: CGFloat) -> Bool { width >= twoColumnWidth }
+    static let maxContentWidth: CGFloat = 1100
+
+    static func footnote(twoColumns: Bool, kind: String) -> String {
+        "History is recorded as each window closes, so it fills in over time. Peak "
+            + (twoColumns ? "5h and weekly" : kind == HistoryStats.sessionKind ? "5h" : "weekly")
+            + " readings are sampled when the app checks."
+    }
+}
+
 struct HistoryScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @State private var key: String?
     @State private var kind = HistoryStats.sessionKind
-    @State private var weekIndex = 0
+    @State private var weekIndex5 = 0
+    @State private var weekIndex7 = 0
+    @State private var width: CGFloat = 0
+
+    private func index(_ kind: String) -> Binding<Int> {
+        kind == HistoryStats.sessionKind ? $weekIndex5 : $weekIndex7
+    }
 
     var body: some View {
         let account = model.account(key ?? model.selectedKey) ?? model.accounts.first
+        let state = account.flatMap { model.states[$0.key] }
+        // A plan with no 5-hour window has one pane at every width (no picker, no columns).
+        let usage = account.flatMap { model.usage($0.key) }
+        let hasSession = usage == nil || usage?.session != nil
+        let two = hasSession && HistoryLayout.twoColumns(width: width)
+        let activeKind = hasSession ? kind : HistoryStats.weeklyKind
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                AccountTabs(accounts: model.accounts, selected: Binding(get: { account?.key }, set: { key = $0; weekIndex = 0 }))
+                AccountTabs(accounts: model.accounts, selected: Binding(get: { account?.key }, set: { key = $0; weekIndex5 = 0; weekIndex7 = 0 }))
                     .padding(.horizontal, -16)
-                Picker("Window", selection: $kind) {
-                    Text("5-hour").tag(HistoryStats.sessionKind)
-                    Text("7-day").tag(HistoryStats.weeklyKind)
+                if let account {
+                    if two {
+                        HStack(alignment: .top, spacing: 16) {
+                            pane(account, kind: HistoryStats.sessionKind, heading: "5-hour windows", state: state, two: true)
+                            pane(account, kind: HistoryStats.weeklyKind, heading: "7-day windows", state: state, two: true)
+                        }
+                    } else {
+                        if hasSession {
+                            Picker("Window", selection: $kind) {
+                                Text("5-hour").tag(HistoryStats.sessionKind)
+                                Text("7-day").tag(HistoryStats.weeklyKind)
+                            }
+                            .pickerStyle(.segmented).frame(width: 200)
+                        }
+                        pane(account, kind: activeKind, heading: nil, state: state, two: false)
+                    }
                 }
-                .pickerStyle(.segmented).frame(width: 200)
-                .onChange(of: kind) { weekIndex = 0 }
-                if let account { weekCard(account) }
-                Text("History is recorded as each window closes, so it fills in over time. Peak \(kind == HistoryStats.sessionKind ? "5h" : "weekly") readings are sampled when the app checks.")
+                Text(HistoryLayout.footnote(twoColumns: two, kind: activeKind))
                     .font(.system(size: 13.5)).foregroundStyle(p.txt)
             }
+            .frame(maxWidth: HistoryLayout.maxContentWidth)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, 16).padding(.top, 8)
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(p.bg.ignoresSafeArea())
         .navigationTitle("Usage history")
         .navigationBarTitleDisplayMode(.large)
     }
 
-    @ViewBuilder private func weekCard(_ account: Account) -> some View {
-        let weeks = HistoryStats.weeks(bars: bars(account), timeZone: .current)
-        let index = min(weekIndex, max(weeks.count - 1, 0))
+    /// One window kind's column: an optional heading, Plan Fit on the 7-day side, then the week card.
+    @ViewBuilder private func pane(_ account: Account, kind: String, heading: String?, state: AccountState?, two: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let heading {
+                Text(heading).font(.system(size: 14, weight: .semibold)).foregroundStyle(account.accent(scheme)).padding(.leading, 4)
+            }
+            if kind == HistoryStats.weeklyKind, state?.lastKind != "plan" { planFit(account, two: two) }
+            weekCard(account, kind: kind, index: index(kind))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Android's Plan Fit block (iOS subset: no plan or model tags on history records yet, so the plan is the live one and
+    /// the cap is the generic "the cap"). Shown for a new account too, hidden for a plan-refused one (caller).
+    @ViewBuilder private func planFit(_ account: Account, two: Bool) -> some View {
+        let reading = PlanFit.evaluate(records: model.records[account.key] ?? [], nowMs: model.nowMs)
+        let st = model.states[account.key]
+        let live = st?.plan.map { PlanNames.display(account.provider, $0, tier: st?.tier) }
+        let lines = PlanFitCopy.build(reading, fallbackPlan: live, compact: !two)
+        VStack(alignment: .leading, spacing: 0) {
+            Text(lines.header).font(.system(size: 11, weight: .semibold)).foregroundStyle(p.sub)
+            Text(lines.reading).font(.system(size: 15, weight: .semibold)).foregroundStyle(p.ink).padding(.top, 2)
+            Text(lines.evidence).font(.system(size: 13)).foregroundStyle(p.sub).padding(.top, 2)
+            if let five = lines.fiveHourLine { Text(five).font(.system(size: 13)).foregroundStyle(p.sub).padding(.top, 2) }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(p.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder private func weekCard(_ account: Account, kind: String, index weekIndex: Binding<Int>) -> some View {
+        let weeks = HistoryStats.weeks(bars: bars(account, kind: kind), timeZone: .current)
+        let index = min(weekIndex.wrappedValue, max(weeks.count - 1, 0))
         CardBox {
             if weeks.isEmpty {
                 Text("No closed windows yet.").foregroundStyle(p.txt).frame(maxWidth: .infinity)
             } else {
                 let week = weeks[index]
                 HStack {
-                    Button { weekIndex = index + 1 } label: { Image(systemName: "chevron.left") }
+                    Button { weekIndex.wrappedValue = index + 1 } label: { Image(systemName: "chevron.left") }
                         .disabled(index + 1 >= weeks.count).accessibilityLabel("Earlier week")
                     VStack(spacing: 2) {
                         Text(index == 0 ? "This week" : index == 1 ? "Last week" : HistoryContent.weekTitle(mondayISO: week.monday))
@@ -647,7 +746,7 @@ struct HistoryScreen: View {
                         Text(range(week.monday)).font(.system(size: 14)).foregroundStyle(p.txt)
                     }
                     .frame(maxWidth: .infinity)
-                    Button { weekIndex = index - 1 } label: { Image(systemName: "chevron.right") }
+                    Button { weekIndex.wrappedValue = index - 1 } label: { Image(systemName: "chevron.right") }
                         .disabled(index == 0).accessibilityLabel("Later week")
                 }
                 .foregroundStyle(p.ink)
@@ -673,7 +772,7 @@ struct HistoryScreen: View {
         }
     }
 
-    private func bars(_ account: Account) -> [HistoryStats.Bar] {
+    private func bars(_ account: Account, kind: String) -> [HistoryStats.Bar] {
         let records = model.records[account.key] ?? []
         let usage = model.usage(account.key)
         let window = kind == HistoryStats.sessionKind ? usage?.session : usage?.weekly

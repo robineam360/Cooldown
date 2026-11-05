@@ -161,3 +161,91 @@ enum Fixtures {
     /// The captured credits shape: $123.90 of $400.00.
     static let claudeWithCredits = #"{"five_hour":{"utilization":4.0,"resets_at":"2026-09-16T11:29:59.851590+00:00"},"spend":{"used":{"amount_minor":12390,"currency":"USD","exponent":2},"limit":{"amount_minor":40000,"currency":"USD","exponent":2},"percent":31,"severity":"normal","enabled":true}}"#
 }
+
+/// CCRM-94 (iOS App) parity wireframes rev B §5: the credits card's three shapes.
+@Suite("Credits card (parity rev B)")
+struct CreditsCardTests {
+    func credits(used: Int64, limit: Int64?, balance: Int64? = nil) -> SpendCredits {
+        SpendCredits(usedMinor: used, limitMinor: limit, exponent: 2, currency: "USD", serverSeverity: nil, balanceMinor: balance)
+    }
+
+    @Test("capped, money left: amounts, rounded percent, bar, money left and the cover line")
+    func capped() throws {
+        let c = try #require(CardContent.creditsCard(credits(used: 957, limit: 4000)))
+        #expect(c.amounts == "$9.57 / $40.00" && c.figure == "24%" && c.showsInfo)
+        #expect(c.footer == "$30.43 left · covers you when you hit your plan limits" && !c.footerAlarm)
+        #expect(abs((c.barPct ?? 0) - 23.925) < 0.001)
+    }
+
+    @Test("capped and all spent: red footer, bar full")
+    func spent() throws {
+        let c = try #require(CardContent.creditsCard(credits(used: 4000, limit: 4000)))
+        #expect(c.figure == "100%" && c.footerAlarm && c.barPct == 100)
+        #expect(c.footer == "All credits spent — nothing left to cover plan overruns")
+        #expect(try #require(CardContent.creditsCard(credits(used: 5000, limit: 4000))).barPct == 100)
+    }
+
+    @Test("balance only and no cap: no bar, no info glyph")
+    func noCap() throws {
+        let b = try #require(CardContent.creditsCard(credits(used: 0, limit: nil, balance: 1240)))
+        #expect(b.amounts == "$12.40 balance" && b.figure == "No cap" && !b.showsInfo && b.barPct == nil)
+        #expect(b.footer == "Covers you when you hit your plan limits")
+        let s = try #require(CardContent.creditsCard(credits(used: 957, limit: nil)))
+        #expect(s.amounts == "$9.57 spent" && s.figure == "No cap" && s.barPct == nil)
+        #expect(s.footer == "No monthly spend limit — credits cover you when you hit your plan limits")
+        #expect(CardContent.creditsCard(credits(used: 0, limit: nil)) == nil)
+        #expect(CardContent.creditsCard(nil) == nil)
+    }
+
+    @Test("the provenance note says the figure is computed, not an estimate")
+    func provenance() {
+        #expect(CardContent.CreditsCardContent.provenance == "Computed from the exact amounts — finer than the server’s rounded figure, not an estimate.")
+    }
+}
+
+/// CCRM-94 (iOS App) parity wireframes rev B §4: History's width rule and footnote.
+@Suite("History layout (parity rev B)")
+struct HistoryLayoutTests {
+    @Test("two columns from 600 pt, one below")
+    func columns() {
+        #expect(HistoryLayout.twoColumns(width: 600))
+        #expect(!HistoryLayout.twoColumns(width: 599))
+        #expect(HistoryLayout.twoColumns(width: 744) && !HistoryLayout.twoColumns(width: 390))
+    }
+
+    @Test("the footnote names the pane's kind, or both when the columns are side by side")
+    func footnote() {
+        #expect(HistoryLayout.footnote(twoColumns: false, kind: HistoryStats.sessionKind).contains("Peak 5h readings are sampled"))
+        #expect(HistoryLayout.footnote(twoColumns: false, kind: HistoryStats.weeklyKind).contains("Peak weekly readings are sampled"))
+        #expect(HistoryLayout.footnote(twoColumns: true, kind: HistoryStats.sessionKind).contains("Peak 5h and weekly readings are sampled when the app checks."))
+    }
+}
+
+/// CCRM-94 (iOS App) parity wireframes rev B §5: the chart's curve fill, split at the even-pace diagonal.
+@Suite("Chart fill split (parity rev B)")
+struct ChartFillTests {
+    @Test("a curve that stays under the diagonal has no overshoot")
+    func under() {
+        let r = TrendChart.splitFill([CGPoint(x: 0, y: 0), CGPoint(x: 0.5, y: 20), CGPoint(x: 1, y: 60)])
+        #expect(r.above.isEmpty)
+        #expect(r.below.count == 3 && r.below.allSatisfy { $0.y <= 100 * $0.x + 1e-9 })
+    }
+
+    @Test("a curve past the diagonal gets an overshoot polygon between the curve and the diagonal, from the crossing")
+    func over() throws {
+        // Starts under (x 0.1, 5% < 10), ends over (x 0.5, 80% > 50).
+        let r = TrendChart.splitFill([CGPoint(x: 0.1, y: 5), CGPoint(x: 0.3, y: 20), CGPoint(x: 0.5, y: 80)])
+        let poly = try #require(r.above.first)
+        #expect(r.above.count == 1)
+        let first = try #require(poly.first)
+        #expect(abs(Double(first.y) - 100 * Double(first.x)) < 1e-6)       // begins at the crossing, on the diagonal
+        #expect(poly.contains { $0.y > 100 * $0.x + 1 })                     // and reaches above it
+        #expect(r.below.allSatisfy { $0.y <= 100 * $0.x + 1e-9 })           // the lower fill never crosses the diagonal
+    }
+
+    @Test("fewer than two samples: nothing to split")
+    func tiny() {
+        #expect(TrendChart.splitFill([]).above.isEmpty)
+        #expect(TrendChart.splitFill([CGPoint(x: 0.2, y: 90)]).above.isEmpty)
+    }
+}

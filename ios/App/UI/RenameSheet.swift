@@ -12,7 +12,7 @@ struct RenameSheet: View {
 
     init(account: Account) {
         self.account = account
-        _text = State(initialValue: account.label)
+        _text = State(initialValue: String(account.label.prefix(AccountEmail.nameLimit)))
     }
 
     var body: some View {

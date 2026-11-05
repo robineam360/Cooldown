@@ -235,8 +235,13 @@ public actor UsageRepository {
             state.reauthNeeded = true
             return finish(key, &state, .authNeeded, at: t0)
         }
+        // Android maps a renewal failure the same way (UsageRepository.kt): "HTTP <code>" is the server's, anything
+        // else a transport failure — never the red "something went wrong in the app" notice.
+        if state.lastMessage.hasPrefix("HTTP "), let code = Int(state.lastMessage.dropFirst(5).prefix { $0.isNumber }) {
+            return finish(key, &state, .server(code: code), at: t0)
+        }
         let detail = state.lastMessage.isEmpty ? "" : " (\(state.lastMessage))"
-        return finish(key, &state, .error("token refresh failed\(detail) — will retry"), at: t0)
+        return finish(key, &state, .network("token refresh failed\(detail) — will retry"), at: t0)
     }
 
     // MARK: - Plan

@@ -215,6 +215,7 @@ final class AppModel {
     }
 
     func remove(_ key: String) async {
+        if reauthTarget == key { reauthTarget = nil }
         await repo?.forget(key)
         accounts.removeAll { $0.key == key }
         // The account on screen went: the All tab where it shows, else the first account (validSelection).
@@ -223,7 +224,29 @@ final class AppModel {
         reload()
     }
 
+    /// The account a "Sign in again" is for: the next grant of its provider replaces its credentials instead of adding an
+    /// account. Cleared by the Add-account sheet and when the account goes.
+    var reauthTarget: String?
+
+    /// Starts a "Sign in again": remembers the account, and returns the provider's sign-in sheet.
+    func signInAgain(_ account: Account) -> Sheet {
+        reauthTarget = account.key
+        return Sheet.signIn(for: account.provider)
+    }
+
     private func addAccount(provider: Provider, grant: TokenGrant) async throws {
+        // Signing in again: the same account, new credentials (clears "sign-in stopped", restarts the 30-day clock).
+        if let target = reauthTarget, let i = accounts.firstIndex(where: { $0.key == target && $0.provider == provider }) {
+            reauthTarget = nil
+            try await repo?.adopt(grant, profileKey: target)
+            accounts[i].addedAtMs = Self.clock()
+            selectedKey = target
+            save()
+            _ = await repo?.refresh(target, manual: true)
+            reload()
+            await Surfaces.update(self)
+            return
+        }
         let key = "\(provider.rawValue)-\(UUID().uuidString.prefix(8).lowercased())"
         try await repo?.adopt(grant, profileKey: key)
         let count = accounts.filter { $0.provider == provider }.count

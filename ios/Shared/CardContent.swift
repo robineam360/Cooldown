@@ -199,6 +199,41 @@ enum CardContent {
         return nil
     }
 
+    /// CCRM-94 (iOS App) parity wireframes rev B §5: the credits card in Android's three shapes (capped, capped and spent,
+    /// no cap / balance), with the footer line and the provenance note. The percentage rounds (window figures truncate).
+    struct CreditsCardContent: Equatable {
+        var amounts: String
+        /// "24%" or "No cap"; bold at the right.
+        var figure: String
+        /// The info glyph (and the provenance note) belong to a computed percentage only.
+        var showsInfo: Bool
+        /// The bar's fill, 0-100; nil draws no bar (no ceiling to measure against).
+        var barPct: Double?
+        var footer: String
+        var footerAlarm: Bool
+        static let provenance = "Computed from the exact amounts — finer than the server’s rounded figure, not an estimate."
+    }
+
+    static func creditsCard(_ credits: SpendCredits?) -> CreditsCardContent? {
+        guard let credits, credits.isReportable else { return nil }
+        func money(_ minor: Int64) -> String { Fmt.money(minorUnits: minor, exponent: credits.exponent, currencyCode: credits.currency) }
+        if credits.hasLimit, let limit = credits.limitMinor, let pct = credits.percentDisplay, let exact = credits.percent {
+            let spent = pct >= 100
+            let left = money(credits.remainingMinor ?? 0)
+            return CreditsCardContent(
+                amounts: "\(money(credits.usedMinor)) / \(money(limit))", figure: "\(pct)%", showsInfo: true,
+                barPct: min(100, exact),
+                footer: spent ? "All credits spent — nothing left to cover plan overruns" : "\(left) left · covers you when you hit your plan limits",
+                footerAlarm: spent)
+        }
+        if let balance = credits.balanceMinor {
+            return CreditsCardContent(amounts: "\(money(balance)) balance", figure: "No cap", showsInfo: false, barPct: nil,
+                                      footer: "Covers you when you hit your plan limits", footerAlarm: false)
+        }
+        return CreditsCardContent(amounts: "\(money(credits.usedMinor)) spent", figure: "No cap", showsInfo: false, barPct: nil,
+                                  footer: "No monthly spend limit — credits cover you when you hit your plan limits", footerAlarm: false)
+    }
+
     // MARK: - Times, written the Android way: "9:50 pm", "Thu 9:50 pm", "13 Oct"
 
     static func clock(_ ms: Int64, _ use24h: Bool, _ tz: TimeZone) -> String {
@@ -241,6 +276,11 @@ enum SignInExpiry {
     static func expiresAtMs(provider: Provider, addedAtMs: Int64?) -> Int64? {
         guard provider == .claude, let added = addedAtMs else { return nil }
         return added + lifetimeMs
+    }
+
+    /// "expires in 5d 3h", or "may expire any moment" once the estimate has run out (the real token can outlive it).
+    static func phrase(leftMs: Int64) -> String {
+        leftMs < 60_000 ? "may expire any moment" : "expires in \(Fmt.compactDuration(ms: leftMs))"
     }
 
     /// Time left, when the sign-in is within the warning window (and not already broken).
@@ -293,10 +333,8 @@ struct Notice: Equatable {
                           body: "Cooldown won’t guess. An app update may be needed.", action: nil, tone: .warning,
                           evidence: state.lastMessage.hasPrefix("Reply held") ? state.lastMessage : nil)
         case "rateLimited", "backedOff":
-            var evidence = state.lastMessage
-            if state.backoffUntilMs > nowMs {
-                evidence += (evidence.isEmpty ? "" : " · ") + "next try ~\(CardContent.clock(state.backoffUntilMs, use24h, timeZone))"
-            }
+            // The title already says "rate limited"; the evidence is the retry time alone.
+            let evidence = state.backoffUntilMs > nowMs ? "next try ~\(CardContent.clock(state.backoffUntilMs, use24h, timeZone))" : ""
             return Notice(title: "Rate limited — backing off, retries on its own.", body: "", action: nil, tone: .warning,
                           evidence: detail(evidence))
         case "network":
@@ -322,7 +360,7 @@ struct Notice: Equatable {
                           action: nil, tone: .warning)
         }
         if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: state.reauthNeeded, nowMs: nowMs) {
-            return Notice(title: "Sign-in expires in \(Fmt.compactDuration(ms: left))",
+            return Notice(title: "Sign-in \(SignInExpiry.phrase(leftMs: left))",
                           body: "Sign in again to keep polling going.", action: "Sign in again", tone: .quiet)
         }
         return nil
@@ -368,7 +406,7 @@ enum AccountStatus {
             rows.append(Condition(text: "Sign-in stopped working — \(provider == .chatgpt ? "sign in with a code" : "sign in again") below.", tone: .red))
         }
         if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: state.reauthNeeded, nowMs: nowMs) {
-            rows.append(Condition(text: "Sign-in expires in \(Fmt.compactDuration(ms: left)) — sign in again to keep polling going.", tone: .amber))
+            rows.append(Condition(text: "Sign-in \(SignInExpiry.phrase(leftMs: left)) — sign in again to keep polling going.", tone: .amber))
         }
         if state.backoffUntilMs > nowMs {
             rows.append(Condition(text: "Rate-limited — next try in \(Fmt.compactDuration(ms: state.backoffUntilMs - nowMs))", tone: .red))
@@ -380,8 +418,22 @@ enum AccountStatus {
     static func listWord(provider: Provider, state: AccountState, addedAtMs: Int64?, nowMs: Int64) -> (text: String, tone: Condition.Tone?) {
         if state.reauthNeeded { return ("Sign in again", .amber) }
         if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: false, nowMs: nowMs) {
-            return ("Expires in \(Fmt.compactDuration(ms: left))", .amber)
+            return (left < 60_000 ? "Expiring now" : "Expires in \(Fmt.compactDuration(ms: left))", .amber)
         }
         return ("Signed in", nil)
+    }
+}
+
+/// CCRM-94 (iOS App) parity wireframes rev B §6 (CCRM-24 (Share Card), Weekly first): which window the share card leads with.
+/// The Headline decides, through the same rule the widgets and the notification use, so the card can never disagree with
+/// them: Weekly by default, the 5h under Headline 5-hour or when Auto sees the 5h binding. A spent week always leads,
+/// whatever the Headline. A plan with no 5h window has the one row. The ring stays the 5h gauge (Weekly only when there is
+/// no 5h).
+enum ShareCardPlan {
+    static func order(headline: Headline, hasSession: Bool, sessionBinding: Bool, weeklySpent: Bool) -> [WindowKind] {
+        guard hasSession else { return [.weekly] }
+        if weeklySpent { return [.weekly, .session] }
+        let lead = HeadlineRule.lead(setting: headline, surface: .notification, hasSession: true, sessionBinding: sessionBinding)
+        return lead == .session ? [.session, .weekly] : [.weekly, .session]
     }
 }

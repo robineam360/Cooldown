@@ -199,25 +199,44 @@ struct WeeklyCard: View {
     }
 }
 
+/// CCRM-94 (iOS App) parity rev B §5: Android's credits card — title and amounts, the figure (tap the percentage for where
+/// it comes from), a bar without a pace tick, and a footer line.
 struct CreditsCard: View {
-    let text: String
-    let pct: Int?
-    let isBalance: Bool
+    let content: CardContent.CreditsCardContent
+    let accent: Color
     @Environment(\.palette) private var p
+    @State private var showsProvenance = false
     var body: some View {
         CardBox {
-            HStack(spacing: 8) {
-                Text(isBalance ? "Credits" : "Usage credits").fontWeight(isBalance ? .regular : .semibold).foregroundStyle(p.txt)
-                if !isBalance { Text(text).foregroundStyle(p.txt) }
-                Spacer()
-                if isBalance {
-                    Text(text).fontWeight(.semibold)
-                } else if let pct {
-                    Text("\(pct)%").fontWeight(.bold)
-                    Image(systemName: "info.circle").foregroundStyle(p.sub).font(.system(size: 14))
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 8) {
+                    Text("Usage credits").fontWeight(.semibold).foregroundStyle(p.txt)
+                    Text(content.amounts).foregroundStyle(p.txt).lineLimit(1).minimumScaleFactor(0.8)
+                    Spacer()
+                    if content.showsInfo {
+                        Button { showsProvenance.toggle() } label: {
+                            HStack(spacing: 4) {
+                                Text(content.figure).font(.system(size: 17, weight: .bold)).foregroundStyle(p.ink)
+                                Image(systemName: "info.circle").foregroundStyle(p.sub).font(.system(size: 14))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(content.figure) used. Show where this figure comes from")
+                    } else {
+                        Text(content.figure).font(.system(size: 17, weight: .bold)).foregroundStyle(p.ink)
+                    }
+                }
+                .font(.system(size: 16))
+                if let pct = content.barPct {
+                    UsageBar(pct: pct, pace: nil, accent: accent, height: 9).padding(.top, 8)
+                }
+                Text(content.footer).font(.system(size: 12.5)).foregroundStyle(content.footerAlarm ? p.red : p.sub).padding(.top, 6)
+                if showsProvenance && content.showsInfo {
+                    Text(CardContent.CreditsCardContent.provenance).font(.system(size: 13)).foregroundStyle(p.sub)
+                        .padding(.horizontal, 9).padding(.vertical, 6)
+                        .background(p.fill, in: RoundedRectangle(cornerRadius: 8, style: .continuous)).padding(.top, 8)
                 }
             }
-            .font(.system(size: 16))
         }
     }
 }
@@ -426,8 +445,8 @@ struct AccountCards: View {
         case .session, .weekly:
             tile(accent: accent, notice: notice, inMore: folded)
         case .credits:
-            if Display.creditsVisible(account.key), let credits = CardContent.credits(model.usage(account.key)?.credits) {
-                CreditsCard(text: credits.text, pct: credits.pct, isBalance: credits.pct == nil)
+            if Display.creditsVisible(account.key), let credits = CardContent.creditsCard(model.usage(account.key)?.credits) {
+                CreditsCard(content: credits, accent: accent)
             }
         }
     }

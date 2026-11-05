@@ -190,11 +190,22 @@ struct UsageRepositoryTests {
     func renewalStuck() async {
         let h = Harness(expiresAtMs: t0 + 60_000)
         h.api.queueRenewal(HTTPResult(code: 500, body: ""), HTTPResult(code: 500, body: ""))
+        // Android maps a refused-but-transient renewal to the server's error (never the red "something went wrong").
         let first = await h.repo.refresh("teams", manual: false).outcome
-        guard case .error(let detail) = first else { Issue.record("expected an error, got \(first)"); return }
-        #expect(detail.contains("will retry"))
+        #expect(first == .server(code: 500))
+        #expect(await h.repo.state("teams").lastKind == "server")
         h.clock.advance(seconds: 6 * 3600 + 1)
         #expect(await h.repo.refresh("teams", manual: false).outcome == .authNeeded)
+    }
+
+    @Test("a renewal that fails without an HTTP status reads as a network error, not an app bug")
+    func renewalNetwork() async {
+        let h = Harness(expiresAtMs: t0 + 60_000)
+        h.api.queueRenewal(HTTPResult(code: 200, body: "not json"))
+        let outcome = await h.repo.refresh("teams", manual: false).outcome
+        guard case .network(let detail) = outcome else { Issue.record("expected network, got \(outcome)"); return }
+        #expect(detail.contains("will retry"))
+        #expect(await h.repo.state("teams").lastKind == "network")
     }
 
     @Test("Free plan 403: parked, the snapshot dropped, then only the profile is read until the plan changes")

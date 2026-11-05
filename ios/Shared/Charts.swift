@@ -82,6 +82,38 @@ struct TrendChart: View {
     /// time runs top to bottom, with the times down the right edge.
     var down = Display.chartDown
     @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    /// CCRM-94 (iOS App) parity wireframes rev B §5, Android's curve fill: the area under the curve split at the even-pace
+    /// diagonal (y = 100x in the chart's own units, x in 0…1 of the window, y in percent). `below` is the area under
+    /// whichever is lower, the curve or the diagonal; `above` holds one polygon per stretch where the curve runs past the
+    /// diagonal — the overshoot — between the curve and the diagonal. No sample past the diagonal gives no `above`.
+    nonisolated static func splitFill(_ samples: [CGPoint]) -> (below: [CGPoint], above: [[CGPoint]]) {
+        guard samples.count >= 2 else { return (samples, []) }
+        func gap(_ q: CGPoint) -> Double { Double(q.y) - 100 * Double(q.x) }
+        var seq: [CGPoint] = [samples[0]]
+        for i in 1..<samples.count {
+            let a = samples[i - 1], b = samples[i]
+            let da = gap(a), db = gap(b)
+            if da * db < 0 {
+                let t = CGFloat(da / (da - db))
+                seq.append(CGPoint(x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y)))
+            }
+            seq.append(b)
+        }
+        let below = seq.map { CGPoint(x: $0.x, y: min($0.y, 100 * $0.x)) }
+        var above: [[CGPoint]] = []
+        var run: [CGPoint] = []
+        func flush() {
+            if run.contains(where: { gap($0) > 1e-9 }) {
+                above.append(run + run.reversed().map { CGPoint(x: $0.x, y: 100 * $0.x) })
+            }
+            run = []
+        }
+        for q in seq { if gap(q) >= -1e-9 { run.append(q) } else { flush() } }
+        flush()
+        return (below, above)
+    }
 
     var body: some View {
         Canvas { ctx, size in
@@ -120,13 +152,25 @@ struct TrendChart: View {
             ctx.stroke(line(P(0, 0), P(1, 0)), with: .color(p.line), lineWidth: 1)
 
             let pts = model.samples.map { P($0.x, $0.y) }
+            // Rev B §5: the pace wash first — a faint red triangle above the even-pace diagonal, only while over pace.
+            if model.over {
+                let wash = Path { $0.move(to: P(0, 0)); $0.addLine(to: P(1, 100)); $0.addLine(to: P(0, 100)); $0.closeSubpath() }
+                ctx.fill(wash, with: .color(p.red.opacity(scheme == .dark ? 0.10 : 0.07)))
+            }
             if let first = model.samples.first, let last = model.samples.last {
-                var area = Path()
-                area.move(to: P(first.x, 0))
-                pts.forEach { area.addLine(to: $0) }
-                area.addLine(to: P(last.x, 0))
-                area.closeSubpath()
-                ctx.fill(area, with: .color(accent.opacity(0.24)))
+                let split = Self.splitFill(model.samples)
+                var below = Path()
+                below.move(to: P(first.x, 0))
+                split.below.forEach { below.addLine(to: P($0.x, $0.y)) }
+                below.addLine(to: P(last.x, 0))
+                below.closeSubpath()
+                ctx.fill(below, with: .color(accent.opacity(scheme == .dark ? 0.20 : 0.18)))
+                for polygon in split.above {
+                    var path = Path()
+                    path.addLines(polygon.map { P($0.x, $0.y) })
+                    path.closeSubpath()
+                    ctx.fill(path, with: .color(p.orange.opacity(scheme == .dark ? 0.34 : 0.30)))
+                }
             }
             ctx.stroke(line(P(0, 0), P(1, 100)), with: .color(p.pace), style: StrokeStyle(lineWidth: 2.6, dash: [5, 4]))
             if let nowX = model.nowX {
@@ -150,12 +194,12 @@ struct TrendChart: View {
                 }
                 var path = Path()
                 path.addLines(pts)
-                ctx.stroke(path, with: .color(model.over ? p.red : accent), style: StrokeStyle(lineWidth: 2.2, lineJoin: .round))
+                ctx.stroke(path, with: .color(accent), style: StrokeStyle(lineWidth: 2.2, lineJoin: .round))
                 for pt in pts.dropLast() {
                     ctx.fill(Path(ellipseIn: CGRect(x: pt.x - 2.4, y: pt.y - 2.4, width: 4.8, height: 4.8)), with: .color(accent))
                 }
                 ctx.fill(Path(ellipseIn: CGRect(x: lastPt.x - 5, y: lastPt.y - 5, width: 10, height: 10)),
-                         with: .color(model.over ? p.red : accent))
+                         with: .color(accent))
                 if down {
                     // Right of the dot, unless that would run into the times.
                     let roomy = lastPt.x < right - 40

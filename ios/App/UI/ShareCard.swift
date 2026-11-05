@@ -10,6 +10,11 @@ struct ShareCardView: View {
     let history: [HistoryPoint]
     let fetchedAtMs: Int64
     let nowMs: Int64
+    /// CCRM-96 (Weekly First): the account's Headline and whether its 5h is the binding window, for the row order.
+    var headline: Headline = .default
+    var sessionBinding = false
+    /// Sample data: the card carries Android's synthetic band, so made-up numbers can't pass for a real share.
+    var sample = false
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
@@ -17,8 +22,18 @@ struct ShareCardView: View {
         let accent = account.accent(scheme)
         let five = CardContent.window(title: "5h", window: usage.session, kind: HistoryStats.sessionKind, history: history, nowMs: nowMs, use24h: Display.use24h)
         let week = CardContent.window(title: "Weekly", window: usage.weekly, kind: HistoryStats.weeklyKind, history: history, nowMs: nowMs, use24h: Display.use24h)
+        let order = ShareCardPlan.order(headline: headline, hasSession: five != nil, sessionBinding: sessionBinding,
+                                        weeklySpent: Pace.isSpent(usage.weekly?.percent))
+        let rows: [WindowContent] = order.compactMap { $0 == .session ? five : week }
+        let spent = order.first == .weekly && order.count == 2   // a spent week leads and greys the 5h
         VStack(alignment: .leading, spacing: 0) {
+            if sample {
+                Text("● SAMPLE DATA").font(.system(size: 8.5, weight: .bold)).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 16).background(Color(red: 0.486, green: 0.302, blue: 1.0))
+                    .padding(.horizontal, -20).padding(.top, -20).padding(.bottom, 20)
+            }
             HStack(spacing: 14) {
+                // The ring is the 5h gauge; Weekly only when the plan has no 5h window.
                 UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 7) {
@@ -28,12 +43,15 @@ struct ShareCardView: View {
                     Text(asOf).font(.system(size: 13)).foregroundStyle(p.sub).fixedSize(horizontal: false, vertical: true)
                 }
             }
-            if let five { row(five, accent: accent).padding(.top, 18) }
-            if let week { row(week, accent: accent).padding(.top, 14) }
+            ForEach(Array(rows.enumerated()), id: \.offset) { i, c in
+                row(c, accent: accent, figure: i == 0 ? 24 : 19, spentWeek: spent && c.isWeekly && Pace.isSpent(c.pct),
+                    greyed: spent && i == 1 && Pace.isSpent(rows[0].pct))
+                    .padding(.top, i == 0 ? 18 : 14)
+            }
             Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 14)
-            // A weekly-only plan has no 5h window: its Weekly trend takes the chart.
-            Text(five == nil ? "Weekly trend" : "5h trend").font(.system(size: 13)).foregroundStyle(p.sub)
-            if let chart = (five ?? week)?.chart {
+            // The trend follows the lead window; a weekly-only plan's is the Weekly.
+            Text("\(rows.first?.title ?? "Weekly") trend").font(.system(size: 13)).foregroundStyle(p.sub)
+            if let chart = rows.first?.chart {
                 TrendChart(model: chart, accent: accent).frame(height: 130).padding(.top, 6)
             }
             Text("COOLDOWN").font(.system(size: 11, weight: .medium)).tracking(1.5).foregroundStyle(p.sub).padding(.top, 14)
@@ -41,25 +59,28 @@ struct ShareCardView: View {
         .padding(20)
         .frame(width: 300)
         .background(p.bg)
+        .clipped()
     }
 
-    private func row(_ c: WindowContent, accent: Color) -> some View {
+    private func row(_ c: WindowContent, accent: Color, figure: CGFloat, spentWeek: Bool, greyed: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Display.pctText(c.pct, pace: c.pace, size: 19).font(.system(size: 19, weight: .bold)).foregroundStyle(p.ink)
+                Display.pctText(c.pct, pace: c.pace, size: figure).font(.system(size: figure, weight: .bold)).foregroundStyle(spentWeek ? p.red : p.ink)
             }
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 10)
             HStack {
                 // v2.0: Weekly reads its band words; the 5h (no Pace) its projection.
-                Text(c.notStarted ? c.resetsIn : (c.paceLine.isEmpty ? (c.projectionFold.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "") : c.paceLine)).foregroundStyle(c.paceLineAlarm ? p.red : p.sub)
+                // A greyed 5h (the week is spent) leaves its phrase slot empty and keeps its reset.
+                Text(greyed ? "" : c.notStarted ? c.resetsIn : (c.paceLine.isEmpty ? (c.projectionFold.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "") : c.paceLine)).foregroundStyle(c.paceLineAlarm || spentWeek ? p.red : p.sub)
                 Spacer()
                 Text(c.resetsAt.replacingOccurrences(of: "Resets at ", with: "Resets ")).foregroundStyle(p.sub)
             }
             .font(.system(size: 12.5))
         }
+        .opacity(greyed ? 0.45 : 1)
     }
 
     /// "as of 6:26 pm, Thu 23 Oct" — the reading's own time, never the moment of sharing.
@@ -108,8 +129,11 @@ struct ShareSheet: View {
     private var card: ShareCardView? {
         guard let account = model.account(accountKey), let usage = model.usage(accountKey),
               let snapshot = model.snapshots[accountKey] else { return nil }
+        let face = Face.build(account: account, snapshot: snapshot, state: model.states[accountKey] ?? AccountState(),
+                              history: model.histories[accountKey] ?? [], nowMs: model.nowMs)
         return ShareCardView(account: account, usage: usage, history: model.histories[accountKey] ?? [],
-                             fetchedAtMs: snapshot.fetchedAtMs, nowMs: model.nowMs)
+                             fetchedAtMs: snapshot.fetchedAtMs, nowMs: model.nowMs,
+                             headline: Prefs.headline(accountKey), sessionBinding: face.sessionBinding, sample: model.isDemo)
     }
 
     private func render(_ card: ShareCardView) -> UIImage? {

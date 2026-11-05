@@ -42,7 +42,7 @@ struct NoticeParityTests {
         var limited = state("rateLimited", message: "HTTP 429"); limited.backoffUntilMs = now + 40 * 60_000
         let rl = try #require(notice(limited))
         #expect(rl.title == "Rate limited — backing off, retries on its own." && rl.action == nil)
-        #expect(rl.evidence?.hasPrefix("HTTP 429 · next try ~") == true)
+        #expect(rl.evidence?.hasPrefix("next try ~") == true)
         #expect(notice(state("backedOff"))?.title.hasPrefix("Rate limited") == true)
         // Not failures: nothing to say.
         for kind in ["success", "tooSoon", "noCredentials", "skipped", ""] { #expect(notice(state(kind)) == nil) }
@@ -149,5 +149,35 @@ struct RenameParityTests {
         let model = AppModel(demo: .standard)
         for a in model.accounts { await model.remove(a.key) }
         #expect(model.accounts.isEmpty)
+    }
+}
+
+/// CCRM-94 (iOS App) parity rev B: the judge's two blockers — signing in again replaces the account's credentials, and the
+/// expiry phrase never prints "in any moment".
+@Suite("Sign in again and expiry wording")
+struct SignInAgainTests {
+    @Test("once the estimate runs out the phrase says so instead of \"in any moment\"")
+    func phrase() {
+        #expect(SignInExpiry.phrase(leftMs: 0) == "may expire any moment")
+        #expect(SignInExpiry.phrase(leftMs: 5 * 86_400_000 + 3 * 3_600_000) == "expires in 5d 3h")
+        let now: Int64 = 1_790_000_000_000
+        var s = AccountState(); s.lastKind = "success"; s.lastAttemptAtMs = now
+        let n = Notice.forAccount(label: "T", state: s, snapshot: nil, nowMs: now, provider: .claude, addedAtMs: now - 40 * 86_400_000)
+        #expect(n?.title == "Sign-in may expire any moment")
+        #expect(AccountStatus.listWord(provider: .claude, state: s, addedAtMs: now - 40 * 86_400_000, nowMs: now).text == "Expiring now")
+    }
+
+    @Test("the Remove copy adds the first-launch line only for the last account")
+    func removeCopy() {
+        #expect(RemoveCopy.message(accountCount: 1).contains("only account"))
+        #expect(!RemoveCopy.message(accountCount: 2).contains("only account"))
+    }
+
+    @Test("a sign-in again targets the account: the model remembers it and offers the provider's sheet")
+    @MainActor func target() {
+        let model = AppModel(demo: .standard)
+        let account = model.accounts[0]
+        #expect(model.signInAgain(account) == Sheet.signIn(for: account.provider))
+        #expect(model.reauthTarget == account.key)
     }
 }
