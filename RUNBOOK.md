@@ -576,6 +576,18 @@ phone never loses data in this pass. No uninstall is allowed and no destructive 
   - **Claude mark at 82%** seen on the new build: smaller than the ChatGPT mark beside it, as drawn.
   - **Always after:** run; installed sha256 `fcd15940…ad3fed`; diff against Before empty; clock offset 0 s.
   - **Gate:** no High open; no deferral.
+- 2026-11-05 — **Step 7 reopened by CCBG-75 (Antigravity Crash on Refresh) and closed again.** Robin found four
+  crash reports on the Fold 7 (the github 1.9 / 25 build, 23:20 to 06:16): a Gemini account left by a v2.0 build
+  made `refreshAll` throw `NotImplementedError` at `Sources.of`. The Step 7 pass of 2026-11-04 ran on that phone
+  and missed it: it never opened the crash-report screen, and the Gemini card read "Checked 2h 51m ago". **From
+  now on every device pass ends by reading the crash card/reports against the count at the start.** Fixed in
+  e6130b8 (`hasSource` skip in `UsageRepository`, `RefreshNoSourceTest` failing first); the v2.0 merge must drop
+  the guard. Redone on the Fold 7 (`design/research/2026-11-05-ccbg75/`): Before recorded (screen timeout 300000;
+  baseline crash card 7 reports, newest 10:18), fixed APK installed (`8dad5c87…2e7e`), the real
+  `UsagePollWorker` forced: Claude, ChatGPT and Work refreshed, Gemini untouched; manual refresh on every card
+  without a crash (Work and Product refreshed, Claude and ChatGPT answered "rate-limit floor", Gemini "Error:
+  not supported in this version"); crash card unchanged at 7 / 10:18 afterwards and no entry in the crash log
+  buffer. Always after run, diff empty, phone locked, still on the cable.
 
 ---
 
@@ -643,6 +655,11 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
   **blocking** on a packet assembled before CI finished (CI pending, no headSha in the evidence, provenance only
   claimed, the tag not fetched locally, Robin's go absent); the first and second are now closed (CI green; headSha
   `44c65b71…`), the rest are done at execution on a fresh packet with Robin's go. Not tagged, drafted or published.
+- 2026-11-05 — **44c65b7 and APK `fcd15940…ad3fed` are superseded** by CCBG-75 (Antigravity Crash on Refresh):
+  the fix landed as e6130b8 (CI green: build, ios-core, ios-app) and the rebuilt APK is sha256
+  `8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e` (signer = trusted digest, 1.9 / 25,
+  `check_artefact.py --channel github` PASS), tested on the Fold 7 (Step 7 Log, 2026-11-05). The release commit
+  is the docs HEAD after e6130b8, named in HANDOVER.md and the report.
 
 ---
 

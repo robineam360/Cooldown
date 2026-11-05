@@ -167,7 +167,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Details in `spec/mobile/surfaces/foundations.md` and `app.md`, "Differs from" notes.
 
 ### CCBG-75 · Antigravity Crash on Refresh — a Gemini account left by a v2.0 build crashes every v1.9 refresh
-- **Status:** **Fixed in code 2026-11-05, not yet seen on the phone** — found by Robin 2026-11-05 on the
+- **Status:** **Verified on the Fold 7 2026-11-05** (RUNBOOK Step 7 Log): with the Gemini account still on the
+  phone, the fixed build (e6130b8's APK, sha256 `8dad5c87…2e7e`) ran the real `UsagePollWorker` (forced through
+  `cmd jobscheduler`), which refreshed Claude, ChatGPT and Work and left Gemini's data alone; a manual refresh
+  of every card on the Accounts screen answered without a crash (Gemini: "Error: not supported in this
+  version"); the crash card still read "7 reports, newest 10:18 AM" afterwards, and the crash log buffer was
+  empty. **Fixed in code 2026-11-05** — found by Robin 2026-11-05 on the
   Fold 7 in the github build 1.9 (25): four crash reports (23:20, 01:21, 04:20, 06:16) plus a manual refresh
   tap on the Gemini card. Robin: "Fix, rebuild." Guard added in `UsageRepository` (`hasSource`): an account
   whose provider has no source is skipped by `refreshAll` and answers `refreshNow` with an error, its stored

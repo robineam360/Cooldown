@@ -1,0 +1,26 @@
+# Before — 2026-11-05T05:00:15Z, USB adb RZCY70YN0LJ
+settings get system screen_off_timeout: 300000
+settings get global airplane_mode_on: 0
+settings get global auto_time: 1
+settings get global auto_time_zone: 1
+getprop persist.sys.timezone: Asia/Calcutta
+phone date +%s: 1793854815
+host date +%s: 1793854815
+settings get global wifi_on: 1
+settings get global mobile_data: 1
+deviceidle:
+  mForceIdle=false
+  mState=ACTIVE mLightState=ACTIVE
+battery:
+  AC powered: false
+  USB powered: true
+installed:
+    codePath=/data/app/~~jWxTMSFI3dHEOR9ZM8nNuA==/com.robin.claudeusage-6U0wEG0v3cKHNKsCmQ6-4g==
+    versionCode=25 minSdk=31 targetSdk=36
+    versionName=1.9
+    lastUpdateTime=2026-11-04 19:06:04
+fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed  design/research/2026-11-05-ccbg75/installed-before-3.apk
+# 2026-11-05T05:00:24Z: screen_off_timeout set to 1800000 for the pass; RESTORE 300000
+baseline: crash card 'Cooldown crashed today at 10:18 AM, 7 reports on this phone' (phone clock 10:30 IST), installed fcd15940 (CCBG-75 bug present)
+8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e  design/research/2026-11-05-ccbg75/installed-after-install.apk
+installed e6130b8 at 05:00:44Z (expect 8dad5c87…2e7e)
