@@ -196,16 +196,17 @@ anything new) so a published GitHub release never has to be replaced before the 
   `design/2026-10-01-play-feature-graphic.html` (approved 2026-10-01); re-export it from that page
   with `?only=b` if the design changes.
 
-## 6. The iOS channel — DRAFT, not in force (CCRM-95 (Dual Release) phase B)
+## 6. The iOS channel — early beta before v2.0 (CCRM-95 (Dual Release) phase B)
 
 Written 2026-11-04 for the day phase B starts; **nothing here is a step yet**. Robin approves it, and
 settles the open decisions below, before any session follows it. Until v2.0 ships, iOS distribution is
 GitHub plus TestFlight only; Google Play and the public App Store come after v2.0.
 
-**Decisions only Robin can make first** (all in `docs/ios/PLAN.md` phase B): which team publishes (Sedin
-today, EAM360 later) and EAM360's agreement to publish a personal MIT app; his own App Store Connect
-role (App Manager or Developer, by invitation, never a shared login); the Apple Distribution
-certificate route; whether the bundle ids stay on the Sedin team; and the release rule below.
+**Settled by Robin, 2026-11-05** (details in `release/testflight/README.md`): EAM360 publishes (Sedin and EAM360 are one Apple
+team); bundle ids stay; one public TestFlight link (external testers, Beta App Review once); an early beta before v2.0 with the
+link kept unshared until v2.0; reviewer access by the sample-data mode only; contact robin@eam360.com. **Still only Robin:** the
+iPad device checks, the archive, signing and upload, the App Store Connect entries, and merging the privacy text to `main`
+once v1.9 is out. The copy for every field is in `release/testflight/`; the version and build plan is `version-plan.md`.
 
 **Release rule for phase B.** A TestFlight build cannot be installed from a GitHub asset, so the rule
 "one release carries the APK and the IPA" becomes: **the GitHub release carries the APK as always, and

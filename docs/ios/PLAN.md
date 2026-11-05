@@ -16,8 +16,8 @@ and CCRM-95 (Dual Release).
    Development profiles last a year and App Groups are a standard capability. Xcode registers the iPad and creates
    the app ids `com.robinrichardrajan.cooldown`, its `.widgets` extension and the App Group under Sedin's team; those
    ids belong to that team (moving teams later means an app transfer or new ids). Sedin is therefore the developer of
-   record for every iOS build; Robin settles that with EAM360 before colleagues get it (CCRM-95 (Dual Release) phase
-   B). The team id is passed on the command line, never committed.
+   record for every iOS build; Settled by Robin 2026-11-05: EAM360 publishes (Sedin and EAM360 are one Apple team), TestFlight only, bundle ids stay
+   (CCRM-95 (Dual Release) phase B). The team id is passed on the command line, never committed.
 3. Universal app, one target: iPhone and iPad. Hardware check on the iPad Pro M4; iPhone on the simulator only.
 
 ## Layout

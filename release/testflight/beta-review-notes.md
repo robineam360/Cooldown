@@ -1,4 +1,4 @@
-# Beta App Review notes — DRAFT
+# Beta App Review notes — ready to paste
 
 **What the app is.** Cooldown is a read-only usage monitor. It shows how much of a person's own
 Claude (Anthropic), ChatGPT (OpenAI) and Gemini (Google) usage windows is used and when each resets.
@@ -17,17 +17,14 @@ belong to. Removing an account deletes its token from the device.
 third-party SDK (see the privacy manifest and the policy URL). Requests go over HTTPS to the hosts
 listed in the privacy policy.
 
-**To review the app without your own accounts.** TO FILL BEFORE SUBMITTING: the reviewer needs a path
-that does not require their own Claude, ChatGPT or Gemini account. The planned path is a sample-data
-mode (wireframe pending Robin's approval, `design/2026-11-05-ios-parity-*.html`); until it is built,
-supply a test account's sign-in here instead. Do not put real credentials in the repo.
+**To review the app without your own accounts.** No sign-in is required. On the first screen tap **Try with sample data**
+(also available in Add account). It shows three made-up accounts with sample usage, so every screen can be reviewed: the
+main screens, History, Settings and the share card. Nothing is saved or sent, no service is contacted, and **Exit** (the
+purple banner at the top) returns to the real app. A real Claude, ChatGPT or Gemini account is not needed and none is
+offered; in App Store Connect leave "Sign-in required" off. (Reset alerts and the Lock Screen section are hidden in the sample because they need notification permission and
+real widgets; they behave as described above with a real account.)
 
 **Permissions asked.** Notifications (reset alerts), Live Activities (the lock-screen countdown),
 background app refresh (keeping widgets current). No location, contacts, camera or photos.
 
 **Contact.** robin@eam360.com
-
-
-## Proposed line for the reviewer (wording is Robin's, 2026-11-05)
-
-"To look around without signing in, tap **Try with sample data** on the first screen (or in Add account). It shows three made-up accounts; nothing is saved or sent, and Exit returns to the real app." Open question for Robin: also offer a real test account? (Not decided here; needs his own tokens.)
