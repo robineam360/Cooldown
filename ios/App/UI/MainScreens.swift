@@ -14,6 +14,9 @@ struct CooldownApp: App {
     @Environment(\.scenePhase) private var phase
     private var model: AppModel { sampleModel ?? realModel }
 
+    /// A kill during the sample leaves its throwaway settings on disk; start clean.
+    init() { SampleStore.wipe() }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -24,7 +27,7 @@ struct CooldownApp: App {
                 .modifier(PaletteProvider())
                 .task(id: phase) {
                     // The app fetches when it opens or returns (spec mobile §1); the repository's floor keeps it polite.
-                    if phase == .active { await realModel.refresh(manual: false) }
+                    if phase == .active, !SampleStore.active { await realModel.refresh(manual: false) }
                 }
                 .task {
                     // Countdowns and "ago" lines move with the clock, not with fetches.
@@ -41,8 +44,8 @@ struct CooldownApp: App {
                 .onChange(of: phase) { if phase == .background { BackgroundRefresh.schedule() } }
         }
         .backgroundTask(.appRefresh(BackgroundRefresh.id)) {
-            // The real accounts, even while the sample data is showing.
-            await realModel.refresh(manual: false)
+            // The real accounts; not while the sample data is showing (Exit refreshes).
+            if !SampleStore.active { await realModel.refresh(manual: false) }
             BackgroundRefresh.schedule()
         }
     }

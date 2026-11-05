@@ -40,31 +40,33 @@ struct SampleModeTests {
 /// Owner's call 2026-11-05: the sample data saves nothing at all, display settings included.
 @Suite("Sample store (saves nothing)", .serialized)
 struct SampleStoreTests {
-    /// Two throwaway "real" suites stand in for the App Group and the app's standard defaults.
-    func realSuites() -> (group: UserDefaults, standard: UserDefaults, cleanup: () -> Void) {
-        let g = "cooldown.test.real.group", s = "cooldown.test.real.standard"
-        let group = UserDefaults(suiteName: g)!, standard = UserDefaults(suiteName: s)!
-        group.removePersistentDomain(forName: g); standard.removePersistentDomain(forName: s)
-        return (group, standard, { group.removePersistentDomain(forName: g); standard.removePersistentDomain(forName: s); SampleStore.wipe() })
+    @Test("begin seeds both suites from the real settings, redirects Prefs, and end leaves the real values untouched")
+    func beginEnd() {
+        let realGroup = UserDefaults(suiteName: Shared.appGroup) ?? .standard
+        let realStandard = UserDefaults.standard
+        let gKey = "zz.sample.test.group", sKey = "zz.sample.test.standard"
+        realGroup.set("real-g", forKey: gKey); realStandard.set("real-s", forKey: sKey)
+        defer { realGroup.removeObject(forKey: gKey); realStandard.removeObject(forKey: sKey); SampleStore.end() }
+
+        SampleStore.begin()
+        #expect(SampleStore.active)
+        // The sample starts from the user's own settings…
+        #expect(Prefs.defaults.string(forKey: gKey) == "real-g")
+        #expect(Prefs.standard.string(forKey: sKey) == "real-s")
+        // …and what it changes goes to the throwaway copies.
+        Prefs.defaults.set("sample-g", forKey: gKey); Prefs.standard.set("sample-s", forKey: sKey)
+        Prefs.defaults.set("only-in-sample", forKey: "zz.sample.new")
+        SampleStore.end()
+
+        #expect(!SampleStore.active)
+        #expect(realGroup.string(forKey: gKey) == "real-g")
+        #expect(realStandard.string(forKey: sKey) == "real-s")
+        #expect(realGroup.object(forKey: "zz.sample.new") == nil)
+        #expect(Prefs.defaults.string(forKey: gKey) == "real-g")
+        #expect(SampleStore.group.object(forKey: gKey) == nil && SampleStore.standard.object(forKey: sKey) == nil)
     }
 
-    @Test("the sample starts from the user's settings, and what it changes never reaches the real ones")
-    func seedAndIsolate() {
-        let r = realSuites(); defer { r.cleanup() }
-        r.group.set("24", forKey: "display.timeFormat")
-        r.standard.set("dark", forKey: "theme")
-        // seed() reads the persistent domain by name; the test suites' domains are their own names.
-        SampleStore.group.setPersistentDomain(r.group.persistentDomain(forName: "cooldown.test.real.group") ?? [:], forName: SampleStore.groupName)
-        SampleStore.standard.setPersistentDomain(r.standard.persistentDomain(forName: "cooldown.test.real.standard") ?? [:], forName: SampleStore.standardName)
-        #expect(SampleStore.group.string(forKey: "display.timeFormat") == "24")
-        #expect(SampleStore.standard.string(forKey: "theme") == "dark")
-        SampleStore.group.set("12", forKey: "display.timeFormat")
-        SampleStore.standard.set("light", forKey: "theme")
-        #expect(r.group.string(forKey: "display.timeFormat") == "24")
-        #expect(r.standard.string(forKey: "theme") == "dark")
-    }
-
-    @Test("wipe removes the throwaway suites")
+    @Test("wipe removes the throwaway suites (also run at launch after a kill)")
     func wipe() {
         SampleStore.group.set("x", forKey: "k")
         SampleStore.wipe()

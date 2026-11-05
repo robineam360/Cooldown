@@ -237,21 +237,19 @@ enum SampleStore {
     nonisolated(unsafe) static var active = false
     static let groupName = "cooldown.sample.group"
     static let standardName = "cooldown.sample.standard"
-    static var group: UserDefaults { UserDefaults(suiteName: groupName) ?? UserDefaults() }
-    static var standard: UserDefaults { UserDefaults(suiteName: standardName) ?? UserDefaults() }
+    nonisolated(unsafe) static let group: UserDefaults = UserDefaults(suiteName: groupName) ?? UserDefaults()
+    nonisolated(unsafe) static let standard: UserDefaults = UserDefaults(suiteName: standardName) ?? UserDefaults()
 
-    /// Copies the real settings into the two suites (no redirect yet).
-    static func seed(realGroup: UserDefaults, realStandard: UserDefaults, bundleID: String) {
+    /// Copies the real settings (their persistent domains, by name) into the two suites; no redirect yet.
+    static func seed(realGroup: UserDefaults, groupDomain: String, realStandard: UserDefaults, standardDomain: String) {
         wipe()
-        let groupDomain = realGroup.persistentDomain(forName: Shared.appGroup) ?? [:]
-        let standardDomain = realStandard.persistentDomain(forName: bundleID) ?? [:]
-        group.setPersistentDomain(groupDomain, forName: groupName)
-        standard.setPersistentDomain(standardDomain, forName: standardName)
+        group.setPersistentDomain(realGroup.persistentDomain(forName: groupDomain) ?? [:], forName: groupName)
+        standard.setPersistentDomain(realStandard.persistentDomain(forName: standardDomain) ?? [:], forName: standardName)
     }
 
     static func begin() {
-        seed(realGroup: UserDefaults(suiteName: Shared.appGroup) ?? .standard, realStandard: .standard,
-             bundleID: Bundle.main.bundleIdentifier ?? "")
+        seed(realGroup: UserDefaults(suiteName: Shared.appGroup) ?? .standard, groupDomain: Shared.appGroup,
+             realStandard: .standard, standardDomain: Bundle.main.bundleIdentifier ?? "")
         active = true
     }
 
@@ -260,6 +258,8 @@ enum SampleStore {
         wipe()
     }
 
+    /// Deletes both suites. Also run at launch: a kill during the sample leaves them on disk (the real settings were
+    /// never touched, `active` lives only in memory).
     static func wipe() {
         UserDefaults.standard.removePersistentDomain(forName: groupName)
         UserDefaults.standard.removePersistentDomain(forName: standardName)
