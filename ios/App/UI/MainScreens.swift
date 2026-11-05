@@ -13,16 +13,15 @@ struct CooldownApp: App {
     @State private var sampleModel: AppModel?
     @Environment(\.scenePhase) private var phase
     private var model: AppModel { sampleModel ?? realModel }
-    @AppStorage("theme") private var theme = "system"
 
     var body: some Scene {
         WindowGroup {
             RootView()
+                .modifier(ThemeScheme())
                 .id(model.isSample)
                 .environment(model)
-                .environment(\.sampleControl, SampleControl(enter: { let m = AppModel(demo: .standard); m.isSample = true; sampleModel = m }, exit: { sampleModel = nil; Task { await realModel.refresh(manual: false) } }))
+                .environment(\.sampleControl, SampleControl(enter: { SampleStore.begin(); let m = AppModel(demo: .standard); m.isSample = true; sampleModel = m }, exit: { SampleStore.end(); sampleModel = nil; Task { await realModel.refresh(manual: false) } }))
                 .modifier(PaletteProvider())
-                .preferredColorScheme(theme == "light" ? .light : theme == "dark" ? .dark : nil)
                 .task(id: phase) {
                     // The app fetches when it opens or returns (spec mobile §1); the repository's floor keeps it polite.
                     if phase == .active { await realModel.refresh(manual: false) }
@@ -46,6 +45,14 @@ struct CooldownApp: App {
             await realModel.refresh(manual: false)
             BackgroundRefresh.schedule()
         }
+    }
+}
+
+/// The theme choice as the window's colour scheme, read from the sample-aware defaults.
+struct ThemeScheme: ViewModifier {
+    @AppStorage("theme", store: Prefs.standard) private var theme = "system"
+    func body(content: Content) -> some View {
+        content.preferredColorScheme(theme == "light" ? .light : theme == "dark" ? .dark : nil)
     }
 }
 

@@ -36,3 +36,46 @@ struct SampleModeTests {
         #expect(model.isSample == false)   // the screenshot demo is not the sample mode: no band on its share card
     }
 }
+
+/// Owner's call 2026-11-05: the sample data saves nothing at all, display settings included.
+@Suite("Sample store (saves nothing)", .serialized)
+struct SampleStoreTests {
+    /// Two throwaway "real" suites stand in for the App Group and the app's standard defaults.
+    func realSuites() -> (group: UserDefaults, standard: UserDefaults, cleanup: () -> Void) {
+        let g = "cooldown.test.real.group", s = "cooldown.test.real.standard"
+        let group = UserDefaults(suiteName: g)!, standard = UserDefaults(suiteName: s)!
+        group.removePersistentDomain(forName: g); standard.removePersistentDomain(forName: s)
+        return (group, standard, { group.removePersistentDomain(forName: g); standard.removePersistentDomain(forName: s); SampleStore.wipe() })
+    }
+
+    @Test("the sample starts from the user's settings, and what it changes never reaches the real ones")
+    func seedAndIsolate() {
+        let r = realSuites(); defer { r.cleanup() }
+        r.group.set("24", forKey: "display.timeFormat")
+        r.standard.set("dark", forKey: "theme")
+        // seed() reads the persistent domain by name; the test suites' domains are their own names.
+        SampleStore.group.setPersistentDomain(r.group.persistentDomain(forName: "cooldown.test.real.group") ?? [:], forName: SampleStore.groupName)
+        SampleStore.standard.setPersistentDomain(r.standard.persistentDomain(forName: "cooldown.test.real.standard") ?? [:], forName: SampleStore.standardName)
+        #expect(SampleStore.group.string(forKey: "display.timeFormat") == "24")
+        #expect(SampleStore.standard.string(forKey: "theme") == "dark")
+        SampleStore.group.set("12", forKey: "display.timeFormat")
+        SampleStore.standard.set("light", forKey: "theme")
+        #expect(r.group.string(forKey: "display.timeFormat") == "24")
+        #expect(r.standard.string(forKey: "theme") == "dark")
+    }
+
+    @Test("wipe removes the throwaway suites")
+    func wipe() {
+        SampleStore.group.set("x", forKey: "k")
+        SampleStore.wipe()
+        #expect(SampleStore.group.object(forKey: "k") == nil)
+    }
+
+    @Test("Prefs hands out the sample suites only while the sample is active")
+    func pick() {
+        let a = UserDefaults(suiteName: "cooldown.test.pick.a")!, b = UserDefaults(suiteName: "cooldown.test.pick.b")!
+        #expect(Prefs.pick(active: false, real: a, sample: b) === a)
+        #expect(Prefs.pick(active: true, real: a, sample: b) === b)
+        #expect(SampleStore.active == false)
+    }
+}

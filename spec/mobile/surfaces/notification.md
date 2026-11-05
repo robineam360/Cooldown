@@ -406,7 +406,7 @@ icon. Rules of when each is true are in BEHAVIOR-MOBILE.md section 3; this secti
 | Sign-in stopped working | red | "Sign-in stopped working" | same | "The saved sign-in failed and couldn't renew. Open the app and re-sign in." |
 | Free plan, no usage reported (CCBG-27 (Free Plan 403)); takes the slot stale would fill | red | "No usage on the Free plan" | "Usage isn't available on the Free plan" | "<Provider> only reports usage for Pro, Max and Team. Upgrade the plan, or remove this account." |
 | Stale (no success for 6 h) | red | "Stale — nothing since 6:00 AM" | "Usage data is stale" | "Nothing fetched since Thu 7:46 PM (12m ago). Last error: <re-auth needed / rate limited / can't reach <vendor> / server error / unrecognised response / app error>" |
-| Sign-in expiring (within 7 days, known expiry only) | accent | "Sign-in expires in 2d 3h 4m" | same | "Valid until Aug 13, 8:30 PM. Paste a fresh token when convenient." |
+| Sign-in expiring (within 3 days, known expiry only) | accent | "Sign-in expires in 2d 3h 4m" | same | "Valid until Aug 13, 8:30 PM. Paste a fresh token when convenient." |
 | Update available (GitHub build only; the Play build never has one) | accent | "Update available — v1.10" | same | "You have v1.9. Tap to open the app; nothing installs by itself." |
 
 Order and cap: faults first (per account: sign-in, then plan-or-stale), then expiry warnings, then update

@@ -230,8 +230,49 @@ func shortClock(_ date: Date) -> String {
 
 // MARK: - Preferences shared by the app and the extension
 
+/// CCRM-94 (iOS App) parity wireframes rev B §7, owner's call 2026-11-05: the reviewer sample data saves nothing at all,
+/// display settings included. On entry the user's current settings are copied into two throwaway suites and every read and
+/// write goes there (`Prefs.defaults`, `Prefs.standard`); on Exit the suites are deleted and the real values were never touched.
+enum SampleStore {
+    nonisolated(unsafe) static var active = false
+    static let groupName = "cooldown.sample.group"
+    static let standardName = "cooldown.sample.standard"
+    static var group: UserDefaults { UserDefaults(suiteName: groupName) ?? UserDefaults() }
+    static var standard: UserDefaults { UserDefaults(suiteName: standardName) ?? UserDefaults() }
+
+    /// Copies the real settings into the two suites (no redirect yet).
+    static func seed(realGroup: UserDefaults, realStandard: UserDefaults, bundleID: String) {
+        wipe()
+        let groupDomain = realGroup.persistentDomain(forName: Shared.appGroup) ?? [:]
+        let standardDomain = realStandard.persistentDomain(forName: bundleID) ?? [:]
+        group.setPersistentDomain(groupDomain, forName: groupName)
+        standard.setPersistentDomain(standardDomain, forName: standardName)
+    }
+
+    static func begin() {
+        seed(realGroup: UserDefaults(suiteName: Shared.appGroup) ?? .standard, realStandard: .standard,
+             bundleID: Bundle.main.bundleIdentifier ?? "")
+        active = true
+    }
+
+    static func end() {
+        active = false
+        wipe()
+    }
+
+    static func wipe() {
+        UserDefaults.standard.removePersistentDomain(forName: groupName)
+        UserDefaults.standard.removePersistentDomain(forName: standardName)
+    }
+}
+
 enum Prefs {
-    static var defaults: UserDefaults { UserDefaults(suiteName: Shared.appGroup) ?? .standard }
+    /// The App Group defaults the widgets share — or, while the reviewer sample data is showing, a throwaway copy
+    /// (`SampleStore`), so nothing done in the sample is saved.
+    static var defaults: UserDefaults { pick(active: SampleStore.active, real: UserDefaults(suiteName: Shared.appGroup) ?? .standard, sample: SampleStore.group) }
+    /// The app-only defaults (theme, density, chart size, card layout), redirected the same way.
+    static var standard: UserDefaults { pick(active: SampleStore.active, real: .standard, sample: SampleStore.standard) }
+    static func pick(active: Bool, real: UserDefaults, sample: UserDefaults) -> UserDefaults { active ? sample : real }
 
     /// Reset alerts, per account and window (spec mobile §2): "off", "smart" (If busy) or "always".
     /// Android's defaults: 5h If busy, Weekly Always.

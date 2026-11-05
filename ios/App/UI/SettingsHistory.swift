@@ -9,9 +9,9 @@ struct SettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.palette) private var p
     @Binding var sheet: Sheet?
-    @AppStorage("theme") private var theme = "system"
-    @AppStorage("density") private var density = Density.comfortable.rawValue
-    @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
+    @AppStorage("theme", store: Prefs.standard) private var theme = "system"
+    @AppStorage("density", store: Prefs.standard) private var density = Density.comfortable.rawValue
+    @AppStorage("chartSize", store: Prefs.standard) private var chartSize = ChartSize.medium.rawValue
     @State private var renaming: Account?
     @State private var noMail = false
     @Environment(\.openURL) private var openURL

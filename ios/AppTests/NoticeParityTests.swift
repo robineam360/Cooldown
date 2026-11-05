@@ -59,17 +59,17 @@ struct NoticeParityTests {
         #expect(net.title.hasPrefix("Couldn’t reach") && net.evidence?.hasPrefix("offline · last reading ") == true)
         #expect(notice(state("network", message: "offline"), snap: snapshot(ageMs: 60_000))?.evidence == "offline")
         // Stale alone, then expiring only when nothing else applies.
-        let added = now - 25 * day
+        let added = now - 28 * day
         #expect(notice(state("success"), snap: old, added: added)?.title.hasPrefix("Stale") == true)
         let exp = try #require(notice(state("success"), snap: snapshot(ageMs: 60_000), added: added))
-        #expect(exp.title == "Sign-in expires in 5d" && exp.tone == .quiet && exp.action == "Sign in again" && !exp.dimsCards)
+        #expect(exp.title == "Sign-in expires in 2d" && exp.tone == .quiet && exp.action == "Sign in again" && !exp.dimsCards)
     }
 
-    @Test("expiring: Claude only, within 7 days, never when sign-in is already broken")
+    @Test("expiring: Claude only, within 3 days, never when sign-in is already broken")
     func expiring() {
-        let edge = now - (30 * day - 7 * day)               // 7 d left exactly
-        #expect(SignInExpiry.soonLeftMs(provider: .claude, addedAtMs: edge - 60_000, reauthNeeded: false, nowMs: now) != nil)   // 7 d − 1 min left
-        #expect(SignInExpiry.soonLeftMs(provider: .claude, addedAtMs: edge + 60_000, reauthNeeded: false, nowMs: now) == nil)   // 7 d + 1 min left
+        let edge = now - (30 * day - 3 * day)               // 3 d left exactly (Robin, 2026-11-05: 3 days on both apps)
+        #expect(SignInExpiry.soonLeftMs(provider: .claude, addedAtMs: edge - 60_000, reauthNeeded: false, nowMs: now) != nil)   // 3 d − 1 min left
+        #expect(SignInExpiry.soonLeftMs(provider: .claude, addedAtMs: edge + 60_000, reauthNeeded: false, nowMs: now) == nil)   // 3 d + 1 min left
         #expect(SignInExpiry.soonLeftMs(provider: .claude, addedAtMs: now - 29 * day, reauthNeeded: true, nowMs: now) == nil)
         #expect(SignInExpiry.soonLeftMs(provider: .chatgpt, addedAtMs: now - 29 * day, reauthNeeded: false, nowMs: now) == nil)
         #expect(SignInExpiry.soonLeftMs(provider: .antigravity, addedAtMs: now - 29 * day, reauthNeeded: false, nowMs: now) == nil)
@@ -106,16 +106,17 @@ struct NoticeParityTests {
         #expect(rows.map(\.tone) == [.red, .red, .red])
         #expect(AccountStatus.conditions(provider: .chatgpt, state: state("authNeeded"), addedAtMs: nil, nowMs: now).map(\.text)
                 == ["Sign-in stopped working — sign in with a code below."])
-        let exp = AccountStatus.conditions(provider: .claude, state: state("success"), addedAtMs: now - 25 * day, nowMs: now)
-        #expect(exp == [.init(text: "Sign-in expires in 5d — sign in again to keep polling going.", tone: .amber)])
+        let exp = AccountStatus.conditions(provider: .claude, state: state("success"), addedAtMs: now - 28 * day, nowMs: now)
+        #expect(exp == [.init(text: "Sign-in expires in 2d — sign in again to keep polling going.", tone: .amber)])
         #expect(AccountStatus.conditions(provider: .claude, state: state("success"), addedAtMs: now - 5 * day, nowMs: now).isEmpty)
+        #expect(AccountStatus.conditions(provider: .claude, state: state("success"), addedAtMs: now - 25 * day, nowMs: now).isEmpty)   // 5 d left: outside the 3-day window
     }
 
     @Test("Settings list word: sign in again › expires in › signed in")
     func listWord() {
         var broken = state("success"); broken.reauthNeeded = true
         #expect(AccountStatus.listWord(provider: .claude, state: broken, addedAtMs: now - 29 * day, nowMs: now).text == "Sign in again")
-        #expect(AccountStatus.listWord(provider: .claude, state: state("success"), addedAtMs: now - 25 * day, nowMs: now).text == "Expires in 5d")
+        #expect(AccountStatus.listWord(provider: .claude, state: state("success"), addedAtMs: now - 28 * day, nowMs: now).text == "Expires in 2d")
         let ok = AccountStatus.listWord(provider: .claude, state: state("success"), addedAtMs: now - 5 * day, nowMs: now)
         #expect(ok.text == "Signed in" && ok.tone == nil)
     }

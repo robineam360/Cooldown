@@ -93,12 +93,12 @@ struct CardLayout: Codable, Equatable {
     // MARK: - Storage, per account
 
     static func load(_ key: String) -> CardLayout {
-        guard let data = UserDefaults.standard.data(forKey: "layout.\(key)"),
+        guard let data = Prefs.standard.data(forKey: "layout.\(key)"),
               let layout = try? JSONDecoder().decode(CardLayout.self, from: data) else { return .standard }
         return layout.normalized
     }
     static func save(_ layout: CardLayout, _ key: String) {
-        if let data = try? JSONEncoder().encode(layout.normalized) { UserDefaults.standard.set(data, forKey: "layout.\(key)") }
+        if let data = try? JSONEncoder().encode(layout.normalized) { Prefs.standard.set(data, forKey: "layout.\(key)") }
     }
 }
 

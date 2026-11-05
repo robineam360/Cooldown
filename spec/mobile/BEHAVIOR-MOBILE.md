@@ -66,7 +66,7 @@ itself; it never posts a notification of its own.
 |---|---|
 | Plan refusal | The usage endpoint refuses the account's plan (core §10.1) |
 | Stale | No successful fetch for **6 hours** |
-| Sign-in expiring | A known sign-in expiry is within **7 days** |
+| Sign-in expiring | A known sign-in expiry is within **3 days** (both apps; was written as 7 until 2026-11-05, when the owner confirmed Android's 3) |
 | Sign-in needed | An auth failure (core §10.0) |
 | Update available | The GitHub-channel Android build only (CCRM-87 (Update Channel)) |
 

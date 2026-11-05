@@ -268,11 +268,11 @@ enum CardContent {
 }
 
 /// CCRM-94 (iOS App): when a sign-in runs out — the Details sheet's rule (Claude only: added + ~30 days; ChatGPT and
-/// Gemini renew themselves). Spec mobile §3 (BEHAVIOR-MOBILE) warns within 7 days; Android's code uses 3 (SignInExpiry.kt
-/// SOON_MS) — iOS follows the spec, and the mismatch is listed for the Android session (iOS parity wireframes rev B).
+/// Gemini renew themselves). Both apps warn within 3 days (Robin, 2026-11-05: Android's `SignInExpiry.SOON_MS` is right;
+/// BEHAVIOR-MOBILE §3 said 7 and was corrected).
 enum SignInExpiry {
     static let lifetimeMs: Int64 = 30 * 86_400_000
-    static let soonMs: Int64 = 7 * 86_400_000
+    static let soonMs: Int64 = 3 * 86_400_000
 
     static func expiresAtMs(provider: Provider, addedAtMs: Int64?) -> Int64? {
         guard provider == .claude, let added = addedAtMs else { return nil }

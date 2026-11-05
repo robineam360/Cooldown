@@ -320,8 +320,8 @@ struct AccountCards: View {
     /// The card's width, for Large chart heights.
     var cardWidth: CGFloat = 338
     var onSignIn: () -> Void = {}
-    @AppStorage("density") private var density = Density.comfortable.rawValue
-    @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
+    @AppStorage("density", store: Prefs.standard) private var density = Density.comfortable.rawValue
+    @AppStorage("chartSize", store: Prefs.standard) private var chartSize = ChartSize.medium.rawValue
     /// Whether the user opened or closed the tile; until then the density's default (Comfortable open, Compact folded;
     /// behind More it starts folded, as on Android).
     @State private var tileOpen: Bool?
