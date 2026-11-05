@@ -17,7 +17,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **shipped in v1.8 (2026-09-27)**.
 
 ### CCBG-46 · Keystore Wedge — a broken credential store could crash the app at every launch
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): sign-ins survive the upgrade from v1.8, a force-stop and a reboot; the store reads "Open · healthy". **Fixed in code 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 checks that sign-in
   persists across a restart on the phone. Built as the Fix line says, with two rulings from the fresh
   Opus judge adopted: only the main screen's repository may reset (workers, the pinned service and
   anything `BOOT_COMPLETED` starts never do, and defer to the next app open), and the marker counts
@@ -59,7 +59,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
 ### CCBG-48 · Reconfigure Label — a widget reconfigured later shows "Add widget", not "Save changes"
-- **Status:** **Verified on the Fold 7 2026-10-01** for a placed widget opened for reconfigure ("Save changes"); placement without config on One UI not exercised. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. `WidgetPrefs.placed` is
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** for a placed widget opened for reconfigure ("Save changes"); placement without config on One UI not exercised. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. `WidgetPrefs.placed` is
   true once config is saved or the widget has been drawn (`w<id>.drawn`, set after each successful
   draw, moved by a restore, pruned by a delete). The config screen picks its label from that.
   `WidgetPrefsTest` pins it. It was not seen on the emulator, because placing through the Pixel
@@ -80,7 +80,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
 ### CCBG-50 · Degraded Store Notice — a sign-in made while the credential store is degraded vanishes at restart
-- **Status:** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. **Restart card verified on the Fold 7 2026-11-04** (github candidate 1f7fa0b): Simulate on, Product signed in and Work cleared while degraded, force-stop and reopen → one card, "2 sign-in changes … weren't kept", "you signed out of Work and signed in to Product", both accounts still signed in; OK removes it (`design/research/2026-11-04-v19-device-pass/01-…` and `02-…`). **2026-10-02:** CI lint had failed on every push since ce2b904 because the main page's "No account yet" card read the store state with `.value` during composition (`StateFlowValueCalledInComposition`); it now collects it, so the card also follows a state change without waiting for the next tick. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Shipped v1.9 (2026-11-05).** **Partly verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Simulate shows the notice as the whole main page and above Accounts (every account "Not signed in"), and switching it off brings the accounts back. **Restart card verified on the Fold 7 2026-11-04** (github candidate 1f7fa0b): Simulate on, Product signed in and Work cleared while degraded, force-stop and reopen → one card, "2 sign-in changes … weren't kept", "you signed out of Work and signed in to Product", both accounts still signed in; OK removes it (`design/research/2026-11-04-v19-device-pass/01-…` and `02-…`). **2026-10-02:** CI lint had failed on every push since ce2b904 because the main page's "No account yet" card read the store state with `.value` during composition (`StateFlowValueCalledInComposition`); it now collects it, so the card also follows a state change without waiting for the next tick. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator at 360 dp, about 411 dp and 750 dp: the notice, Try again, recovery, the Remove dialog, the
   Debug switch, and the restart card (from a seeded record). The held-change wordings need a real
   sign-in, so Step 7 checks them on the phone: simulate, Clear an account, restart, and the
@@ -108,7 +108,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   and never overwrites it. The notice's wireframe draws that boundary; see RUNBOOK Step 5.
 
 ### CCBG-51 · Held Change Residue — a removed account's held-change item can stay in settings for good
-- **Status:** **Fixed in code 2026-10-01**, ships v1.9 (Robin's call, the same day). Filed by the
+- **Status:** **Shipped v1.9 (2026-11-05).** **Fixed in code 2026-10-01**, ships v1.9 (Robin's call, the same day). Filed by the
   RUNBOOK Step 6 judge (finding 4d) while checking `docs/privacy.md` against the code; never observed
   on a device. `removeProfile` calls `HeldChanges.forgetAccount`, and `card()` deletes the orphan
   items it skips; three tests in `HeldChangesTest`. `docs/privacy.md` says removing an account
@@ -124,7 +124,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   items it skips. Pure logic, no wireframe; one test in `HeldChangesTest`/`CredentialStoreTest`.
 
 ### CCBG-52 · Boot Pin Delay — after a reboot the always-on notification takes minutes, not seconds, to return
-- **Status:** **Verified on the Fold 7 2026-11-04** — found 2026-10-01 in RUNBOOK v1.9
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-11-04** — found 2026-10-01 in RUNBOOK v1.9
   Step 7 (item 5) on the Fold 7. Robin, 2026-10-02: fix it in v1.9. The boot restart is now an
   expedited request with no delay (`BootRequestTest`). One reboot on the phone with the pin on
   (github candidate 1f7fa0b): user unlocked 20:28:19, app process 20:28:36.9, `PinBootWorker` started
@@ -167,7 +167,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Details in `spec/mobile/surfaces/foundations.md` and `app.md`, "Differs from" notes.
 
 ### CCBG-75 · Antigravity Crash on Refresh — a Gemini account left by a v2.0 build crashes every v1.9 refresh
-- **Status:** **Verified on the Fold 7 2026-11-05** (RUNBOOK Step 7 Log): with the Gemini account still on the
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-11-05** (RUNBOOK Step 7 Log): with the Gemini account still on the
   phone, the fixed build (e6130b8's APK, sha256 `8dad5c87…2e7e`) ran the real `UsagePollWorker` (forced through
   `cmd jobscheduler`), which refreshed Claude, ChatGPT and Work and left Gemini's data alone; a manual refresh
   of every card on the Accounts screen answered without a crash (Gemini: "Error: not supported in this
@@ -190,6 +190,22 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   inside the pass window: the Accounts card read "Checked 2h 51m ago" for Gemini, which was the hint, and
   it was read as "not polled yet". The first reported crash (23:20) came after the pass ended (about 22:00).
   Step 7 now also reads the crash-report screen at the end of every pass.
+
+### CCBG-76 · Probe Crash — the Diagnostics endpoint probe can still crash on a leftover Gemini account
+- **Status:** Open — found 2026-11-05 by the Fable judge's read of the v1.9 publish packet (not reproduced on the phone).
+- **Severity:** Low (debug screen behind the 7-tap unlock, one phone population, never on a normal path)
+- **Symptom:** `UsageRepository.probeEndpoint` reaches `Sources.of` through `refreshAccessToken` for a Gemini account whose
+  token is near expiry or got a 401; `NotImplementedError` is an `Error`, which the surrounding `catch (e: Exception)` does not
+  catch. Settings → Diagnostics → Gemini → Probe would then crash the process.
+- **Fix:** a `hasSource` return at the top of `probeEndpoint` plus a test; or the v2.0 merge, where `Sources.of(ANTIGRAVITY)`
+  stops throwing and CCBG-75 (Antigravity Crash on Refresh)'s guard is dropped.
+
+### CCBG-77 · Gemini One-shot Retry — a per-profile poll aimed at a Gemini account retries three times
+- **Status:** Open — seen 2026-11-05 on the Fold 7 (a forced UsagePollWorker returned RETRY after 48 ms).
+- **Severity:** Low (bounded, no crash, no data change)
+- **Symptom:** `Polling.kt` runs `refreshNow(onlyProfile)` for a per-profile one-shot; for a Gemini account the CCBG-75
+  guard answers `FetchResult.Error("not supported in this version")`, so the worker retries while `runAttemptCount < 3` and then ends.
+- **Fix:** skip accounts with no source in the one-shot path too (same `hasSource`), dropped with the guard at the v2.0 merge.
 
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
@@ -285,7 +301,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   anyone holding the phone. The diagnostics log's rule is "no emails".
 
 ### CCBG-35 · Tab Clip — Settings tab titles are cut off on a 360 dp phone
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the four Settings tabs fit without scrolling on the cover and fill the width on the inner screen. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the four Settings tabs fit without scrolling on the cover and fill the width on the inner screen. **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9. Checked on the API 36
   emulator: at 360 dp the row scrolls with every title whole, and choosing More scrolls it into view;
   at 2.0× it scrolls too; at about 411 dp and 750 dp it stays the fixed row it was. Found
   2026-09-25 while checking CCBG-32 (Accounts Button Wrap) on the emulator. **Fix approved 2026-09-30** (wireframe rev B, `design/2026-09-28-v19-play-ready.mockup.html` §5): keep
@@ -299,7 +315,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   fix changes what the user sees, so it needs a wireframe first (CLAUDE.md §2).
 
 ### CCBG-45 · Single Panel Wording — the one-account notification says "5-hour window" and "7-day"
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): collapsed "Work · 5h", expanded "Weekly". **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9, under Robin's as-is ruling.
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): collapsed "Work · 5h", expanded "Weekly". **Fixed in code 2026-10-01** (RUNBOOK Step 5), ships v1.9, under Robin's as-is ruling.
   The single row and its weekly panel row now say "5h" and "Weekly", as the Duet does. The collapsed
   "Personal · 5h" was seen on the API 36 emulator; the expanded Weekly row needs real usage, so
   `SinglePanelWordingTest` pins it and Step 7 sees it on the phone. Found 2026-09-26 in Robin's v1.8 doc shots (`release/docs/src/shots/v18-notif-single-*.jpg`);

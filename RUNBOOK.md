@@ -99,7 +99,7 @@ begun, run its *Always after* block first.
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☑ |
-| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☐ |
+| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☑ published 2026-11-05 (phone install check and Robin's tap pending) |
 | 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | **Deferred 2026-11-04 until after v2.0** |
 
 ---
@@ -621,14 +621,16 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 ```
 
 **Done when:**
-- ☐ v1.9 is published and `releases/latest` resolves to it. The phone runs the published APK
-  (sha256 checked), and "Check for updates" reads up to date.
+- ☑ v1.9 is published and `releases/latest` resolves to it (2026-11-05). The published asset's sha256 equals the
+  reviewed build. ☐ **Still pending:** the Fold 7 was off the cable right after publishing, so `adb install -r` of
+  the published asset, the installed-sha256 check, the unchanged crash card, restoring the screen timeout to the
+  recorded 300000 (it was left at 30 min) and Robin's "Check for updates" tap are open (HANDOVER.md).
 - ~~Play's current upload requirements were checked against the AAB before publishing.~~ Dropped
   from v1.9, Robin 2026-11-04 (Play waits until after v2.0).
-- ☐ CI was green on the exact release commit before the tag.
+- ☑ CI was green on the exact release commit before the tag (run 41972204923 on 3905c14: build, ios-core, ios-app).
 - ~~The AAB was built and verified from the release commit before publishing.~~ Dropped from v1.9,
   Robin 2026-11-04. The APK's sha256 and signer are logged here instead.
-- ☐ Every arc item reads Shipped v1.9, or Deferred with a reason.
+- ☑ Every arc item reads Shipped v1.9, or Deferred with a reason (CCRM-86 to CCRM-91, CCRM-85, CCBG-35, 45, 46, 48, 50, 51, 52 and 75; the Play side is deferred past v2.0).
 
 **If it goes wrong mid-way:** as in RELEASING.md.
 - Before the draft is published, nothing is public: delete the draft and move the tag only if it
@@ -660,6 +662,19 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
   `8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e` (signer = trusted digest, 1.9 / 25,
   `check_artefact.py --channel github` PASS), tested on the Fold 7 (Step 7 Log, 2026-11-05). The release commit
   is the docs HEAD after e6130b8, named in HANDOVER.md and the report.
+- 2026-11-05 — **Published.** Robin's go (given in the session, "Confirmed, go", after the question "tag and publish
+  v1.9 at 3905c14 with APK 6ff15bdc…6037?"). Release commit **`3905c147865bee70da39429b3a6ab81873070575`**; tag `v1.9` pushed
+  with the commit named (`git push origin 3905c14…:refs/tags/v1.9`) and fetched back (`v1.9^{commit}` = 3905c14); CI green on that sha
+  (run 41972204923). **Uploaded asset: `app-release.apk`, sha256
+  `6ff15bdc64cf8544b28d948bd6ed59a8bb9961ffcd893c005154268180736037`** (1.9 / 25, signer = the trusted digest
+  `8bc21a2a…f64f`, `check_artefact.py --channel github` PASS), a clean `--rerun-tasks` build of the tagged commit under
+  `model-mesh-review evidence` (gradle exit 0, tree clean before and after). **Not the 8dad5c87…2e7e build** that HANDOVER.md
+  and the Step 7 Log of the same date name: a rerun build is not byte-identical, so the rebuild became the release and was installed and
+  tested on the Fold 7 as that file. Draft created with `--verify-tag` and `release/docs/release-notes-v1.9.md`; the downloaded
+  draft asset equalled the build (sha256, signer, 25 / 1.9); published with `gh release edit v1.9 --draft=false --latest`
+  (07:03 UTC); `releases/latest` = v1.9; the downloaded published asset equals 6ff15bdc…6037. Reviews: tag push (Fable concerns, Sol concerns,
+  both adopted) and publish (same); two earlier packets blocked on thin evidence and a stale CI state and were redone. No AAB (scope change).
+  Filed after release: CCBG-76 (Diagnostics probe), CCBG-77 (Gemini one-shot retry), both Low.
 
 ---
 

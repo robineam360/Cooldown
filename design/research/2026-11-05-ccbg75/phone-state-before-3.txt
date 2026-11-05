@@ -24,3 +24,4 @@ fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed  design/researc
 baseline: crash card 'Cooldown crashed today at 10:18 AM, 7 reports on this phone' (phone clock 10:30 IST), installed fcd15940 (CCBG-75 bug present)
 8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e  design/research/2026-11-05-ccbg75/installed-after-install.apk
 installed e6130b8 at 05:00:44Z (expect 8dad5c87…2e7e)
+# 2026-11-05T06:30:59Z round 2: release APK replaced by the clean --rerun-tasks build of HEAD 3905c14 (sha 6ff15bdc…6037; the earlier 8dad5c87 build is not byte-reproducible with --rerun-tasks); screen_off_timeout set to 1800000, RESTORE 300000

@@ -99,44 +99,28 @@ After the move, session in `~/Projects/CooldownDesktop`:
 > through the EAM360 team (TestFlight or ad hoc), which waits on EAM360 agreeing to publish; one GitHub release
 > carries both the APK and the IPA, never an iOS-only one. Separately, in the desktop repo: REPO-STRUCTURE step 3.
 
-## ▶ Next session — v1.9 is rebuilt after CCBG-75 and waits only for the release steps (written 2026-11-05)
+## ▶ v1.9 is published (2026-11-05) — what is left, then the v2.0 session
 
-**What changed.** Robin found four crash reports on the Fold 7 in the first v1.9 candidate: a Gemini account left
-by a v2.0 build made every refresh throw `NotImplementedError` (CCBG-75 (Antigravity Crash on Refresh)).
-Fixed in e6130b8 (`hasSource` skip in `UsageRepository`, a failing-first `RefreshNoSourceTest`, BUGS.md CCBG-75)
-and redone on the Fold 7 with the Gemini account still on it: the forced background poll and a manual refresh on
-every card ran without a crash, and the crash card stayed at 7 reports (newest 10:18 AM). The earlier candidate
-(44c65b7, APK sha256 `fcd15940…ad3fed`) is **superseded and must not be released**. **The v2.0 merge (PR #21)
-must drop `hasSource` once `AntigravitySource` lands** (it edits the same `Sources.of` line).
-Play is after v2.0 (Robin's scope call, 2026-11-04): v1.9 is a GitHub APK release only, `release/play/CHECKLIST.md`
-lists the Console items for that day.
+**Published.** GitHub release **v1.9** (APK only, no AAB), `releases/latest` = v1.9. Release commit
+`3905c147865bee70da39429b3a6ab81873070575`, tag `v1.9`, CI green on it. **Uploaded asset: sha256
+`6ff15bdc64cf8544b28d948bd6ed59a8bb9961ffcd893c005154268180736037`**, 1.9 / 25, signer = the trusted digest. It is a clean
+rebuild of the tagged commit and **not** the earlier `8dad5c87…2e7e` build (a rebuild is not byte-identical); the
+rebuild is what was tested on the Fold 7. The crash that blocked the first candidate was CCBG-75 (Antigravity Crash on Refresh): a Gemini
+account left on a phone by a v2.0 build made every v1.9 refresh throw; fixed in e6130b8 and shipped. RUNBOOK Step 8 Log has the full record.
+**Gate G0 is lifted** for the v2.0 branch (PR #21), with one obligation: **the v2.0 merge must drop `hasSource` in
+`UsageRepository.kt` (CCBG-75's guard) once `AntigravitySource` lands**, and CCBG-76 / CCBG-77 (both Low, filed) go with it.
 
-**The release candidate:** the HEAD of main that carries this block (it follows e6130b8 by docs only). Its APK
-`app/build/asset/app-release.apk` is sha256 `8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e`,
-1.9 / 25, signer = the trusted digest `8bc21a2a…f64f`, `check_artefact.py --channel github` PASS, the build now on
-the Fold 7. CI is green on e6130b8 (build, ios-core, ios-app); CI on the docs HEAD must be green too before the
-tag. Nothing is tagged, drafted or published unless the report says so. PR robineam360/Cooldown#21 and the
-Dependabot PRs are untouched; Gate G0 holds until Step 8 is ticked.
+**Still open on the phone (the Fold 7 was off the cable right after publishing):**
+1. Restore the screen timeout to the recorded **300000** ms (it is at 1800000 from the CCBG-75 re-test).
+2. `adb install -r` the published asset (`gh release download v1.9`), check the installed sha256 = `6ff15bdc…6037`, read the crash card
+   (it read "7 reports, newest 10:18 AM"; nothing newer).
+3. Robin taps **Check for updates** and confirms it reads up to date.
+Then tick the pending bullet in Step 8's Done-when.
 
-**Robin:** his words of 2026-11-05 relayed by the parent session were "If v1.9 is ready, then let's go ahead
-with the release". The session still asks him once, in the session, for the go on the named commit and sha256.
+**Robin, morning questions still open:** keep the FGS demo video (recorded on v1.9) or re-record on v2.0? Keep the Play feature graphic or
+redo it after CCRM-101 (Icon v3)? Anything in `release/play/CHECKLIST.md` to decide now? Play is after v2.0.
 
-Paste this as the prompt in a fresh session in `~/Projects/Cooldown`:
-
-> Read CLAUDE.md, WORKTREE.md, RELEASING.md, RUNBOOK.md Conventions and Step 8 (its Log), and BUGS.md CCBG-75;
-> load model-mesh. Robin has given his go for the HEAD of main named in HANDOVER.md and the APK sha256
-> 8dad5c87…2e7e (confirm his words in the session before anything irreversible). Confirm `gh run list --commit
-> <HEAD sha>` is green and that `app/build/asset/app-release.apk` has that sha256 (rebuild with
-> assembleGithubRelease from that sha only if it is gone: signing files from the main checkout, never staged; the
-> build is reproducible). Then, one packet and judge round per step (Fable judge plus Sol, since they publish;
-> register evidence with headSha, `git status --porcelain`, `git rev-parse HEAD` and the full aapt badging line):
-> `git push origin <HEAD sha>:refs/tags/v1.9`; `git fetch origin tag v1.9` and check `git rev-parse v1.9^{commit}`;
-> `gh release create v1.9 app/build/asset/app-release.apk --draft --verify-tag --title "Cooldown v1.9"
-> --notes-file release/docs/release-notes-v1.9.md`; download the draft asset, check the sha256 equals, the signer
-> equals the trusted digest and aapt shows versionCode 25 / 1.9; a fresh judge on that; `gh release edit v1.9
-> --draft=false --latest`; `adb install -r` the downloaded asset on the Fold 7 (cable, unlocked), check the
-> installed sha256, end with the crash card unchanged; Robin taps Check for updates. Then tick Step 8 and the arc
-> items (Shipped v1.9), lift Gate G0, and hand over to the v2.0 session.
+The v2.0 session prompt is the "v2.0 arc" block above (Gate G0 no longer applies).
 
 ---
 

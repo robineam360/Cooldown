@@ -1554,7 +1554,7 @@ The launch and the provider check are one gated decision, and it is Robin's. The
 in [RUNBOOK.md](RUNBOOK.md).
 
 ### CCRM-86 · Play Readiness — a Play-uploadable build from the same commit as the GitHub APK
-- **Status:** Planned v1.9 (umbrella).
+- **Status:** **Shipped v1.9 (2026-11-05)** as a GitHub APK release; the Play side waits until after v2.0 (CCRM-66 (Play Store Launch)).
 - **What:** v1.9 produces two artefacts from one commit, signed by one permanent key, with one
   versionCode sequence across both channels: the GitHub APK as always, and an AAB for Play. Calls
   made (Fable, 2026-09-27):
@@ -1570,7 +1570,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   `bundletool validate`, and its signer matches RELEASING.md's trusted digest.
 
 ### CCRM-87 · Update Channel — `github` and `play` flavors; the Play build has no out-of-store update path
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): github keeps the Updates card and Check for updates; the play build (installed from the AAB's device splits over github, same key and versionCode) has no card, no strip and no check. **Built 2026-09-30** (RUNBOOK.md Step 3): flavor dimension `channel` with `github` and `play` on one `applicationId`; `channel/UpdateChannel.kt` in `main`, `object Channel` in each flavor; `UpdateCheck`, `UpdateGate`, `UpdateNotification` and the Updates card moved to `src/github/`; the play no-op drops inherited update prefs on the first poll (`PlayChannelTest`). `tools/check_artefact.py` checks the artefacts. Ships in v1.9 · planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): github keeps the Updates card and Check for updates; the play build (installed from the AAB's device splits over github, same key and versionCode) has no card, no strip and no check. **Built 2026-09-30** (RUNBOOK.md Step 3): flavor dimension `channel` with `github` and `play` on one `applicationId`; `channel/UpdateChannel.kt` in `main`, `object Channel` in each flavor; `UpdateCheck`, `UpdateGate`, `UpdateNotification` and the Updates card moved to `src/github/`; the play no-op drops inherited update prefs on the first poll (`PlayChannelTest`). `tools/check_artefact.py` checks the artefacts. Ships in v1.9 · planned v1.9 (RUNBOOK Step 3). **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §4).
   In the play flavor the whole Updates section goes, so Polling and Usage credits run straight into
   About. The invalidResponse notice keeps its title and detail and has no action row.
 - **Why:** Play's policy is about *offering* update paths outside Play. A static scan finds
@@ -1591,7 +1591,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   - RUNBOOK Conventions and RELEASING.md name the real flavor task names.
 
 ### CCRM-88 · Scoped Queries — `QUERY_ALL_PACKAGES` goes
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the picker lists every enabled browser (Brave, Edge, Samsung Browser; Chrome is disabled on this phone) in both flavors, so QUERY_ALL_PACKAGES is not re-added. **Built 2026-09-30** (RUNBOOK.md Step 3): the permission is gone from `main`; `<queries>` names VIEW + BROWSABLE + https (the picker's probe moved from http to https to match) and, beyond the spec, `<package>` lines for the three provider apps, because `getLaunchIntentForPackage` (the pinned notification's "open the provider's app" tap, CCRM-56 (Provider Identity)) returns null for an invisible package. `ManifestQueriesTest` keeps that list equal to `Provider.appPackage`. The device check is RUNBOOK Step 7 · planned v1.9. Not a layout change, so it needs a device check but no wireframe.
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): the picker lists every enabled browser (Brave, Edge, Samsung Browser; Chrome is disabled on this phone) in both flavors, so QUERY_ALL_PACKAGES is not re-added. **Built 2026-09-30** (RUNBOOK.md Step 3): the permission is gone from `main`; `<queries>` names VIEW + BROWSABLE + https (the picker's probe moved from http to https to match) and, beyond the spec, `<package>` lines for the three provider apps, because `getLaunchIntentForPackage` (the pinned notification's "open the provider's app" tap, CCRM-56 (Provider Identity)) returns null for an invisible package. `ManifestQueriesTest` keeps that list equal to `Provider.appPackage`. The device check is RUNBOOK Step 7 · planned v1.9. Not a layout change, so it needs a device check but no wireframe.
 - **What:** drop the permission (`AndroidManifest.xml:29-30`) from `main` and add a `<queries>`
   block for `ACTION_VIEW` + `BROWSABLE` + `https`. This serves the browser picker
   (`SettingsScreen.kt:1434-1450`). If the Fold 7 pass shows One UI under-reporting browsers, re-add
@@ -1600,7 +1600,7 @@ in [RUNBOOK.md](RUNBOOK.md).
   the Fold 7, in both flavors.
 
 ### CCRM-89 · Privacy Policy — the policy, the Data-safety answers, and a row on the About card
-- **Status:** **Built 2026-10-01** (RUNBOOK Step 6): `docs/privacy.md` (both flavors, every host and every store, CCBG-50 (Degraded Store Notice)'s `store_held_changes` record included) and `release/play/data-safety.md` (question by question, maximal honest answers, unclear lines marked "re-read on the day"); a fresh Opus judge checked both against the code (round 1 blocking: the hidden Debug endpoint probe was undisclosed; 13 findings fixed, delta accepted). CCBG-51 (Held Change Residue) was filed from it. `.github/SECURITY.md` and README's Privacy paragraph now agree with it. Step 6 closed 2026-10-01: the policy is on main, so the About row's link resolves · planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
+- **Status:** **Shipped v1.9 (2026-11-05).** **Built 2026-10-01** (RUNBOOK Step 6): `docs/privacy.md` (both flavors, every host and every store, CCBG-50 (Degraded Store Notice)'s `store_held_changes` record included) and `release/play/data-safety.md` (question by question, maximal honest answers, unclear lines marked "re-read on the day"); a fresh Opus judge checked both against the code (round 1 blocking: the hidden Debug endpoint probe was undisclosed; 13 findings fixed, delta accepted). CCBG-51 (Held Change Residue) was filed from it. `.github/SECURITY.md` and README's Privacy paragraph now agree with it. Step 6 closed 2026-10-01: the policy is on main, so the About row's link resolves · planned v1.9. **Wireframe rev B approved 2026-09-30** (`design/2026-09-28-v19-play-ready.mockup.html` §2): a centred
   "Privacy policy" TextButton 8 dp below "Share feedback", the same in both flavors. It opens the
   policy through the browser picker (`openInBrowser`).
   **The row is built** (2026-10-01, RUNBOOK Step 5) and was checked at 360 dp on the emulator. It opens
@@ -1616,7 +1616,7 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** all three exist, and the row opens the policy.
 
 ### CCRM-90 · Listing Pack — everything the Console asks for, drafted in the repo
-- **Status:** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic: **variant B approved by Robin 2026-10-01**, exported to `release/play/feature-graphic.png` (1024×500, RGB, no alpha) from `design/2026-10-01-play-feature-graphic.html`. Step 6 closed; **the FGS demo video was recorded 2026-11-04** (`release/play/fgs-demo.mp4`, 45 s, Accounts tab cut for its email addresses; not uploaded, since Play work waits until after v2.0) · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
+- **Status:** **Shipped v1.9 (2026-11-05).** **Drafted 2026-10-01** (RUNBOOK Step 6): `release/play/listing.md`, `fgs-declaration.md` (its video is Step 7's) and `app-access.md` (which reviewer account to give is Robin's call at Step 9); the feature graphic: **variant B approved by Robin 2026-10-01**, exported to `release/play/feature-graphic.png` (1024×500, RGB, no alpha) from `design/2026-10-01-play-feature-graphic.html`. Step 6 closed; **the FGS demo video was recorded 2026-11-04** (`release/play/fgs-demo.mp4`, 45 s, Accounts tab cut for its email addresses; not uploaded, since Play work waits until after v2.0) · planned v1.9. The feature graphic is reviewed by Robin in `design/`. It is a docs
   artefact, not an app screen.
 - **What:** everything goes in `release/play/`:
   - the title and the short and full descriptions, with no provider mark in the title, icon or
@@ -1629,7 +1629,7 @@ in [RUNBOOK.md](RUNBOOK.md).
 - **Done when:** every file is present, and Robin has approved the graphic.
 
 ### CCRM-91 · CI Gate — tests, builds and lint on every push
-- **Status:** **Built 2026-09-30** (RUNBOOK.md Step 3): `.github/workflows/ci.yml` on push to `main` and every PR — `testGithubDebugUnitTest testPlayDebugUnitTest`, unsigned `assembleGithubRelease bundlePlayRelease`, `lintGithubDebug lintPlayDebug` (warnings only today, so no baseline), reports kept 14 days; `contents: read`, no secrets. Dependabot's `github-actions` entry is back · planned v1.9.
+- **Status:** **Shipped v1.9 (2026-11-05).** **Built 2026-09-30** (RUNBOOK.md Step 3): `.github/workflows/ci.yml` on push to `main` and every PR — `testGithubDebugUnitTest testPlayDebugUnitTest`, unsigned `assembleGithubRelease bundlePlayRelease`, `lintGithubDebug lintPlayDebug` (warnings only today, so no baseline), reports kept 14 days; `contents: read`, no secrets. Dependabot's `github-actions` entry is back · planned v1.9.
 - **What:** `.github/workflows/ci.yml`. On push and PR it runs both flavors' unit tests (github and play), an
   unsigned `assembleGithubRelease`, `bundlePlayRelease` and `lint` (with a baseline if needed). It
   also restores the `github-actions` entry in `.github/dependabot.yml`. No secrets: CI never signs.
@@ -3272,7 +3272,7 @@ keys) would still make this a different product. Not filed, not an open question
 ## Needs design — decide the shape before building
 
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
-- **Status:** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Crash now → the system recorded APP CRASH (EXCEPTION) → the card on relaunch → the shared text carries no token, email or message; backing out keeps the card, picking an app ends it, Not now keeps it gone across a restart. **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
+- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Crash now → the system recorded APP CRASH (EXCEPTION) → the card on relaunch → the shared text carries no token, email or message; backing out keeps the card, picking an app ends it, Not now keeps it gone across a restart. **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
   Wireframe rev B approved by Robin 2026-09-30 (`design/2026-09-28-v19-play-ready.mockup.html` §1 and
   §3). A fresh Opus judge's findings are adopted: a report is capped at 8,000 characters so eight fit
   one share intent, a failed share never crashes, the handler goes in at `attachBaseContext`, and every
