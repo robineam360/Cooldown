@@ -125,7 +125,8 @@ struct CardContentTests {
         #expect(auth?.title == "Teams: Sign-in stopped working")
         #expect(auth?.action == "Sign in again")
 
-        state = AccountState(); state.lastKind = "network"
+        // Staleness alone (the last attempt was fine); a fetch error absorbs it (NoticeParityTests).
+        state = AccountState(); state.lastKind = "success"
         let old = Snapshot(profileKey: "k", provider: .claude, body: "{}", fetchedAtMs: now - 7 * 3_600_000,
                            lastAttemptAtMs: now, lastKind: "network", lastMessage: "", plan: nil)
         #expect(Notice.forAccount(label: "Teams", state: state, snapshot: old, nowMs: now)?.title.hasPrefix("Stale — nothing since") == true)

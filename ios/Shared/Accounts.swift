@@ -52,3 +52,25 @@ enum Shared {
         Storage(directory: FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup))
     }
 }
+
+/// CCRM-94 (iOS App): Android's `AccountEmail.suggestion` — the rename sheet's "Use “robin”" row. The local part,
+/// unless another account's email shares it (then the domain's first label, which is what differs); nil when there is
+/// no email, or the suggestion is already the name. Clipped to `maxLen`.
+enum AccountEmail {
+    static let nameLimit = 16
+
+    static func split(_ email: String) -> (local: String, domain: String) {
+        guard let at = email.lastIndex(of: "@"), at != email.startIndex else { return (email, "") }
+        return (String(email[..<at]), String(email[at...]))
+    }
+
+    static func suggestion(email: String?, others: [String], current: String, maxLen: Int = nameLimit) -> String? {
+        guard let email = email?.trimmingCharacters(in: .whitespaces), email.contains("@") else { return nil }
+        let (local, domain) = split(email)
+        let shared = others.contains { $0.contains("@") && split($0.trimmingCharacters(in: .whitespaces)).local.lowercased() == local.lowercased() }
+        let pick = shared ? String(domain.dropFirst().prefix { $0 != "." }) : local
+        let out = String(pick.prefix(maxLen))
+        let name = current.trimmingCharacters(in: .whitespaces)
+        return out.isEmpty || out.lowercased() == name.lowercased() ? nil : out
+    }
+}

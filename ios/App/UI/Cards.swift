@@ -252,15 +252,20 @@ struct NoticeView: View {
     let notice: Notice
     var onAction: () -> Void = {}
     @Environment(\.palette) private var p
+    @Environment(\.openURL) private var openURL
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(notice.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(p.ink)
             if let evidence = notice.evidence {
                 Text(evidence).font(.system(size: 12.5).monospaced()).foregroundStyle(p.sub)
             }
-            Text(notice.body).font(.system(size: 14)).foregroundStyle(p.txt)
+            if !notice.body.isEmpty {
+                Text(notice.body).font(.system(size: 14)).foregroundStyle(p.txt)
+            }
             if let action = notice.action {
-                Button(action, action: onAction)
+                Button(action) {
+                    if let url = notice.actionURL.flatMap(URL.init(string:)) { openURL(url) } else { onAction() }
+                }
                     .font(.system(size: 14.5, weight: .semibold))
                     .padding(.horizontal, 14).padding(.vertical, 7)
                     .background(p.ink, in: Capsule()).foregroundStyle(p.bg)
@@ -269,9 +274,16 @@ struct NoticeView: View {
         }
         .padding(.horizontal, 13).padding(.vertical, 11)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
-    private var tint: Color { notice.tone == .error ? p.red : p.orange }
+    /// Error red, warning orange, quiet the card's grey fill (a note, not a failure — rev B §3).
+    private var background: Color {
+        switch notice.tone {
+        case .error: p.red.opacity(0.16)
+        case .warning: p.orange.opacity(0.16)
+        case .quiet: p.fill
+        }
+    }
 }
 
 /// One account's tile and credits card, in the order, visibility and fold the user chose (the layout sheet), drawn at
@@ -321,7 +333,7 @@ struct AccountCards: View {
         let state = model.states[account.key] ?? AccountState()
         let snapshot = model.snapshots[account.key]
         let notice = Notice.forAccount(label: account.label, state: state, snapshot: snapshot, nowMs: model.nowMs,
-                                       provider: account.provider)
+                                       provider: account.provider, addedAtMs: account.addedAtMs)
         let layout = model.drawnLayout(account.key)
         let main = Self.merged(layout.main)
         let folded = Self.merged(layout.folded).filter { $0 == .credits || !main.contains(.weekly) }
@@ -361,7 +373,7 @@ struct AccountCards: View {
     /// The pool's own tile, same anatomy, its name as the last line under it (rev D T6). No history is kept for it.
     @ViewBuilder
     private func poolTile(_ pool: UsagePool, accent: Color, notice: Notice?) -> some View {
-        let dimmed = notice?.tone == .error || notice?.tone == .warning
+        let dimmed = notice?.dimsCards == true
         let weekly = CardContent.window(title: "All", window: pool.weekly, kind: HistoryStats.weeklyKind, history: [],
                                         nowMs: model.nowMs, use24h: Display.use24h)
         let five = CardContent.window(title: "5-hour window", window: pool.session, kind: HistoryStats.sessionKind, history: [],
@@ -380,7 +392,7 @@ struct AccountCards: View {
         let usage = model.usage(account.key)
         let history = model.histories[account.key] ?? []
         let snapshot = model.snapshots[account.key]
-        let dimmed = notice?.tone == .error || notice?.tone == .warning
+        let dimmed = notice?.dimsCards == true
         let size = ChartSize(rawValue: chartSize) ?? .medium
         let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,
                                      history: history, nowMs: model.nowMs, use24h: Display.use24h)

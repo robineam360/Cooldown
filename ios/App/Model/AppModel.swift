@@ -193,10 +193,23 @@ final class AppModel {
     /// What clearing the rename field restores (spec/mobile/surfaces/app.md: "Clear the field to go back to …").
     func defaultLabel(for key: String) -> String { Account.defaultLabel(for: key, in: accounts) }
 
-    /// A blank name goes back to the default label, as Android's does.
+    /// The access token's expiry in the Keychain, for the account page's "renews in …" clause; nil in the sample
+    /// data, or when nothing readable is stored.
+    func tokenExpiresAtMs(_ key: String) -> Int64? {
+        guard !isDemo else { return nil }
+        return CredentialStore.shared(accessGroup: Shared.keychainGroup).load(profileKey: key)?.expiresAtMs
+    }
+
+    /// The rename sheet's e-mail suggestion for an account (see `AccountEmail`).
+    func nameSuggestion(for key: String, current: String) -> String? {
+        let others = accounts.filter { $0.key != key }.compactMap { states[$0.key]?.email }
+        return AccountEmail.suggestion(email: states[key]?.email, others: others, current: current)
+    }
+
+    /// A blank name goes back to the default label, as Android's does. The name is capped at 16 characters.
     func rename(_ key: String, to label: String) {
         guard let i = accounts.firstIndex(where: { $0.key == key }) else { return }
-        let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = String(label.trimmingCharacters(in: .whitespacesAndNewlines).prefix(AccountEmail.nameLimit))
         accounts[i].label = trimmed.isEmpty ? defaultLabel(for: key) : trimmed
         save()
     }

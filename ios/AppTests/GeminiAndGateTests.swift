@@ -133,7 +133,10 @@ struct GeminiAndGateTests {
         #expect(n?.title == "Google changed something — usage unavailable")
         #expect(n?.evidence == "Reply held 1 of 3 groups")
         #expect(n?.body == "Cooldown won’t guess. An app update may be needed.")
-        #expect(Notice.forAccount(label: "Teams", state: state, snapshot: nil, nowMs: now.ms, provider: .claude) == nil)
+        // Any other provider gets the generic invalid-reply notice, not Google's (parity rev B §3).
+        let other = Notice.forAccount(label: "Teams", state: state, snapshot: nil, nowMs: now.ms, provider: .claude)
+        #expect(other?.title.hasPrefix("The server answered in a shape this app doesn’t know") == true)
+        #expect(other?.title.contains("Google") == false)
     }
 
     @Test("a Gemini reading: Weekly leads, Argon is a model limit, the untouched pool is hidden and the used one shown")

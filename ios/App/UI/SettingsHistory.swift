@@ -13,7 +13,6 @@ struct SettingsScreen: View {
     @AppStorage("density") private var density = Density.comfortable.rawValue
     @AppStorage("chartSize") private var chartSize = ChartSize.medium.rawValue
     @State private var renaming: Account?
-    @State private var newName = ""
     @State private var details: Account?
     @State private var colouring: Account?
     @State private var clearing: Account?
@@ -35,20 +34,24 @@ struct SettingsScreen: View {
                     ForEach(model.accounts) { account in
                         // CCRM-96 (Weekly First) rev B §2: the row pushes the account's page (Plan, Accent colour,
                         // Headline, Model limits, Details, Clear history); the touch-and-hold menu stays.
-                        NavigationLink { AccountPage(account: account) } label: {
+                        NavigationLink {
+                            AccountPage(account: account, onRename: { renaming = account },
+                                        onSignIn: { sheet = Sheet.signIn(for: account.provider) },
+                                        onRemove: { removing = account })
+                        } label: {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
                             Text(account.label)
                             PlanChip(provider: account.provider, plan: model.states[account.key]?.plan,
                                      tier: model.states[account.key]?.tier)
                             Spacer()
-                            let needsSignIn = model.states[account.key]?.reauthNeeded == true
-                            Text(needsSignIn ? "Sign in again" : "Signed in").font(.system(size: 14))
-                                .foregroundStyle(needsSignIn ? p.orange : p.sub)
+                            let word = AccountStatus.listWord(provider: account.provider, state: model.states[account.key] ?? AccountState(),
+                                                              addedAtMs: account.addedAtMs, nowMs: model.nowMs)
+                            Text(word.text).font(.system(size: 14)).foregroundStyle(word.tone == nil ? p.sub : p.orange)
                         }
                         }
                         .contextMenu {
-                            Button("Rename", systemImage: "pencil") { newName = account.label; renaming = account }
+                            Button("Rename", systemImage: "pencil") { renaming = account }
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
@@ -183,18 +186,13 @@ struct SettingsScreen: View {
                 ToolbarItem(placement: .topBarLeading) { EditButton() }
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
-            .alert("Rename account", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-                TextField("Name", text: $newName)
-                Button("Save") { if let r = renaming { model.rename(r.key, to: newName) }; renaming = nil }
-                Button("Cancel", role: .cancel) { renaming = nil }
-            } message: {
-                Text("Used everywhere — tabs, widgets and the Live Activity. Clear the field to go back to “\(renaming.map { model.defaultLabel(for: $0.key) } ?? "")”.")
-            }
+            .sheet(item: $renaming) { RenameSheet(account: $0) }
             .alert("Remove “\(removing?.label ?? "")”?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
                 Button("Cancel", role: .cancel) { removing = nil }
                 Button("Remove account", role: .destructive) { if let r = removing { Task { await model.remove(r.key) } }; removing = nil }
             } message: {
-                Text("This deletes, permanently and only for this account:\n•  the saved sign-in\n•  its cached usage and settings — alerts, credits, reset alerts\n•  8 days of trend history\n•  a year of session and weekly history")
+                Text("This deletes, permanently and only for this account:\n•  the saved sign-in\n•  its cached usage and settings — alerts, credits, reset alerts\n•  8 days of trend history\n•  a year of session and weekly history"
+                     + (model.accounts.count == 1 ? "\n\nThis is your only account. Cooldown goes back to its first-launch screen." : ""))
             }
             .alert("Clear usage history?", isPresented: Binding(get: { clearing != nil }, set: { if !$0 { clearing = nil } })) {
                 Button("Cancel", role: .cancel) { clearing = nil }
@@ -262,12 +260,57 @@ struct AccountPage: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.dismiss) private var dismiss
     let account: Account
+    /// The Settings screen owns the rename sheet, the sign-in sheets and the Remove alert; the page asks for them.
+    var onRename: () -> Void = {}
+    var onSignIn: () -> Void = {}
+    var onRemove: () -> Void = {}
     @State private var headline = Headline.default
+    @State private var tokenExpiry: Int64?
     @State private var modelLimits = true
     @State private var colouring = false
     @State private var details = false
     @State private var clearing = false
+
+    /// Parity rev B §1-2: the status line with its check-now button, the condition rows, and the sign-in action.
+    @ViewBuilder private var signInSection: some View {
+        let state = model.states[account.key] ?? AccountState()
+        let broken = state.reauthNeeded || state.lastKind == "authNeeded"
+        Section {
+            HStack(spacing: 8) {
+                Text(AccountStatus.line(provider: account.provider, state: state, tokenExpiresAtMs: tokenExpiry,
+                                        busy: model.isRefreshing, nowMs: model.nowMs))
+                    .font(.system(size: 13.5)).foregroundStyle(p.sub)
+                Spacer(minLength: 8)
+                Button {
+                    Task { await model.refresh(manual: true) }
+                } label: {
+                    Group {
+                        if model.isRefreshing { ProgressView().controlSize(.small) }
+                        else { Image(systemName: "arrow.clockwise").font(.system(size: 14, weight: .semibold)) }
+                    }
+                    .frame(width: 28, height: 28)
+                    .overlay(Circle().stroke(p.sub.opacity(0.3), lineWidth: 1))
+                }
+                .buttonStyle(.borderless)
+                .disabled(model.isRefreshing || model.isDemo)
+                .accessibilityLabel("Check now")
+            }
+            ForEach(AccountStatus.conditions(provider: account.provider, state: state, addedAtMs: account.addedAtMs, nowMs: model.nowMs), id: \.text) { row in
+                Text(row.text).font(.system(size: 13.5)).foregroundStyle(row.tone == .red ? p.red : p.orange)
+            }
+            if !model.isDemo {
+                Button(account.provider == .chatgpt ? "Sign in with a code" : "Sign in again", action: onSignIn)
+                    .font(.system(size: 16, weight: broken ? .semibold : .regular))
+                    .foregroundStyle(account.accent(scheme))
+            }
+        } header: { Text("Sign-in") } footer: {
+            if account.provider == .chatgpt && !model.isDemo {
+                Text("Shows a short code to type at auth.openai.com — on this phone or any other device.")
+            }
+        }
+    }
 
     var body: some View {
         let usage = model.usage(account.key)
@@ -275,6 +318,16 @@ struct AccountPage: View {
         let caps = usage?.modelCaps ?? []
         List {
             Section("Account") {
+                // Parity rev B §1: the Name row renames (one sheet, shared with the touch-and-hold Rename).
+                Button(action: onRename) {
+                    LabeledContent("Name") {
+                        HStack(spacing: 4) {
+                            Text(account.label).lineLimit(1).truncationMode(.tail)
+                            Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(p.sub.opacity(0.7))
+                        }
+                    }
+                }
+                .foregroundStyle(p.ink)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Plan")
                     // API-CONTRACT §11's name, as the pill shows it.
@@ -288,6 +341,7 @@ struct AccountPage: View {
                     }
                 }
             }
+            signInSection
             Section {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Lead with")
@@ -329,12 +383,20 @@ struct AccountPage: View {
                 Button("Details…") { details = true }.foregroundStyle(p.ink)
                 Button("Clear usage history…") { clearing = true }.foregroundStyle(p.red)
             }
+            if !model.isDemo {
+                Section {
+                    Button { dismiss(); onRemove() } label: { Text("Remove account").frame(maxWidth: .infinity) }
+                        .foregroundStyle(p.red)
+                }
+            }
         }
         .navigationTitle(account.label)
         .onAppear {
             headline = Prefs.headline(account.key)
             modelLimits = Prefs.showModelLimits(account.key)
+            tokenExpiry = model.tokenExpiresAtMs(account.key)
         }
+        .onChange(of: model.isRefreshing) { tokenExpiry = model.tokenExpiresAtMs(account.key) }
         .sheet(isPresented: $colouring) { AccentSheet(account: account) }
         .sheet(isPresented: $details) { AccountDetailsSheet(account: account) }
         .alert("Clear usage history?", isPresented: $clearing) {

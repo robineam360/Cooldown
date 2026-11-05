@@ -231,6 +231,26 @@ enum CardContent {
     }
 }
 
+/// CCRM-94 (iOS App): when a sign-in runs out — the Details sheet's rule (Claude only: added + ~30 days; ChatGPT and
+/// Gemini renew themselves). Spec mobile §3 (BEHAVIOR-MOBILE) warns within 7 days; Android's code uses 3 (SignInExpiry.kt
+/// SOON_MS) — iOS follows the spec, and the mismatch is listed for the Android session (iOS parity wireframes rev B).
+enum SignInExpiry {
+    static let lifetimeMs: Int64 = 30 * 86_400_000
+    static let soonMs: Int64 = 7 * 86_400_000
+
+    static func expiresAtMs(provider: Provider, addedAtMs: Int64?) -> Int64? {
+        guard provider == .claude, let added = addedAtMs else { return nil }
+        return added + lifetimeMs
+    }
+
+    /// Time left, when the sign-in is within the warning window (and not already broken).
+    static func soonLeftMs(provider: Provider, addedAtMs: Int64?, reauthNeeded: Bool, nowMs: Int64) -> Int64? {
+        guard !reauthNeeded, let at = expiresAtMs(provider: provider, addedAtMs: addedAtMs) else { return nil }
+        let left = at - nowMs
+        return left <= soonMs ? max(0, left) : nil
+    }
+}
+
 /// The condition shown above an account's cards (spec mobile §3): states, not notifications.
 struct Notice: Equatable {
     enum Tone { case error, warning, quiet }
@@ -240,15 +260,14 @@ struct Notice: Equatable {
     let tone: Tone
     /// A raw detail under the title ("Reply held 1 of 3 groups").
     var evidence: String? = nil
+    /// When set, the action opens this page (a status page) instead of the sign-in sheet.
+    var actionURL: String? = nil
 
+    /// One notice at a time (iOS parity wireframes rev B §3): plan refusal › sign-in needed › the last fetch's error ›
+    /// stale › sign-in expiring. A fetch error absorbs staleness: its evidence line names the last reading.
     static func forAccount(label: String, state: AccountState, snapshot: Snapshot?, nowMs: Int64,
-                           provider: Provider = .claude) -> Notice? {
-        // CCRM-55 (H): Google answered without the Gemini groups. Never 0% or 100%: the last good cards stay.
-        if provider == .antigravity, state.lastKind == "invalidResponse" {
-            return Notice(title: "Google changed something — usage unavailable",
-                          body: "Cooldown won’t guess. An app update may be needed.", action: nil, tone: .warning,
-                          evidence: state.lastMessage.hasPrefix("Reply held") ? state.lastMessage : nil)
-        }
+                           provider: Provider = .claude, addedAtMs: Int64? = nil,
+                           use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> Notice? {
         if state.lastKind == "plan" {
             let plan = state.plan ?? "Free"
             return Notice(title: "Usage isn’t available on the \(plan) plan",
@@ -260,15 +279,109 @@ struct Notice: Equatable {
                           body: "The saved sign-in failed and couldn’t renew. The numbers below are the last ones that worked.",
                           action: "Sign in again", tone: .error)
         }
-        if let snapshot, nowMs - snapshot.fetchedAtMs > staleMs {
-            let when = CardContent.dayClock(snapshot.fetchedAtMs, nowMs, Display.use24h, .current)
+        let stale = snapshot.map { nowMs - $0.fetchedAtMs > staleMs } ?? false
+        let lastReading = snapshot.map { " · last reading \(CardContent.dayClock($0.fetchedAtMs, nowMs, use24h, timeZone))" } ?? ""
+        let vendor = provider.serviceName
+        func detail(_ evidence: String) -> String? {
+            let text = evidence + (stale ? lastReading : "")
+            return text.isEmpty ? nil : text
+        }
+        switch state.lastKind {
+        case "invalidResponse" where provider == .antigravity:
+            // CCRM-55 (H): Google answered without the Gemini groups. Never 0% or 100%: the last good cards stay.
+            return Notice(title: "Google changed something — usage unavailable",
+                          body: "Cooldown won’t guess. An app update may be needed.", action: nil, tone: .warning,
+                          evidence: state.lastMessage.hasPrefix("Reply held") ? state.lastMessage : nil)
+        case "rateLimited", "backedOff":
+            var evidence = state.lastMessage
+            if state.backoffUntilMs > nowMs {
+                evidence += (evidence.isEmpty ? "" : " · ") + "next try ~\(CardContent.clock(state.backoffUntilMs, use24h, timeZone))"
+            }
+            return Notice(title: "Rate limited — backing off, retries on its own.", body: "", action: nil, tone: .warning,
+                          evidence: detail(evidence))
+        case "network":
+            return Notice(title: "Couldn’t reach \(vendor) — check your connection, or see if it’s them.", body: "",
+                          action: "Check \(vendor) status", tone: .warning, evidence: detail(state.lastMessage),
+                          actionURL: provider.statusPageURL)
+        case "server":
+            return Notice(title: "\(vendor)’s server errored — usually theirs, usually brief.", body: "",
+                          action: "Check \(vendor) status", tone: .warning, evidence: detail(state.lastMessage),
+                          actionURL: provider.statusPageURL)
+        case "invalidResponse":
+            return Notice(title: "The server answered in a shape this app doesn’t know — an app update may be needed.", body: "",
+                          action: nil, tone: .warning, evidence: detail(state.lastMessage))
+        case "error":
+            return Notice(title: "Something unexpected went wrong in the app.", body: "", action: nil, tone: .error,
+                          evidence: detail(state.lastMessage))
+        default: break
+        }
+        if stale, let snapshot {
+            let when = CardContent.dayClock(snapshot.fetchedAtMs, nowMs, use24h, timeZone)
             return Notice(title: "Stale — nothing since \(when)",
                           body: "Cooldown hasn’t had a reading for over 6 hours. Pull down to try again.",
                           action: nil, tone: .warning)
         }
+        if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: state.reauthNeeded, nowMs: nowMs) {
+            return Notice(title: "Sign-in expires in \(Fmt.compactDuration(ms: left))",
+                          body: "Sign in again to keep polling going.", action: "Sign in again", tone: .quiet)
+        }
         return nil
     }
 
+    /// Cards dim under a failure or warning, never under a quiet note (rev B §3).
+    var dimsCards: Bool { tone != .quiet }
+
     /// spec mobile §3: stale after 6 hours without a success.
     static let staleMs: Int64 = 6 * 3_600_000
+}
+
+/// CCRM-94 (iOS App): the account page's status line (iOS parity wireframes rev B §2) and its condition rows.
+enum AccountStatus {
+    /// "Checking…", "Not checked yet", "Checked 12m ago", plus (Claude and Gemini, never while sign-in is broken)
+    /// " · renews in 6h 4m" or " · renewal due at next check". `tokenExpiresAtMs` is the Keychain access token's expiry;
+    /// nil or 0 (unreadable) adds nothing. ChatGPT never shows the clause.
+    static func line(provider: Provider, state: AccountState, tokenExpiresAtMs: Int64?, busy: Bool, nowMs: Int64) -> String {
+        if busy { return "Checking…" }
+        guard state.lastAttemptAtMs > 0 else { return "Not checked yet" }
+        var text = "Checked \(Fmt.relativeAgo(epochMs: state.lastAttemptAtMs, nowMs: nowMs))"
+        if provider != .chatgpt, !state.reauthNeeded, let at = tokenExpiresAtMs, at > 0 {
+            text += at > nowMs ? " · renews in \(Fmt.compactDuration(ms: at - nowMs))" : " · renewal due at next check"
+        }
+        return text
+    }
+
+    struct Condition: Equatable {
+        enum Tone { case red, amber }
+        let text: String
+        let tone: Tone
+    }
+
+    /// The condition rows under the status line, in Android's order: free plan, sign-in stopped, expiring, rate-limited.
+    static func conditions(provider: Provider, state: AccountState, addedAtMs: Int64?, nowMs: Int64) -> [Condition] {
+        var rows: [Condition] = []
+        if state.lastKind == "plan" {
+            rows.append(Condition(text: provider == .claude
+                ? "\(state.plan ?? "Free") plan: Claude doesn’t report usage — upgrade to Pro, Max or Team to see numbers."
+                : "\(provider.displayName) only reports usage windows for paid plans.", tone: .red))
+        }
+        if state.reauthNeeded || state.lastKind == "authNeeded" {
+            rows.append(Condition(text: "Sign-in stopped working — \(provider == .chatgpt ? "sign in with a code" : "sign in again") below.", tone: .red))
+        }
+        if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: state.reauthNeeded, nowMs: nowMs) {
+            rows.append(Condition(text: "Sign-in expires in \(Fmt.compactDuration(ms: left)) — sign in again to keep polling going.", tone: .amber))
+        }
+        if state.backoffUntilMs > nowMs {
+            rows.append(Condition(text: "Rate-limited — next try in \(Fmt.compactDuration(ms: state.backoffUntilMs - nowMs))", tone: .red))
+        }
+        return rows
+    }
+
+    /// The Settings list row's word: broken sign-in, then an expiry warning, else signed in.
+    static func listWord(provider: Provider, state: AccountState, addedAtMs: Int64?, nowMs: Int64) -> (text: String, tone: Condition.Tone?) {
+        if state.reauthNeeded { return ("Sign in again", .amber) }
+        if let left = SignInExpiry.soonLeftMs(provider: provider, addedAtMs: addedAtMs, reauthNeeded: false, nowMs: nowMs) {
+            return ("Expires in \(Fmt.compactDuration(ms: left))", .amber)
+        }
+        return ("Signed in", nil)
+    }
 }
