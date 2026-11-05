@@ -7,6 +7,7 @@ import SwiftUI
 struct AddAccountSheet: View {
     @Binding var sheet: Sheet?
     @Environment(\.palette) private var p
+    @Environment(\.sampleControl) private var control
 
     var body: some View {
         VStack(spacing: 12) {
@@ -16,6 +17,19 @@ struct AddAccountSheet: View {
             // CCRM-55 (I1): hidden on a build without the client secret.
             if Antigravity.available {
                 row(.antigravity, "Signs in with Google in your browser, then paste the code back.") { sheet = .geminiSignIn }
+            }
+            // Parity rev B §7: the reviewer sample data, below the providers.
+            Button { sheet = nil; control.enter() } label: {
+                HStack(spacing: 14) {
+                    Image("AppMark").resizable().frame(width: 32, height: 32).clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(SampleRules.entryTitle).font(.system(size: 17, weight: .semibold)).foregroundStyle(p.ink)
+                        Text(SampleRules.entryDetail).font(.system(size: 13.5)).foregroundStyle(p.txt).multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(p.sub)
+                }
+                .padding(14).background(p.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             Text("Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.top, 2)

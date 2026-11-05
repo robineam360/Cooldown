@@ -26,3 +26,8 @@ supply a test account's sign-in here instead. Do not put real credentials in the
 background app refresh (keeping widgets current). No location, contacts, camera or photos.
 
 **Contact.** robin@eam360.com
+
+
+## Proposed line for the reviewer (wording is Robin's, 2026-11-05)
+
+"To look around without signing in, tap **Try with sample data** on the first screen (or in Add account). It shows three made-up accounts; nothing is saved or sent, and Exit returns to the real app." Open question for Robin: also offer a real test account? (Not decided here; needs his own tokens.)

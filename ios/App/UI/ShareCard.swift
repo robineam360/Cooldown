@@ -133,7 +133,7 @@ struct ShareSheet: View {
                               history: model.histories[accountKey] ?? [], nowMs: model.nowMs)
         return ShareCardView(account: account, usage: usage, history: model.histories[accountKey] ?? [],
                              fetchedAtMs: snapshot.fetchedAtMs, nowMs: model.nowMs,
-                             headline: Prefs.headline(accountKey), sessionBinding: face.sessionBinding, sample: model.isDemo)
+                             headline: Prefs.headline(accountKey), sessionBinding: face.sessionBinding, sample: model.isSample)
     }
 
     private func render(_ card: ShareCardView) -> UIImage? {

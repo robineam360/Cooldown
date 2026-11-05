@@ -52,22 +52,25 @@ struct SettingsScreen: View {
                             Spacer()
                             let word = AccountStatus.listWord(provider: account.provider, state: model.states[account.key] ?? AccountState(),
                                                               addedAtMs: account.addedAtMs, nowMs: model.nowMs)
-                            Text(word.text).font(.system(size: 14)).foregroundStyle(word.tone == nil ? p.sub : p.orange)
+                            Text(model.isSample ? SampleRules.accountWord : word.text).font(.system(size: 14))
+                                .foregroundStyle(model.isSample || word.tone == nil ? p.sub : p.orange)
                         }
                         }
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { renaming = account }
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
-                            Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
-                                sheet = model.signInAgain(account)
+                            if !model.isSample {
+                                Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
+                                    sheet = model.signInAgain(account)
+                                }
                             }
                             Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
-                            Button("Remove", systemImage: "trash", role: .destructive) { removing = account }
+                            if !model.isSample { Button("Remove", systemImage: "trash", role: .destructive) { removing = account } }
                         }
                     }
                     .onMove { model.move(from: $0, to: $1) }
-                    Button { sheet = .addAccount } label: { Label("Add account", systemImage: "plus") }
+                    if !model.isSample { Button { sheet = .addAccount } label: { Label("Add account", systemImage: "plus") } }
                 }
                 // Android's "Usage credits" switches: one per account whose reading reports credits.
                 let withCredits = model.accounts.filter { CardContent.credits(model.usage($0.key)?.credits) != nil }
@@ -84,6 +87,8 @@ struct SettingsScreen: View {
                         }
                     } header: { Text("Usage credits") }
                 }
+                // The sample data has no notifications or Live Activity to configure (rev B §7).
+                if !model.isSample {
                 Section {
                     ForEach(model.accounts) { account in
                         ResetModeRow(account: account, weekly: false)
@@ -93,6 +98,7 @@ struct SettingsScreen: View {
                     Text("“If busy” only alerts when the window that closed peaked at 80% or more. Alerts are set ahead from the reset times Cooldown last saw.")
                 }
                 LockScreenSection()
+                }
                 Section {
                     Picker("Theme", selection: $theme) {
                         Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
@@ -317,13 +323,13 @@ struct AccountPage: View {
             ForEach(AccountStatus.conditions(provider: account.provider, state: state, addedAtMs: account.addedAtMs, nowMs: model.nowMs), id: \.text) { row in
                 Text(row.text).font(.system(size: 13.5)).foregroundStyle(row.tone == .red ? p.red : p.orange)
             }
-            if !model.isDemo {
+            if !model.isSample {
                 Button(account.provider == .chatgpt ? "Sign in with a code" : "Sign in again", action: onSignIn)
                     .font(.system(size: 16, weight: broken ? .semibold : .regular))
                     .foregroundStyle(account.accent(scheme))
             }
         } header: { Text("Sign-in") } footer: {
-            if account.provider == .chatgpt && !model.isDemo {
+            if account.provider == .chatgpt && !model.isSample {
                 Text("Shows a short code to type at auth.openai.com — on this phone or any other device.")
             }
         }
@@ -400,7 +406,7 @@ struct AccountPage: View {
                 Button("Details…") { details = true }.foregroundStyle(p.ink)
                 Button("Clear usage history…") { clearing = true }.foregroundStyle(p.red)
             }
-            if !model.isDemo {
+            if !model.isSample {
                 Section {
                     Button { removing = true } label: { Text("Remove account").frame(maxWidth: .infinity) }
                         .foregroundStyle(p.red)

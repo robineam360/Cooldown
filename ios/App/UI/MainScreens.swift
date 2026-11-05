@@ -8,14 +8,19 @@ import UserNotifications
 @main
 struct CooldownApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-    @State private var model = AppModel()
+    @State private var realModel = AppModel()
+    /// CCRM-94 parity rev B §7: the reviewer sample data swaps the model for the built-in demo; Exit swaps back.
+    @State private var sampleModel: AppModel?
     @Environment(\.scenePhase) private var phase
+    private var model: AppModel { sampleModel ?? realModel }
     @AppStorage("theme") private var theme = "system"
 
     var body: some Scene {
         WindowGroup {
             RootView()
+                .id(model.isSample)
                 .environment(model)
+                .environment(\.sampleControl, SampleControl(enter: { let m = AppModel(demo: .standard); m.isSample = true; sampleModel = m }, exit: { sampleModel = nil }))
                 .modifier(PaletteProvider())
                 .preferredColorScheme(theme == "light" ? .light : theme == "dark" ? .dark : nil)
                 .task(id: phase) {
@@ -340,7 +345,7 @@ struct MainTabs: View {
                 Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.refresh(manual: true) } }
                 Button("Layout", systemImage: "rectangle.3.group") { sheet = .layout }
                 Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
-                Button("Add account", systemImage: "plus") { sheet = .addAccount }
+                if !model.isSample { Button("Add account", systemImage: "plus") { sheet = .addAccount } }
             } label: { Image(systemName: "ellipsis.circle") }
         }
     }
@@ -364,6 +369,7 @@ struct TabPage: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if model.isSample { SampleBanner() }
                 if showsTitle { AppTitle().frame(maxWidth: .infinity, alignment: .leading) }
                 if let account {
                     if iPad {
@@ -442,6 +448,7 @@ struct EmptyStateView: View {
     @Binding var sheet: Sheet?
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.sampleControl) private var control
 
     var body: some View {
         VStack(spacing: 0) {
@@ -464,6 +471,9 @@ struct EmptyStateView: View {
                 if Antigravity.available { addButton("Add a Gemini account", .antigravity) { sheet = .geminiSignIn } }
             }
             .padding(.top, 28)
+            // Reviewers (and the curious) can look around without an account.
+            Button(SampleRules.entryTitle) { control.enter() }
+                .font(.system(size: 15)).foregroundStyle(p.ink).padding(.top, 20)
             Spacer()
             Text("Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).multilineTextAlignment(.center).padding(.horizontal, 24).padding(.bottom, 24)

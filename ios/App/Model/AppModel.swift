@@ -33,6 +33,8 @@ final class AppModel {
     let api: APIClient
     private let accountsStore: AccountsStore
     let isDemo: Bool
+    /// The reviewer sample data (parity rev B §7): the built-in demo entered from the app, as opposed to the screenshot demo.
+    var isSample = false
 
     init(demo: DemoScenario? = DemoScenario.fromLaunchArguments()) {
         // The User-Agent's version, and CCRM-55's client secret from the uncommitted xcconfig (never logged).

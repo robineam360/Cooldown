@@ -483,6 +483,12 @@ The sheet polls at the server-given interval while waiting. Approved by `design/
 
 ---
 
+### Reviewer sample data (iOS, 2026-11-05, parity wireframes rev B §7)
+
+Entered from "Try with sample data" under the capsules on the first-launch screen, or from the fourth row of Add account ("Try with sample data" · "Three made-up accounts to look around. Nothing is saved or sent."). The app swaps its model for the built-in demo (temporary storage, no Keychain, nothing persisted) and swaps back on Exit. A purple banner (`#7C4DFF` at 16%, 12 pt radius, "● Sample data — made-up accounts", trailing "Exit") tops each tab page. Settings account rows read "Sample"; Add account, Reset alerts, Lock Screen, Sign in again and Remove are hidden; the account page hides Remove and the sign-in action; the share card stays and carries the 16 pt `#7C4DFF` "● SAMPLE DATA" band. Display settings still apply and persist (they are the user's own).
+
+---
+
 ## 8. Share card
 
 Android: ⋮ → "Share snapshot" renders off the main thread then shows a dialog "Share snapshot" containing the card image (16 dp radius, aspect ratio of the bitmap) with "Share" and "Cancel"; nothing is written to disk until Share, and the previous snapshot is deleted. iOS: ellipsis → "Share card" opens a sheet "Share card" with the card (18 pt radius, shadow) and a "Share" capsule (system share sheet); with no reading: "Nothing to share yet — this account has no reading." Approved by `design/2026-09-25-share-card-renders.html` rev D §9e. Source `A/share/ShareCard.kt:54`, `I/App/UI/ShareCard.swift:7`.
