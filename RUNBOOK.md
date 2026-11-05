@@ -99,7 +99,7 @@ begun, run its *Always after* block first.
 | 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☑ |
-| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☑ published 2026-11-05 (phone install check and Robin's tap pending) |
+| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☑ done 2026-11-05 |
 | 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | **Deferred 2026-11-04 until after v2.0** |
 
 ---
@@ -624,7 +624,7 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 - ☑ v1.9 is published and `releases/latest` resolves to it (2026-11-05). The published asset's sha256 equals the
   reviewed build. ☑ The Fold 7 (back on the cable later the same day): screen timeout restored to the recorded
   300000; `adb install -r` of the downloaded published asset, installed sha256 = `6ff15bdc…6037`, 25 / 1.9; the crash card still
-  "7 reports, newest 10:18 AM" and the crash log buffer empty. ☐ **Still pending:** Robin's "Check for updates" tap.
+  "7 reports, newest 10:18 AM" and the crash log buffer empty. ☑ Robin tapped "Check for updates" on the Fold 7 (2026-11-05) and it reads up to date. **Step 8 is done.**
 - ~~Play's current upload requirements were checked against the AAB before publishing.~~ Dropped
   from v1.9, Robin 2026-11-04 (Play waits until after v2.0).
 - ☑ CI was green on the exact release commit before the tag (run 41972204923 on 3905c14: build, ios-core, ios-app).

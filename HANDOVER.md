@@ -112,7 +112,7 @@ account left on a phone by a v2.0 build made every v1.9 refresh throw; fixed in 
 
 **Done on the phone (2026-11-05, after publishing):** screen timeout restored to 300000; the published asset installed with
 `adb install -r` (installed sha256 = `6ff15bdc…6037`, 1.9 / 25); the crash card unchanged ("7 reports, newest 10:18 AM"), crash log buffer empty.
-**Still open: Robin taps Check for updates** and confirms it reads up to date; then tick that bullet in Step 8's Done-when.
+Robin tapped Check for updates and it reads up to date: **Step 8 is closed.**
 
 **Robin, morning questions still open:** keep the FGS demo video (recorded on v1.9) or re-record on v2.0? Keep the Play feature graphic or
 redo it after CCRM-101 (Icon v3)? Anything in `release/play/CHECKLIST.md` to decide now? Play is after v2.0.
