@@ -166,6 +166,26 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   (3) §3.1 says the three pace suppressions must read differently; Android words them as one line.
   Details in `spec/mobile/surfaces/foundations.md` and `app.md`, "Differs from" notes.
 
+### CCBG-75 · Antigravity Crash on Refresh — a Gemini account left by a v2.0 build crashes every v1.9 refresh
+- **Status:** **Fixed in code 2026-11-05, not yet seen on the phone** — found by Robin 2026-11-05 on the
+  Fold 7 in the github build 1.9 (25): four crash reports (23:20, 01:21, 04:20, 06:16) plus a manual refresh
+  tap on the Gemini card. Robin: "Fix, rebuild." Guard added in `UsageRepository` (`hasSource`): an account
+  whose provider has no source is skipped by `refreshAll` and answers `refreshNow` with an error, its stored
+  data untouched. `RefreshNoSourceTest` (failing first: three `NotImplementedError`s). **The v2.0 merge
+  (PR #21) must drop `hasSource` once `AntigravitySource` lands**, and that PR edits the same
+  `Sources.of` line; ID 75 was taken to stay clear of the v2.0 branch's CCBG-56 to CCBG-74.
+- **Severity:** High (a crash on every background and manual refresh)
+- **Symptom:** `kotlin.NotImplementedError` at `Sources.of` (`UsageSource.kt:47`) ← `UsageRepository.doFetch`
+  ← `UsageRepository.refreshAll`, thread `DefaultDispatcher-worker`, every time.
+- **Root cause:** on main `Sources.of(ANTIGRAVITY)` throws, because the real source lives on the v2.0 branch.
+  v1.9 has no Gemini sign-in, but a phone that ran a v2.0 build first (same package and versionCode, so v1.9
+  installs over it) still holds a Gemini account, and `refreshAll` loops over every account with a token.
+- **Why the Step 7 pass missed it:** the pass ran on exactly such a phone (a Gemini account with a token sat on
+  the Accounts screen) but never opened the crash-report screen, and a refresh of that account never ran
+  inside the pass window: the Accounts card read "Checked 2h 51m ago" for Gemini, which was the hint, and
+  it was read as "not polled yet". The first reported crash (23:20) came after the pass ended (about 22:00).
+  Step 7 now also reads the crash-report screen at the end of every pass.
+
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
