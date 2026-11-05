@@ -622,9 +622,9 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 
 **Done when:**
 - ☑ v1.9 is published and `releases/latest` resolves to it (2026-11-05). The published asset's sha256 equals the
-  reviewed build. ☐ **Still pending:** the Fold 7 was off the cable right after publishing, so `adb install -r` of
-  the published asset, the installed-sha256 check, the unchanged crash card, restoring the screen timeout to the
-  recorded 300000 (it was left at 30 min) and Robin's "Check for updates" tap are open (HANDOVER.md).
+  reviewed build. ☑ The Fold 7 (back on the cable later the same day): screen timeout restored to the recorded
+  300000; `adb install -r` of the downloaded published asset, installed sha256 = `6ff15bdc…6037`, 25 / 1.9; the crash card still
+  "7 reports, newest 10:18 AM" and the crash log buffer empty. ☐ **Still pending:** Robin's "Check for updates" tap.
 - ~~Play's current upload requirements were checked against the AAB before publishing.~~ Dropped
   from v1.9, Robin 2026-11-04 (Play waits until after v2.0).
 - ☑ CI was green on the exact release commit before the tag (run 41972204923 on 3905c14: build, ios-core, ios-app).

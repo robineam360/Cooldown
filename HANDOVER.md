@@ -110,12 +110,9 @@ account left on a phone by a v2.0 build made every v1.9 refresh throw; fixed in 
 **Gate G0 is lifted** for the v2.0 branch (PR #21), with one obligation: **the v2.0 merge must drop `hasSource` in
 `UsageRepository.kt` (CCBG-75's guard) once `AntigravitySource` lands**, and CCBG-76 / CCBG-77 (both Low, filed) go with it.
 
-**Still open on the phone (the Fold 7 was off the cable right after publishing):**
-1. Restore the screen timeout to the recorded **300000** ms (it is at 1800000 from the CCBG-75 re-test).
-2. `adb install -r` the published asset (`gh release download v1.9`), check the installed sha256 = `6ff15bdc…6037`, read the crash card
-   (it read "7 reports, newest 10:18 AM"; nothing newer).
-3. Robin taps **Check for updates** and confirms it reads up to date.
-Then tick the pending bullet in Step 8's Done-when.
+**Done on the phone (2026-11-05, after publishing):** screen timeout restored to 300000; the published asset installed with
+`adb install -r` (installed sha256 = `6ff15bdc…6037`, 1.9 / 25); the crash card unchanged ("7 reports, newest 10:18 AM"), crash log buffer empty.
+**Still open: Robin taps Check for updates** and confirms it reads up to date; then tick that bullet in Step 8's Done-when.
 
 **Robin, morning questions still open:** keep the FGS demo video (recorded on v1.9) or re-record on v2.0? Keep the Play feature graphic or
 redo it after CCRM-101 (Icon v3)? Anything in `release/play/CHECKLIST.md` to decide now? Play is after v2.0.
