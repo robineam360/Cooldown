@@ -719,9 +719,9 @@ struct HistoryScreen: View {
     /// Android's Plan Fit block (iOS subset: no plan or model tags on history records yet, so the plan is the live one and
     /// the cap is the generic "the cap"). Shown for a new account too, hidden for a plan-refused one (caller).
     @ViewBuilder private func planFit(_ account: Account, two: Bool) -> some View {
-        let reading = PlanFit.evaluate(records: model.records[account.key] ?? [], nowMs: model.nowMs)
         let st = model.states[account.key]
         let live = st?.plan.map { PlanNames.display(account.provider, $0, tier: st?.tier) }
+        let reading = PlanFit.evaluate(records: model.records[account.key] ?? [], livePlan: live, nowMs: model.nowMs)
         let lines = PlanFitCopy.build(reading, fallbackPlan: live, compact: !two)
         VStack(alignment: .leading, spacing: 0) {
             Text(lines.header).font(.system(size: 11, weight: .semibold)).foregroundStyle(p.sub)

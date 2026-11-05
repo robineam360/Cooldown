@@ -25,7 +25,8 @@ struct ShareCardView: View {
         let order = ShareCardPlan.order(headline: headline, hasSession: five != nil, sessionBinding: sessionBinding,
                                         weeklySpent: Pace.isSpent(usage.weekly?.percent))
         let rows: [WindowContent] = order.compactMap { $0 == .session ? five : week }
-        let spent = order.first == .weekly && order.count == 2   // a spent week leads and greys the 5h
+        let weeklyLeads = order.first == .weekly && order.count == 2
+        let weekSpent = weeklyLeads && Pace.isSpent(usage.weekly?.percent)   // a spent week dims the 5h row and the ring
         VStack(alignment: .leading, spacing: 0) {
             if sample {
                 Text("● SAMPLE DATA").font(.system(size: 8.5, weight: .bold)).foregroundStyle(.white)
@@ -35,6 +36,7 @@ struct ShareCardView: View {
             HStack(spacing: 14) {
                 // The ring is the 5h gauge; Weekly only when the plan has no 5h window.
                 UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
+                    .opacity(weekSpent ? 0.45 : 1)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 7) {
                         ProviderMark(provider: account.provider, size: 22)
@@ -44,8 +46,8 @@ struct ShareCardView: View {
                 }
             }
             ForEach(Array(rows.enumerated()), id: \.offset) { i, c in
-                row(c, accent: accent, figure: i == 0 ? 24 : 19, spentWeek: spent && c.isWeekly && Pace.isSpent(c.pct),
-                    greyed: spent && i == 1 && Pace.isSpent(rows[0].pct))
+                row(c, accent: accent, figure: i == 0 ? 24 : 19, spentWeek: weekSpent && i == 0,
+                    greyed: weekSpent && i == 1)
                     .padding(.top, i == 0 ? 18 : 14)
             }
             Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 14)

@@ -249,3 +249,32 @@ struct ChartFillTests {
         #expect(TrendChart.splitFill([CGPoint(x: 0.2, y: 90)]).above.isEmpty)
     }
 }
+
+/// CCRM-94 (iOS App) parity wireframes rev B §5-6, the judge's fixes: "spent" is the money left, not the rounded percent;
+/// the share card's row order follows the Headline.
+@Suite("Credits spent and share-card order (parity rev B)")
+struct ParityFixTests {
+    @Test("$39.81 of $40.00 is not spent: $0.19 left, no alarm; $40.00 of $40.00 is spent")
+    func notSpentYet() throws {
+        func c(_ used: Int64) -> SpendCredits { SpendCredits(usedMinor: used, limitMinor: 4000, exponent: 2, currency: "USD", serverSeverity: nil) }
+        let almost = try #require(CardContent.creditsCard(c(3981)))
+        #expect(almost.figure == "100%" && !almost.footerAlarm)
+        #expect(almost.footer == "$0.19 left · covers you when you hit your plan limits")
+        let spent = try #require(CardContent.creditsCard(c(4000)))
+        #expect(spent.footerAlarm && spent.footer.hasPrefix("All credits spent"))
+    }
+
+    @Test("share-card order: Weekly leads by default and under Auto unless 5h binds; 5-hour leads under Headline 5-hour; spent week leads always; no 5h = one row")
+    func order() {
+        func o(_ h: Headline, session: Bool = true, binding: Bool = false, spent: Bool = false) -> [WindowKind] {
+            ShareCardPlan.order(headline: h, hasSession: session, sessionBinding: binding, weeklySpent: spent)
+        }
+        #expect(o(.weekly) == [.weekly, .session])
+        #expect(o(.auto) == [.weekly, .session])
+        #expect(o(.auto, binding: true) == [.session, .weekly])
+        #expect(o(.fiveHour) == [.session, .weekly])
+        #expect(o(.fiveHour, spent: true) == [.weekly, .session])
+        #expect(o(.auto, binding: true, spent: true) == [.weekly, .session])
+        #expect(o(.fiveHour, session: false) == [.weekly])
+    }
+}

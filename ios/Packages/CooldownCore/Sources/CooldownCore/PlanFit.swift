@@ -110,6 +110,18 @@ public enum PlanFit {
         return evaluate(weekly: weekly, sessions: sessions, nowMs: nowMs)
     }
 
+    /// The iOS app's entry: history records carry no plan tag, so every weekly entry is tagged with the account's live plan
+    /// (the header then names it; a plan change inside the window cannot be seen until records carry the tag). A nil or empty
+    /// `livePlan` leaves them untagged.
+    public static func evaluate(records: [HistoryStats.Record], livePlan: String?, nowMs: Int64) -> Reading {
+        let plan = livePlan.flatMap { $0.isEmpty ? nil : $0 }
+        let weekly = records.filter { $0.kind == HistoryStats.weeklyKind }.map {
+            WeeklyEntry(resetAtMs: $0.resetAtMs, peakPct: $0.peakPct, hitLimit: $0.hitLimit, plan: plan)
+        }
+        let sessions = records.filter { $0.kind == HistoryStats.sessionKind }
+        return evaluate(weekly: weekly, sessions: sessions, nowMs: nowMs)
+    }
+
     /// - Parameters:
     ///   - weekly: closed weekly windows (any order).
     ///   - sessions: the same profile's session-kind records, for the 5h line; empty for a

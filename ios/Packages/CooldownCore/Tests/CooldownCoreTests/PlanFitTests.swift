@@ -496,3 +496,27 @@ struct PlanFitCopyTests {
         #expect(lines.evidence == "Capped or above 75% in 6 of 8 weeks")
     }
 }
+
+
+/// iOS entry: records carry no plan tag, so the account's live plan names the header.
+@Suite("PlanFit with the live plan (iOS)")
+struct PlanFitLivePlanTests {
+    func records(weeks: Int) -> [HistoryStats.Record] {
+        (0..<weeks).map { HistoryStats.Record(kind: HistoryStats.weeklyKind, resetAtMs: 1_700_000_000_000 + Int64($0) * HistoryStats.weekMs,
+                                              peakPct: 50, hitLimit: false) }
+    }
+
+    @Test("eight closed weeks: the live plan is in the header, compact and two-column")
+    func header() {
+        let reading = PlanFit.evaluate(records: records(weeks: 8), livePlan: "Max 5x", nowMs: 1_700_000_000_000 + 9 * HistoryStats.weekMs)
+        #expect(PlanFitCopy.build(reading, compact: true).header == "PLAN FIT · MAX 5X")
+        #expect(PlanFitCopy.build(reading, compact: false).header == "PLAN FIT · MAX 5X · LAST 8 WEEKS")
+        #expect(reading.currentPlan == "Max 5x")
+    }
+
+    @Test("no live plan leaves the header without one")
+    func none() {
+        let reading = PlanFit.evaluate(records: records(weeks: 8), livePlan: nil, nowMs: 1_700_000_000_000 + 9 * HistoryStats.weekMs)
+        #expect(PlanFitCopy.build(reading, compact: true).header == "PLAN FIT")
+    }
+}

@@ -20,18 +20,19 @@ struct CooldownApp: App {
             RootView()
                 .id(model.isSample)
                 .environment(model)
-                .environment(\.sampleControl, SampleControl(enter: { let m = AppModel(demo: .standard); m.isSample = true; sampleModel = m }, exit: { sampleModel = nil }))
+                .environment(\.sampleControl, SampleControl(enter: { let m = AppModel(demo: .standard); m.isSample = true; sampleModel = m }, exit: { sampleModel = nil; Task { await realModel.refresh(manual: false) } }))
                 .modifier(PaletteProvider())
                 .preferredColorScheme(theme == "light" ? .light : theme == "dark" ? .dark : nil)
                 .task(id: phase) {
                     // The app fetches when it opens or returns (spec mobile §1); the repository's floor keeps it polite.
-                    if phase == .active { await model.refresh(manual: false) }
+                    if phase == .active { await realModel.refresh(manual: false) }
                 }
                 .task {
                     // Countdowns and "ago" lines move with the clock, not with fetches.
                     while !Task.isCancelled {
                         try? await Task.sleep(nanoseconds: 30_000_000_000)
-                        model.nowMs = AppModel.clock()
+                        realModel.nowMs = AppModel.clock()
+                        sampleModel?.nowMs = AppModel.clock()
                     }
                 }
                 .onOpenURL { url in if let key = DeepLink.key(from: url) { model.selectedKey = key } }
@@ -41,7 +42,8 @@ struct CooldownApp: App {
                 .onChange(of: phase) { if phase == .background { BackgroundRefresh.schedule() } }
         }
         .backgroundTask(.appRefresh(BackgroundRefresh.id)) {
-            await model.refresh(manual: false)
+            // The real accounts, even while the sample data is showing.
+            await realModel.refresh(manual: false)
             BackgroundRefresh.schedule()
         }
     }

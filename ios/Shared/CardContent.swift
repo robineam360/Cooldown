@@ -218,7 +218,8 @@ enum CardContent {
         guard let credits, credits.isReportable else { return nil }
         func money(_ minor: Int64) -> String { Fmt.money(minorUnits: minor, exponent: credits.exponent, currencyCode: credits.currency) }
         if credits.hasLimit, let limit = credits.limitMinor, let pct = credits.percentDisplay, let exact = credits.percent {
-            let spent = pct >= 100
+            // Android decides on the money left, not the rounded percent: $39.81 of $40 is not spent.
+            let spent = (credits.remainingMinor ?? 0) == 0
             let left = money(credits.remainingMinor ?? 0)
             return CreditsCardContent(
                 amounts: "\(money(credits.usedMinor)) / \(money(limit))", figure: "\(pct)%", showsInfo: true,
