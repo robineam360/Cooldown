@@ -375,6 +375,40 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   guard answers `FetchResult.Error("not supported in this version")`, so the worker retries while `runAttemptCount < 3` and then ends.
 - **Fix:** skip accounts with no source in the one-shot path too (same `hasSource`), dropped with the guard at the v2.0 merge.
 
+> **v2.0 Fold 7 pass, 2026-11-06 (github release flavor of `d81fbe9`, release-signed, installed over v1.9).**
+> CCBG-78 and CCBG-79 came out of it; report and captures in
+> `design/research/2026-11-06-v20-fold7-pass/`. Neither is fixed: both change what the user sees, so each
+> waits for Robin's go (CLAUDE.md §2).
+
+### CCBG-78 · Collapsed Pace Line Clip — the collapsed notification ellipsizes the pace line on the cover screen
+- **Status:** Open · found 2026-11-06 on the Fold 7 cover (One UI 8, 420 dpi, font scale 1.0), in Used and Vs pace mode
+- **Severity:** Medium (the always-on notification is the app's main surface; the reset clock is cut on the phone it was designed on)
+- **Symptom:** the collapsed one-account notification reads "5h 45m behind · Sun 9:30 …"
+  (`09-cover-notification-vs-pace-clip.png`, `10-cover-notification-used-clip.png`). CCRM-104 (Pace Line Parity)
+  D10 says the line drops the weekday, then the clock, and never cuts. The inner screen's wider shade shows the
+  full line, and the expanded notification (141 dp column) drops the weekday as designed (`15-inner-notification.png`).
+- **Cause:** `TextFit.COLLAPSED_COLUMN_DP` assumes a 184 dp column (the tight 328 dp skin, wireframe §5/§8). On the
+  cover the sub line's view is 385 px wide, about 147 dp (uiautomator bounds `[379,663][764,706]`). The full form
+  is about 169 dp at 12 sp, so it passes the 184 dp check and gets ellipsized. The form without the weekday is
+  about 144 dp, so it would have fitted.
+- **Fix (needs Robin's go):** measure the collapsed column on One UI's cover shade and set the constant to that
+  width or less. 146 dp would pick "5h 45m behind · 9:30 pm" here. Then recheck the Duet header's 159 dp the same
+  way. This only changes which approved form is shown.
+
+### CCBG-79 · Leader Reads as Trail — Pace map leader lines span the plot and cross other labels
+- **Status:** Open · found 2026-11-06 on the Fold 7, cover and inner
+- **Severity:** Low (cosmetic, but the map can be misread)
+- **Symptom 1:** Gemini's week has not started, so its dot sits at the origin. Its label gets a leader line
+  that runs the whole width of the plot to "Gemini" at the right edge, just above "behind pace". It reads as a
+  Gemini trail rising to about 18% (`02-cover-pace-map-gemini-leader.png`, `14-inner-summary.png`).
+- **Symptom 2:** with synthetic data (five dots at one point), Work's leader runs straight through the "Claude"
+  label and Product's grazes it (`18-inner-synthetic-map-leaders.png`).
+- **Cause:** at the origin, every candidate spot (right, below, left, above-left) leaves the plot, so
+  `PaceMapGeometry.placeLabels` always falls back to a leader to the right edge. Spec: core §6.3, which says
+  "a short leader line". The leader is checked against labels only at its end spot, not along its path.
+- **Fix (needs a wireframe and Robin's go):** for example, allow an origin dot's label to sit inside the plot
+  above-right, end leaders short of the edge, or refuse a leader whose path crosses a placed label.
+
 ### CCBG-31 · Alert Crash — enabling alerts crashes the app
 - **Status:** **Shipped v1.8 (2026-09-27).** **Fixed (2026-09-25)** — reproduced on the API 36 emulator, fixed, unit-tested and
   seen on the emulator the same day, and **on the Fold 7 the same evening** (the expanded one-account
