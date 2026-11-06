@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "BEHAVIOR-SPEC section 6.3 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)): the distance from the pace mark as numbers. Promoted from spec/mobile on 2026-11-02 at the desktop family's request: two installs must agree. Generated from the same inputs as spec/mobile/fixtures/display/cases.json, whose strings are the mobile wording of these numbers. expected null = no distance (spent, no reset clock or no reading). markTime (section 6.3, Robin 2026-11-02): the instant the pace mark equals the usage — window start + used/100 x length — as a future instant when over pace and a past duration when under; null = no readout. markTime fields: side (over|under|on), markReachesUsedAtMs and inMs (over), markWasAtUsedAgoMs (under); whole milliseconds, rounded half up. vsPace rounds toward zero since 2026-11-06 (Robin): sign(d) x floor(|d| + 1e-9), d = elapsed - used, so within a point of the mark is 0 on either side.",
+    "note": "BEHAVIOR-SPEC section 6.3 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)): the distance from the pace mark as numbers. Promoted from spec/mobile on 2026-11-02 at the desktop family's request: two installs must agree. Generated from the same inputs as spec/mobile/fixtures/display/cases.json, whose strings are the mobile wording of these numbers. expected null = no distance (spent, no reset clock or no reading). markTime (section 6.3, Robin 2026-11-02): the instant the pace mark equals the usage — window start + used/100 x length — as a future instant when over pace and a past duration when under; null = no readout. markTime fields: side (over|under|on), markReachesUsedAtMs and inMs (over), markWasAtUsedAgoMs (under); whole milliseconds, rounded half up. vsPace rounds toward zero since 2026-11-06 (Robin): sign(d) x floor(|d| + 1e-9), d = elapsed - used, so within a point of the mark is 0 on either side. On the mark since 2026-11-06 (CooldownDesktop agreed): |d| + 1e-9 < 1, the same epsilon as vsPace, so the figure and the line never disagree.",
     "tolerance": "exact integers"
   },
   "vsPace": [
@@ -115,6 +115,14 @@
       "hasResetClock": true,
       "expected": 0,
       "why": "(1 - 0.83) x 100 against an even 17: 0%, not -1% (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "binary float edge just under a point over",
+      "usedPct": 2.3,
+      "elapsedPct": 1.3,
+      "hasResetClock": true,
+      "expected": -1,
+      "why": "1.3 - 2.3 is -0.9999999999999998; |d| + 1e-9 reaches 1, so -1, and the mark test agrees it is over (null = the surface falls back to the usage figure, or a dash with no reading)"
     }
   ],
   "markDistance": [
@@ -237,6 +245,18 @@
       "elapsedPct": 50,
       "hasResetClock": true,
       "expected": null
+    },
+    {
+      "name": "binary float edge just under a point over",
+      "usedPct": 2.3,
+      "elapsedPct": 1.3,
+      "hasResetClock": true,
+      "expected": {
+        "markPct": 1,
+        "points": 1,
+        "side": "over"
+      },
+      "why": "|d| + 1e-9 >= 1: over by 1, matching the figure -1%"
     }
   ],
   "markTime": [
@@ -324,6 +344,19 @@
       "nowMs": 1793620200000,
       "expected": null,
       "why": ""
+    },
+    {
+      "name": "binary float edge just under a point over",
+      "usedPct": 2.3,
+      "msUntilReset": 596937600,
+      "windowLengthMs": 604800000,
+      "nowMs": 1793620200000,
+      "expected": {
+        "side": "over",
+        "markReachesUsedAtMs": 1793626248000,
+        "inMs": 6048000
+      },
+      "why": "elapsed 1.3, used 2.3: |d| + 1e-9 >= 1, so over (was 'on' before 2026-11-06), agreeing with the figure -1%"
     }
   ]
 }

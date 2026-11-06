@@ -293,6 +293,69 @@
     "belowDiagonal": "behind pace",
     "diagonal": "even pace",
     "xStart": "week start",
-    "xEnd": "reset"
-  }
+    "xEnd": "reset",
+    "xCentre": "each account's own week"
+  },
+  "paceLineForms": [
+    {
+      "name": "full, then without the weekday, then the floor",
+      "side": "over",
+      "durationMs": 86399999,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-11T12:30",
+      "hour24": false,
+      "forms": [
+        "23h 59m ahead · Wed 12:30 PM",
+        "23h 59m ahead · 12:30 PM",
+        "23h 59m ahead"
+      ]
+    },
+    {
+      "name": "on the mark",
+      "side": "on",
+      "durationMs": null,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-11T12:30",
+      "hour24": false,
+      "forms": [
+        "On the mark · Wed 12:30 PM",
+        "On the mark · 12:30 PM",
+        "On the mark"
+      ]
+    },
+    {
+      "name": "a reset later today has no weekday to drop",
+      "side": "under",
+      "durationMs": 125280000,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-04T23:00",
+      "hour24": false,
+      "forms": [
+        "1d 10h behind · 11:00 PM",
+        "1d 10h behind"
+      ]
+    },
+    {
+      "name": "24-hour",
+      "side": "under",
+      "durationMs": 604799999,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-05T09:00",
+      "hour24": true,
+      "forms": [
+        "6d 23h behind · Thu 09:00",
+        "6d 23h behind · 09:00",
+        "6d 23h behind"
+      ]
+    },
+    {
+      "name": "no readout",
+      "side": null,
+      "durationMs": null,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-11T12:30",
+      "hour24": false,
+      "forms": []
+    }
+  ]
 }

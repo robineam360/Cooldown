@@ -412,22 +412,21 @@ For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), n
 - **Vs pace figure** = `elapsedPct − usedPct` rounded **toward zero**, an integer, signed (positive = under the mark,
   room): `sign(d) × floor(|d| + 1e-9)` with `d = elapsedPct − usedPct` (Robin, 2026-11-06, replacing the
   2026-11-02 floor, so a window within a point of the mark on either side prints "0%" beside "On the mark" and
-  the figure and the line agree; "−1%" at 1.5 over, was "−2%"). One float artefact remains: within 1e-9 below a
-  whole point (`|d|` in `[1 − 1e-9, 1)`) the figure's epsilon reaches 1 while the on-the-mark test does not, so
-  "−1%" can still meet "On the mark" there; giving the on-the-mark test the same epsilon is an open proposal. Spent, no reset clock or no reading → no
+  the figure and the line agree; "−1%" at 1.5 over, was "−2%"). Spent, no reset clock or no reading → no
   figure (a surface falls back to the usage figure, or a dash).
 - **The mark** = `elapsedPct` rounded half up; the **distance** = `|elapsedPct − usedPct|` rounded half up;
-  **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
+  **on the mark** when `|elapsedPct − usedPct| + 1e-9 < 1` (the same epsilon as the figure, 2026-11-06, so the
+  figure and the line never disagree), else under (`elapsedPct > usedPct`) or over.
 - Every floor and half-up adds 1e-9 first, so binary float edges (`2.3 − 0.3`) land on the decimal answer.
 
 - **When the mark meets the usage** (Robin, 2026-11-02; any clocked window, not spent, a reading): the pace
   mark passes `usedPct` at `windowStart + usedPct ÷ 100 × windowLength` (`windowStart` = reset − length).
   Over the mark that instant is ahead — how long to slow down for the mark to catch up; under the mark it is
   behind — how much the usage trails the mark, as a duration. The result is one of:
-  - **over** (`usedPct − elapsedPct ≥ 1`): `markReachesUsedAtMs` (that instant, epoch ms) and
+  - **over** (not on the mark, `usedPct > elapsedPct`): `markReachesUsedAtMs` (that instant, epoch ms) and
     `inMs` = `markReachesUsedAtMs − now`;
-  - **under** (`elapsedPct − usedPct ≥ 1`): `markWasAtUsedAgoMs` = `now − that instant`;
-  - **on** (`|elapsedPct − usedPct| < 1`): side only, no instant (nothing to show);
+  - **under** (not on the mark, `elapsedPct > usedPct`): `markWasAtUsedAgoMs` = `now − that instant`;
+  - **on** (on the mark, as above): side only, no instant (nothing to show);
   - **none** (null): spent (§6.1, used ≥ 99.5), no reset clock or no reading.
 
   Instants and durations are whole milliseconds, rounded half up. Where it shows is family layer; its words
@@ -464,18 +463,27 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
   §6.1 band words and the allowance ("≈X%/day") are not on any pace line; they remain for alerts and as help
   text. With no readout (spent, no reset clock, no reading) the family's held, spent, signed-out or
   no-reading line shows instead, unchanged. The 5-hour session keeps its projection line (§3), not this one.
+  **Where the line does not fit** (2026-11-06, both families): drop the weekday ("23h 59m ahead · 12:30 PM"),
+  then the clock ("23h 59m ahead"); the duration and its word are the floor and are never cut or ellipsised, and
+  "On the mark" is its own floor. Each string is measured on its own at the text's real (scaled) size, so a short
+  line keeps its clock where a long one drops it. Only if the floor itself does not fit may a surface step its
+  text down (and truncate as the last resort); the words never change.
 - **The pace-mark caption** (help on a figure: hover on desktop, a press on mobile, and a bar's caption where a
   family draws one): Used mode "40% pace mark · 12 over", "60% pace mark · 19 under", "60% pace mark · on it"
   (§6.3's mark, distance and on-the-mark rule); Left mode in remaining terms, the mark as `100 − mark`: "40% pace
   mark · 10 to spare", "40% pace mark · 20 over", "40% pace mark · on it" (Robin, 2026-11-06: mobile's form for
   every family); Vs pace mode "41% used · 60% pace mark" (the sign already says the side).
 - **The Pace map's words:** "ahead of pace" in the wedge above the even-pace diagonal, "behind pace" below it,
-  the diagonal "even pace", the x axis "week start" and "reset". Account names label the dots, never numbers;
-  when two labels would collide, the lower one moves below its dot, and if they still collide each takes a
-  short leader line to a free spot at the plot's right edge.
+  the diagonal "even pace", the x axis "week start" and "reset" with "each account's own week" centred between
+  them. Account names label the dots, never numbers.
+  Labels are placed top-down (highest usage first), so on a collision the lower label is the one that moves; each
+  tries, in order, right of its dot, below it, left of it, above-left, and then a short leader line to a free spot
+  at the plot's right edge (CooldownDesktop's wireframe C1-3). A spot is refused if it leaves the plot or overlaps
+  a placed label, a dot, a wedge or axis label or "even pace"; "even pace" slides along the diagonal to the first
+  free stretch.
 
 Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
-`dayClock`, `paceLine`, `endToEnd`, `caption`, `mapLabels`.
+`dayClock`, `paceLine`, `paceLineForms`, `endToEnd`, `caption`, `mapLabels`.
 
 ---
 

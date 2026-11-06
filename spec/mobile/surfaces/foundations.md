@@ -482,7 +482,7 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amen
 | Weekly spent (≥ 99.5) | "Out until Sun 9:30 pm" red + "Opens again when the window resets" | "Out until Sun 9:30 pm" |
 | Allowance | "≈11%/day", "<1%/day", "40% left, 6h", "40% left, <1h" (under 30 min) | same |
 | 5h | no pace line; the "At this pace …" projection line stays; "Limit reached" at 100 | "Resets in 2h 20m · on track for ~69%" / "· runs out ~3:25 pm" (red) / "· Limit reached" |
-| Pace-mark caption (V1), under every in-app bar (5h, Weekly, model half, Summary row) | "39% pace mark · 13 over" / "· 19 under" / "· on it"; Left "61% pace mark · 13 over" / "· 10 to spare"; Vs pace "52% used · mark 39%"; 11.5 pt (10.5 in a half), first word bold; starts 5 pt right of the mark, else ends 5 pt left; none when spent, unclocked or unread | none |
+| Pace-mark caption (V1), under every in-app bar (5h, Weekly, model half, Summary row) | "39% pace mark · 13 over" / "· 19 under" / "· on it"; Left "61% pace mark · 13 over" / "· 10 to spare"; Vs pace "52% used · 39% pace mark" (core §6.3, since CCRM-104); 11.5 pt (10.5 in a half), first word bold; starts 5 pt right of the mark, else ends 5 pt left; none when spent, unclocked or unread | none |
 | Dashed room | under pace by ≥ 1 point, a 1 pt dashed outline (sub at 80%) from the fill to the mark, in-app bars only | |
 Source: `ios/Shared/CardContent.swift`, `ios/Shared/Charts.swift` (`UsageBar.showsRoom`, `PaceCaption`),
 `ios/Packages/CooldownCore/Sources/CooldownCore/PaceText.swift`. The signed Pace is never printed on iOS.
@@ -527,9 +527,16 @@ wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar"
   colour end the fill square at the usage and add a short line: on a bar 1.5 dp wide, 1.5 dp past each edge; on a
   ring a radial line 0.35 of the band past each edge, max(1.3, S/40) dp; both over a 1 dp gap in the surface colour.
   Line is the fill's colour; Pace colour is ink inside the ±5 on-pace band, green under, red over.
-- **Vs pace colours** (rev D §7b): figures are unsigned; green under the mark (dark #9CCC65, light #2E7D32), red over
-  it (#FF5252 / #C62828, the bar's red), plain ink at 0%; a fallback usage figure keeps its severity colour. Where a
-  caption exists it names the side: the notification's "UNDER PACE" / "OVER PACE" / "ON PACE".
+- **Vs pace figures and colours** (CCRM-104 (Pace Line Parity), core §6.3 "Printed form", replacing rev D §7b's
+  unsigned figure): signed everywhere — "+19%" green under the mark (dark #9CCC65, light #2E7D32), "−12%" (U+2212)
+  red over it (#FF5252 / #C62828, the bar's red), "0%" plain ink — **except inside a 5-hour ring**, where the figure
+  stays unsigned and the colour alone gives the side. A fallback usage figure keeps its severity colour. The
+  notification's "UNDER PACE" / "OVER PACE" / "ON PACE" caption is gone (the sign carries the side). Wireframe
+  `design/2026-11-06-mobile-pace-line-wireframe.html`.
+- **The pace line** (CCRM-104): every Weekly band line ("Slow down · ≈11%/day · resets Sun") is now core's short line,
+  "6d 23h behind · Wed 12:30 PM" / "13h 59m ahead · Thu 6:15 PM" / "On the mark · Sat 8:00 AM", duration and word in
+  the tone. Narrow columns drop the weekday, then the clock; the duration and word are the floor (wireframe D10).
+  Band words and "≈X%/day" survive only in alerts. Per-surface sizes are in app.md, notification.md and widgets.md.
 - **Status-bar glyphs** (Android, rev D §4): the 5h ring (unchanged geometry, §3.3); a red cross alone (arms 7 of 24
   units, stroke 3.4) while out; the ring greyed (track 30%, arc 40%, no needle) while the week is spent; N3, the
   Weekly as a 21 × 10-unit capsule with its tick in a cleared halo.

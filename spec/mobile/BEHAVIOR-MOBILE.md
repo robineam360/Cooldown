@@ -164,6 +164,22 @@ says the side: green under the mark, red over it, plain ink on it; the fallback 
 colour (fixture field `tone`). The notification's caption under the figure says "UNDER PACE" / "OVER PACE" /
 "ON PACE"; the app's figures carry no "vs pace" word. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
 
+**Since CCRM-104 (Pace Line Parity), 2026-11-06** (wireframe `design/2026-11-06-mobile-pace-line-wireframe.html`,
+approved under Robin's delegation; the strings are core §6.3 "Printed form"), the rules above change as follows, and
+this paragraph wins where they differ:
+- **The figure is signed again** ("+19%", "−12%", "0%"), rounded toward zero, except inside a 5-hour ring (unsigned,
+  colour only). The notification's "UNDER PACE / OVER PACE / ON PACE" caption is gone.
+- **The pace line** replaces every Weekly band line (app cards, Summary line 3, the notification's collapsed sub and
+  expanded line 1, widgets, iOS widgets and Live Activity): core's "6d 23h behind · Wed 12:30 PM". Drop order on a
+  narrow column: the weekday, then the clock; the duration and word are never cut. The band words and the allowance
+  stay only in alerts.
+- **The notification's expanded line 2** is the pace-mark caption; where it does not fit, its distance clause alone
+  ("13 over", "10 to spare", "On the mark"; Vs pace "52% used").
+- **The press on a figure** shows the pace-mark caption for 3 s (the drawn caption underlined, or the ring's / one-line
+  row's line swapped for it). The `markTime` readout words ("Pace catches up …", "1d 4h behind pace") are retired;
+  the line now carries `markTime`. Vs pace caption words are core's: "52% used · 39% pace mark".
+- **The Pace map** reads "ahead of pace" / "behind pace"; names on every dot, never numbers (core §6.3).
+
 **Spent week gate** (CCRM-102 (Spent Week Gate), approved 2026-11-02): while the Weekly window is spent
 (core §6.1), the 5h is shown disabled on every account — figure, bar and reset line at 45% opacity, no pace
 caption, no projection — with one full-opacity note "Weekly limit reached — 5h can't be used until <weekly

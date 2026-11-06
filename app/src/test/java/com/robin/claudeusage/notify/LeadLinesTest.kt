@@ -4,8 +4,11 @@ import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.ui.PaceText
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
+import java.time.ZoneOffset
+import java.util.Locale
 
 /**
  * RUNBOOK-v2.0 Step 4: the notification's lines once Weekly leads — CCRM-96 (Weekly First),
@@ -17,25 +20,39 @@ class LeadLinesTest {
     private val now = Instant.parse("2026-11-04T14:50:00Z")
     private fun w(pct: Double?, inMs: Long?) = UsageWindow(pct, inMs?.let { now.plusMillis(it) }, null)
 
+    private fun pace(weekly: UsageWindow?, avail: Float, scale: Float = 1f) =
+        LeadLines.weeklyPace(weekly, now, false, avail, 12f, scale, ZoneOffset.UTC, Locale.US)
+
     @Test
-    fun `pace words are band and allowance`() {
-        // Teams: 52% used, 38.9% of the week gone, 102.7 h left → Slow down · ≈11%/day.
+    fun `the pace line replaces the band words and the allowance`() {
+        // Teams: 52% used, 38.9% of the week gone, 102.7 h left, so 22h 3m ahead of the pace mark.
         val weekly = w(52.0, (102.7 * hour).toLong())
-        assertEquals("Slow down · ≈11%/day", LeadLines.paceWords(weekly, 38.9, now))
-        assertEquals("Slow down · ≈11%/day to last", LeadLines.paceWords(weekly, 38.9, now, toLast = true))
+        val full = pace(weekly, 184f)!!
+        assertEquals("22h 3m ahead · Sun 9:32 PM", full.form.text)
+        assertEquals("22h 3m ahead", full.form.tinted)
+        assertEquals(PaceText.VsTone.OVER, full.form.tone)
+        assertEquals("22h 3m ahead · 9:32 PM", pace(weekly, 150f)!!.form.text)
+        assertEquals("22h 3m ahead", pace(weekly, 100f)!!.form.text)
+        // The band words and the allowance leave the line.
+        assertTrue(!full.form.text.contains("%/day") && !full.form.text.contains("Slow down"))
     }
 
     @Test
-    fun `to last never follows the hours form`() {
-        val lastDay = w(60.0, 6 * hour)
-        assertEquals("Use before reset · 40% left, 6h", LeadLines.paceWords(lastDay, 96.4, now, toLast = true))
+    fun `under the mark the line says behind, on it the mark`() {
+        val under = pace(w(20.0, (102.7 * hour).toLong()), 184f)!!
+        assertEquals(PaceText.VsTone.UNDER, under.form.tone)
+        assertTrue(under.form.text, under.form.text.contains(" behind · "))
+        val on = pace(w(34.7, (110 * hour)), 184f)!!
+        assertTrue(on.form.text, on.form.text.startsWith("On the mark · "))
+        assertNull(on.form.tinted)
     }
 
     @Test
-    fun `no verdict without a reading or a reset`() {
-        assertNull(LeadLines.paceWords(w(null, hour), 50.0, now))
-        assertNull(LeadLines.paceWords(w(10.0, null), null, now))
-        assertNull(LeadLines.weeklyLine(w(10.0, null), null, use24h = false))
+    fun `no pace line without a reading or a reset, nor for a spent week`() {
+        assertNull(pace(w(null, hour), 184f))
+        assertNull(pace(w(10.0, null), 184f))
+        assertNull(pace(w(100.0, 50 * hour), 184f))
+        assertNull(pace(null, 184f))
     }
 
     @Test
@@ -62,19 +79,55 @@ class LeadLinesTest {
     fun `figures follow the three display modes`() {
         assertEquals("52%", LeadLines.figure(52.0, 38.9, PaceText.Mode.USED))
         assertEquals("48%", LeadLines.figure(52.0, 38.9, PaceText.Mode.LEFT))
-        assertEquals("13%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE)) // −13.1 toward zero (core §6.3, 2026-11-06)
+        // CCRM-104 (Pace Line Parity) D1: the Vs pace figure is signed, −13.1 toward zero (core §6.3).
+        assertEquals("−13%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE))
+        assertEquals("+19%", LeadLines.figure(20.0, 39.0, PaceText.Mode.VS_PACE))
+        assertEquals("0%", LeadLines.figure(39.0, 39.0, PaceText.Mode.VS_PACE))
+        assertEquals("100%", LeadLines.figure(100.0, 80.0, PaceText.Mode.VS_PACE)) // spent: the usage figure
         assertEquals("—", LeadLines.figure(null, 38.9, PaceText.Mode.VS_PACE))
-        assertEquals("OVER PACE", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.VS_PACE))
-        assertNull(LeadLines.figureCaption(100.0, 80.0, PaceText.Mode.VS_PACE))
-        assertEquals("LEFT", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.LEFT))
-        assertNull(LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.USED))
     }
 
     @Test
-    fun `second line names the distance and the reset day`() {
-        val weekly = w(50.0, 60 * hour)
-        val line = LeadLines.weeklySecondLine(weekly, 60.0, PaceText.Mode.USED)!!
-        assert(line.startsWith("10 under the pace mark (60%) · resets ")) { line }
-        assert(LeadLines.weeklySecondLine(weekly, 60.0, PaceText.Mode.VS_PACE)!!.startsWith("50% used (mark 60%) · resets "))
+    fun `the ring figure stays unsigned in Vs pace`() {
+        assertEquals("13%", LeadLines.ringFigure(52.0, 38.9, PaceText.Mode.VS_PACE))
+        assertEquals("19%", LeadLines.ringFigure(20.0, 39.0, PaceText.Mode.VS_PACE))
+        assertEquals("52%", LeadLines.ringFigure(52.0, 38.9, PaceText.Mode.USED))
+        assertEquals("48%", LeadLines.ringFigure(52.0, 38.9, PaceText.Mode.LEFT))
+        assertEquals("—", LeadLines.ringFigure(null, 38.9, PaceText.Mode.VS_PACE))
+    }
+
+    @Test
+    fun `the under over on pace caption is gone, LEFT stays (D2)`() {
+        assertNull(LeadLines.figureCaption(52.0, PaceText.Mode.VS_PACE))
+        assertNull(LeadLines.figureCaption(52.0, PaceText.Mode.USED))
+        assertEquals("LEFT", LeadLines.figureCaption(52.0, PaceText.Mode.LEFT))
+        assertNull(LeadLines.figureCaption(null, PaceText.Mode.LEFT))
+    }
+
+    private fun caption(weekly: UsageWindow?, elapsed: Double?, mode: PaceText.Mode, avail: Float) =
+        LeadLines.weeklyCaption(weekly, elapsed, mode, avail, 12f, 1f)?.form
+
+    @Test
+    fun `line 2 is the pace mark caption, permanently (D4)`() {
+        val weekly = w(52.0, (102.7 * hour).toLong())
+        assertEquals("39% pace mark · 13 over", caption(weekly, 38.9, PaceText.Mode.USED, 184f))
+        assertEquals("61% pace mark · 13 over", caption(weekly, 38.9, PaceText.Mode.LEFT, 184f))
+        assertEquals("52% used · 39% pace mark", caption(weekly, 38.9, PaceText.Mode.VS_PACE, 184f))
+    }
+
+    @Test
+    fun `line 2 falls back to its distance clause in a narrow column, never mid-word`() {
+        val weekly = w(52.0, (102.7 * hour).toLong())
+        assertEquals("13 over", caption(weekly, 38.9, PaceText.Mode.USED, 100f))
+        assertEquals("52% used", caption(weekly, 38.9, PaceText.Mode.VS_PACE, 100f))
+        assertEquals("On the mark", caption(w(39.0, hour), 39.0, PaceText.Mode.USED, 60f))
+    }
+
+    @Test
+    fun `no caption when spent, unclocked or unread`() {
+        assertNull(caption(w(100.0, hour), 80.0, PaceText.Mode.USED, 184f))
+        assertNull(caption(w(52.0, null), null, PaceText.Mode.USED, 184f))
+        assertNull(caption(w(null, hour), 38.9, PaceText.Mode.USED, 184f))
+        assertNull(caption(null, null, PaceText.Mode.USED, 184f))
     }
 }

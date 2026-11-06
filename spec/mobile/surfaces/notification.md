@@ -63,22 +63,22 @@ remaining width; the figure block trails.
 | Element | Size | Colour / style | Rule |
 |---|---|---|---|
 | 5h ring (left of the column) | 44 dp, 14 dp gap right, vertically centred | `ui/ShapeGrammar.kt` `GrammarRing.paint` bitmap (band 0.10 S, track, fill in the account accent with its severity step, dashed room to the pace tick, red slice past it, the Usage end mark, the tick) | **gone for a plan with no 5h (B1: today's row exactly)**; shown with no reading yet (hairline ring, "—") |
-| Ring figure (in the bore) | 0.29 × 44 ≈ 12.8 dp before fitting (0.24 for four characters), shrunk until it clears the band by 1.5 dp; sized in dp, so font scale cannot push it into the band | bold, tabular lining digits, its "%" at 58%; ink (`#ECECEC` dark / `#1F1F1F` light); the ladder colour above 90 **or while the 5h binds**; Vs pace green / red / ink; 50% ink with no reading; 45% ink when greyed | the 5h in the Usage display ("34%", "66%" Left, "19%" Vs pace); **no "5h" label** anywhere; TalkBack hears "5-hour window, 34 percent" |
+| Ring figure (in the bore) | 0.29 × 44 ≈ 12.8 dp before fitting (0.24 for four characters), shrunk until it clears the band by 1.5 dp; sized in dp, so font scale cannot push it into the band | bold, tabular lining digits, its "%" at 58%; ink (`#ECECEC` dark / `#1F1F1F` light); the ladder colour above 90 **or while the 5h binds**; Vs pace green / red / ink; 50% ink with no reading; 45% ink when greyed | the 5h in the Usage display ("34%", "66%" Left, "19%" Vs pace — **unsigned**, the tone carries the side; CCRM-104 (Pace Line Parity) D1); **no "5h" label** anywhere; TalkBack hears "5-hour window, 34 percent" |
 | Provider mark (left of label) | 14 dp square, 4 dp gap right | tinted with the account accent | the Claude / ChatGPT mark of the account's provider |
 | Label (title) | 13 sp, platform notification Title style, 1 line, ellipsis | platform title colour | "<Account label> · Weekly", whatever leads |
 | Synthetic dot | 7 dp circle, 5 dp margin left, after the label, at the end of the row | violet `#B388FF` | visible only while the synthetic series is on; contentDescription "Synthetic data" |
 | Bar (full width of the left column) | ImageView 13 dp high, 3 dp margin top, bitmap stretched to fit | see 1.6 | the Weekly's usage with its pace tick and the Usage end mark |
-| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4 |
-| Figure | 32 sp bold, letter-spacing −0.02, tabular lining digits, "%" at 58%, no font padding, 14 dp margin left of the left column | severity colour (1.4); in Vs pace unsigned and coloured (`#9CCC65` / `#2E7D32` under the mark, `#FF5252` / `#C62828` over, ink on it, the severity colour when it falls back to usage) | the Weekly: "52%" or "—" |
-| Caption | 10 sp, letter-spacing 0.08, under the figure, centred on it | platform info colour | "LEFT" in Left mode; "UNDER PACE" / "OVER PACE" / "ON PACE" in Vs pace (the colour-blind cue); none in Used or when the figure falls back |
+| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4; the pace line's form is picked for the 184 dp column of the tight 328 dp skin (CCRM-104 (Pace Line Parity) D10, `notify/TextFit.kt`), at 12 sp, or 10 sp when even its floor would not fit |
+| Figure | 32 sp bold, letter-spacing −0.02, tabular lining digits, "%" at 58%, no font padding, 14 dp margin left of the left column | severity colour (1.4); in Vs pace **signed** (D1) and coloured (`#9CCC65` / `#2E7D32` under the mark, `#FF5252` / `#C62828` over, ink on it, the severity colour when it falls back to usage) | the Weekly: "52%", in Vs pace "+19%" / "−12%" (U+2212) / "0%", or "—" |
+| Caption | 10 sp, letter-spacing 0.08, under the figure, centred on it | platform info colour | "LEFT" in Left mode only; none in Used and Vs pace (the "UNDER PACE" / "OVER PACE" / "ON PACE" caption went with D2: the sign is the cue) |
 
 Layout order: [ring] then [mark] [label ........ synth dot] / [bar] / [sub] in the column; [figure] /
 [caption] on the right, vertically centred.
 
 ```text
- ╭──╮  [mark] Teams · Weekly                    52%
+ ╭──╮  [mark] Teams · Weekly                   −13%
  │34│  [==========|---------------------]
- ╰──╯  Slow down · ≈11%/day
+ ╰──╯  22h 3m ahead · Sun 9:32 PM
 ```
 
 ### 1.3 Anatomy, expanded (`res/layout/notif_big_number_expanded.xml`)
@@ -91,8 +91,8 @@ Layout order: [ring] then [mark] [label ........ synth dot] / [bar] / [sub] in t
 | Label | 14 sp | same text |
 | Bar | 13 dp high, 4 dp margin top | same drawing |
 | Sub line | always the line in 1.4, **never a strip** | the strips live in the panel below |
-| Line 2 (`sub2`) | 12 sp, 2 dp margin, gone when empty | today's distance / reset text (rev D C3: no pace readout in the notification) |
-| Figure | **44 sp** bold | the height is generous, so the figure grows |
+| Line 2 (`sub2`) | 12 sp, 2 dp margin, gone when empty | CCRM-104 (Pace Line Parity) D4: the pace-mark caption, permanently (no hover on a notification); the 5h projection under a takeover. Picked for the 141 dp column (C1-3) |
+| Figure | **44 sp** bold | the height is generous, so the figure grows; signed in Vs pace like the collapsed one (D1) |
 | Synthetic marker | none in the row | the whole view sits under the full-width band instead (1.7) |
 | Panel (`notif_panel_single.xml` included under the header) | 10 dp margin top | section 3: **no 5h row any more** (the ring and its time line replace it, −43 dp) and no Weekly row (the header is the Weekly) |
 
@@ -115,15 +115,29 @@ follows its own Status-bar icon choice, not the Headline.
 
 | Lead | Collapsed line | Expanded line 1 / line 2 | Ring |
 |---|---|---|---|
-| Weekly | "Slow down · ≈11%/day" — the pace words only; the ring replaced v2.0's "· 5h 34%" companion (no 5h: "Slow down · ≈11%/day · resets Sun", B1) | "Slow down · ≈11%/day to last" / "13 over the pace mark (39%) · resets Sun" (Left: "10 to spare · pace mark 40% · resets Sun"; Vs pace: "52% used (mark 39%) · resets Sun") | quiet: ink figure; **while the 5h binds** (Q1) the arc and the figure take the ladder colour, the red slice shows |
+| Weekly | the pace line, "22h 3m ahead · Sun 9:32 PM" (its "ahead" / "behind" span tinted red / green and semi-bold; "On the mark · Sun 9:32 PM" untinted); the band words and "≈11%/day" are gone (CCRM-104 (Pace Line Parity) D3). The ring replaced v2.0's "· 5h 34%" companion; the line carries the reset, so a plan with no 5h (B1) has no extra "· resets Sun" | the same pace line (141 dp column) / the pace-mark caption "39% pace mark · 13 over" (D4; Left "61% pace mark · 13 to spare"; Vs pace "52% used · 39% pace mark") | quiet: ink figure; **while the 5h binds** (Q1) the arc and the figure take the ladder colour, the red slice shows |
 | Weekly, spent | "Out until Sun 9:30 PM · in 3d 4h" | same / none | **greyed** (CCRM-102 (Spent Week Gate)): the track alone at 22%, the figure ("34%") at 45% ink, no time line |
 | Takeover (5-hour, or Auto while the 5h binds) | the 5h's reset line, "Back at 3:40 PM · in 50m" while it binds | the 5h's reset line / "Projected to hit 100% at 3:25 PM" when core §3 projects a hit (as v2.0) | loud, as above |
 | Weekly not started (Q6) | "Weekly not started" | same / none | as its 5h reads ("—" and the hairline without a reading) |
 | No reading yet (Q7), single and Duet | "No reading yet" | same / none | hairline ring, "—" |
 
 Model-cap rows follow in the panel only while the account's "Show model limits" is on (CCRM-99). The figure follows
-Used / Left / Vs pace; in Vs pace it is unsigned and coloured, with "UNDER PACE" / "OVER PACE" / "ON PACE" under it
-(none when it falls back to usage), and panel row figures are coloured distances too. Before CCRM-103: the panel's
+Used / Left / Vs pace; in Vs pace it is **signed** ("+19%", "−12%", "0%") and coloured, with no caption under it
+(CCRM-104 (Pace Line Parity) D1, D2; "LEFT" stays in Left mode), the ring's figure stays unsigned, and panel row
+figures are signed, coloured distances too.
+
+**Fitting the lines (CCRM-104 D10, C1-3, C1-4; `notify/TextFit.kt`).** A RemoteViews cannot measure text, so the
+form is chosen from the column's width in dp at the tight 328 dp skin — collapsed 184, expanded single 141, Duet
+expanded header 159 — against an estimate of the string's width: the wireframe's per-character em classes
+(digit .56, narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80, other capitals .62, space
+.25, "·" .29, ":" .23, sign .58, small "%" .46; the tinted span +3%) × text size in sp × the system font
+scale. Pace line forms, longest first (`PaceText.paceLineForms`): full, without the weekday, the duration and its
+word alone (the floor, never cut); caption forms (`PaceText.captionForms`): the full caption, then its distance
+clause alone ("13 over", "13 to spare", "On the mark"; Vs pace "52% used"). If even the floor does not fit, the
+line steps down to 10 sp, then ellipsizes. At 12 sp the widest line ("23h 59m ahead · Wed 12:30 PM") is 169 dp,
+without the weekday 144, the floor 85; at font scale 2.0 the 141 dp column takes the floor at 10 sp. The tight
+width is the only width a notification knows, so a wider skin simply has spare room. Held, spent, signed-out,
+no-reading and Weekly-not-started lines are unchanged. Before CCRM-103: the panel's
 first row was the companion — the 5h under a Weekly lead, the Weekly under a 5h lead — and a 5h lead swapped the
 label and the figure to the 5h.
 
@@ -201,7 +215,8 @@ None); an install that never sets Second never sees any of this.
 
 **CCRM-103 (Hybrid Notification), rev D §3 D1–D4:** each half is the Weekly (label, bar, figure) with its 5h as
 a ring; the Headline picks only the expanded sub's words, per account (1.4). Collapsed halves have no sub line, as
-before. An expanded header's sub is "Slow down · ≈11%/day · resets Sun" under a Weekly lead, the 5h's reset line in
+before. An expanded header's sub is the pace line ("22h 3m ahead · Sun 9:32 PM", CCRM-104 (Pace Line Parity); the
+weekday drops in the 159 dp column when it does not fit, then the clock) under a Weekly lead, the 5h's reset line in
 a takeover. **The panel has no bar rows any more** — the companion rows left with the grammar (each 5h is its
 header's ring with its time left, each Weekly its header) — so it carries only the condition strip. An account with
 no 5h has no ring anywhere on the Duet (B1). The status-bar icon's "Whichever is higher" compares the gauge windows (4).
@@ -233,7 +248,7 @@ it). 1 dp padding top and bottom.
 | 5h ring, half ≥ 150 dp (D1) | 36 dp at the half's left, 8 dp to the column, vertically centred; the half stays 52 dp | as 1.2 (the figure 0.29 × 36 before fitting, about 10 dp; dashed room kept at 28 dp and up) | gone for an account with no 5h (B1); TalkBack "5-hour window, 34 percent" |
 | 5h ring, half < 150 dp (D3) | the bare 14 dp ring, no digits, no dashed room, at the far end of the label line; the line's end is padded 18 dp so the label ellipsizes before it | as 1.2 | same |
 | Bar | 8 dp high ImageView (see 1.6 note), weight 1, 1 dp margin top | account accent, ladder above 80 | the Weekly; drawn at 156 dp nominal width, 47 dp beside the 36 dp ring (about what it gets) |
-| Figure | 30 sp bold, **28 sp beside the 36 dp ring**, tabular lining digits, "%" at 58%, 8 dp margin left of the bar, no caption collapsed | severity colour; Vs pace coloured (1.2) | the Weekly: "52%" or "—" |
+| Figure | 30 sp bold, **28 sp beside the 36 dp ring**, tabular lining digits, "%" at 58%, 8 dp margin left of the bar, no caption collapsed | severity colour; Vs pace signed and coloured (1.2; CCRM-104 (Pace Line Parity) D1: "+19%" at 28 sp is 63 dp, so 36 + 8 + 40 + 8 + 63 = 155 keeps the 156 dp budget) | the Weekly: "52%", in Vs pace "+19%" / "−12%" / "0%", or "—" |
 
 ```text
  ╭──╮ [mark] Teams           [mark] Personal ●
@@ -256,9 +271,9 @@ Two header blocks, 2 dp padding top and 4 dp bottom, Second 10 dp under First, t
 | Label | 14 sp, max width 200 dp, ellipsis | "<Account label> · Weekly" |
 | Condition dot | 6 dp, 5 dp margin left | as 2.2 |
 | Bar | 13 dp high, 4 dp margin top, full width | the Weekly, drawn at 340 dp nominal |
-| Sub | 12 sp, 4 dp margin top | 1.4's words for that account ("Slow down · ≈11%/day · resets Sun", or the 5h's reset line in a takeover), or "No reading yet" |
-| Figure | **36 sp** bold, tabular lining digits, "%" at 58%, 14 dp margin left | severity colour; Vs pace coloured |
-| Caption | 10 sp, letter-spacing 0.08 | "LEFT", or "UNDER PACE" / "OVER PACE" / "ON PACE", under the figure |
+| Sub | 12 sp, 4 dp margin top | 1.4's words for that account (the pace line, "22h 3m ahead · Sun 9:32 PM", fitted to the 159 dp column and set at 12 sp or 10; or the 5h's reset line in a takeover), or "No reading yet" |
+| Figure | **36 sp** bold, tabular lining digits, "%" at 58%, 14 dp margin left | severity colour; Vs pace signed and coloured |
+| Caption | 10 sp, letter-spacing 0.08 | "LEFT" only, under the figure (no Vs pace caption since CCRM-104 D2) |
 
 ### 2.4 States (per half; the other half is unaffected)
 
@@ -459,7 +474,7 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 | settings-diet-wireframe.html section 2, single row | wireframe: "ChatGPT · 5-hour window", "7-day" row. Code: "<Label> · 5h" and "Weekly" (CCBG-45 (Single Panel Wording)) |
 | settings-diet-wireframe.html section 2, Duet strips | wireframe: two-line strips, cap 2. Code: one-line, cap 1 (CCBG-26 (Panel Scaling)) |
 | 2026-11-02-shape-grammar.html rev D §3 D3 | the bare 14 dp ring for a Duet half under 150 dp is built (`Duet.halfRing`, `notif_duet.xml`); every shade measured so far (the cover, the Fold 7 inner at ~180 dp halves) takes the 36 dp ring (CCBG-64, Robin's call) |
-| 2026-11-02-shape-grammar.html rev D §3 N2 | the page draws line 2 as "Resets Sun 9:30 pm · in 4d 6h"; the code keeps v2.0's distance line ("13 over the pace mark (39%) · resets Sun"), as the build brief said |
+| 2026-11-02-shape-grammar.html rev D §3 N2 | the page draws line 2 as "Resets Sun 9:30 pm · in 4d 6h"; the code kept v2.0's distance line until CCRM-104 (Pace Line Parity) D4 made line 2 the pace-mark caption ("39% pace mark · 13 over"), permanently |
 | 2026-11-02-shape-grammar.html rev D §3 D4 | the page's expanded Duet panel shows a model-cap row ("Teams · Fable"); the code keeps the Duet panel free of model caps (CCBG-26 (Panel Scaling)) |
 | rails-gauge-wireframe.html | see section 4.3 |
 | status-bar-gauge-wireframe.html | superseded twin-ring design; see 4.3 |
@@ -479,7 +494,7 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 | Reset pings | `alerts/Alerts.kt`, `alerts/ResetRollover.kt` | BEHAVIOR-MOBILE.md section 2 |
 | Settings rows | `SettingsScreen.kt` | design/settings-diet-wireframe.html |
 
-**Expanded Duet, a header with the 44 dp ring** (CCBG-61 (Duet Line Clip)): its line is the tight form — "Use before
-reset · ≈31%/day", without "· resets <day>" — which ellipsized on the Fold 7 cover; a header without a ring (a plan
-with no 5h) keeps the full line.
+**Expanded Duet header** (CCBG-61 (Duet Line Clip), superseded by CCRM-104 (Pace Line Parity) D10): every header's
+line is the pace line in the form the 159 dp column holds — the weekday drops first, as CCBG-61's tight form did — so
+a header with the 44 dp ring and one without take the same rule.
 

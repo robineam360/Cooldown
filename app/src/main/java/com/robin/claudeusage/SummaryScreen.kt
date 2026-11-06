@@ -38,6 +38,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -129,13 +131,13 @@ internal fun SummaryScreen(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) { list() }
             BoxWithConstraints(Modifier.weight(1f)) {
-                MapCard(mapEntries, compact, maxWidth - 32.dp)
+                MapCard(mapEntries, maxWidth - 32.dp)
             }
         }
     } else {
         list()
         Spacer(Modifier.height(12.dp))
-        MapCard(mapEntries, compact, 230.dp)
+        MapCard(mapEntries, 230.dp)
     }
     Spacer(Modifier.height(12.dp))
     SummaryStatus(repo, profiles, tick)
@@ -205,12 +207,12 @@ private fun CardHeader(title: String, sub: String) {
 }
 
 @Composable
-private fun MapCard(entries: List<PaceMapEntry>, numbered: Boolean, plotHeight: androidx.compose.ui.unit.Dp) {
+private fun MapCard(entries: List<PaceMapEntry>, plotHeight: androidx.compose.ui.unit.Dp) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             CardHeader("Pace map", "Weekly, where each account stands")
             Spacer(Modifier.height(8.dp))
-            PaceMap(entries, numbered, Modifier.fillMaxWidth().height(plotHeight))
+            PaceMap(entries, modifier = Modifier.fillMaxWidth().height(plotHeight))
         }
     }
 }
@@ -249,14 +251,15 @@ private fun SummaryRow(
     val ringFigureColor = if (mode == PaceText.Mode.VS_PACE && ringTone != PaceText.VsTone.USAGE &&
         ringState == GrammarRing.State.NORMAL
     ) Grammar.vsColor(ringTone, dark, Grammar.ink(dark), Grammar.ink(dark)) else null
-    var readout by remember(r.profile) { mutableStateOf<String?>(null) }
-    LaunchedEffect(readout) {
-        if (readout != null) {
+    // CCRM-104 (Pace Line Parity) D5: a press on the figure underlines its caption for 3 s.
+    var pressed by remember(r.profile) { mutableStateOf(false) }
+    LaunchedEffect(pressed) {
+        if (pressed) {
             delay(TAP_READOUT_MS)
-            readout = null
+            pressed = false
         }
     }
-    val tapLabel = tapReadout(r.weekly, Projection.WEEKLY_MS, use24h, System.currentTimeMillis())
+    val tapLabel = PaceText.caption(mode, r.used, r.elapsed)
     Row(
         Modifier
             .fillMaxWidth()
@@ -306,9 +309,9 @@ private fun SummaryRow(
                     }
                 }
                 Spacer(Modifier.width(7.dp))
-                // The figure in the grammar's type (rev D §1c), Vs pace unsigned in its colour
-                // (§7b); Left keeps its word, as today. "—" unread.
-                val (figure, word) = AppPace.figure(used, r.elapsed, mode)
+                // The figure in the grammar's type (rev D §1c), Vs pace signed in its colour
+                // (CCRM-104 D1); Left keeps its word, as today. "—" unread.
+                val (figure, word) = AppPace.figureSigned(used, r.elapsed, mode)
                 Text(
                     buildAnnotatedString {
                         append(grammarFigure(figure))
@@ -317,10 +320,10 @@ private fun SummaryRow(
                     style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold).grammarDigits(),
                     maxLines = 1,
                     color = grammarFigureColor(used, r.elapsed, mode, accent),
-                    // TalkBack reaches the readout on the figure itself (the tap target below
+                    // TalkBack reads the caption as the figure's click action (the tap target below
                     // carries no semantics of its own).
                     modifier = Modifier.semantics {
-                        if (tapLabel != null) onClick(label = tapLabel) { readout = tapLabel; true }
+                        if (tapLabel != null) onClick(label = tapLabel) { pressed = true; true }
                     },
                 )
             }
@@ -335,17 +338,20 @@ private fun SummaryRow(
                     dashedRoom = true,
                 )
             }
-            PaceCaption(mode, used, r.elapsed)
+            PaceCaption(mode, used, r.elapsed, underline = pressed)
             Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically) {
-                val swapped = readout
-                if (swapped != null) {
-                    // P8: the readout takes line 3's full width for 3 s.
-                    SwapText(swapped, 13.sp)
+                val full = if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
+                else SummaryRows.words(r.weekly, r.elapsed, use24h)
+                val pace = if (r.group == SummaryRank.Group.HELD) null else SummaryRows.paceLine(r.weekly, use24h)
+                if (pace != null && pace.forms.isNotEmpty()) {
+                    // CCRM-104 D3: the pace line, its forms measured on the row's real width.
+                    PaceLineText(
+                        pace, 13.sp, MaterialTheme.colorScheme.onSurface, FontWeight.Normal,
+                        modifier = Modifier.weight(1f).alpha(dim),
+                    )
                 } else {
-                    val full = if (r.group == SummaryRank.Group.HELD) SummaryRows.heldWords(session, r.weekly, use24h)
-                    else SummaryRows.words(r.weekly, r.elapsed, use24h)
-                    // CCBG-60: under the measured width "resets <day>" goes first; keyed on the
-                    // width, so a fold or unfold measures again.
+                    // CCBG-60 (Summary Line Clip): the held line's "resets <day>" goes first under
+                    // the measured width; keyed on the width, so a fold or unfold measures again.
                     BoxWithConstraints(Modifier.weight(1f)) {
                         var short by remember(full, maxWidth) { mutableStateOf(false) }
                         Text(
@@ -361,8 +367,8 @@ private fun SummaryRow(
             }
         }
         // CCBG-56 (Summary Readout Tap): the figure's own target, 80 × 48 dp over the figure
-        // and the bar's end, consumes the tap (P8: line 3 swaps; nothing when there is no
-        // readout) so the row's tap — open the account — never takes it. A plain gesture, no
+        // and the bar's end, consumes the tap (CCRM-104 D5: the caption underlines; nothing when
+        // there is no caption) so the row's tap — open the account — never takes it. A plain gesture, no
         // ripple and no node of its own for TalkBack (the figure carries the action). Only
         // while there is a readout (Fable F7): a spent, unread or unclocked row's figure opens
         // the account like the rest of the row, rather than being a dead zone.
@@ -372,7 +378,7 @@ private fun SummaryRow(
                 Modifier
                     .align(Alignment.TopEnd)
                     .size(width = 80.dp, height = 48.dp)
-                    .pointerInput(Unit) { detectTapGestures { currentTap?.let { readout = it } } },
+                    .pointerInput(Unit) { detectTapGestures { if (currentTap != null) pressed = true } },
             )
         }
         }
@@ -394,7 +400,18 @@ private fun CompactSummaryRow(
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val used = r.used
     val word = SummaryRows.compactWord(r.group, r.weekly, r.elapsed, r.data?.session, use24h)
-    val wordColor = when (r.group) {
+    val spanTone = SummaryRows.compactTone(r.group, r.weekly, use24h)
+    val onInk = MaterialTheme.colorScheme.onSurface
+    // CCRM-104 D5: no caption on a one-line row, so a press swaps the word slot for it for 3 s.
+    val caption = PaceText.caption(mode, used, r.elapsed)
+    var pressed by remember(r.profile) { mutableStateOf(false) }
+    LaunchedEffect(pressed) {
+        if (pressed) {
+            delay(TAP_READOUT_MS)
+            pressed = false
+        }
+    }
+    val wordColor = if (spanTone != null) Grammar.vsColor(spanTone, dark, onInk, onInk) else when (r.group) {
         SummaryRank.Group.HELD -> Palette.barColor(r.data?.session?.percent, accent, dark)
         SummaryRank.Group.ELIGIBLE -> MaterialTheme.colorScheme.onSurface
         else -> muted
@@ -425,22 +442,42 @@ private fun CompactSummaryRow(
                 showOverPace = showOverPace,
             )
         }
-        Text(
-            word,
-            fontSize = 12.5.sp,
-            color = wordColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.width(90.dp),
-        )
-        val (figure, _) = AppPace.figure(used, r.elapsed, mode)
+        val forms = PaceText.captionForms(mode, used, r.elapsed)
+        if (pressed && caption != null) {
+            val measurer = rememberTextMeasurer()
+            val slot = with(LocalDensity.current) { 90.dp.roundToPx() }
+            val shown = PaceText.fitText(forms) {
+                measurer.measure(it, TextStyle(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)).size.width <= slot
+            } ?: caption
+            SwapText(shown, 12.5.sp, Modifier.width(90.dp))
+        } else {
+            // Judge F2: the duration and its word are never cut (core §6.3) — step to 10 sp before any ellipsis.
+            val wordMeasurer = rememberTextMeasurer()
+            val wordSlot = with(LocalDensity.current) { 90.dp.roundToPx() }
+            val wordWeight = if (spanTone != null) FontWeight.SemiBold else null
+            val wordSize = if (spanTone != null &&
+                wordMeasurer.measure(word, TextStyle(fontSize = 12.5.sp, fontWeight = wordWeight)).size.width > wordSlot
+            ) 10.sp else 12.5.sp
+            Text(
+                word,
+                fontSize = wordSize,
+                fontWeight = wordWeight,
+                color = wordColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.width(90.dp),
+            )
+        }
+        val (figure, _) = AppPace.figureSigned(used, r.elapsed, mode)
         Text(
             grammarFigure(figure),
             style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold).grammarDigits(),
             textAlign = TextAlign.End,
             color = grammarFigureColor(used, r.elapsed, mode, accent),
             maxLines = 1,
-            modifier = Modifier.width(40.dp),
+            modifier = Modifier
+                .width(40.dp)
+                .clickable(enabled = caption != null, onClickLabel = caption) { pressed = true },
         )
     }
 }

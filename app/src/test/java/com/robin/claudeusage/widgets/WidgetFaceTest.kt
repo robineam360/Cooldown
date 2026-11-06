@@ -158,17 +158,17 @@ class WidgetFaceTest {
         // The shape grammar (rev D §5): the 5h ring at the left of the Weekly name, figure and
         // bar; the 2×1 stacks the name over the figure, the 4×1 keeps "Pro · Weekly".
         assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S1))
-        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
+        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
         // The window chips went (both windows show); the cycler stays.
         assertEquals(
-            "38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:26 PM | Pro ⇄",
+            "38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | as of 6:26 PM | Pro ⇄",
             joined(Bucket.NUMBER_4X2, StateId.S1),
         )
         // B1: a weekly-only account keeps today's face, no ring — on 2×1 its name, with
         // "Weekly" as its own second line.
         assertEquals("ChatGPT | Weekly | 31%", joined(Bucket.NUMBER_2X1, StateId.S4))
         assertEquals(
-            "ChatGPT · Weekly | 31% | Resets Sat 9:10 PM | as of 6:26 PM | ChatGPT ⇄",
+            "ChatGPT · Weekly | 31% | 2d 17h behind · Sat 9:10 PM | as of 6:26 PM | ChatGPT ⇄",
             joined(Bucket.NUMBER_4X2, StateId.S4),
         )
         // The 5h's states land on the ring.
@@ -180,7 +180,7 @@ class WidgetFaceTest {
         // Rev D's 84 dp 2×1 beside the ring has no height for the pill; the tap opens the config.
         assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S10))
         // Rev H (Q4): the stamp slot says how to choose, the name stays whole.
-        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
+        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
         // Left: the bare figure flips at 2×1; the LEFT caption from 4×1 up.
         assertEquals("62% | Pro | 80%", joined(Bucket.NUMBER_2X1, StateId.S11))
         assertTrue(joined(Bucket.NUMBER_4X1, StateId.S11).startsWith("62% | Pro · Weekly | 80% | LEFT"))
@@ -260,7 +260,7 @@ class WidgetFaceTest {
             assertEquals(FaceWindow.WEEKLY, n.cells.single().window)
             assertEquals(FaceWindow.SESSION, n.cells.single().companion!!.window)
             val all = texts(inflate(Bucket.NUMBER_4X2, n)).joinToString(" | ")
-            assertTrue(all, all.startsWith("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM"))
+            assertTrue(all, all.startsWith("38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM"))
             val r = FaceStates.of(forState(Face.RING, StateId.S1).copy(window = window))
             assertEquals(FaceWindow.SESSION, r.cells.single().window)
             assertEquals(FaceWindow.WEEKLY, r.cells.single().companion!!.window)
@@ -585,7 +585,7 @@ class WidgetFaceTest {
         assertEquals(FaceWindow.WEEKLY, s.cells.single().companion!!.window)
         val v = WidgetFace.render(context, Face.RING, Frame.at(Face.RING, 333f, 366f), s).apply(context, FrameLayout(context))
         val t = texts(v).joinToString(" | ")
-        assertTrue(t, t.startsWith("38% | Pro | Weekly | 20% | Resets 9:10 PM"))
+        assertTrue(t, t.startsWith("38% | Pro | Weekly | 20% | 3d 11h behind · Sat 9:10 PM"))
         // A one-window account has no companion.
         assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).cells.single().companion)
         // The Strip: every account's ring carries its Weekly.
@@ -661,7 +661,7 @@ class WidgetFaceTest {
         const val INNER_DENSITY = 2.625f
         /** A raised Display size, for headroom. */
         const val HEADROOM_DENSITY = 3.5f
-        val RELATIVE = Regex("""\bin \d+[hmd]\b|\d+[dh] \d+[hm]\b|\bago\b|Updated""")
+        val RELATIVE = Regex("""\bin \d+[hmd]\b|\d+[dh] \d+[hm]\b(?! (?:behind|ahead))|\bago\b|Updated""")
         val H24 = Regex("""\b(1[3-9]|2[0-3]):[0-5]\d\b""")
     }
 }

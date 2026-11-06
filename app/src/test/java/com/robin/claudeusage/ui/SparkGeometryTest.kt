@@ -311,13 +311,20 @@ class SparkGeometryTest {
     // --- CCRM-74 (Chart Polish) item 4: "points" is gone, "%" is not ---
 
     @Test
-    fun `the chart's short pace label signs the number and says percent`() {
-        assertEquals("+12% vs pace", paceLabel(12.4))
-        assertEquals("-12% vs pace", paceLabel(-12.4))
-        assertEquals("on pace", paceLabel(0.0))
-        // The dead zone is the same gate the wash uses, so the label agrees with it.
-        assertEquals("on pace", paceLabel(PACE_DEAD_ZONE))
-        assertEquals("on pace", paceLabel(-PACE_DEAD_ZONE))
+    fun `the chart callout prints core's sign - minus over, plus under, zero within a point`() {
+        // CCRM-104 (Pace Line Parity) D8: delta is used - pace mark, so positive is over (red, "−").
+        assertEquals("−12%", paceLabel(12.4))
+        assertEquals("+12%", paceLabel(-12.4))
+        assertEquals("+10%", paceLabel(-10.7))
+        assertEquals("0%", paceLabel(0.0))
+        // Toward zero, like the figure: inside a point on either side is "0%".
+        assertEquals("0%", paceLabel(0.99))
+        assertEquals("0%", paceLabel(-0.99))
+        assertEquals("−1%", paceLabel(1.0))
+        assertEquals("+1%", paceLabel(-1.0))
+        assertEquals(PaceText.VsTone.OVER, paceTone(12.4))
+        assertEquals(PaceText.VsTone.UNDER, paceTone(-12.4))
+        assertEquals(PaceText.VsTone.ON, paceTone(0.5))
     }
 
     @Test

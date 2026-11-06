@@ -64,6 +64,11 @@ public enum Pace {
         return sessionPct > 90 || sessionHitsLimitBeforeReset
     }
 
+    /// Core §6.3: on the pace mark when `|elapsed − used| + 1e-9 < 1`, the figure's own epsilon, so the two never disagree.
+    public static func onMark(usedPct: Double, elapsedPct: Double) -> Bool {
+        abs(elapsedPct - usedPct) + edgeEpsilon < 1
+    }
+
     /// CCRM-100 (Vs Pace Display): `elapsed − used` rounded toward zero (core §6.3, Robin 2026-11-06: within a point of
     /// the mark is 0 on either side, matching "On the mark"); nil when the figure falls back to the usage (no reading,
     /// no reset clock, or spent).

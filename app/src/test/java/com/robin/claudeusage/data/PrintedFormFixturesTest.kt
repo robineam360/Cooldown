@@ -79,6 +79,24 @@ class PrintedFormFixturesTest {
     }
 
     @Test
+    fun `pace line forms follow the drop order`() {
+        val zone = ZoneOffset.UTC
+        for (c in fx.getJSONArray("paceLineForms").objects()) {
+            val now = LocalDateTime.parse(c.getString("nowLocal")).toInstant(zone).toEpochMilli()
+            val reset = LocalDateTime.parse(c.getString("resetLocal")).toInstant(zone)
+            val mt: Pace.MarkTime? = when (c.str("side")) {
+                null -> null
+                "on" -> Pace.MarkTime.On
+                "under" -> Pace.MarkTime.Under(c.getLong("durationMs"))
+                else -> Pace.MarkTime.Over(0L, c.getLong("durationMs"))
+            }
+            val want = c.getJSONArray("forms").let { a -> (0 until a.length()).map { a.getString(it) } }
+            val got = PaceText.paceLineForms(mt, reset, now, c.getBoolean("hour24"), zone, Locale.US).map { it.text }
+            assertEquals(c.getString("name"), want, got)
+        }
+    }
+
+    @Test
     fun `end to end from the numbers`() {
         val zone = ZoneId.of("UTC")
         for (c in fx.getJSONObject("endToEnd").getJSONArray("cases").objects()) {
@@ -117,5 +135,6 @@ class PrintedFormFixturesTest {
         assertEquals(m.getString("diagonal"), PaceText.MAP_EVEN)
         assertEquals(m.getString("xStart"), PaceText.MAP_WEEK_START)
         assertEquals(m.getString("xEnd"), PaceText.MAP_RESET)
+        assertEquals(m.getString("xCentre"), PaceText.MAP_CENTRE)
     }
 }
