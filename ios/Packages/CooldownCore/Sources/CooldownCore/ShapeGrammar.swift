@@ -17,7 +17,7 @@ public enum MarkTime: Sendable, Equatable {
     public static func of(usedPct: Double?, msUntilReset: Int64?, windowLengthMs: Int64, nowMs: Int64) -> MarkTime? {
         guard let usedPct, let msUntilReset, windowLengthMs > 0, !Pace.isSpent(usedPct) else { return nil }
         let elapsedPct = min(max(Double(windowLengthMs - msUntilReset) * 100 / Double(windowLengthMs), 0), 100)
-        if abs(elapsedPct - usedPct) < 1 { return .on }
+        if Pace.onMark(usedPct: usedPct, elapsedPct: elapsedPct) { return .on }
         let startMs = nowMs + msUntilReset - windowLengthMs
         let atMs = startMs + Int64((usedPct / 100 * Double(windowLengthMs)).rounded())
         return usedPct > elapsedPct ? .over(atMs: atMs, inMs: atMs - nowMs) : .under(agoMs: nowMs - atMs)

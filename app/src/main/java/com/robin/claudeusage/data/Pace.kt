@@ -82,6 +82,10 @@ object Pace {
         return sessionPct > 90.0 || sessionHitsLimitBeforeReset
     }
 
+    /** Core §6.3: on the pace mark when `|elapsed − used| + 1e-9 < 1`, the figure's own epsilon, so they never disagree. */
+    fun onMark(usedPct: Double, elapsedPct: Double): Boolean =
+        kotlin.math.abs(elapsedPct - usedPct) + EDGE_EPSILON < 1.0
+
     /** CCRM-100 (Vs Pace Display): `elapsed − used` toward zero (core §6.3); null when it falls back to usage. */
     fun vsPace(usedPct: Double?, elapsedPct: Double?): Int? {
         if (usedPct == null || elapsedPct == null || isSpent(usedPct)) return null
@@ -115,7 +119,7 @@ object Pace {
         // The side is §6's elapsed percent, clamped 0…100 as the caption's is, so a reading
         // cached past its reset can never say "behind" where the caption says "on it".
         val elapsedPct = ((windowLengthMs - msUntilReset) * 100.0 / windowLengthMs).coerceIn(0.0, 100.0)
-        if (abs(elapsedPct - usedPct) < 1.0) return MarkTime.On
+        if (onMark(usedPct, elapsedPct)) return MarkTime.On
         val startMs = nowMs + msUntilReset - windowLengthMs
         val atMs = startMs + Math.round(usedPct / 100.0 * windowLengthMs)
         return if (usedPct > elapsedPct) MarkTime.Over(atMs, atMs - nowMs) else MarkTime.Under(nowMs - atMs)

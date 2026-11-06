@@ -76,7 +76,7 @@ public enum PaceText {
         let d = elapsedPct - usedPct
         let n = halfUp(abs(d))
         let words: String
-        if abs(d) < 1 { words = "on it" }
+        if Pace.onMark(usedPct: usedPct, elapsedPct: elapsedPct) { words = "on it" }
         else if d > 0 { words = mode == .left ? "\(n) to spare" : "\(n) under" }
         else { words = "\(n) over" }
         return "\(mode == .left ? 100 - m : m)% pace mark\(dot)\(words)"

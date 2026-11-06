@@ -95,7 +95,7 @@ object PaceText {
         val n = halfUp(abs(d))
         val under = if (mode == Mode.LEFT) "$n to spare" else "$n under"
         val words = when {
-            abs(d) < 1.0 -> "on it"
+            Pace.onMark(usedPct, elapsedPct) -> "on it"
             d > 0 -> under
             else -> "$n over"
         }
@@ -115,7 +115,7 @@ object PaceText {
         val n = halfUp(abs(d))
         val shown = if (mode == Mode.LEFT) 100 - m else m
         return when {
-            abs(d) < 1.0 -> "On the pace mark ($shown%)"
+            Pace.onMark(usedPct, elapsedPct) -> "On the pace mark ($shown%)"
             // Left mode turns the V1 caption round, which also fits the 12 sp line (Fable, 2026-11-02).
             mode == Mode.LEFT -> "${if (d > 0) "$n to spare" else "$n over"}${DOT}pace mark $shown%"
             d > 0 -> "$n under the pace mark ($shown%)"
@@ -280,7 +280,7 @@ object PaceText {
             val d = elapsedPct!! - usedPct!!
             val n = halfUp(abs(d))
             when {
-                abs(d) < 1.0 -> "On the mark"
+                Pace.onMark(usedPct, elapsedPct) -> "On the mark"
                 d > 0 -> if (mode == Mode.LEFT) "$n to spare" else "$n under"
                 else -> "$n over"
             }
@@ -293,6 +293,7 @@ object PaceText {
     const val MAP_EVEN = "even pace"
     const val MAP_WEEK_START = "week start"
     const val MAP_RESET = "reset"
+    const val MAP_CENTRE = "each account's own week"
 
     /** True = the caption starts 5 dp right of the mark; false = it ends 5 dp left of it. */
     fun captionRightOfMark(barWidth: Float, markPct: Double, captionWidth: Float, gap: Float = 5f): Boolean =
