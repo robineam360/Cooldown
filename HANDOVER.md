@@ -4,7 +4,13 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 arc + Gemini — finish Step 7, then Step 8 (written 2026-11-04)
+## ▶ v2.0 is on main (2026-11-06) — the arc continues on main
+
+PR #21's branch `worktree-v20-arc-and-antigravity` was merged with v1.9's `main` and landed on `main` (Robin: "Yes, land it now"). Gate G0 is lifted; the next session works on `main` in a fresh worktree, not on the old branch. CCBG-75 (Antigravity Crash on Refresh) is closed by dropping `hasSource`; CCBG-76 and CCBG-77 closed with it. versionCode and versionName are **not** bumped: that is RUNBOOK-v2.0 Step 8. The iOS parity PR #23 was based on the old branch and is retargeted by its own session.
+
+**Still open on `main`** (the list in the block below still applies, minus "app code stays off main"): the Fold 7 and iPad Step 7 leftovers, the Android half of the Weekly-first share card (needs its own wireframe under CCRM-24 (Share Card)), Robin removing the old Ring widget (CCBG-70 (Stale Ring Widget)), then Step 8 with Robin's go in chat. Replace this block when the next step is known.
+
+## ▶ (older, written before the landing) v2.0 arc + Gemini — finish Step 7, then Step 8 (written 2026-11-04)
 
 **Where it stands.** Branch `worktree-v20-arc-and-antigravity` (worktree `.claude/worktrees/v20-arc-and-antigravity`),
 PR robineam360/Cooldown#21, at bbc19db. **App code stays off main** until v1.9 ships (Gate G0); Robin lifted G0 *for

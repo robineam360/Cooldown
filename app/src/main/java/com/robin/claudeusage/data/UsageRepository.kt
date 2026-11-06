@@ -25,15 +25,6 @@ sealed class FetchResult(val message: String) {
 }
 
 /**
- * CCBG-75 (Antigravity Crash on Refresh): v1.9 has no Antigravity (Gemini) usage source, so
- * [Sources.of] throws for it. A phone that ran a build with a Gemini account first still holds
- * that account, and every refresh loops over every account with a token. Such an account is
- * skipped, its stored data left as it was. **Drop this guard when `AntigravitySource` lands
- * (the v2.0 merge, PR #21), where `Sources.of(ANTIGRAVITY)` stops throwing.**
- */
-private fun hasSource(provider: Provider): Boolean = provider != Provider.ANTIGRAVITY
-
-/**
  * [credentialResetAllowed] is true only for the main screen's repository: CCBG-46 (Keystore
  * Wedge) resets an unreadable credential store only when the app is opened, never from a
  * worker, the pinned service or anything a `BOOT_COMPLETED` starts.
@@ -279,9 +270,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
     /** Background path: fetch every profile that has a token. */
     suspend fun refreshAll(manual: Boolean = false): Map<Profile, FetchResult> = withContext(Dispatchers.IO) {
         val results = mutex.withLock {
-            // CCBG-75: an account with no source here is not fetched (and so never an Error the
-            // worker would retry).
-            configuredProfiles().filter { hasSource(it.provider) }.associateWith { doFetch(it, manual) }
+            configuredProfiles().associateWith { doFetch(it, manual) }
         }
         Alerts.evaluate(context, cache)
         results
@@ -519,7 +508,6 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
     }
 
     private fun doFetch(profile: Profile, manual: Boolean, ignoreGates: Boolean = false): FetchResult {
-        if (!hasSource(profile.provider)) return FetchResult.Error("not supported in this version")
         val now = System.currentTimeMillis()
         val creds = credStore.load(profile) ?: run {
             cache.saveFailure(profile, "No token set", now, AuthState.NO_CREDENTIALS, ErrorKind.AUTH)

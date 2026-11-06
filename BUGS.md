@@ -335,7 +335,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Details in `spec/mobile/surfaces/foundations.md` and `app.md`, "Differs from" notes.
 
 ### CCBG-75 · Antigravity Crash on Refresh — a Gemini account left by a v2.0 build crashes every v1.9 refresh
-- **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-11-05** (RUNBOOK Step 7 Log): with the Gemini account still on the
+- **Status:** **Shipped v1.9 (2026-11-05); the guard is gone in v2.0 (merge of PR #21, 2026-11-06).** The v2.0 branch's `Sources.of(ANTIGRAVITY)` returns `AntigravitySource` and no longer throws, so the `hasSource` guard was dropped from `UsageRepository` (`refreshAll`, `doFetch`); the v1.9 `RefreshNoSourceTest` became `RefreshEveryProviderTest`, which pins what the guard stood in for: every `Provider` resolves a source, and a refresh loop over a Claude, a ChatGPT and a Gemini account attempts all three. **Verified on the Fold 7 2026-11-05** (RUNBOOK Step 7 Log): with the Gemini account still on the
   phone, the fixed build (e6130b8's APK, sha256 `8dad5c87…2e7e`) ran the real `UsagePollWorker` (forced through
   `cmd jobscheduler`), which refreshed Claude, ChatGPT and Work and left Gemini's data alone; a manual refresh
   of every card on the Accounts screen answered without a crash (Gemini: "Error: not supported in this
@@ -360,7 +360,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Step 7 now also reads the crash-report screen at the end of every pass.
 
 ### CCBG-76 · Probe Crash — the Diagnostics endpoint probe can still crash on a leftover Gemini account
-- **Status:** Open — found 2026-11-05 by the Fable judge's read of the v1.9 publish packet (not reproduced on the phone).
+- **Status:** **Closed by the v2.0 merge (2026-11-06)** — `Sources.of(ANTIGRAVITY)` no longer throws on the v2.0 branch, so `probeEndpoint` has a source to reach. Found 2026-11-05 by the Fable judge's read of the v1.9 publish packet (not reproduced on the phone).
 - **Severity:** Low (debug screen behind the 7-tap unlock, one phone population, never on a normal path)
 - **Symptom:** `UsageRepository.probeEndpoint` reaches `Sources.of` through `refreshAccessToken` for a Gemini account whose
   token is near expiry or got a 401; `NotImplementedError` is an `Error`, which the surrounding `catch (e: Exception)` does not
@@ -369,7 +369,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   stops throwing and CCBG-75 (Antigravity Crash on Refresh)'s guard is dropped.
 
 ### CCBG-77 · Gemini One-shot Retry — a per-profile poll aimed at a Gemini account retries three times
-- **Status:** Open — seen 2026-11-05 on the Fold 7 (a forced UsagePollWorker returned RETRY after 48 ms).
+- **Status:** **Closed by the v2.0 merge (2026-11-06)** — the guard that answered `Error` is gone and a Gemini account is fetched through its real source like the others. Seen 2026-11-05 on the Fold 7 (a forced UsagePollWorker returned RETRY after 48 ms).
 - **Severity:** Low (bounded, no crash, no data change)
 - **Symptom:** `Polling.kt` runs `refreshNow(onlyProfile)` for a per-profile one-shot; for a Gemini account the CCBG-75
   guard answers `FetchResult.Error("not supported in this version")`, so the worker retries while `runAttemptCount < 3` and then ends.
