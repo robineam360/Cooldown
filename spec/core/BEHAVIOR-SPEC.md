@@ -470,9 +470,12 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
   mark · 10 to spare", "40% pace mark · 20 over", "40% pace mark · on it" (Robin, 2026-11-06: mobile's form for
   every family); Vs pace mode "41% used · 60% pace mark" (the sign already says the side).
 - **The Pace map's words:** "ahead of pace" in the wedge above the even-pace diagonal, "behind pace" below it,
-  the diagonal "even pace", the x axis "week start" and "reset". Account names label the dots, never numbers;
-  when two labels would collide, the lower one moves below its dot, and if they still collide each takes a
-  short leader line to a free spot at the plot's right edge.
+  the diagonal "even pace", the x axis "week start" and "reset". Account names label the dots, never numbers.
+  Labels are placed top-down (highest usage first), so on a collision the lower label is the one that moves; each
+  tries, in order, right of its dot, below it, left of it, above-left, and then a short leader line to a free spot
+  at the plot's right edge (CooldownDesktop's wireframe C1-3). A spot is refused if it leaves the plot or overlaps
+  a placed label, a dot, a wedge or axis label or "even pace"; "even pace" slides along the diagonal to the first
+  free stretch.
 
 Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
 `dayClock`, `paceLine`, `endToEnd`, `caption`, `mapLabels`.

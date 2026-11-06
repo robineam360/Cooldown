@@ -1902,9 +1902,10 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   explain, and it happens on every provider.
 
 ### CCRM-104 · Pace Line Parity — mobile adopts the Mac's 2026-11-06 pace line, signed Vs pace and map labels
-- **Status:** **Spec landed** 2026-11-06 (core §6.3 "Printed form" and `spec/core/fixtures/pace-distance/printed.json`)
-  · wireframe next (`design/2026-11-06-mobile-pace-line-wireframe.html`, Fable draws, Astra reviews, approved under
-  Robin's delegation if they agree) · then Android on main; iOS by the iOS session before the iPad pass · **in v2.0**.
+- **Status:** **Building** · spec landed 2026-11-06 (core §6.3 "Printed form", `spec/core/fixtures/pace-distance/printed.json`)
+  · wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` **approved 2026-11-06 under Robin's delegation**
+  (Fable drew it, Astra reviewed: concerns, four adopted, nothing parked) · Android built on main · iOS by the iOS
+  session before the iPad pass · device check pending · **in v2.0**.
 - **What:** Robin approved the Mac callout redesign on 2026-11-06 (CooldownDesktop CCM-198…204 (Panel), CCM-200
   (Readout), CCM-201 (Pace)) and asked mobile to follow it closely: "Ensure we align the spec with Desktop app as
   well and don't deviate too much." Mobile adopts (1) the signed Vs pace figure, "+19%" green under the mark,
