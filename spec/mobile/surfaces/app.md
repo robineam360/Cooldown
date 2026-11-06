@@ -744,12 +744,18 @@ line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp 
 in the 5h colour — the full row's words without "resets", never "5h" (judge F3); "Held" with no 5h clock — "Out ·
 Thu", "No reading"), figure 15 sp bold in the grammar's type, 40 dp right-aligned.
 Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
-30/10/12/26 dp; over-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
-dashed even-pace diagonal in the 80% step, "even pace" along it; "over pace" / "room to spare" 10.5 sp ink 55%;
-axis "week start · each account's own week · reset". Per account with a reading: its real trail this week (history
-samples, accent 55%, 1.6 dp) to a 5.5 dp dot with a 2 dp card ring, named 11.5 sp SemiBold (left of the dot past 70%
-of the week, under it above 92% used); spent: × on the dot; 6+ accounts: 8 dp dots numbered by rank (a spent dot
-shows its × instead of the number); unread: off the map; an unclocked week sits at week gone 0. Inner screen
+30/10/12/26 dp; ahead-of-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
+dashed even-pace diagonal in the 80% step; wedge words 10.5 sp ink 55%: "ahead of pace" top-left above the
+diagonal, "behind pace" bottom-right below it (`PaceText.MAP_AHEAD` / `MAP_BEHIND`, CCRM-104 (Pace Line Parity));
+"even pace" 10 sp along the diagonal, starting at 62% of the week and sliding (6% steps) to the first stretch no
+dot sits on; axis "week start · each account's own week · reset". Per account with a reading: its real trail this
+week (history samples, accent 55%, 1.6 dp) to a 5.5 dp dot with a 2 dp card ring; spent: × on the dot; unread: off
+the map; an unclocked week sits at week gone 0. **Names label every dot at every count** (11.5 sp SemiBold, no
+numbered dots): `PaceMapGeometry.placeLabels` goes top-down (highest used % first, so the lower label moves) and
+tries right of the dot, below, left, above-left; a candidate is refused if it leaves the plot or overlaps a placed
+label (2 dp), a dot, a wedge word, an axis word, the centre note or "even pace"; all four refused, a short leader
+line (1 dp, the dot's colour at 55%) to a free spot at the plot's right edge, y offsets 0, -18, +18, -36, +36,
+-54, +54 dp. Inner screen
 (≥ 700 dp): two columns, list left, square map right. Footer: the status line with the stalest account's check;
 tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/SummaryRows.kt`.
 
