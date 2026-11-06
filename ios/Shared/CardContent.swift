@@ -32,23 +32,14 @@ struct WindowContent: Equatable {
     /// The 5h window's folded projection: "on track for ~69%" / "runs out ~3:25 pm"; nil when there is none.
     var projectionFold: String? = nil
     var isWeekly = false
-    /// CCRM-103 (Hybrid Notification) §2b: the window's reset clock, its length and the moment this was built, for the
-    /// tap readout (core §6.3 `markTime`). nil reset = not started.
-    var resetMs: Int64? = nil
-    var windowMs: Int64 = 0
-    var builtAtMs: Int64 = 0
+    /// CCRM-104 (Pace Line Parity): the weekly window's pace line (core §6.3 Printed form), nil when spent, unclocked,
+    /// unread or not weekly — the held, spent, signed-out or no-reading line stands instead.
+    var line: PaceLine? = nil
 
-    /// When the pace mark meets the usage; nil — the tap does nothing — when spent, unclocked or unread.
-    var markTime: MarkTime? {
-        MarkTime.of(usedPct: pct, msUntilReset: resetMs.map { $0 - builtAtMs }, windowLengthMs: windowMs, nowMs: builtAtMs)
-    }
-    /// The tap readout's words: "Pace catches up Thu 5 Nov, 12:50 PM", "1h 6m behind pace", "On the pace mark".
-    func readout(use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> String? {
-        PaceText.markReadout(markTime, use24h: use24h, timeZone: timeZone)
-    }
-
-    /// The weekly pace line at full width: "Room to spare · ≈22%/day until Fri" (rev B); halves drop " until …".
+    /// The weekly pace line at full width: "1d 7h behind · Fri 9:00 am" (CCRM-104); the band words only where there is
+    /// no readout (they stay for alerts and help text).
     var paceLineFull: String {
+        if let line { return line.text() }
         guard isWeekly, let band, band != .spent, !paceLine.isEmpty, !resetDay.isEmpty else { return paceLine }
         return "\(paceLine) until \(resetDay)"
     }
@@ -157,7 +148,9 @@ enum CardContent {
             resetsIn: reset - nowMs < 5 * 60_000 ? "Resets soon" : "Resets in \(Fmt.compactDuration(ms: reset - nowMs))",
             resetsAt: "Resets at \(dayClock(reset, nowMs, use24h, timeZone))",
             band: band, resetDay: weekday(reset, timeZone), projectionFold: projectionFold, isWeekly: weeklyKind,
-            resetMs: reset, windowMs: length, builtAtMs: nowMs)
+            line: weeklyKind && !Pace.isSpent(pct) && (pct ?? 0) < 100
+                ? PaceText.paceLine(usedPct: pct, resetMs: reset, windowLengthMs: length, nowMs: nowMs, use24h: use24h, timeZone: timeZone)
+                : nil)
     }
 
     static let notStartedLine = "Starts when a message is sent"
@@ -173,11 +166,12 @@ enum CardContent {
     /// A widget face showing the 5h while the week is spent.
     static let weekSpentStamp = "Weekly spent"
 
-    /// A folded card's one line (rev B): Weekly "Slow down · ≈11%/day · resets Sun" or "Out until Sun 9:30 pm";
+    /// A folded card's one line: Weekly the pace line "21h 50m ahead · Sun 9:30 pm" (CCRM-104), or "Out until Sun 9:30 pm";
     /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 pm".
     static func compactLine(_ c: WindowContent) -> String {
         if c.notStarted { return notStartedLine }
         if c.isWeekly {
+            if let line = c.line { return line.text() }
             if c.band == .spent || c.paceLine.hasPrefix("Out until") || c.paceLine.isEmpty { return c.paceLine.isEmpty ? c.leadReset : c.paceLine }
             return "\(c.paceLine) · resets \(c.resetDay)"
         }

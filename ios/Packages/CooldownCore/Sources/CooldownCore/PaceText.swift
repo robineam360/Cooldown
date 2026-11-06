@@ -5,7 +5,7 @@ import Foundation
 public enum PaceText {
 
     public static let minus = "\u{2212}"
-    static let dot = " \u{00B7} "
+    public static let dot = " \u{00B7} "
 
     /// The global Used / Left / Vs pace token (CCRM-22 (Used or Left) gained a third value).
     public enum Mode: String, Sendable, Equatable, CaseIterable {

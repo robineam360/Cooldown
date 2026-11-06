@@ -92,8 +92,10 @@ struct SummaryList: View {
             ForEach(entries) { entry in
                 Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 8)
                 if entries.count >= 6 {
-                    Button { onOpen(entry.account.key) } label: { SummaryOneLineRow(entry: entry, nowMs: nowMs) }
-                        .buttonStyle(.plain)
+                    // CCRM-104: not a Button, so a press on the figure can swap the word for its caption instead of opening.
+                    SummaryOneLineRow(entry: entry, nowMs: nowMs)
+                        .onTapGesture { onOpen(entry.account.key) }
+                        .accessibilityAddTraits(.isButton)
                 } else {
                     // CCRM-103: not a Button, so a tap on the row's figure can show its readout instead of opening.
                     SummaryRow(entry: entry, nowMs: nowMs)
@@ -106,8 +108,8 @@ struct SummaryList: View {
 }
 
 enum SummaryWords {
-    /// Line 3 of a row: "Room to spare · ≈22%/day · resets Fri", "Held · back at 3:40 pm · resets Fri", "Out until Thu
-    /// 8:00 am", "No reading".
+    /// Line 3 of a row: the pace line "1d 7h behind · Fri 9:00 am" (CCRM-104), "Held · back at 3:40 pm · resets Fri",
+    /// "Out until Thu 8:00 am", "No reading".
     static func line(_ e: SummaryEntry, nowMs: Int64) -> String {
         let f = e.face
         guard let used = e.usedPct else { return "No reading" }
@@ -117,14 +119,16 @@ enum SummaryWords {
         if e.group == .held, e.hasSession, let back = f.reset {
             return "Held · back at \(shortClock(back)) · resets \(CardContent.weekday(reset.ms, .current))"
         }
-        let band = Pace.band(usedPct: used, elapsedPct: elapsed)
-        let words = PaceText.tight(band, Pace.allowance(usedPct: used, msUntilReset: reset.ms - nowMs)) ?? ""
-        return "\(words) · resets \(CardContent.weekday(reset.ms, .current))"
+        return paceLine(e, nowMs: nowMs)?.text()
+            ?? "\(PaceText.tight(Pace.band(usedPct: used, elapsedPct: elapsed), nil) ?? "") · resets \(CardContent.weekday(reset.ms, .current))"
     }
 
-    /// CCBG-60 (Summary Line Clip): line 3 without its " · resets <day>" clause, for a row too narrow for it.
-    static func withoutReset(_ line: String) -> String {
-        line.range(of: " · resets ").map { String(line[..<$0.lowerBound]) } ?? line
+    /// The eligible row's pace line (core §6.3 Printed form); nil for held, spent, unread and unclocked rows, whose own
+    /// lines stand. CCBG-60 (Summary Line Clip) is now the one drop order: weekday, clock, never the duration and word.
+    static func paceLine(_ e: SummaryEntry, nowMs: Int64) -> PaceLine? {
+        guard e.group == .eligible, let reset = e.face.weeklyReset else { return nil }
+        return PaceText.paceLine(usedPct: e.usedPct, resetMs: reset.ms, windowLengthMs: HistoryStats.weekMs, nowMs: nowMs,
+                                 use24h: Display.use24h)
     }
 
     /// The held reason's time, "back 3:40 pm". CCRM-103 (Hybrid Notification) rev D S1: no longer drawn beside the
@@ -134,12 +138,9 @@ enum SummaryWords {
         return "back \(shortClock(back))"
     }
 
-    /// CCRM-103 §2b: the Weekly figure's tap readout, shown in line 3 for 3 s; nil when spent, unclocked or unread.
-    static func readout(_ e: SummaryEntry, nowMs: Int64) -> String? {
-        PaceText.markReadout(MarkTime.of(usedPct: e.usedPct, msUntilReset: e.face.weeklyReset.map { $0.ms - nowMs },
-                                         windowLengthMs: HistoryStats.weekMs, nowMs: nowMs),
-                             use24h: Display.use24h)
-    }
+    /// CCRM-104 (Pace Line Parity) D5: the pace-mark caption a press on the figure underlines (or, in a one-line row,
+    /// shows in the word slot) for 3 s; nil when spent, unclocked or unread.
+    static func caption(_ e: SummaryEntry) -> String? { PaceText.caption(mode: Display.mode, usedPct: e.usedPct, elapsedPct: e.elapsedPct) }
 
     /// The one-line row's word: the band, "Held · 3:40 pm" when held (never "5h", as on Android), "Out · Thu" when spent.
     static func word(_ e: SummaryEntry) -> String {
@@ -165,7 +166,7 @@ struct SummaryRow: View {
     var body: some View {
         let accent = entry.account.accent(scheme)
         let spent = entry.group == .spent
-        let readout = SummaryWords.readout(entry, nowMs: nowMs)
+        let readout = SummaryWords.caption(entry)
         let used = entry.usedPct, pace = entry.elapsedPct
         HStack(alignment: .center, spacing: 12) {
             ring(accent: accent)
@@ -189,27 +190,22 @@ struct SummaryRow: View {
                         .allowsHitTesting(readout != nil)
                 }
                 GrammarBar(pct: used, pace: pace, accent: accent, height: 10, surface: p.card).padding(.top, 6)
-                if let caption = PaceText.caption(mode: Display.mode, usedPct: used, elapsedPct: pace), let mark = pace {
-                    PaceCaption(text: caption, markPct: mark).padding(.top, 1)
+                if let caption = readout, let mark = pace {
+                    PaceCaption(text: caption, markPct: mark, underlined: revealed).padding(.top, 1)
                 }
-                if revealed, let readout {
-                    Text(readout).font(.system(size: 13, weight: .semibold)).underline().foregroundStyle(p.ink)
-                        .padding(.top, 4).lineLimit(1)
+                // CCRM-104: the pace line, one drop order (weekday, then clock, never the duration and word).
+                if let line = SummaryWords.paceLine(entry, nowMs: nowMs) {
+                    PaceLineView(line: line).font(.system(size: 13)).padding(.top, 4)
                 } else {
-                    // CCBG-60: under the width, "resets <day>" goes first.
-                    let full = SummaryWords.line(entry, nowMs: nowMs)
-                    ViewThatFits(in: .horizontal) {
-                        Text(full).font(.system(size: 13)).lineLimit(1).fixedSize()
-                        Text(SummaryWords.withoutReset(full)).font(.system(size: 13)).lineLimit(1)
-                    }
-                    .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4)
+                    Text(SummaryWords.line(entry, nowMs: nowMs)).font(.system(size: 13)).lineLimit(1).minimumScaleFactor(0.8)
+                        .foregroundStyle(spent || entry.group == .noReading ? p.sub : p.txt).padding(.top, 4)
                 }
             }
         }
         .opacity(spent ? 0.6 : 1)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityHint(readout ?? "")
+        .accessibilityActions { if let readout { Button(readout) { show(readout) } } }
     }
 
     /// The 5h ring: greyed while the week is spent (CCRM-102 (Spent Week Gate)), a cross for a plan with no 5h, "—"
@@ -221,7 +217,7 @@ struct SummaryRow: View {
         let pct = state == .notApplicable ? nil : f.pct
         return GrammarRing(
             pct: pct, pace: f.pace, accent: accent,
-            figure: state == .notApplicable ? nil : Display.number(pct, pace: f.pace),
+            figure: state == .notApplicable ? nil : Display.ringNumber(pct, pace: f.pace),
             figureColour: state == .normal && Display.isDistance(pct, pace: f.pace)
                 ? Display.figureColour(pct, pace: f.pace, ink: p.ink, usage: p.ink, scheme) : nil,
             state: state, surface: p.card)
@@ -243,31 +239,65 @@ struct SummaryRow: View {
 struct SummaryOneLineRow: View {
     let entry: SummaryEntry
     let nowMs: Int64
+    @State private var revealed = false
+    @State private var revealToken = 0
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         let accent = entry.account.accent(scheme)
         let quiet = entry.group == .spent || entry.group == .noReading
+        let caption = SummaryWords.caption(entry)
+        let line = SummaryWords.paceLine(entry, nowMs: nowMs)
         HStack(spacing: 8) {
             Text("\(entry.rank)").font(.system(size: 10, weight: .bold)).foregroundStyle(.black)
                 .frame(width: 16, height: 16).background(accent, in: Circle())
             Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
                 .fixedSize().frame(minWidth: 44, alignment: .leading).layoutPriority(1)
             UsageBar(pct: entry.usedPct, pace: entry.elapsedPct, accent: accent, height: 7).frame(minWidth: 50, maxWidth: 110)
-            Text(SummaryWords.word(entry)).font(.system(size: 12.5, weight: entry.group == .held ? .semibold : .regular))
-                .foregroundStyle(entry.group == .held ? p.orange : quiet ? p.sub : p.txt).lineLimit(1).frame(width: 96, alignment: .leading)
-            Text(Display.number(entry.usedPct, pace: entry.elapsedPct)).font(.system(size: 15, weight: .bold)).monospacedDigit()
-                .foregroundStyle(entry.usedPct == nil ? p.sub : p.severity(entry.usedPct, accent: accent))
-                .frame(width: 46, alignment: .trailing)
+            // CCRM-104: the word slot is the pace line's tinted span alone; a press on the figure swaps it for the caption.
+            Group {
+                if revealed, let caption {
+                    Text(caption).font(.system(size: 12, weight: .semibold)).underline().foregroundStyle(p.ink)
+                } else if let line {
+                    Text(line.lead).font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(line.tone(scheme, ink: p.ink))
+                } else {
+                    Text(SummaryWords.word(entry)).font(.system(size: 12.5, weight: entry.group == .held ? .semibold : .regular))
+                        .foregroundStyle(entry.group == .held ? p.orange : quiet ? p.sub : p.txt)
+                }
+            }
+            .lineLimit(1).minimumScaleFactor(0.8).frame(width: 96, alignment: .leading)
+            Display.grammarFigure(Display.number(entry.usedPct, pace: entry.elapsedPct), size: 15)
+                .foregroundStyle(Display.figureColour(entry.usedPct, pace: entry.elapsedPct, ink: p.ink,
+                                                      usage: entry.usedPct == nil ? p.sub : p.severity(entry.usedPct, accent: accent), scheme))
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .frame(width: 52, alignment: .trailing)
+                // The row's tap opens the account; the figure's own target shows the caption (48 pt, as the two-line row).
+                .contentShape(Rectangle().inset(by: -10))
+                .onTapGesture { show(caption) }
+                .allowsHitTesting(caption != nil)
         }
         .opacity(quiet ? 0.6 : 1)
         .contentShape(Rectangle())
+        .accessibilityActions { if let caption { Button(caption) { show(caption) } } }
+    }
+
+    private func show(_ caption: String?) {
+        guard caption != nil else { return }
+        revealed = true
+        revealToken += 1
+        let token = revealToken
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: AccountTile.readoutSeconds * 1_000_000_000)
+            if revealToken == token { revealed = false }
+        }
     }
 }
 
-/// The Pace map: each account's week as (share gone, used), over-pace above the diagonal. Spent dots carry an ×;
-/// no-reading accounts are left off; from six accounts the dots are numbered by rank instead of named.
+/// The Pace map: each account's week as (share gone, used), "ahead of pace" above the diagonal and "behind pace" below it
+/// (CCRM-104 (Pace Line Parity), core §6.3's words). Names label every dot, never rank numbers, placed by
+/// `PaceMapLayout`; spent dots carry an ×; no-reading accounts are left off.
 struct PaceMapCard: View {
     let entries: [SummaryEntry]
     var height: CGFloat = 230
@@ -281,7 +311,7 @@ struct PaceMapCard: View {
                 Spacer()
                 Text("Weekly, where each account stands").font(.system(size: 13)).foregroundStyle(p.sub)
             }
-            PaceMap(entries: entries.filter { $0.usedPct != nil && $0.elapsedPct != nil }, numbered: entries.count >= 6)
+            PaceMap(entries: entries.filter { $0.usedPct != nil && $0.elapsedPct != nil })
                 .frame(height: height).padding(.top, 10)
         }
     }
@@ -289,7 +319,6 @@ struct PaceMapCard: View {
 
 struct PaceMap: View {
     let entries: [SummaryEntry]
-    var numbered = false
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
@@ -299,6 +328,7 @@ struct PaceMap: View {
             func P(_ x: Double, _ y: Double) -> CGPoint {
                 CGPoint(x: left + x / 100 * (right - left), y: bottom - y / 100 * (bottom - top))
             }
+            func measure(_ t: Text) -> CGSize { ctx.resolve(t).measure(in: CGSize(width: 400, height: 40)) }
             func label(_ t: String, _ at: CGPoint, _ c: Color, _ a: UnitPoint, _ s: CGFloat = 10, _ bold: Bool = false) {
                 ctx.draw(Text(t).font(.system(size: s, weight: bold ? .bold : .regular)).foregroundStyle(c), at: at, anchor: a)
             }
@@ -311,17 +341,31 @@ struct PaceMap: View {
             }
             ctx.stroke(Path { $0.move(to: P(0, 0)); $0.addLine(to: P(100, 100)) }, with: .color(p.pace),
                        style: StrokeStyle(lineWidth: 1.6, dash: [3, 3]))
-            label("over pace", P(3, 94), p.sub, .leading, 10)
-            label("room to spare", P(97, 6), p.sub, .trailing, 10)
-            var even = ctx
-            even.translateBy(x: P(82, 82).x, y: P(82, 82).y)
-            even.rotate(by: .radians(-atan2(Double(bottom - top), Double(right - left))))
-            even.draw(Text("even pace").font(.system(size: 9.5)).foregroundStyle(p.pace), at: CGPoint(x: 0, y: -7), anchor: .center)
-            label("week start", CGPoint(x: left, y: bottom + 10), p.sub, .leading, 10)
-            label("each account's own week", CGPoint(x: (left + right) / 2, y: bottom + 10), p.sub, .center, 9.5)
-            label("reset", CGPoint(x: right, y: bottom + 10), p.sub, .trailing, 10)
-            for e in entries {
-                guard let used = e.usedPct, let gone = e.elapsedPct else { continue }
+
+            // The words that stay: the wedges, the axis ends. Their boxes keep the name labels off them.
+            let wedgeFont = Font.system(size: 10)
+            let ahead = Text(PaceText.MapWords.aboveDiagonal).font(wedgeFont), behind = Text(PaceText.MapWords.belowDiagonal).font(wedgeFont)
+            let aheadAt = P(3, 94), behindAt = P(97, 6)
+            let aheadSize = measure(ahead), behindSize = measure(behind)
+            let xStart = measure(Text(PaceText.MapWords.xStart).font(.system(size: 10)))
+            let xEnd = measure(Text(PaceText.MapWords.xEnd).font(.system(size: 10)))
+            var obstacles = [
+                CGRect(x: aheadAt.x, y: aheadAt.y - aheadSize.height / 2, width: aheadSize.width, height: aheadSize.height),
+                CGRect(x: behindAt.x - behindSize.width, y: behindAt.y - behindSize.height / 2, width: behindSize.width, height: behindSize.height),
+            ]
+            label(PaceText.MapWords.aboveDiagonal, aheadAt, p.sub, .leading, 10)
+            label(PaceText.MapWords.belowDiagonal, behindAt, p.sub, .trailing, 10)
+            label(PaceText.MapWords.xStart, CGPoint(x: left, y: bottom + 10), p.sub, .leading, 10)
+            label(PaceText.MapWords.xEnd, CGPoint(x: right, y: bottom + 10), p.sub, .trailing, 10)
+            obstacles.append(CGRect(x: left, y: bottom + 10 - xStart.height / 2, width: xStart.width, height: xStart.height))
+            obstacles.append(CGRect(x: right - xEnd.width, y: bottom + 10 - xEnd.height / 2, width: xEnd.width, height: xEnd.height))
+
+            let live = entries.compactMap { e -> (SummaryEntry, Double, Double)? in
+                guard let used = e.usedPct, let gone = e.elapsedPct else { return nil }
+                return (e, used, gone)
+            }
+            // Dots and trails first, then the names where `PaceMapLayout` puts them.
+            for (e, used, gone) in live {
                 let accent = e.account.accent(scheme)
                 if e.trail.count > 1 {
                     var path = Path()
@@ -329,10 +373,7 @@ struct PaceMap: View {
                     ctx.stroke(path, with: .color(accent.opacity(0.7)), lineWidth: 1.4)
                 }
                 let dot = P(gone, min(used, 100))
-                if numbered {
-                    ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 7, y: dot.y - 7, width: 14, height: 14)), with: .color(accent))
-                    label("\(e.rank)", dot, .black, .center, 9, true)
-                } else if Pace.isSpent(used) {
+                if Pace.isSpent(used) {
                     ctx.stroke(Path(ellipseIn: CGRect(x: dot.x - 5, y: dot.y - 5, width: 10, height: 10)), with: .color(accent), lineWidth: 1.6)
                     ctx.stroke(Path { $0.move(to: CGPoint(x: dot.x - 3, y: dot.y - 3)); $0.addLine(to: CGPoint(x: dot.x + 3, y: dot.y + 3))
                         $0.move(to: CGPoint(x: dot.x + 3, y: dot.y - 3)); $0.addLine(to: CGPoint(x: dot.x - 3, y: dot.y + 3)) },
@@ -340,11 +381,32 @@ struct PaceMap: View {
                 } else {
                     ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 4.5, y: dot.y - 4.5, width: 9, height: 9)), with: .color(accent))
                 }
-                if !numbered {
-                    let rightSide = dot.x < right - 60
-                    label(e.account.label, CGPoint(x: dot.x + (rightSide ? 8 : -8), y: dot.y - 9), p.ink, rightSide ? .leading : .trailing, 11, true)
-                }
             }
+            let nameFont = Font.system(size: 11, weight: .bold)
+            let dots = live.map { PaceMapLayout.Dot(key: $0.0.account.key, name: $0.0.account.label, point: P($0.2, min($0.1, 100))) }
+            let placements = PaceMapLayout.place(
+                dots: dots, plot: CGRect(origin: .zero, size: size), rightEdge: right, obstacles: obstacles,
+                size: { measure(Text($0).font(nameFont)) })
+            for placement in placements {
+                guard let dot = dots.first(where: { $0.key == placement.key }) else { continue }
+                if let leader = placement.leader {
+                    ctx.stroke(Path { $0.move(to: leader.from); $0.addLine(to: leader.to) }, with: .color(p.sub.opacity(0.7)), lineWidth: 0.8)
+                }
+                ctx.draw(Text(dot.name).font(nameFont).foregroundStyle(p.ink), at: CGPoint(x: placement.rect.minX, y: placement.rect.midY), anchor: .leading)
+            }
+
+            // "even pace" slides along the diagonal to the first stretch no dot or name sits on.
+            let evenSize = measure(Text(PaceText.MapWords.diagonal).font(.system(size: 9.5)))
+            let slide = [82.0, 70, 58, 46, 34, 22, 90].first { t in
+                let c = P(t, t)
+                let r = CGRect(x: c.x - evenSize.width / 2, y: c.y - evenSize.height - 6, width: evenSize.width, height: evenSize.height + 8)
+                return !placements.contains { $0.rect.intersects(r) } && !dots.contains { d in r.insetBy(dx: -6, dy: -6).contains(d.point) }
+                    && !obstacles.contains { $0.intersects(r) }
+            } ?? 82
+            var even = ctx
+            even.translateBy(x: P(slide, slide).x, y: P(slide, slide).y)
+            even.rotate(by: .radians(-atan2(Double(bottom - top), Double(right - left))))
+            even.draw(Text(PaceText.MapWords.diagonal).font(.system(size: 9.5)).foregroundStyle(p.pace), at: CGPoint(x: 0, y: -7), anchor: .center)
         }
         .accessibilityLabel("Pace map")
     }

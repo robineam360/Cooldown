@@ -275,7 +275,7 @@ struct UsageRing: View {
                         .rotationEffect(.degrees(pace / 100 * 360))
                 }
                 VStack(spacing: 0) {
-                    Text(label ?? Display.number(pct, pace: pace))
+                    Text(label ?? Display.ringNumber(pct, pace: pace))
                         .font(.system(size: fontSize ?? s * 0.22, weight: .bold)).monospacedDigit()
                         .foregroundStyle(mono ?? (pct == nil ? p.sub : colour))
                         .minimumScaleFactor(0.6).lineLimit(1)
@@ -306,10 +306,14 @@ struct PaceCaption: View {
     let text: String
     let markPct: Double
     var size: CGFloat = 11.5
+    /// CCRM-104 (Pace Line Parity) D5: a press on the figure underlines the caption for 3 s.
+    var underlined = false
     @Environment(\.palette) private var p
 
     var body: some View {
-        CaptionLayout(markPct: markPct) { styled.font(.system(size: size)).foregroundStyle(p.txt).lineLimit(1).fixedSize() }
+        CaptionLayout(markPct: markPct) {
+            styled.font(.system(size: size)).underline(underlined, color: p.ink).foregroundStyle(p.txt).lineLimit(1).fixedSize()
+        }
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityLabel(text)
     }

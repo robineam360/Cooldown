@@ -36,6 +36,10 @@ struct CooldownActivityAttributes: ActivityAttributes {
         var fiveReset: Date?
         var weeklyLine: String?
         var weeklyWords: String?
+        /// CCRM-104 (Pace Line Parity): the Weekly's pace line (core §6.3 Printed form) and the 5h's projection words
+        /// ("on track for ~69%") for the single account's second line. Optional, so older states decode.
+        var paceLine: PaceLine?
+        var fiveFold: String?
 
         var providerValue: Provider { Provider(rawValue: provider) ?? .claude }
         var leadsWeekly: Bool { weeklyLeads ?? false }
@@ -91,6 +95,8 @@ struct CooldownActivityAttributes: ActivityAttributes {
             fiveReset = face.fiveHour?.reset
             weeklyLine = face.leadsWeekly ? face.session.flatMap { $0.paceLine.isEmpty ? nil : $0.paceLine } : nil
             weeklyWords = face.leadsWeekly ? face.session?.band.flatMap(PaceText.bandWords) : nil
+            paceLine = face.leadsWeekly ? face.session?.line : nil
+            fiveFold = fiveContent?.projectionFold
         }
     }
 

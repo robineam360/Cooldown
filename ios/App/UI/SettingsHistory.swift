@@ -119,7 +119,7 @@ struct SettingsScreen: View {
                            [("Used", PaceText.Mode.used.rawValue), ("Left", PaceText.Mode.left.rawValue), ("Vs pace", PaceText.Mode.vsPace.rawValue)],
                            note: "How percentages read on every surface. Bars and colours always show what's spent. "
                                + (usageMode == PaceText.Mode.left.rawValue ? "Shows “53% left”: what remains of each window."
-                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “10%” — how far from the pace mark you are: green under it, red over it."
+                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “+10%” — how far under the pace mark you are (“−20%” over it): green under, red over."
                                   : "Shows “47% used”: what each window has consumed."))
                     // CCRM-103 (Hybrid Notification) rev D §1e: how a bar or ring ends at the usage. Line by default.
                     VStack(alignment: .leading, spacing: 8) {
@@ -261,7 +261,7 @@ struct EndMarkPreviews: View {
         HStack(spacing: 18) {
             ForEach(UsageEndMark.allCases, id: \.self) { mark in
                 HStack(spacing: 8) {
-                    GrammarRing(pct: 64, pace: 52, accent: accent, figure: Display.number(64, pace: 52),
+                    GrammarRing(pct: 64, pace: 52, accent: accent, figure: Display.ringNumber(64, pace: 52),
                                 figureColour: Display.isDistance(64, pace: 52)
                                     ? Display.figureColour(64, pace: 52, ink: p.ink, usage: p.ink, scheme) : nil,
                                 endMark: mark, surface: p.card)

@@ -75,37 +75,30 @@ enum Display {
     static func isDistance(_ pct: Double?, pace: Double?) -> Bool {
         mode == .vsPace && Pace.vsPace(usedPct: pct, elapsedPct: pace) != nil
     }
-    /// The figure without any word: "62%", "38%" (Left), "10%" (Vs pace, unsigned — `figureColour` says the side; the
-    /// usage when it falls back).
+    /// The figure without any word: "62%", "38%" (Left), "+19%" / "−12%" / "0%" (Vs pace, signed since CCRM-104 (Pace
+    /// Line Parity), core §6.3 Printed form; the usage when it falls back). Rings print `ringNumber` instead.
     static func number(_ pct: Double?, pace: Double?) -> String {
+        if mode == .vsPace { return PaceText.signedVsPaceFigure(usedPct: pct, elapsedPct: pace) }
+        return usage(pct)
+    }
+    /// The same figure inside the 5-hour ring: unsigned ("19%", "12%"), the tone alone gives the side — a sign would
+    /// shrink the figure (Robin, CCM-201).
+    static func ringNumber(_ pct: Double?, pace: Double?) -> String {
         if mode == .vsPace { return PaceText.vsPaceFigure(usedPct: pct, elapsedPct: pace) }
         return usage(pct)
     }
     /// A companion's figure: always usage ("5h 34%"), bare in Left mode.
     static func usage(_ pct: Double?) -> String { value(pct).map { "\($0)%" } ?? "—" }
-    /// "62%", "38% left" or "13% over pace" / "10% under pace" / "0% on pace" as a plain string, for text-only surfaces:
-    /// with no colour to carry the side, the words do (rev D §7b's colour-blind cue, as the notification's caption).
+    /// "62%", "38% left" or "−13%" / "+10%" / "0%" as a plain string, for text-only surfaces (the sign is the cue).
     static func pct(_ pct: Double?, pace: Double?) -> String {
-        if isDistance(pct, pace: pace) {
-            let side: String
-            switch PaceText.vsPaceTone(usedPct: pct, elapsedPct: pace) {
-            case .under: side = "under pace"
-            case .over: side = "over pace"
-            default: side = "on pace"
-            }
-            return "\(number(pct, pace: pace)) \(side)"
-        }
+        if isDistance(pct, pace: pace) { return number(pct, pace: pace) }
         guard let v = value(pct) else { return "—" }
         return usageLeft ? "\(v)% left" : "\(v)%"
     }
-    /// A headline figure: "62%", or "38%" with a smaller "left" (or "vs pace") after it so big numbers keep their size.
+    /// A headline figure: "62%", "+19%", or "38%" with a smaller "left" after it so big numbers keep their size.
     static func pctText(_ pct: Double?, pace: Double?, size: CGFloat) -> Text {
         let small = Font.system(size: max(10, size * 0.42), weight: .semibold)
-        if isDistance(pct, pace: pace) {
-            // Unsigned since rev D §7b: the small word says the side where the figure is not coloured.
-            let side = String(self.pct(pct, pace: pace).drop { $0 != " " })
-            return Text("\(number(pct, pace: pace))\(Text(side).font(small))")
-        }
+        if isDistance(pct, pace: pace) { return Text(number(pct, pace: pace)) }
         guard let v = value(pct) else { return Text("—") }
         guard usageLeft else { return Text("\(v)%") }
         return Text("\(v)%\(Text(" left").font(small))")

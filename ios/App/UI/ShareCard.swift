@@ -69,14 +69,21 @@ struct ShareCardView: View {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Display.pctText(c.pct, pace: c.pace, size: figure).font(.system(size: figure, weight: .bold)).foregroundStyle(spentWeek ? p.red : p.ink)
+                // Vs pace renders the share card as Used (wireframe CCRM-104 §7, approved 2026-11-06).
+                (Display.mode == .vsPace ? Text(Display.usage(c.pct)) : Display.pctText(c.pct, pace: c.pace, size: figure))
+                    .font(.system(size: figure, weight: .bold)).foregroundStyle(spentWeek ? p.red : p.ink)
             }
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 10)
             HStack {
                 // v2.0: Weekly reads its band words; the 5h (no Pace) its projection.
                 // A greyed 5h (the week is spent) leaves its phrase slot empty and keeps its reset.
-                Text(greyed ? "" : c.notStarted ? c.resetsIn : (c.paceLine.isEmpty ? (c.projectionFold.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "") : c.paceLine)).foregroundStyle(c.paceLineAlarm || spentWeek ? p.red : p.sub)
+                // CCRM-104 D9: Weekly's left slot is the pace line's tinted span ("13h 59m ahead"); "Resets …" stays right.
+                if !greyed, !c.notStarted, !spentWeek, let line = c.line {
+                    Text(line.lead).fontWeight(.semibold).foregroundStyle(line.tone(colorSchemeFor(p), ink: p.ink))
+                } else {
+                    Text(greyed ? "" : c.notStarted ? c.resetsIn : (c.paceLine.isEmpty ? (c.projectionFold.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "") : c.paceLine)).foregroundStyle(c.paceLineAlarm || spentWeek ? p.red : p.sub)
+                }
                 Spacer()
                 Text(c.resetsAt.replacingOccurrences(of: "Resets at ", with: "Resets ")).foregroundStyle(p.sub)
             }

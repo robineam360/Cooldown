@@ -74,10 +74,11 @@ struct V20SurfaceTests {
     func wording() throws {
         let f = teams()
         let w = try #require(f.weekly)
-        #expect(w.paceLine.hasPrefix("Slow down · ≈"))
+        #expect(w.paceLine.hasPrefix("Slow down · ≈"))   // the band words stay for alerts and help; no surface prints them
         #expect(w.paceLineAlarm)
-        #expect(w.paceLineFull.contains(" until "))
-        #expect(CardContent.compactLine(w).contains(" · resets "))
+        // CCRM-104 (Pace Line Parity): 52% against a 38.9% mark is ahead; every weekly line is the pace line.
+        #expect(w.line?.side == .over && w.paceLineFull.contains(" ahead · "))
+        #expect(CardContent.compactLine(w) == w.line?.text())
         #expect(w.caption == "39% pace mark · 13 over")
         let five = try #require(f.session)
         #expect(five.paceLine.isEmpty)
@@ -87,8 +88,10 @@ struct V20SurfaceTests {
         #expect(spent.paceLine.hasPrefix("Out until ") && spent.caption == nil && spent.paceLineAlarm)
         #expect(CardContent.compactLine(spent).hasPrefix("Out until "))
         withMode(.vsPace) {
-            #expect(w.caption == "52% used · mark 39%")
-            #expect(Display.number(52, pace: 38.9) == "13%")  // |38.9 − 52| toward zero (core §6.3, 2026-11-06), red: unsigned since rev D §7b
+            #expect(w.caption == "52% used · 39% pace mark")
+            #expect(Display.number(52, pace: 38.9) == "−13%")  // toward zero (core §6.3, 2026-11-06), signed since CCRM-104
+            #expect(Display.ringNumber(52, pace: 38.9) == "13%")  // inside the 5h ring the sign stays off
+            #expect(Display.number(50, pace: 67) == "+17%" && Display.number(60.2, pace: 60.7) == "0%")
             #expect(Display.number(100, pace: 89.8) == "100%")
             #expect(Display.usage(34) == "34%")
         }
@@ -215,23 +218,26 @@ struct V20SurfaceTests {
         #expect(SummaryWords.companion(e[2])?.hasPrefix("back ") == true)
         #expect(SummaryWords.companion(e[0]) == nil && SummaryWords.companion(e[1]) == nil)
         #expect(SummaryWords.line(e[3], nowMs: now.ms).hasPrefix("Out until "))
-        #expect(SummaryWords.line(e[0], nowMs: now.ms).hasPrefix("Room to spare · ≈"))
-        // §2b: the Weekly figure's tap readout — under (Personal 50 vs 67), over (Teams 52 vs 38.9), none when spent.
-        #expect(SummaryWords.readout(e[0], nowMs: now.ms)?.hasSuffix(" behind pace") == true)
-        #expect(SummaryWords.readout(e[1], nowMs: now.ms)?.hasPrefix("Pace catches up ") == true)
-        #expect(SummaryWords.readout(e[3], nowMs: now.ms) == nil)
+        // CCRM-104: line 3 is the pace line — under (Personal 50 vs 67), over (Teams 52 vs 38.9).
+        #expect(SummaryWords.line(e[0], nowMs: now.ms).contains(" behind · "))
+        #expect(SummaryWords.paceLine(e[1], nowMs: now.ms)?.side == .over)
+        #expect(SummaryWords.paceLine(e[3], nowMs: now.ms) == nil && SummaryWords.paceLine(e[2], nowMs: now.ms) == nil)
+        // D5: a press on the figure shows the caption; none when spent.
+        #expect(SummaryWords.caption(e[0])?.hasSuffix("17 under") == true)
+        #expect(SummaryWords.caption(e[1])?.hasSuffix("13 over") == true)
+        #expect(SummaryWords.caption(e[3]) == nil)
     }
 
     // MARK: - CCRM-103 (Hybrid Notification): the account tile, rev D §2, §6, §7
 
-    @Test("tile readouts: each figure's own words, none for an unclocked or spent window")
-    func tileReadouts() throws {
+    @Test("tile presses: each figure's own caption, none for an unclocked or spent window")
+    func tileCaptions() throws {
         let f = teams()
         let w = try #require(f.weekly), five = try #require(f.session)
-        #expect(w.readout()?.hasPrefix("Pace catches up ") == true)   // 52% against a 38.9% mark: over
-        #expect(five.readout()?.hasSuffix(" behind pace") == true)    // 34% against 53.3%: under
-        #expect(try #require(teams(weekly: 100).weekly).readout() == nil)
-        #expect(try #require(r.face("Idle", .claude, pct: 0, pace: nil, notStarted: true).session).readout() == nil)
+        #expect(w.caption == "39% pace mark · 13 over")        // 52% against a 38.9% mark: over
+        #expect(five.caption?.hasSuffix(" under") == true)     // 34% against 53.3%: under
+        #expect(try #require(teams(weekly: 100).weekly).caption == nil)
+        #expect(try #require(r.face("Idle", .claude, pct: 0, pace: nil, notStarted: true).session).caption == nil)
     }
 
     @Test("tile renders: folded and open on each chip, no 5h, spent week, no reading, binding; Used, Left, Vs pace; end marks")

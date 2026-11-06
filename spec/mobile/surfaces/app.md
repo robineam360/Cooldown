@@ -979,3 +979,32 @@ sections, and the "Summary and one account at a time" layout, whose selection ru
 5. **iPhone past five tabs (four or more accounts plus All):** the extra accounts sit under the system's More list.
 6. **iPhone page top:** the title is now the first row of the scrolling page (top padding 4 pt), under the navigation
    bar. It no longer sits above a fixed tab strip.
+
+## The pace line on iOS — CCRM-104 (Pace Line Parity)
+
+Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §9 (approved 2026-11-06 under Robin's delegation); strings are core
+§6.3 "Printed form" (`PaceText.signed`, `PaceText.paceLine`, `PaceLine`; cases `spec/core/fixtures/pace-distance/printed.json`,
+read by `PrintedFormTests`). This section supersedes the readout, unsigned-figure and band-line wording above wherever they differ.
+
+- **Figure.** Every Vs pace figure but a ring is signed: "+19%" green, "−12%" (U+2212) red, "0%" ink (`Display.number`).
+  Rings stay unsigned, tone only (`Display.ringNumber`: tile ring, Summary ring, 5h rings on faces, the Island's compact ring,
+  the end-mark previews). The notification-style "vs pace" words never appear. The Vs pace share card still renders as Used.
+- **The pace line replaces every Weekly band line** (`WindowContent.line`, drawn by `PaceLineView`/`FitLine`,
+  `ios/Shared/PaceLineView.swift`): "21h 50m ahead · Sun 9:30 pm", "6d 23h behind · Wed 12:30 pm", "On the mark · Sat 8:00 am";
+  the duration and word tinted (semibold), the rest in the surface's own ink. Where: tile folded line 1 (14.5 pt semibold) and the
+  open tile's lines, the classic Weekly/5h cards, Summary line 3 (13 pt), Strip (12.5), Overview T1–T4, Bars small (11.5 pt, 126 pt
+  wide), the Live Activity (single: line 1 is the pace line, line 2 the 5h line led by a ring glyph "resets in 2h 20m · on track
+  for ~69%"; Duet: the pace line alone), the Island expanded (13 pt; "· in 4d 6h" is gone). A spent, held, signed-out, unclocked
+  or no-reading window keeps its own line; the Lock Screen widgets and the Number face are unchanged.
+- **Drop order, one everywhere**: weekday, then clock, then the text steps to 0.8 of its size; the duration and word are never cut.
+  `FitLine` is a `ViewThatFits` over the three variants, so the choice is made on the real text width per string (Dynamic Type
+  included). `PaceLineFitTests` pins it. CCBG-60 (Summary Line Clip)'s " · resets <day>" drop is this rule now.
+- **Captions.** Vs pace "52% used · 39% pace mark" (was "· mark 39%"). A press on a bar figure underlines its caption for 3 s;
+  on the ring it puts the 5h's caption in the 5h line for 3 s; in a one-line Summary row it swaps the word slot (the pace line's
+  tinted span) for the caption. VoiceOver offers the caption as the figure's action. The markTime readout ("Pace catches up …",
+  "1d 4h behind pace") is gone from the app (`PaceText.markReadout` stays in core for the shared fixture).
+- **Pace map.** Wedge words "ahead of pace" (above the diagonal) and "behind pace" (below); names on every dot at any count, no
+  rank numbers; placement right → below → left → above-left → a leader line to the right edge, from the top down
+  (`PaceMapLayout`, `PaceLineFitTests`); "even pace" slides along the diagonal to a free stretch; the centre note "each account's
+  own week" is dropped.
+- **Share card, Weekly row**: left slot the tinted span ("13h 59m ahead"), right slot "Resets …".

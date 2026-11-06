@@ -86,9 +86,7 @@ struct WindowCard: View {
                     Text(content.resetsIn).font(.system(size: 14.5)).foregroundStyle(p.sub).padding(.top, 10)
                 } else {
                     if !content.paceLine.isEmpty {
-                        Text(content.paceLineFull)
-                            .foregroundStyle(content.paceLineAlarm ? p.red : p.txt)
-                            .font(.system(size: 14.5)).padding(.top, 6)
+                        WindowLine(content: content).font(.system(size: 14.5)).padding(.top, 6)
                     }
                     if let line = content.projectionLine {
                         Text(line).foregroundStyle(p.txt).font(.system(size: 14.5)).padding(.top, 4)
@@ -101,8 +99,7 @@ struct WindowCard: View {
                     .font(.system(size: 14.5)).foregroundStyle(p.txt).padding(.top, 10)
                 }
             } else {
-                Text(CardContent.compactLine(content))
-                    .font(.system(size: 14.5)).foregroundStyle(content.paceLineAlarm ? p.red : p.txt).padding(.top, 10)
+                WindowLine(content: content, folded: true).font(.system(size: 14.5)).padding(.top, 10)
             }
     }
 
@@ -159,8 +156,7 @@ struct WeeklyCard: View {
                 half(all, short: false)
             }
             if !(expanded || !collapsible) {
-                Text(CardContent.compactLine(all)).font(.system(size: 13.5))
-                    .foregroundStyle(all.paceLineAlarm ? p.red : p.txt).padding(.top, 8)
+                WindowLine(content: all, folded: true).font(.system(size: 13.5)).padding(.top, 8)
             }
         }
     }
@@ -185,8 +181,7 @@ struct WeeklyCard: View {
                         .frame(height: chartHeight).padding(.top, 10)
                 }
                 if !c.notStarted, !c.paceLine.isEmpty {
-                    Text(short ? c.paceLine : c.paceLineFull).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).font(.system(size: 13.5))
-                        .fixedSize(horizontal: false, vertical: true).padding(.top, 6)
+                    WindowLine(content: c).font(.system(size: 13.5)).padding(.top, 6)
                 }
                 if let line = c.projectionLine {
                     Text(line).foregroundStyle(p.txt).font(.system(size: 13.5)).padding(.top, 3)
@@ -522,7 +517,7 @@ struct GrammarBar: View {
 
 /// The open tile's chart chips: All · <model> · 5h.
 enum TileChip: Hashable { case all, model, five }
-/// What a tap readout replaces: the ring's 5h line, or a bar's caption.
+/// What a press underlines or replaces for 3 s: the ring's 5h line (its caption), or a bar's caption (underlined).
 enum TileTap: Hashable { case ring, weekly, model }
 
 /// One account: the 5h `GrammarRing` left (72 pt), the 7-day bars stacked right — "Weekly · All models" first, its figure
@@ -568,7 +563,7 @@ struct AccountTile: View {
     }
     private var ringState: GrammarRing.State { five == nil ? .notApplicable : weekGate != nil ? .grey : .normal }
     /// The ring's readout; a greyed 5h (spent week) has none.
-    private var ringReadout: String? { weekGate == nil ? five?.readout() : nil }
+    private var ringReadout: String? { weekGate == nil ? five?.caption : nil }
 
     var body: some View {
         CardBox {
@@ -595,7 +590,7 @@ struct AccountTile: View {
         let pct = five?.pct, pace = five?.pace
         return GrammarRing(
             pct: pct, pace: pace, accent: accent,
-            figure: five == nil ? nil : Display.number(pct, pace: pace),
+            figure: five == nil ? nil : Display.ringNumber(pct, pace: pace),
             figureColour: ringState == .normal && Display.isDistance(pct, pace: pace)
                 ? Display.figureColour(pct, pace: pace, ink: p.ink, usage: p.ink, scheme) : nil,
             state: ringState,
@@ -632,7 +627,7 @@ struct AccountTile: View {
 
     private func barRow(_ c: WindowContent, lead: Bool) -> some View {
         let target: TileTap = lead ? .weekly : .model
-        let readout = c.readout()
+        let readout = c.caption
         let label = lead ? (cap != nil ? "Weekly · All models" : "Weekly") : c.title
         let usageColour = c.pct == nil ? p.sub : p.severity(c.pct, accent: accent)
         return VStack(alignment: .leading, spacing: 0) {
@@ -654,25 +649,20 @@ struct AccountTile: View {
             .frame(minHeight: 20)
             GrammarBar(pct: c.pct, pace: c.pace, accent: accent, height: lead ? 8 : 6, dimmed: dimmed, surface: p.card)
                 .padding(.top, 2)
-            if reveal == target, let readout {
-                Text(readout).font(.system(size: 12.5, weight: .semibold)).underline().foregroundStyle(p.ink)
-                    .lineLimit(1).padding(.top, 2)
-            } else if let caption = c.caption, let mark = c.pace {
-                PaceCaption(text: caption, markPct: mark, size: 12.5).padding(.top, 2)
+            // CCRM-104 (Pace Line Parity) D5: a press on the figure underlines this caption for 3 s.
+            if let caption = c.caption, let mark = c.pace {
+                PaceCaption(text: caption, markPct: mark, size: 12.5, underlined: reveal == target).padding(.top, 2)
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityHint(readout ?? "")
-        .accessibilityAction { show(target, readout) }
+        .accessibilityActions { if let readout { Button(readout) { show(target, readout) } } }
     }
 
     // MARK: Folded: the band line and the 5h line
 
     @ViewBuilder private var foldedLines: some View {
         if let weekly {
-            Text(CardContent.compactLine(weekly)).font(.system(size: 14.5, weight: .semibold))
-                .foregroundStyle(weekly.paceLineAlarm ? p.red : p.txt)
-                .fixedSize(horizontal: false, vertical: true).padding(.top, 10)
+            WindowLine(content: weekly, folded: true).font(.system(size: 14.5, weight: .semibold)).padding(.top, 10)
         }
         if let weekGate {
             Text(weekGate).font(.system(size: 14.5)).foregroundStyle(p.ink)
@@ -750,8 +740,7 @@ struct AccountTile: View {
             Text(c.resetsIn).font(.system(size: 14.5)).foregroundStyle(p.sub).padding(.top, 10)
         } else {
             if !c.paceLine.isEmpty {
-                Text(c.paceLineFull).font(.system(size: 14.5)).foregroundStyle(c.paceLineAlarm ? p.red : p.txt)
-                    .fixedSize(horizontal: false, vertical: true).padding(.top, 8)
+                WindowLine(content: c).font(.system(size: 14.5)).padding(.top, 8)
             }
             if let line = c.projectionLine {
                 Text(line).font(.system(size: 14.5)).foregroundStyle(p.txt)

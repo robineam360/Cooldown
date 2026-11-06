@@ -2,8 +2,8 @@ import Foundation
 
 /// CCRM-104 (Pace Line Parity): core §6.3 "Printed form" — the strings every family prints for the pace numbers, so two
 /// installs read the same. Cases: `spec/core/fixtures/pace-distance/printed.json`. Layout and sizes are the surface's.
-public struct PaceLine: Sendable, Equatable {
-    public enum Side: String, Sendable, Equatable { case under, over, on }
+public struct PaceLine: Sendable, Equatable, Hashable, Codable {
+    public enum Side: String, Sendable, Equatable, Hashable, Codable { case under, over, on }
 
     public let side: Side
     /// The duration the mark is behind or ahead ("21h 50m"); nil on the mark.
@@ -12,6 +12,13 @@ public struct PaceLine: Sendable, Equatable {
     public let weekday: String?
     /// The reset's clock in the device's time format ("9:30 pm", "09:30").
     public let clock: String
+
+    public init(side: Side, duration: String?, weekday: String?, clock: String) {
+        self.side = side
+        self.duration = duration
+        self.weekday = weekday
+        self.clock = clock
+    }
 
     /// What the tone tints: "21h 50m ahead", "6d 23h behind"; nil on the mark (the whole lead is plain ink).
     public var tinted: String? {

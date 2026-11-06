@@ -59,6 +59,9 @@ struct FaceFootnote: View {
                         .foregroundStyle(p.sub)
                 } else if face.atLimit || face.leadSpent, let reset = face.reset {
                     Text("Limit · \(limitShort ? "" : "resets ")\(face.resetClock(reset))").foregroundStyle(p.red)
+                } else if face.leadsWeekly, let line = face.session?.line {
+                    // CCRM-104 (Pace Line Parity): Bars small — "6d 23h behind · 9:30 pm"; the weekday drops, then the clock.
+                    FitLine(variants: line.variants(rest: p.sub, ink: p.ink, scheme: colorSchemeFor(p)))
                 } else if let runOut = face.runOut {
                     Text("~ runs out \(shortClock(runOut))").foregroundStyle(p.sub)
                 } else {
@@ -282,7 +285,7 @@ struct FaceRing: View {
     private var pct: Double? { blank ? nil : five.pct }
 
     private var text: String? {
-        let usage = Display.number(pct, pace: five.pace)
+        let usage = Display.ringNumber(pct, pace: five.pace)
         switch figure {
         case .none: return nil
         case .text(let t): return t
@@ -592,26 +595,31 @@ struct StripFace: View {
     }
 }
 
-/// The Weekly's line on a grammar face: "Slow down · ≈11%/day · resets Sun", "Out until Sun 9:30 pm", or the state
-/// that replaces it.
+/// The Weekly's line on a grammar face: the pace line "6d 23h behind · Sun 9:30 pm", "Out until Sun 9:30 pm", or the
+/// state that replaces it.
 struct FaceWeeklyLine: View {
     let face: Face
     var asOf = false
     @Environment(\.palette) private var p
-    var body: some View {
-        line.lineLimit(1).truncationMode(.tail)
-    }
 
-    private var line: Text {
+    @ViewBuilder var body: some View {
         switch face.status {
-        case .signIn: return Text("Sign in again").foregroundStyle(p.orange)
-        case .plan: return Text("No usage on this plan").foregroundStyle(p.sub)
-        case .noData: return Text("Open Cooldown to check").foregroundStyle(p.sub)
+        case .signIn: Text("Sign in again").foregroundStyle(p.orange).lineLimit(1)
+        case .plan: Text("No usage on this plan").foregroundStyle(p.sub).lineLimit(1)
+        case .noData: Text("Open Cooldown to check").foregroundStyle(p.sub).lineLimit(1)
         case .stale where asOf:
-            return Text("as of \(face.fetchedAt.map(shortClock) ?? "—")").foregroundStyle(p.orange)
+            Text("as of \(face.fetchedAt.map(shortClock) ?? "—")").foregroundStyle(p.orange).lineLimit(1)
         default:
-            guard face.leadsWeekly, let c = face.session else { return Text("Weekly not started").foregroundStyle(p.sub) }
-            return Text(CardContent.compactLine(c)).foregroundStyle(c.paceLineAlarm ? p.red : p.txt)
+            if face.leadsWeekly, let c = face.session {
+                // CCRM-104 (Pace Line Parity): the pace line, with the one drop order (weekday, clock, then 0.8 scale).
+                if let line = c.line {
+                    PaceLineView(line: line)
+                } else {
+                    Text(CardContent.compactLine(c)).foregroundStyle(c.paceLineAlarm ? p.red : p.txt).lineLimit(1).truncationMode(.tail)
+                }
+            } else {
+                Text("Weekly not started").foregroundStyle(p.sub).lineLimit(1)
+            }
         }
     }
 }
@@ -1013,7 +1021,7 @@ struct LockPanel: View {
                            dimmed: row.asOf != nil, surface: p.card)
                     .padding(.top, 6)
                 ForEach(Array(PanelLines.lines(row, single: single, p).enumerated()), id: \.offset) { i, line in
-                    line.font(.system(size: 12.5)).lineLimit(1).padding(.top, i == 0 ? 6 : 2)
+                    line.font(.system(size: single ? 12.5 : 12)).padding(.top, i == 0 ? 6 : 2)
                 }
             }
             FaceFigure(pct: row.weekPct, pace: row.weekPace, accent: row.accent, size: big, weight: .semibold,
@@ -1023,20 +1031,39 @@ struct LockPanel: View {
     }
 }
 
-/// The Weekly's lines in the Live Activity. One account: "Slow down · ≈11%/day" over "Resets Sun 9:30 pm"; the Duet:
-/// "Slow down · Sun 9:30 pm". States replace them: sign in, "as of", spent, reset, not started.
+/// The Weekly's lines in the Live Activity (CCRM-104 (Pace Line Parity)). One account: the pace line "6d 23h behind · Sun
+/// 9:30 pm" over the 5h's line led by its ring glyph ("◔ resets in 2h 20m · on track for ~69%"); the Duet: the pace line
+/// alone. States replace them: sign in, "as of", spent, reset, not started.
 enum PanelLines {
-    static func lines(_ row: CooldownActivityAttributes.Row, single: Bool, _ p: Palette) -> [Text] {
-        if row.signIn { return [Text(single ? "Sign-in stopped working · open Cooldown" : "Sign in again").foregroundStyle(p.orange)] }
-        if let asOf = row.asOf { return [Text("as of \(shortClock(asOf))").foregroundStyle(p.orange)] }
-        guard row.leadsWeekly, let reset = row.reset else { return [Text("Weekly not started").foregroundStyle(p.sub)] }
+    private static func text(_ t: Text) -> AnyView { AnyView(t.lineLimit(1)) }
+
+    static func lines(_ row: CooldownActivityAttributes.Row, single: Bool, _ p: Palette) -> [AnyView] {
+        if row.signIn { return [text(Text(single ? "Sign-in stopped working · open Cooldown" : "Sign in again").foregroundStyle(p.orange))] }
+        if let asOf = row.asOf { return [text(Text("as of \(shortClock(asOf))").foregroundStyle(p.orange))] }
+        guard row.leadsWeekly, let reset = row.reset else { return [text(Text("Weekly not started").foregroundStyle(p.sub))] }
         let clock = row.clock(reset)
-        if row.hasReset { return [Text(single ? "Weekly reset at \(clock) · back at 0%" : "Weekly reset · 0%").foregroundStyle(p.txt)] }
-        if row.isSpent { return [Text("Out until \(clock)").foregroundStyle(p.red)] }
-        if single {
-            return [row.weeklyLine.map { Text($0).foregroundStyle(p.txt) }, Text("Resets \(clock)").foregroundStyle(p.txt)].compactMap { $0 }
+        if row.hasReset { return [text(Text(single ? "Weekly reset at \(clock) · back at 0%" : "Weekly reset · 0%").foregroundStyle(p.txt))] }
+        if row.isSpent { return [text(Text("Out until \(clock)").foregroundStyle(p.red))] }
+        if let line = row.paceLine {
+            let pace = AnyView(FitLine(variants: line.variants(rest: p.txt, ink: p.ink, scheme: colorSchemeFor(p))))
+            return single ? [pace, fiveLine(row, p)].compactMap { $0 } : [pace]
         }
-        return [Text(row.weeklyWords.map { "\($0) · \(clock)" } ?? "Resets \(clock)").foregroundStyle(p.txt)]
+        if single {
+            return [row.weeklyLine.map { text(Text($0).foregroundStyle(p.txt)) }, text(Text("Resets \(clock)").foregroundStyle(p.txt))].compactMap { $0 }
+        }
+        return [text(Text(row.weeklyWords.map { "\($0) · \(clock)" } ?? "Resets \(clock)").foregroundStyle(p.txt))]
+    }
+
+    /// "◔ resets in 2h 20m · on track for ~69%": the 5h's own line, led by a small ring glyph (orange while it binds).
+    static func fiveLine(_ row: CooldownActivityAttributes.Row, _ p: Palette) -> AnyView? {
+        guard let five = row.five, !row.isWeekGated, let reset = row.fiveReset, reset > .now else { return nil }
+        var words = "resets in \(Fmt.compactDuration(ms: reset.ms - Date.now.ms))"
+        if let fold = row.fiveFold { words += " · \(fold)" }
+        return AnyView(HStack(spacing: 4) {
+            FiveGlyph(pct: row.signIn ? nil : five.pct, pace: five.pace, accent: row.accent, greyed: false)
+                .frame(width: 11, height: 11).accessibilityHidden(true)
+            Text(words).lineLimit(1).foregroundStyle((row.companionLoud ?? false) ? p.orange : p.sub)
+        })
     }
 }
 
@@ -1073,12 +1100,15 @@ struct IslandExpanded: View {
     }
 }
 
-/// The Island's expanded line (rev D §6): "Resets Sun 9:30 pm · in 4d 6h" ("Out until …" while the week is spent),
-/// or the state that replaces it.
+/// The Island's expanded line: the pace line "6d 23h behind · Sun 9:30 pm" (CCRM-104; "Out until …" while the week is
+/// spent), or the state that replaces it.
 struct IslandLine: View {
     let row: CooldownActivityAttributes.Row
     var body: some View {
-        if row.leadsWeekly, let reset = row.reset, !row.signIn, row.asOf == nil, !row.hasReset {
+        if row.leadsWeekly, let line = row.paceLine, !row.isSpent, !row.signIn, row.asOf == nil, !row.hasReset {
+            // CCRM-104 (Pace Line Parity) D3: the pace line; the reset is inside it.
+            PaceLineView(line: line)
+        } else if row.leadsWeekly, let reset = row.reset, !row.signIn, row.asOf == nil, !row.hasReset {
             let left = Fmt.compactDuration(ms: max(reset.ms - Date.now.ms, 0))
             Text("\(row.isSpent ? "Out until" : "Resets") \(row.clock(reset)) · in \(left)").lineLimit(1)
         } else if let first = PanelLines.lines(row, single: true, .dark).first {
