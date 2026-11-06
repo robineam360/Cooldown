@@ -86,12 +86,15 @@ widgets, the lock screen and Live Activity, the Home Screen, airplane/Wi-Fi, sig
 ## Results — iPad Pro 11-inch (M4), PR #23 build b990bb3 + the History plural fix (2026-11-06)
 | # | Item | Result |
 |---|---|---|
-| 1-3 | Account page, rename sheet (6/16, "Use …" row), Check now | Pass. Sign in again and Remove not yet done. |
+| 1-3 | Account page, rename sheet (6/16, "Use …" row), Check now, Sign in again | Pass. Sign in again on Claude replaced the account: still four accounts, one Claude, "renews in 7h 55m". Remove not done. |
 | 4-6 | Summary rows, pace line, Pace map, Vs pace signed figures (+2% green, −1% red, 0%), caption press underlines | Pass (asserted for every row; hyphen never used). Chart wash not checked on an over-pace account. |
 | 7 | History: two columns in portrait and landscape, Plan Fit header | Pass. Defect: "1 weeks" (fixed in this commit: singular). |
 | D | Share card: Weekly lead, tinted "3h 53m behind" left slot, 5h row | Pass (sample and real). |
 | 8 | Sample data: banner, Exit, real accounts and settings back | Pass. |
 | F | About: Version 1.0 (1), Made by, Share feedback, Privacy policy rows | Rows present; the mail and policy links not tapped. |
-| 9-12 | Widgets, Live Activity (CCBG-72), reset alert on Always, second lock-screen widget | Not done: needs Robin. |
+| 9 | Home Screen widgets (Overview, Strip, tile, Countdown, Ring) | Pass: pace lines read right; Bars small shows "4h 19m behind" (weekday and clock dropped at its width, duration and word kept). |
+| 10 | Live Activity two-row layout; CCBG-72 recheck (Used ↔ Vs pace) | Pass: followed at once ("48%/67%" to "0%/+1%" green; pace lines unchanged). Single-account layout not seen (the iPad shows two accounts). |
+| B5 | Offline notice (Wi-Fi off, refresh) | Pass: "Couldn’t reach Anthropic — check your connection, or see if it’s them." with the network line and "Check Anthropic status"; same for OpenAI. Note: the footer still reads "Checked just now" after a failed refresh. |
+| 11-12 | Reset alert on Always, second lock-screen widget | Not done. |
 | §3 | Step 7 leftovers | Not done. |
-| §4 | CCBG-70 | Not done: Robin's action. |
+| §4 | CCBG-70 (Stale Ring Widget) | Pass: the orphan (no "Edit Widget" in its menu) removed, Bars (small) added in its place. |

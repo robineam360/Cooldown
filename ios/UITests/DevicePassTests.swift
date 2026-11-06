@@ -188,4 +188,53 @@ final class DevicePassTests: XCTestCase {
         _ = reveal("Privacy policy", contains: true)
         shot("F1-about", tree: true)
     }
+
+    // MARK: L — Live Activity follows a Usage display change (CCBG-72): L1 sets Vs pace, L2 puts Used back
+
+    func testL1_setVsPace() {
+        openSettings()
+        XCTAssertTrue(reveal("Vs pace"))
+        tap("Vs pace")
+        closeSheet()
+        sleep(2)
+    }
+
+    func testL2_setUsed() {
+        openSettings()
+        XCTAssertTrue(reveal("Used"))
+        tap("Used")
+        closeSheet()
+        sleep(2)
+    }
+
+    // MARK: N — offline: the "Couldn't reach …" notice (§2 B5). The person turns Wi-Fi off first and back on after.
+
+    func testN_offline() {
+        if let refresh = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Checked'")).firstMatch as XCUIElement?, refresh.exists {
+            refresh.tap()
+        }
+        sleep(10)
+        shot("N1-all-offline", tree: true)
+        tap("Claude")
+        sleep(1)
+        shot("N2-claude-offline", tree: true)
+        tap("ChatGPT")
+        sleep(1)
+        shot("N3-chatgpt-offline", tree: true)
+    }
+
+    // MARK: R — after Sign in again: the list still has the same accounts, no duplicate (§2 A2)
+
+    func testR_afterSignInAgain() {
+        openSettings()
+        shot("R1-settings", tree: true)
+        let accounts = app.buttons.matching(NSPredicate(format: "label ENDSWITH 'Signed in'")).allElementsBoundByIndex.map { $0.label }
+        XCTAssertEqual(accounts.count, 4, "accounts: \(accounts)")
+        XCTAssertEqual(accounts.filter { $0.hasPrefix("Claude,") }.count, 1, "duplicate Claude: \(accounts)")
+        tap("Claude, Pro, Signed in")
+        shot("R2-claude", tree: true)
+        _ = tap("Check now")
+        sleep(3)
+        shot("R3-checked", tree: true)
+    }
 }
