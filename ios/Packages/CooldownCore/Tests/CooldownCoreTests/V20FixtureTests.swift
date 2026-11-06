@@ -164,6 +164,8 @@ struct V20FixtureTests {
     func caption() throws {
         for c in try cases(Fixtures.mobileJSON("display/cases.json"), "caption") {
             let mode = try #require(PaceText.Mode(rawValue: c.str("mode") ?? ""))
+            // Vs pace's wording moved to core §6.3 Printed form (CCRM-104): PrintedFormTests reads that fixture.
+            if mode == .vsPace { continue }
             let elapsed = (c.flag("hasResetClock") ?? true) ? c.num("elapsedPct") : nil
             let got = PaceText.caption(mode: mode, usedPct: c.num("usedPct"), elapsedPct: elapsed)
             #expect(got == c.str("expected"), "\(c.str("name") ?? "?"): \(got ?? "nil")")

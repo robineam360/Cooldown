@@ -68,11 +68,11 @@ public enum PaceText {
     public static func markPct(_ elapsedPct: Double) -> Int { halfUp(elapsedPct) }
 
     /// The V1 caption under an in-app bar: "60% pace mark · 10 under" (Used), "40% pace mark · 10 to spare" (Left),
-    /// "52% used · mark 39%" (Vs pace). nil — no caption — when spent, unclocked or unread.
+    /// "52% used · 39% pace mark" (Vs pace, core §6.3 Printed form). nil — no caption — when spent, unclocked or unread.
     public static func caption(mode: Mode, usedPct: Double?, elapsedPct: Double?) -> String? {
         guard let usedPct, let elapsedPct, !Pace.isSpent(usedPct) else { return nil }
         let m = markPct(elapsedPct)
-        if mode == .vsPace { return "\(Int(usedPct))% used\(dot)mark \(m)%" }
+        if mode == .vsPace { return "\(Int(usedPct))% used\(dot)\(m)% pace mark" }
         let d = elapsedPct - usedPct
         let n = halfUp(abs(d))
         let words: String
