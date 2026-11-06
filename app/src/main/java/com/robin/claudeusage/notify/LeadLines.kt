@@ -1,15 +1,20 @@
 package com.robin.claudeusage.notify
 
 import com.robin.claudeusage.data.Pace
+import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.UsageWindow
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.PaceText
 import java.time.Instant
+import java.time.ZoneId
+import java.util.Locale
 
 /**
  * CCRM-96 (Weekly First) and CCRM-97 (Pace Number): the notification's text lines once
  * Weekly leads (`design/2026-11-02-weekly-first-pace.html` §2–3, the caption decision in
- * `-pace-line-label.html`). Strings only; [PinnedNotification] styles and places them.
+ * `-pace-line-label.html`); CCRM-104 (Pace Line Parity) moved them to core §6.3's printed
+ * form (`design/2026-11-06-mobile-pace-line-wireframe.html` §5, §8). Strings only;
+ * [PinnedNotification] styles and places them.
  */
 internal object LeadLines {
 
@@ -42,43 +47,45 @@ internal object LeadLines {
         "Out until ${Fmt.dayTime(weekly.resetsAt, use24h)}$DOT${Fmt.relIn(weekly.resetsAt)}"
 
     /**
-     * "Slow down · ≈11%/day", or null when there is no verdict (no reading, not started).
-     * [toLast] adds the expanded header's " to last" after a daily allowance.
+     * CCRM-104 (Pace Line Parity), wireframe D3/D10: the Weekly's pace line — "21h 50m ahead ·
+     * Sun 9:30 PM" — replacing the band words and "≈11%/day". Null when there is no readout
+     * (no reading, no reset clock, a spent week: the caller's own line applies). The form is
+     * chosen for a column [availDp] wide at [sp] and [fontScale] ([TextFit], C1-4).
      */
-    fun paceWords(weekly: UsageWindow?, elapsed: Double?, now: Instant = Instant.now(), toLast: Boolean = false): String? {
-        val used = weekly?.percent ?: return null
-        val resets = weekly.resetsAt ?: return null
-        val band = Pace.bandOrNull(used, elapsed) ?: return null
-        val words = PaceText.bandWords(band) ?: return null
-        val allowance = Pace.allowance(used, resets.toEpochMilli() - now.toEpochMilli())
-            ?: return words
-        val tail = if (toLast && allowance is Pace.Allowance.PerDay) " to last" else ""
-        return words + DOT + PaceText.allowance(allowance) + tail
+    fun weeklyPace(
+        weekly: UsageWindow?,
+        now: Instant,
+        use24h: Boolean,
+        availDp: Float,
+        sp: Float,
+        fontScale: Float,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): TextFit.Pick<PaceText.PaceLine>? {
+        val resets = weekly?.resetsAt ?: return null
+        val mt = Pace.markTime(
+            weekly.percent, resets.toEpochMilli() - now.toEpochMilli(), Projection.WEEKLY_MS, now.toEpochMilli(),
+        )
+        val forms = PaceText.paceLineForms(mt, resets, now.toEpochMilli(), use24h, zone, locale)
+        return TextFit.paceLine(forms, availDp, sp, fontScale)
     }
 
     /**
-     * Weekly leads: the single collapsed row's line and a Duet header's sub, without the
-     * companion (the caller appends it, styled). Null = the caller's existing "Not started"
-     * / "No reading" line applies.
+     * Wireframe D4/C1-3: the expanded single header's line 2 under a Weekly lead, permanently
+     * the pace-mark caption — "39% pace mark · 13 over", Vs pace "52% used · 39% pace mark",
+     * Left "61% pace mark · 13 over" — or its distance clause alone when the column is too
+     * narrow ("13 over"). Null when spent, unclocked or unread.
      */
-    fun weeklyLine(weekly: UsageWindow?, elapsed: Double?, use24h: Boolean): String? {
-        if (weekly?.percent == null || weekly.resetsAt == null) return null
-        if (Pace.isSpent(weekly.percent)) return outUntil(weekly, use24h)
-        return paceWords(weekly, elapsed)
-    }
-
-    /** "resets Sun" — the companion slot on an account with no 5h, and a Duet header's tail. */
-    fun resetsDay(weekly: UsageWindow?): String? = weekly?.resetsAt?.let { "resets ${Fmt.weekday(it)}" }
-
-    /**
-     * The expanded single header's second line under a Weekly lead: the distance from the
-     * pace mark and the reset day, "13 over the pace mark (39%) · resets Sun"; in Vs pace
-     * mode the usage, "52% used · resets Sun".
-     */
-    fun weeklySecondLine(weekly: UsageWindow?, elapsed: Double?, mode: PaceText.Mode): String? {
-        val day = resetsDay(weekly) ?: return null
-        val distance = PaceText.notificationDistance(mode, weekly?.percent, elapsed) ?: return null
-        return distance + DOT + day
+    fun weeklyCaption(
+        weekly: UsageWindow?,
+        elapsed: Double?,
+        mode: PaceText.Mode,
+        availDp: Float,
+        sp: Float,
+        fontScale: Float,
+    ): TextFit.Pick<String>? {
+        if (weekly?.resetsAt == null) return null
+        return TextFit.caption(PaceText.captionForms(mode, weekly.percent, elapsed), availDp, sp, fontScale)
     }
 
     /**
@@ -105,38 +112,28 @@ internal object LeadLines {
     fun sessionSecondLine(hitsLimitAtMs: Long?, use24h: Boolean): String? =
         hitsLimitAtMs?.let { "Projected to hit 100% at ${Fmt.timeOnly(Instant.ofEpochMilli(it), use24h)}" }
 
-    /** A panel's Weekly row sub under a 5h lead: "Slow down · ≈11%/day · Sun". */
-    fun weeklyRowSub(weekly: UsageWindow?, elapsed: Double?, use24h: Boolean): String? {
-        if (weekly?.percent == null || weekly.resetsAt == null) return null
-        if (Pace.isSpent(weekly.percent)) return outUntil(weekly, use24h)
-        val words = paceWords(weekly, elapsed) ?: return null
-        return words + DOT + Fmt.weekday(weekly.resetsAt)
-    }
-
     /**
-     * A figure in the chosen Usage display: Used, Left, or the distance from the pace
-     * mark (CCRM-100 (Vs Pace Display)) — "—" with no reading.
+     * A figure in the chosen Usage display: Used, Left, or — CCRM-104 (Pace Line Parity), D1 —
+     * the signed distance from the pace mark ("+19%", "−12%", "0%"); "—" with no reading.
+     * The 5h ring's figure stays unsigned: [ringFigure].
      */
     fun figure(pct: Double?, elapsed: Double?, mode: PaceText.Mode): String = when {
+        pct == null -> "—"
+        mode == PaceText.Mode.VS_PACE -> PaceText.vsPaceSigned(pct, elapsed)
+        else -> "${Fmt.usageInt(pct, mode == PaceText.Mode.LEFT)}%"
+    }
+
+    /** The ring's figure: Vs pace is unsigned ("19%"), its tone carries the side (wireframe §1). */
+    fun ringFigure(pct: Double?, elapsed: Double?, mode: PaceText.Mode): String = when {
         pct == null -> "—"
         mode == PaceText.Mode.VS_PACE -> PaceText.vsPaceFigure(pct, elapsed)
         else -> "${Fmt.usageInt(pct, mode == PaceText.Mode.LEFT)}%"
     }
 
     /**
-     * The small caption under a figure: "LEFT", or in Vs pace the side the unsigned figure's
-     * colour shows — "UNDER PACE", "OVER PACE", "ON PACE" (shape grammar rev D §7b, its
-     * colour-blind cue) — or none.
+     * The small caption under a figure: "LEFT" in Left mode. Vs pace has none since CCRM-104
+     * (D2): the figure's sign and colour are the cue.
      */
-    fun figureCaption(pct: Double?, elapsed: Double?, mode: PaceText.Mode): String? = when {
-        pct == null -> null
-        mode == PaceText.Mode.LEFT -> "LEFT"
-        mode == PaceText.Mode.VS_PACE -> when (PaceText.vsPaceTone(pct, elapsed)) {
-            PaceText.VsTone.UNDER -> "UNDER PACE"
-            PaceText.VsTone.OVER -> "OVER PACE"
-            PaceText.VsTone.ON -> "ON PACE"
-            PaceText.VsTone.USAGE -> null
-        }
-        else -> null
-    }
+    fun figureCaption(pct: Double?, mode: PaceText.Mode): String? =
+        if (pct != null && mode == PaceText.Mode.LEFT) "LEFT" else null
 }
