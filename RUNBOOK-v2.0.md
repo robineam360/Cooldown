@@ -374,6 +374,6 @@ weekly.
 - **2026-11-06 · Landed on main** (Robin in chat: "Yes, land it now"). The v2.0 branch (PR #21) was merged with
   `origin/main` (v1.9's nine commits; no textual conflicts) and tested as one tree. CCBG-75 (Antigravity Crash on Refresh):
   `hasSource` dropped from `UsageRepository` now that `Sources.of(ANTIGRAVITY)` is `AntigravitySource`; the v1.9 test became
-  `RefreshEveryProviderTest`; CCBG-76 and CCBG-77 closed with it. No versionCode or versionName bump (Step 8). Step 7 and
+  `RefreshEveryProviderTest`; CCBG-76 (Probe Crash) and CCBG-77 (Gemini One-shot Retry) closed with it. No versionCode or versionName bump (Step 8). Step 7 and
   Step 8 stay unticked: the Fold 7 leftovers, the Android half of the Weekly-first share card (CCRM-24 (Share Card)), the Ring
   widget removal (CCBG-70 (Stale Ring Widget)) and the release itself continue on `main`.

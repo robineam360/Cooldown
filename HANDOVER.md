@@ -6,7 +6,7 @@ BUGS.md; the ordered plan stays in RUNBOOK.md.
 
 ## ▶ v2.0 is on main (2026-11-06) — the arc continues on main
 
-PR #21's branch `worktree-v20-arc-and-antigravity` was merged with v1.9's `main` and landed on `main` (Robin: "Yes, land it now"). Gate G0 is lifted; the next session works on `main` in a fresh worktree, not on the old branch. CCBG-75 (Antigravity Crash on Refresh) is closed by dropping `hasSource`; CCBG-76 and CCBG-77 closed with it. versionCode and versionName are **not** bumped: that is RUNBOOK-v2.0 Step 8. The iOS parity PR #23 was based on the old branch and is retargeted by its own session.
+PR #21's branch `worktree-v20-arc-and-antigravity` was merged with v1.9's `main` and landed on `main` (Robin: "Yes, land it now"). Gate G0 is lifted; the next session works on `main` in a fresh worktree, not on the old branch. CCBG-75 (Antigravity Crash on Refresh) is closed by dropping `hasSource`; CCBG-76 (Probe Crash) and CCBG-77 (Gemini One-shot Retry) closed with it. versionCode and versionName are **not** bumped: that is RUNBOOK-v2.0 Step 8. The iOS parity PR #23 was based on the old branch and is retargeted by its own session.
 
 **Still open on `main`** (the list in the block below still applies, minus "app code stays off main"): the Fold 7 and iPad Step 7 leftovers, the Android half of the Weekly-first share card (needs its own wireframe under CCRM-24 (Share Card)), Robin removing the old Ring widget (CCBG-70 (Stale Ring Widget)), then Step 8 with Robin's go in chat. Replace this block when the next step is known.
 
@@ -167,7 +167,7 @@ rebuild of the tagged commit and **not** the earlier `8dad5c87…2e7e` build (a 
 rebuild is what was tested on the Fold 7. The crash that blocked the first candidate was CCBG-75 (Antigravity Crash on Refresh): a Gemini
 account left on a phone by a v2.0 build made every v1.9 refresh throw; fixed in e6130b8 and shipped. RUNBOOK Step 8 Log has the full record.
 **Gate G0 is lifted** for the v2.0 branch (PR #21), with one obligation: **the v2.0 merge must drop `hasSource` in
-`UsageRepository.kt` (CCBG-75's guard) once `AntigravitySource` lands**, and CCBG-76 / CCBG-77 (both Low, filed) go with it.
+`UsageRepository.kt` (CCBG-75's guard) once `AntigravitySource` lands**, and CCBG-76 (Probe Crash) / CCBG-77 (Gemini One-shot Retry) (both Low, filed) go with it.
 
 **Done on the phone (2026-11-05, after publishing):** screen timeout restored to 300000; the published asset installed with
 `adb install -r` (installed sha256 = `6ff15bdc…6037`, 1.9 / 25); the crash card unchanged ("7 reports, newest 10:18 AM"), crash log buffer empty.
