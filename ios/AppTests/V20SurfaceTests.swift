@@ -87,7 +87,7 @@ struct V20SurfaceTests {
         #expect(spent.paceLine.hasPrefix("Out until ") && spent.caption == nil && spent.paceLineAlarm)
         #expect(CardContent.compactLine(spent).hasPrefix("Out until "))
         withMode(.vsPace) {
-            #expect(w.caption == "52% used · mark 39%")
+            #expect(w.caption == "52% used · 39% pace mark")
             #expect(Display.number(52, pace: 38.9) == "13%")  // |38.9 − 52| toward zero (core §6.3, 2026-11-06), red: unsigned since rev D §7b
             #expect(Display.number(100, pace: 89.8) == "100%")
             #expect(Display.usage(34) == "34%")

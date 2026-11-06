@@ -84,13 +84,13 @@ object PaceText {
 
     /**
      * The V1 caption under an in-app bar: "60% pace mark · 10 under" (Used),
-     * "40% pace mark · 10 to spare" (Left), "52% used · mark 39%" (Vs pace). Null —
+     * "40% pace mark · 10 to spare" (Left), "52% used · 39% pace mark" (Vs pace, core §6.3). Null —
      * no caption — when spent, unclocked or unread.
      */
     fun caption(mode: Mode, usedPct: Double?, elapsedPct: Double?): String? {
         if (usedPct == null || elapsedPct == null || Pace.isSpent(usedPct)) return null
         val m = markPct(elapsedPct)
-        if (mode == Mode.VS_PACE) return "${usedPct.toInt()}% used${DOT}mark $m%"
+        if (mode == Mode.VS_PACE) return captionVsPace(usedPct.toInt(), m)
         val d = elapsedPct - usedPct
         val n = halfUp(abs(d))
         val under = if (mode == Mode.LEFT) "$n to spare" else "$n under"
@@ -238,6 +238,55 @@ object PaceText {
 
     /** Vs pace mode caption: "41% used · 60% pace mark" — the figure's sign already says the side. */
     fun captionVsPace(usedFigure: Int, mark: Int): String = "$usedFigure% used$DOT$mark% pace mark"
+
+    /**
+     * The pace line's forms, longest first (wireframe D10): full, without the weekday, then the
+     * duration and its word alone — the floor, never cut. A reset later today has no weekday to drop.
+     * Empty with no readout.
+     */
+    fun paceLineForms(
+        mt: Pace.MarkTime?,
+        reset: Instant,
+        nowMs: Long,
+        use24h: Boolean,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): List<PaceLine> {
+        val full = paceLine(mt, dayClock(reset, nowMs, use24h, zone, locale)) ?: return emptyList()
+        val clock = DateTimeFormatter.ofPattern(if (use24h) "HH:mm" else "h:mm a", locale).withZone(zone).format(reset)
+        val noDay = paceLine(mt, clock)!!
+        val floorText = full.tinted ?: "On the mark"
+        val floor = PaceLine(floorText, full.tinted, full.tone)
+        return listOf(full, noDay, floor).distinctBy { it.text }
+    }
+
+    /** The first form [fits] accepts, else the last (the floor); null with no forms. */
+    fun fit(forms: List<PaceLine>, fits: (String) -> Boolean): PaceLine? =
+        forms.firstOrNull { fits(it.text) } ?: forms.lastOrNull()
+
+    /** The same for plain strings (the caption's forms). */
+    fun fitText(forms: List<String>, fits: (String) -> Boolean): String? =
+        forms.firstOrNull(fits) ?: forms.lastOrNull()
+
+    /**
+     * The caption's forms (Astra C1-3): the full caption, then its distance clause alone — "13 over",
+     * "10 to spare", "On the mark"; Vs pace mode "52% used". Empty when spent, unclocked or unread.
+     */
+    fun captionForms(mode: Mode, usedPct: Double?, elapsedPct: Double?): List<String> {
+        val full = caption(mode, usedPct, elapsedPct) ?: return emptyList()
+        val short = if (mode == Mode.VS_PACE) {
+            "${usedPct!!.toInt()}% used"
+        } else {
+            val d = elapsedPct!! - usedPct!!
+            val n = halfUp(abs(d))
+            when {
+                abs(d) < 1.0 -> "On the mark"
+                d > 0 -> if (mode == Mode.LEFT) "$n to spare" else "$n under"
+                else -> "$n over"
+            }
+        }
+        return listOf(full, short)
+    }
 
     const val MAP_AHEAD = "ahead of pace"
     const val MAP_BEHIND = "behind pace"
