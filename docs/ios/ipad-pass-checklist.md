@@ -69,15 +69,29 @@ Find the small "9%, as of …" ring on the Home Screen. Confirm it offers **no**
 Put every recorded setting back, widgets match the starting screenshots, auto-lock restored. The PR #23 build stays installed on purpose. File every
 defect in BUGS.md (Robin decides what blocks), tick Step 7 in RUNBOOK-v2.0.md, and report to the parent session.
 
-## Results (fill during the pass)
-| # | Item | Result | Capture |
-|---|---|---|---|
-| 1-3 | Accounts, account page, rename, sign in again, remove | | |
-| 4-6 | Main screen, notices, chart wash | | |
-| 7 | History two columns, Plan Fit | | |
-| D | Share card | | |
-| 8 | Sample data | | |
-| F | About, feedback mail, privacy link | | |
-| 9-12 | Widgets, Live Activity (CCBG-72), reset alert on Always, second lock-screen widget | | |
-| §3 | Step 7 leftovers | | |
-| §4 | CCBG-70 | | |
+## 6 · Driving the in-app steps without a person (added 2026-11-06)
+`ios/UITests/DevicePassTests.swift` taps through the in-app steps on the connected iPad and attaches a screenshot and the
+accessibility tree of each step. It uses the real accounts and settings, restores the settings it changes, and is skipped unless
+`TEST_RUNNER_DEVICE_PASS=1` is set. The iPad must be unlocked and awake.
+```bash
+TEST_RUNNER_DEVICE_PASS=1 xcodebuild test -project ios/Cooldown.xcodeproj -scheme Cooldown -configuration Debug \
+  -destination 'id=<iPad udid>' -only-testing:CooldownUITests/DevicePassTests -derivedDataPath ios/.derived \
+  -allowProvisioningUpdates DEVELOPMENT_TEAM=<team id> -resultBundlePath <dir>/run.xcresult
+xcrun xcresulttool export attachments --path <dir>/run.xcresult --output-path <dir>/out   # PNGs + .tree text, keep out of the repo
+```
+Covers A (account page: Name, Check now), B (Vs pace: signed figures asserted on every Summary row, the caption press, the tile),
+C (History portrait and landscape, Time down), D (share card), E (sample data and Exit), F (About). Not reachable by a test:
+widgets, the lock screen and Live Activity, the Home Screen, airplane/Wi-Fi, sign-in codes.
+
+## Results — iPad Pro 11-inch (M4), PR #23 build b990bb3 + the History plural fix (2026-11-06)
+| # | Item | Result |
+|---|---|---|
+| 1-3 | Account page, rename sheet (6/16, "Use …" row), Check now | Pass. Sign in again and Remove not yet done. |
+| 4-6 | Summary rows, pace line, Pace map, Vs pace signed figures (+2% green, −1% red, 0%), caption press underlines | Pass (asserted for every row; hyphen never used). Chart wash not checked on an over-pace account. |
+| 7 | History: two columns in portrait and landscape, Plan Fit header | Pass. Defect: "1 weeks" (fixed in this commit: singular). |
+| D | Share card: Weekly lead, tinted "3h 53m behind" left slot, 5h row | Pass (sample and real). |
+| 8 | Sample data: banner, Exit, real accounts and settings back | Pass. |
+| F | About: Version 1.0 (1), Made by, Share feedback, Privacy policy rows | Rows present; the mail and policy links not tapped. |
+| 9-12 | Widgets, Live Activity (CCBG-72), reset alert on Always, second lock-screen widget | Not done: needs Robin. |
+| §3 | Step 7 leftovers | Not done. |
+| §4 | CCBG-70 | Not done: Robin's action. |

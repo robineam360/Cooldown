@@ -757,7 +757,7 @@ struct HistoryScreen: View {
                 }
                 .foregroundStyle(p.ink)
                 let maxed = week.bars.filter(\.hitLimit).count
-                Text("\(week.bars.count) \(kind == HistoryStats.sessionKind ? "sessions" : "weeks")\(maxed > 0 ? " · \(maxed) maxed out" : "")")
+                Text("\(week.bars.count) \(kind == HistoryStats.sessionKind ? "session" : "week")\(week.bars.count == 1 ? "" : "s")\(maxed > 0 ? " · \(maxed) maxed out" : "")")
                     .font(.system(size: 14)).foregroundStyle(p.txt).frame(maxWidth: .infinity).padding(.vertical, 10)
                 ForEach(week.bars, id: \.resetMs) { bar in
                     HStack(spacing: 10) {
