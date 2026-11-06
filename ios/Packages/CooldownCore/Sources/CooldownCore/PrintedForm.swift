@@ -48,6 +48,13 @@ public struct PaceLine: Sendable, Equatable, Hashable, Codable {
         return lead + PaceText.dot + r
     }
 
+    /// The distinct forms, widest first (core §6.3 `paceLineForms`): a reset with no weekday has one fewer.
+    public var forms: [String] {
+        var out: [String] = []
+        for d in Drop.allCases { let t = text(d); if out.last != t { out.append(t) } }
+        return out
+    }
+
     /// The same line from the printed pieces (the fixture's `side`, `durationMs`, `reset`).
     public static func text(side: Side, durationMs: Int64?, reset: String) -> String {
         if side == .on { return "On the mark" + PaceText.dot + reset }
@@ -111,5 +118,7 @@ extension PaceText {
         public static let diagonal = "even pace"
         public static let xStart = "week start"
         public static let xEnd = "reset"
+        /// Centred between the axis ends (kept on both families, core §6.3).
+        public static let xCentre = "each account's own week"
     }
 }

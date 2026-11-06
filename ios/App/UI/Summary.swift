@@ -361,6 +361,10 @@ struct PaceMap: View {
             label(PaceText.MapWords.belowDiagonal, behindAt, p.sub, .trailing, 10)
             label(PaceText.MapWords.xStart, CGPoint(x: left, y: bottom + 10), p.sub, .leading, 10)
             label(PaceText.MapWords.xEnd, CGPoint(x: right, y: bottom + 10), p.sub, .trailing, 10)
+            // The centre note is kept on both families (core §6.3), centred between the ends.
+            label(PaceText.MapWords.xCentre, CGPoint(x: (left + right) / 2, y: bottom + 10), p.sub, .center, 9.5)
+            let xCentre = measure(Text(PaceText.MapWords.xCentre).font(.system(size: 9.5)))
+            obstacles.append(CGRect(x: (left + right - xCentre.width) / 2, y: bottom + 10 - xCentre.height / 2, width: xCentre.width, height: xCentre.height))
             obstacles.append(CGRect(x: left, y: bottom + 10 - xStart.height / 2, width: xStart.width, height: xStart.height))
             obstacles.append(CGRect(x: right - xEnd.width, y: bottom + 10 - xEnd.height / 2, width: xEnd.width, height: xEnd.height))
 

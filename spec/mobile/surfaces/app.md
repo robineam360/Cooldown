@@ -1022,5 +1022,5 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
 - **Pace map.** Wedge words "ahead of pace" (above the diagonal) and "behind pace" (below); names on every dot at any count, no
   rank numbers; placement right → below → left → above-left → a leader line to the right edge, from the top down
   (`PaceMapLayout`, `PaceLineFitTests`); "even pace" slides along the diagonal to a free stretch; the centre note "each account's
-  own week" is dropped.
+  own week" stays, centred under the axis (core §6.3 keeps it on both families).
 - **Share card, Weekly row**: left slot the tinted span ("13h 59m ahead"), right slot "Resets …".

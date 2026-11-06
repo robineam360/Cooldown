@@ -79,6 +79,23 @@ struct PrintedFormTests {
         }
     }
 
+    @Test("paceLineForms: full, without the weekday, the floor")
+    func paceLineForms() throws {
+        let zone = TimeZone(identifier: "UTC")!
+        for c in try list("paceLineForms") {
+            let name = c.str("name") ?? "?"
+            let want = (c["forms"] as? [String]) ?? []
+            guard let side = c.str("side"), let s = PaceLine.Side(rawValue: side) else { #expect(want.isEmpty, "\(name)"); continue }
+            let now = local(c.str("nowLocal") ?? "", zone), reset = local(c.str("resetLocal") ?? "", zone)
+            let full = Fmt.dayClock(epochMs: reset, nowMs: now, use24h: c.flag("hour24") ?? false, timeZone: zone)
+            let parts = full.split(separator: " ", maxSplits: 1).map(String.init)
+            let hasDay = !Fmt.sameDay(reset, now, timeZone: zone)
+            let line = PaceLine(side: s, duration: s == .on ? nil : PaceText.behind(i64(c, "durationMs") ?? 0),
+                                weekday: hasDay ? parts.first : nil, clock: hasDay ? (parts.count > 1 ? parts[1] : full) : full)
+            #expect(line.forms == want, "\(name): \(line.forms)")
+        }
+    }
+
     @Test("drop order: weekday, then clock, never the duration and word")
     func dropOrder() {
         let l = PaceLine(side: .over, duration: "23h 59m", weekday: "Wed", clock: "12:30 PM")
@@ -124,5 +141,6 @@ struct PrintedFormTests {
         #expect(PaceText.MapWords.diagonal == m.str("diagonal"))
         #expect(PaceText.MapWords.xStart == m.str("xStart"))
         #expect(PaceText.MapWords.xEnd == m.str("xEnd"))
+        #expect(PaceText.MapWords.xCentre == "each account's own week")
     }
 }
