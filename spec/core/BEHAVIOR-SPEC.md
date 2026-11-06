@@ -412,7 +412,9 @@ For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), n
 - **Vs pace figure** = `elapsedPct − usedPct` rounded **toward zero**, an integer, signed (positive = under the mark,
   room): `sign(d) × floor(|d| + 1e-9)` with `d = elapsedPct − usedPct` (Robin, 2026-11-06, replacing the
   2026-11-02 floor, so a window within a point of the mark on either side prints "0%" beside "On the mark" and
-  the figure and the line always agree; "−1%" at 1.5 over, was "−2%"). Spent, no reset clock or no reading → no
+  the figure and the line agree; "−1%" at 1.5 over, was "−2%"). One float artefact remains: within 1e-9 below a
+  whole point (`|d|` in `[1 − 1e-9, 1)`) the figure's epsilon reaches 1 while the on-the-mark test does not, so
+  "−1%" can still meet "On the mark" there; giving the on-the-mark test the same epsilon is an open proposal. Spent, no reset clock or no reading → no
   figure (a surface falls back to the usage figure, or a dash).
 - **The mark** = `elapsedPct` rounded half up; the **distance** = `|elapsedPct − usedPct|` rounded half up;
   **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
