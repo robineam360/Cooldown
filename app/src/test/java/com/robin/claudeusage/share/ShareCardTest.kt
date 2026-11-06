@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
+import com.robin.claudeusage.data.Headline
 import com.robin.claudeusage.data.HistoryPoint
+import com.robin.claudeusage.data.WindowKind
+import com.robin.claudeusage.widgets.FaceWindow
 import com.robin.claudeusage.widgets.GalleryFixtures
 import com.robin.claudeusage.widgets.GalleryFixtures.MIN
 import com.robin.claudeusage.widgets.GalleryFixtures.NOW_MS
@@ -32,6 +35,21 @@ class ShareCardTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
+    /**
+     * The earlier part of the week, for a Weekly-led card's trend: [n] readings from a day
+     * into the window up to the 5h window, climbing to [to].
+     */
+    private fun week(to: Double, n: Int = 7): List<HistoryPoint> {
+        val start = RESET_WEEKLY.toEpochMilli() - 7 * 24 * 60 * MIN + 24 * 60 * MIN
+        val end = RESET_5H.toEpochMilli() - 5 * 60 * MIN - 60 * MIN
+        return (0 until n).map { i ->
+            HistoryPoint(
+                at = start + (end - start) * i / (n - 1), sessionPct = null, sessionResetAt = 0L,
+                weeklyPct = to * (i + 1) / (n + 1), weeklyResetAt = RESET_WEEKLY.toEpochMilli(),
+            )
+        }
+    }
+
     private fun history(n: Int = 8, from: Double = 10.0, to: Double = 62.0): List<HistoryPoint> {
         val start = RESET_5H.toEpochMilli() - 5 * 60 * MIN
         val span = NOW_MS - 3 * MIN - start
@@ -52,11 +70,28 @@ class ShareCardTest {
         dark: Boolean = true,
         left: Boolean = false,
         synthetic: Boolean = false,
-    ) = ShareCard.model(account, history, dark, left, showOverPace = true, synthetic = synthetic, nowMs = NOW_MS, zone = ZONE)
+        headline: Headline = Headline.DEFAULT,
+        binding: Boolean = false,
+    ) = ShareCard.model(
+        account, history, dark, left, showOverPace = true, synthetic = synthetic,
+        headline = headline, sessionBinding = binding, nowMs = NOW_MS, zone = ZONE,
+    )
+
+    /** CCRM-24 (Share Card), Weekly first: the five states of parity rev B §6, by name. */
+    private fun weeklyFirstStates(dark: Boolean = true) = linkedMapOf(
+        "5h-leads" to model(headline = Headline.FIVE_HOUR, dark = dark),
+        "weekly-leads" to model(history = week(20.0) + history().map { it.copy(weeklyPct = 22.0) }, dark = dark),
+        "weekly-spent" to model(
+            GalleryFixtures.pro(GalleryFixtures.both(34.0, 100.0)), week(96.0) + history(to = 34.0).map { it.copy(weeklyPct = 100.0) },
+            dark = dark, headline = Headline.FIVE_HOUR,
+        ),
+        "weekly-only" to model(GalleryFixtures.CHATGPT, history = emptyList(), dark = dark),
+        "no-reading" to model(GalleryFixtures.account("pro", "Pro", null), dark = dark),
+    )
 
     @Test
     fun `the card carries the label, the snapshot's own stamp and both windows`() {
-        val m = model()
+        val m = model(headline = Headline.FIVE_HOUR)
         assertEquals("Pro", m.label)
         // Fetched 3 minutes before the fixture's 6:29 PM, Thu Jan 1.
         assertEquals("as of 6:26 PM, Thu Jan 1", m.asOf)
@@ -78,7 +113,7 @@ class ShareCardTest {
 
     @Test
     fun `left mode flips the figures and says so, pace still reads usage`() {
-        val m = model(left = true)
+        val m = model(left = true, headline = Headline.FIVE_HOUR)
         assertEquals("5h left", m.rows[0].name)
         assertEquals("38%", m.rows[0].figure)
         assertTrue(m.rows[0].pace!!.endsWith("above even pace"))
@@ -86,10 +121,118 @@ class ShareCardTest {
 
     @Test
     fun `never fetched has no stamp, and a not-started window has no trend`() {
-        val m = model(GalleryFixtures.account("pro", "Pro", GalleryFixtures.both(null, sessionReset = null), fetchedAt = 0))
+        val m = model(
+            GalleryFixtures.account("pro", "Pro", GalleryFixtures.both(null, sessionReset = null), fetchedAt = 0),
+            headline = Headline.FIVE_HOUR,
+        )
         assertNull(m.asOf)
         assertEquals("—", m.headline.figure)
         assertNull(m.trend)
+    }
+
+    @Test
+    fun `the order follows the Headline rule, a spent week always leads, no 5h is one row`() {
+        fun o(h: Headline, session: Boolean = true, binding: Boolean = false, spent: Boolean = false) =
+            ShareCard.order(h, hasSession = session, sessionBinding = binding, weeklySpent = spent)
+        val ws = listOf(WindowKind.WEEKLY, WindowKind.SESSION)
+        val sw = listOf(WindowKind.SESSION, WindowKind.WEEKLY)
+        assertEquals(ws, o(Headline.WEEKLY))
+        assertEquals(ws, o(Headline.AUTO))
+        assertEquals(sw, o(Headline.AUTO, binding = true))
+        assertEquals(sw, o(Headline.FIVE_HOUR))
+        assertEquals(ws, o(Headline.FIVE_HOUR, spent = true))
+        assertEquals(ws, o(Headline.AUTO, binding = true, spent = true))
+        assertEquals(listOf(WindowKind.WEEKLY), o(Headline.FIVE_HOUR, session = false))
+    }
+
+    @Test
+    fun `5h leads under Headline 5-hour and under Auto while the 5h binds - as today`() {
+        for (m in listOf(model(headline = Headline.FIVE_HOUR), model(headline = Headline.AUTO, binding = true))) {
+            assertEquals(listOf("5h", "Weekly"), m.rows.map { it.name })
+            assertEquals(listOf(true, false), m.rows.map { it.lead })
+            assertEquals("5h trend", m.trend!!.title)
+            assertEquals(FaceWindow.SESSION, m.headline.window)
+            assertFalse(m.ringDimmed)
+            assertTrue(m.rows.none { it.dimmed || it.alarm })
+        }
+    }
+
+    @Test
+    fun `Weekly leads by default with its trend, and the ring stays the 5h gauge`() {
+        for (m in listOf(model(), model(headline = Headline.AUTO))) {
+            assertEquals(listOf("Weekly", "5h"), m.rows.map { it.name })
+            assertEquals(listOf(true, false), m.rows.map { it.lead })
+            assertEquals("22%", m.rows[0].figure)
+            assertEquals("Weekly trend", m.trend!!.title)
+            // The header ring never swaps: it is the 5h (62%) under a Weekly lead.
+            assertEquals(FaceWindow.SESSION, m.headline.window)
+            assertEquals("62%", m.headline.figure)
+            assertTrue(m.rows.none { it.dimmed || it.alarm })
+        }
+    }
+
+    @Test
+    fun `a spent week leads whatever the Headline, red, out until its reset, and dims the 5h row and the ring`() {
+        val m = weeklyFirstStates().getValue("weekly-spent")
+        assertEquals(listOf("Weekly", "5h"), m.rows.map { it.name })
+        val (week, five) = m.rows
+        assertTrue(week.lead && week.alarm && !week.dimmed)
+        assertEquals("100%", week.figure)
+        assertEquals("Out until Sat 9:10 PM", week.pace)
+        assertEquals("Resets Sat 9:10 PM", week.reset)
+        assertTrue(five.dimmed && !five.lead && !five.alarm)
+        assertNull(five.pace)
+        assertEquals("Resets 9:10 PM", five.reset)
+        assertTrue(m.ringDimmed)
+        assertEquals("Weekly trend", m.trend!!.title)
+    }
+
+    @Test
+    fun `under a spent week a stale 5h still says Stale and a not-started 5h says so`() {
+        val stale = model(
+            GalleryFixtures.pro(GalleryFixtures.both(34.0, 100.0)).copy(fetchedAt = NOW_MS - 7 * 60 * MIN),
+            headline = Headline.FIVE_HOUR,
+        )
+        assertEquals("Stale", stale.rows.single { it.name == "5h" }.reset)
+        val idle = model(GalleryFixtures.pro(GalleryFixtures.both(null, 100.0, sessionReset = null)))
+        val five = idle.rows.single { it.name == "5h" }
+        assertTrue(five.dimmed)
+        assertEquals("Starts when a message is sent", five.reset)
+    }
+
+    @Test
+    fun `a weekly-only plan has the one row, which leads, and the ring is the Weekly`() {
+        val m = weeklyFirstStates().getValue("weekly-only")
+        assertEquals(listOf("Weekly"), m.rows.map { it.name })
+        assertTrue(m.rows[0].lead)
+        assertEquals(FaceWindow.WEEKLY, m.headline.window)
+        assertFalse(m.ringDimmed)
+    }
+
+    @Test
+    fun `no reading draws the ring's dash and nothing else`() {
+        val m = weeklyFirstStates().getValue("no-reading")
+        assertEquals("—", m.headline.figure)
+        assertTrue(m.rows.isEmpty())
+        assertNull(m.trend)
+    }
+
+    @Test
+    fun `the five Weekly-first states render in both themes`() {
+        val dump = System.getenv("SHARE_CARD_DUMP")?.let { File(it).apply { mkdirs() } }
+        for (dark in listOf(true, false)) {
+            for ((name, card) in weeklyFirstStates(dark)) {
+                val (bmp, end) = ShareCard.draw(context, card)
+                assertEquals(name, 1440, bmp.width)
+                assertEquals(name, ShareCard.heightPx(card), bmp.height)
+                // What render drew ends where heightPx says: nothing clipped, no empty tail.
+                assertEquals(name, ShareCard.heightPx(card).toFloat(), end, 1f)
+                dump?.let { d ->
+                    File(d, "$name-${if (dark) "dark" else "light"}.png").outputStream()
+                        .use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                }
+            }
+        }
     }
 
     @Test
