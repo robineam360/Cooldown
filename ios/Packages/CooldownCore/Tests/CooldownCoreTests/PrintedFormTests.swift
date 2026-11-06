@@ -107,6 +107,14 @@ struct PrintedFormTests {
         }
     }
 
+    @Test("caption drop order: the distance clause alone, or the used figure in Vs pace")
+    func captionShort() {
+        #expect(PaceText.captionShort("40% pace mark · 12 over") == "12 over")
+        #expect(PaceText.captionShort("40% pace mark · 10 to spare") == "10 to spare")
+        #expect(PaceText.captionShort("60% pace mark · on it") == "on it")
+        #expect(PaceText.captionShort("41% used · 60% pace mark") == "41% used")
+    }
+
     @Test("map words")
     func mapLabels() throws {
         let fx = try Fixtures.json("pace-distance/printed.json")

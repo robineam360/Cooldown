@@ -35,7 +35,8 @@ struct ShareCardView: View {
             }
             HStack(spacing: 14) {
                 // The ring is the 5h gauge; Weekly only when the plan has no 5h window.
-                UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7, fontSize: 20).frame(width: 80, height: 80)
+                UsageRing(pct: (five ?? week)?.pct, pace: (five ?? week)?.pace, accent: accent, lineWidth: 7,
+                          label: Display.mode == .vsPace ? Display.usage((five ?? week)?.pct) : nil, fontSize: 20).frame(width: 80, height: 80)
                     .opacity(weekSpent ? 0.45 : 1)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 7) {

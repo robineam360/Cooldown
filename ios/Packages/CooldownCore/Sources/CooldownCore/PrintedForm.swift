@@ -96,6 +96,14 @@ extension PaceText {
 }
 
 extension PaceText {
+    /// The caption's own drop order (Astra C1-3): the whole caption, then the distance clause alone — "13 over",
+    /// "10 to spare", "on it", and "52% used" in Vs pace mode. Never cut mid-word.
+    public static func captionShort(_ caption: String) -> String {
+        guard let r = caption.range(of: dot) else { return caption }
+        let head = String(caption[..<r.lowerBound]), tail = String(caption[r.upperBound...])
+        return tail.hasSuffix("pace mark") ? head : tail
+    }
+
     /// The Pace map's words (core §6.3 Printed form): names label the dots, never numbers.
     public enum MapWords {
         public static let aboveDiagonal = "ahead of pace"

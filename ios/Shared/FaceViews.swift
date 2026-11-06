@@ -43,6 +43,8 @@ struct FaceFootnote: View {
     var weekly = false
     /// Bars' tight form: "Limit · Sun 9:30 pm" ("resets" dropped to fit, rev B).
     var limitShort = false
+    /// CCRM-104: Bars small prints the Weekly's pace line here; the Number face keeps "Resets …" (not in the wireframe).
+    var paceLine = false
     @Environment(\.palette) private var p
 
     var body: some View {
@@ -59,7 +61,7 @@ struct FaceFootnote: View {
                         .foregroundStyle(p.sub)
                 } else if face.atLimit || face.leadSpent, let reset = face.reset {
                     Text("Limit · \(limitShort ? "" : "resets ")\(face.resetClock(reset))").foregroundStyle(p.red)
-                } else if face.leadsWeekly, let line = face.session?.line {
+                } else if paceLine, face.leadsWeekly, let line = face.session?.line {
                     // CCRM-104 (Pace Line Parity): Bars small — "6d 23h behind · 9:30 pm"; the weekday drops, then the clock.
                     FitLine(variants: line.variants(rest: p.sub, ink: p.ink, scheme: colorSchemeFor(p)))
                 } else if let runOut = face.runOut {
@@ -542,7 +544,7 @@ struct BarsFace: View {
             }
             .padding(.top, 8)
             if footnote {
-                FaceFootnote(face: face, limitShort: true).font(.system(size: 11.5)).padding(.top, 6)
+                FaceFootnote(face: face, limitShort: true, paceLine: true).font(.system(size: 11.5)).padding(.top, 6)
             }
             // The first model limit (Fable, Argon …) as a 5 pt bar; none when the plan reports none or it is hidden.
             if !blank, let limit = face.modelLimit {

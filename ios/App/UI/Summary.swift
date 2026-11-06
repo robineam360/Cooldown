@@ -258,7 +258,10 @@ struct SummaryOneLineRow: View {
             // CCRM-104: the word slot is the pace line's tinted span alone; a press on the figure swaps it for the caption.
             Group {
                 if revealed, let caption {
-                    Text(caption).font(.system(size: 12, weight: .semibold)).underline().foregroundStyle(p.ink)
+                    // The caption's own drop order (Astra C1-3): whole, then the distance clause alone.
+                    FitLine(variants: [caption, PaceText.captionShort(caption)].map {
+                        Text($0).font(.system(size: 12, weight: .semibold)).underline().foregroundStyle(p.ink)
+                    })
                 } else if let line {
                     Text(line.lead).font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(line.tone(scheme, ink: p.ink))
@@ -280,6 +283,7 @@ struct SummaryOneLineRow: View {
         }
         .opacity(quiet ? 0.6 : 1)
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
         .accessibilityActions { if let caption { Button(caption) { show(caption) } } }
     }
 
