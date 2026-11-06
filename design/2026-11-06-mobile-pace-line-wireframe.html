@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mobile pace line — signed Vs pace, short line, Pace map labels (CCRM-104 (Pace Line Parity))</title>
+<style>
+.lt{--bg:#F5EFE8;--card:#FCF8F4;--ink:#26211E;--ink2:#6B625C;--ink3:#9A918A;--line:#E2D9D0;--shade:#ECECEE;--scard:#FFFFFF;--sink:#1D1D1F;--sink2:#5F5F63;--vg:#2E7D32;--vr:#C62828;--yel:#F9A825;--org:#F57C00;--red:#C62828;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--prod:#8E5BB0;--lab:#2A9A8C;--rose:#C2478A;--mink:38,33,30}
+.dk{--bg:#0D0D0D;--card:#1A1A1A;--ink:#EDE8E4;--ink2:#A39B94;--ink3:#6E6760;--line:#2E2A27;--shade:#141416;--scard:#2A2A2C;--sink:#ECECEC;--sink2:#A6A6AA;--vg:#9CCC65;--vr:#FF5252;--yel:#FDD663;--org:#FFA726;--red:#FF5252;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--prod:#CE93D8;--lab:#4DB6AC;--rose:#F48FB1;--mink:237,232,228}
+*{box-sizing:border-box}body{background:#f6f6f8;color:#1d1d1f;font:14px/1.45 Roboto,-apple-system,"Segoe UI",sans-serif;margin:0;padding:24px 16px 80px}main{max-width:1180px;margin:0 auto}
+h1{font-size:22px;margin:0 0 6px}h2{font-size:16px;margin:36px 0 4px;border-top:1px solid #d9d9de;padding-top:16px}p.sub,.ann{font-size:13px;color:#444;max-width:900px}.ann{padding-left:18px;margin:6px 0}.ann li{margin:3px 0}
+.status{border:2px solid #c9a21a;background:#fff8e1;border-radius:8px;padding:8px 12px;font-size:13px;margin:10px 0 14px;max-width:900px}
+.id{font-weight:700;color:#8a5a00;background:#fff4d6;border:1px solid #e8c66a;border-radius:4px;padding:0 4px;font-size:11px;white-space:nowrap}
+.mac{font-weight:700;color:#fff;background:#2f5d9a;border-radius:4px;padding:0 5px;font-size:10.5px}.dev{font-weight:700;color:#fff;background:#b3402a;border-radius:4px;padding:0 5px;font-size:10.5px}.sug{font-weight:700;color:#fff;background:#2a7d4f;border-radius:4px;padding:0 5px;font-size:10.5px}.dec{font-weight:700;color:#1d1d1f;background:#e3e3e6;border-radius:4px;padding:0 5px;font-size:10.5px}
+.pair{display:flex;flex-wrap:wrap;margin:8px 0}.scope{background:var(--bg);color:var(--ink);padding:14px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;min-width:372px}.pair .scope:first-child{border-radius:10px 0 0 10px}.pair .scope:last-child{border-radius:0 10px 10px 0}
+figure{margin:0}figcaption{font-size:11px;color:var(--ink2);font-weight:600;margin-bottom:5px}
+.g{color:var(--vg)}.r{color:var(--vr)}b.g,b.r{font-weight:600}.mut{color:var(--ink2)}.fig{font-weight:700;font-variant-numeric:tabular-nums lining-nums}.fig small{font-size:58%;font-weight:700}
+.mk{display:inline-block;vertical-align:middle}
+.card{background:var(--card);border-radius:12px;padding:16px;font-size:13px}
+.bar{position:relative;border-radius:99px;background:color-mix(in srgb,var(--bc) 25%,transparent)}.bar>.fill{position:absolute;left:0;top:0;bottom:0;background:var(--bc);border-radius:99px}.bar>.rz{position:absolute;top:0;bottom:0;background:var(--red)}.bar>.room{position:absolute;top:1px;bottom:1px;border:1.3px dashed rgba(var(--mink),.55);border-left:0;border-radius:0 99px 99px 0}.bar>.tk{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;background:rgba(var(--mink),.6);border-radius:1px}
+.cap{font-size:11.5px;color:var(--ink2);margin-top:5px;white-space:nowrap}.cap b{color:var(--ink);font-weight:600}.press{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--claude) 70%,transparent);color:var(--ink);font-weight:600}
+.tile{display:flex;align-items:center;gap:14px}.tile .bars{flex:1;min-width:0}.lr{display:flex;justify-content:space-between;align-items:baseline;height:20px;margin-bottom:5px}.l1{display:flex;align-items:center;gap:6px;white-space:nowrap}.l1 .nm{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis}.pill{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:0 5px;color:var(--ink2);line-height:16px}.l1 .wf{margin-left:auto;font-size:17px}
+.fold{margin-top:10px;font-size:13.5px;font-weight:600}.five{margin-top:2px;font-size:13.5px;color:var(--ink2);font-weight:400;display:flex;align-items:center;gap:4px}
+.srow{display:flex;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.srow:first-child{border-top:0;padding-top:0}.srow .rg{flex:0 0 48px;line-height:0}.srow .sr{flex:1;min-width:0}.srow .l3{font-size:13px;color:var(--ink2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dim{opacity:.5}
+.shade{background:var(--shade);padding:8px;border-radius:12px}.ncard{background:var(--scard);color:var(--sink);border-radius:18px;padding:10px 16px;font-size:12px;width:360px}.ncard .top{font-size:10.5px;color:var(--sink2);margin-bottom:6px}.nrow{display:flex;align-items:center;gap:14px}.ncol{flex:1;min-width:0}.nlab{font-size:13px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:4px}.nsub{font-size:12px;color:var(--sink2);white-space:nowrap;margin-top:4px}.nfig{font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}.nfig small{font-size:58%}.ncap{font-size:10px;letter-spacing:.08em;color:var(--sink2);text-align:center}
+.nbar{height:8px;margin-top:5px}.ncard .half{flex:1;min-width:0;display:flex;align-items:center;gap:8px}.ncard .ring{text-align:center;font-size:11px;color:var(--sink2)}
+.wid{background:var(--card);border-radius:16px;padding:12px;font-size:12px;color:var(--ink)}.wid .st{font-size:10px;opacity:.55}.wid .sub{opacity:.78;white-space:nowrap}
+.mapc{background:var(--card);border-radius:14px;padding:10px 0 4px}.mapc .ch{display:flex;align-items:baseline;padding:0 12px 4px}.mapc .tt{font-size:14px;font-weight:600}.mapc .stt{font-size:11px;color:var(--ink2);margin-left:auto}
+table.t{border-collapse:collapse;font-size:12.5px;max-width:1100px}.t th,.t td{border:1px solid #d9d9de;padding:4px 7px;text-align:left;vertical-align:top}.t th{background:#f0f0f2}.ok{color:#2E7D32;font-weight:700}.drop{color:#9A6700;font-weight:700}.bad{color:#C23B30;font-weight:700}
+.chips{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.chips>div{text-align:center;font-size:11px;color:var(--ink2)}.chips .fig{display:block;font-size:17px;color:var(--ink)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+</style></head><body><main>
+<h1>Mobile pace line — signed Vs pace, short line, Pace map labels (CCRM-104 (Pace Line Parity))</h1>
+<div class="status"><b>Status:</b> <b>Approved 2026-11-06 under Robin's delegation</b> ("Fable draws, Astra reviews, then build"): drawn by Fable (xhigh), one Astra review (high, <code>concerns</code>, coverage full), all four findings adopted below with no disagreement between the two, so nothing is parked for Robin. Q1–Q4 take Fable's recommendations. Since drawing: the Vs pace figure rounds toward zero (Robin, 2026-11-06), drawn in §1. Build: Android on main (CCRM-104 (Pace Line Parity)); iOS by the iOS session.</div>
+<p class="sub">The mobile delta for the pace changes Robin approved on the Mac on 2026-11-06 (CooldownDesktop CCM-200 (Readout), CCM-201 (Pace), CCM-204 (Pace)), now core §6.3 "Printed form" and <code>spec/core/fixtures/pace-distance/printed.json</code>. Starts from <code>spec/mobile/surfaces/</code> (as shipped) and draws only what changes. One dataset: the moment is <b>Wednesday 2:00 PM</b>; each account has its own week, so its mark, signed figure, pace line and map dot come from the same two numbers. Android sizes are dp/sp on the Fold 7 cover (411 dp); iOS pt. Chips: <span class="dec">decision</span> closed here, <span class="dev">deviation</span> platform-forced, <span class="sug">suggestion</span> for the Mac, <span class="mac">Mac</span> what the Mac wireframe draws. Strings are core's and identical on both families.</p>
+
+<h2>1. The figure — signed everywhere but inside the 5-hour ring</h2>
+<div class="pair" id="s1"></div>
+<ul class="ann">
+<li><span class="id">CCRM-104 (Pace Line Parity)</span> <span class="dec">D1</span> "+19%" green under the mark, "−12%" red (U+2212) over it, "0%" plain ink; Used and Left never signed; a fallback usage figure (spent, unclocked) keeps its severity colour, unread "—". Tabular lining digits and the "%" at 58% (shape grammar rev C §1c) make "+19%" exactly as wide as "100%", so no fit rule moves; "+100%" (used 0 at the reset instant) takes the four-character step. Reverses CCRM-100 (Vs Pace Display) rev C.</li>
+<li><span class="mac">Mac</span> Ring centres stay unsigned (Robin, CCM-201): the tile's 72 dp, the Summary's 48 dp, the notification's 44/36 dp and every widget ring print "19%" in the tone. Core rounds the figure toward zero (Robin, 2026-11-06), so a window within a point of the mark prints "0%" beside "On the mark" (fourth chip); "−7.8" prints "−7%".</li>
+<li><span class="dec">D8</span> The Android chart callout (<code>Sparkline.kt:816</code>) today prints "+8% vs pace" for <i>over</i> pace; it adopts core's sign and tone: "14% · −8%" red, "14% · +10%" green, "14% · 0%", so "+" never means over anywhere on mobile.</li>
+</ul>
+
+<h2>2. Android account tile (cover, card 339 dp) — folded lines, open line, press</h2>
+<div class="pair" id="s2"></div>
+<ul class="ann">
+<li><span class="dec">D3</span> Folded line 1 (13.5 sp SemiBold onSurface): <b>before</b> "Slow down · ≈11%/day · resets Sun" → <b>after</b> "<span class="g">21h 50m ahead</span> · Sun 9:30 PM"; the band words and ≈%/day leave (alerts and help only). Line 2, the 5h line with its ring glyph, unchanged. Open tile: the line under the Weekly or model chart is the same pace line; the projection line, divider and reset row stay; the 5h chip keeps "At this pace: ~69% …".</li>
+<li><span class="dec">D6</span> V1 caption under each bar, Vs pace mode: "52% used · <b>39% pace mark</b>" (was "52% used · mark 39%"); Used "39% pace mark · 13 over" and Left "61% pace mark · 13 over" unchanged.</li>
+<li><span class="dev">press</span> <span class="dec">D5</span> A press on a bar figure underlines its caption for 3 s (accent at 70%, the readout's underline) and TalkBack reads the caption as the click action; the ring's figure swaps the 5h line for the 5h's caption ("40% pace mark · 12 over"). The markTime readout ("Pace catches up …") is gone — the line carries it. Spent, unclocked, unread: nothing.</li>
+<li>States of line 1 (second figure): behind · ahead · on the mark · held ("Held · back at 3:18 PM · resets Sun") · spent ("Out until Thu 8:00 AM", red) · signed out ("Sign in again") · no reading ("No reading yet") · not started ("Starts when a message is sent").</li>
+</ul>
+
+<h2>3. Summary rows (Android cover; iOS the same at pt) — seven states and the press</h2>
+<div class="pair" id="s3"></div>
+<ul class="ann">
+<li><span class="dec">D3</span> Line 3 (13 sp): the pace line; held, spent (row at 50%), signed out and no reading unchanged. Figure 17 sp signed (D1); ring 48 dp unsigned. Line 3 drops "· resets &lt;day&gt;" today under width (CCBG-60 (Summary Line Clip)); it now follows the one drop order of §8: weekday, then clock, never the duration+word — on the cover (279 dp) nothing drops.</li>
+<li><span class="dec">D5</span> Press on the figure (its 80 × 48 dp target): the caption underlines for 3 s; one-line rows (six accounts or more, no caption) swap the word slot for the caption. iOS: 48 pt target, same behaviour.</li>
+</ul>
+
+<h2>4. Pace map — wedge words, names on every dot, the collision rule</h2>
+<div class="pair" id="s4"></div>
+<ul class="ann">
+<li><span class="dec">D7</span> "ahead of pace" above the diagonal, "behind pace" below (were "over pace" / "room to spare"); "even pace" slides along the diagonal to a free stretch; "week start" / "reset". Names label dots at every count (no rank numbers from six): right of the dot → below → left → above-left → a leader line to the right edge; refused where it overlaps a label, a dot or an axis word. Studio shares Work's spot and goes below; Design then takes a leader. Spent dot keeps its ×; unread accounts stay off the map with the footnote.</li>
+<li><span class="sug">S3</span> Mobile's centre note "each account's own week" is dropped to match the Mac (Q3); recommended that both keep it.</li>
+</ul>
+
+<h2>5. Always-on notification (Android; drawn at the tight 328 dp content width)</h2>
+<div class="pair" id="s5"></div>
+<ul class="ann">
+<li><span class="dec">D3</span> Collapsed sub (12 sp): "Slow down · ≈11%/day" → "<span class="r">21h 50m ahead</span> · Sun 9:30 PM" (a strip still outranks it). Expanded line 1: the same; <span class="dec">D4</span> <span class="dev">no hover</span> line 2 the pace-mark caption, permanent ("39% pace mark · 13 over"; Vs pace "52% used · 39% pace mark"; Left "61% pace mark · 13 over").</li>
+<li><span class="dec">D1</span> <span class="dec">D2</span> Figure signed (32 / 44 sp, Duet 28–36 sp); the Vs pace caption "UNDER PACE / OVER PACE / ON PACE" goes — the sign is the cue, as the Mac menu bar; "LEFT" stays. Ring 44 / 36 dp unsigned.</li>
+<li><span class="dev">width</span> Expanded single header column ≈ 141 dp on a 328 dp skin: the weekday drops, then the clock ("21h 50m ahead"); on the cover (≈ 160, UNVERIFIED) only the weekday. Duet expanded header (≈ 159): the weekday drops, as CCBG-61 (Duet Line Clip)'s tight form did. Duet collapsed halves have no sub line; the 28 sp "+19%" (63 dp) keeps the 156 dp budget (36+8+40+8+63 = 155).</li>
+</ul>
+
+<h2>6. Android widgets — the figure sign, and the Weekly line where a face has one (Q1)</h2>
+<div class="pair" id="s6"></div>
+<ul class="ann">
+<li><span class="dec">D1</span> Every Weekly figure signed: Number (28–57 sp), Strip 4×2 row (11 sp), Countdown 2×2 figure row, Ring's Weekly row (13 sp); rings unsigned. Name lines keep " · vs pace" where Left adds " · left" (the widget has no mode control; the Mac widget took mobile's labels).</li>
+<li><span class="dec">Q1</span> Where a face has a Weekly sub line today ("Resets Sat 9:10 PM": Number 4×1 and up, Ring 2×2 and 3×1) it becomes the pace line — the clock survives inside it. Drop order by column (§8): 333 dp Number: weekday drops beside the stamp; 244 dp: duration+word, the stamp yields; Ring 2×2 at 156: duration+word. Ring 1×1, Number 2×1, Strip 4×1, Countdown: no line, figure sign only.</li>
+</ul>
+
+<h2>7. Share card — the Weekly row (Android 360 dp; iOS 300 pt the same)</h2>
+<div class="pair" id="s7"></div>
+<ul class="ann"><li><span class="dec">D9</span> Pace slot (10.5 sp, left): "12% above pace" → "<span class="r">13h 59m ahead</span>" / "<span class="g">6d 23h behind</span>" / "On the mark"; reset slot unchanged. The 5h row ("On track for ~69%") and the Used figures unchanged (Vs pace renders as Used, approved 2026-11-06).</li></ul>
+
+<h2>8. Measurements — worst-case lines against each surface (estimate; a device pass confirms)</h2>
+<div id="meas"></div>
+<p class="sub"><span class="dec">D10</span> <span class="sug">S1</span> One drop order everywhere a column cannot hold the full line: drop the weekday ("23h 59m ahead · 12:30 PM"), then the clock ("23h 59m ahead"); the duration+word is the floor and is never cut. Measured per string, so "6d 23h behind · 9:30 pm" keeps its clock where "23h 59m ahead · 12:30 PM" lost it. Em classes: digit .56 (bold .60), narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80, other capitals .62, space .25, "·" .29, ":" .23, sign .58, small "%" .46; the tinted span +3%. The 24-hour forms save 1.67 em.</p>
+
+<h2>9. iOS — before → after, one line each</h2>
+<table class="t"><tr><th>Surface</th><th>Before</th><th>After</th></tr>
+<tr><td>Tile lead / model figures (18 / 15 pt)</td><td>"19%" tone only</td><td>"+19%" / "−12%" / "0%" (D1); ring 72 unsigned</td></tr>
+<tr><td>Tile folded line 1 (14.5 pt semibold)</td><td>"Slow down · ≈11%/day · resets Sun"</td><td>"21h 50m ahead · Sun 9:30 pm" (tinted span red); line 2 the 5h line unchanged</td></tr>
+<tr><td>Tile open, under the Weekly/model chart (13.5 pt)</td><td>"Slow down · ≈11%/day until Sun"</td><td>the same pace line; projection and reset row unchanged</td></tr>
+<tr><td>V1 caption, Vs pace (12.5 pt)</td><td>"52% used · mark 39%"</td><td>"52% used · 39% pace mark" (D6)</td></tr>
+<tr><td>Tap readout</td><td>markTime words for 3 s</td><td>the caption underlined 3 s; ring → 5h caption in the 5h line (D5)</td></tr>
+<tr><td>Summary row line 3 (13 pt), figure 17 pt</td><td>"Room to spare · ≈22%/day · resets Fri"</td><td>"1d 7h behind · Fri 9:00 am" green; figure signed; one-line rows: word slot = the tinted span ("1d 7h behind")</td></tr>
+<tr><td>Pace map</td><td>"over pace" / "room to spare"; 6+: numbered dots</td><td>"ahead of pace" / "behind pace"; names with the collision rule (D7)</td></tr>
+<tr><td>Bars small (11.5 pt reset line)</td><td>"Resets Sun 9:30 pm"</td><td>"6d 23h behind · 9:30 pm" (weekday dropped at 126 pt; "23h 59m ahead" alone); SE: line gone, "· Sun" in the header as today</td></tr>
+<tr><td>Strip medium line (12.5 pt)</td><td>"Slow down · ≈11%/day · resets Sun"</td><td>"6d 23h behind · Sun 9:30 pm" (208 pt: fits); figure 30 pt signed</td></tr>
+<tr><td>Overview T1–T3 Weekly line (14.5 pt), T4 (12 pt)</td><td>band words · "~ runs out …"</td><td>the pace line; a 180 pt cell drops the weekday; "~ runs out …" stays on the 5h line only; T5 Mini: figure sign only</td></tr>
+<tr><td>Live Activity, one account (two 12.5 pt lines)</td><td>"Slow down · ≈11%/day" / "Resets Sun 9:30 pm"</td><td>"6d 23h behind · Sun 9:30 pm" / "◔ resets in 2h 20m · on track for ~69%" (D11); figure 44 pt signed</td></tr>
+<tr><td>Live Activity Duet row (12 pt)</td><td>"Slow down · Sun 9:30 pm"</td><td>"6d 23h behind · Sun 9:30 pm"; figure 36 pt signed</td></tr>
+<tr><td>Dynamic Island expanded (13 pt) / compact</td><td>"Resets Sun 9:30 pm · in 4d 6h" / "19%"</td><td>"6d 23h behind · Sun 9:30 pm" / "+19%" (34 pt in the 52 pt slot)</td></tr>
+<tr><td>Lock Screen (circular, rectangular, inline)</td><td>Used figure, "Weekly · Sun"</td><td><span class="dev">tint</span> unchanged (Q2): the system tint carries no tone and the figure is Used by rule</td></tr>
+<tr><td>Share card Weekly row (12.5 pt)</td><td>band words left, "Resets Thu 9:50 pm" right</td><td>"13h 59m ahead" left, reset right (D9)</td></tr>
+<tr><td>Held / spent / signed-out / no-reading lines, every surface</td><td colspan="2">unchanged ("Held · back at 3:40 pm · resets Fri", "Out until Thu 8:00 am", "Sign in again", "No reading yet", "Weekly spent" stamps)</td></tr></table>
+
+<h2>10. Deviations (platform-forced) and Mac suggestions</h2>
+<table class="t"><tr><th>Surface</th><th>Mac does</th><th>Mobile does</th><th>Reason</th><th>Desktop agreement</th></tr>
+<tr><td>App figures</td><td>hover caption; click 3 s</td><td>press underlines the drawn caption / swaps the ring's line (D5)</td><td>no hover on touch</td><td>no</td></tr>
+<tr><td>Notification expanded</td><td>hover help</td><td>line 2 = caption, permanent (D4)</td><td>RemoteViews: no hover, no press</td><td>no</td></tr>
+<tr><td>Narrow columns (notification expanded, Duet header, widgets, iOS small)</td><td>never drops at 224 pt</td><td>weekday → clock → duration+word (D10)</td><td>width</td><td>no (S1)</td></tr>
+<tr><td>Lock Screen</td><td>n/a</td><td>unchanged</td><td>system tint, Used-only surface</td><td>no</td></tr>
+<tr><td>Widget name lines</td><td>mobile's labels</td><td>" · vs pace" suffix kept</td><td>no mode control on a widget</td><td>no (UNVERIFIED on the Mac widget)</td></tr>
+<tr><td>Share card row</td><td>n/a</td><td>pace words left, reset right</td><td>approved two-slot row; words identical</td><td>no</td></tr></table>
+<ul class="ann">
+<li><span class="sug">S1</span> Whole-unit fallback (D10) instead of the Mac §6's ellipsis truncation ("6d 23h behind · Wed…"): every width prints a true phrase. Shown in §8.</li>
+<li><span class="sug">S2</span> The "%" at 58% with tabular digits: "+19%" costs the same width as "100%", so the sign is free in rows and ring text. Shown in §1.</li>
+<li><span class="sug">S3</span> The map's centre x-axis note "each account's own week". Shown in §4.</li></ul>
+
+<h2>Review record</h2>
+<p class="sub">review: calls=1 (1 full + ≤ 1 delta) effort=high size=6.1 KB · verbatim: <code>reviews/ccrm104-mobile-pace-line-astra-call1.txt</code> · reviewer: Astra (GPT, cross-family) · drafter: Fable</p>
+<table class="t"><tr><th>ID</th><th>Grade</th><th>Conf.</th><th>Where</th><th>What</th><th>Fix (adopted)</th><th>Closed by</th><th>Status</th></tr>
+<tr><td>C1-1</td><td>concerns</td><td>99</td><td>D7, §4</td><td>Placement order right → below → left → above-left → leader differs from core's shorter wording ("lower label below, then leaders")</td><td>Both families use the desktop's approved order (its wireframe C1-3, the same as D7); core §6.3's map wording is corrected to that order, and labels are placed top-down so the lower label is always the one that moves. The CooldownDesktop session is told.</td><td>Core text in the build commit; Android placement unit test with the five-account collision case</td><td>fixed (build)</td></tr>
+<tr><td>C1-2</td><td>concerns</td><td>100</td><td>§6, §8, Number 4×1 at 244 dp</td><td>The "Updated" stamp and the pace line collide; what yields was unspecified</td><td>The stamp yields first: when the line plus the 66 dp stamp does not fit, the stamp hides, then the line's drop order (D10) runs on the full column. The pace readout always outranks the stamp.</td><td>Widget fit unit test at 244 and 333 dp</td><td>fixed (build)</td></tr>
+<tr><td>C1-3</td><td>concerns</td><td>96</td><td>D4, D10, §5</td><td>The permanent notification caption (line 2) had no width rule; "61% pace mark · 13 to spare" ≈ 154 dp at 12 sp against a 141 dp column</td><td>The caption gets its own drop order: the full caption → the distance clause alone ("13 to spare", "13 over", and "On the mark" for on it; Vs pace mode "52% used"). Never ellipsised mid-word. Today's line 2 ("13 over the pace mark (39%) · resets Sun") is longer still, so this only improves the shipped state.</td><td>Unit test of the caption drop order at 141 and 184 dp</td><td>fixed (build)</td></tr>
+<tr><td>C1-4</td><td>concerns</td><td>95</td><td>§8 measurements</td><td>Fit evidence is at nominal sizes; Android font scale and iOS Dynamic Type not covered</td><td>Every drop decision is measured at run time on the scaled text (D10 is per string, not per size class), so larger text drops earlier. If even the floor does not fit, the text steps down to 10 sp (iOS: <code>minimumScaleFactor</code> 0.8), and only then truncates. Wording never changes.</td><td>Drop-order unit test at font scale 1.0, 1.3 and 2.0; device pass at the largest font size</td><td>fixed (build)</td></tr>
+</table>
+<p class="sub">Open questions settled under the delegation (Fable's recommendations, no objection from Astra): Q1 Android widget Weekly lines take the pace line · Q2 iOS lock-screen line unchanged · Q3 the map's centre note goes for parity (suggestion S3 offered to the desktop) · Q4 a press on a map dot: deferred.</p>
+</main>
+<script>
+const M='−',DOT=' · ';
+const mark=(k,c,s=14)=>{const i=k==='claude'?[0,1,2,3,4,5,6,7].map(r=>`<path d="M12 12L12 2.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" transform="rotate(${r*45} 12 12)"/>`).join(''):k==='gpt'?[0,1,2].map(r=>`<ellipse cx="12" cy="7" rx="3.6" ry="6" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate(${r*120} 12 12)"/>`).join(''):`<path d="M12 2C12.8 8 16 11.2 22 12C16 12.8 12.8 16 12 22C11.2 16 8 12.8 2 12C8 11.2 11.2 8 12 2Z" fill="currentColor"/>`;return `<svg class="mk" width="${s}" height="${s}" viewBox="0 0 24 24" style="color:${c}">${i}</svg>`};
+const sg=d=>d==null?'—':d===0?'0%':(d>0?'+':M)+Math.abs(d)+'%';
+const tone=d=>d==null?'var(--ink)':d>0?'var(--vg)':d<0?'var(--vr)':'var(--ink)';
+const F=(t,sz,col)=>`<span class="fig" style="font-size:${sz}px;color:${col}">${t.replace('%','<small>%</small>')}</span>`;
+function ring(S,pct,tick,o={}){const c=S/2,sw=(S<=48?.1:.13)*S,R=.39*S,P=(r,f)=>`${(c+r*Math.sin(2*Math.PI*f)).toFixed(1)},${(c-r*Math.cos(2*Math.PI*f)).toFixed(1)}`,arc=(a,b)=>{if(b-a>=.9999)b=a+.9999;return `M${P(R,a)}A${R},${R} 0 ${b-a>.5?1:0} 1 ${P(R,b)}`};
+let s=`<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" role="img" aria-label="5-hour window"><circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="rgba(var(--mink),${o.grey||o.na?.22:.16})" stroke-width="${sw}"/>`;
+if(o.na){const k=.12*S;return s+`<path d="M${c-k},${c-k}L${c+k},${c+k}M${c+k},${c-k}L${c-k},${c+k}" stroke="rgba(var(--mink),.45)" stroke-width="1.8" stroke-linecap="round"/></svg>`}
+if(pct==null)return s+`<text x="${c}" y="${c+.1*S}" text-anchor="middle" font-size="${.29*S}" font-weight="700" fill="rgba(var(--mink),.5)">—</text></svg>`;
+const col=pct>90?'var(--org)':pct>80?'var(--yel)':o.col;
+if(!o.grey){s+=`<path d="${arc(0,Math.max(pct/100,.09))}" fill="none" stroke="${col}" stroke-width="${sw}"/>`;
+ if(tick!=null){if(pct>tick+3)s+=`<path d="${arc(tick/100,pct/100)}" fill="none" stroke="var(--red)" stroke-width="${sw}"/>`;if(pct<tick-1&&S>=28)s+=`<path d="${arc(pct/100,tick/100)}" fill="none" stroke="${o.col}" stroke-opacity=".6" stroke-width="${Math.max(1,S/60)}" stroke-dasharray="${Math.max(1.6,S/26)} ${Math.max(1.6,S/26)}"/>`;
+ const a=2*Math.PI*tick/100;s+=`<line x1="${(c+(R-sw)*Math.sin(a)).toFixed(1)}" y1="${(c-(R-sw)*Math.cos(a)).toFixed(1)}" x2="${(c+(R+sw)*Math.sin(a)).toFixed(1)}" y2="${(c-(R+sw)*Math.cos(a)).toFixed(1)}" stroke="rgba(var(--mink),.9)" stroke-width="${Math.max(1.5,S/32)}" stroke-linecap="round"/>`}}
+const txt=o.vs!=null?Math.abs(o.vs)+'%':pct+'%',fs=(txt.length>=4?.21:.25)*S*(S<=48?1.16:1),fc=o.grey?'rgba(var(--mink),.45)':o.vs!=null?tone(o.vs):pct>90?col:'var(--ink)';
+return s+`<text x="${c}" y="${(c+.36*fs).toFixed(1)}" text-anchor="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="${fc}" style="font-variant-numeric:tabular-nums">${txt.slice(0,-1)}<tspan font-size="${(fs*.58).toFixed(1)}">%</tspan></text></svg>`}
+const bar=(p,t,h,col)=>{const over=t!=null&&p>t+3;return `<div class="bar" style="height:${h}px;--bc:${col}"><div class="fill" style="width:${Math.max(over?t:p,3)}%"></div>${over?`<div class="rz" style="left:${t}%;width:${p-t}%"></div>`:''}${t!=null&&p<t-1?`<div class="room" style="left:${p}%;width:${t-p}%"></div>`:''}${t!=null?`<div class="tk" style="left:${t}%"></div>`:''}</div>`};
+// dataset: Wednesday 2:00 PM; each account its own week
+const NOW=3*1440+840,WK=10080,DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],clk=(h,m)=>`${((h+11)%12)+1}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`;
+const dur=min=>{const d=Math.floor(min/1440),h=Math.floor(min%1440/60),m=Math.floor(min%60);return d>0?`${d}d ${h}h`:h>0?`${h}h ${m}m`:`${m}m`};
+function A(b){const a={...b},ra=b.rd*1440+b.rh*60+b.rm;let to=(ra-NOW+WK)%WK;if(!to)to=WK;a.g=Math.round((WK-to)/WK*100);a.reset=(b.rd===3&&to<1440?'':DN[b.rd]+' ')+clk(b.rh,b.rm);
+ if(a.u!=null&&!a.spent&&a.vs===undefined){const d=a.g-a.u,n=Math.floor(Math.abs(d)+1e-9);a.vs=d<0?-n:n;}
+ if(!a.line&&a.u!=null){const d=a.g-a.u;a.tint=d===0?null:`${dur(Math.floor(Math.abs(d)/100*WK))} ${d>0?'behind':'ahead'}`;a.line=d===0?`On the mark${DOT}${a.reset}`:`<b class="${d>0?'g':'r'}">${a.tint}</b>${DOT}${a.reset}`}
+ a.cap=a.u==null||a.spent?null:{used:`<b>${a.g}% pace mark</b>${DOT}${Math.abs(a.g-a.u)<1?'on it':Math.round(Math.abs(a.g-a.u))+(a.g>a.u?' under':' over')}`,vs:`<b>${a.u}% used</b>${DOT}${a.g}% pace mark`};return a}
+const AC={
+ gpt:A({n:'ChatGPT',mk:'gpt',col:'var(--gpt)',plan:'Plus',r:[22,35],u:6,rd:2,rh:9,rm:0}),
+ gem:A({n:'Gemini',mk:'gem',col:'var(--gem)',plan:'Pro',r:[40,55],u:91,rd:4,rh:18,rm:15}),
+ lab:A({n:'Lab',mk:'claude',col:'var(--lab)',plan:'Team Standard',r:null,u:61,rd:6,rh:8,rm:0}),
+ work:A({n:'Work',mk:'claude',col:'var(--claude)',plan:'Team Premium',r:[93,83],u:30,rd:0,rh:21,rm:30,line:'Held · back at 3:18 PM · resets Sun',held:1}),
+ atlas:A({n:'Atlas',mk:'claude',col:'var(--rose)',plan:'Max',r:[12,60],u:100,rd:4,rh:8,rm:0,spent:1,line:'<span class="r">Out until Thu 8:00 AM</span>'}),
+ prod:A({n:'Product',mk:'claude',col:'var(--prod)',plan:'Pro',r:'none',u:null,rd:3,rh:23,rm:0,line:'<span class="r">Sign in again</span>'}),
+ design:A({n:'Design',mk:'gpt',col:'var(--gpt)',plan:'Team',r:'none',u:null,rd:0,rh:20,rm:0,line:'No reading yet'}),
+ teams:A({n:'Teams',mk:'claude',col:'var(--claude)',plan:'Max',r:[34,52],u:52,rd:0,rh:21,rm:30}),
+ studio:A({n:'Studio',mk:'claude',col:'var(--prod)',u:30,rd:0,rh:21,rm:30}),
+ des2:A({n:'Design',mk:'gem',col:'var(--rose)',u:27,rd:0,rh:20,rm:0})};
+const R48=a=>a.r==='none'?ring(48,null):a.r==null?ring(48,null,null,{na:1}):ring(48,a.r[0],a.r[1],{col:a.col,grey:a.spent,vs:a.spent?null:a.r[1]-a.r[0]});
+const fig=(a,sz)=>F(a.u==null?'—':a.spent?a.u+'%':sg(a.vs),sz,a.u==null?'var(--ink3)':a.spent?'var(--red)':tone(a.vs));
+// §1
+const chips=`<div class="card chips" style="width:339px">${[['+19% under','+19%','var(--vg)'],['−12% over',M+'12%','var(--vr)'],['0% on the mark','0%','var(--ink)'],['0% within a point over (−0.49 toward zero)','0%','var(--ink)']].map(([l,t,c])=>`<div>${F(t,17,c)}${l}</div>`).join('')}<div>${ring(48,19,38,{col:'var(--claude)',vs:19})}ring: "19%", tone only</div><div>${ring(48,48,36,{col:'var(--claude)',vs:-12})}ring over: "12%" red</div></div>`;
+// §2 tile
+const five=t=>`<div class="five"><svg width="12" height="12" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="rgba(var(--mink),.5)" stroke-width="1.5"/><path d="M12 3.5A8.5 8.5 0 0 1 20.5 12" fill="none" stroke="var(--claude)" stroke-width="4"/><circle cx="12" cy="12" r="1.4" fill="rgba(var(--mink),.85)"/><line x1="12" y1="12" x2="17" y2="4" stroke="rgba(var(--mink),.85)" stroke-width="1.8" stroke-linecap="round"/></svg>${t}</div>`;
+function tile(a,o={}){const t=a.teams||a;const capU=o.press==='bar'?`<span class="press">${a.cap.used.replace(/<\/?b>/g,'')}</span>`:a.cap.used;
+ return `<div class="card" style="width:339px"><div class="tile">${ring(72,34,52,{col:a.col,vs:18})}<div class="bars"><div class="lr"><span style="font-size:13.5px">Weekly · All models</span>${fig(a,18)}</div>${bar(a.u,a.g,10,a.col)}<div class="cap">${capU}</div>
+ <div class="lr" style="margin-top:8px"><span style="font-size:12.5px;color:var(--ink2)">Fable</span>${F('+30%',14,'var(--vg)')}</div>${bar(9,a.g,7,a.col)}<div class="cap">${a.g}% pace mark · 30 under</div></div></div>
+ <div class="fold">${o.line||a.line}</div>${o.press==='ring'?five(`<span class="press">40% pace mark · 12 over</span>`):five('resets in 2h 20m · on track for ~69%')}</div>`}
+const states=`<div class="card" style="width:339px;font-size:13.5px;font-weight:600"><div class="mut" style="font-size:11px;font-weight:600;margin-bottom:4px">LINE 1 BY STATE (13.5 sp SemiBold)</div>${[['behind',AC.gpt.line],['ahead',AC.gem.line],['on the mark',AC.lab.line],['held',AC.work.line],['spent',AC.atlas.line],['signed out',AC.prod.line],['no reading','No reading yet'],['not started','Starts when a message is sent']].map(([k,l])=>`<div style="display:flex;gap:10px;padding:3px 0;border-top:1px solid var(--line)"><span class="mut" style="font-weight:400;font-size:11px;width:72px;flex:none">${k}</span><span>${l}</span></div>`).join('')}</div>`;
+// §3 Summary
+function srow(a,o={}){const dead=a.u==null,cls=a.spent||dead?' dim':'';const cap=a.cap?`<div class="cap">${o.press?`<span class="press">${a.cap.used.replace(/<\/?b>/g,'')}</span>`:a.cap.used}</div>`:'';
+ return `<div class="srow"><div class="rg">${R48(a)}</div><div class="sr${cls}"><div class="l1">${mark(a.mk,a.col,18)}<span class="nm">${a.n}</span><span class="pill">${a.plan}</span><span class="wf">${fig(a,17)}</span></div>${dead?`<div class="bar" style="height:10px;--bc:var(--ink3)"></div>`:bar(a.u,a.spent?null:a.g,10,a.spent?'var(--red)':a.col)}${cap}<div class="l3">${a.line}</div></div></div>`}
+const summary=(rows,title)=>`<div class="card" style="width:339px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><b style="font-size:14px">Weekly</b><span class="mut" style="font-size:12px">${title||'most room first'}</span></div>${rows}</div>`;
+// §4 map
+const _cv=document.createElement('canvas').getContext('2d'),tw=(t,s,w=400)=>{_cv.font=`${w} ${s}px Roboto,-apple-system,sans-serif`;return _cv.measureText(t).width};
+const Rr=(x,y,w,h)=>({x,y,w,h}),hit=(a,b,p=1)=>a.x<b.x+b.w+p&&b.x<a.x+a.w+p&&a.y<b.y+b.h+p&&b.y<a.y+a.h+p,lab=(x,base,w,s,e)=>Rr(e?x-w:x,base-s*.8,w,s*1.05);
+function map(accts,o={}){const w=339,h=230,L=30,RE=w-12,T=10,B=h-26,X=f=>L+(RE-L)*f/100,Y=v=>B-(B-T)*v/100,ink=a=>`rgba(var(--mink),${a})`;
+ let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;font-family:Roboto,sans-serif"><polygon points="${X(0)},${Y(0)} ${X(100)},${Y(100)} ${X(0)},${Y(100)}" fill="var(--red)" fill-opacity=".06"/>`;
+ for(const v of[0,50,100])s+=`<line x1="${X(0)}" x2="${X(100)}" y1="${Y(v)}" y2="${Y(v)}" stroke="${ink(v?.12:.35)}"/><text x="${L-5}" y="${Y(v)+3.5}" fill="${ink(.6)}" font-size="10" text-anchor="end">${v}%</text>`;
+ s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(100)}" stroke="var(--yel)" stroke-width="2" stroke-dasharray="3 2.5"/>`;
+ s+=`<text x="${X(3)}" y="${Y(92)}" fill="${ink(.55)}" font-size="10.5">ahead of pace</text><text x="${X(97)}" y="${Y(7)}" fill="${ink(.55)}" font-size="10.5" text-anchor="end">behind pace</text><text x="${X(0)}" y="${h-7}" fill="${ink(.7)}" font-size="10.5">week start</text><text x="${X(100)}" y="${h-7}" fill="${ink(.7)}" font-size="10.5" text-anchor="end">reset</text>`;
+ const fixed=[lab(X(3),Y(92),tw('ahead of pace',10.5),10.5),lab(X(97),Y(7),tw('behind pace',10.5),10.5,1),lab(X(0),h-7,tw('week start',10.5),10.5),lab(X(100),h-7,tw('reset',10.5),10.5,1)];
+ const it=accts.filter(a=>a.u!=null).map(a=>({a,cx:X(a.g),cy:Y(Math.min(a.u,100))}));
+ it.forEach(i=>{const pts=[];for(let k=0;k<=8;k++){const f=k/8;pts.push(`${X(i.a.g*f).toFixed(1)},${Y(Math.min(i.a.u,i.a.u*f*(1+.18*Math.sin(k*2.1+i.a.g)))).toFixed(1)}`)}s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${i.a.col}" stroke-opacity=".55" stroke-width="1.6"/>`});
+ it.forEach(i=>{s+=`<circle cx="${i.cx}" cy="${i.cy}" r="5.5" fill="${i.a.col}" stroke="var(--card)" stroke-width="2"/>`;if(i.a.spent)s+=`<path d="M${i.cx-3},${i.cy-3}L${i.cx+3},${i.cy+3}M${i.cx+3},${i.cy-3}L${i.cx-3},${i.cy+3}" stroke="var(--card)" stroke-width="1.6"/>`});
+ const dots=it.map(i=>Rr(i.cx-7,i.cy-7,14,14)),placed=[],inP=r=>r.x>=L-2&&r.x+r.w<=w-2&&r.y>=T-6&&r.y+r.h<=h-20,hard=r=>!inP(r)||fixed.some(f=>hit(r,f))||dots.some(d=>hit(r,d,0))||placed.some(p=>hit(r,p,2));
+ [...it].sort((p,q)=>p.cy-q.cy||p.cx-q.cx).forEach(i=>{const n=i.a.n,lw=tw(n,11.5,600),tx=(x,y,e)=>`<text x="${x}" y="${y}" fill="${ink(.92)}" font-size="11.5" font-weight="600"${e?' text-anchor="end"':''}>${n}</text>`;
+  const c=[[i.cx+10,i.cy+4,0],[i.cx+2,i.cy+19,0],[i.cx-10,i.cy+4,1],[i.cx-10,i.cy-9,1]].map(([x,y,e])=>({r:lab(x,y,lw,11.5,e),svg:tx(x,y,e)}));
+  const ld=[0,-18,18,-36,36].map(dy=>{const by=Math.max(T+4,Math.min(B-10,i.cy+dy))+4,r=lab(w-6,by,lw,11.5,1);return{r,svg:`<path d="M${i.cx+2},${i.cy+(dy>0?7:-7)}L${r.x-3},${by-4}" stroke="${ink(.4)}" fill="none"/>${tx(w-6,by,1)}`}});
+  const k=c.find(k=>!hard(k.r))||ld.find(k=>!hard(k.r))||c[0];placed.push(k.r);s+=k.svg});
+ const ang=Math.atan2(Y(100)-Y(0),X(100)-X(0))*180/Math.PI,ex=X(62),ey=Y(62)-5;s+=`<text x="${ex}" y="${ey}" fill="var(--yel)" font-size="10" text-anchor="middle" transform="rotate(${ang.toFixed(1)} ${ex} ${ey})">even pace</text></svg>`;
+ return `<div class="mapc" style="width:339px"><div class="ch"><span class="tt">Pace map</span><span class="stt">Weekly, where each account stands</span></div>${s}${o.foot?`<div class="mut" style="font-size:11px;padding:2px 12px">${o.foot}</div>`:''}</div>`}
+// §5 notification
+const nfig=(a,sz)=>`<div class="nfig" style="font-size:${sz}px;color:${a.spent?'var(--red)':tone(a.vs)}">${sg(a.vs).replace('%','<small>%</small>')}</div>`;
+const shade=(inner)=>`<div class="shade">${inner}</div>`;
+function ncol(a,sub,lab=13){return `<div class="ncol"><div class="nlab" style="font-size:${lab}px">${mark(a.mk,a.col)}${a.n} · Weekly</div>${bar(a.u,a.g,8,a.col).replace('class="bar"','class="bar nbar"')}<div class="nsub">${sub}</div></div>`}
+const t=AC.teams;
+const nCol=`<div class="ncard"><div class="top">Cooldown · Pinned usage</div><div class="nrow">${ring(44,34,52,{col:t.col,vs:18})}${ncol(t,t.line)}<div style="margin-left:14px">${nfig(t,32)}</div></div></div>`;
+const nColB=`<div class="ncard"><div class="top">BEFORE (v2.0 as built)</div><div class="nrow">${ring(44,34,52,{col:t.col,vs:18})}${ncol(t,'Slow down · ≈11%/day')}<div style="margin-left:14px"><div class="nfig" style="font-size:32px;color:var(--vr)">13<small>%</small></div><div class="ncap">OVER PACE</div></div></div></div>`;
+const nExp=`<div class="ncard"><div class="top">Cooldown · Pinned usage · expanded (column ≈ 141 dp: weekday and clock dropped on this skin)</div><div class="nrow"><div class="ring">${ring(44,34,52,{col:t.col,vs:18})}<div>in 2h 20m</div></div>${ncol(t,`<b class="r">${t.tint}</b><div class="nsub" style="margin-top:2px">${t.cap.used.replace(/<\/?b>/g,'')}</div>`,14)}<div style="margin-left:14px">${nfig(t,44)}</div></div><div class="nsub" style="margin-top:10px">Panel: model-cap rows (figures signed), strips as today</div></div>`;
+const half=(a,ringed=1)=>`<div class="half">${ringed?ring(36,a.r[0],a.r[1],{col:a.col,vs:a.r[1]-a.r[0]}):''}<div class="ncol"><div class="nlab" style="font-size:12px">${mark(a.mk,a.col)}${a.n}</div>${bar(a.u,a.g,8,a.col).replace('class="bar"','class="bar nbar"')}</div><div>${nfig(a,28)}</div></div>`;
+const duet=`<div class="ncard"><div class="top">Duet, collapsed — halves 156 dp, no sub line; figures 28 sp signed</div><div class="nrow" style="gap:16px">${half(t)}${half(AC.gpt)}</div></div>`;
+const duetX=`<div class="ncard"><div class="top">Duet, expanded headers (column ≈ 159 dp: the weekday drops)</div><div class="nrow"><div class="ring">${ring(44,34,52,{col:t.col,vs:18})}<div>in 2h 20m</div></div>${ncol(t,`<b class="r">${t.tint}</b> · 9:30 PM`,14)}<div style="margin-left:14px">${nfig(t,36)}</div></div><div class="nrow" style="margin-top:10px"><div class="ring">${ring(44,22,35,{col:AC.gpt.col,vs:13})}<div>in 3h 15m</div></div>${ncol(AC.gpt,`<b class="g">${AC.gpt.tint}</b> · Tue 9:00 AM`,14)}<div style="margin-left:14px">${nfig(AC.gpt,36)}</div></div></div>`;
+// §6 widgets
+function num41(W,a,line,note){const inner=W-24,d=Math.min(96,84-8,.4*inner),col=inner-d-12;return `<div class="wid" style="width:${W}px;height:108px;padding:12px"><div style="display:flex;align-items:center;gap:12px;height:84px">${ring(d,34,52,{col:a.col,vs:18})}<div style="width:${col}px;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap"><span style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${mark(a.mk,a.col)} ${a.n} · Weekly · vs pace</span>${fig(a,32)}</div>${bar(a.u,a.g,8,a.col)}<div style="display:flex;justify-content:space-between;margin-top:5px;white-space:nowrap"><span class="sub">${line}</span>${note?`<span class="st">${note}</span>`:''}</div></div></div></div>`}
+const ring22=`<div class="wid" style="width:156px;height:237px;text-align:center"><div style="display:flex;justify-content:center;margin-top:6px">${ring(108,34,52,{col:t.col,vs:18})}</div><div style="font-size:13px;margin-top:8px">${mark(t.mk,t.col)} Teams · vs pace</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px"><span class="sub">Weekly</span>${bar(t.u,t.g,6,t.col).replace('class="bar"','class="bar" style="flex:1;height:6px;--bc:'+t.col+'"')}${fig(t,13)}</div><div class="sub" style="margin-top:4px"><b class="r">${t.tint}</b></div><div class="st" style="margin-top:3px">as of 1:46 PM</div></div>`;
+const strip42=`<div class="wid" style="width:333px;height:150px;display:flex;justify-content:center;gap:12px;align-items:flex-start">${[t,AC.gpt,AC.gem].map(a=>`<div style="width:84px;text-align:center">${ring(64,a.r[0],a.r[1],{col:a.col,vs:a.r[1]-a.r[0]})}<div style="display:flex;align-items:center;gap:4px;margin-top:3px">${bar(a.u,a.g,5,a.col).replace('class="bar"','class="bar" style="flex:1;height:5px;--bc:'+a.col+'"')}${fig(a,11)}</div><div style="font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mark(a.mk,a.col,11)} ${a.n}</div><div class="st" style="opacity:.72">9:10 PM</div></div>`).join('')}</div>`;
+// §7 share
+const share=`<div class="card" style="width:360px;background:var(--bg);border-radius:0"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12.5px">Weekly</span>${F('91%',24,'var(--org)')}</div>${bar(91,83,10,'var(--org)')}<div style="display:flex;justify-content:space-between;font-size:10.5px;margin-top:4px"><span><b class="r">13h 26m ahead</b></span><span class="mut">Resets Thu 6:15 PM</span></div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px"><span style="font-size:12.5px">5h</span>${F('40%',17,'var(--claude)')}</div>${bar(40,55,10,'var(--claude)')}<div style="display:flex;justify-content:space-between;font-size:10.5px;margin-top:4px"><span>On track for ~73%</span><span class="mut">Resets 4:45 PM</span></div></div>`;
+// render pairs
+const pair=(id,items)=>document.getElementById(id).innerHTML=['lt','dk'].map(th=>`<div class="scope ${th}">${items.map(([c,h])=>`<figure><figcaption>${th==='lt'?'Light':'Dark'} · ${c}</figcaption>${h}</figure>`).join('')}</div>`).join('');
+pair('s1',[['Figures at 17 sp (Summary / tile), rings at 48 dp',chips]]);
+pair('s2',[['Tile, folded · ahead (Teams 52% used, mark 39%)',tile(t)],['Press on the ring: the 5h line shows the 5h caption',tile(t,{press:'ring'})],['Press on a bar figure: its caption underlined 3 s',tile(t,{press:'bar'})],['Line 1 by state',states]]);
+pair('s3',[['Seven states',summary(['gpt','gem','lab','work','atlas','prod','design'].map(k=>srow(AC[k])).join(''))],['Press on a figure (ChatGPT): caption underlined',summary(srow(AC.gpt,{press:1})+srow(AC.gem),'most room first')]]);
+pair('s4',[['Wedge words, names; Studio on Work goes below; Design takes a leader',map([AC.gpt,AC.gem,AC.lab,AC.work,AC.studio,AC.des2,AC.atlas],{foot:'Product has no reading, so it is not plotted'})]]);
+pair('s5',[['Collapsed · before',shade(nColB)],['Collapsed · after',shade(nCol)],['Expanded · after',shade(nExp)],['Duet collapsed',shade(duet)],['Duet expanded headers',shade(duetX)]]);
+pair('s6',[['Number 4×1 at 333 dp: weekday drops beside the stamp',num41(333,t,`<b class="r">${t.tint}</b> · 9:30 PM`,'as of 1:46 PM')],['Number 4×1 at 244 dp: duration+word; the stamp yields',num41(244,t,`<b class="r">${t.tint}</b>`,'')],['Ring 2×2 at 156×237 (tier T): duration+word',ring22],['Strip 4×2 at 333: figures 11 sp signed, no line',strip42]]);
+pair('s7',[['Weekly row (lead, 24 sp) and the 5h row',share]]);
+// §8 measurements
+(function(){const EM={d:.56,n:.30,w:.86,l:.54,U:.80,u:.62,' ':.25,'·':.29,':':.23,'%':.46,'+':.58,'−':.58};const cl=c=>/[0-9]/.test(c)?'d':/[iltrfj]/.test(c)?'n':/[mw]/.test(c)?'w':/[a-z]/.test(c)?'l':/[WMO]/.test(c)?'U':/[A-Z]/.test(c)?'u':c;
+ const em=(s,b)=>[...s].reduce((a,c)=>a+(EM[cl(c)]??.5),0)*(b?1.03:1);
+ const L=[['6d 23h behind','Wed','12:30 PM'],['23h 59m ahead','Wed','12:30 PM'],['On the mark','Wed','12:30 PM'],['23h 59m ahead','Wed','12:30'],['6d 23h behind','Wed','12:30']];
+ const S=[['Tile line 1',13.5,339],['Summary line 3',13,279],['Notif collapsed (328 skin)',12,184],['Notif expanded',12,141],['Duet expanded',12,159],['Number 4×1 @333 (beside stamp)',12,155],['Number 4×1 @244',12,132],['Ring 2×2 @156',12,132],['iOS Bars small',11.5,126],['iOS Strip medium',12.5,208],['iOS Overview T3 180',14.5,180],['Share slot',10.5,150]];
+ const fit=(l,sp,av)=>{const tint=l[0]==='On the mark'?em(l[0]):em(l[0],1);const full=(tint+em(' · ')+em(l[1]+' '+l[2]))*sp,nod=(tint+em(' · ')+em(l[2]))*sp,bare=tint*sp;return full<=av?`<span class="ok">${Math.round(full)} fits</span>`:nod<=av?`<span class="drop">${Math.round(full)} → −weekday ${Math.round(nod)}</span>`:`<span class="drop">${Math.round(full)} → −clock ${Math.round(bare)}</span>`+(bare>av?` <span class="bad">over</span>`:'')};
+ let h='<table class="t"><tr><th>Surface · sp/pt · available</th>'+L.map(l=>`<th>${l[0]} · ${l[1]} ${l[2]}</th>`).join('')+'</tr>';
+ S.forEach(s=>{h+=`<tr><td>${s[0]} · ${s[1]} · ${s[2]}</td>`+L.map(l=>`<td>${fit(l,s[1],s[2])}</td>`).join('')+'</tr>'});
+ document.getElementById('meas').innerHTML=h+'</table>'})();
+</script></body></html>
