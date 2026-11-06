@@ -359,7 +359,8 @@ units at most ("3d 4h", "2h 14m", "9m"). Source: `ui/Palette.kt:259-330`,
   the currency's exponent (0-6): "$9.57", "$1,234.00"; unknown code falls back to "CODE ". Billing
   figures read the same everywhere. A window and a credits percent can differ by one point on one
   screen; that is intended.
-- Rate: one decimal, "1.8%/h". Plan multiplier from a tier string: "default_5x" becomes "5x".
+- Rate: one decimal, "1.8%/h". Plan names: spec/core API-CONTRACT §11 ("Max", "Ultra", "Pro 100", "Ultra 5x"); no
+  multiplier is appended since 2026-11-02.
 - Dates: "Jul 16, 2026", "Aug 13, 8:30 PM", "23 Jul". Relative past: "just now", "12m ago", "2h 10m
   ago", "never".
 
@@ -410,11 +411,19 @@ chart note carries one generic line plus a separate "not enough history" line. S
 - **Duet**: the pinned notification carrying two accounts. **Strip**: a condition strip, or the
   widget that lists up to four accounts and "+N".
 - **Credits**: pay-as-you-go spend, a row with no clock and so no tick. **Plan tag**: the plan name
-  beside an account, with its multiplier ("Max 5x").
+  beside an account, by spec/core API-CONTRACT §11's names ("Max", "Ultra", "Pro 100"); no multiplier since 2026-11-02.
 
 ## 5. Icons
 
-- **Launcher: Pulse.** An ECG trace on a flat charcoal plate `#1F1B19`: terracotta `#D97757` P bump,
+- **Launcher (v2.0 branch): Shared pace** — CCRM-101 (Icon v3), designed by ChatGPT, chosen by Robin
+  2026-11-02; master `design/icon-v3/shared-pace.svg` (README there). Three clockwise arcs in an open C on
+  the charcoal plate `#1F1B19`, common centre (52, 50) in the master's 100-unit box: outer Claude `#D97757`
+  (its excess past the pace line in red `#FF5252`), middle ChatGPT `#19C39A` meeting the line, inner Gemini
+  `#8AB4F8` short of it; tracks `#524944`; a red pace line with a plate-coloured halo. Android: the mark scaled
+  0.81 into the 66-unit safe circle (`ic_launcher_foreground.xml`), monochrome with tracks at α 0.4 and a real
+  gap in the Claude arc at the line (no halo); About's `drawable/ic_launcher.xml` the same; iOS `icon-1024.png`
+  flattened on the plate. Replaces the Pulse below on that branch.
+- **Launcher (v1.9): Pulse.** An ECG trace on a flat charcoal plate `#1F1B19`: terracotta `#D97757` P bump,
   red `#FF5252` Q-R-S beat (red is only ever the beat), green `#10A37F` T bump, a dashed cream
   `#F3EBE3` ceiling, stroke 9, baseline y 64 (108 units), seven butt-capped dashes at pitch 12.5.
   Android ships the adaptive layers plus a monochrome silhouette; the iOS app icon is a single
@@ -451,3 +460,76 @@ chart note carries one generic line plus a separate "not enough history" line. S
    build story in user-facing copy.
 7. **Tracker IDs in the doc**: CLAUDE.md section 1 applies to every tracker ID, epic name
    in brackets on first use.
+
+## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6
+
+As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amends, which still describes v1.9.
+
+#### §4.2 Used / Left (the Mode table) — add a row and two notes
+| Vs pace | "−13%" / "+10%" / "0%" (minus U+2212) | `floor(elapsed − used + 1e-9)`; falls back to the Used figure when spent (≥ 99.5), unclocked or unread (core §6.1, mobile §5) |
+
+- iOS stores Vs pace as its own Bool `display.usageVsPace` (App Group); choosing it clears `display.usageLeft`, so a
+  v1.9 downgrade reads Used. `Display.mode`, `Display.setMode`, `ios/Shared/Display.swift`.
+- iOS: in Vs pace mode a headline figure carries a small "vs pace" where Left puts "left" (42% of the size, min
+  10 pt); bare figures (rings, Summary rows, Island compact) show the signed figure alone. **Companions always show
+  usage**, bare in Left mode ("5h 66%"), never a distance (`Display.usage`).
+
+#### §4.5 Pace phrase family — iOS column replaced (the ±3 dead-zone phrases are retired on iOS)
+| State | iOS open card | iOS folded line |
+|---|---|---|
+| Weekly, a band | "Slow down · ≈11%/day until Sun" (halves drop " until …") | "Slow down · ≈11%/day · resets Sun" |
+| Weekly over pace (Slow down, Nearly out) | whole line red | whole line red |
+| Weekly spent (≥ 99.5) | "Out until Sun 9:30 pm" red + "Opens again when the window resets" | "Out until Sun 9:30 pm" |
+| Allowance | "≈11%/day", "<1%/day", "40% left, 6h", "40% left, <1h" (under 30 min) | same |
+| 5h | no pace line; the "At this pace …" projection line stays; "Limit reached" at 100 | "Resets in 2h 20m · on track for ~69%" / "· runs out ~3:25 pm" (red) / "· Limit reached" |
+| Pace-mark caption (V1), under every in-app bar (5h, Weekly, model half, Summary row) | "39% pace mark · 13 over" / "· 19 under" / "· on it"; Left "61% pace mark · 13 over" / "· 10 to spare"; Vs pace "52% used · mark 39%"; 11.5 pt (10.5 in a half), first word bold; starts 5 pt right of the mark, else ends 5 pt left; none when spent, unclocked or unread | none |
+| Dashed room | under pace by ≥ 1 point, a 1 pt dashed outline (sub at 80%) from the fill to the mark, in-app bars only | |
+Source: `ios/Shared/CardContent.swift`, `ios/Shared/Charts.swift` (`UsageBar.showsRoom`, `PaceCaption`),
+`ios/Packages/CooldownCore/Sources/CooldownCore/PaceText.swift`. The signed Pace is never printed on iOS.
+
+#### Bars (§ "Height, app card" row) — append
+"Summary row bar 10 pt; one-line Summary row (6+ accounts) 7 pt, 50–110 pt wide."
+
+## Gemini and the spent-week gate on iOS — CCRM-55, CCRM-102
+
+As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
+
+- **§1.2 Providers table, Antigravity row:** replace "**Android only: iOS ships Claude and ChatGPT**" with "iOS: `GeminiMark`
+  (asset `ios/Shared/Assets.xcassets/GeminiMark.imageset`, the same spark as `ic_provider_gemini`, template-rendered,
+  drawn at 100% of the box); Gemini Blue `#4285F4` light / `#8AB4F8` dark (`ios/Shared/Theme.swift`)". The provider's
+  display name is "Gemini" everywhere on iOS.
+- **Theme colour, "Per provider" swatch (iOS):** three equal bands (Claude, ChatGPT, Gemini), was two (rev B §6 default).
+- **§4.5 / copy, new iOS rows:**
+  | Weekly spent, 5h shown | card: figure, bar, chart (no projection) and reset line at 45%, no caption; one full-ink line "Weekly limit reached — 5h can't be used until Thu 10:21 pm" (weekly reset, `dayClock`) | widgets/faces showing the 5h: dimmed to 45%, stamp "Weekly spent" at full opacity |
+  Source: `CardContent.weekGateNote`, `CardContent.weekSpentStamp`, `WindowCard.weekGate`.
+
+## The shape grammar — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
+
+Frozen 2026-11-02 at rev D of `design/2026-11-02-shape-grammar.html`. It supersedes the per-window shapes above
+wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar").
+
+- **Two shapes, one meaning each.** The 5-hour window is a hollow ring, always on the left; the 7-day windows are
+  bars, always on the right. No "5h" text anywhere; a ring's accessibility label is "5-hour window, 34 percent"
+  ("No 5-hour window" for the cross).
+- **The ring** (Android `ui/ShapeGrammar.kt GrammarRing`): centre-line radius 0.39 S; band 0.13 S, 0.10 S at 48 dp
+  and under (never under 3 dp); track ink 16% (22% greyed); fill the account colour with the §1.4 step, round cap
+  only under Round, at least 9% when non-zero; the red slice from the tick to the fill tip more than 3 points over;
+  the pace tick a radial line from R − band to R + band at max(1.5, S/32) dp, ink 90%; the dashed room under the mark
+  from the fill's visible end to the tick, in the account colour at 60%, line max(1, S/60), dashes max(1.6, S/26),
+  dropped under 28 dp; the open app tile's dotted projection arc. The figure is a real text: 0.25 S (0.29 S at 48 and
+  under; four characters 0.21 / 0.24 S), fitted to clear the band's inner edge by 1.5 dp; ink, or the severity colour
+  above 90. States: greyed (a spent week, CCRM-102 (Spent Week Gate)): the track only, the figure at 45%; not
+  applicable (a plan with no 5h): the track and a cross (arms 0.12 S, ink 45%), no figure; no reading: the track and
+  "—".
+- **Figures** (rev C §1c, rev B §1b): the system sans with tabular, lining digits (`tnum`, `lnum`; iOS
+  `.monospacedDigit()`), the "%" at 58% of the digits' size on the baseline.
+- **Usage end mark** (rev D §1e): Round (E0, the pre-v2.0 cap) · Line (E1, default) · Pace colour (E2b). Line and Pace
+  colour end the fill square at the usage and add a short line: on a bar 1.5 dp wide, 1.5 dp past each edge; on a
+  ring a radial line 0.35 of the band past each edge, max(1.3, S/40) dp; both over a 1 dp gap in the surface colour.
+  Line is the fill's colour; Pace colour is ink inside the ±5 on-pace band, green under, red over.
+- **Vs pace colours** (rev D §7b): figures are unsigned; green under the mark (dark #9CCC65, light #2E7D32), red over
+  it (#FF5252 / #C62828, the bar's red), plain ink at 0%; a fallback usage figure keeps its severity colour. Where a
+  caption exists it names the side: the notification's "UNDER PACE" / "OVER PACE" / "ON PACE".
+- **Status-bar glyphs** (Android, rev D §4): the 5h ring (unchanged geometry, §3.3); a red cross alone (arms 7 of 24
+  units, stroke 3.4) while out; the ring greyed (track 30%, arc 40%, no needle) while the week is spent; N3, the
+  Weekly as a 21 × 10-unit capsule with its tick in a cleared halo.

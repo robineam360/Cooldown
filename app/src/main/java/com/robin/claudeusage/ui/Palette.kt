@@ -266,6 +266,12 @@ object Fmt {
         return DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault()).format(instant)
     }
 
+    /** "Sun" — the weekly reset's day where the pace words leave room for nothing more (CCRM-97). */
+    fun weekday(instant: Instant?): String {
+        instant ?: return ""
+        return DateTimeFormatter.ofPattern("EEE").withZone(ZoneId.systemDefault()).format(instant)
+    }
+
     /**
      * "11:45 PM" or "23:45" — no day part. Only for the 5-hour window, which is
      * always a few hours out at most, so the day is never in question.
@@ -439,6 +445,13 @@ object Fmt {
      * caller falls back to the bare plan. The raw tier is stored as-is; this
      * runs at render time only.
      */
+    /**
+     * CCBG-62 (Plan Pill Case) and API-CONTRACT §11: the one plan name every surface prints, for the
+     * [provider]'s stored plan ("prolite" → "Pro 100", a 20x Claude Max → "Ultra"); never a multiplier.
+     */
+    fun planLabel(provider: com.robin.claudeusage.data.Provider, plan: String, tier: String? = null): String =
+        com.robin.claudeusage.data.PlanNames.display(provider, plan, tier)
+
     fun tierMultiplier(tier: String?): String? {
         tier ?: return null
         val part = tier.split(Regex("[^A-Za-z0-9]+")).firstOrNull {

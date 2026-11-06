@@ -108,7 +108,7 @@ is the session if present, else the weekly window.
 | Surface | Leads with |
 |---|---|
 | Pinned notification (each Duet half follows its own account), iOS Overview big number | `weekly` → Weekly · `fiveHour` → 5h · `auto` → 5h while core §6.2's `sessionBinding`, else Weekly |
-| Status-bar gauge (one window, no room for a companion) | as above, except `weekly` behaves as `auto` |
+| Status-bar gauge (one window, no room for a companion) | **superseded 2026-11-02** by the shape grammar (below): the Headline no longer picks the status-bar window |
 | A new widget's window choice (stored per widget afterwards) | `weekly` and `auto` → Weekly · `fiveHour` → 5h |
 | The app's default card order (a layout reordered in the sheet wins) | `fiveHour` → 5h card first · otherwise Weekly first |
 
@@ -159,13 +159,43 @@ spare · pace mark 40% · resets Fri" / "20 over · pace mark 40% · resets Fri"
 **Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
 value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
-The minus is U+2212. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
+**Since the shape grammar (rev D §7b, 2026-11-02) the figure is unsigned** — "10%", "20%", "0%" — and its colour
+says the side: green under the mark, red over it, plain ink on it; the fallback usage figure keeps its severity
+colour (fixture field `tone`). The notification's caption under the figure says "UNDER PACE" / "OVER PACE" /
+"ON PACE"; the app's figures carry no "vs pace" word. Cases in [`fixtures/display/cases.json`](fixtures/display/cases.json) → `vsPaceFigure`.
 
 **Spent week gate** (CCRM-102 (Spent Week Gate), approved 2026-11-02): while the Weekly window is spent
 (core §6.1), the 5h is shown disabled on every account — figure, bar and reset line at 45% opacity, no pace
 caption, no projection — with one full-opacity note "Weekly limit reached — 5h can't be used until <weekly
 reset, day and time>". The notification's expanded 5h panel row takes the note as its sub; a widget face
 showing the 5h reads "Weekly spent".
+
+**Shape grammar** (CCRM-103 (Hybrid Notification), frozen 2026-11-02 at rev D of
+`design/2026-11-02-shape-grammar.html`; its open-questions table is the decided list). The 5-hour window is
+always a hollow ring on the left, the 7-day windows always bars on the right; no "5h" label anywhere (screen
+readers say "5-hour window, 34 percent").
+
+- *Tap readout* (rev D §2b, C2–C5): a tap on a figure (a ring's figure included) swaps that figure's own line
+  — a bar's caption, the ring's 5h line, a Summary row's line 3 — for 3 s with core §6.3's `markTime` in
+  words: over the mark "Pace catches up Thu 5 Nov, 12:50 PM" (day, date and time in the Time format);
+  under it "1d 4h behind pace" (`Xd Yh`, under a day `Xh Ym`, under an hour `Ym`, every part rounded down);
+  within a point "On the pace mark". Spent, no reset clock or no reading: the tap does nothing. Same in
+  every Usage display mode. Not in the notification. Cases in
+  [`fixtures/display/cases.json`](fixtures/display/cases.json) → `markReadout`.
+- *Usage end mark* (rev D §1e, C1): global `usageEndMark`, Appearance › Usage end mark: `round` (E0, the
+  round cap) · `line` (E1, default: the fill ends square at the usage with a short line in the fill's
+  colour) · `pace` (E2b: that line green under the ±5 on-pace band, red over it, ink inside it). An
+  unknown or absent value reads as `line`; v1.9 does not read the key.
+- *Status-bar icon* (Android only; rev D §4, §4b, C6–C8): per account `statusIcon`, `ring` (default) or
+  `weeklyBar`, set in the account's ⋮ › Headline… sheet. With the ring: the 5h ring; a full 5h (truncated
+  100) is a red cross alone until it resets; a spent week (core §6.1) greys the ring, outranking the
+  cross. With the Weekly bar, or on a plan with no 5h whatever is stored: the Weekly as a small bar with its
+  pace tick; a full Weekly, or a full 5h on a plan that has one, is the red cross. In a Duet the icon
+  belongs to the account the "Status-bar icon shows" setting picks, and that account's choice draws it;
+  "Whichever is higher" compares the window each account's glyph stands for (the 5h for the ring, the Weekly
+  for the bar or a plan with no 5h).
+  Cases in [`fixtures/status-icon/cases.json`](fixtures/status-icon/cases.json). An absent or unknown value
+  reads as `ring`; v1.9 does not read the key.
 
 **Model limits** (CCRM-99 (Model Limits Toggle)): per account `showModelLimits`, default true. False hides
 the model-cap rows and chips on the 7-day card and the notification panel; nothing else changes.
@@ -190,8 +220,19 @@ off, launch opens the last account looked at, as today. The toggle is shown only
 4. **No reading**, in tab order.
 
 A spent week is never held. Below the list, the **Pace map** plots each account with a reading at (its week gone,
-its Weekly used); a spent account's dot carries an ×. Rows use the §5 band words and allowance, the pace-mark
+its Weekly used); a spent account's dot carries an ×. Rows draw no pace pip (Robin, 2026-11-02: the bar above
+already shows the pace); line 3 starts with the words. Rows use the §5 band words and allowance, the pace-mark
 caption and the account's figure in the Usage display mode; the Pace still ranks in every mode. No combined or
 summed figure (CCRM-6 (Multi-Account)), no Summary widget, no 5h on the map.
 
 Cases in [`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `ranking`, `tab`.
+
+**Summary order** (Robin, 2026-11-02): Appearance › **Summary order**, next to Open on the summary and shown with it
+(two or more accounts), global `summaryOrder`: **Your order** (`yours`, the default — Settings › Account order),
+**Most room first** (`room`, the ranking above), **Resets soonest** (`resets`: the Weekly that resets next on top, ties
+and accounts with no reset clock in your order, the clockless last), **Most used** (`used`: the highest Weekly % on
+top, ties in your order, unread accounts last in your order). The list's header names the choice in lower case:
+"your order", "most room first", "resets soonest", "most used". Every row keeps its group's words and styling (held,
+spent, no reading) whatever the order; the Pace map is unaffected; widgets that list accounts keep their own order.
+An absent or unknown value reads as `yours`; v1.9 does not read the key. Cases in
+[`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `order`.

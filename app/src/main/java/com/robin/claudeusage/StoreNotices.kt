@@ -339,3 +339,42 @@ internal fun SimulateDegradedCard(use24h: Boolean) {
         }
     }
 }
+
+/**
+ * CCRM-96 (Weekly First): the one-time "Weekly now leads" notice
+ * (`design/2026-11-02-vs-pace-display.html` §6, F1), above the cards on installs that had
+ * an account before v2.0. "Keep 5h first" sets every account's Headline to 5-hour; either
+ * button dismisses it for good. Copy is the wireframe's; the card is [StoreChangeCard]'s.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun WeeklyFirstNoticeCard(
+    onKeepWeekly: () -> Unit,
+    onKeep5hFirst: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp)) {
+            Text("Weekly now leads", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                "The weekly limit is the one every plan has, so it's now the big number " +
+                    "everywhere, with 5h beside it. Prefer 5h on top?",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(
+                Modifier.fillMaxWidth().padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                androidx.compose.material3.Button(onClick = onKeepWeekly) { Text("Keep Weekly") }
+                androidx.compose.material3.OutlinedButton(onClick = onKeep5hFirst) { Text("Keep 5h first") }
+            }
+        }
+    }
+}

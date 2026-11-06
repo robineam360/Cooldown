@@ -18,7 +18,10 @@ struct SettingsScreen: View {
     @State private var colouring: Account?
     @State private var clearing: Account?
     @AppStorage(Display.Key.timeFormat, store: Prefs.defaults) private var timeFormat = "system"
-    @AppStorage(Display.Key.usageLeft, store: Prefs.defaults) private var usageLeft = false
+    @State private var usageMode = Display.mode.rawValue
+    @State private var endMark = Display.usageEndMark
+    @State private var openOnSummary = Prefs.openOnSummary
+    @State private var summaryOrder = Prefs.summaryOrder
     @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
     @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
     @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
@@ -29,23 +32,26 @@ struct SettingsScreen: View {
             List {
                 Section("Accounts") {
                     ForEach(model.accounts) { account in
+                        // CCRM-96 (Weekly First) rev B §2: the row pushes the account's page (Plan, Accent colour,
+                        // Headline, Model limits, Details, Clear history); the touch-and-hold menu stays.
+                        NavigationLink { AccountPage(account: account) } label: {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
                             Text(account.label)
-                            PlanChip(plan: model.states[account.key]?.plan)
-                            if account.key == model.pinnedKey { Image(systemName: "pin.fill").font(.system(size: 11)).foregroundStyle(p.sub) }
+                            PlanChip(provider: account.provider, plan: model.states[account.key]?.plan,
+                                     tier: model.states[account.key]?.tier)
                             Spacer()
                             let needsSignIn = model.states[account.key]?.reauthNeeded == true
                             Text(needsSignIn ? "Sign in again" : "Signed in").font(.system(size: 14))
                                 .foregroundStyle(needsSignIn ? p.orange : p.sub)
                         }
+                        }
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { newName = account.label; renaming = account }
-                            Button("Pin to the top", systemImage: "pin") { model.pin(account.key) }
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             Button("Sign in again", systemImage: "arrow.triangle.2.circlepath") {
-                                sheet = account.provider == .claude ? .claudeSignIn : .chatGPTSignIn
+                                sheet = Sheet.signIn(for: account.provider)
                             }
                             Button("Clear usage history…", systemImage: "clock.arrow.circlepath") { clearing = account }
                             Button("Remove", systemImage: "trash", role: .destructive) { Task { await model.remove(account.key) } }
@@ -93,16 +99,53 @@ struct SettingsScreen: View {
                     }
                     choice("Time format", $timeFormat, [("System", "system"), ("12-hour", "12"), ("24-hour", "24")],
                            note: "Times shown like \(CardContent.dayClock(Self.sampleTime, Self.sampleTime, Display.use24h, .current)).")
-                    choice("Usage display", $usageLeft, [("Used", false), ("Left", true)],
+                    // CCRM-100 (Vs Pace Display): a third value. Stored as Display.setMode writes it (v1.9 then reads Used).
+                    choice("Usage display", Binding(get: { usageMode }, set: { usageMode = $0; Display.setMode(PaceText.Mode(rawValue: $0) ?? .used) }),
+                           [("Used", PaceText.Mode.used.rawValue), ("Left", PaceText.Mode.left.rawValue), ("Vs pace", PaceText.Mode.vsPace.rawValue)],
                            note: "How percentages read on every surface. Bars and colours always show what's spent. "
-                               + (usageLeft ? "Shows “53% left”: what remains of each window." : "Shows “47% used”: what each window has consumed."))
+                               + (usageMode == PaceText.Mode.left.rawValue ? "Shows “53% left”: what remains of each window."
+                                  : usageMode == PaceText.Mode.vsPace.rawValue ? "Shows “10%” — how far from the pace mark you are: green under it, red over it."
+                                  : "Shows “47% used”: what each window has consumed."))
+                    // CCRM-103 (Hybrid Notification) rev D §1e: how a bar or ring ends at the usage. Line by default.
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Usage end mark")
+                            Text("How a bar or ring ends at your usage").font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                        Picker("Usage end mark", selection: Binding(get: { endMark }, set: { mark in
+                            endMark = mark
+                            Display.setUsageEndMark(mark)
+                            model.displayChanged()
+                        })) {
+                            Text("Round").tag(UsageEndMark.round); Text("Line").tag(UsageEndMark.line)
+                            Text("Pace colour").tag(UsageEndMark.pace)
+                        }
+                        .pickerStyle(.segmented)
+                        EndMarkPreviews()
+                    }
+                    // CCRM-98 (Summary Tab) P2: shown only with two or more accounts, on by default.
+                    if SummaryRank.tabShown(accountCount: model.accounts.count) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Toggle("Open on the summary", isOn: Binding(get: { openOnSummary }, set: { openOnSummary = $0; Prefs.openOnSummary = $0 }))
+                            Text("With two or more accounts, start on the All tab. Off: start on the last account you looked at.")
+                                .font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                        // Robin, 2026-11-02: the All tab's order, beside Open on the summary and shown with it.
+                        Picker("Summary order", selection: Binding(get: { summaryOrder }, set: { order in
+                            summaryOrder = order
+                            Prefs.summaryOrder = order
+                            model.displayChanged()
+                        })) {
+                            ForEach(SummaryOrder.allCases, id: \.self) { Text($0.label).tag($0) }
+                        }
+                    }
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Density")
                         Picker("Density", selection: $density) {
                             Text("Comfortable").tag(Density.comfortable.rawValue); Text("Compact").tag(Density.compact.rawValue)
                         }
                         .pickerStyle(.segmented)
-                        Text("Comfortable opens the 5-hour chart and keeps the rest a tap away. Compact folds each card to a title, bar and one line — tap it to open the chart in place.")
+                        Text("Comfortable opens the first card's chart and keeps the rest a tap away. Compact folds each card to a title, bar and one line — tap it to open the chart in place.")
                             .font(.system(size: 13)).foregroundStyle(p.sub)
                     }
                     VStack(alignment: .leading, spacing: 8) {
@@ -128,7 +171,7 @@ struct SettingsScreen: View {
                 } header: { Text("Appearance") }
                 Section {
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
-                    Text("Unofficial. Not affiliated with Anthropic or OpenAI. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI.")
+                    Text("Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC.")
                         .font(.system(size: 13)).foregroundStyle(p.sub)
                 } header: { Text("About") } footer: {
                     Text("Touch and hold an account to rename, pin, sign in again or remove it. Drag to reorder: the order is the same everywhere.")
@@ -177,6 +220,123 @@ extension SettingsScreen {
     }
 }
 
+/// Appearance › Usage end mark's three previews (rev D §1e): each an over-pace ring (36 pt) and bar (54 × 8 pt), 64%
+/// against a 52% mark, drawn Round · Line · Pace colour.
+struct EndMarkPreviews: View {
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        let accent = Provider.claude.accent(scheme)
+        HStack(spacing: 18) {
+            ForEach(UsageEndMark.allCases, id: \.self) { mark in
+                HStack(spacing: 8) {
+                    GrammarRing(pct: 64, pace: 52, accent: accent, figure: Display.number(64, pace: 52),
+                                figureColour: Display.isDistance(64, pace: 52)
+                                    ? Display.figureColour(64, pace: 52, ink: p.ink, usage: p.ink, scheme) : nil,
+                                endMark: mark, surface: p.card)
+                        .frame(width: 36, height: 36)
+                    GrammarBar(pct: 64, pace: 52, accent: accent, height: 8, showsRoom: false, endMark: mark, surface: p.card)
+                        .frame(width: 54)
+                }
+            }
+        }
+        .padding(.top, 4)
+        .accessibilityHidden(true)
+    }
+}
+
+/// CCRM-96 (Weekly First) rev B §2 and CCRM-99 (Model Limits Toggle): one account's page — Plan, Accent colour,
+/// Headline (Weekly · 5-hour · Auto; greyed with its reason on a plan with no 5h), Show model limits (only while the
+/// plan reports one), Details and Clear usage history.
+struct AccountPage: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+    let account: Account
+    @State private var headline = Headline.default
+    @State private var modelLimits = true
+    @State private var colouring = false
+    @State private var details = false
+    @State private var clearing = false
+
+    var body: some View {
+        let usage = model.usage(account.key)
+        let hasSession = usage?.session != nil || usage == nil
+        let caps = usage?.modelCaps ?? []
+        List {
+            Section("Account") {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Plan")
+                    // API-CONTRACT §11's name, as the pill shows it.
+                    Text(model.states[account.key]?.plan.map { PlanNames.display(account.provider, $0, tier: model.states[account.key]?.tier) } ?? "—")
+                        .font(.system(size: 15)).foregroundStyle(p.sub)
+                }
+                Button { colouring = true } label: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Accent colour…").foregroundStyle(p.ink)
+                        Circle().fill(account.accent(scheme)).frame(width: 12, height: 12)
+                    }
+                }
+            }
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Lead with")
+                    Text("What widgets, the lock screen, the Live Activity, the iPad sidebar and the card order show first.")
+                        .font(.system(size: 13)).foregroundStyle(p.sub)
+                    Picker("Lead with", selection: Binding(get: { hasSession ? headline : .weekly }, set: { new in
+                        headline = new
+                        Prefs.setHeadline(account.key, new)
+                        model.displayChanged()
+                    })) {
+                        Text("Weekly").tag(Headline.weekly); Text("5-hour").tag(Headline.fiveHour); Text("Auto").tag(Headline.auto)
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(!hasSession)
+                }
+            } header: { Text("Headline") } footer: {
+                Text(hasSession ? "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets."
+                     : "This plan has no 5-hour window, so Weekly is always the headline.")
+            }
+            if !caps.isEmpty {
+                let names = caps.map { $0.modelName.replacingOccurrences(of: "Claude ", with: "") }
+                Section("Model limits") {
+                    Toggle(isOn: Binding(get: { modelLimits }, set: { on in
+                        modelLimits = on
+                        Prefs.setShowModelLimits(account.key, on)
+                        model.displayChanged()
+                    })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Show model limits")
+                            Text(modelLimits
+                                 ? caps.map { "\($0.modelName.replacingOccurrences(of: "Claude ", with: "")) · \(Int($0.window.percent ?? 0))% this week" }.joined(separator: ", ")
+                                 : "Hidden: \(names.joined(separator: ", ")). The limit still applies to that model; Cooldown just stops drawing it.")
+                                .font(.system(size: 13)).foregroundStyle(p.sub)
+                        }
+                    }
+                }
+            }
+            Section("Usage") {
+                Button("Details…") { details = true }.foregroundStyle(p.ink)
+                Button("Clear usage history…") { clearing = true }.foregroundStyle(p.red)
+            }
+        }
+        .navigationTitle(account.label)
+        .onAppear {
+            headline = Prefs.headline(account.key)
+            modelLimits = Prefs.showModelLimits(account.key)
+        }
+        .sheet(isPresented: $colouring) { AccentSheet(account: account) }
+        .sheet(isPresented: $details) { AccountDetailsSheet(account: account) }
+        .alert("Clear usage history?", isPresented: $clearing) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear", role: .destructive) { model.clearHistory(account.key) }
+        } message: {
+            Text("This clears, for “\(account.label)” only:\n•  8 days of trend history\n•  a year of session and weekly history\n\nCurrent readings and the sign-in stay.")
+        }
+    }
+}
+
 /// The colour swatches shared by Theme colour (led by "Per provider") and an account's Accent colour (led by its
 /// provider's own colour). `nil` is the leading choice.
 struct ColourGrid: View {
@@ -202,9 +362,12 @@ struct ColourGrid: View {
                 } else {
                     switch first {
                     case .perProvider:
-                        Circle().fill(AngularGradient(colors: [Provider.claude.accent(scheme), Provider.claude.accent(scheme),
-                                                              Provider.chatgpt.accent(scheme), Provider.chatgpt.accent(scheme)],
-                                                      center: .center))
+                        // Three equal bands since CCRM-55 (rev B §6 default).
+                        Circle().fill(AngularGradient(stops: [
+                            .init(color: Provider.claude.accent(scheme), location: 0), .init(color: Provider.claude.accent(scheme), location: 1 / 3),
+                            .init(color: Provider.chatgpt.accent(scheme), location: 1 / 3), .init(color: Provider.chatgpt.accent(scheme), location: 2 / 3),
+                            .init(color: Provider.antigravity.accent(scheme), location: 2 / 3), .init(color: Provider.antigravity.accent(scheme), location: 1),
+                        ], center: .center))
                     case .provider(let provider):
                         Circle().fill(provider.accent(scheme))
                     }
@@ -259,7 +422,9 @@ struct AccountDetailsSheet: View {
         let state = model.states[account.key]
         NavigationStack {
             List {
-                if let plan = state?.plan { LabeledContent("Plan", value: plan) }
+                if let plan = state?.plan {
+                    LabeledContent("Plan", value: PlanNames.display(account.provider, plan, tier: state?.tier))
+                }
                 if let email = state?.email { LabeledContent("Email", value: email) }
                 LabeledContent("Last checked", value: stamp(state?.lastAttemptAtMs ?? 0))
                 LabeledContent("Last successful check", value: stamp(state?.lastSuccessAtMs ?? 0))

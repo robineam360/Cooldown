@@ -286,6 +286,9 @@ public struct APIClient: Sendable {
         return try await perform(request)
     }
 
+    /// For the Antigravity calls in Antigravity.swift.
+    func send(_ request: URLRequest) async throws -> HTTPResult { try await perform(request) }
+
     private func perform(_ request: URLRequest) async throws -> HTTPResult {
         let (data, response) = try await session.data(for: request)
         let code = (response as? HTTPURLResponse)?.statusCode ?? 0

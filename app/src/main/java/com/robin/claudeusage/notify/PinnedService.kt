@@ -202,6 +202,15 @@ class PinnedService : Service() {
         }
     }
 
+    /**
+     * CCRM-103 (Hybrid Notification): a Duet half's ring follows the screen's configuration
+     * ([Duet.halfDp]), so folding or unfolding re-posts the notification for the new shade.
+     */
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        scope.launch { Surfaces.refresh(applicationContext, UsageCache(applicationContext)) }
+    }
+
     override fun onDestroy() {
         pollJob?.cancel()
         running = false

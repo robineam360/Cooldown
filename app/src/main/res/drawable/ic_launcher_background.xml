@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CCRM-60 (Dual Identity): the adaptive icon's background layer. Pulse, variant S2
-     (Tall) on the charcoal plate - chosen 2026-09-10, round 10 of
-     design/app-icon-v2-wireframe.html. The plate is one flat 108 x 108 path filled
-     charcoal #1F1B19: no gradient, no radial, nothing else in this layer. The
-     round-7 two-colour ground (terracotta over green) and the CCRM-56 (Provider
-     Identity) slate radial both retire here; the two accounts are now carried by
-     the trace's own colour roles in ic_launcher_foreground.xml. -->
+<!-- CCRM-101 (Icon v3): the adaptive icon's background layer - the plate of "Shared pace", chosen by
+     Robin 2026-11-02, designed by ChatGPT; master design/icon-v3/shared-pace.svg. One flat 108 x 108 path
+     filled #1F1B19: no gradient, nothing else in this layer. (Replaces the Pulse plate of CCRM-60, Dual
+     Identity; the colour is unchanged.) -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

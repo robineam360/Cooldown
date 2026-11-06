@@ -3,18 +3,15 @@ package com.robin.claudeusage.notify
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** CCBG-45 (Single Panel Wording): "5h" and "Weekly" on the one-account notification too. */
+/**
+ * CCBG-45 (Single Panel Wording): "Weekly", never "7-day", on the one-account notification
+ * too. Since CCRM-103 (Hybrid Notification) the header always names the Weekly — the 5h is
+ * the ring, which carries no "5h" text — and the panel no longer has a Weekly or 5h row.
+ */
 class SinglePanelWordingTest {
 
     @Test
-    fun `the headline window is 5h or Weekly, never the long names`() {
-        assertEquals("5h", PinnedNotification.windowName(headlineWeekly = false))
-        assertEquals("Weekly", PinnedNotification.windowName(headlineWeekly = true))
-    }
-
-    @Test
-    fun `the weekly row is bare with one account and prefixed with two`() {
-        assertEquals("Weekly", PinnedNotification.weeklyLabel(null))
-        assertEquals("Work · Weekly", PinnedNotification.weeklyLabel("Work"))
+    fun `the header names the Weekly, never the long name`() {
+        assertEquals("Work · Weekly", LeadLines.headerTitle("Work"))
     }
 }

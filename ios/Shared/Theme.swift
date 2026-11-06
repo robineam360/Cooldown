@@ -37,11 +37,26 @@ extension Provider {
         switch self {
         case .claude: scheme == .dark ? Color(hex: 0xE59980) : Color(hex: 0xD97757)
         case .chatgpt: scheme == .dark ? Color(hex: 0x19C39A) : Color(hex: 0x10A37F)
+        // CCRM-55 (Antigravity Account): Gemini Blue (foundations §1.2).
+        case .antigravity: scheme == .dark ? Color(hex: 0x8AB4F8) : Color(hex: 0x4285F4)
         }
     }
 
-    var markAsset: String { self == .claude ? "ClaudeMark" : "ChatGPTMark" }
-    var displayName: String { self == .claude ? "Claude" : "ChatGPT" }
+    var markAsset: String {
+        switch self {
+        case .claude: "ClaudeMark"
+        case .chatgpt: "ChatGPTMark"
+        case .antigravity: "GeminiMark"
+        }
+    }
+    /// The provider is "Gemini" everywhere (CCRM-55 rev B); "Antigravity" only in the trademark line.
+    var displayName: String {
+        switch self {
+        case .claude: "Claude"
+        case .chatgpt: "ChatGPT"
+        case .antigravity: "Gemini"
+        }
+    }
 }
 
 /// The provider's own mark, tinted (CCRM-56: logos, not dots).
@@ -56,9 +71,9 @@ struct ProviderMark: View {
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
-            // The Claude starburst runs edge to edge in its square while the ChatGPT knot fills ~70% of its own, so
-            // Claude is drawn at 82% to match apparent size (approved 24 Oct; Android's drawable does the same).
-            .scaleEffect(provider == .claude ? 0.82 : 1)
+            // The optical sizing lives in the assets themselves since 2026-11-02, as in Android's drawables: Claude at
+            // 82% of its square, the ChatGPT blossom re-centred and scaled to ~93% (CCBG-23 (Mark Size Mismatch)),
+            // Gemini at its own 93% — so every use, the native tab icons included, reads one size.
             .frame(width: size, height: size)
             .foregroundStyle(color ?? provider.accent(scheme))
             .accessibilityHidden(true)

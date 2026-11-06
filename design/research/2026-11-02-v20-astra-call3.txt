@@ -1,0 +1,7 @@
+[model-mesh] astra -> gpt-6-astra (resolved from the Codex catalogue, tier astra)
+VERDICT: accept
+1. prior C1-1 [blocking] — fixed at Step 8 — No change required.
+2. prior C1-2 [concerns] — fixed at Tests and gates, Step 3 downgrade test — No change required.
+3. prior C1-3 [concerns] — fixed at Step 7, starting-state log and Always after restoration — No change required.
+COVERAGE: changed text in full
+[model-mesh] tier=astra model=gpt-6-astra effort=high tokens=17,242 transcript=/var/folders/_h/p57yw3_54cd5brs6bb858bch0000gq/T/model-mesh.XXXXXX.PQcAuuLBbN/transcript.log

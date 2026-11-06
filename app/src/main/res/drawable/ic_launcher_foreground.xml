@@ -1,72 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CCRM-60 (Dual Identity): the adaptive icon's foreground layer - the whole Pulse
-     trace. Round 10, variant S2 (Tall), chosen 2026-09-10; geometry per
-     design/app-icon-v2-wireframe.html symbol #r10s2, mirrored coordinate for
-     coordinate. The charcoal plate lives in ic_launcher_background.xml.
-
-     Same B1 (ECG) trace and the same x geometry as round 9 - span x 12 -> 96, so
-     every mask cuts the flat runs and the outer ceiling dashes - with the vertical
-     numbers and the stroke raised: stroke 9, baseline y 64, dashed cream ceiling
-     y 42. P-QRS-T: terracotta P bump peaking y 50; red Q dip to y 72, R apex y 20,
-     S dip to y 74; green T bump peaking y 50. Red is only ever the beat.
-     The P and T bumps are one unit wider each side (P x 27-41, T x 71-85) because at
-     14 units tall in the old 12-unit width their flanks were steeper than the beat
-     wanted; the slope goes 1.67 -> 2.0. Q-R-S stays x 44 -> 66.
-
-     The apex cap reaches y 15.5, and the visible square's top edge is y 18, so 2.5
-     units of the tip cap are cut by every mask - that is S2's accepted cost, not a
-     defect. The zero-crop alternative was apex y 22.5 and was not chosen.
-
-     Two Android traps the wireframe's implementer note calls out, and how they are
-     handled here:
-       1. VectorDrawable has no stroke dashing, so the ceiling is seven short
-          subpaths at the SVG's dash pitch - dash 7, gap 5.5, pitch 12.5 - starting at
-          x 12: 12, 24.5, 37, 49.5, 62, 74.5, 87, the last ending at x 94. Butt caps,
-          NOT round: round caps would add 3.9 units to every dash and close the gaps.
-       2. There is no clip-path either, so the colour split is three explicit stroked
-          subpaths rather than one path drawn three times and clipped. They meet at
-          shared points - terracotta ends at (44,64) where red begins, red ends at
-          (66,64) where green begins - so the round caps coincide and the joins are
-          seamless. Red is drawn last, as in the wireframe, so its caps sit on top. -->
+<!-- CCRM-101 (Icon v3): the adaptive icon's foreground layer - "Shared pace", chosen by Robin
+     2026-11-02, designed by ChatGPT; master design/icon-v3/shared-pace.svg. It replaces the Pulse (CCRM-60,
+     Dual Identity). The plate lives in ic_launcher_background.xml (#1F1B19, unchanged).
+     Geometry: design/icon-v3/shared-pace.svg, the #mark group, in the SVG's 100-unit space. All three arcs
+     share one centre, (52, 50), solved from the path data (radii 33 / 24.5 / 16); the mark's bounding box
+     (stroke half-widths included) is x 15.95-81.05, y 13.95-86.05, centred at (48.50, 50.00), which is NOT the
+     arcs' centre because the C is open on the right. A <group> scales the mark by 0.81 and translates it so
+     that bounding-box centre lands on (54, 54); the farthest point of the mark, round caps included, then
+     sits 32.9 units from (54, 54), inside the 33-unit radius of the 66 dp safe circle.
+     Three clockwise arcs form an open C: Claude (terracotta, outer), ChatGPT (green, middle), Gemini (blue,
+     inner), over three dim tracks. The red radial line is even pace; the Claude arc turns red past it, and the
+     plate-coloured halo line under the red one keeps the marker visible beside the red arc. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- even-pace ceiling: cream, y 42 across x 12 -> 94, as seven butt-capped dashes -->
-    <path
-        android:pathData="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7"
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#F3EBE3"
-        android:strokeWidth="3.9"
-        android:strokeAlpha="0.72"
-        android:strokeLineCap="butt"
-        android:strokeLineJoin="round" />
-    <!-- P wave, Claude account: flat run from the layer edge, bump peaking y 50,
-         back to baseline and on to the Q dip start at (44,64) -->
-    <path
-        android:pathData="M12,64 L27,64 L34,50 L41,64 L44,64"
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#D97757"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <!-- T wave, ChatGPT account: from the S dip end at (66,64), bump peaking y 50,
-         then flat off the layer edge at x 96 -->
-    <path
-        android:pathData="M66,64 L71,64 L78,50 L85,64 L96,64"
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#10A37F"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <!-- QRS, the run past pace: Q dip to y 72, R apex y 20 (22 units clear above the
-         ceiling), S dip to y 74. Drawn last so it owns both joins. -->
-    <path
-        android:pathData="M44,64 L48,72 L54,20 L60,74 L66,64"
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#FF5252"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+    <group
+        android:translateX="14.7131"
+        android:translateY="13.4999"
+        android:scaleX="0.81"
+        android:scaleY="0.81">
+        <!-- track -->
+        <path
+            android:pathData="M 76.1347,72.5059 A 33,33 0 1,1 78.0044,29.6832"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#524944"
+            android:strokeWidth="2.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- track -->
+        <path
+            android:pathData="M 69.9182,66.7090 A 24.5,24.5 0 1,1 71.3063,34.9163"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#524944"
+            android:strokeWidth="2.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- track -->
+        <path
+            android:pathData="M 63.7017,60.9120 A 16,16 0 1,1 64.6082,40.1494"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#524944"
+            android:strokeWidth="2.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- Claude arc, terracotta, up to the pace line -->
+        <path
+            android:pathData="M 76.1347,72.5059 A 33,33 0 1,1 69.9731,22.3239"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#D97757"
+            android:strokeWidth="6.1"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- over-pace segment of the Claude arc, red -->
+        <path
+            android:pathData="M 69.9731,22.3239 A 33,33 0 0,1 78.0044,29.6832"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FF5252"
+            android:strokeWidth="6.1"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- ChatGPT arc, meets the line -->
+        <path
+            android:pathData="M 69.9182,66.7090 A 24.5,24.5 0 1,1 65.3437,29.4526"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#19C39A"
+            android:strokeWidth="6.1"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- Gemini arc, stops short of the line -->
+        <path
+            android:pathData="M 63.7017,60.9120 A 16,16 0 1,1 50.0501,34.1193"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#8AB4F8"
+            android:strokeWidth="6.1"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- plate-coloured halo under the pace line -->
+        <path
+            android:pathData="M 58.5357,39.9360 L 72.1516,18.9692"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1F1B19"
+            android:strokeWidth="6"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- pace line, red -->
+        <path
+            android:pathData="M 58.5357,39.9360 L 72.1516,18.9692"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FF5252"
+            android:strokeWidth="3.3"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>

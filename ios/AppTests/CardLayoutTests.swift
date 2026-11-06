@@ -59,4 +59,69 @@ struct CardLayoutTests {
         #expect(ChartSize.medium.height(width: 360) == 120)
         #expect(ChartSize.large.height(width: 360) == 180 && ChartSize.large.height(width: 900) == 300)
     }
+
+    /// CCRM-103 (Hybrid Notification): the layout sheet shows the tile as one "Usage" row (Robin, 2026-11-02).
+    @Test func theTileIsOneUsageRow() {
+        #expect(CardID.session.title == "Usage" && CardID.weekly.title == "Usage" && CardID.credits.title == "Usage credits")
+        let all: Set<CardID> = [.session, .weekly, .credits]
+        // The row stands for the window card the tile is drawn under.
+        #expect(LayoutSheet.usageID(.standard) == .session)
+        #expect(LayoutSheet.sheetCards(.standard, all) == [.session, .credits])
+        let legacy = CardLayout(order: [.session, .weekly, .credits], hidden: [.session], more: [])
+        #expect(LayoutSheet.usageID(legacy) == .weekly)
+        // Hiding or folding the row moves both window ids together.
+        let hidden = LayoutSheet.both(.weekly, .standard) { $0.hiding($1) }
+        #expect(hidden.hidden.isSuperset(of: [.session, .weekly]) && hidden.main == [.credits])
+        let shown = LayoutSheet.both(.weekly, legacy) { $0.showing($1) }
+        #expect(shown.hidden.isEmpty)
+        let folded = LayoutSheet.both(.session, .standard) { $0.folding($1) }
+        #expect(folded.folded == [.session, .weekly])
+    }
+
+    /// Moving the Usage row carries its other window id right behind it (6ee08e6 judge F3).
+    @Test func movingTheUsageRowKeepsTheWindowsTogether() {
+        let all: Set<CardID> = [.session, .weekly, .credits]
+        // Rows: [Usage (session), credits]; move credits to the top.
+        let up = LayoutSheet.moved(.standard, all, false, IndexSet(integer: 1), 0)
+        #expect(up.order == [.credits, .session, .weekly] && up.reordered == true)
+        let back = LayoutSheet.moved(up, all, false, IndexSet(integer: 0), 2)
+        #expect(back.order == [.session, .weekly, .credits])
+    }
+
+    /// Robin's layout (2026-11-02, superseding CCBG-67 (iPad Sidebar Tap)), kept by the native tabs ("Native
+    /// everywhere"): the selected tab is the Summary by default and on "All", else only the tapped account; with one
+    /// account (no Summary) that account.
+    @MainActor @Test func theTabsShowTheSummaryOrOneAccount() {
+        let keys = ["claude", "personal"]
+        #expect(MainTabs.shownKey(selectedKey: nil, accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: AppModel.summaryKey, accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: "claude", accountKeys: keys, summaryShown: true) == "claude")
+        #expect(MainTabs.shownKey(selectedKey: "personal", accountKeys: keys, summaryShown: true) == "personal")
+        #expect(MainTabs.shownKey(selectedKey: "gone", accountKeys: keys, summaryShown: true) == nil)
+        #expect(MainTabs.shownKey(selectedKey: nil, accountKeys: ["claude"], summaryShown: false) == "claude")
+        #expect(MainTabs.shownKey(selectedKey: AppModel.summaryKey, accountKeys: ["claude"], summaryShown: false) == "claude")
+    }
+
+    /// CCBG-72 (Live Activity Stale Mode): a Usage display change makes a new content state, which iOS redraws.
+    @Test func aDisplayChangeIsANewLiveActivityState() {
+        // The display passed explicitly, so the test never touches the shared setting other suites change.
+        let vs = CooldownActivityAttributes.ContentState(rows: [], ended: nil, display: "vsPace·line")
+        let used = CooldownActivityAttributes.ContentState(rows: [], ended: nil, display: "used·line")
+        #expect(vs != used)
+        // A state written before CCBG-72 (no "display" key) still decodes.
+        let old = try? JSONDecoder().decode(CooldownActivityAttributes.ContentState.self, from: Data(#"{"rows":[]}"#.utf8))
+        #expect(old != nil && old?.display == nil && old?.rows.isEmpty == true)
+    }
+
+    /// Robin's iPad layout: removing the account on screen, or an unknown selection, falls back to the All tab where it
+    /// shows (2+ accounts), else the first account.
+    @MainActor @Test func aLostSelectionFallsBackToTheSummary() {
+        let three = [Account(key: "a", label: "A", provider: .claude), Account(key: "b", label: "B", provider: .chatgpt),
+                     Account(key: "c", label: "C", provider: .claude)]
+        #expect(AppModel.validSelection("gone", accounts: three) == AppModel.summaryKey)
+        #expect(AppModel.validSelection(nil, accounts: three) == AppModel.summaryKey)
+        #expect(AppModel.validSelection("b", accounts: three) == "b")
+        #expect(AppModel.validSelection("gone", accounts: [three[0]]) == "a")
+        #expect(AppModel.validSelection(AppModel.summaryKey, accounts: [three[0]]) == "a")
+    }
 }

@@ -1,0 +1,151 @@
+{
+  "_meta": {
+    "note": "The status-bar glyph (BEHAVIOR-MOBILE section 5, CCRM-103 (Hybrid Notification), shape grammar rev D section 4, 4b, C6-C8; Android only). choice is the account's Status-bar icon: ring (default) | weeklyBar. hasSession false = a plan with no 5-hour window. Full = the percent truncated reaches 100; spent = core 6.1's usedPct >= 99.5. expected: ring | greyedRing | cross | weeklyBar. Spec-first, written 2026-11-02."
+  },
+  "cases": [
+    {
+      "name": "ring: normal",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 52,
+      "expected": "ring",
+      "why": "the 5h ring by default, whichever window leads"
+    },
+    {
+      "name": "ring: binding stays the ring",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 93,
+      "weeklyPct": 52,
+      "expected": "ring",
+      "why": "the ring turns loud; the shape never swaps"
+    },
+    {
+      "name": "ring: 5h full is the cross",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 100,
+      "weeklyPct": 52,
+      "expected": "cross",
+      "why": "out right now (C7), until the 5h resets"
+    },
+    {
+      "name": "ring: 99.9 truncates below full",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 99.9,
+      "weeklyPct": 52,
+      "expected": "ring",
+      "why": "the ring's own cross test is a truncated 100"
+    },
+    {
+      "name": "ring: week spent greys the ring",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 100,
+      "expected": "greyedRing",
+      "why": "CCRM-102 (Spent Week Gate): the 5h cannot be used"
+    },
+    {
+      "name": "ring: week spent at 99.5",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 99.5,
+      "expected": "greyedRing",
+      "why": "core 6.1's spent line"
+    },
+    {
+      "name": "ring: week spent outranks the 5h cross",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": 100,
+      "weeklyPct": 100,
+      "expected": "greyedRing",
+      "why": "C7"
+    },
+    {
+      "name": "ring: no 5h reading yet",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": null,
+      "weeklyPct": 52,
+      "expected": "ring",
+      "why": "an empty ring, as before"
+    },
+    {
+      "name": "ring: no reading at all",
+      "choice": "ring",
+      "hasSession": true,
+      "sessionPct": null,
+      "weeklyPct": null,
+      "expected": "ring",
+      "why": "an empty ring"
+    },
+    {
+      "name": "bar chosen: normal",
+      "choice": "weeklyBar",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 52,
+      "expected": "weeklyBar",
+      "why": "rev D 4b"
+    },
+    {
+      "name": "bar chosen: 5h full is the cross",
+      "choice": "weeklyBar",
+      "hasSession": true,
+      "sessionPct": 100,
+      "weeklyPct": 52,
+      "expected": "cross",
+      "why": "C8: the cross means out right now whichever icon"
+    },
+    {
+      "name": "bar chosen: weekly full is the cross",
+      "choice": "weeklyBar",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 100,
+      "expected": "cross",
+      "why": "Weekly full"
+    },
+    {
+      "name": "bar chosen: weekly 99.6 stays a bar",
+      "choice": "weeklyBar",
+      "hasSession": true,
+      "sessionPct": 34,
+      "weeklyPct": 99.6,
+      "expected": "weeklyBar",
+      "why": "a truncated 100 makes the cross"
+    },
+    {
+      "name": "no 5h: the Weekly bar",
+      "choice": "ring",
+      "hasSession": false,
+      "sessionPct": null,
+      "weeklyPct": 50,
+      "expected": "weeklyBar",
+      "why": "N3, whatever the stored choice"
+    },
+    {
+      "name": "no 5h: weekly full is the cross",
+      "choice": "ring",
+      "hasSession": false,
+      "sessionPct": null,
+      "weeklyPct": 100,
+      "expected": "cross",
+      "why": "rev D 4: full is the same red cross"
+    },
+    {
+      "name": "no 5h, bar stored: the Weekly bar",
+      "choice": "weeklyBar",
+      "hasSession": false,
+      "sessionPct": null,
+      "weeklyPct": 50,
+      "expected": "weeklyBar",
+      "why": ""
+    }
+  ]
+}

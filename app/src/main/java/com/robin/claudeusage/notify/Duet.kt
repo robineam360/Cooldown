@@ -37,14 +37,72 @@ object Duet {
      * layout's weight ellipsizes the label against the width it really has. Never below
      * [MIN_LABEL_DP].
      */
-    fun labelClampDp(dots: Int = 0): Int =
-        (HALF_DP - MARK_DP - MARK_GAP_DP - dots * DOT_DP).toInt().coerceAtLeast(MIN_LABEL_DP)
+    fun labelClampDp(dots: Int = 0, ring: HalfRing = HalfRing.NONE): Int =
+        (HALF_DP - ringTakesDp(ring) - MARK_DP - MARK_GAP_DP - dots * DOT_DP).toInt().coerceAtLeast(MIN_LABEL_DP)
 
     private const val HALF_DP = 156f
     private const val MARK_DP = 14f
     private const val MARK_GAP_DP = 4f
     private const val DOT_DP = 11f
     const val MIN_LABEL_DP = 24
+
+    /**
+     * CCRM-103 (Hybrid Notification), shape grammar rev D §3 (D1–D3): the 5h ring a collapsed
+     * half carries. [FULL] is the 36 dp ring with its figure, at the half's left, 8 dp from the
+     * column; [BARE] is the 14 dp ring with no digits at the end of the label line, for a half
+     * under [RING_MIN_HALF_DP] (36 + 8 + a 40 dp bar + 8 + a 57 dp figure = 149); [NONE] is an
+     * account with no 5h (B1: today's half exactly).
+     */
+    enum class HalfRing { NONE, FULL, BARE }
+
+    const val RING_DP = 36f
+    const val RING_GAP_DP = 8f
+    const val BARE_RING_DP = 14f
+    const val BARE_RING_GAP_DP = 4f
+    const val RING_MIN_HALF_DP = 150f
+
+    /** The ring a half of [halfDp] carries; [hasFiveHour] false is B1's no ring at all. */
+    fun halfRing(hasFiveHour: Boolean, halfDp: Float): HalfRing = when {
+        !hasFiveHour -> HalfRing.NONE
+        halfDp >= RING_MIN_HALF_DP -> HalfRing.FULL
+        else -> HalfRing.BARE
+    }
+
+    /** The width a half's ring takes from its label line, gap included. */
+    fun ringTakesDp(ring: HalfRing): Float = when (ring) {
+        HalfRing.NONE -> 0f
+        HalfRing.FULL -> RING_DP + RING_GAP_DP
+        HalfRing.BARE -> BARE_RING_DP + BARE_RING_GAP_DP
+    }
+
+    /** The collapsed figure: 28 sp beside the 36 dp ring (D1), today's 30 sp otherwise. */
+    fun figureSp(ring: HalfRing): Float = if (ring == HalfRing.FULL) 28f else 30f
+
+    /**
+     * The nominal width a collapsed half's bar is drawn at: about 47 dp beside the 36 dp ring
+     * (156 − 36 − 8 − 8 − a 57 dp figure, D1), else the half's own width as before.
+     */
+    fun barDp(ring: HalfRing): Float = if (ring == HalfRing.FULL) RING_BAR_DP else HALF_DP
+
+    private const val RING_BAR_DP = 47f
+
+    /**
+     * The width the layout is drawn for. RemoteViews never learns a half's real width (it
+     * runs from about 101 dp on the Fold 7's inner shade to 156 on a phone), so the ring
+     * choice is made against this nominal half — see [halfRing].
+     */
+    const val NOMINAL_HALF_DP = HALF_DP
+
+    /**
+     * The half's width as far as a notification can know it. CCBG-64 (Inner Duet Ring): the
+     * Step 7 pass measured the Fold 7 inner shade's halves at about 180 dp — wider than the
+     * cover's, not the 101 dp the 6d build assumed — and Robin chose the cover's 36 dp ring
+     * there too (2026-11-02). Every shade the app has met holds the 36 dp ring, so the bare
+     * 14 dp ring (D3) stays for a half [halfRing] is told is narrower; the service still
+     * re-posts on a configuration change.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun halfDp(smallestScreenWidthDp: Int): Float = NOMINAL_HALF_DP
 
     /**
      * How many condition strips the expanded panel may draw.

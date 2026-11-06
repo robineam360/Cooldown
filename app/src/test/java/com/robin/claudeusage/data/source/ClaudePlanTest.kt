@@ -46,7 +46,9 @@ class ClaudePlanTest {
     @Test
     fun `pro and max by organisation type, then by the account flags`() {
         assertEquals("Pro", ClaudePlan.parse(profile("claude_pro", null, "default_claude_ai", pro = true))!!.plan)
-        assertEquals("Max", ClaudePlan.parse(profile("claude_max", null, "default_claude_max_20x", max = true))!!.plan)
+        // API-CONTRACT §11: since Anthropic's 2026-10-30 rename a 20x Max is "Ultra", a 5x one "Max".
+        assertEquals("Ultra", ClaudePlan.parse(profile("claude_max", null, "default_claude_max_20x", max = true))!!.plan)
+        assertEquals("Max", ClaudePlan.parse(profile("claude_max", null, "default_claude_max_5x", max = true))!!.plan)
         assertEquals("Max", ClaudePlan.label(null, null, hasMax = true, hasPro = true))
         assertEquals("Pro", ClaudePlan.label(null, null, hasMax = false, hasPro = true))
         assertNull(ClaudePlan.label(null, null, hasMax = false, hasPro = false))

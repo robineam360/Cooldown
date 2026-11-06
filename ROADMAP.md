@@ -385,7 +385,18 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   honest User-Agent), same honesty. Ships with the v1.5 docs.
 
 ### CCRM-55 · Antigravity Account — Gemini windows from a phone, code-paste sign-in
-- **Status:** Planned (reopened 2026-11-02, Robin's call) · large · after the v2.0 arc
+- **Status:** **Building in v2.0** (Robin, 2026-11-02: "let's build the Gemini/Antigravity option as well in
+  this build"; RUNBOOK-v2.0 Steps 6a–6c) · **wireframe rev B approved 2026-11-02**
+  (`design/2026-11-02-antigravity-account.html`) · spec/core in (API-CONTRACT §10, BEHAVIOR-SPEC §1.1,
+  `fixtures/antigravity/`). **Decided 2026-11-02 (Robin):** the open questions below — (1) the Claude + GPT
+  pool is hidden until used, then a second card pair "Claude + GPT in Antigravity"; (2) only Cooldown's
+  reset copy, never Google's `description`; (3) no new disclosure box: the existing "Unofficial. Not
+  affiliated with …" lines add Google, the README carries the ToS detail; (4) **Android and iOS** in the
+  same release. Rev A review: the provider is named **"Gemini"** (not "Gemini (Antigravity)"); every v2.0
+  rule applies to Gemini unchanged; tiny readings truncate as everywhere ("0%"); the pool-only reply notice
+  as drawn (H); theme colours unchanged (Gemini Blue through "Per provider", option A); a spent week greys
+  the 5h on every account (split out as CCRM-102 (Spent Week Gate)); a new app icon designed with ChatGPT
+  (CCRM-101 (Icon v3)). Earlier text below, kept: Planned (reopened 2026-11-02) · after the v2.0 arc
   (RUNBOOK-v2.0.md) · **wireframe first** (working agreement 2). Robin accepted the ToS posture:
   Cooldown presents as Google's Antigravity CLI (its User-Agent token and its public OAuth
   client), and Google can change or close either at any time. The app says so as plainly as the
@@ -1670,7 +1681,10 @@ it carries the umbrella CCRM-7 (iOS).
   to Robin before anything else is built.
 
 ### CCRM-94 · iOS App — the app, widgets, lock-screen widgets, control, reset alerts, Live Activity
-- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the
+- **Status:** **Built 2026-10-24; device check on the iPad mostly passed** (open: a reset alert on "Always", and the **2026-11-02 (Robin):** the iPad drops the pinned account — the sidebar (landscape) or the tabs (portrait) open on
+  "All accounts" and show one account at a time; built on the v2.0 branch (RUNBOOK-v2.0 Step 7 log). **2026-11-02 (Robin, "Native everywhere"):** the main screen runs on the system's tabs — one SwiftUI `TabView`
+  (`.sidebarAdaptable`): the Liquid Glass tab bar at the bottom on iPhone, at the top on iPad portrait, the native
+  sidebar on iPad landscape; All first, then each account.
   lock-screen widget picker not reopening for a second widget) · CI builds the app and runs its app-hosted tests on
   a simulator from 0a6b6fb · **wireframes approved 2026-10-23** (rev B, `design/2026-10-23-ios-wireframes.html`: tabs on
   iPhone, Live Activity Duet with Weekly, Large widget, iPad pinned + selected) · **In progress:** `CooldownCore`
@@ -1743,7 +1757,7 @@ Logic lands in `spec/core/` first (formula, bands, the Auto rule, fixtures), the
 desktop repo picks it up with its pinned core. Every visible change waits for an approved wireframe (§2).
 
 ### CCRM-96 · Weekly First — the weekly window heads every surface, 5h is the companion
-- **Status:** Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
+- **Status:** **Building** (RUNBOOK-v2.0; Android logic and prefs in, Step 3; notification, status-bar gauge and widget defaults in, Step 4; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 · **Android wireframe rev A approved 2026-11-02**
   (`design/2026-11-02-weekly-first-pace.html`; the 5h card's line is the §3 projection, "on track
   for ~69%") · iOS faces to be drawn as rev B before iOS is built (Robin).
 - **What:** a per-account **Headline** setting — **Weekly** (default) · **5-hour** · **Auto** — read by
@@ -1763,7 +1777,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   above pace, narrow widths) are approved, both apps match them, and the Fold 7 and iPad passes are clean.
 
 ### CCRM-97 · Pace Number — the ModelMesh Pace on weekly-length windows, worded as a band and a daily allowance
-- **Status:** Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
+- **Status:** **Building** (RUNBOOK-v2.0; Android logic in, Step 3; notification pace words, Step 4; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 · spec and fixtures in (BEHAVIOR-SPEC §6.1–6.2) · Android
   wireframe rev A approved 2026-11-02; **iOS rev B approved 2026-11-02**
   (`design/2026-11-02-ios-weekly-first.html`, with its listed interpretations) · **pace-mark caption V1
   chosen 2026-11-02** (`design/2026-11-02-pace-line-label.html`): under the app and Summary bars, mode-aware
@@ -1786,7 +1800,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   per the approved wireframes, and no surface still shows the gap verdict.
 
 ### CCRM-98 · Summary Tab — every account's week on one page, and which one to use next
-- **Status:** Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe
+- **Status:** **Building** (RUNBOOK-v2.0; Android ranking and prefs in, Step 3; iOS built, Step 6; Android app built, Step 5) · Decided 2026-11-02 (Robin, with the CCRM-96 (Weekly First) rev A approval) · wireframe **2026-11-02 (Robin):** Appearance › Summary order — Your order (default), Most room first (the ranking), Resets **2026-11-02 (Robin):** the pace pip leaves line 3 (the bar already shows the pace); the words start the line.
+  soonest, Most used — on both platforms, built on the v2.0 branch; the header names the choice.
   `design/2026-11-02-summary-tab.html` **approved 2026-11-02 with the Use next card dropped** (rev B:
   the ranked list's top row is the one to use next; nothing else marks it). Pulls the "Use next" ranking that
   CCRM-6 (Multi-Account) had deferred into this arc, at Robin's request.
@@ -1798,14 +1813,14 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   eligible and sorts after, with its reason. (3) A **Pace map**: one plot of every account against
   its own week (across = share of its week gone, up = % used, the even-pace diagonal), each account
   its accent dot with this week's trail.
-- **What:** the ranked Weekly list (bar with neutral pace tick, a pace pip, band ·
+- **What:** the ranked Weekly list (bar with neutral pace tick, band ·
   allowance · reset day, the 5h companion), the Pace map; one-line rows and numbered dots from six
   accounts; two columns on the Fold inner screen and iPad. Never a summed or combined figure.
 - **Spec:** BEHAVIOR-MOBILE gains the ranking and the toggle, with `fixtures/summary/cases.json`.
 - **Done when:** the wireframe is approved, both apps match it, and the ranking fixtures pass.
 
 ### CCRM-99 · Model Limits Toggle — hide an account's per-model weekly limits
-- **Status:** Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
+- **Status:** **Building** (RUNBOOK-v2.0; Android pref in, Step 3; notification panel honours it, Step 4; iOS built, Step 6; Android app built, Step 5) · Asked by Robin 2026-11-02 · wireframe rev A `design/2026-11-02-model-limits-toggle.html`
   **approved 2026-11-02**.
 - **What:** a per-account "Show model limits" switch (default on) on the account's page under
   Headline, listing what it hides ("Fable · 30% this week"). Off removes the model rows and the
@@ -1815,7 +1830,7 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Spec:** BEHAVIOR-MOBILE gains `showModelLimits` per account; nothing in the core.
 
 ### CCRM-100 · Vs Pace Display — the big figure shows the distance from the pace mark
-- **Status:** Asked by Robin 2026-11-02 · option A chosen · wireframe
+- **Status:** **Building** (RUNBOOK-v2.0; Android figure, caption and pref in, Step 3; notification and widget figures, Step 4; iOS built, Step 6; Android app built, Step 5) · Asked by Robin 2026-11-02 · option A chosen · wireframe
   `design/2026-11-02-vs-pace-display.html` **approved 2026-11-02**.
 - **What:** a third value on CCRM-22 (Used or Left)'s global "Usage display": **Used · Left · Vs pace**.
   Vs pace shows `elapsed − used` in points, signed and floored so room is never overstated: "+10%" is
@@ -1825,6 +1840,66 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   back to the usage figure. The Huge number's caption reads "VS PACE" where Left mode reads "LEFT".
 - **Why:** the bar already shows usage and the mark; the figure is free to show the one thing the bar
   makes you work out. The sign always agrees with the Pace band (Pace is this gap scaled by what's left).
+- **Revision asked by Robin, 2026-11-02 (pending the shape-grammar wireframe):** "avoid the plus or minus and
+  show it in green or red … A green percentage means the usage is behind the baseline by that percent — I have
+  that space … Red means it's going beyond … Zero is the sweet spot." So the Vs pace figure becomes the
+  unsigned distance coloured green under the mark, red over it, neutral at 0%; the fallbacks stay. This drops
+  the approved "figure keeps the bar's colour" rule for Vs pace mode only. Core §6.3's signed number is
+  unchanged (presentation only). Drawn in `design/2026-11-02-shape-grammar.html`; built after approval.
+
+### CCRM-101 · Icon v3 — a launcher icon about the weekly limit, with all three providers' colours
+- **Status:** **Built on the v2.0 branch** — Robin chose ChatGPT's "Shared pace" (`design/icon-v3/`, 2026-11-02), now the Android adaptive + monochrome icon, About and the iOS 1024; device check at Step 7. Earlier: asked by Robin 2026-11-02 (CCRM-55 (Antigravity Account) rev A review: "Can we ask ChatGPT to
+  design a better app icon … with focus on hitting the weekly usage limit and theme of Claude, ChatGPT and
+  Gemini being there"). Concepts requested from ChatGPT (Astra, through model-mesh's fenced transport); to be
+  drawn as a wireframe with the current Pulse beside them, then Robin picks. **Wireframe first**; not in v2.0
+  unless Robin says so — the Pulse ships until a concept is approved.
+- **Constraints:** no provider logos (trademarks); professional, official colours (Claude #D97757, ChatGPT
+  #10A37F/#19C39A, Gemini #4285F4/#8AB4F8); legible at 48 px, in Android's monochrome themed icon and under
+  every mask; one art for Android and iOS. Rejected before: anything that reads as a flag, fun mascots.
+
+- **Round 2 (Robin, 2026-11-02):** neither column concept; he asked for **at least ten ring-based designs**,
+  the ring filled with all three colours somehow, echoing the notification's ring — named ideas: three
+  concentric rings against one common pace line (one over pace, one on it, one well under), and a three-way
+  split nodding to the providers' logos and usage. Formal and professional. Concepts from ChatGPT (Astra) and a
+  Fable expert, drawn in `design/2026-11-02-icon-v3.html` rev B. Logo echoes stay abstract (trademarks).
+
+### CCRM-103 · Hybrid Notification — Weekly as the bar, the 5h as a small ring
+- **Status:** Idea from Robin 2026-11-02 ("a bar for 7-day weekly usage and also a small ring for 5-hour usage,
+  just like how we show in the menu bar. That'll be cool to look at in the notification shade") · **wireframe
+  first** (`design/2026-11-02-hybrid-notification.html`) · **in v2.0** (Robin, 2026-11-02, on rev A). Placement
+  not final: Robin liked H3 (an 18 dp ring on the title row) and asked to see H4 first — a bigger hollow ring on
+  the left with the 5h % inside it and its pace line, the right side all Weekly (rev B). The desktop session
+  was asked, in Robin's words, to follow the same standard and hold its build until this is final.
+  **Frozen 2026-11-02 (Robin, rev D of `design/2026-11-02-shape-grammar.html`)** — it grew into the shape
+  grammar for every mobile surface: the 5h is always a hollow ring on the left, the 7-day windows always bars
+  on the right, with no "5h" label; tabular sans figures with a small "%"; the dashed room on rings ≥ 28 dp;
+  usage end mark E1 by default with an Appearance setting (Round / Line / Pace colour); tap a figure to see
+  when the pace mark meets the usage (the figure's own line swaps for 3 s, core §6.3 `markTime`, not in the
+  notification); a plan with no 5h keeps a greyed ring with a cross on the tile, Summary and iPad sidebar;
+  the status bar shows the 5h ring (a red cross while out, greyed while the week is spent), or the Weekly bar
+  for a plan with no 5h or an account that picks it in its ⋮ › Headline… sheet (Android only). **Building**,
+  RUNBOOK-v2.0 Step 6d: Android data and tests done (`markTime` and its readout words, the `usageEndMark`
+  and per-account `statusIcon` prefs, the status-glyph rule; spec/mobile §5 and fixtures); Android
+  surfaces built (account tile, Summary rows, notification H4 and Duet, status-bar glyphs, the four widget
+  faces, Appearance › Usage end mark, the Status-bar icon group, tabular figures, Vs pace unsigned and
+  coloured); iOS built (CooldownCore `MarkTime`, readout and `UsageEndMark` on the same fixtures; the account
+  tile, Summary rows, iPad sidebar, Settings row, home widgets, lock screen, Live Activity and Island). Device
+  check at Step 7.
+- **What:** the pinned notification keeps Weekly as its bar and figure and draws the 5h companion as a small
+  ring gauge (the status-bar ring's geometry) instead of the "5h 34%" text; the Duet and the iOS Live Activity
+  take the same idea if it fits. The desktop's hybrid menu-bar gauge is the reference.
+
+### CCRM-102 · Spent Week Gate — a spent week greys the 5h on every account
+- **Status:** Decided and approved 2026-11-02 (Robin, CCRM-55 (Antigravity Account) rev B, §3b of
+  `design/2026-11-02-antigravity-account.html`) · **built** on the v2.0 branch: Android notification and widgets (5c6b2ef), Android app cards (26c1075), iOS (886d4dd, e11b87f); device check at Step 7.
+- **What:** for Claude, ChatGPT and Gemini alike, while the Weekly window is spent (core §6.1, used ≥ 99.5)
+  the 5h window is shown **disabled, not hidden and not zeroed**: its figure, bar and reset line at 45%
+  opacity, without the pace caption or the "on track" projection, plus one full-opacity note "Weekly limit
+  reached — 5h can't be used until Sat 4:51 pm". The notification's expanded panel 5h row takes the same note
+  as its sub; a widget showing the 5h says "Weekly spent". Matches core §6.2, where a spent week outranks the
+  session.
+- **Why:** a fresh 5h beside a spent week reads as "I can use it now" — the Pro confusion CCRM-55 exists to
+  explain, and it happens on every provider.
 
 ## Next — small, high value, ready to build
 

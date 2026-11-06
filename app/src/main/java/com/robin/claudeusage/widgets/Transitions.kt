@@ -15,7 +15,8 @@ import com.robin.claudeusage.data.UsageData
  *  (d) `fetchedAt + 24 h` (one ms past it, since `Fmt.widgetClock` adds the day only
  *      beyond 24 h) — the "as of" stamp gains its weekday (R2), so a face last fed
  *      yesterday never reads as today. Every placed account, whatever its bucket.
- * A Ring counts both of its account's windows (rev H's companion ring).
+ * A Ring, a Number and every Strip account count both windows (the shape grammar draws
+ * the 5h ring and the Weekly bar together); a Countdown only its own.
  * Null when nothing is placed, or nothing placed has anything left to change into.
  * `Surfaces.arm` sets or cancels the one alarm from it; Step 4 wires that.
  */
@@ -43,17 +44,17 @@ object Transitions {
         val candidates = mutableListOf<Long>()
         for (p in placed) {
             val shown: List<Pair<Snapshot, FaceWindow>> = when (p.face) {
-                // Every account, each on its own headline window (CCRM-82 (Accounts Strip)).
-                Face.STRIP -> snapshots.take(FaceStates.STRIP_MAX).map { it to FaceWindow.SESSION }
+                // Every account, each a 5h ring over its Weekly bar (CCRM-103 (Hybrid
+                // Notification)'s shape grammar).
+                Face.STRIP -> snapshots.take(FaceStates.STRIP_MAX).flatMap { listOf(it to FaceWindow.SESSION, it to FaceWindow.WEEKLY) }
                 else -> {
                     val key = p.accountKey?.takeIf { it.isNotEmpty() }
                     val s = if (key == null) snapshots.first()
                     else snapshots.firstOrNull { it.key == key }
                     // A removed account (S9) has nothing left to change into.
-                    // Rev H (CCBG-44 (Widget Fill)): a Ring may draw the other window as its
-                    // companion ring — on a frame this does not know — so it counts both;
-                    // one spare inexact wake-up is safe under R4.
-                    val windows = if (p.face == Face.RING) listOf(p.window, other(p.window)) else listOf(p.window)
+                    // The shape grammar: a Ring draws the 5h with the Weekly bar under it, a
+                    // Number the 5h ring beside the Weekly, so both count both windows.
+                    val windows = if (p.face == Face.COUNTDOWN) listOf(p.window) else listOf(p.window, other(p.window))
                     s?.let { snap -> windows.map { snap to it } }.orEmpty()
                 }
             }

@@ -1,5 +1,8 @@
 package com.robin.claudeusage
 
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.navigationBars
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -13,6 +16,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import com.robin.claudeusage.ui.appDark
+import com.robin.claudeusage.ui.GrammarRingBox
+import com.robin.claudeusage.ui.LocalUsageEndMark
+import com.robin.claudeusage.ui.UsageEndMark
+import com.robin.claudeusage.data.StatusIconChoice
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +35,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.tappableElement
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -44,6 +56,9 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
+import com.robin.claudeusage.data.Headline
+import com.robin.claudeusage.data.SummaryRank
+import com.robin.claudeusage.ui.PaceText
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -93,6 +108,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -128,6 +144,7 @@ import com.robin.claudeusage.data.QuickLinks
 import com.robin.claudeusage.data.SignInExpiry
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
+import com.robin.claudeusage.data.source.AntigravitySource
 import com.robin.claudeusage.diag.AppLog
 import com.robin.claudeusage.ui.AccountStatusLine
 import com.robin.claudeusage.ui.ChartOrientation
@@ -189,9 +206,15 @@ fun SettingsScreen(
     /** CCRM-29 (Display Mode): "system" / "12" / "24", hoisted likewise. */
     timeFormat: String,
     onTimeFormat: (String) -> Unit,
-    /** CCRM-22 (Used or Left) — hoisted like use24h so the main screen recomposes. */
-    usageLeft: Boolean,
-    onUsageLeft: (Boolean) -> Unit,
+    /**
+     * CCRM-22 (Used or Left), grown by CCRM-100 (Vs Pace Display) to three values —
+     * hoisted like use24h so the main screen recomposes.
+     */
+    usageMode: PaceText.Mode,
+    onUsageMode: (PaceText.Mode) -> Unit,
+    /** CCRM-103 (Hybrid Notification): Appearance › Usage end mark, hoisted like [usageMode]. */
+    usageEndMark: UsageEndMark,
+    onUsageEndMark: (UsageEndMark) -> Unit,
     /** CCRM-23 (Reset Display) — same hoisting for which reset form leads. */
     resetClock: Boolean,
     onResetClock: (Boolean) -> Unit,
@@ -389,7 +412,8 @@ fun SettingsScreen(
             }
             ToggleRow(
                 title = "Always-on usage notification",
-                subtitle = "Silent and ongoing, with a status-bar ring. Nothing else " +
+                // CCBG-63 (Status Ring Wording), Robin 2026-11-02: "icon", since rev D's can be the Weekly bar.
+                subtitle = "Silent and ongoing, with a status-bar icon. Nothing else " +
                     "posts on its own except the reset pings below.",
                 checked = pinned,
             ) {
@@ -511,7 +535,7 @@ fun SettingsScreen(
                     )
                 }
                 RowDivider()
-                Text("Status-bar ring shows", style = MaterialTheme.typography.bodyLarge)
+                Text("Status-bar icon shows", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.height(4.dp))
                 if (second == null) {
                     Text(
@@ -549,8 +573,8 @@ fun SettingsScreen(
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "A clean ring for the 5h window, in that account's own colour, " +
-                            "so the colour tells you which account you are looking at.",
+                        "The 5h ring, or the Weekly bar where the account has no 5h or picks it, " +
+                            "in that account's own colour.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -667,12 +691,14 @@ fun SettingsScreen(
         )
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for ((value, text) in listOf("used" to "Used", "left" to "Left")) {
+            for ((value, text) in listOf(
+                PaceText.Mode.USED to "Used", PaceText.Mode.LEFT to "Left", PaceText.Mode.VS_PACE to "Vs pace",
+            )) {
                 FilterChip(
-                    selected = if (value == "left") usageLeft else !usageLeft,
+                    selected = usageMode == value,
                     onClick = {
-                        onUsageLeft(value == "left")
-                        cacheSettings.setUsageDisplay(value)
+                        onUsageMode(value)
+                        cacheSettings.setUsageDisplay(value.key)
                         // Re-post so the change lands without waiting for a poll.
                         com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
                     },
@@ -682,12 +708,43 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            if (usageLeft) "Shows \"53% left\" — what remains of each window."
-            else "Shows \"47% used\" — what each window has consumed.",
+            when (usageMode) {
+                PaceText.Mode.LEFT -> "Shows \"53% left\" — what remains of each window."
+                // CCRM-100 (Vs Pace Display), wireframe §1 A1.
+                // Unsigned since the shape grammar (rev D §7b): the colour says the side.
+                PaceText.Mode.VS_PACE ->
+                    "Shows \"10%\" — how far from the pace mark you are: green under it, red over it."
+                PaceText.Mode.USED -> "Shows \"47% used\" — what each window has consumed."
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         RowDivider()
+        UsageEndMarkGroup(usageEndMark) {
+            onUsageEndMark(it)
+            cacheSettings.setUsageEndMark(it)
+            com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
+        }
+        RowDivider()
+        // CCRM-98 (Summary Tab), wireframe P2: shown only with two or more accounts, on by
+        // default. The All tab is always there with 2+ accounts; this decides where the
+        // app opens.
+        if (SummaryRank.tabShown(repo.configuredProfiles().size)) {
+            var openOnSummary by remember { mutableStateOf(cacheSettings.openOnSummary()) }
+            ToggleRow(
+                title = "Open on the summary",
+                subtitle = "With two or more accounts, start on the All tab. Off: start on " +
+                    "the last account you looked at.",
+                checked = openOnSummary,
+            ) {
+                openOnSummary = it
+                cacheSettings.setOpenOnSummary(it)
+            }
+            RowDivider()
+            // Robin, 2026-11-02: the All tab's order, beside Open on the summary and shown with it.
+            SummaryOrderGroup(cacheSettings)
+            RowDivider()
+        }
         // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
         // Comfortable stays the default — Compact is opt-in, so nobody's screen changes
         // under them. No Surfaces.refresh: these three are in-app only.
@@ -1640,16 +1697,8 @@ private fun TokenCard(
                     }
                     if (hasToken && plan != null) {
                         Spacer(Modifier.width(6.dp))
-                        // CCRM-57 (Provider Plumbing): tier is Anthropic's `default_5x`
-                        // grammar. No multiplier is invented for OpenAI or Google, so a
-                        // non-Claude account passes null and renders the bare plan.
-                        // CCRM-64 (Claude Plan Tag): the multiplier is only meaningful on
-                        // Max ("Max 5x"); a Team premium seat also reports a `_5x` tier,
-                        // and "Team Premium 5x" would read as a third plan.
-                        PlanChip(
-                            plan,
-                            tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") },
-                        )
+                        // API-CONTRACT §11 (2026-11-02): no multipliers; a 20x Claude tier names the plan "Ultra".
+                        PlanChip(profile.provider, plan, tier)
                     }
                 }
                 if (busy) {
@@ -1661,6 +1710,15 @@ private fun TokenCard(
                 // history; Remove destroys it. Side by side, that is a fat-finger disaster.
                 var menuOpen by remember { mutableStateOf(false) }
                 var showAccentPicker by remember { mutableStateOf(false) }
+                var showHeadlineSheet by remember { mutableStateOf(false) }
+                if (showHeadlineSheet) {
+                    AccountHeadlineSheet(
+                        repo = repo,
+                        profile = profile,
+                        label = label,
+                        onDismiss = { showHeadlineSheet = false },
+                    )
+                }
                 Box {
                     IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(28.dp)) {
                         Icon(
@@ -1694,6 +1752,15 @@ private fun TokenCard(
                             text = { Text("Accent colour…") },
                             onClick = { menuOpen = false; showAccentPicker = true },
                         )
+                        // CCRM-96 (Weekly First) and CCRM-99 (Model Limits Toggle): the
+                        // account's Headline and model-limits groups. Android has no
+                        // per-account page, so they open as a sheet from here.
+                        if (hasToken) {
+                            DropdownMenuItem(
+                                text = { Text("Headline…") },
+                                onClick = { menuOpen = false; showHeadlineSheet = true },
+                            )
+                        }
                         // Hidden on the last remaining card: the registry always keeps one
                         // account, which is what makes the zero-configured fallback work.
                         if (canRemove) {
@@ -1721,8 +1788,21 @@ private fun TokenCard(
 
             // CCBG-34 (Account Display Name): the login under the name, in the app only.
             val email = remember(stateKey) { repo.cacheSettings().email(profile) }
-            if (!awaitingCode && hasToken && AccountEmail.shownUnder(label, email)) {
+            // The Gemini paste step has no email line either (rev B F4; judge b).
+            val geminiPending = remember(stateKey) {
+                profile.provider == Provider.ANTIGRAVITY && repo.hasPendingAntigravitySignIn(profile)
+            }
+            if (!awaitingCode && !geminiPending && hasToken && AccountEmail.shownUnder(label, email)) {
                 AccountEmailLine(email!!, Modifier.padding(start = 26.dp))
+            }
+
+            // CCRM-55 (Antigravity Account): Gemini's card body, own paste sign-in.
+            if (profile.provider == Provider.ANTIGRAVITY) {
+                GeminiAccountBody(
+                    repo, profile, label,
+                    autoStart = autoStartSignIn,
+                ) { stateKey++ }
+                return@Column
             }
 
             // The sign-in completion step takes over the card while active, for
@@ -2282,6 +2362,226 @@ private fun ChatGptAccountBody(
 }
 
 /**
+ * CCRM-55 (Antigravity Account): a Gemini account's body under the shared header.
+ * Sign-in is the Claude-style paste flow with Google's copy: a Custom Tab (never a
+ * WebView — Google refuses them), then the `4/…` code pasted back. design
+ * 2026-11-02-antigravity-account.html rev B §2 F2–F7. Nothing here logs a code.
+ */
+@Composable
+private fun GeminiAccountBody(
+    repo: UsageRepository,
+    profile: Profile,
+    label: String,
+    autoStart: Boolean = false,
+    onStateChanged: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val clipboard = LocalClipboardManager.current
+    val openWithPicker = rememberBrowserOpener(label, profile.provider)
+    var tick by remember { mutableIntStateOf(0) }
+    val storeHealthy = CredentialStoreOpener.state.collectAsState().value.healthy
+    LaunchedEffect(storeHealthy) { tick++ }
+    val hasToken = remember(tick) { repo.hasCredentials(profile) }
+    val snapshot = remember(tick) { repo.snapshot(profile) }
+    var busy by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
+    var awaiting by remember { mutableStateOf(repo.hasPendingAntigravitySignIn(profile)) }
+    var input by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var authUrl by remember { mutableStateOf<String?>(null) }
+
+    fun bump() {
+        tick++
+        onStateChanged()
+    }
+
+    fun begin() {
+        message = null
+        error = null
+        input = ""
+        // No secret in this build: Google would accept the sign-in but the exchange can't
+        // succeed, so never start one (judge e).
+        if (!AntigravitySource.available) return
+        awaiting = true
+        val url = repo.startAntigravitySignIn(profile)
+        authUrl = url
+        onStateChanged() // the card hides its email line while the paste step shows
+        openWithPicker(url)
+    }
+
+    fun finish() {
+        scope.launch {
+            busy = true
+            message = null
+            error = null
+            val result = repo.completeAntigravitySignIn(profile, input)
+            if (result.message == "OK") {
+                Polling.schedulePeriodic(context, repo.cacheSettings().pollIntervalMinutes())
+                message = GeminiSignIn.successLine(label)
+                awaiting = false
+                input = ""
+            } else {
+                error = result.message
+            }
+            busy = false
+            bump()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (autoStart && !hasToken && !awaiting) begin()
+    }
+
+    if (awaiting) {
+        Spacer(Modifier.height(10.dp))
+        Text(GeminiSignIn.PASTE_TITLE, style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(6.dp))
+        Text(
+            GeminiSignIn.PASTE_BODY,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(10.dp))
+        OutlinedTextField(
+            value = input,
+            onValueChange = { input = it; error = null },
+            label = { Text(GeminiSignIn.PASTE_LABEL) },
+            isError = error != null,
+            supportingText = { Text(error ?: GeminiSignIn.PASTE_HELPER) },
+            singleLine = true,
+            enabled = !busy,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                TextButton(
+                    onClick = { clipboard.getText()?.text?.let { input = it.trim(); error = null } },
+                    enabled = !busy,
+                ) { Text("Paste") }
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+        SignInActionRow {
+            Button(
+                enabled = GeminiSignIn.continueEnabled(input, busy, error != null),
+                onClick = { finish() },
+            ) { Text("Continue") }
+            // Rev B F5/F6: under an error the second button is "Start again" in place of "Reopen page".
+            if (error != null) {
+                TextButton(enabled = !busy, onClick = { begin() }) { Text(GeminiSignIn.START_AGAIN) }
+            } else {
+                TextButton(enabled = !busy, onClick = { authUrl?.let { openWithPicker(it) } ?: begin() }) {
+                    Text("Reopen page")
+                }
+            }
+            TextButton(enabled = !busy, onClick = {
+                repo.cancelAntigravitySignIn()
+                awaiting = false
+                input = ""
+                error = null
+                message = null
+                onStateChanged()
+            }) { Text("Cancel") }
+        }
+        return
+    }
+
+    Spacer(Modifier.height(8.dp))
+    if (!hasToken) {
+        Text(
+            "Not signed in",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(12.dp))
+        if (AntigravitySource.available) {
+            Button(enabled = !busy, onClick = { begin() }) { Text(GeminiSignIn.NOT_SIGNED_IN_BUTTON) }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                GeminiSignIn.NOT_SIGNED_IN_HELP,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    } else {
+        val now = System.currentTimeMillis()
+        val backoffUntil = remember(tick) { repo.cacheSettings().backoffUntil(profile) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                AccountStatusLine.chatGpt(snapshot.lastAttemptAt, busy, now),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            RefreshIconButton(
+                enabled = !busy,
+                onClick = {
+                    scope.launch {
+                        busy = true
+                        val result = repo.refreshNow(profile, manual = true)
+                        message = if (result.message == "OK") "Checked — working." else result.message
+                        busy = false
+                        bump()
+                    }
+                },
+            )
+        }
+        // G1 (rev B): exactly the Claude/ChatGPT re-auth state.
+        if (snapshot.authState == AuthState.REAUTH_NEEDED) {
+            Text(
+                "Sign-in stopped working — re-sign in below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        if (backoffUntil > now) {
+            Text(
+                "Rate-limited — next try in ${Fmt.dhm(backoffUntil)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        RowDivider()
+        Row(Modifier.fillMaxWidth()) {
+            if (AntigravitySource.available) ActionCell(
+                icon = R.drawable.ic_action_key,
+                label = "Re-sign in",
+                tint = if (snapshot.authState == AuthState.REAUTH_NEEDED) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                enabled = !busy,
+                emphasized = snapshot.authState == AuthState.REAUTH_NEEDED,
+                onClick = { begin() },
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_sign_out,
+                label = "Clear",
+                tint = MaterialTheme.colorScheme.error,
+                enabled = !busy,
+                onClick = {
+                    repo.clearCredentials(profile)
+                    message = StoreCopy.clearedMessage(label, repo.storeDegraded())
+                    bump()
+                },
+            )
+            ActionCell(
+                icon = R.drawable.ic_action_open_new,
+                label = "Dashboard",
+                tint = MaterialTheme.colorScheme.primary,
+                enabled = !busy,
+                onClick = { openWithPicker(QuickLinks.accountUrl(profile.provider)) },
+            )
+        }
+    }
+
+    message?.let {
+        Spacer(Modifier.height(6.dp))
+        Text(it, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+/**
  * The device-code sheet (CCRM-54 (ChatGPT Account) part 2), built to
  * `design/provider-identity-wireframe.html` section 5. One bottom sheet, five
  * states, all of them the same three parts: the sentence, the code (when there is
@@ -2528,13 +2828,12 @@ private fun SignInActionRow(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun PlanChip(plan: String, tier: String?) {
+private fun PlanChip(provider: Provider, plan: String, tier: String?) {
     val color = MaterialTheme.colorScheme.primary
-    // "Max 20x" when the tier parses, bare "Max" otherwise (CCRM-38). A tier
-    // with no plan renders no chip at all — the caller's gate is on the plan.
-    val multiplier = Fmt.tierMultiplier(tier)
+    // API-CONTRACT §11: the provider's own plan name ("Pro 100", "Ultra"), never a multiplier. A tier with
+    // no plan renders no chip at all — the caller's gate is on the plan.
     Text(
-        plan.replaceFirstChar { it.uppercase() } + (multiplier?.let { " $it" } ?: ""),
+        Fmt.planLabel(provider, plan, tier),
         style = MaterialTheme.typography.labelSmall,
         color = color,
         modifier = Modifier
@@ -2664,10 +2963,9 @@ private fun providerOnlySwatch(dark: Boolean): Brush = Brush.sweepGradient(
 /**
  * CCRM-56 (Provider Identity), decision 5: "+ Add account" opens this sheet
  * instead of minting a Claude profile directly. Only Claude and ChatGPT are
- * listed — CCRM-55 (Antigravity Account) was dropped 2026-09-08 (Google never
- * exposes real usage outside a live Antigravity session, to anyone), so
- * Antigravity gets no row here, same as Cursor, Copilot or any other
- * out-of-scope provider.
+ * listed — CCRM-55 (Antigravity Account) was dropped 2026-09-08 and reopened
+ * 2026-11-02: Gemini's row is the third, shown only when [AntigravitySource.available].
+ * Cursor, Copilot and any other out-of-scope provider get no row.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2688,6 +2986,16 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
                     "device. ${DeviceCodeCopy.PREREQUISITE}",
                 onClick = { onPick(Provider.CHATGPT) },
             )
+            // CCRM-55 (Antigravity Account): the third row, only in a build that carries
+            // the client secret — without it today's two rows.
+            if (Provider.ANTIGRAVITY in GeminiSignIn.addRowProviders(AntigravitySource.available)) {
+                Spacer(Modifier.height(14.dp))
+                AddAccountRow(
+                    Provider.ANTIGRAVITY,
+                    GeminiSignIn.ROW_SUBTITLE,
+                    onClick = { onPick(Provider.ANTIGRAVITY) },
+                )
+            }
         }
     }
 }
@@ -2883,7 +3191,7 @@ private fun ReorderRow(
         // Absent when not signed in — nothing to show a plan for yet.
         if (signedIn && plan != null) {
             Spacer(Modifier.width(8.dp))
-            PlanChip(plan, tier.takeIf { profile.provider == Provider.CLAUDE && plan.startsWith("Max") })
+            PlanChip(profile.provider, plan, tier)
         }
         DragHandle(
             dragKey = profile.key,
@@ -3041,8 +3349,9 @@ private fun AboutCard(debugUnlocked: Boolean, onDebugUnlock: () -> Unit) {
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic or OpenAI. " +
-                    "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI.",
+                "Unofficial. Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google. " +
+                    "\"Claude\" is a trademark of Anthropic, PBC. \"ChatGPT\" is a trademark of OpenAI. " +
+                    "\"Gemini\" and \"Antigravity\" are trademarks of Google LLC.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -3534,6 +3843,196 @@ private fun AppLogCard(cache: UsageCache) {
     }
 }
 
+/**
+ * CCRM-96 (Weekly First), CCRM-99 (Model Limits Toggle): the account's Headline group
+ * (`design/2026-11-02-weekly-first-pace.html` §6 G1/G2, caption per `-vs-pace-display.html`
+ * F2) and its Model limits group (`-model-limits-toggle.html` G1–G3), in a sheet.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AccountHeadlineSheet(
+    repo: UsageRepository,
+    profile: Profile,
+    label: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val cache = repo.cacheSettings()
+    val data = remember(profile) { repo.snapshot(profile).data }
+    var headline by remember(profile) { mutableStateOf(cache.headline(profile)) }
+    var showLimits by remember(profile) { mutableStateOf(cache.showModelLimits(profile)) }
+    var statusIcon by remember(profile) { mutableStateOf(cache.statusIcon(profile)) }
+    // CCBG-65 (Sheet Under Taskbar): the sheet opens fully (a half-open sheet hid its last
+    // rows), scrolls, and pads for the navigation bar and a large screen's taskbar; the padding
+    // takes only what the sheet's own insets have not consumed, so a phone is not padded twice.
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(
+                    WindowInsets.navigationBars.union(WindowInsets.tappableElement).only(WindowInsetsSides.Bottom),
+                )
+                .padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProviderMark(profile.provider, size = 20.dp, tint = Palette.color(Palette.accentName(cache, profile), appDark()))
+                Spacer(Modifier.width(8.dp))
+                Text(label, style = MaterialTheme.typography.titleMedium)
+            }
+            Spacer(Modifier.height(16.dp))
+            HeadlineGroup(
+                headline = headline,
+                hasSession = data?.session != null,
+                onChange = {
+                    headline = it
+                    cache.setHeadline(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                },
+            )
+            // CCRM-103 (Hybrid Notification), shape grammar rev D §4b: between Headline and Model limits.
+            Spacer(Modifier.height(18.dp))
+            StatusIconGroup(
+                choice = statusIcon,
+                hasSession = data?.session != null,
+                accent = Palette.color(Palette.accentName(cache, profile), appDark()),
+                onChange = {
+                    statusIcon = it
+                    cache.setStatusIcon(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                },
+            )
+            val caps = data?.modelCaps.orEmpty()
+            // G3: no Model limits group while the plan reports none.
+            if (caps.isNotEmpty()) {
+                Spacer(Modifier.height(18.dp))
+                SectionLabel("Model limits")
+                ToggleRow(
+                    title = "Show model limits",
+                    subtitle = modelLimitsSubtitle(caps.map { it.modelName to it.window.percent }, showLimits),
+                    checked = showLimits,
+                ) {
+                    showLimits = it
+                    cache.setShowModelLimits(profile, it)
+                    com.robin.claudeusage.notify.Surfaces.refresh(context, cache)
+                }
+            }
+        }
+    }
+}
+
+/** The segmented Weekly · 5-hour · Auto row, greyed with its reason on an account with no 5h (G2). */
+@Composable
+internal fun HeadlineGroup(headline: Headline, hasSession: Boolean, onChange: (Headline) -> Unit) {
+    SectionLabel("Headline")
+    val dim = if (hasSession) 1f else 0.45f
+    Column(Modifier.alpha(dim)) {
+        Text(
+            // Since the shape grammar (rev D §4b) the Headline no longer picks the status-bar window.
+            "What the notification, new widgets and the card order lead with",
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Spacer(Modifier.height(8.dp))
+        val options = listOf(Headline.WEEKLY to "Weekly", Headline.FIVE_HOUR to "5-hour", Headline.AUTO to "Auto")
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            options.forEachIndexed { i, (value, text) ->
+                SegmentedButton(
+                    selected = headline == value,
+                    onClick = { onChange(value) },
+                    enabled = hasSession,
+                    shape = SegmentedButtonDefaults.itemShape(i, options.size),
+                    label = { Text(text) },
+                )
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+        Text(
+            headlineCaption(hasSession),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * CCRM-103 (Hybrid Notification), rev D §4b: the account's Status-bar icon, "5h ring" (the
+ * default) or "Weekly bar", each option carrying its glyph at 16 dp. A plan with no 5h
+ * shows it greyed at "Weekly bar" with its reason, as the Headline group is greyed.
+ */
+@Composable
+internal fun StatusIconGroup(
+    choice: StatusIconChoice,
+    hasSession: Boolean,
+    accent: androidx.compose.ui.graphics.Color,
+    onChange: (StatusIconChoice) -> Unit,
+) {
+    SectionLabel("Status-bar icon")
+    val dim = if (hasSession) 1f else 0.45f
+    val shown = if (hasSession) choice else StatusIconChoice.WEEKLY_BAR
+    val context = LocalContext.current
+    val dark = appDark()
+    Column(Modifier.alpha(dim)) {
+        Text("What the status bar shows for this account", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(8.dp))
+        val options = listOf(
+            Triple(StatusIconChoice.RING, "5h ring", com.robin.claudeusage.data.StatusGlyph.RING),
+            Triple(StatusIconChoice.WEEKLY_BAR, "Weekly bar", com.robin.claudeusage.data.StatusGlyph.WEEKLY_BAR),
+        )
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            options.forEachIndexed { i, (value, text, glyph) ->
+                // The page's sample: Teams' 5h at 34% against 53%, or its Weekly at 52% against 39%.
+                val bmp = remember(glyph, dark, accent) {
+                    val pct = if (glyph == com.robin.claudeusage.data.StatusGlyph.RING) 34.0 else 52.0
+                    val gone = if (glyph == com.robin.claudeusage.data.StatusGlyph.RING) 53.3 else 38.9
+                    com.robin.claudeusage.ui.UsageIcon.drawGlyph(
+                        context, glyph, pct, false, gone,
+                        com.robin.claudeusage.ui.Palette.barColor(pct, accent, dark).toArgb(), dark, true,
+                    ).asImageBitmap()
+                }
+                SegmentedButton(
+                    selected = shown == value,
+                    onClick = { onChange(value) },
+                    enabled = hasSession,
+                    shape = SegmentedButtonDefaults.itemShape(i, options.size),
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.foundation.Image(bmp, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(text)
+                        }
+                    },
+                )
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+        Text(
+            if (hasSession) "Either turns to a red cross while you are out."
+            else "This plan has no 5-hour window, so the status bar always shows the Weekly bar.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** G1's Auto explanation, or G2's reason the row is greyed. */
+internal fun headlineCaption(hasSession: Boolean): String =
+    if (hasSession) "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets."
+    else "This plan has no 5-hour window, so Weekly is always the headline."
+
+/**
+ * The switch's subtitle: shown, the limits with their reading ("Fable · 30% this week");
+ * hidden, what is hidden and that the limit still applies.
+ */
+internal fun modelLimitsSubtitle(caps: List<Pair<String, Double?>>, shown: Boolean): String {
+    val names = caps.joinToString(", ") { it.first }
+    return if (shown) {
+        caps.joinToString(", ") { (name, pct) -> "$name · ${(pct ?: 0.0).toInt()}% this week" }
+    } else if (caps.size == 1) {
+        "Hidden: $names. The limit still applies to that model; Cooldown just stops drawing it."
+    } else {
+        "Hidden: $names. The limits still apply to those models; Cooldown just stops drawing them."
+    }
+}
+
 @Composable
 internal fun SectionLabel(text: String) {
     Text(
@@ -3621,4 +4120,73 @@ internal object SettingsTabs {
     /** Every title, plus its padding, fits an equal share of the row. All in px. */
     fun fit(titleWidths: List<Float>, share: Float, padding: Float): Boolean =
         titleWidths.all { it + padding <= share }
+}
+
+/**
+ * CCRM-103 (Hybrid Notification), shape grammar rev D §1e: Appearance › Usage end mark,
+ * after Usage display. Three choices, Line the default; each preview is an over-pace ring
+ * and bar (64% against a 52% mark) drawn with that choice.
+ */
+@Composable
+internal fun UsageEndMarkGroup(selected: UsageEndMark, onChange: (UsageEndMark) -> Unit) {
+    Text("Usage end mark", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+    Text(
+        "How a bar or ring ends at your usage",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(6.dp))
+    val choices = listOf(UsageEndMark.ROUND to "Round", UsageEndMark.LINE to "Line", UsageEndMark.PACE to "Pace colour")
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for ((value, text) in choices) {
+            FilterChip(selected = selected == value, onClick = { onChange(value) }, label = { Text(text) })
+        }
+    }
+    Spacer(Modifier.height(10.dp))
+    val accent = MaterialTheme.colorScheme.primary
+    Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+        for ((value, _) in choices) {
+            androidx.compose.runtime.CompositionLocalProvider(LocalUsageEndMark provides value) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GrammarRingBox(
+                        size = 36.dp, pct = 64.0, elapsed = 52.0, accent = accent, figure = null,
+                        description = "",
+                        surface = MaterialTheme.colorScheme.surface,
+                    )
+                    Box(Modifier.width(54.dp)) {
+                        UsageBarLine(
+                            percent = 64.0, fillColor = barFill(64.0), height = 8.dp, elapsedPercent = 52.0,
+                            surface = MaterialTheme.colorScheme.surface,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Appearance › Summary order (Robin, 2026-11-02; BEHAVIOR-MOBILE §6): Your order (default) · Most room
+ * first · Resets soonest · Most used, as wrapping chips like the other Appearance choices.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+internal fun SummaryOrderGroup(cache: com.robin.claudeusage.data.UsageCache) {
+    var order by remember { mutableStateOf(cache.summaryOrder()) }
+    Text("Summary order", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+    Spacer(Modifier.height(6.dp))
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        for (value in com.robin.claudeusage.data.SummaryOrder.entries) {
+            FilterChip(
+                selected = order == value,
+                onClick = {
+                    order = value
+                    cache.setSummaryOrder(value)
+                },
+                label = { Text(value.label) },
+            )
+        }
+    }
 }

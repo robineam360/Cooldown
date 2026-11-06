@@ -19,6 +19,18 @@ enum Fixtures {
             .appending(path: "spec/core/fixtures")
     }()
 
+    /// `spec/mobile/fixtures`: the mobile family's cases (CCRM-96 (Weekly First) onwards).
+    static let mobileRoot: URL = root.deletingLastPathComponent().deletingLastPathComponent()
+        .appending(path: "mobile/fixtures")
+
+    static func mobileJSON(_ relativePath: String) throws -> [String: Any] {
+        let data = try Data(contentsOf: mobileRoot.appending(path: relativePath))
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw FixtureError.notAnObject(relativePath)
+        }
+        return object
+    }
+
     static func text(_ relativePath: String) throws -> String {
         try String(contentsOf: root.appending(path: relativePath), encoding: .utf8)
     }

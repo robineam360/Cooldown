@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's own mark in the title (Robin, 2026-11-02): the "Shared pace" tile — CCRM-101 (Icon v3)'s master
+     design/icon-v3/shared-pace.svg, its plate as a 22-unit rounded square and its #mark group unchanged, moved 1.5
+     units right so the open C's bounding box (x 15.95-81.05) sits centred. Used where the three provider marks do not
+     fit beside "Cooldown". -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path android:fillColor="#1F1B19" android:pathData="M22,0 H78 A22,22 0 0 1 100,22 V78 A22,22 0 0 1 78,100 H22 A22,22 0 0 1 0,78 V22 A22,22 0 0 1 22,0 Z" />
+    <group android:translateX="1.5">
+        <path android:strokeColor="#524944" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832" />
+        <path android:strokeColor="#524944" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163" />
+        <path android:strokeColor="#524944" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494" />
+        <path android:strokeColor="#D97757" android:strokeWidth="6.1" android:strokeLineCap="round" android:pathData="M 76.1347 72.5059 A 33 33 0 1 1 69.9731 22.3239" />
+        <path android:strokeColor="#FF5252" android:strokeWidth="6.1" android:strokeLineCap="round" android:pathData="M 69.9731 22.3239 A 33 33 0 0 1 78.0044 29.6832" />
+        <path android:strokeColor="#19C39A" android:strokeWidth="6.1" android:strokeLineCap="round" android:pathData="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526" />
+        <path android:strokeColor="#8AB4F8" android:strokeWidth="6.1" android:strokeLineCap="round" android:pathData="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193" />
+        <path android:strokeColor="#1F1B19" android:strokeWidth="6" android:strokeLineCap="round" android:pathData="M 58.5357 39.9360 L 72.1516 18.9692" />
+        <path android:strokeColor="#FF5252" android:strokeWidth="3.3" android:strokeLineCap="round" android:pathData="M 58.5357 39.9360 L 72.1516 18.9692" />
+    </group>
+</vector>

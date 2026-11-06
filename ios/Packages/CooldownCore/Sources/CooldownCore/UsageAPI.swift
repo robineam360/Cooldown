@@ -14,6 +14,7 @@ extension APIClient: UsageAPI {
         switch credentials.provider {
         case .claude: try await fetchUsage(accessToken: credentials.accessToken)
         case .chatgpt: try await fetchChatGPTUsage(accessToken: credentials.accessToken, accountId: credentials.accountId ?? "")
+        case .antigravity: try await fetchAntigravityUsage(credentials)
         }
     }
 
@@ -21,6 +22,7 @@ extension APIClient: UsageAPI {
         switch credentials.provider {
         case .claude: try await refreshToken(credentials.refreshToken)
         case .chatgpt: try await refreshChatGPTToken(credentials.refreshToken)
+        case .antigravity: try await refreshAntigravityToken(credentials.refreshToken)
         }
     }
 }

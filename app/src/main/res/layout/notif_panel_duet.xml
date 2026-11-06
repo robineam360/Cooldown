@@ -312,6 +312,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
         </LinearLayout>
@@ -384,6 +385,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
         </LinearLayout>
@@ -456,6 +458,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
         </LinearLayout>
@@ -528,6 +531,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
         </LinearLayout>

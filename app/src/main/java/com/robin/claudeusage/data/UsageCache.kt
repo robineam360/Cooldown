@@ -6,6 +6,8 @@ import com.robin.claudeusage.data.source.Sources
 import com.robin.claudeusage.ui.ChartOrientation
 import com.robin.claudeusage.ui.ChartSize
 import com.robin.claudeusage.ui.Density
+import com.robin.claudeusage.ui.PaceText
+import com.robin.claudeusage.ui.UsageEndMark
 import com.robin.claudeusage.ui.Palette
 
 enum class AuthState { NO_CREDENTIALS, OK, REAUTH_NEEDED }
@@ -39,10 +41,13 @@ data class Snapshot(
     val data: UsageData? by lazy {
         if (synthetic) return@lazy syntheticData
         rawJson?.let {
-            // A provider with no source yet (Antigravity, CCRM-55) must read as "no
-            // data", never as a crash on a lazy the whole UI touches.
+            // Parsed against the fetch time, not now (CCRM-55 (Antigravity Account): an
+            // untouched window's reset slides with the clock it was read at). A provider
+            // with no source must read as "no data", never as a crash on a lazy the whole
+            // UI touches.
             try {
-                Sources.of(provider).parseUsage(it)
+                if (fetchedAt > 0) Sources.of(provider).parseUsage(it, fetchedAt)
+                else Sources.of(provider).parseUsage(it)
             } catch (_: NotImplementedError) {
                 null
             }
@@ -103,6 +108,10 @@ class UsageCache(context: Context) {
             // layout, weekly-chart choice and per-card expanded state.
             "layout", "weeklyChart",
             "expanded.session", "expanded.weekly", "expanded.credits",
+            // v2.0: CCRM-96 (Weekly First) Headline, CCRM-99 (Model Limits Toggle).
+            "headline", "showModelLimits",
+            // v2.0: CCRM-103 (Hybrid Notification) Status-bar icon.
+            "statusIcon",
         )
     }
 
@@ -532,6 +541,75 @@ class UsageCache(context: Context) {
 
     /** The flag render sites actually branch on. */
     fun usageLeft(): Boolean = usageDisplay() == "left"
+
+    /**
+     * CCRM-100 (Vs Pace Display): the token's third value is written into the same
+     * `usageDisplay` string, so a downgrade to v1.9 — whose [usageLeft] is true only for
+     * "left" — reads it as Used.
+     */
+    fun usageMode(): PaceText.Mode = PaceText.Mode.fromKey(usageDisplay())
+
+    // --- v2.0: CCRM-96 (Weekly First), CCRM-98 (Summary Tab), CCRM-99 (Model Limits Toggle) ---
+
+    /** Per account; Weekly by default. */
+    fun headline(profile: Profile): Headline = Headline.fromKey(prefs.getString(k(profile, "headline"), null))
+
+    fun setHeadline(profile: Profile, headline: Headline) {
+        prefs.edit().putString(k(profile, "headline"), headline.key).apply()
+    }
+
+    /** Per account; false hides the model-cap rows and chips on the 7-day card and the notification panel. */
+    fun showModelLimits(profile: Profile): Boolean = prefs.getBoolean(k(profile, "showModelLimits"), true)
+
+    fun setShowModelLimits(profile: Profile, show: Boolean) {
+        prefs.edit().putBoolean(k(profile, "showModelLimits"), show).apply()
+    }
+
+    /** CCRM-103 (Hybrid Notification): per account, the ⋮ › Headline… sheet's Status-bar icon; the 5h ring by default. */
+    fun statusIcon(profile: Profile): StatusIconChoice =
+        StatusIconChoice.fromKey(prefs.getString(k(profile, "statusIcon"), null))
+
+    fun setStatusIcon(profile: Profile, choice: StatusIconChoice) {
+        prefs.edit().putString(k(profile, "statusIcon"), choice.key).apply()
+    }
+
+    /** CCRM-103: Appearance › Usage end mark, global; Line (E1) by default. */
+    fun usageEndMark(): UsageEndMark = UsageEndMark.fromKey(prefs.getString("usageEndMark", null))
+
+    fun setUsageEndMark(mark: UsageEndMark) {
+        prefs.edit().putString("usageEndMark", mark.key).apply()
+    }
+
+    /** Appearance › Summary order (Robin, 2026-11-02), global; Your order by default. */
+    fun summaryOrder(): SummaryOrder = SummaryOrder.fromKey(prefs.getString("summaryOrder", null))
+
+    fun setSummaryOrder(order: SummaryOrder) {
+        prefs.edit().putString("summaryOrder", order.key).apply()
+    }
+
+    /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */
+    fun openOnSummary(): Boolean = prefs.getBoolean("openOnSummary", true)
+
+    fun setOpenOnSummary(on: Boolean) {
+        prefs.edit().putBoolean("openOnSummary", on).apply()
+    }
+
+    /**
+     * The one-time "Weekly now leads" notice. Settled at the first v2.0 process start:
+     * an install with any account that has ever fetched is owed it; a fresh one never
+     * is, however many accounts it adds later.
+     */
+    fun weeklyFirstNotice(): String? = prefs.getString("weeklyFirstNotice", null)
+
+    fun settleWeeklyFirstNotice() {
+        if (prefs.contains("weeklyFirstNotice")) return
+        val hadAccounts = registry.all().any { prefs.getLong(k(it, "fetchedAt"), 0L) > 0L }
+        prefs.edit().putString("weeklyFirstNotice", WeeklyFirstNotice.settle(hadAccounts)).apply()
+    }
+
+    fun markWeeklyFirstNoticeShown() {
+        prefs.edit().putString("weeklyFirstNotice", WeeklyFirstNotice.DONE).apply()
+    }
 
     // CCRM-34 (Diagnostics Log): the app log's minimum level. "info" default;
     // "debug" only while someone is chasing something — a user-facing setting,

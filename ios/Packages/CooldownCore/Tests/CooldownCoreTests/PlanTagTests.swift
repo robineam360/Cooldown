@@ -12,7 +12,8 @@ import Testing
 func planTagFixtures() throws {
     #expect(try PlanTag.parse(Fixtures.text("profile/free.json"))?.plan == "Free")
     #expect(try PlanTag.parse(Fixtures.text("profile/pro.json"))?.plan == "Pro")
-    #expect(try PlanTag.parse(Fixtures.text("profile/max.json"))?.plan == "Max")
+    // A 20x rate_limit_tier: "Ultra" since Anthropic's 2026-10-30 rename (API-CONTRACT §11).
+    #expect(try PlanTag.parse(Fixtures.text("profile/max.json"))?.plan == "Ultra")
     #expect(try PlanTag.parse(Fixtures.text("profile/team-standard.json"))?.plan == "Team Standard")
     #expect(try PlanTag.parse(Fixtures.text("profile/team-premium.json"))?.plan == "Team Premium")
     #expect(try PlanTag.parse(Fixtures.text("profile/enterprise.json"))?.plan == "Enterprise")

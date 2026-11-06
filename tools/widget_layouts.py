@@ -123,18 +123,7 @@ def ring_box(sfx):
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 {ind(I('ring'+sfx,'64dp','64dp'),4)}
-{ind(T('ring_fig'+sfx,'16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', vis=None, bold=True),4)}
-</FrameLayout>"""
-
-def ring_comp(sfx, extra):
-    # The companion ring (rev H, Q1): the same account's other window, its word in the bore.
-    return f"""<FrameLayout
-    android:id="@+id/ring_comp_box{sfx}"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:visibility="gone"{extra}>
-{ind(I('ring_comp'+sfx,'64dp','64dp'),4)}
-{ind(ll(None,'vertical', chr(10).join([T('ring_comp_fig'+sfx,'22', N+'    android:includeFontPadding="false"', vis=None, bold=True), T('ring_comp_tag'+sfx,'9', N+'    android:includeFontPadding="false"', vis=None, bold=True)]), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_gravity="center"'),4)}
+{ind(T('ring_fig'+sfx,'16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
 </FrameLayout>"""
 
 def ring_lines(sfx, gravity):
@@ -144,6 +133,12 @@ def ring_lines(sfx, gravity):
             T('ring_label'+sfx,'12', N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
             I('ring_dot'+sfx,'6dp','6dp', N+'    android:layout_marginStart="4dp"', vis='gone', src='notif_condition_dot'),
         ]), w='wrap_content', extra=G('center_vertical'), vis='gone'),
+        # CCRM-103 (Hybrid Notification): the Weekly as a bar under the 5h ring.
+        ll('ring_wk'+sfx, 'horizontal', '\n'.join([
+            T('ring_wk_word'+sfx,'11', N+'    android:layout_marginEnd="6dp"'+N+'    android:singleLine="true"', text='Weekly'),
+            I('ring_wk_bar'+sfx,'50dp','6dp', N+'    android:scaleType="fitXY"'),
+            T('ring_wk_fig'+sfx,'13', N+'    android:layout_marginStart="6dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:fontFeatureSettings="tnum,lnum"', bold=True),
+        ]), w='wrap_content', extra=G('center_vertical')+N+'    android:layout_marginTop="4dp"', vis='gone'),
         T('ring_reset'+sfx,'12', N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
         T('ring_stamp'+sfx,'10', N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"'),
     ])
@@ -155,32 +150,27 @@ ring = f"""<FrameLayout
 {ind(ll('ring_col', 'vertical', chr(10).join([
     ring_box(''),
     ll('ring_lines', 'vertical', ring_lines('', 'center_horizontal'), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_marginTop="6dp"', vis='gone'),
-    ring_comp('', N+'    android:layout_marginTop="8dp"'),
 ]), h='match_parent', extra=G('center')), 4)}
 {ind(ll('ring_row', 'horizontal', chr(10).join([
     ring_box('_h'),
     ll('ring_lines_h', 'vertical', ring_lines('_h', 'start'), w='0dp', extra=N+'    android:layout_weight="1"'+N+'    android:layout_marginStart="12dp"', vis='gone'),
-    ring_comp('_h', N+'    android:layout_marginStart="8dp"'),
 ]), h='match_parent', extra=G('center_vertical'), vis='gone'), 4)}
 </FrameLayout>"""
 ring += '\n\n' + I('ring_corner_dot','6dp','6dp', N+'    android:layout_gravity="top|end"', vis='gone', src='notif_condition_dot')
 
 # ------------------------------------------------------------------ Number
-def chip(id):
-    # The text is match_parent too: FrameLayout stretches match_parent children of a
-    # wrap_content frame only when there are two or more, else the bg collapses to 1 px.
-    return f'''<FrameLayout
-    android:id="@+id/{id}"
+# CCRM-103 (Hybrid Notification): the 5h ring at the left of the reading.
+num_ring_box = f'''<FrameLayout
+    android:id="@+id/num_ring_box"
     android:layout_width="wrap_content"
-    android:layout_height="24dp"
-    android:layout_marginEnd="6dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp"
     android:visibility="gone">
-{ind(I(id+'_bg','match_parent','match_parent', N+'    android:scaleType="fitXY"', src='widget_chip'),4)}
-{ind(T(id+'_text','11', N+'    android:gravity="center"'+N+'    android:paddingStart="11dp"'+N+'    android:paddingEnd="11dp"', h='match_parent', vis=None),4)}
+{ind(I('num_ring','60dp','60dp'),4)}
+{ind(T('num_ring_fig','15', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
 </FrameLayout>'''
 
-number = ll('num_col', 'vertical', '\n'.join([
-    ll('num_reading', 'vertical', '\n'.join([
+num_reading = (ll('num_reading', 'vertical', '\n'.join([
         ll(None, 'horizontal', '\n'.join([
             ll(None, 'vertical', '\n'.join([
                 T('num_pill','8', N+'    android:layout_marginStart="18dp"'+N+'    android:paddingStart="4dp"'+N+'    android:paddingEnd="4dp"'+N+'    android:background="@drawable/widget_pill"'+N+'    android:letterSpacing="0.05"', bold=True, text='UNASSIGNED'),
@@ -191,12 +181,12 @@ number = ll('num_col', 'vertical', '\n'.join([
                 ]), extra=G('center_vertical')),
                 T('num_weekly2','10', N+'    android:layout_marginStart="18dp"', bold=True, text='Weekly'),
             ]), w='0dp', extra=N+'    android:layout_weight="1"'+N+'    android:paddingBottom="3dp"'),
-            T('num_fig','32', N+'    android:layout_marginStart="10dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"', vis=None, bold=True),
+            T('num_fig','32', N+'    android:layout_marginStart="10dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),
             T('num_leftcap','10', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
         ]), extra=G('bottom')),
         # rev F (CCBG-38 (Cover Buckets)): a 2×1 frame too narrow for label and figure on one
         # row shows the figure here, under the label, instead of beside it.
-        T('num_fig_below','32', N+'    android:layout_marginTop="2dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"', bold=True),
+        T('num_fig_below','32', N+'    android:layout_marginTop="2dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:fontFeatureSettings="tnum,lnum"', bold=True),
         I('num_bar','match_parent','12dp', N+'    android:layout_marginTop="1dp"'+N+'    android:scaleType="fitXY"'),
         ll('num_subrow', 'horizontal', '\n'.join([
             T('num_sub','12', N+'    android:includeFontPadding="false"'+N+'    android:layout_weight="1"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', w='0dp', vis=None),
@@ -204,9 +194,23 @@ number = ll('num_col', 'vertical', '\n'.join([
         ]), extra=G('bottom')+N+'    android:layout_marginTop="2dp"', vis='gone'),
         # rev H: the Number 2×2 (tall tier, CCBG-44 (Widget Fill)) puts the stamp on its own line.
         T('num_stamp_below','10', N+'    android:includeFontPadding="false"'+N+'    android:layout_marginTop="2dp"'+N+'    android:singleLine="true"'),
-    ]), h='0dp', extra=N+'    android:layout_weight="1"'+G('center_vertical')),
+    ]), w='0dp', extra=N+'    android:layout_weight="1"'+G('center_vertical')))
+
+# num_main holds the ring box and the reading; the reading sits un-indented inside it (hand-edited layout).
+num_main = f'''<LinearLayout
+    android:id="@+id/num_main"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:orientation="horizontal"
+    android:layout_weight="1"
+    android:gravity="center_vertical">
+{ind(num_ring_box,4)}
+{num_reading}
+</LinearLayout>'''
+
+number = ll('num_col', 'vertical', '\n'.join([
+    num_main,
     ll('num_ctrl', 'vertical', '\n'.join([ll('num_ctrl_row', 'horizontal', '\n'.join([
-        chip('num_chip_s'), chip('num_chip_w'), chip('num_chip_fixed'),
         spacer(),
         f'''<FrameLayout
     android:id="@+id/num_cycler"
@@ -230,7 +234,30 @@ number = ll('num_col', 'vertical', '\n'.join([
 ]), h='match_parent')
 
 # ------------------------------------------------------------------ Countdown
-countdown = ll('cd_col', 'vertical', '\n'.join([
+cd_ring_box = f'''<FrameLayout
+    android:id="@+id/cd_ring_box"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:visibility="gone">
+{ind(I('cd_ring','44dp','44dp'),4)}
+{ind(T('cd_ring_fig','11', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
+</FrameLayout>'''
+
+# CCBG-66 (Countdown Ring Small): on a 2×2 that is not wide the 5h ring is the hero, centred
+# under the count between the two gaps, sized from the frame as the Ring face's is.
+cd_hero_box = f'''<FrameLayout
+    android:id="@+id/cd_hero_box"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="6dp"
+    android:visibility="gone">
+{ind(I('cd_hero','64dp','64dp'),4)}
+{ind(T('cd_hero_fig','16', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),4)}
+</FrameLayout>'''
+
+cd_col = ll('cd_col', 'vertical', '\n'.join([
     T('cd_caption','11', N+'    android:singleLine="true"', vis=None),
     ll('cd_countrow', 'horizontal', '\n'.join([
         f'''<Chronometer
@@ -251,7 +278,7 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
         spacer('cd_side_gap', vis='gone'),
         ll('cd_side', 'vertical', '\n'.join([
             ll(None, 'horizontal', '\n'.join([
-                T('cd_side_fig','24', N+'    android:includeFontPadding="false"', vis=None, bold=True),
+                T('cd_side_fig','24', N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),
                 T('cd_side_left','9', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
             ]), w='wrap_content', extra=G('bottom')),
             I('cd_side_bar','match_parent','8dp', N+'    android:layout_marginTop="3dp"'+N+'    android:scaleType="fitXY"'),
@@ -260,8 +287,9 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
     T('cd_at_below','12', N+'    android:layout_marginTop="3dp"'+N+'    android:singleLine="true"'),
     T('cd_msg','13.5', N+'    android:includeFontPadding="false"', bold=True),
     spacer('cd_gap1', 'v', vis='gone'),
+    cd_hero_box,
     ll('cd_figrow', 'horizontal', '\n'.join([
-        T('cd_fig','18', N+'    android:includeFontPadding="false"', vis=None, bold=True),
+        T('cd_fig','18', N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True),
         T('cd_leftcap','8.5', N+'    android:layout_marginStart="4dp"'+N+'    android:letterSpacing="0.08"', bold=True, text='LEFT'),
         spacer(),
         T('cd_est','11', N+'    android:singleLine="true"'),
@@ -281,7 +309,18 @@ countdown = ll('cd_col', 'vertical', '\n'.join([
         ]), w='wrap_content', extra=N+'    android:layout_weight="1"'+G('center_vertical')),
         T('cd_stamp','10', N+'    android:layout_marginStart="6dp"'+N+'    android:singleLine="true"'),
     ]), extra=G('center_vertical')+N+'    android:layout_marginTop="4dp"'),
-]), h='match_parent', extra=G('center_vertical'))
+]), w='0dp', h='match_parent', extra=N+'    android:layout_weight="1"'+G('center_vertical'))
+
+# cd_col sits un-indented beside the ring box inside cd_main (hand-edited layout).
+countdown = f'''<LinearLayout
+    android:id="@+id/cd_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+{ind(cd_ring_box,4)}
+{cd_col}
+</LinearLayout>'''
 
 # ------------------------------------------------------------------ Strip
 def cell(i):
@@ -290,10 +329,14 @@ def cell(i):
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 {ind(I(f'strip_ring{i}','53dp','53dp'),4)}
-{ind(ll(None,'vertical', chr(10).join([T(f'strip_fig{i}','13', N+'    android:includeFontPadding="false"', vis=None, bold=True), T(f'strip_tag{i}','8', N+'    android:includeFontPadding="false"', bold=True, text='Weekly')]), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_gravity="center"'),4)}
+{ind(ll(None,'vertical', chr(10).join([T(f'strip_fig{i}','13', N+'    android:includeFontPadding="false"'+N+'    android:fontFeatureSettings="tnum,lnum"', vis=None, bold=True), T(f'strip_tag{i}','8', N+'    android:includeFontPadding="false"', bold=True, text='Weekly')]), w='wrap_content', extra=G('center_horizontal')+N+'    android:layout_gravity="center"'),4)}
 {ind(T(f'strip_xtag{i}','8', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', bold=True, text='Weekly'),4)}
 {ind(T(f'strip_free{i}','13', N+'    android:layout_gravity="center"'+N+'    android:includeFontPadding="false"', text='Free'),4)}
 </FrameLayout>''',
+        ll(f'strip_wk{i}', 'horizontal', '\n'.join([
+            I(f'strip_wkbar{i}','42dp','4dp', N+'    android:scaleType="fitXY"'),
+            T(f'strip_wkfig{i}','11', N+'    android:layout_marginStart="4dp"'+N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:fontFeatureSettings="tnum,lnum"', bold=True),
+        ]), w='wrap_content', extra=G('center_vertical')+N+'    android:layout_marginTop="3dp"', vis='gone'),
         ll(None, 'horizontal', '\n'.join([
             I(f'strip_mark{i}','10dp','10dp', N+'    android:layout_marginEnd="3dp"'),
             T(f'strip_label{i}','9.5', N+'    android:includeFontPadding="false"'+N+'    android:singleLine="true"'+N+'    android:ellipsize="end"', vis=None),
@@ -310,9 +353,9 @@ strip = ll('strip_col', 'vertical', ll('strip_group', 'vertical', '\n'.join([
 ]), w='wrap_content'), h='match_parent', extra=G('center'))
 
 faces = {
-  'widget_ring': ('    CCRM-79 (Ring Face): the rails ring (a RingRenderer TICK bitmap) with the figure in\n    its bore as real text; on 2×2 a label line under it.', ring),
-  'widget_number': ('    CCRM-80 (Number Face): label and figure on one row, the bar under both, the absolute\n    sub-line from 4×1, and the 4×2 control row (window chips, account cycler).', number),
-  'widget_countdown': ('    CCRM-81 (Countdown Face): caption, the live chronometer or an absolute time, and on\n    2×2 the figure row over a 6 dp bar; the account line at the bottom.', countdown),
+  'widget_ring': ("    CCRM-79 (Ring Face), CCRM-103 (Hybrid Notification)'s shape grammar: the 5h as a\n    GrammarRing bitmap with the figure in its bore as real text, the Weekly as a bar under\n    it (ring_wk: \"Weekly\", bar, figure; the bar alone on 1×1); on 2×2 the label lines.", ring),
+  'widget_number': ("    CCRM-80 (Number Face), CCRM-103 (Hybrid Notification)'s shape grammar: the 5h ring at\n    the left (num_ring_box) of the Weekly label, figure and bar; the absolute sub-line from\n    4×1, and the account cycler on 4×2 and 2×2 (the window chips went: both windows show).", number),
+  'widget_countdown': ("    CCRM-81 (Countdown Face): caption, the live chronometer or an absolute time, and on\n    2×2 the figure row over a 6 dp bar; the account line at the bottom. CCRM-103 (Hybrid\n    Notification)'s shape grammar: a 5h countdown leads with the 44 dp ring (cd_ring_box)\n    in place of the \"5h reset\" caption; a 2×2 that is not wide (CCBG-66 (Countdown Ring\n    Small)) draws it as cd_hero_box instead, centred under the count, filling the face.", countdown),
   'widget_strip': ('    CCRM-82 (Accounts Strip): up to four rings, each its own account in its own accent,\n    and a "+N" cell. Never a sum.', strip),
 }
 for name, (comment, content) in faces.items():

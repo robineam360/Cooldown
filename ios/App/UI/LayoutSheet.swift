@@ -1,3 +1,4 @@
+import CooldownCore
 import SwiftUI
 
 /// CCRM-94 (iOS App): the layout sheet, ported from Android's (CCRM-25 (Card Layout), CCRM-35 (Layout Reset)) as an iOS
@@ -10,8 +11,8 @@ struct LayoutSheet: View {
     let accountKey: String
 
     var body: some View {
-        let layout = model.layout(accountKey)
-        let available = self.available
+        let layout = model.drawnLayout(accountKey)
+        let available = Self.sheetCards(layout, self.available)
         NavigationStack {
             List {
                 Section {
@@ -41,7 +42,7 @@ struct LayoutSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Reset layout") { model.setLayout(.standard, for: accountKey) }
+                    Button("Reset layout") { var reset = CardLayout.standard; reset.reordered = false; model.setLayout(reset, for: accountKey) }
                 }
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
@@ -50,6 +51,7 @@ struct LayoutSheet: View {
     }
 
     private func row(_ id: CardID, layout: CardLayout, behindMore: Bool) -> some View {
+        let available = Self.sheetCards(layout, self.available)
         let shown = !layout.hidden.contains(id)
         let canHide = !shown || layout.canHide(id, among: available)
         return HStack(spacing: 12) {
@@ -58,15 +60,15 @@ struct LayoutSheet: View {
             Spacer()
             Toggle(id.title, isOn: Binding(
                 get: { shown },
-                set: { model.setLayout($0 ? layout.showing(id) : layout.hiding(id), for: accountKey) }))
+                set: { show in model.setLayout(Self.both(id, layout) { show ? $0.showing($1) : $0.hiding($1) }, for: accountKey) }))
                 .labelsHidden()
                 .disabled(shown && !canHide)
         }
         .swipeActions(edge: .trailing) {
             if behindMore {
-                Button("Above More") { model.setLayout(layout.unfolding(id), for: accountKey) }.tint(.blue)
+                Button("Above More") { model.setLayout(Self.both(id, layout) { $0.unfolding($1) }, for: accountKey) }.tint(.blue)
             } else if layout.canFold(id, among: available) {
-                Button("Behind More") { model.setLayout(layout.folding(id), for: accountKey) }.tint(.gray)
+                Button("Behind More") { model.setLayout(Self.both(id, layout) { $0.folding($1) }, for: accountKey) }.tint(.gray)
             }
         }
     }
@@ -84,14 +86,46 @@ struct LayoutSheet: View {
         }
     }
 
-    /// Reorders within one section; the other section's cards keep their places in the shared order.
+    /// Reorders within one section; the other section's cards keep their places in the shared order. The Usage row's
+    /// second window id travels right behind it.
     private func move(within behindMore: Bool, _ source: IndexSet, _ destination: Int) {
-        let layout = model.layout(accountKey)
-        var section = layout.order.filter { layout.more.contains($0) == behindMore }
+        model.setLayout(Self.moved(model.drawnLayout(accountKey), available, behindMore, source, destination), for: accountKey)
+    }
+
+    /// The reorder itself, pure: the sheet's rows of one section move; the Usage row's other window id travels right
+    /// behind it.
+    nonisolated static func moved(_ layout: CardLayout, _ available: Set<CardID>, _ behindMore: Bool,
+                                  _ source: IndexSet, _ destination: Int) -> CardLayout {
+        let sheet = sheetCards(layout, available)
+        var section = layout.order.filter { sheet.contains($0) && layout.more.contains($0) == behindMore }
         section.move(fromOffsets: source, toOffset: destination)
         var it = section.makeIterator()
+        let rep = usageID(layout)
         var copy = layout
-        copy.order = layout.order.map { layout.more.contains($0) == behindMore ? (it.next() ?? $0) : $0 }
-        model.setLayout(copy, for: accountKey)
+        copy.order = layout.order.filter { $0 == rep || $0 == .credits }
+            .map { sheet.contains($0) && layout.more.contains($0) == behindMore ? (it.next() ?? $0) : $0 }
+            .flatMap { $0 == rep ? [rep, other(rep)] : [$0] }
+        copy.reordered = true
+        return copy
+    }
+
+    // MARK: CCRM-103 (Hybrid Notification): the two window cards are one row, "Usage"
+
+    /// The row's id: the window card the tile is drawn under (`AccountCards.merged`: the first shown above More, else
+    /// behind it), else the first in the order — so a layout saved before the tile shows the row as the screen does.
+    nonisolated static func usageID(_ layout: CardLayout) -> CardID {
+        (layout.main + layout.folded + layout.order).first { $0 != .credits } ?? .weekly
+    }
+    nonisolated static func other(_ id: CardID) -> CardID { id == .session ? .weekly : .session }
+
+    /// The sheet's rows: the Usage row and, when the reading carries them, the credits.
+    nonisolated static func sheetCards(_ layout: CardLayout, _ available: Set<CardID>) -> Set<CardID> {
+        available.subtracting([other(usageID(layout))])
+    }
+
+    /// Hiding, showing, folding or unfolding the Usage row does it to both window ids, so a flag left on the other
+    /// (by a layout saved before the tile) can never contradict the row.
+    nonisolated static func both(_ id: CardID, _ layout: CardLayout, _ op: (CardLayout, CardID) -> CardLayout) -> CardLayout {
+        id == .credits ? op(layout, id) : op(op(layout, .session), .weekly)
     }
 }

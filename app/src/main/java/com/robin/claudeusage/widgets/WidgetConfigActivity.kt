@@ -59,8 +59,8 @@ import com.robin.claudeusage.ui.resolveDark
 
 /**
  * Placing or reconfiguring a widget (CCRM-78 (Widgets Reborn) §Config; wireframe rev D
- * §6): a live preview, then Account (none on the Strip), Window (hidden when the account
- * has one; none on the Strip) and Background, then "Add widget" — or "Save changes" when
+ * §6): a live preview, then Account (none on the Strip), Window (a note when the account
+ * has one or on the Strip; not shown on the Ring and Number, whose window is fixed) and Background, then "Add widget" — or "Save changes" when
  * reached by long-press → "Widget settings".
  *
  * The result is `RESULT_CANCELED` until Save, so backing out of the add flow removes the
@@ -99,7 +99,13 @@ class WidgetConfigActivity : ComponentActivity() {
                 mutableStateOf((profiles.firstOrNull { it.key == stored.accountKey } ?: profiles.firstOrNull())?.key)
             }
             val account = profiles.firstOrNull { it.key == accountKey }
-            var windowPick by rememberSaveable { mutableStateOf(stored.window) }
+            // CCRM-96 (Weekly First): a new widget's chip starts on its account's Headline
+            // and follows the account pick until the window chip is touched.
+            val fresh = !reconfigure && !prefs.hasWindow(id)
+            var windowTouched by rememberSaveable { mutableStateOf(!fresh) }
+            var windowPick by rememberSaveable {
+                mutableStateOf(if (fresh) WidgetHost.headlineWindow(cache, accountKey) else stored.window)
+            }
             var bg by rememberSaveable { mutableStateOf(stored.background) }
 
             ConfigScreen(
@@ -111,8 +117,14 @@ class WidgetConfigActivity : ComponentActivity() {
                 window = windowPick,
                 background = bg,
                 reconfigure = reconfigure,
-                onAccount = { accountKey = it.key },
-                onWindow = { windowPick = it },
+                onAccount = {
+                    accountKey = it.key
+                    if (!windowTouched) windowPick = WidgetHost.headlineWindow(cache, it.key)
+                },
+                onWindow = {
+                    windowPick = it
+                    windowTouched = true
+                },
                 onBackground = { bg = it },
                 onBack = { finish() },
                 preview = {
@@ -143,6 +155,13 @@ class WidgetConfigActivity : ComponentActivity() {
         }
     }
 }
+
+/**
+ * Fable C6 (CCRM-103 (Hybrid Notification)'s shape grammar): the Ring is always the 5h and
+ * the Number always the Weekly, so a Window row there would be a dead control — it is not
+ * shown. Their stored `w<id>.window` is still saved as before and simply ignored by the face.
+ */
+internal fun windowRowShown(face: Face): Boolean = face != Face.RING && face != Face.NUMBER
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -228,7 +247,7 @@ private fun ConfigScreen(
                 }
             }
 
-            ConfigRow("Window", ink, divider) {
+            if (windowRowShown(face)) ConfigRow("Window", ink, divider) {
                 val data = account?.let { cache.snapshot(it).data }
                 val oneWindow = data != null && (data.session == null) != (data.weekly == null)
                 when {

@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antigravity Account Wireframe</title>
+<!-- CCRM-55 (Antigravity Account), rev B, 2026-11-02 (rev A approved with five changes, see the Rev B paragraph). Wireframe for Robin’s approval (CLAUDE.md §2), Android and iPhone/iPad.
+     Same grammar as design/2026-11-02-weekly-first-pace.html (Android: 1 CSS px = 1 dp) and design/2026-11-02-ios-weekly-first.html
+     (iOS: 1 px = 1 pt). The card anatomy, the sev() colours, the pace maths, the notification, the chart and the iOS bar are copied
+     from those two files by the build step, not redrawn. Every number comes from the fixtures in the script. -->
+<style>
+  :root {
+    --bg: #FAF8F6; --ink: #26211E; --muted: #6E6660; --accent: #C15F3C;
+    --hair: #E7E1DC; --card: #FFFFFF; --bad: #B3402A; --good: #2F6D44; --warn: #9A6B1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+      --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --ink: #EDE8E4; --muted: #9B928B; --accent: #E59980;
+    --hair: #2C2825; --card: #201D1B; --bad: #E08268; --good: #7FC08F; --warn: #D8AC63;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 48px 16px 96px; line-height: 1.5; }
+  .page { max-width: 1240px; margin: 0 auto; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 76ch; margin: 0 0 12px; font-size: 14px; }
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -.01em; margin: 54px 0 4px; }
+  h3 { font-size: 14px; font-weight: 650; margin: 26px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; max-width: 84ch; margin: 0 0 18px; }
+  .sub b, .note b, .lede b { color: var(--ink); font-weight: 650; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: color-mix(in srgb, var(--hair) 55%, transparent); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .hr { height: 1px; background: var(--hair); margin: 46px 0 0; border: 0; }
+  .cap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .cap.bad { color: var(--bad); } .cap.good { color: var(--good); } .cap.warn { color: var(--warn); }
+  .row { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .col { flex: 0 1 384px; min-width: 0; }
+  .col.wide { flex-basis: 435px; }
+  .scroll { overflow-x: auto; max-width: 100%; }
+  .note { font-size: 12.5px; color: var(--muted); max-width: 384px; margin: 10px 0 0; }
+  table { border-collapse: collapse; margin: 12px 0 0; font-size: 13px; width: 100%; max-width: 1020px; }
+  th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tbl-wrap { overflow-x: auto; }
+  ol.dec, ul.inv { font-size: 13.5px; max-width: 86ch; padding-left: 22px; }
+  ol.dec li, ul.inv li { margin: 0 0 9px; }
+  ol.dec li b, ul.inv li b { font-weight: 650; }
+  .q { border: 1px solid var(--warn); border-radius: 12px; padding: 12px 16px; margin: 14px 0; max-width: 86ch; font-size: 13.5px; }
+  .q b { color: var(--warn); }
+  .pending { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 5px; padding: 1px 6px; vertical-align: 2px; }
+
+  /* ---------- Android shade + notification (same grammar as duet-panel-fit-wireframe.html) ---------- */
+  .shade { width: 384px; padding: 12px; background: #16171A; border-radius: 28px; border: 1px solid #2A2C31; }
+  .shade.light { background: #E4E4E4; border-color: #CFCFCF; }
+  .nc { width: 360px; padding: 16px; border-radius: 24px; background: #232529; color: #ECECEC; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .shade.light .nc { background: #F7F7F7; color: #1F1F1F; }
+  .nc .apphdr { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9E9E9E; margin: 0 0 10px; font-weight: 600; }
+  .shade.light .apphdr { color: #5C5C5C; }
+  .nc .apphdr .sp { opacity: .7; }
+  .hl { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .lbl { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fig { font-weight: 700; letter-spacing: -.02em; line-height: 1; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .bar { position: relative; overflow: visible; }
+  .bar > i, .bar > o { position: absolute; top: 0; bottom: 0; }
+  .bar > i { left: 0; border-radius: inherit; }
+  .bar > o { border-radius: 0 6px 6px 0; }
+  .bar > s { position: absolute; top: -2px; bottom: -2px; width: 2px; }
+  .hb { display: flex; align-items: center; gap: 14px; margin: 0 0 10px; }
+  .hb:last-child { margin-bottom: 0; }
+  .hb .lft { flex: 1; min-width: 0; }
+  .hsub { font-size: 12px; color: #9E9E9E; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+  .hsub + .hsub { margin-top: 0; }
+  .shade.light .hsub { color: #5C5C5C; }
+  .hsub .c5 { font-weight: 700; }
+  .figwrap { flex: 0 0 auto; text-align: center; }
+  .acts { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; font-weight: 650; color: #E59980; }
+  .shade.light .acts { border-top-color: rgba(0,0,0,.08); color: #D97757; }
+  .pnl { margin-top: 10px; }
+  .crow { margin: 0 0 8px; }
+  .crow:last-child { margin-bottom: 0; }
+  .crow .ch { display: flex; align-items: baseline; gap: 6px; height: 18px; margin-bottom: 4px; font-size: 13.5px; white-space: nowrap; }
+  .crow .cl { flex: 0 0 auto; }
+  .crow .cr { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #9E9E9E; }
+  .shade.light .crow .cr { color: #5C5C5C; }
+  .crow .cv { flex: 0 0 auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Duet collapsed: two halves side by side */
+  .duet { display: flex; gap: 16px; }
+  .duet > div { flex: 1; min-width: 0; }
+  .duet .dl { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .duet .db { display: flex; align-items: center; gap: 8px; }
+  .duet .db .bar { flex: 1; }
+  .tag { display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: #7FC08F; border: 1px solid #3B5A43; border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+  .tag.chg { color: #D8AC63; border-color: #6B5428; }
+
+  /* ---------- the app (Fold 7 cover, 411 dp) ---------- */
+  .phone { width: 411px; background: #121212; border-radius: 26px; padding: 14px 16px 18px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #3a3a3a; margin: 0 -16px 14px; font-size: 15px; }
+  .tabs span { flex: 1; text-align: center; padding: 8px 0 9px; color: #9C9894; display: flex; gap: 6px; justify-content: center; align-items: center; }
+  .tabs span.on { color: #EDE8E4; border-bottom: 3px solid #E59980; }
+  .card { background: #232120; border-radius: 18px; padding: 15px 14px 14px; margin: 0 0 10px; }
+  .card .t { display: flex; align-items: baseline; font-size: 15.5px; color: #E6E1DE; margin: 0 0 10px; gap: 6px; }
+  .card .t .v { margin-left: auto; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; }
+  .card .t .chev { font-size: 12px; color: #BDB8B3; }
+  .card .bar { height: 10px; border-radius: 5px; background: #4A3A35; margin: 0 0 12px; }
+  .card .bar > s { background: #CFC9C4; width: 3px; top: -4px; bottom: -4px; border-radius: 2px; }
+  .card .ln { font-size: 13.5px; color: #CFC9C4; margin: 0 0 3px; }
+  .card .ln.m { color: #A7A19C; }
+  .card .ln b { color: #EDE8E4; font-weight: 600; }
+  .card .rs { display: flex; justify-content: space-between; border-top: 1px solid #3A3532; padding-top: 7px; margin-top: 8px; font-size: 13.5px; color: #CFC9C4; }
+  .chips { display: flex; gap: 8px; margin: 2px 0 6px; }
+  .chips span { border: 1px solid #5A5552; border-radius: 9px; padding: 4px 14px; font-size: 14px; }
+  .chips span.on { background: #46404F; border-color: #46404F; }
+  .chk { font-size: 13px; color: #A7A19C; margin: 6px 2px 0; }
+
+  /* settings */
+  .set { width: 411px; background: #121212; border-radius: 26px; padding: 18px 16px; border: 1px solid #2A2C31; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; color: #E6E1DE; }
+  .set .h { font-size: 20px; margin: 0 0 14px; display: flex; gap: 8px; align-items: center; }
+  .set .grp { font-size: 12.5px; color: #E59980; font-weight: 600; margin: 14px 0 6px; }
+  .set .it { padding: 10px 0; border-bottom: 1px solid #2A2725; font-size: 15px; }
+  .set .it .d { font-size: 12.5px; color: #A7A19C; margin-top: 2px; }
+  .seg { display: flex; border: 1px solid #5A5552; border-radius: 20px; overflow: hidden; margin-top: 9px; }
+  .seg span { flex: 1; text-align: center; padding: 7px 0; font-size: 14px; border-left: 1px solid #5A5552; }
+  .seg span:first-child { border-left: 0; }
+  .seg span.on { background: #4A3A35; color: #F4D9CF; font-weight: 600; }
+  .seg.off { opacity: .42; }
+
+  /* status-bar strip */
+  .sbar { width: 384px; height: 40px; border-radius: 12px; background: #000; display: flex; align-items: center; padding: 0 14px; gap: 7px; color: #fff; font: 600 14px Roboto, Arial, sans-serif; }
+  .zoom { display: flex; gap: 18px; align-items: center; margin-top: 12px; }
+  .zoom figure { margin: 0; text-align: center; font-size: 11.5px; color: var(--muted); }
+  .zoom .tile { background: #000; border-radius: 14px; padding: 10px; display: inline-block; }
+
+  /* pace scale */
+  .scale { max-width: 760px; margin: 18px 0 6px; }
+  .scale .track { position: relative; height: 34px; border-radius: 8px; overflow: hidden; display: flex; }
+  .scale .track > div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: #1d1a18; text-align: center; line-height: 1.15; }
+  .scale .ax { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 4px; }
+
+/* ---------- this page ---------- */
+.col.n { flex-basis: 344px; } .col.i { flex-basis: 420px; } .col.xw { flex-basis: 560px; }
+.tag.new { color: #D8AC63; border-color: #6B5428; }
+.cap.ng { color: var(--accent); }
+.phone.g { background: #0D0D0D; }
+.phone.g .tabs { border-bottom-color: #2A2A2A; }
+.phone.g .tabs span.on { border-bottom-color: #8AB4F8; }
+.phone.g .card { background: #1A1A1A; }
+.phone.g .card .t .v { font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
+.phone.g .card .rs { border-top-color: #2A2A2A; }
+.phone.g .chips span.on { background: #2C3A52; border-color: #2C3A52; }
+.phone.g .chips span { border-color: #4A4A4A; }
+.meter { position: relative; margin: 0 0 10px; }
+.card .meter .bar { margin: 0; background: #36445A; }
+.meter .bar > u { position: absolute; top: 1px; bottom: 1px; border: 1.3px dashed rgba(230,225,222,.55); border-left: 0; border-radius: 0 3px 3px 0; }
+.meter .bar > s { transform: translateX(-1.5px); }
+.capt { position: relative; height: 17px; margin-top: 5px; font-size: 11.5px; color: #A7A19C; white-space: nowrap; }
+.capt span { position: absolute; top: 0; } .capt b { color: #E6E1DE; font-weight: 600; }
+.card .ln { overflow-wrap: anywhere; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #81C995; flex: 0 0 auto; }
+.dot.bad { background: #F28B82; }
+.pill { font-size: 11px; line-height: 1; color: #8AB4F8; background: rgba(138,180,248,.14); border-radius: 10px; padding: 4px 8px; flex: 0 0 auto; }
+.btn { display: inline-block; background: #8AB4F8; color: #0B1B33; border-radius: 20px; padding: 9px 20px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.btn.o { background: none; border: 1px solid #5A5552; color: #8AB4F8; padding: 8px 16px; }
+.btn.t { background: none; color: #8AB4F8; padding: 9px 10px; }
+.btn.off { opacity: .4; }
+.btns { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; margin-top: 12px; }
+.btns .r { margin-left: auto; }
+.sheet { background: #1C1B1B; border-radius: 28px 28px 0 0; padding: 12px 20px 22px; margin: 0 -16px -18px; }
+.grab { width: 32px; height: 4px; border-radius: 2px; background: #6A6A6A; margin: 0 auto 16px; }
+.arow { display: flex; gap: 14px; align-items: flex-start; padding: 11px 0; }
+.arow .nm { font-size: 16px; color: #E6E1DE; } .arow .ds { font-size: 13px; color: #A7A19C; margin-top: 2px; line-height: 1.35; }
+.arow .mk { flex: 0 0 28px; padding-top: 1px; }
+.fld { position: relative; border: 1px solid #6A6A6A; border-radius: 4px; height: 56px; margin-top: 12px; display: flex; align-items: center; padding: 0 8px 0 14px; font-size: 15px; color: #E6E1DE; }
+.fld .fl { position: absolute; left: 10px; top: -8px; background: #1A1A1A; padding: 0 4px; font-size: 11.5px; color: #8AB4F8; max-width: calc(100% - 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fld .tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fld.err { border-color: #F28B82; } .fld.err .fl { color: #F28B82; }
+.fld.empty .tx { color: #77736F; }
+.help { font-size: 12px; color: #A7A19C; margin: 5px 14px 0; line-height: 1.35; } .help.err { color: #F28B82; }
+.rd { color: #F28B82; font-size: 13px; margin: 6px 0 0; line-height: 1.35; }
+.ctab { background: #fff; color: #202124; border-radius: 14px; overflow: hidden; font-family: Roboto, Arial, sans-serif; }
+.ctab .bar2 { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; background: #F1F3F4; font-size: 13.5px; }
+.ctab .body { padding: 22px 18px 26px; font-size: 13.5px; }
+.notice { border-radius: 12px; padding: 10px 12px; margin: 0 0 10px; }
+.notice .nt { font-size: 14px; font-weight: 600; color: #EDE8E4; line-height: 1.3; }
+.notice .ev { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; margin-top: 4px; }
+.notice .nb { font-size: 12.5px; color: #CFC9C4; margin-top: 4px; line-height: 1.35; }
+.notice .na { margin-top: 6px; font-size: 13.5px; font-weight: 600; color: #8AB4F8; }
+.mini { font-size: 12.5px; color: #A7A19C; line-height: 1.4; }
+.swrow { display: flex; align-items: center; gap: 12px; }
+.sw { width: 44px; height: 24px; border-radius: 12px; border: 2px solid #8A8A8A; position: relative; flex: 0 0 auto; }
+.sw:after { content: ""; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #8A8A8A; }
+.sw.on { background: #8AB4F8; border-color: #8AB4F8; } .sw.on:after { left: 23px; background: #0B1B33; }
+.hd2 { font-size: 20px; margin: 0 0 12px; }
+.snack { background: #E6E1DE; color: #1c1b1b; border-radius: 6px; padding: 12px 14px; font-size: 13.5px; margin-top: 12px; }
+.grp3 { font-size: 13px; font-weight: 600; color: #A7A19C; margin: 16px 2px 8px; display: flex; align-items: center; gap: 8px; }
+.sumline { font-size: 12.5px; color: var(--muted); max-width: 86ch; margin: 6px 0 0; }
+.flag { font-family: ui-monospace, Menlo, monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+.dr { color: var(--good); } .tbl-wrap td.s { white-space: nowrap; }
+
+/* ---------- iPhone / iPad (1 px = 1 pt), classes prefixed i, variables scoped to .ios ---------- */
+.ios { --bg: #0E0E0E; --card: #1C1C1E; --ink: #F2F2F2; --txt: #D1D1D6; --sub: #98989F; --line: #38383A; --fill: #2C2C2E;
+  --yellow: #FDD663; --orange: #FFA726; --red: #FF5252; --pace: #FDD663; --tick: #C7C7CC; --cl: #E59980; --gp: #19C39A; --gm: #8AB4F8;
+  color: var(--ink); font-variant-numeric: tabular-nums; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; }
+.ios .mk { display: inline-block; vertical-align: -2px; flex: none; }
+.ibar { position: relative; width: 100%; } .ibar .itr { position: absolute; inset: 0; border-radius: 99px; overflow: hidden; }
+.ibar .itk { position: absolute; top: 50%; transform: translate(-50%, -50%); border-radius: 2px; background: var(--tick); }
+.iph { width: 393px; background: var(--bg); border-radius: 30px; padding: 10px 16px 18px; border: 1px solid #2a2a2e; }
+.itb { display: flex; justify-content: flex-end; gap: 22px; height: 30px; align-items: center; font-size: 18px; }
+.iltt { display: flex; align-items: center; gap: 7px; font-size: 34px; font-weight: 700; height: 50px; white-space: nowrap; }
+.itabs { display: flex; border-bottom: 1px solid var(--line); margin: 4px -16px 14px; }
+.itab { flex: 1; display: flex; gap: 7px; align-items: center; justify-content: center; height: 44px; font-size: 16px; font-weight: 500; position: relative; color: var(--sub); }
+.itab.on { color: var(--ink); } .itab.on:after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 2px; background: var(--ac); }
+.icard { background: var(--card); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+.ich { display: flex; align-items: center; gap: 8px; font-size: 17px; } .ich .t { flex: 1; color: var(--txt); } .ich b { font-size: 19px; }
+.ichev { color: var(--sub); font-size: 15px; }
+.iln { font-size: 14.5px; line-height: 1.35; margin-top: 5px; color: var(--txt); } .iln.m { color: var(--sub); }
+.irs { display: flex; justify-content: space-between; font-size: 14.5px; margin-top: 10px; color: var(--txt); }
+.isub2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ifoot { font-size: 15px; color: var(--sub); padding: 2px 2px 0; }
+.ihd { font-size: 13px; color: var(--sub); text-transform: uppercase; letter-spacing: .3px; margin: 18px 16px 6px; }
+.igrp { background: var(--card); border-radius: 12px; overflow: hidden; } .igrp .ic { padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 16px; } .igrp .ic:last-child { border: 0; }
+.ifn { font-size: 13px; color: var(--sub); margin: 6px 16px 0; line-height: 1.35; }
+.isheet { width: 393px; background: #1C1C1E; border-radius: 30px; padding: 8px 20px 24px; border: 1px solid #2a2a2e; }
+.igrab { width: 36px; height: 5px; border-radius: 3px; background: #5a5a5e; margin: 0 auto 14px; }
+.icaps { display: inline-block; border-radius: 99px; padding: 12px 22px; font-weight: 600; font-size: 16px; background: var(--gm); color: #000; white-space: nowrap; }
+.icaps.g { background: var(--fill); color: var(--ink); } .icaps.off { opacity: .4; } .icaps.w { background: #fff; color: #000; font-size: 14.5px; padding: 6px 14px; }
+.ifld { background: var(--fill); border-radius: 10px; padding: 12px 14px; font-size: 16px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 12px; }
+.ifld.empty { color: var(--sub); } .ifld.err { box-shadow: inset 0 0 0 1.5px var(--red); }
+.ierr { color: var(--red); font-size: 14px; margin-top: 8px; line-height: 1.35; }
+.inotice { border-radius: 14px; padding: 11px 13px; margin-bottom: 12px; } .inotice .nt { font-size: 15px; font-weight: 600; } .inotice .nb { font-size: 14px; margin-top: 3px; color: var(--txt); line-height: 1.35; }
+.iside { width: 300px; background: #161617; border-radius: 14px; padding: 16px 0 18px; border: 1px solid #2a2a2e; }
+.iacc { display: flex; align-items: center; gap: 10px; margin: 0 6px; padding: 10px 12px; border-radius: 10px; }
+.ipct { text-align: right; line-height: 1.1; } .ipct b { font-size: 16px; display: block; } .ipct small { font-size: 11px; color: var(--sub); }
+.ichip { font-size: 11px; color: var(--sub); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; }
+.iseg { display: flex; background: var(--fill); border-radius: 9px; padding: 2px; font-size: 13px; } .iseg span { flex: 1; text-align: center; padding: 5px 0; border-radius: 7px; color: var(--txt); } .iseg .on { background: #636366; color: #fff; font-weight: 600; }
+.iw { background: var(--card); border-radius: 22px; padding: 16px; overflow: hidden; color: var(--txt); display: flex; flex-direction: column; width: 160px; height: 160px; flex: 0 0 auto; }
+.ihdr { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; min-width: 0; } .inm { overflow: hidden; text-overflow: ellipsis; }
+.iwrap { padding: 22px; border-radius: 26px; background: linear-gradient(135deg, #5b4f8f 0%, #9a6aa8 55%, #d8899a 100%); overflow-x: auto; max-width: 100%; display: inline-flex; gap: 22px; align-items: flex-start; }
+.iwrap .note { color: #f1ecf5; }
+.card .ln.spn { border-top: 1px solid #3A3532; padding-top: 7px; margin-top: 8px; font-weight: 600; color: #E6E1DE; font-size: 13.5px; }
+.phone.cl { background: #0D0D0D; } .phone.cl .card { background: #1A1A1A; } .phone.cl .card .meter .bar { background: #4A3A35; } .phone.cl .card .rs { border-top-color: #2A2A2A; }
+.iln.spni { font-weight: 600; color: var(--ink); margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 14px; }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mkClaude" viewBox="0 0 24 24"><path fill="currentColor" d="m4.7144,15.9555 4.7174,-2.6471 0.079,-0.2307 -0.079,-0.1275 h-0.2307 l-0.7893,-0.0486 -2.6956,-0.0729 -2.3375,-0.0971 -2.2646,-0.1214 -0.5707,-0.1215 -0.5343,-0.7042 0.0546,-0.3522 0.4797,-0.3218 0.686,0.0608 1.5179,0.1032 2.2767,0.1578 1.6514,0.0972 2.4468,0.255 h0.3886 l0.0546,-0.1579 -0.1336,-0.0971 -0.1032,-0.0972 -2.339,-1.5869 -2.55,-1.6879 -1.3356,-0.9714 -0.7225,-0.4918 -0.3643,-0.4614 -0.1578,-1.0078 0.6557,-0.7225 0.8803,0.0607 0.2246,0.0607 0.8925,0.686 1.9064,1.4754 2.4893,1.8336 0.3643,0.3035 0.1457,-0.1032 0.0182,-0.0728 -0.164,-0.2733 -1.3539,-2.4467 -1.445,-2.4893 -0.6435,-1.032 -0.17,-0.6194 c-0.0607,-0.255 -0.1032,-0.4674 -0.1032,-0.7285 L6.287,0.1335 6.6997,0 7.6954,0.1336 8.1144,0.4978 8.7336,1.9125 9.7354,4.1407 11.2897,7.1703 11.745,8.0688 11.9879,8.9006 12.2308,9.7324 h0.1579 v-0.1457 l0.1275,-1.706 0.2368,-2.0947 0.2307,-2.6957 0.0789,-0.7589 0.3764,-0.9107 0.7468,-0.4918 0.5828,0.2793 0.4797,0.686 -0.0668,0.4433 -0.2853,1.8517 -0.5586,2.9021 -0.3643,1.9429 h0.2125 l0.2429,-0.2429 0.9835,-1.3053 1.6514,-2.0643 0.7286,-0.8196 0.85,-0.9046 0.5464,-0.4311 h1.0321 l0.759,1.1293 -0.34,1.1657 -1.0625,1.3478 -0.8804,1.1414 -1.2628,1.7 -0.7893,1.36 0.0729,0.1093 0.1882,-0.0183 2.8535,-0.607 1.5421,-0.2794 1.8396,-0.3157 0.8318,0.3886 0.091,0.3946 -0.3278,0.8075 -1.967,0.4857 -2.3072,0.4614 -3.4364,0.8136 -0.0425,0.0304 0.0486,0.0607 1.5482,0.1457 0.6618,0.0364 h1.621 l3.0175,0.2247 0.7892,0.522 0.4736,0.6376 -0.079,0.4857 -1.2142,0.6193 -1.6393,-0.3886 -3.825,-0.9107 -1.3113,-0.3279 h-0.1822 v0.1093 l1.0929,1.0686 2.0035,1.8092 2.5075,2.3314 0.1275,0.5768 -0.3218,0.4554 -0.34,-0.0486 -2.2039,-1.6575 -0.85,-0.7468 -1.9246,-1.621 h-0.1275 v0.17 l0.4432,0.6496 2.3436,3.5214 0.1214,1.0807 -0.17,0.3521 -0.6071,0.2125 -0.6679,-0.1214 -1.3721,-1.9246 -1.4147,-2.169 -0.1397,0.079 -0.674,7.2552 -0.3156,0.3703 -0.7286,0.2793 -0.6071,-0.4614 -0.3218,-0.7468 0.3218,-1.4753 0.3886,-1.9246 0.3157,-1.53 0.2853,-1.9004 0.17,-0.6314 -0.0121,-0.0425 -0.1397,0.0182 -1.4328,1.9672 -2.1796,2.9446 -1.7243,1.8456 -0.4128,0.164 -0.7164,-0.3704 0.0667,-0.6618 0.4008,-0.5889 2.386,-3.0357 1.4389,-1.882 0.929,-1.0868 -0.0062,-0.1579 h-0.0546 l-6.3385,4.1164 -1.1293,0.1457 -0.4857,-0.4554 0.0608,-0.7467 0.2307,-0.2429 1.9064,-1.3114Z"/></symbol><symbol id="mkGpt" viewBox="0 0 24 24"><g transform="translate(1.995 2)"><path fill="currentColor" d="M11.248,18.25 q-0.825,0 -1.568,-0.314 a4.3,4.3 0 0 1 -1.32,-0.874 4,4 0 0 1 -1.304,0.214 4,4 0 0 1 -2.046,-0.544 4.270,4.270 0 0 1 -1.518,-1.485 4,4 0 0 1 -0.560,-2.095 q0,-0.48 0.131,-1.04 A4.4,4.4 0 0 1 2.04,10.71 a4.07,4.07 0 0 1 0.017,-3.4 4.2,4.2 0 0 1 1.056,-1.418 3.8,3.8 0 0 1 1.6,-0.842 3.9,3.9 0 0 1 0.76,-1.683 q0.593,-0.759 1.451,-1.188 a4.04,4.04 0 0 1 1.832,-0.429 q0.825,0 1.567,0.313 0.742,0.314 1.32,0.875 a4,4 0 0 1 1.304,-0.215 q1.106,0 2.046,0.545 a4.14,4.14 0 0 1 1.501,1.485 q0.578,0.941 0.578,2.095 0,0.48 -0.132,1.04 0.66,0.61 1.023,1.419 0.363,0.792 0.363,1.666 0,0.892 -0.38,1.717 a4.3,4.3 0 0 1 -1.072,1.435 3.8,3.8 0 0 1 -1.584,0.825 3.8,3.8 0 0 1 -0.775,1.683 4.06,4.06 0 0 1 -1.436,1.188 4.04,4.04 0 0 1 -1.832,0.429 m-4.076,-2.062 q0.825,0 1.435,-0.347 l3.103,-1.782 a0.36,0.36 0 0 0 0.164,-0.313 v-1.42 L7.881,14.62 a0.67,0.67 0 0 1 -0.726,0 l-3.118,-1.798 a0.5,0.5 0 0 1 -0.017,0.115 v0.198 q0,0.841 0.396,1.551 0.413,0.693 1.139,1.089 a3.2,3.2 0 0 0 1.617,0.412 m0.165,-2.69 a0.4,0.4 0 0 0 0.181,0.05 q0.083,0 0.165,-0.05 l1.238,-0.71 -3.977,-2.31 a0.7,0.7 0 0 1 -0.363,-0.643 v-3.58 q-0.825,0.362 -1.32,1.122 a2.9,2.9 0 0 0 -0.495,1.65 q0,0.809 0.413,1.55 0.412,0.743 1.072,1.123 z m3.91,3.663 q0.875,0 1.585,-0.396 a2.96,2.96 0 0 0 1.534,-2.64 v-3.564 a0.32,0.32 0 0 0 -0.165,-0.297 l-1.254,-0.726 v4.604 a0.7,0.7 0 0 1 -0.363,0.643 l-3.119,1.799 a3,3 0 0 0 1.783,0.577 m0.627,-6.039 V8.878 L10.01,7.822 8.129,8.878 v2.244 l1.881,1.056 z M7.057,5.859 a0.7,0.7 0 0 1 0.363,-0.644 l3.119,-1.798 a3,3 0 0 0 -1.782,-0.578 q-0.874,0 -1.584,0.396 A2.96,2.96 0 0 0 6.05,4.324 a3.07,3.07 0 0 0 -0.396,1.551 v3.547 q0,0.199 0.165,0.314 l1.237,0.726 z m8.383,7.887 q0.825,-0.364 1.303,-1.123 0.495,-0.758 0.495,-1.65 a3.15,3.15 0 0 0 -0.412,-1.55 q-0.413,-0.743 -1.073,-1.123 l-3.086,-1.782 q-0.099,-0.065 -0.181,-0.049 a0.3,0.3 0 0 0 -0.165,0.05 l-1.238,0.692 3.993,2.327 a0.6,0.6 0 0 1 0.264,0.264 0.64,0.64 0 0 1 0.1,0.363 z m-3.317,-8.382 a0.63,0.63 0 0 1 0.726,0 l3.135,1.831 v-0.297 q0,-0.792 -0.396,-1.501 a2.860,2.860 0 0 0 -1.105,-1.155 q-0.71,-0.43 -1.65,-0.43 q-0.825,0 -1.436,0.347 L8.294,5.941 a0.36,0.36 0 0 0 -0.165,0.314 v1.418 z"/></g></symbol><symbol id="ring42" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="21.1 50.3" transform="rotate(-90 12 12)"/><line x1="10.76" y1="15.80" x2="8.76" y2="21.98" stroke="currentColor" stroke-width="1.8" stroke-opacity=".8"/></symbol><symbol id="mkGem" viewBox="0 0 24 24"><path fill="currentColor" d="M11.04,19.32 Q12,21.51 12,24 q0,-2.49 0.93,-4.68 0.96,-2.19 2.58,-3.81 t3.81,-2.55 Q21.51,12 24,12 q-2.49,0 -4.68,-0.93 a12.3,12.3 0 0 1 -3.81,-2.58 a12.3,12.3 0 0 1 -2.58,-3.81 Q12,2.49 12,0 q0,2.49 -0.96,4.68 -0.93,2.19 -2.55,3.81 a12.3,12.3 0 0 1 -3.81,2.58 Q2.49,12 0,12 q2.49,0 4.68,0.96 2.19,0.93 3.81,2.55 t2.55,3.81 Z"/></symbol><symbol id="mkClaudeI" viewBox="0 0 24 24"><g transform="translate(2.16 2.16) scale(.82)"><use href="#mkClaude" width="24" height="24"/></g></symbol></defs></svg>
+
+<div class="page">
+  <p class="eyebrow">CCRM-55 (Antigravity Account) · rev B · 2026-11-02 · Android and iPhone/iPad</p>
+  <h1>Antigravity Account Wireframe</h1>
+  <div class="q" style="border-color:var(--accent)"><b style="color:var(--accent)">Rev B, 2 Nov.</b> You approved rev A with these changes, all drawn below.
+    <b>(1) Name:</b> the provider is "Gemini" everywhere (Add-account rows, strings, decisions, the pool label); "Antigravity" stays only in the trademark line and in Google’s own sign-in addresses.
+    <b>(2) New standard for every account (Claude, ChatGPT, Gemini):</b> when Weekly is spent, the 5h window is greyed out but keeps its own figure, bar and reset line, with one note that the weekly limit is spent. It replaces state C’s "5h is fresh" lines and is drawn in the new <b>§3b</b> for Claude Teams and Gemini on Android (cards, open card, notification, widget) and iPhone.
+    <b>(3) App icon:</b> §7 draws today’s Pulse and two Gemini variants; I recommend keeping it.
+    <b>(4) Theme colour:</b> §8 shows today’s grids and the two options; I recommend no change.
+    <b>(5)</b> Every v2.0 rule applies to a Gemini account unchanged (§1, last line). Every rev A state is kept; sizes and styling are rev A’s.</div>
+  <p class="lede">
+    Adding a <b>Gemini</b> account to Cooldown, on <b>Android and iOS in the same release</b>. Your five decisions of
+    2 Nov are drawn, not reopened: Gemini 5h and Weekly are the account’s own windows (Weekly leads, 5h is the companion), Argon is a
+    model-limit row, the Claude + GPT pool stays hidden until it is used, Google’s own description line is never shown, and the
+    disclosure is the existing "Unofficial" line with Google added. A Gemini account is <b>drawn exactly like a Claude or ChatGPT
+    account after v2.0</b>, with its own mark, its Gemini Blue accent (<code>#8AB4F8</code> dark) and the neutral room surface.
+  </p>
+  <p class="lede">Fixtures (one moment, as the v2.0 wireframes: <b>Wednesday 2:50 pm</b>). <b>Gemini (Pro)</b>: Weekly resets Sat 4:51 pm
+    (74 h left, 55.9% gone); 5h resets 5:30 pm (2h 40m left, 46.7% gone); Argon resets Wed 9:28 am (3.2% gone). Light-use values are the
+    respike record (Weekly 1.5% and Argon 1.1% after two prompts); "busy" faces use Weekly 18%, 5h 27%. <b>Teams</b> (Claude Max): Weekly 52%,
+    39% of the week gone. Figures truncate as everywhere else (1.5% reads 1%). Sections 2 to 4 (and 3b) show every state A to L; the new strings are
+    collected in §5, what I could not settle is in §6, the icon is §7 and the theme colour §8.</p>
+
+  <hr class="hr">
+  <h2>1 · Decisions drawn</h2>
+  <div class="tbl-wrap"><table>
+    <tr><th>#</th><th>Decision (2 Nov)</th><th>Where it shows</th></tr>
+    <tr><td>1</td><td><b>Windows.</b> <code>gemini-5h</code> and <code>gemini-weekly</code> are the account’s 5h and Weekly; Weekly leads, 5h companion. <code>gemini-argon-wtu-weekly</code> is a per-model limit row "Argon" on the Weekly card, like a Claude model cap, hidden by "Show model limits" off.</td><td>A to D, I, J, K (not-started, busy, spent; Argon with and without the toggle)</td></tr>
+    <tr><td>2</td><td><b>Claude + GPT pool</b> (<code>3p-5h</code>, <code>3p-weekly</code>): hidden while both are untouched; once either is used, a second card pair "Claude + GPT in Antigravity" (Weekly + 5h, same anatomy) appears under the Gemini cards.</td><td>E (Android and iOS)</td></tr>
+    <tr><td>3</td><td><b>No Google description line</b> ("…fully refresh in 3 days, 12 hours"). Only Cooldown’s usual reset copy.</td><td>Every card: the reset lines are the Claude/ChatGPT ones</td></tr>
+    <tr><td>4</td><td><b>Disclosure, no new box.</b> "Unofficial. Not affiliated with Anthropic, OpenAI or Google", and "“Gemini” and “Antigravity” are trademarks of Google LLC" where trademarks are listed. The README carries the ToS detail (not drawn).</td><td>L (Android About, iOS About), iOS Add sheet and empty state</td></tr>
+    <tr><td>5</td><td><b>Both platforms in this release.</b> iOS gets the Gemini provider, its Add row, sign-in sheet, cards, sidebar row and widget faces.</td><td>§2 and §4</td></tr>
+    <tr><td>—</td><td><b>Not drawn, noted.</b> The v2.0 All tab (CCRM-98 (Summary Tab)) is left off these phones to keep them short: a Gemini account sits in it, its Weekly ranked by Pace like any other; the Claude + GPT pool is not ranked. A build without the client secret (<code>antigravityClientSecret</code>) hides the Gemini row in Add account instead of failing; the sheet is then the two rows of today.</td><td>—</td></tr>
+  </table></div>
+  <p class="sub" style="margin-top:14px"><b>Every v2.0 rule applies to a Gemini account unchanged:</b> Weekly first or 5h first per the account’s Headline, Auto takeover, the pace words and the allowance, the pace-mark caption, Vs pace, the Summary (All tab) ranking, and Show model limits for Argon.</p>
+
+  <hr class="hr">
+  <h2>2 · Sign-in flow</h2>
+  <p class="sub">The Claude paste path’s shape (spec <code>app.md</code> §7.1): the Android flow lives <b>inside the account card</b> in Settings › Accounts, the iOS flow is a
+    <b>sheet</b>. Google refuses embedded web views, so the browser step is a <b>Custom Tab</b> (Android) or <b>ASWebAuthenticationSession</b> (iOS). It ends on Google’s hosted page,
+    which shows a <code>4/…</code> code; the field takes that code <b>or the whole address</b> of the page. Drawn in Gemini Blue; new strings are tagged.</p>
+  <h3>Android</h3>
+  <div class="scroll"><div class="row" id="sf-and"></div></div>
+  <h3>iPhone</h3>
+  <div class="scroll"><div class="row" id="sf-ios"></div></div>
+
+  <hr class="hr">
+  <h2>3 · The Android states, Fold cover (411 dp)</h2>
+  <p class="sub">Compact cards, as approved for the v2.0 pages (the pace caption of <code>2026-11-02-pace-line-label.html</code> V1 sits under each started bar; the open card is drawn once, in D).
+    Every started window follows the Weekly-first ladder unchanged.</p>
+  <h3>A · B · C — what a window can be doing</h3>
+  <div class="scroll"><div class="row" id="s-abc"></div></div>
+  <h3>D — Argon, and the toggle</h3>
+  <div class="scroll"><div class="row" id="s-d"></div></div>
+  <h3>E — the Claude + GPT pool</h3>
+  <div class="scroll"><div class="row" id="s-e"></div></div>
+  <h3>F — the plan pill</h3>
+  <div class="scroll"><div class="row" id="s-f"></div></div>
+  <h3>G · H — when it breaks</h3>
+  <div class="scroll"><div class="row" id="s-gh"></div></div>
+  <h3>I — the narrowest width (320 dp)</h3>
+  <div class="scroll"><div class="row" id="s-i"></div></div>
+  <h3>J — the always-on notification</h3>
+  <div class="scroll"><div class="row" id="s-j"></div></div>
+
+  <hr class="hr">
+  <h2>3b · Weekly spent: the 5h greyed out (every account)</h2>
+  <p class="sub">New standard for Claude, ChatGPT and Gemini alike (ChatGPT is the same in its Green): when the Weekly window is spent, the 5h window is <b>shown disabled, not hidden and not zeroed</b>: its own figure, bar and reset line at about 45% opacity, plus one full-opacity note that the weekly limit is spent. Drawn for a Claude Teams account and a Gemini account. It replaces state C’s "5h is fresh" lines.</p>
+  <h3>Android · compact cards</h3>
+  <div class="scroll"><div class="row" id="s3b-a"></div></div>
+  <h3>Android · the open 5h card</h3>
+  <div class="scroll"><div class="row" id="s3b-o"></div></div>
+  <h3>Android · the notification, expanded panel</h3>
+  <div class="scroll"><div class="row" id="s3b-n"></div></div>
+  <h3>Android · a widget face (Number 4×1, window 5h)</h3>
+  <div class="scroll"><div class="row" id="s3b-w"></div></div>
+  <h3>iPhone · cards</h3>
+  <div class="scroll"><div class="row" id="s3b-i"></div></div>
+
+  <hr class="hr">
+  <h2>4 · iPhone and iPad (393 pt)</h2>
+  <p class="sub">iOS carries the same rules in iOS grammar: the 7-day card shows model limits as a <b>second half</b> (All | Argon), and its notices are the one-notice style (cards dim to 45%).
+    The sidebar, widgets and About are shown for Gemini; everything else (Overview, lock screen, Live Activity) swaps in the same way and is not redrawn.</p>
+  <h3>States on the main screen (A, C, D, E, G, H)</h3>
+  <div class="scroll"><div class="row" id="i-main"></div></div>
+  <h3>K · iPad sidebar and a home widget</h3>
+  <div class="scroll"><div class="row" id="i-k"></div></div>
+  <h3>L · About (Android and iOS)</h3>
+  <div class="scroll"><div class="row" id="i-l"></div></div>
+
+  <hr class="hr">
+  <h2>5 · New copy for Robin</h2>
+  <p class="sub">Every string this wireframe adds or changes. <span class="flag">new copy</span> are my proposals: say "change X" on any of them. <b>decided</b> are your 2 Nov wording.
+    Strings not listed are today’s, unchanged (reset lines, the Weekly ladder, the plan-error lines, "Sign-in stopped working", "Out until …").</p>
+  <div class="tbl-wrap"><table id="strings"><tr><th>Where</th><th>Platform</th><th>String</th><th>Status</th></tr></table></div>
+
+  <hr class="hr">
+  <h2>6 · Open questions</h2>
+  <p class="sub">Real gaps only; each one has a default drawn above, so none blocks approval if you accept the default.</p>
+  <ol class="dec" id="qs"></ol>
+
+  <hr class="hr">
+  <h2>7 · App icon</h2>
+  <p class="sub">Robin asks whether the launcher icon should reflect the new provider. Same geometry as <code>ic_launcher_foreground.xml</code> and <code>ic_launcher_background.xml</code> (Pulse, CCRM-60 (Dual Identity) round 10), drawn at 192 px and at 48 px, the true launcher size. The iOS AppIcon is the same art (one 1024 px image, no mask crop).
+    <b>Recommendation: V1, keep it.</b> The Pulse is the app’s identity, not a provider list: the trace is full from x 12 to 96, so a third provider has no honest place on it, and V2 recolours "even pace", the one element that is not an account.</p>
+  <div class="scroll"><div class="row" id="t-icon"></div></div>
+
+  <hr class="hr">
+  <h2>8 · Theme colour</h2>
+  <p class="sub">Gemini Blue already exists on Android as Gemini’s provider colour, provider-only and outside both grids, exactly like ChatGPT Green (<code>foundations.md</code> §1.2). <b>Recommendation: option A, no change:</b> Gemini accounts default to Gemini Blue through "Per provider", as ChatGPT ones default to ChatGPT Green. Option B offers both provider colours in both grids.</p>
+  <div class="scroll"><div class="row" id="t-theme"></div></div>
+</div>
+
+<script>
+// ---------- fixtures ----------
+const CL = '#E59980', GP = '#19C39A', GM = '#8AB4F8';
+
+const AND = (() => {
+function pace(used, gone) { const q = 100 - used, r = 100 - gone; const m = Math.max(r, q); return m === 0 ? 0 : (r - q) / m * 100; }
+function band(used, gone) {
+  if (used >= 99.5) return 'Spent';
+  const p = pace(used, gone);
+  if (Math.abs(p) <= 5) return 'On pace';
+  if (p < -50) return 'Use before reset';
+  if (p < 0) return 'Room to spare';
+  if (p > 50) return 'Nearly out';
+  return 'Slow down';
+}
+function allowance(used, hoursLeft) {
+  const q = 100 - used;
+  if (hoursLeft < 24) return `${Math.round(q)}% left, ${Math.round(hoursLeft)}h`;
+  const d = q / (hoursLeft / 24);
+  return d < 1 ? '<1%/day' : `≈${Math.round(d)}%/day`;
+}
+function sev(p, accent) { return p >= 100 ? '#FF5252' : p > 90 ? '#FFA726' : p > 80 ? '#F5D35A' : accent; } // spec §5: ≥100, >90, >80
+const mark = (id, color, s = 14) => `<svg width="${s}" height="${s}" style="color:${color};flex:0 0 auto" aria-hidden="true"><use href="#${id}"/></svg>`;
+function bar(p, tick, color, h = 13, light = false) {
+  const track = light ? '#D6D6D6' : '#3A3A3A';
+  const red = p != null && tick != null && p > tick ? `<o style="left:${tick}%;width:${Math.min(p, 100) - tick}%;background:#FF5252"></o>` : '';
+  const tk = tick != null && p != null ? `<s style="left:${tick}%;background:${light ? 'rgba(31,31,31,.6)' : 'rgba(236,236,236,.7)'}"></s>` : '';
+  return `<div class="bar" style="height:${h}px;border-radius:${h / 2}px;background:${track}"><i style="width:${Math.min(p ?? 0, 100)}%;background:${color}"></i>${red}${tk}</div>`;
+}
+function nc({ light = false, mk = 'mkClaude', ac = CL, title, pct, tick, sub, sub2, fig = 32, panel = '', expanded = false, tag = '' }) {
+  const col = sev(pct, ac);
+  return `<div class="scroll"><div class="shade ${light ? 'light' : ''}"><div class="nc">
+    <div class="apphdr">${mark('ring42', ac, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span>${expanded ? '<span class="sp">⌃</span>' : '<span class="sp">⌄</span>'}</div>
+    <div class="hb"><div class="lft"><div class="hl">${mark(mk, ac)}<span class="lbl">${title}</span></div>${bar(pct, tick, col, 13, light)}
+      <div class="hsub">${sub}</div>${sub2 ? `<div class="hsub">${sub2}</div>` : ''}</div>
+      <div class="figwrap"><div class="fig" style="font-size:${fig}px;color:${col}">${pct}%</div></div></div>
+    ${panel ? `<div class="pnl">${panel}</div>` : ''}
+    ${expanded ? '<div class="acts">Refresh</div>' : ''}
+  </div></div></div>`;
+}
+const crow = (l, r, v, tick, ac) => `<div class="crow"><div class="ch"><span class="cl">${l}</span><span class="cr">${r}</span><span class="cv">${v}%</span></div>${bar(v, tick, sev(v, ac))}</div>`;
+const col = (cap, cls, body, note) => `<div class="col"><p class="cap ${cls}">${cap}</p>${body}${note ? `<p class="note">${note}</p>` : ''}</div>`;
+function chart({ w = 355, h = 150, gone, pts, now, label, proj, accent = CL }) {
+  const L = 0, R = w - 8, T = 16, B = h - 22, H = B - T;
+  const X = f => L + (R - L) * f / 100, Y = v => B - H * v / 100;
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;font-family:Roboto,Arial,sans-serif">`;
+  for (const [v, c] of [[100, '#E55B4D'], [90, '#E8A33A'], [80, '#D7C25A']]) s += `<line x1="0" x2="${w}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-opacity=".75" stroke-dasharray="2 3"/><text x="${w - 2}" y="${Y(v) - 1}" fill="${c}" font-size="9.5" text-anchor="end">${v}%</text>`;
+  s += `<line x1="2" x2="20" y1="${Y(100) + 9}" y2="${Y(100) + 9}" stroke="#F5D35A" stroke-width="2.4" stroke-dasharray="3 2.5"/><text x="25" y="${Y(100) + 12.5}" fill="#F5D35A" font-size="10.5">even pace</text>`;
+  // amber wash where usage sits above the diagonal
+  const poly = pts.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ');
+  s += `<polygon points="${X(pts[0][0])},${B} ${poly} ${X(pts[pts.length - 1][0])},${B}" fill="${accent}" fill-opacity=".22"/>`;
+  s += `<clipPath id="ab${gone}"><polygon points="${X(0)},${Y(0)} ${X(100)},${Y(100)} ${X(100)},${T - 10} ${X(0)},${T - 10}"/></clipPath>`;
+  s += `<polygon clip-path="url(#ab${gone})" points="${X(pts[0][0])},${B} ${poly} ${X(pts[pts.length - 1][0])},${B}" fill="#C88A1E" fill-opacity=".45"/>`;
+  s += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(100)}" stroke="#F5D35A" stroke-width="2.2" stroke-dasharray="3 2.5"/>`;
+  s += `<line x1="${X(gone)}" x2="${X(gone)}" y1="${T}" y2="${B}" stroke="#8a8582" stroke-width="1"/>`;
+  s += `<polyline points="${poly}" fill="none" stroke="${accent}" stroke-width="2.4" stroke-linejoin="round"/>`;
+  for (const [x, y] of pts.slice(0, -1)) s += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.6" fill="${accent}"/>`;
+  const [lx, ly] = pts[pts.length - 1];
+  if (proj) { s += `<line x1="${X(lx)}" y1="${Y(ly)}" x2="${X(proj[0])}" y2="${Y(proj[1])}" stroke="${accent}" stroke-opacity=".8" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(proj[0])}" cy="${Y(proj[1])}" r="5" fill="none" stroke="${accent}" stroke-width="2"/><text x="${X(proj[0]) - 6}" y="${Y(proj[1]) + 16}" fill="#E6E1DE" font-size="11" font-weight="700" text-anchor="end">${proj[2]}</text>`; }
+  s += `<circle cx="${X(lx)}" cy="${Y(ly)}" r="5" fill="${accent}"/><text x="${X(lx) - 8}" y="${Y(ly) - 8}" fill="#fff" font-size="12" font-weight="700" text-anchor="end">${label}</text>`;
+  s += `<line x1="0" x2="${w}" y1="${B}" y2="${B}" stroke="#55504c"/>`;
+  s += `<text x="0" y="${h - 6}" fill="#CFC9C4" font-size="10.5">${now[0]}</text><text x="${X(gone)}" y="${h - 6}" fill="#CFC9C4" font-size="10.5" text-anchor="middle">now</text><text x="${w}" y="${h - 6}" fill="#CFC9C4" font-size="10.5" text-anchor="end">${now[1]}</text>`;
+  return s + '</svg>';
+}
+  return { pace, band, allowance, sev, mark, bar, nc, crow, col, chart };
+})();
+const IOS = (() => {
+const sev=(p,a)=>p==null?'var(--txt)':p>=100?'var(--red)':p>90?'var(--orange)':p>80?'var(--yellow)':`var(--${a})`;
+const mn=n=>n<0?'−'+Math.abs(n):'+'+n;
+function pace(u,g){const q=100-u,r=100-g,m=Math.max(r,q);return m?(r-q)/m*100:0}
+function band(u,g){if(u>=99.5)return'Spent';const p=pace(u,g);if(Math.abs(p)<=5)return'On pace';if(p<-50)return'Use before reset';if(p<0)return'Room to spare';if(p>50)return'Nearly out';return'Slow down'}
+function allow(u,h){const q=100-u;if(h<24)return`${Math.round(q)}% left, ${Math.round(h)}h`;const d=q/(h/24);return d<1?'<1%/day':`≈${Math.round(d)}%/day`}
+const words=w=>w.used>=99.5?`Out until ${w.rs}`:`${band(w.used,w.gone)} · ${allow(w.used,w.hrs)}`;
+const bandOnly=w=>w.used>=99.5?`Out until ${w.rs}`:band(w.used,w.gone);
+const hot=w=>['Slow down','Nearly out'].includes(band(w.used,w.gone))||w.used>=99.5;
+const signed=w=>`Pace ${mn(Math.round(pace(w.used,w.gone)))}% · an even week is ${Math.round(w.gone)}% by now`;
+// ---- bar and chart (the shipped drawing, as in 2026-10-24-ios-widgets.html) ----
+function bar(a,pct,gone,h){const p=Math.min(pct??0,100),c=`var(--${a})`,fill=sev(pct,a),over=gone!=null&&p<100&&p>gone+3;
+  let i=`<div style="position:absolute;inset:0;background:${c};opacity:.28"></div>`;
+  if(over)i+=`<div style="position:absolute;left:0;top:0;bottom:0;width:${gone}%;background:${fill}"></div><div style="position:absolute;left:${gone}%;top:0;bottom:0;width:${p-gone}%;background:var(--red)"></div>`;
+  else if(p>0)i+=`<div style="position:absolute;left:0;top:0;bottom:0;width:${Math.max(p,1.5)}%;background:${fill};border-radius:99px"></div>`;
+  const th=h+2*Math.max(3,h*.45),tw=Math.max(2.5,h*.38);
+  return `<div class="ibar" style="height:${h}px;margin:${(th-h)/2}px 0"><div class="itr">${i}</div>${gone!=null?`<div class="itk" style="left:${gone}%;width:${tw}px;height:${th}px"></div>`:''}</div>`}
+function chart(a,Wd,H,w,lines){const top=lines?4:18,base=H-(lines?4:18),X=v=>v*Wd,Y=v=>base-v/100*(base-top);
+  let s=`<svg width="${Wd}" height="${H}" style="display:block;overflow:visible">`;
+  [[80,'yellow'],[90,'orange'],[100,'red']].forEach(([v,c])=>s+=`<line x1="0" x2="${Wd}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--${c})" stroke-opacity=".7" stroke-dasharray="2 4"/>`);
+  if(!lines){s+=`<text x="${Wd}" y="${Y(100)-4}" fill="var(--red)" font-size="10" text-anchor="end">100%</text><line x1="0" x2="13" y1="${Y(95)}" y2="${Y(95)}" stroke="var(--pace)" stroke-width="2.6" stroke-dasharray="4 3"/><text x="18" y="${Y(95)+3.5}" fill="var(--pace)" font-size="10.5">even pace</text>`}
+  s+=`<line x1="0" x2="${Wd}" y1="${base}" y2="${base}" stroke="var(--line)"/><line x1="0" y1="${Y(0)}" x2="${Wd}" y2="${Y(100)}" stroke="var(--pace)" stroke-width="2.4" stroke-dasharray="5 4"/>`;
+  if(w){const pts=w.s.map(([x,y])=>[X(x),Y(y)]),c=`var(--${a})`,lc=w.over?'var(--red)':c,last=w.s[w.s.length-1],lp=pts[pts.length-1];
+    s+=`<line x1="${X(w.nowX)}" x2="${X(w.nowX)}" y1="${top-4}" y2="${base}" stroke="var(--sub)" stroke-opacity=".7"/><path d="M${pts[0][0]},${base} L${pts.map(p=>p.join(',')).join(' L')} L${lp[0]},${base}Z" fill="${c}" fill-opacity=".24"/>`;
+    if(w.projY!=null&&last[1]<100){const pr=w.projY,ex=pr>100?last[0]+(1-last[0])*(100-last[1])/(pr-last[1]):1,ey=Y(Math.min(pr,100));
+      s+=`<line x1="${lp[0]}" y1="${lp[1]}" x2="${X(ex)-(ex>=1?4:0)}" y2="${ey}" stroke="${c}" stroke-opacity=".75" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(ex)-(ex>=1?4:0)}" cy="${ey}" r="4" fill="none" stroke="${pr>=100?'var(--red)':c}" stroke-width="1.8"/>`;
+      if(pr<100&&!lines)s+=`<text x="${X(1)-30}" y="${ey+(pr>=60?14:-8)}" fill="var(--txt)" font-size="11.5" font-weight="700" text-anchor="end">~${pr}%</text>`}
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${lc}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    pts.slice(0,-1).forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.4" fill="${c}"/>`);
+    s+=`<circle cx="${lp[0]}" cy="${lp[1]}" r="5" fill="${lc}"/>`;
+    if(!lines){s+=`<text x="${lp[0]-8}" y="${lp[1]-9}" fill="var(--ink)" font-size="12" font-weight="700" text-anchor="end">${last[1]}%</text><text x="0" y="${base+14}" fill="var(--sub)" font-size="11">${w.start}</text>`;
+      if(X(w.nowX)>52&&X(w.nowX)<Wd-52)s+=`<text x="${X(w.nowX)}" y="${base+14}" fill="var(--sub)" font-size="11" text-anchor="middle">now</text>`;
+      s+=`<text x="${Wd}" y="${base+14}" fill="var(--sub)" font-size="11" text-anchor="end">${w.end}</text>`}}
+  return s+'</svg>'}
+  return { sev, mn, pace, band, allow, words, bandOnly, hot, signed, bar, chart };
+})();
+const { band, allowance, sev, mark, nc, crow, col, chart: achart } = AND;
+const $ = id => document.getElementById(id);
+const tagNew = '<span class="tag new">new copy</span>';
+const flag = t => `<span class="flag">${t}</span>`;
+
+// Gemini fixtures. used = raw percent; rounded only when drawn.
+const WK = { used: 1.5, gone: 55.9, hrs: 74, rs: 'Sat 4:51 pm', day: 'Sat', inT: '3d 2h' };
+const H5 = { used: 12, gone: 46.7, hrs: 2.667, rs: '5:30 pm', inT: '2h 40m' };
+const AR = { used: 1.1, gone: 3.2, hrs: 162.6, rs: 'Wed 9:28 am', day: 'Wed', inT: '6d 18h' };
+const NS = { ns: true };
+const WKB = { ...WK, used: 18 }, H5B = { ...H5, used: 27 };          // busy
+const WKS = { ...WK, used: 100 };                                    // spent
+const P3W = { used: 6, gone: 2.1, hrs: 164.4, rs: 'Wed 11:15 am', day: 'Wed', inT: '6d 20h' };
+const P35 = { used: 4, gone: 70, hrs: 1.5, rs: '4:20 pm', inT: '1h 30m' };
+const TW = { used: 52, gone: 38.9, hrs: 102.7 };
+
+// ---------- Android pieces ----------
+const ctx = document.createElement('canvas').getContext('2d'); ctx.font = '11.5px Roboto, Arial, sans-serif';
+const tw = t => ctx.measureText(t).width;
+function capt(u, m, w) {
+  const dd = m - u, n = Math.floor(Math.abs(dd) + 0.5), dist = Math.abs(dd) < 1 ? 'on it' : dd > 0 ? `${n} under` : `${n} over`;
+  const txt = `${m}% pace mark · ${dist}`, x = w * m / 100, html = `<b>${m}%</b> pace mark · ${dist}`;
+  return x + 5 + tw(txt) <= w ? `<div class="capt"><span style="left:${x + 5}px">${html}</span></div>` : `<div class="capt"><span style="right:${w - x + 5}px">${html}</span></div>`;
+}
+function meter(u, m, { caption = true, cw = 351, ac = GM } = {}) {
+  const gap = m != null && u < m ? `<u style="left:${u}%;width:${m - u}%"></u>` : '';
+  const red = m != null && u > m ? `<o style="left:${m}%;width:${Math.min(u, 100) - m}%;background:#FF5252"></o>` : '';
+  const tk = m != null ? `<s style="left:${m}%"></s>` : '';
+  return `<div class="meter"><div class="bar" style="height:10px;border-radius:5px"><i style="width:${Math.min(u, 100)}%;background:${sev(u, ac)}"></i>${gap}${red}${tk}</div>${caption && m != null ? capt(u, m, cw) : ''}</div>`;
+}
+const head = (t, u, ch = '⌄') => `<div class="t">${t}<span class="v" style="color:${sev(u, GM)}">${Math.floor(u)}%</span><span class="chev">${ch}</span></div>`;
+const L = (txt, m) => `<div class="ln${m ? ' m' : ''}">${txt}</div>`;
+const proj5 = w => Math.min(99, Math.round(w.used / w.gone * 100));
+function weeklyCard(w, o = {}) {
+  const cw = o.cw || 351, t = '7-day window';
+  if (w.ns) return `<div class="card">${head(t, 0)}${meter(0, null, { caption: false })}${L('Not started yet', 1)}</div>`;
+  const m = Math.round(w.gone);
+  if (w.used >= 99.5) return `<div class="card">${head(t, 100)}${meter(100, m, { caption: false })}${L(`<b>Out until ${w.rs}</b> · in ${w.inT}`)}</div>`;
+  return `<div class="card">${head(t, w.used)}${meter(w.used, m, { cw })}${L(`<b>${band(w.used, w.gone)} · ${allowance(w.used, w.hrs)} · resets ${w.day}</b>`)}</div>`;
+}
+const spentNote = u => `Weekly limit reached — 5h can’t be used until ${u}`;
+function fiveCard(w, o = {}) {
+  const cw = o.cw || 351, t = '5-hour window';
+  if (o.weeklySpent) return `<div class="card"><div style="opacity:.45">${head(t, w.used)}${meter(w.used, Math.round(w.gone), { caption: false })}${L(`Resets in ${w.inT}`)}</div><div class="ln spn">${spentNote('Sat 4:51 pm')}</div></div>`;
+  if (w.ns) return `<div class="card">${head(t, 0)}${meter(0, null, { caption: false })}${L('Not started yet', 1)}</div>`;
+  return `<div class="card">${head(t, w.used)}${meter(w.used, Math.round(w.gone), { cw })}${L(`Resets in ${w.inT} · on track for ~${proj5(w)}%`)}</div>`;
+}
+const aTabs = () => `<div class="tabs"><span>${mark('mkClaude', CL, 16)}Teams</span><span class="on">${mark('mkGem', GM, 16)}Gemini</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>`;
+const aPhone = (body, o = {}) => `<div class="phone g" ${o.w ? `style="width:${o.w}px"` : ''}>${o.tabs === false ? '' : aTabs()}${body}${o.foot === null ? '' : `<div class="chk">${o.foot || 'Checked 1m ago ⟳'}</div>`}</div>`;
+const colA = (cap, cls, body, note, k = 'wide') => `<div class="col ${k}"><p class="cap ${cls}">${cap}</p><div class="scroll">${body}</div>${note ? `<p class="note">${note}</p>` : ''}</div>`;
+
+// Open Weekly card (as the A1 card of the v2.0 page): All and Argon rows, chips, chart, three lines.
+function openWeekly(withArgon) {
+  const m = Math.round(WK.gone), ma = Math.round(AR.gone);
+  const ch = achart({ w: 351, gone: WK.gone, accent: GM, pts: [[0, 0], [12, .2], [24, .5], [36, .9], [46, 1.2], [55.9, 1.5]], now: ['31 Oct', '7 Nov'], label: '1%', proj: [100, 2.7, ''] });
+  return `<div class="card"><div class="t">7-day window <span class="chev">⌃</span></div>
+    <div class="t" style="margin:0 0 7px">All<span class="v" style="color:${sev(1.5, GM)}">1%</span></div>${meter(WK.used, m)}
+    ${withArgon ? `<div class="t" style="margin:6px 0 7px">Argon<span class="v" style="color:${sev(1.1, GM)}">1%</span></div>${meter(AR.used, ma)}
+    <div class="chips"><span class="on">All</span><span>Argon</span></div>` : ''}
+    ${ch}
+    <div class="ln" style="margin-top:8px"><b>Use before reset · ≈32%/day until Sat</b></div>
+    <div class="ln m">At this pace: ~3% when the window resets · &lt;0.1%/h</div>
+    <div class="rs"><span>Resets in 3d 2h</span><span>Resets at Sat 4:51 pm</span></div></div>`;
+}
+const acctHdr = ({ plan, dot = '', email = 'you@gmail.com', status, cw, extra = '' }) => `<div class="card"><div class="t" style="margin:0 0 3px;gap:6px;align-items:center;white-space:nowrap">${mark('mkGem', GM, 20)}<span style="font-size:15.5px">Gemini</span><i class="dot ${dot}" title=""></i>${plan ? `<span class="pill">${plan}</span>` : ''}<span style="margin-left:auto;color:#BDB8B3">⋮</span></div>
+  <div class="ln m" style="margin:0 0 6px 26px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${email}</div>${status ? `<div class="ln m" style="display:flex;justify-content:space-between;align-items:center">${status}<span style="font-size:16px">⟳</span></div>` : ''}${extra}</div>`;
+const setPhone = (body, w) => `<div class="phone g" ${w ? `style="width:${w}px"` : ''}><div class="hd2">Settings</div><div class="mini" style="margin:-6px 0 10px;font-weight:600;color:#A7A19C;letter-spacing:.04em">ACCOUNTS</div>${body}</div>`;
+
+// ---------- section 2 · sign-in, Android ----------
+const addRow = (id, c, nm, ds, isNew) => `<div class="arow"><span class="mk">${mark(id, c, 28)}</span><div><div class="nm">${nm}${isNew ? ' ' + '<span class="tag chg">new</span>' : ''}</div><div class="ds">${ds}</div></div></div>`;
+const signedOut = `<div class="card"><div class="t" style="margin:0 0 6px;gap:6px;align-items:center">${mark('mkGem', GM, 20)}<span style="font-size:15.5px">Gemini</span><span style="margin-left:auto;color:#BDB8B3">⋮</span></div>
+  <div class="ln m">Not signed in</div><div style="margin:10px 0 8px"><span class="btn">Sign in with Google</span></div>
+  <div class="ln m" style="font-size:12.5px">Opens Google’s sign-in in your browser — no computer needed. ${tagNew}</div></div>`;
+const pasteCard = ({ txt, err, help }) => `<div class="card"><div class="t" style="margin:0 0 6px;gap:6px;align-items:center">${mark('mkGem', GM, 20)}<span style="font-size:15.5px">Gemini</span><span style="margin-left:auto;color:#BDB8B3">⋮</span></div>
+  <div class="ln" style="font-weight:600;font-size:14.5px;color:#EDE8E4">Finish signing in</div>
+  <div class="ln m" style="font-size:13px">Sign in on the page that opened, then copy the code it shows and paste it here.</div>
+  <div class="fld${err ? ' err' : ''}${txt ? '' : ' empty'}"><span class="fl">Paste the code from the sign-in page ${''}</span><span class="tx">${txt || 'Paste the code from the sign-in page'}</span><span class="btn t" style="padding:6px 8px">Paste</span></div>
+  ${err ? `<div class="help err">${err}</div>` : `<div class="help">${help || 'The code starts with 4/. You can also paste the whole address from the page.'} ${tagNew}</div>`}
+  <div class="btns"><span class="btn${txt && !err ? '' : ' off'}">Continue</span><span class="btn t">${err ? 'Start again' : 'Reopen page'}</span><span class="btn t r">Cancel</span></div></div>`;
+$('sf-and').innerHTML = [
+  colA('F1 · Add account sheet', 'good', `<div class="phone"><div style="height:58px;opacity:.35;font-size:20px;padding-top:4px">Settings › Accounts</div><div class="sheet"><div class="grab"></div><div style="font-size:22px;margin:0 0 6px;color:#E6E1DE">Add account</div>
+     ${addRow('mkClaude', CL, 'Claude', 'Signs in through your browser, then paste the code back — as before.')}
+     ${addRow('mkGpt', GP, 'ChatGPT', 'Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security.')}
+     ${addRow('mkGem', GM, 'Gemini', 'Signs in with Google in your browser, then paste the code back.', true)}</div></div>`,
+    'A third row, 28 dp mark in Gemini Blue, the sheet’s rows otherwise as shipped. Picking it adds the account and starts the sign-in (F2). Hidden on a build without the client secret.', 'wide'),
+  colA('F2 · the new account, signed out', 'good', setPhone(signedOut), 'The Claude card’s shape: "Not signed in", one filled button, one line of help. The button names the thing the user will see ("Sign in with Google") and the line does not mention a plan (what Free accounts report is unverified, §6 q2).', 'wide'),
+  colA('F3 · Custom Tab (Google’s page, not ours)', 'warn', `<div class="phone g" style="padding-bottom:20px"><div class="ctab"><div class="bar2"><span>✕</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔒 antigravity.google/oauth-callback</span><span>⋮</span></div>
+     <div class="body"><div style="font-size:15px;font-weight:500;margin-bottom:8px">Copy this code</div><div style="color:#5F6368;margin-bottom:14px;line-height:1.4">Paste it into Cooldown to finish signing in.</div>
+     <div style="border:1px solid #DADCE0;border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">4/0AVMBt8kQ2xLpR7w…</div></div></div>
+     <div class="mini" style="margin:12px 4px 0">Schematic. Google draws this page and may change its wording; the app never sees the page, only what the user pastes.</div></div>`,
+    'Chrome Custom Tab, never a WebView (Google refuses them). The user signs in, approves, and Google shows a code at its hosted page. They switch back to Cooldown, where F4 is waiting.', 'wide'),
+  colA('F4 · paste the code', 'good', setPhone(pasteCard({ txt: '4/0AVMBt8kQ2xLpR7wZ…' })), 'The Claude paste step’s layout: "Finish signing in", the instruction, an outlined field with a trailing "Paste", then the buttons in a flow row, the last right-aligned. Continue enables with text in the field. The field accepts the bare <code>4/…</code> code or the whole callback address, and checks <code>state</code> when the address carries it.', 'wide'),
+  colA('F5 · the code didn’t work', 'bad', setPhone(pasteCard({ txt: '4/0AVMBt8kQ2xLpR7wZ…', err: 'That code didn’t work — it may have expired or been copied wrong. Start again.' })), 'Wrong, expired or already used: Google’s exchange answers with a refusal. The field turns red and the buttons offer "Start again", which reopens the Custom Tab with a fresh sign-in.', 'wide'),
+  colA('F6 · a different sign-in', 'bad', setPhone(pasteCard({ txt: 'https://antigravity.google/oauth-callback?state=…&code=4/0AVMB…', err: 'That code is for a different sign-in — start again.' })), 'State mismatch: a whole address whose <code>state</code> is not the one this attempt sent (for example from an older tab). Never exchanged. Same card, same one button.', 'wide'),
+  colA('F7 · signed in', 'good', `<div class="phone g">${'<div class="hd2">Settings</div><div class="mini" style="margin:-6px 0 10px;font-weight:600;color:#A7A19C;letter-spacing:.04em">ACCOUNTS</div>'}${acctHdr({ plan: 'Pro', status: 'Checked just now' })}<div class="snack">Gemini signed in — usage fetched, polling started.</div></div>`, 'The existing success line with the account’s name; the plan pill reads "Pro" from Google’s paid tier (F, below). Cooldown keeps only the refresh token and the email.', 'wide'),
+].join('');
+
+// ---------- section 2 · sign-in, iOS ----------
+const ios = inner => `<div class="ios">${inner}</div>`;
+const mk = (a, s) => `<svg class="mk" width="${s}" height="${s}" style="color:var(--${a})" aria-hidden="true"><use href="#${a === 'cl' ? 'mkClaudeI' : a === 'gp' ? 'mkGpt' : 'mkGem'}"/></svg>`;
+const mkc = (a, s) => mk(a, s);
+const irow = (a, nm, ds, isNew) => `<div style="display:flex;gap:14px;align-items:flex-start;padding:11px 0">${mk(a, 32)}<div><div style="font-size:17px">${nm}${isNew ? ' <span class="tag chg">new</span>' : ''}</div><div style="font-size:14px;color:var(--sub);margin-top:2px;line-height:1.35">${ds}</div></div></div>`;
+const isheet = (inner, h) => `<div class="isheet"${h ? ` style="min-height:${h}px"` : ''}><div class="igrab"></div>${inner}</div>`;
+const iStart = isheet(`<div style="font-size:20px;font-weight:700">Sign in to Gemini ${tagNew}</div>
+  <div style="font-size:15px;color:var(--txt);margin-top:10px;line-height:1.45">1. Sign in with Google and approve Cooldown.<br>2. Copy the code Google shows you and paste it here.</div>
+  <div style="margin-top:18px"><span class="icaps">Sign in with Google</span></div></div>`.replace(/<\/div>$/, ''), 330) + '';
+const iPaste = (txt, err) => isheet(`<div style="font-size:20px;font-weight:700">Sign in to Gemini</div>
+  <div style="font-size:15px;color:var(--txt);margin-top:10px;line-height:1.45">Copy the code Google shows you and paste it here.</div>
+  <div class="ifld${txt ? '' : ' empty'}${err ? ' err' : ''}">${txt || 'Paste the code from the sign-in page'}</div>
+  ${err ? `<div class="ierr">${err}</div>` : `<div style="font-size:13px;color:var(--sub);margin-top:6px">The code starts with 4/. You can also paste the whole address. ${tagNew}</div>`}
+  <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end"><span class="icaps g">${err ? 'Start again' : 'Cancel'}</span><span class="icaps${txt && !err ? '' : ' off'}">Continue</span></div>`, 330);
+const colI = (cap, cls, body, note) => `<div class="col i"><p class="cap ${cls}">${cap}</p><div class="scroll">${ios(body)}</div>${note ? `<p class="note">${note}</p>` : ''}</div>`;
+const T_NOTE = '“Gemini” and “Antigravity” are trademarks of Google LLC.';
+$('sf-ios').innerHTML = [
+  colI('I1 · Add account sheet', 'good', isheet(`<div style="font-size:20px;font-weight:700;margin-bottom:6px">Add account</div>
+     ${irow('cl', 'Claude', 'Sign in with your Claude account in the browser, then paste the code it shows.')}
+     ${irow('gp', 'ChatGPT', 'Sign in with a code on any device — no password in this app.')}
+     ${irow('gm', 'Gemini', 'Signs in with Google in your browser, then paste the code back.', true)}
+     <div style="font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.4">Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. ${T_NOTE} ${tagNew}</div>`),
+    'A third row (32 pt mark, 17 pt name). The footnote is the shipped one with Google added, and carries the trademark line (decision 4).'),
+  colI('I2 · start', 'good', iStart, 'The Claude sheet’s shape: title, two numbered steps, one capsule in the account’s accent with black text. The capsule opens an ASWebAuthenticationSession (Google’s sign-in, then its hosted code page).'),
+  colI('I3 · paste', 'good', iPaste('4/0AVMBt8kQ2xLpR7wZ…'), 'Field with no autocapitalisation. "Continue" is disabled until a code is present (spec: "Sign in" on the Claude sheet; drawn as you wrote, "Continue").'),
+  colI('I4 · the code didn’t work', 'bad', iPaste('4/0AVMBt8kQ2xLpR7wZ…', 'That code didn’t work — it may have expired or been copied wrong. Start again.'), 'Red line under the field, as the Claude sheet does. "Start again" reopens the web session with a fresh sign-in.'),
+  colI('I5 · a different sign-in', 'bad', iPaste('https://antigravity.google/oauth-callback?state=…&code=4/0AVMB…', 'That code is for a different sign-in — start again.'), 'State mismatch. The pasted address is shown cut off by the field, as a long Claude code is.'),
+].join('');
+
+// ---------- section 3 · states ----------
+$('s-abc').innerHTML = [
+  colA('A · not started', 'ng', aPhone(weeklyCard(NS) + fiveCard(NS)),
+    'Signed in, nothing used: every bucket reads fraction 1 and its reset slides to "now + window". There is no reset to show, so the line is "Not started yet": no pace tick, no caption, no pace words. The figure is 0%. The two windows start counting separately, at the first Gemini prompt.'),
+  colA('B · 5h used, weekly not started', 'ng', aPhone(weeklyCard(NS) + fiveCard(H5)),
+    '5h at 12% (resets 5:30 pm, 47% gone) with its caption and "on track for ~26%"; Weekly is still "Not started yet". Real Gemini use moves both buckets together (§6 q1), but the payload allows this, so the card handles it.'),
+  colA('C · weekly spent, 5h greyed', 'bad', aPhone(weeklyCard(WKS) + fiveCard(H5, { weeklySpent: true })),
+    '<b>Weekly spent: the 5h is greyed, not "fresh".</b> Weekly is spent: "Out until Sat 4:51 pm · in 3d 2h", as any spent window. The 5h card keeps its own figure (12%), bar and reset line at 45% opacity, and one full-opacity line says why it cannot be used. ' + flag('new copy') + ' <b>"Weekly limit reached — 5h can’t be used until Sat 4:51 pm"</b>. This is now the standard for every account (§3b draws Claude too). The notification face drops the 5h companion; its expanded panel greys the row (§3b).'),
+].join('');
+
+$('s-d').innerHTML = [
+  colA('D1 · Argon used, Show model limits on', 'good', aPhone(openWeekly(true) + fiveCard(H5)),
+    'The Weekly card in A1’s anatomy: an "All" row and an <b>"Argon" row</b> (1%, its own reset Wed 9:28 am, its own pace mark at 3%), the All | Argon chips, the chart, the pace lines. Argon is a per-model limit exactly as Fable is, with the same rows, chips and chart switch.'),
+  colA('D2 · same account, Show model limits off', 'warn', aPhone(openWeekly(false) + fiveCard(H5)) +
+    `<div class="phone g" style="margin-top:12px"><div class="swrow"><div style="flex:1"><div style="font-size:15px">Show model limits</div><div class="mini">Hides: Argon · 1% this week</div></div><div class="sw"></div></div></div>`,
+    'The CCRM-99 (Model Limits Toggle) switch on the account’s page (drawn below the phone), off: the Argon row and the chips leave the card, and so does the model row in the notification’s expanded panel; the limit is still parsed and stored. On iOS the 7-day card drops its model half (§4, D).'),
+].join('');
+
+const poolHdr = `<div class="grp3">Claude + GPT in Antigravity <span class="tag chg">new</span></div>`;
+$('s-e').innerHTML = [
+  colA('E1 · pool untouched: hidden', 'good', aPhone(weeklyCard(WKB) + fiveCard(H5B)),
+    '<code>3p-5h</code> and <code>3p-weekly</code> are both at fraction 1 (sliding): nothing is drawn, not an empty card and not a hint. The account reads as a Gemini account with two cards.'),
+  colA('E2 · pool used: a second pair appears', 'good', aPhone(weeklyCard(WKB) + fiveCard(H5B) + poolHdr + weeklyCard(P3W) + fiveCard(P35)),
+    'Once either pool window moves, a group label "Claude + GPT in Antigravity" and a card pair under the Gemini pair: Weekly first, then 5h, the same anatomy, the same Gemini Blue accent, the same pace words. If only one of the two has moved, the other reads "Not started yet". Neither notification, widget nor the status-bar ring reads these cards.'),
+].join('');
+
+const planAcct = p => acctHdr({ plan: p, status: 'Checked 12m ago' });
+$('s-f').innerHTML = [
+  colA('F · Free', 'good', setPhone(planAcct('Free')), 'No paid tier on the account: <code>loadCodeAssist</code> has no <code>paidTier</code>.', 'n'),
+  colA('F · Pro', 'good', setPhone(planAcct('Pro')), '<code>paidTier.id = g1-pro-tier</code> (the record’s Pro account). Never read <code>currentTier</code>: it says free on a Pro account.', 'n'),
+  colA('F · Ultra', 'good', setPhone(planAcct('Ultra')), 'The pill is a labelSmall in the accent on the accent at 14%, 10 dp radius, as the Claude "Max 5x" pill. Id for Ultra not yet seen (§6 q2).', 'n'),
+].join('');
+
+const fetchErr = (kind, title, ev, nb, act) => `<div class="notice" style="background:${kind === 'sev' ? 'rgba(242,139,130,.11)' : 'rgba(255,167,38,.11)'}"><div class="nt">${title}</div><div class="ev" style="color:${kind === 'sev' ? '#F28B82' : 'rgba(255,167,38,.85)'}">${ev}</div>${nb ? `<div class="nb">${nb}</div>` : ''}${act ? `<div class="na">${act}</div>` : ''}</div>`;
+$('s-gh').innerHTML = [
+  colA('G1 · token dead (Settings)', 'bad', setPhone(acctHdr({ plan: 'Pro', dot: 'bad', status: null, extra: `<div class="rd">Sign-in stopped working — re-sign in below.</div><div style="display:flex;gap:8px;margin-top:10px"><span class="btn o">Re-sign in</span><span class="btn t" style="color:#F28B82">Clear</span></div>` })),
+    'Exactly the Claude/ChatGPT state: the dot turns error-coloured ("Needs re-auth"), the red line, and "Re-sign in" (outlined, as the Claude card has it when re-auth is needed) which restarts F2 to F4.', 'wide'),
+  colA('G2 · token dead (main screen)', 'bad', aPhone(fetchErr('sev', 'Sign-in stopped working — re-sign in from Settings.', 'HTTP 400 · invalid_grant', '', 'Open Settings') + weeklyCard(WKB) + fiveCard(H5B), { foot: 'Checked 3h ago ⟳' }),
+    'The existing "auth" fetch error: the fix as the title, the raw status as evidence, one action, shown beside the last good cards, never in place of them. Nothing new.', 'wide'),
+  colA('H1 · Google answered with only the pool', 'warn', aPhone(fetchErr('warn', 'Google changed something — usage unavailable', 'Reply held 1 of 3 groups', 'Cooldown won’t guess. An app update may be needed. ' + tagNew, 'Check for updates') + weeklyCard(WKB) + fiveCard(H5B)),
+    'The UA was rejected (or the version token no longer works): Google returns only the Claude + GPT group, which would read as an account with no Gemini usage. <b>Never 0%, never 100%</b>: the notice says so and the last good Gemini cards stay beside it. A Play build shows no action (the existing "invalidResponse" kind).', 'wide'),
+  colA('H2 · same, with nothing yet', 'warn', aPhone(fetchErr('warn', 'Google changed something — usage unavailable', 'Reply held 1 of 3 groups', 'Cooldown won’t guess. An app update may be needed.', 'Check for updates') + L('No data yet — try Refresh now.', 1), { foot: 'Not checked yet' }),
+    'First check after sign-in and the answer is already pool-only: the notice and "No data yet", no cards at all. The pool is not shown as the account either, since it would pass for the account\'s usage.', 'wide'),
+].join('');
+
+$('s-i').innerHTML = [
+  colA('I1 · main screen, 320 dp', 'warn', aPhone(weeklyCard(WKB, { cw: 260 }) + fiveCard(H5B, { cw: 260 }) + weeklyCard(WKS, { cw: 260 }), { w: 320 }),
+    'The narrowest bucket the app and widgets use. The three tabs (mark 16 dp + name) each get 106 dp and "Personal" is the longest at about 80. The figure never moves: it sits right of "7-day window". The folded line <b>wraps to two lines</b> rather than truncate ("Room to spare · ≈27%/day · resets Sat"); no rule here is new.', 'n'),
+  colA('I2 · Settings, Ultra pill, 320 dp', 'warn', setPhone(acctHdr({ plan: 'Ultra', status: 'Checked 12m ago', email: 'a.long.address.for.testing@gmail.com' }), 320) + `<div class="phone g n" style="width:320px;margin-top:12px"><div class="swrow"><div style="flex:1;min-width:0"><div style="font-size:15px">Show model limits</div><div class="mini">Hides: Argon · 1% this week</div></div><div class="sw on"></div></div></div>`,
+    'Mark, name, status dot, the widest pill ("Ultra") and the ⋮ fit in one row with room to spare; the email truncates before the domain, as on a Claude card.', 'n'),
+].join('');
+
+// ---------- J · notification ----------
+const hb = (mk_, ac, title, p, tick, sub) => `<div class="hb"><div class="lft"><div class="hl">${mark(mk_, ac)}<span class="lbl">${title}</span></div>${AND.bar(p, tick, sev(p, ac), 13)}<div class="hsub">${sub}</div></div><div class="figwrap"><div class="fig" style="font-size:36px;color:${sev(p, ac)}">${p}%</div></div></div>`;
+const hdrN = (up) => `<div class="apphdr">${mark('ring42', GM, 16)}<span>Cooldown</span><span class="sp">·</span><span>now</span><span class="sp">${up ? '⌃' : '⌄'}</span></div>`;
+const dHalf = (mk_, ac, nm, p, tick) => `<div><div class="dl">${mark(mk_, ac)}<span>${nm}</span></div><div class="db">${AND.bar(p, tick, sev(p, ac), 13)}<div class="fig" style="font-size:30px;color:${sev(p, ac)}">${p}%</div></div></div>`;
+const duetC = () => `<div class="scroll"><div class="shade"><div class="nc">${hdrN(false)}<div class="duet">${dHalf('mkClaude', CL, 'Teams', 52, 38.9)}${dHalf('mkGem', GM, 'Gemini', 18, 55.9)}</div></div></div></div>`;
+const duetE = () => `<div class="scroll"><div class="shade"><div class="nc">${hdrN(true)}${hb('mkClaude', CL, 'Teams · Weekly', 52, 38.9, 'Slow down · ≈11%/day · resets Sun')}${hb('mkGem', GM, 'Gemini · Weekly', 18, 55.9, 'Room to spare · ≈27%/day · resets Sat')}
+  <div class="pnl">${crow('Teams · 5h', 'Resets in 2h 20m · 5:10 pm', 34, 53.3, CL)}${crow('Gemini · 5h', 'Resets in 2h 40m · 5:30 pm', 27, 46.7, GM)}</div><div class="acts" style="color:#E59980">Refresh</div></div></div></div>`;
+$('s-j').innerHTML = [
+  col('J1 · Duet collapsed, Claude + Gemini', 'good', duetC(), 'Each half is its own account’s Weekly, with its own mark and accent. A Gemini half is a Claude half in Gemini Blue; nothing else differs.'),
+  col('J2 · Duet expanded', 'good', duetE(), 'Header blocks are Weekly; the panel rows are the two 5h rows, 78 dp as the v2.0 budget says. Gemini’s reset lines are today’s wording.'),
+  col('J3 · Gemini alone, expanded, Argon used', 'good', nc({ expanded: true, fig: 44, mk: 'mkGem', ac: GM, title: 'Gemini · Weekly', pct: 18, tick: 55.9, sub: 'Room to spare · ≈27%/day to last', sub2: 'Resets Sat 4:51 pm · in 3d 2h',
+    panel: crow('5h', 'Resets in 2h 40m · 5:30 pm', 27, 46.7, GM) + crow('Argon', 'Resets Wed 9:28 am', 1, 3.2, GM) }), 'The model-limit row in the panel is Argon, as Fable is for Claude, and leaves with "Show model limits".'),
+  col('J4 · not started', 'ng', nc({ mk: 'mkGem', ac: GM, title: 'Gemini · Weekly', pct: 0, tick: null, sub: 'Not started yet '}), 'The v2.0 ladder’s "Weekly not started", with the companion in the same words. No tick, no band.'),
+  col('J5 · weekly spent', 'bad', nc({ mk: 'mkGem', ac: GM, title: 'Gemini · Weekly', pct: 100, tick: 55.9, sub: 'Out until Sat 4:51 pm · in 3d 2h' }), 'The v2.0 spent face: no band, no allowance, and the 5h companion is dropped, and the collapsed face carries no 5h line; the expanded panel shows it greyed (§3b).'),
+].join('');
+
+// ---------- section 4 · iOS ----------
+const IB = IOS.bar, IC = IOS.chart;
+const iTab = (a, n, on) => `<div class="itab${on ? ' on' : ''}" style="--ac:var(--${a})">${mk(a, 20)}${n}</div>`;
+const iTop = () => `<div class="itb"><span>▦</span><span>⚙</span><span>⋯</span></div><div class="iltt">${mk('cl', 26)}${mk('gp', 26)}${mk('gm', 26)}<span>Cooldown</span></div><div class="itabs">${iTab('cl', 'Teams')}${iTab('gp', 'Personal')}${iTab('gm', 'Gemini', 1)}</div>`;
+const iPhone = (body, foot) => `<div class="iph">${iTop()}${body}<div class="ifoot">${foot || 'Checked 1m ago ⟳'}</div></div>`;
+const iFig = (u, a = 'gm') => `<b style="color:${IOS.sev(u, a)}">${Math.floor(u)}%</b>`;
+const iHead = (t, u, open) => `<div class="ich"><span class="t">${t}</span>${iFig(u)}<span class="ichev">${open ? '⌃' : '⌄'}</span></div>`;
+const hotLn = (w, txt) => `<div class="iln" style="font-size:13.5px;${IOS.hot(w) ? 'color:var(--red)' : ''}">${txt}</div>`;
+function iWk(w, o = {}) {
+  if (w.ns) return `<div class="icard">${iHead('7-day window', 0)}<div style="margin-top:12px">${IB('gm', 0, null, 9)}</div><div class="iln m" style="font-size:13.5px">Not started yet</div></div>`;
+  if (w.used >= 99.5) return `<div class="icard">${iHead('7-day window', 100)}<div style="margin-top:12px">${IB('gm', 100, w.gone, 9)}</div><div class="iln" style="font-size:13.5px;color:var(--red)">Out until ${w.rs}</div></div>`;
+  if (!o.open) return `<div class="icard">${iHead('7-day window', w.used)}<div style="margin-top:12px">${IB('gm', w.used, w.gone, 9)}</div>${hotLn(w, `${IOS.words(w)} · resets ${w.day}`)}</div>`;
+  // open: All | Argon halves (Argon omitted when the toggle is off)
+  const two = !!o.argon, Wd = two ? 156 : 329, CWd = 329;
+  const half = (nm, x, ser, proj) => `<div style="min-width:0"><div class="ich" style="font-size:${two ? 16 : 17}px"><span class="t">${nm}</span><b style="font-size:17px;color:${IOS.sev(x.used, 'gm')}">${Math.floor(x.used)}%</b></div><div style="margin-top:12px">${IB('gm', x.used, x.gone, 9)}</div>
+    <div style="margin-top:12px">${IC('gm', Wd, two ? 120 : 150, ser)}</div>${hotLn(x, IOS.words(x) + (two ? '' : ` until ${x.day}`))}${proj ? `<div class="iln m" style="font-size:13.5px">${proj}</div>` : ''}${two ? `<div class="iln" style="font-size:13.5px">Resets in ${x.inT}</div>` : `<div class="irs"><span>Resets in ${x.inT}</span><span>Resets at ${x.rs}</span></div>`}</div>`;
+  const serW = { s: [[0, 0], [.12, .2], [.24, .5], [.36, .9], [.46, 1.2], [.559, 1.5]], nowX: .559, projY: 3, start: '31 Oct', end: '7 Nov' };
+  return `<div class="icard"><div class="ich"><span class="t">7-day window</span><span class="ichev">⌃</span></div><div style="margin-top:10px" class="${two ? 'isub2' : ''}">${half('All', w, serW, 'At this pace: ~3% when the window resets · &lt;0.1%/h')}${two ? half('Argon', AR, undefined, '') : ''}</div></div>`;
+}
+function iFive(w, o = {}) {
+  const t = '5-hour window';
+  if (o.weeklySpent) return `<div class="icard"><div style="opacity:.45">${iHead(t, w.used)}<div style="margin-top:12px">${IB('gm', w.used, w.gone, 11)}</div><div class="iln">Resets in ${w.inT}</div></div><div class="iln spni">${spentNote('Sat 4:51 pm')}</div></div>`;
+  if (w.ns) return `<div class="icard">${iHead(t, 0)}<div style="margin-top:12px">${IB('gm', 0, null, 11)}</div><div class="iln m">Not started yet</div></div>`;
+  return `<div class="icard">${iHead(t, w.used)}<div style="margin-top:12px">${IB('gm', w.used, w.gone, 11)}</div><div class="iln">Resets in ${w.inT} · on track for ~${proj5(w)}%</div></div>`;
+}
+const iNotice = (bg, title, body, btn) => `<div class="inotice" style="background:${bg}"><div class="nt">${title}</div><div class="nb">${body}</div>${btn ? `<div style="margin-top:9px"><span class="icaps w">${btn}</span></div>` : ''}</div>`;
+const iPoolHdr = `<div style="font-size:13px;font-weight:600;color:var(--sub);margin:4px 2px 8px">Claude + GPT in Antigravity ${'<span class="tag chg">new</span>'}</div>`;
+$('i-main').innerHTML = [
+  colI('A · not started', 'ng', iPhone(iWk(NS) + iFive(NS)), 'The same words as Android: no tick, no pace line, "Not started yet".'),
+  colI('C · weekly spent, 5h greyed', 'bad', iPhone(iWk(WKS) + iFive(H5, { weeklySpent: true })), 'Spent folded line is today’s red "Out until Sat 4:51 pm"; the 5h card is dimmed to 45% with its own values and carries the full-opacity note (same ' + flag('new copy') + ').'),
+  colI('D · Argon half, Show model limits on', 'good', iPhone(iWk(WK, { open: true, argon: true }) + iFive(H5)), 'The two halves All | Argon, as All | Fable on Claude: the first draws the chart, the second its guides and pace line. Argon: "On pace · ≈15%/day", its own reset in a single line.'),
+  colI('D · same, toggle off', 'warn', iPhone(iWk(WK, { open: true }) + iFive(H5)), 'The model half is dropped (CCRM-99 (Model Limits Toggle)); the card is full width as a one-model account’s is.'),
+  colI('E · pool used', 'good', iPhone(iWk(WKB) + iFive(H5B) + iPoolHdr + iWk(P3W) + iFive(P35)), 'Untouched pool: hidden (as E1 on Android). Used: the label and a second card pair, the same anatomy.'),
+  colI('G · token dead', 'bad', iPhone(iNotice('rgba(255,82,82,.16)', 'Gemini: Sign-in stopped working', 'The saved sign-in failed and couldn’t renew. The numbers below are the last ones that worked.', 'Sign in again') + `<div style="opacity:.45">${iWk(WKB)}${iFive(H5B)}</div>`), 'The shipped sign-in notice with the account’s name; cards dim to 45%.'),
+  colI('H · Google returned only the pool', 'warn', iPhone(iNotice('rgba(255,167,38,.16)', 'Google changed something — usage unavailable', 'Cooldown only got part of Google’s answer and won’t guess. An app update may be needed.', '') + `<div style="opacity:.45">${iWk(WKB)}${iFive(H5B)}</div>`), 'One notice, orange, cards dimmed to the last good reading: never 0% or 100%. ' + flag('new copy')),
+].join('');
+
+function sidebar(rows, mode = 'Headline') {
+  let h = `<div class="iside"><div style="display:flex;align-items:center;gap:6px;font-size:30px;font-weight:700;padding:0 18px 10px">${mk('cl', 22)}${mk('gp', 22)}${mk('gm', 22)} Cooldown</div><div class="iseg" style="margin:0 18px 10px">${['Headline', 'Weekly', '5h'].map(s => `<span class="${s === mode ? 'on' : ''}">${s}</span>`).join('')}</div>`;
+  for (const r of rows) h += `<div class="iacc" style="${r.sel ? `background:color-mix(in srgb,var(--${r.a}) 18%,transparent)` : ''}">${mk(r.a, 22)}<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:16px">${r.n} <span class="ichip">${r.plan}</span>${r.pin ? '<span style="font-size:11px">📌</span>' : ''}</div>${IB(r.a, r.w.ns ? 0 : r.w.used, r.w.ns ? null : r.w.gone, 5)}</div><div class="ipct"><b style="color:${IOS.sev(r.w.ns ? 0 : r.w.used, r.a)}">${r.w.ns ? 0 : Math.round(r.w.used)}%</b><small>Weekly</small></div></div>`;
+  return h + '<div style="font-size:12.5px;color:var(--sub);padding:12px 22px 0">Touch and hold an account to pin it to the top.</div></div>';
+}
+const PR = { a: 'gp', n: 'Personal', plan: 'Pro', pin: true, w: { used: 50, gone: 67 } }, TR = { a: 'cl', n: 'Teams', plan: 'Max 5×', w: { used: 52, gone: 38.9 } };
+function bars(top, bot, ns) {
+  const line = (l, w, big) => `<div style="display:flex;align-items:center;font-size:13px;margin-top:8px"><span>${l}</span><span style="margin-left:auto;font-size:15px;font-weight:600;color:var(--txt)">${w.ns ? 0 : Math.round(w.used)}%</span></div><div style="margin-top:3px">${IB('gm', w.ns ? 0 : w.used, w.ns ? null : w.gone, 6)}</div>`;
+  return `<div class="iw"><div class="ihdr" style="font-size:14px">${mk('gm', 15)}<span class="inm">Gemini · Weekly</span></div>
+    <div style="font-size:28px;font-weight:700;line-height:30px;margin-top:2px;color:${IOS.sev(top.ns ? 0 : top.used, 'gm')}">${top.ns ? 0 : Math.floor(top.used)}%</div><div style="margin-top:3px">${IB('gm', top.ns ? 0 : top.used, top.ns ? null : top.gone, 8)}</div>
+    <div style="font-size:11.5px;margin-top:2px;white-space:nowrap;color:var(--sub)">${top.ns ? 'Not started yet' : 'Resets ' + top.rs}</div>${line('5h', bot)}</div>`;
+}
+$('i-k').innerHTML = [
+  colI('K1 · iPad sidebar, Headline', 'good', sidebar([PR, TR, { a: 'gm', n: 'Gemini', plan: 'Pro', sel: true, w: WKB }]), 'The third account row: its mark, name, plan chip ("Pro"), a 5 pt bar with the pace tick, the figure and the window tag. Weekly leads; with the Headline segment on "5h" the row shows 5h like the others.'),
+  colI('K2 · sidebar, Gemini not started', 'ng', sidebar([PR, TR, { a: 'gm', n: 'Gemini', plan: 'Free', sel: true, w: NS }]), 'Not started: 0%, an empty bar with no tick. The chip reads "Free" here to show the third pill in context.'),
+  `<div class="col i"><p class="cap good">K3 · Bars (small, 160 pt)</p><div class="iwrap ios">${bars(WKB, H5B)}${bars(NS, NS)}</div><p class="note">Weekly block on top, 5h under it, as every v2.0 Bars face: Gemini busy (left) and not started (right: "Not started yet" in the footnote, empty bars, no ticks). Footnote of the 5h block drops first at 160 pt, as shipped.</p></div>`,
+].join('');
+
+const andAbout = `<div class="phone g"><div class="hd2">More</div><div class="card" style="text-align:center;padding:22px 18px"><div style="margin:0 auto 10px;width:56px;height:56px;border-radius:14px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;color:#E59980"><svg width="40" height="40"><use href="#ring42"/></svg></div>
+  <div style="font-size:16px">Cooldown</div><div class="mini">Version 2.0</div><div class="mini" style="margin-top:6px">Made by Robin Richard Rajan</div><div class="mini" style="opacity:.75">Built with Claude Code</div>
+  <div style="margin-top:12px"><span class="btn o">Share feedback</span> <span class="btn t">Privacy policy</span></div>
+  <div style="font-size:11.5px;color:#A7A19C;margin-top:12px;line-height:1.4">Unofficial. Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google. "Claude" is a trademark of Anthropic, PBC. "ChatGPT" is a trademark of OpenAI. "Gemini" and "Antigravity" are trademarks of Google LLC. ${tagNew}</div></div></div>`;
+const iosAbout = `<div class="iph"><div style="font-size:34px;font-weight:700;margin:6px 0 4px">Settings</div><div class="ihd">About</div><div class="igrp"><div class="ic" style="display:flex;justify-content:space-between"><span>Version</span><span style="color:var(--sub)">2.0</span></div></div>
+  <div class="ifn">Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC. ${tagNew}</div>
+  <div class="ifn" style="margin-top:10px">Touch and hold an account to rename, pin, sign in again or remove it. Drag to reorder: the order is the same everywhere.</div></div>`;
+const emptyIos = `<div class="iph" style="min-height:560px;display:flex;flex-direction:column;align-items:center"><div style="align-self:flex-start;font-size:34px;font-weight:700;margin:6px 0 40px">Cooldown</div>
+  <div style="display:flex;gap:14px">${mk('cl', 54)}${mk('gp', 54)}${mk('gm', 54)}</div><div style="font-size:22px;font-weight:700;margin-top:22px">Track your usage windows</div>
+  <div style="font-size:15.5px;color:var(--txt);text-align:center;margin:8px 32px 0;line-height:1.4">See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude, ChatGPT and Gemini. ${tagNew}</div>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">${[['cl', 'Add a Claude account', ''], ['gp', 'Add a ChatGPT account', ''], ['gm', 'Add a Gemini account', ' <span class="tag chg">new</span>']].map(([a, t, n]) => `<div style="width:260px;text-align:center;border-radius:99px;padding:12px 0;background:var(--${a});color:#000;font-weight:600;font-size:16px">${t}${n}</div>`).join('')}</div>
+  <div style="flex:1"></div><div style="font-size:12.5px;color:var(--sub);text-align:center;margin:20px 28px 6px;line-height:1.4">Not affiliated with Anthropic, OpenAI or Google. ${T_NOTE} ${tagNew}</div></div>`;
+$('i-l').innerHTML = [
+  colA('L1 · Android About', 'good', andAbout, 'The shipped centred card: the "Unofficial" line names Google and the trademark sentence is added, in the same labelSmall. Nothing else moves; no box, no new row (decision 4). The README carries the ToS detail.', 'wide'),
+  colI('L2 · iOS About', 'good', iosAbout, 'The shipped footnote with the same two changes.'),
+  colI('L3 · iOS empty state', 'good', emptyIos, 'The first-launch screen gains a third mark and a third 260 pt capsule in Gemini Blue, and its footnote carries the same two changes (decision 4 names the empty state). The body copy and button are not on your list, so they are tagged.'),
+].join('');
+
+// ---------- section 3b · weekly spent: the 5h greyed out (every account) ----------
+const CLW = { used: 100, gone: 38.9, rs: 'Sun 9:30 pm', inT: '4d 6h' };   // Teams (Claude Max): Weekly spent
+const CL5 = { used: 34, gone: 53.3, rs: '5:10 pm', inT: '2h 20m' };        // Teams 5h, its own values
+const U_CL = 'Sun 9:30 pm', U_GM = 'Sat 4:51 pm';
+const aTabsOn = on => `<div class="tabs"><span class="${on === 'cl' ? 'on' : ''}">${mark('mkClaude', CL, 16)}Teams</span><span class="${on === 'gm' ? 'on' : ''}">${mark('mkGem', GM, 16)}Gemini</span><span>${mark('mkGpt', GP, 16)}Personal</span></div>`;
+const phoneAcct = (on, body) => `<div class="phone ${on === 'gm' ? 'g' : 'cl'}">${aTabsOn(on)}${body}<div class="chk">Checked 1m ago ⟳</div></div>`;
+const hdrA = (t, u, a, ch = '⌄') => `<div class="t">${t}<span class="v" style="color:${sev(u, a)}">${Math.floor(u)}%</span><span class="chev">${ch}</span></div>`;
+const wkSpentA = (w, a) => `<div class="card">${hdrA('7-day window', 100, a)}${meter(100, Math.round(w.gone), { caption: false, ac: a })}${L(`<b>Out until ${w.rs}</b> · in ${w.inT}`)}</div>`;
+const five3b = (w, a, until) => `<div class="card"><div style="opacity:.45">${hdrA('5-hour window', w.used, a)}${meter(w.used, Math.round(w.gone), { caption: false, ac: a })}${L(`Resets in ${w.inT}`)}</div><div class="ln spn">${spentNote(until)}</div></div>`;
+function open5(w, a, until, pts, now) {
+  const ch = achart({ w: 351, gone: w.gone, accent: a, pts, now, label: Math.floor(w.used) + '%' });
+  return `<div class="card"><div style="opacity:.45">${hdrA('5-hour window', w.used, a, '⌃')}${meter(w.used, Math.round(w.gone), { caption: false, ac: a })}${ch}<div class="rs"><span>Resets in ${w.inT}</span><span>Resets at ${w.rs}</span></div></div><div class="ln spn">${spentNote(until)}</div></div>`;
+}
+$('s3b-a').innerHTML = [
+  colA('3b-1 · Claude Teams, compact', 'bad', phoneAcct('cl', wkSpentA(CLW, CL) + five3b(CL5, CL, U_CL)),
+    'Weekly on top as any spent window. The 5h card below keeps its own figure (34%), bar with pace tick and reset line at 45% opacity; the one note line under them is full opacity. ' + flag('new copy') + ' <b>"Weekly limit reached — 5h can’t be used until Sun 9:30 pm"</b>.', 'wide'),
+  colA('3b-2 · Gemini, compact', 'bad', phoneAcct('gm', wkSpentA(WKS, GM) + five3b(H5, GM, U_GM)),
+    'Same rule, Gemini Blue, the neutral room. 5h shows 12%, 47% pace tick and "Resets in 2h 40m". The pace caption and "on track for ~N%" are dropped while greyed (§6 q6); ChatGPT is identical in its Green.', 'wide'),
+].join('');
+const pts5g = [[0, 0], [10, 2], [20, 4], [30, 7], [40, 10], [46.7, 12]], pts5c = [[0, 0], [12, 6], [25, 14], [38, 23], [53.3, 34]];
+$('s3b-o').innerHTML = [
+  colA('3b-3 · Claude Teams, open 5h card', 'bad', phoneAcct('cl', wkSpentA(CLW, CL) + open5(CL5, CL, U_CL, pts5c, ['12:10 pm', '5:10 pm'])),
+    'The opened 5h card in the same state: figure, bar, chart and both reset readings at 45%, the note at full opacity under the reset row. Opening a greyed card still works; it only reads.', 'wide'),
+  colA('3b-4 · Gemini, open 5h card', 'bad', phoneAcct('gm', wkSpentA(WKS, GM) + open5(H5, GM, U_GM, pts5g, ['12:30 pm', '5:30 pm'])),
+    'Same on Gemini. The chart keeps its even-pace line and guides, dimmed with the rest, so nothing is hidden, only quietened.', 'wide'),
+].join('');
+const spentNc = (mkId, ac, ttl, w5, wkTick, wkRs, wkIn, until, fl, fr) => nc({ expanded: true, fig: 44, mk: mkId, ac, title: ttl, pct: 100, tick: wkTick, sub: `Out until ${wkRs} · in ${wkIn}`,
+  panel: `<div style="margin:0 0 8px"><div style="opacity:.45">${crow('5h', `Resets in ${w5.inT} · ${w5.rs}`, w5.used, w5.gone, ac)}</div><div class="hsub" style="white-space:normal;margin-top:6px;color:#ECECEC;font-weight:600">${spentNote(until)}</div></div>` });
+$('s3b-n').innerHTML = [
+  col('3b-5 · Claude Teams, expanded', 'bad', spentNc('mkClaude', CL, 'Teams · Weekly', CL5, 38.9, 'Sun 9:30 pm', '4d 6h', U_CL),
+    'The header block is the spent Weekly (no band, no allowance). The panel’s 5h row is greyed to 45% and the note is its sub line, at full opacity, wrapping to two lines.'),
+  col('3b-6 · Gemini, expanded', 'bad', spentNc('mkGem', GM, 'Gemini · Weekly', H5, 55.9, 'Sat 4:51 pm', '3d 2h', U_GM),
+    'Collapsed, the face is J5 as before (no 5h companion line). Only the expanded panel shows the greyed 5h row and its note.'),
+].join('');
+const numW = (mkId, ac, nm, w) => `<div style="padding:16px;border-radius:26px;background:linear-gradient(135deg,#2b3a55,#4a3b52 60%,#5a4a40);width:395px;max-width:100%"><div style="width:363px;max-width:100%;height:84px;border-radius:22px;background:#1A1A1A;padding:9px 12px 8px;color:#E6E1DE;font-family:Roboto,Arial,sans-serif;overflow:hidden">
+  <div style="opacity:.5"><div style="display:flex;align-items:center;gap:6px;font-size:13px;height:32px">${mark(mkId, ac, 14)}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${nm} · 5h</span><span style="margin-left:auto;font-size:32px;font-weight:700;line-height:32px;color:${sev(w.used, ac)}">${w.used}%</span></div>
+  <div style="margin-top:6px">${AND.bar(w.used, w.gone, sev(w.used, ac), 8)}</div></div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-top:7px;white-space:nowrap"><span style="opacity:.5">Resets ${w.rs}</span><span style="font-weight:700;color:#E6E1DE">Weekly spent</span></div></div></div>`;
+$('s3b-w').innerHTML = [
+  colA('3b-7 · Number 4×1, Claude Teams, window 5h', 'bad', numW('mkClaude', CL, 'Teams', CL5),
+    'Mark, label, figure and bar at 50% (the widgets’ dim alpha), the reset text dimmed with them. The stamp slot, which says "as of …" when stale, says ' + flag('new copy') + ' <b>"Weekly spent"</b> at full opacity. The tall sizes add the same stamp on its own line.', 'wide'),
+  colA('3b-8 · Number 4×1, Gemini, window 5h', 'bad', numW('mkGem', GM, 'Gemini', H5),
+    'Same face, Gemini Blue. Countdown and Ring (5h) dim the same way and the iOS Number and Bars faces take the same stamp; a Weekly-window widget never needs it.', 'wide'),
+].join('');
+const iTop2 = on => `<div class="itb"><span>▦</span><span>⚙</span><span>⋯</span></div><div class="iltt">${mk('cl', 26)}${mk('gp', 26)}${mk('gm', 26)}<span>Cooldown</span></div><div class="itabs">${iTab('cl', 'Teams', on === 'cl')}${iTab('gp', 'Personal')}${iTab('gm', 'Gemini', on === 'gm')}</div>`;
+const iPhone2 = (on, body) => `<div class="iph">${iTop2(on)}${body}<div class="ifoot">Checked 1m ago ⟳</div></div>`;
+const iWkSpent = (a, w) => `<div class="icard"><div class="ich"><span class="t">7-day window</span><b style="color:var(--red)">100%</b><span class="ichev">⌄</span></div><div style="margin-top:12px">${IB(a, 100, w.gone, 9)}</div><div class="iln" style="font-size:13.5px;color:var(--red)">Out until ${w.rs}</div></div>`;
+const iFive3 = (a, w, until) => `<div class="icard"><div style="opacity:.45"><div class="ich"><span class="t">5-hour window</span><b style="color:${IOS.sev(w.used, a)}">${w.used}%</b><span class="ichev">⌄</span></div><div style="margin-top:12px">${IB(a, w.used, w.gone, 11)}</div><div class="iln">Resets in ${w.inT}</div></div><div class="iln spni">${spentNote(until)}</div></div>`;
+$('s3b-i').innerHTML = [
+  colI('3b-9 · iPhone, Claude Teams', 'bad', iPhone2('cl', iWkSpent('cl', CLW) + iFive3('cl', CL5, U_CL)), 'The 5h card’s content dims to 45%, as iOS dims cards under a notice; the note line stays at full ink inside the same card.'),
+  colI('3b-10 · iPhone, Gemini', 'bad', iPhone2('gm', iWkSpent('gm', WKS) + iFive3('gm', H5, U_GM)), 'The same on Gemini. The iPad sidebar row, lock screen and Live Activity keep reading Weekly and need no new state.'),
+].join('');
+
+// ---------- section 7 · app icon ----------
+function pulse(variant, size) {
+  const ceil = variant === 'v2' ? '#8AB4F8' : '#F3EBE3', ca = variant === 'v2' ? .9 : .72, alt = variant === 'alt';
+  const tee = alt ? 'M66,64 L71,64 L78,50 L85,64' : 'M66,64 L71,64 L78,50 L85,64 L96,64';
+  return `<svg width="${size}" height="${size}" viewBox="18 18 72 72" style="display:block;border-radius:${Math.round(size * .26)}px" role="img" aria-label="Pulse icon, ${variant}"><rect x="0" y="0" width="108" height="108" fill="#1F1B19"/>
+    <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" fill="none" stroke="${ceil}" stroke-opacity="${ca}" stroke-width="3.9" stroke-linecap="butt"/>
+    <path d="M12,64 L27,64 L34,50 L41,64 L44,64" fill="none" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${tee}" fill="none" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    ${alt ? '<path d="M85,64 L96,64" fill="none" stroke="#8AB4F8" stroke-width="9" stroke-linecap="round"/>' : ''}
+    <path d="M44,64 L48,72 L54,20 L60,74 L66,64" fill="none" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const iconCol = (cap, cls, v, note) => `<div class="col n"><p class="cap ${cls}">${cap}</p><div style="display:flex;gap:22px;align-items:flex-end;background:#0D0D0D;border-radius:20px;padding:18px;width:fit-content;max-width:100%">${pulse(v, 192)}${pulse(v, 48)}</div><p class="note">${note}</p></div>`;
+$('t-icon').innerHTML = [
+  iconCol('Today · V1 keep as is', 'good', 'v1', 'Charcoal plate, terracotta P (Claude), red beat, green T (ChatGPT), dashed cream ceiling. 192 px left, 48 px (true launcher size) right. Shown inside the launcher’s mask, so the trace runs past the visible square as shipped.'),
+  iconCol('V2 · the ceiling in Gemini Blue', 'warn', 'v2', 'Only the seven dashes change: <code>#8AB4F8</code> at 90% instead of cream at 72%. The beat, bumps and every coordinate are as in the XML. At 48 px the dashes are the thinnest stroke, so they read as a blue line, not as a third account.'),
+  iconCol('V2 alt · a blue tail after the T', 'bad', 'alt', 'The flat run after the T (x 85 to 96) in blue. Only 5 units of it sit inside the mask (edge at x 90), so it reads as a smudge on the T. Considered, not recommended.'),
+].join('');
+
+// ---------- section 8 · theme colour ----------
+const THEMES = [['Claude Orange', '#E59980'], ['Blue', '#8AB4F8'], ['Indigo', '#9FA8DA'], ['Cyan', '#4DD0E1'], ['Teal', '#4DB6AC'], ['Green', '#81C995'], ['Amber', '#FDD663'], ['Deep Orange', '#FF8A65'], ['Red', '#F28B82'], ['Pink', '#F48FB1'], ['Purple', '#CE93D8'], ['Brown', '#BCAAA4']];
+const SWEEP3 = 'conic-gradient(#E59980 0 33.3%,#19C39A 0 66.6%,#8AB4F8 0)';
+const sw = (bg, o = {}) => `<span title="${o.t || ''}" style="width:${o.s || 40}px;height:${o.s || 40}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:${o.s ? 14 : 18}px;font-weight:700;color:#1a1a1a;${o.sel ? 'box-shadow:0 0 0 3px #1A1A1A,0 0 0 5px #E6E1DE;' : ''}${o.add ? 'outline:2px dashed #D8AC63;outline-offset:3px;' : ''}">${o.sel ? '✓' : ''}</span>`;
+const grid = (cells, s = 40, gap = 12) => `<div style="display:grid;grid-template-columns:repeat(6,${s}px);gap:${gap}px;padding:6px 0">${cells.join('')}</div>`;
+const themeGrid = (optB) => grid([sw(SWEEP3, { sel: 1, t: 'Per provider' }), sw('linear-gradient(135deg,#8AB4F8,#CE93D8,#FDD663)', { t: 'Material You' }), ...THEMES.map(([n, c]) => sw(c, { t: n })), ...(optB ? [sw('#19C39A', { add: 1, t: 'ChatGPT Green' }), sw('#8AB4F8', { add: 1, t: 'Gemini Blue' })] : [])]);
+const acctGrid = (optB) => grid([sw('#8AB4F8', { sel: 1, t: 'Provider colour (Gemini Blue)' }), ...THEMES.map(([n, c]) => sw(c, { t: n })), ...(optB ? [sw('#19C39A', { add: 1, t: 'ChatGPT Green' }), sw('#8AB4F8', { add: 1, t: 'Gemini Blue' })] : [])]);
+const gcard = (title, g, cap) => `<div class="phone g" style="padding-bottom:14px"><div class="hd2" style="font-size:17px;margin:0 0 6px">${title}</div>${g}<div class="mini" style="margin-top:4px">${cap}</div><div class="btns" style="margin-top:8px"><span class="btn t r">Close</span></div></div>`;
+const iGrid = grid([sw(SWEEP3, { sel: 1, s: 36 }), ...THEMES.slice(1).map(([n, c]) => sw(c, { s: 36 }))], 36, 12);
+$('t-theme').innerHTML = [
+  colA('Android · Appearance › Theme colour · option A (recommended)', 'good', gcard('Theme colour', themeGrid(false), 'Selected: Per provider'),
+    'Six per row, 40 dp: Per provider, Material You, then Claude Orange … Brown as today (12 named, order of foundations §1.2). Nothing is added; the only change is the Per provider sweep, which gains a third band for Gemini (today two). Gemini accounts take Gemini Blue through it, as ChatGPT takes ChatGPT Green.', 'wide'),
+  colA('Android · Theme colour · option B', 'warn', gcard('Theme colour', themeGrid(true), 'Selected: Per provider'),
+    'ChatGPT Green and Gemini Blue offered as two more swatches (dashed outlines = added, appended after Brown, my assumption). Cost: two more entries in the grid, and "Gemini Blue" would sit beside "Blue", whose dark hex is already <code>#8AB4F8</code> (only the light hex differs: #1A73E8 vs #4285F4).', 'wide'),
+  colA('Android · account colour grid · option A', 'good', gcard('Accent colour · Gemini', acctGrid(false), 'Selected: Provider colour (default)'),
+    'First swatch is the provider colour, here Gemini Blue; then the 12 selectable themes. Unchanged from today apart from the Gemini account’s first swatch.', 'wide'),
+  colA('Android · account colour grid · option B', 'warn', gcard('Accent colour · Gemini', acctGrid(true), 'Selected: Provider colour (default)'),
+    'The same two extra swatches, so a Claude account could be set to ChatGPT Green (and the reverse). Option B changes both grids and the spec’s "provider-only" rule for both colours.', 'wide'),
+  `<div class="col i"><p class="cap good">iPhone · Theme colour (A)</p><div class="scroll"><div class="ios"><div class="isheet"><div class="igrab"></div><div style="font-size:20px;font-weight:700;margin-bottom:8px">Theme colour</div>${iGrid}<div style="font-size:13px;color:var(--sub);margin-top:6px">Selected: Per provider</div></div></div></div><p class="note">iOS has no Gemini today, so this release adds Gemini Blue as the Gemini provider default and nothing to the grid (Per provider plus eleven, no Claude Orange). The sweep gains the third band here too.</p></div>`,
+].join('');
+
+// ---------- section 5 · strings ----------
+const STR = [
+  ['Add sheet row name', 'both', 'Gemini', 'decided (rev B: "(Antigravity)" dropped)'],
+  ['Add sheet', 'both', 'Signs in with Google in your browser, then paste the code back.', 'decided'],
+  ['Add sheet footnote', 'iOS', 'Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.', 'decided (wording of "apps" mine)'],
+  ['Signed-out card', 'Android', 'Not signed in · [Sign in with Google] · Opens Google\'s sign-in in your browser — no computer needed.', 'new copy'],
+  ['Sign-in sheet title and steps', 'iOS', 'Sign in to Gemini · 1. Sign in with Google and approve Cooldown. 2. Copy the code Google shows you and paste it here. · [Sign in with Google]', 'new copy'],
+  ['Paste step', 'both', 'Paste the code from the sign-in page · [Continue] · [Reopen page] / [Start again] · [Cancel]. Shipped Claude copy elsewhere in the step is reused.', 'decided (field label, Continue)'],
+  ['Paste helper line', 'both', 'The code starts with 4/. You can also paste the whole address from the page.', 'new copy'],
+  ['Wrong or expired code', 'both', 'That code didn\'t work — it may have expired or been copied wrong. Start again.', 'new copy'],
+  ['State mismatch', 'both', 'That code is for a different sign-in — start again.', 'decided'],
+  ['Signed in', 'Android', 'Gemini signed in — usage fetched, polling started.', 'existing pattern'],
+  ['Not started', 'both', 'Not started yet (card line; notification: "Not started yet")', 'decided (notification line mine)'],
+  ['Weekly spent: 5h greyed note', 'both (Android cards and open card, notification panel sub, iOS card)', 'Weekly limit reached — 5h can’t be used until Sat 4:51 pm (Claude Teams example: … until Sun 9:30 pm)', 'new copy'],
+  ['Weekly spent: widget short form', 'Android Number 4×1 (other faces alike)', 'Weekly spent (the stamp slot, full opacity; the face’s other text stays at 50%)', 'new copy'],
+  ['Weekly spent: 5h reset line', 'both', 'Resets in 2h 40m (today’s wording; "on track for ~N%" and the pace caption dropped while greyed)', 'existing wording, tail dropped (§6 q6)'],
+  ['Icon and theme colour', '—', 'No strings (§7 icon, §8 theme colour). Option names "ChatGPT Green" and "Gemini Blue" already exist.', 'none new'],
+  ['Pool group label', 'both', 'Claude + GPT in Antigravity', 'decided (the pool lives inside Google’s Antigravity app; the account itself is “Gemini”)'],
+  ['Plan pill', 'both', 'Free · Pro · Ultra', 'decided'],
+  ['Pace words, reset lines, caption', 'both', 'unchanged', 'existing'],
+  ['Show model limits row', 'both', 'Hides: Argon · 1% this week', 'existing pattern (CCRM-99)'],
+  ['Pool-only reply', 'both', 'Google changed something — usage unavailable · evidence "Reply held 1 of 3 groups" · "Cooldown won\'t guess. An app update may be needed."', 'decided (title); body and evidence new copy'],
+  ['Token dead', 'both', 'Sign-in stopped working — re-sign in from Settings. · Gemini: Sign-in stopped working · Sign-in stopped working — re-sign in below.', 'existing patterns'],
+  ['Android About', 'Android', 'Unofficial. Not affiliated with, endorsed by, or supported by Anthropic, OpenAI or Google. … "Gemini" and "Antigravity" are trademarks of Google LLC.', 'decided'],
+  ['iOS About', 'iOS', 'Unofficial. Not affiliated with Anthropic, OpenAI or Google. … “Gemini” and “Antigravity” are trademarks of Google LLC.', 'decided'],
+  ['iOS empty state', 'iOS', 'body "… for Claude, ChatGPT and Gemini." · [Add a Gemini account] · footnote "Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC."', 'footnote decided; body and button new copy'],
+];
+$('strings').insertAdjacentHTML('beforeend', STR.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2].replace(/</g, '&lt;')}</td><td class="s">${r[3].replace(/new copy/g, '<span class="flag">new copy</span>')}</td></tr>`).join(''));
+
+// ---------- section 6 · questions ----------
+$('qs').innerHTML = [
+  '<b>Can "5h used, weekly not started" (state B) happen?</b> In the respike record a Flash prompt moved the 5h bucket <i>and</i> the weekly one together, so for Gemini models the two start at the same moment. B is drawn because the payload allows it. <b>Default: keep the card able to show it; nothing else depends on it.</b>',
+  '<b>Free and Ultra are unverified.</b> The record has one Pro account. The Ultra tier id is unknown, whether Free returns the same buckets is unknown, and Google says Ultra\'s larger Argon quota is "included as part of the larger Gemini quota bucket", so an Ultra account may have no Argon bucket at all. <b>Default: the pill reads Free / Pro / Ultra, a bucket that is absent is simply not drawn (no row, no card), and the device pass checks each plan if you have one.</b>',
+  '<b>Tiny used values.</b> Two prompts left Weekly at 1.5% and 5h at 0.24%. Truncated like everything else, 0.24% shows "0%" with a started clock and a pace caption, next to "Not started yet" on a different window. <b>Default: truncate as elsewhere; the caption makes the difference ("47% pace mark · 47 under").</b> Say if you would rather show "<1%".',
+  '<b>Notification colour.</b> The brief said always-on surfaces stay monochrome until 80%. The shipped notification (v2.0 wireframe, foundations §1.6) draws the mark and figure in the account’s accent below 80% and the severity ladder above, so Gemini is drawn the same, in Gemini Blue. <b>Default: as shipped.</b>',
+  '<b>"iOS sign-in sheet intro".</b> Decision 4 lists it as a place for the trademark line. The only sheet that carries a disclaimer today is the Add-account sheet’s footnote (<code>SignInSheets.swift:15</code>), so that is where it is drawn; the per-provider sign-in sheet (I2 to I5) carries none. <b>Default: the Add sheet footnote.</b>',
+  '<b>While the 5h is greyed, what does its card still say?</b> It keeps the figure, the bar with its pace tick and "Resets in 2h 40m", and drops the pace caption and "on track for ~N%" (a projection for a window that cannot be used). <b>Default: as drawn in §3b.</b>',
+  '<b>The "Per provider" swatch.</b> Today it is a sweep of two provider colours; with Gemini it needs a third band (§8, option A). <b>Default: three equal bands.</b>',
+].map(t => `<li>${t}</li>`).join('');
+</script>
+</html>

@@ -15,7 +15,8 @@ struct SurfaceRenderTests {
 
     func face(_ label: String, _ provider: Provider, pct: Double?, pace: Double?, minutes: Double = 95,
               runOut: Double? = nil, status: Face.Status = .fresh, fetchedMinutesAgo: Double = 3,
-              weeklyPct: Double = 18, weeklyPace: Double = 43, weeklyOnly: Bool = false, notStarted: Bool = false) -> Face {
+              weeklyPct: Double = 18, weeklyPace: Double = 43, weeklyOnly: Bool = false, notStarted: Bool = false,
+              headline: Headline = .weekly, binding: Bool? = nil) -> Face {
         // A unique key per sample: rows and rings are identified by account key.
         let reset = now.addingTimeInterval(minutes * 60), weeklyReset = now.addingTimeInterval((1 - weeklyPace / 100) * 7 * 86_400)
         var f = Face(account: Account(key: "\(label)-\(Int(pct ?? -1))-\(status)-\(weeklyOnly)", label: label, provider: provider),
@@ -39,6 +40,11 @@ struct SurfaceRenderTests {
         f.attachContent(sessionWindow: weeklyOnly ? nil : UsageWindow(percent: notStarted ? 0 : pct, resetsAtMs: notStarted ? nil : reset.ms, serverSeverity: nil),
                         weeklyWindow: UsageWindow(percent: weeklyPct, resetsAtMs: weeklyReset.ms, serverSeverity: nil),
                         history: history, nowMs: now.ms)
+        // v2.0 (CCRM-96 (Weekly First)): what Face.build sets from the Headline and core §6.2.
+        f.headline = headline
+        f.hasSessionWindow = !weeklyOnly
+        f.sessionBinding = binding ?? Pace.sessionBinding(sessionPct: weeklyOnly ? nil : pct, weeklyPct: weeklyPct,
+                                                         sessionHitsLimitBeforeReset: runOut != nil)
         return f
     }
 
@@ -131,8 +137,10 @@ struct SurfaceRenderTests {
         save("wk-lock-circle", LockFace(entry: entry, familyOverride: .accessoryCircular).foregroundStyle(.white), width: 104, height: 104, background: wall)
         save("wk-lock-rect", LockFace(entry: entry, familyOverride: .accessoryRectangular).foregroundStyle(.white), width: 204, height: 108, background: wall)
         let bg = Color(hex: 0x1C1C1E)
+        // CCRM-103: rows are Weekly-led; the 5h whose window has reset is the ring's, read 0%.
         var reset = CooldownActivityAttributes.Row(states[0].1)
-        reset.reset = now.addingTimeInterval(-60)
+        reset.fiveReset = now.addingTimeInterval(-60)
+        #expect(reset.five?.pct == 0 && reset.five?.pace == nil)
         save("la-reset-duet", LockPanel(state: .init(rows: [reset, CooldownActivityAttributes.Row(states[5].1)], ended: nil)),
              width: 370, height: 160, background: bg)
         save("la-weekly-duet", LockPanel(state: .init(rows: [CooldownActivityAttributes.Row(weekly), CooldownActivityAttributes.Row(states[0].1)], ended: nil)),
@@ -177,6 +185,104 @@ struct SurfaceRenderTests {
                  width: 104, height: 104, background: wall)
             save("lock-rect-\(state)", LockFace(entry: entry, familyOverride: .accessoryRectangular).foregroundStyle(.white),
                  width: 204, height: 108, background: wall)
+            save("lock-inline-\(state)", LockFace(entry: entry, familyOverride: .accessoryInline).foregroundStyle(.white),
+                 width: 342, height: 52, background: wall)
+        }
+    }
+
+    /// CCRM-103 (Hybrid Notification), rev D §6: the shape grammar on every iOS face — the 5h a ring, the Weekly a bar,
+    /// whatever the Headline; a plan with no 5h per B1; a spent week greys the ring; the three end marks; Vs pace.
+    @Test("shape grammar: faces, end marks, Vs pace, no 5h, spent week")
+    func shapeGrammar() {
+        let d = Prefs.defaults
+        defer { [Display.Key.usageEndMark, Display.Key.usageLeft, Display.Key.usageVsPace].forEach { d.removeObject(forKey: $0) } }
+        let teams = face("Teams", .claude, pct: 34, pace: 53, minutes: 140, weeklyPct: 52, weeklyPace: 39)
+        let binding = face("Teams", .claude, pct: 93, pace: 83, minutes: 50, runOut: 35, weeklyPct: 52, weeklyPace: 39)
+        let spent = face("Teams", .claude, pct: 12, pace: 20, minutes: 240, weeklyPct: 100, weeklyPace: 55)
+        let personal = extraStates[0].1
+
+        // The model: the grammar face is Weekly-led whatever the Headline, the 5h its companion; no 5h, no ring.
+        for headline in [Headline.weekly, .fiveHour, .auto] {
+            var f = teams
+            f.headline = headline
+            let g = f.lead(for: .notification).grammar
+            #expect(g.leadsWeekly && g.pct == 52 && g.fiveHour?.pct == 34)
+            #expect(CooldownActivityAttributes.Row(f.lead(for: .notification)).five?.pct == 34)
+            #expect(CooldownActivityAttributes.Row(f.lead(for: .notification)).weekPct == 52)
+        }
+        #expect(personal.grammar.fiveHour == nil && CooldownActivityAttributes.Row(personal.leading).five == nil)
+        #expect(spent.grammar.fiveGreyed && spent.fiveGreyed && !teams.grammar.fiveGreyed)
+
+        // Fable E1.1: the first model limit rides on the face (hidden by Model limits off, none when the plan has none),
+        // whatever leads, and Bars and Strip draw it.
+        let fableCap = ModelCap(modelName: "Claude Fable",
+                                window: UsageWindow(percent: 30, resetsAtMs: now.addingTimeInterval(0.61 * 7 * 86_400).ms, serverSeverity: nil))
+        let limit = Face.limit(fableCap, show: true, nowMs: now.ms)
+        #expect(limit?.name == "Fable" && limit?.pct == 30 && limit?.pace != nil)
+        #expect(Face.limit(fableCap, show: false, nowMs: now.ms) == nil && Face.limit(nil, show: true, nowMs: now.ms) == nil)
+        let passed = ModelCap(modelName: "Argon", window: UsageWindow(percent: 80, resetsAtMs: now.addingTimeInterval(-60).ms, serverSeverity: nil))
+        #expect(Face.limit(passed, show: true, nowMs: now.ms)?.pct == 0)
+        var fable = teams
+        fable.modelLimit = limit
+        #expect(fable.grammar.modelLimit == limit && fable.lead(.session).modelLimit == limit && fable.leading.modelLimit == limit)
+
+        func shoot(_ tag: String) {
+            for (name, f) in [("teams", teams), ("binding", binding), ("spent", spent), ("personal", personal), ("fable", fable)] {
+                let entry = FaceEntry(date: now, faces: [f], key: f.account.key)
+                save("g-\(tag)-bars-\(name)", BarsFace(entry: entry), width: 158 + 32, height: 158 + 32)
+                save("g-\(tag)-number5-\(name)", NumberFace(entry: entry), width: 158 + 32, height: 158 + 32)
+                save("g-\(tag)-numberw-\(name)", NumberFace(entry: FaceEntry(date: now, faces: [f], key: nil, window: .weekly)),
+                     width: 158 + 32, height: 158 + 32)
+                save("g-\(tag)-countdown-\(name)", CountdownFace(entry: entry), width: 158 + 32, height: 158 + 32)
+                save("g-\(tag)-strip-\(name)", StripFace(entry: entry), width: 338 + 32, height: 158 + 32)
+            }
+            let all = [teams, binding, spent, personal]
+            save("g-\(tag)-ov-large-t4", OverviewFace(entry: FaceEntry(date: now, faces: all, key: nil), familyOverride: .systemLarge),
+                 width: 338 + 32, height: 354 + 32)
+            save("g-\(tag)-ov-medium-t5", OverviewFace(entry: FaceEntry(date: now, faces: [teams, spent, personal], key: nil),
+                                                       familyOverride: .systemMedium), width: 338 + 32, height: 158 + 32)
+            save("g-\(tag)-ov-large-t3", OverviewFace(entry: FaceEntry(date: now, faces: [teams, personal], key: nil),
+                                                      familyOverride: .systemLarge), width: 338 + 32, height: 354 + 32)
+            save("g-\(tag)-ov-large-t1", OverviewFace(entry: FaceEntry(date: now, faces: [binding], key: nil), familyOverride: .systemLarge),
+                 width: 338 + 32, height: 354 + 32)
+            save("g-\(tag)-ov-xl-1", OverviewFace(entry: FaceEntry(date: now, faces: [teams], key: nil), familyOverride: .systemExtraLarge),
+                 width: 724, height: 346)
+            let bg = Color(hex: 0x1C1C1E)
+            let rows = [teams, personal].map { CooldownActivityAttributes.Row($0) }
+            save("g-\(tag)-la-single", LockPanel(state: .init(rows: [rows[0]], ended: nil)), width: 361 + 32, height: 160, background: bg)
+            save("g-\(tag)-la-duet", LockPanel(state: .init(rows: rows, ended: nil)), width: 361 + 32, height: 160, background: bg)
+            save("g-\(tag)-la-spent", LockPanel(state: .init(rows: [CooldownActivityAttributes.Row(spent), rows[1]], ended: nil)),
+                 width: 361 + 32, height: 160, background: bg)
+            save("g-\(tag)-island-expanded", IslandExpanded(row: rows[0]), width: 361 + 40, height: 110, background: .black)
+        }
+        shoot("line")
+        Display.setUsageEndMark(.round); shoot("round")
+        Display.setUsageEndMark(.pace); shoot("pace")
+        d.removeObject(forKey: Display.Key.usageEndMark)
+        Display.setMode(.vsPace); shoot("vs")
+        Display.setMode(.left); shoot("left")
+        Display.setMode(.used)
+        // The iPhone SE's small widget (141 pt) with the model limit: the reset line goes first (rev C).
+        save("g-bars-se-fable", BarsFace(entry: FaceEntry(date: now, faces: [fable], key: nil)), width: 141, height: 141)
+
+        // The lock screen keeps the Used figure in Vs pace (iOS tints it): circular, rectangular, inline.
+        let wall = Color(hex: 0x6E5F95)
+        Display.setMode(.vsPace)
+        for (name, f) in [("teams", teams), ("binding", binding), ("spent", spent), ("personal", personal)] {
+            let entry = FaceEntry(date: now, faces: [f], key: f.account.key)
+            save("g-lock-circle-\(name)", LockFace(entry: entry, familyOverride: .accessoryCircular).foregroundStyle(.white),
+                 width: 72 + 32, height: 72 + 32, background: wall)
+            save("g-lock-rect-\(name)", LockFace(entry: entry, familyOverride: .accessoryRectangular).foregroundStyle(.white),
+                 width: 172 + 32, height: 76 + 32, background: wall)
+            save("g-lock-inline-\(name)", LockFace(entry: entry, familyOverride: .accessoryInline).foregroundStyle(.white),
+                 width: 310 + 32, height: 52, background: wall)
+        }
+        Display.setMode(.used)
+        // The compact Island's leading ring (30 pt, "34" at 11 pt).
+        if let five = CooldownActivityAttributes.Row(teams).five {
+            save("g-island-compact-ring", FaceRing(five: five, accent: teams.account.accent(.dark), figure: .digits, figureSize: 11,
+                                                   surface: .black).frame(width: 30, height: 30),
+                 width: 30 + 32, height: 30 + 32, background: .black)
         }
     }
 
@@ -190,5 +296,23 @@ struct SurfaceRenderTests {
         save("la-single", LockPanel(state: .init(rows: [rows[0]], ended: nil)), width: 370, height: 160, background: bg)
         save("la-ended", LockPanel(state: .init(rows: [], ended: .init(label: "Teams", provider: "claude", peak: 87))),
              width: 370, height: 110, background: bg)
+    }
+
+    @Test("Live Activity: stale at the first Weekly or 5h reset; the ended frame's peak is the 5h's")
+    func liveActivityStaleAndPeak() {
+        let now = Date(timeIntervalSince1970: 1_793_620_200)
+        var row = CooldownActivityAttributes.Row(states[0].1)
+        row.weeklyLeads = true
+        row.pct = 52
+        row.weeklyPct = 93
+        row.reset = now.addingTimeInterval(4 * 86_400)
+        row.fiveReset = now.addingTimeInterval(50 * 60)
+        #expect(CooldownActivityAttributes.staleDate([row], now: now) == now.addingTimeInterval(50 * 60))
+        row.fiveReset = now.addingTimeInterval(-60)
+        #expect(CooldownActivityAttributes.staleDate([row], now: now) == now.addingTimeInterval(4 * 86_400))
+        // The frame is drawn after the 5h has reset: the peak is still the 93 it reached.
+        #expect(CooldownActivityAttributes.endedPeak(row) == 93)
+        row.weeklyPct = nil
+        #expect(CooldownActivityAttributes.endedPeak(row) == 52)
     }
 }

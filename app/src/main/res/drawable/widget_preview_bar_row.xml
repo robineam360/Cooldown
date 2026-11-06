@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-103 (Hybrid Notification): the Ring face's Weekly row bar for the picker preview
+     (rev D §5's `awRing22`): a 6 dp track, 20% filled with the Line end mark, the pace tick
+     at 30%. Preview only — placed faces draw through BarRenderer. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp" android:height="9.6dp"
+    android:viewportWidth="80" android:viewportHeight="9.6">
+    <path android:fillColor="#40E59980" android:pathData="M5.5,1.8 L74.5,1.8 A3,3 0 0,1 74.5,7.8 L5.5,7.8 A3,3 0 0,1 5.5,1.8 Z" />
+    <path android:fillColor="#FFE59980" android:pathData="M5.5,1.8 L17.5,1.8 L17.5,7.8 L5.5,7.8 A3,3 0 0,1 5.5,1.8 Z" />
+    <path android:fillColor="#FF1A1A1A" android:pathData="M15.75,0 L19.25,0 L19.25,9.6 L15.75,9.6 Z" />
+    <path android:strokeColor="#FFE59980" android:strokeWidth="1.5" android:strokeLineCap="round"
+        android:pathData="M17.5,0.75 L17.5,8.85" />
+    <path android:strokeColor="#FF1A1A1A" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M25,2.5 L25,7.1" />
+    <path android:strokeColor="#E6EDE8E4" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M25,2.5 L25,7.1" />
+</vector>

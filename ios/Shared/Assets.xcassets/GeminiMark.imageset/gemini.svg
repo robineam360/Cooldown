@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CCRM-55 (Antigravity Account): the provider mark, from app/src/main/res/drawable/ic_provider_gemini.xml (a trace of Google's public Gemini spark; "Gemini" is a trademark of Google LLC, used only to identify the account's service). Rendered as a template so it takes the account accent. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11.04,19.32 Q12,21.51 12,24 q0,-2.49 0.93,-4.68 0.96,-2.19 2.58,-3.81 t3.81,-2.55 Q21.51,12 24,12 q-2.49,0 -4.68,-0.93 a12.3,12.3 0 0 1 -3.81,-2.58 a12.3,12.3 0 0 1 -2.58,-3.81 Q12,2.49 12,0 q0,2.49 -0.96,4.68 -0.93,2.19 -2.55,3.81 a12.3,12.3 0 0 1 -3.81,2.58 Q2.49,12 0,12 q2.49,0 4.68,0.96 2.19,0.93 3.81,2.55 t2.55,3.81 Z" fill="#000000"/></svg>

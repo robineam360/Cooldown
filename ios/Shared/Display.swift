@@ -10,7 +10,11 @@ enum Display {
 
     enum Key {
         static let timeFormat = "display.timeFormat"     // "system" | "12" | "24"
-        static let usageLeft = "display.usageLeft"       // Bool
+        static let usageLeft = "display.usageLeft"       // Bool — v1.9's key, still read by v1.9 after a downgrade
+        /// RUNBOOK-v2.0 Step 3's iOS storage rule: Vs pace is its own Bool, so v1.9 (which reads only `usageLeft`)
+        /// sees Used when it is on — choosing Vs pace clears `usageLeft`.
+        static let usageVsPace = "display.usageVsPace"   // Bool
+        static let usageEndMark = "display.usageEndMark" // "round" | "line" | "pace" (CCRM-103), default "line"
         static let chartDown = "display.chartDown"       // Bool
         static let clockFirst = "display.clockFirst"     // Bool
         static let redPastPace = "display.redPastPace"   // Bool, default true
@@ -28,7 +32,28 @@ enum Display {
         default: !(DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "h a").contains("a")
         }
     }
-    static var usageLeft: Bool { defaults.bool(forKey: Key.usageLeft) }
+    /// CCRM-100 (Vs Pace Display): Used · Left · Vs pace.
+    static var mode: PaceText.Mode { mode(left: defaults.bool(forKey: Key.usageLeft), vsPace: defaults.bool(forKey: Key.usageVsPace)) }
+
+    /// `setMode` never writes both keys true, so both true means v1.9 (which writes only `usageLeft`) chose Left
+    /// after v2.0 chose Vs pace — a downgrade and re-upgrade: Left wins, the user's latest choice.
+    static func mode(left: Bool, vsPace: Bool) -> PaceText.Mode {
+        if left { return .left }
+        return vsPace ? .vsPace : .used
+    }
+
+    /// Clears a stale Vs pace flag left behind by that round trip; run at launch.
+    static func repairMode() {
+        if defaults.bool(forKey: Key.usageLeft) && defaults.bool(forKey: Key.usageVsPace) { setMode(.left) }
+    }
+    static func setMode(_ mode: PaceText.Mode) {
+        defaults.set(mode == .left, forKey: Key.usageLeft)
+        defaults.set(mode == .vsPace, forKey: Key.usageVsPace)
+    }
+    static var usageLeft: Bool { mode == .left }
+    /// CCRM-103 (Hybrid Notification): Appearance › Usage end mark; Line by default, v1.9 never reads the key.
+    static var usageEndMark: UsageEndMark { UsageEndMark(key: defaults.string(forKey: Key.usageEndMark)) }
+    static func setUsageEndMark(_ mark: UsageEndMark) { defaults.set(mark.rawValue, forKey: Key.usageEndMark) }
     static var chartDown: Bool { defaults.bool(forKey: Key.chartDown) }
     static var clockFirst: Bool { defaults.bool(forKey: Key.clockFirst) }
     static var redPastPace: Bool { defaults.object(forKey: Key.redPastPace) as? Bool ?? true }
@@ -39,24 +64,51 @@ enum Display {
     static func creditsVisible(_ key: String) -> Bool { defaults.object(forKey: Key.credits(key)) as? Bool ?? true }
     static func setCreditsVisible(_ on: Bool, for key: String) { defaults.set(on, forKey: Key.credits(key)) }
 
-    // MARK: Used / Left — the words flip, the bars never do (they always show what's spent)
+    // MARK: Used / Left / Vs pace — the words flip, the bars never do (they always show what's spent)
 
-    /// The figure a readout shows: what's used, or what's left.
+    /// The usage figure alone, in Used or Left terms (never a distance): 62 or 38. The 5h and Weekly companions
+    /// always show usage, bare in Left mode (spec mobile §5).
     static func value(_ pct: Double?) -> Int? {
         pct.map { usageLeft ? max(0, 100 - Int($0)) : Int($0) }
     }
-    /// "62%" or "38% left" as a plain string, for text-only surfaces.
-    static func pct(_ pct: Double?) -> String {
+    /// Whether the figure for (`pct`, `pace`) is a distance from the pace mark (Vs pace mode and not a fallback).
+    static func isDistance(_ pct: Double?, pace: Double?) -> Bool {
+        mode == .vsPace && Pace.vsPace(usedPct: pct, elapsedPct: pace) != nil
+    }
+    /// The figure without any word: "62%", "38%" (Left), "10%" (Vs pace, unsigned — `figureColour` says the side; the
+    /// usage when it falls back).
+    static func number(_ pct: Double?, pace: Double?) -> String {
+        if mode == .vsPace { return PaceText.vsPaceFigure(usedPct: pct, elapsedPct: pace) }
+        return usage(pct)
+    }
+    /// A companion's figure: always usage ("5h 34%"), bare in Left mode.
+    static func usage(_ pct: Double?) -> String { value(pct).map { "\($0)%" } ?? "—" }
+    /// "62%", "38% left" or "13% over pace" / "10% under pace" / "0% on pace" as a plain string, for text-only surfaces:
+    /// with no colour to carry the side, the words do (rev D §7b's colour-blind cue, as the notification's caption).
+    static func pct(_ pct: Double?, pace: Double?) -> String {
+        if isDistance(pct, pace: pace) {
+            let side: String
+            switch PaceText.vsPaceTone(usedPct: pct, elapsedPct: pace) {
+            case .under: side = "under pace"
+            case .over: side = "over pace"
+            default: side = "on pace"
+            }
+            return "\(number(pct, pace: pace)) \(side)"
+        }
         guard let v = value(pct) else { return "—" }
         return usageLeft ? "\(v)% left" : "\(v)%"
     }
-    /// The figure without the word, for a secondary readout beside a headline that already says "left".
-    static func number(_ pct: Double?) -> String { value(pct).map { "\($0)%" } ?? "—" }
-    /// A headline figure: "62%", or "38%" with a smaller "left" after it so big numbers keep their size.
-    static func pctText(_ pct: Double?, size: CGFloat) -> Text {
+    /// A headline figure: "62%", or "38%" with a smaller "left" (or "vs pace") after it so big numbers keep their size.
+    static func pctText(_ pct: Double?, pace: Double?, size: CGFloat) -> Text {
+        let small = Font.system(size: max(10, size * 0.42), weight: .semibold)
+        if isDistance(pct, pace: pace) {
+            // Unsigned since rev D §7b: the small word says the side where the figure is not coloured.
+            let side = String(self.pct(pct, pace: pace).drop { $0 != " " })
+            return Text("\(number(pct, pace: pace))\(Text(side).font(small))")
+        }
         guard let v = value(pct) else { return Text("—") }
         guard usageLeft else { return Text("\(v)%") }
-        return Text("\(v)%\(Text(" left").font(.system(size: max(10, size * 0.42), weight: .semibold)))")
+        return Text("\(v)%\(Text(" left").font(small))")
     }
 
     // MARK: Accent: the account's own, else the theme colour, else the provider's (Android's three levels)
@@ -102,4 +154,33 @@ enum ThemeColours {
         ThemeOption(name: "Brown", light: Color(hex: 0x6D4C41), dark: Color(hex: 0xBCAAA4)),
     ]
     static func option(_ name: String) -> ThemeOption? { options.first { $0.name == name } }
+}
+
+// MARK: CCRM-103 (Hybrid Notification) — the shape grammar's figures (rev C §1c, rev B §1b, rev D §7b)
+
+extension Display {
+    /// A figure in the grammar's type: SF Pro with monospaced digits, its "%" at 58% of the digits on the baseline.
+    static func grammarFigure(_ text: String, size: CGFloat, weight: Font.Weight = .bold) -> Text {
+        let font = Font.system(size: size, weight: weight).monospacedDigit()
+        guard text.count >= 2, text.hasSuffix("%"), text.dropLast().last?.isNumber == true else {
+            return Text(text).font(font)
+        }
+        return Text(String(text.dropLast())).font(font)
+            + Text("%").font(.system(size: size * 0.58, weight: weight))
+    }
+
+    /// Vs pace green (under the mark) and red (over it); the red is the bar's own red slice.
+    static func vsUnder(_ scheme: ColorScheme) -> Color { scheme == .dark ? Color(hex: 0x9CCC65) : Color(hex: 0x2E7D32) }
+    static func vsOver(_ scheme: ColorScheme) -> Color { scheme == .dark ? Color(hex: 0xFF5252) : Color(hex: 0xC62828) }
+
+    /// A figure's colour: in Vs pace green / red / `ink` by the side, else (and for a fallback usage figure) `usage`.
+    static func figureColour(_ pct: Double?, pace: Double?, ink: Color, usage: Color, _ scheme: ColorScheme) -> Color {
+        guard mode == .vsPace else { return usage }
+        switch PaceText.vsPaceTone(usedPct: pct, elapsedPct: pace) {
+        case .under: return vsUnder(scheme)
+        case .over: return vsOver(scheme)
+        case .on: return ink
+        case .usage: return usage
+        }
+    }
 }

@@ -160,6 +160,8 @@ public actor UsageRepository {
             return Result(outcome: result.outcome, closed: closed)
         }
         switch response.code {
+        case 200 where creds.provider == .antigravity:
+            return finish(key, &state, .invalidResponse(Self.antigravityChangedMessage(response.body)), at: t0)
         case 200:
             return finish(key, &state, .invalidResponse("Unrecognized response shape"), at: t0)
         case 429:
@@ -185,7 +187,14 @@ public actor UsageRepository {
         switch provider {
         case .claude: UsageParser.parse(body)
         case .chatgpt: ChatGPTUsageParser.parse(body, nowMs: nowMs)
+        case .antigravity: AntigravityUsageParser.parse(body, nowMs: nowMs)
         }
+    }
+
+    /// API-CONTRACT §10.4: a 200 with no Gemini group (the UA rejected, or Google changed the reply). The message
+    /// carries the evidence line; the last good reading stays.
+    static func antigravityChangedMessage(_ body: String) -> String {
+        "Reply held \(AntigravityUsageParser.groupCount(body)) of 3 groups"
     }
 
     // MARK: - Renewal
@@ -202,6 +211,7 @@ public actor UsageRepository {
             let grant: TokenGrant? = switch creds.provider {
             case .claude: TokenGrant.claude(body: response.body, previous: creds, nowMs: now())
             case .chatgpt: TokenGrant.chatGPT(body: response.body, previous: creds, nowMs: now())
+            case .antigravity: TokenGrant.antigravity(body: response.body, previous: creds, nowMs: now())
             }
             guard let grant else { state.lastMessage = "no token in response"; return nil }
             try credentials.save(grant.credentials, profileKey: key)
@@ -256,6 +266,8 @@ public actor UsageRepository {
         state.lastAttemptAtMs = t0
         state.lastKind = Self.kind(outcome)
         if outcome != .success { state.lastMessage = outcome.message } else { state.lastMessage = "" }
+        // CCRM-55: the Antigravity notice shows its evidence ("Reply held 1 of 3 groups"), not the generic line.
+        if case .invalidResponse(let detail) = outcome, detail.hasPrefix("Reply held ") { state.lastMessage = detail }
         states.save(state, key)
         if outcome != .success, var snapshot = snapshots.load(key) {
             snapshot.lastAttemptAtMs = t0

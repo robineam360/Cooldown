@@ -31,6 +31,11 @@ targets:
           enabled: 1
     platform: iOS
     sources: [App, Shared]
+    # CCRM-55 (Antigravity Account): ANTIGRAVITY_CLIENT_SECRET from the git-ignored Config/Antigravity.secrets.xcconfig
+    # (empty without it: the Gemini row is hidden).
+    configFiles:
+      Debug: Config/Antigravity.xcconfig
+      Release: Config/Antigravity.xcconfig
     dependencies:
       - target: CooldownWidgets
       - package: CooldownCore
@@ -53,6 +58,7 @@ targets:
         UIApplicationSupportsIndirectInputEvents: true
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.robinrichardrajan.cooldown.refresh]
+        AntigravityClientSecret: $(ANTIGRAVITY_CLIENT_SECRET)
         CFBundleURLTypes:
           - CFBundleURLName: com.robinrichardrajan.cooldown
             CFBundleURLSchemes: [cooldown]

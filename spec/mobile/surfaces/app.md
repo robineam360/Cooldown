@@ -45,14 +45,14 @@ Android, top to bottom: optional synthetic-data banner, top app bar, [app-wide n
 | Element | Size and rule | Source |
 |---|---|---|
 | Synthetic banner | 34 dp tall, `#9A6B1E` fill, text "SYNTHETIC DATA · tap to turn off" 11.5 sp bold `#1A1400`, letter-spacing 0.35 sp; whole bar taps to turn it off. Main only, debug-only | `A/MainActivity.kt:351` |
-| Title | Claude mark 20 dp (Claude colour), 4 dp gap, ChatGPT mark 20 dp (ChatGPT colour), 8 dp gap, text "Cooldown". Other screens show a plain text title: "Settings", "Usage history" | `A/MainActivity.kt` (TopAppBar `title`) |
+| Title | The app's identity (Robin, 2026-11-02): Claude, ChatGPT and Gemini marks, always all three, 20 dp each in its provider colour (the drawables' own optical sizing: Claude at 82% of its box, the ChatGPT blossom ~93%, the Gemini spark 93%), 4 dp apart, 8 dp gap, text "Cooldown". Where the three do not fit beside the text in the width the top bar leaves (measured: 76 dp of marks and gaps + the text's measured width; about 180 dp, so a 320 dp phone falls back), the app's own "Shared pace" tile (`ic_app_mark`, 24 dp, CCRM-101 (Icon v3)'s master on a rounded plate) stands in for the three. Other screens show a plain text title: "Settings", "Usage history" | `A/MainActivity.kt` (`AppTitle`, `AppTitleMarks`) |
 | Actions | History (calendar icon, "Usage history"), Settings (gear, "Settings"), then the ⋮ ("More options") only when the selected account has a reading | `A/MainActivity.kt` (`canShare`) |
 | ⋮ menu | "Main screen layout" (only when the account has two or more cards), "Share snapshot" | `A/MainActivity.kt:425` |
 | Content column | horizontal padding 20 dp, capped at 760 dp wide (`ChartColumnMaxWidth`), centred, vertical scroll; 16 dp above the first card, 24 dp below the last | `A/ui/Adaptive.kt:93,184`, `A/MainActivity.kt` (`ProfileTabs`) |
 | One account at a time | at every width, tabs and swipe included; a wide window never splits into two profile panes | `A/MainActivity.kt:543` |
 | Back | system back walks Settings/History → Main instead of exiting | `A/MainActivity.kt` (`BackHandler`) |
 
-iOS frame (`I/App/UI/MainScreens.swift:70`): a navigation stack; toolbar trailing: calendar (History, "Usage history"), gear (Settings), ellipsis menu (Refresh, Layout, Share card, Add account). Title is a 34 pt bold row: Claude mark, ChatGPT mark (each 0.76 of the title size), "Cooldown". Toolbar items hide when there are no accounts. Refresh is also pull-to-refresh on every scroll view.
+iOS frame (`I/App/UI/MainScreens.swift:70`): a navigation stack; toolbar trailing: calendar (History, "Usage history"), gear (Settings), ellipsis menu (Refresh, Layout, Share card, Add account). Title is a 34 pt bold row (30 pt in the iPad landscape sidebar header): the Claude, ChatGPT and Gemini marks (each 0.76 of the title size, 0.12 apart), "Cooldown" — always all three since 2026-11-02 (Robin); a `ViewThatFits` falls back to the app's "Shared pace" tile (`AppMark`, 0.91 of the title size — 1.2 × a mark, as on Android) where they do not fit (a narrow Split View, a tight sidebar). The marks carry Android's optical sizing in their SVGs (Claude 82%, the ChatGPT blossom re-centred at ~93% — before, iOS drew it off-centre at 69%, visibly smaller — Gemini 93%), so they read one size everywhere, the native tab icons included. Toolbar items hide when there are no accounts. Refresh is also pull-to-refresh on every scroll view.
 
 Differs from the Android frame: iOS puts Refresh, Add account and Layout in one ellipsis menu; Android has no Add account on Main (it lives in Settings) and puts refresh in the status line.
 
@@ -60,7 +60,7 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 
 | Class | Android | iPhone | iPad |
 |---|---|---|---|
-| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar plus pinned half plus selected half. Portrait or Split View ≥ 700 pt: pinned account on top, tabs for the others, selected below. Narrower than 700 pt: the iPhone layout |
+| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar ("All accounts" plus one row per account) and the Summary or only the tapped account, full width. Portrait or Split View ≥ 700 pt: the phone's model, tabs for All and every account, one page at a time. Narrower than 700 pt: the iPhone layout. No pinned account since 2026-11-02 (Robin) |
 | Cards per account | one column at every width; the 7-day card runs two stacks side by side when the card has a model cap and the window is ≥ 700 dp (`hasTwoColumns`) | one column; 7-day card pairs All with the first cap side by side | `twoAcross`: the account's windows sit side by side in a row |
 | Chart width | cover ≈ 339 dp (411 − 40 − 32); inner ≈ 678 dp (750 − 40 − 32), or ≈ 331 dp per stack in the two-stack 7-day card | card width, Large height keyed to it | card width 356 (portrait) or 396 (landscape) |
 
@@ -75,9 +75,9 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 | Selection | keyed on the account key, not position, so reordering accounts in Settings keeps the same account on screen | `selectedKey` | `A/MainActivity.kt:557-600` |
 | Reduce motion | tab tap jumps instead of animating when the system animator scale is 0 | `withAnimation` | `A/ui/Adaptive.kt:Motion` |
 
-iPad sidebar (landscape, 300 pt wide): large title 30 pt, a segmented "5h" / "Weekly" switch (remembered), one row per account (mark 22 pt, name 16 pt, plan chip 11 pt, pin glyph if pinned, 5 pt-high bar with pace tick, right-aligned percent in the severity colour), selected row tinted with the account accent at 18%, the note "Touch and hold an account to pin it to the top.", the Footer at the bottom. A plan with no 5-hour window always shows Weekly and labels the percentage "Weekly". Context menu: "Pin to the top". Approved by `design/2026-10-24-ios-sidebar-window.html`.
+iPad sidebar (landscape, 300 pt wide): large title 30 pt, a segmented "5h" / "Weekly" switch (remembered), one row per account (mark 22 pt, name 16 pt, plan chip 11 pt, 5 pt-high bar with pace tick, right-aligned percent in the severity colour), selected row tinted with the account accent at 18%, the Footer at the bottom. A plan with no 5-hour window always shows Weekly and labels the percentage "Weekly". Approved by `design/2026-10-24-ios-sidebar-window.html`; the pin glyph, the "Touch and hold an account to pin it to the top." note and the "Pin to the top" menu are gone since 2026-11-02 (Robin: no pinned account), and the shape grammar rows below supersede the switch.
 
-iPad half header (21 pt bold name, mark 22 pt, plan chip 12 pt, "Pinned" label with pin glyph, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). The pinned half is on top; a 1 pt divider separates it from the selected half; when the selected account is the pinned one, the bottom half shows the next account.
+iPad account page header (21 pt bold name, mark 22 pt, plan chip 12 pt, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). Since 2026-11-02 the iPad shows one account at a time, full width, or the Summary — no pinned half, no "Pinned" label, no divider.
 
 ### 2.4 Cards, in order
 
@@ -382,9 +382,9 @@ iOS section order (`I/App/UI/SettingsHistory.swift:7`): Accounts, Usage credits 
 | Part | Android | iOS |
 |---|---|---|
 | Degraded notice | `DegradedStoreNotice` at the top of the page (2.6) | none |
-| Account card | `Card`, 16 dp padding. Header row: provider mark 20 dp in the account accent, 6 dp, name (titleMedium, one line, ellipsis), 8 dp, 8 dp status dot (green `#188038` light / `#81C995` dark "Active", or error colour "Needs re-auth"; only with a token), 6 dp, plan chip (labelSmall in accent on accent at 14%, 10 dp radius; Claude Max adds the tier multiplier: "Max 5x"), spinner 18 dp while busy, ⋮ ("Account options", 28 dp button) | list row: mark 20 pt, name, plan chip, pin glyph if pinned, right text "Signed in" (sub) or "Sign in again" (orange); touch and hold opens the menu |
+| Account card | `Card`, 16 dp padding. Header row: provider mark 20 dp in the account accent, 6 dp, name (titleMedium, one line, ellipsis), 8 dp, 8 dp status dot (green `#188038` light / `#81C995` dark "Active", or error colour "Needs re-auth"; only with a token), 6 dp, plan chip (labelSmall in accent on accent at 14%, 10 dp radius; the plan's name per spec/core API-CONTRACT §11 — "Pro 100", "Max", "Ultra", "Ultra 5x" — never a multiplier, since 2026-11-02), spinner 18 dp while busy, ⋮ ("Account options", 28 dp button) | list row: mark 20 pt, name, plan chip, right text "Signed in" (sub) or "Sign in again" (orange); touch and hold opens the menu |
 | Email line | under the header, 26 dp indent, bodySmall muted, local part truncates before the domain; shown only when it adds something beyond the name | Details sheet only |
-| Menu | "Details…" (with a token), "Clear usage history…", "Rename…", "Accent colour…", "Remove account" (error colour; only with two or more accounts) | "Rename", "Pin to the top", "Details…", "Accent colour…", "Sign in again", "Clear usage history…", "Remove" (destructive) |
+| Menu | "Details…" (with a token), "Clear usage history…", "Rename…", "Accent colour…", "Remove account" (error colour; only with two or more accounts) | "Rename", "Details…", "Accent colour…", "Sign in again", "Clear usage history…", "Remove" (destructive) |
 | Claude, signed out | "Not signed in" (bodySmall muted), filled button "Sign in on this phone", then "Opens Claude's sign-in in your browser — no computer needed. Needs a paid plan: Claude reports no usage for Free accounts." | taps open the Claude sign-in sheet |
 | Claude, signed in | status line (bodySmall muted) with a 28 dp refresh button ("Check token now"): "Checking…", "Checked 12m ago", "Checked 12m ago · renews in 6h 4m", "… · renewal due at next check", "Not checked yet"; then red lines as they apply: free plan ("Free plan: Claude doesn't report usage — upgrade to Pro, Max or Team to see numbers."), renewal dead ("Renewal has stopped working — re-sign in below." and day-count variants), amber expiry-soon ("Sign-in expires in 5d 3h — re-sign in to keep polling going."), red "Rate-limited — next try in 12m"; divider; a three-cell action row (min 44 dp, 10 dp radius, 20 dp icon over a labelSmall label): "Re-sign in" (accent, outlined when re-auth is needed), "Clear" (error), "Dashboard" (opens the Claude usage page) | list row only |
 | ChatGPT, signed out | "Not signed in", filled "Sign in with a code", then "Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security." | tap opens the device-code sheet |
@@ -409,7 +409,7 @@ Dialogs (`A/SettingsScreen.kt:1165-1430`):
 
 | Section | Rows |
 |---|---|
-| Always-on notification (Android only; details in the notification file) | switch "Always-on usage notification" / "Silent and ongoing, with a status-bar ring. Nothing else posts on its own except the reset pings below."; when on: "Show accounts" (First: chip per account with its mark; Second · optional: "None" plus chips, the first account disabled), "Tapping a number opens" (chips "Cooldown", "That service's app"; note "The <Provider> app isn't installed — taps open Cooldown instead."), "Status-bar ring shows" (chips "First", "Second", "Whichever is higher"; with one account "One account, so there is nothing to choose" and a disabled "First" chip), a link row "System notification settings" / "The two channels left" |
+| Always-on notification (Android only; details in the notification file) | switch "Always-on usage notification" / "Silent and ongoing, with a status-bar icon. Nothing else posts on its own except the reset pings below."; when on: "Show accounts" (First: chip per account with its mark; Second · optional: "None" plus chips, the first account disabled), "Tapping a number opens" (chips "Cooldown", "That service's app"; note "The <Provider> app isn't installed — taps open Cooldown instead."), "Status-bar icon shows" (chips "First", "Second", "Whichever is higher"; with one account "One account, so there is nothing to choose" and a disabled "First" chip), a link row "System notification settings" / "The two channels left" |
 | Reset pings | intro "The one notification that still posts on its own. "If busy" pings only when that window had reached 80% before it reset."; per account its name and two rows "5h reset" and "Weekly reset", each a three-segment control "Off" / "If busy" / "Always" |
 | iOS Reset alerts | one row per account and window: mark 18 pt, "<name> · 5h" or "<name> · Weekly", segmented "Off" / "If busy" / "Always"; footer "“If busy” only alerts when the window that closed peaked at 80% or more. Alerts are set ahead from the reset times Cooldown last saw." Turning one on asks for notification permission |
 | iOS Lock Screen | switch "Live Activity"; a "Shows" row listing the selected accounts (up to two; a third replaces the oldest); footer "Two accounts’ 5h and Weekly on the lock screen while a window runs. iOS keeps it up to 8 hours and it updates when Cooldown checks." or "Live Activities are switched off for Cooldown in the iOS Settings app." |
@@ -503,3 +503,461 @@ Differs from Android: iOS has no synthetic band, and a weekly-only plan swaps th
 | Share card | `A/share/ShareCard.kt`, `A/share/ChartBitmap.kt` | `I/App/UI/ShareCard.swift` |
 
 Shared numbers (severity breakpoints, projection, pace, dead zone, history) are in `spec/core/BEHAVIOR-SPEC.md`; cadence, reset pings and conditions are in `spec/mobile/BEHAVIOR-MOBILE.md`.
+
+## v2.0 on iOS — CCRM-96…100, RUNBOOK-v2.0 Step 6
+
+As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amends, which still describes v1.9.
+
+#### §2.3 Account tabs — add
+iOS: with two or more accounts an **"All"** tab comes first (icon `text.alignleft`, ink underline, counts as one tab
+for the three-across / scroll rule). iPad landscape: an **"All accounts"** row tops the sidebar (count on the right,
+fill when selected); it is the default detail. iPad portrait: "All" is the first tab, as on the iPhone, and shows
+the Summary. Launch: All when Open on the summary is on and 2+ accounts; otherwise the last account
+looked at (stored `lastAccount`), else the first. `ios/App/UI/MainScreens.swift`, `AppModel.launchKey`.
+
+#### §2.4 Cards, in order — iOS row
+"Default order: Weekly, then 5h (Headline 5-hour: 5h first); a layout moved in the sheet keeps its order (flag
+`reordered` in the stored layout; a v1.9 layout with a non-standard order counts as moved). Show/hide/fold never
+make the order the user's; Reset layout hands it back to the Headline. Comfortable opens the first window card on
+iPhone (both on iPad)." `CardLayout.ordered(by:)`, `AppModel.drawnLayout`.
+
+#### §2.4.4 5-hour card — iOS
+Remove "N% below/above even pace" / "On even pace". Under the bar: the V1 caption and dashed room. Open: the
+projection line, then the reset row. Folded: "Resets in 2h 20m · on track for ~69%" (red with "runs out ~3:25 pm").
+
+#### §2.4.5 7-day card — iOS
+Each half (All, model cap): bar, V1 caption, chart, band line ("Slow down · ≈11%/day", full width "… until Fri"),
+projection line, reset. Spent: red figure, "Out until Sun 9:30 pm", no caption. **Show model limits off**
+(per account, default on): no model half, All takes the full width.
+
+#### §2.6 Notices above the cards — add
+"Weekly now leads" (CCRM-96 F1): title 15 pt semibold, body "The weekly limit is the one every plan has, so it's
+now the big number everywhere, with 5h beside it. Prefer 5h on top?", buttons "Keep Weekly" (Claude-accent capsule,
+black text) and "Keep 5h first" (outlined). Card on `fill`, 14 pt radius. Shown above the cards and above the
+Summary until answered; settled at the first v2.0 launch (`weeklyFirstNotice` = pending only when accounts
+existed). "Keep 5h first" sets every account's Headline to 5-hour.
+
+#### New §2.8 The Summary (All tab) — iOS
+List card "Weekly · most room first", rows by `SummaryRank` (eligible by Pace, held, spent, no reading). Row: mark
+18 · name 15 · plan chip · companion 12 ("no 5h" / "5h 34%" / held "5h 93% · back 3:40 pm" bold orange) · figure
+17 bold in the severity colour (Usage display mode, no "vs pace" word); bar 10 pt with dashed room; V1 caption;
+"Room to spare · ≈22%/day · resets Fri" 13 pt (spent "Out until Thu 8:00 am", row at 60%; "No reading"). From
+six accounts, one-line rows: rank disc 16 pt in the accent, name, bar, word ("Slow down", "5h · 3:40 pm",
+"Out · Thu", "No reading"), figure. Pace map card below (iPhone 230 pt; iPad two columns, list left, map 340 pt
+right, title "All accounts" 30 pt bold): over-pace triangle red 8%, 0/50/100% lines, dashed even-pace diagonal
+labelled "even pace", "over pace"/"room to spare", axis "week start · each account's own week · reset"; per account
+its week's trail (accent 70%, 1.4 pt) and a 9 pt dot named in bold 11 pt; spent: ring with ×; 6+: numbered dots;
+no reading: off the map. Tapping a row opens that account. `ios/App/UI/Summary.swift`.
+
+#### §2.2 iPad sidebar
+Segments "Headline · Weekly · 5h", default Headline (a stored v1.9 choice is kept). Headline: each row shows its
+account's lead window (Auto takes over while 5h binds) and names it under the figure ("Weekly"/"5h"; a binding 5h
+tag is bold orange). Weekly and 5h segments as v1.9.
+
+#### §6.2 Accounts — iOS
+The row pushes an account page: **Account** (Plan; Accent colour… with its dot), **Headline** ("Lead with",
+caption "What widgets, the lock screen, the Live Activity, the iPad sidebar and the card order show first.",
+segmented Weekly · 5-hour · Auto; footer "Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to
+run out before it resets."; a plan with no 5h: control greyed, footer "This plan has no 5-hour window, so Weekly is
+always the headline."), **Model limits** (only while the reading has a model cap: "Show model limits", subtitle
+"Fable · 30% this week" / "Hidden: Fable. The limit still applies to that model; Cooldown just stops drawing it."),
+**Usage** (Details…, Clear usage history… in red). The touch-and-hold menu is unchanged.
+
+#### §6.4 Appearance — iOS
+Usage display: "Used · Left · Vs pace", Vs pace note "Shows “+10%” — how far under the pace mark you are (“−20%”:
+over it)." New "Open on the summary" switch (2+ accounts only, default on), subtitle "With two or more accounts,
+start on the All tab. Off: start on the last account you looked at." Density note now "Comfortable opens the first
+card's chart and keeps the rest a tap away. …"
+
+#### §8 Share card — iOS
+The 5h row's line is now its projection ("On track for ~69%"); the Weekly row reads the band words. Layout otherwise
+unchanged (5h row still above Weekly — not in any v2.0 wireframe).
+
+## Gemini and the spent-week gate on iOS — CCRM-55, CCRM-102
+
+As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
+
+- **§2.4.4 5-hour card — iOS, add (CCRM-102 (Spent Week Gate)):** while the account's Weekly is spent (≥ 99.5) the 5h
+  card is disabled, not hidden: header, bar (no dashed room), chart without its projection and the reset line(s) at 45%
+  ("on track for ~N%" and the V1 caption dropped); folded it shows the reset line alone; the note above sits under it
+  at full opacity (14.5 pt, ink), wrapping. Same rule inside the Gemini pool pair. `ios/App/UI/Cards.swift`.
+- **§2.4 Cards, add (CCRM-55):** a Gemini account's cards are the shipped ones in Gemini Blue; Argon is the 7-day card's
+  model half ("Argon", hidden by Show model limits); once the Claude + GPT pool has been used (a reset clock or a reading
+  above 0), a group label "Claude + GPT in Antigravity" (15 pt semibold, `txt`) and a second pair (7-day, then 5h, the same
+  anatomy, folded by default, no history so no chart samples) follow the account's cards. Untouched: nothing drawn.
+- **§2.6 Notices, add (H):** Gemini only, after a 200 without the Gemini groups: title "Google changed something — usage
+  unavailable", evidence line in 12.5 pt monospaced `sub` "Reply held 1 of 3 groups", body "Cooldown won’t guess. An
+  app update may be needed."; warning tone (cards dim as under any notice); the last good cards stay; no cards and the
+  notice alone when there was never a reading. No action button on iOS (no update channel).
+- **§2.7 First launch (L3):** a third mark and a third 260 pt capsule "Add a Gemini account" in Gemini Blue; body "…for
+  Claude, ChatGPT and Gemini."; footnote "Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are
+  trademarks of Google LLC." (centred). Without the client secret the Gemini mark, capsule and body mention are hidden.
+- **§6.4/6.5 About (L2), iOS:** "Unofficial. Not affiliated with Anthropic, OpenAI or Google. “Claude” is a trademark of
+  Anthropic, PBC; “ChatGPT” is a trademark of OpenAI; “Gemini” and “Antigravity” are trademarks of Google LLC."
+- **§7 Sign-in flows, new §7.3 Gemini (iOS, I1–I5):** Add account gains a third row (32 pt mark, "Gemini", "Signs in with
+  Google in your browser, then paste the code back."), hidden on a build without the secret; the sheet's footnote reads
+  "Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain.
+  Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC."; the sheet
+  now opens at medium and large. Sign-in sheet: "Sign in to Gemini", steps "1. Sign in with Google and approve Cooldown.
+  2. Copy the code Google shows you and paste it here.", Gemini-Blue capsule "Sign in with Google" opening an
+  `ASWebAuthenticationSession` (shared browser session; it never auto-completes, the user closes it). Then: "Copy the code
+  Google shows you and paste it here.", a field (no autocapitalisation, placeholder "4/…"), helper "The code starts with
+  4/. You can also paste the whole address.", buttons Cancel · Continue (Continue disabled while empty). Errors: red line
+  under the field and the line "That code didn’t work — it may have expired or been copied wrong. Start again." or "That
+  code is for a different sign-in — start again."; the left button becomes "Start again" (a fresh PKCE attempt).
+- **§2.2 iPad sidebar / §6.2 Accounts:** a Gemini account is an ordinary row (mark, name, plan pill Free · Pro · Ultra from
+  `loadCodeAssist`'s `paidTier.id`); re-sign-in opens the Gemini sheet.
+## v2.0 on Android — CCRM-96…100, CCRM-102, RUNBOOK-v2.0 Step 5
+
+As built on the v2.0 branch; each entry names the section it amends, which still describes v1.9.
+
+#### §2.3 Account tabs — add
+Android: with two or more signed-in accounts an **"All"** tab comes first (a three-bar glyph, 20 dp, in ink, then
+"All"); it counts as one tab for the fixed/scrollable rule (fixed ≤ 3 tabs, so two accounts + All stay fixed).
+While All is showing the shell takes Settings' neutral scheme (global accent, no room tint) and the top bar's ⋮
+(layout, share) is hidden. Launch: a notification or shortcut naming an account opens that account; otherwise All
+when Open on the summary is on and 2+ accounts; otherwise the last account looked at (stored `lastAccount` in its
+own `main_ui` preferences file), else the first. `MainActivity.kt` (`ProfileTabs`, `LastAccount`).
+
+#### §2.4 Cards, in order — Android row
+**Shape grammar (CCRM-103 (Hybrid Notification), Step 6d):** the account page has one window card, the account
+tile (below), then Usage credits. The tile takes the 7-day card's slot (`CardId.WEEKLY`): its place, its
+show/hide and its More fold; the 5-hour card is no longer a card of its own, so `dataCards` lists `SESSION` only
+for an account reporting no 7-day window at all (the tile then sits in that slot). The Headline's order rule
+(Weekly first, Headline 5-hour: 5h first) no longer moves anything visible: the ring is always the tile's left.
+A layout whose stored order differs from the v1.9 default counts as reordered and keeps its order; only a drag
+stores an order. `dataCards`, `cardOrderLayout` in `MainCards.kt`, `LayoutSheet.kt`.
+
+#### §2.4.2 Row style — figure
+Every figure on the tile and the Summary rows is the grammar's figure (shape grammar rev C §1c): the system sans
+with tabular, lining digits (`tnum, lnum`), bold, its "%" at 58% on the baseline (`grammarFigure`,
+`grammarDigits`). Its colour is the usage's severity colour (the account colour, its step above 80). Usage
+display: Used "52%"; Left "48%" on the tile (no word; Summary keeps "48% left"); **Vs pace** the unsigned
+distance to the mark, "13%", green under the mark (dark #9CCC65 / light #2E7D32), red over it (#FF5252 /
+#C62828), onSurface on it, with no "vs pace" word — falling back to the Used figure in its severity colour when
+spent, unclocked or unread. `AppPace.figure`, `grammarFigureColor`, `Grammar.vsColor`.
+
+#### §2.4.3 The usage bar — add
+Under pace (used < mark) the room from the fill to the tick is a dashed outline: 1.3 dp, onSurface 55%, dash
+3 dp / gap 2 dp, inset 1 dp top and bottom, open on the fill side. **V1 caption** under every in-app window bar
+(the tile's Weekly and each model limit, Summary rows; the 5h is a ring and has none): 11.5 sp bodySmall in onSurfaceVariant, 5 dp above, 17 dp line (22 dp in
+all), starting 5 dp right of the tick or ending 5 dp left of it when it would not fit (`PaceText.captionRightOfMark`).
+Text `PaceText.caption`: "39% pace mark · 13 over" / "· 10 under" / "· on it"; Left "40% pace mark · 10 to spare";
+Vs pace "52% used · mark 39%". The leading value ("39%"; Vs pace "52% used") is onSurface SemiBold. No caption when
+spent, unclocked or unread. Credits bars unchanged. `PaceCaption`, `UsageBarLine(dashedRoom)`.
+
+#### §2.4.4 + §2.4.5 The account tile — Android (replaces the 5-hour and 7-day cards)
+Shape grammar rev D §1–§2, §7 (`design/2026-11-02-shape-grammar.html`), CCRM-103 (Hybrid Notification). One card
+(the card shell, 16 dp padding). **Tile:** a row, centred vertically: the **5h ring** (`GrammarRingBox`) 72 dp —
+56 dp under 360 dp of window width, 84 dp from 700 dp — then a 14 dp gap (12 dp under 360 dp), then the **7-day
+bars** stacked with 8 dp between them. The ring is hollow: track onSurface-ink 16%, the arc from 12 o'clock in the
+account colour (its severity step above 80, the 9% minimum fill), the pace tick across the band, the red slice past
+the tick when more than 3 points ahead (per the over-pace toggle), the dashed room from the fill to the tick in
+the account colour at 60%, the usage end mark per Appearance › Usage end mark. In the bore only the figure (0.25 of
+the ring, four characters 0.21, fitted 1.5 dp clear of the band), ink, the severity colour and ExtraBold above 90%,
+the Vs pace colour in Vs pace; **no "5h" text anywhere**. TalkBack: "5-hour window, 34 percent" ("… 66 percent
+left", "… 19 percent under/over pace"; no reading "… no reading yet"). **Bars:** first "Weekly · All models" (just
+"Weekly" when no model limit is shown) — label 13.5 sp onSurface, the figure at the ring's number size (18 sp at
+72 dp, 14 at 56, 21 at 84), bar 10 dp; then each shown model limit — label 12.5 sp onSurfaceVariant, figure 14 sp,
+bar 7 dp. Label and figure share a 20 dp row (label ellipsises), 5 dp above the bar; every bar carries the dashed
+room and the V1 caption (§2.4.3).
+**Closed (Compact, the default fold):** under the tile, 10 dp below, the **band line** 13.5 sp SemiBold onSurface
+(`AppPace.weeklyFolded`: "Slow down · ≈11%/day · resets Sun", the band · allowance bold in the orange step when over
+pace; spent "Out until Sun 9:30 PM"; no clock "Starts when a message is sent"); 2 dp below, the **5h line** 13.5 sp
+onSurfaceVariant led by a 12 dp ring glyph (the status-bar ring geometry, the severity colour, red slice, × at 100%)
+and a 4 dp gap instead of the word "5h": "resets in 2h 20m · on track for ~69%" (on course to run out: "resets in
+1h 30m · on track for 100% at 3:25 PM", that clause bold orange; no projection: "resets in 2h 20m"); no 5h line
+before the 5h has a reading and a clock. Lines wrap rather than ellipsise. No chevron: the whole card is the tap
+target and opens the tile.
+**Open (Comfortable, or a tapped Compact tile):** no lines under the tile; 12 dp below it the chips **All ·
+<model> · 5h** (FilterChips, 8 dp apart; "5h" only on an account with a 5h, model chips only while model limits
+show; no chips with neither) and the chosen series under them. All or a model: the Weekly chart as before (§3), then
+the band · allowance line ("Slow down · ≈11%/day until Sun", bold orange over pace), the projection line, a divider
+and the reset row. **5h:** the 5h chart, "At this pace: ~69% when the window resets · 15.0%/h ⓘ", a divider and the
+5h reset row, and the ring draws its **projection**: a dotted arc (0.4 of the band, the fill colour at 75%) from
+just past the fill to the projected end (~69%, or 100% when it gets there first) — only while the 5h chip is
+chosen. Tapping the ring on an open tile chooses the 5h chip **and** swaps the 5h chart's projection line for the
+ring's readout for 3 s (rev D C5, "both on one tap"). The 5h chip is not stored (session only); the tile starts on
+5h when the drawn card order leads with the 5h (Headline 5-hour, or the 5-hour card dragged first; credits don't
+count), else on All — as iOS (`tileStartsOnFive`). The series choice is still stored. Inner screen (≥ 700 dp) with a model limit shown and All or a model chosen: two chart columns, All
+left and the chosen model (All → the first) right, each with its lines and reset row; the tile's bars above, not
+repeated.
+**Tap a figure (rev D §2b, form b):** the ring's figure, the Weekly figure or a model figure. For 3 s the figure's
+own line swaps to the readout (`PaceText.markReadout(Pace.markTime(…))`): "Pace catches up Thu 5 Nov, 12:50 PM"
+over the mark, "1d 4h behind pace" under it, "On the pace mark" within a point — a bar's V1 caption (from the
+bar's start), or for the ring the 5h line after its glyph (closed tile) or the projection line under the 5h chart
+(open tile, bodySmall). Swapped text: onSurface SemiBold,
+underlined 2 dp in the accent at 70%. Spent, unclocked or unread: the tap does nothing. Works in every Usage
+display mode (the readout is about the usage). TalkBack: the readout is the figure's click label.
+**States.** No reading yet: the ring's track and "—" (ink 50%), a bare bar with "—" (onSurfaceVariant). **A plan
+with no 5h** (rev C §7): the ring slot stays, grey track (ink 22%) and a cross (0.12 of the ring each way, ink
+45%), no figure, label "No 5-hour window"; no 5h line, no 5h chip. **Spent week** (CCRM-102 (Spent Week Gate)):
+the ring greys (track only, no arc, no tick), its figure at 45%; the band line says "Out until …" and the 5h line
+becomes the note "Weekly limit reached — 5h can’t be used until Sun 9:30 PM" (13.5 sp onSurfaceVariant, full
+opacity, no glyph); the ring's tap reads nothing out. With the 5h chip chosen on a spent week, the 5h chart, its
+lines and reset row draw at 45% with no projection, then a divider and the same note in bodySmall SemiBold
+onSurface. **Show model limits off:** the bars are "Weekly" alone, no model chips. **Saved layouts** (judge F2):
+the tile follows its own sheet row, "Usage" (its place and its fold); the sheet hides or shows both window ids
+together. A v1.9/v2.0 layout that hid only the reported window card while keeping the other is read as the tile
+shown, folded as the other was (`tileLayout`, which the sheet and the screen both read through, so the row's switch
+always matches the screen); the order is left alone — it is hidden only when the stored layout hides **both**. And the sheet's never-blank rule (§4)
+holds whatever was stored: if nothing would be drawn while the account reports cards, the tile shows
+(`drawnCards`).
+`AccountTile`, `TileBarRow`, `tileRingDp`, `tileRingState`, `ringDescription`, `tapReadout`, `tileProjectionPct`,
+`drawnCards`, `tileStartsOnFive` in `MainCards.kt`; `AppPace.fiveHourLine`.
+
+#### §2.6 Notices above the cards — add
+"Weekly now leads" (CCRM-96 F1), in the crash-card slot above the tabs (in the page column at compact height),
+after the store and crash cards: card on surfaceContainer, 12 dp radius, outlineVariant border; title bodyMedium
+SemiBold "Weekly now leads"; body bodySmall muted "The weekly limit is the one every plan has, so it's now the big
+number everywhere, with 5h beside it. Prefer 5h on top?"; a filled "Keep Weekly" and an outlined "Keep 5h first".
+Shown while `weeklyFirstNotice` is pending, on every tab including All, until a button is tapped; either button
+marks it shown. "Keep 5h first" sets every account's Headline to 5-hour, re-posts the surfaces and re-reads the order.
+
+#### New §2.8 The Summary (All tab) — Android
+List card "Weekly" (titleSmall) · "most room first" (bodySmall muted), rows by `SummaryRank`, hairline dividers,
+each row tappable (opens that account's tab). Full row (shape grammar rev D S1, CCRM-103 (Hybrid Notification)):
+a **48 dp 5h ring** on the left, centred on the row, then a 12 dp gap and the three lines. The ring is §2.4.4's
+ring at 48 dp (band 0.10 of the ring, figure up to 0.29 fitted to the bore, the account colour and its step, the
+held row's ring loud above 90%), not tappable (the row is); a plan with no 5h: the grey ring with a cross, so every
+row has the same frame; a spent week: greyed, figure dim; an unread account: the track and "—". The ring is not
+dimmed with the row. Line 1: mark 18 dp in the accent · name 15 sp (ellipsised) · plan pill 11 sp (outlineVariant
+border, 6 dp radius) · figure 17 sp bold in the grammar's type (§2.4.2) in the severity colour (Usage display;
+Left "48% left"; Vs pace unsigned in green/red/onSurface; "—" unread). **No companion text** — the ring replaced
+"5h 34%" and "no 5h". Bar 10 dp with neutral tick, red past it per the toggle, dashed room; V1 caption; line 3:
+13 sp words, starting at the row's text edge — no pace pip since 2026-11-02 (Robin: "what is the point of showing
+that indicator … just below the actual bar which also shows that anyway"; the freed 48 dp goes to the words, so
+"resets <day>" survives on narrower widths) ("Room to spare · ≈22%/day ·
+resets Fri", "Out until Thu 8:00 AM", "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at
+3:40 PM · resets Fri", `SummaryRows.heldWords`); under the measured width line 3 drops "· resets <day>" first
+(CCBG-60 (Summary Line Clip)); the name gives way before the plan pill, which keeps its place beside it (the pill
+reads `Fmt.planLabel`, as Settings: "Pro 100", CCBG-62 (Plan Pill Case), API-CONTRACT §11). **Tap the figure** (P8): its own
+80 × 48 dp target over the figure and the bar's end (CCBG-56 (Summary Readout Tap)) — line 3 becomes the Weekly's
+readout (§2.4.4) for 3 s, at the line's full width, underlined (the font's own underline,
+CCBG-57 (Readout Underline Clip)); the target exists only while there is a readout (Fable F7), so a spent,
+unclocked or unread row's figure opens the account like the rest of the row; TalkBack: the figure carries the readout
+as its click action. Spent and unread rows:
+line 1, bar and words at 50%. From six accounts, one-line rows (no ring): 17 dp rank disc in the accent (number
+10.5 sp bold, #121212), name 64 dp, 8 dp bar, word 12.5 sp 90 dp ("Slow down", a held row "Held · 3:40 PM"
+in the 5h colour — the full row's words without "resets", never "5h" (judge F3); "Held" with no 5h clock — "Out ·
+Thu", "No reading"), figure 15 sp bold in the grammar's type, 40 dp right-aligned.
+Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
+30/10/12/26 dp; over-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
+dashed even-pace diagonal in the 80% step, "even pace" along it; "over pace" / "room to spare" 10.5 sp ink 55%;
+axis "week start · each account's own week · reset". Per account with a reading: its real trail this week (history
+samples, accent 55%, 1.6 dp) to a 5.5 dp dot with a 2 dp card ring, named 11.5 sp SemiBold (left of the dot past 70%
+of the week, under it above 92% used); spent: × on the dot; 6+ accounts: 8 dp dots numbered by rank (a spent dot
+shows its × instead of the number); unread: off the map; an unclocked week sits at week gone 0. Inner screen
+(≥ 700 dp): two columns, list left, square map right. Footer: the status line with the stalest account's check;
+tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/SummaryRows.kt`.
+
+#### §4.1 Layout sheet — add
+Rows show the drawn order (Headline order for an untouched layout); see §2.4. Since the account tile, an account
+lists one window row, **"Usage"** (Robin, 2026-11-02; the calendar glyph), for the tile — never a separate
+"5-hour window" or "7-day window" row — and hiding it hides both window ids; the ⋮'s
+"Main screen layout" item needs two cards, so an account without a credits card no longer shows it (Share
+snapshot stays).
+
+#### §6.2 Accounts — Android
+The account card's ⋮ gains **"Headline…"** (signed-in accounts, after "Accent colour…"), opening a bottom sheet:
+mark 20 dp + the account name (titleMedium); **HEADLINE** label; "What the notification, status-bar gauge, new
+widgets and the card order lead with" (bodyLarge); segmented Weekly · 5-hour · Auto; caption "Auto shows Weekly,
+and switches to 5h while 5h is past 90% or on course to run out before it resets."; an account with no 5h: the group
+at 45%, segments disabled, caption "This plan has no 5-hour window, so Weekly is always the headline.". **MODEL
+LIMITS** (only while the reading has a cap): switch "Show model limits", subtitle "Fable · 30% this week" / "Hidden:
+Fable. The limit still applies to that model; Cooldown just stops drawing it." (two or more: "The limits still
+apply to those models; Cooldown just stops drawing them."). Each change re-posts the surfaces.
+
+#### §6.4 Appearance — Android
+Usage display chips "Used · Left · Vs pace"; Vs pace note "Shows "+10%" — how far under the pace mark you are
+("−20%": over it)." New switch row "Open on the summary" after Usage display (2+ signed-in accounts only, default on),
+subtitle "With two or more accounts, start on the All tab. Off: start on the last account you looked at."
+
+#### §8 Share card — Android
+Unchanged in this step (share/ not touched): Vs pace renders the share card as Used.
+
+
+## The shape grammar on iOS — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
+
+CCRM-103 (Hybrid Notification), the shape grammar (`design/2026-11-02-shape-grammar.html` rev D, §1, §2, §2b, §6, §7,
+§7b).
+
+### Account tile (`AccountTile`, `ios/App/UI/Cards.swift`) — replaces the 7-day and 5-hour cards
+
+One card (`CardBox`: 16 pt padding, 18 pt corners, `p.card`) per account, as the page's `itile(a, 329, 72)`:
+
+| Part | As built |
+|---|---|
+| Ring | `GrammarRing`, 72 pt, left, centred against the bars; 14 pt gap to the bars |
+| Lead bar row | "Weekly · All models" (15 pt, ink) when a model limit shows, else "Weekly"; figure 18 pt (0.25 × ring) bold, `Display.grammarFigure` (small "%"); bar 8 pt |
+| Model row | the model name (13.5 pt, `p.txt`), figure 15 pt, bar 6 pt; 8 pt between rows |
+| Captions | each bar's V1 `PaceCaption` at 12.5 pt; the dashed room under the mark (`UsageBar showsRoom`) |
+| Figure colour | Used / Left: the severity colour of the account accent; Vs pace: `Display.figureColour` (green under, red over, ink on the mark), unsigned, no "vs pace" word; dimmed (error/stale notice): `p.sub` |
+| Bar end | `GrammarBar` = `UsageBar` + the Usage end mark: Round = today's capsule; Line / Pace colour = square end, a 1.5 pt line 1.5 pt past each edge over a 1 pt gap in the card colour, coloured per `UsageEndMark.role`; the pace tick on top |
+| Folded lines | line 1: the band line (`CardContent.compactLine` of Weekly) 14.5 pt semibold, red when alarmed; line 2: a 12 pt ring glyph (`GrammarRing`, no figure) then the 5h's folded line ("Resets in 2h 20m · on track for ~69%") 14.5 pt `p.sub` (red when alarmed); 10 pt above line 1, 2 pt between |
+| Open | chips All · <model> · 5h (14 pt, 4 × 14 pt padding, 9 pt corners, selected `p.fill`, others a 1 pt `p.line` outline; 12 pt above, 8 below), then the chosen chart (chart height setting) and its lines: Weekly / model = pace line (with "until <day>"), projection line, reset row (countdown left, clock right); 5h = "Limit reached" when at it, projection line, reset row ("as of …" on the right while dimmed) |
+| Ring projection | the dotted arc to the projection only while the tile is open on the 5h chip |
+| Open / fold | a tap on the tile (not on a figure) toggles; default Comfortable open, Compact folded, behind More folded |
+| Default chip | 5h when the drawn card order leads with the 5h (Headline 5-hour or reordered), else All; the chips row is dropped when only one chip exists |
+
+Layout sheet: `.session` and `.weekly` still order, hide and fold; the tile sits where the first visible one of the two
+does (in More only when both are in More). The iPad halves show the tile at full width (credits stay in the header).
+
+#### Tap readout (form b, §2b)
+
+Tapping a figure swaps that figure's own line for 3 s with `PaceText.markReadout(MarkTime.of(...), use24h:
+Display.use24h)`, semibold, ink, underlined: the lead or model figure → its bar's caption; the ring → the 5h line (folded),
+or the projection line under the 5h chart (open; the ring tap also selects the 5h chip). Nothing happens when the readout
+is nil (spent, not started, no reading) or the 5h is greyed by a spent week. VoiceOver: each bar row and the ring carry the
+readout as their hint; the ring's label stays "5-hour window, N percent".
+
+#### States
+
+| State | Ring | Lines |
+|---|---|---|
+| Normal | 5h ring with figure, tick, red slice / dashed room, end mark | band line, 5h line |
+| No 5h (weekly-only plan) | `.notApplicable`: grey track and cross, no figure; slot kept | band line only |
+| 5h not started | ring at 0% | "Starts when a message is sent" |
+| No reading | ring "—" (the tile with no 5h shows the cross) | as `compactLine` says |
+| Week spent (CCRM-102 (Spent Week Gate)) | `.grey`, figure dim | the spent line, then the gate note ("Weekly limit reached — 5h can’t be used until Sun 9:30 pm") at full opacity, no glyph |
+| Error / stale notice | ring and bars at 45% | unchanged |
+
+Pool (CCRM-55 (Antigravity Account) E2): its own tile, "Weekly" bar and 5h ring, with the pool's name as the last folded
+line (page T6b) instead of the old label above two cards.
+
+### Summary rows (`SummaryRow`, `ios/App/UI/Summary.swift`)
+
+A 48 pt `GrammarRing` (the 5h) left of each row, centred on its lines, 12 pt gap, in place of the "5h 34%" companion;
+every row has the same frame: a plan with no 5h shows the grey cross, a spent week the grey ring, no reading "—". Nothing
+sits beside the name but the plan chip: a held row says why in line 3 only, "Held · back at 3:40 pm · resets Fri"
+(rev D S1, Fable D1), beside its loud ring. The Weekly figure is 17 pt `grammarFigure`,
+Vs pace coloured. Bars take the end mark. Tapping the figure swaps line 3 for the readout for 3 s; tapping elsewhere
+opens the account. Rows of the one-line form (six accounts or more) are unchanged.
+
+### iPad sidebar (`IPadLandscape.sidebarRow`, `ios/App/UI/MainScreens.swift`)
+
+Row (`sideRow`): ring 40 pt (the 5h; grey while the week is spent, grey cross for no 5h, so names align), then the mark
+(16 pt) and name (16 pt) with the plan chip and pin as before, over a 4 pt Weekly bar (no room, end mark on); the Weekly
+figure 16 pt bold right (min 40 pt). The figure is always the Weekly and the ring the 5h, so the Headline · Weekly · 5h
+segmented switch is removed.
+
+### Settings › Appearance (`SettingsScreen`, `ios/App/UI/SettingsHistory.swift`)
+
+"Usage end mark" right after Usage display: subtitle "How a bar or ring ends at your usage" (13 pt `p.sub`), a segmented
+Round · Line · Pace colour (Line default), writing `Display.setUsageEndMark`, then three previews 18 pt apart, each a
+36 pt ring (64% against 52%, over pace) and a 54 × 8 pt bar, drawn Round, Line and Pace colour. iOS has no status-bar
+icon: no Status-bar icon row anywhere.
+
+### Layout sheet on iOS (Robin, 2026-11-02)
+
+The tile is one row, **"Usage"** (`CardID.title`), in place of the "5-hour window" and "7-day window" rows. The row
+stands for the window card the tile is drawn under (`LayoutSheet.usageID`: the first shown above More, else behind
+it); showing, hiding, folding and unfolding it applies to both window ids, and reordering carries the other id right
+behind it, so the stored layout can never contradict the row. "Usage credits" is unchanged.
+
+### Step 7 pass fixes (2026-11-02, CCBG-56 … CCBG-65)
+
+- **Tile bar rows** (CCBG-58 (Tile Title Clip), CCBG-59 (Model Figure Alignment)): the label takes all the width the
+  figure leaves, so every row's figure is flush right on one edge; a lead label that still does not fit drops
+  " · All models" ("Weekly") rather than ellipsizing. iOS the same (`ViewThatFits`).
+- **The readout's underline** (CCBG-57): the font's own underline on Android (`TextDecoration.Underline`), as iOS's
+  `.underline()` — never across the glyphs.
+- **Account sheet** (CCBG-65 (Sheet Under Taskbar)): the ⋮ › Headline… sheet opens fully (never half-expanded),
+  scrolls, and pads for the navigation bar and a large screen's taskbar (only what the sheet's own insets have not
+  consumed, so a phone is not padded twice). Fold 7 recheck: an inset dump and captures on the inner screen and a
+  phone-width capture.
+- **The Summary figure's target** carries no TalkBack node of its own: the figure offers the readout as its click
+  action, and only when there is one; the target shows no ripple.
+- **Shortened labels** (the tile's " · All models", line 3's "· resets <day>") are measured again whenever the width
+  changes, so a fold or unfold brings the full text back where it fits.
+- **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
+  way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
+  "Held · 3:40 pm" (never "5h").
+- **iPad sidebar** (CCBG-68 (iPad Plan Chip Wrap)): the plan chip stays on one line and gives way to the name.
+  CCBG-67 (iPad Sidebar Tap)'s highlight-and-scroll is superseded by the layout below.
+
+### iPad: the Summary and one account at a time (Robin, 2026-11-02)
+
+"Drop the 'pinned' account as it's confusing here … make the summary/all as the default one … only on tap of the
+individual account, we'll show the details as we have the whole space … should be same for the phones" — Robin
+picked "Only that account" over "All stacked, scroll to it".
+
+- **Landscape** (≥ 1000 pt): the 300 pt sidebar is "All accounts" (the Summary; the default detail when "Open on the
+  summary" applies, whenever no account is chosen, and when the account on screen is removed) and one row per account; the highlighted row is the detail's.
+  A tap on an account shows only that account's page at the detail's full width (`IPadLandscape.shownKey`); "All
+  accounts" returns to the Summary. Each new page starts at its top. With one account there is no Summary row and
+  that account shows.
+- **Portrait / Split View ≥ 700 pt:** the phone's model — the title, tabs for All and every account, one page at a
+  time; no pinned section.
+- **Gone everywhere:** the pinned half, "Pinned" in the header, the pin glyph in the sidebar and in Settings ›
+  Accounts, "Touch and hold an account to pin it to the top.", and "Pin to the top" (sidebar and Settings menus).
+  The stored `pinned` flag is still decoded and never read (stored keys are never reused).
+- **Phones:** unchanged; neither the iPhone nor Android ever pinned an account in the main screen (on the iPhone the
+  only trace was the Settings › Accounts pin glyph and its "Pin to the top" item, now removed with the concept).
+
+### Summary order (Robin, 2026-11-02; Android and iOS)
+
+Appearance › **Summary order**, right after "Open on the summary" and shown with it (two or more accounts):
+Android a wrapping row of four FilterChips — "Your order" (default) · "Most room first" · "Resets soonest" · "Most
+used" — under the bodyLarge SemiBold title, no subtitle; iOS a Picker row "Summary order" with the same four labels.
+The All tab's list header names the choice in lower case on the right of "Weekly": "your order", "most room first",
+"resets soonest", "most used". Rows keep their group's words and styling (held, spent, no reading) in every order;
+the rank number on a one-line row and the Pace map's labels follow the list's order. The Pace map's dots are
+unaffected; widgets that list accounts (Android Strip, iOS Overview) keep their own order (`SummaryRank.ordered`,
+BEHAVIOR-MOBILE §6).
+
+### Native tabs on iPhone and iPad (Robin, 2026-11-02, "Native everywhere"; `ios/App/UI/MainScreens.swift`)
+
+Supersedes the custom tab strip and the custom iPad sidebar described above (§1 iPad rows, the iPad sidebar
+sections, and the "Summary and one account at a time" layout, whose selection rule it keeps).
+
+
+- **One `TabView`** (`MainTabs`) with `.tabViewStyle(.sidebarAdaptable)` and the iOS 18 `Tab` API (deployment target
+  iOS 18.0). Built with Xcode 27.2, so the chrome is Liquid Glass with no styling of our own: no tint, background or
+  glass is set on the tab bar or sidebar.
+  - **iPhone:** the Liquid Glass tab bar at the bottom. Past five tabs the system adds **More**.
+  - **iPad portrait (and Split View):** the floating Liquid Glass tab bar at the top.
+  - **iPad landscape:** the native sidebar, which the user can collapse into the tab bar. It replaces the custom
+    300 pt sidebar.
+- **Tabs, in order:** **All** (SF Symbol `text.alignleft`, only with two or more accounts, `SummaryRank.tabShown`),
+  then one tab per account in `model.accounts` order (Settings › Account order). Each account tab shows the provider
+  mark and the account label.
+  - **Tab icon:** the provider mark's asset (`ClaudeMark` / `ChatGPTMark` / `GeminiMark`, 24 × 24 template SVGs) via
+    `Tab(_:image:value:)`. The system draws it in its own tint (selected or unselected), **not the account accent**.
+    Claude's 82 % optical scale from `ProviderMark` doesn't apply there.
+  - **Sidebar rows** show the mark and name only. The per-row 5h ring, Weekly bar, Weekly figure and plan chip are
+    gone (Robin accepted this). The "All accounts" row is now titled **All**, with no account count.
+- **Selection:** `AppModel.selectedKey` (`AppModel.summaryKey` for All). The rule stays the pure helper
+  `MainTabs.shownKey` (was `IPadLandscape.shownKey`, tests in `CardLayoutTests.theTabsShowTheSummaryOrOneAccount`):
+  the chosen tab, else All where it shows, else the first account. The following all set the selection as before:
+  deep links (`DeepLink.key`), the `-tab` launch argument, reset-alert taps, `launchKey` ("Open on the summary") and
+  `validSelection`.
+- **Each tab has its own `NavigationStack`** with today's toolbar (History, Settings, the ⋯ menu: Refresh, Layout,
+  Share card, Add account). History is pushed on the tab it was opened from. `-screen history` opens it on whichever
+  tab is selected.
+- **Page content (`TabPage`):**
+  - **Regular width ≥ 700 pt (iPad):** an account is the full-width page, `AccountHeader` over
+    `AccountCards(twoAcross: true, cardWidth: max(396, width − 40))`, 20 pt side margins. The Summary is
+    `SummaryView(wide:)` from 900 pt.
+  - **Narrower (iPhone, narrow Split View):** the phone page, `AccountCards` with 16 pt margins.
+  - Every page has `.refreshable` and the `Footer` at the end.
+  - **App title** (`AppTitle`, 34 pt) tops every page, except in iPad landscape (regular, wider than tall,
+    ≥ 1000 pt). There the sidebar header carries it (`tabViewSidebarHeader`, 30 pt) and the Summary page is headed
+    "All accounts" (30 pt bold), as before.
+- **Unchanged:** the empty state (`EmptyStateView`, in its own stack, no tabs), the sign-in and other sheets, and the
+  one-account case (no All tab, so one tab).
+- **Removed:** `PhoneMain`, `IPadTabs`, `IPadLandscape` (the custom sidebar, its rows and the All row).
+  `AccountTabs` **stays**: History's account picker (`SettingsHistory.swift`) still uses it.
+
+#### Visible consequences, listed for Robin (2026-11-02)
+
+1. **iPhone loses the swipe between accounts** (the old page-style `TabView`). Native tabs switch only by tapping.
+2. **Tab icons follow the system tint**, not the provider accent (the custom strip coloured the selected underline in
+   the account accent).
+3. **The All tab's title is "All"** in both the tab bar and the sidebar. The old sidebar row said "All accounts" with
+   the account count, and the old strip's VoiceOver label said "All accounts".
+4. **Collapsing the sidebar in iPad landscape** leaves no app title on screen: the landscape rule is by window shape,
+   not by whether the sidebar is open.
+5. **iPhone past five tabs (four or more accounts plus All):** the extra accounts sit under the system's More list.
+6. **iPhone page top:** the title is now the first row of the scrolling page (top padding 4 pt), under the navigation
+   bar. It no longer sits above a fixed tab strip.

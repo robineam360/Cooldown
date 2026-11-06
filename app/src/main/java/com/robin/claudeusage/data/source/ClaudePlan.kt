@@ -1,5 +1,6 @@
 package com.robin.claudeusage.data.source
 
+import com.robin.claudeusage.data.PlanNames
 import org.json.JSONObject
 
 /**
@@ -26,7 +27,7 @@ object ClaudePlan {
     data class Info(
         /** The chip text: "Free", "Pro", "Max", "Team Standard", "Team Premium", "Enterprise". */
         val plan: String,
-        /** Raw `rate_limit_tier`, for `Fmt.tierMultiplier` ("default_claude_max_5x" → "5x"). */
+        /** Raw `rate_limit_tier`: a 20x tier makes a Max plan "Ultra" (`PlanNames`, API-CONTRACT §11). */
         val tier: String?,
         /** Raw `organization_type`, kept for diagnostics. */
         val organizationType: String?,
@@ -52,7 +53,7 @@ object ClaudePlan {
             hasMax = account?.optBoolean("has_claude_max", false) == true,
             hasPro = account?.optBoolean("has_claude_pro", false) == true,
         ) ?: return null
-        Info(plan, tier, orgType, account?.optString("email")?.ifEmpty { null })
+        Info(PlanNames.claude(plan, tier), tier, orgType, account?.optString("email")?.ifEmpty { null })
     } catch (_: Exception) {
         null
     }

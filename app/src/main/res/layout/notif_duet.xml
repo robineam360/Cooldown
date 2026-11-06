@@ -3,8 +3,7 @@
     Collapsed row for the Duet — the always-on notification carrying two accounts
     (CCRM-62 (Duet Notification), collapsed option 1 in
     design/settings-diet-wireframe.html section 2). Only rendered when a Second
-    account is set; with Second = None the notification keeps notif_big_number.xml
-    byte for byte, 32 sp figure, full window name, reset line and all.
+    account is set; with Second = None the notification keeps notif_big_number.xml.
 
     The height constraint is the whole design. A collapsed custom view gets roughly
     48 to 64 dp depending on the skin, and today's single row already spends about
@@ -12,12 +11,19 @@
     and the window name; both reappear in the expanded view.
 
     Rev G (design/2026-09-26-v18-gate-fixes.html §1, CCBG-39 (Inner Duet Squeeze)):
-    each half is two lines — the mark and label across the whole half, then the bar
-    and the 30 sp figure. A notification is one layout for every width (the Fold 7's
-    unfolded shade gives each half ~101 dp, the cover ~128, a phone 156), so the label
-    can no longer share its line with the figure. Content height is about 52 dp: the
-    label line (~14 dp without font padding), 1 dp, and the figure (~35 dp of Roboto
-    ascent + descent), plus 1 dp of padding a side — the single-account row's ~53.
+    each half's column is two lines — the mark and label, then the bar and the figure.
+    A notification is one layout for every width (the Fold 7's unfolded shade gives
+    each half ~101 dp, the cover ~128, a phone 156), so the label never shares its
+    line with the figure. Content height is about 52 dp: the label line (~14 dp
+    without font padding), 1 dp, and the figure (~35 dp of Roboto ascent + descent),
+    plus 1 dp of padding a side — the single-account row's ~53.
+
+    CCRM-103 (Hybrid Notification), shape grammar rev D §3 D1–D3: a half whose account
+    has a 5h leads with the 36 dp 5h ring (its figure fitted in the bore, 8 dp to the
+    column; the Weekly figure drops to 28 sp, the bar to about 47 dp); a half under
+    150 dp takes the bare 14 dp ring, no digits, at the end of the label line instead.
+    No 5h: no ring at all (B1). Both rings are gone here and shown from code. The ring
+    (36 dp) sits inside the 52 dp half, so the row does not grow.
 
     Two halves of 156 dp at the Fold 7's cover width (360 dp card, 16 dp of system
     padding a side, one 16 dp gutter). The gutter is a start margin on the second
@@ -41,93 +47,147 @@
     <!-- First. Each half is its own click target (CCRM-2 (Notification Tap Target),
          now resolved per half against that account's own provider), which is the one
          thing a custom RemoteViews layout can do and the other pinned styles could
-         not: a PendingIntent per view rather than one content intent for the row.
-         Two lines (rev G): the mark and label, then the bar and the figure. -->
+         not: a PendingIntent per view rather than one content intent for the row. -->
     <LinearLayout
         android:id="@+id/duet_half_first"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+        <!-- CCRM-103: the 36 dp 5h ring (D1). -->
+        <FrameLayout
+            android:id="@+id/duet_ring_box_first"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone">
 
             <ImageView
-                android:id="@+id/duet_mark_first"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginEnd="4dp"
+                android:id="@+id/duet_ring_first"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:importantForAccessibility="no" />
 
-            <!-- maxWidth is set at runtime (Duet.labelClampDp): the 156 dp half less the
-                 mark and any dots. On a narrower half the weight lets the label give way
-                 to the dots after it, and the wrap_content row keeps a short label's dots
-                 beside it rather than at the far end (CCBG-37). -->
             <TextView
-                android:id="@+id/duet_label_first"
+                android:id="@+id/duet_ring_fig_first"
                 style="@android:style/TextAppearance.Material.Notification.Title"
                 android:layout_width="wrap_content"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1"
-                android:ellipsize="end" />
-
-            <ImageView
-                android:id="@+id/duet_dot_first"
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:layout_marginStart="5dp"
-                android:src="@drawable/notif_condition_dot"
-                android:visibility="gone"
                 android:importantForAccessibility="no" />
-            <!-- CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic
-                 marker. The band would take this row past what short skins give a
-                 collapsed view. App-global, so First only, like the update dot; 6 dp
-                 to match the condition dot beside it. -->
-            <ImageView
-                android:id="@+id/duet_synth_dot"
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:layout_marginStart="5dp"
-                android:src="@drawable/notif_synth_dot"
-                android:visibility="gone"
-                android:contentDescription="Synthetic data"
-                android:importantForAccessibility="yes" />
-        </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/duet_bar_first"
-                android:layout_width="0dp"
-                android:layout_height="8dp"
-                android:layout_weight="1"
-                android:scaleType="fitXY"
-                android:importantForAccessibility="no" />
+            <!-- The label line, with the bare 14 dp ring (D3) at the far end when the half
+                 is too narrow for the 36 dp one; code pads the line's end by the ring's
+                 18 dp then, so the label ellipsizes before it rather than under it. -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <!-- No "LEFT" caption here (CCRM-22 (Used or Left)): the caption appears in
-                 the expanded headers only. -->
-            <TextView
-                android:id="@+id/duet_pct_first"
-                style="@android:style/TextAppearance.Material.Notification.Title"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/duet_line_first"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/duet_mark_first"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="4dp"
+                        android:importantForAccessibility="no" />
+
+                    <!-- maxWidth is set at runtime (Duet.labelClampDp): the 156 dp half less
+                         the ring, the mark and any dots. On a narrower half the weight lets
+                         the label give way to the dots after it, and the wrap_content row
+                         keeps a short label's dots beside it rather than at the far end
+                         (CCBG-37). -->
+                    <TextView
+                        android:id="@+id/duet_label_first"
+                        style="@android:style/TextAppearance.Material.Notification.Title"
+                        android:layout_width="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <ImageView
+                        android:id="@+id/duet_dot_first"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="5dp"
+                        android:src="@drawable/notif_condition_dot"
+                        android:visibility="gone"
+                        android:importantForAccessibility="no" />
+                    <!-- CCRM-15 (Above-Pace Verification), rev E §9c: the synthetic
+                         marker. The band would take this row past what short skins give a
+                         collapsed view. App-global, so First only, like the update dot; 6 dp
+                         to match the condition dot beside it. -->
+                    <ImageView
+                        android:id="@+id/duet_synth_dot"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="5dp"
+                        android:src="@drawable/notif_synth_dot"
+                        android:visibility="gone"
+                        android:contentDescription="Synthetic data"
+                        android:importantForAccessibility="yes" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/duet_bare_ring_first"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                android:includeFontPadding="false"
-                android:maxLines="1" />
+                android:layout_marginTop="1dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/duet_bar_first"
+                    android:layout_width="0dp"
+                    android:layout_height="8dp"
+                    android:layout_weight="1"
+                    android:scaleType="fitXY"
+                    android:importantForAccessibility="no" />
+
+                <!-- No "LEFT" caption here (CCRM-22 (Used or Left)): the caption appears in
+                     the expanded headers only. 30 sp, or 28 sp beside the ring (code). -->
+                <TextView
+                    android:id="@+id/duet_pct_first"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:fontFeatureSettings="tnum,lnum"
+                    android:includeFontPadding="false"
+                    android:maxLines="1" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -138,67 +198,117 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginStart="16dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+        <FrameLayout
+            android:id="@+id/duet_ring_box_second"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone">
 
             <ImageView
-                android:id="@+id/duet_mark_second"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginEnd="4dp"
+                android:id="@+id/duet_ring_second"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:importantForAccessibility="no" />
 
             <TextView
-                android:id="@+id/duet_label_second"
+                android:id="@+id/duet_ring_fig_second"
                 style="@android:style/TextAppearance.Material.Notification.Title"
                 android:layout_width="wrap_content"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1"
-                android:ellipsize="end" />
-
-            <ImageView
-                android:id="@+id/duet_dot_second"
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:layout_marginStart="5dp"
-                android:src="@drawable/notif_condition_dot"
-                android:visibility="gone"
                 android:importantForAccessibility="no" />
-        </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/duet_bar_second"
-                android:layout_width="0dp"
-                android:layout_height="8dp"
-                android:layout_weight="1"
-                android:scaleType="fitXY"
-                android:importantForAccessibility="no" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/duet_pct_second"
-                style="@android:style/TextAppearance.Material.Notification.Title"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/duet_line_second"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/duet_mark_second"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="4dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/duet_label_second"
+                        style="@android:style/TextAppearance.Material.Notification.Title"
+                        android:layout_width="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <ImageView
+                        android:id="@+id/duet_dot_second"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="5dp"
+                        android:src="@drawable/notif_condition_dot"
+                        android:visibility="gone"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/duet_bare_ring_second"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                android:includeFontPadding="false"
-                android:maxLines="1" />
+                android:layout_marginTop="1dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/duet_bar_second"
+                    android:layout_width="0dp"
+                    android:layout_height="8dp"
+                    android:layout_weight="1"
+                    android:scaleType="fitXY"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/duet_pct_second"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:fontFeatureSettings="tnum,lnum"
+                    android:includeFontPadding="false"
+                    android:maxLines="1" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

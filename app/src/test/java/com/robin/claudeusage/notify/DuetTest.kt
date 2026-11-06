@@ -32,6 +32,39 @@ class DuetTest {
         assertEquals(116, Duet.labelClampDp(dots = 2))
     }
 
+    // --- CCRM-103 (Hybrid Notification): the half's 5h ring, shape grammar rev D §3 D1–D3 ---
+
+    @Test
+    fun `a half of 150 dp or more takes the 36 dp ring, a narrower one the bare 14 dp ring`() {
+        assertEquals(Duet.HalfRing.FULL, Duet.halfRing(hasFiveHour = true, halfDp = 156f))
+        assertEquals(Duet.HalfRing.FULL, Duet.halfRing(hasFiveHour = true, halfDp = 150f))
+        assertEquals(Duet.HalfRing.BARE, Duet.halfRing(hasFiveHour = true, halfDp = 149f))
+        assertEquals(Duet.HalfRing.BARE, Duet.halfRing(hasFiveHour = true, halfDp = 101f))
+    }
+
+    @Test
+    fun `a plan with no 5h has no ring at any width (B1)`() {
+        assertEquals(Duet.HalfRing.NONE, Duet.halfRing(hasFiveHour = false, halfDp = 156f))
+        assertEquals(Duet.HalfRing.NONE, Duet.halfRing(hasFiveHour = false, halfDp = 101f))
+    }
+
+    @Test
+    fun `the ring takes its width and gap from the label`() {
+        // 138 − (36 ring + 8 gap); 138 − (14 bare ring + 4).
+        assertEquals(94, Duet.labelClampDp(ring = Duet.HalfRing.FULL))
+        assertEquals(120, Duet.labelClampDp(ring = Duet.HalfRing.BARE))
+        assertEquals(83, Duet.labelClampDp(dots = 1, ring = Duet.HalfRing.FULL))
+    }
+
+    @Test
+    fun `beside the 36 dp ring the figure is 28 sp and the bar about 47 dp`() {
+        assertEquals(28f, Duet.figureSp(Duet.HalfRing.FULL))
+        assertEquals(30f, Duet.figureSp(Duet.HalfRing.BARE))
+        assertEquals(30f, Duet.figureSp(Duet.HalfRing.NONE))
+        assertEquals(47f, Duet.barDp(Duet.HalfRing.FULL))
+        assertEquals(156f, Duet.barDp(Duet.HalfRing.NONE))
+    }
+
     // --- the strip cap: ~120 dp of panel left under two header blocks -----------------
 
     @Test

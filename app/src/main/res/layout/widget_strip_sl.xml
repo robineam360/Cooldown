@@ -98,7 +98,8 @@
                                         android:layout_height="wrap_content"
                                         android:textSize="13sp"
                                         android:textStyle="bold"
-                                        android:includeFontPadding="false" />
+                                        android:includeFontPadding="false"
+                                        android:fontFeatureSettings="tnum,lnum" />
                                     <TextView
                                         android:id="@+id/strip_tag0"
                                         style="@style/WFace.ShadowLight"
@@ -132,6 +133,33 @@
                                     android:layout_gravity="center"
                                     android:includeFontPadding="false" />
                             </FrameLayout>
+                            <LinearLayout
+                                android:id="@+id/strip_wk0"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_wkbar0"
+                                    android:layout_width="42dp"
+                                    android:layout_height="4dp"
+                                    android:importantForAccessibility="no"
+                                    android:scaleType="fitXY" />
+                                <TextView
+                                    android:id="@+id/strip_wkfig0"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="4dp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:fontFeatureSettings="tnum,lnum" />
+                            </LinearLayout>
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -198,7 +226,8 @@
                                         android:layout_height="wrap_content"
                                         android:textSize="13sp"
                                         android:textStyle="bold"
-                                        android:includeFontPadding="false" />
+                                        android:includeFontPadding="false"
+                                        android:fontFeatureSettings="tnum,lnum" />
                                     <TextView
                                         android:id="@+id/strip_tag1"
                                         style="@style/WFace.ShadowLight"
@@ -232,6 +261,33 @@
                                     android:layout_gravity="center"
                                     android:includeFontPadding="false" />
                             </FrameLayout>
+                            <LinearLayout
+                                android:id="@+id/strip_wk1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_wkbar1"
+                                    android:layout_width="42dp"
+                                    android:layout_height="4dp"
+                                    android:importantForAccessibility="no"
+                                    android:scaleType="fitXY" />
+                                <TextView
+                                    android:id="@+id/strip_wkfig1"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="4dp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:fontFeatureSettings="tnum,lnum" />
+                            </LinearLayout>
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -298,7 +354,8 @@
                                         android:layout_height="wrap_content"
                                         android:textSize="13sp"
                                         android:textStyle="bold"
-                                        android:includeFontPadding="false" />
+                                        android:includeFontPadding="false"
+                                        android:fontFeatureSettings="tnum,lnum" />
                                     <TextView
                                         android:id="@+id/strip_tag2"
                                         style="@style/WFace.ShadowLight"
@@ -332,6 +389,33 @@
                                     android:layout_gravity="center"
                                     android:includeFontPadding="false" />
                             </FrameLayout>
+                            <LinearLayout
+                                android:id="@+id/strip_wk2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_wkbar2"
+                                    android:layout_width="42dp"
+                                    android:layout_height="4dp"
+                                    android:importantForAccessibility="no"
+                                    android:scaleType="fitXY" />
+                                <TextView
+                                    android:id="@+id/strip_wkfig2"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="4dp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:fontFeatureSettings="tnum,lnum" />
+                            </LinearLayout>
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -398,7 +482,8 @@
                                         android:layout_height="wrap_content"
                                         android:textSize="13sp"
                                         android:textStyle="bold"
-                                        android:includeFontPadding="false" />
+                                        android:includeFontPadding="false"
+                                        android:fontFeatureSettings="tnum,lnum" />
                                     <TextView
                                         android:id="@+id/strip_tag3"
                                         style="@style/WFace.ShadowLight"
@@ -432,6 +517,33 @@
                                     android:layout_gravity="center"
                                     android:includeFontPadding="false" />
                             </FrameLayout>
+                            <LinearLayout
+                                android:id="@+id/strip_wk3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="3dp">
+                                <ImageView
+                                    android:id="@+id/strip_wkbar3"
+                                    android:layout_width="42dp"
+                                    android:layout_height="4dp"
+                                    android:importantForAccessibility="no"
+                                    android:scaleType="fitXY" />
+                                <TextView
+                                    android:id="@+id/strip_wkfig3"
+                                    style="@style/WFace.ShadowLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:visibility="gone"
+                                    android:layout_marginStart="4dp"
+                                    android:includeFontPadding="false"
+                                    android:singleLine="true"
+                                    android:fontFeatureSettings="tnum,lnum" />
+                            </LinearLayout>
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"

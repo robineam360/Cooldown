@@ -37,7 +37,7 @@ func chatGPTWeeklyOnly() throws {
     #expect(weekly.percent == 42)
     #expect(weekly.resetsAtMs == 1_788_900_000_000)
 
-    #expect(ChatGPTUsageParser.planTag(raw)?.plan == "Pro")
+    #expect(ChatGPTUsageParser.planTag(raw)?.plan == "Pro 200")  // API-CONTRACT §11
 }
 
 @Test("phantom-untouched-session.json: CCBG-30 — used_percent 0 and reset_after_seconds near the full window means not-started")
@@ -219,12 +219,13 @@ func chatGPTUsageDataIsEmpty() throws {
     #expect(!plusBoth.isEmpty)
 }
 
-@Test("plan_type maps onto PlanTag's existing labels")
+@Test("plan_type maps onto API-CONTRACT §11's names")
 func chatGPTPlanTagMapping() {
     #expect(PlanTag.fromChatGPT(planType: "plus")?.plan == "Plus")
-    #expect(PlanTag.fromChatGPT(planType: "pro")?.plan == "Pro")
+    #expect(PlanTag.fromChatGPT(planType: "pro")?.plan == "Pro 200")
+    #expect(PlanTag.fromChatGPT(planType: "prolite")?.plan == "Pro 100")
     #expect(PlanTag.fromChatGPT(planType: "team")?.plan == "Team")
-    #expect(PlanTag.fromChatGPT(planType: "business")?.plan == "Team")
+    #expect(PlanTag.fromChatGPT(planType: "business")?.plan == "Business")
     #expect(PlanTag.fromChatGPT(planType: "free")?.plan == "Free")
     #expect(PlanTag.fromChatGPT(planType: "enterprise")?.plan == "Enterprise")
     #expect(PlanTag.fromChatGPT(planType: nil) == nil)

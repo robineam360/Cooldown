@@ -6,7 +6,19 @@ import Observation
 @MainActor @Observable
 final class AppModel {
     var accounts: [Account] = []
-    var selectedKey: String?
+    /// The account on screen, or `AppModel.summaryKey` for the All tab (CCRM-98 (Summary Tab)).
+    var selectedKey: String? {
+        didSet { if let key = selectedKey, key != Self.summaryKey, !isDemo { Prefs.lastAccountKey = key } }
+    }
+    static let summaryKey = "__all__"
+    var showsSummary: Bool { selectedKey == Self.summaryKey }
+    /// The account the toolbar's Layout and Share act on: the one on screen, else the first.
+    var currentAccountKey: String? {
+        if let key = selectedKey, key != Self.summaryKey, account(key) != nil { return key }
+        return accounts.first?.key
+    }
+    /// CCRM-96 (Weekly First): the one-time "Weekly now leads" notice is showing.
+    var noticeOwed = false
     var nowMs: Int64 = AppModel.clock()
     private(set) var snapshots: [String: Snapshot] = [:]
     private(set) var states: [String: AccountState] = [:]
@@ -23,6 +35,10 @@ final class AppModel {
     let isDemo: Bool
 
     init(demo: DemoScenario? = DemoScenario.fromLaunchArguments()) {
+        // The User-Agent's version, and CCRM-55's client secret from the uncommitted xcconfig (never logged).
+        AppInfo.configure(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                          build: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String, commit: nil)
+        Antigravity.configure(clientSecret: Bundle.main.object(forInfoDictionaryKey: "AntigravityClientSecret") as? String)
         api = APIClient()
         if let demo {
             isDemo = true
@@ -36,12 +52,41 @@ final class AppModel {
             repo = UsageRepository(api: api, credentials: CredentialStore.shared(accessGroup: Shared.keychainGroup), storage: storage)
             accountsStore = AccountsStore(storage: storage)
             accounts = accountsStore.load()
-            selectedKey = accounts.first?.key
+            // CCRM-96 (Weekly First): settled once, at the first v2.0 launch — owed only to installs that already
+            // had an account (an upgrade from v1.9); a new install never sees it.
+            if Prefs.weeklyFirstNotice == nil {
+                Prefs.weeklyFirstNotice = WeeklyFirstNotice.settle(hadAccountsBefore: !accounts.isEmpty)
+            }
+            noticeOwed = Prefs.weeklyFirstNotice == WeeklyFirstNotice.pending && !accounts.isEmpty
+            Display.repairMode()
+            selectedKey = Self.launchKey(accounts: accounts, openOnSummary: Prefs.openOnSummary, last: Prefs.lastAccountKey)
             reload()
         }
     }
 
     static func clock() -> Int64 { Int64(Date().timeIntervalSince1970 * 1000) }
+
+    /// CCRM-98 (Summary Tab): with two or more accounts and Open on the summary on, the All tab; otherwise the last
+    /// account looked at (or the first).
+    static func launchKey(accounts: [Account], openOnSummary: Bool, last: String?) -> String? {
+        if SummaryRank.opensOnSummary(accountCount: accounts.count, openOnSummary: openOnSummary) { return summaryKey }
+        return accounts.first { $0.key == last }?.key ?? accounts.first?.key
+    }
+
+    /// The notice's two buttons; either dismisses it for good. "Keep 5h first" sets every account's Headline to 5-hour.
+    func answerNotice(keepFiveHourFirst: Bool) {
+        if keepFiveHourFirst { for a in accounts { Prefs.setHeadline(a.key, .fiveHour) } }
+        if !isDemo { Prefs.weeklyFirstNotice = WeeklyFirstNotice.done }
+        noticeOwed = false
+        displayChanged()
+    }
+
+    /// The account's face — the same numbers, binding and Headline the widgets draw.
+    func face(_ key: String) -> Face? {
+        guard let account = account(key) else { return nil }
+        return Face.build(account: account, snapshot: snapshots[key], state: states[key] ?? AccountState(),
+                          history: histories[key] ?? [], nowMs: nowMs)
+    }
 
     // MARK: - Reading
 
@@ -58,6 +103,17 @@ final class AppModel {
             layouts[account.key] = CardLayout.load(account.key)
         }
         nowMs = Self.clock()
+        selectedKey = Self.validSelection(selectedKey, accounts: accounts)
+    }
+
+    /// The selection, kept to something on screen: the All tab only while it shows (2+ accounts), an account only
+    /// while it exists; otherwise the All tab where it shows (the default since 2026-11-02, Robin: "make the
+    /// summary/all as the default one"), else the first account.
+    static func validSelection(_ key: String?, accounts: [Account]) -> String? {
+        let summary = SummaryRank.tabShown(accountCount: accounts.count)
+        if key == summaryKey { return summary ? key : accounts.first?.key }
+        if let key, accounts.contains(where: { $0.key == key }) { return key }
+        return summary ? summaryKey : accounts.first?.key
     }
 
     /// Demo mode fills these directly.
@@ -71,11 +127,20 @@ final class AppModel {
     func account(_ key: String?) -> Account? { accounts.first { $0.key == key } }
 
     func layout(_ key: String) -> CardLayout { layouts[key] ?? CardLayout.load(key) }
+    /// The layout as the screen draws it: the Headline's default order unless the user reordered (CCRM-96).
+    func drawnLayout(_ key: String) -> CardLayout { layout(key).ordered(by: Prefs.headline(key)) }
     func setLayout(_ layout: CardLayout, for key: String) {
+        var layout = layout
+        // Showing, hiding or folding a card (reordered nil) keeps the stored order: only a move (true) makes the
+        // order the user's, and Reset layout (false) hands it back to the Headline.
+        if layout.reordered == nil {
+            let stored = self.layout(key)
+            if !stored.userOrdered { layout.order = stored.order }
+            layout.reordered = stored.reordered
+        }
         layouts[key] = layout.normalized
         if !isDemo { CardLayout.save(layout, key) }
     }
-    var pinnedKey: String? { accounts.first(where: \.pinned)?.key ?? accounts.first?.key }
     var lastCheckedMs: Int64? { states.values.map(\.lastAttemptAtMs).filter { $0 > 0 }.max() }
 
     func usage(_ key: String) -> UsageData? { snapshots[key]?.usage(nowMs: nowMs) }
@@ -101,11 +166,6 @@ final class AppModel {
 
     /// Settings changes that only the surfaces read (reset alert modes, the Live Activity switch).
     func surfacesChanged() { Task { await Surfaces.update(self) } }
-
-    func pin(_ key: String) {
-        for i in accounts.indices { accounts[i].pinned = accounts[i].key == key }
-        save()
-    }
 
     func move(from source: IndexSet, to destination: Int) {
         accounts.move(fromOffsets: source, toOffset: destination)
@@ -139,7 +199,8 @@ final class AppModel {
     func remove(_ key: String) async {
         await repo?.forget(key)
         accounts.removeAll { $0.key == key }
-        if selectedKey == key { selectedKey = accounts.first?.key }
+        // The account on screen went: the All tab where it shows, else the first account (validSelection).
+        selectedKey = Self.validSelection(selectedKey, accounts: accounts)
         save()
         reload()
     }
@@ -183,6 +244,45 @@ final class AppModel {
             }
             try await addAccount(provider: .claude, grant: grant)
             claudePending = nil
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
+    // MARK: - Gemini sign-in (CCRM-55: Google's page in an ASWebAuthenticationSession, then a pasted 4/ code)
+
+    private var antigravityPending: AntigravitySignIn.Pending?
+
+    /// A fresh attempt; "Start again" calls this again, so an older page's code is refused by its state.
+    func beginAntigravitySignIn() -> URL {
+        let (url, pending) = AntigravitySignIn.begin()
+        antigravityPending = pending
+        return url
+    }
+
+    static let antigravityCodeFailed = "That code didn’t work — it may have expired or been copied wrong. Start again."
+    static let antigravityOtherSignIn = "That code is for a different sign-in — start again."
+
+    /// Returns an error sentence (rev B I4/I5), or nil when the account was added. Never logs the code or a token.
+    func completeAntigravitySignIn(pasted: String) async -> String? {
+        guard let pending = antigravityPending else { return "Start again — open the sign-in page first." }
+        let code: String
+        switch AntigravitySignIn.parsePaste(pasted, expectedState: pending.state) {
+        case .code(let c): code = c
+        case .otherSignIn: return Self.antigravityOtherSignIn
+        case .unreadable: return Self.antigravityCodeFailed
+        }
+        if isDemo { return Self.antigravityCodeFailed }
+        do {
+            let response = try await api.exchangeAntigravityCode(code: code, verifier: pending.verifier)
+            guard response.code == 200,
+                  let grant = TokenGrant.antigravity(body: response.body, previous: nil, nowMs: Self.clock()),
+                  !grant.credentials.refreshToken.isEmpty
+            else { return Self.antigravityCodeFailed }
+            let assist = try? await api.loadCodeAssist(accessToken: grant.credentials.accessToken).1
+            try await addAccount(provider: .antigravity, grant: grant.withAntigravity(project: assist?.project, plan: assist?.plan))
+            antigravityPending = nil
             return nil
         } catch {
             return error.localizedDescription
@@ -240,7 +340,8 @@ final class AppModel {
                           let grant = TokenGrant.chatGPT(body: exchange.body, previous: nil, nowMs: Self.clock())
                     else { return .stage(.denied, detail: "HTTP \(exchange.code)") }
                     try await addAccount(provider: .chatgpt, grant: grant)
-                    return .done(label: accounts.last?.label ?? "ChatGPT", plan: grant.plan?.capitalized)
+                    // API-CONTRACT §11's name ("prolite" → "Pro 100"), never the raw code capitalised.
+                    return .done(label: accounts.last?.label ?? "ChatGPT", plan: grant.plan.map(PlanNames.chatgpt))
                 } catch {
                     return .stage(.failed, detail: error.localizedDescription)
                 }

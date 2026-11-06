@@ -7,6 +7,8 @@ struct Account: Codable, Identifiable, Equatable, Sendable {
     var key: String
     var label: String
     var provider: Provider
+    /// The iPad's pinned account, retired 2026-11-02 (Robin: no pinned account; the Summary and one account at a time).
+    /// Still decoded and kept, never read: stored keys are never reused.
     var pinned = false
     /// When it was signed in here, for Details… (nil for accounts added before this was recorded).
     var addedAtMs: Int64? = nil

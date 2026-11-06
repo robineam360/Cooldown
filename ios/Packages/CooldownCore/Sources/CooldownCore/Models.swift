@@ -113,17 +113,40 @@ public struct SpendCredits: Sendable, Equatable {
     }
 }
 
+/// CCRM-55 (Antigravity Account): a second pair of windows on one account — the Claude + GPT pool inside Google's
+/// Antigravity (BEHAVIOR-SPEC §1.1). Hidden while untouched (both windows unstarted at 0%).
+public struct UsagePool: Sendable, Equatable {
+    public let name: String
+    public let session: UsageWindow?
+    public let weekly: UsageWindow?
+
+    public init(name: String, session: UsageWindow?, weekly: UsageWindow?) {
+        self.name = name
+        self.session = session
+        self.weekly = weekly
+    }
+
+    /// Shown once either window has been used (it has a reset clock or a reading above zero).
+    public var shown: Bool {
+        [session, weekly].contains { w in w.map { $0.resetsAtMs != nil || ($0.percent ?? 0) > 0 } ?? false }
+    }
+}
+
 public struct UsageData: Sendable, Equatable {
     public let session: UsageWindow?
     public let weekly: UsageWindow?
     public let modelCaps: [ModelCap]
     public let credits: SpendCredits?
+    /// CCRM-55: extra window pairs (only Antigravity has one); empty for Claude and ChatGPT.
+    public let pools: [UsagePool]
 
-    public init(session: UsageWindow?, weekly: UsageWindow?, modelCaps: [ModelCap], credits: SpendCredits?) {
+    public init(session: UsageWindow?, weekly: UsageWindow?, modelCaps: [ModelCap], credits: SpendCredits?,
+                pools: [UsagePool] = []) {
         self.session = session
         self.weekly = weekly
         self.modelCaps = modelCaps
         self.credits = credits
+        self.pools = pools
     }
 
     /// CCM-76 [Accounts]: true when nothing at all was read — no session, no weekly, no model

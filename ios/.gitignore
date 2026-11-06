@@ -10,3 +10,5 @@ xcuserdata/
 Packages/*/.build/
 Packages/*/.swiftpm/
 .derived-core/
+# CCRM-55 (Antigravity Account): the Antigravity client secret lives only here, never in the repo.
+Config/*.secrets.xcconfig

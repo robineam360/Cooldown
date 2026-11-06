@@ -48,12 +48,13 @@ struct ShareCardView: View {
             HStack {
                 Text(c.title).foregroundStyle(p.txt)
                 Spacer()
-                Display.pctText(c.pct, size: 19).font(.system(size: 19, weight: .bold)).foregroundStyle(p.ink)
+                Display.pctText(c.pct, pace: c.pace, size: 19).font(.system(size: 19, weight: .bold)).foregroundStyle(p.ink)
             }
             .font(.system(size: 16))
             UsageBar(pct: c.pct, pace: c.pace, accent: accent, height: 10)
             HStack {
-                Text(c.notStarted ? c.resetsIn : c.paceLine).foregroundStyle(c.paceLineAlarm ? p.red : p.sub)
+                // v2.0: Weekly reads its band words; the 5h (no Pace) its projection.
+                Text(c.notStarted ? c.resetsIn : (c.paceLine.isEmpty ? (c.projectionFold.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "") : c.paceLine)).foregroundStyle(c.paceLineAlarm ? p.red : p.sub)
                 Spacer()
                 Text(c.resetsAt.replacingOccurrences(of: "Resets at ", with: "Resets ")).foregroundStyle(p.sub)
             }

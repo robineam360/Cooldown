@@ -23,6 +23,55 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
+        <!-- CCRM-103 (Hybrid Notification), shape grammar rev D §3 N2: the 44 dp 5h ring
+             with the 5h's time left under it (11 sp, 3 dp gap): 60 dp, centred on the header.
+             It replaces the panel's 5h row. Gone for a plan with no 5h (B1). -->
+        <LinearLayout
+            android:id="@+id/ring_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp">
+
+                <ImageView
+                    android:id="@+id/ring_img"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ring_fig"
+                    style="@android:style/TextAppearance.Material.Notification.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:fontFeatureSettings="tnum,lnum"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:importantForAccessibility="no" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/ring_time"
+                style="@android:style/TextAppearance.Material.Notification.Info"
+                android:layout_width="wrap_content"
+                android:layout_height="13dp"
+                android:layout_marginTop="3dp"
+                android:textSize="11sp"
+                android:fontFeatureSettings="tnum,lnum"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:visibility="gone" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -71,6 +120,19 @@
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
+
+            <!-- CCRM-96 (Weekly First): the header's second line (the distance from the
+                 pace mark and the reset day, or the 5h projection); gone when empty. -->
+            <TextView
+                android:id="@+id/sub2"
+                style="@android:style/TextAppearance.Material.Notification.Info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- CCRM-22 (Used or Left): in Left mode the number is the remainder and the
@@ -89,6 +151,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="44sp"
                 android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:fontFeatureSettings="tnum,lnum"
                 android:includeFontPadding="false"
                 android:maxLines="1" />
 

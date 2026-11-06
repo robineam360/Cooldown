@@ -1,3 +1,4 @@
+import AuthenticationServices
 import CooldownCore
 import SwiftUI
 
@@ -12,12 +13,16 @@ struct AddAccountSheet: View {
             Text("Add account").font(.system(size: 20, weight: .bold)).padding(.bottom, 10)
             row(.claude, "Sign in with your Claude account in the browser, then paste the code it shows.") { sheet = .claudeSignIn }
             row(.chatgpt, "Sign in with a code on any device — no password in this app.") { sheet = .chatGPTSignIn }
-            Text("Cooldown reads the same usage numbers the Claude and ChatGPT apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic or OpenAI.")
+            // CCRM-55 (I1): hidden on a build without the client secret.
+            if Antigravity.available {
+                row(.antigravity, "Signs in with Google in your browser, then paste the code back.") { sheet = .geminiSignIn }
+            }
+            Text("Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.top, 2)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 20).padding(.top, 24)
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 
@@ -36,6 +41,98 @@ struct AddAccountSheet: View {
             .background(p.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// CCRM-55 (Antigravity Account) rev B I2–I5: Google's sign-in in an `ASWebAuthenticationSession` (never a web view —
+/// Google refuses them), ending on Google's hosted page with a `4/…` code the user pastes back here.
+struct GeminiSignInSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.webAuthenticationSession) private var webAuth
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+    @State private var code = ""
+    @State private var opened = false
+    @State private var working = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Sign in to Gemini").font(.system(size: 20, weight: .bold)).padding(.bottom, 8)
+            if !opened {
+                Text("1. Sign in with Google and approve Cooldown.\n2. Copy the code Google shows you and paste it here.")
+                    .font(.system(size: 15)).foregroundStyle(p.txt)
+                Button { open() } label: {
+                    Text("Sign in with Google").font(.system(size: 15, weight: .semibold)).foregroundStyle(.black)
+                        .padding(.horizontal, 16).padding(.vertical, 10)
+                        .background(Provider.antigravity.accent(scheme), in: Capsule())
+                }
+                .padding(.vertical, 16)
+            } else {
+                Text("Copy the code Google shows you and paste it here.").font(.system(size: 15)).foregroundStyle(p.txt)
+                    .padding(.bottom, 14)
+                TextField(Self.placeholder, text: $code)
+                    .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    .lineLimit(1).truncationMode(.tail)
+                    .padding(.horizontal, 14).padding(.vertical, 13)
+                    .background(p.fill, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(alignment: .bottom) { if error != nil { Rectangle().fill(p.red).frame(height: 2).padding(.horizontal, 6) } }
+                    .onChange(of: code) { error = nil }
+                if let error {
+                    Text(error).font(.system(size: 13.5)).foregroundStyle(p.red).padding(.top, 8)
+                } else {
+                    Text("The code starts with 4/. You can also paste the whole address.")
+                        .font(.system(size: 13)).foregroundStyle(p.sub).padding(.top, 8)
+                }
+                HStack(spacing: 10) {
+                    if error != nil {
+                        Button("Start again") { code = ""; error = nil; open() }.buttonStyle(Pill(fill: p.fill, ink: p.ink))
+                    } else {
+                        Button("Cancel") { dismiss() }.buttonStyle(Pill(fill: p.fill, ink: p.ink))
+                    }
+                    Button(working ? "Signing in…" : "Continue") {
+                        working = true
+                        Task {
+                            error = await model.completeAntigravitySignIn(pasted: code)
+                            working = false
+                            if error == nil { dismiss() }
+                        }
+                    }
+                    .buttonStyle(Pill(fill: p.ink, ink: p.bg))
+                    .disabled(!Self.canContinue(code: code, error: error, working: working))
+                    .opacity(Self.canContinue(code: code, error: error, working: working) ? 1 : 0.45)
+                }
+                .padding(.top, 16)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 20).padding(.top, 24)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    /// The field's label, as decided (rev B §5).
+    static let placeholder = "Paste the code from the sign-in page"
+
+    /// Continue needs a code, no error showing (editing the field clears it), and no exchange in flight.
+    static func canContinue(code: String, error: String?, working: Bool) -> Bool {
+        !code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && error == nil && !working
+    }
+
+    /// Test seam: the sheet as it stands after a paste that failed (I4).
+    init(code: String = "", opened: Bool = false, error: String? = nil) {
+        _code = State(initialValue: code)
+        _opened = State(initialValue: opened)
+        _error = State(initialValue: error)
+    }
+
+    /// Opens Google's page. The session never "completes" — the page ends on Google's own address, not ours — so
+    /// closing it is the normal way back; its error is ignored.
+    private func open() {
+        let url = model.beginAntigravitySignIn()
+        opened = true
+        Task { _ = try? await webAuth.authenticate(using: url, callbackURLScheme: "cooldown") }
     }
 }
 

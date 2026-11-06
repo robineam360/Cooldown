@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CCRM-103 (Hybrid Notification): the ChatGPT Strip cell's Weekly bar for the picker
+     preview — widget_preview_bar_strip in the ChatGPT accent (a weekly-only account, B1).
+     Preview only — placed faces draw through BarRenderer. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="46dp" android:height="6.4dp"
+    android:viewportWidth="46" android:viewportHeight="6.4">
+    <path android:fillColor="#4019C39A" android:pathData="M4.5,1.2 L41.5,1.2 A2,2 0 0,1 41.5,5.2 L4.5,5.2 A2,2 0 0,1 4.5,1.2 Z" />
+    <path android:fillColor="#FF19C39A" android:pathData="M4.5,1.2 L10.7,1.2 L10.7,5.2 L4.5,5.2 A2,2 0 0,1 4.5,1.2 Z" />
+    <path android:fillColor="#FF1A1A1A" android:pathData="M8.95,0 L12.45,0 L12.45,6.4 L8.95,6.4 Z" />
+    <path android:strokeColor="#FF19C39A" android:strokeWidth="1.5" android:strokeLineCap="round"
+        android:pathData="M10.7,0.75 L10.7,5.65" />
+    <path android:strokeColor="#FF1A1A1A" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M14.8,2.5 L14.8,3.9" />
+    <path android:strokeColor="#E6EDE8E4" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M14.8,2.5 L14.8,3.9" />
+</vector>
