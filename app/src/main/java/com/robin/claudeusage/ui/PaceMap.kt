@@ -210,11 +210,11 @@ fun PaceMapCard(entries: List<PaceMapEntry>, plotHeight: Dp, modifier: Modifier 
 }
 
 /**
- * [numbered] is ignored: CCRM-104 (Pace Line Parity), D7 — names label every dot at every count.
+ * CCRM-104 (Pace Line Parity), D7: names label every dot at every count; no numbered dots.
  * The parameter stays only so existing call sites compile.
  */
 @Composable
-fun PaceMap(entries: List<PaceMapEntry>, @Suppress("UNUSED_PARAMETER") numbered: Boolean = false, modifier: Modifier = Modifier) {
+fun PaceMap(entries: List<PaceMapEntry>, modifier: Modifier = Modifier) {
     val dark = appDark()
     val ink = MaterialTheme.colorScheme.onSurface
     val card = MaterialTheme.colorScheme.surfaceContainer

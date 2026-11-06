@@ -131,13 +131,13 @@ internal fun SummaryScreen(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) { list() }
             BoxWithConstraints(Modifier.weight(1f)) {
-                MapCard(mapEntries, compact, maxWidth - 32.dp)
+                MapCard(mapEntries, maxWidth - 32.dp)
             }
         }
     } else {
         list()
         Spacer(Modifier.height(12.dp))
-        MapCard(mapEntries, compact, 230.dp)
+        MapCard(mapEntries, 230.dp)
     }
     Spacer(Modifier.height(12.dp))
     SummaryStatus(repo, profiles, tick)
@@ -207,12 +207,12 @@ private fun CardHeader(title: String, sub: String) {
 }
 
 @Composable
-private fun MapCard(entries: List<PaceMapEntry>, numbered: Boolean, plotHeight: androidx.compose.ui.unit.Dp) {
+private fun MapCard(entries: List<PaceMapEntry>, plotHeight: androidx.compose.ui.unit.Dp) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             CardHeader("Pace map", "Weekly, where each account stands")
             Spacer(Modifier.height(8.dp))
-            PaceMap(entries, numbered, Modifier.fillMaxWidth().height(plotHeight))
+            PaceMap(entries, modifier = Modifier.fillMaxWidth().height(plotHeight))
         }
     }
 }
