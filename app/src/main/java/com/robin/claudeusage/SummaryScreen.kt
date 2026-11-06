@@ -451,10 +451,17 @@ private fun CompactSummaryRow(
             } ?: caption
             SwapText(shown, 12.5.sp, Modifier.width(90.dp))
         } else {
+            // Judge F2: the duration and its word are never cut (core §6.3) — step to 10 sp before any ellipsis.
+            val wordMeasurer = rememberTextMeasurer()
+            val wordSlot = with(LocalDensity.current) { 90.dp.roundToPx() }
+            val wordWeight = if (spanTone != null) FontWeight.SemiBold else null
+            val wordSize = if (spanTone != null &&
+                wordMeasurer.measure(word, TextStyle(fontSize = 12.5.sp, fontWeight = wordWeight)).size.width > wordSlot
+            ) 10.sp else 12.5.sp
             Text(
                 word,
-                fontSize = 12.5.sp,
-                fontWeight = if (spanTone != null) FontWeight.SemiBold else null,
+                fontSize = wordSize,
+                fontWeight = wordWeight,
                 color = wordColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

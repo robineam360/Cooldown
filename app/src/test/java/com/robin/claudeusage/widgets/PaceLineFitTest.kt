@@ -273,4 +273,27 @@ class PaceLineFaceTest {
         RuntimeEnvironment.setFontScale(1.0f)
         assertNotNull(wk)
     }
+
+    @Test fun aWeeklyOnlyRingStillShowsThePaceLine() {
+        // Judge F1: a Ring whose own cell is the Weekly (no 5h companion) takes the pace line too.
+        val state = FaceStates.of(forState(Face.RING, StateId.S4)) // B1: ChatGPT, no 5h
+        val c = state.cells.single()
+        assertEquals(FaceWindow.WEEKLY, c.window)
+        val frame = Frame(Bucket.RING_2X2, 244f, 237f)
+        val l = WidgetFace.ringLayout(frame)
+        val v = render(frame, state)
+        val reset = v.findViewById<TextView>(if (l.horizontal) R.id.ring_reset_h else R.id.ring_reset)
+        assertTrue(reset.text.toString(), shown(reset))
+        assertFalse(reset.text.toString(), reset.text.toString().startsWith("Resets "))
+        assertTrue(reset.text.toString(), Regex("(behind|ahead|On the mark)").containsMatchIn(reset.text))
+    }
+
+    @Test fun talkBackReadsThePaceLine() {
+        // Judge F3: the description carries the drawn pace line, not the old "Resets …" sub.
+        for (face in listOf(Face.NUMBER, Face.RING)) {
+            val state = FaceStates.of(forState(face, StateId.S1))
+            val said = WidgetFace.describe(state)
+            assertTrue(said, Regex("(behind|ahead|On the mark)").containsMatchIn(said))
+        }
+    }
 }

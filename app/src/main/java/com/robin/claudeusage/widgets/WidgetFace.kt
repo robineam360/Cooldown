@@ -1284,7 +1284,7 @@ object WidgetFace {
             rv.setTextColor(ids.reset, ink(s.dark, if (c.dim) 0.5f else 0.78f))
             rv.setInt(ids.reset, "setMaxWidth", (lineDp * d).toInt())
             // CCRM-104 (Pace Line Parity), Q1: the Weekly's pace line takes the reset line's slot.
-            val forms = if (it.startsWith("Resets ")) c.weeklyBar?.paceForms.orEmpty() else emptyList()
+            val forms = if (it.startsWith("Resets ")) (c.weeklyBar ?: c.takeIf { w -> w.window == FaceWindow.WEEKLY })?.paceForms.orEmpty() else emptyList()
             val pick = PaceLineFit.choose(forms, lineDp, resetSp, fontScale(context))
             if (pick == null) {
                 rv.setTextViewText(ids.reset, it)
@@ -2041,7 +2041,9 @@ object WidgetFace {
         buildString {
             append(c.name).append(", ")
             reading(c)
-            c.sub?.let { append(", ").append(it) }
+            // CCRM-104 (Pace Line Parity): the drawn pace line, in full, where the face shows one (judge F3).
+            val pace = (c.paceForms.firstOrNull() ?: c.weeklyBar?.paceForms?.firstOrNull())?.text
+            (pace ?: c.sub)?.let { append(", ").append(it) }
             c.companion?.let { append(", ").reading(it) }
         }
     }
