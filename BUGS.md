@@ -377,11 +377,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 > **v2.0 Fold 7 pass, 2026-11-06 (github release flavor of `d81fbe9`, release-signed, installed over v1.9).**
 > CCBG-78 and CCBG-79 came out of it; report and captures in
-> `design/research/2026-11-06-v20-fold7-pass/`. Neither is fixed: both change what the user sees, so each
-> waits for Robin's go (CLAUDE.md §2).
+> `design/research/2026-11-06-v20-fold7-pass/`. CCBG-78 was fixed in code the same day on Robin's word.
+> CCBG-79 stays open (it needs a wireframe).
 
 ### CCBG-78 · Collapsed Pace Line Clip — the collapsed notification ellipsizes the pace line on the cover screen
-- **Status:** Open · found 2026-11-06 on the Fold 7 cover (One UI 8, 420 dpi, font scale 1.0), in Used and Vs pace mode
+- **Status:** **Fixed in code 2026-11-06** (Robin: "Fix 78 before v2.0"). `TextFit.COLLAPSED_COLUMN_DP` went from 184 to 142 dp: the measured 147 dp, less about 3.5% for the estimator's error. `TextFitTest` gains "CCBG-78 the collapsed column fits the Fold 7 cover's 147 dp", which fails on 184. **The device check is pending:** the phone was disconnected, and Robin will recheck it with his next batch of v2.0 feedback. On the Fold 7 cover and inner, expect "5h 45m behind · 9:30 pm" in full in the collapsed notification. Found 2026-11-06 on the Fold 7 cover (One UI 8, 420 dpi, font scale 1.0), in Used and Vs pace mode
 - **Severity:** Medium (the always-on notification is the app's main surface; the reset clock is cut on the phone it was designed on)
 - **Symptom:** the collapsed one-account notification reads "5h 45m behind · Sun 9:30 …"
   (`09-cover-notification-vs-pace-clip.png`, `10-cover-notification-used-clip.png`). CCRM-104 (Pace Line Parity)
@@ -391,9 +391,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   cover the sub line's view is 385 px wide, about 147 dp (uiautomator bounds `[379,663][764,706]`). The full form
   is about 169 dp at 12 sp, so it passes the 184 dp check and gets ellipsized. The form without the weekday is
   about 144 dp, so it would have fitted.
-- **Fix (needs Robin's go):** measure the collapsed column on One UI's cover shade and set the constant to that
-  width or less. 146 dp would pick "5h 45m behind · 9:30 pm" here. Then recheck the Duet header's 159 dp the same
-  way. This only changes which approved form is shown.
+- **Fix:** the constant is now 142 dp. Only the approved D10 forms are used, so no wireframe was needed. The weekday now
+  drops on wider shades too, including the inner screen: one RemoteViews serves both screens and has to fit the narrower.
+  **Residual:** the Duet header's 159 dp is still unmeasured, because Robin runs a one-account notification. A shade narrower than the
+  Fold 7 cover would have a column below 142 dp, and there a long line steps down to the floor or to 10 sp as D10 says.
 
 ### CCBG-79 · Leader Reads as Trail — Pace map leader lines span the plot and cross other labels
 - **Status:** Open · found 2026-11-06 on the Fold 7, cover and inner

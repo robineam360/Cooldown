@@ -56,3 +56,9 @@ Captures are in this folder. Shade captures are cropped to the Cooldown card.
   under v1.9 before this install. None were logged after the install.
 - **AM/PM case:** widgets and the share card always print "PM"; the app follows the system locale ("pm"). Both
   are as specified (foundations.md, "Widget clock").
+
+## Follow-up
+
+- **CCBG-78 fixed in code later on 2026-11-06** (Robin: "Fix 78 before v2.0"). The collapsed column constant
+  went from 184 to 142 dp. Not yet checked on the phone: it was disconnected, and Robin will recheck it with his
+  next v2.0 feedback batch.

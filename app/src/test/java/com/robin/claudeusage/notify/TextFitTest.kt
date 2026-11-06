@@ -79,6 +79,25 @@ class TextFitTest {
     }
 
     @Test
+    fun `CCBG-78 the collapsed column fits the Fold 7 cover's 147 dp`() {
+        // Measured on the Fold 7 cover (One UI 8): the collapsed sub line is 385 px at 2.625, about 147 dp.
+        val measured = 147f
+        assertTrue(TextFit.COLLAPSED_COLUMN_DP <= measured * 0.97f) // room for the estimator's ~2% error
+        // The line the pass saw ellipsized drops its weekday, as D10 orders, and keeps the clock.
+        val pass = PaceText.paceLineForms(
+            Pace.MarkTime.Under((5 * 60 + 45) * 60_000L),
+            Instant.parse("2026-11-08T16:00:00Z"), now.toEpochMilli(), false, ZoneOffset.UTC, us,
+        )
+        assertEquals("5h 45m behind · Sun 4:00 PM", pass[0].text)
+        assertEquals(
+            "5h 45m behind · 4:00 PM" to 12f,
+            TextFit.paceLine(pass, TextFit.COLLAPSED_COLUMN_DP, 12f, 1f)!!.let { it.form.text to it.sp },
+        )
+        // No line the old 184 dp let through stays full-width: every full form is wider than the column.
+        listOf(ahead, behind, onMark).forEach { assertTrue(dp(it[0]) > TextFit.COLLAPSED_COLUMN_DP) }
+    }
+
+    @Test
     fun `larger text drops earlier, at 1_3`() {
         assertEquals("23h 59m ahead" to 12f, texts(141f, 1.3f))
         assertEquals("23h 59m ahead" to 12f, texts(159f, 1.3f))

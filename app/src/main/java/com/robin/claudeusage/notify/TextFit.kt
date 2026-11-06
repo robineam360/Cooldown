@@ -15,8 +15,17 @@ internal object TextFit {
     /** Astra C1-4: when even the floor does not fit, the text steps down to this, then ellipsizes. */
     const val STEP_DOWN_SP = 10f
 
-    /** The pace line's column on the tight 328 dp skin (wireframe §5/§8), in dp. */
-    const val COLLAPSED_COLUMN_DP = 184f
+    /**
+     * The pace line's column in dp, chosen for the narrowest shade the notification is checked on.
+     *
+     * Collapsed: CCBG-78 (Collapsed Pace Line Clip). The wireframe's 328 dp skin gave 184 dp, but on
+     * the Fold 7 cover (One UI 8, 411 dp) the collapsed sub line is only 385 px wide, about 147 dp,
+     * so a 157 dp full line was ellipsized instead of dropping its weekday (D10). The constant is
+     * 147 dp less about 3.5%, because this estimator ran 2% narrow of the rendered caption on that
+     * phone. Expanded single and Duet keep the wireframe's numbers: the cover's expanded sub line
+     * measured 156 dp, against 141.
+     */
+    const val COLLAPSED_COLUMN_DP = 142f
     const val EXPANDED_COLUMN_DP = 141f
     const val DUET_EXPANDED_COLUMN_DP = 159f
 

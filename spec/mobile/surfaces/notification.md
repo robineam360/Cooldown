@@ -68,7 +68,7 @@ remaining width; the figure block trails.
 | Label (title) | 13 sp, platform notification Title style, 1 line, ellipsis | platform title colour | "<Account label> · Weekly", whatever leads |
 | Synthetic dot | 7 dp circle, 5 dp margin left, after the label, at the end of the row | violet `#B388FF` | visible only while the synthetic series is on; contentDescription "Synthetic data" |
 | Bar (full width of the left column) | ImageView 13 dp high, 3 dp margin top, bitmap stretched to fit | see 1.6 | the Weekly's usage with its pace tick and the Usage end mark |
-| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4; the pace line's form is picked for the 184 dp column of the tight 328 dp skin (CCRM-104 (Pace Line Parity) D10, `notify/TextFit.kt`), at 12 sp, or 10 sp when even its floor would not fit |
+| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4; the pace line's form is picked for a 142 dp column (CCRM-104 (Pace Line Parity) D10, `notify/TextFit.kt`; the Fold 7 cover's measured 147 dp less a margin, CCBG-78 (Collapsed Pace Line Clip)), at 12 sp, or 10 sp when even its floor would not fit |
 | Figure | 32 sp bold, letter-spacing −0.02, tabular lining digits, "%" at 58%, no font padding, 14 dp margin left of the left column | severity colour (1.4); in Vs pace **signed** (D1) and coloured (`#9CCC65` / `#2E7D32` under the mark, `#FF5252` / `#C62828` over, ink on it, the severity colour when it falls back to usage) | the Weekly: "52%", in Vs pace "+19%" / "−12%" (U+2212) / "0%", or "—" |
 | Caption | 10 sp, letter-spacing 0.08, under the figure, centred on it | platform info colour | "LEFT" in Left mode only; none in Used and Vs pace (the "UNDER PACE" / "OVER PACE" / "ON PACE" caption went with D2: the sign is the cue) |
 
@@ -127,8 +127,9 @@ Used / Left / Vs pace; in Vs pace it is **signed** ("+19%", "−12%", "0%") and 
 figures are signed, coloured distances too.
 
 **Fitting the lines (CCRM-104 D10, C1-3, C1-4; `notify/TextFit.kt`).** A RemoteViews cannot measure text, so the
-form is chosen from the column's width in dp at the tight 328 dp skin — collapsed 184, expanded single 141, Duet
-expanded header 159 — against an estimate of the string's width: the wireframe's per-character em classes
+form is chosen from the column's width in dp — collapsed 142 (CCBG-78 (Collapsed Pace Line Clip): the wireframe's 328 dp
+skin gave 184, but the Fold 7 cover's collapsed sub line measured about 147 dp, so 147 less about 3.5% for the
+estimate's error), expanded single 141 (the cover measured 156), Duet expanded header 159 — against an estimate of the string's width: the wireframe's per-character em classes
 (digit .56, narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80, other capitals .62, space
 .25, "·" .29, ":" .23, sign .58, small "%" .46; the tinted span +3%) × text size in sp × the system font
 scale. Pace line forms, longest first (`PaceText.paceLineForms`): full, without the weekday, the duration and its
