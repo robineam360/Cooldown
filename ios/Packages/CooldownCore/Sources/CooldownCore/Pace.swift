@@ -64,11 +64,14 @@ public enum Pace {
         return sessionPct > 90 || sessionHitsLimitBeforeReset
     }
 
-    /// CCRM-100 (Vs Pace Display): `floor(elapsed − used)`; nil when the figure falls back to the usage (no reading,
+    /// CCRM-100 (Vs Pace Display): `elapsed − used` rounded toward zero (core §6.3, Robin 2026-11-06: within a point of
+    /// the mark is 0 on either side, matching "On the mark"); nil when the figure falls back to the usage (no reading,
     /// no reset clock, or spent).
     public static func vsPace(usedPct: Double?, elapsedPct: Double?) -> Int? {
         guard let usedPct, let elapsedPct, !isSpent(usedPct) else { return nil }
-        return Int((elapsedPct - usedPct + edgeEpsilon).rounded(.down))
+        let d = elapsedPct - usedPct
+        let n = Int((abs(d) + edgeEpsilon).rounded(.down))
+        return d < 0 ? -n : n
     }
 
     /// Added before every floor and half-up rounding of a percentage difference (spec mobile §5): binary floats put
