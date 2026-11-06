@@ -3,7 +3,7 @@
 **A personal Android app for your Claude and ChatGPT plan limits — for as many accounts as you use.**
 Shows the 5-hour and weekly rolling windows for every signed-in account (including per-model caps like Fable and Spark), when each resets, how far into the week you are, and forecasts *when* you'll hit a limit at your current pace. Its home is the **always-on notification**: two accounts side by side in the shade, a ring in the status bar, and a ping the moment a window resets.
 
-> Version **1.9** · released October 2026 · sideloaded personal app, not on any store
+> Version **1.9** · released November 2026 · sideloaded personal app, not on any store
 > Download the APK from the [latest GitHub release](https://github.com/robineam360/Cooldown/releases/latest)
 >
 > **Note:** the screenshots and much of the walkthrough below date from the v1.3-era
@@ -261,4 +261,4 @@ Below the main screen's cards, one status line — *"Checked 4m ago ↻"* — ha
 - RemoteViews gotcha: containers max out at 10 children — keep notification blocks wrapped in nested layouts.
 - If Anthropic changes the undocumented response schema, the parser ignores unknown fields; if bars go blank, check the raw JSON in the debug view first.
 
-*Verified on a real device; updated for v1.9 on 2 Oct 2026.*
+*Verified on a real device; updated for v1.9 on 4 Nov 2026.*

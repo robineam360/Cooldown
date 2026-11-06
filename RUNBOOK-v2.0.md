@@ -52,6 +52,7 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
   unticked step of RUNBOOK-v2.0.md, and stop when its check passes."
 - **Gate G0:** no app-code commit of this arc reaches `main` until RUNBOOK.md's v1.9 Step 8 is ticked.
   Before that, code steps live on their session branch with an open PR; the docs/spec of Step 2 may land.
+  **Lifted 2026-11-05** (v1.9 Step 8 ticked); the arc's code reached `main` on 2026-11-06 by merging PR #21's branch (see the Log).
 
 ## Progress
 
@@ -370,4 +371,9 @@ weekly.
 - **2026-11-02 · Pace pip dropped** (Robin): line 3 of a Summary row starts with the band words; only Android's full
   row drew the pip (the compact rows and iOS never did; the P8 readout never aligned to it). The desktop drops it
   from its menu-bar rows too.
-
+- **2026-11-06 · Landed on main** (Robin in chat: "Yes, land it now"). The v2.0 branch (PR #21) was merged with
+  `origin/main` (v1.9's nine commits; no textual conflicts) and tested as one tree. CCBG-75 (Antigravity Crash on Refresh):
+  `hasSource` dropped from `UsageRepository` now that `Sources.of(ANTIGRAVITY)` is `AntigravitySource`; the v1.9 test became
+  `RefreshEveryProviderTest`; CCBG-76 (Probe Crash) and CCBG-77 (Gemini One-shot Retry) closed with it. No versionCode or versionName bump (Step 8). Step 7 and
+  Step 8 stay unticked: the Fold 7 leftovers, the Android half of the Weekly-first share card (CCRM-24 (Share Card)), the Ring
+  widget removal (CCBG-70 (Stale Ring Widget)) and the release itself continue on `main`.

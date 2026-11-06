@@ -47,6 +47,14 @@ notification and the status-bar ring appearing, a refresh, and the switch turned
 notification gone. It is recorded in RUNBOOK Step 7 and uploaded unlisted. Its link goes here:
 `<video URL — Step 7>`.
 
+**Recorded 2026-11-04** on the Fold 7 (github candidate 1f7fa0b, 1.9 / 25): `release/play/fgs-demo.mp4`
+(45 s, no audio). Switch on, the Cooldown notification in the shade (the only one), a refresh
+(skipped by the rate-limit floor, as it should be), switch off, "No notifications". The Accounts
+tab was cut out of the take because it shows email addresses. Not uploaded anywhere, and the link
+above stays empty until Robin uploads it at Step 9 (Play work is deferred past v2.0, 2026-11-04).
+**It shows v1.9's notification, so it is re-recorded on the v2.0 build before Step 9**
+(see `CHECKLIST.md` §A).
+
 ## If review pushes back
 
 CCRM-67's recorded fallback: move to `dataSync` with a watchdog that restarts the service when the
