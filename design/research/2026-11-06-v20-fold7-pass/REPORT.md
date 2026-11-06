@@ -49,8 +49,9 @@ Captures are in this folder. Shade captures are cropped to the Cooldown card.
 
 - **Claude's reset clock moved one minute:** "Fri 12:29 am" at 19:46, then "Fri 12:30 am" at 20:01. This is the
   server's `resets_at` jitter crossing a minute boundary. It was there before v2.0.
-- **Background worker:** the `UsagePollWorker` jobs were re-enqueued at 20:00 (job ids 67808 → 67817…). The run
-  with the app in the background is recorded in the worker line below.
+- **Background worker:** the `UsagePollWorker` jobs were re-enqueued at 20:00 (job ids 67808 → 67817…). With
+  the launcher on top from 20:05, jobs 67817 and 67820 (due about 20:12) ran and were replaced by 67835–67839
+  by 20:16. The process stayed 14735 throughout and `exit-info` shows no crash.
 - **Poll timeouts in the app log:** "auto → Error: timeout" for p11, work and chatgpt:p5 between 18:00 and 19:07,
   under v1.9 before this install. None were logged after the install.
 - **AM/PM case:** widgets and the share card always print "PM"; the app follows the system locale ("pm"). Both
