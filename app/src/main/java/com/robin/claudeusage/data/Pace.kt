@@ -82,10 +82,14 @@ object Pace {
         return sessionPct > 90.0 || sessionHitsLimitBeforeReset
     }
 
-    /** CCRM-100 (Vs Pace Display): `floor(elapsed − used)`; null when it falls back to usage. */
+    /** CCRM-100 (Vs Pace Display): `elapsed − used` toward zero (core §6.3); null when it falls back to usage. */
     fun vsPace(usedPct: Double?, elapsedPct: Double?): Int? {
         if (usedPct == null || elapsedPct == null || isSpent(usedPct)) return null
-        return kotlin.math.floor(elapsedPct - usedPct + EDGE_EPSILON).toInt()
+        // Toward zero (core §6.3, Robin 2026-11-06): within a point of the mark is 0 on either side,
+        // so the figure agrees with the pace line's "On the mark".
+        val d = elapsedPct - usedPct
+        val n = kotlin.math.floor(kotlin.math.abs(d) + EDGE_EPSILON).toInt()
+        return if (d < 0) -n else n
     }
 
     /**

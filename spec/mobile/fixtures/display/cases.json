@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark. markReadout (CCRM-103 (Hybrid Notification), shape grammar rev D section 2b and C4): the words a tapped figure's line shows for 3 s, from core section 6.3 markTime. zone is the IANA zone the instant is written in; the day and time follow the app's Time format, 12-hour or 24-hour; the 12-hour cases are written in en-US (AM/PM), and a client prints its platform locale's own marker. Durations are Xd Yh, under a day Xh Ym, under an hour Ym, every part rounded down. expected null = the tap does nothing. vsPaceFigure, rev D of the shape grammar (Robin, 2026-11-02, CCRM-103 (Hybrid Notification) section 7b): the figure carries no sign; tone carries it: under = green (the usage is under the mark), over = red, on = plain ink at 0%, usage = the fallback usage figure in its severity colours (spent, unclocked) or a dash. The number is unchanged: |floor(elapsed - used)|."
+    "note": "Usage display figures and the pace-mark caption (BEHAVIOR-MOBILE section 5, CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number); wireframes design/2026-11-02-vs-pace-display.html and -pace-line-label.html V1). Spec-first, written 2026-11-02 by script from the rules, not ported from code. usedPct null = no reading; elapsedPct is core section 6's elapsedPercent; hasResetClock false = the window has not started. The minus sign is U+2212 and the middle dot U+00B7. A null expected caption means none is drawn. captionSide: the caption starts 5 dp right of the mark when it fits inside the bar width, else it ends 5 dp left of the mark. markReadout (CCRM-103 (Hybrid Notification), shape grammar rev D section 2b and C4): the words a tapped figure's line shows for 3 s, from core section 6.3 markTime. zone is the IANA zone the instant is written in; the day and time follow the app's Time format, 12-hour or 24-hour; the 12-hour cases are written in en-US (AM/PM), and a client prints its platform locale's own marker. Durations are Xd Yh, under a day Xh Ym, under an hour Ym, every part rounded down. expected null = the tap does nothing. vsPaceFigure, rev D of the shape grammar (Robin, 2026-11-02, CCRM-103 (Hybrid Notification) section 7b): the figure carries no sign; tone carries it: under = green (the usage is under the mark), over = red, on = plain ink at 0%, usage = the fallback usage figure in its severity colours (spent, unclocked) or a dash. The number is |core section 6.3 vsPace|, rounded toward zero since 2026-11-06. The signed form every non-ring surface prints since CCRM-104 (Pace Line Parity) is in spec/core/fixtures/pace-distance/printed.json."
   },
   "vsPaceFigure": [
     {
@@ -31,13 +31,13 @@
       "tone": "under"
     },
     {
-      "name": "rounded down over the mark",
+      "name": "within a point over the mark: zero",
       "usedPct": 60.2,
       "elapsedPct": 60.0,
       "hasResetClock": true,
-      "expected": "1%",
-      "why": "floor(-0.2) = -1",
-      "tone": "over"
+      "expected": "0%",
+      "why": "toward zero: -0.2 is 0 (core 6.3, 2026-11-06)",
+      "tone": "on"
     },
     {
       "name": "exactly on the mark",

@@ -1913,6 +1913,9 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   "On the mark · Sat 8:00 AM", the band words and "≈X%/day" leaving every line (alerts and press help only);
   (3) the Pace map's wedge labels "ahead of pace" / "behind pace", names on the dots with the collision rule;
   (4) a press on a figure shows the pace-mark caption. The strings live once, in core §6.3.
+- **Robin, 2026-11-06 (via the desktop session):** the Vs pace figure rounds **toward zero** (core §6.3 maths
+  change: within a point of the mark prints "0%" beside "On the mark"; "−7.8" prints "−7%"), and the Left-mode
+  caption "40% pace mark · 10 to spare" is mobile's form for every family, now in core.
 - **Deviations from the Mac:** only where the platform forces one, each listed on the wireframe with its reason
   and agreed with the CooldownDesktop session.
 

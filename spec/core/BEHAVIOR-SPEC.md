@@ -409,8 +409,11 @@ below (the sign, durations, the pace line, the reset, the caption, the Pace map'
 
 For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), not spent (§6.1):
 
-- **Vs pace figure** = `floor(elapsedPct − usedPct + 1e-9)`, an integer, signed (positive = under the mark,
-  room). Spent, no reset clock or no reading → no figure (a surface falls back to the usage figure, or a dash).
+- **Vs pace figure** = `elapsedPct − usedPct` rounded **toward zero**, an integer, signed (positive = under the mark,
+  room): `sign(d) × floor(|d| + 1e-9)` with `d = elapsedPct − usedPct` (Robin, 2026-11-06, replacing the
+  2026-11-02 floor, so a window within a point of the mark on either side prints "0%" beside "On the mark" and
+  the figure and the line always agree; "−1%" at 1.5 over, was "−2%"). Spent, no reset clock or no reading → no
+  figure (a surface falls back to the usage figure, or a dash).
 - **The mark** = `elapsedPct` rounded half up; the **distance** = `|elapsedPct − usedPct|` rounded half up;
   **on the mark** when `|elapsedPct − usedPct| < 1`, else under (`elapsedPct > usedPct`) or over.
 - Every floor and half-up adds 1e-9 first, so binary float edges (`2.3 − 0.3`) land on the decimal answer.
@@ -461,16 +464,13 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
   no-reading line shows instead, unchanged. The 5-hour session keeps its projection line (§3), not this one.
 - **The pace-mark caption** (help on a figure: hover on desktop, a press on mobile, and a bar's caption where a
   family draws one): Used mode "40% pace mark · 12 over", "60% pace mark · 19 under", "60% pace mark · on it"
-  (§6.3's mark, distance and on-the-mark rule); Vs pace mode "41% used · 60% pace mark" (the sign already says
-  the side). Left mode stays family layer until both families agree its words.
+  (§6.3's mark, distance and on-the-mark rule); Left mode in remaining terms, the mark as `100 − mark`: "40% pace
+  mark · 10 to spare", "40% pace mark · 20 over", "40% pace mark · on it" (Robin, 2026-11-06: mobile's form for
+  every family); Vs pace mode "41% used · 60% pace mark" (the sign already says the side).
 - **The Pace map's words:** "ahead of pace" in the wedge above the even-pace diagonal, "behind pace" below it,
   the diagonal "even pace", the x axis "week start" and "reset". Account names label the dots, never numbers;
   when two labels would collide, the lower one moves below its dot, and if they still collide each takes a
   short leader line to a free spot at the plot's right edge.
-
-**Known edge, recorded, not decided:** the figure floors (`floor(−0.49) = −1`) while the line's on-the-mark test
-is `|elapsedPct − usedPct| < 1`, so a window just over the mark prints "−1%" beside "On the mark". Both families
-print exactly that until a core change says otherwise.
 
 Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
 `dayClock`, `paceLine`, `endToEnd`, `caption`, `mapLabels`.

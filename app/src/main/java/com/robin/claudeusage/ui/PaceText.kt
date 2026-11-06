@@ -157,6 +157,94 @@ object PaceText {
         }
     }
 
+    // ---- CCRM-104 (Pace Line Parity): core §6.3's printed form, the strings the Mac prints too.
+    // Cases: spec/core/fixtures/pace-distance/printed.json.
+
+    /** "+19%" under the mark, "−12%" (U+2212) over it, "0%" on it. */
+    fun signed(d: Int): String = when {
+        d > 0 -> "+$d%"
+        d < 0 -> "$MINUS${-d}%"
+        else -> "0%"
+    }
+
+    /** Inside the 5-hour ring the figure is unsigned; [toneOf] carries the side. */
+    fun unsigned(d: Int): String = "${abs(d)}%"
+
+    /** The tone of a Vs pace figure; null figure → [VsTone.USAGE] (the fallback usage figure). */
+    fun toneOf(d: Int?): VsTone = when {
+        d == null -> VsTone.USAGE
+        d > 0 -> VsTone.UNDER
+        d < 0 -> VsTone.OVER
+        else -> VsTone.ON
+    }
+
+    /** The signed Vs pace figure, falling back to the Used figure (spent, unclocked) or "—" (unread). */
+    fun vsPaceSigned(usedPct: Double?, elapsedPct: Double?): String {
+        if (usedPct == null) return "—"
+        val d = Pace.vsPace(usedPct, elapsedPct) ?: return "${usedPct.toInt()}%"
+        return signed(d)
+    }
+
+    /** "6d 23h", "1d 0h", "13h 59m", "57m": the two largest units, each rounded down. */
+    fun duration(ms: Long): String = behind(ms)
+
+    /**
+     * The reset in a pace line: "Wed 12:30 PM" / "Wed 12:30", the weekday dropped when the reset
+     * falls later the same local day ("11:00 PM").
+     */
+    fun dayClock(
+        reset: Instant,
+        nowMs: Long,
+        use24h: Boolean,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): String {
+        val today = reset.atZone(zone).toLocalDate() == Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate() &&
+            reset.toEpochMilli() >= nowMs
+        val clock = if (use24h) "HH:mm" else "h:mm a"
+        val pattern = if (today) clock else "EEE $clock"
+        return DateTimeFormatter.ofPattern(pattern, locale).withZone(zone).format(reset)
+    }
+
+    /** A pace line: [text] in full, [tinted] its leading "<duration> behind|ahead" span (null on the mark). */
+    data class PaceLine(val text: String, val tinted: String?, val tone: VsTone)
+
+    /**
+     * "6d 23h behind · Wed 12:30 PM", "13h 59m ahead · Thu 6:15 PM", "On the mark · Sat 8:00 AM".
+     * Null with no readout: the caller shows its held / spent / signed-out / no-reading line.
+     */
+    fun paceLine(mt: Pace.MarkTime?, reset: String): PaceLine? = when (mt) {
+        null -> null
+        Pace.MarkTime.On -> PaceLine("On the mark$DOT$reset", null, VsTone.ON)
+        is Pace.MarkTime.Under -> "${duration(mt.agoMs)} behind".let { PaceLine(it + DOT + reset, it, VsTone.UNDER) }
+        is Pace.MarkTime.Over -> "${duration(mt.inMs)} ahead".let { PaceLine(it + DOT + reset, it, VsTone.OVER) }
+    }
+
+    /** Used-mode caption: "40% pace mark · 12 over", "· 19 under", "· on it". [side]: under, over or on. */
+    fun captionUsed(mark: Int, distance: Int, side: String): String =
+        "$mark% pace mark$DOT" + when (side) {
+            "on" -> "on it"
+            "under" -> "$distance under"
+            else -> "$distance over"
+        }
+
+    /** Left-mode caption, in remaining terms: "40% pace mark · 10 to spare", "· 20 over", "· on it" ([mark] is the elapsed mark). */
+    fun captionLeft(mark: Int, distance: Int, side: String): String =
+        "${100 - mark}% pace mark$DOT" + when (side) {
+            "on" -> "on it"
+            "under" -> "$distance to spare"
+            else -> "$distance over"
+        }
+
+    /** Vs pace mode caption: "41% used · 60% pace mark" — the figure's sign already says the side. */
+    fun captionVsPace(usedFigure: Int, mark: Int): String = "$usedFigure% used$DOT$mark% pace mark"
+
+    const val MAP_AHEAD = "ahead of pace"
+    const val MAP_BEHIND = "behind pace"
+    const val MAP_EVEN = "even pace"
+    const val MAP_WEEK_START = "week start"
+    const val MAP_RESET = "reset"
+
     /** True = the caption starts 5 dp right of the mark; false = it ends 5 dp left of it. */
     fun captionRightOfMark(barWidth: Float, markPct: Double, captionWidth: Float, gap: Float = 5f): Boolean =
         barWidth * markPct / 100.0 + gap + captionWidth <= barWidth

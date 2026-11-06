@@ -62,7 +62,7 @@ class LeadLinesTest {
     fun `figures follow the three display modes`() {
         assertEquals("52%", LeadLines.figure(52.0, 38.9, PaceText.Mode.USED))
         assertEquals("48%", LeadLines.figure(52.0, 38.9, PaceText.Mode.LEFT))
-        assertEquals("14%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE))
+        assertEquals("13%", LeadLines.figure(52.0, 38.9, PaceText.Mode.VS_PACE)) // −13.1 toward zero (core §6.3, 2026-11-06)
         assertEquals("—", LeadLines.figure(null, 38.9, PaceText.Mode.VS_PACE))
         assertEquals("OVER PACE", LeadLines.figureCaption(52.0, 38.9, PaceText.Mode.VS_PACE))
         assertNull(LeadLines.figureCaption(100.0, 80.0, PaceText.Mode.VS_PACE))
