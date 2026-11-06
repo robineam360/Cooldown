@@ -368,9 +368,11 @@ Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §6, §8, D1, D10,
   would be), the Ring's Weekly row. Ring bores (`Cell.figure`) stay unsigned in the tone. Used and Left are never signed.
 - **The line (Q1).** Where a face shows a Weekly "Resets Sat 9:10 PM" line it shows the pace line instead:
   "21h 50m ahead · Sun 9:30 PM" ("<duration> behind|ahead" tinted semibold, green under the mark, red over; "On the
-  mark · 9:30 PM" in ink). It applies in every usage mode. Widgets keep their own clock rule (`Fmt.widgetClock`: 12-hour,
-  the weekday only when the reset is more than 24 h out), so the forms are `PaceLineFit.forms`, not `PaceText.paceLineForms`
-  (whose weekday rule is the calendar day's). Faces: Number 4×1, 4×2 and the tall 2×1 (sub row); Ring 2×2 and the wide 1×1
+  mark · 9:30 PM" in ink). It applies in every usage mode. The forms are core's (`PaceText.paceLineForms`: the weekday
+  dropped when the reset is later today), pinned to 12-hour as every widget clock is (R2); the width estimator is the
+  notification's (`notify/TextFit`). The Number 4×1 keeps its shipped Ø60 ring, so its column is 237 dp at 333 and 148 at
+  244 (the wireframe drew Ø76): at 333 the full line fits beside the stamp, at 244 the stamp yields and the line drops
+  the weekday. Faces: Number 4×1, 4×2 and the tall 2×1 (sub row); Ring 2×2 and the wide 1×1
   (the reset line's slot, replacing the 5h's reset line when the account has a Weekly). Faces with no line (Ring 1×1,
   Number 2×1, Strip, Countdown) change only the figure. Held, spent ("Weekly spent"), stale, signed-out (S7), no-reading
   and not-started lines are untouched; so is the 5h's own line on a 5h-only account.
