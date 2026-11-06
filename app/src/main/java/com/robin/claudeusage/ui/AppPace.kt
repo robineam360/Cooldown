@@ -20,7 +20,29 @@ object AppPace {
      * One line, with [emphasis] the part of [text] drawn bold in the orange step (today's
      * over-pace emphasis); null when nothing is emphasised. Always a substring of [text].
      */
-    data class Line(val text: String, val emphasis: String? = null)
+    data class Line(
+        val text: String,
+        val emphasis: String? = null,
+        /**
+         * CCRM-104 (Pace Line Parity): set on a pace line — [text] is its full form, [emphasis] the
+         * tinted "<duration> behind|ahead" span (null on the mark), [tone] its colour, [forms] the
+         * drop order the card measures at run time ([PaceText.fit]).
+         */
+        val tone: PaceText.VsTone? = null,
+        val forms: List<PaceText.PaceLine> = emptyList(),
+    )
+
+    /** CCRM-104: the pace line of a clocked, unspent Weekly window, null when it has none. */
+    fun weeklyPaceLine(window: UsageWindow?, use24h: Boolean, now: Instant = Instant.now()): Line? {
+        val used = window?.percent ?: return null
+        val resets = window.resetsAt ?: return null
+        val forms = PaceText.paceLineForms(
+            Pace.markTime(used, msLeft(resets, now), Projection.WEEKLY_MS, now.toEpochMilli()),
+            resets, now.toEpochMilli(), use24h,
+        )
+        val full = forms.firstOrNull() ?: return null
+        return Line(full.text, full.tinted, full.tone, forms)
+    }
 
     /** Slow down and Nearly out are the over-pace bands; spent is drawn the same way. */
     fun overPace(band: Pace.Band): Boolean =
@@ -29,9 +51,8 @@ object AppPace {
     private fun msLeft(resets: Instant, now: Instant) = resets.toEpochMilli() - now.toEpochMilli()
 
     /**
-     * The open Weekly card's first line under the chart: "Slow down · ≈11%/day until Sun";
-     * under a day, "Use before reset · 40% left, 6h" (wireframe E1, no day); spent, "Out
-     * until Sun 9:30 PM". Null with no reading or no reset clock. A cap's window words the
+     * The open Weekly card's first line under the chart: the pace line (CCRM-104 (Pace Line
+     * Parity), "21h 50m ahead · Sun 9:30 PM"); spent, "Out until Sun 9:30 PM". Null with no reading or no reset clock. A cap's window words the
      * same way (the chips switch the pace lines with the chart, as today).
      */
     fun weeklyOpen(window: UsageWindow?, elapsed: Double?, use24h: Boolean, now: Instant = Instant.now()): Line? {
@@ -42,19 +63,12 @@ object AppPace {
             val text = "Out until ${Fmt.dayTime(resets, use24h)}"
             return Line(text, text)
         }
-        val words = PaceText.bandWords(band) ?: return null
-        val allowance = Pace.allowance(used, msLeft(resets, now))
-        val text = when (allowance) {
-            null -> words
-            is Pace.Allowance.PerDay -> words + DOT + PaceText.allowance(allowance) + " until " + Fmt.weekday(resets)
-            is Pace.Allowance.Hours -> words + DOT + PaceText.allowance(allowance)
-        }
-        return Line(text, text.takeIf { overPace(band) })
+        return weeklyPaceLine(window, use24h, now)
     }
 
     /**
-     * The folded Weekly card's one line: "Slow down · ≈11%/day · resets Sun", the tight
-     * form bold when over pace and the reset day muted; spent "Out until Sun 9:30 PM"; no
+     * The folded Weekly card's one line: the pace line ("21h 50m ahead · Sun 9:30 PM", its
+     * span tinted); spent "Out until Sun 9:30 PM"; no
      * reset clock, today's "Starts when a message is sent".
      */
     fun weeklyFolded(window: UsageWindow?, elapsed: Double?, use24h: Boolean, now: Instant = Instant.now()): Line {
@@ -65,9 +79,7 @@ object AppPace {
             val text = "Out until ${Fmt.dayTime(resets, use24h)}"
             return Line(text, text)
         }
-        val tight = PaceText.tight(band, Pace.allowance(used, msLeft(resets, now)))
-            ?: return Line("Resets ${Fmt.relIn(resets)}")
-        return Line(tight + DOT + "resets " + Fmt.weekday(resets), tight.takeIf { overPace(band) })
+        return weeklyPaceLine(window, use24h, now) ?: Line("Resets ${Fmt.relIn(resets)}")
     }
 
     /**
@@ -120,4 +132,10 @@ object AppPace {
             PaceText.vsPaceFigure(pct, elapsed) to null
         else -> "${pct.toInt()}%" to null
     }
+
+    /** CCRM-104 (Pace Line Parity) D1: [figure] with Vs pace signed ("+19%", "−12%", "0%"); rings use [figure]. */
+    fun figureSigned(pct: Double?, elapsed: Double?, mode: PaceText.Mode): Pair<String, String?> =
+        if (mode == PaceText.Mode.VS_PACE && pct != null && Pace.vsPace(pct, elapsed) != null)
+            PaceText.vsPaceSigned(pct, elapsed) to null
+        else figure(pct, elapsed, mode)
 }

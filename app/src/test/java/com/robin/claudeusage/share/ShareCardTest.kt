@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.robin.claudeusage.data.Headline
 import com.robin.claudeusage.data.HistoryPoint
 import com.robin.claudeusage.data.WindowKind
+import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.widgets.FaceWindow
 import com.robin.claudeusage.widgets.GalleryFixtures
 import com.robin.claudeusage.widgets.GalleryFixtures.MIN
@@ -169,6 +170,32 @@ class ShareCardTest {
             assertEquals("62%", m.headline.figure)
             assertTrue(m.rows.none { it.dimmed || it.alarm })
         }
+    }
+
+    // CCRM-104 (Pace Line Parity) D9: the Weekly row's left slot is the tinted span, the reset keeps the right.
+    @Test
+    fun `the weekly pace slot is the tinted span alone`() {
+        val now = 1_800_000_000_000L
+        val week = 7 * 24 * 60 * 60_000L
+        val resets = java.time.Instant.ofEpochMilli(now + 3 * 24 * 60 * 60_000L) // 4/7 of the week gone
+        // Over the mark: the mark reaches 80% 1d 14h from now; under: it passed 20% 2d 14h ago.
+        assertEquals("1d 14h ahead" to PaceText.VsTone.OVER, ShareCard.weeklyPace(80.0, resets, week, now))
+        assertEquals("2d 14h behind" to PaceText.VsTone.UNDER, ShareCard.weeklyPace(20.0, resets, week, now))
+        assertEquals("On the mark" to PaceText.VsTone.ON, ShareCard.weeklyPace(57.0, resets, week, now))
+        assertNull(ShareCard.weeklyPace(100.0, resets, week, now))
+        assertNull(ShareCard.weeklyPace(null, resets, week, now))
+        assertNull(ShareCard.weeklyPace(40.0, null, week, now))
+    }
+
+    @Test
+    fun `the weekly row carries the span and keeps its reset, the 5h row its own phrase`() {
+        val m = model(headline = Headline.FIVE_HOUR)
+        val week = m.rows[1]
+        assertTrue(week.pace!!, week.pace!!.matches(Regex("""(\d+d \d+h|\d+h \d+m|\d+m) (ahead|behind)|On the mark""")))
+        assertNotNull(week.paceTone)
+        assertEquals("Resets Sat 9:10 PM", week.reset)
+        assertTrue(m.rows[0].pace!!.endsWith("above even pace"))
+        assertNull(m.rows[0].paceTone)
     }
 
     @Test

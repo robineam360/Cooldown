@@ -38,36 +38,62 @@ class AppPaceTest {
 
     // --- the Weekly card (A1/A2) ---
 
-    @Test fun `open line is band, allowance and the reset day, emphasised over pace`() {
+    // CCRM-104 (Pace Line Parity) D3: the line under the chart is the pace line.
+
+    @Test fun `open line over pace is the pace line, its span red`() {
         val line = AppPace.weeklyOpen(w(52.0, sun), 38.9, use24h = false, now = now)!!
-        assertEquals("Slow down · ≈11%/day until Sun", line.text)
-        assertEquals(line.text, line.emphasis)
+        assertEquals("22h 1m ahead · Sun 9:30 PM", line.text)
+        assertEquals("22h 1m ahead", line.emphasis)
+        assertEquals(PaceText.VsTone.OVER, line.tone)
+        // The drop order: full, no weekday, duration+word.
+        assertEquals(
+            listOf("22h 1m ahead · Sun 9:30 PM", "22h 1m ahead · 9:30 PM", "22h 1m ahead"),
+            line.forms.map { it.text },
+        )
     }
 
-    @Test fun `open line under pace is not emphasised`() {
+    @Test fun `open line under pace is behind, green`() {
         val line = AppPace.weeklyOpen(w(50.0, fri), 67.0, use24h = false, now = now)!!
-        assertEquals("Room to spare · ≈22%/day until Fri", line.text)
-        assertNull(line.emphasis)
+        assertEquals("1d 4h behind · Fri 10:18 PM", line.text)
+        assertEquals("1d 4h behind", line.emphasis)
+        assertEquals(PaceText.VsTone.UNDER, line.tone)
+        assertEquals("1d 4h behind · Fri 22:18", AppPace.weeklyOpen(w(50.0, fri), 67.0, use24h = true, now = now)!!.text)
     }
 
-    @Test fun `under a day the open line carries hours and no day (E1)`() {
+    @Test fun `on the mark has no tinted span and the ink tone`() {
+        val line = AppPace.weeklyOpen(w(39.0, sun), 38.9, use24h = false, now = now)!!
+        assertEquals("On the mark · Sun 9:30 PM", line.text)
+        assertNull(line.emphasis)
+        assertEquals(PaceText.VsTone.ON, line.tone)
+        assertEquals(listOf("On the mark · Sun 9:30 PM", "On the mark · 9:30 PM", "On the mark"), line.forms.map { it.text })
+    }
+
+    @Test fun `a reset later today drops the weekday from every form`() {
         val reset = now.plusSeconds(6 * 3600)
         val line = AppPace.weeklyOpen(w(60.0, reset), 96.0, use24h = false, now = now)!!
-        assertEquals("Use before reset · 40% left, 6h", line.text)
+        assertEquals("2d 13h behind · 8:50 PM", line.text)
+        assertEquals(listOf("2d 13h behind · 8:50 PM", "2d 13h behind"), line.forms.map { it.text })
     }
 
     @Test fun `spent week says out until, and nothing without a reading or a clock`() {
+        assertNull(AppPace.weeklyOpen(w(100.0, sun), 38.9, false, now)!!.tone)
+        assertTrue(AppPace.weeklyOpen(w(100.0, sun), 38.9, false, now)!!.forms.isEmpty())
         assertEquals("Out until Sun 9:30 PM", AppPace.weeklyOpen(w(100.0, sun), 38.9, false, now)!!.text)
         assertNull(AppPace.weeklyOpen(w(null, sun), 38.9, false, now))
         assertNull(AppPace.weeklyOpen(w(10.0, null), null, false, now))
     }
 
-    @Test fun `folded line bolds only the tight form`() {
+    @Test fun `folded line is the pace line, spent and not-started lines stay`() {
         val line = AppPace.weeklyFolded(w(52.0, sun), 38.9, false, now)
-        assertEquals("Slow down · ≈11%/day · resets Sun", line.text)
-        assertEquals("Slow down · ≈11%/day", line.emphasis)
-        assertEquals("Room to spare · ≈22%/day · resets Fri", AppPace.weeklyFolded(w(50.0, fri), 67.0, false, now).text)
+        assertEquals("22h 1m ahead · Sun 9:30 PM", line.text)
+        assertEquals("22h 1m ahead", line.emphasis)
+        assertEquals(PaceText.VsTone.OVER, line.tone)
+        assertEquals("1d 4h behind · Fri 10:18 PM", AppPace.weeklyFolded(w(50.0, fri), 67.0, false, now).text)
         assertEquals("Starts when a message is sent", AppPace.weeklyFolded(w(0.0, null), null, false, now).text)
+        assertEquals("Out until Sun 9:30 PM", AppPace.weeklyFolded(w(100.0, sun), 38.9, false, now).text)
+        assertTrue(AppPace.weeklyFolded(w(100.0, sun), 38.9, false, now).forms.isEmpty())
+        // No pace elapsed, no pace line: the reset clause alone, as before.
+        assertTrue(AppPace.weeklyFolded(w(52.0, sun), null, false, now).text.startsWith("Resets "))
     }
 
     // --- the 5h card ---
@@ -127,6 +153,20 @@ class AppPaceTest {
         assertEquals("10%" to null, AppPace.figure(50.0, 60.0, PaceText.Mode.VS_PACE))
     }
 
+    @Test fun `signed figure - plus under, minus over, zero on, rings stay unsigned (D1)`() {
+        assertEquals("52%" to null, AppPace.figureSigned(52.0, 39.0, PaceText.Mode.USED))
+        assertEquals("48%" to "left", AppPace.figureSigned(52.0, 39.0, PaceText.Mode.LEFT))
+        assertEquals("−13%" to null, AppPace.figureSigned(52.0, 39.0, PaceText.Mode.VS_PACE))
+        assertEquals("+10%" to null, AppPace.figureSigned(50.0, 60.0, PaceText.Mode.VS_PACE))
+        assertEquals("0%" to null, AppPace.figureSigned(50.0, 50.4, PaceText.Mode.VS_PACE))
+        // Fallbacks keep the usage figure; unread is a dash.
+        assertEquals("100%" to null, AppPace.figureSigned(100.0, 55.0, PaceText.Mode.VS_PACE))
+        assertEquals("0%" to null, AppPace.figureSigned(0.0, null, PaceText.Mode.VS_PACE))
+        assertEquals("—" to null, AppPace.figureSigned(null, 40.0, PaceText.Mode.VS_PACE))
+        // The ring's figure is [AppPace.figure]: unsigned.
+        assertEquals("13%" to null, AppPace.figure(52.0, 39.0, PaceText.Mode.VS_PACE))
+    }
+
     @Test fun `vs pace falls back to usage, without its word`() {
         assertEquals("100%" to null, AppPace.figure(100.0, 55.0, PaceText.Mode.VS_PACE))
         assertEquals("0%" to null, AppPace.figure(0.0, null, PaceText.Mode.VS_PACE))
@@ -136,7 +176,9 @@ class AppPaceTest {
     // --- Summary rows (rev B) ---
 
     @Test fun `row words`() {
-        assertEquals("Room to spare · ≈22%/day · resets Fri", SummaryRows.words(w(50.0, fri), 67.0, false, now))
+        assertEquals("1d 4h behind · Fri 10:18 PM", SummaryRows.words(w(50.0, fri), 67.0, false, now))
+        assertEquals("22h 1m ahead · Sun 9:30 PM", SummaryRows.words(w(52.0, sun), 38.9, false, now))
+        assertEquals("On the mark · Sun 9:30 PM", SummaryRows.words(w(39.0, sun), 38.9, false, now))
         assertEquals("Out until Sun 9:30 PM", SummaryRows.words(w(100.0, sun), 89.8, false, now))
         assertEquals("No reading yet", SummaryRows.words(w(null, sun), 40.0, false, now))
         assertEquals("Not started yet", SummaryRows.words(w(0.0, null), null, false, now))
@@ -160,7 +202,15 @@ class AppPaceTest {
         assertEquals("Held", SummaryRows.compactWord(SummaryRank.Group.HELD, w(30.0, fri), 72.0, null, false))
         assertEquals("Out · Thu", SummaryRows.compactWord(SummaryRank.Group.SPENT, w(100.0, Instant.parse("2026-11-05T08:00:00Z")), 89.8, null, false))
         assertEquals("No reading", SummaryRows.compactWord(SummaryRank.Group.NO_READING, null, null, null, false))
-        assertEquals("Slow down", SummaryRows.compactWord(SummaryRank.Group.ELIGIBLE, w(52.0, sun), 38.9, null, false))
+        // CCRM-104 D3: the one-line row's word slot is the tinted span alone, in its tone.
+        assertEquals("22h 1m ahead", SummaryRows.compactWord(SummaryRank.Group.ELIGIBLE, w(52.0, sun), 38.9, null, false, now))
+        assertEquals("1d 4h behind", SummaryRows.compactWord(SummaryRank.Group.ELIGIBLE, w(50.0, fri), 67.0, null, false, now))
+        assertEquals("On the mark", SummaryRows.compactWord(SummaryRank.Group.ELIGIBLE, w(39.0, sun), 38.9, null, false, now))
+        assertEquals(PaceText.VsTone.OVER, SummaryRows.compactTone(SummaryRank.Group.ELIGIBLE, w(52.0, sun), false, now))
+        assertEquals(PaceText.VsTone.UNDER, SummaryRows.compactTone(SummaryRank.Group.ELIGIBLE, w(50.0, fri), false, now))
+        assertEquals(PaceText.VsTone.ON, SummaryRows.compactTone(SummaryRank.Group.ELIGIBLE, w(39.0, sun), false, now))
+        assertNull(SummaryRows.compactTone(SummaryRank.Group.HELD, w(52.0, sun), false, now))
+        assertNull(SummaryRows.compactTone(SummaryRank.Group.SPENT, w(100.0, sun), false, now))
         assertFalse(SummaryRows.compact(5))
         assertTrue(SummaryRows.compact(6))
         assertTrue(SummaryRows.dimmed(SummaryRank.Group.SPENT))
@@ -197,7 +247,6 @@ class AppPaceTest {
 
     /** CCBG-60 (Summary Line Clip) and CCBG-62 (Plan Pill Case), Step 7 pass. */
     @Test fun `line 3 drops its reset day first, and one plan formatter`() {
-        assertEquals("Use before reset · ≈31%/day", SummaryRows.withoutReset("Use before reset · ≈31%/day · resets Fri"))
         assertEquals("Held · back at 3:40 PM", SummaryRows.withoutReset("Held · back at 3:40 PM · resets Fri"))
         assertEquals("Out until Thu 8:00 AM", SummaryRows.withoutReset("Out until Thu 8:00 AM"))
         // API-CONTRACT §11 replaced the capitalising fallback (2026-11-02).
