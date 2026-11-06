@@ -23,18 +23,20 @@ object SummaryRows {
         group == SummaryRank.Group.SPENT || group == SummaryRank.Group.NO_READING
 
     /**
-     * Line 3's words: "Room to spare · ≈22%/day · resets Fri"; spent "Out until Thu 8:00 AM";
+     * Line 3's words: the pace line, "1d 7h behind · Fri 9:00 AM"; spent "Out until Thu 8:00 AM";
      * a week with a reading but no clock "Not started yet"; no reading "No reading yet".
      */
     fun words(weekly: UsageWindow?, elapsed: Double?, use24h: Boolean, now: Instant = Instant.now()): String {
         val used = weekly?.percent ?: return "No reading yet"
         val resets = weekly.resetsAt ?: return "Not started yet"
         if (Pace.isSpent(used)) return "Out until ${Fmt.dayTime(resets, use24h)}"
-        val band = Pace.bandOrNull(used, elapsed) ?: return "Not started yet"
-        val tight = PaceText.tight(band, Pace.allowance(used, resets.toEpochMilli() - now.toEpochMilli()))
-            ?: return "Not started yet"
-        return tight + DOT + "resets " + Fmt.weekday(resets)
+        Pace.bandOrNull(used, elapsed) ?: return "Not started yet"
+        return paceLine(weekly, use24h, now)?.text ?: "Not started yet"
     }
+
+    /** CCRM-104 (Pace Line Parity): line 3's pace line, with its drop-order forms; null when the row has none. */
+    fun paceLine(weekly: UsageWindow?, use24h: Boolean, now: Instant = Instant.now()): AppPace.Line? =
+        AppPace.weeklyPaceLine(weekly, use24h, now)
 
     /**
      * Line 3 of a row its binding 5h holds (CCRM-103 (Hybrid Notification), shape grammar
@@ -62,12 +64,19 @@ object SummaryRows {
         elapsed: Double?,
         session: UsageWindow?,
         use24h: Boolean,
+        now: Instant = Instant.now(),
     ): String = when (group) {
         SummaryRank.Group.NO_READING -> "No reading"
         SummaryRank.Group.SPENT -> "Out · ${Fmt.weekday(weekly?.resetsAt)}"
         SummaryRank.Group.HELD ->
             session?.resetsAt?.let { "Held$DOT${Fmt.timeOnly(it, use24h)}" } ?: "Held"
         SummaryRank.Group.ELIGIBLE ->
-            Pace.bandOrNull(weekly?.percent, elapsed)?.let { PaceText.bandWords(it) } ?: "Not started"
+            // CCRM-104: the tinted span alone ("13h 59m ahead", "On the mark"); [compactTone] colours it.
+            paceLine(weekly, use24h, now)?.let { it.emphasis ?: "On the mark" }
+                ?: Pace.bandOrNull(weekly?.percent, elapsed)?.let { PaceText.bandWords(it) } ?: "Not started"
     }
+
+    /** The tone of [compactWord]'s span; null when the word is not a pace span. */
+    fun compactTone(group: SummaryRank.Group, weekly: UsageWindow?, use24h: Boolean, now: Instant = Instant.now()): PaceText.VsTone? =
+        if (group == SummaryRank.Group.ELIGIBLE) paceLine(weekly, use24h, now)?.tone else null
 }

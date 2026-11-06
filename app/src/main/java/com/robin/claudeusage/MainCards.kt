@@ -289,19 +289,6 @@ fun ringDescription(
     return "5-hour window, $n$tail"
 }
 
-/**
- * A tapped figure's readout (rev D §2b): "Pace catches up Thu 5 Nov, 12:50 PM", "1d 4h
- * behind pace" or "On the pace mark". Null — the tap does nothing — when spent, unclocked
- * or unread.
- */
-fun tapReadout(window: UsageWindow?, windowLengthMs: Long, use24h: Boolean, nowMs: Long): String? {
-    val resets = window?.resetsAt ?: return null
-    return PaceText.markReadout(
-        Pace.markTime(window.percent, resets.toEpochMilli() - nowMs, windowLengthMs, nowMs),
-        use24h,
-    )
-}
-
 /** The open ring's dotted projection (rev D §2, A3): to the projected end, or to 100% if it gets there first. */
 fun tileProjectionPct(estimate: Projection.Estimate?): Double? =
     estimate?.let { if (it.hitsLimitAtMs != null) 100.0 else it.pctAtReset }
@@ -523,15 +510,18 @@ internal fun SwapText(text: String, fontSize: TextUnit, modifier: Modifier = Mod
  * unread). Costs 22 dp.
  */
 @Composable
-internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?) {
+internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?, underline: Boolean = false) {
     val text = PaceText.caption(mode, percent, elapsed) ?: return
     if (elapsed == null) return
     val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
     val annotated = buildAnnotatedString {
-        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
-            append(strongPart)
+        // CCRM-104 (Pace Line Parity) D5: a press underlines the caption for 3 s (the font's own underline).
+        withStyle(SpanStyle(textDecoration = if (underline) TextDecoration.Underline else null)) {
+            withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
+                append(strongPart)
+            }
+            append(text.removePrefix(strongPart))
         }
-        append(text.removePrefix(strongPart))
     }
     val style = MaterialTheme.typography.bodySmall.copy(
         fontSize = 11.5.sp,
@@ -560,19 +550,6 @@ internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?
     }
 }
 
-/** A bar's caption slot holding the tap readout instead (rev D §2b P3/P5): from the bar's start. */
-@Composable
-private fun ReadoutCaption(text: String) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 5.dp)
-            .height(17.dp),
-    ) {
-        SwapText(text, 11.5.sp)
-    }
-}
-
 @Composable
 private fun emphasised(line: AppPace.Line): AnnotatedString {
     val warn = barFill(95.0)
@@ -584,6 +561,66 @@ private fun emphasised(line: AppPace.Line): AnnotatedString {
         withStyle(SpanStyle(color = warn, fontWeight = FontWeight.Bold)) { append(e) }
         append(line.text.substring(at + e.length))
     }
+}
+
+/**
+ * CCRM-104 (Pace Line Parity) D3, D10: a pace line, its "<duration> behind|ahead" span in the tone
+ * (green under, red over, ink on the mark) and semibold, the rest in [base]. The form is chosen
+ * at run time on the scaled text width ([PaceText.fit]: full, no weekday, duration+word); if even
+ * the floor does not fit it steps down to 10 sp, then ellipsizes (Astra C1-4).
+ */
+@Composable
+internal fun PaceLineText(
+    line: AppPace.Line,
+    fontSize: TextUnit,
+    base: Color,
+    weight: FontWeight,
+    modifier: Modifier = Modifier,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+) {
+    val dark = appDark()
+    val ink = MaterialTheme.colorScheme.onSurface
+    val tint = Grammar.vsColor(line.tone ?: PaceText.VsTone.ON, dark, ink, ink)
+    val measurer = rememberTextMeasurer()
+    fun styled(f: PaceText.PaceLine): AnnotatedString {
+        val span = f.tinted ?: f.text.takeIf { f.tone == PaceText.VsTone.ON && f.tinted == null }?.substringBefore(" · ")
+        return buildAnnotatedString {
+            if (span != null && f.text.startsWith(span)) {
+                withStyle(SpanStyle(color = tint, fontWeight = FontWeight.SemiBold)) { append(span) }
+                append(f.text.removePrefix(span))
+            } else append(f.text)
+        }
+    }
+    BoxWithConstraints(modifier) {
+        val avail = constraints.maxWidth
+        fun width(f: PaceText.PaceLine, sp: TextUnit): Int =
+            measurer.measure(styled(f), TextStyle(fontSize = sp, fontWeight = weight)).size.width
+        var size = fontSize
+        var chosen = PaceText.fit(line.forms) { t -> line.forms.first { it.text == t }.let { width(it, size) <= avail } }
+            ?: line.forms.first()
+        if (width(chosen, size) > avail) {
+            size = 10.sp
+            chosen = PaceText.fit(line.forms) { t -> line.forms.first { it.text == t }.let { width(it, size) <= avail } }
+                ?: line.forms.first()
+        }
+        Text(
+            styled(chosen),
+            fontSize = size,
+            lineHeight = lineHeight,
+            fontWeight = weight,
+            color = base,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** A Weekly line: the pace line when it has one, else (spent, no clock) today's [emphasised] words. */
+@Composable
+private fun WeeklyLineText(line: AppPace.Line, fontSize: TextUnit, lineHeight: TextUnit, weight: FontWeight, base: Color) {
+    if (line.forms.isNotEmpty()) PaceLineText(line, fontSize, base, weight, lineHeight = lineHeight)
+    else Text(emphasised(line), fontSize = fontSize, lineHeight = lineHeight, fontWeight = weight, color = base)
 }
 
 /**
@@ -702,14 +739,21 @@ internal fun TrendBlock(
 }
 
 /**
- * The open Weekly chart's first line under the chart, "Slow down · ≈11%/day until Sun":
- * bold in the warning colour when over pace, as the old pace readout was above pace.
+ * The open Weekly chart's first line under the chart: the pace line ("21h 50m ahead · Sun
+ * 9:30 PM", CCRM-104 (Pace Line Parity)); a spent window's "Out until …" bold in the warning colour.
  */
 @Composable
 private fun PaceWordsLine(line: AppPace.Line?) {
     line ?: return
-    val over = line.emphasis != null
     Spacer(Modifier.height(6.dp))
+    if (line.forms.isNotEmpty()) {
+        PaceLineText(
+            line, MaterialTheme.typography.bodySmall.fontSize, MaterialTheme.colorScheme.onSurfaceVariant,
+            FontWeight.Normal,
+        )
+        return
+    }
+    val over = line.emphasis != null
     Text(
         line.text,
         style = MaterialTheme.typography.bodySmall,
@@ -786,15 +830,14 @@ internal fun AccountTile(
     // It starts on 5h when the drawn order leads with the 5h (Fable A5, as iOS).
     var fiveChip by remember(startOnFive) { mutableStateOf(startOnFive) }
     val showFive = open && fiveChip && session != null
-    var readout by remember { mutableStateOf<Pair<String, String>?>(null) }
-    LaunchedEffect(readout) {
-        if (readout != null) {
+    // CCRM-104 (Pace Line Parity) D5: the figure pressed in the last [TAP_READOUT_MS], by key.
+    var pressed by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(pressed) {
+        if (pressed != null) {
             delay(TAP_READOUT_MS)
-            readout = null
+            pressed = null
         }
     }
-    val readoutFor: (String) -> String? = { key -> readout?.takeIf { it.first == key }?.second }
-    val nowMs = System.currentTimeMillis()
 
     val sessionElapsed = elapsedPercent(session, SESSION_MS)
     val sessionSamples = session?.resetsAt?.let {
@@ -808,9 +851,10 @@ internal fun AccountTile(
     val ringFigureColor = if (mode == PaceText.Mode.VS_PACE && ringTone != PaceText.VsTone.USAGE &&
         ringState == GrammarRing.State.NORMAL
     ) Grammar.vsColor(ringTone, dark, Grammar.ink(dark), Grammar.ink(dark)) else null
-    // A greyed 5h can't be used, so its figure has nothing to read out.
-    val ringReadout = if (ringState == GrammarRing.State.NORMAL) tapReadout(session, SESSION_MS, use24h, nowMs) else null
-    val ringTappable = session != null && (open || ringReadout != null)
+    // A greyed 5h can't be used, so its figure has nothing to read out; the 5h window's caption
+    // ("40% pace mark · 12 over") takes the 5h line's place for 3 s.
+    val ringCaption = if (ringState == GrammarRing.State.NORMAL) PaceText.caption(mode, session?.percent, sessionElapsed) else null
+    val ringTappable = session != null && (open || ringCaption != null)
 
     CardShell(onToggle.takeIf { compact }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -823,12 +867,12 @@ internal fun AccountTile(
                 description = ringDescription(ringState, ringFigure, mode, ringTone),
                 modifier = Modifier.clickable(
                     enabled = ringTappable,
-                    onClickLabel = ringReadout ?: "Show the 5-hour chart",
+                    onClickLabel = ringCaption ?: "Show the 5-hour chart",
                 ) {
-                    // C5 "both on one tap": open, it also picks the 5h chip, and the readout
+                    // C5 "both on one tap": open, it also picks the 5h chip, and the caption
                     // swaps the 5h chart's projection line; folded, it swaps the 5h line.
                     if (open) fiveChip = true
-                    if (ringReadout != null) readout = TAP_RING to ringReadout
+                    if (ringCaption != null) pressed = TAP_RING
                 },
                 state = ringState,
                 figureColor = ringFigureColor,
@@ -844,9 +888,8 @@ internal fun AccountTile(
                     ringDp = ringDp,
                     mode = mode,
                     showOverPace = showOverPace,
-                    readout = readoutFor(TAP_WEEKLY),
-                    tapLabel = tapReadout(data.weekly, WEEKLY_MS, use24h, nowMs),
-                    onTap = { readout = TAP_WEEKLY to it },
+                    underlined = pressed == TAP_WEEKLY,
+                    onPress = { pressed = TAP_WEEKLY },
                 )
                 for (cap in caps) {
                     TileBarRow(
@@ -856,9 +899,8 @@ internal fun AccountTile(
                         ringDp = ringDp,
                         mode = mode,
                         showOverPace = showOverPace,
-                        readout = readoutFor(tapCap(cap.modelName)),
-                        tapLabel = tapReadout(cap.window, WEEKLY_MS, use24h, nowMs),
-                        onTap = { readout = tapCap(cap.modelName) to it },
+                        underlined = pressed == tapCap(cap.modelName),
+                        onPress = { pressed = tapCap(cap.modelName) },
                     )
                 }
             }
@@ -867,12 +909,9 @@ internal fun AccountTile(
         if (!open) {
             // The band line, then the 5h line led by the ring glyph (rev D §1, T1–T8).
             Spacer(Modifier.height(10.dp))
-            Text(
-                emphasised(AppPace.weeklyFolded(data.weekly, elapsedPercent(data.weekly, WEEKLY_MS), use24h)),
-                fontSize = 13.5.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+            WeeklyLineText(
+                AppPace.weeklyFolded(data.weekly, elapsedPercent(data.weekly, WEEKLY_MS), use24h),
+                13.5.sp, 18.sp, FontWeight.SemiBold, MaterialTheme.colorScheme.onSurface,
             )
             if (session != null && gate != null) {
                 Spacer(Modifier.height(2.dp))
@@ -884,7 +923,7 @@ internal fun AccountTile(
                 )
             } else if (session != null) {
                 val line = AppPace.fiveHourLine(session, sessionEstimate, use24h)
-                val swapped = readoutFor(TAP_RING)
+                val swapped = ringCaption.takeIf { pressed == TAP_RING }
                 if (line != null || swapped != null) {
                     Spacer(Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.Top) {
@@ -935,7 +974,7 @@ internal fun AccountTile(
                     chartSize = chartSize,
                     chartOrientation = chartOrientation,
                     gated = gate != null,
-                    readout = readoutFor(TAP_RING),
+                    readout = ringCaption.takeIf { pressed == TAP_RING },
                 )
                 Spacer(Modifier.height(2.dp))
                 HorizontalDivider()
@@ -998,14 +1037,15 @@ private fun TileBarRow(
     ringDp: Int,
     mode: PaceText.Mode,
     showOverPace: Boolean,
-    readout: String?,
-    tapLabel: String?,
-    onTap: (String) -> Unit,
+    underlined: Boolean,
+    onPress: () -> Unit,
 ) {
     val pct = window?.percent
     val elapsed = elapsedPercent(window, WEEKLY_MS)
-    // The tile's figures carry no word: Left "48%", Vs pace "13%" in its colour (rev D T4, T5).
-    val figure = AppPace.figure(pct, elapsed, mode).first
+    // The tile's figures carry no word: Left "48%", Vs pace "+13%" signed in its colour (CCRM-104 D1).
+    val figure = AppPace.figureSigned(pct, elapsed, mode).first
+    // D5: a press on the figure underlines the caption under its bar; TalkBack reads it as the action.
+    val caption = PaceText.caption(mode, pct, elapsed)
     val figureSp = if (lead) (0.25f * ringDp).roundToInt().sp else 14.sp
     Column {
         Row(
@@ -1036,9 +1076,7 @@ private fun TileBarRow(
                 style = TextStyle(fontSize = figureSp, fontWeight = FontWeight.Bold).grammarDigits(),
                 color = grammarFigureColor(pct, elapsed, mode),
                 maxLines = 1,
-                modifier = Modifier.clickable(enabled = tapLabel != null, onClickLabel = tapLabel) {
-                    tapLabel?.let(onTap)
-                },
+                modifier = Modifier.clickable(enabled = caption != null, onClickLabel = caption) { onPress() },
             )
         }
         Spacer(Modifier.height(5.dp))
@@ -1050,7 +1088,7 @@ private fun TileBarRow(
             showOverPace = showOverPace,
             dashedRoom = true,
         )
-        if (readout != null) ReadoutCaption(readout) else PaceCaption(mode, pct, elapsed)
+        PaceCaption(mode, pct, elapsed, underline = underlined)
     }
 }
 

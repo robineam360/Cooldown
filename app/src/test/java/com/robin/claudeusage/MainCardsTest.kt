@@ -229,22 +229,6 @@ class MainCardsTest {
     }
 
     @Test
-    fun `tap readout - behind, on the mark, and nothing when spent or unclocked`() {
-        val len = 18_000_000L // 5h
-        val now = 1_800_000_000_000L
-        // 50% of the window gone, 34% used: the mark passed 34% 48 minutes ago.
-        val under = UsageWindow(34.0, Instant.ofEpochMilli(now + 9_000_000L), null)
-        assertEquals("48m behind pace", tapReadout(under, len, false, now))
-        val on = UsageWindow(50.4, Instant.ofEpochMilli(now + 9_000_000L), null)
-        assertEquals("On the pace mark", tapReadout(on, len, false, now))
-        val over = UsageWindow(70.0, Instant.ofEpochMilli(now + 9_000_000L), null)
-        assertTrue(tapReadout(over, len, false, now)!!.startsWith("Pace catches up "))
-        assertNull(tapReadout(UsageWindow(100.0, Instant.ofEpochMilli(now + 9_000_000L), null), len, false, now))
-        assertNull(tapReadout(UsageWindow(34.0, null, null), len, false, now))
-        assertNull(tapReadout(null, len, false, now))
-    }
-
-    @Test
     fun `projection arc runs to the projected end, or to 100 if it gets there first`() {
         assertNull(tileProjectionPct(null))
         assertEquals(69.4, tileProjectionPct(Projection.Estimate(15.0, null, 69.4))!!, 1e-9)

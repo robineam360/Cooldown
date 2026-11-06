@@ -486,7 +486,11 @@ fun UsageSparkline(
                 else "${pct.roundToInt()}%") + " · ${paceLabel(delta)}",
                 TextStyle(
                     fontSize = 11.sp,
-                    color = if (delta > PACE_DEAD_ZONE) warn90 else onSurface,
+                    color = when (paceTone(delta)) {
+                        PaceText.VsTone.UNDER -> Grammar.vsUnder(dark)
+                        PaceText.VsTone.OVER -> Grammar.vsOver(dark)
+                        else -> onSurface
+                    },
                     fontWeight = FontWeight.Bold,
                 ),
             )
@@ -806,16 +810,20 @@ private class Callout(
 )
 
 /**
- * The pace delta as a chart label — short, because it shares a line with the value.
- *
- * CCRM-74 (Chart Polish) item 4: the number carries a "%", the way every other pace
- * phrase in the app now does; "points" is gone. Public only so the copy can be pinned by
- * a unit test, the same reason [SparkGeometry] is.
+ * The pace delta as a chart label — short, because it shares a line with the value. Core's
+ * printed form, [delta] being used − pace mark: "−8%" over, "+10%" under, "0%" within a point,
+ * rounded toward zero (CCRM-104 (Pace Line Parity) D8). Public only so the copy can be pinned
+ * by a unit test, the same reason [SparkGeometry] is.
  */
-fun paceLabel(delta: Double): String = when {
-    delta > PACE_DEAD_ZONE -> "+${delta.roundToInt()}% vs pace"
-    delta < -PACE_DEAD_ZONE -> "${delta.roundToInt()}% vs pace"
-    else -> "on pace"
+fun paceLabel(delta: Double): String {
+    val n = kotlin.math.floor(kotlin.math.abs(delta) + com.robin.claudeusage.data.Pace.EDGE_EPSILON).toInt()
+    return PaceText.signed(if (delta > 0) -n else n)
+}
+
+/** The tone [paceLabel] prints: over red, under green, on the mark the ink. */
+fun paceTone(delta: Double): PaceText.VsTone {
+    val n = kotlin.math.floor(kotlin.math.abs(delta) + com.robin.claudeusage.data.Pace.EDGE_EPSILON).toInt()
+    return PaceText.toneOf(if (delta > 0) -n else n)
 }
 
 /** The same verdict in words, for the screen-reader summary. */

@@ -24,7 +24,9 @@ import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.WindowKind
 import com.robin.claudeusage.ui.BarRenderer
 import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.Grammar
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.RingRenderer
 import com.robin.claudeusage.ui.pacePhrase
 import com.robin.claudeusage.ui.providerMarkRes
@@ -110,6 +112,8 @@ object ShareCard {
         val alarm: Boolean = false,
         /** The 5h under a spent week: drawn at [DIM], its pace slot empty. */
         val dimmed: Boolean = false,
+        /** CCRM-104 (Pace Line Parity) D9: the Weekly row's [pace] is a tinted span; its tone. */
+        val paceTone: PaceText.VsTone? = null,
     )
 
     /** The headline window's trend; null when the window has no reset clock to chart. */
@@ -183,7 +187,7 @@ object ShareCard {
             FaceStates.cell(input, account, if (k == WindowKind.SESSION) FaceWindow.SESSION else FaceWindow.WEEKLY, false)
         }
         val rows = cells.mapIndexed { i, c ->
-            val base = row(c, usageLeft).copy(lead = i == 0)
+            val base = row(c, usageLeft, nowMs).copy(lead = i == 0)
             when {
                 !weekSpent -> base
                 c.window == FaceWindow.WEEKLY -> base.copy(
@@ -227,15 +231,31 @@ object ShareCard {
             .withZone(zone).format(Instant.ofEpochMilli(it))
     }
 
-    private fun row(c: Cell, usageLeft: Boolean): Row = Row(
-        name = c.window.word + if (usageLeft) " left" else "",
-        figure = c.figure,
-        pct = c.pct,
-        elapsed = c.elapsed,
-        // Pace is about usage, so it reads the used figure even in Left mode.
-        pace = if (c.pct != null && c.elapsed != null) pacePhrase(c.pct - c.elapsed) else null,
-        reset = c.sub,
-    )
+    /**
+     * CCRM-104 (Pace Line Parity) D9: the Weekly row's left slot is the tinted span of the pace
+     * line — "13h 59m ahead", "6d 23h behind", "On the mark" — and the reset keeps the right.
+     * The 5h row keeps its even-pace phrase. The card renders Used, so the figure is unchanged.
+     */
+    fun weeklyPace(pct: Double?, resetsAt: Instant?, lengthMs: Long, nowMs: Long): Pair<String, PaceText.VsTone>? {
+        val reset = resetsAt ?: return null
+        val line = PaceText.paceLine(Pace.markTime(pct, reset.toEpochMilli() - nowMs, lengthMs, nowMs), "") ?: return null
+        return (line.tinted ?: "On the mark") to line.tone
+    }
+
+    private fun row(c: Cell, usageLeft: Boolean, nowMs: Long): Row {
+        val week = if (c.window == FaceWindow.WEEKLY) weeklyPace(c.pct, c.resetsAt, c.window.lengthMs, nowMs) else null
+        return Row(
+            name = c.window.word + if (usageLeft) " left" else "",
+            figure = c.figure,
+            pct = c.pct,
+            elapsed = c.elapsed,
+            // Pace is about usage, so it reads the used figure even in Left mode.
+            pace = week?.first
+                ?: if (c.pct != null && c.elapsed != null) pacePhrase(c.pct - c.elapsed) else null,
+            reset = c.sub,
+            paceTone = week?.second,
+        )
+    }
 
     private fun trend(c: Cell, account: AccountInput, history: List<HistoryPoint>): Trend? {
         val reset = c.resetsAt?.toEpochMilli() ?: return null
@@ -372,7 +392,13 @@ object ShareCard {
             bar.recycle()
             val sub = y + px(11f)
             r.pace?.let {
-                font(10.5f, false, fade(if (r.alarm) alarm else ink(dark, 0.7f), a))
+                val tone = when (r.paceTone) {
+                    PaceText.VsTone.UNDER -> Grammar.vsUnder(dark).toArgb()
+                    PaceText.VsTone.OVER -> Grammar.vsOver(dark).toArgb()
+                    PaceText.VsTone.ON -> ink(dark, 1f)
+                    else -> null
+                }
+                font(10.5f, tone != null && !r.alarm, fade(if (r.alarm) alarm else tone ?: ink(dark, 0.7f), a))
                 c.drawText(it, left, sub, text)
             }
             r.reset?.let {
