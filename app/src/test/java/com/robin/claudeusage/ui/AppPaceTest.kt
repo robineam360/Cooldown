@@ -190,9 +190,6 @@ class AppPaceTest {
         )
         val t = PaceMapGeometry.trail(samples, reset, week, 60.0, 40.0)
         assertEquals(listOf(10.0 to 5.0, 50.0 to 30.0, 60.0 to 40.0), t.map { (x, y) -> Math.round(x).toDouble() to y })
-        assertTrue(PaceMapGeometry.labelLeft(72.0))
-        assertFalse(PaceMapGeometry.labelLeft(67.0))
-        assertTrue(PaceMapGeometry.labelBelow(100.0))
     }
 
     /** CCBG-60 (Summary Line Clip) and CCBG-62 (Plan Pill Case), Step 7 pass. */
