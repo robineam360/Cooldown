@@ -11,6 +11,7 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.RelativeSizeSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
@@ -287,6 +288,16 @@ data class Cell(
      * of a Weekly figure (Number). Null when the account has only the one window.
      */
     val companion: Cell? = null,
+    /**
+     * CCRM-104 (Pace Line Parity): the figure as a text figure prints it, in Vs pace mode
+     * signed ("+19%", "−12%", "0%"). Rings keep [figure], unsigned, the tone alone.
+     */
+    val textFigure: String = figure,
+    /**
+     * CCRM-104 (Pace Line Parity), Q1: a Weekly window's pace line in [PaceLineFit.forms]'
+     * order (full, no weekday, floor), replacing "Resets Sat 9:10 PM"; empty on any other line.
+     */
+    val paceForms: List<PaceText.PaceLine> = emptyList(),
 ) {
     val dim: Boolean get() = StateId.S7 in states || StateId.S8 in states || weekGated
     /** R6's gauge dim: a broken sign-in or stale data. A spent week greys the ring instead. */
@@ -475,6 +486,12 @@ object FaceStates {
             clock != null -> "Resets $clock"
             else -> null
         }
+        val paceForms = if (window == FaceWindow.WEEKLY && StateId.S7 !in states && sub?.startsWith("Resets ") == true && resetsAt != null) {
+            PaceLineFit.forms(
+                com.robin.claudeusage.data.Pace.markTime(pct, resetsAt.toEpochMilli() - now, window.lengthMs, now),
+                resetsAt, now, input.zone,
+            )
+        } else emptyList()
         val shortReset = when {
             StateId.S8 in states -> "Stale"
             weekGated -> WEEK_SPENT
@@ -509,6 +526,12 @@ object FaceStates {
             sub = sub, shortReset = shortReset, countForm = countForm, estimate = estimate,
             vsPace = input.usageVsPace && pct != null && com.robin.claudeusage.data.Pace.vsPace(pct, elapsed) != null,
             weekGated = weekGated,
+            textFigure = when {
+                pct == null -> "—"
+                input.usageVsPace -> PaceText.vsPaceSigned(pct, elapsed)
+                else -> "${Fmt.usageInt(pct, input.usageLeft)}%"
+            },
+            paceForms = paceForms,
             vsTone = if (input.usageVsPace && pct != null) PaceText.vsPaceTone(pct, elapsed) else PaceText.VsTone.USAGE,
         )
     }
@@ -1258,10 +1281,18 @@ object WidgetFace {
 
         if (l.lines >= 2) c.sub?.let {
             rv.setViewVisibility(ids.reset, View.VISIBLE)
-            rv.setTextViewText(ids.reset, it)
-            rv.setTextViewTextSize(ids.reset, TypedValue.COMPLEX_UNIT_SP, resetSp)
             rv.setTextColor(ids.reset, ink(s.dark, if (c.dim) 0.5f else 0.78f))
             rv.setInt(ids.reset, "setMaxWidth", (lineDp * d).toInt())
+            // CCRM-104 (Pace Line Parity), Q1: the Weekly's pace line takes the reset line's slot.
+            val forms = if (it.startsWith("Resets ")) c.weeklyBar?.paceForms.orEmpty() else emptyList()
+            val pick = PaceLineFit.choose(forms, lineDp, resetSp, fontScale(context))
+            if (pick == null) {
+                rv.setTextViewText(ids.reset, it)
+                rv.setTextViewTextSize(ids.reset, TypedValue.COMPLEX_UNIT_SP, resetSp)
+            } else {
+                rv.setTextViewText(ids.reset, paceSpan(pick.line, s.dark))
+                rv.setTextViewTextSize(ids.reset, TypedValue.COMPLEX_UNIT_SP, pick.sp)
+            }
         }
         if (l.lines >= 3) {
             // Rev H (Q4): an unassigned face says how to choose, in the stamp's slot.
@@ -1283,7 +1314,7 @@ object WidgetFace {
         rv.setViewVisibility(ids.wkWord, View.VISIBLE)
         rv.setTextColor(ids.wkWord, ink(s.dark, if (w.dim) 0.5f else 0.78f))
         figure(rv, ids.wkFig, w, s.dark, 13f)
-        val words = textDp(context, "Weekly", 11f, bold = false) + 6f + 6f + figureTextDp(context, w.figure, 13f)
+        val words = textDp(context, "Weekly", 11f, bold = false) + 6f + 6f + figureTextDp(context, w.textFigure, 13f)
         barInto(context, rv, ids.wkBar, BarDp(kotlin.math.floor(rowDp - words).coerceAtLeast(16f), WK_ROW_BAR), s, w)
     }
 
@@ -1360,7 +1391,7 @@ object WidgetFace {
         }
         // CCBG-24 (Duet Label Clamp)'s measure: the label gets exactly what the measured
         // figure leaves on the row.
-        val figDp = figureTextDp(context, c.figure, figSp) +
+        val figDp = figureTextDp(context, c.textFigure, figSp) +
             (if (leftCap) textDp(context, "LEFT", 10f, bold = true) + 4f else 0f)
         val labelDp = colDp - figDp - 10f - 14f - 4f - (if (c.brokenDot) 10f else 0f)
         rv.setInt(R.id.num_label, "setMaxWidth", (labelDp.coerceAtLeast(24f) * d).toInt())
@@ -1380,13 +1411,23 @@ object WidgetFace {
 
         if (bucket == Bucket.NUMBER_2X1 && !tall) return
         rv.setViewVisibility(R.id.num_subrow, View.VISIBLE)
-        rv.setTextViewText(R.id.num_sub, c.sub ?: "")
-        if (frame.roomy) rv.setTextViewTextSize(R.id.num_sub, TypedValue.COMPLEX_UNIT_SP, 13f)
+        val subSp = if (frame.roomy) 13f else 12f
+        val stampText = if (c.unassigned) FaceStates.TAP_TO_CHOOSE else s.asOf
+        // CCRM-104 (Pace Line Parity), Q1: the Weekly's pace line; beside the stamp (not on the
+        // 2×2, whose stamp has its own line) the stamp yields first (Astra C1-2).
+        val pick = PaceLineFit.pick(c.paceForms, colDp, stampText != null && !tall, subSp, fontScale(context))
+        if (pick == null) {
+            rv.setTextViewText(R.id.num_sub, c.sub ?: "")
+            if (frame.roomy) rv.setTextViewTextSize(R.id.num_sub, TypedValue.COMPLEX_UNIT_SP, 13f)
+        } else {
+            rv.setTextViewText(R.id.num_sub, paceSpan(pick.choice.line, s.dark))
+            rv.setTextViewTextSize(R.id.num_sub, TypedValue.COMPLEX_UNIT_SP, pick.choice.sp)
+        }
         rv.setTextColor(R.id.num_sub, ink(s.dark, if (c.dim) 0.5f else 0.78f))
         // Rev H (Q4): an unassigned face says how to choose, in the stamp's slot — on the
         // 2×2 on a line of its own.
-        (if (c.unassigned) FaceStates.TAP_TO_CHOOSE else s.asOf)?.let {
-            stamp(rv, if (tall) R.id.num_stamp_below else R.id.num_stamp, it, s.dark)
+        stampText?.let {
+            if (tall || pick?.stamp != false) stamp(rv, if (tall) R.id.num_stamp_below else R.id.num_stamp, it, s.dark)
         }
 
         if (!numberControls(frame)) return
@@ -1606,7 +1647,7 @@ object WidgetFace {
         }
         c.estimate?.let {
             // Rev F.1: on a narrow tall frame the estimate takes its own line under the figure.
-            val figDp = figureTextDp(context, c.figure, figSp) +
+            val figDp = figureTextDp(context, c.textFigure, figSp) +
                 (if (c.left && c.pct != null) textDp(context, "LEFT", leftSp, bold = true) + 4f else 0f)
             val below = figDp + 6f + textDp(context, it, estSp, bold = false) > frame.innerWidthDp && frame.heightDp >= 150f
             val id = if (below) R.id.cd_est_below else R.id.cd_est
@@ -1750,7 +1791,7 @@ object WidgetFace {
                 rv.setViewVisibility(STRIP_WK[i], View.VISIBLE)
                 if (big) {
                     figure(rv, STRIP_WKFIG[i], w, s.dark, 11f)
-                    val bar = wkBar.copy(width = kotlin.math.floor(wkBar.width - 4f - figureTextDp(context, w.figure, 11f)).coerceAtLeast(16f))
+                    val bar = wkBar.copy(width = kotlin.math.floor(wkBar.width - 4f - figureTextDp(context, w.textFigure, 11f)).coerceAtLeast(16f))
                     barInto(context, rv, STRIP_WKBAR[i], bar, s, w)
                 } else {
                     barInto(context, rv, STRIP_WKBAR[i], wkBar, s, w)
@@ -1901,7 +1942,7 @@ object WidgetFace {
         unit: Int = TypedValue.COMPLEX_UNIT_SP,
     ) {
         rv.setViewVisibility(id, View.VISIBLE)
-        rv.setTextViewText(id, Grammar.smallPercent(c.figure))
+        rv.setTextViewText(id, Grammar.smallPercent(c.textFigure))
         rv.setTextViewTextSize(id, unit, sp)
         val dim = if (c.dim) DIM_FIGURE else 1f
         val color = when {
@@ -1972,6 +2013,18 @@ object WidgetFace {
             typeface = if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
         }
         return paint.measureText(text) / context.resources.displayMetrics.density
+    }
+
+    private fun fontScale(context: Context): Float = context.resources.configuration.fontScale
+
+    /** A pace line: its "<duration> behind|ahead" span semibold in the Vs pace tone (green under the mark, red over). */
+    private fun paceSpan(line: PaceText.PaceLine, dark: Boolean): CharSequence {
+        val tinted = line.tinted ?: return line.text
+        val tone = Grammar.vsColor(line.tone, dark, Color(ink(dark, 1f)), Color(ink(dark, 1f))).toArgb()
+        return SpannableString(line.text).apply {
+            setSpan(ForegroundColorSpan(tone), 0, tinted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(StyleSpan(Typeface.BOLD), 0, tinted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
     }
 
     /** The face's text colour at [alpha]. */

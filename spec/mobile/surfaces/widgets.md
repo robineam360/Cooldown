@@ -114,7 +114,7 @@ Picks survive a fold/unfold mid-config. Saving redraws that widget, re-arms the 
 | Dim (S7, S8) | Figure at 50% alpha, ring or bar bitmap at 45%, name 50%, mark 50% | `WidgetFace.kt` (`DIM_*`) |
 | Ring figure (grammar) | Real text over the ring bitmap, `GrammarRing.figureDp` (0.25 of Ø, four characters 0.21; 0.29 / 0.24 at 48 dp and under) fitted to the bore (`fitFigure`), in dp; full ink, the severity colour above 90%, half ink with no reading ("—"), 45% ink on a spent week | `WidgetFace.kt` (`ringInto`) |
 | Bar figure | The severity colour; "—" with no reading | `WidgetFace.kt` (`figure`) |
-| Vs pace colour | The figure is the unsigned distance to the pace mark: green under it (#9CCC65 dark / #2E7D32 light), red over (#FF5252 / #C62828), ink on it; the usage figure's own colour when it falls back (rev D §7b) | `Grammar.vsColor` |
+| Vs pace colour | The figure is the distance to the pace mark, signed on every text figure since CCRM-104 (Pace Line Parity) ("+19%" green under it, "−12%" red over it, "0%" ink; a ring's bore stays unsigned): green under it (#9CCC65 dark / #2E7D32 light), red over (#FF5252 / #C62828), ink on it; the usage figure's own colour when it falls back (rev D §7b) | `Grammar.vsColor` |
 | Clock text | Always 12-hour "9:10 PM" whatever the app's Time format says; weekday added only when the instant is more than 24 h from now ("Sat 9:10 PM") | `ui/Palette.kt:285` |
 | Stamp ("as of 9:10 PM") | 10 sp, 55% ink, in flow, never overlaid | `WidgetFace.kt:1616` |
 | Secondary text alpha | Reset / sub line 78% (50% dim); countdown caption 75% (50% dim); "LEFT" caption 75–80% | `WidgetFace.kt` (ring/number/countdown face functions) |
@@ -168,7 +168,7 @@ Source: `WidgetFace.kt:371` (`FaceStates.cell`). A cell can carry several states
 
 | State | Trigger | What the reading shows | Copy (exact) |
 |---|---|---|---|
-| S1 normal | A reading with none of S2/S3/S5/S6 | Figure in the severity colour; ring/bar with pace tick | Sub line "Resets 9:10 PM" ("Resets Sat 9:10 PM" beyond 24 h) |
+| S1 normal | A reading with none of S2/S3/S5/S6 | Figure in the severity colour; ring/bar with pace tick | Sub line "Resets 9:10 PM" ("Resets Sat 9:10 PM" beyond 24 h); a Weekly window's line is its pace line since CCRM-104 (Pace Line Parity), see "The pace line on a widget" below |
 | S2 above pace | percent > elapsed + 3 and <100 | S1 plus the red slice/bar from the pace tick to the tip; Countdown 2×2 adds the estimate when one exists | "~ runs out 4:20 PM" |
 | S3 100% | percent ≥100 (truncated) | The figure is "100%" in red, on a ring too (the grammar ring draws no cross); no estimate | — |
 | S4 no 5h window | Account has Weekly only | Window forced to Weekly; names tagged; no 5h ring (B1): its Weekly figure where the ring would be (Ring, Strip), the pre-grammar face (Number), today's Weekly countdown (Countdown) | Name line "… · Weekly" |
@@ -179,7 +179,7 @@ Source: `WidgetFace.kt:371` (`FaceStates.cell`). A cell can carry several states
 | S9 account removed | Saved account no longer exists | Whole face replaced by a message; tap opens config | "Account removed · tap to choose" (Ring: "Account removed" over a smaller 75% "tap to choose") |
 | S10 unassigned / no accounts | No saved account (draws the first), or no accounts / never signed in | Unassigned: a normal reading plus the stamp slot reading "tap to choose account" (Number 2×1: an "UNASSIGNED" pill, 8 sp; Countdown 2×1 caption gains " · tap to choose"). No accounts: message | "Open Cooldown to sign in" (Ring: two lines "Open Cooldown" / "to sign in") |
 | S11 Left mode | "Usage display: Left" setting | Figures flip ("62%" instead of "38%"); bars and rings do not flip | Name lines gain " · left"; a small "LEFT" caption beside the figure where room allows |
-| (v2.0) Vs pace | "Usage display: Vs pace" (CCRM-100 (Vs Pace Display)) | Figures show the **unsigned** distance from the pace mark, "10%" green under it, red over it, ink at "0%" (shape grammar rev D §7b), falling back to usage (its severity colour) when spent or unclocked; bars and rings do not change | Wherever Left mode adds " · left" (Ring and Countdown name lines, the Number 4×2 label, Strip labels) a distance adds " · vs pace" instead (`design/2026-11-02-vs-pace-display.html` §4: "as Left already does"); none when the figure falls back to usage. "10%" is no wider than "100%", so figures need no fit change; labels truncate as before |
+| (v2.0) Vs pace | "Usage display: Vs pace" (CCRM-100 (Vs Pace Display)) | Text figures show the distance from the pace mark, **signed** since CCRM-104 (Pace Line Parity): "+10%" green under it, "−10%" red over it, ink at "0%" (rings keep it unsigned, with the tone alone; shape grammar rev D §7b), falling back to usage (its severity colour) when spent or unclocked; bars and rings do not change | Wherever Left mode adds " · left" (Ring and Countdown name lines, the Number 4×2 label, Strip labels) a distance adds " · vs pace" instead (`design/2026-11-02-vs-pace-display.html` §4: "as Left already does"); none when the figure falls back to usage. "+10%" is no wider than "100%" (tabular digits, the small "%"), so figures need no fit change except "+100%" (used 0 at the reset instant), a fifth character; labels truncate as before |
 | S12 Free plan | Provider reports no usage on the plan | Whole face replaced by a message (Strip: that one ring shows the empty extent, its name and "Free") | "No usage on this plan" (Ring: "No usage" / "on this plan"); Strip "Free" |
 | S13 synthetic | Process-wide synthetic series is on | Marker per 1.3 | "● SYNTHETIC" |
 | S14 unavailable | A face pulled in a later version (switch exists, off in v1.8) | Recovery message | "Update Cooldown" (Ring 1×1: "Update" / "Cooldown"; 2×1: same one line); "Unavailable in this version · update Cooldown" on wider faces (Ring 2×2: two lines) |
@@ -206,7 +206,7 @@ companion ring became that bar (rev D §5 `awRing22`, `awRing11`).
 | Weekly bar (1×1 column) | The Weekly bar alone, as wide as the ring, 5 dp tall, 5 dp under the ring; no digits |
 | Weekly row (every other layout) | After the name line, 4 dp above: "Weekly" 11 sp at 78% ink (50% dim), 6 dp gap, the 6 dp Weekly bar, 6 dp gap, the Weekly figure 13 sp bold in its bar colour; the row is max(150, Ø) dp wide (never wider than its room), the bar takes what the words leave |
 | Name line | Provider mark + name (+ " · Weekly" for a weekly-only account, + " · left" in Left mode, + " · vs pace", + " · not started" under S5 when no reset line can say it); 13 sp (15 roomy); wraps nowhere, truncates; 6 dp red dot after it under S7 |
-| Reset line | The sub (see 1.5; "Weekly spent" while the week is spent) at 12 sp (13 roomy), 78% ink (50% dim) |
+| Reset line | The sub (see 1.5; "Weekly spent" while the week is spent) at 12 sp (13 roomy), 78% ink (50% dim). When the Weekly has a pace line (CCRM-104 (Pace Line Parity), Q1) it takes this slot instead of the 5h's "Resets 9:10 PM", form by column width ("The pace line on a widget") |
 | Stamp line | "as of 9:10 PM", or "tap to choose account" when unassigned; 10 sp 55% |
 | No 5h (B1) | No ring: the Weekly figure at 0.4 Ø dp in its bar colour where the ring would be, then the same Weekly bar / row |
 | No Weekly (5h only) | The ring and its lines; no Weekly bar (1×1) or row — its room stays empty, so the ring is the same size |
@@ -241,10 +241,10 @@ the face keeps the two-window geometry and never draws a 5h bar.
 |---|---|
 | 5h ring | `GrammarRing`, Ø per table, vertically centred, 12 dp before the Weekly column (8 on 2×1); figure per 1.3 |
 | Mark + label | 13 sp (14 on 4×2 and the tall 2×1; 15 roomy), full ink (50% dim); label = "<name> · Weekly" (Q "The widget mode header": mobile's labels), the name alone on a 2×1 beside the ring (rev D §5) |
-| Figure | The Weekly, severity colour (Vs pace colour per 1.3), bold, tabular, small "%"; sp per table; "—" with no reading |
+| Figure | The Weekly, severity colour (Vs pace colour per 1.3, signed in Vs pace mode: "+19%", "−12%", "0%"), bold, tabular, small "%"; sp per table; "—" with no reading |
 | "LEFT" caption | 10 sp bold, 75% ink, beside the figure, Left mode only |
 | Bar | The Weekly; track = the column's width (the inner width without a ring); height 8 / 10 / 12 / 14 dp per table; pace tick and end mark per 1.3 |
-| Sub row | The Weekly's sub line (78% ink, 13 sp roomy) + stamp ("as of …" or "tap to choose account") |
+| Sub row | The Weekly's sub line (78% ink, 13 sp roomy; its pace line since CCRM-104 (Pace Line Parity)) + stamp ("as of …" or "tap to choose account"); beside the stamp the stamp yields first ("The pace line on a widget") |
 | Controls (tall sizes) | The account cycler only: in the 32 dp control row on 4×2, on its own row on the 2×2 (whose old chip row is gone) |
 | Cycler | "<name> ⇄" (⇄ at 60% ink), mark, 8% ink plate |
 | Pill | "UNASSIGNED", 8 sp, on an unassigned 2×1 only, and beside the ring only when the frame is ≥100 dp tall (card colour text on ink) |
@@ -357,6 +357,38 @@ is superseded: rings are always the 5h.)
 A wide row becomes a centred group (the pitch cap), not rings spread to thirds. Drop order: stamp, short reset and the
 Weekly figure go on 4×1 (the name remains, with the inline reset where it fits); the label's window word is never shown.
 At S9 the account simply leaves the strip. Source: `WidgetFace.kt` (`stripRing`, `stripBar`, `stripFace`).
+
+### The pace line on a widget — CCRM-104 (Pace Line Parity)
+
+Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §6, §8, D1, D10, Q1, Astra C1-2 and C1-4. Built in
+`widgets/PaceLineFit.kt` and `WidgetFace.kt` (`FaceStates.cell`: `Cell.textFigure`, `Cell.paceForms`; `numberFace`, `ringFace`).
+
+- **Figure.** In Vs pace mode every Weekly text figure is signed (`Cell.textFigure`): Number, Countdown (2×2 figure row
+  and the wide side figure), Strip (the 4×2 Weekly figures; also a weekly-only account's figure where its ring
+  would be), the Ring's Weekly row. Ring bores (`Cell.figure`) stay unsigned in the tone. Used and Left are never signed.
+- **The line (Q1).** Where a face shows a Weekly "Resets Sat 9:10 PM" line it shows the pace line instead:
+  "21h 50m ahead · Sun 9:30 PM" ("<duration> behind|ahead" tinted semibold, green under the mark, red over; "On the
+  mark · 9:30 PM" in ink). It applies in every usage mode. Widgets keep their own clock rule (`Fmt.widgetClock`: 12-hour,
+  the weekday only when the reset is more than 24 h out), so the forms are `PaceLineFit.forms`, not `PaceText.paceLineForms`
+  (whose weekday rule is the calendar day's). Faces: Number 4×1, 4×2 and the tall 2×1 (sub row); Ring 2×2 and the wide 1×1
+  (the reset line's slot, replacing the 5h's reset line when the account has a Weekly). Faces with no line (Ring 1×1,
+  Number 2×1, Strip, Countdown) change only the figure. Held, spent ("Weekly spent"), stale, signed-out (S7), no-reading
+  and not-started lines are untouched; so is the 5h's own line on a 5h-only account.
+- **Form by width (D10).** Longest first: full, without the weekday, then "<duration> behind|ahead" ("On the mark"),
+  the floor, never cut. `PaceLineFit.choose` picks the first form whose estimated width fits the column; the estimate is
+  wireframe §8's em classes (digit .56, narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80,
+  other capitals .62, space .25, "·" .29, ":" .23, sign .58, "%" .46; the tinted span +3%) × sp × `Configuration.fontScale`
+  (Astra C1-4: larger text drops earlier). If the floor does not fit it steps to 10 sp, then the TextView ellipsizes.
+  The column is the Ring's line width (inner width under the ring, what the ring leaves beside it) or the Number's
+  column (`numberColDp`).
+- **The stamp yields first (Astra C1-2).** On a Number whose stamp shares the row (4×1, 4×2): the stamp stays while some form
+  fits beside it (column − 66 dp at font scale 1.0, 58 × scale + 8); when even the floor does not, the stamp hides and the
+  drop order runs on the full column. The 2×2's stamp has its own line and never yields. Worst case "23h 59m ahead ·
+  Fri 12:30 PM" at 12 sp: 161 dp full, 144 without the weekday, 85 the floor. At the shipped geometry (the Number's ring
+  is Ø60 at 4×1, so its column is 237 dp at a 333 dp widget and 148 dp at 244): 333 and 510 full beside the stamp; 244 the
+  stamp yields and the weekday-less line shows; 156 the floor at 10 sp. Ring 2×2: 156 floor, 244 full, 333 (ring beside,
+  129 dp) floor, 510 full; 1.3× drops 244 to no-weekday; 2.0× to the floor (at 156 the floor at 10 sp).
+- **Unchanged.** The " · vs pace" name suffix stays. The TalkBack description still reads the "Resets …" sub line.
 
 ## 1.10 Refresh and transitions
 
