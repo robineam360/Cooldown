@@ -466,7 +466,7 @@ chart note carries one generic line plus a separate "not enough history" line. S
 As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amends, which still describes v1.9.
 
 #### §4.2 Used / Left (the Mode table) — add a row and two notes
-| Vs pace | "−13%" / "+10%" / "0%" (minus U+2212) | `floor(elapsed − used + 1e-9)`; falls back to the Used figure when spent (≥ 99.5), unclocked or unread (core §6.1, mobile §5) |
+| Vs pace | "−13%" / "+10%" / "0%" (minus U+2212) | core §6.3 `vsPace`, toward zero (`sign(d) × floor(|d| + 1e-9)`); falls back to the Used figure when spent (≥ 99.5), unclocked or unread (core §6.1, mobile §5) |
 
 - iOS stores Vs pace as its own Bool `display.usageVsPace` (App Group); choosing it clears `display.usageLeft`, so a
   v1.9 downgrade reads Used. `Display.mode`, `Display.setMode`, `ios/Shared/Display.swift`.

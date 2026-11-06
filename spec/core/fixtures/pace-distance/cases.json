@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "BEHAVIOR-SPEC section 6.3 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)): the distance from the pace mark as numbers. Promoted from spec/mobile on 2026-11-02 at the desktop family's request: two installs must agree. Generated from the same inputs as spec/mobile/fixtures/display/cases.json, whose strings are the mobile wording of these numbers. expected null = no distance (spent, no reset clock or no reading). markTime (section 6.3, Robin 2026-11-02): the instant the pace mark equals the usage — window start + used/100 x length — as a future instant when over pace and a past duration when under; null = no readout. markTime fields: side (over|under|on), markReachesUsedAtMs and inMs (over), markWasAtUsedAgoMs (under); whole milliseconds, rounded half up.",
+    "note": "BEHAVIOR-SPEC section 6.3 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)): the distance from the pace mark as numbers. Promoted from spec/mobile on 2026-11-02 at the desktop family's request: two installs must agree. Generated from the same inputs as spec/mobile/fixtures/display/cases.json, whose strings are the mobile wording of these numbers. expected null = no distance (spent, no reset clock or no reading). markTime (section 6.3, Robin 2026-11-02): the instant the pace mark equals the usage — window start + used/100 x length — as a future instant when over pace and a past duration when under; null = no readout. markTime fields: side (over|under|on), markReachesUsedAtMs and inMs (over), markWasAtUsedAgoMs (under); whole milliseconds, rounded half up. vsPace rounds toward zero since 2026-11-06 (Robin): sign(d) x floor(|d| + 1e-9), d = elapsed - used, so within a point of the mark is 0 on either side.",
     "tolerance": "exact integers"
   },
   "vsPace": [
@@ -10,7 +10,7 @@
       "elapsedPct": 60,
       "hasResetClock": true,
       "expected": 10,
-      "why": "floor(60 - 50) = +10 (null = the surface falls back to the usage figure, or a dash with no reading)"
+      "why": "toward zero: 60 - 50 = +10 (null = the surface falls back to the usage figure, or a dash with no reading)"
     },
     {
       "name": "over the mark",
@@ -18,7 +18,7 @@
       "elapsedPct": 60,
       "hasResetClock": true,
       "expected": -20,
-      "why": "floor(60 - 80) = -20, printed with U+2212 (null = the surface falls back to the usage figure, or a dash with no reading)"
+      "why": "toward zero: 60 - 80 = -20, printed with U+2212 (null = the surface falls back to the usage figure, or a dash with no reading)"
     },
     {
       "name": "rounded down: room is never overstated",
@@ -26,15 +26,31 @@
       "elapsedPct": 60.9,
       "hasResetClock": true,
       "expected": 10,
-      "why": "floor(10.5) = 10 (null = the surface falls back to the usage figure, or a dash with no reading)"
+      "why": "toward zero: 10.5 is 10 (null = the surface falls back to the usage figure, or a dash with no reading)"
     },
     {
-      "name": "rounded down over the mark",
+      "name": "within a point over the mark: zero",
       "usedPct": 60.2,
       "elapsedPct": 60.0,
       "hasResetClock": true,
+      "expected": 0,
+      "why": "toward zero: -0.2 is 0, matching 'On the mark' (was floor = -1 before 2026-11-06)"
+    },
+    {
+      "name": "over by a point and a half",
+      "usedPct": 61.5,
+      "elapsedPct": 60.0,
+      "hasResetClock": true,
       "expected": -1,
-      "why": "floor(-0.2) = -1 (null = the surface falls back to the usage figure, or a dash with no reading)"
+      "why": "toward zero: -1.5 is -1 (floor gave -2 before 2026-11-06) (null = the surface falls back to the usage figure, or a dash with no reading)"
+    },
+    {
+      "name": "just under a point over",
+      "usedPct": 60.99,
+      "elapsedPct": 60.0,
+      "hasResetClock": true,
+      "expected": 0,
+      "why": "toward zero: -0.99 is 0; the line says 'On the mark' (null = the surface falls back to the usage figure, or a dash with no reading)"
     },
     {
       "name": "exactly on the mark",
@@ -50,7 +66,7 @@
       "elapsedPct": 1.7,
       "hasResetClock": true,
       "expected": 1,
-      "why": "floor(1.3) = 1 (null = the surface falls back to the usage figure, or a dash with no reading)"
+      "why": "toward zero: 1.3 is 1 (null = the surface falls back to the usage figure, or a dash with no reading)"
     },
     {
       "name": "week spent falls back to usage",

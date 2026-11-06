@@ -130,6 +130,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import com.robin.claudeusage.data.CardId
+import com.robin.claudeusage.data.AccountRead
 import com.robin.claudeusage.data.Headline
 import com.robin.claudeusage.data.SummaryRank
 import com.robin.claudeusage.data.WeeklyFirstNotice
@@ -1137,9 +1138,13 @@ private fun renderShareCard(
     val history = HistoryStore(context).points(profile)
     val account = WidgetHost.accounts(context, cache, dark, withEstimates = false)
         .firstOrNull { it.key == profile.key } ?: return null
+    // CCRM-24 (Share Card), Weekly first: the rows follow the account's Headline, and
+    // Auto reads whether the 5h binds the same way the notification does.
+    val binding = AccountRead.sessionBinding(account.data, AccountRead.sessionHitsLimitAtMs(account.data, history))
     val model = ShareCard.model(
         account, history, dark, usageLeft, showOverPace,
         synthetic = account.synthetic || historySynthetic,
+        headline = cache.headline(profile), sessionBinding = binding,
     )
     return ShareCard.render(context, model)
 }

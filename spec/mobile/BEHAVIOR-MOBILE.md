@@ -157,7 +157,7 @@ spare · pace mark 40% · resets Fri" / "20 over · pace mark 40% · resets Fri"
 ("5h 66%"); under a 5h lead the companion is "Weekly 52%".
 
 **Usage display: Vs pace** (CCRM-100 (Vs Pace Display), wireframe approved 2026-11-02): the third
-value of the global Used/Left token. Figure = `floor(elapsedPct − usedPct)`, signed ("+10%", "−20%", "0%");
+value of the global Used/Left token. Figure = core §6.3's `vsPace` (rounded toward zero since 2026-11-06), signed ("+10%", "−20%", "0%");
 falls back to the usage figure when spent (`usedPct ≥ 99.5`), with no reset clock, or with no reading.
 **Since the shape grammar (rev D §7b, 2026-11-02) the figure is unsigned** — "10%", "20%", "0%" — and its colour
 says the side: green under the mark, red over it, plain ink on it; the fallback usage figure keeps its severity

@@ -11,12 +11,20 @@ import android.net.Uri
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.robin.claudeusage.data.Headline
+import com.robin.claudeusage.data.HeadlineRule
+import com.robin.claudeusage.data.HeadlineSurface
 import com.robin.claudeusage.data.HistoryPoint
+import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.data.Projection
 import com.robin.claudeusage.data.Provider
+import com.robin.claudeusage.data.WindowKind
 import com.robin.claudeusage.ui.BarRenderer
+import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.RingRenderer
 import com.robin.claudeusage.ui.pacePhrase
 import com.robin.claudeusage.ui.providerMarkRes
@@ -40,6 +48,13 @@ import java.util.Locale
  * tapped: an 88 dp ring with its figure, the account's label and "as of" stamp, the 5h and
  * Weekly bars with their pace and absolute resets, that account's trend, and a COOLDOWN
  * wordmark.
+ *
+ * **Weekly first** (parity wireframes rev B §6, design/2026-11-05-ios-parity-wireframes.html):
+ * the rows follow the account's Headline through [order] — Weekly by default, the 5h under
+ * Headline 5-hour or while Auto sees it binding — the lead row's figure is 24 sp against the
+ * other's 17 sp, and the trend charts the lead. The header ring stays the 5h gauge (Weekly
+ * only on a plan with no 5h). A spent week leads whatever the Headline, red, "Out until …",
+ * and dims the 5h row and the ring to 45%.
  *
  * Drawn 360 dp wide at a fixed [SCALE] of 4 (1440 px) whatever the phone's density — a card
  * that looks crisp in a chat thread has to be drawn well above display density. The ring,
@@ -73,6 +88,13 @@ object ShareCard {
     private const val INK_LIGHT = 0xFF26211E.toInt()
     /** S13's violet (rev D). */
     private const val SYNTHETIC = 0xFF7C4DFF.toInt()
+    /** The lead row's figure against the other row's [FIGURE] (rev B §6). */
+    private const val LEAD_FIGURE = 24f
+    private const val FIGURE = 17f
+    /** The lead row's figure line is this much taller than a plain row's 20 dp. */
+    private const val LEAD_EXTRA = 6f
+    /** A spent week's 5h row and ring (rev B §6, CCRM-102 (Spent Week Gate)). */
+    private const val DIM = 0.45f
 
     /** One window's row: "5h … 62%", the bar, then pace left and the reset right. */
     data class Row(
@@ -82,6 +104,12 @@ object ShareCard {
         val elapsed: Double?,
         val pace: String?,
         val reset: String?,
+        /** The first row: its figure is [LEAD_FIGURE] and the trend is its window's. */
+        val lead: Boolean = false,
+        /** A spent week: the figure and its "Out until …" line in the severity red. */
+        val alarm: Boolean = false,
+        /** The 5h under a spent week: drawn at [DIM], its pace slot empty. */
+        val dimmed: Boolean = false,
     )
 
     /** The headline window's trend; null when the window has no reset clock to chart. */
@@ -107,7 +135,24 @@ object ShareCard {
         val dark: Boolean,
         val showOverPace: Boolean,
         val synthetic: Boolean,
+        /** A spent week dims the header's 5h ring with the 5h row. */
+        val ringDimmed: Boolean = false,
     )
+
+    /**
+     * The rows' windows, lead first. The Headline decides through [HeadlineRule.lead] on the
+     * notification's surface — the rule the notification and the widgets use, so the card
+     * cannot disagree with them; a spent week always leads; a plan with no 5h has one row.
+     */
+    fun order(headline: Headline, hasSession: Boolean, sessionBinding: Boolean, weeklySpent: Boolean): List<WindowKind> {
+        if (!hasSession) return listOf(WindowKind.WEEKLY)
+        if (weeklySpent) return listOf(WindowKind.WEEKLY, WindowKind.SESSION)
+        val lead = HeadlineRule.lead(
+            headline, HeadlineSurface.NOTIFICATION, hasSession = true, sessionBinding = sessionBinding,
+        )
+        return if (lead == WindowKind.SESSION) listOf(WindowKind.SESSION, WindowKind.WEEKLY)
+        else listOf(WindowKind.WEEKLY, WindowKind.SESSION)
+    }
 
     fun model(
         account: AccountInput,
@@ -116,6 +161,8 @@ object ShareCard {
         usageLeft: Boolean,
         showOverPace: Boolean,
         synthetic: Boolean,
+        headline: Headline = Headline.DEFAULT,
+        sessionBinding: Boolean = false,
         nowMs: Long = System.currentTimeMillis(),
         zone: ZoneId = ZoneId.systemDefault(),
     ): Model {
@@ -125,20 +172,48 @@ object ShareCard {
             usageLeft = usageLeft, showOverPace = showOverPace, synthetic = synthetic,
             unavailable = false, nowMs = nowMs, zone = zone,
         )
-        val headline = FaceStates.cell(input, account, FaceWindow.SESSION, unassigned = false)
+        // The ring is the 5h gauge whatever leads; Weekly only on a plan with no 5h.
+        val ring = FaceStates.cell(input, account, FaceWindow.SESSION, unassigned = false)
         val data = account.data
-        val rows = buildList {
-            if (data?.session != null) add(row(FaceStates.cell(input, account, FaceWindow.SESSION, false), usageLeft))
-            if (data?.weekly != null) add(row(FaceStates.cell(input, account, FaceWindow.WEEKLY, false), usageLeft))
+        val weekSpent = data?.session != null && Pace.isSpent(data.weekly?.percent)
+        val present = order(headline, data?.session != null, sessionBinding, weekSpent).filter {
+            if (it == WindowKind.SESSION) data?.session != null else data?.weekly != null
+        }
+        val cells = present.map { k ->
+            FaceStates.cell(input, account, if (k == WindowKind.SESSION) FaceWindow.SESSION else FaceWindow.WEEKLY, false)
+        }
+        val rows = cells.mapIndexed { i, c ->
+            val base = row(c, usageLeft).copy(lead = i == 0)
+            when {
+                !weekSpent -> base
+                c.window == FaceWindow.WEEKLY -> base.copy(
+                    alarm = true,
+                    pace = c.resetsAt?.let { "Out until ${Fmt.widgetClock(it, nowMs, zone)}" },
+                )
+                // The 5h under a spent week keeps its own reset line, not the widgets' "Weekly
+                // spent" (which the dim already says); "Stale" outranks both and stays.
+                else -> base.copy(
+                    dimmed = true, pace = null,
+                    reset = if (c.sub != FaceStates.WEEK_SPENT) base.reset else {
+                        val clock = c.resetsAt?.let { Fmt.widgetClock(it, nowMs, zone) }
+                        when {
+                            clock == null -> FaceStates.NOT_STARTED
+                            StateId.S6 in c.states -> "Reset $clock"
+                            else -> "Resets $clock"
+                        }
+                    },
+                )
+            }
         }
         return Model(
             label = account.label,
             provider = account.provider,
             accentArgb = account.accentArgb,
             asOf = asOf(account.fetchedAt, zone),
-            headline = headline,
+            headline = ring,
             rows = rows,
-            trend = trend(headline, account, history),
+            trend = cells.firstOrNull()?.let { trend(it, account, history) },
+            ringDimmed = weekSpent,
             nowMs = nowMs,
             dark = dark,
             showOverPace = showOverPace,
@@ -190,21 +265,28 @@ object ShareCard {
 
     private fun px(dp: Float) = dp * SCALE
 
-    private fun rowHeightDp(): Float =
-        12f + 20f + 4f + BarRenderer.bitmapHeight(px(BAR_H)) / SCALE + 4f + 14f
+    private fun rowHeightDp(r: Row): Float =
+        12f + 20f + (if (r.lead) LEAD_EXTRA else 0f) + 4f + BarRenderer.bitmapHeight(px(BAR_H)) / SCALE + 4f + 14f
+
+    /** [argb] with its alpha scaled by [f]. */
+    private fun fade(argb: Int, f: Float): Int =
+        ((((argb ushr 24) * f).toInt().coerceIn(0, 255)) shl 24) or (argb and 0x00FFFFFF)
 
     /** The card's height for [m], in px; the layout is fixed, so it is plain arithmetic. */
     fun heightPx(m: Model): Int {
         var dp = PAD
         if (m.synthetic) dp += BAND_H
         dp += RING
-        dp += m.rows.size * rowHeightDp()
+        dp += m.rows.sumOf { rowHeightDp(it).toDouble() }.toFloat()
         if (m.trend != null) dp += 14f + 12f + 14f + 6f + CHART_H
         dp += 12f + 12f + PAD
         return px(dp).toInt()
     }
 
-    fun render(context: Context, m: Model): Bitmap {
+    fun render(context: Context, m: Model): Bitmap = draw(context, m).first
+
+    /** The card and the y, in px, where its drawing ended — the tests hold it to [heightPx]. */
+    internal fun draw(context: Context, m: Model): Pair<Bitmap, Float> {
         val dark = m.dark
         val card = if (dark) CARD_DARK else CARD_LIGHT
         val bmp = Bitmap.createBitmap(WIDTH_PX, heightPx(m), Bitmap.Config.ARGB_8888)
@@ -241,13 +323,14 @@ object ShareCard {
             m.showOverPace, spentCross = h.full, mark = RingRenderer.PaceMark.TICK,
             haloArgb = card, density = SCALE,
         )
-        c.drawBitmap(ring, left, y, null)
+        val ringAlpha = if (m.ringDimmed) DIM else 1f
+        c.drawBitmap(ring, left, y, Paint().apply { alpha = (ringAlpha * 255f).toInt() })
         ring.recycle()
         val ringCx = left + px(RING) / 2f
         val ringCy = y + px(RING) / 2f
         // At 100% the × replaces the figure (Q3, Q10), as on the Ring widget.
         if (!h.full) {
-            font(22f, true, if (h.pct == null) ink(dark, 1f) else h.fillArgb)
+            font(22f, true, fade(if (h.pct == null) ink(dark, 1f) else h.fillArgb, ringAlpha))
             c.drawText(h.figure, ringCx - text.measureText(h.figure) / 2f, ringCy - (text.ascent() + text.descent()) / 2f, text)
         }
         val tx = left + px(RING + HEADER_GAP)
@@ -269,26 +352,33 @@ object ShareCard {
         }
         y += px(RING)
 
-        // One row per window.
+        // One row per window, the lead first; a spent week's in the severity red.
+        val alarm = Palette.barColor(100.0, Color(m.accentArgb), dark).toArgb()
         val tick = BarRenderer.Tick(px(3f), px(1f), ink(dark, 0.9f), card)
         for (r in m.rows) {
+            val a = if (r.dimmed) DIM else 1f
             y += px(12f)
-            val base = y + px(16f)
-            font(12.5f, false, ink(dark, 0.85f))
+            val base = y + px(16f + if (r.lead) LEAD_EXTRA else 0f)
+            font(12.5f, false, fade(ink(dark, 0.85f), a))
             c.drawText(r.name, left, base, text)
-            font(17f, true, ink(dark, 1f))
+            font(if (r.lead) LEAD_FIGURE else FIGURE, true, fade(if (r.alarm) alarm else ink(dark, 1f), a))
             c.drawText(r.figure, right - text.measureText(r.figure), base, text)
-            y += px(20f + 4f)
+            y += px(20f + 4f + if (r.lead) LEAD_EXTRA else 0f)
             val bar = BarRenderer.draw(
                 px(inner), px(BAR_H), r.pct, r.elapsed, Color(m.accentArgb), dark, m.showOverPace, tick,
             )
-            c.drawBitmap(bar, left - BarRenderer.sidePadding(px(BAR_H), tick), y, null)
+            c.drawBitmap(bar, left - BarRenderer.sidePadding(px(BAR_H), tick), y, Paint().apply { alpha = (a * 255f).toInt() })
             y += bar.height + px(4f)
             bar.recycle()
-            font(10.5f, false, ink(dark, 0.7f))
             val sub = y + px(11f)
-            r.pace?.let { c.drawText(it, left, sub, text) }
-            r.reset?.let { c.drawText(it, right - text.measureText(it), sub, text) }
+            r.pace?.let {
+                font(10.5f, false, fade(if (r.alarm) alarm else ink(dark, 0.7f), a))
+                c.drawText(it, left, sub, text)
+            }
+            r.reset?.let {
+                font(10.5f, false, fade(ink(dark, 0.7f), a))
+                c.drawText(it, right - text.measureText(it), sub, text)
+            }
             y += px(14f)
         }
 
@@ -312,7 +402,8 @@ object ShareCard {
         y += px(12f)
         font(9.5f, false, ink(dark, 0.45f), 0.06f)
         c.drawText("COOLDOWN", left, y + px(10f), text)
-        return bmp
+        y += px(12f + PAD)
+        return bmp to y
     }
 
     // ---- the file and the intent -------------------------------------------------------
