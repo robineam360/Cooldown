@@ -19,6 +19,8 @@ projection/  cases.json           — burn-rate estimate cases
 pace/        cases.json           — the Pace number, the allowance and the session-binding
                                      predicate (BEHAVIOR-SPEC §6.1–6.2), spec-first
 pace-distance/ cases.json         — the Vs pace figure and the distance from the pace mark (§6.3)
+             printed.json         — the printed form every family shows: sign, durations, the pace
+                                     line, the reset, the caption, the Pace map's words (§6.3)
 ranking/     cases.json           — accounts ranked by room to spare (§6.4)
 history/     cases.json           — bar-building and week-grouping cases
 plans/       cases.json           — the label for each provider's plan code (API-CONTRACT §11)

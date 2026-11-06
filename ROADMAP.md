@@ -1901,6 +1901,21 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Why:** a fresh 5h beside a spent week reads as "I can use it now" — the Pro confusion CCRM-55 exists to
   explain, and it happens on every provider.
 
+### CCRM-104 · Pace Line Parity — mobile adopts the Mac's 2026-11-06 pace line, signed Vs pace and map labels
+- **Status:** **Spec landed** 2026-11-06 (core §6.3 "Printed form" and `spec/core/fixtures/pace-distance/printed.json`)
+  · wireframe next (`design/2026-11-06-mobile-pace-line-wireframe.html`, Fable draws, Astra reviews, approved under
+  Robin's delegation if they agree) · then Android on main; iOS by the iOS session before the iPad pass · **in v2.0**.
+- **What:** Robin approved the Mac callout redesign on 2026-11-06 (CooldownDesktop CCM-198…204 (Panel), CCM-200
+  (Readout), CCM-201 (Pace)) and asked mobile to follow it closely: "Ensure we align the spec with Desktop app as
+  well and don't deviate too much." Mobile adopts (1) the signed Vs pace figure, "+19%" green under the mark,
+  "−12%" red over it, "0%" plain, unsigned only inside the 5-hour ring — reversing CCRM-100 (Vs Pace Display)
+  rev C everywhere else; (2) the short pace line "6d 23h behind · Wed 12:30 PM" / "13h 59m ahead · Thu 6:15 PM" /
+  "On the mark · Sat 8:00 AM", the band words and "≈X%/day" leaving every line (alerts and press help only);
+  (3) the Pace map's wedge labels "ahead of pace" / "behind pace", names on the dots with the collision rule;
+  (4) a press on a figure shows the pace-mark caption. The strings live once, in core §6.3.
+- **Deviations from the Mac:** only where the platform forces one, each listed on the wireframe with its reason
+  and agreed with the CooldownDesktop session.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases

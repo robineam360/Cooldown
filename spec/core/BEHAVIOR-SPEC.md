@@ -403,8 +403,9 @@ Cases in [`fixtures/pace/cases.json`](fixtures/pace/cases.json) → `sessionBind
 ## 6.3 Distance from the pace mark — numbers
 
 **Status:** decided 2026-11-02 (CCRM-100 (Vs Pace Display), CCRM-97 (Pace Number)); promoted from the mobile
-layer the same day because every family shows it; `markTime` added the same day (Robin). Words and layout stay
-family layer.
+layer the same day because every family shows it; `markTime` added the same day (Robin). The **printed form**
+below (the sign, durations, the pace line, the reset, the caption, the Pace map's words) is core since 2026-11-06
+(Robin: "align the spec with Desktop app as well and don't deviate too much"); layout and sizes stay family layer.
 
 For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), not spent (§6.1):
 
@@ -424,11 +425,55 @@ For a window with a reading (`usedPct`) and a reset clock (`elapsedPct`, §6), n
   - **on** (`|elapsedPct − usedPct| < 1`): side only, no instant (nothing to show);
   - **none** (null): spent (§6.1, used ≥ 99.5), no reset clock or no reading.
 
-  Instants and durations are whole milliseconds, rounded half up. Words and where it shows are family layer;
-  no client implements `markTime` yet.
+  Instants and durations are whole milliseconds, rounded half up. Where it shows is family layer; its words
+  are the printed form below.
 
 Cases in [`fixtures/pace-distance/cases.json`](fixtures/pace-distance/cases.json) → `vsPace`, `markDistance`,
 `markTime`.
+
+### Printed form — the same strings in every family
+
+**Status:** decided 2026-11-06 (Robin, on the Mac callout: CooldownDesktop CCM-200 (Readout) and CCM-201 (Pace),
+its `design/2026-11-06-callout-summary-first-wireframe.html`; mobile adopts it as CCRM-104 (Pace Line Parity)).
+Reverses the 2026-11-02 unsigned figure (CCRM-100 (Vs Pace Display) rev C) everywhere except inside the 5-hour
+ring. The numbers above do not change. A family may deviate only where its platform forces it (a press for a
+hover, a width the line cannot fit), and records each deviation in its wireframe.
+
+- **The sign.** The Vs pace figure prints signed: positive "+19%" (under the mark: behind pace, room), negative
+  "−12%" with U+2212 MINUS SIGN, never a hyphen (over the mark: ahead of pace), zero "0%" with no sign. **Tone:**
+  positive in the under tone (green), negative in the over tone (red), zero in plain ink; each platform keeps
+  its own green and red values. The sign is the contract and colour is never the only cue — **except inside
+  the 5-hour ring**, where the figure is unsigned ("12%") and the tone alone gives the side (Robin, CCM-201: a
+  sign would shrink the figure). Used and Left figures are never signed. With no figure (spent, no reset
+  clock, no reading) the surface prints the usage figure, unsigned, in its usual colour.
+- **Durations** (`markTime`'s `markWasAtUsedAgoMs` under the mark, `inMs` over it): the two largest units,
+  each rounded down, no zero padding — from one day "Xd Yh" with no minutes ("1d 0h", "6d 23h"), under a day
+  "Xh Ym" ("13h 59m", "1h 0m"), under an hour "Ym" ("57m", "0m").
+- **The reset** in a line: the weekday's short name and the clock in the device's time format — "Wed 12:30 PM",
+  or "Wed 12:30" in 24-hour (hours two digits: "Thu 09:00"); the weekday is dropped when the reset falls later
+  the same local day ("11:00 PM").
+- **The pace line** (a 7-day window's line under its bar or figure, from `markTime`):
+  under "6d 23h behind · Wed 12:30 PM"; over "13h 59m ahead · Thu 6:15 PM"; on "On the mark · Sat 8:00 AM".
+  The duration and its word ("6d 23h behind", "13h 59m ahead") take the under or over tone and may be set
+  semibold; the rest is the line's secondary ink. The separator is " · " (U+00B7, a space each side). The
+  §6.1 band words and the allowance ("≈X%/day") are not on any pace line; they remain for alerts and as help
+  text. With no readout (spent, no reset clock, no reading) the family's held, spent, signed-out or
+  no-reading line shows instead, unchanged. The 5-hour session keeps its projection line (§3), not this one.
+- **The pace-mark caption** (help on a figure: hover on desktop, a press on mobile, and a bar's caption where a
+  family draws one): Used mode "40% pace mark · 12 over", "60% pace mark · 19 under", "60% pace mark · on it"
+  (§6.3's mark, distance and on-the-mark rule); Vs pace mode "41% used · 60% pace mark" (the sign already says
+  the side). Left mode stays family layer until both families agree its words.
+- **The Pace map's words:** "ahead of pace" in the wedge above the even-pace diagonal, "behind pace" below it,
+  the diagonal "even pace", the x axis "week start" and "reset". Account names label the dots, never numbers;
+  when two labels would collide, the lower one moves below its dot, and if they still collide each takes a
+  short leader line to a free spot at the plot's right edge.
+
+**Known edge, recorded, not decided:** the figure floors (`floor(−0.49) = −1`) while the line's on-the-mark test
+is `|elapsedPct − usedPct| < 1`, so a window just over the mark prints "−1%" beside "On the mark". Both families
+print exactly that until a core change says otherwise.
+
+Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
+`dayClock`, `paceLine`, `endToEnd`, `caption`, `mapLabels`.
 
 ---
 

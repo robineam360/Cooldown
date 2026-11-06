@@ -27,6 +27,10 @@ then every client must change, so it must turn every client red at once. A featu
 because one family decided to, so it lives in that family's layer. When in doubt, it is family:
 promoting a rule to the core later is cheap, untangling a feature from it is not.
 
+**One exception for copy** (Robin, 2026-11-06): a string Robin has fixed for every family — today the printed
+form of the pace numbers, `core/BEHAVIOR-SPEC.md` §6.3 — lives in the core with a fixture, so the families
+cannot drift apart. Each family's surfaces still decide where and how large it shows.
+
 ## How it stays true
 
 - **The spec leads, clients follow.** Change the docs and a fixture here first, then each client.

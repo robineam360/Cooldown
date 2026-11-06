@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "note": "BEHAVIOR-SPEC section 6.3, 'Printed form' (Robin, 2026-11-06; CooldownDesktop CCM-200 (Readout) and CCM-201 (Pace), Cooldown CCRM-104 (Pace Line Parity)). The strings every family prints for the numbers in cases.json, so two installs read the same. tone: under = the green tone, over = the red tone, ink = plain, usage = the fallback usage figure's own colour. MINUS is U+2212, never a hyphen. The separator is ' · ' (U+00B7 with a space each side). Clock strings are en-US; a client may let its platform's locale spell AM/PM and weekday names, but the shape (weekday, then clock; weekday dropped when the reset is later today) is fixed.",
+    "tolerance": "exact strings"
+  },
+  "figure": [
+    { "name": "under the mark", "vsPace": 19, "text": "+19%", "ringText": "19%", "tone": "under" },
+    { "name": "over the mark", "vsPace": -12, "text": "−12%", "ringText": "12%", "tone": "over" },
+    { "name": "on the mark", "vsPace": 0, "text": "0%", "ringText": "0%", "tone": "ink" },
+    { "name": "a point over", "vsPace": -1, "text": "−1%", "ringText": "1%", "tone": "over" },
+    { "name": "fully under", "vsPace": 100, "text": "+100%", "ringText": "100%", "tone": "under" },
+    { "name": "no figure: spent, no clock or no reading", "vsPace": null, "text": null, "ringText": null, "tone": "usage", "why": "the surface prints the usage figure, unsigned, in its usual colour (or a dash with no reading)" }
+  ],
+  "duration": [
+    { "ms": 0, "text": "0m" },
+    { "ms": 59999, "text": "0m" },
+    { "ms": 60000, "text": "1m" },
+    { "ms": 3599999, "text": "59m" },
+    { "ms": 3600000, "text": "1h 0m" },
+    { "ms": 50340000, "text": "13h 59m", "why": "13h 59m" },
+    { "ms": 86399999, "text": "23h 59m" },
+    { "ms": 86400000, "text": "1d 0h", "why": "from a day up, days and hours; never minutes" },
+    { "ms": 125280000, "text": "1d 10h", "why": "1d 10h 48m: the 48 minutes drop" },
+    { "ms": 604799999, "text": "6d 23h", "why": "the widest a weekly line gets" }
+  ],
+  "dayClock": [
+    { "name": "later today: clock only", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-04T23:00", "hour24": false, "text": "11:00 PM" },
+    { "name": "tomorrow, under 24 h: weekday kept", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-05T09:00", "hour24": false, "text": "Thu 9:00 AM" },
+    { "name": "this week", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-05T18:15", "hour24": false, "text": "Thu 6:15 PM" },
+    { "name": "same weekday next week", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-11T12:30", "hour24": false, "text": "Wed 12:30 PM" },
+    { "name": "24-hour", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-05T18:15", "hour24": true, "text": "Thu 18:15" },
+    { "name": "24-hour, morning", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-05T09:00", "hour24": true, "text": "Thu 09:00" },
+    { "name": "24-hour, later today", "nowLocal": "2026-11-04T14:00", "resetLocal": "2026-11-04T23:00", "hour24": true, "text": "23:00" }
+  ],
+  "paceLine": [
+    { "name": "behind, widest", "side": "under", "durationMs": 604799999, "reset": "Wed 12:30 PM", "text": "6d 23h behind · Wed 12:30 PM", "tinted": "6d 23h behind", "tone": "under" },
+    { "name": "ahead", "side": "over", "durationMs": 50340000, "reset": "Thu 6:15 PM", "text": "13h 59m ahead · Thu 6:15 PM", "tinted": "13h 59m ahead", "tone": "over" },
+    { "name": "on the mark", "side": "on", "durationMs": null, "reset": "Sat 8:00 AM", "text": "On the mark · Sat 8:00 AM", "tinted": null, "tone": "ink" },
+    { "name": "no readout", "side": null, "durationMs": null, "reset": "Sat 8:00 AM", "text": null, "tinted": null, "tone": null, "why": "spent, no reset clock or no reading: the family's held / spent / signed-out / no-reading line instead" }
+  ],
+  "endToEnd": {
+    "_note": "From the numbers to the printed figure and line, in UTC, 12-hour clock, a 7-day window. nowMs is Wed 2026-11-04 14:00 UTC.",
+    "cases": [
+      { "name": "behind", "usedPct": 40, "nowMs": 1793800800000, "resetMs": 1794038400000, "windowLengthMs": 604800000, "figure": "+20%", "line": "1d 10h behind · Sat 8:00 AM", "why": "elapsed 60.71, markWasAtUsedAgoMs 125280000" },
+      { "name": "ahead", "usedPct": 91, "nowMs": 1793800800000, "resetMs": 1793902500000, "windowLengthMs": 604800000, "figure": "−8%", "line": "13h 7m ahead · Thu 6:15 PM", "why": "elapsed 83.18, inMs 47268000" },
+      { "name": "on the mark, under by a fraction", "usedPct": 60.5, "nowMs": 1793800800000, "resetMs": 1794038400000, "windowLengthMs": 604800000, "figure": "0%", "line": "On the mark · Sat 8:00 AM", "why": "elapsed 60.71: within a point, floor(0.21) = 0" },
+      { "name": "on the mark, over by a fraction", "usedPct": 61.2, "nowMs": 1793800800000, "resetMs": 1794038400000, "windowLengthMs": 604800000, "figure": "−1%", "line": "On the mark · Sat 8:00 AM", "why": "elapsed 60.71: within a point, so the line is on the mark, but the figure floors -0.49 to -1. The figure and the line read different rules today; recorded as is, not a decision (see section 6.3)" }
+    ]
+  },
+  "caption": [
+    { "name": "used mode, over", "mode": "used", "mark": 40, "distance": 12, "side": "over", "text": "40% pace mark · 12 over" },
+    { "name": "used mode, under", "mode": "used", "mark": 60, "distance": 19, "side": "under", "text": "60% pace mark · 19 under" },
+    { "name": "used mode, on", "mode": "used", "mark": 60, "distance": 0, "side": "on", "text": "60% pace mark · on it" },
+    { "name": "vs pace mode", "mode": "vsPace", "usedFigure": 41, "mark": 60, "text": "41% used · 60% pace mark", "why": "the figure's sign already says under or over" }
+  ],
+  "mapLabels": {
+    "aboveDiagonal": "ahead of pace",
+    "belowDiagonal": "behind pace",
+    "diagonal": "even pace",
+    "xStart": "week start",
+    "xEnd": "reset"
+  }
+}
