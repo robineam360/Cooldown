@@ -14,6 +14,7 @@ import android.graphics.Typeface
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.TypedValue
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
@@ -49,6 +50,7 @@ import com.robin.claudeusage.ui.UsageEndMark
 import com.robin.claudeusage.ui.UsageIcon
 import com.robin.claudeusage.ui.elapsedPercent
 import com.robin.claudeusage.ui.providerMarkRes
+import java.time.Instant
 import kotlin.math.ceil
 
 /**
@@ -284,13 +286,15 @@ object PinnedNotification {
         // wireframe); quiet, it keeps the reset line as always. The dot marks the
         // line as a strip, in the strip's own hue.
         val panelState = Conditions.panelFor(context, cache, profile)
-        val collapsedText = collapsedLine(panelState, h.collapsedSub, h.accent, dark, synthetic = false)
+        val collapsedText = collapsedLine(panelState, h.collapsedSub.text, h.accent, dark, synthetic = false)
+        // A strip takes the line at the normal size; the pace line's step-down is its own.
+        val collapsedSp = if (panelState.strips.isEmpty()) h.collapsedSub.sp else SUB_SP
         // Expanded has the room the collapsed row doesn't: the panel below carries every
         // condition in full, so the header needs no marker at all.
-        val expandedText = h.sub
+        val expandedText = h.sub.text
 
         val builder = baseBuilder(
-            context, smallIcon, h.title, collapsedLine(panelState, h.collapsedSub, h.accent, dark),
+            context, smallIcon, h.title, collapsedLine(panelState, h.collapsedSub.text, h.accent, dark),
             tapIntent(context, cache, profile, slot = 0), h.fill,
         )
 
@@ -310,13 +314,13 @@ object PinnedNotification {
         // height for the synthetic band (rev E §9c), so it shows the violet dot instead.
         builder.setCustomContentView(
             bigNumberView(
-                context, R.layout.notif_big_number, h, collapsedText,
+                context, R.layout.notif_big_number, h, collapsedText, collapsedSp,
                 dark, showOverPace, endMark, null, panelState.stale, expanded = false,
             ).apply { showSyntheticDot(R.id.synth_dot) }
         )
         builder.setCustomBigContentView(synthetic(context,
             bigNumberView(
-                context, R.layout.notif_big_number_expanded, h, expandedText,
+                context, R.layout.notif_big_number_expanded, h, expandedText, h.sub.sp,
                 dark, showOverPace, endMark, panel, panelState.stale, expanded = true,
             )
         ))
@@ -360,7 +364,7 @@ object PinnedNotification {
         // ignores the custom view read these and nothing else. Both accounts, both
         // numbers, in the order the halves are drawn.
         val title = "${first.label} ${first.pctText} · ${second.label} ${second.pctText}"
-        val collapsedText = collapsedLine(panelState, first.collapsedSub, first.accent, dark)
+        val collapsedText = collapsedLine(panelState, first.collapsedSub.text, first.accent, dark)
 
         val firstTap = tapIntent(context, cache, firstProfile, slot = 0)
         val secondTap = tapIntent(context, cache, secondProfile, slot = 1)
@@ -476,18 +480,16 @@ object PinnedNotification {
         val elapsed: Double?,
         /** "Personal · Weekly", on the single row and a Duet alike (CCBG-45 (Single Panel Wording)). */
         val title: String,
-        /** The expanded header's first line (single and Duet). */
-        val sub: String,
         /**
-         * CCBG-61 (Duet Line Clip): the tight form ("Use before reset · ≈31%/day", no
-         * "· resets <day>") for an expanded Duet header that carries the 44 dp ring, where the
-         * full line ellipsized on the Fold 7 cover.
+         * The expanded header's first line (single and Duet): the pace line in the form the
+         * column holds (CCRM-104 (Pace Line Parity); CCBG-61 (Duet Line Clip)'s tight form is
+         * its second drop-order step), at its size.
          */
-        val subTight: String,
-        /** The single expanded header's second line, or null. */
-        val sub2: String?,
-        /** The single collapsed row's line: the pace words, or the 5h's words in a takeover. */
-        val collapsedSub: CharSequence,
+        val sub: Sub,
+        /** The single expanded header's second line — the pace-mark caption (D4) — or null. */
+        val sub2: Sub?,
+        /** The single collapsed row's line: the pace line, or the 5h's words in a takeover. */
+        val collapsedSub: Sub,
         /** The 5h ring, or null for a plan with no 5h (B1: no ring at all). */
         val ring: Ring?,
         /** "LEFT", "VS PACE" or null, under the figure. */
@@ -586,37 +588,39 @@ object PinnedNotification {
             !takeover && (weekly?.percent == null || weekly.resetsAt == null) -> LeadLines.WEEKLY_NOT_STARTED
             else -> null
         }
-        // Weekly leads: "band · allowance" (rev A §2), a spent week "Out until …"; a takeover:
-        // the 5h's reset line, "Back at …" while it binds. The words carry no colour here.
-        val headerSub = fallback ?: if (takeover) {
+        // CCRM-104 (Pace Line Parity), wireframe D3/D10: Weekly leads with the pace line, "21h 50m
+        // ahead · Sun 9:30 PM" (its "<duration> ahead|behind" span tinted), in the form the
+        // column's width holds at this font scale; a spent week says "Out until …"; a takeover:
+        // the 5h's reset line, "Back at …" while it binds (its projection line is unchanged).
+        val ink = Grammar.ink(dark)
+        val fontScale = context.resources.configuration.fontScale
+        val nowAt = Instant.now()
+        val fixedLine: String? = fallback ?: if (takeover) {
             LeadLines.sessionLine(session, binding, resetClock, use24h) ?: ""
         } else if (weeklySpent) {
             LeadLines.outUntil(weekly!!, use24h)
-        } else {
-            LeadLines.paceWords(weekly, weeklyElapsed, toLast = !duet) ?: ""
+        } else null
+        fun subFor(availDp: Float): Sub {
+            if (fixedLine != null) return Sub(fixedLine, SUB_SP)
+            val pick = LeadLines.weeklyPace(weekly, nowAt, use24h, availDp, SUB_SP, fontScale)
+                ?: return Sub("", SUB_SP)
+            return Sub(paceSpan(pick.form, dark, ink), pick.sp)
         }
-        val duetSub = if (fallback == null && !takeover && !weeklySpent) {
-            listOfNotNull(headerSub.ifEmpty { null }, LeadLines.resetsDay(weekly)).joinToString(" · ")
-        } else headerSub
-        // Line 2 keeps today's text (rev D C3: no pace readout in the notification).
-        val sub2 = when {
+        // The expanded header's first line (a Duet header's column is wider than the single's).
+        val headerSub = subFor(if (duet) TextFit.DUET_EXPANDED_COLUMN_DP else TextFit.EXPANDED_COLUMN_DP)
+        // Line 2: the pace-mark caption, permanently (D4, C1-3); a takeover keeps the 5h projection.
+        val sub2: Sub? = when {
             duet || fallback != null -> null
-            takeover -> LeadLines.sessionSecondLine(hitsAt, use24h)
+            takeover -> LeadLines.sessionSecondLine(hitsAt, use24h)?.let { Sub(it, SUB_SP) }
             weeklySpent -> null
-            else -> LeadLines.weeklySecondLine(weekly, weeklyElapsed, mode)
+            else -> LeadLines.weeklyCaption(
+                weekly, weeklyElapsed, mode, TextFit.EXPANDED_COLUMN_DP, SUB_SP, fontScale,
+            )?.let { Sub(it.form, it.sp) }
         }
-        // Rev D §3 N1: the collapsed line is the pace words only — the ring replaced the
-        // "· 5h 34%" companion. An account with no 5h keeps today's "· resets Sun" (B1).
-        val collapsedSub: CharSequence = when {
-            fallback != null -> fallback
-            takeover || weeklySpent -> headerSub
-            else -> listOfNotNull(
-                LeadLines.paceWords(weekly, weeklyElapsed),
-                if (session == null) LeadLines.resetsDay(weekly) else null,
-            ).joinToString(" · ")
-        }
+        // Rev D §3 N1: the collapsed line is the pace line only — the ring replaced the "· 5h 34%"
+        // companion, and the pace line carries the reset, so a plan with no 5h needs no "resets Sun".
+        val collapsedSub = subFor(TextFit.COLLAPSED_COLUMN_DP)
         val fill = Palette.barColor(pct, accent, dark)
-        val ink = Grammar.ink(dark)
         val figureColor =
             if (mode == PaceText.Mode.VS_PACE && pct != null) {
                 Grammar.vsColor(PaceText.vsPaceTone(pct, elapsed), dark, onInk = ink, usage = fill)
@@ -627,7 +631,7 @@ object PinnedNotification {
             val rPct = if (broken) null else session?.percent
             val rElapsed = if (broken) null else elapsedPercent(session, Projection.SESSION_MS)
             val grey = !broken && weeklySpent
-            val rFigure = LeadLines.figure(rPct, rElapsed, mode)
+            val rFigure = LeadLines.ringFigure(rPct, rElapsed, mode) // unsigned in the ring (D1)
             val tone = if (mode == PaceText.Mode.VS_PACE && rPct != null) PaceText.vsPaceTone(rPct, rElapsed) else null
             Ring(
                 pct = rPct,
@@ -661,12 +665,11 @@ object PinnedNotification {
             figureColor = figureColor,
             elapsed = elapsed,
             title = LeadLines.headerTitle(label),
-            sub = if (duet) duetSub else headerSub,
-            subTight = headerSub,
+            sub = headerSub,
             sub2 = sub2,
             collapsedSub = collapsedSub,
             ring = ring,
-            caption = LeadLines.figureCaption(pct, elapsed, mode),
+            caption = LeadLines.figureCaption(pct, mode),
             gaugePct = gaugePct,
             gaugeGlyph = glyph,
             gaugeElapsed = if (broken) null else elapsedPercent(
@@ -729,6 +732,7 @@ object PinnedNotification {
         layout: Int,
         h: Half,
         sub: CharSequence,
+        subSp: Float,
         dark: Boolean,
         showOverPace: Boolean,
         endMark: UsageEndMark,
@@ -750,9 +754,12 @@ object PinnedNotification {
         if (h.caption != null) setTextViewText(R.id.pct_caption, h.caption)
         setTextViewText(R.id.title, h.title)
         setTextViewText(R.id.sub, sub)
-        // CCRM-96 (Weekly First): the expanded header's second line.
+        setTextViewTextSize(R.id.sub, TypedValue.COMPLEX_UNIT_SP, subSp)
+        // CCRM-96 (Weekly First), CCRM-104 (Pace Line Parity) D4: the expanded header's second
+        // line, the pace-mark caption (or the 5h projection under a takeover).
         if (expanded && h.sub2 != null) {
-            setTextViewText(R.id.sub2, h.sub2)
+            setTextViewText(R.id.sub2, h.sub2.text)
+            setTextViewTextSize(R.id.sub2, TypedValue.COMPLEX_UNIT_SP, h.sub2.sp)
             setViewVisibility(R.id.sub2, android.view.View.VISIBLE)
         }
         setImageViewBitmap(
@@ -773,6 +780,26 @@ object PinnedNotification {
         if (stale) {
             setFloat(R.id.pct, "setAlpha", 0.5f)
             setFloat(R.id.bar, "setAlpha", 0.45f)
+        }
+    }
+
+    /** CCRM-104 (Pace Line Parity): the sub lines are 12 sp; [TextFit.STEP_DOWN_SP] is the last-resort step. */
+    private const val SUB_SP = 12f
+
+    /** A sub line and the size to set it at (12 sp, or 10 when even the floor form would not fit). */
+    private class Sub(val text: CharSequence, val sp: Float)
+
+    /**
+     * The pace line with its "<duration> behind|ahead" span in the tone colour and semi-bold
+     * (wireframe §8's +3% allowance); a line on the mark, or one with no span, has none.
+     */
+    private fun paceSpan(line: PaceText.PaceLine, dark: Boolean, ink: Color): CharSequence {
+        val tinted = line.tinted ?: return line.text
+        if (!line.text.startsWith(tinted)) return line.text
+        return SpannableString(line.text).apply {
+            val color = Grammar.vsColor(line.tone, dark, onInk = ink, usage = ink).toArgb()
+            setSpan(ForegroundColorSpan(color), 0, tinted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(StyleSpan(Typeface.BOLD), 0, tinted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
 
@@ -1027,7 +1054,9 @@ object PinnedNotification {
             ),
         )
         if (expanded) {
-            setTextViewText(ids.sub, if (h.ring != null) h.subTight else h.sub)
+            // CCRM-104 (Pace Line Parity): the pace line in the form the 159 dp header holds.
+            setTextViewText(ids.sub, h.sub.text)
+            setTextViewTextSize(ids.sub, TypedValue.COMPLEX_UNIT_SP, h.sub.sp)
             setViewVisibility(
                 ids.caption,
                 if (h.caption != null) android.view.View.VISIBLE else android.view.View.GONE,
