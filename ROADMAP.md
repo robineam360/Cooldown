@@ -1921,6 +1921,74 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 - **Deviations from the Mac:** only where the platform forces one, each listed on the wireframe with its reason
   and agreed with the CooldownDesktop session.
 
+## v2.0 feedback — the Fold 7 batch · **approved 2026-11-10**
+
+**Why:** Robin used the v2.0 candidate on his Galaxy Z Fold 7 and sent eight items; on 2026-11-10 he decided all
+eight ship in v2.0, so v2.0 waits for their build and a second Fold 7 + iPad pass. One wireframe covers them:
+`design/2026-11-10-v20-feedback-wireframes.html`, **approved rev B 2026-11-10** (Fable drew it, the seat polished
+it, Astra reviewed: concerns, C1-2 and C1-4 adopted, C1-1 and C1-3 disputed — `reviews/v20-feedback-wireframes-findings.md`).
+Core rules are in BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"; the surface deltas are listed in
+`spec/mobile/surfaces/README.md`. CCRM-107, CCRM-108 and CCRM-111 change `spec/core`, which CooldownDesktop pins:
+they go to the desktop session as one frozen set. Robin's answers, 2026-11-10, one question at a time: the pace
+line names the reset (B, not since/until); tags carry a person or briefcase glyph with the word; the snapshot is
+rows then the map; "Weekly · All models" stays; collapsed Duet text is capped at large fonts.
+
+### CCRM-105 · Duet Stack — the two-account notification: two rings left, two stacked Weekly rows
+- **Status:** Planned · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification).
+- **What:** collapsed at 52 dp: two 36 dp 5h rings (First left, unsigned, each in its account colour), then two
+  rows — mark 14 dp + name 12 sp with a right-aligned 11 sp state word, under it an 8 dp Weekly bar with tick and
+  red slice; both bars share one edge and length; the figure 18 sp bold tabular in a fixed 42 dp slot, signed Vs
+  pace. Narrow: the bar absorbs, the name ellipsizes to 24 dp, then the state word drops its tail. Expanded keeps
+  the two headers with the figure 36 → 24 sp. Collapsed text is capped in dp at large font scales (Robin's exception
+  to foundations §2). **Unverified:** the cover's and the inner shade's collapsed content widths for this layout.
+
+### CCRM-106 · 7d Chip — the 7-day "All" chip and label read "7d"
+- **Status:** Planned · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
+- **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
+  and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
+
+### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
+- **Status:** Planned · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
+- **What:** vertical lines at each window-relative day, horizontal lines at 1/7 steps so the crossings sit on the
+  even-pace diagonal; labels start date, 2…6, reset date. 5h charts: five hourly columns and 1/5 steps. The map's
+  axis reads "week start", 2…6, "reset"; "each account's own week" moves to the foot line. Every existing chart
+  element stays.
+
+### CCRM-108 · Reset Named — the pace line says "resets" before its clock
+- **Status:** Planned · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
+- **What:** "6d 23h behind · resets Wed 12:30 PM", "On the mark · resets Sat 8:00 AM". Robin had read the clock
+  as the reset, and it is the reset, so the line now says so. Where it does not fit, "resets" drops first (today's
+  line), then today's order. Since/until (the mark instant) was drawn and not chosen.
+
+### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
+- **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps (mobile rule; desktop may adopt).
+- **What:** under 1% weekly leaves the map; the foot line counts them ("2 under 1%", "· 1 no reading"); all under
+  1% keeps the frame with "Nothing to plot yet". The list still shows every account.
+
+### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
+- **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
+- **What:** an optional tag None · Personal · Work, set from the account's menu (Android "Tag…", iOS account page
+  and long-press), shown in Settings as a neutral chip with a person or briefcase glyph and the word. Once any
+  account has a tag, an All · Personal · Work control sits beside the Summary's "Weekly" (remembered) and filters
+  the list, the map and the snapshot; untagged accounts show only under All. "your order" becomes a sort menu of
+  the four orders (Appearance keeps its setting).
+
+### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
+- **Status:** Planned · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
+  Closes CCBG-79 (Leader Reads as Trail) with the build.
+- **What:** three chips right on the map's title line (defaults off / on / off, remembered; Android 32 dp, iOS
+  13 pt; wrap under the title at large text). Figures puts the figure after the name; Projection draws a dashed tail
+  to a hollow ring at the projected % (red on the 100% line when it runs out); the last 24 h of each trail is
+  heavier. A tap on a dot or name pins a callout (others dim to 35%; name, figure, pace line, "~74% at reset"; a
+  second tap opens the account). Leaders are dotted and at most 48 dp; with nothing free the name is not drawn.
+
+### CCRM-112 · Summary Snapshot — a share card for the whole Summary
+- **Status:** Planned · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.
+- **What:** "Share snapshot" from the Summary (Android top-bar ⋮, iOS ellipsis menu), the same share dialog as
+  CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
+  filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
+  callout. Names shown, e-mail addresses never.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases

@@ -485,6 +485,40 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
 Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
 `dayClock`, `paceLine`, `paceLineForms`, `endToEnd`, `caption`, `mapLabels`.
 
+### Planned — v2.0 feedback (approved 2026-11-10, not built)
+
+**Status:** approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` rev B (Fable drew
+it, Astra reviewed: concerns, two adopted and two disputed, `reviews/v20-feedback-wireframes-findings.md`). These
+rules replace the matching ones above **when the mobile build lands**, together with their fixtures; until then the
+rules above are what ships. Desktop pins this core and takes these as a frozen set.
+
+- **The day grid** (§6, CCRM-107 (Day Grid)). Every 7-day chart and the Pace map draw a grid under everything else:
+  vertical lines at the window's start + k × 24 h (k = 1…6: window-relative days, not midnights, so the seven columns
+  are equal) and horizontal lines at k/7 of 100%, so each crossing (k, k) sits on the even-pace diagonal. A 5-hour
+  chart draws five hourly columns and lines at k/5 of 100%. Axis labels: the start (date, or clock on a 5h chart) at
+  the left edge, the ordinals 2…6 (2…4 on a 5h chart) centred in their columns, the reset at the right edge; the
+  column holding now is bold, and an ordinal gives way to "now" or to an end label it would touch. The grid is the
+  quietest line on the chart; guides, the diagonal and the data draw over it. Ink values are each family's.
+- **The pace line names the reset** (CCRM-108 (Reset Named), Robin's choice B). The clock after the dot is still
+  the reset and now says so: under "6d 23h behind · resets Wed 12:30 PM"; over "13h 59m ahead · resets Thu
+  6:15 PM"; on "On the mark · resets Sat 8:00 AM". **Where the line does not fit:** drop the word "resets" first
+  (which is exactly today's line, "6d 23h behind · Wed 12:30 PM"), then today's order — the weekday, then the clock;
+  the floor is unchanged. Since/until wording (the mark instant) was considered and not chosen. Fixtures
+  `paceLine`, `paceLineForms` and `endToEnd` gain the "resets" forms.
+- **The Pace map's words** (CCRM-107 and CCRM-111 (Map Layers)). The x axis reads "week start", 2…6, "reset"
+  (each account's own week, so no dates); "each account's own week" moves from the axis to the card's foot line.
+  **Account names label the dots; with the Figures layer on, the figure follows the name** in the account's figure
+  form — "Teams 52%" (Used), "48% left" (Left), "−13%" (Vs pace, signed as above). **Leaders:** after the four
+  spots fail, the name tries 24, 36 and 48 from its dot in eight directions, joined by a dotted leader never longer
+  than 48 and never to the far edge; a leader is refused if its path crosses a placed name or dot; with nothing
+  free, the name is not drawn — the dot stays and still opens its callout (closes CCBG-79 (Leader Reads as Trail)).
+  With the Projection layer on, a name does not sit on its own tail or ring. Fixture `mapLabels` gains a dense
+  200-wide map.
+- **The Projection layer** (CCRM-111). A dashed tail from the dot to a hollow ring at the projected weekly % (§3's
+  estimate on the weekly samples) on the plot's right edge, or to a red ring on the 100% line where it runs out
+  before the reset. No tail and no ring when the estimate is null (§3: too little span or movement), or the week is
+  spent.
+
 ---
 
 ## 6.4 Ranking accounts by room to spare

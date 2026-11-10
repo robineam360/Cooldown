@@ -32,3 +32,24 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
 - CCRM-96 (Weekly First) and CCRM-97 (Pace Number): weekly leads every surface, the 5h companion,
   the per-account Headline, and the pace words — [BEHAVIOR-MOBILE §5](../BEHAVIOR-MOBILE.md) and
   `design/2026-11-02-weekly-first-pace.html`. Fold them into these files when they are built.
+- **v2.0 feedback (Fold 7, 2026-11-10), approved rev B** — `design/2026-11-10-v20-feedback-wireframes.html`,
+  core rules in [BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"](../../core/BEHAVIOR-SPEC.md). Each build folds
+  its delta into these files in the same commit:
+  - CCRM-105 (Duet Stack): `notification.md` §2.1 (width budget: 136 dp of chrome, no halves), §2.2 (anatomy:
+    two 36 dp rings left, two stacked rows, 42 dp figure slot), §2.3 (expanded figure 24 sp, column ≈186 dp),
+    §2.4 (per-row state words; drop order bar → name to its 24 dp floor → the state word's tail), §8 (the bare
+    14 dp ring retires); `foundations.md` §2 (collapsed Duet text is capped in dp at large font scales — Robin's
+    exception).
+  - CCRM-106 (7d Chip): `app.md` tile chips and the classic 7-day card's label "All" → "7d"; "Weekly · All
+    models" unchanged.
+  - CCRM-107 (Day Grid): `app.md` trend chart (grid lines, axis ordinals, Small and share-card charts),
+    `foundations.md` chart tokens (grid ink), the Pace map's axis and foot line.
+  - CCRM-108 (Reset Named): `foundations.md` "The pace line", `notification.md` §1.2/§1.4/§2.3 fitting numbers,
+    `app.md` tile lines, Summary line 3, "The pace line on iOS", `widgets.md` Weekly lines.
+  - CCRM-109 (Quiet Accounts): `app.md` Pace map — accounts under 1% weekly leave the map, foot-line count
+    ("2 under 1%", joined with "· 1 no reading"), the all-under-1% message.
+  - CCRM-110 (Account Tags): `app.md` Settings › Accounts (Tag… with person/briefcase glyph + word, neutral),
+    the account menu, iOS account page; Summary header (All · Personal · Work filter, remembered; the sort menu).
+  - CCRM-111 (Map Layers): `app.md` Pace map (Figures · Trails · Projection chips on the title line, the callout,
+    heavier last 24 h, dotted leaders).
+  - CCRM-112 (Summary Snapshot): `app.md` share card (the Summary version: rows, then the map).

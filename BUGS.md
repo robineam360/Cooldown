@@ -397,7 +397,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Fold 7 cover would have a column below 142 dp, and there a long line steps down to the floor or to 10 sp as D10 says.
 
 ### CCBG-79 · Leader Reads as Trail — Pace map leader lines span the plot and cross other labels
-- **Status:** Open · found 2026-11-06 on the Fold 7, cover and inner
+- **Status:** Open · found 2026-11-06 on the Fold 7, cover and inner · **design approved 2026-11-10** in
+  CCRM-111 (Map Layers) (`design/2026-11-10-v20-feedback-wireframes.html` §7: dotted leaders of at most 48 dp,
+  refused across a placed name or dot, no name when nothing is free); closes with that build.
 - **Severity:** Low (cosmetic, but the map can be misread)
 - **Symptom 1:** Gemini's week has not started, so its dot sits at the origin. Its label gets a leader line
   that runs the whole width of the plot to "Gemini" at the right edge, just above "behind pace". It reads as a
