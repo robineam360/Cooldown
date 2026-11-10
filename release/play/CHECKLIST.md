@@ -1,5 +1,10 @@
 # Google Play listing checklist — prepared 2026-11-04, used after v2.0
 
+> **2026-11-10 — superseded in order by [CONSOLE-STEPS.md](CONSOLE-STEPS.md).** Robin decided Play
+> launches **at v2.0** on a **personal** account (Q4 answered), with the closed test after the
+> eight v2.0 feedback items land ([CLOSED-TEST-PLAN.md](CLOSED-TEST-PLAN.md)). The tables below stay
+> the asset inventory; [V2.0-ASSET-CHECK.md](V2.0-ASSET-CHECK.md) is the current v2.0 check.
+
 **Status: Play is after v2.0** (Robin's scope call, 2026-11-04: "Till v2.0, let's focus on getting
 the app out to everyone via the Cooldown repo and TestFlight. After v2.0 is published, let's work to
 get our apps in the public GooglePlay and Apple App Store (and not now in v1.9 or v2.0)."). So for
