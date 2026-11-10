@@ -1965,8 +1965,11 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 ### CCRM-108 · Reset Named — the pace line says "resets" before its clock
 - **Status:** Planned · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
 - **What:** "6d 23h behind · resets Wed 12:30 PM", "On the mark · resets Sat 8:00 AM". Robin had read the clock
-  as the reset, and it is the reset, so the line now says so. Where it does not fit, "resets" drops first (today's
-  line), then today's order. Since/until (the mark instant) was drawn and not chosen.
+  as the reset, and it is the reset, so the line now says so. Where it does not fit, a bare clock always means
+  today (Robin, 2026-11-10, on desktop's proposal): another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM" →
+  "· Wed" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. This replaces the shipped order
+  that dropped the weekday first (so the Fold 7 cover will read "5h 45m behind · Sun", not "· 9:30 PM").
+  Since/until (the mark instant) was drawn and not chosen.
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
 - **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block

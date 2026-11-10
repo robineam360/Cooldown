@@ -501,10 +501,14 @@ rules above are what ships. Desktop pins this core and takes these as a frozen s
   quietest line on the chart; guides, the diagonal and the data draw over it. Ink values are each family's.
 - **The pace line names the reset** (CCRM-108 (Reset Named), Robin's choice B). The clock after the dot is still
   the reset and now says so: under "6d 23h behind · resets Wed 12:30 PM"; over "13h 59m ahead · resets Thu
-  6:15 PM"; on "On the mark · resets Sat 8:00 AM". **Where the line does not fit:** drop the word "resets" first
-  (which is exactly today's line, "6d 23h behind · Wed 12:30 PM"), then today's order — the weekday, then the clock;
-  the floor is unchanged. Since/until wording (the mark instant) was considered and not chosen. Fixtures
-  `paceLine`, `paceLineForms` and `endToEnd` gain the "resets" forms.
+  6:15 PM"; on "On the mark · resets Sat 8:00 AM". **Where the line does not fit — a bare clock always means
+  today** (Robin, 2026-11-10, on CooldownDesktop's proposal after its Astra and Fable review; it replaces the
+  2026-11-06 order above, which dropped the weekday first and so printed a reset days away as a bare clock that
+  read as today's). A reset on another day: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor.
+  A reset later the same local day: "· resets 11:00 PM" → "· 11:00 PM" → the floor. "· Wed" is narrower than any
+  clock, so no surface loses a form it fits today. The floor (the duration and its word, or "On the mark") is
+  unchanged. Since/until wording (the mark instant) was considered and not chosen. Fixtures `paceLine`,
+  `paceLineForms` and `endToEnd` gain the "resets" forms and the weekday-only form.
 - **The Pace map's words** (CCRM-107 and CCRM-111 (Map Layers)). The x axis reads "week start", 2…6, "reset"
   (each account's own week, so no dates); "each account's own week" moves from the axis to the card's foot line.
   **Account names label the dots; with the Figures layer on, the figure follows the name** in the account's figure
