@@ -28,10 +28,15 @@ Then: Settings → Alerts → Always-on notification shows the foreground-servic
 Account: <see below — Robin decides>
 ```
 
-## Robin's decision (reserved): what account the reviewer gets
+## Robin's decision: the sample mode (2026-11-10)
 
-Play needs working credentials, or the review can stall. This hands a live sign-in to Google's
-reviewers, so the choice is Robin's. It is taken at Step 9, not here.
+**Decided by Robin, 2026-11-10: "Port sample mode".** The Android app gets the iPhone app's
+sample-data mode, built with the v2.0 feedback items (item 9), so the reviewer needs no
+credentials: the answer becomes "tap *Try with sample data* on the first screen". Rewrite the
+instructions above on the v2.0 build once the Android wireframe is approved and built
+(CONSOLE-STEPS.md step 12).
+
+The options considered before, kept for the record (no longer the plan):
 
 1. **A dedicated paid test account** (for example a ChatGPT Plus account made only for review, with
    2-step verification off, or with a code route Play accepts). It costs a subscription, and the

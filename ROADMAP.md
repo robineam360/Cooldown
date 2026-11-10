@@ -1559,6 +1559,10 @@ time:
   Fable, weighing a portfolio of small single-purpose apps under one developer name, all free and
   open source now, with a possible one-time "Pro" in-app purchase later. Step 9 of
   [RUNBOOK.md](RUNBOOK.md) cannot start until Q4 is answered.
+  **Answered 2026-11-10 by Robin: a personal account**, registered and verified by Robin himself (it
+  does not exist yet). Play launches at v2.0; the mandatory closed test (12 testers opted in for 14
+  continuous days) starts after the eight v2.0 feedback items land. The checklist and the test plan
+  are `release/play/CONSOLE-STEPS.md` and `release/play/CLOSED-TEST-PLAN.md`.
 
 **What v1.9 is not.** It is not the launch. CCRM-66 (Play Store Launch) stays the launch decision.
 The launch and the provider check are one gated decision, and it is Robin's. The execution order is
@@ -1992,7 +1996,19 @@ rows then the map; "Weekly · All models" stays; collapsed Duet text is capped a
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases
-- **Status:** **Dropped 2026-09-16, by Robin.** Not deferred — dropped. The ID stays filed and
+- **Status:** **Planned v2.0 — reopened 2026-11-10 by Robin.** Play launches at v2.0 on a
+  **personal** developer account (Q4 answered; Robin registers and verifies it himself). The
+  closed test — 12 testers opted in for 14 continuous days, the rule for new personal accounts as
+  read 2026-11-10 — starts after the eight v2.0 feedback items land; production follows Google's
+  approval. iOS stays on TestFlight (EAM360 publishes). Prepared in `release/play/`:
+  `CONSOLE-STEPS.md` (Robin's ordered Console checklist with the dated policy check),
+  `CLOSED-TEST-PLAN.md`, `TESTER-INVITE.md`, `V2.0-ASSET-CHECK.md`. The reopening condition
+  below was not met (no sanctioned provider route); **Robin accepted that risk on 2026-11-10**
+  ("Proceed, risk accepted"), recorded in `CLOSED-TEST-PLAN.md` § Risks. **Reviewer access,
+  decided by Robin 2026-11-10: "Port sample mode"** — the Android app gets the iOS sample-data mode,
+  built with the v2.0 feedback items (item 9, wireframe first), and Play's App access answer is
+  "Try with sample data" (`CONSOLE-STEPS.md` step 12). Earlier history follows.
+  **2026-09-16 — Dropped, by Robin.** Not deferred — dropped. The ID stays filed and
   is never reused, per CLAUDE.md.
   **2026-09-27 — readiness split out.** Robin asked for v1.9 to make the app Play-*ready*. That is
   CCRM-86 (Play Readiness) and CCRM-87–91. v1.9 goes as far as a Console account and the
@@ -2053,7 +2069,8 @@ rows then the map; "Weekly · All models" stays; collapsed Duet text is capped a
 - **Already fine:** targetSdk 36, minSdk 31, INTERNET + POST_NOTIFICATIONS only, no foreground
   service, WorkManager polling, encrypted credential storage, no analytics.
 - **Console facts to plan around:** personal developer accounts must run a closed test with 20
-  opted-in testers for 14 continuous days before production; the developer name and country
+  opted-in testers for 14 continuous days before production (**12 testers since Dec 2024**, read
+  2026-11-10; see `release/play/CONSOLE-STEPS.md` § Policy check); the developer name and country
   are public on the listing; the title "Cooldown" has to be checked for availability.
 - **Sequencing:** v1.7 (CCRM-65 (Accounts Redesign) and the open fixes) ships as the last
   GitHub-only release first, so the flavor work is the only thing in the next diff.

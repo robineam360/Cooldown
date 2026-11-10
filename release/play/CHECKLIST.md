@@ -1,5 +1,10 @@
 # Google Play listing checklist — prepared 2026-11-04, used after v2.0
 
+> **2026-11-10 — superseded in order by [CONSOLE-STEPS.md](CONSOLE-STEPS.md).** Robin decided Play
+> launches **at v2.0** on a **personal** account (Q4 answered), with the closed test after the
+> eight v2.0 feedback items land ([CLOSED-TEST-PLAN.md](CLOSED-TEST-PLAN.md)). The tables below stay
+> the asset inventory; [V2.0-ASSET-CHECK.md](V2.0-ASSET-CHECK.md) is the current v2.0 check.
+
 **Status: Play is after v2.0** (Robin's scope call, 2026-11-04: "Till v2.0, let's focus on getting
 the app out to everyone via the Cooldown repo and TestFlight. After v2.0 is published, let's work to
 get our apps in the public GooglePlay and Apple App Store (and not now in v1.9 or v2.0)."). So for
@@ -43,7 +48,7 @@ new launcher icon (CCRM-101 (Icon v3)); all of them live on the v2.0 branch
 | 9 | Category, tags, contact | Tools; robin@eam360.com; the GitHub page | Drafted, `listing.md` §4 | Robin |
 | 10 | Privacy policy URL | `docs/privacy.md` must resolve and agree with the data-safety answers | Policy exists; check the URL the day of submission | session checks |
 | 11 | Data safety form | Answered for the play build, question by question | Drafted, `data-safety.md`; **re-check against v2.0** (Gemini adds a host: it must be in the policy) | session drafts, Robin submits |
-| 12 | App access | Reviewer sign-in: a test account, a video, or both | Drafted, `app-access.md`; **reserved: Robin picks the option** | Robin |
+| 12 | App access | Reviewer path: the Android sample mode (Robin, 2026-11-10) | Drafted, `app-access.md`; rewrite on the v2.0 build once the sample mode is built | Robin |
 | 13 | Foreground service declaration (`specialUse`) | Written justification plus the demo video | Text drafted, `fgs-declaration.md`; video per §A | session drafts, Robin submits |
 | 14 | Content rating (IARC) questionnaire | Answers about the app's content | Not started | Robin |
 | 15 | Target audience and content | Age groups; not for children | Not started | Robin |

@@ -3,7 +3,7 @@
 > **Next arc:** [RUNBOOK-v2.0.md](RUNBOOK-v2.0.md) (Weekly First, Pace, Summary; FROZEN 2026-11-02). This file's Step 8 is
 > ticked (v1.9 published 2026-11-05), so its Gate G0 is lifted, and the arc's code landed on `main` on 2026-11-06 (PR #21).
 
-**Plan status: FROZEN 2026-09-27.** Cross-family review: Astra at xhigh. Rounds 1 and 2 were blocking, and round 3 returned **concerns**. All thirteen findings are adopted. Q4 (the Play account type) stays open by Robin's choice and gates only Step 9. See Step 1's Log.
+**Plan status: FROZEN 2026-09-27.** Cross-family review: Astra at xhigh. Rounds 1 and 2 were blocking, and round 3 returned **concerns**. All thirteen findings are adopted. Q4 (the Play account type) stayed open by Robin's choice and gated only Step 9; **Robin answered it on 2026-11-10: personal** (Step 9's Log). See Step 1's Log.
 
 This runbook takes `main` as of 2026-09-27 (v1.8 shipped, versionCode 24) to a released v1.9, and
 then to the same build on Google Play's internal-testing track. It is written as ordered, checkable
@@ -35,8 +35,8 @@ Earlier arcs are in git history: v1.8 at `6e4c1a0`, v1.7 at `4f30dba`, the dropp
   start closed testing and does not publish to production.
 - **Q2:** CCBG-45 is fixed as-is, under CLAUDE.md §2's exemption.
 - **Q3:** Play App Signing uses our existing key.
-- **Q4:** the account type (personal or organisation) is **open**, and Robin will talk it through
-  with Fable. **Step 9 cannot start until Q4 is answered.**
+- **Q4:** the account type (personal or organisation) was **open**. **Answered 2026-11-10 by
+  Robin: personal** (see Step 9's Log).
 
 **Five things the plan is built on:**
 1. **Nothing outside git or the phone changes before Step 8.** Steps 1–6 are commits, and
@@ -100,7 +100,7 @@ begun, run its *Always after* block first.
 | 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
 | 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☑ |
 | 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☑ done 2026-11-05 |
-| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, **Q4** | **Deferred 2026-11-04 until after v2.0** |
+| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, Q4 ☑ (personal, 2026-11-10) | **Moved to the v2.0 launch** (Robin, 2026-11-10): `release/play/CONSOLE-STEPS.md` |
 
 ---
 
@@ -689,7 +689,7 @@ Set the shipped items to Shipped v1.9; close out per Convention 4.
 checks results, and never holds a console login. **Blocked until Q4 (the account type) is answered**,
 by Robin after his talk with Fable. That answer is recorded here before anything else.
 
-### Q4 — personal or organisation account (open; both paths are planned)
+### Q4 — personal or organisation account (answered 2026-11-10: personal)
 
 Robin's context: a portfolio of small single-purpose apps (Cooldown, then simple timer or checklist
 apps) under one developer name. They are all free and open source now, with a possible one-time
@@ -715,8 +715,8 @@ this file.
 **Before Robin chooses and pays:** read Play's current identity and disclosure pages for both account
 types on the day. The † rows are the ones most likely to have moved.
 
-**Robin decides after his talk with Fable.** The answer goes into this step's Log before anything
-else happens. Everything below applies to both paths, except that the organisation path first waits
+**Answered by Robin on 2026-11-10: personal** (Log below). (Originally: Robin decides after his talk with Fable, and the answer goes into this step's Log before anything
+else happens.) Everything below applies to both paths, except that the organisation path first waits
 for the D-U-N-S.
 
 **Irreversible, named up front:**
@@ -750,7 +750,8 @@ HANDOVER.md's next block around the launch decision (the provider check, CCRM-66
 ```
 
 **Done when:**
-- ☐ Q4's answer and the account are recorded.
+- ☐ Q4's answer and the account are recorded. (Answer ☑ 2026-11-10: personal. The account: not yet
+  registered.)
 - ☐ The app exists, and the existing key is enrolled: the Play-signed APK's signer equals the
   trusted digest.
 - ☐ v1.9 is available on the internal track, and no closed or production track has been touched.
@@ -761,6 +762,22 @@ unpublished. Whether the app record can be deleted after an internal upload is u
 it as permanent.
 
 **Log:**
+
+- 2026-11-10 — **Q4 answered by Robin: a personal developer account**, which he registers and
+  verifies himself (it does not exist yet). Play launches at **v2.0**, not v1.9: this step's
+  internal-track upload of a v1.9 AAB is replaced by the v2.0 AAB, and it runs on into the
+  **closed test** (12 testers opted in for 14 continuous days, the rule read on 2026-11-10), which
+  starts only after the eight v2.0 feedback items of 2026-11-10 land, then the production
+  application. This supersedes Q1's "no closed testing" for the launch. iOS stays on TestFlight,
+  published by EAM360. The ordered checklist, with the dated policy check, is
+  `release/play/CONSOLE-STEPS.md`; the test is `release/play/CLOSED-TEST-PLAN.md`; the invite
+  draft `release/play/TESTER-INVITE.md`; the v2.0 listing and graphics check
+  `release/play/V2.0-ASSET-CHECK.md`. The *Resume* block above predates this and names the v1.9
+  AAB: follow CONSOLE-STEPS.md instead.
+- 2026-11-10 — Robin's two follow-up answers: the provider terms risk — **"Proceed, risk
+  accepted"** (CLOSED-TEST-PLAN.md § Risks); reviewer access — **"Port sample mode"**: the Android
+  app gets the iOS sample-data mode as item 9 of the v2.0 feedback work (wireframe first), and
+  App access answers "Try with sample data" (CONSOLE-STEPS.md step 12).
 
 ---
 
