@@ -46,8 +46,8 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
     `foundations.md` chart tokens (grid ink), the Pace map's axis and foot line.
   - CCRM-108 (Reset Named): `foundations.md` "The pace line", `notification.md` §1.2/§1.4/§2.3 fitting numbers,
     `app.md` tile lines, Summary line 3, "The pace line on iOS", `widgets.md` Weekly lines.
-  - CCRM-109 (Quiet Accounts): `app.md` Pace map — accounts under 1% weekly leave the map, foot-line count
-    ("2 under 1%", joined with "· 1 no reading"), the all-under-1% message.
+  - CCRM-109 (Quiet Accounts): `app.md` Pace map — accounts whose Weekly figure prints "0%" leave the map, foot-line count
+    ("2 at 0%", joined with "· 1 no reading"), the all-at-0% message.
   - CCRM-110 (Account Tags): `app.md` Settings › Accounts (Tag… with person/briefcase glyph + word, neutral),
     the account menu, iOS account page; Summary header (All · Personal · Work filter, remembered; the sort menu).
   - CCRM-111 (Map Layers): `app.md` Pace map (Figures · Trails · Projection chips on the title line, the callout,

@@ -519,10 +519,12 @@ rules above are what ships. Desktop pins this core and takes these as a frozen s
   With the Projection layer on, a name does not sit on its own tail or ring. Fixture `mapLabels` gains a dense
   200-wide map.
 - **Quiet accounts leave the map** (CCRM-109 (Quiet Accounts); mobile approved 2026-11-10, desktop adopted it as
-  CCM-214 the same day). An account under 1% weekly used is not plotted; the list still shows it. The foot line
-  accounts for every unplotted account (under 1%, not started, no reading). Its form is each family's: mobile counts
-  them ("2 under 1% · 1 no reading", Robin 2026-11-10: the count fits one line on a phone); desktop names them in one
-  sentence (Robin approved 2026-11-10). With every account under 1%, the frame, grid and diagonal stay.
+  CCM-214 the same day). An account whose row prints "0%" weekly used is not plotted — under 0.5, by
+  this spec's rounding of a displayed percent (Robin, 2026-11-10, on desktop's judge note: match the row, so a row
+  reading "1%" is always on the map); the list still shows it. The foot line
+  accounts for every unplotted account (at 0%, not started, no reading). Its form is each family's: mobile counts
+  them ("2 at 0% · 1 no reading", Robin 2026-11-10: the count fits one line on a phone); desktop names them in one
+  sentence (Robin approved 2026-11-10). With every account at 0%, the frame, grid and diagonal stay.
 - **The callout's forecast** (CCRM-111): "~74% at reset", or, when the projection reaches 100% before the reset,
   "100% at Wed 6:10 PM" — the instant it runs out, as a reset clock is printed (desktop CCM-213 follows the same).
 - **The Projection layer** (CCRM-111). A dashed tail from the dot to a hollow ring at the projected weekly % (§3's

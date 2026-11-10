@@ -1975,8 +1975,9 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
   once desktop adopted it (CCM-214, 2026-11-10). Foot line: mobile keeps the count, desktop names the accounts in a
   sentence (Robin approved both forms, 2026-11-10).
-- **What:** under 1% weekly leaves the map; the foot line counts them ("2 under 1%", "· 1 no reading"); all under
-  1% keeps the frame with "Nothing to plot yet". The list still shows every account.
+- **What:** an account whose Weekly figure prints "0%" (under 0.5; Robin, 2026-11-10: match the row, so a row
+  reading "1%" is always plotted) leaves the map; the foot line counts them ("2 at 0%", "· 1 no reading"); all at
+  0% keeps the frame with "Nothing to plot yet". The list still shows every account.
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
 - **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
