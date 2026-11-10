@@ -1933,7 +1933,10 @@ eight ship in v2.0, so v2.0 waits for their build and a second Fold 7 + iPad pas
 it, Astra reviewed: concerns, C1-2 and C1-4 adopted, C1-1 and C1-3 disputed — `reviews/v20-feedback-wireframes-findings.md`).
 Core rules are in BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"; the surface deltas are listed in
 `spec/mobile/surfaces/README.md`. CCRM-107, CCRM-108 and CCRM-111 change `spec/core`, which CooldownDesktop pins:
-they go to the desktop session as one frozen set. Robin's answers, 2026-11-10, one question at a time: the pace
+they go to the desktop session as one frozen set. **Desktop's calls (2026-11-10, re-pinned core to 4b45df9):** adopts CCRM-107 (CCM-211), CCRM-108 (CCM-212),
+CCRM-111's words (CCM-213) and CCRM-109 (CCM-214); adapts the callout to hover-to-show, click-to-open; holds
+CCRM-110 for two calls of Robin's; CCRM-112 later in its Share epic; files its widget's "All" as CCM-216 after
+CCRM-106; CCRM-105 not applicable. Robin's answers, 2026-11-10, one question at a time: the pace
 line names the reset (B, not since/until); tags carry a person or briefcase glyph with the word; the snapshot is
 rows then the map; "Weekly · All models" stays; collapsed Duet text is capped at large fonts. Item 9, the Android
 sample mode, was added and approved the same day as CCRM-113 (Sample Port).
@@ -1966,7 +1969,9 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   line), then today's order. Since/until (the mark instant) was drawn and not chosen.
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
-- **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps (mobile rule; desktop may adopt).
+- **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
+  once desktop adopted it (CCM-214, 2026-11-10). Foot line: mobile keeps the count, desktop names the accounts in a
+  sentence (Robin approved both forms, 2026-11-10).
 - **What:** under 1% weekly leaves the map; the foot line counts them ("2 under 1%", "· 1 no reading"); all under
   1% keeps the frame with "Nothing to plot yet". The list still shows every account.
 
