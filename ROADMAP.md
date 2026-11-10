@@ -1935,7 +1935,8 @@ Core rules are in BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"; the surface d
 `spec/mobile/surfaces/README.md`. CCRM-107, CCRM-108 and CCRM-111 change `spec/core`, which CooldownDesktop pins:
 they go to the desktop session as one frozen set. Robin's answers, 2026-11-10, one question at a time: the pace
 line names the reset (B, not since/until); tags carry a person or briefcase glyph with the word; the snapshot is
-rows then the map; "Weekly · All models" stays; collapsed Duet text is capped at large fonts.
+rows then the map; "Weekly · All models" stays; collapsed Duet text is capped at large fonts. Item 9, the Android
+sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 
 ### CCRM-105 · Duet Stack — the two-account notification: two rings left, two stacked Weekly rows
 - **Status:** Planned · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification).
@@ -1992,6 +1993,22 @@ rows then the map; "Weekly · All models" stays; collapsed Duet text is capped a
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
   callout. Names shown, e-mail addresses never.
+
+### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
+- **Status:** Planned · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
+  isolation rules adopted, `reviews/v20-sample-mode-findings.md`) · **in v2.0**, built with CCRM-105…112 so it is in
+  the AAB for Play's closed track · Android; one iOS follow-up.
+- **Why:** Robin, 2026-11-10: "Port sample mode" — so Play's reviewer gets in with no credentials (Play App access,
+  `release/play/CONSOLE-STEPS.md` step 12).
+- **What:** "Try with sample data" under the first screen's "No Claude account yet" card and as the last row of Add
+  account; three made-up accounts, one per provider (Teams · Claude, Personal · ChatGPT, Lab · Gemini); a violet
+  "● Sample data — made-up accounts · Exit" banner on every tab, Settings and History; held in memory only, with
+  settings in an in-memory copy, so nothing is saved, fetched or sent, and process death returns to the real app.
+  The always-on notification, status-bar icon, reset pings and widgets **stay on the real accounts** (Robin: A).
+  Isolation rules: real polling carries on into the real stores; only the app's screens read the settings copy; a
+  sample edit binds to the sample store; the debug synthetic series pauses while the sample is open.
+- **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
+  stores' review notes describe the same three accounts.
 
 ## Next — small, high value, ready to build
 

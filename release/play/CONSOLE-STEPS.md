@@ -87,8 +87,9 @@ fix the draft in the repo first if they disagree.
     built **with the v2.0 feedback items** as their item 9, so it is in the AAB that goes to the
     closed track. It is app work: the wireframe session draws the Android delta first (CLAUDE.md
     §2). The App access answer is then the same on both stores: no credentials; the reviewer taps
-    "Try with sample data" on the first screen and every tab, the notification and the widgets show
-    sample accounts. Refresh `app-access.md`'s instructions on the v2.0 build (they predate Gemini,
+    "Try with sample data" on the first screen and every tab of the app shows sample accounts. The
+    always-on notification and the widgets stay on real accounts (Robin, 2026-11-10, CCRM-113 (Sample Port)):
+    the note says they need a real account and points to the foreground-service video. Refresh `app-access.md`'s instructions on the v2.0 build (they predate Gemini,
     the Summary tab and the sample mode). The test account / video options are no longer the plan;
     if Play's reviewer still asks for a live sign-in, that is a new decision for Robin, and
     credentials would go only into the Console field, never into the repo.

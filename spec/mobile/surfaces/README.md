@@ -53,3 +53,8 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
   - CCRM-111 (Map Layers): `app.md` Pace map (Figures · Trails · Projection chips on the title line, the callout,
     heavier last 24 h, dotted leaders).
   - CCRM-112 (Summary Snapshot): `app.md` share card (the Summary version: rows, then the map).
+  - CCRM-113 (Sample Port), §9: `app.md` notice slot (the sample banner on every tab, Settings and History),
+    status line words, first-screen entry, Add account row, Settings › Accounts / Alerts / Appearance / More in the
+    sample, the share band's "● SAMPLE DATA"; "Reviewer sample data (iOS…)" becomes both platforms.
+    `notification.md` and `widgets.md`: one line each — the sample never reaches them. Rule:
+    [BEHAVIOR-MOBILE §7](../BEHAVIOR-MOBILE.md).

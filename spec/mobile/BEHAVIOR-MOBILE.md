@@ -252,3 +252,27 @@ top, ties in your order, unread accounts last in your order). The list's header 
 spent, no reading) whatever the order; the Pace map is unaffected; widgets that list accounts keep their own order.
 An absent or unknown value reads as `yours`; v1.9 does not read the key. Cases in
 [`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `order`.
+
+---
+
+## 7. Sample mode — CCRM-113 (Sample Port) · planned, approved 2026-11-10
+
+**Status:** approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` §9. iOS ships this
+mode today (CCRM-94 (iOS App), `ios/App/UI/SampleMode.swift`); Android builds it for v2.0. Until then this section
+describes iOS only.
+
+- **What it is.** A reviewer or a curious user taps "Try with sample data" ("Three made-up accounts to look around.
+  Nothing is saved or sent.") on the first screen or in Add account, and the app's screens show three made-up
+  accounts, one per provider: Teams (Claude), Personal (ChatGPT), Lab (Gemini). (iOS shows two Claude and one
+  ChatGPT until its follow-up swaps one Claude account for Gemini, on Robin's word.) A banner "● Sample data —
+  made-up accounts" with "Exit" stays visible on every page.
+- **Held in memory only.** The mode is a process-wide flag that is never written. Settings changed in the sample go
+  to an in-memory copy seeded from the user's own and are dropped on Exit. No token, account, history or setting is
+  written, and the sample never fetches or sends. Process death, a reboot or an update returns to the real app.
+- **Isolation.** Only the app's screens read the sample and its settings copy. The always-on notification, the
+  status-bar icon, reset pings, widgets and polling read the real accounts and real settings throughout (Robin: they
+  stay real). Real polling and alerts carry on and write only the real stores, and a request in flight on entry
+  completes into them. Entering or leaving dismisses any open dialog and drops its pending edit; a sample edit is
+  bound to the sample store when it opens. Opening the app from a real surface (notification, widget, shortcut,
+  ping) exits the sample first. The debug synthetic series pauses while the sample is open and resumes on Exit.
+
