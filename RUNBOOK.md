@@ -774,6 +774,10 @@ it as permanent.
   draft `release/play/TESTER-INVITE.md`; the v2.0 listing and graphics check
   `release/play/V2.0-ASSET-CHECK.md`. The *Resume* block above predates this and names the v1.9
   AAB: follow CONSOLE-STEPS.md instead.
+- 2026-11-10 — Robin's two follow-up answers: the provider terms risk — **"Proceed, risk
+  accepted"** (CLOSED-TEST-PLAN.md § Risks); reviewer access — **"Port sample mode"**: the Android
+  app gets the iOS sample-data mode as item 9 of the v2.0 feedback work (wireframe first), and
+  App access answers "Try with sample data" (CONSOLE-STEPS.md step 12).
 
 ---
 

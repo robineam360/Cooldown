@@ -48,7 +48,7 @@ new launcher icon (CCRM-101 (Icon v3)); all of them live on the v2.0 branch
 | 9 | Category, tags, contact | Tools; robin@eam360.com; the GitHub page | Drafted, `listing.md` §4 | Robin |
 | 10 | Privacy policy URL | `docs/privacy.md` must resolve and agree with the data-safety answers | Policy exists; check the URL the day of submission | session checks |
 | 11 | Data safety form | Answered for the play build, question by question | Drafted, `data-safety.md`; **re-check against v2.0** (Gemini adds a host: it must be in the policy) | session drafts, Robin submits |
-| 12 | App access | Reviewer sign-in: a test account, a video, or both | Drafted, `app-access.md`; **reserved: Robin picks the option** | Robin |
+| 12 | App access | Reviewer path: the Android sample mode (Robin, 2026-11-10) | Drafted, `app-access.md`; rewrite on the v2.0 build once the sample mode is built | Robin |
 | 13 | Foreground service declaration (`specialUse`) | Written justification plus the demo video | Text drafted, `fgs-declaration.md`; video per §A | session drafts, Robin submits |
 | 14 | Content rating (IARC) questionnaire | Answers about the app's content | Not started | Robin |
 | 15 | Target audience and content | Age groups; not for children | Not started | Robin |

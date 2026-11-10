@@ -82,18 +82,16 @@ fix the draft in the repo first if they disagree.
     `daily-cloudcode-pa.googleapis.com`). The v2.0 release adds that row (RELEASING.md §5: a change
     to what leaves the phone updates the policy and the Data safety form in the same release).
 12. **App access** 📄 [app-access.md](app-access.md) — "All or some functionality is restricted".
-    **Robin's reserved choice:** a dedicated test account, a video, or both. The draft's
-    instructions predate Gemini and the Summary tab; refresh them on v2.0 (CLOSED-TEST-PLAN.md
-    § Assets). Credentials, if any, go only into the Console field, never into the repo.
-    **Sample mode is iOS only today.** The iPhone app's App Review path is its sample-data mode
-    (`ios/App/UI/SampleMode.swift`, CCRM-94 (iOS App) parity wireframe rev B §7). The Android app
-    has none: its Debug section's synthetic series (behind seven taps) is a developer tool, not a
-    reviewer path. Two ways:
-    - **Port the sample mode to Android before the closed-test build** (Robin's call). The iOS
-      design is approved, so it is a port of an approved layout, but it still needs an Android
-      wireframe delta (CLAUDE.md §2) and is app work for the v2.0 build — the cleanest review
-      path, and the same "Try with sample data" answer on both stores.
-    - **Keep the draft's choices** (a dedicated test account, a screen-recording video, or both).
+    **Decided by Robin, 2026-11-10: port the sample mode.** The Android app gets the iPhone app's
+    sample-data mode (`ios/App/UI/SampleMode.swift`, CCRM-94 (iOS App) parity wireframe rev B §7),
+    built **with the v2.0 feedback items** as their item 9, so it is in the AAB that goes to the
+    closed track. It is app work: the wireframe session draws the Android delta first (CLAUDE.md
+    §2). The App access answer is then the same on both stores: no credentials; the reviewer taps
+    "Try with sample data" on the first screen and every tab, the notification and the widgets show
+    sample accounts. Refresh `app-access.md`'s instructions on the v2.0 build (they predate Gemini,
+    the Summary tab and the sample mode). The test account / video options are no longer the plan;
+    if Play's reviewer still asks for a live sign-in, that is a new decision for Robin, and
+    credentials would go only into the Console field, never into the repo.
 13. **Ads:** "No, my app does not contain ads."
 14. **Content rating (IARC questionnaire):** category **Utility, Productivity, Communication or
     Other**; answer **No** to violence, sexuality, language, controlled substances, gambling;
@@ -116,7 +114,7 @@ fix the draft in the repo first if they disagree.
     a link on the day).
 19. **Advertising ID:** "No" (the app never reads it; manifest has no `AD_ID` permission).
 
-## Phase D — signing and the first upload (after v2.0's eight items land)
+## Phase D — signing and the first upload (after v2.0's eight items and the sample mode land)
 
 20. **Play App Signing → use an existing key** (Robin's Q3, 2026-09-27). ⛔ Google keeps a copy of
     the key for good; this is what lets the GitHub APK and the Play build update each other.

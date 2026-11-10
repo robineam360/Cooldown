@@ -1935,8 +1935,11 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
   approval. iOS stays on TestFlight (EAM360 publishes). Prepared in `release/play/`:
   `CONSOLE-STEPS.md` (Robin's ordered Console checklist with the dated policy check),
   `CLOSED-TEST-PLAN.md`, `TESTER-INVITE.md`, `V2.0-ASSET-CHECK.md`. The reopening condition
-  below was not met (no sanctioned provider route); Robin's decision accepts that risk, recorded in
-  `CLOSED-TEST-PLAN.md` § Risks. Earlier history follows.
+  below was not met (no sanctioned provider route); **Robin accepted that risk on 2026-11-10**
+  ("Proceed, risk accepted"), recorded in `CLOSED-TEST-PLAN.md` § Risks. **Reviewer access,
+  decided by Robin 2026-11-10: "Port sample mode"** — the Android app gets the iOS sample-data mode,
+  built with the v2.0 feedback items (item 9, wireframe first), and Play's App access answer is
+  "Try with sample data" (`CONSOLE-STEPS.md` step 12). Earlier history follows.
   **2026-09-16 — Dropped, by Robin.** Not deferred — dropped. The ID stays filed and
   is never reused, per CLAUDE.md.
   **2026-09-27 — readiness split out.** Robin asked for v1.9 to make the app Play-*ready*. That is

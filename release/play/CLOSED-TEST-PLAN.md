@@ -9,14 +9,14 @@ a personal developer account created after 13 Nov 2023 must run a closed test wi
 testers opted in continuously for 14 days** before it may apply for production access. Robin's
 account will be new, so it applies.
 
-**When it starts** (Robin, 2026-11-10): **after the eight v2.0 feedback items are built and land**
+**When it starts** (Robin, 2026-11-10): **after the eight v2.0 feedback items, and item 9 (the Android sample mode for Play's reviewers), are built and land**
 (his Fold 7 notes of 2026-11-10: the Duet notification, "7d", the day grid, since/until, the Pace map's
 1% floor, the Personal/Work tag, the Pace map chips, the Summary share). The test runs on the v2.0
 build that will also be the GitHub release, so testers judge what ships.
 
 ## Timeline
 
-**Day 0 = the day the eight items land on `main` and the v2.0 release commit is cut.** Phases A–C
+**Day 0 = the day the eight items and the sample mode land on `main` and the v2.0 release commit is cut.** Phases A–C
 of CONSOLE-STEPS.md (account, identity, app record, declarations) run **before** Day 0, in parallel
 with the build, because identity checks can take days.
 
@@ -24,7 +24,7 @@ with the build, because identity checks can take days.
 |---|---|---|
 | Now → Day 0 | Register the personal account, identity and device verification, create the app, fill the declarations that do not depend on the build (CONSOLE-STEPS.md A–C) | Robin |
 | Now → Day 0 | Recruit testers and collect their Google account emails (§ Recruiting); create the Google Group | Robin |
-| Before Day 0 | Decide the review path (sample mode port or test account / video) and the screenshot crop (V2.0-ASSET-CHECK.md) | Robin |
+| Before Day 0 | Review path **decided 2026-11-10: the Android sample mode, built as item 9 with the v2.0 items**; still to decide: the screenshot crop (V2.0-ASSET-CHECK.md) | Robin |
 | Day 0 | v2.0 release commit; CI green; `bundlePlayRelease` and RELEASING.md §5's checks; the GitHub APK from the same commit | session |
 | Day 0–1 | Play App Signing with the existing key (PEPK); upload the AAB to **Internal testing**; check the Play-signed APK's SHA-256 = the trusted digest | Robin, session checks |
 | Day 1 | The same AAB to the **Closed** track; release notes; countries; start rollout | Robin |
@@ -140,12 +140,16 @@ CONSOLE-STEPS.md). Draft answers to adjust with the test's real numbers on the d
 
 ## Risks to name before Day 0
 
-- **The provider question is unchanged.** CCRM-66 (Play Store Launch) was dropped on 2026-09-16
-  because Anthropic's published terms prohibit third-party apps offering Claude.ai sign-in, and a
-  listing puts the app in front of the people who enforce it. The Gemini path uses Google's
-  Antigravity sign-in, and Play is Google's own store. Robin's 2026-11-10 decision accepts this; it
-  is recorded here so the closed test is not where it is first noticed.
+- **The provider question is unchanged — risk accepted by Robin, 2026-11-10** (his words:
+  "Proceed, risk accepted"). CCRM-66 (Play Store Launch) was dropped on 2026-09-16 because
+  Anthropic's published terms prohibit third-party apps offering Claude.ai sign-in, and a listing
+  puts the app in front of the people who enforce it. The Gemini path uses Google's Antigravity
+  sign-in, and Play is Google's own store. Robin has accepted both and the launch proceeds; a
+  takedown, a provider objection or a Play rejection on these grounds is handled when it comes,
+  not prevented.
 - **Review may question `specialUse`.** The fallback is CCRM-67 (Pin Service)'s `dataSync` plus a
   watchdog — a code change and a new release, which during the test means a new closed release.
-- **App access.** Reviewers without a working path can reject for "insufficient access"; settle the
-  review path before Day 0 (CONSOLE-STEPS.md step 12).
+- **App access.** Reviewers without a working path can reject for "insufficient access". **Settled
+  2026-11-10 (Robin): the Android sample mode**, built with the v2.0 items (CONSOLE-STEPS.md
+  step 12). If it slips past Day 0, the closed release waits for it rather than going out with no
+  review path.
