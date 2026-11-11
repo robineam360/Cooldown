@@ -1954,7 +1954,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Status:** Planned · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
 - **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
   and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
-- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): the tile's first chip and the classic 7-day card's half read "7d" (VoiceOver "7-day, all models"); the stored chip key unchanged. Captures `design/research/2026-11-v20-build/I1/`.
+- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): the tile's first chip reads "7d", as does the classic 7-day card's half (`WeeklyCard`, in code but placed by no layout since CCRM-103 (Hybrid Notification)) (VoiceOver "7-day, all models"); the stored chip key unchanged. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
 - **Status:** Planned · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.

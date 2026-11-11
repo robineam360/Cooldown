@@ -27,20 +27,28 @@ pasting its block below. Each lane replaces only its own block (RUNBOOK "Who own
 > light; save the captures in design/research/2026-11-v20-build/A1/. Stop and report at anything the
 > wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
 
-## ▶ Next — Lane I (iOS): Step I1 · Lines and labels (written 2026-11-11)
+## ▶ Next — Lane I (iOS): Step I2 · Pace map (written 2026-11-11, after I1 landed)
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I1),
-> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I1 names in
+I1 (Lines and labels) is on main: CCRM-106 (7d Chip), CCRM-107 (Day Grid), CCRM-108 (Reset Named) built on iOS (PR #38).
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I2),
+> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I2 names in
 > design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step I1 on iOS only (ios/, never the Android code).
+> answers" (Convention 10; ask and record first if not). Build Step I2 on iOS only (ios/, never the Android code).
 > Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
 > inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with
 > its tests reading spec/core/fixtures/pace-distance/printed-v20.json and the new mobile fixtures, then the app,
 > widgets, lock screen and Live Activity as the wireframe says. Check every state the wireframe draws on the
 > iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the
-> captures in design/research/2026-11-v20-build/I1/. Stop and report at anything the wireframe does not
+> captures in design/research/2026-11-v20-build/I2/. Stop and report at anything the wireframe does not
 > draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+>
+> Notes from I1: the Pace map already draws the sevenths, "week start", 2…6, "reset" and the foot line's left note
+> ("each account's own week", `PaceMapCard` in ios/App/UI/Summary.swift); I2 adds the count on the foot line's right,
+> the chips, callout, leaders and layers. `DayGrid` and the "resets" `PaceLine` live in CooldownCore. One copy call is
+> still open with Robin through the orchestrating session: a spent account in Left mode on the map — "Teams 0%" (the
+> fixture and the drawing) or "Teams 0% left". Build to the fixture unless the answer is recorded by then.
 
 ## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
 

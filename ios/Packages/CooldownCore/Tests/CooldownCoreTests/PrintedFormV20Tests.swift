@@ -76,8 +76,12 @@ struct PrintedFormV20Tests {
                 #expect(PaceText.signedVsPaceFigure(usedPct: c.num("usedPct"), elapsedPct: elapsed) == figure, "\(name)")
             }
             let l = PaceText.paceLine(usedPct: c.num("usedPct"), resetMs: reset, windowLengthMs: len, nowMs: now, use24h: false, timeZone: utc)
-            // The spent case: core §6.1 gates it before the line (`CardContent` never asks for one), so only a printed line is checked.
-            if let want = c.str("line") { #expect(l?.text() == want, "\(name): \(l?.text() ?? "nil")") }
+            if let want = c.str("line") {
+                #expect(l?.text() == want, "\(name): \(l?.text() ?? "nil")")
+            } else {
+                // No line: core §6.1's spent week, which `CardContent` gates before it asks for a line.
+                #expect(Pace.isSpent(c.num("usedPct")), "\(name): a case with no line must be a spent week")
+            }
         }
     }
 
@@ -113,12 +117,13 @@ struct PrintedFormV20Tests {
                 #expect(start + k * length / Int64(n) == local(v.str("atLocal") ?? ""), "\(name): vertical \(k)")
             }
             let horizontals = try #require(ex["horizontals"] as? [[String: Any]])
+            #expect(fr.count == horizontals.count, "\(name)")
             for (f, h) in zip(fr, horizontals) { #expect(abs(100 * f - (h.num("pct") ?? -1)) < 1e-6, "\(name)") }
 
             let col = DayGrid.nowColumn(columns: n, elapsedMs: now - start, windowLengthMs: length)
             #expect(col == (ex["nowColumn"] as? NSNumber)?.intValue, "\(name): now column \(col)")
-            let nowX = Double(now - start) / Double(length) * width
-            #expect(abs(nowX - (ex.num("nowX") ?? -1)) < 1e-3, "\(name): nowX \(nowX)")
+            // The fixture's own nowX feeds the give-way rule, so the test checks DayGrid, not a copy of the chart's formula.
+            let nowX = try #require(ex.num("nowX"))
 
             let w = try #require(c.dict("widths"))
             let got = DayGrid.ordinals(columns: n, plotWidth: width, nowColumn: col, nowAt: (c.flag("nowLabel") ?? false) ? nowX : nil,
