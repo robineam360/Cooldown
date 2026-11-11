@@ -833,4 +833,13 @@ Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared 
 
 ## v2.0 feedback on iOS
 
-Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").
+Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4); renders in
+`design/research/2026-11-v20-build/I1/render/`.
+
+- **Weekly lines** (CCRM-108 (Reset Named)): every face that prints the pace line — Strip, Bars, Overview tiers, the
+  Large/XL account card, the Live Activity (single and Duet) and the Island expanded — prints the "resets" form where it
+  fits and drops by the one order: "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor. The Live Activity's
+  single row at its usual width reads "21h 50m ahead · Sun"; the Bars small (iPhone SE width) keeps the floor. The Lock
+  Screen faces and the Number face are unchanged.
+- **Charts** (CCRM-107 (Day Grid)): the Large/XL account card's trend chart draws the day grid and ordinals as the app's
+  (`TrendChart`); the narrow tier (lines only) draws the grid with no ordinals.

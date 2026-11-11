@@ -1031,4 +1031,32 @@ Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared 
 
 ## v2.0 feedback on iOS
 
-Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").
+Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B
+§2–§4. It supersedes "The pace line on iOS" and the iOS tile/Pace map paragraphs above wherever they differ. Captures
+`design/research/2026-11-v20-build/I1/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ both orientations; `render/` holds the
+widget, lock-screen and Live Activity faces from `SurfaceRenderTests`).
+
+- **7d** (CCRM-106 (7d Chip)). The open tile's chips read "7d · Opus · 5h" (was "All · …"); one chip only → no row, no 5h →
+  "7d · Opus", model limits hidden → "7d · 5h". The classic 7-day card's left half (`WeeklyCard`, kept in code, not placed
+  by any layout since CCRM-103) reads "7d". VoiceOver: "7-day, all models" (`CardContent.spokenTitle`). The stored chip
+  selection is unchanged. The lead bar label "Weekly · All models" is unchanged (wireframe Q4 (a)).
+- **Day grid** (CCRM-107 (Day Grid)), `TrendChart` in `ios/Shared/Charts.swift`. Every 7-day chart draws seven equal
+  columns (the window's start + k days) and lines at k/7 of 100%; a 5h chart five hourly columns and 20% steps. Ink
+  `line` at 60%, 0.5 pt, drawn after the pace wash and before the guides, so the 80/90/100 guides, the diagonal and the data
+  sit over it. Axis strip: the start label left (11 pt), the ordinals 2…6 (2…4 on a 5h chart) centred in their columns at
+  9.5 pt in `sub`, the reset label right; the column holding now is bold `ink`. An ordinal gives way within 6 pt of "now"
+  and 4 pt of an end label, and every ordinal drops below a 14 pt column (CooldownCore `DayGrid`, the core rule). Small
+  (lines only): the grid, no ordinals. "Time down": the grid transposes, and the ordinals run down the right edge under the
+  same rule (measured by label height). Not started: no chart, no grid. Where: the open tile (7d, model and 5h chips), the
+  share card's trend, the Overview/Large and XL widgets' chart.
+- **Pace map** (CCRM-107). Sevenths both ways in the same grid ink under the 0/50/100% lines, which stay; the x axis reads
+  "week start", 2…6, "reset" (10 pt, `sub`; an ordinal gives way to an end word it would touch; never bold — each dot has
+  its own week, so there is no now column). "each account's own week" leaves the axis for the card's foot line, left, 11 pt
+  `sub`, 4 pt under the plot (the right side of the foot line is CCRM-109's count, Step I2). Labels, leaders and layers are
+  unchanged until Step I2.
+- **The pace line names the reset** (CCRM-108 (Reset Named)). "1d 18h behind · resets Sun 10:17 AM", "21h 50m ahead · resets
+  Sun 4:59 PM", "On the mark · resets Sat 8:00 AM". Drop order, one everywhere (`FitLine`, now four variants): another day
+  "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the
+  floor; then the floor steps to 0.8 of its size. A bare clock always means today. The tinted span and the floor are
+  unchanged; spent, held, signed-out, unclocked and no-reading lines are unchanged. The one-line Summary row's word slot
+  is still the tinted span alone, and the share card's Weekly row keeps "Resets …" in its right slot.
