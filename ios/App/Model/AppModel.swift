@@ -216,6 +216,14 @@ final class AppModel {
         save()
     }
 
+    /// CCRM-110 (Account Tags): sets or clears (nil) an account's tag. Saved with the accounts (a sample's stays in memory).
+    func setTag(_ key: String, _ tag: AccountTag?) {
+        guard let i = accounts.firstIndex(where: { $0.key == key }) else { return }
+        accounts[i].tag = tag?.rawValue
+        save()
+        displayChanged()
+    }
+
     func remove(_ key: String) async {
         if reauthTarget == key { reauthTarget = nil }
         await repo?.forget(key)

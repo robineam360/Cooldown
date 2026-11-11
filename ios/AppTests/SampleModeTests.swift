@@ -19,7 +19,7 @@ struct SampleModeTests {
         #expect(Prefs.lastAccountKey == before)
         #expect(AccountsStore(storage: Shared.storage).load() == realBefore)
         let creds = CredentialStore.shared(accessGroup: Shared.keychainGroup)
-        for key in ["teams", "product", "personal"] { #expect(creds.load(profileKey: key) == nil) }
+        for key in ["teams", "personal", "lab"] { #expect(creds.load(profileKey: key) == nil) }
     }
 
     @Test("the real model is not a sample, and the entry copy is Fable's")

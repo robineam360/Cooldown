@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 extension Notification.Name { static let openAccount = Notification.Name("cooldown.openAccount") }
 
 enum Sheet: String, Identifiable {
-    case settings, addAccount, claudeSignIn, chatGPTSignIn, geminiSignIn, layout, share
+    case settings, addAccount, claudeSignIn, chatGPTSignIn, geminiSignIn, layout, share, snapshot
     var id: String { rawValue }
 
     /// The sign-in sheet for an account's provider.
@@ -129,6 +129,7 @@ struct RootView: View {
                 case .geminiSignIn: GeminiSignInSheet()
                 case .layout: LayoutSheet(accountKey: model.currentAccountKey ?? "")
                 case .share: ShareSheet(accountKey: model.currentAccountKey ?? "")
+                case .snapshot: SummarySnapshotSheet()
                 }
             }
             .environment(model)
@@ -152,6 +153,7 @@ struct RootView: View {
         case "gemini": sheet = .geminiSignIn
         case "layout": sheet = .layout
         case "share": sheet = .share
+        case "snapshot": sheet = .snapshot
         default: break
         }
     }
@@ -356,7 +358,12 @@ struct MainTabs: View {
             Menu {
                 Button("Refresh", systemImage: "arrow.clockwise") { Task { await model.refresh(manual: true) } }
                 Button("Layout", systemImage: "rectangle.3.group") { sheet = .layout }
-                Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
+                // CCRM-112 (Summary Snapshot): on the All tab the share item is the whole Summary's snapshot.
+                if key == AppModel.summaryKey {
+                    Button("Share snapshot", systemImage: "square.and.arrow.up") { sheet = .snapshot }
+                } else {
+                    Button("Share card", systemImage: "square.and.arrow.up") { sheet = .share }
+                }
                 if !model.isSample { Button("Add account", systemImage: "plus") { sheet = .addAccount } }
             } label: { Image(systemName: "ellipsis.circle") }
         }

@@ -94,11 +94,14 @@ struct ShareCardView: View {
     }
 
     /// "as of 6:26 pm, Thu 23 Oct" — the reading's own time, never the moment of sharing.
-    private var asOf: String {
+    private var asOf: String { Self.asOf(fetchedAtMs) }
+
+    /// CCRM-112 (Summary Snapshot) writes the same line, for the newest reading shown.
+    static func asOf(_ ms: Int64) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
         f.dateFormat = "EEE d MMM"
-        return "as of \(CardContent.clock(fetchedAtMs, Display.use24h, .current)), \(f.string(from: Date(ms: fetchedAtMs)))"
+        return "as of \(CardContent.clock(ms, Display.use24h, .current)), \(f.string(from: Date(ms: ms)))"
     }
 }
 

@@ -12,6 +12,11 @@ struct Account: Codable, Identifiable, Equatable, Sendable {
     var pinned = false
     /// When it was signed in here, for Details… (nil for accounts added before this was recorded).
     var addedAtMs: Int64? = nil
+    /// CCRM-110 (Account Tags): "personal" or "work"; absent = None. Additive — a v1.9-era reader ignores the key, and an
+    /// account written without it reads as None. A string, not the enum, so a value this build does not know survives a
+    /// round trip instead of failing the whole account.
+    var tag: String? = nil
+    var accountTag: AccountTag? { AccountTag(stored: tag) }
     var id: String { key }
 
     /// The positional default a cleared rename restores: the provider's name for the first account of that provider

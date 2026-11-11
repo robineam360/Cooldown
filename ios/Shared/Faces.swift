@@ -303,6 +303,11 @@ enum Prefs {
         get { SummaryOrder(key: defaults.string(forKey: "summaryOrder")) }
         set { defaults.set(newValue.rawValue, forKey: "summaryOrder") }
     }
+    /// CCRM-110 (Account Tags): the Summary's All · Personal · Work filter, remembered (a new key; v1.9 never reads it).
+    static var summaryFilter: String? {
+        get { defaults.string(forKey: "summaryFilter") }
+        set { defaults.set(newValue, forKey: "summaryFilter") }
+    }
     /// The last account looked at, for launch with Open on the summary off (or one account).
     static var lastAccountKey: String? {
         get { defaults.string(forKey: "lastAccount") }
