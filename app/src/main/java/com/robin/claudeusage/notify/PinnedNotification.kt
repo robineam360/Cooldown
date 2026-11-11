@@ -699,7 +699,11 @@ object PinnedNotification {
         val title = LeadLines.headerTitle(label)
         // N1-Q7: "· Weekly" gives before the name, both layouts.
         val headerTitle =
-            if (TextFit.titleKeepsWindow(title, headerColumn, spToDp.dp(TextFit.EXPANDED_TITLE_SP))) title else label
+            if (TextFit.titleKeepsWindow(
+                    title, headerColumn, spToDp.dp(TextFit.EXPANDED_TITLE_SP),
+                    if (duet) TextFit.duetLabelMaxDp(ring != null) else Float.MAX_VALUE,
+                )
+            ) title else label
         val collapsedTitle =
             if (TextFit.titleKeepsWindow(title, collapsedColumn, spToDp.dp(TextFit.COLLAPSED_TITLE_SP))) title else label
         val gaugeWindow = if (gaugeWeekly) weekly else data?.session
@@ -881,9 +885,6 @@ object PinnedNotification {
 
     /** Rev D §3: the header ring, single and Duet expanded (the figure 0.29 × 44 ≈ 12.8 sp before fitting). */
     private const val HEADER_RING_DP = 44f
-
-    /** `notif_duet_expanded.xml`'s label bound, the full-width header's. */
-    private const val EXPANDED_LABEL_DP = 200f
 
     /** The view ids of one ring: its box (shown or gone), bitmap, figure and optional time line. */
     private class RingIds(val box: Int, val img: Int, val fig: Int, val time: Int?)
@@ -1093,7 +1094,7 @@ object PinnedNotification {
             )
             // The layout's 200 dp label bound assumed the full 328 dp row; the ring and
             // its 14 dp gap take 58 of it, so the dot after the label stays on screen.
-            setInt(ids.label, "setMaxWidth", dp(context, EXPANDED_LABEL_DP - HEADER_RING_DP - 14f).toInt())
+            setInt(ids.label, "setMaxWidth", dp(context, TextFit.duetLabelMaxDp(hasRing = true)).toInt())
         }
         // Sign in, no reading, a Weekly not started: "—" and a bare track (notification.md §1.4;
         // CCRM-105 keeps the two views agreeing on it).
@@ -1161,7 +1162,10 @@ object PinnedNotification {
         // tail dropped once the name is at its floor; under 256 dp of content a row with no figure gives the word the
         // figure's slot; a bare word that would leave the name under 32 dp goes ("Stale" leaving its dot).
         val dots = (if (dotHue != null) 1 else 0) + (if (synthDot) 1 else 0)
-        val fit = Duet.rowFit(contentDp, barDp, dots, h.label, h.word, h.wordFull, h.wordShort, h.dash, fontScale)
+        val fit = Duet.rowFit(
+            contentDp, barDp, dots, h.label, h.word, h.wordFull, h.wordShort, h.dash, fontScale,
+            dotShown = dotHue != null,
+        )
         if (fit.word == null) {
             setViewVisibility(ids.word, android.view.View.GONE)
             setViewPadding(ids.line, 0, 0, 0, 0)

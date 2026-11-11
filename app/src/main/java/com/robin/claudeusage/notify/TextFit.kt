@@ -102,8 +102,16 @@ internal object TextFit {
      * N1-Q7: "· Weekly" gives before the name. True keeps "<name> · Weekly" — its bold width at [labelDp] fits the
      * column less the mark; false prints the name alone.
      */
-    fun titleKeepsWindow(title: String, columnDp: Float, labelDp: Float): Boolean =
-        widthDp(em(title, bold = true), labelDp, 1f) <= columnDp - LABEL_MARK_DP
+    fun titleKeepsWindow(title: String, columnDp: Float, labelDp: Float, labelMaxDp: Float = Float.MAX_VALUE): Boolean =
+        widthDp(em(title, bold = true), labelDp, 1f) <= minOf(columnDp - LABEL_MARK_DP, labelMaxDp)
+
+    /**
+     * The Duet header label's own bound (`notif_duet_expanded.xml` maxWidth 200 dp, less the 44 dp ring and its 14 dp gap
+     * when there is one): on a wide shade the column is wider than the label may grow, so "· Weekly" is weighed against
+     * the smaller of the two (A6 judge F2) — never kept only to be cut inside it.
+     */
+    fun duetLabelMaxDp(hasRing: Boolean): Float = if (hasRing) DUET_LABEL_MAX_DP - RING_BOX_DP - COLUMN_GAP_DP else DUET_LABEL_MAX_DP
+    const val DUET_LABEL_MAX_DP = 200f
 
     /** Wireframe §8: a tinted (semi-bold) span is 3% wider. */
     private const val BOLD = 1.03

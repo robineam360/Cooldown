@@ -311,4 +311,18 @@ class TextFitTest {
         val col750 = TextFit.expandedColumnDp(750, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
         assertTrue(TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col750, one.dp(TextFit.EXPANDED_TITLE_SP)))
     }
+
+    @Test
+    fun `on a wide shade Weekly gives against the Duet label's own 142 dp bound, not only the column (judge F2)`() {
+        val one = aosp(1f)
+        val label = one.dp(TextFit.EXPANDED_TITLE_SP)
+        for (sw in listOf(411, 600)) {
+            val col = TextFit.expandedColumnDp(sw, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
+            assertTrue("column alone at $sw", TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col, label) || sw == 411)
+            assertFalse("bounded at $sw", TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col, label, TextFit.duetLabelMaxDp(true)))
+            assertTrue("short name at $sw", TextFit.titleKeepsWindow("Teams · Weekly", col, label, TextFit.duetLabelMaxDp(true)))
+        }
+        assertEquals(142f, TextFit.duetLabelMaxDp(true))
+        assertEquals(200f, TextFit.duetLabelMaxDp(false))
+    }
 }

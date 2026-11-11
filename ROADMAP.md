@@ -2043,7 +2043,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS follow-up (Step I4):** built 2026-11-11: Lab is **Work** in every demo scenario (Teams Work, Personal Personal, Lab Work); `-demo upgraded` shows the upgrade state.
 
 ### CCRM-114 · Narrow Duet — the two-account notification on a 360 dp phone's shade
-- **Status:** Planned · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1) · **in v2.0** · Android only.
+- **Status:** **Android built** 2026-11-11 (RUNBOOK Step A6, code `3ab1181`; emulator captures `design/research/2026-11-v20-build/A6/`) · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1, variant C) · **in v2.0** · Android only · One UI's 360 dp widths UNVERIFIED until Step 3.
 - **Why:** Step A2 measured the AOSP shade giving a 360 dp phone **220 dp** of collapsed content (rev B drew 328): a word
   with no tail ("No reading", "Not started", "Sign in") squeezed the account name to ".." (finding F1); the pace line
   was cut mid-clock instead of dropping its weekday (finding F2, CCBG-80 (Fixed Pace Columns)).

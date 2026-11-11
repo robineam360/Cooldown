@@ -199,6 +199,11 @@ object Duet {
         short: String?,
         dash: Boolean,
         fontScale: Float,
+        /**
+         * The row's one condition dot view is already showing (the update strip on First, a Free-plan fault): a "Stale"
+         * that goes recolours it fault red (the row's own fault wins, as in the expanded header) and costs no more room.
+         */
+        dotShown: Boolean = false,
     ): RowFit {
         if (word == null || full == null) return RowFit(null, inSlot = false, staleDot = false, nameRoomDp(barDp, dots, null, fontScale))
         val bare = short ?: full
@@ -209,8 +214,9 @@ object Duet {
         val run = if (inSlot) SLOT_RUN_DP else 0f
         val floor = min(NAME_FLOOR_BARE_DP, nameDp)
         if (shown == bare && word != Word.SIGN_IN && room(shown, run) < floor) {
-            val dot = word == Word.STALE && room(null, 0f, extraDots = 1) >= floor
-            return RowFit(null, inSlot = false, staleDot = dot, room(null, 0f, extraDots = if (dot) 1 else 0))
+            val extra = if (dotShown) 0 else 1
+            val dot = word == Word.STALE && room(null, 0f, extraDots = extra) >= floor
+            return RowFit(null, inSlot = false, staleDot = dot, room(null, 0f, extraDots = if (dot) extra else 0))
         }
         return RowFit(shown, inSlot, staleDot = false, room(shown, run))
     }

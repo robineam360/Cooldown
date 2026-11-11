@@ -376,4 +376,17 @@ class DuetTest {
         assertFalse(fit.inSlot)
         assertFalse(fit.staleDot)
     }
+
+    @Test
+    fun `a Stale that goes shares the row's one dot view - no extra room when it already shows (judge F3)`() {
+        // 200 dp, First row with the update dot showing: the stale word goes and recolours that dot; the name keeps the
+        // room it had beside one dot, not one less.
+        val alone = Duet.rowFit(200f, 64f, 0, "Studio", Duet.Word.STALE, "Stale", "Stale", false, 1f)
+        assertTrue(alone.staleDot)
+        assertEquals(35, Math.round(alone.nameRoomDp))
+        val shared = Duet.rowFit(200f, 64f, 1, "Studio", Duet.Word.STALE, "Stale", "Stale", false, 1f, dotShown = true)
+        assertNull(shared.word)
+        assertTrue(shared.staleDot)
+        assertEquals(35, Math.round(shared.nameRoomDp))
+    }
 }

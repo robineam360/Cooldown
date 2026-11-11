@@ -208,7 +208,7 @@ clients back at `cases.json`.
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☑ 2026-11-11 |
 | A4 | Summary: CCRM-110 (Personal/Work, filter memory), CCRM-112, CCRM-115 (row glyph) | A3, Q5 | ☑ 2026-11-11 |
 | A5 | Sample: CCRM-113 | A4 | ☑ 2026-11-11 |
-| A6 | Narrow Duet: CCRM-114, CCBG-80 | A5 | ☐ |
+| A6 | Narrow Duet: CCRM-114, CCBG-80 (+ CCBG-81, Robin) | A5 | ☑ 2026-11-11 |
 
 ### Lane I — iOS (one step at a time; runs beside Lane A)
 
@@ -508,17 +508,17 @@ measured the Fold 7; this restores the approved drop order ("· resets Wed 12:30
 the floor).
 
 **Done when:**
-- ☐ `DuetTest` has a case for every cell the addendum draws (226 · 220 · 200 · 176 dp, font 1.0 and 2.0, the states of
+- ☑ `DuetTest` has a case for every cell the addendum draws (226 · 220 · 200 · 176 dp, font 1.0 and 2.0, the states of
   its grid); `TextFitTest` pins the derived-column table (360 · 411 · 420 · 750 dp at font 1.0 / 1.3 / 2.0) and the
   pace line dropping its weekday where the column is short, for both layouts; both flavors' tests and lint; the
   widget generator byte-identical.
-- ☐ Emulator captures at 360 dp, the cover-like and inner widths, font 1.0 and 2.0, dark and light: the Duet collapsed
+- ☑ Emulator captures at 360 dp, the cover-like and inner widths, font 1.0 and 2.0, dark and light: the Duet collapsed
   and expanded with "Sign in", "No reading", "Not started", "Held", "Out", "Stale", a long name; the single layout
   collapsed and expanded with a signed figure; the "Sun 6:…" cut of A2's capture 25 gone.
-- ☐ CCRM-114 Status "Android built"; CCBG-80 "Fixed" with the commit; `notification.md` Android section.
-- ☐ **UNVERIFIED until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220); write the measured
+- ☑ CCRM-114 Status "Android built"; CCBG-80 "Fixed" with the commit; `notification.md` Android section.
+- ☑ **UNVERIFIED until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220); write the measured
   emulator widths in the Log.
-- ☐ Judge round recorded; landed. Lane A's HANDOVER block now says "Lane A done".
+- ☑ Judge round recorded; landed. Lane A's HANDOVER block now says "Lane A done".
 
 **Lane A reversal:** each step is its own commits; `git revert` of them, newest first, restores the previous
 step. A4's tag preference is additive, so a revert leaves only an unread key; A6 changes only the Duet's layout and fit code.
@@ -693,6 +693,47 @@ step. A4's tag preference is additive, so a revert leaves only an unread key; A6
   captures (never committed, deleted); afterwards app data cleared, size / density / font reset, dark mode off, airplane mode off,
   emulator killed; `screen_off_timeout` was already 2147483647 and untouched. Sweeper skipped: the session list was not read.
 
+- **2026-11-11 · A6 Narrow Duet (Android).** Code `3ab1181` (CCRM-114 (Narrow Duet), addendum §N1 variant C: `Duet.rowFit` rungs 4
+  and 5 — under 256 dp of content a row with no figure gives its slot to the word, the figure view gone and the bar padded 50 dp;
+  a bare word that would leave the name under min(32, its width) goes, "Stale" leaving its fault-red dot, "Sign in" never; TalkBack
+  hears the full word on the word view, or "<name>, <word>" on the name. Expanded: the ring's time line in 11 dp, "· Weekly"
+  gives before the name, the spent line drops " · in …". CCBG-80 (Fixed Pace Columns): `TextFit.collapsedColumnDp` /
+  `expandedColumnDp` / `fitDp`, sizes via `TypedValue.applyDimension`, capped at 142 / 141 / 186. CCBG-81 (History Tab Wrap):
+  `ui/ProfileTabStrip.kt`, Main and History), judge fixes and close-out in the following commit; both flavors' tests, lint and
+  both assembles green; `tools/widget_layouts.py --check` ok. **Tests:** `DuetTest` pins all **109** cells the page draws (the
+  four widths × font 1.0 / 2.0 × its two grids, plus the 272 / 253 / 220 trio), each generated from the page's own `decide()`
+  and matching word, slot, dot and name room; `TextFitTest` pins the derived-column table (360 · 411 · 420 · 750 dp × 1.0 / 1.3 /
+  2.0, all three columns, AOSP's non-linear table as the test's `SpToDp`) and the form the pace line takes in each — matching
+  the page's `cols()`; `TabStripFitTest`. **CCBG-81:** Robin, asked with options, chose **B** (both strips scroll when a label
+  will not fit) over the recommended A, then approved B as captured (`design/2026-11-11-ccbg81-history-tab-strip.html`, before /
+  A / B captures in `A6/ccbg81/`); approved side effect: on the cover and the inner screen Main's strip is fixed whenever its
+  labels fit. **Captures** `design/research/2026-11-v20-build/A6/` (76 + 23 strip shots, fold7inner at 5556, AOSP shade, each
+  collapsed and expanded): 360 dp dark font 1.0 01–08 (Vs pace both signs; Held · Out; no 5h · Not started; Sign in · No reading
+  in the figure's slot; Stale · 91%; a long name beside Held; the single layout, signed figure, short and long name), 360 dark
+  font 2.0 09–15, 360 light 16–19, cover-like dark 20–27 (rev B's "—" kept, "Out · Sat" keeps its tail), cover font 2.0 28–30,
+  cover light 31–32, inner 33–38. The "Sun 6:…" cut of A2's capture 25 is gone: the 360 dp Duet header reads "21h 50m ahead ·
+  Mon" (01). **Measured emulator widths (AOSP, for Step 3 against One UI):** collapsed Duet content / bar **220 / 84 dp at
+  360**, 280 / 144 at the cover-like 420, 402 / 265 at the inner 750 — as A2. **Judge** (fresh Opus @ high, product account):
+  concerns, nothing blocking. Adopted: F1 (no notification captures yet — taken, above); F2 ("· Weekly" was weighed against the
+  column only, so on a wide shade a Duet label passed and was then cut inside its 142 dp maxWidth, "Personal Max 20x · …",
+  inner capture 35 before the fix — now weighed against min(column − 18, the label's bound), `TextFitTest`; re-shot 28, 35, 37);
+  F3 (a "Stale" that goes now shares the row's one dot view with an update dot instead of counting a second, `DuetTest`; the
+  row's own fault colours it, as the expanded header already ranks fault over update). Not changed: F4 (older than A6: on a
+  SystemUI reapply the word colour, the stale alpha and the label's maxWidth are not reset — new RemoteViews are built each
+  update; worth a look in Step 2 or 3), F5 (Convention 5: the status lines and surfaces deltas ride in the close-out commit).
+  **Wireframe calls, within §N1:** rung 5 is read as the page's text says, for a *bare* word — the page's script would also drop
+  a still-tailed "Held · 3:40 PM" whose name room falls in [24, 32), which no drawn cell reaches (a 400 dp phone would); the
+  judge accepted the reading. The spent line's second-clause drop and "· Weekly" giving are applied to both layouts, as the page's
+  `xh()` / `sgl()` draw them. At font 2.0 on a 360 dp phone the Duet line ends in the stated last resort ("23h 31m be…", N1-Q8
+  (a)) and the single collapsed line is cut (the page's own caveat). **For Step 2:** (1) check whether the iPhone 17e's
+  History strip wraps "Personal" the same way (Lane I is closed; any iOS fix is Step 2's, and BEHAVIOR / surfaces should then
+  state the measured-label rule for both platforms); (2) `spec/mobile/surfaces/app.md` §1's "Fit" row and the All tab's
+  "fixed ≤ 3" sentence are superseded on Android by A6's section — fold them; (3) the judge's F4 above. **UNVERIFIED until
+  Step 3:** One UI's real widths at 360 dp (assumed AOSP's 220), expanded = collapsed + 40 on One UI, One UI's font curve.
+  **Emulator notes:** a scratch debug-only `SeedActivity` (never committed, deleted) seeded registry, snapshots, plans and fake
+  credentials (airplane mode on); afterwards the app was cleared and uninstalled, size / density / font reset, dark mode off,
+  airplane mode off, stay-awake off, emulator killed; `screen_off_timeout` was set to 2147483647 without recording the old
+  value. Sweeper skipped: the session list was not read.
 ---
 
 ## Lane I — iOS
@@ -1279,6 +1320,13 @@ captures); the snapshot glyph, **"Only while both tags appear (Recommended)"**; 
 with Fable's fit calls; the filter reset **"As per your recommendation but ensure specs and behaviour is the same across
 iOS and Android"**; and Robin's two requests, the row glyph ("Also on summary rows please (next to or better: before the
 account logos?)") and the narrow Duet ("Yes, wireframe it"). No new gate: none of A4, A6, I4 waits on a question.
+
+**Added 2026-11-11 (relayed by the orchestrating session to Step A6, recorded there):** the Personal/Work filter keeps its
+tags **as words** ("All · Personal · Work"), not glyphs; a half-added account abandoned in the browser is **removed at the
+next launch once it is over an hour old**, as A5 built it (`UsageRepository.settleProvisional`). And CCBG-81 (History Tab
+Wrap), added to A6 by Robin: asked with options (A: History counts tabs like Main, recommended; B: both strips scroll when a
+label will not fit; leave as is), Robin chose **"B: scroll if a label won't fit"**, then, shown B's captures, **"Approve B as
+captured"** (`design/2026-11-11-ccbg81-history-tab-strip.html`).
 
 All six were answered by Robin in the orchestrating session on 2026-11-11 (AskUserQuestion, options quoted
 verbatim) and relayed to the planning session, which recorded them. No answer adds or removes a step.
