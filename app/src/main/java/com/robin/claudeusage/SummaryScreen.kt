@@ -1,6 +1,15 @@
 package com.robin.claudeusage
 
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.input.pointer.pointerInput
@@ -16,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,6 +58,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.robin.claudeusage.data.AccountRead
+import com.robin.claudeusage.data.AccountTag
+import com.robin.claudeusage.data.SummaryFilter
+import com.robin.claudeusage.data.SummaryFilters
+import com.robin.claudeusage.data.SummaryOrder
+import com.robin.claudeusage.ui.SummaryFilterControl
+import com.robin.claudeusage.ui.TagGlyph
 import com.robin.claudeusage.data.HistoryPoint
 import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.data.Profile
@@ -94,14 +110,33 @@ internal fun SummaryScreen(
 ) {
     val cache = remember { repo.cacheSettings() }
     val dark = appDark()
+    // CCRM-110 (Account Tags): the filter in force — the remembered value when it names an enabled segment, else All.
+    // The memory rule runs when the Summary comes on screen and whenever the tags change (BEHAVIOR-MOBILE §6).
+    val tags = profiles.map { cache.tag(it) }
+    var stored by remember { mutableStateOf(cache.summaryFilterStored()) }
+    LaunchedEffect(tags) {
+        cache.settleSummaryFilter(profiles)
+        stored = cache.summaryFilterStored()
+    }
+    val filter = SummaryFilters.inForce(stored, tags)
+    val shown = profiles.filterIndexed { i, _ -> filter.matches(tags[i]) }
+    var note by remember { mutableStateOf<SummaryFilter?>(null) }
+    LaunchedEffect(note) {
+        if (note != null) {
+            delay(SummaryFilters.NOTE_MS)
+            note = null
+        }
+    }
     // History files are read only when a fetch lands, not on every 5 s tick (Step 5 judge F4);
     // the tick still re-runs the time maths.
-    val fetchedAts = profiles.map { repo.snapshot(it).fetchedAt }
-    val histories = remember(profiles, fetchedAts) { profiles.associateWith { repo.history().points(it) } }
-    // Appearance › Summary order (Robin, 2026-11-02): keyed so a change re-sorts at once.
-    val order = cache.summaryOrder()
-    val rows = remember(profiles, tick, histories, order) { summaryRows(repo, profiles, histories) }
-    val compact = SummaryRows.compact(profiles.size)
+    val fetchedAts = shown.map { repo.snapshot(it).fetchedAt }
+    val histories = remember(shown, fetchedAts) { shown.associateWith { repo.history().points(it) } }
+    // Appearance › Summary order (Robin, 2026-11-02), also the header's sort menu (CCRM-110): keyed so a change
+    // re-sorts at once.
+    var order by remember { mutableStateOf(cache.summaryOrder()) }
+    val rows = remember(shown, tick, histories, order) { summaryRows(repo, shown, histories) }
+    // The one-line form follows the rows shown, not the accounts (CCRM-110).
+    val compact = SummaryRows.compact(shown.size)
     // CCRM-109 (Quiet Accounts): only an account whose row prints 1% or more, with a reset clock, is plotted; the
     // foot line counts the rest. CCRM-111 (Map Layers): the three chips, remembered.
     val mapEntries = remember(rows, dark, use24h) {
@@ -117,22 +152,48 @@ internal fun SummaryScreen(
     val list: @Composable () -> Unit = {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
-                CardHeader("Weekly", order.header)
+                SummaryHeader(
+                    filter = filter,
+                    tags = tags,
+                    order = order,
+                    onChoose = { f ->
+                        cache.setSummaryFilter(f)
+                        stored = f.key
+                        note = null
+                    },
+                    onDisabledTap = { note = it },
+                    onOrder = { o -> cache.setSummaryOrder(o); order = o },
+                )
+                note?.let {
+                    Text(
+                        SummaryFilters.disabledNote(it),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp).semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                }
                 Spacer(Modifier.height(6.dp))
-                rows.forEachIndexed { i, r ->
-                    if (i > 0) HorizontalDivider()
-                    val accent = Palette.color(Palette.accentName(cache, r.profile), dark)
-                    if (compact) {
-                        CompactSummaryRow(r, i + 1, accent, mode, use24h, showOverPace) { onOpen(r.profile) }
-                    } else {
-                        SummaryRow(
-                            r, accent, r.name,
-                            // API-CONTRACT §11's name, as Settings shows it.
-                            repo.plan(r.profile)?.let { Fmt.planLabel(r.profile.provider, it, repo.tier(r.profile)) },
-                            mode, use24h, showOverPace,
-                        ) {
-                            onOpen(r.profile)
+                // CCRM-115 (Row Tag Glyph): one decision for the whole list, measured on its tightest row.
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    val glyph = rowGlyphColumn(rows, repo, compact, mode, maxWidth.value)
+                    Column(Modifier.fillMaxWidth()) {
+                    rows.forEachIndexed { i, r ->
+                        if (i > 0) HorizontalDivider()
+                        val accent = Palette.color(Palette.accentName(cache, r.profile), dark)
+                        val tag = cache.tag(r.profile)
+                        if (compact) {
+                            CompactSummaryRow(r, i + 1, accent, tag, glyph, mode, use24h, showOverPace) { onOpen(r.profile) }
+                        } else {
+                            SummaryRow(
+                                r, accent, r.name,
+                                // API-CONTRACT §11's name, as Settings shows it.
+                                repo.plan(r.profile)?.let { Fmt.planLabel(r.profile.provider, it, repo.tier(r.profile)) },
+                                tag, glyph, mode, use24h, showOverPace,
+                            ) {
+                                onOpen(r.profile)
+                            }
                         }
+                    }
                     }
                 }
             }
@@ -200,7 +261,7 @@ internal data class SummaryRowModel(
 }
 
 /** Reads every account, ranks them by [SummaryRank], and returns them in display order. */
-private fun summaryRows(
+internal fun summaryRows(
     repo: UsageRepository,
     profiles: List<Profile>,
     histories: Map<Profile, List<HistoryPoint>>,
@@ -231,12 +292,131 @@ private fun summaryRows(
     }
 }
 
+/**
+ * CCRM-110 (Account Tags), wireframe rev B §6 as amended: "Weekly", the All · Personal · Work control beside it, and
+ * the sort menu ("your order ▾") at the right. On a narrow list (a 360 dp phone's 288 dp) the sort button is its
+ * glyph "⇅ ▾"; from font scale 1.5 the control wraps under the title across the whole width.
+ */
 @Composable
-private fun CardHeader(title: String, sub: String) {
-    Row(verticalAlignment = Alignment.Bottom) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.weight(1f))
-        Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun SummaryHeader(
+    filter: SummaryFilter,
+    tags: List<AccountTag>,
+    order: SummaryOrder,
+    onChoose: (SummaryFilter) -> Unit,
+    onDisabledTap: (SummaryFilter) -> Unit,
+    onOrder: (SummaryOrder) -> Unit,
+) {
+    val wrap = LocalDensity.current.fontScale >= 1.5f
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val glyphSort = maxWidth < 320.dp
+        val control: @Composable (Modifier, Boolean) -> Unit = { m, fill ->
+            SummaryFilterControl(
+                current = filter,
+                enabled = { SummaryFilters.enabled(it, tags) },
+                onChoose = onChoose,
+                onDisabledTap = onDisabledTap,
+                modifier = m,
+                fill = fill,
+            )
+        }
+        if (wrap) {
+            Column(Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Weekly", style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.weight(1f))
+                    SortMenu(order, glyphSort, onOrder)
+                }
+                Spacer(Modifier.height(8.dp))
+                control(Modifier.fillMaxWidth(), true)
+            }
+        } else {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Weekly", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.width(10.dp))
+                control(Modifier, false)
+                Spacer(Modifier.weight(1f))
+                SortMenu(order, glyphSort, onOrder)
+            }
+        }
+    }
+}
+
+/** The sort button: the four Summary orders, a check on the current one; the same setting as Appearance › Summary order. */
+@Composable
+private fun SortMenu(order: SummaryOrder, glyphOnly: Boolean, onOrder: (SummaryOrder) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val ink = MaterialTheme.colorScheme.onSurfaceVariant
+    val shape = RoundedCornerShape(8.dp)
+    Box {
+        Row(
+            Modifier
+                .heightIn(min = 28.dp)
+                .clip(shape)
+                .border(1.dp, MaterialTheme.colorScheme.outline, shape)
+                .clickable { open = true }
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .semantics { contentDescription = "Sort order: ${order.header}" },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (glyphOnly) {
+                androidx.compose.foundation.Canvas(Modifier.size(width = 14.dp, height = 12.dp)) {
+                    val w = 1.4.dp.toPx()
+                    val h = size.height
+                    val x = size.width / 4f
+                    // ⇅ — an up arrow and a down arrow side by side.
+                    drawLine(ink, Offset(x, h), Offset(x, 1.dp.toPx()), w)
+                    drawLine(ink, Offset(x, 1.dp.toPx()), Offset(x - 2.5.dp.toPx(), 4.dp.toPx()), w)
+                    drawLine(ink, Offset(x, 1.dp.toPx()), Offset(x + 2.5.dp.toPx(), 4.dp.toPx()), w)
+                    val x2 = size.width * 3f / 4f
+                    drawLine(ink, Offset(x2, 0f), Offset(x2, h - 1.dp.toPx()), w)
+                    drawLine(ink, Offset(x2, h - 1.dp.toPx()), Offset(x2 - 2.5.dp.toPx(), h - 4.dp.toPx()), w)
+                    drawLine(ink, Offset(x2, h - 1.dp.toPx()), Offset(x2 + 2.5.dp.toPx(), h - 4.dp.toPx()), w)
+                }
+            } else {
+                Text(order.header, fontSize = 12.sp, color = ink, maxLines = 1, softWrap = false)
+            }
+            Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = ink, modifier = Modifier.size(18.dp))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            for (value in SummaryOrder.entries) {
+                DropdownMenuItem(
+                    text = { Text((if (value == order) "✓ " else "") + value.label) },
+                    onClick = { open = false; onOrder(value) },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * CCRM-115 (Row Tag Glyph): whether the list draws its glyph column. One answer for every row shown, measured on the
+ * tightest — never row by row (BEHAVIOR-MOBILE §6; the pure rule is [SummaryRows.fullKeepsGlyph] and
+ * [SummaryRows.oneLineKeepsGlyph]). [listDp] is the width inside the card's padding.
+ */
+@Composable
+private fun rowGlyphColumn(rows: List<SummaryRowModel>, repo: UsageRepository, compact: Boolean, mode: PaceText.Mode, listDp: Float): Boolean {
+    if (compact) return SummaryRows.oneLineKeepsGlyph(listDp)
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val plans = rows.map { r -> repo.plan(r.profile)?.let { Fmt.planLabel(r.profile.provider, it, repo.tier(r.profile)) } }
+    return remember(rows, plans, mode, listDp, density) {
+        with(density) {
+            fun wide(text: androidx.compose.ui.text.AnnotatedString, style: TextStyle) = measurer.measure(text, style).size.width.toDp().value
+            val figureStyle = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold).grammarDigits()
+            val measures = rows.mapIndexed { i, r ->
+                val (figure, word) = AppPace.figureSigned(r.used, r.elapsed, mode)
+                val figureText = buildAnnotatedString {
+                    append(grammarFigure(figure))
+                    if (word == "left") append(" left")
+                }
+                SummaryRows.FullMeasure(
+                    nameDp = wide(androidx.compose.ui.text.AnnotatedString(r.name), TextStyle(fontSize = 15.sp)),
+                    pillDp = plans[i]?.let { wide(androidx.compose.ui.text.AnnotatedString(it), TextStyle(fontSize = 11.sp)) + 10f },
+                    figureDp = wide(figureText, figureStyle),
+                )
+            }
+            SummaryRows.fullKeepsGlyph(listDp - SummaryRows.FULL_RING_COLUMN_DP, measures, 15.sp.toDp().value / 15f)
+        }
     }
 }
 
@@ -270,6 +450,8 @@ private fun SummaryRow(
     accent: Color,
     name: String,
     plan: String?,
+    tag: AccountTag,
+    glyph: Boolean,
     mode: PaceText.Mode,
     use24h: Boolean,
     showOverPace: Boolean,
@@ -323,6 +505,11 @@ private fun SummaryRow(
                 // CCBG-60 (Summary Line Clip): mark, name and pill share every dp the figure
                 // leaves; the name gives way first, and the pill stays beside it.
                 Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    // CCRM-115 (Row Tag Glyph): a person or briefcase, 14 dp and 4 dp, before the provider mark.
+                    if (glyph) {
+                        TagGlyph(tag, SummaryRows.GLYPH_FULL_DP.dp, muted)
+                        Spacer(Modifier.width(SummaryRows.GLYPH_GAP_DP.dp))
+                    }
                     ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
                     Spacer(Modifier.width(7.dp))
                     Text(
@@ -330,7 +517,10 @@ private fun SummaryRow(
                         fontSize = 15.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            // TalkBack reads the tag on the name, whether or not the glyph is drawn.
+                            .semantics { contentDescription = SummaryRows.nameDescription(name, tag) },
                     )
                     plan?.let {
                         Spacer(Modifier.width(7.dp))
@@ -429,6 +619,8 @@ private fun CompactSummaryRow(
     r: SummaryRowModel,
     rank: Int,
     accent: Color,
+    tag: AccountTag,
+    glyph: Boolean,
     mode: PaceText.Mode,
     use24h: Boolean,
     showOverPace: Boolean,
@@ -464,13 +656,23 @@ private fun CompactSummaryRow(
         horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
         RankBadge(rank, accent)
-        Text(
-            r.name,
-            fontSize = 15.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.width(64.dp),
-        )
+        // CCRM-115: the glyph (12 dp, then 4 dp) sits between the rank disc and the name; as one group with the name
+        // it costs the bar 16 dp and the row's gaps stay 7 dp.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (glyph) {
+                TagGlyph(tag, SummaryRows.GLYPH_ONE_LINE_DP.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(SummaryRows.GLYPH_GAP_DP.dp))
+            }
+            Text(
+                r.name,
+                fontSize = 15.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .width(64.dp)
+                    .semantics { contentDescription = SummaryRows.nameDescription(r.name, tag) },
+            )
+        }
         Box(Modifier.weight(1f)) {
             UsageBarLine(
                 percent = used,

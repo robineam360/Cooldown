@@ -605,6 +605,41 @@ class UsageCache(context: Context) {
             .apply()
     }
 
+    /**
+     * CCRM-110 (Account Tags): the account's tag, read through the registry by key (a [Profile] captured earlier may
+     * carry an older one). Missing, empty or unknown reads as Personal.
+     */
+    fun tag(profile: Profile): AccountTag = registry.byKey(profile.key)?.tag ?: AccountTag.PERSONAL
+
+    /**
+     * The Summary's remembered filter — the last segment tapped (`all`, `personal`, `work`), exactly as stored; null
+     * when never chosen. An additive key (v1.9 never reads it).
+     */
+    fun summaryFilterStored(): String? = prefs.getString("summaryFilter", null)
+
+    /** A tap on an enabled segment: the only thing besides [settleSummaryFilter] that writes the memory. */
+    fun setSummaryFilter(filter: SummaryFilter) {
+        prefs.edit().putString("summaryFilter", filter.key).apply()
+    }
+
+    /**
+     * The filter in force over [accounts] (the accounts the Summary shows — those with a sign-in): the remembered value
+     * when it names an enabled segment, else All.
+     */
+    fun summaryFilter(accounts: List<Profile>): SummaryFilter =
+        SummaryFilters.inForce(summaryFilterStored(), accounts.map { tag(it) })
+
+    /**
+     * The memory rule (BEHAVIOR-MOBILE §6), run whenever the accounts, a tag or the Summary change and when the
+     * Summary comes on screen: a stored value the filter in force does not match is replaced by `all`; a missing
+     * value stays missing; with fewer than two [accounts] nothing is evaluated.
+     */
+    fun settleSummaryFilter(accounts: List<Profile>) {
+        val stored = summaryFilterStored()
+        val settled = SummaryFilters.settled(stored, accounts.map { tag(it) })
+        if (settled != stored) prefs.edit().putString("summaryFilter", settled).apply()
+    }
+
     /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */
     fun openOnSummary(): Boolean = prefs.getBoolean("openOnSummary", true)
 

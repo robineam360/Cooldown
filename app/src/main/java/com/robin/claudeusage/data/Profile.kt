@@ -32,7 +32,15 @@ data class Profile(
      * account's whole life; nothing renders a provider switch mid-life.
      */
     val provider: Provider = Provider.CLAUDE,
+    /**
+     * CCRM-110 (Account Tags): the stored tag exactly as [ProfileRegistry] holds it — null when never written. Raw
+     * so that an unknown value written by a newer version survives a save; read it through [tag]. Not identity.
+     */
+    val tagRaw: String? = null,
 ) {
+    /** Personal or Work; a missing, empty or unknown stored value reads as Personal. */
+    val tag: AccountTag get() = AccountTag.read(tagRaw)
+
     override fun equals(other: Any?): Boolean =
         this === other || (other is Profile && other.key == key)
 

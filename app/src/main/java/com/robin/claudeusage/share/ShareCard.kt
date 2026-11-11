@@ -242,7 +242,10 @@ object ShareCard {
         return (line.tinted ?: "On the mark") to line.tone
     }
 
-    private fun row(c: Cell, usageLeft: Boolean, nowMs: Long): Row {
+    private fun row(c: Cell, usageLeft: Boolean, nowMs: Long): Row = rowOf(c, usageLeft, nowMs)
+
+    /** One window's row — also CCRM-112 (Summary Snapshot)'s two-slot row, so the two cards never disagree. */
+    internal fun rowOf(c: Cell, usageLeft: Boolean, nowMs: Long): Row {
         val week = if (c.window == FaceWindow.WEEKLY) weeklyPace(c.pct, c.resetsAt, c.window.lengthMs, nowMs) else null
         return Row(
             name = c.window.word + if (usageLeft) " left" else "",

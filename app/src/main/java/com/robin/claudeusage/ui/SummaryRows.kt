@@ -1,5 +1,6 @@
 package com.robin.claudeusage.ui
 
+import com.robin.claudeusage.data.AccountTag
 import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.data.SummaryRank
 import com.robin.claudeusage.data.UsageWindow
@@ -79,4 +80,51 @@ object SummaryRows {
     /** The tone of [compactWord]'s span; null when the word is not a pace span. */
     fun compactTone(group: SummaryRank.Group, weekly: UsageWindow?, use24h: Boolean, now: Instant = Instant.now()): PaceText.VsTone? =
         if (group == SummaryRank.Group.ELIGIBLE) paceLine(weekly, use24h, now)?.tone else null
+
+    // ---- CCRM-115 (Row Tag Glyph): the glyph column's fit rule (BEHAVIOR-MOBILE §6, addendum 2026-11-11) ------------
+
+    /** A full row's glyph and the gap after it: 14 dp + 4 dp, 18 dp in all, before the provider mark. */
+    const val GLYPH_FULL_DP = 14f
+    const val GLYPH_GAP_DP = 4f
+    const val GLYPH_COLUMN_DP = GLYPH_FULL_DP + GLYPH_GAP_DP
+
+    /** A one-line row's glyph (12 dp, then 4 dp) between the rank disc and the name; the snapshot's rows too. */
+    const val GLYPH_ONE_LINE_DP = 12f
+
+    /** A name keeps 64 dp at its own text scale (or its own width, if shorter) before the glyph column leaves. */
+    const val NAME_FLOOR_DP = 64f
+
+    /** A one-line bar keeps 40 dp (the Duet's floor) before the glyph column leaves. */
+    const val BAR_FLOOR_DP = 40f
+
+    /** The full row's fixed parts beside the name: the 18 dp mark, its 7 dp gap, the 7 dp gap before the figure. */
+    private const val FULL_MARK_DP = 18f
+    private const val FULL_GAP_DP = 7f
+
+    /** The ring box and its gap, which sit left of a full row's text column. */
+    const val FULL_RING_COLUMN_DP = 48f + 12f
+
+    /** A one-line row's fixed slots: disc 17, name 64, word 90, figure 40, four 7 dp gaps. */
+    const val ONE_LINE_FIXED_DP = 17f + 64f + 90f + 40f + 4 * 7f
+
+    /** One full row's measured parts, in dp: its name at its natural width, its plan pill (null: none), its figure. */
+    data class FullMeasure(val nameDp: Float, val pillDp: Float?, val figureDp: Float)
+
+    /**
+     * Whether the glyph column fits every full row shown: the name ellipsizes first, down to its floor
+     * (`64 dp × [nameScale]`, or its own width if shorter), and only a row that cannot hold the floor beside the glyph
+     * takes the column away from **every** row (never one row). [textColumnDp] is the width right of the ring.
+     */
+    fun fullKeepsGlyph(textColumnDp: Float, rows: List<FullMeasure>, nameScale: Float): Boolean = rows.all { r ->
+        val floor = minOf(NAME_FLOOR_DP * nameScale, r.nameDp)
+        GLYPH_COLUMN_DP + FULL_MARK_DP + FULL_GAP_DP + floor + (r.pillDp?.let { FULL_GAP_DP + it } ?: 0f) +
+            FULL_GAP_DP + r.figureDp <= textColumnDp
+    }
+
+    /** One-line rows: the bar (the one flexible column) pays 16 dp for the glyph and keeps 40 dp, else the column leaves. */
+    fun oneLineKeepsGlyph(listDp: Float): Boolean =
+        listDp - ONE_LINE_FIXED_DP - (GLYPH_ONE_LINE_DP + GLYPH_GAP_DP) >= BAR_FLOOR_DP
+
+    /** TalkBack / VoiceOver read the tag on the row's name, whether or not the glyph is drawn: "Teams, Work account". */
+    fun nameDescription(name: String, tag: AccountTag): String = "$name, ${tag.label} account"
 }

@@ -575,6 +575,18 @@ fun PaceMap(
     }
 }
 
+/** CCRM-112 (Summary Snapshot): the map's painter for the share card — the screen's own, drawn into a bitmap. */
+internal fun DrawScope.drawPaceMap(
+    s: PaceMapScene,
+    layers: MapLayers,
+    mode: PaceText.Mode,
+    pinned: String?,
+    callout: PaceMapCallout?,
+    ink: Color,
+    card: Color,
+    dark: Boolean,
+) = drawMap(s, layers, mode, pinned, callout, ink, card, dark)
+
 /** Draws [block] at [alpha] (a layer, so overlapping strokes do not double up). */
 private fun DrawScope.withAlpha(alpha: Float, block: DrawScope.() -> Unit) {
     if (alpha >= 1f) { block(); return }

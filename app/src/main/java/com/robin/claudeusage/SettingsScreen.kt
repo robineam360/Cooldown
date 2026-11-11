@@ -368,8 +368,9 @@ fun SettingsScreen(
         if (showAddSheet) {
             AddAccountSheet(
                 onDismiss = { showAddSheet = false },
-                onPick = { provider ->
-                    val newProfile = repo.addProfile(provider = provider)
+                onPick = { provider, tag ->
+                    // CCRM-110 (Account Tags): the account is created with the tag the sheet's control showed.
+                    val newProfile = repo.addProfile(provider = provider, tag = tag)
                     namesTick++
                     Shortcuts.publish(context)
                     autoStartProfileKey = newProfile.key
@@ -1638,6 +1639,11 @@ private fun TokenCard(
 
     val openWithPicker = rememberBrowserOpener(label, profile.provider)
 
+    // CCRM-110 (Account Tags): every account is Personal or Work; read by key from the registry.
+    var tagTick by remember { mutableIntStateOf(0) }
+    val tag = remember(stateKey, tagTick) { repo.profileTag(profile) }
+    var showTagDialog by remember { mutableStateOf(false) }
+
     fun beginSignIn() {
         message = null
         codeInput = ""
@@ -1680,7 +1686,27 @@ private fun TokenCard(
                 // so the kebab is pinned to the card's right edge above ↻. Two weighted
                 // siblings (the label and a Spacer) split the free width between them,
                 // which parked the kebab at a label-dependent x.
-                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                // CCRM-110 (Account Tags): the chip sits after the plan chip on every card; the name gives first, down
+                // to 64 dp at its own text scale, and then the chip drops its word and keeps its glyph.
+                val tagMeasurer = rememberTextMeasurer()
+                val tagDensity = LocalDensity.current
+                BoxWithConstraints(Modifier.weight(1f)) {
+                    val chipWord = tag.label
+                    val showTagWord = with(tagDensity) {
+                        fun dp(text: String, style: androidx.compose.ui.text.TextStyle) =
+                            tagMeasurer.measure(text, style).size.width.toDp().value
+                        val nameDp = dp(label, MaterialTheme.typography.titleMedium)
+                        val scale = 15.sp.toDp().value / 15f
+                        var others = 6f
+                        if (hasToken) others += 8f + 8f
+                        if (hasToken && plan != null) {
+                            others += 6f + dp(Fmt.planLabel(profile.provider, plan, tier), MaterialTheme.typography.labelSmall) + 16f
+                        }
+                        com.robin.claudeusage.ui.TagChipFit.showsWord(
+                            maxWidth.value, nameDp, scale, others, dp(chipWord, MaterialTheme.typography.labelSmall),
+                        )
+                    }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     // CCRM-65 (Accounts Redesign): the label shrinks only when it must —
                     // weight(fill = false) rather than a plain weight(1f), so a short
                     // label like "Free" doesn't push the dot/chip to the far edge.
@@ -1700,6 +1726,9 @@ private fun TokenCard(
                         // API-CONTRACT §11 (2026-11-02): no multipliers; a 20x Claude tier names the plan "Ultra".
                         PlanChip(profile.provider, plan, tier)
                     }
+                    Spacer(Modifier.width(6.dp))
+                    com.robin.claudeusage.ui.TagChip(tag, showTagWord, onClick = { showTagDialog = true })
+                }
                 }
                 if (busy) {
                     Spacer(Modifier.width(8.dp))
@@ -1747,6 +1776,11 @@ private fun TokenCard(
                             text = { Text("Rename…") },
                             onClick = { menuOpen = false; onRename() },
                         )
+                        // CCRM-110 (Account Tags): after Rename…, the Personal / Work dialog.
+                        DropdownMenuItem(
+                            text = { Text("Tag…") },
+                            onClick = { menuOpen = false; showTagDialog = true },
+                        )
                         // CCRM-56 (Provider Identity), decision 1: the per-account override.
                         DropdownMenuItem(
                             text = { Text("Accent colour…") },
@@ -1775,6 +1809,17 @@ private fun TokenCard(
                             )
                         }
                     }
+                }
+                if (showTagDialog) {
+                    com.robin.claudeusage.ui.TagDialog(
+                        label = label,
+                        current = tag,
+                        onPick = { picked ->
+                            repo.setProfileTag(profile, picked)
+                            tagTick++
+                        },
+                        onDismiss = { showTagDialog = false },
+                    )
                 }
                 if (showAccentPicker) {
                     AccentColorDialog(
@@ -2969,22 +3014,33 @@ private fun providerOnlySwatch(dark: Boolean): Brush = Brush.sweepGradient(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
+private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider, com.robin.claudeusage.data.AccountTag) -> Unit) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+        // CCRM-110 (Account Tags), addendum "Adding and tagging": the Personal | Work control sits above the provider
+        // rows (a row tap is the commit), Personal selected every time the sheet opens. The sheet scrolls once it
+        // outgrows the screen (font 2.0 on a 360 dp phone).
+        var tag by remember { mutableStateOf(com.robin.claudeusage.data.AccountTag.PERSONAL) }
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+        ) {
             Text("Add account", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(16.dp))
+            com.robin.claudeusage.ui.AddSheetTagControl(tag) { tag = it }
             Spacer(Modifier.height(16.dp))
             AddAccountRow(
                 Provider.CLAUDE,
                 "Signs in through your browser, then paste the code back — as before.",
-                onClick = { onPick(Provider.CLAUDE) },
+                onClick = { onPick(Provider.CLAUDE, tag) },
             )
             Spacer(Modifier.height(14.dp))
             AddAccountRow(
                 Provider.CHATGPT,
                 "Shows a short code to type at auth.openai.com — on this phone or any other " +
                     "device. ${DeviceCodeCopy.PREREQUISITE}",
-                onClick = { onPick(Provider.CHATGPT) },
+                onClick = { onPick(Provider.CHATGPT, tag) },
             )
             // CCRM-55 (Antigravity Account): the third row, only in a build that carries
             // the client secret — without it today's two rows.
@@ -2993,7 +3049,7 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider) -> Unit) {
                 AddAccountRow(
                     Provider.ANTIGRAVITY,
                     GeminiSignIn.ROW_SUBTITLE,
-                    onClick = { onPick(Provider.ANTIGRAVITY) },
+                    onClick = { onPick(Provider.ANTIGRAVITY, tag) },
                 )
             }
         }
