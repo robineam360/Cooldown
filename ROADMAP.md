@@ -1981,7 +1981,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **What:** an account whose Weekly figure prints "0%" (under 0.5; Robin, 2026-11-10: match the row, so a row
   reading "1%" is always plotted) leaves the map; the foot line counts them ("2 at 0%", "· 1 no reading"); all at
   0% keeps the frame with "Nothing to plot yet". The list still shows every account.
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): CooldownCore `PaceMapRules` — an account whose row prints "0%" (truncated, as the row: 0.99 hidden, 1.0 plotted) leaves the map; the foot line counts "N at 0%" and "N no reading" (`spec/mobile/fixtures/map-foot`); every account at 0% keeps the frame with "Nothing to plot yet" / "every account is at 0% this week"; `printed-v20.json` → `quiet`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
 - **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
@@ -2000,7 +2000,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   to a hollow ring at the projected % (red on the 100% line when it runs out); the last 24 h of each trail is
   heavier. A tap on a dot or name pins a callout (others dim to 35%; name, figure, pace line, "~74% at reset"; a
   second tap opens the account). Leaders are dotted and at most 48 dp; with nothing free the name is not drawn.
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): Figures · Trails · Projection chips on the title line (13 pt capsules, remembered, wrapping under the title); figures after the name ("Teams 52%", "48% left", "−13%"; spent Left "Teams 0%"); the last 24 h of each trail heavier; dashed projection tails to rings, red on the 100% line where it runs out; the pinned callout (tap pins, again opens, others at 35%, "~74% at reset" / "100% at Wed 6:10 PM"); CooldownCore `MapLabels` places names with dotted leaders of at most 48 pt in eight directions, and draws no name when nothing is free — the iOS side of CCBG-79 (Leader Reads as Trail). `printed-v20.json` → `mapLabels`, `callout`, `projectionLayer`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-112 · Summary Snapshot — a share card for the whole Summary
 - **Status:** Planned · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.

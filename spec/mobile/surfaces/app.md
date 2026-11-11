@@ -1088,3 +1088,46 @@ widget, lock-screen and Live Activity faces from `SurfaceRenderTests`).
   floor; then the floor steps to 0.8 of its size. A bare clock always means today. The tinted span and the floor are
   unchanged; spent, held, signed-out, unclocked and no-reading lines are unchanged. The one-line Summary row's word slot
   is still the tinted span alone, and the share card's Weekly row keeps "Resets …" in its right slot.
+
+Step I2 (Pace map), built 2026-11-11 at 42ad02e from rev B §5 and §7 (CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers)).
+It supersedes the iOS Pace map paragraphs above wherever they differ. Code `ios/App/UI/PaceMap.swift` (the old
+`PaceMapLayout` is gone); rules CooldownCore `PaceMapRules` and `MapLabels`. Captures
+`design/research/2026-11-v20-build/I2/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape, dark and light,
+from the `-demo map|dense|quiet|hidden` scenarios; `render/` holds every chip combination, callout and quiet state from
+`PaceMapTests`).
+
+- **Title line.** "Pace map" 17 pt left; on the right, in place of "Weekly, where each account stands", three chips
+  Figures · Trails · Projection: 13 pt capsules, 10 pt side padding, 5 pt vertical, 6 pt apart; selected = `fill` and
+  semibold `ink`, unselected = a 1 pt `line` outline and regular `txt`; no check glyph. Defaults Figures off, Trails on,
+  Projection off, remembered in the app's own defaults (`paceMap.figures|trails|projection`, new keys). When the line
+  cannot hold the title and the chips they wrap to their own line under the title, 6 pt below (the app's fonts are fixed
+  sizes, so only a narrow width wraps them — iPad split view; every iPhone holds one line).
+- **Who is plotted.** An account whose Weekly row prints "0%" (the row truncates: 0.99 → 0%) leaves the map; so do
+  accounts with no reading and a reading with no reset clock. The list still shows every row. Spent: × on the dot.
+- **Foot line.** Left "each account's own week"; right, 11 pt `sub`, the count of accounts left off: "2 at 0%",
+  "1 no reading", joined "2 at 0% · 1 no reading"; nothing when none.
+- **All at 0%.** The frame, grid, diagonal and words stay at full height; in the behind wedge, right-aligned at (96%, 26%),
+  10.5 pt `ink` 55%: "Nothing to plot yet" (semibold) over "every account is at 0% this week".
+- **Figures.** "Teams 52%" (Used), "Teams 48% left" (Left; spent "Teams 0%"), "Teams −13%" / "+19%" / "0%" (Vs pace;
+  no reset clock falls back to Used). Name 11.5 pt semibold `ink`; figure 11.5 pt bold in the severity colour (Used, Left,
+  the Vs fallback) or green / red / `ink` (Vs pace). Used and Left truncate like the row.
+- **Trails.** The week at 1.6 pt, accent 55%; the last 24 h (a seventh of the week before the dot) 2.6 pt, accent 90%,
+  round caps; an account with fewer than two samples has no trail (as shipped). Off: dots only.
+- **Projection.** A dashed tail (1.6 pt, 5/4, accent 65%) from the dot to a ring (r 3.5 pt, 1.5 pt, `card` fill) on the
+  right edge at the projected %; where the estimate runs out before the reset the ring sits on the 100% line at that
+  moment and is red, and the tail fades from the accent to red at its end. The estimate is the account chart's
+  (`Projection.estimate` on the week's samples). No tail and no ring with no estimate, spent, or no reset clock.
+- **Callout.** A tap on a dot (48 pt target) or a name pins it; the nearest dot wins. The others dim to 35% (trails, tails,
+  leaders, dots, names). Pill: 8 pt radius, `card` at 97%, 1 pt border in the account colour at 55%, padding 9 × 6 pt.
+  Line 1: a 7 pt accent dot, the name 12 pt semibold, the figure 12 pt bold right. Line 2, 11 pt: the pace line (its own
+  drop order), or the row's line where there is none ("Out until Fri 1:48 pm" red when spent, "Held · …"). Line 3, 11 pt:
+  "~74% at reset" (`sub`) or "100% at Wed 6:10 PM" (red; a bare clock later today); no third line without a projection.
+  It opens 10 pt right and 8 pt above the dot, flips left when it would pass the plot's right edge by 6 pt, below the dot
+  when it would leave the top, and is clamped to the plot. The same account again opens its page; another dot moves the
+  pin; the empty plot clears it. VoiceOver: one element per dot, "Teams, 52 percent, 21h 50m ahead · resets Sun 5:58 PM,
+  ~74% at reset", hint "Double-tap to pin, again to open".
+- **Names and leaders.** Placed top-down by CooldownCore `MapLabels` with the fixture's geometry (dot box 14 pt, 2 pt
+  between names, 1 pt off a word; right +10, below +2/+3, left −10, above-left −6) and a 4 pt right margin: right, below,
+  left, above-left, then a dotted leader (1 pt, 1.5/2.5, accent 55%, from the dot's edge) of 24, 36 or 48 pt in eight
+  directions, refused across a placed name or another dot. A name never sits on a ring or its own tail. Nothing free:
+  the name is not drawn; its dot stays and still opens the callout. "even pace" slides as before and also avoids rings.

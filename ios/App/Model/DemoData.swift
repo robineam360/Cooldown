@@ -6,6 +6,9 @@ import Foundation
 /// `-demo <scenario>`; nothing here touches the network, the Keychain or the App Group.
 enum DemoScenario: String, CaseIterable {
     case standard, signin, plan, stale, max, empty
+    /// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): the Pace map's states on the Summary — the wireframe's six
+    /// (`map`), ten for a dense map (`dense`), every account at 0% (`quiet`), two hidden and one unread (`hidden`).
+    case map, dense, quiet, hidden
 
     static func fromLaunchArguments() -> DemoScenario? {
         let args = ProcessInfo.processInfo.arguments
@@ -20,6 +23,16 @@ enum DemoData {
         let now = AppModel.clock()
         model.nowMs = now
         guard scenario != .empty else { model.accounts = []; return }
+        if let set = mapSet(scenario) {
+            model.accounts = set.map { Account(key: $0.key, label: $0.label, provider: $0.provider) }
+            model.selectedKey = AppModel.summaryKey
+            for a in set {
+                add(model, key: a.key, provider: a.provider, plan: a.provider == .chatgpt ? "Plus" : "Max", sessionPct: 20,
+                    sessionReset: now + 3 * 3_600_000, curve: [(0, 0), (0.2, 8), (0.4, 20)], weeklyPct: a.weekly ?? 0,
+                    weeklyElapsed: a.elapsed, opus: nil, credits: false, now: now, plan_: a.weekly == nil, sessionWeekly: 1)
+            }
+            return
+        }
         model.accounts = [
             Account(key: "teams", label: "Teams", provider: .claude, pinned: true),
             Account(key: "product", label: "Product", provider: .claude),
@@ -50,10 +63,49 @@ enum DemoData {
             weeklyPct: 9, weeklyElapsed: 0.43, opus: nil, credits: false, now: now)
     }
 
+    private struct MapAccount {
+        let key: String, label: String, provider: Provider
+        /// nil = no reading.
+        let weekly: Double?
+        let elapsed: Double
+    }
+
+    /// The wireframe's Pace map accounts (rev B §5 and §7), by scenario; nil for the other scenarios.
+    private static func mapSet(_ scenario: DemoScenario) -> [MapAccount]? {
+        let six = [
+            MapAccount(key: "teams", label: "Teams", provider: .claude, weekly: 52, elapsed: 0.39),
+            MapAccount(key: "personal", label: "Personal", provider: .chatgpt, weekly: 50, elapsed: 0.68),
+            MapAccount(key: "chatgpt", label: "ChatGPT", provider: .chatgpt, weekly: 6, elapsed: 0.30),
+            MapAccount(key: "gemini", label: "Gemini", provider: .antigravity, weekly: 91, elapsed: 0.83),
+            MapAccount(key: "lab", label: "Lab", provider: .claude, weekly: 61, elapsed: 0.61),
+            MapAccount(key: "atlas", label: "Atlas", provider: .claude, weekly: 100, elapsed: 0.70),
+        ]
+        switch scenario {
+        case .map: return six
+        case .dense:
+            return six + [
+                MapAccount(key: "ops", label: "Ops", provider: .claude, weekly: 33, elapsed: 0.36),
+                MapAccount(key: "research", label: "Research", provider: .chatgpt, weekly: 28, elapsed: 0.33),
+                MapAccount(key: "client", label: "Client", provider: .antigravity, weekly: 74, elapsed: 0.90),
+                MapAccount(key: "work", label: "Work", provider: .claude, weekly: 30, elapsed: 0.44),
+            ]
+        case .quiet:
+            return [MapAccount(key: "notes", label: "Notes", provider: .chatgpt, weekly: 0.4, elapsed: 0.22),
+                    MapAccount(key: "sandbox", label: "Sandbox", provider: .antigravity, weekly: 0, elapsed: 0.09),
+                    MapAccount(key: "spare", label: "Spare", provider: .claude, weekly: 0.2, elapsed: 0.40)]
+        case .hidden:
+            return [six[0], six[1], six[4],
+                    MapAccount(key: "notes", label: "Notes", provider: .chatgpt, weekly: 0.4, elapsed: 0.22),
+                    MapAccount(key: "sandbox", label: "Sandbox", provider: .antigravity, weekly: 0, elapsed: 0.09),
+                    MapAccount(key: "product", label: "Product", provider: .claude, weekly: nil, elapsed: 0.43)]
+        default: return nil
+        }
+    }
+
     private static func add(
         _ model: AppModel, key: String, provider: Provider, plan: String, sessionPct: Double, sessionReset: Int64,
         curve: [(Double, Double)], weeklyPct: Double, weeklyElapsed: Double, opus: Double?, credits: Bool, now: Int64,
-        stale: Bool = false, signin: Bool = false, plan_: Bool = false
+        stale: Bool = false, signin: Bool = false, plan_: Bool = false, sessionWeekly: Double = 0.9
     ) {
         let session = HistoryStats.sessionMs, week = HistoryStats.weekMs
         let weeklyReset = now + Int64((1 - weeklyElapsed) * Double(week))
@@ -92,7 +144,7 @@ enum DemoData {
         let sessionStart = sessionReset - session
         var points = curve.map { x, pct in
             HistoryPoint(atMs: sessionStart + Int64(x * Double(session)), sessionPct: pct, sessionResetAtMs: sessionReset,
-                         weeklyPct: weeklyPct * 0.9, weeklyResetAtMs: weeklyReset)
+                         weeklyPct: weeklyPct * sessionWeekly, weeklyResetAtMs: weeklyReset)
         }
         let weekStart = weeklyReset - week
         points += stride(from: 0.0, through: weeklyElapsed - 0.05, by: 0.05).map { x in

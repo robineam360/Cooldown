@@ -181,7 +181,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 | Step | What | Gated on | Status |
 |---|---|---|---|
 | I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☑ 2026-11-11 |
-| I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☐ |
+| I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☑ 2026-11-11 |
 | I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☐ |
 
 ### Lane D — release text and the graphic (beside the lanes)
@@ -525,10 +525,10 @@ accounts and the foot-line count). Fixes the leader defect of CCBG-79 on iOS; th
 Step 2.
 
 **Done when:**
-- ☐ `swift test` on `mapLabels`, quiet, callout and projection cases; the app tests pass.
-- ☐ Simulator captures: each chip combination, the callout, a dense map, all quiet, the iPad two-column Summary.
-- ☐ The "iOS:" lines of CCRM-109 and CCRM-111 read "built"; the iOS section of `app.md`.
-- ☐ Judge round recorded; landed.
+- ☑ `swift test` on `mapLabels`, quiet, callout and projection cases; the app tests pass.
+- ☑ Simulator captures: each chip combination, the callout, a dense map, all quiet, the iPad two-column Summary.
+- ☑ The "iOS:" lines of CCRM-109 and CCRM-111 read "built"; the iOS section of `app.md`.
+- ☑ Judge round recorded; landed.
 
 ### Step I3 · Summary — CCRM-110, CCRM-112, and the CCRM-113 iOS follow-up
 
@@ -575,6 +575,39 @@ Gemini account, so both stores' review notes describe the same three accounts.
   (core `Fmt.dayClock`, per the fixtures) while the older iOS lines built by `CardContent.clock` print "am/pm", so the open
   tile now shows "resets Sun 10:17 AM" right above "Resets at Sun 10:17 am" (`iphone17pro/teams-tile-light.png`).
   Pre-existing since CCRM-104 (Pace Line Parity); the new "resets" word makes it easier to see. Severity Low.
+- 2026-11-11 · **Step I2 done** (worktree `jovial-mendel-a0b95c`, PR #42). Code 42ad02e, judge fixes and docs in the
+  close-out commit. CooldownCore `PaceMapRules` (quiet: the row's truncated "0%" leaves the map, 0.99 hidden, 1.0
+  plotted; the mobile foot line "N at 0% · N no reading"; the figure after a name in Used, Left and Vs pace; the callout's
+  forecast; the projection end) and `MapLabels` (the core placement with 24/36/48 dotted leaders in eight directions;
+  nothing free = no name), on `printed-v20.json` `quiet`, `mapLabels`, `callout`, `projectionLayer` and
+  `spec/mobile/fixtures/map-foot` (`PaceMapV20Tests`, every case incl. boxes, leaders and refusal reasons). App
+  `ios/App/UI/PaceMap.swift` replaces `PaceMapLayout`: chips (13 pt capsules, remembered, wrap under the title),
+  trails with the heavier last 24 h, dashed tails to rings (red on the 100% line), the pinned callout (others 35%, tap
+  again opens, empty plot clears), VoiceOver per dot, the foot-line count and the all-at-0% message; `-demo
+  map|dense|quiet|hidden` for the simulator. Tests: `swift test` 206 passed, app tests 106 passed (iPhone 17 Pro),
+  gradle suites green. **Captures** `design/research/2026-11-v20-build/I2/`: `iphone17pro/` (each chip combination, the
+  callout on Teams light/dark and on Gemini flipped left and below, dense ten, all at 0%, two hidden + one unread),
+  `iphone17e/` (defaults, all three, dense scrolled, all at 0%), `ipadpro13/` (the two-column Summary, portrait and
+  landscape), `render/` (34 faces from `PaceMapTests`: every layer combination in Used/Left/Vs pace, three callouts, the
+  four quiet states, dense ten, 320 and 300 pt widths with the chips wrapped, the iPad square).
+- 2026-11-11 · **Robin's answer, recorded here** (the answers table has no row for it): a spent account in Left mode on
+  the map reads **"Teams 0%" (as approved)** — the drawing and the fixture. Built so.
+- 2026-11-11 · **Judge** (fresh Opus, high, worker on claude-product): **concerns**, no blocking. F1 (concerns) an
+  account with no history got a made-up trail from the origin → the shipped `trail.count > 1` guard is back, pinned by
+  `PaceMap.trail` and a test (the render's spent Atlas now has a dot only). F2 (concerns) each dot's VoiceOver element
+  was positioned before it was made an element, so it could span the map → the element is the 48 pt frame, `.position`
+  last (checked by reading SwiftUI's modifier order; not checked with Accessibility Inspector). F3 (concerns) the
+  nearest-wins and name-tap checks could pass vacuously and the pin transitions were untested → two dots 11 pt apart
+  must each win their side; `PaceMap.tap` and `keepPin` are pure and test all transitions. F4 (nit) the all-at-0%
+  message was invisible to VoiceOver → the map's accessibility value. F5 (nit) one `clocked` term in the core `quiet`
+  test never decides → not changed; the map-foot "Odd 3.0" case covers it. F6 (nit) no fixture between 99.5 and 99.99
+  (spent prints "100%" where the row truncates to 99%) → for Step 2 below.
+- 2026-11-11 · **For Step 2** (spec and tracker text, not defects): (a) ROADMAP CCRM-109's What text and wireframe §5 still
+  say "under 0.5"; the fixture and §6.3 truncate (as told, left for Step 2). (b) The §5 drawing's empty message reads
+  "every account is under 1% this week"; the fixture and the annotation say "at 0%", built so. (c) A `quiet`/`figures`
+  case at 99.7 (spent, "100%"; the row prints 99%) would pin judge F6. (d) A map with nothing plotted where some accounts
+  have no reading is not drawn in rev B (the fixture says so): iOS shows the empty frame with the foot-line count and no
+  message, as before I2.
 
 ---
 
