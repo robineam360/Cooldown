@@ -63,6 +63,7 @@ final class AppModel {
             Display.repairMode()
             selectedKey = Self.launchKey(accounts: accounts, openOnSummary: Prefs.openOnSummary, last: Prefs.lastAccountKey)
             reload()
+            runFilterMemory()
         }
     }
 
@@ -216,18 +217,39 @@ final class AppModel {
         save()
     }
 
-    /// CCRM-110 (Account Tags): sets or clears (nil) an account's tag. Saved with the accounts (a sample's stays in memory).
-    func setTag(_ key: String, _ tag: AccountTag?) {
+    /// CCRM-110 (Account Tags): sets an account's tag, Personal or Work. Saved with the accounts (a sample's stays in
+    /// memory). Runs the filter memory rule: losing the last Work account while Work is the filter stores All, and tagging
+    /// one Work later never brings the filter back.
+    func setTag(_ key: String, _ tag: AccountTag) {
         guard let i = accounts.firstIndex(where: { $0.key == key }) else { return }
-        accounts[i].tag = tag?.rawValue
+        accounts[i].tag = tag.rawValue
         save()
+        runFilterMemory()
         displayChanged()
+    }
+
+    /// The tag the Add account sheet's "This account is" control has chosen for the sign-in in progress (CCRM-110, addendum
+    /// §Adding and tagging). Personal each time the sheet opens, never remembered; read by `addAccount` for a new account,
+    /// ignored for "Sign in again", dropped when the sheet stack closes; the first-launch buttons leave it Personal.
+    var pendingTag: AccountTag = .personal
+
+    /// The Summary filter's memory rule (BEHAVIOR-MOBILE §6, the same on both clients; `SummaryFilter.memory`): a stored
+    /// `summaryFilter` that the filter in force does not match — unknown, or its group has no accounts — becomes `all`, at
+    /// once; a missing value stays missing. It runs whenever the accounts, a tag or the Summary change, and when the Summary
+    /// comes on screen — only while the Summary exists, and in the sample against its in-memory copy (`Prefs` reads that).
+    /// A screenshot `-demo` launch has no store of its own and leaves the user's key alone.
+    func runFilterMemory() {
+        guard !isDemo || isSample else { return }
+        let stored = Prefs.summaryFilter
+        let next = SummaryFilter.memory(tags: accounts.map(\.accountTag), stored: stored)
+        if next != stored { Prefs.summaryFilter = next }
     }
 
     func remove(_ key: String) async {
         if reauthTarget == key { reauthTarget = nil }
         await repo?.forget(key)
         accounts.removeAll { $0.key == key }
+        runFilterMemory()
         // The account on screen went: the All tab where it shows, else the first account (validSelection).
         selectedKey = Self.validSelection(selectedKey, accounts: accounts)
         save()
@@ -242,6 +264,14 @@ final class AppModel {
     func signInAgain(_ account: Account) -> Sheet {
         reauthTarget = account.key
         return Sheet.signIn(for: account.provider)
+    }
+
+    /// The account a successful sign-in creates: the provider's name ("Claude", "Claude 2", …) and the tag chosen on the Add
+    /// account sheet (CCRM-110: stored explicitly as `personal` or `work`).
+    static func newAccount(key: String, provider: Provider, existing: [Account], tag: AccountTag, addedAtMs: Int64) -> Account {
+        let count = existing.filter { $0.provider == provider }.count
+        let label = count == 0 ? provider.displayName : "\(provider.displayName) \(count + 1)"
+        return Account(key: key, label: label, provider: provider, addedAtMs: addedAtMs, tag: tag.rawValue)
     }
 
     private func addAccount(provider: Provider, grant: TokenGrant) async throws {
@@ -259,9 +289,9 @@ final class AppModel {
         }
         let key = "\(provider.rawValue)-\(UUID().uuidString.prefix(8).lowercased())"
         try await repo?.adopt(grant, profileKey: key)
-        let count = accounts.filter { $0.provider == provider }.count
-        let label = count == 0 ? provider.displayName : "\(provider.displayName) \(count + 1)"
-        accounts.append(Account(key: key, label: label, provider: provider, addedAtMs: Self.clock()))
+        accounts.append(Self.newAccount(key: key, provider: provider, existing: accounts, tag: pendingTag, addedAtMs: Self.clock()))
+        pendingTag = .personal
+        runFilterMemory()
         selectedKey = key
         save()
         _ = await repo?.refresh(key, manual: true)

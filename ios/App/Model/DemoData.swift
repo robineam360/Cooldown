@@ -10,9 +10,9 @@ enum DemoScenario: String, CaseIterable {
     /// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): the Pace map's states on the Summary — the wireframe's six
     /// (`map`), ten for a dense map (`dense`), every account at 0% (`quiet`), two hidden and one unread (`hidden`).
     case map, dense, quiet, hidden
-    /// CCRM-110 (Account Tags): the standard accounts with only Personal tagged, so the filter's Work segment is disabled
-    /// (`tagsdisabled`); every standard account untagged, so the Summary shows no control (`untagged`).
-    case tagsdisabled, untagged
+    /// CCRM-110 (Account Tags): the standard accounts as an upgrade from v1.9 leaves them — no stored tag, so all three read
+    /// Personal and the filter's Work segment is disabled (`upgraded`).
+    case upgraded
     /// CCRM-112 (Summary Snapshot): no account has a reading, so the snapshot says "Nothing to share yet".
     case noreading
 
@@ -40,17 +40,16 @@ enum DemoData {
             return
         }
         model.accounts = [
-            // CCRM-110 (Account Tags): Teams is Work and Personal is Personal, so the All · Personal · Work control shows;
-            // Lab is untagged (rev B §9).
+            // CCRM-110 (Account Tags) and CCRM-113 (Sample Port): Teams Work, Personal Personal, Lab Work — every scenario
+            // (addendum §Row glyph, R8 A), so both segments are live and the first list mixes both glyphs. The signed-out
+            // Lab shows its warning word beside both chips in Settings.
             Account(key: "teams", label: "Teams", provider: .claude, pinned: true, tag: AccountTag.work.rawValue),
             Account(key: "personal", label: "Personal", provider: .chatgpt, tag: AccountTag.personal.rawValue),
-            Account(key: "lab", label: "Lab", provider: .antigravity),
+            Account(key: "lab", label: "Lab", provider: .antigravity, tag: AccountTag.work.rawValue),
         ]
         model.selectedKey = "teams"
-        if scenario == .untagged { for i in model.accounts.indices { model.accounts[i].tag = nil } }
-        if scenario == .tagsdisabled { model.accounts[0].tag = nil }
-        // The signed-out Lab carries a Work tag, so Settings shows its warning word beside both chips.
-        if scenario == .signin { model.accounts[2].tag = AccountTag.work.rawValue }
+        // The upgrade: nothing stored, so every account reads Personal and Work is disabled.
+        if scenario == .upgraded { for i in model.accounts.indices { model.accounts[i].tag = nil } }
 
         // Teams: on even pace (46% at 46% elapsed), or at 100% in the `max` scenario.
         let teamsReset = now + (5 * 3600 - Int64(0.46 * 5 * 3600)) * 1000
@@ -81,7 +80,7 @@ enum DemoData {
         /// nil = no reading.
         let weekly: Double?
         let elapsed: Double
-        /// CCRM-110: the wireframe's tags (rev B §6); `quiet` and `hidden` leave every account untagged.
+        /// CCRM-110: the wireframe's tags (rev B §6); `quiet` and `hidden` store none, so every account reads Personal.
         var tag: AccountTag? = nil
         var untagged: MapAccount { MapAccount(key: key, label: label, provider: provider, weekly: weekly, elapsed: elapsed) }
     }
@@ -93,7 +92,7 @@ enum DemoData {
             MapAccount(key: "personal", label: "Personal", provider: .chatgpt, weekly: 50, elapsed: 0.68, tag: .personal),
             MapAccount(key: "chatgpt", label: "ChatGPT", provider: .chatgpt, weekly: 6, elapsed: 0.30, tag: .personal),
             MapAccount(key: "gemini", label: "Gemini", provider: .antigravity, weekly: 91, elapsed: 0.83, tag: .work),
-            MapAccount(key: "lab", label: "Lab", provider: .claude, weekly: 61, elapsed: 0.61),
+            MapAccount(key: "lab", label: "Lab", provider: .claude, weekly: 61, elapsed: 0.61, tag: .work),
             MapAccount(key: "atlas", label: "Atlas", provider: .claude, weekly: 100, elapsed: 0.70, tag: .work),
         ]
         switch scenario {

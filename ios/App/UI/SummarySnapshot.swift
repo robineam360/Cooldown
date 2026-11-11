@@ -17,6 +17,9 @@ struct SummarySnapshotView: View {
     var layers = MapLayers.saved
     /// Sample data: the same violet band as the account card, so made-up numbers can't pass for a real share.
     var sample = false
+    /// CCRM-115 (Row Tag Glyph): the glyph column, drawn only while the rows on the card carry both tags (so only under All;
+    /// an install whose accounts are all Personal shares the card without it).
+    var glyphs = false
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
@@ -37,7 +40,8 @@ struct SummarySnapshotView: View {
             }
             Text(ShareCardView.asOf(asOfMs)).font(.system(size: 11)).foregroundStyle(p.sub.opacity(0.9)).padding(.top, 1)
             ForEach(entries) { entry in
-                if oneLine { OneLine(entry: entry, nowMs: nowMs, first: entry.id == entries.first?.id) } else { FullRow(entry: entry, nowMs: nowMs) }
+                if oneLine { OneLine(entry: entry, nowMs: nowMs, first: entry.id == entries.first?.id, glyph: glyphs) }
+                else { FullRow(entry: entry, nowMs: nowMs, glyph: glyphs) }
             }
             Rectangle().fill(p.line).frame(height: 1).padding(.top, 14).padding(.bottom, 6)
             Text("Pace map").font(.system(size: 10.5)).foregroundStyle(p.ink)
@@ -90,6 +94,7 @@ struct SummarySnapshotView: View {
     fileprivate struct FullRow: View {
         let entry: SummaryEntry
         let nowMs: Int64
+        var glyph = false
         @Environment(\.palette) private var p
         @Environment(\.colorScheme) private var scheme
 
@@ -102,7 +107,10 @@ struct SummarySnapshotView: View {
                 ring(accent: accent)
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 6) {
-                        ProviderMark(provider: entry.account.provider, size: 14)
+                        HStack(spacing: 4) {
+                            if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                            ProviderMark(provider: entry.account.provider, size: 14)
+                        }
                         Text(entry.account.label).font(.system(size: 13, weight: .semibold)).foregroundStyle(p.ink).lineLimit(1)
                         Spacer(minLength: 4)
                         figure(used: used)
@@ -153,6 +161,7 @@ struct SummarySnapshotView: View {
         let entry: SummaryEntry
         let nowMs: Int64
         var first = false
+        var glyph = false
         @Environment(\.palette) private var p
         @Environment(\.colorScheme) private var scheme
 
@@ -162,7 +171,10 @@ struct SummarySnapshotView: View {
             let slot = SummarySnapshotView.slot(entry, nowMs: nowMs, short: true)
             let used = dead ? nil : entry.usedPct
             HStack(spacing: 6) {
-                ProviderMark(provider: entry.account.provider, size: 14)
+                HStack(spacing: 4) {
+                    if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                    ProviderMark(provider: entry.account.provider, size: 14)
+                }
                 Text(entry.account.label).font(.system(size: 12, weight: .semibold)).foregroundStyle(p.ink).lineLimit(1)
                     .frame(width: 58, alignment: .leading)
                 UsageBar(pct: used, pace: dead || entry.group == .spent ? nil : entry.elapsedPct, accent: accent, height: 7)
@@ -236,7 +248,8 @@ struct SummarySnapshotSheet: View {
         guard entries.contains(where: { $0.usedPct != nil }) else { return nil }
         let asOf = entries.compactMap { model.snapshots[$0.account.key]?.fetchedAtMs }.max() ?? model.nowMs
         return SummarySnapshotView(entries: entries, title: resolved.snapshotHeader, orderName: order.header,
-                                   asOfMs: asOf, nowMs: model.nowMs, layers: layers, sample: model.isSample)
+                                   asOfMs: asOf, nowMs: model.nowMs, layers: layers, sample: model.isSample,
+                                   glyphs: resolved.snapshotGlyphs)
     }
 
     private func render(_ card: SummarySnapshotView) -> UIImage? {

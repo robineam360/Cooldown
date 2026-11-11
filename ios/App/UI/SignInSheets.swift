@@ -6,12 +6,17 @@ import SwiftUI
 /// pasted code (PKCE), ChatGPT by OpenAI's device code with all five states.
 struct AddAccountSheet: View {
     @Binding var sheet: Sheet?
+    @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.sampleControl) private var control
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Add account").font(.system(size: 20, weight: .bold)).padding(.bottom, 10)
+            Text("Add account").font(.system(size: 20, weight: .bold)).padding(.bottom, 2)
+            // CCRM-110 (Account Tags), addendum T1 (i): the choice sits above the provider rows, because a row's tap is
+            // the commit. It rides with the pending sign-in and is written when the account is created; Personal every time
+            // the sheet opens.
+            AddTagControl(tag: Binding(get: { model.pendingTag }, set: { model.pendingTag = $0 })).padding(.bottom, 4)
             row(.claude, "Sign in with your Claude account in the browser, then paste the code it shows.") { sheet = .claudeSignIn }
             row(.chatgpt, "Sign in with a code on any device — no password in this app.") { sheet = .chatGPTSignIn }
             // CCRM-55 (I1): hidden on a build without the client secret.
@@ -194,7 +199,7 @@ struct ClaudeSignInSheet: View {
                 .opacity(code.isEmpty || !opened ? 0.45 : 1)
             }
             .padding(.top, 16)
-            Text("Name this account after signing in (e.g. “Teams”); the plan tag comes from Anthropic.")
+            Text("Name this account after signing in (e.g. “Teams”); the plan name comes from Anthropic.")
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.top, 14)
             Spacer(minLength: 0)
         }

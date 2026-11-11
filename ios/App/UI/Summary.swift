@@ -73,17 +73,20 @@ struct SummaryView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     var wide = false
-    /// The remembered filter and the order, mirrored here so a tap redraws at once (a Settings change redraws the page
-    /// through `displayStamp`, which re-reads both).
-    @State private var filterKey = Prefs.summaryFilter
+    /// The order, mirrored here so a tap redraws at once (a Settings change redraws the page through `displayStamp`, which
+    /// re-reads it). The remembered filter is read straight from `Prefs` on every draw — never mirrored — so the memory
+    /// rule's fallback to All (BEHAVIOR-MOBILE §6) shows at once and a stale copy can never bring an earlier choice back;
+    /// `filterTick` redraws after a tap.
     @State private var order = Prefs.summaryOrder
+    @State private var filterTick = 0
 
     var body: some View {
         // Read so a Settings change (the Summary order, a tag) re-sorts at once.
         let _ = model.displayStamp
-        let (entries, resolved) = SummaryEntry.current(model: model, filter: filterKey, order: order)
+        let _ = filterTick
+        let (entries, resolved) = SummaryEntry.current(model: model, filter: Prefs.summaryFilter, order: order)
         let list = SummaryList(entries: entries, nowMs: model.nowMs, resolved: resolved, order: order,
-                               onFilter: { filterKey = $0.rawValue; Prefs.summaryFilter = $0.rawValue },
+                               onFilter: { Prefs.summaryFilter = $0.rawValue; filterTick += 1 },
                                onOrder: { order = $0; Prefs.summaryOrder = $0 }, onOpen: open)
         VStack(alignment: .leading, spacing: 12) {
             if model.noticeOwed { WeeklyFirstNoticeView() }
@@ -97,6 +100,9 @@ struct SummaryView: View {
                 PaceMapCard(entries: entries, height: 230, onOpen: open)
             }
         }
+        // The memory rule runs when the Summary comes on screen and whenever the accounts or a tag change (`displayStamp`).
+        .onAppear { model.runFilterMemory() }
+        .onChange(of: model.displayStamp) { model.runFilterMemory(); filterTick += 1 }
     }
 
     private func open(_ key: String) { withAnimation { model.selectedKey = key } }
@@ -114,39 +120,68 @@ struct SummaryList: View {
     var onOrder: (SummaryOrder) -> Void = { _ in }
     var onOpen: (String) -> Void = { _ in }
     @Environment(\.palette) private var p
+    /// CCRM-115: the row measures the glyph column's fit is decided on — the tightest row decides for the list.
+    @State private var metrics: [RowFitMetric] = []
+    /// A tap on a dimmed segment shows its one line for 3 s (addendum T3 B).
+    @State private var notice: SummaryFilter?
+    @State private var noticeToken = 0
+
+    private var oneLine: Bool { entries.count >= SummaryFilter.oneLineFrom }
+    private var glyphs: Bool {
+        oneLine ? RowGlyphFit.keepsGlyph(oneLine: metrics.compactMap(\.oneLine)) : RowGlyphFit.keepsGlyph(full: metrics.compactMap(\.full))
+    }
 
     var body: some View {
+        let glyphs = glyphs
         CardBox {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: false) }
                 HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: true) }
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) { title; Spacer(minLength: 6); sort(glyphOnly: false) }
-                    if resolved.controlShown { SummaryFilterControl(resolved: resolved, fill: true, onSelect: onFilter) }
+                    if resolved.controlShown {
+                        SummaryFilterControl(resolved: resolved, fill: true, onSelect: onFilter, onDisabled: showNotice)
+                    }
                 }
             }
             .padding(.bottom, 4)
+            if let notice {
+                Text("No \(notice.label) accounts yet. Tag one in Settings.").font(.system(size: 12)).foregroundStyle(p.sub)
+                    .padding(.top, 2).padding(.bottom, 2)
+            }
             ForEach(entries) { entry in
                 Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 8)
-                if entries.count >= SummaryFilter.oneLineFrom {
+                if oneLine {
                     // CCRM-104: not a Button, so a press on the figure can swap the word for its caption instead of opening.
-                    SummaryOneLineRow(entry: entry, nowMs: nowMs)
+                    SummaryOneLineRow(entry: entry, nowMs: nowMs, glyph: glyphs)
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
                 } else {
                     // CCRM-103: not a Button, so a tap on the row's figure can show its readout instead of opening.
-                    SummaryRow(entry: entry, nowMs: nowMs)
+                    SummaryRow(entry: entry, nowMs: nowMs, glyph: glyphs)
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
                 }
             }
+        }
+        .onPreferenceChange(RowFitKey.self) { metrics = $0 }
+    }
+
+    private func showNotice(_ filter: SummaryFilter) {
+        notice = filter
+        noticeToken += 1
+        let token = noticeToken
+        UIAccessibility.post(notification: .announcement, argument: "No \(filter.label) accounts yet. Tag one in Settings.")
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+            if noticeToken == token { notice = nil }
         }
     }
 
     private var title: some View { Text("Weekly").font(.system(size: 17)).foregroundStyle(p.ink).fixedSize() }
 
     @ViewBuilder private var control: some View {
-        if resolved.controlShown { SummaryFilterControl(resolved: resolved, onSelect: onFilter) }
+        if resolved.controlShown { SummaryFilterControl(resolved: resolved, onSelect: onFilter, onDisabled: showNotice) }
     }
 
     private func sort(glyphOnly: Bool) -> some View { SummarySortMenu(order: order, glyphOnly: glyphOnly, onSelect: onOrder) }
@@ -203,6 +238,11 @@ enum SummaryWords {
 struct SummaryRow: View {
     let entry: SummaryEntry
     let nowMs: Int64
+    /// CCRM-115: draw the tag's glyph before the provider's mark (the list's one decision, `RowGlyphFit`).
+    var glyph = true
+    @State private var lineWidth: CGFloat = 0
+    @State private var chipWidth: CGFloat = 0
+    @State private var figureWidth: CGFloat = 0
     @State private var revealed = false
     @State private var revealToken = 0
     @Environment(\.palette) private var p
@@ -217,10 +257,17 @@ struct SummaryRow: View {
             ring(accent: accent)
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 7) {
-                    ProviderMark(provider: entry.account.provider, size: 18)
+                    // CCRM-115 (Row Tag Glyph): a person or briefcase, 14 pt box + 4, before the mark; the list drops the
+                    // column from every row at once when a name would fall under its 64 pt floor.
+                    HStack(spacing: 4) {
+                        if glyph { TagRowGlyph(tag: entry.account.accountTag) }
+                        ProviderMark(provider: entry.account.provider, size: 18)
+                    }
                     // CCBG-60 (Summary Line Clip): the name gives way before the pill and the figure.
                     Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
+                        .accessibilityLabel("\(entry.account.label), \(entry.account.accountTag.accountWord)")
                     PlanChip(provider: entry.account.provider, plan: entry.plan).fixedSize()
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { chipWidth = $0 }
                     Spacer(minLength: 6)
                     // CCBG-56 (Summary Readout Tap): the figure's own target, at least 48 pt wide and 12 pt past it
                     // above and below, so the row's tap (open the account) never takes it.
@@ -229,6 +276,7 @@ struct SummaryRow: View {
                                                               usage: used == nil ? p.sub : p.severity(used, accent: accent), scheme))
                         .fixedSize()
                         .frame(minWidth: 48, alignment: .trailing)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { figureWidth = $0 }
                         .contentShape(Rectangle().inset(by: -12))
                         // Only while there is a readout (Fable F7): otherwise the figure opens the account with the row.
                         .onTapGesture(count: 1, perform: { show(readout) })
@@ -247,10 +295,22 @@ struct SummaryRow: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { lineWidth = $0 - 48 - 12 }
+        .preference(key: RowFitKey.self, value: [fitMetric])
         .opacity(spent ? 0.6 : 1)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityActions { if let readout { Button(readout) { show(readout) } } }
+    }
+
+    /// What this row's line 1 has to share, for `RowGlyphFit`: everything but the name and the glyph column (the mark, the
+    /// plan chip, the figure and the gaps between them), none of it dependent on whether the glyph is drawn.
+    private var fitMetric: RowFitMetric {
+        let gaps = 28.0 + 6 - (chipWidth == 0 ? 7 : 0)   // five items at 7 pt, the spacer's 6 pt floor, no gap for an absent chip
+        let fixed = 18 + gaps + Double(chipWidth) + Double(max(48, figureWidth))
+        let name = (entry.account.label as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: 15)]).width.rounded(.up)
+        return RowFitMetric(id: entry.id, full: .init(line: Double(lineWidth), name: Double(name), fixed: fixed), oneLine: nil)
     }
 
     /// The 5h ring: greyed while the week is spent (CCRM-102 (Spent Week Gate)), a cross for a plan with no 5h, "—"
@@ -284,6 +344,10 @@ struct SummaryRow: View {
 struct SummaryOneLineRow: View {
     let entry: SummaryEntry
     let nowMs: Int64
+    /// CCRM-115: the glyph between the rank disc and the name (12 pt box + 4), while the bar keeps its 50 pt floor.
+    var glyph = true
+    @State private var lineWidth: CGFloat = 0
+    @State private var nameWidth: CGFloat = 0
     @State private var revealed = false
     @State private var revealToken = 0
     @Environment(\.palette) private var p
@@ -297,8 +361,14 @@ struct SummaryOneLineRow: View {
         HStack(spacing: 8) {
             Text("\(entry.rank)").font(.system(size: 10, weight: .bold)).foregroundStyle(.black)
                 .frame(width: 16, height: 16).background(accent, in: Circle())
-            Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
-                .fixedSize().frame(minWidth: 44, alignment: .leading).layoutPriority(1)
+            HStack(spacing: 4) {
+                if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
+                    .accessibilityLabel("\(entry.account.label), \(entry.account.accountTag.accountWord)")
+                    .fixedSize().frame(minWidth: 44, alignment: .leading)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { nameWidth = $0 }
+            }
+            .layoutPriority(1)
             UsageBar(pct: entry.usedPct, pace: entry.elapsedPct, accent: accent, height: 7).frame(minWidth: 50, maxWidth: 110)
             // CCRM-104: the word slot is the pace line's tinted span alone; a press on the figure swaps it for the caption.
             Group {
@@ -326,10 +396,19 @@ struct SummaryOneLineRow: View {
                 .onTapGesture { show(caption) }
                 .allowsHitTesting(caption != nil)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { lineWidth = $0 }
+        .preference(key: RowFitKey.self, value: [fitMetric])
         .opacity(quiet ? 0.6 : 1)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityActions { if let caption { Button(caption) { show(caption) } } }
+    }
+
+    /// The disc (16), the name, the word (96), the figure (52) and four 8 pt gaps; the bar is the one flexible column.
+    private var fitMetric: RowFitMetric {
+        let name = Double(max(44, nameWidth))
+        return RowFitMetric(id: entry.id, full: nil, oneLine: .init(line: Double(lineWidth), fixed: 16 + name + 96 + 52 + 32))
     }
 
     private func show(_ caption: String?) {
@@ -342,4 +421,16 @@ struct SummaryOneLineRow: View {
             if revealToken == token { revealed = false }
         }
     }
+}
+
+/// One Summary row's measures for `RowGlyphFit`, gathered up to the list.
+struct RowFitMetric: Equatable {
+    let id: String
+    let full: RowGlyphFit.FullRow?
+    let oneLine: RowGlyphFit.OneLineRow?
+}
+
+struct RowFitKey: PreferenceKey {
+    static let defaultValue: [RowFitMetric] = []
+    static func reduce(value: inout [RowFitMetric], nextValue: () -> [RowFitMetric]) { value += nextValue() }
 }

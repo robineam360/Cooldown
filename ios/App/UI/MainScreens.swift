@@ -123,7 +123,8 @@ struct RootView: View {
                 case .settings: SettingsScreen(sheet: $sheet)
                 case .addAccount:
                     // Adding an account, not signing one in again: forget any earlier "Sign in again" target.
-                    AddAccountSheet(sheet: $sheet).onAppear { model.reauthTarget = nil }
+                    // The tag control starts on Personal each time the sheet opens (never remembered).
+                    AddAccountSheet(sheet: $sheet).onAppear { model.reauthTarget = nil; model.pendingTag = .personal }
                 case .claudeSignIn: ClaudeSignInSheet()
                 case .chatGPTSignIn: ChatGPTSignInSheet()
                 case .geminiSignIn: GeminiSignInSheet()
@@ -136,6 +137,8 @@ struct RootView: View {
             .modifier(PaletteProvider())
         }
         .onAppear(perform: openRequestedScreen)
+        // A chosen tag is only for the sign-in in progress: it is dropped when the sheets close.
+        .onChange(of: sheet?.id) { _, new in if new == nil { model.pendingTag = .personal } }
     }
 
     /// Demo screenshots can open a screen directly: `-screen settings|history|addAccount|claude|chatgpt`.
@@ -465,6 +468,7 @@ struct PlanChip: View {
 /// First launch: no accounts yet.
 struct EmptyStateView: View {
     @Binding var sheet: Sheet?
+    @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Environment(\.sampleControl) private var control
@@ -485,9 +489,10 @@ struct EmptyStateView: View {
                 .font(.system(size: 15.5)).foregroundStyle(p.txt).multilineTextAlignment(.center).padding(.top, 8)
                 .padding(.horizontal, 32)
             VStack(spacing: 12) {
-                addButton("Add a Claude account", .claude) { sheet = .claudeSignIn }
-                addButton("Add a ChatGPT account", .chatgpt) { sheet = .chatGPTSignIn }
-                if Antigravity.available { addButton("Add a Gemini account", .antigravity) { sheet = .geminiSignIn } }
+                // CCRM-110: the first account never passes the Add sheet, so it is Personal without asking (addendum T2 A).
+                addButton("Add a Claude account", .claude) { model.pendingTag = .personal; sheet = .claudeSignIn }
+                addButton("Add a ChatGPT account", .chatgpt) { model.pendingTag = .personal; sheet = .chatGPTSignIn }
+                if Antigravity.available { addButton("Add a Gemini account", .antigravity) { model.pendingTag = .personal; sheet = .geminiSignIn } }
             }
             .padding(.top, 28)
             // Reviewers (and the curious) can look around without an account.

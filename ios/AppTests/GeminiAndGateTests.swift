@@ -186,12 +186,12 @@ struct GeminiAndGateTests {
         r.save("v21-gemini-weekly-argon", WeeklyCard(all: try #require(light.weekly), cap: cap, accent: light.account.accent(.dark),
                                                      expanded: .constant(true)), width: 390, height: 420, background: .black)
         r.save("v21-gemini-signin", GeminiSignInSheet().environment(model), width: 393, height: 360, background: .black)
-        r.save("v21-gemini-add-nosecret", AddAccountSheet(sheet: .constant(nil)), width: 393, height: 520, background: .black)
+        r.save("v21-gemini-add-nosecret", AddAccountSheet(sheet: .constant(nil)).environment(AppModel(demo: .standard)), width: 393, height: 610, background: .black)
         // A build with the secret shows the Gemini row (I1); a dummy value, never a real one, and cleared after.
         Antigravity.configure(clientSecret: "render-only")
         #expect(Antigravity.available)
-        r.save("v21-gemini-add", AddAccountSheet(sheet: .constant(nil)), width: 393, height: 620, background: .black)
-        r.save("v21-gemini-empty", EmptyStateView(sheet: .constant(nil)), width: 393, height: 760, background: .black)
+        r.save("v21-gemini-add", AddAccountSheet(sheet: .constant(nil)).environment(AppModel(demo: .standard)), width: 393, height: 710, background: .black)
+        r.save("v21-gemini-empty", EmptyStateView(sheet: .constant(nil)).environment(model), width: 393, height: 760, background: .black)
         Antigravity.configure(clientSecret: nil)
         var state = AccountState(); state.lastKind = "invalidResponse"; state.lastMessage = "Reply held 1 of 3 groups"
         if let n = Notice.forAccount(label: "Gemini", state: state, snapshot: nil, nowMs: now.ms, provider: .antigravity) {
