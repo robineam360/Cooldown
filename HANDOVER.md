@@ -55,32 +55,11 @@ to find a node. Much faster than the jdb route; rebuild it from this description
 > Stop and report at anything the wireframe does not draw. One fresh Opus judge round, then close out per Convention 9
 > and land per WORKTREE.md. Before stopping, replace this block with Step A5's prompt (then A6's).
 
-## ▶ Next — Lane I (iOS): Step I4 · Row glyph and the Personal/Work model (written 2026-11-11, after the amendment)
+## ▶ Next — Lane I (iOS): Lane I done (written 2026-11-11)
 
-I1–I3 are on `main`. **Amended 2026-11-11** (Robin): iOS gets one more step. I3 built the optional tag (None · Personal ·
-Work); Robin dropped "None" (every account Personal or Work, chosen on the Add account sheet, all existing accounts
-Personal at upgrade), asked for the tag glyph before the provider logo on Summary rows and the snapshot (CCRM-115 (Row Tag
-Glyph)), and for the filter memory to be the same on both clients — a stored filter whose group is empty becomes `all`
-(I3 kept the old value; judge F4). RUNBOOK Step I4 lists the five parts; the approved addendum
-`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` (§Row glyph, §Adding and tagging) is the contract, and
-BEHAVIOR-MOBILE §6 has the rules. Tests read `spec/mobile/fixtures/tags/cases-personal-work.json` (every `filter` case
-with `storedAfter`, every `memory` sequence replayed against the real store); I3's tests on `cases.json` are retired
-in the same commit (Step 2 folds the new file into `cases.json` later). Lane I's open items from I3 are closed by
-this step (the remembered-filter question; the chip beyond Settings is now the row glyph). Step 2 waits for I4 and A6.
-
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I4),
-> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I4 names in
-> design/2026-11-10-v20-feedback-wireframes.html AND its approved addendum
-> design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html (the addendum wins), BEHAVIOR-MOBILE §6, and the ROADMAP
-> entries it builds (CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot), CCRM-115 (Row Tag Glyph), CCRM-113 (Sample Port));
-> load the model-mesh skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in
-> "Robin's answers" (Convention 10; ask and record first if not). Build Step I4 on iOS only (ios/, never the Android
-> code). Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
-> inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with its tests
-> reading spec/mobile/fixtures/tags/cases-personal-work.json, then the app. Check every state the addendum draws on the
-> iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the captures
-> in design/research/2026-11-v20-build/I4/. Stop and report at anything the wireframe does not draw. One fresh Opus judge
-> round, then close out per Convention 9 and land per WORKTREE.md. Before stopping, replace this block with "Lane I done".
+Lane I done: Step I4 (Row glyph and the Personal/Work model) landed on `main` with CCRM-115 (Row Tag Glyph), CCRM-110 (Account Tags)
+converted to Personal · Work and the filter memory, and the sample's Lab as Work. Its notes for Step 2 are in RUNBOOK.md's Step I4
+Log (the one-account `storedAfter` fixture case, the full-row drop only unit-tested). Step 2 waits for Lane A's A6.
 
 ## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
 

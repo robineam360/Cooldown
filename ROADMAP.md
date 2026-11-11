@@ -1999,6 +1999,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Amended 2026-11-11:** Android builds this in RUNBOOK Step A4; iOS (I3 built the optional tag) converts in Step I4:
   `AccountTag` loses None, the Add sheet gains the control, a stored value that is not in force is rewritten to All.
 - **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): CooldownCore `AccountTag` and `SummaryFilter` on `spec/mobile/fixtures/tags`; the account's additive `tag` string (absent = None, an unknown value survives a round trip, a v1.9-era reader ignores it); the "Tag" row on the account page (menu picker, glyphs leading), a "Tag" submenu in the touch-and-hold menu, the neutral glyph + word chip after the plan chip in Settings; the All · Personal · Work control (13 pt, 28 pt high) beside "Weekly", remembered, filtering the list, the map and the snapshot, a segment with no accounts disabled; "your order" is a native pull-down of the four orders (glyph alone, then the control wrapping under the title, where the line cannot hold it). Captures `design/research/2026-11-v20-build/I3/`.
+- **iOS (Step I4):** built 2026-11-11 (RUNBOOK Step I4; code and captures `design/research/2026-11-v20-build/I4/`): converted to Personal · Work only — `AccountTag(stored:)` reads a missing, empty or unknown value as Personal (nothing written at upgrade, the raw string survives), the pickers have two rows, `setTag` takes a tag, the Settings chip and the account page's Tag row show on every account; "This account is" on the Add account sheet (Personal each open, `pendingTag` written at creation, ignored by "Sign in again", the first-launch buttons leave it Personal); the control shows whenever the Summary exists, a tap on a dimmed segment shows "No Work accounts yet. Tag one in Settings." for 3 s; the memory rule (`SummaryFilter.memory`, `AppModel.runFilterMemory`) stores All when the stored group is empty and tagging later never switches it back, tested on every `cases-personal-work.json` sequence against the real model and store; the Settings row order of addendum T4 B.
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
 - **Status:** **Android built** 2026-11-11 (92b4244, RUNBOOK A3; emulator captures `design/research/2026-11-v20-build/A3/`) · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
@@ -2019,6 +2020,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Amended 2026-11-11 (CCRM-115 (Row Tag Glyph)):** the card's rows carry the tag glyph before the mark **only while
   the rows on it carry both tags**; under a filter, or with every row the same tag, the card is as drawn in rev B.
 - **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): "Share snapshot" replaces "Share card" in the All tab's ellipsis menu; `SummarySnapshotView` (300 pt at 3×) — header with the filter's name, the newest reading's time and the order's name, full rows in the screen's order and filter (one line each from six), the Pace map with the layers saved on screen and the foot line, never the chips or a callout; names, never e-mail addresses; the violet "SAMPLE DATA" band in the sample; "Nothing to share yet — no account has a reading." Captures `design/research/2026-11-v20-build/I3/`.
+- **iOS (Step I4):** built 2026-11-11: the snapshot draws the tag glyph (11 pt in a 12 pt box, before the mark) only while its rows carry both tags (`SummarySnapshotView.glyphs`, from `SummaryFilter.Resolved.snapshotGlyphs`); under a filter or with every row Personal the card is unchanged. Captures `design/research/2026-11-v20-build/I4/`.
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
 - **Status:** Planned · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
@@ -2038,6 +2040,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
   stores' review notes describe the same three accounts.
 - **iOS follow-up:** built 2026-11-11 (a43afb4, RUNBOOK Step I3): the iOS sample's Product (Claude) is Lab (Gemini, Pro) — Teams · Claude, Personal · ChatGPT, Lab · Gemini, as Android's; Teams Work, Personal Personal, Lab untagged (**changes in Step I4: Lab is Work**, Robin 2026-11-11 — no account is untagged any more), so the filter shows in the sample. Captures `design/research/2026-11-v20-build/I3/iphone17pro/sample-mode-*`.
+- **iOS follow-up (Step I4):** built 2026-11-11: Lab is **Work** in every demo scenario (Teams Work, Personal Personal, Lab Work); `-demo upgraded` shows the upgrade state.
 
 ### CCRM-114 · Narrow Duet — the two-account notification on a 360 dp phone's shade
 - **Status:** Planned · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1) · **in v2.0** · Android only.
@@ -2058,13 +2061,14 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Unverified until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220).
 
 ### CCRM-115 · Row Tag Glyph — the Personal/Work glyph before the logo on Summary rows
-- **Status:** Planned · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
+- **Status:** **iOS built** 2026-11-11 (RUNBOOK Step I4) · Android Planned (Step A4) · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
 - **Why:** Robin, 2026-11-11: "Also on summary rows please (next to or better: before the account logos?)".
 - **What:** a person (Personal) or briefcase (Work) glyph, neutral ink, before the provider mark on every Summary row,
   full (14 dp + 4) and one-line (12 dp + 4, between the rank disc and the name); the column leaves every row at once
   when a name would fall under its floor; the share snapshot draws it only while its rows carry both tags. The rule
   is in BEHAVIOR-MOBILE §6; it comes with CCRM-110 (Account Tags)'s Personal/Work-only model (no empty slot).
   Android builds it in Step A4, iOS in Step I4.
+- **iOS:** built 2026-11-11 (RUNBOOK Step I4): `TagRowGlyph` (SF Symbols `person` / `briefcase`, `sub` ink) before the provider mark on full rows (14 pt box + 4) and between the rank disc and the name on one-line rows (12 pt box + 4), VoiceOver "Teams, Work account"; the column leaves every row at once by CooldownCore `RowGlyphFit` (name floor 64 pt or its own width; one-line bar floor 50 pt), decided on measured widths; the snapshot draws it only while its rows carry both tags. Captures `design/research/2026-11-v20-build/I4/`.
 
 ## Next — small, high value, ready to build
 

@@ -217,7 +217,7 @@ clients back at `cases.json`.
 | I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☑ 2026-11-11 |
 | I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☑ 2026-11-11 |
 | I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☑ 2026-11-11 |
-| I4 | Row glyph and the Personal/Work model: CCRM-115; CCRM-110 converted; filter memory; the sample's Lab is Work | I3 | ☐ |
+| I4 | Row glyph and the Personal/Work model: CCRM-115; CCRM-110 converted; filter memory; the sample's Lab is Work | I3 | ☑ 2026-11-11 |
 
 ### Lane D — release text and the graphic (beside the lanes)
 
@@ -689,16 +689,16 @@ iPhone 17e Settings row order of the addendum (T4); the sample's Lab is **Work**
 in the Claude sign-in footnote (T7).
 
 **Done when:**
-- ☐ CooldownCore tests read `spec/mobile/fixtures/tags/cases-personal-work.json` (every `filter` case with
+- ☑ CooldownCore tests read `spec/mobile/fixtures/tags/cases-personal-work.json` (every `filter` case with
   `storedAfter`, every `memory` sequence replayed against the real store); I3's tests on the optional tag are
   retired in the same commit; the downgrade and unknown-value tests pass; `swift test` and the app tests pass.
-- ☐ Simulator captures (the addendum's states) on the iPhone 17 Pro, iPhone 17e and iPad Pro 13″ (both orientations),
+- ☑ Simulator captures (the addendum's states) on the iPhone 17 Pro, iPhone 17e and iPad Pro 13″ (both orientations),
   dark and light: the Add sheet with each choice, the chips on every row (the 17e's row order), the Tag row and
   submenu without None, the Summary after an "upgrade" (everything Personal, Work disabled), both tags, each filter,
   the glyph on full and one-line rows, the glyph column dropped, the snapshot with both tags and with one.
-- ☐ The "iOS:" lines of CCRM-110, CCRM-112 and CCRM-115 read "built"; CCRM-113's iOS follow-up notes Lab Work; the iOS
+- ☑ The "iOS:" lines of CCRM-110, CCRM-112 and CCRM-115 read "built"; CCRM-113's iOS follow-up notes Lab Work; the iOS
   section of `app.md`.
-- ☐ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
+- ☑ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
 
 **Lane I reversal:** as Lane A: `git revert` of the step's commits, newest first.
 
@@ -802,6 +802,36 @@ in the Claude sign-in footnote (T7).
   unread account among the rows (the rule does not look at readings).
 
 ---
+
+- 2026-11-11 · **Step I4 done** (worktree `angry-dhawan-37e588`). Code cfcd998, judge fixes b3421b8, docs in the close-out commit.
+  CooldownCore: `AccountTag` is Personal · Work (`init(stored:)` reads missing, empty or unknown as Personal; `accountWord` "Work account"),
+  `SummaryFilter.resolve(tags:remembered:)` (control from two accounts; `snapshotGlyphs` = the rows shown carry both tags) and
+  `SummaryFilter.memory` (the §6 rule), `RowGlyphFit` (name floor 64 pt or its own width; one-line bar floor 50 pt; 18 pt full
+  column, 16 pt one-line). `AccountTagsTests` read `cases-personal-work.json` (every `filter` case, every `memory` sequence); the I3
+  tests on `cases.json` are retired. App: `AppModel.runFilterMemory` (init, `setTag`, `remove`, `addAccount`, Summary appear and
+  `displayStamp`; a `-demo` launch that is not the sample leaves the user's key alone), `pendingTag`, `newAccount`; the Summary reads
+  the stored filter on every draw; `TagRowGlyph` on full and one-line rows with the list-wide fit decided from measured widths
+  (preference keys); the snapshot's glyph column; `AddTagControl` on the Add account sheet (opens at large); the dimmed-segment line;
+  the Settings row order of addendum T4 B; Lab is Work in every demo scenario (`-demo upgraded` is the upgrade, `-demo fitdrop` the
+  one-line drop). Tests: `swift test` 215 passed; app tests 124 passed (iPhone 17 Pro, `SummaryTagsTests.memoryReplay` replays every
+  fixture sequence against `AppModel` and the sample's settings copy); no new crash report. Captures
+  `design/research/2026-11-v20-build/I4/` (`iphone17pro/`, `iphone17e/`, `ipadpro13/`, `render/`).
+- 2026-11-11 · **Judge** (fresh Opus, high, worker on claude-product): **concerns**, no blocking. F1 (the tap gesture on a disabled
+  Button) → the segment is a Button that is never disabled; checked on the iPhone 17 Pro simulator (Work narrows the list; a tap on the
+  dimmed Work reaches the handler, logged; the line itself is drawn in `render/i4-list-disabled-work-notice-*`, it expires in 3 s).
+  F2 (the fixture's one-account `storedAfter` contradicts its memory case) → **for Step 2**: the one-account filter case should read
+  `storedAfter: "work"` (the rule does not run without a Summary); the core test follows §6 and says so. F3 (a plan chip could
+  truncate before the name) → `.fixedSize()` (the tag chip already had it). F4 (Add sheet at the medium detent) → opens at large only.
+  F5 (tests claiming more than they check) → retitled; a new test pins that a failed sign-in leaves no account. F6 (an unmeasured row
+  reported width 0 and dropped the glyph for a frame) → rows with no width are left out. Fit calls accepted: the notice line sits between
+  the header and the first divider; the announcement is posted with it; without a warning the last Settings layout drops the status word
+  (the sample's word too); the Add sheet title gap 10 → 2; the sheet at large.
+- 2026-11-11 · **For Step 2** (spec and tracker text, not defects): (a) the fixture case above. (b) A full row never drops its glyph on
+  an iPhone 17e or an iPad with the sample names (the one-line drop is captured with `-demo fitdrop`); the full-row rule is covered by
+  `RowGlyphFitTests` only. (c) The `-demo` launches read the real `summaryFilter` key and no longer write it (I3's note d). (d) The
+  captures `I3/…/summary-untagged-no-control-*` and `i3-header-untagged-*` no longer describe a reachable state (the addendum says so).
+  (e) Peer message 2026-11-11: Desktop's VoiceOver label for the Add control is "Tag for the new account, Personal"; the addendum
+  fixes "This account is, Personal, selected", which iOS keeps. A cancelled or failed sign-in leaves no account and so no tag.
 
 ## Lane D — release text and the feature graphic
 

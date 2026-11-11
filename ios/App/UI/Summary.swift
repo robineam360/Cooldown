@@ -351,7 +351,6 @@ struct SummaryOneLineRow: View {
     /// CCRM-115: the glyph between the rank disc and the name (12 pt box + 4), while the bar keeps its 50 pt floor.
     var glyph = true
     @State private var lineWidth: CGFloat = 0
-    @State private var nameWidth: CGFloat = 0
     @State private var revealed = false
     @State private var revealToken = 0
     @Environment(\.palette) private var p
@@ -370,7 +369,6 @@ struct SummaryOneLineRow: View {
                 Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
                     .accessibilityLabel("\(entry.account.label), \(entry.account.accountTag.accountWord)")
                     .fixedSize().frame(minWidth: 44, alignment: .leading)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { nameWidth = $0 }
             }
             .layoutPriority(1)
             UsageBar(pct: entry.usedPct, pace: entry.elapsedPct, accent: accent, height: 7).frame(minWidth: 50, maxWidth: 110)
@@ -411,7 +409,9 @@ struct SummaryOneLineRow: View {
 
     /// The disc (16), the name, the word (96), the figure (52) and four 8 pt gaps; the bar is the one flexible column.
     private var fitMetric: RowFitMetric {
-        let name = Double(max(44, nameWidth))
+        // The name by its font, not by what an overfull row left it: it never truncates on a one-line row.
+        let natural = (entry.account.label as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: 15)]).width.rounded(.up)
+        let name = Double(max(44, natural))
         return RowFitMetric(id: entry.id, full: nil, oneLine: .init(line: Double(lineWidth), fixed: 16 + name + 96 + 52 + 32))
     }
 

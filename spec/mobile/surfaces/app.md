@@ -1189,25 +1189,25 @@ CCRM-112 (Summary Snapshot), the iOS follow-up to CCRM-113 (Sample Port)). Code 
 `design/research/2026-11-v20-build/I3/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape; `render/` holds the
 snapshot card in every state and the header at three widths).
 
-- **Tag.** None · Personal · Work, stored on the account as an additive `tag` string ("personal" / "work"; absent = None; a
-  value this build does not know is kept and reads as None). SF Symbols `person` / `briefcase` lead each picker row and the
+- **Tag.** (Converted in Step I4 below: Personal · Work only, no None.) Stored on the account as an additive `tag` string
+  ("personal" / "work"; a value this build does not know is kept and, since I4, reads as Personal). SF Symbols `person` / `briefcase` lead each picker row and the
   chip, in the chip's ink, never a colour. Set from the account page's Account section, row "Tag" after Accent colour (a menu
-  picker, the current choice with its glyph and a chevron at the right, VoiceOver "Work" / "None"), and from the touch-and-hold
+  picker, the current choice with its glyph and a chevron at the right, VoiceOver "Work"), and from the touch-and-hold
   menu's "Tag" submenu (after Rename). In Settings › Accounts a set tag is a chip after the plan chip: 12 pt glyph + 11 pt
   semibold word, a 1 pt `sub` 50% outline, radius 6. The name keeps its line; the status word gives way before it
   ("Signed in" shrinks to 0.75 and may truncate on a narrow phone), except a warning word ("Sign in again"), which outranks
-  the name. The chip is on no other surface.
-- **Summary header.** "Weekly" 17 pt, then — once any account has a tag — the All · Personal · Work control (13 pt, 28 pt high,
+  the name. (Since I4: the chip is on every account, and its glyph alone also leads the Summary's rows.)
+- **Summary header.** "Weekly" 17 pt, then — since I4 whenever the Summary exists — the All · Personal · Work control (13 pt, 28 pt high,
   an outlined bar of three segments, the chosen one a tonal fill and semibold, a segment with no accounts at 38% and
   disabled), then at the right the sort menu: "your order ▾" (13 pt, a 1 pt `line` outline, radius 8), a native pull-down of
   Your order · Most room first · Resets soonest · Most used with a check on the current one; it writes the same setting as
   Appearance › Summary order, which stays. Where the line cannot hold all three: the sort button shows its glyph alone
   ("⇅ ▾", VoiceOver "Sort: your order"), then the control wraps under the title at full width. The iPad's list column
-  carries the header; the map column follows it. Without a tag the control is absent and the sort menu stays.
+  carries the header; the map column follows it.
 - **Filter.** Remembered (App Group key `summaryFilter`, new; v1.9 never reads it); an unknown, disabled or empty remembered
-  value reads as All (the stored value is left as it was). The filter narrows the accounts before the order ranks them, so the
+  value reads as All (since I4 the memory rule stores All instead, below). The filter narrows the accounts before the order ranks them, so the
   list, the rank numbers, the Pace map, its foot-line count and empty message, the one-line threshold (six rows shown, not six
-  accounts) and the snapshot follow the same rows; untagged accounts show only under All. The footer and refresh still cover
+  accounts) and the snapshot follow the same rows. The footer and refresh still cover
   every account.
 - **Share snapshot.** On the All tab the ellipsis menu's share item reads "Share snapshot" (the account tabs keep "Share
   card"); a sheet titled "Share snapshot" previews the card above a Share button (the system share sheet), and says "Nothing to
@@ -1224,6 +1224,48 @@ snapshot card in every state and the header at three widths).
   ("13h 26m ahead", "Out · Fri"; 10 pt, 64 pt), the figure 14 pt bold. The sample adds the violet "● SAMPLE DATA" band across the
   top (8.5 pt bold white, 16 pt high).
 - **Sample.** Teams (Claude, Team), Personal (ChatGPT, Plus), Lab (Gemini, Pro) — Product (a second Claude) is gone, so the
-  stores' review notes describe the same three accounts on both phones. Teams is Work, Personal is Personal, Lab is
-  untagged, so the control shows in the sample. A tag edited in the sample stays in memory (nothing is saved or written); the
+  stores' review notes describe the same three accounts on both phones. Teams is Work, Personal is Personal, Lab is Work
+  (Step I4; I3 left it untagged). A tag edited in the sample stays in memory (nothing is saved or written); the
   filter and order go to the sample's own settings copy, seeded from the user's.
+
+Step I4 (Row glyph and the Personal/Work model), built 2026-11-11 from `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`
+(§Row glyph, §Adding and tagging; it wins over rev B §6 where they differ) and BEHAVIOR-MOBILE §6 (CCRM-115 (Row Tag Glyph),
+CCRM-110 (Account Tags) converted, the iOS follow-up to CCRM-113 (Sample Port)). Code `ios/App/UI/AccountTags.swift`,
+`Summary.swift`, `SummarySnapshot.swift`, `SignInSheets.swift`, `SettingsHistory.swift`, `AppModel.swift`; rules CooldownCore
+`AccountTag`, `SummaryFilter` (`resolve`, `memory`) and `RowGlyphFit`. Captures `design/research/2026-11-v20-build/I4/`
+(iPhone 17 Pro, iPhone 17e, iPad Pro 13″; `render/` holds the list, snapshot and control states from the app tests).
+
+- **No None.** `AccountTag` is Personal · Work. A missing, empty or unknown stored `tag` reads as Personal and nothing is
+  written at upgrade; the raw string survives a save (an unknown value round-trips; v1.9 ignores the key). The Tag picker
+  (account page row, touch-and-hold submenu) has two rows, glyphs leading; the submenu's icon is always the current glyph;
+  Settings shows the chip on **every** account, and the account page's Tag row always shows a value.
+- **Adding.** The Add account sheet has "This account is" (13.5 pt `txt`) above the provider rows, a two-segment control in the
+  Summary control's style (36 pt high, radius 10, 15 pt words with 14 pt glyphs, the chosen one a 13% fill and semibold) and
+  "Groups it on the Summary. You can change it later." (12.5 pt `sub`). Personal is selected every time the sheet opens
+  (not remembered). The choice rides on `AppModel.pendingTag` with the sign-in and is written when the account is created
+  (stored as `personal` or `work`); "Sign in again" ignores it, closing the sheets drops it, the first-launch buttons leave it
+  Personal, and "Try with sample data" ignores it. VoiceOver reads "This account is" then "Personal, selected". The sheet opens at the large detent only (the control's
+  ~90 pt made the provider rows truncate at medium; a fit call the addendum left to I4).
+- **Summary.** The All · Personal · Work control is shown whenever the Summary exists. A tap on a dimmed segment answers with
+  one line under the header for 3 s, "No Work accounts yet. Tag one in Settings." (12 pt `sub`; also announced to VoiceOver;
+  the segment is a Button that is never disabled, so the tap arrives, and VoiceOver reads it as "Work, dimmed").
+  **Memory rule** (`SummaryFilter.memory`, run by `AppModel.runFilterMemory`): a stored `summaryFilter` that the filter in
+  force does not match — unknown, or its group empty — is rewritten to `all` at once; a missing value stays missing; it runs
+  while the Summary exists (two or more accounts), at launch, when an account, a tag or the Summary changes, and when the
+  Summary comes on screen; in the sample it touches only the sample's settings copy, and a screenshot `-demo` launch leaves
+  the user's key alone. Tagging later never brings an earlier choice back; the view reads the stored value on every draw.
+- **Row glyph** (CCRM-115). A person (Personal) or briefcase (Work), SF Symbols `person` / `briefcase`, `sub` ink, never a colour
+  or the word, hidden from VoiceOver. Full row: a 14 pt box (12 pt symbol) + 4 pt before the provider mark. One-line row: a
+  12 pt box (11 pt symbol) + 4 pt between the rank disc and the name. VoiceOver reads the name as "Teams, Work account" whether
+  or not the glyph is drawn. It dims with its row. Under a Personal or Work filter it stays. **Drop-out:** the name
+  ellipsizes first, down to its floor (64 pt, or its own width if shorter); then the column leaves every row shown at once;
+  one-line rows: when the bar would fall under 50 pt. Decided on the tightest row shown from measured widths
+  (`RowGlyphFit`; the mark, plan chip, figure and gaps are measured, the name by its font) and re-decided when the width, the
+  filter or the rows change. iPad never drops it; an iPhone 17e drops it on a one-line list with a long name.
+- **Snapshot.** The card draws the glyph column (11 pt in a 12 pt box, before the mark) only while the rows on it carry both
+  tags (`Resolved.snapshotGlyphs`), so only under All; an install whose accounts are all Personal shares the card without it.
+- **Settings row order on a narrow phone** (addendum T4 B, iPhone 17e): the whole row; then a plain "Signed in" leaves whole
+  (never "Signed…"); beside a warning word the tag chip drops its word and keeps its glyph (VoiceOver still "Tag: Work");
+  only then does the name ellipsize.
+- **Sample.** Teams Work, Personal Personal, Lab Work in every demo scenario; `-demo upgraded` is the v1.9 upgrade (nothing
+  stored, all Personal, Work disabled). The Claude sign-in footnote reads "the plan name comes from Anthropic" (T7).
