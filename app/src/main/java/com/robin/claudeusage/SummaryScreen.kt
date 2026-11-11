@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -110,6 +111,8 @@ internal fun SummaryScreen(
     }
     val foot = remember(rows) { PaceMapRules.foot(rows.map { PaceMapRules.Account(it.used, it.clocked) }) }
     var layers by remember { mutableStateOf(cache.mapLayers()) }
+    // One pin for both layouts, so a fold or unfold keeps it (judge F5).
+    var pinned by rememberSaveable { mutableStateOf<String?>(null) }
     val openKey: (String) -> Unit = { key -> profiles.firstOrNull { it.key == key }?.let(onOpen) }
     val list: @Composable () -> Unit = {
         Card(Modifier.fillMaxWidth()) {
@@ -140,13 +143,13 @@ internal fun SummaryScreen(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) { list() }
             BoxWithConstraints(Modifier.weight(1f)) {
-                MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, maxWidth - 32.dp, openKey)
+                MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, maxWidth - 32.dp, pinned, { pinned = it }, openKey)
             }
         }
     } else {
         list()
         Spacer(Modifier.height(12.dp))
-        MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, 230.dp, openKey)
+        MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, 230.dp, pinned, { pinned = it }, openKey)
     }
     Spacer(Modifier.height(12.dp))
     SummaryStatus(repo, profiles, tick)
@@ -245,9 +248,11 @@ private fun MapCard(
     onLayers: (MapLayers) -> Unit,
     mode: PaceText.Mode,
     plotHeight: androidx.compose.ui.unit.Dp,
+    pinned: String?,
+    onPin: (String?) -> Unit,
     onOpen: (String) -> Unit,
 ) {
-    PaceMapCard(entries, foot, layers, onLayers, mode, plotHeight, onOpen, Modifier.fillMaxWidth())
+    PaceMapCard(entries, foot, layers, onLayers, mode, plotHeight, pinned, onPin, onOpen, Modifier.fillMaxWidth())
 }
 
 /**

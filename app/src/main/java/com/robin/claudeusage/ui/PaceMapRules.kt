@@ -162,6 +162,12 @@ object PaceMapRules {
         return listOf(from to a.second + t * (b.second - a.second)) + pts.subList(k, pts.size)
     }
 
+    /**
+     * Whether an account's trail is drawn: [trail] ends on the live point, so it needs at least two samples behind it
+     * (iOS: `samples.count > 1`) — an account with no history, or one reading, has no made-up line (iOS judge F1).
+     */
+    fun hasTrail(trail: List<Pair<Double, Double>>): Boolean = trail.size > 2
+
     /** A tap's effect: [pinned] afterwards and the account to [open], if any. */
     data class Tap(val pinned: String?, val open: String?)
 

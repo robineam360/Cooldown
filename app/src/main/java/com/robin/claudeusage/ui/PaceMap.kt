@@ -24,12 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -342,6 +340,10 @@ internal class PaceMapCallout(
     val figure: TextLayoutResult,
     val line: TextLayoutResult?,
     val forecast: TextLayoutResult?,
+    /** The vertical centres (px from the top) of the name row, the line and the forecast. */
+    val centreName: Float,
+    val centreLine: Float?,
+    val centreForecast: Float?,
 ) {
     companion object {
         /** The callout for [item], or null when its account is not on the map. */
@@ -391,9 +393,22 @@ internal class PaceMapCallout(
                     (forecast?.size?.width ?: 0) + 18 * d,
                 ),
             )
-            val h = (24 + (if (line != null) 15 else 0) + (if (forecast != null) 15 else 0)) * d
+            // The lines stack from their measured heights (judge F2): the wireframe's 24 + 15 + 15 dp at scale 1.0, more
+            // as the text grows, never overlapping.
+            val c1 = max(13 * d, 6 * d + max(name.size.height, figure.size.height) / 2f)
+            var bottom = c1 + max(name.size.height, figure.size.height) / 2f
+            var prev = c1
+            fun next(l: TextLayoutResult): Float {
+                val c = max(prev + 15 * d, bottom + 2 * d + l.size.height / 2f)
+                prev = c
+                bottom = c + l.size.height / 2f
+                return c
+            }
+            val cLine = line?.let { next(it) }
+            val cForecast = forecast?.let { next(it) }
+            val h = max((24 + (if (line != null) 15 else 0) + (if (forecast != null) 15 else 0)) * d, bottom + 6 * d)
             val (x, y) = PaceMapRules.calloutOrigin(item.point.x, item.point.y, w, h, f.left, f.top, f.right, f.bottom, d)
-            return PaceMapCallout(Offset(x, y), Size(w, h), e.color, name, figure, line, forecast)
+            return PaceMapCallout(Offset(x, y), Size(w, h), e.color, name, figure, line, forecast, c1, cLine, cForecast)
         }
     }
 }
@@ -413,11 +428,14 @@ fun PaceMapCard(
     onLayers: (MapLayers) -> Unit,
     mode: PaceText.Mode,
     plotHeight: Dp,
+    pinned: String?,
+    onPin: (String?) -> Unit,
     onOpen: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var pinned by rememberSaveable { mutableStateOf<String?>(null) }
     val pin = PaceMapRules.keepPin(pinned, entries.map { it.key })
+    // The pin is dropped, not just hidden, when its account leaves the map (judge F1): it must not reopen later.
+    LaunchedEffect(pinned, entries.map { it.key }) { if (pin != pinned) onPin(pin) }
     androidx.compose.material3.Card(modifier) {
         Column(Modifier.padding(16.dp)) {
             FlowRow(
@@ -439,7 +457,7 @@ fun PaceMapCard(
                 entries, layers, mode, foot.empty, pin,
                 onTap = { hit ->
                     val t = PaceMapRules.tap(pin, hit)
-                    pinned = t.pinned
+                    onPin(t.pinned)
                     t.open?.let(onOpen)
                 },
                 modifier = Modifier.fillMaxWidth().height(plotHeight),
@@ -523,7 +541,8 @@ fun PaceMap(
         Canvas(
             Modifier
                 .fillMaxSize()
-                .pointerInput(scene) {
+                // Keyed on the targets, not the scene: the scene is rebuilt on every 5 s tick (the time maths moves).
+                .pointerInput(scene.targets) {
                     detectTapGestures { at -> currentTap(PaceMapRules.hit(scene.targets, at.x, at.y, d)) }
                 }
                 .semantics {
@@ -615,7 +634,7 @@ private fun DrawScope.drawMap(
     if (layers.trails) {
         for (i in s.items) {
             val e = i.entry
-            if (e.trail.size < 2) continue
+            if (!PaceMapRules.hasTrail(e.trail)) continue
             withAlpha(alphaOf(e)) {
                 val path = Path()
                 e.trail.forEachIndexed { k, (x, y) -> if (k == 0) path.moveTo(f.x(x), f.y(y)) else path.lineTo(f.x(x), f.y(y)) }
@@ -682,15 +701,11 @@ private fun DrawScope.drawCallout(c: PaceMapCallout, card: Color) {
     drawRoundRect(c.accent.copy(alpha = 0.55f), c.topLeft, c.size, r, style = Stroke(1.dp.toPx()))
     val x = c.topLeft.x
     val y = c.topLeft.y
-    drawCircle(c.accent, 3.5.dp.toPx(), Offset(x + 12.dp.toPx(), y + 13.dp.toPx()))
-    drawText(c.name, topLeft = Offset(x + 20.dp.toPx(), y + 13.dp.toPx() - c.name.size.height / 2f))
-    drawText(c.figure, topLeft = Offset(x + c.size.width - 9.dp.toPx() - c.figure.size.width, y + 13.dp.toPx() - c.figure.size.height / 2f))
-    var at = 27.5.dp.toPx()
-    c.line?.let {
-        drawText(it, topLeft = Offset(x + 9.dp.toPx(), y + at - it.size.height / 2f))
-        at += 15.dp.toPx()
-    }
-    c.forecast?.let { drawText(it, topLeft = Offset(x + 9.dp.toPx(), y + at - it.size.height / 2f)) }
+    drawCircle(c.accent, 3.5.dp.toPx(), Offset(x + 12.dp.toPx(), y + c.centreName))
+    drawText(c.name, topLeft = Offset(x + 20.dp.toPx(), y + c.centreName - c.name.size.height / 2f))
+    drawText(c.figure, topLeft = Offset(x + c.size.width - 9.dp.toPx() - c.figure.size.width, y + c.centreName - c.figure.size.height / 2f))
+    c.line?.let { drawText(it, topLeft = Offset(x + 9.dp.toPx(), y + c.centreLine!! - it.size.height / 2f)) }
+    c.forecast?.let { drawText(it, topLeft = Offset(x + 9.dp.toPx(), y + c.centreForecast!! - it.size.height / 2f)) }
 }
 
 private fun DrawScope.dot(e: PaceMapEntry, c: Offset, card: Color) {

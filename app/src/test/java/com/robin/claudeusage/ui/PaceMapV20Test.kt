@@ -249,13 +249,27 @@ class PaceMapV20Test {
         }
     }
 
-    @Test fun `leaders stay short - never past the longest distance`() {
+    @Test fun `leaders stay short - the placer never goes past the longest distance`() {
+        var leaders = 0
         for (c in cases(fx.getJSONObject("mapLabels"), "placement")) {
-            val max = geometry(c).leaderDistances.max()
-            for (e in c.getJSONObject("expected").getJSONArray("names").objects()) {
-                if (!e.isNull("leader")) assertTrue(e.getJSONObject("leader").getDouble("distance") <= max)
+            val g = geometry(c)
+            val plot = c.getJSONObject("plot")
+            val w = plot.getDouble("width")
+            val h = plot.getDouble("height")
+            val area = MapLabels.Rect(-g.margin.left, -g.margin.top, w + g.margin.left + g.margin.right, h + g.margin.top + g.margin.bottom)
+            val dots = c.getJSONArray("dots").objects().map { d ->
+                MapLabels.Dot(
+                    d.getString("name"), d.getDouble("weekGonePct") / 100 * w, (100 - d.getDouble("usedPct")) / 100 * h,
+                    d.getDouble("nameWidth"), d.getDouble("nameHeight"),
+                )
+            }
+            for (p in MapLabels.place(dots, area, g, emptyList(), emptyList())) {
+                val l = p.leader ?: continue
+                leaders++
+                assertTrue(l.distance <= g.leaderDistances.max())
             }
         }
+        assertTrue("the dense case takes leaders", leaders > 0)
     }
 
     // ---- the callout, the pin, the trail and the tap
@@ -307,10 +321,16 @@ class PaceMapV20Test {
         assertTrue(PaceMapRules.lastDay(listOf(0.0 to 0.0, 5.0 to 1.0), 60.0).isEmpty())
     }
 
-    @Test fun `an account with no history has no trail`() {
-        // CCBG-79's sibling (iOS judge F1): no samples → the live point only, which the map does not draw as a line.
-        val t = PaceMapGeometry.trail(emptyList(), 1_000_000L, 1_000_000L, 40.0, 30.0)
-        assertEquals(1, t.size)
+    @Test fun `an account with no history, or one reading, has no trail`() {
+        // iOS judge F1: the trail ends on the live point, so a line needs two samples behind it.
+        val week = 1_000_000L
+        val none = PaceMapGeometry.trail(emptyList(), week, week, 40.0, 30.0)
+        assertFalse(PaceMapRules.hasTrail(none))
+        val one = PaceMapGeometry.trail(listOf(100_000L to 5.0), week, week, 40.0, 30.0)
+        assertEquals(2, one.size)
+        assertFalse(PaceMapRules.hasTrail(one))
+        val two = PaceMapGeometry.trail(listOf(100_000L to 5.0, 200_000L to 12.0), week, week, 40.0, 30.0)
+        assertTrue(PaceMapRules.hasTrail(two))
     }
 
     @Test fun `callout origin - above-right of the dot, flipped left at the right edge and below at the top, clamped`() {

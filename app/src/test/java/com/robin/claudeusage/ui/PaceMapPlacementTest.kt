@@ -4,6 +4,7 @@ import com.robin.claudeusage.ui.MapLabels.Spot
 import com.robin.claudeusage.ui.PaceMapGeometry.Rect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -83,12 +84,12 @@ class PaceMapPlacementTest {
         assertEquals(Spot.RIGHT, got[5].spot)
     }
 
-    @Test fun `the origin dot gets no leader to the far edge`() {
+    @Test fun `the origin dot gets its name beside it, never a leader to the far edge`() {
         // Gemini's week has not started: its dot sits at the origin (CCBG-79 symptom 1).
         val p = place(dot("Gemini", 0.0, 0.0)).single()
-        val box = p.box
-        if (p.spot == Spot.LEADER) assertTrue(p.leader!!.distance <= 48.0)
-        if (box != null) assertTrue(box.right < f.right - 40.0)
+        assertEquals(Spot.RIGHT, p.spot)
+        assertNull(p.leader)
+        assertEquals(f.x(0.0) + 10.0, p.box!!.x, 1e-3)
     }
 
     @Test fun `nothing free - the name is not drawn and takes no room`() {
@@ -105,17 +106,25 @@ class PaceMapPlacementTest {
         assertFalse(overlap(p.box!!, fixed))
     }
 
-    @Test fun `with Projection on a name does not sit on its own tail or on a ring`() {
+    @Test fun `with Projection on a name does not sit on its own tail`() {
         val a = f.x(40.0).toDouble() to f.y(50.0).toDouble()
         val tailEnd = f.x(100.0).toDouble() to f.y(70.0).toDouble()
         val own = MapLabels.Dot("a", a.first, a.second, w, h, tailEnd)
         val p = MapLabels.place(listOf(own), area, g, emptyList(), emptyList()).single()
         assertTrue("the tail runs right, so the name cannot", p.spot != Spot.RIGHT)
+        assertNotNull(p.box)
         assertTrue(p.refusedFor.contains("sits on its own tail"))
-        val ring = MapLabels.Rect(tailEnd.first - 3.5, tailEnd.second - 3.5, 7.0, 7.0)
-        val q = MapLabels.place(listOf(dot("b", 96.0, 70.0)), area, g, emptyList(), listOf(ring)).single()
-        val qb = q.box
-        if (qb != null) assertFalse(overlap(qb, ring))
+    }
+
+    @Test fun `a name does not sit on a ring`() {
+        val d = dot("b", 40.0, 50.0)
+        // a ring exactly where the right-hand spot would put the name
+        val ring = MapLabels.Rect(d.x + g.rightDx + 5, d.y - 3.5, 7.0, 7.0)
+        val p = MapLabels.place(listOf(d), area, g, emptyList(), listOf(ring)).single()
+        assertTrue(p.spot != Spot.RIGHT)
+        assertNotNull(p.box)
+        assertFalse(overlap(p.box!!, ring))
+        assertTrue(p.refusedFor.contains("sits on a ring"))
     }
 
     @Test fun `every label stays inside the plot`() {

@@ -1975,7 +1975,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): `PaceLine` prints "· resets Wed 12:30 PM" and drops "resets", then the clock (another day keeps its weekday), then the floor, on every pace-line surface (tile, Summary, widgets, lock screen, Live Activity, Island); `printed-v20.json` → `paceLine`, `paceLineForms`, `endToEnd`. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
-- **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
+- **Status:** **Android built** 2026-11-11 (92b4244, RUNBOOK A3; emulator captures `design/research/2026-11-v20-build/A3/`) · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
   once desktop adopted it (CCM-214, 2026-11-10). Foot line: mobile keeps the count, desktop names the accounts in a
   sentence (Robin approved both forms, 2026-11-10).
 - **What:** an account whose Weekly figure prints "0%" (under 0.5; Robin, 2026-11-10: match the row, so a row
@@ -1993,7 +1993,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS:** not started
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
-- **Status:** Planned · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
+- **Status:** **Android built** 2026-11-11 (92b4244, RUNBOOK A3; emulator captures `design/research/2026-11-v20-build/A3/`) · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
   Closes CCBG-79 (Leader Reads as Trail) with the build.
 - **What:** three chips right on the map's title line (defaults off / on / off, remembered; Android 32 dp, iOS
   13 pt; wrap under the title at large text). Figures puts the figure after the name; Projection draws a dashed tail

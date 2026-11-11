@@ -397,7 +397,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Fold 7 cover would have a column below 142 dp, and there a long line steps down to the floor or to 10 sp as D10 says.
 
 ### CCBG-79 · Leader Reads as Trail — Pace map leader lines span the plot and cross other labels
-- **Status:** Open · found 2026-11-06 on the Fold 7, cover and inner · **design approved 2026-11-10** in
+- **Status:** Open · **fixed on Android in code 2026-11-11** (92b4244, RUNBOOK A3: `MapLabels` places names with dotted leaders of at most 48 dp, refused across a placed name or dot, no name when nothing is free; `design/research/2026-11-v20-build/A3/` 18 and 16–17; fixed on iOS in I2, 42ad02e); closes at Step 2 with the release text · found 2026-11-06 on the Fold 7, cover and inner · **design approved 2026-11-10** in
   CCRM-111 (Map Layers) (`design/2026-11-10-v20-feedback-wireframes.html` §7: dotted leaders of at most 48 dp,
   refused across a placed name or dot, no name when nothing is free); closes with that build.
 - **Severity:** Low (cosmetic, but the map can be misread)

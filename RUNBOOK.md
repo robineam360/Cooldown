@@ -172,7 +172,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 |---|---|---|---|
 | A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☑ 2026-11-11 |
 | A2 | Duet: CCRM-105 | A1 | ☑ 2026-11-11 |
-| A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☐ |
+| A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☑ 2026-11-11 |
 | A4 | Summary: CCRM-110, CCRM-112 | A3, Q5 | ☐ |
 | A5 | Sample: CCRM-113 | A4 | ☐ |
 
@@ -385,13 +385,13 @@ after the name; the projection's dashed tail and hollow ring (red on the 100% li
 account; dotted leaders of at most 48 dp, the name not drawn when nothing is free.
 
 **Done when:**
-- ☐ Tests on `mapLabels` (the dense 200-wide case), the quiet rule, the callout forecast and the projection layer;
+- ☑ Tests on `mapLabels` (the dense 200-wide case), the quiet rule, the callout forecast and the projection layer;
   both flavors' tests and lint.
-- ☐ Emulator captures: each chip combination, the callout pinned, a dense map with a refused label, all quiet,
+- ☑ Emulator captures: each chip combination, the callout pinned, a dense map with a refused label, all quiet,
   two-column inner layout.
-- ☐ CCRM-109 and CCRM-111 Status "Android built"; CCBG-79's status notes the Android fix (Lane A owns BUGS.md);
+- ☑ CCRM-109 and CCRM-111 Status "Android built"; CCBG-79's status notes the Android fix (Lane A owns BUGS.md);
   `app.md` Android section.
-- ☐ Judge round recorded; landed.
+- ☑ Judge round recorded; landed.
 
 ### Step A4 · Summary — CCRM-110, CCRM-112
 
@@ -483,6 +483,39 @@ step. A4's tag preference is additive, so a revert leaves only an unread key.
   notification; airplane mode on throughout; afterwards both prefs files restored from copies, font 1.0, size and
   density reset, dark mode, network restored, emulator killed. Sweeper skipped: the session list returned exactly 50
   rows (WORKTREE.md rule).
+- **2026-11-11 · A3 Pace map (Android).** Code `92b4244` (CCRM-111 (Map Layers) and CCRM-109 (Quiet Accounts): `ui/PaceMapRules.kt`
+  quiet rule / foot line / figures / forecast / projection end / pin and hit test, `ui/MapLabels.kt` the placer (the same
+  rules as iOS's, dp offsets equal the fixture's), `ui/PaceMap.kt` the card with the 32 dp chips, scene, trails with the
+  heavier last 24 h, tails and rings, dotted leaders, callout and per-dot TalkBack nodes, `data/MapLayers.kt` + three new
+  `paceMap.*` prefs, `SummaryScreen` plotted-only entries and the foot count), judge fixes and close-out in the following
+  commit; both flavors' tests, lint and both assembles green; no widget layout changed. Tests read `printed-v20.json`
+  (`quiet`, `mapLabels` words / figures / placement incl. every box, leader and refusal reason, `callout`,
+  `projectionLayer`) and `spec/mobile/fixtures/map-foot`; the dp offsets the map always drew are the fixture's, so the
+  port passed first time. **Captures** `design/research/2026-11-v20-build/A3/` (44, fold7inner at 5556): cover dark 02–24
+  (all eight chip combinations 02–09; figures in Vs pace and Left 10–11; the callout on Teams, Gemini flipped left and
+  below, spent Atlas, and a second tap opening Teams 12–15; a dense eleven-account map with figures and with all layers
+  16–17; a stack of seven dots with refused names 18; two hidden, two hidden + one unread, all at 0%, nothing plotted
+  with one unread, one account, no history 19–24), cover light 30–33, inner two-column 40–44, 360 dp 50–56, large
+  text 52, 57, 60, 61 (chips wrap among themselves, the callout grows), the chip tap and its memory after a restart
+  58–59. **Judge** (fresh Opus @ high, product account): concerns, no blocking. Adopted: F1 the pin was hidden, not
+  dropped, when its account left the map (it would reopen later) → dropped by a `LaunchedEffect`, and the pin moved up
+  to `SummaryScreen` so a fold keeps it; F2 the callout's rows were fixed dp and overlapped from font 1.3 → stacked from
+  measured heights (captures 60–61); F3 an account with one sample drew a line where iOS draws none → `hasTrail` (the
+  trail ends on the live point, so it needs two samples behind it; **departs from the shipped Android rule on purpose,
+  to match iOS**, pinned by a test); F4 vacuous test branches made unconditional, the leader-length test now reads the
+  placer, a ring test added; F5 `pointerInput` keyed on the targets, not the scene. Not changed: the y-axis "100%" is cut
+  to "00%" at font 2.0 (the 30 dp left inset predates this step; Step 3 or a fix of its own). **Matches iOS where rev B is
+  silent:** no trail for an account with no history; one TalkBack node per dot on its 48 dp target; the all-at-0% message
+  is announced as the map's state; nothing plotted with some accounts unread shows the empty frame and the count, no
+  message. **Wireframe calls, all within rev B:** the chips are 32 dp *including* their touch target (Material's 48 dp
+  minimum is not applied, so the header is the drawn 32 dp; they are switches for TalkBack, iOS marks them selected buttons);
+  a reading of 1% or more with no reset clock is no longer plotted on the origin but counted as no reading (the foot-line
+  fixture's rule); "even pace" also keeps off rings. **For the orchestrator:** nothing undrawn stopped the step; the
+  wireframe's "Largest font" drawing shows only the chips, the map text at font 2.0 follows the existing sp scaling.
+  **Emulator notes:** a scratch debug-only `SeedActivity` (not committed) seeded the registry, snapshots, history and fake
+  credentials in-process and started `MainActivity` (airplane mode on); afterwards the app was cleared and uninstalled,
+  size and density reset to 411, font 1.0, stay-awake off, airplane mode off, emulator killed. Sweeper skipped: the
+  session list was not read (a landing step carries it, see WORKTREE.md).
 
 ---
 

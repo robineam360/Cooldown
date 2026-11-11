@@ -1057,6 +1057,57 @@ overrides them where they disagree. Captures: `design/research/2026-11-v20-build
   a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today.
   `PaceText.paceLineForms`; the held line ("Held · back at … · resets Fri") is unchanged.
 
+Step A3 (Pace map, Android), built 2026-11-11 from rev B §5 and §7 (CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers)); it
+supersedes the Pace map paragraphs of §2.8 above wherever they differ. Code `ui/PaceMap.kt` (card, scene, drawing),
+`ui/PaceMapRules.kt` (quiet rule, foot line, figures, callout forecast, projection end, pin and hit test) and
+`ui/MapLabels.kt` (the placer, the same rules as iOS's `MapLabels`). Captures `design/research/2026-11-v20-build/A3/`.
+
+- **Title line.** "Pace map" (titleSmall) left; on the right, in place of "Weekly, where each account stands", three chips
+  Figures · Trails · Projection: 32 dp high, 12 sp, 10 dp side padding, 6 dp apart, an 8 dp radius; selected = ink at 13%
+  fill and SemiBold, unselected = a 1 dp `outline` border and regular; no check glyph. A switch for TalkBack (the chip
+  turns a layer on or off). The chips are 32 dp **including** their touch target (Material's 48 dp minimum is not applied,
+  so the header is the 32 dp the wireframe draws). Defaults Figures off, Trails on, Projection off, remembered in
+  `usage_cache` (`paceMap.figures|trails|projection`, new keys, ignored by v1.9). `FlowRow`: when the title and the chips
+  do not fit one line the chips wrap under the title, left-aligned, 6 dp below.
+- **Who is plotted.** An account whose Weekly row prints "0%" (the row truncates: 0.99 → 0%, 1.0 → 1%) leaves the map; so
+  do accounts with no reading and a reading with no reset clock (it has no x; before, it sat on the origin). The list
+  still shows every row. Spent: × on the dot. Stale: the last reading, undimmed (as shipped).
+- **Foot line (`PaceMapFoot`).** Left "each account's own week"; right, 11 sp `onSurfaceVariant`, the count of accounts left
+  off: "2 at 0%", "1 no reading", joined "2 at 0% · 1 no reading"; nothing when none (a not-started week counts as 0%; a
+  reading of 1% or more with no reset clock counts as no reading).
+- **All at 0%.** The frame, grid, diagonal and words stay at full height; in the behind wedge, right-aligned at (96%, 26%),
+  10.5 sp ink 55%: "Nothing to plot yet" (SemiBold) over "every account is at 0% this week"; TalkBack reads it as the
+  map's state. With nothing plotted but some accounts unread, the empty frame shows the foot line's count and no message
+  (not drawn in rev B; as iOS).
+- **Figures.** "Teams 52%" (Used), "Teams 48% left" (Left; a spent account reads "Teams 0%", Robin 2026-11-11), "Teams −13%" /
+  "+19%" / "0%" (Vs pace; no reset clock falls back to Used). Name 11.5 sp SemiBold ink; figure bold in the severity colour
+  (Used, Left, the Vs fallback) or green / red / ink (Vs pace). Used and Left truncate like the row (51.5 → "51%", "48% left").
+- **Trails.** The week at 1.6 dp, accent 55%; the last 24 h (a seventh of the week before the dot) 2.6 dp, accent 90%,
+  round caps; an account with fewer than two samples has no trail (`PaceMapRules.hasTrail`: the trail ends on the live
+  point, so it needs two behind it, as iOS). Off: dots only.
+- **Projection.** A dashed tail (1.6 dp, 5/4, accent 65%) from the dot to a ring (r 3.5 dp, 1.5 dp, card fill) on the right
+  edge at the projected %; where the estimate runs out before the reset the ring sits on the 100% line at that moment, red,
+  and the tail fades from the accent to red. The estimate is the account chart's (`Projection.estimate` on the Summary's
+  weekly samples). No tail and no ring with no estimate, spent, or no reset clock. "even pace" also keeps off every ring.
+- **Callout.** A tap on a dot (48 dp target) or a name (its box widened to 48 dp high) pins it; the nearest dot wins. The
+  others dim to 35% (trails, tails, rings, leaders, dots, names; not the frame or its words). Drawn in the canvas: 8 dp
+  radius, card at 97%, 1 dp border in the account colour at 55%; line 1 a 3.5 dp accent dot, the name 12 sp SemiBold, the
+  figure 12 sp bold at the right; line 2, 11 sp, the pace line (its drop order measured to the plot's width) or the row's
+  line where there is none ("Out until Fri 1:48 PM" red when spent, "Held · …"); line 3, 11 sp, "~74% at reset" (muted) or
+  "100% at Wed 6:10 PM" (red; a bare clock later today), none without a projection. It opens 10 dp right and 8 dp above the
+  dot, flips left past the plot's right edge by 6 dp, below the dot at the top, and is clamped to the plot. The same account
+  again opens its page; another dot moves the pin; the empty plot clears it; the pin is held by the Summary (one for the cover
+  and the inner layout, so a fold keeps it) and is dropped, not just hidden, when its account leaves the map. The lines
+  of the callout stack from their measured heights (the drawn 24 + 15 + 15 dp at scale 1.0, taller as the text grows). TalkBack: one node per dot on its 48 dp target, "Teams, 52 percent, 21h 50m
+  ahead · resets Sun 5:58 PM, ~74% at reset", click label "Pin, again to open" (then "Open").
+- **Names and leaders (closes CCBG-79 (Leader Reads as Trail)).** `MapLabels`, top-down: right, below, left, above-left;
+  then a dotted leader (1 dp, 1.5/2.5, accent 55%) 24, 36 or 48 dp from the dot in eight directions, refused across a
+  placed name or another dot (so a stack of dots at one point shows two names and no leader), never longer than 48 dp and
+  never to the far edge. With Projection on a name does not sit on its own tail or on a ring. Nothing free: the name is not
+  drawn and takes no room; its dot stays and its 48 dp target still pins a callout that names it. The offsets are the
+  fixture's (dot box 14 dp, 2 dp between names, 1 dp off a word, right +10, below +2/+3, left −10, above-left −6, margins
+  2/6/8/6), which the map has always drawn. `printed-v20.json` → `mapLabels` pins them.
+
 ## v2.0 feedback on iOS
 
 Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B

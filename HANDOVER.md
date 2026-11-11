@@ -13,28 +13,34 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A3 · Pace map (written 2026-11-11, after A2 landed)
+## ▶ Next — Lane A (Android): Step A4 · Summary (written 2026-11-11, after A3 landed)
 
-Step A2 (Duet: CCRM-105 (Duet Stack)) landed on `main`; RUNBOOK's Lane A Log has the commits, the Fable fit calls,
-the judge round, the measured shade widths and the captures (`design/research/2026-11-v20-build/A2/`). Settled for
-A3 since the wireframe: a spent account in Left mode stays on the map as "Teams 0%" (Robin, 2026-11-11), and since
-c24e675 map figures and the quiet edge truncate like the row. Emulator seeding (A1/A2): `run-as` writes
-`shared_prefs/usage_cache.xml` (First's keys bare, Second's prefixed `work.`; `rawJson`, `fetchedAt`, `authState`)
-and `profiles.xml` (labels), with airplane mode on; the in-app screens also need a stored credential (A1: a generated
-test token via `jdb` → `CredentialStore.save`, signed out afterwards); restore both files and kill the emulator at
-the end. Open for the orchestrator from A2 (not A3's): F1 (a ≤ 226 dp Duet), F2 (pace-line columns keyed on width).
+Step A3 (Pace map: CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers), closing the Android side of CCBG-79 (Leader Reads as
+Trail)) landed on `main`; RUNBOOK's Lane A Log has the commits, the judge round and the captures
+(`design/research/2026-11-v20-build/A3/`). Q5 is answered ("After v2.0": A4 is CCRM-110 (Account Tags) and CCRM-112
+(Summary Snapshot) only; the Android half of CCRM-24 (Share Card) is not in v2.0). What A3 leaves A4: `SummaryScreen`
+now builds `mapEntries` from `rows.filter { it.plotted }` and a `PaceMapRules.foot` over **every** row — the Summary
+filter (CCRM-110) must filter `rows` before both, so the list, the map, its foot-line count and its empty message follow
+the filter; the snapshot (CCRM-112) draws `PaceMap(entries, layers, mode, empty, pinned = null, onTap = {})` with the
+on-screen `MapLayers` and never the chips or a callout (the `mapLabels` dense 200 × 120 case is the snapshot map).
+**Emulator without a sign-in:** a scratch debug-only `SeedActivity` (not committed; `app/src/debug/`, plus a manifest
+entry) seeded the registry, `UsageCache.saveSuccess` snapshots, `HistoryStore.record` history and fake credentials
+(`CredentialStore(this, true).save(profile, Credentials(...), stampAdded = true)`, airplane mode on) and then started
+`MainActivity`; scenarios via intent extras, `pm clear` + `pm grant POST_NOTIFICATIONS` between runs, `uiautomator dump`
+to find a node. Much faster than the jdb route; rebuild it from this description, never commit it.
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A3),
-> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A3 names in
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A4),
+> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A4 names in
 > design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step A3 on Android only (repo root, never ios/). Write
+> answers" (Convention 10; ask and record first if not). Build Step A4 on Android only (repo root, never ios/). Write
 > only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
 > "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
-> fixtures for the changed rules. Check every state the wireframe draws for these items on the fold7inner
-> emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths, dark and
-> light; save the captures in design/research/2026-11-v20-build/A3/. Stop and report at anything the
-> wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+> fixtures (spec/mobile/fixtures/tags for CCRM-110 (Account Tags)) for the changed rules. Check every state the
+> wireframe draws for these items on the fold7inner emulator (port 5556, headless; never emulator-5554) at the
+> cover-like, inner and 360 dp widths, dark and light; save the captures in design/research/2026-11-v20-build/A4/.
+> Stop and report at anything the wireframe does not draw. One fresh Opus judge round, then close out per Convention 9
+> and land per WORKTREE.md.
 
 ## ▶ Next — Lane I (iOS): Step I3 · Summary (written 2026-11-11, after I2 landed)
 
