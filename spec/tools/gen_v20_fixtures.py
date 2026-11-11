@@ -778,7 +778,8 @@ PW_NOTE = ("Account tags and the Summary filter on mobile after Robin's 2026-11-
            "never. The filter in force is the remembered value when it names an enabled segment of a shown control, else "
            "All. It narrows the list, the ranking, the Pace map and the snapshot (the snapshot header names it). oneLineRows: "
            "the one-line form from six rows shown. storedAfter: the remembered value once the memory rule has run (a stored "
-           "value the filter in force does not match becomes 'all'; an absent value stays absent). memory: sequences of "
+           "value the filter in force does not match becomes 'all'; an absent value stays absent; with fewer than two "
+           "accounts there is no Summary, the rule does not run, and the value stays as it was). memory: sequences of "
            "changes (open the Summary, tag an account, add, remove, choose a segment), each step followed by the filter in "
            "force and the value stored; the client's test replays them against its own store. Tagging never brings an "
            "earlier choice back.")
@@ -831,7 +832,10 @@ def build_tags_pw():
                 "segmentsEnabled": segs if ctrl else None, "filter": eff, "shown": shown,
                 "oneLineRows": len(shown) >= 6,
                 "snapshotHeader": {"all": "All accounts", "personal": "Personal accounts", "work": "Work accounts"}[eff],
-                "storedAfter": None if remembered is None else eff}
+                # The memory rule runs only while the Summary exists (two or more accounts): with one account the stored
+                # value is left exactly as it was (BEHAVIOR-MOBILE §6; memory sequence "a second account added to a
+                # single-account install" agrees).
+                "storedAfter": None if remembered is None else (eff if ctrl else remembered)}
 
     sample = [a("Teams", "work"), a("Personal", "personal"), a("Lab", "work")]
     seven = [a("Teams", "work"), a("Personal", "personal"), a("Lab", "work"), a("Atlas", "work"), a("Side", "personal"),

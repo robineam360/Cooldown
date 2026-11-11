@@ -177,13 +177,9 @@ class AccountTagsTest {
             assertEquals("$name: one-line rows", e.getBoolean("oneLineRows"), com.robin.claudeusage.ui.SummaryRows.compact(shown.size))
             assertEquals("$name: snapshot header", e.getString("snapshotHeader"), filter.snapshotHeader)
             // The memory rule, run as the Summary does when it comes on screen. With one account there is no Summary, so
-            // nothing is evaluated and the value stays as it was (the memory sequence "a second account added to a
-            // single-account install" pins this; the filter case's storedAfter of "all" for one account is the
-            // generator's simplification and is not asserted — reported for Step 2).
+            // nothing is evaluated and the value stays as it was; the fixture's storedAfter says the same.
             repo.settleSummaryFilter()
-            val after = cache.summaryFilterStored()
-            if (shownControl) assertEquals("$name: stored after", e.str("storedAfter"), after)
-            else assertEquals("$name: no Summary, nothing evaluated", c.str("rememberedFilter"), after)
+            assertEquals("$name: stored after", e.str("storedAfter"), cache.summaryFilterStored())
         }
     }
 

@@ -647,6 +647,13 @@ step. A4's tag preference is additive, so a revert leaves only an unread key; A6
   the addendum's TalkBack paragraph fixes it. **Emulator notes:** a scratch debug-only `SeedActivity` (never committed)
   seeded the registry, snapshots and fake credentials (airplane mode on); afterwards the app was cleared, size / density /
   font reset, dark mode off, airplane mode off, emulator killed. Sweeper skipped: the session list was not read.
+- **2026-11-11 · A4 fixture fix (spec-only, at the orchestrator's request after Desktop's replay).** `spec/tools/gen_v20_fixtures.py`
+  set a `filter` case's `storedAfter` to the filter in force even with fewer than two accounts; with no Summary the memory rule
+  does not run (BEHAVIOR-MOBILE §6) and the value stays as it was, as memory sequence 6 already said. Fixed in `build_tags_pw()`
+  and the file's note; regenerated, `--check` passes; **only the "one account" case changed** (`storedAfter` all → work), the
+  other ten `filter` cases and every `memory` sequence are byte-identical, and the other three generated files are unchanged.
+  Android needed no code change (A4 already left the value alone below two accounts); `AccountTagsTest` now asserts
+  `storedAfter` for every case, the special case removed. `check_no_code.sh`, both flavors' unit tests and `swift test` pass.
 
 ---
 
