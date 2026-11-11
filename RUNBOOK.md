@@ -170,7 +170,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 
 | Step | What | Gated on | Status |
 |---|---|---|---|
-| A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☐ |
+| A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☑ 2026-11-11 |
 | A2 | Duet: CCRM-105 | A1 | ☐ |
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☐ |
 | A4 | Summary: CCRM-110, CCRM-112 | A3, Q5 | ☐ |
@@ -339,14 +339,14 @@ line. The pace line's "resets" forms and the new drop order on the notification,
 the widgets' Weekly lines, with the fit tables re-measured.
 
 **Done when:**
-- ☐ Unit tests on `printed-v20.json` (paceLine, paceLineForms, endToEnd, the grid) pass on both flavors, with
+- ☑ Unit tests on `printed-v20.json` (paceLine, paceLineForms, endToEnd, the grid) pass on both flavors, with
   lint, and the widget generator is byte-identical.
-- ☐ Emulator captures: each chart with the grid (7-day and 5h, now-column bold, an ordinal yielding), the
+- ☑ Emulator captures: each chart with the grid (7-day and 5h, now-column bold, an ordinal yielding), the
   notification's collapsed and expanded pace line at the cover-like width showing "· Sun" for a reset days away
   (not "· 9:30 PM"), the tile and a widget's Weekly line.
-- ☐ ROADMAP Status lines of CCRM-106, 107 and 108 read "Android built" with the commit; the Android sections
+- ☑ ROADMAP Status lines of CCRM-106, 107 and 108 read "Android built" with the commit; the Android sections
   of `app.md`, `foundations.md`, `notification.md` and `widgets.md` carry the delta.
-- ☐ Judge round recorded; landed.
+- ☑ Judge round recorded; landed.
 
 ### Step A2 · Duet — CCRM-105
 
@@ -423,6 +423,29 @@ only the app's screens read the copy; a sample edit binds to the sample store; t
 step. A4's tag preference is additive, so a revert leaves only an unread key.
 
 **Lane A Log:**
+
+- **2026-11-11 · A1 Lines and labels (Android).** Code `bdbb90a` (CCRM-106 (7d Chip) "7d" chip with TalkBack
+  "7-day, all models"; CCRM-107 (Day Grid) `ui/DayGrid.kt` in the in-app chart, share-card chart and Pace map, the
+  map's note on a foot line; CCRM-108 (Reset Named) `PaceText.paceLineForms`), judge fixes and close-out in the
+  following commit; both flavors' tests, lint and both assembles green; `tools/widget_layouts.py` byte-identical.
+  Tests read `printed-v20.json` (`paceLine`, `paceLineForms`, `endToEnd`, `dayGrid`, `mapLabels.words`); `TextFitTest`
+  pins the wireframe's §4 B fit table at 142/141/159 dp. **Captures** `design/research/2026-11-v20-build/A1/` (22, on
+  fold7inner at 5556): cover-like dark (Summary, 7d chart with "3" yielding, 5h chart, under pace with "5" yielding,
+  now-column "4" bold, shade collapsed/expanded reading "21h 49m ahead · Sun", widget Number 4×1/4×2 lines), cover
+  light, Small (grid, no ordinals), time down, inner two stacks dark/light, 360 dp dark/light, share-card chart.
+  **Judge** (fresh Opus @ high, product account): accept-with-fixes, no blocking. Adopted: F2 chip test (constants;
+  the selected-state announcement is **UNVERIFIED** — a TalkBack check in Step 3), F3 wide-column `TextFitTest` row,
+  F4 stale comments. Not adopted: F1 (docs in the code commit) — Convention 5 allows earlier code-only commits, the
+  close-out commit carries the status lines and surfaces deltas. F5 accepted as is (wiring shown by captures 02/18).
+  Rulings 4a–4d all "within the wireframe": time-down draws no ordinals (no axis strip, as Small); at 360 dp the
+  map's "2" gives way to "week start" (core's end-label give-way); the share card draws ordinals, bold in now's
+  column; `contentDescription` on the `FilterChip` keeps its selected semantics. **For the orchestrator:** the 360 dp
+  map state (no "2") is undrawn in rev B though the rule covers it — worth a glance in Step 3. **Emulator notes:**
+  seeded with `run-as` (`usage_cache.xml`, history JSONL) and a generated test token stored through
+  `CredentialStore.save` with `jdb` (airplane mode on, nothing sent); afterwards both profiles signed out, the
+  history files removed, network and screen size restored, emulator killed; the original `screen_off_timeout` was not
+  recorded and is now 60000. The AOSP shade clips the collapsed card's third row vertically (capture 06; layout
+  unchanged by A1; One UI showed it whole) — Step 3 checks it on the Fold 7.
 
 ---
 

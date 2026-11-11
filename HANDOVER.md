@@ -13,18 +13,26 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A1 · Lines and labels (written 2026-11-11)
+## ▶ Next — Lane A (Android): Step A2 · Duet (written 2026-11-11)
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A1),
-> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A1 names in
+Step A1 (Lines and labels: CCRM-106 (7d Chip), CCRM-107 (Day Grid), CCRM-108 (Reset Named)) landed on `main`;
+RUNBOOK's Step A1 Log has the commits, the judge round and the captures (`design/research/2026-11-v20-build/A1/`).
+For the emulator: the fold7inner AVD has two empty Claude profiles; a debug build is seeded by writing
+`shared_prefs/usage_cache.xml` (`rawJson`, `authState` OK) and `files/usage-history-<key>.jsonl` with `run-as`,
+but the UI needs a stored credential — A1 stored a generated test token through `CredentialStore.save` with `jdb`
+attached to the debuggable app, with the emulator offline (airplane mode) so nothing is sent; it signed both
+profiles out and restored the network afterwards (A1 Log).
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A2),
+> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A2 names in
 > design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step A1 on Android only (repo root, never ios/). Write
+> answers" (Convention 10; ask and record first if not). Build Step A2 on Android only (repo root, never ios/). Write
 > only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
 > "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
 > fixtures for the changed rules. Check every state the wireframe draws for these items on the fold7inner
 > emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths, dark and
-> light; save the captures in design/research/2026-11-v20-build/A1/. Stop and report at anything the
+> light; save the captures in design/research/2026-11-v20-build/A2/. Stop and report at anything the
 > wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
 
 ## ▶ Next — Lane I (iOS): Step I1 · Lines and labels (written 2026-11-11)

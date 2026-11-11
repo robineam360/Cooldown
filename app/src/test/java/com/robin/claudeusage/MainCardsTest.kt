@@ -280,4 +280,11 @@ class MainCardsTest {
         assertTrue(AppTitleMarks.fits(200.dp, text))
         assertTrue(AppTitleMarks.fits(251.dp, text))
     }
+
+    /** CCRM-106 (7d Chip): the 7-day chip's label and what TalkBack reads (wireframe §2). */
+    @Test
+    fun `the 7-day chip reads 7d and speaks 7-day, all models`() {
+        assertEquals("7d", SEVEN_DAY_CHIP)
+        assertEquals("7-day, all models", SEVEN_DAY_CHIP_SPOKEN)
+    }
 }

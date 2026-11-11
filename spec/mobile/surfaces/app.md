@@ -1027,7 +1027,35 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
 
 ## v2.0 feedback on Android
 
-Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+Step A1 (2026-11-11, RUNBOOK Lane A), built on Android; until Step 2 folds it into the sections above, this
+overrides them where they disagree. Captures: `design/research/2026-11-v20-build/A1/`.
+
+- **CCRM-106 (7d Chip)** — §2.4.4/§2.4.5 the open tile's chips read **"7d · <model> · 5h"** (`MainCards.kt`,
+  `TileChips`, `SEVEN_DAY_CHIP`); TalkBack reads the 7d chip as "7-day, all models". The selection key is unchanged
+  (null = the 7-day series), so a stored choice survives. "Weekly · All models" on the lead bar row is unchanged.
+  The inner screen's two stacks take the same chip row. (The classic card's "All" row label of §3 no longer exists
+  on Android since the account tile replaced it.)
+- **CCRM-107 (Day Grid)** — §3.3 gains a **Grid** element, drawn after the pace wash and before the 80/90/100
+  guides: vertical lines at window start + k × (span / n), k = 1…n−1, and horizontal lines at k/n of 100%, k = 1…n
+  (the n-th lies under the 100% guide); n = 7 for a window measured in days, 5 for the 5h. 1 dp solid,
+  `onSurfaceVariant` at 13% (`GRID_ALPHA`). Pure layout in `ui/DayGrid.kt`.
+  - **Time labels** (§3.3 row): start and reset labels as before; between them the ordinals 2…n−1 at 9.5 sp
+    `onSurfaceVariant`, centred in their columns; the one in now's column (an instant on a line belongs to the
+    later column) bold, `onSurface` at 95%. An ordinal gives way when its box comes within 6 dp of the "now" label
+    or within 4 dp of an end label, and all drop below a 14 dp column. "now" and the end labels never move for an
+    ordinal.
+  - **Small (72 dp)**: grid lines, no ordinals (no axis strip). **Time down**: the grid transposes with the chart
+    (day lines across, percent lines down); no ordinals (no axis strip there either). **Inner two stacks**: each
+    stack has its own grid and ordinals. **Share card chart** (`ChartBitmap`): the same grid and ordinals, bold in
+    now's column; it has no "now" label, so the ordinals yield only to the end labels.
+  - **Pace map** (§2.8 Android): sevenths both ways at ink 10% (`MAP_GRID_ALPHA`) under the 0/50/100% lines, which
+    stay; the x axis reads "week start", 2…6 (10 sp, ink 60%, never bold — each account's own week), "reset", with the
+    same end-label give-way (at 360 dp the "2" yields to "week start"). "each account's own week" leaves the axis for
+    the card's **foot line** (`PaceMapFoot`): left, 11 sp `onSurfaceVariant`, 4 dp under the plot.
+- **CCRM-108 (Reset Named)** — the tile's folded and open pace lines and the Summary's line 3 read
+  "21h 50m ahead · **resets** Sun 5:08 PM" and drop, by measured width, to "· Sun 5:08 PM" → "· Sun" → the floor;
+  a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today.
+  `PaceText.paceLineForms`; the held line ("Held · back at … · resets Fri") is unchanged.
 
 ## v2.0 feedback on iOS
 

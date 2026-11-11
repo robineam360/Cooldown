@@ -33,8 +33,9 @@ object PaceLineFit {
     fun widthDp(line: PaceText.PaceLine, sp: Float, fontScale: Float): Float = emWidth(line) * sp * fontScale
 
     /**
-     * The forms of a Weekly pace line, longest first: core §6.3's ("21h 50m ahead · Sun 9:30 PM", the weekday
-     * dropped when the reset is later today), without the weekday, then the floor. Widgets print every clock in
+     * The forms of a Weekly pace line, longest first — CCRM-108 (Reset Named): "21h 50m ahead · resets Sun 9:30 PM",
+     * then "· Sun 9:30 PM", then "· Sun", then the floor (a reset later today: "· resets 11:00 PM", "· 11:00 PM", the
+     * floor; a bare clock always means today). Widgets print every clock in
      * 12-hour form (CCRM-78 (Widgets Reborn) R2), so the forms are asked for in 12-hour, en-US. Empty with no readout.
      */
     fun forms(mt: Pace.MarkTime?, resetsAt: Instant, nowMs: Long, zone: ZoneId): List<PaceText.PaceLine> =

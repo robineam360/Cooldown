@@ -23,7 +23,7 @@ object SummaryRows {
         group == SummaryRank.Group.SPENT || group == SummaryRank.Group.NO_READING
 
     /**
-     * Line 3's words: the pace line, "1d 7h behind · Fri 9:00 AM"; spent "Out until Thu 8:00 AM";
+     * Line 3's words: the pace line, "1d 7h behind · resets Fri 9:00 AM" (CCRM-108 (Reset Named)); spent "Out until Thu 8:00 AM";
      * a week with a reading but no clock "Not started yet"; no reading "No reading yet".
      */
     fun words(weekly: UsageWindow?, elapsed: Double?, use24h: Boolean, now: Instant = Instant.now()): String {

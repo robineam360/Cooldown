@@ -1951,13 +1951,13 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   to foundations §2). **Unverified:** the cover's and the inner shade's collapsed content widths for this layout.
 
 ### CCRM-106 · 7d Chip — the 7-day "All" chip and label read "7d"
-- **Status:** Planned · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
+- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
 - **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
   and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
 - **iOS:** not started
 
 ### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
-- **Status:** Planned · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
+- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
 - **What:** vertical lines at each window-relative day, horizontal lines at 1/7 steps so the crossings sit on the
   even-pace diagonal; labels start date, 2…6, reset date. 5h charts: five hourly columns and 1/5 steps. The map's
   axis reads "week start", 2…6, "reset"; "each account's own week" moves to the foot line. Every existing chart
@@ -1965,7 +1965,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS:** not started
 
 ### CCRM-108 · Reset Named — the pace line says "resets" before its clock
-- **Status:** Planned · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
+- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
 - **What:** "6d 23h behind · resets Wed 12:30 PM", "On the mark · resets Sat 8:00 AM". Robin had read the clock
   as the reset, and it is the reset, so the line now says so. Where it does not fit, a bare clock always means
   today (Robin, 2026-11-10, on desktop's proposal): another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM" →

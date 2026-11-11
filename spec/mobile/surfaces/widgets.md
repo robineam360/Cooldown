@@ -829,7 +829,15 @@ removed in rev C) keeps its last snapshot on a home screen until the user remove
 
 ## v2.0 feedback on Android
 
-Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named):
+
+- **The pace line on a widget**: a Weekly line takes core's new forms, still in 12-hour clocks (R2) and picked by
+  `PaceLineFit` from the column width and font scale: "3d 11h behind · resets Sat 9:10 PM" where it fits (the
+  gallery's Number 4×1; the Ring 2×2 at 244 dp), then "· Sat 9:10 PM" (the Number 4×2 beside its stamp; the
+  worst-case "23h 59m ahead" line on a Number 4×1 at 333 dp), then "· Sat" (Number 4×1 at 244 dp, Ring 2×2 at 156
+  and 333 dp, where the shipped order printed a bare clock or the floor), then the floor and the 10 sp step-down as
+  before. No layout file changes; `tools/widget_layouts.py` regenerates byte
+  for byte. Captures 08/09 (Faces gallery, dark).
 
 ## v2.0 feedback on iOS
 

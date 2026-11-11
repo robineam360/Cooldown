@@ -501,4 +501,15 @@ a header with the 44 dp ring and one without take the same rule.
 
 ## v2.0 feedback on Android
 
-Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named), the re-measured fits:
+
+- **§1.2 / §1.4** The Weekly pace line uses core's new forms (foundations "v2.0 feedback on Android"). The columns are
+  unchanged — collapsed 142 dp, expanded 141 dp, Duet expanded 159 dp (`TextFit`) — and the forms each prints at
+  12 sp now follow the wireframe's §4 B table (`TextFitTest` pins it): a reset days away ends on its weekday,
+  "6d 23h behind · Wed", "23h 59m ahead · Wed"; later today the bare clock, "5h 45m behind · 8:15 AM"; on the mark
+  "On the mark · Sat 8:00 AM" (1.3×: "· Sat"). At 1.3× and 2.0× the floor, at 2.0× stepped to 10 sp where it does
+  not fit 12. The emulator's cover-like shade printed "21h 49m ahead · Sun" collapsed and expanded (captures 06, 07).
+- **§2.3** Duet expanded (159 dp, 36 sp figure, until A2 rebuilds the Duet): "· Wed" at 1.0 and 1.3, "57m ahead ·
+  resets 2:57 PM" in full where it fits; the floor at 2.0. A2 re-measures with its own column.
+- Emulator note: the AOSP shade on the fold7inner AVD clips the collapsed card's third text row vertically (06); the
+  layout is unchanged by A1 and One UI showed the row whole (CCBG-78's pass), so this is left for Step 3's device check.

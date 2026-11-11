@@ -107,6 +107,15 @@ class TextFitTest {
     }
 
     @Test
+    fun `a wide column prints the full line - the reset named`() {
+        // Judge A1 F3: a wide notification (328 dp) keeps every word at 1.0 and 1.3; 184 dp drops "resets", then the clock.
+        assertEquals("23h 59m ahead · resets Wed 12:30 PM", TextFit.paceLine(ahead, 328f, 12f, 1f)!!.form.text)
+        assertEquals("23h 59m ahead · resets Wed 12:30 PM", TextFit.paceLine(ahead, 328f, 12f, 1.3f)!!.form.text)
+        assertEquals("23h 59m ahead · Wed 12:30 PM", TextFit.paceLine(ahead, 184f, 12f, 1f)!!.form.text)
+        assertEquals("23h 59m ahead · Wed", TextFit.paceLine(ahead, 184f, 12f, 1.3f)!!.form.text)
+    }
+
+    @Test
     fun `a reset days away keeps its weekday on the cover - never a bare clock`() {
         // RUNBOOK A1: the collapsed line at the cover-like width shows "· Sun" for a reset days away, not "· 9:30 PM".
         val tue = Instant.parse("2026-11-10T14:00:00Z")

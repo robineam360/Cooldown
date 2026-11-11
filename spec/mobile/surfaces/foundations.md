@@ -543,7 +543,15 @@ wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar"
 
 ## v2.0 feedback on Android
 
-Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+Step A1 (2026-11-11, RUNBOOK Lane A), built on Android:
+
+- **§1.5 chart tokens — grid ink (CCRM-107 (Day Grid))**: charts `onSurfaceVariant` at 13%, 1 dp solid
+  (`GRID_ALPHA`); the Pace map ink at 10% (`MAP_GRID_ALPHA`). The quietest line on a chart: below the axis (18%) and
+  the dashed 80/90/100 guides. Ordinals: 9.5 sp (map 10 sp), the now-column one bold at 95% ink.
+- **The pace line (CCRM-108 (Reset Named))**: the clock after the dot is named, "6d 23h behind · resets Wed 12:30
+  PM", "On the mark · resets Sat 8:00 AM". Forms, widest first: another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM"
+  → "· Wed" → the floor; later the same day "· resets 11:00 PM" → "· 11:00 PM" → the floor. The floor (the duration
+  and its word, or "On the mark") is never cut; below it the 10 sp step-down and the ellipsis are unchanged.
 
 ## v2.0 feedback on iOS
 

@@ -1194,7 +1194,7 @@ private fun weeklySamplesFor(
  * stored "no cap" selection (null), unchanged; only its label moved from "All". "5h" stays a word here — a chip
  * needs a name — and only on an account with a 5h; tapping the ring picks it too.
  */
-/** CCRM-106 (7d Chip): the 7-day series' chip, and what TalkBack reads for it. */
+/** CCRM-106 (7d Chip): the 7-day series' chip, and what TalkBack reads for it. Pinned by `MainCardsTest`. */
 internal const val SEVEN_DAY_CHIP = "7d"
 internal const val SEVEN_DAY_CHIP_SPOKEN = "7-day, all models"
 
