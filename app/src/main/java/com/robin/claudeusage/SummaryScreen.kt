@@ -60,10 +60,11 @@ import com.robin.claudeusage.ui.GrammarRing
 import com.robin.claudeusage.ui.GrammarRingBox
 import com.robin.claudeusage.ui.grammarDigits
 import com.robin.claudeusage.ui.grammarFigure
-import com.robin.claudeusage.ui.PaceMap
+import com.robin.claudeusage.data.MapLayers
+import com.robin.claudeusage.ui.PaceMapCard
 import com.robin.claudeusage.ui.PaceMapEntry
-import com.robin.claudeusage.ui.PaceMapFoot
 import com.robin.claudeusage.ui.PaceMapGeometry
+import com.robin.claudeusage.ui.PaceMapRules
 import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.Fmt
@@ -100,9 +101,16 @@ internal fun SummaryScreen(
     val order = cache.summaryOrder()
     val rows = remember(profiles, tick, histories, order) { summaryRows(repo, profiles, histories) }
     val compact = SummaryRows.compact(profiles.size)
-    val mapEntries = remember(rows, dark) {
-        rows.mapIndexedNotNull { i, r -> r.mapEntry(i + 1, Palette.color(Palette.accentName(cache, r.profile), dark)) }
+    // CCRM-109 (Quiet Accounts): only an account whose row prints 1% or more, with a reset clock, is plotted; the
+    // foot line counts the rest. CCRM-111 (Map Layers): the three chips, remembered.
+    val mapEntries = remember(rows, dark, use24h) {
+        rows.mapNotNull { r ->
+            if (!r.plotted) null else r.mapEntry(Palette.color(Palette.accentName(cache, r.profile), dark), use24h)
+        }
     }
+    val foot = remember(rows) { PaceMapRules.foot(rows.map { PaceMapRules.Account(it.used, it.clocked) }) }
+    var layers by remember { mutableStateOf(cache.mapLayers()) }
+    val openKey: (String) -> Unit = { key -> profiles.firstOrNull { it.key == key }?.let(onOpen) }
     val list: @Composable () -> Unit = {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
@@ -132,13 +140,13 @@ internal fun SummaryScreen(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) { list() }
             BoxWithConstraints(Modifier.weight(1f)) {
-                MapCard(mapEntries, maxWidth - 32.dp)
+                MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, maxWidth - 32.dp, openKey)
             }
         }
     } else {
         list()
         Spacer(Modifier.height(12.dp))
-        MapCard(mapEntries, 230.dp)
+        MapCard(mapEntries, foot, layers, { layers = it; cache.setMapLayers(it) }, mode, 230.dp, openKey)
     }
     Spacer(Modifier.height(12.dp))
     SummaryStatus(repo, profiles, tick)
@@ -156,13 +164,35 @@ internal data class SummaryRowModel(
     val weekly get() = data?.weekly
     val used get() = data?.weekly?.percent
 
-    fun mapEntry(number: Int, color: Color): PaceMapEntry? {
+    /** The week has a reset clock (an x on the map). */
+    val clocked get() = weekly?.resetsAt != null && elapsed != null
+
+    /** CCRM-109 (Quiet Accounts): on the map — a reading whose row prints 1% or more, with a reset clock. */
+    val plotted get() = PaceMapRules.isPlotted(used, clocked)
+
+    /**
+     * The account's dot: a [plotted] account only. [use24h] words the callout's reset and forecast (CCRM-111 (Map
+     * Layers)); the pace line and its forms are the row's own.
+     */
+    fun mapEntry(color: Color, use24h: Boolean, now: java.time.Instant = java.time.Instant.now()): PaceMapEntry? {
         val u = used ?: return null
-        val gone = elapsed ?: 0.0
-        val reset = weekly?.resetsAt?.toEpochMilli()
-        val trail = if (reset == null) listOf(gone to u)
-        else PaceMapGeometry.trail(samples, reset, Projection.WEEKLY_MS, gone, u)
-        return PaceMapEntry(name, color, gone, u, Pace.isSpent(u), trail, number)
+        val gone = elapsed ?: return null
+        val reset = weekly?.resetsAt?.toEpochMilli() ?: return null
+        val trail = PaceMapGeometry.trail(samples, reset, Projection.WEEKLY_MS, gone, u)
+        val estimate = Projection.estimate(samples, reset)
+        val spent = Pace.isSpent(u)
+        val held = group == SummaryRank.Group.HELD
+        val pace = if (held) null else SummaryRows.paceLine(weekly, use24h, now)
+        return PaceMapEntry(
+            key = profile.key, name = name, color = color, gonePct = gone, usedPct = u, spent = spent, trail = trail,
+            estimate = estimate, resetMs = reset, paceLine = pace,
+            plainLine = if (pace != null) null
+            else if (held) SummaryRows.heldWords(data?.session, weekly, use24h)
+            else SummaryRows.words(weekly, elapsed, use24h, now),
+            plainRed = spent,
+            forecast = PaceMapRules.forecast(estimate, u, reset, now.toEpochMilli(), use24h),
+            runsOut = PaceMapRules.runsOut(estimate, u, reset),
+        )
     }
 }
 
@@ -208,15 +238,16 @@ private fun CardHeader(title: String, sub: String) {
 }
 
 @Composable
-private fun MapCard(entries: List<PaceMapEntry>, plotHeight: androidx.compose.ui.unit.Dp) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            CardHeader("Pace map", "Weekly, where each account stands")
-            Spacer(Modifier.height(8.dp))
-            PaceMap(entries, modifier = Modifier.fillMaxWidth().height(plotHeight))
-            PaceMapFoot()
-        }
-    }
+private fun MapCard(
+    entries: List<PaceMapEntry>,
+    foot: PaceMapRules.Foot,
+    layers: MapLayers,
+    onLayers: (MapLayers) -> Unit,
+    mode: PaceText.Mode,
+    plotHeight: androidx.compose.ui.unit.Dp,
+    onOpen: (String) -> Unit,
+) {
+    PaceMapCard(entries, foot, layers, onLayers, mode, plotHeight, onOpen, Modifier.fillMaxWidth())
 }
 
 /**

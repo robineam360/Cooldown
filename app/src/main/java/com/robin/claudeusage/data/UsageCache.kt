@@ -587,6 +587,24 @@ class UsageCache(context: Context) {
         prefs.edit().putString("summaryOrder", order.key).apply()
     }
 
+    /**
+     * CCRM-111 (Map Layers): the Pace map's three chips — Figures · Trails · Projection, remembered, global. Defaults
+     * off / on / off. The keys are new in v2.0 (additive, so a v1.9 install after a downgrade ignores them).
+     */
+    fun mapLayers(): MapLayers = MapLayers(
+        figures = prefs.getBoolean(MapLayers.KEY_FIGURES, false),
+        trails = prefs.getBoolean(MapLayers.KEY_TRAILS, true),
+        projection = prefs.getBoolean(MapLayers.KEY_PROJECTION, false),
+    )
+
+    fun setMapLayers(layers: MapLayers) {
+        prefs.edit()
+            .putBoolean(MapLayers.KEY_FIGURES, layers.figures)
+            .putBoolean(MapLayers.KEY_TRAILS, layers.trails)
+            .putBoolean(MapLayers.KEY_PROJECTION, layers.projection)
+            .apply()
+    }
+
     /** Appearance › Open on the summary; on by default, meaningful with two or more accounts. */
     fun openOnSummary(): Boolean = prefs.getBoolean("openOnSummary", true)
 

@@ -77,7 +77,7 @@ object PaceText {
         }
     }
 
-    private fun halfUp(x: Double): Int = floor(x + 0.5 + Pace.EDGE_EPSILON).toInt()
+    internal fun halfUp(x: Double): Int = floor(x + 0.5 + Pace.EDGE_EPSILON).toInt()
 
     /** The pace mark's own value, as the caption names it. */
     fun markPct(elapsedPct: Double): Int = halfUp(elapsedPct)
