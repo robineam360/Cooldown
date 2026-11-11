@@ -2,7 +2,9 @@
 
 Drafted 2026-10-01 for RUNBOOK Step 6, CCRM-89 (Privacy Policy). This file answers **the play
 build only**: it has no GitHub update check (CCRM-87 (Update Channel)). Every answer below is taken
-from the code at the commit that adds this file. [docs/privacy.md](../../docs/privacy.md) is the
+from the code at the commit that adds this file. **Updated 2026-11-11 for v2.0** (RUNBOOK Step D1): Gemini,
+CCRM-55 (Antigravity Account), adds Google as a recipient; the answers are re-read against
+`AntigravitySource.kt` and `AntigravitySignIn.kt` on `main` at 0b1c85b. [docs/privacy.md](../../docs/privacy.md) is the
 plain-language version and must agree with it.
 
 **Rule used:** where Play's definition is unclear, this file takes the **maximal honest answer**, so
@@ -23,6 +25,7 @@ Play's definitions, as read on 2026-10-01:
 |---|---|---|
 | OAuth access token and refresh token, the one-time sign-in code and PKCE value | Anthropic (`platform.claude.com`, `api.anthropic.com`) | `data/ApiClient.kt`, `data/OAuthSignIn.kt` |
 | OAuth tokens, the device code, and the ChatGPT account ID (`ChatGPT-Account-Id` header) | OpenAI (`auth.openai.com`, `chatgpt.com`) | `data/source/ChatGptSource.kt`, `data/CodexDeviceSignIn.kt` |
+| **v2.0:** OAuth tokens, the pasted sign-in code and PKCE value, and the Google Cloud project ID that `loadCodeAssist` returns (sent back in the quota request's body) | Google (`oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com`; the sign-in page itself is `accounts.google.com` in a Custom Tab) | `data/source/AntigravitySource.kt`, `data/AntigravitySignIn.kt` |
 | A crash report: time, exception class, frames, app version and flavor, Android version, manufacturer, model; for an ANR, the system's thread dump (thread names, build fingerprint). No message; all scrubbed. | Only through the share sheet, to the app the user picks | `diag/CrashReport.kt`, `diag/CrashStore.kt` |
 | The diagnostics log: timestamps, account keys, status codes, outcomes | Only through the share sheet | `diag/AppLog.kt`, `SettingsScreen.kt` (AppLogCard) |
 | A share card PNG: one account's label and usage | Only through the share sheet | `share/ShareCard.kt` |
@@ -34,9 +37,11 @@ the release AAB nor the GitHub APK can send it. Removed from release builds by R
 2026-10-01.
 
 **Never leaves the device:** the account email (received from the provider and shown in Settings
-only), the usage numbers and history, settings, the `store_held_changes` record of CCBG-50 (Degraded
-Store Notice) (account keys, sign-in or sign-out, and times, never a token), and the
-installed-package checks done through `<queries>`.
+only; for Gemini it is read on the phone from the `id_token` in Google's token reply and is never
+sent back), the usage numbers and history, settings, the `store_held_changes` record of CCBG-50 (Degraded
+Store Notice) (account keys, sign-in or sign-out, and times, never a token), the
+installed-package checks done through `<queries>`, and (v2.0) the sample mode, CCRM-113 (Sample Port):
+"Try with sample data" builds three made-up accounts in memory and makes no request at all.
 
 **No SDK collects anything:** the dependencies are AndroidX (Compose, Activity, WorkManager,
 security-crypto, browser) and OkHttp. There is no analytics, ads, crash-reporting or Firebase
@@ -57,7 +62,7 @@ answer is still Yes for everything the app itself sends.
 
 **Which of the following methods of account creation does your app support?** — **None: "My app
 does not allow users to create an account".** Users sign in to accounts that already exist at
-Anthropic or OpenAI, and the app creates no account of its own. **Re-read on the day:** if the form
+Anthropic, OpenAI or Google, and the app creates no account of its own. **Re-read on the day:** if the form
 counts "log in with an existing third-party account" as account creation, choose OAuth and give the
 policy's *Deleting your data* section as the deletion route: the developer holds no account data.
 
@@ -73,11 +78,12 @@ Answer **Yes** to these and **No** to every other type.
 
 #### Personal info → User IDs — **collected**
 
-- **Why declared:** the OAuth tokens identify the user's account at the provider, and the ChatGPT
-  account ID is a user identifier sent as a header. Both leave the device, to the provider.
+- **Why declared:** the OAuth tokens identify the user's account at the provider, the ChatGPT
+  account ID is a user identifier sent as a header, and (v2.0) the Gemini account's Google Cloud
+  project ID is sent in the usage request. All of them leave the device, each only to its own provider.
   **Re-read on the day:** Play has no "authentication token" type, and User IDs is the nearest
   honest fit.
-- **Collected or shared?** **Collected: yes. Shared: yes, with Anthropic and OpenAI.** This is the
+- **Collected or shared?** **Collected: yes. Shared: yes, with Anthropic, OpenAI and Google.** This is the
   maximal answer. The user-initiated exemption arguably covers it, since the user signs in to that
   service in the app. But the poll repeats unattended every 15 minutes, so this file declares it.
   **Re-read on the day.**
@@ -109,11 +115,11 @@ Answer **Yes** to these and **No** to every other type.
 #### Personal info → Email address — **not collected**
 
 - The app receives the email from the provider (Claude's `/api/oauth/profile`, ChatGPT's id_token
-  and usage body) and keeps it on the device. It never sends it anywhere. A feedback email is sent
+  and usage body, Google's id_token for Gemini) and keeps it on the device. It never sends it anywhere. A feedback email is sent
   by the user's own mail app, from an address the user picks.
 - **Re-read on the day:** Android Auto Backup copies `usage_cache` (which holds the email and the
   raw usage response, with OpenAI's user and account IDs) and any in-progress sign-in values
-  (`oauth_pending`, `device_pending`) to the user's Google backup. That is a system service: Google runs it, it is
+  (`oauth_pending`, `device_pending`, and from v2.0 `oauth_pending_antigravity`) to the user's Google backup. That is a system service: Google runs it, it is
   end-to-end encrypted when the phone has a screen lock, and the developer cannot read it. This file
   does not count it as collection. If Play's text then counts system backup as collection, declare
   Email address and User IDs as collected, optional, for App functionality, and note that tokens are
