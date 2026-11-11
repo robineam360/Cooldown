@@ -95,7 +95,8 @@ class DuetTest {
     fun `at the cover the name keeps 42 dp beside Held 3_40 PM`() {
         // Wireframe table, 272 dp: "name room 118 dp; 42 dp beside 'Held · 3:40 PM'".
         assertEquals(118f, Duet.nameRoomDp(136f, 0, null, 1f), 0.01f)
-        assertEquals(42f, Duet.nameRoomDp(136f, 0, "Held · 3:40 PM", 1f), 1f)
+        // 42 dp in the wireframe's arithmetic; the line is padded 4% past the word's estimate (judge A2 F4).
+        assertEquals(39f, Duet.nameRoomDp(136f, 0, "Held · 3:40 PM", 1f), 1f)
         assertTrue(Duet.keepsTail(136f, 0, "Personal Max 20x", "Held · 3:40 PM", 1f))
     }
 
@@ -121,6 +122,14 @@ class DuetTest {
     }
 
     @Test
+    fun `the room the decision assumes is the room the padded line leaves`() {
+        // Judge A2 F4: keepsTail and fillRow's end padding use one width for the word.
+        val word = "Held · 3:40 PM"
+        assertEquals(136f - 18f - Duet.wordPadDp(word, 1f), Duet.nameRoomDp(136f, 0, word, 1f), 0.001f)
+        assertEquals(0f, Duet.wordPadDp(null, 1f))
+    }
+
+    @Test
     fun `a dot takes its 11 dp from the name, not from the word`() {
         assertEquals(Duet.nameRoomDp(136f, 0, "Held", 1f) - 11f, Duet.nameRoomDp(136f, 1, "Held", 1f), 0.01f)
     }
@@ -139,9 +148,9 @@ class DuetTest {
 
     @Test
     fun `at font scale 2 the capped word still leaves the name room at the cover`() {
-        // "Held · 3:40 PM" at the 12 dp cap is about 76 dp: 136 − 18 − 6 − 76 ≈ 36 dp of name.
+        // "Held · 3:40 PM" at the 12 dp cap is about 76 dp, padded 4%: 136 − 18 − 85 ≈ 33 dp of name.
         assertTrue(Duet.keepsTail(136f, 0, "Personal", "Held · 3:40 PM", 2f))
-        assertTrue(Duet.nameRoomDp(136f, 0, "Held · 3:40 PM", 2f) in 34f..38f)
+        assertTrue(Duet.nameRoomDp(136f, 0, "Held · 3:40 PM", 2f) in 31f..35f)
     }
 
     // --- the strip cap: ~120 dp of panel left under two header blocks -----------------

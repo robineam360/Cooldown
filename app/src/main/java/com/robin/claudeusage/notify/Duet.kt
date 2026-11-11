@@ -143,9 +143,12 @@ object Duet {
      */
     fun wordPadDp(word: String?, fontScale: Float): Float = if (word == null) 0f else wordDp(word, fontScale) * 1.04f
 
-    /** The name's room on its line: the bar's length less the mark, its gap, the dots and the word. */
+    /**
+     * The name's room on its line: the bar's length less the mark, its gap, the dots and the word
+     * as the line is padded for it ([wordPadDp]), so the decision and the layout agree.
+     */
     fun nameRoomDp(barDp: Float, dots: Int, word: String?, fontScale: Float): Float =
-        barDp - MARK_DP - MARK_GAP_DP - dots * DOT_DP - wordDp(word, fontScale)
+        barDp - MARK_DP - MARK_GAP_DP - dots * DOT_DP - wordPadDp(word, fontScale)
 
     /**
      * The narrow drop order (wireframe §1, Astra C1-4): the bar absorbs first (the layout's

@@ -680,7 +680,8 @@ object PinnedNotification {
             notStarted = notStarted,
         )
         val wordClock = when (word) {
-            Duet.Word.HELD -> session?.resetsAt?.let { Fmt.timeOnly(it, use24h) }
+            // Core §6.3: a bare clock always means today; a 5h that lets go after midnight names its day.
+            Duet.Word.HELD -> session?.resetsAt?.let { PaceText.dayClock(it, nowAt.toEpochMilli(), use24h) }
             Duet.Word.OUT -> weekly?.resetsAt?.let { LeadLines.dayOrClock(it, nowAt.toEpochMilli(), use24h) }
             else -> null
         }
@@ -1135,7 +1136,7 @@ object PinnedNotification {
 
         // The Weekly bar and figure. Sign in / no reading / not started: "—", a bare track, no
         // tick; a spent week: the full red bar, no tick (wireframe §1).
-        val spent = h.word == Duet.Word.OUT
+        val spent = Pace.isSpent(h.pct)
         setImageViewBitmap(
             ids.bar,
             drawBarBitmap(

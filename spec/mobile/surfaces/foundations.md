@@ -553,6 +553,13 @@ Step A1 (2026-11-11, RUNBOOK Lane A), built on Android:
   → "· Wed" → the floor; later the same day "· resets 11:00 PM" → "· 11:00 PM" → the floor. The floor (the duration
   and its word, or "On the mark") is never cut; below it the 10 sp step-down and the ellipsis are unchanged.
 
+Step A2 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-105 (Duet Stack):
+
+- **§2.2 Pinned notification sizes:** collapsed figure, Duet row **18 sp** (was 30 / 28 per half), right-aligned in a
+  42 dp slot; expanded figure, Duet header **24 sp** (was 36). Collapsed Duet name 12 sp, state word 11 sp.
+- **§2 "true sp", one stated exception:** the collapsed Duet's text is sized in dp and capped — figure 18 dp, name
+  13.5 dp, state word 12 dp — as the ring's bore figure already is (Robin, 2026-11-10). Its expanded view scales.
+
 ## v2.0 feedback on iOS
 
 Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4).

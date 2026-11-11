@@ -513,3 +513,46 @@ Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named
   resets 2:57 PM" in full where it fits; the floor at 2.0. A2 re-measures with its own column.
 - Emulator note: the AOSP shade on the fold7inner AVD clips the collapsed card's third text row vertically (06); the
   layout is unchanged by A1 and One UI showed the row whole (CCBG-78's pass), so this is left for Step 3's device check.
+
+Step A2 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-105 (Duet Stack), wireframe v2.0 feedback rev B §1.
+These replace §2.1–§2.4's collapsed rows and §8's D3 row; the expanded headers are otherwise as shipped.
+
+- **§2.1 Width budget (no halves).** Collapsed, left to right: First's 5h ring 36 · 6 · Second's 36 · 8 · two stacked
+  rows · 8 · each row's figure in a fixed 42 dp slot: **136 dp of chrome**, the bars take the rest (never under 40; the
+  floor is 176). Both bars share one left edge and one length. The bar bitmap's nominal width is
+  `Duet.barDp(Duet.contentDp(smallestWidth))`: below 600 dp the screen less **140 dp** of shade chrome (measured on the
+  emulator's AOSP shade: 280 dp of content at 420, 220 at 360; One UI's Fold 7 cover gave 272 at 411), from 600 up
+  352. Height 1 + 24 + 2 + 24 + 1 = 52 dp, unchanged. **Measured** (fold7inner, AOSP): cover-like 420 dp → content
+  280, bar 144; inner 750 dp → content 402, bar 265; 360 dp → content 220, bar 84. The AOSP collapsed slot shows
+  ≈46 dp at font 1.0, clipping the second bar (One UI gave 52; Step 3 checks).
+- **§2.2 Anatomy, collapsed (`notif_duet.xml`, rewritten).** Ring: 36 dp, the 5h, figure unsigned (Vs pace by tone),
+  in the bore at its dp size; a plan with no 5h keeps the slot as the track and a cross (TalkBack "No 5-hour window on
+  this plan"). Row (24 dp): name line — mark 14, 4, name 12 sp (platform Title), the condition dot when any, the state
+  word 11 sp right-aligned with 6 dp before it — then 1 dp and the 8 dp Weekly bar with tick and red slice. Figure
+  18 sp bold tabular, "%" at 58%, right-aligned in its 42 dp slot, 8 dp after the bar: Used in the severity colour,
+  Left the remainder (no caption), Vs pace signed and coloured. **Collapsed text is sized in dp and capped:** figure
+  18 dp, name 13.5 dp, word 12 dp (`Duet.*_CAP_DP`; the stated exception to foundations §2). Ring and row each open
+  their account.
+- **Drop order** (one order everywhere): the bar absorbs (weight); the name ellipsizes to its 24 dp floor; then the
+  word drops its tail, "Held · 3:40 PM" → "Held", "Out · Thu" → "Out" (`Duet.keepsTail`, against the nominal bar).
+  The name line's end is padded by the word's estimated width + 4% (`Duet.wordPadDp`), so the name ellipsizes before
+  the word, never under it; the tail decision counts the same padded width. At 272 dp the name keeps about 39 dp
+  beside "Held · 3:40 PM" (42 in the wireframe's arithmetic, less the pad); at 250 Held drops its tail; at
+  226 both drop; at 360 dp on AOSP (220) both drop.
+- **§2.3 Expanded.** Headers as shipped; the figure **36 → 24 sp**, sign kept; the pace line's column **159 → 186 dp**
+  (`TextFit.DUET_EXPANDED_COLUMN_DP`), so "23h 59m ahead · Wed 12:30 PM" / "5h 45m behind · resets 8:15 AM" print
+  in full at 1.0. Measured column: 194 dp at 420 (AOSP), 315–328 at 750, **133 at 360** (the line ellipsizes there,
+  "Sun 6:…"); at font 2.0 ≈121 (420) and 61 (360) — Step 3 compares the Fold 7.
+- **§2.4 States, collapsed (per row; the other row is unaffected).** The state word, by precedence: **Sign in** (fault
+  red) › **No reading** › **Stale** (fault red) › **Out · Thu** (red; the weekday, or the bare clock when the reset is
+  later today) › **Held · 3:40 PM** (the 5h's ladder colour; the 5h's reset clock, with its weekday when that falls after
+  midnight: "Held · Thu 1:40 AM") › **Not started**; the rest in the
+  info colour. Sign in / No reading / Not started: figure "—", a bare track, no tick — in the expanded header too
+  (§1.4). Spent week: grey ring, "100%" (Left "0%") and the full bar in red, no tick (stale or not). Stale: figure 50%, bar and ring
+  45%. The 6 dp dot stays only for conditions with no word: the Free-plan fault, and the update strip on First; the
+  violet synthetic marker stays after First's name. Expanded keeps today's dots (any fault, the update on First).
+- **§8.** The D3 bare 14 dp ring and the halves' arithmetic (`labelClampDp`, `halfRing`, `halfDp`, `figureSp`) are
+  retired with the halves.
+- **Not drawn by the wireframe, seen on the emulator:** at 360 dp on AOSP (220 dp content, under the narrowest drawn
+  226) a tail-less word leaves the name at ".." ("No reading", "Not started", capture 31, 33); at font 2.0 the
+  expanded headers ellipsize their labels and lines (13, 29). Reported to the orchestrating session; Step 3 measures.

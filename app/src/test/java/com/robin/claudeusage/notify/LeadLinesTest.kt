@@ -143,4 +143,14 @@ class LeadLinesTest {
         assertEquals("Thu", LeadLines.dayOrClock(tomorrow, now.toEpochMilli(), false, ZoneOffset.UTC, Locale.US))
         assertEquals("Out · Thu" to "Out", Duet.wordText(Duet.Word.OUT, "Thu"))
     }
+
+    @Test
+    fun `CCRM-105 Held names the day when the 5h lets go after midnight`() {
+        // Judge A2 F5: the Held tail follows the same rule — a bare clock always means today.
+        val late = Instant.parse("2026-11-04T23:00:00Z")
+        val afterMidnight = late.plusMillis(160 * 60_000L) // Thu 01:40
+        val sameDay = late.plusMillis(40 * 60_000L) // Wed 23:40
+        assertEquals("Thu 1:40 AM", PaceText.dayClock(afterMidnight, late.toEpochMilli(), false, ZoneOffset.UTC, Locale.US))
+        assertEquals("11:40 PM", PaceText.dayClock(sameDay, late.toEpochMilli(), false, ZoneOffset.UTC, Locale.US))
+    }
 }

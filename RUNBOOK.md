@@ -171,7 +171,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 | Step | What | Gated on | Status |
 |---|---|---|---|
 | A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☑ 2026-11-11 |
-| A2 | Duet: CCRM-105 | A1 | ☐ |
+| A2 | Duet: CCRM-105 | A1 | ☑ 2026-11-11 |
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☐ |
 | A4 | Summary: CCRM-110, CCRM-112 | A3, Q5 | ☐ |
 | A5 | Sample: CCRM-113 | A4 | ☐ |
@@ -366,14 +366,14 @@ narrow drop order: the bar absorbs, the name to its 24 dp floor, then the state 
 headers, figure 36 → 24 sp. Collapsed text capped in dp at large font scales. The bare 14 dp ring retires.
 
 **Done when:**
-- ☐ Fit tests for the new width budget (136 dp chrome, no halves) and the drop order; both flavors' tests and lint.
-- ☐ Emulator captures: collapsed and expanded at the three widths, font scale 1.0 and 2.0, both signs, one
+- ☑ Fit tests for the new width budget (136 dp chrome, no halves) and the drop order; both flavors' tests and lint.
+- ☑ Emulator captures: collapsed and expanded at the three widths, font scale 1.0 and 2.0, both signs, one
   account spent, one with no 5h.
-- ☐ CCRM-105 Status "Android built"; `notification.md` §2.1–§2.4 and §8 and `foundations.md` §2 deltas inside the
+- ☑ CCRM-105 Status "Android built"; `notification.md` §2.1–§2.4 and §8 and `foundations.md` §2 deltas inside the
   Android sections.
-- ☐ **UNVERIFIED until Step 3:** the real cover and inner shade widths. Write the measured emulator widths in the
+- ☑ **UNVERIFIED until Step 3:** the real cover and inner shade widths. Write the measured emulator widths in the
   Log so Step 3 can compare.
-- ☐ Judge round recorded; landed.
+- ☑ Judge round recorded; landed.
 
 ### Step A3 · Pace map — CCRM-109, CCRM-111, closes CCBG-79
 
@@ -455,6 +455,34 @@ step. A4's tag preference is additive, so a revert leaves only an unread key.
   history files removed, network and screen size restored, emulator killed; the original `screen_off_timeout` was not
   recorded and is now 60000. The AOSP shade clips the collapsed card's third row vertically (capture 06; layout
   unchanged by A1; One UI showed it whole) — Step 3 checks it on the Fold 7.
+- **2026-11-11 · A2 Duet (Android).** Code `abb323f` (CCRM-105 (Duet Stack): `notif_duet.xml` rewritten — two
+  36 dp rings, two stacked rows, 42 dp figure slot; `Duet.kt` width budget, state words, `keepsTail`; expanded figure
+  24 sp and `TextFit.DUET_EXPANDED_COLUMN_DP` 186), `2a97300` (nominal width from the measured shade chrome), judge
+  fixes and close-out in the following commit; both flavors' tests, lint and both assembles green. **Fable fit calls**
+  (Convention 11, fresh Fable via the product account, no departure): smallest-width classes; "Out · <clock>" for a
+  reset later today; "—" and a bare track for Sign in / No reading / Not started in both views (notification.md §1.4);
+  the synthetic marker kept. **Measured on the emulator (AOSP shade, for Step 3 to compare with One UI):** collapsed
+  content 280 dp at 420 dp (bar 144), 402 at 750 (bar 265), **220 at 360 (bar 84)** — a phone's shade takes ≈140 dp
+  (One UI's cover: 272 at 411, the v1.8 figure), so `Duet.contentDp` is smallest width − 140 below 600 dp and 352 from
+  600 up (the wireframe's 328 for a 360 dp phone did not hold on AOSP); expanded header column 194 dp at 420, 315–328
+  at 750, 133 at 360, ≈121 / 61 at font 2.0 (420 / 360); the AOSP collapsed slot shows ≈46 dp of the 52 at font 1.0
+  (the second bar clipped; the same clip as A1's capture 06) and the whole 52+ at font 2.0. **Captures**
+  `design/research/2026-11-v20-build/A2/` (34, fold7inner at 5556): cover-like 01–16, inner 17–23, 360 dp 24–34; dark
+  and light; font 1.0 and 2.0; Vs pace both signs, Used, Left; held + spent, no 5h + not started, sign in + no
+  reading, stale + 91%, a long name. **Judge** (fresh Opus @ high, product account): accept-with-fixes, no blocking.
+  Adopted: F4 (the name-room arithmetic uses the padded word, so the decision and the layout agree; `DuetTest`), F5
+  ("Held · <day clock>" when the 5h lets go after midnight — core §6.3's bare-clock rule; a stale spent week drops its
+  tick too; `LeadLinesTest`). **For the orchestrator, not fixed here:** F1 (concerns) — at 360 dp on AOSP (220 dp,
+  under the narrowest drawn 226) a word with no tail ("No reading", "Not started", "Sign in") leaves the name at ".."
+  (captures 31, 33): undrawn, Robin's call (a wireframe delta for ≤ 226 dp); F2 (concerns) — the expanded column is
+  one constant (186) while 360 dp AOSP measures 133, so the pace line ellipsizes ("Sun 6:…", capture 25) instead of
+  dropping its weekday; A1's single-layout constants (142/141) have the same 360 dp gap, so the fix (columns keyed on
+  the smallest width, a Fable fit call) belongs to one step for both layouts; F3 — the AOSP clip above, Step 3 checks
+  One UI (blocking if One UI clips too). **Emulator notes:** seeded with `run-as` (`usage_cache.xml` with
+  `pinnedSecondProfile`, `profiles.xml` labels) and the app's own start path; no credential was needed for the
+  notification; airplane mode on throughout; afterwards both prefs files restored from copies, font 1.0, size and
+  density reset, dark mode, network restored, emulator killed. Sweeper skipped: the session list returned exactly 50
+  rows (WORKTREE.md rule).
 
 ---
 

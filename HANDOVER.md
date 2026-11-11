@@ -13,26 +13,27 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A2 · Duet (written 2026-11-11)
+## ▶ Next — Lane A (Android): Step A3 · Pace map (written 2026-11-11, after A2 landed)
 
-Step A1 (Lines and labels: CCRM-106 (7d Chip), CCRM-107 (Day Grid), CCRM-108 (Reset Named)) landed on `main`;
-RUNBOOK's Step A1 Log has the commits, the judge round and the captures (`design/research/2026-11-v20-build/A1/`).
-For the emulator: the fold7inner AVD has two empty Claude profiles; a debug build is seeded by writing
-`shared_prefs/usage_cache.xml` (`rawJson`, `authState` OK) and `files/usage-history-<key>.jsonl` with `run-as`,
-but the UI needs a stored credential — A1 stored a generated test token through `CredentialStore.save` with `jdb`
-attached to the debuggable app, with the emulator offline (airplane mode) so nothing is sent; it signed both
-profiles out and restored the network afterwards (A1 Log).
+Step A2 (Duet: CCRM-105 (Duet Stack)) landed on `main`; RUNBOOK's Lane A Log has the commits, the Fable fit calls,
+the judge round, the measured shade widths and the captures (`design/research/2026-11-v20-build/A2/`). Settled for
+A3 since the wireframe: a spent account in Left mode stays on the map as "Teams 0%" (Robin, 2026-11-11), and since
+c24e675 map figures and the quiet edge truncate like the row. Emulator seeding (A1/A2): `run-as` writes
+`shared_prefs/usage_cache.xml` (First's keys bare, Second's prefixed `work.`; `rawJson`, `fetchedAt`, `authState`)
+and `profiles.xml` (labels), with airplane mode on; the in-app screens also need a stored credential (A1: a generated
+test token via `jdb` → `CredentialStore.save`, signed out afterwards); restore both files and kill the emulator at
+the end. Open for the orchestrator from A2 (not A3's): F1 (a ≤ 226 dp Duet), F2 (pace-line columns keyed on width).
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A2),
-> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A2 names in
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A3),
+> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A3 names in
 > design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step A2 on Android only (repo root, never ios/). Write
+> answers" (Convention 10; ask and record first if not). Build Step A3 on Android only (repo root, never ios/). Write
 > only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
 > "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
 > fixtures for the changed rules. Check every state the wireframe draws for these items on the fold7inner
 > emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths, dark and
-> light; save the captures in design/research/2026-11-v20-build/A2/. Stop and report at anything the
+> light; save the captures in design/research/2026-11-v20-build/A3/. Stop and report at anything the
 > wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
 
 ## ▶ Next — Lane I (iOS): Step I2 · Pace map (written 2026-11-11, after I1 landed)

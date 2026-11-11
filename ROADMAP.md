@@ -1942,7 +1942,7 @@ rows then the map; "Weekly · All models" stays; collapsed Duet text is capped a
 sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 
 ### CCRM-105 · Duet Stack — the two-account notification: two rings left, two stacked Weekly rows
-- **Status:** Planned · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification).
+- **Status:** **Android built** 2026-11-11 (abb323f, 2a97300, RUNBOOK A2; emulator captures `design/research/2026-11-v20-build/A2/`) · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification).
 - **What:** collapsed at 52 dp: two 36 dp 5h rings (First left, unsigned, each in its account colour), then two
   rows — mark 14 dp + name 12 sp with a right-aligned 11 sp state word, under it an 8 dp Weekly bar with tick and
   red slice; both bars share one edge and length; the figure 18 sp bold tabular in a fixed 42 dp slot, signed Vs
