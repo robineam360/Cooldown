@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>v2.0 feedback wireframes, addendum (2026-11-11)</title>
+<style>
+:root{--bg:#F5EFE8;--card:#FCF8F4;--ink:#26211E;--ink2:#6B625C;--ink3:#9A918A;--line:#E2D9D0;--mink:38,33,30;--vg:#2E7D32;--vr:#C62828;--yel:#F9A825;--org:#F57C00;--red:#C62828;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--pers:#8E5BB0;--lab:#2A9A8C;--rose:#C2478A;--fault:#B3402A;--shade:#ECECEE;--scard:#FFFFFF}
+.dk{--bg:#0D0D0D;--card:#1A1A1A;--ink:#EDE8E4;--ink2:#A39B94;--ink3:#6E6760;--line:#2E2A27;--mink:237,232,228;--vg:#9CCC65;--vr:#FF5252;--yel:#FDD663;--org:#FFA726;--red:#FF5252;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--pers:#CE93D8;--lab:#4DB6AC;--rose:#F48FB1;--fault:#E0705A;--shade:#141416;--scard:#2A2A2C}
+*{box-sizing:border-box}body{background:#f6f6f8;color:#1d1d1f;font:14px/1.45 Roboto,-apple-system,"Segoe UI",sans-serif;margin:0;padding:24px 16px 80px}main{max-width:1180px;margin:0 auto}
+h1{font-size:22px;margin:0 0 6px}h2{font-size:17px;margin:38px 0 4px;border-top:1px solid #d9d9de;padding-top:16px}h3{font-size:13px;margin:14px 0 4px}
+p,.ann{font-size:13px;color:#444;max-width:940px}.ann{padding-left:18px;margin:6px 0}.ann li{margin:3px 0}
+.status{border:2px solid #c9a21a;background:#fff8e1;border-radius:8px;padding:8px 12px;font-size:13px;margin:10px 0;max-width:940px}
+.warn{border:2px solid #b3402a;background:#fdecea;border-radius:8px;padding:8px 12px;font-size:13px;margin:10px 0;max-width:940px}
+.spec{border:1px solid #9bb7d8;background:#eef4fb;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:10px 0;max-width:940px}
+.id{font-weight:700;color:#8a5a00;background:#fff4d6;border:1px solid #e8c66a;border-radius:4px;padding:0 4px;font-size:11px;white-space:nowrap}
+.core{font-weight:700;color:#fff;background:#2f5d9a;border-radius:4px;padding:0 5px;font-size:10.5px}.dev{font-weight:700;color:#fff;background:#b3402a;border-radius:4px;padding:0 5px;font-size:10.5px}.sug{font-weight:700;color:#fff;background:#2a7d4f;border-radius:4px;padding:0 5px;font-size:10.5px}
+.scope{background:var(--bg);color:var(--ink);padding:14px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;border-radius:10px;margin:8px 0}
+figure{margin:0}figcaption{font-size:11px;color:var(--ink2);font-weight:600;margin-bottom:5px;max-width:380px}
+.g{color:var(--vg)}.r{color:var(--vr)}b.g,b.r{font-weight:600}.mut{color:var(--ink2)}.dim{opacity:.5}
+.fg{font-weight:700;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}.fg small{font-size:58%;font-weight:700}
+.mk{flex:none;vertical-align:middle}
+.card{background:var(--card);border-radius:12px;padding:16px;font-size:13px}
+.bar{position:relative;border-radius:99px;background:color-mix(in srgb,var(--bc) 25%,transparent)}.bar>.fill{position:absolute;left:0;top:0;bottom:0;background:var(--bc);border-radius:99px}.bar>.rz{position:absolute;top:0;bottom:0;background:var(--red);border-radius:0 99px 99px 0}.bar>.tk{position:absolute;top:-3px;bottom:-3px;width:2.5px;margin-left:-1.25px;background:rgba(var(--mink),.6);border-radius:1px}
+.cap{font-size:11.5px;color:var(--ink2);margin-top:5px;white-space:nowrap}.cap b{color:var(--ink);font-weight:600}
+.shade{background:var(--shade);padding:8px;border-radius:12px;display:inline-block}.nc{background:var(--scard);color:var(--ink);border-radius:18px;padding:8px 16px 10px;font-size:12px}.nc .top{font-size:10.5px;color:var(--ink2);margin-bottom:5px}
+.dq{display:flex;align-items:center;height:52px}.dw{flex:1;min-width:0;margin-left:8px;display:flex;flex-direction:column;gap:2px}.dr{display:flex;align-items:center;gap:8px;height:24px}.dc{flex:1;min-width:0}
+.dn{display:flex;align-items:center;gap:4px;height:15px;font-size:12px;font-weight:600;white-space:nowrap}.nm{overflow:hidden;text-overflow:ellipsis;min-width:24px}.wd{margin-left:auto;font-size:11px;font-weight:400;flex:none;padding-left:6px}.cd{width:6px;height:6px;border-radius:50%;flex:none}.df{width:42px;text-align:right;flex:none;line-height:1}
+.xh{display:flex;align-items:center;min-height:60px}.xr{width:44px;margin-right:14px;text-align:center;font-size:11px;color:var(--ink2);flex:none;line-height:13px}.xs{font-size:12px;color:var(--ink2);margin-top:4px;white-space:nowrap}
+.srow{display:flex;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.l1{display:flex;align-items:center;gap:6px;white-space:nowrap;height:22px;margin-bottom:4px}.l1 .nm{font-size:15px;font-weight:600}.pill{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:0 5px;color:var(--ink2);line-height:16px;flex:none}.l3{font-size:13px;color:var(--ink2);margin-top:4px;white-space:nowrap}
+.sh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;margin-bottom:6px}.seg{display:inline-flex;border:1px solid var(--ink3);border-radius:8px;overflow:hidden;font-size:12px;height:28px;align-items:stretch}.seg i{font-style:normal;padding:5px 9px;border-left:1px solid var(--ink3)}.seg i:first-child{border-left:0}.seg i.on{background:rgba(var(--mink),.13);font-weight:600}.seg i.off{opacity:.38}.sort{font-size:12px;color:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:3px 7px;white-space:nowrap}
+.chips{display:flex;gap:6px}.chip{font-size:12px;height:32px;line-height:30px;padding:0 10px;border:1px solid var(--ink3);border-radius:8px;white-space:nowrap}.chip.on{background:rgba(var(--mink),.13);font-weight:600;border-color:transparent}
+.mh{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:8px}.mh b{font-size:14px;font-weight:600;margin-right:auto}.foot{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-top:4px}
+.menu{background:var(--scard);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.18);font-size:13.5px;padding:6px 0;width:190px}.menu div{padding:8px 14px}.menu .new{background:#fff4d6}
+table.t{border-collapse:collapse;font-size:12px;max-width:1160px}.t th,.t td{border:1px solid #d9d9de;padding:4px 7px;text-align:left;vertical-align:top}.t th{background:#f0f0f2}.ok{color:#2E7D32;font-weight:700}.drop{color:#9A6700;font-weight:700}.bad{color:#C23B30;font-weight:700}
+code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px}.err{color:#C23B30;font-family:monospace;font-size:12px}
+nav a{margin-right:12px;font-size:13px}
+.scope.nd-g{overflow-x:auto}.scope{max-width:100%}
+</style></head><body><main>
+<h1>v2.0 feedback wireframes — addendum, 2026-11-11</h1>
+<div class="status"><b>Date:</b> 2026-11-11 · <b>Status:</b> <b>Approved by Robin 2026-11-11, as drawn</b> · <b>Base:</b> <code>design/2026-11-10-v20-feedback-wireframes.html</code> rev B (approved 2026-11-10), whose tokens and drawing helpers this page reuses · <b>Tracker:</b> CCRM-114 (Narrow Duet), CCRM-115 (Row Tag Glyph); the filter-reset rule needs no wireframe (BEHAVIOR-MOBILE §6). Drawn light with one dark scope per state; Android sizes dp/sp, iOS pt. Widths printed in captions are the em estimate, not rendered text.</div>
+<nav><a href="#n1">1 Narrow Duet (N1)</a><a href="#rg1">2 Tag glyph on rows</a><a href="#ta1">3 Adding and tagging</a></nav>
+<div class="status" style="border-color:#2a7d4f;background:#eaf6ee"><b>Approved by Robin 2026-11-11, as drawn</b> (CLAUDE.md §2), with Robin's decisions: <b>narrow Duet</b> variant C (the tail-less word takes the figure's slot under 256 dp of content); <b>tag glyph</b> before the provider logo on Summary rows, both platforms; <b>no "None"</b> — every account is Personal or Work, chosen on the Add account sheet above the provider rows (T1 (i)), the very first account Personal without asking (T2 A; Robin: both platforms behave the same), all existing accounts Personal at upgrade, silently; <b>snapshot</b> glyph only while its rows carry both tags (R4 A). The remaining forks are Fable fit calls drawn at their recommendation and approved with the page: R2 A, R3 A, R5 A, R6 A, R7 A, R8 A (Lab is Work), T3 B (a tap on a disabled segment shows one line for 3 s), T4 B, T5 A, T6 A, T7 A, N1-Q2…Q8 as recommended. F2 (the pace-line column follows the screen, for both layouts) is a build note, not a decision. The filter-reset rule is spec only (BEHAVIOR-MOBILE §6). Tracker: CCRM-114 (Narrow Duet), CCRM-115 (Row Tag Glyph), CCBG-80 (Fixed Pace Columns).</div>
+<h2 id="n1">N1. Duet on a narrow shade — the state word under 256 dp, and the pace-line column (Android)</h2>
+<div class="status"><b>Date:</b> 2026-11-11 · <b>Status:</b> <b>Approved by Robin 2026-11-11, as drawn</b>; nothing is built from it (CLAUDE.md §2). A delta to §1, CCRM-105 (Duet Stack); F2 is a build note for CCRM-108 (Reset Named). Android only. Step A2 measured the emulator's AOSP shade: a 360 dp phone gives the collapsed Duet <b>220 dp</b> of content (bar 84), not §1's 328; §1's narrowest drawing is 226. The card there is 336 dp: 56 (icon column) + 220 + 60 (the expander); expanded, 56 + 260 + 20 (captures 24 and 25, 3 px per dp). 200 dp stands for a smaller shade and 176 is the layout's floor; neither is measured. Every width is TextFit's em estimate, as in §4, and drawn names are cut by that estimate, not by this browser's font.</div>
+
+<h3>F1 · A state word with no tail — as built (captures 31, 33)</h3>
+<p>§1's ladder is: the bar absorbs → the name ellipsizes to 24 dp → the word drops its tail. "Sign in" (40 dp with its 6 dp gap), "No reading" and "Not started" (58 each) have no tail, and the line's end is padded for the word plus 4%, so the name gets what is left: 6 dp beside "No reading" at 220 dp, which Android prints as "..". Each caption ends with the two rows' name room in dp.</p>
+<div class="scope nd-g" id="nd-b0"></div>
+<div id="nd-rooms"></div>
+<p>Green: 32 dp or more (about "Pers…"); amber: 24 to 32 ("Te…"); red: under 24. A word's width includes its 6 dp gap; the line is padded by that width + 4% (<code>Duet.wordPadDp</code>).</p>
+
+<h3>Variant A — short forms</h3>
+<p>Each long word has a short form, taken when the name would fall under 32 dp: "No reading" → "No data" (43 dp) → gone; "Not started" → "Idle" (28 dp) → gone; "Sign in" has none and stays, because it is the action. Cost: two words that exist nowhere else in the app, and it still fails where it matters — at 220 dp "No data" leaves 22 dp, so the word simply vanishes, and "Sign in" still crushes the name (24 dp at 220, 4 at 200).</p>
+<div class="scope nd-g" id="nd-va"></div>
+
+<h3>Variant B — the word becomes the dot</h3>
+<p>Under 32 dp of name the word becomes v2.0's 6 dp dot in the word's colour, after the name (11 dp): fault red for "Sign in", grey for the other two; the full word lives in the expanded view. Name room is bar − 29 for every word. Cost: on a 360 dp phone the Duet is back to what §1 replaced, a dot that says "expand me", and "Sign in" is never printed there. If the row-glyph section settles a glyph set, B would draw those in a 12 dp box instead (bar − 36).</p>
+<div class="scope nd-g" id="nd-vb"></div>
+
+<h3>Variant C — the word takes the figure's place <span class="sug">recommended</span></h3>
+<p>A row with no figure has nothing in its 42 dp slot but "—". On a shade under 256 dp of content (smallest width under 396 dp; 136 + 18 + 61 + 40 = 255 is where "Not started" stops leaving 40 dp of name) that row drops the dash: its name line runs on over the 8 dp gap and the slot, 50 dp further, to the row's right edge, and the word sits there, right-aligned where the figure would be. The bar keeps its length and its left edge. Name room is bar + 32 − the padded word: 74 dp beside "Sign in" and 56 beside "No reading" at 220. The rule keys on the screen, not on the name, so both rows of one notification behave alike; from 256 dp (the Fold 7 cover's 272 and wider) §1 stays exactly as approved. <span class="dev">flag</span> departs from §1's "Sign in / No reading / Not started: —" on narrow shades only.</p>
+<div class="scope nd-g" id="nd-vc"></div>
+<div class="scope" id="nd-vc2"></div>
+
+<div class="spec"><b>Recommended: C.</b> It is the only variant that keeps the whole name and the whole word on a 360 dp phone; it adds no vocabulary; and what it displaces, the dash, says nothing the hairline ring and the bare track do not already say. The ladder, one order everywhere (1–3 are §1's, untouched):
+<ol class="ann">
+<li>The bar absorbs.</li>
+<li>The name ellipsizes to 24 dp beside a word with a tail.</li>
+<li>The word drops its tail: "Held · 3:40 PM" → "Held", "Out · Thu" → "Out".</li>
+<li><b>New, under 256 dp:</b> a row with no figure gives its "—" to the word (C).</li>
+<li><b>New:</b> a bare word that still leaves the name under 32 dp (or under the name's own width, if that is less) goes. What it said stays on the row — the loud ring for "Held", the red figure and full bar for "Out", the "—" (back in its slot) and the bare track for "No reading" / "Not started" — and in the expanded view. "Stale" leaves v2.0's 6 dp fault-red dot while the name keeps 32 dp beside it. "Sign in" never goes: it is the action, so there the name gives.</li></ol>
+32 dp is about "Pers…" at 12 sp, which is what a 360 dp phone already prints beside "Held" (capture 27). At 220 dp and font 1.0 only rung 4 fires for the states drawn; rung 5 is for about 200 dp and under.</div>
+
+<h3>C on every state — 226 · 220 (measured) · 200 · 176 (the floor)</h3>
+<p>Font 1.0, light.</p>
+<div class="scope nd-g" id="nd-m1"></div>
+<p>Font 2.0, light. Collapsed text is capped in dp (figure 18, name 13.5, word 12), so only the name and the word grow.</p>
+<div class="scope nd-g" id="nd-m2"></div>
+<p>Dark, font 1.0, then 2.0.</p>
+<div class="scope dk nd-g" id="nd-m3"></div>
+<div class="scope dk nd-g" id="nd-m4"></div>
+<ul class="ann">
+<li><b>TalkBack</b> always hears the full word, whichever rung printed: the word view's description is the full form ("Held · 3:40 PM" while "Held" prints), and when no word prints the name's description becomes "Design, No reading". <span class="dev">flag</span> As built it reads only the printed text, so a dropped tail is already lost to it.</li>
+<li><b>Unchanged at every width:</b> rings 36 dp, the 42 dp figure slot (on a C row it is empty, not resized), the 8 dp bar, the 52 dp height. Colours as §1: "Sign in" and "Stale" fault red, "Out" red, "Held" the 5h's ladder colour, the rest info.</li>
+<li><b>176 dp</b> (a 316 dp smallest width: a 360 dp phone at its largest display size): the name line is the mark and 22 dp — one letter, with or without a word. That is §1's floor, drawn here for the first time. This delta does not make it worse (a "Sign in" row gets 30 dp) and does not fix it: the mark or a ring would have to give. See N1-Q5.</li>
+<li><b>Build.</b> C is three calls on the existing row: the figure view gone, the bar's end padded 50 dp, the line's end padded for the word as today. The class comes from <code>Duet.contentDp</code>; two pure functions in <code>Duet.kt</code> (the slot rule, the word-goes rule) with a <code>DuetTest</code> case for every cell drawn here. The AOSP shade's vertical clip of the second bar (A2's F3) is not touched.</li></ul>
+
+<h3>F2 · The pace-line column follows the screen — a build note, no decision</h3>
+<p>The pace line's form is picked for a fixed column — 142 dp (single, collapsed), 141 (single, expanded), 186 (Duet, expanded) — but on a 360 dp phone the Duet's expanded column measures 133 dp, so the line picked for 186 is cut mid-clock ("Sun 6:…", capture 25) instead of following §4's order: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor. Drawn: what is built, then the same header with its column derived from the screen. Font 1.0, a 360 dp phone (260 dp of expanded content):</p>
+<div class="scope" id="nd-x1"></div>
+<p>Font 2.0, on a 420 dp and a 360 dp phone (dark, as the captures):</p>
+<div class="scope dk" id="nd-x2"></div>
+<p>Narrower still: 226, 220 and 200 dp of expanded content, font 1.0. Rings 44 + 14, bars 13 dp and the 24 sp figure all hold; only the line's form and "· Weekly" give.</p>
+<div class="scope" id="nd-x3"></div>
+<p>States on a 360 dp phone, derived columns:</p>
+<div class="scope" id="nd-x4"></div>
+<p>The single layout on a 360 dp phone: collapsed (220 dp of content), then expanded (260):</p>
+<div class="scope" id="nd-s"></div>
+<div class="spec"><b>Build note (F2).</b> Column widths are derived from the screen's smallest width for both layouts; no fixed numbers. Content = <code>Duet.contentDp(sw)</code>: sw − 140 below 600 dp, 352 from 600. Expanded content = content + 40, because the expander's column comes back (A2: 133 + 126 = 259 at 360, 194 + 126 = 320 at 420). Column = (content − ring box − gaps − the figure's own width) × 0.965, the 3.5% CCBG-78 (Collapsed Pace Line Clip) took off for the estimate's error. Ring box: 44 collapsed; expanded, the wider of 44 and the time line; none with no 5h. Gaps: 14 dp each side of the column, one with no ring. The figure's width is its em (bold, "%" at 58%) × its size in dp, so the column moves with the figure: 82 dp beside "−13%", 102 beside "52%". Sizes in dp come from the system (<code>TypedValue.applyDimension</code>), not sp × fontScale: Android 14 scales large text non-linearly (24 sp → 26.4 dp at 1.3 and 36 dp at 2.0; 32 sp stays 32 at 1.3), and with that table this model gives A2's four measured Duet columns (133, 194, ≈121, 61) within about 1 dp. Until Step 3 has measured the Fold 7, never wider than today's constants — min(derived, 142 / 141 / 186) — so nothing widens at 411 dp and up. <code>TextFitTest</code> pins the table below.</div>
+<div id="nd-cols"></div>
+<ul class="ann">
+<li><span class="dev">flag</span> <b>The ring's time line</b> ("in 2h 20m", 11 sp) is the one thing that must change in the expanded headers. At font 2.0 it is 97 dp wide, which takes the column from 110 to 61 dp, and its 13 dp box cuts it in half (capture 29). Drawn sized in dp (11), like the bore figure it sits under. Departs from §1's "the expanded view scales as today" for this one line.</li>
+<li><span class="sug">suggestion</span> <b>"· Weekly" gives before the name.</b> The label "Teams · Weekly" becomes "Teams" when the column cannot hold both: "Personal Max 20x" is whole at 360 dp, and "Teams" is whole at font 2.0 where today's label is "T…". Both layouts.</li>
+<li><b>Font 2.0 on a 360 dp phone:</b> with those two the column is 110 dp; the floor at 10 sp is 141 dp, so the line ends in §1.4's last resort, an ellipsis after the duration ("21h 50m a…"); the tint and the figure's sign still say which side. Holding the floor would take the figure capped at 24 dp and the two 14 dp gaps closed to 8 (column 146) — not drawn; N1-Q8.</li>
+<li><span class="sug">suggestion</span> The spent line ("Out until Thu 8:00 AM · in 1d 18h", 175 dp) has no drop order and is cut mid-clause at 360 dp; drawn dropping its second clause whole. The same shape would serve the takeover lines.</li>
+<li>The single layout's collapsed line on a 360 dp phone in Vs pace has 82 dp: the floor at 10 sp at font 1.0, cut at 1.3 and up. Derived, not measured; Step 3 or an emulator pass should confirm before it is tuned.</li></ul>
+<div class="spec"><b>Spec changes this implies.</b> <code>notification.md</code> "v2.0 feedback on Android": §2.2 and the drop order (rungs 4–5, the 256 dp class, the 32 dp floor), §2.4 (no "—" on a C row; the "Stale" dot at the last rung), §2.3 (the ring's time line in dp; "· Weekly" gives), §1.4 "Fitting the lines" (derived columns replace 142 / 141 / 186; the table). Code: <code>Duet.kt</code>, <code>PinnedNotification.fillRow</code> and its descriptions, <code>TextFit</code> (columns as functions of smallest width, figure and font), the two expanded layouts' time line, <code>DuetTest</code>, <code>TextFitTest</code>. No core change.</div>
+
+<h3>Questions for Robin (N1)</h3>
+<table class="t"><tr><th>#</th><th>Question</th><th>Options</th><th>Recommendation</th></tr>
+<tr><td>N1-Q1</td><td>The tail-less word on a narrow shade</td><td><b>A</b> short forms · <b>B</b> the dot · <b>C</b> the word takes the figure's place</td><td><b>C</b></td></tr>
+<tr><td>N1-Q2</td><td>How far C reaches</td><td>(a) only under 256 dp; the cover and wider keep §1's "—" · (b) every width: one look, but it changes §1's approved drawings</td><td>(a)</td></tr>
+<tr><td>N1-Q3</td><td>The name's floor for the new rungs</td><td>24 dp (§1's; names down to "Te…") · 32 dp ("Pers…", today's look at 220) · 40 dp (whole five-letter names; "Stale" and "Held" give way sooner)</td><td>32</td></tr>
+<tr><td>N1-Q4</td><td>"Stale" when its word goes</td><td>(a) the fault-red dot while the name keeps 32 dp · (b) nothing; the dimmed row alone</td><td>(a)</td></tr>
+<tr><td>N1-Q5</td><td>The 176 dp floor: one-letter names</td><td>(a) accept until a real device shows it · (b) a follow-up where the mark or a ring gives</td><td>(a)</td></tr>
+<tr><td>N1-Q6</td><td>Expanded: the ring's time line</td><td>(a) sized in dp, 11 · (b) stays sp: cut in half and 48 dp of column lost at font 2.0</td><td>(a)</td></tr>
+<tr><td>N1-Q7</td><td>Expanded label when the column is short</td><td>(a) "· Weekly" gives before the name · (b) as shipped, cut inside "· Weekly"</td><td>(a)</td></tr>
+<tr><td>N1-Q8</td><td>Font 2.0 on a 360 dp phone, the expanded line</td><td>(a) accept the ellipsis after the duration · (b) cap the Duet's expanded figure at 24 dp and close the gaps to 8 dp so the floor fits</td><td>(a): the figure is what a large-font reader came for</td></tr></table>
+
+<h3>Unverified (N1)</h3>
+<ul class="ann">
+<li>One UI on a 360 dp phone (the Galaxy S class): assumed to give AOSP's 220 dp; unmeasured.</li>
+<li>Expanded content = collapsed + 40 dp is derived from A2's columns and captures 24–25, not measured directly; from 600 dp it is the nominal 352 + 40.</li>
+<li>The single layout's 360 dp columns (82 collapsed, 93 expanded) are layout arithmetic and the em model; A1 took no 360 dp notification capture.</li>
+<li>The non-linear font table is AOSP's <code>FontScaleConverterFactory</code> (Android 14 and later); One UI's curve and Android 13 (linear) are unverified, which is why the build asks the system.</li>
+<li>The em model runs 2–4% off rendered text, so a cell within a few dp of 32 may fall either way on a device.</li>
+<li>This section's script was written without a browser: check that every figure renders with no error box.</li></ul>
+
+<style>
+.scope.nd-g{display:grid;grid-template-columns:repeat(4,max-content);gap:10px 12px;align-items:start}
+.nd-h{font-size:11px;color:var(--ink2)}
+.dn.nd-l{position:relative}
+.wd.nd-w{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;padding:0;margin:0}
+.dq.nd-f2{height:auto;min-height:54px}.nd-f2 .dr{height:25px}.nd-f2 .dn{height:16px}
+.dn.nd-o{overflow:hidden}
+.xs.nd-c{overflow:hidden;text-overflow:ellipsis}
+.nd-t{height:13px;margin-top:3px;line-height:1.2;overflow:hidden;white-space:nowrap}
+</style>
+<script>
+(function(){
+/* copies of rev B's helpers, local to this section */
+const M='−',NOW=2*1440+840,WK=10080,DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const ink=a=>'rgba(var(--mink),'+a+')';
+const put=(id,fn)=>{const el=document.getElementById(id);if(!el)return;try{el.innerHTML=fn()}catch(e){el.innerHTML='<div class="err">'+id+': '+e.message+'</div>'}};
+const fig=(c,h)=>'<figure><figcaption>'+c+'</figcaption>'+h+'</figure>';
+function mk(k,c,s){let i='';if(k==='claude'){for(let r=0;r<10;r++)i+='<path d="M12 12L12 2.6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" transform="rotate('+(r*36+(r%2?7:0))+' 12 12)"/>'}else if(k==='gpt'){for(let r=0;r<3;r++)i+='<ellipse cx="12" cy="7.2" rx="3.5" ry="5.8" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate('+r*120+' 12 12)"/>'}else i='<path d="M12 2C12.8 8 16 11.2 22 12C16 12.8 12.8 16 12 22C11.2 16 8 12.8 2 12C8 11.2 11.2 8 12 2Z" fill="currentColor"/>';
+ return '<svg class="mk" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" style="color:'+c+'">'+i+'</svg>'}
+const EMC=c=>/[0-9]/.test(c)?.56:/[iltrfj]/.test(c)?.30:/[mw]/.test(c)?.86:/[a-z]/.test(c)?.54:/[WMO]/.test(c)?.80:/[A-Z]/.test(c)?.62:c===' '?.25:c==='·'?.29:c===':'?.23:c==='%'?.46:(c==='+'||c===M)?.58:.5;
+const em=(s,b)=>[...s].reduce((a,c)=>a+EMC(c),0)*(b?1.03:1);
+const clk=m=>{m=((m%1440)+1440)%1440;const h=Math.floor(m/60);return ((h+11)%12+1)+':'+String(m%60).padStart(2,'0')+' '+(h<12?'AM':'PM')};
+const at=t=>{const m=((t%WK)+WK)%WK;return {d:DN[Math.floor(m/1440)],c:clk(m),same:Math.floor(t/1440)===Math.floor(NOW/1440)}};
+const dur=n=>{const d=Math.floor(n/1440),h=Math.floor(n%1440/60),m=n%60;return d>0?d+'d '+h+'h':h>0?h+'h '+m+'m':m+'m'};
+function PL(a){if(a.u==null||a.spent||a.dash)return null;const d=a.g-a.u,r=at(NOW+Math.round((100-a.g)/100*WK));
+ if(Math.abs(d)<1)return {on:1,tint:'On the mark',cls:'',day:r.same?'':r.d,c:r.c};
+ const n=Math.floor(Math.abs(d)/100*WK),un=d>0;return {tint:dur(n)+(un?' behind':' ahead'),cls:un?'g':'r',day:r.same?'':r.d,c:r.c}}
+const sev=a=>a.u>=100?'var(--red)':a.u>90?'var(--org)':a.u>80?'var(--yel)':a.col;
+const F=(t,sz,col)=>'<span class="fg" style="font-size:'+sz+'px;color:'+col+'">'+t.replace('%','<small>%</small>')+'</span>';
+function figOf(a,mode){if(a.u==null||a.dash)return ['—','var(--ink3)'];if(a.spent)return [mode==='left'?'0%':'100%','var(--red)'];
+ if(mode==='vs'){const v=Math.trunc(a.g-a.u);return [v===0?'0%':(v>0?'+':M)+Math.abs(v)+'%',v>0?'var(--vg)':v<0?'var(--vr)':'var(--ink)']}
+ return [mode==='left'?(100-a.u)+'% left':a.u+'%',sev(a)]}
+function ring(S,pct,tick,o){o=o||{};const c=S/2,sw=(S<=48?.1:.13)*S,R=.39*S,P=(r,f)=>(c+r*Math.sin(6.2832*f)).toFixed(1)+','+(c-r*Math.cos(6.2832*f)).toFixed(1),arc=(a,b)=>{if(b-a>=.9999)b=a+.9999;return 'M'+P(R,a)+'A'+R+','+R+' 0 '+(b-a>.5?1:0)+' 1 '+P(R,b)};
+ let s='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" style="flex:none;opacity:'+(o.dim||1)+'"><circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="none" stroke="'+ink(o.grey||o.na?.22:.16)+'" stroke-width="'+sw+'"/>';
+ if(o.na){const k=.12*S;return s+'<path d="M'+(c-k)+','+(c-k)+'L'+(c+k)+','+(c+k)+'M'+(c+k)+','+(c-k)+'L'+(c-k)+','+(c+k)+'" stroke="'+ink(.45)+'" stroke-width="1.8" stroke-linecap="round"/></svg>'}
+ if(pct==null)return s+'<text x="'+c+'" y="'+(c+.1*S)+'" text-anchor="middle" font-size="'+(.29*S)+'" font-weight="700" fill="'+ink(.5)+'">—</text></svg>';
+ const col=pct>=100?'var(--red)':pct>90?'var(--org)':pct>80?'var(--yel)':o.col;
+ if(!o.grey){s+='<path d="'+arc(0,Math.max(pct/100,.09))+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';
+  if(tick!=null){if(pct>tick+3)s+='<path d="'+arc(tick/100,pct/100)+'" fill="none" stroke="var(--red)" stroke-width="'+sw+'"/>';
+   s+='<path d="M'+P(R-sw,tick/100)+'L'+P(R+sw,tick/100)+'" stroke="'+ink(.9)+'" stroke-width="'+Math.max(1.5,S/32)+'" stroke-linecap="round"/>'}}
+ const vs=o.vs&&tick!=null&&!o.grey?Math.trunc(tick-pct):null,txt=(vs!=null?Math.abs(vs):pct)+'%',fs=(txt.length>=4?.24:.29)*S,fc=o.grey?ink(.45):vs!=null?(vs>0?'var(--vg)':vs<0?'var(--vr)':'var(--ink)'):pct>90?col:'var(--ink)';
+ return s+'<text x="'+c+'" y="'+(c+.36*fs).toFixed(1)+'" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="700" fill="'+fc+'">'+txt.slice(0,-1)+'<tspan font-size="'+(fs*.58).toFixed(1)+'">%</tspan></text></svg>'}
+function bar(p,t,h,col,op){const over=t!=null&&p>t+3;return '<div class="bar" style="height:'+h+'px;--bc:'+col+';opacity:'+(op||1)+';margin-top:'+(h>8?4:1)+'px">'+(p>0?'<div class="fill" style="width:'+Math.max(p,3)+'%"></div>':'')+(over?'<div class="rz" style="left:'+t+'%;width:'+(p-t)+'%"></div>':'')+(t!=null?'<div class="tk" style="left:'+t+'%"></div>':'')+'</div>'}
+const dring=(a,S,mode)=>a.r==='none'?ring(S,null):a.r==null?ring(S,null,null,{na:1}):ring(S,a.r[0],a.r[1],{col:a.col,grey:a.spent,vs:mode==='vs',dim:a.stale?.45:1});
+
+/* accounts: rev B's, with each word's head (w0) and its expanded line (x) */
+const A=o=>Object.assign({t5:'2h 20m'},o),
+ T=A({n:'Teams',mk:'claude',col:'var(--claude)',r:[34,52],u:52,g:39}),
+ PE=A({n:'Personal',mk:'claude',col:'var(--pers)',r:[12,60],u:50,g:68,t5:'3h 15m'}),
+ LAB=A({n:'Lab',mk:'claude',col:'var(--lab)',r:null,u:61,g:61}),
+ ATL=A({n:'Atlas',mk:'claude',col:'var(--rose)',r:[12,60],u:100,g:70,spent:1,word:'Out · Thu',w0:'Out',wc:'var(--red)',x:['Out until Thu 8:00 AM · in 1d 18h','Out until Thu 8:00 AM']}),
+ HELD=A({n:'Work',mk:'claude',col:'var(--claude)',r:[93,83],u:30,g:44,t5:'1h 40m',word:'Held · 3:40 PM',w0:'Held',wc:'var(--org)'}),
+ PROD=A({n:'Product',mk:'claude',col:'var(--pers)',r:'none',u:null,word:'Sign in',w0:'Sign in',wc:'var(--fault)',x:['No reading yet']}),
+ DES=A({n:'Design',mk:'gpt',col:'var(--gpt)',r:'none',u:null,word:'No reading',w0:'No reading',x:['No reading yet']}),
+ SIDE=A({n:'Side',mk:'gem',col:'var(--gem)',r:[5,20],u:3,g:0,dash:1,word:'Not started',w0:'Not started',x:['Weekly not started']}),
+ STA=A({n:'Studio',mk:'claude',col:'var(--lab)',r:[48,70],u:44,g:57,stale:1,word:'Stale',w0:'Stale',wc:'var(--fault)'}),
+ GEM=A({n:'Gemini',mk:'gem',col:'var(--gem)',r:[40,55],u:91,g:83}),
+ L0=A({n:'Personal Max 20x',mk:'claude',col:'var(--pers)',r:[12,60],u:50,g:68,t5:'3h 15m'}),
+ LONG=Object.assign({},L0,{r:[93,83],t5:'1h 40m',word:'Held · 3:40 PM',w0:'Held',wc:'var(--org)'}),
+ withW=(a,w)=>Object.assign({},a,w==='Not started'?{dash:1}:{r:'none',u:null},{word:w,w0:w,wc:w==='Sign in'?'var(--fault)':null});
+
+/* F1: Duet.kt's arithmetic. NP / WP are the dp caps; wD = Duet.wordDp; pad = Duet.wordPadDp */
+const NP=s=>Math.min(12*s,13.5),WP=s=>Math.min(11*s,12),wD=(w,s)=>6+em(w)*WP(s),pad=(w,s)=>wD(w,s)*1.04;
+const cut=(n,room,px)=>{if(em(n,1)*px<=room+.5)return n;let t=n.slice(0,-1);while(t&&em(t.trimEnd(),1)*px+.7*px>room+.5)t=t.slice(0,-1);return t?t.trimEnd()+'…':'..'};
+const SHORT={'No reading':'No data','Not started':'Idle'},FL=32;
+/* V: '0' as built, 'A' short forms, 'B' the dot, 'C' the figure's place plus the last rung */
+function decide(a,B,s,V){const nw=em(a.n,1)*NP(s),dead=a.u==null||a.dash,rm=(w,x)=>B+(x||0)-18-(w?pad(w,s):0),lo=r=>r<Math.min(FL,nw);
+ let w=a.word||null,slot=0,dot=null,r=rm(w);
+ if(w&&w!==a.w0&&r<Math.min(24,nw)){w=a.w0;r=rm(w)}
+ if(w&&V!=='0'){
+  if(V==='C'&&dead&&B<120){slot=1;r=rm(w,50)}
+  if(lo(r)){
+   if(V==='A'){if(SHORT[w]){w=SHORT[w];r=rm(w)}if(lo(r)&&w!=='Sign in'){w=null;r=rm()}}
+   else if(V==='B'){dot=a.wc||'var(--ink2)';w=null;r=rm()-11}
+   else if(w!=='Sign in'){const st=w==='Stale';w=null;slot=0;r=rm();if(st&&!lo(r-11)){dot='var(--fault)';r-=11}}
+  }}
+ return {w:w,slot:slot,dot:dot,r:r,nm:cut(a.n,Math.max(r,0),NP(s))}}
+function drow(a,d,s,m){const f=figOf(a,m),dead=a.u==null||a.dash,b=dead?bar(0,null,8,'var(--ink3)'):bar(a.u,a.spent?null:a.g,8,sev(a),a.stale?.45:1);
+ return '<div class="dr"><div class="dc"><div class="dn nd-l" style="font-size:'+NP(s)+'px">'+mk(a.mk,a.col,14)+'<span>'+d.nm+'</span>'+(d.dot?'<i class="cd" style="background:'+d.dot+'"></i>':'')+(d.w?'<span class="wd nd-w" style="font-size:'+WP(s)+'px;color:'+(a.wc||'var(--ink2)')+'">'+d.w+'</span>':'')+'</div>'+(d.slot?'<div style="margin-right:50px">'+b+'</div>':b)+'</div>'+(d.slot?'':'<div class="df" style="opacity:'+(a.stale?.5:1)+'">'+F(f[0],18,f[1])+'</div>')+'</div>'}
+function duet(W,a,b,cap,o){o=o||{};const s=o.s||1,V=o.V||'C',m=o.m||'vs',B=W-136,d1=decide(a,B,s,V),d2=decide(b,B,s,V);
+ return fig(cap+' · '+Math.round(d1.r)+' / '+Math.round(d2.r),'<div class="shade"><div class="nc" style="width:'+(W+32)+'px"><div class="top">Cooldown · Pinned usage</div><div class="dq'+(s>1?' nd-f2':'')+'">'+dring(a,36,m)+'<span style="width:6px;flex:none"></span>'+dring(b,36,m)+'<div class="dw">'+drow(a,d1,s,m)+drow(b,d2,s,m)+'</div></div></div></div>')}
+const WS=[226,220,200,176];
+const grid=(rows,o)=>WS.map(w=>'<b class="nd-h">'+w+' dp · bar '+(w-136)+'</b>').join('')+rows.map(r=>WS.map(w=>duet(w,r[1],r[2],r[0],Object.assign({m:r[3]},o))).join('')).join('');
+function rooms(){const c=r=>'<span class="'+(r>=32?'ok':r>=24?'drop':'bad')+'">'+Math.round(r)+'</span>',
+ row=(l,fn)=>'<tr><td>'+l+'</td>'+WS.map(w=>'<td>'+c(fn(w-136,1))+' / '+c(fn(w-136,2))+'</td>').join('')+'</tr>';
+ return '<table class="t"><tr><th>Name room, dp · font 1.0 / 2.0 (after the 14 dp mark and its 4 dp gap)</th>'+WS.map(w=>'<th>'+w+' · bar '+(w-136)+'</th>').join('')+'</tr>'+row('No word',B=>B-18)
+ +['Sign in','No reading','Not started'].map(w=>row('<b>"'+w+'"</b> as built · '+Math.round(wD(w,1))+' dp + 4%',(B,s)=>B-18-pad(w,s))
+  +row('· A: '+(SHORT[w]?'"'+SHORT[w]+'" · '+Math.round(wD(SHORT[w],1))+' dp':'no short form, stays'),(B,s)=>B-18-pad(SHORT[w]||w,s))
+  +row('· B: the 6 dp dot · 11 dp',B=>B-29)
+  +row('· C: in the figure’s place · the line 50 dp longer',(B,s)=>B+32-pad(w,s))).join('')
+ +['Stale','Held','Out'].map(w=>row('"'+w+'", tail gone · '+Math.round(wD(w,1))+' dp + 4%',(B,s)=>B-18-pad(w,s))).join('')+'</table>'}
+
+const P=[['Sign in · No reading',withW(T,'Sign in'),withW(L0,'No reading')],['No reading · Not started',withW(T,'No reading'),withW(L0,'Not started')],['Sign in · Not started',withW(L0,'Sign in'),withW(T,'Not started')]],
+ S=[['Vs pace, both signs',T,PE,'vs'],['Held · spent',HELD,ATL,'used'],['No 5h · not started',LAB,SIDE,'vs'],['Sign in · no reading',PROD,DES,'vs'],['Stale · 91%',STA,GEM,'used'],['Long name · spent',LONG,ATL,'vs']];
+put('nd-b0',()=>grid(P,{V:'0'}));
+put('nd-rooms',rooms);
+put('nd-va',()=>grid(P,{V:'A'}));
+put('nd-vb',()=>grid(P,{V:'B'}));
+put('nd-vc',()=>grid(P,{}));
+put('nd-vc2',()=>duet(272,PROD,DES,'272 dp, the Fold 7 cover: §1 unchanged')+duet(253,PROD,DES,'253 dp, a 393 dp phone: the widest shade in the class')+duet(220,T,withW(PE,'No reading'),'220 dp: a figure above, a word below'));
+put('nd-m1',()=>grid(S,{}));
+put('nd-m2',()=>grid(S,{s:2}));
+put('nd-m3',()=>grid(S,{}));
+put('nd-m4',()=>grid(S,{s:2}));
+
+/* F2: sizes in dp under Android 14's non-linear font scaling (AOSP FontScaleConverterFactory) */
+const NL={1:[8,10,12,14,18,20,24,30,100],1.3:[10.4,13,15.6,18.8,21.6,23.6,26.4,30,100],2:[16,20,24,26,30,34,36,38,100]};
+const dpx=(sp,s)=>{const f=NL[1],t=NL[s];for(let i=1;i<9;i++)if(sp<=f[i])return t[i-1]+(t[i]-t[i-1])*(sp-f[i-1])/(f[i]-f[i-1]);return sp};
+/* a bold figure's em, "%" at 58%; 1.04 matches A2's measured "−12%" (49.3 dp at 24) */
+const fE=t=>t==='—'?1:([...t.replace('%','')].reduce((x,c)=>x+EMC(c),0)+(/%/.test(t)?.267:0))*1.04;
+/* §4's form B and its drop order */
+const forms=p=>[['full',p.tint+' · resets '+(p.day?p.day+' ':'')+p.c],['−word',p.tint+' · '+(p.day?p.day+' ':'')+p.c]].concat(p.day?[['−clock',p.tint+' · '+p.day]]:[],[['floor',p.tint]]);
+const lw=(p,t,px)=>(em(p.tint,!p.on)+em(t.slice(p.tint.length)))*px;
+function pick(p,col,s){for(const f of forms(p))if(lw(p,f[1],12*s)<=col)return {k:f[0],t:f[1],px:12*s};return {k:lw(p,p.tint,10*s)<=col?'floor at 10 sp':'10 sp, clipped',t:p.tint,px:10*s}}
+const lineH=(p,k)=>(p.on?p.tint:'<b class="'+p.cls+'">'+p.tint+'</b>')+k.t.slice(p.tint.length);
+/* one expanded header. o.b: as built (fixed column); o.t: ring time line in dp; o.g: "· Weekly" gives; o.sp: figure sp; o.l2: the single layout's line 2 */
+function xh(a,X,s,o){const sp=o.sp||24,m=o.m||'vs',f=figOf(a,m),fpx=dpx(sp,s),tpx=o.t?11:dpx(11,s),rg=a.r!=null,tl=rg&&a.r!=='none'&&!a.spent,rb=rg?Math.max(44,tl?em('in '+a.t5)*tpx:0):0,fW=fE(f[0])*fpx,col=X-(rg?rb+14:0)-14-fW,fit=o.b?(sp>24?141:186):col*.965,lpx=dpx(14,s),p=PL(a),k=p?pick(p,fit,s):null,dead=a.u==null||a.dash,full=a.n+' · Weekly',lab=cut(o.g&&em(full,1)*lpx>col-18?a.n:full,col-18,lpx),
+  x=a.x||[''],sub=p?lineH(p,k):(o.b||!x[1]||em(x[0])*12*s<=fit?x[0]:x[1]),c2=[a.u+'% used · '+a.g+'% pace mark',a.u+'% used'],l2=o.l2&&p?'<div class="xs nd-c" style="margin-top:2px;font-size:'+12*s+'px">'+(em(c2[0])*12*s<=fit?c2[0]:c2[1])+'</div>':'';
+ return {col:col,k:k?k.k:'',h:'<div class="xh" style="width:'+X+'px">'+(rg?'<div class="xr" style="width:'+rb.toFixed(1)+'px">'+dring(a,44,m)+(tl?'<div class="nd-t" style="font-size:'+tpx+'px">in '+a.t5+'</div>':'')+'</div>':'')
+  +'<div class="dc"><div class="dn nd-o" style="font-size:'+lpx+'px;height:'+Math.round(lpx*1.36)+'px">'+mk(a.mk,a.col,14)+'<span>'+lab+'</span></div>'+(dead?bar(0,null,13,'var(--ink3)'):bar(a.u,a.spent?null:a.g,13,sev(a),a.stale?.45:1))+'<div class="xs nd-c" style="font-size:'+(p?k.px:12*s)+'px">'+sub+'</div>'+l2+'</div>'
+  +'<div style="margin-left:14px;line-height:1;width:'+fW.toFixed(1)+'px;text-align:right;flex:none;opacity:'+(a.stale?.5:1)+'">'+F(f[0],fpx,f[1])+'</div></div>'}}
+const xduet=(X,a,b,cap,s,o)=>{s=s||1;o=o||{};const h1=xh(a,X,s,o),h2=xh(b,X,s,o);return fig(cap+' · column '+Math.round(h1.col)+' / '+Math.round(h2.col)+' dp','<div class="shade"><div class="nc" style="width:'+(X+32)+'px"><div class="top">Cooldown · Pinned usage · expanded</div>'+h1.h+'<div style="height:10px"></div>'+h2.h+'<div class="xs" style="margin-top:10px">Panel: one condition strip, as today</div></div></div>')};
+function sgl(a,C,cap,o){o=o||{};const m=o.m||'vs',f=figOf(a,m),fW=fE(f[0])*32,col=C-72-fW,p=PL(a),k=pick(p,o.b?142:col*.965,1),full=a.n+' · Weekly',lab=cut(o.g&&em(full,1)*13>col-18?a.n:full,col-18,13);
+ return fig(cap+' · column '+Math.round(col)+' dp · '+k.k,'<div class="shade"><div class="nc" style="width:'+(C+32)+'px"><div class="top">Cooldown · Pinned usage</div><div style="display:flex;align-items:center;width:'+C+'px"><div style="margin-right:14px;line-height:0;flex:none">'+dring(a,44,m)+'</div><div class="dc"><div class="dn nd-o" style="font-size:13px;height:19px">'+mk(a.mk,a.col,14)+'<span>'+lab+'</span></div>'+bar(a.u,a.g,13,sev(a))+'<div class="xs nd-c" style="font-size:'+k.px+'px">'+lineH(p,k)+'</div></div><div style="margin-left:14px;line-height:1;width:'+fW.toFixed(1)+'px;text-align:right;flex:none">'+F(f[0],32,f[1])+'</div></div></div></div>')}
+const sglx=(a,X,cap,o)=>{const h=xh(a,X,1,Object.assign({sp:44,l2:1},o));return fig(cap+' · column '+Math.round(h.col)+' dp · '+h.k,'<div class="shade"><div class="nc" style="width:'+(X+32)+'px"><div class="top">Cooldown · Pinned usage · expanded</div>'+h.h+'<div class="xs" style="margin-top:10px">Panel: model limits and strips, as today</div></div></div>')};
+function cols(){const L={tint:'23h 59m ahead',day:'Wed',c:'12:30 PM'},SW=[360,411,420,750],C=w=>w>=600?352:Math.max(w-140,176),rt=(s,t)=>Math.max(44,4.42*(t?11:dpx(11,s))),
+ R=[['Single, collapsed · 32 sp figure · today 142',(w,s)=>C(w)-72-2.046*dpx(32,s)],
+  ['Single, expanded · 44 sp · today 141',(w,s)=>C(w)+40-rt(s)-28-2.046*dpx(44,s)],
+  ['· with the ring’s time line in dp',(w,s)=>C(w)+40-rt(s,1)-28-2.046*dpx(44,s)],
+  ['Duet, expanded · 24 sp · today 186',(w,s)=>C(w)+40-rt(s)-28-2.046*dpx(24,s)],
+  ['· with the ring’s time line in dp',(w,s)=>C(w)+40-rt(s,1)-28-2.046*dpx(24,s)]];
+ return '<table class="t"><tr><th>Derived column in dp beside a signed two-digit figure, and the form "23h 59m ahead · resets Wed 12:30 PM" takes in it · font 1.0 / 1.3 / 2.0</th>'+SW.map(w=>'<th>'+w+' dp</th>').join('')+'</tr>'
+  +R.map(r=>'<tr><td>'+r[0]+'</td>'+SW.map(w=>'<td>'+[1,1.3,2].map(s=>{const c=r[1](w,s),k=pick(L,c*.965,s).k;return '<span class="'+(k==='full'?'ok':/clip/.test(k)?'bad':'drop')+'">'+Math.round(c)+' '+k+'</span>'}).join(' / ')+'</td>').join('')+'</tr>').join('')+'</table>'}
+
+put('nd-x1',()=>xduet(260,T,PE,'AS BUILT · 360 dp phone: the form picked for 186 dp, cut mid-clock (capture 25)',1,{b:1})
+ +xduet(260,T,PE,'DERIVED · the same phone: "resets", then the clock, give; the line ends on its weekday')
+ +xduet(260,L0,PE,'A long name, as shipped: cut inside "· Weekly"')
+ +xduet(260,L0,PE,'Suggested: "· Weekly" gives before the name',1,{g:1}));
+put('nd-x2',()=>xduet(320,T,PE,'AS BUILT · 420 dp phone, font 2.0 (measured ≈121)',2,{b:1})
+ +xduet(320,T,PE,'DERIVED, the ring’s time line in dp, "· Weekly" gives: the floor at 10 sp, whole',2,{t:1,g:1})
+ +xduet(260,T,PE,'AS BUILT · 360 dp phone, font 2.0 (measured 61, capture 29)',2,{b:1})
+ +xduet(260,T,PE,'DERIVED alone: 10 sp, but 61 dp holds a few characters',2)
+ +xduet(260,T,PE,'DERIVED, time line in dp, "· Weekly" gives: the last resort, an ellipsis after the duration',2,{t:1,g:1}));
+put('nd-x3',()=>[[226,326],[220,320],[200,300]].map(w=>xduet(w[0],T,PE,w[0]+' dp of expanded content (a '+w[1]+' dp screen)',1,{g:1})).join(''));
+put('nd-x4',()=>xduet(260,HELD,ATL,'Held · spent: the spent line drops its second clause whole',1,{g:1})
+ +xduet(260,LAB,SIDE,'No 5h (no ring: the column gains 63 dp) · not started',1,{g:1})
+ +xduet(260,PROD,DES,'Sign in · no reading',1,{g:1})
+ +xduet(260,STA,GEM,'Stale · 91%',1,{g:1}));
+put('nd-s',()=>sgl(T,220,'AS BUILT · collapsed, Vs pace: picked for 142',{b:1})
+ +sgl(T,220,'DERIVED · beside "−13%"',{g:1})
+ +sgl(T,220,'DERIVED · Used: a narrower figure, a wider column',{g:1,m:'used'})
+ +sglx(T,260,'AS BUILT · expanded: picked for 141',{b:1})
+ +sglx(T,260,'DERIVED · expanded',{g:1}));
+put('nd-cols',cols);
+})();
+</script>
+<h2 id="rg1">Addendum to 6 and 8 · The tag glyph on Summary rows and on the snapshot</h2>
+<div class="status"><b>Date:</b> 2026-11-11 · <b>Rev 2</b> · <b>Status:</b> <b>Approved by Robin 2026-11-11, as drawn</b>; nothing here is built until Robin approves it (CLAUDE.md §2) · <b>Tracker:</b> CCRM-115 (Row Tag Glyph), a delta to CCRM-110 (Account Tags) and CCRM-112 (Summary Snapshot); the sample is CCRM-113 (Sample Port) · <b>Decisions drawn</b> (Robin, 2026-11-11, final): the glyph goes before the provider mark on Summary rows; there is no "None", every account is Personal or Work; accounts that exist at the upgrade all become Personal, silently. Rev 1's untagged rows, its empty slot and its fork R1 are gone. · <b>Built today:</b> iOS Step I3 has the optional tag and a chip in Settings only; Android Step A4 is not built. Sizes are the build's (<code>SummaryScreen.kt</code>, <code>Summary.swift</code>, <code>SummarySnapshot.swift</code>); the widths printed in the captions are this page's em estimate, not rendered text. Android dp/sp, iOS pt. Moment: Tue 10 Nov, 2:00 PM.</div>
+<p><b>The rule.</b> Wherever the Summary is drawn (two or more accounts) the All · Personal · Work control is in its header and every row leads with its tag's glyph: a 14 dp glyph and 4 dp before the provider mark, 18 dp in all, one mark wide. A person for Personal, a briefcase for Work, in the muted ink (<code>onSurfaceVariant</code>, iOS <code>sub</code>), never a colour, never the word. No row is without one, so marks and names keep one column and there is no empty slot. One-line rows (six or more shown) have no mark; there the glyph (12 dp and 4 dp) sits between the rank disc and the name, and the bar pays for it. The column leaves as one: if any row shown cannot keep its name's floor beside the glyph, or a one-line bar would fall under its minimum, no row draws the glyph and every row is today's. Straight after the upgrade every glyph is the person, and the Work segment is disabled (38%) until an account is marked Work.</p>
+
+<h3>1 · The rows: today, after the upgrade, and with a Work account</h3>
+<div class="scope" id="rg-a"></div>
+<h3>2 · After the upgrade at every width: every account Personal, Work disabled (light, dark)</h3>
+<div class="scope" id="rg-up"></div><div class="scope dk" id="rg-upd"></div>
+<h3>3 · Both tags at every width (light, dark)</h3>
+<div class="scope" id="rg-c"></div><div class="scope dk" id="rg-cd"></div>
+<h3>4 · Under a filter, and the sample</h3>
+<div class="scope" id="rg-b"></div>
+<h3>5 · Where the glyph drops out, and large text (light, dark)</h3>
+<div class="scope" id="rg-d"></div><div class="scope dk" id="rg-dd"></div>
+<table class="t"><tr><th>Surface · width</th><th>List · text column</th><th>Without the glyph (today)</th><th>With it</th><th>The glyph column leaves when</th></tr>
+<tr><td>Android full row · 360 dp phone</td><td>288 · 228</td><td>name room 126 dp</td><td>108 dp</td><td rowspan="3">a name would fall under its floor, 64 dp at font scale 1.0 (or under its own width, if shorter): text column &lt; 121 + pill + figure. A typical row ("Pro", "−13%") needs 184 dp of text, a 316 dp screen. The worst drawn ("Enterprise", "72% left", an eight-letter name) needs 235 dp: it drops on a 360 dp phone and holds on the cover and the inner screen.</td></tr>
+<tr><td>Android full row · Fold 7 cover 411 dp</td><td>339 · 279</td><td>177 dp</td><td>159 dp</td></tr>
+<tr><td>Android full row · Fold 7 inner 750 dp, two columns</td><td>317 · 257</td><td>155 dp</td><td>137 dp</td></tr>
+<tr><td>iOS full row · iPhone 17e 390 pt</td><td>326 · 266</td><td>136 pt</td><td>118 pt</td><td rowspan="2">text column &lt; 182 + pill (plus whatever a figure takes past 48 pt). The worst drawn needs about 256 pt, so an iPhone 17e holds by about 10 pt; iPad never drops.</td></tr>
+<tr><td>iOS full row · iPad list column</td><td>455 portrait, 488 landscape · 395, 428</td><td>265 pt</td><td>247 pt</td></tr>
+<tr><td>Android one-line · 360 dp phone</td><td>288</td><td>bar 49 dp</td><td>33 dp: dropped, the bar stays 49</td><td rowspan="3">the bar would fall under 40 dp (the Duet's floor): a list under 295 dp, a screen under 367 dp. The name (64 dp), the word (90 dp) and the figure (40 dp) never pay.</td></tr>
+<tr><td>Android one-line · cover</td><td>339</td><td>100 dp</td><td>84 dp</td></tr>
+<tr><td>Android one-line · inner</td><td>317</td><td>78 dp</td><td>62 dp</td></tr>
+<tr><td>iOS one-line · iPhone 17e</td><td>326</td><td>bar 71 pt beside "Personal"</td><td>55 pt</td><td>a bar would fall under 50 pt (the built minimum): the widest name over 64 pt on a 17e, 76 pt on a 17 Pro. iPad: never, the bar sits at its 110 pt cap.</td></tr>
+<tr><td>Snapshot card · 360 dp (iOS 300 pt)</td><td>320 (260)</td><td>name about 224 dp; one-line bar 78 dp (64 pt)</td><td>about 208 dp; 62 dp (48 pt)</td><td>never for width: the card has one width and one scale. Whether it draws the glyph at all is R4.</td></tr>
+<tr><td>Who pays</td><td colspan="4">Rev 1 charged these 18 dp only to someone who had tagged an account. Now every list of two or more accounts pays them from the day of the upgrade, so the numbers above are every user's. The header follows: the control is always there, so on a 360 dp phone and an iPhone 17e the sort button is always its glyph ("⇅ ▾"), and from font scale 1.5 the control always wraps under the title.</td></tr>
+<tr><td>Android, font scale s</td><td colspan="4">The name, pill and figure are sp; the mark, the glyph and the gaps are dp. Typical row: 69 + 114.6 × s ≤ text column. 360 dp phone: shown through 1.3. Inner: through 1.5. Cover: through 1.8. At 2.0 it is gone on all three. That is linear scaling (Android 13 and earlier, and what is drawn). Android 14 and later scale large text less than linearly (15 sp is 27 dp at 2.0, not 30), which keeps the glyph a little longer: the cover at 2.0 then lands within 4 dp of the line. So the floor is 64 dp times the name's own scale (its rendered size ÷ 15), measured, never "64 sp" converted. One-line rows keep their dp slots, so their drop width does not move with the font.</td></tr></table>
+<h3>6 · States (light, dark)</h3>
+<div class="scope" id="rg-e"></div><div class="scope dk" id="rg-ed"></div>
+<h3>7 · The snapshot card (light, dark)</h3>
+<div class="scope" id="rg-f"></div><div class="scope dk" id="rg-fd"></div>
+<ul class="ann">
+<li><b>Glyph.</b> Android: Material <code>person</code> / <code>work</code>, outlined, 14 dp on a full row, 12 dp on a one-line row and on the snapshot, tinted <code>onSurfaceVariant</code>. iOS: SF Symbols <code>person</code> / <code>briefcase</code>, regular, the chip's 12 pt symbol in a 14 pt box (11 pt in a 12 pt box on one-line and snapshot rows), <code>sub</code>. 4 dp to the mark (full row) or to the name (one-line). No outline, no fill, no word, never the accent. It belongs to line 1 and dims with it (Android 50%, iOS 60%, the built values). It is not a control: the row still opens the account, and Settings stays the place to change a tag.</li>
+<li><b>Always there.</b> A tag is never absent (a missing stored value reads as Personal), so the slot is never empty and there is no reserve rule. The glyph and the control arrive together with the second account; with one account there is no Summary and neither exists.</li>
+<li><b>After the upgrade.</b> Every row shows the person, accounts named "Teams" or "Work" included, and Work is disabled at 38% until an account is marked Work. Personal is enabled and shows the same rows as All. Nothing is announced (Robin: silent); the chip in Settings › Accounts is where the person gets its word (next section).</li>
+<li><b>One-line rows.</b> The glyph sits between the rank disc and the name. The order mirrors the full row: the round mark in the account's colour (ring, disc), the glyph, then the name. The name's 64 dp, the word's 90 dp and the figure's 40 dp are untouched; the bar, the one flexible column, gives 16 dp. On iOS the name keeps its natural width (as built) and the bar its 50 to 110 pt range.</li>
+<li><b>Drop order, one everywhere.</b> Full row: the name ellipsizes first, as built ("the name gives way before the plan pill"), down to its floor; then the glyph column leaves every row shown; then the name goes on ellipsizing; the pill, the mark and the figure never give way. One-line: the bar shrinks to its floor, then the column leaves. It is measured on the tightest row shown and re-measured when the width, the filter, the Usage display or the font scale changes, so a fold or unfold brings it back. <span class="dev">flag</span> The name floor and the Android 40 dp bar floor are new; the build has neither.</li>
+<li><b>Large text.</b> Android: the glyph stays 14 dp, as the 18 dp mark beside it stays 18 dp; the name's floor grows with the name, so the column leaves earlier (table). iOS: the app's fonts are fixed sizes, so Dynamic Type changes nothing here.</li>
+<li><b>Filter.</b> Under Personal or Work every row shown carries the same glyph; the column stays, so line 1 does not move when the filter changes.</li>
+<li><b>Sample</b> (CCRM-113 (Sample Port)): Teams is Work, Personal is Personal, Lab is Work. A Fable fit call: rev B §9 had Lab untagged, which no longer exists. Both segments are then live, and the first list a reviewer sees mixes both glyphs.</li>
+<li><b>Snapshot.</b> The card draws the glyph column only while the rows on it carry both tags, which can only happen under All. Under a filter the header already says "Work accounts" or "Personal accounts". Under All with one tag (every upgraded install until someone marks an account) a column of identical persons tells the person receiving the card nothing, so the card is exactly rev B's. Revised from rev 1's "under All, always", which had no single-tag state to consider. The card still shows names only, never e-mail addresses.</li>
+<li><b>TalkBack / VoiceOver.</b> The name's node reads "Teams, Work account" or "Lab, Personal account" on every row, whether or not the glyph is drawn. The glyph image itself is hidden from accessibility, so the tag is spoken once. New strings: "Work account", "Personal account".</li>
+<li><b>Not touched.</b> The iPad sidebar's account rows, the tab strip, the account tile, the notification, the widgets and the per-account share card carry no tag. The Pace map is unchanged.</li></ul>
+<div class="spec"><b>Spec changes this implies.</b> <code>app.md</code> "New §2.8 The Summary (All tab) — Android": "Line 1: mark 18 dp in the accent · name 15 sp …" gains the leading glyph; "the name gives way before the plan pill" gains the floor and the list-wide drop; "From six accounts, one-line rows … name 64 dp, 8 dp bar" gains the glyph before the name and the 40 dp bar floor. "Summary rows (<code>SummaryRow</code>, iOS)": "Nothing sits beside the name but the plan chip" and "Rows of the one-line form … are unchanged". Step I3: "The chip is on no other surface." becomes "its glyph alone leads Summary rows, and the snapshot's rows while both tags are on the card"; the Share snapshot bullet's "mark 14 pt, name 13 pt semibold" and "one line each (26 pt): mark, name" gain the glyph. "v2.0 feedback on Android": the A4 entry carries the same when it is built. <code>BEHAVIOR-MOBILE.md</code> §6, the row-glyph bullet: its placeholder sentence is replaced by the slot, the drop order and the snapshot rule, and "a row of the share snapshot under All" becomes "while the rows shown carry both tags". No core change, no fixture. Code: <code>SummaryScreen.kt</code> (<code>SummaryRow</code>, <code>CompactSummaryRow</code>), <code>ui/SummaryRows.kt</code> (the fit rule, pure), <code>share/ShareCard.kt</code> (A4's snapshot); <code>Summary.swift</code> (<code>SummaryRow</code>, <code>SummaryOneLineRow</code>), <code>SummarySnapshot.swift</code> (<code>FullRow</code>, <code>OneLine</code>), <code>AccountTags.swift</code> (<code>TagGlyph</code>).</div>
+<h3 id="rg-q">Forks (row glyph)</h3>
+<table class="t"><tr><th>#</th><th>Question</th><th>Options</th><th>Recommendation</th></tr>
+<tr><td>R1</td><td colspan="3">Withdrawn. There are no untagged rows, so there is no empty slot to keep or drop.</td></tr>
+<tr><td>R2 · Robin</td><td>A row that cannot hold the glyph</td><td><b>A</b> the name ellipsizes to its floor, then the column leaves the whole list. <b>B</b> row by row: only that row loses its glyph and shifts left. <b>C</b> the glyph leaves before a name loses a single letter.</td><td><b>A</b>: tidy, and rare at scale 1.0. B keeps more glyphs but leaves one ragged row; C lets one long name switch the column off.</td></tr>
+<tr><td>R4 · Robin</td><td>The snapshot card</td><td><b>A</b> the glyph only while the card's rows carry both tags. <b>B</b> under All always, also when every row is the same (rev 1's pick). <b>C</b> always, filters included: the card is the screen. <b>D</b> never on the card.</td><td><b>A</b>: on a shared card the glyph earns its place only where it tells rows apart.</td></tr>
+<tr><td>R3 · fit call</td><td>Under a Personal or Work filter, on screen</td><td><b>A</b> keep the glyph on every row. <b>B</b> hide the column under a filter.</td><td><b>A</b>: redundant, but nothing jumps when the filter changes.</td></tr>
+<tr><td>R5 · fit call</td><td>Six rows on a 360 dp phone</td><td><b>A</b> bar floor 40 dp: no glyph on one-line rows below a 367 dp screen. <b>B</b> floor 32 dp: the glyph stays and the bar is 33 dp.</td><td><b>A</b>: the bar says more than the glyph, and the filter is one tap above.</td></tr>
+<tr><td>R6 · fit call</td><td>Large text on Android</td><td><b>A</b> the glyph stays 14 dp, like the mark. <b>B</b> it grows with the font, and leaves earlier (already at 1.3 on a 360 dp phone).</td><td><b>A</b>.</td></tr>
+<tr><td>R7 · fit call</td><td>The glyph on a one-line row</td><td><b>A</b> between the rank disc and the name. <b>B</b> before the disc.</td><td><b>A</b>: the disc stays the list's left anchor, as the ring does on a full row.</td></tr>
+<tr><td>R8 · fit call</td><td>The sample's tags</td><td><b>A</b> Teams Work, Personal Personal, Lab Work. <b>B</b> Lab Personal.</td><td><b>A</b>.</td></tr></table>
+<h3>Unverified (row glyph)</h3>
+<ul class="ann"><li>Every width here is the em estimate, not measured text. The close calls need the build's own measurement: an iPhone 17e's worst row, "Research" on a 17e one-line list with about 2 pt to spare, and the cover at font 2.0 under Android 14's scaling.</li>
+<li>The iOS plan chip's width is modelled from the I3 captures. The built iOS one-line name never truncates; how a very long name renders on a 17e today is not captured and is outside this delta. The built Android one-line row at font scale 2.0 is not captured. iPhone SE (375 pt) is not checked.</li>
+<li>iOS rows are drawn with rev B's row helper, so their bar is drawn at the Android height; the widths, which are what this section decides, are the build's.</li>
+<li>The Android "today" header (plain "your order", no control) is rev B §6's BEFORE drawing; the A3 build was not opened to confirm it.</li>
+<li>This section's script was written without a browser: check that every figure renders with no error box.</li></ul>
+<style>
+.rg-p{font-weight:700;color:#fff;border-radius:4px;padding:0 5px;font-size:10px;margin-right:5px}.rg-pa{background:#2a7d4f}.rg-pi{background:#2f5d9a}
+.l1.rg-l1{gap:7px}.l1.rg-l1 .nm{font-weight:400}
+.rg-g{flex:none;display:block;color:var(--ink2)}
+.rg-o{display:flex;align-items:center;padding:7px 0;border-top:1px solid var(--line);white-space:nowrap}
+.rg-d{flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#121212;line-height:1}
+.rg-w{flex:none;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+.card.rg-ios{background:#fff;border-radius:18px;font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif}.dk .card.rg-ios{background:#1C1C1E}.card.rg-ios .pill{border-color:transparent;background:rgba(var(--mink),.1);font-weight:600}
+.rg-sn{background:var(--bg);color:var(--ink);padding:20px;outline:1px solid var(--line)}
+.rg-u{height:110px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink2);border:1px dashed var(--ink3);border-radius:8px;font-size:11px;padding:0 14px}
+</style>
+<script>
+(function(){function run(){
+const M='−',NOW=2*1440+840,WK=10080,DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const ink=a=>'rgba(var(--mink),'+a+')';
+const put=(id,fn)=>{const el=document.getElementById(id);if(!el)return;try{el.innerHTML=fn()}catch(e){el.innerHTML='<div class="err">'+id+': '+e.message+'</div>'}};
+const fig=(c,h)=>'<figure><figcaption>'+c+'</figcaption>'+h+'</figure>';
+function mk(k,c,s){let i='';if(k==='claude'){for(let r=0;r<10;r++)i+='<path d="M12 12L12 2.6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" transform="rotate('+(r*36+(r%2?7:0))+' 12 12)"/>'}else if(k==='gpt'){for(let r=0;r<3;r++)i+='<ellipse cx="12" cy="7.2" rx="3.5" ry="5.8" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate('+r*120+' 12 12)"/>'}else i='<path d="M12 2C12.8 8 16 11.2 22 12C16 12.8 12.8 16 12 22C11.2 16 8 12.8 2 12C8 11.2 11.2 8 12 2Z" fill="currentColor"/>';
+ return '<svg class="mk" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" style="color:'+c+'">'+i+'</svg>'}
+const EMC=c=>/[0-9]/.test(c)?.56:/[iltrfj]/.test(c)?.30:/[mw]/.test(c)?.86:/[a-z]/.test(c)?.54:/[WMO]/.test(c)?.80:/[A-Z]/.test(c)?.62:c===' '?.25:c==='·'?.29:c===':'?.23:c==='%'?.46:(c==='+'||c===M)?.58:.5;
+const em=(s,b)=>[...s].reduce((a,c)=>a+EMC(c),0)*(b?1.03:1);
+const figW=(t,sz)=>(em(t.replace('%',''))+(t.indexOf('%')<0?0:.27))*sz*1.03;
+const clk=m=>{m=((m%1440)+1440)%1440;const h=Math.floor(m/60);return ((h+11)%12+1)+':'+String(m%60).padStart(2,'0')+' '+(h<12?'AM':'PM')};
+const at=t=>{const m=((t%WK)+WK)%WK;return {d:DN[Math.floor(m/1440)],c:clk(m),same:Math.floor(t/1440)===Math.floor(NOW/1440)}};
+const dur=n=>{const d=Math.floor(n/1440),h=Math.floor(n%1440/60),m=n%60;return d>0?d+'d '+h+'h':h>0?h+'h '+m+'m':m+'m'};
+function PL(a){if(a.u==null||a.spent||a.dash)return null;const d=a.g-a.u,r=at(NOW+Math.round((100-a.g)/100*WK)),day=r.same?'':r.d;
+ if(Math.abs(d)<1)return {on:1,tint:'On the mark',cls:'',day:day,c:r.c};
+ const n=Math.floor(Math.abs(d)/100*WK),un=d>0;return {tint:dur(n)+(un?' behind':' ahead'),cls:un?'g':'r',day:day,c:r.c}}
+const RS=a=>{const r=at(NOW+Math.round((100-a.g)/100*WK));return (r.same?'':r.d+' ')+r.c};
+function l3of(a,T,sp){if(a.l3)return Array.isArray(a.l3)?(em(a.l3[0])*sp<=T?a.l3[0]:a.l3[1]):a.l3;const p=PL(a);if(!p)return '';
+ const lead=p.on?p.tint:'<b class="'+p.cls+'">'+p.tint+'</b>',d=p.day?p.day+' ':'',tl=[' · resets '+d+p.c,' · '+d+p.c].concat(p.day?[' · '+p.day]:[]);
+ for(const t of tl)if((em(p.tint,!p.on)+em(t))*sp<=T)return lead+t;return lead}
+const sev=a=>a.u>=100?'var(--red)':a.u>90?'var(--org)':a.u>80?'var(--yel)':a.col;
+const F=(t,sz,col)=>'<span class="fg" style="font-size:'+sz+'px;color:'+col+'">'+t.replace('%','<small>%</small>')+'</span>';
+function figOf(a,mode){if(a.u==null||a.dash)return ['—','var(--ink3)'];if(a.spent)return [mode==='left'?'0%':'100%','var(--red)'];
+ if(mode==='vs'){const v=Math.trunc(a.g-a.u);return [v===0?'0%':(v>0?'+':M)+Math.abs(v)+'%',v>0?'var(--vg)':v<0?'var(--vr)':'var(--ink)']}
+ return [mode==='left'?(100-a.u)+'% left':a.u+'%',sev(a)]}
+function ring(S,pct,tick,o){o=o||{};const c=S/2,sw=(S<=48?.1:.13)*S,R=.39*S,P=(r,f)=>(c+r*Math.sin(6.2832*f)).toFixed(1)+','+(c-r*Math.cos(6.2832*f)).toFixed(1),arc=(a,b)=>{if(b-a>=.9999)b=a+.9999;return 'M'+P(R,a)+'A'+R+','+R+' 0 '+(b-a>.5?1:0)+' 1 '+P(R,b)};
+ let s='<svg width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" style="flex:none;opacity:'+(o.dim||1)+'"><circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="none" stroke="'+ink(o.grey||o.na?.22:.16)+'" stroke-width="'+sw+'"/>';
+ if(o.na){const k=.12*S;return s+'<path d="M'+(c-k)+','+(c-k)+'L'+(c+k)+','+(c+k)+'M'+(c+k)+','+(c-k)+'L'+(c-k)+','+(c+k)+'" stroke="'+ink(.45)+'" stroke-width="1.8" stroke-linecap="round"/></svg>'}
+ if(pct==null)return s+'<text x="'+c+'" y="'+(c+.1*S)+'" text-anchor="middle" font-size="'+(.29*S)+'" font-weight="700" fill="'+ink(.5)+'">—</text></svg>';
+ const col=pct>=100?'var(--red)':pct>90?'var(--org)':pct>80?'var(--yel)':o.col;
+ if(!o.grey){s+='<path d="'+arc(0,Math.max(pct/100,.09))+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';
+  if(tick!=null){if(pct>tick+3)s+='<path d="'+arc(tick/100,pct/100)+'" fill="none" stroke="var(--red)" stroke-width="'+sw+'"/>';
+   s+='<path d="M'+P(R-sw,tick/100)+'L'+P(R+sw,tick/100)+'" stroke="'+ink(.9)+'" stroke-width="'+Math.max(1.5,S/32)+'" stroke-linecap="round"/>'}}
+ const vs=o.vs&&tick!=null&&!o.grey?Math.trunc(tick-pct):null,txt=(vs!=null?Math.abs(vs):pct)+'%',fs=(txt.length>=4?.24:.29)*S,fc=o.grey?ink(.45):vs!=null?(vs>0?'var(--vg)':vs<0?'var(--vr)':'var(--ink)'):pct>90?col:'var(--ink)';
+ return s+'<text x="'+c+'" y="'+(c+.36*fs).toFixed(1)+'" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="700" fill="'+fc+'">'+txt.slice(0,-1)+'<tspan font-size="'+(fs*.58).toFixed(1)+'">%</tspan></text></svg>'}
+function bar(p,t,h,col,op){const over=t!=null&&p>t+3;return '<div class="bar" style="height:'+h+'px;--bc:'+col+';opacity:'+(op||1)+';margin-top:'+(h>8?4:1)+'px">'+(p>0?'<div class="fill" style="width:'+Math.max(p,3)+'%"></div>':'')+(over?'<div class="rz" style="left:'+t+'%;width:'+(p-t)+'%"></div>':'')+(t!=null?'<div class="tk" style="left:'+t+'%"></div>':'')+'</div>'}
+const dring=(a,S,mode,ns)=>a.r==='none'?ring(S,null):a.r==null?ring(S,null,null,{na:1}):ring(S,a.r[0],a.r[1],{col:a.col,grey:a.spent,vs:mode==='vs',dim:a.stale&&!ns?.45:1});
+// the tag glyphs: rev B's TG paths, as a flex item in the muted ink. Anything that is not Work draws the person, as storage reads it.
+const GP='<circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="2"/>',GW='<rect x="2.5" y="6.5" width="19" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 6.5V4.5h7v2M2.5 12h19" fill="none" stroke="currentColor" stroke-width="2"/>';
+const gslot=(a,sz,gap)=>'<svg class="rg-g" style="width:'+sz+'px;height:'+sz+'px;margin-right:'+(4-gap)+'px" viewBox="0 0 24 24">'+(a.tag==='Work'?GW:GP)+'</svg>';
+const A=o=>Object.assign({plan:'Pro',tag:'Personal'},o),Wk='Work';
+const AC={
+ teams:A({n:'Teams',mk:'claude',col:'var(--claude)',plan:'Max',r:[34,52],u:52,g:39,tag:Wk}),
+ pers:A({n:'Personal',mk:'claude',col:'var(--pers)',r:[12,60],u:50,g:68}),
+ gpt:A({n:'ChatGPT',mk:'gpt',col:'var(--gpt)',plan:'Plus',r:[22,35],u:6,g:30}),
+ gem:A({n:'Gemini',mk:'gem',col:'var(--gem)',r:[40,55],u:91,g:83,tag:Wk}),
+ lab:A({n:'Lab',mk:'claude',col:'var(--lab)',plan:'Ultra',r:null,u:61,g:61,tag:Wk}),
+ atlas:A({n:'Atlas',mk:'claude',col:'var(--rose)',plan:'Max',r:[12,60],u:100,g:75,spent:1,word:'Out · Thu',l3:'<span class="r">Out until Thu 8:00 AM</span>',tag:Wk}),
+ held:A({n:'Work',mk:'claude',col:'var(--claude)',plan:'Team',r:[93,83],u:30,g:44,word:'Held · 3:40 PM',wc:'var(--org)',l3:['Held · back at 3:40 PM · resets Sat','Held · back at 3:40 PM'],tag:Wk}),
+ prod:A({n:'Product',mk:'claude',col:'var(--pers)',r:'none',u:null,sw:'Sign in again',l3:'<span class="r">Sign in again</span>'}),
+ des:A({n:'Design',mk:'gpt',col:'var(--gpt)',plan:'Team',r:'none',u:null,sw:'No reading',l3:'No reading yet',tag:Wk}),
+ side:A({n:'Side',mk:'gem',col:'var(--gem)',r:[5,20],u:3,g:0,dash:1,l3:'Not started yet'}),
+ stale:A({n:'Studio',mk:'claude',col:'var(--lab)',r:[48,70],u:44,g:57,stale:1,tag:Wk}),
+ long:A({n:'Personal Max 20x',mk:'claude',col:'var(--pers)',plan:'Max 20x',r:[12,60],u:50,g:68}),
+ ops:A({n:'Ops',mk:'claude',col:'var(--rose)',r:[20,30],u:33,g:36,tag:Wk}),
+ res:A({n:'Research',mk:'gpt',col:'var(--lab)',plan:'Enterprise',r:[10,40],u:28,g:33,tag:Wk}),
+ cli:A({n:'Client',mk:'gem',col:'var(--pers)',r:[30,50],u:74,g:90,tag:Wk}),
+ mkt:A({n:'Marketing',mk:'gpt',col:'var(--gpt)',plan:'Team',r:[15,40],u:41,g:52,tag:Wk})};
+// rev B §9's three sample accounts, with the tags this page gives them
+const SA=[A({n:'Teams',mk:'claude',col:'var(--claude)',plan:'Max',r:[46,46],u:18,g:43,tag:Wk}),A({n:'Personal',mk:'gpt',col:'var(--gpt)',plan:'Plus',r:[26,68],u:9,g:61}),A({n:'Lab',mk:'gem',col:'var(--gem)',r:[62,40],u:64,g:52,tag:Wk})];
+function shead(W,o){o=o||{};if(o.v19)return '<div class="sh" style="width:'+W+'px"><b>Weekly</b><span style="flex:1"></span><span class="mut" style="font-size:12px">your order</span></div>';
+ const seg=o.tags?'<span class="seg"'+(o.wrap?' style="width:100%"':'')+'>'+['All','Personal','Work'].map(t=>'<i class="'+(t===(o.f||'All')?'on':'')+(o.dis===t?' off':'')+'"'+(o.wrap?' style="flex:1;text-align:center"':'')+'>'+t+'</i>').join('')+'</span>':'';
+ return '<div class="sh" style="width:'+W+'px"><b>Weekly</b>'+(o.wrap?'':seg)+'<span style="flex:1"></span><span class="sort">'+(o.icon?'⇅':(o.order||'your order'))+' ▾</span>'+(o.wrap?'<div style="flex-basis:100%">'+seg+'</div>':'')+'</div>'}
+// full row: rev B's srow with the build's 7 dp gaps and Regular name, plus the glyph before the mark
+function row(a,o){const k=o.k||1,mode=o.mode||'vs',f=figOf(a,mode),dead=a.u==null||a.dash,x=Math.abs(a.g-a.u),
+ cap=dead||a.spent?'':'<div class="cap" style="font-size:'+11.5*k+'px;overflow:hidden;text-overflow:ellipsis">'+(mode==='vs'?'<b>'+a.u+'% used</b> · '+a.g+'% pace mark':'<b>'+a.g+'% pace mark</b> · '+(x<1?'on it':x+(a.g>a.u?' under':' over')))+'</div>';
+ return '<div class="srow"'+(o.ios&&a.spent?' style="opacity:.6"':'')+'><div style="flex:none;line-height:0">'+dring(a,48,mode,1)+'</div><div class="dc'+(!o.ios&&(a.u==null||a.spent)?' dim':'')+'"><div class="l1 rg-l1" style="height:'+22*k+'px">'+(o.col?gslot(a,14,7):'')+mk(a.mk,a.col,18)+'<span class="nm" style="font-size:'+15*k+'px">'+a.n+'</span>'+(a.plan?'<span class="pill" style="font-size:'+11*k+'px;line-height:'+16*k+'px">'+a.plan+'</span>':'')+'<span style="margin-left:auto;flex:none">'+F(f[0],17*k,f[1])+'</span></div>'+(dead?bar(0,null,10,'var(--ink3)'):bar(a.u,a.spent?null:a.g,10,sev(a)))+cap+'<div class="l3" style="font-size:'+13*k+'px">'+l3of(a,o.T,13*k)+'</div></div></div>'}
+// one-line row as built: disc, [glyph], name, bar, word, figure
+function orow(a,i,o){const ios=o.ios,f=figOf(a,o.mode||'vs'),dead=a.u==null||a.dash,p=PL(a),gap=ios?8:7,d=ios?16:17,h=ios?7:8,
+ w=a.spent?[a.word,'var(--ink2)',400]:a.u==null?['No reading','var(--ink2)',400]:a.word&&a.wc?[a.word,a.wc,600]:a.dash?['Not started','var(--ink2)',400]:p.on?[p.tint,'var(--ink)',600]:[p.tint,p.cls==='g'?'var(--vg)':'var(--vr)',600];
+ return '<div class="rg-o" style="gap:'+gap+'px'+(a.u==null||a.spent?';opacity:'+(ios?.6:.5):'')+'"><span class="rg-d" style="width:'+d+'px;height:'+d+'px;background:'+a.col+'">'+(i+1)+'</span>'+(o.col?gslot(a,12,gap):'')+'<span class="nm" style="font-size:15px;flex:none;'+(ios?'min-width:44px':'width:64px')+'">'+a.n+'</span><div style="flex:1 1 0;min-width:'+(ios?'50px;max-width:110px':'0')+'">'+(dead?bar(0,null,h,'var(--ink3)'):bar(a.u,a.spent?null:a.g,h,sev(a)))+'</div><span class="rg-w" style="width:'+(ios?96:90)+'px;color:'+w[1]+';font-weight:'+w[2]+'">'+w[0]+'</span><span style="flex:none;width:'+(ios?52:40)+'px;text-align:right">'+F(f[0],15,f[1])+'</span></div>'}
+// the list-wide rule: every row shown keeps min(its name, the floor) beside the 18 dp glyph
+function fit(rows,T,o){const k=o.k||1,mode=o.mode||'vs';let w=null;
+ rows.forEach(a=>{const fw=figW(figOf(a,mode)[0],17*k),need=Math.min(em(a.n)*15*k,64*k),pw=a.plan?(o.ios?em(a.plan)*12.4+12:em(a.plan)*11*k+12)+7:0,room=o.ios?T-63-pw-Math.max(48,fw):T-50-pw-fw;
+  if(!w||room-need<w.room-w.need)w={n:a.n,room:room,need:need}});
+ w.ok=w.room>=w.need;return w}
+// o.before: 'v19' = Android today (plain header), 'i3' = iOS as built with no account tagged (sort menu, no control); neither draws a glyph
+function list(W,rows,o){o=o||{};const ios=o.ios,u=ios?' pt':' dp',T=W-60,one=rows.length>=6,want=!o.before&&!o.nocol;let ok=true,note='';
+ if(want){if(one){if(ios){const wn=Math.max.apply(null,rows.map(a=>Math.max(44,em(a.n)*15))),b=W-212-wn;ok=b>=50;note=' — widest name '+Math.round(wn)+' pt: bar '+Math.round(Math.min(110,b+16))+' → '+Math.round(Math.min(110,b))+' pt'+(ok?'':', under 50: glyph column dropped')}
+   else{ok=W-255>=40;note=' — bar '+(W-239)+' → '+(W-255)+' dp'+(ok?'':', under 40: glyph column dropped, the bar stays '+(W-239))}}
+  else{const w=fit(rows,T,o);ok=w.ok;note=' — tightest name, '+w.n+': '+Math.round(w.room)+u+', needs '+Math.round(w.need)+(ok?'':': glyph column dropped')}}
+ const ro=Object.assign({},o,{T:T,col:want&&ok});
+ return {note:note,html:'<div class="card'+(ios?' rg-ios':'')+'" style="width:'+(W+32)+'px">'+shead(W,{v19:o.before==='v19',tags:!o.before,f:o.f,dis:o.dis,icon:W<300||(ios&&W<340),wrap:(o.k||1)>=1.5,order:o.order})+rows.map((a,i)=>one?orow(a,i,ro):row(a,ro)).join('')+'</div>'}}
+const L=(cap,W,rows,o)=>{const r=list(W,rows,o);return fig(cap+r.note,r.html)};
+// rev B's snapshot card; the Pace map is an "unchanged" box, as rev B item 9 marks unchanged parts
+function snap(Ls,o){o=o||{};const ios=o.ios,one=Ls.length>=6,g=(a,gap)=>o.col?gslot(a,12,gap):'',
+ rw=a=>{const f=figOf(a,'used'),dead=a.u==null||a.dash,p=PL(a),fc=ios?(a.spent?'var(--red)':'var(--ink)'):f[1],rg=dring(a,32,'used'),
+  sp=a.spent?'<span class="r">'+(one?a.word:'Out until Thu 8:00 AM')+'</span>':dead?(a.sw||''):a.stale?'Stale':(p.on?p.tint:'<b class="'+p.cls+'">'+p.tint+'</b>');
+  if(one)return '<div style="display:flex;align-items:center;gap:8px;height:26px;font-size:12.5px'+(a.u==null?';opacity:.5':'')+'">'+g(a,8)+mk(a.mk,a.col,14)+'<span class="nm" style="width:64px;font-weight:600">'+a.n+'</span><div style="flex:1">'+(dead?bar(0,null,7,'var(--ink3)'):bar(a.u,a.spent?null:a.g,7,sev(a)))+'</div><span style="width:92px;font-size:10.5px;white-space:nowrap">'+sp+'</span><span style="width:40px;text-align:right">'+F(f[0],15,fc)+'</span></div>';
+  return '<div style="display:flex;gap:10px;align-items:center;margin-top:12px'+(a.u==null?';opacity:.5':'')+'">'+(ios?rg.replace(/<text[\s\S]*?<\/text>/,''):rg)+'<div class="dc"><div class="dn" style="font-size:13px;height:20px">'+g(a,4)+mk(a.mk,a.col,14)+'<span class="nm">'+a.n+'</span><span style="margin-left:auto">'+F(f[0],17,fc)+'</span></div>'+(dead?bar(0,null,8,'var(--ink3)'):bar(a.u,a.spent?null:a.g,8,sev(a)))+'<div style="display:flex;justify-content:space-between;font-size:10.5px;margin-top:4px"><span>'+sp+'</span><span class="mut">'+(dead?'':'Resets '+RS(a))+'</span></div></div></div>'};
+ return '<div class="rg-sn" style="width:'+(ios?300:360)+'px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">'+(o.title||'All accounts')+'</b><span class="mut" style="font-size:11px">'+(o.order||'your order')+'</span></div><div style="font-size:11px;opacity:.6">as of 2:00 PM, Tue Nov 10</div>'+Ls.map(rw).join('')+'<div style="border-top:1px solid var(--line);margin:14px 0 6px"></div><div style="font-size:10.5px;margin-bottom:2px">Pace map</div><div class="rg-u">Pace map, 200 '+(ios?'pt':'dp')+' high, unchanged (rev B §8) and drawn short here: the layers chosen on screen, and its foot line</div><div style="font-size:9.5px;letter-spacing:.06em;opacity:.45;margin-top:10px">COOLDOWN</div></div>'}
+const AN='<span class="rg-p rg-pa">Android</span>',IO='<span class="rg-p rg-pi">iOS</span>';
+// P: the account as it reads after the upgrade (nothing stored = Personal)
+const P=a=>Object.assign({},a,{tag:'Personal'}),UP={dis:'Work'},T3=[AC.teams,AC.lab,AC.pers],SIX=[AC.teams,AC.pers,AC.gpt,AC.gem,AC.lab,AC.atlas],WF=[AC.teams,AC.held,AC.atlas],WORST=[AC.teams,AC.res,AC.pers],SW=[AC.gem,AC.stale,AC.atlas,AC.des],T3P=T3.map(P),SIXP=SIX.map(P);
+put('rg-a',()=>L(AN+'cover 411 dp, list 339 · TODAY (A4 not built): no control, no glyph',339,T3P,{before:'v19'})
+ +L(AN+'cover, list 339 · AFTER THE UPGRADE: every account Personal, Work disabled',339,T3P,UP)
+ +L(AN+'cover, list 339 · once Teams and Lab are marked Work',339,T3)
+ +L(IO+'iPhone 17e 390 pt, list 326 · TODAY, as built (Step I3) with no account tagged',326,T3P,{ios:1,before:'i3'})
+ +L(IO+'iPhone 17e, list 326 · AFTER THE UPGRADE',326,T3P,{ios:1,dis:'Work'})
+ +L(IO+'iPhone 17e, list 326 · once Teams and Lab are marked Work',326,T3,{ios:1})
+ +L(AN+'cover, list 339 · six rows, one line each: the glyph between the rank disc and the name',339,SIX)
+ +L(IO+'iPhone 17e, list 326 · six rows',326,SIX,{ios:1}));
+const W5=[[AN,'360 dp phone, list 288',288],[AN,'Fold 7 cover 411 dp, list 339',339],[AN,'Fold 7 inner 750 dp, two columns: list column 317 (the map column is unchanged)',317],[IO,'iPhone 17e 390 pt, list 326',326,1],[IO,'iPad, list column 455 pt (portrait; 488 in landscape)',455,1]];
+const widths=(R3,R6,o,n)=>()=>[R3,R6].map((rows,j)=>W5.slice(0,n).map(w=>L(w[0]+w[1]+(j?' · six rows':''),w[2],rows,Object.assign({ios:w[3]},o))).join('')).join('');
+const up=widths(T3P,SIXP,UP,4),mix=widths(T3,SIX,{},5);
+put('rg-up',up);put('rg-upd',up);put('rg-c',mix);put('rg-cd',mix);
+put('rg-b',()=>L(AN+'cover 339 · Work chosen · KEEP, recommended: every row has the same glyph and nothing moves when the filter changes',339,WF,{f:'Work'})
+ +L(AN+'cover 339 · Work chosen · alternative: the column hides under a filter, so line 1 jumps 18 dp on each switch',339,WF,{f:'Work',nocol:1})
+ +L(AN+'cover 339 · after the upgrade, Personal chosen: the same rows as All',339,T3P,{f:'Personal',dis:'Work'})
+ +L(AN+'cover 339 · the sample: Teams Work, Personal Personal, Lab Work',339,SA)
+ +L(IO+'iPhone 17e, list 326 · the sample',326,SA,{ios:1}));
+const drops=()=>L(AN+'360 dp phone, list 288 · Usage display "Left" beside a long plan pill',288,WORST,{mode:'left'})
+ +L(AN+'cover, list 339 · the same list holds',339,WORST,{mode:'left'})
+ +L(AN+'360 dp phone, list 288 · a long name ellipsizes first, as built, and the glyph stays while the name keeps 64 dp',288,[AC.long,AC.teams,AC.lab])
+ +L(AN+'360 dp phone, list 288 · font scale 1.3',288,T3,{k:1.3})
+ +L(AN+'360 dp phone, list 288 · font scale 2.0 (the control wraps under the title)',288,T3,{k:2})
+ +L(AN+'cover, list 339 · font scale 2.0',339,T3,{k:2})
+ +L(AN+'cover, list 339 · font scale 2.0 after the upgrade: the wrapped control with Work disabled',339,T3P,{k:2,dis:'Work'})
+ +L(IO+'iPhone 17e, list 326 · six rows, one name of nine letters',326,SIX.slice(0,5).concat([AC.mkt]),{ios:1})
+ +L(IO+'iPhone 17e, list 326 · largest Dynamic Type: the fonts are fixed sizes, nothing changes',326,T3,{ios:1});
+put('rg-d',drops);put('rg-dd',drops);
+const states=()=>L(AN+'cover 339 · spent (line 1, bar and words at 50%, the glyph with them), signed out, no reading, held',339,[AC.atlas,AC.prod,AC.des,AC.held])
+ +L(AN+'cover 339 · a stale reading (the row has no stale style of its own), not started, a long name',339,[AC.stale,AC.side,AC.long])
+ +L(AN+'cover 339 · seven rows, one line each: spent and no reading at 50%, held, a long name in its 64 dp slot',339,[AC.teams,AC.pers,AC.atlas,AC.prod,AC.held,AC.lab,AC.long])
+ +L(IO+'iPhone 17e, list 326 · spent (the whole row at 60%, as built), signed out, held',326,[AC.atlas,AC.prod,AC.held],{ios:1});
+put('rg-e',states);put('rg-ed',states);
+const snaps=()=>fig(AN+'card 360 dp · All, both tags on the card: glyph 12 dp before the mark',snap([AC.teams,AC.lab,AC.pers,AC.atlas],{col:1}))
+ +fig(AN+'card 360 dp · All after the upgrade · RECOMMENDED: one tag on the card, so no glyph; the card is rev B’s',snap(T3P))
+ +fig(AN+'card 360 dp · All after the upgrade · alternative: a person on every row',snap(T3P,{col:1}))
+ +fig(AN+'card 360 dp · Work filter · RECOMMENDED: no glyph, the header says "Work accounts"; stale, spent, no reading',snap(SW,{title:'Work accounts',order:'most room first'}))
+ +fig(AN+'card 360 dp · Work filter · alternative: a briefcase on every row; it reads, and repeats the header',snap(SW,{title:'Work accounts',order:'most room first',col:1}))
+ +fig(AN+'card 360 dp · All, eight rows, one line each: bar 78 → 62 dp',snap(SIX.concat([AC.ops,AC.cli]),{col:1}))
+ +fig(IO+'card 300 pt · All, both tags: ring without a figure and an ink figure, as built',snap(T3,{col:1,ios:1}));
+put('rg-f',snaps);put('rg-fd',snaps);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
+</script>
+<h2 id="ta1">Addendum to 6 and 9 · Choosing the tag when an account is added, and changing it later</h2>
+<div class="status"><b>Date:</b> 2026-11-11 · <b>Status:</b> <b>Approved by Robin 2026-11-11, as drawn</b>; nothing here is built until Robin approves it (CLAUDE.md §2) · <b>Tracker:</b> a delta to CCRM-110 (Account Tags); the sample row is CCRM-113 (Sample Port) · <b>Decisions drawn</b> (Robin, 2026-11-11, final): there is no "None"; the tag is chosen when the account is added, Personal pre-selected, on both platforms; "Tag…" changes it later; accounts that exist at the upgrade become Personal, silently; the Settings chip is on every account. · <b>Built today:</b> iOS Step I3 has None · Personal · Work in its pickers and a chip only on tagged rows; Android Step A4 is not built. Strings and sizes of existing elements are the build's (<code>SettingsScreen.kt</code>, <code>DeviceCodeCopy.kt</code>, <code>SignInSheets.swift</code>, <code>SettingsHistory.swift</code>, <code>AccountTags.swift</code>). A dashed amber outline marks what is new or changed. Widths are the em estimate. Android dp/sp, iOS pt.</div>
+<p><b>How adding works today.</b> Android: Settings › Accounts › "+ Add account" opens a bottom sheet; a tap on a provider row creates the account at once (a card with a default name, not signed in) and starts its sign-in: the browser for Claude and Gemini, the code sheet for ChatGPT. The first account is never added, because one Claude card always exists. iOS: the account is created only when sign-in succeeds; "Add account" (Settings, or the ellipsis menu) opens the sheet and a row opens that provider's sign-in sheet; on the first-launch screen three buttons open the sign-in sheets directly.</p>
+
+<h3>1 · Add account: three places the choice could sit</h3>
+<div class="scope" id="ta-a"></div>
+<div class="scope" id="ta-a2"></div>
+<h3>2 · Placement (i) in its states (light, dark)</h3>
+<div class="scope" id="ta-b"></div><div class="scope dk" id="ta-bd"></div>
+<h3>3 · After the tap: the code flow, the first account, signing in again</h3>
+<div class="scope" id="ta-c"></div>
+<h3>4 · Android: the chip on every card, "Tag…", the dialog (light, dark)</h3>
+<div class="scope" id="ta-d"></div><div class="scope dk" id="ta-dd"></div>
+<h3>5 · iOS: the chip on every row, the Tag row, the touch-and-hold submenu (light, dark)</h3>
+<div class="scope" id="ta-e"></div><div class="scope dk" id="ta-ed"></div>
+<h3>6 · Work disabled, and losing the last Work account while Work is the filter</h3>
+<div class="scope" id="ta-f"></div>
+<ul class="ann">
+<li><b>Recommended: (i), on the sheet.</b> Android: under "Add account" (titleLarge), "This account is" (bodyMedium 14 sp, <code>onSurfaceVariant</code>), 8 dp, the app's own segmented row (<code>SingleChoiceSegmentedButtonRow</code>, full width, 40 dp, as the reset pings use) with two segments, each an 18 dp glyph and "Personal" or "Work" (labelLarge 14 sp), the chosen one tonal and SemiBold, the glyph in place of Material's check; 6 dp; "Groups it on the Summary. You can change it later." (bodySmall, muted); 16 dp; then the provider rows and the sample row exactly as built. iOS: the same three lines above the rows: label 13.5 pt <code>txt</code>, a two-segment bar in the Summary control's style (36 pt high, radius 10, 15 pt, 14 pt glyphs, the chosen one a 13% fill and semibold), caption 12.5 pt <code>sub</code>.</li>
+<li><b>Why above the rows.</b> A provider row is the commit: its tap adds the account (Android) or opens its sign-in (iOS), and the sheet is gone. A control under the rows is read after the tap that made it moot.</li>
+<li><b>What the tap does.</b> Android: the account is created with the tag, and its card shows the chip before the browser or the code sheet opens. iOS: the choice rides with the pending sign-in and is written when the account is created; leaving the sign-in sheet drops it. Personal is selected every time the sheet opens; the last choice is not remembered.</li>
+<li><b>Sample row.</b> "Try with sample data" ignores the control: the sample's tags are fixed at entry (Teams Work, Personal Personal, Lab Work). Inside the sample "Tag…" still works in memory and is dropped on Exit (rev B §9 d); there is no Add account there.</li>
+<li><b>Signing in again</b> never asks and never changes the tag. Android's "Re-sign in" and "Sign in with a code" run on the card; iOS's "Sign in again" opens the provider's sheet for the existing account.</li>
+<li><b>Large text.</b> Android: everything on the sheet is sp. The glyphs leave both segments together when "Personal" with its glyph no longer fits half the row; at font 2.0 on a 360 dp phone that is 160 of 160 dp, drawn without. The sheet has to scroll at that size and does not today (<code>AddAccountSheet</code> has no scroll; <code>DeviceCodeSheet</code> does). iOS: fixed sizes. Fold 7 inner and iPad: the sheet's own width, the control across its content.</li>
+<li><b>The chip.</b> Android: on every card, signed in or not, after the plan chip (after the name where there is none): 12 dp glyph, labelSmall word, 1 dp outline, 10 dp radius; a tap opens the dialog. The name gives first, as built; when it would fall under 64 dp (or its own width) the chip drops its word and keeps its glyph. Inner screen: the two-column grid as today, a chip in each header. iOS: on every row, as built for a tagged one (12 pt glyph, 11 pt semibold word, 1 pt outline, radius 6).</li>
+<li><span class="dev">flag</span> <b>iPhone 17e rows.</b> I3's rule (the name keeps its line, "Signed in" shrinks to 0.75 and truncates, a warning outranks the name) was built when few rows had a chip. Now all do. A 17e row holds about 300 pt, and "Personal · Plus · Personal · Signed in" needs about 310. Suggested order: whole; then "Signed in" leaves whole (no "Signed…"); beside a warning the chip drops its word; only then does the name give. Departs from I3 as built (T4).</li>
+<li><b>Dialog.</b> "Tag · Teams" (the title form of "Accent colour · Claude"), two radio rows 48 dp high (radio, 18 dp glyph, bodyLarge word), help "Tags group accounts on the Summary: All · Personal · Work." (bodySmall, muted), "Close". A tap applies at once. Rev B's third row and its sentence about untagged accounts are gone.</li>
+<li><b>iOS.</b> Account page › Account, row "Tag" after "Accent colour…": a menu picker of two rows, glyphs leading, a check on the current one; the row's value is glyph, word and chevrons. Touch and hold: "Tag" after "Rename", its icon always the current glyph (the generic tag symbol stood for None), the same two rows. "None" is gone from both.</li>
+<li><b>Losing the last Work account.</b> Changing a tag, or removing an account, can empty the group that is the filter. The filter is then All at once, and All is stored (BEHAVIOR-MOBILE §6). Marking an account Work later re-enables the segment and does not bring the filter back. The change is made in Settings, so the Summary is simply on All when the user returns. If one account is left there is no Summary.</li>
+<li><span class="sug">suggestion</span> <b>A disabled segment that answers.</b> After a silent upgrade "Work" is greyed in every header and nothing says why. A tap on a disabled segment shows one line under the header for 3 s (the readout's own timing): "No Work accounts yet. Tag one in Settings." (12 sp, muted; "Personal" likewise). About 233 dp, so one line on a 360 dp phone. Not in rev B (T3).</li>
+<li><b>TalkBack.</b> Add sheet: the group is "This account is"; the segments read "Personal, selected, 1 of 2" and "Work, not selected, 2 of 2"; the glyphs are hidden. Chip: "Tag: Personal", with the action "change". Dialog: "Tag, Teams", then "Personal, radio button, selected, 1 of 2". A disabled segment: "Work, no accounts, disabled"; with T3 it is not disabled and the line is announced.</li>
+<li><b>VoiceOver.</b> Add sheet: "This account is, Personal, selected" and "Work". Chip: "Tag: Personal" (built). Tag row: "Tag, Work, pop-up button". Menu rows: "Personal", "Work, selected". A disabled segment: "Work, dimmed".</li>
+<li><span class="sug">suggestion</span> <b>A word that now collides.</b> The Claude sign-in sheet's footnote says "the plan tag comes from Anthropic". With tags a feature, "the plan name comes from Anthropic" (T7).</li></ul>
+<div class="spec"><b>Spec changes this implies.</b><ul class="ann">
+<li><code>app.md</code> §6.2 table. "Account card": Android gains "tag chip after the plan chip, on every card" and its word rule; iOS "list row: mark 20 pt, name, plan chip, right text" gains the chip and the 17e order. "Menu": Android gains "Tag…" after "Rename…"; iOS gains "Tag" after "Rename". "Add sheet": both cells gain the three lines above the rows, and "Picking a row adds the account and starts its sign-in" becomes "adds the account with the chosen tag". Dialogs table: a new "Tag" row.</li>
+<li><code>app.md</code> "Step I3 (Summary)". Tag bullet: "None · Personal · Work … (absent = None; a value this build does not know is kept and reads as None)" becomes Personal · Work, absent or unknown reads as Personal; "VoiceOver "Work" / "None"" loses None; "a set tag is a chip" becomes every account's tag; "The chip is on no other surface." is replaced by the row-glyph section's sentence. Summary header bullet: "once any account has a tag" becomes whenever the Summary is drawn; "Without a tag the control is absent and the sort menu stays." is deleted. Filter bullet: "(the stored value is left as it was)" becomes "and is stored as All"; "untagged accounts show only under All" is deleted. Sample bullet: "Lab is untagged" becomes Lab is Work.</li>
+<li><code>app.md</code> "v2.0 feedback on Android": the A4 entry is written from this page when built. "§7 Sign-in flows": the Claude sheet's footnote, if T7 is taken.</li>
+<li><code>BEHAVIOR-MOBILE.md</code> §6. As read on 2026-11-11 the tag, control, filter and memory bullets already state this model. Still to change: the row-glyph bullet's placeholder ("The slot, its drop-out and the snapshot's rule are written when…") and its "a row of the share snapshot under All" (R4); the link to <code>cases-personal-work.json</code> once it is folded into <code>cases.json</code>; one sentence for T3 if taken. §7: "The sample's accounts carry fixed tags (§7)" points at a section that does not name them, so §7 gains "Teams Work, Personal Personal, Lab Work" and loses the stale "(iOS shows two Claude and one ChatGPT until its follow-up…)".</li>
+<li><code>ROADMAP.md</code>. CCRM-110 (Account Tags), "What": "an optional tag None · Personal · Work, set from the account's menu", "Once any account has a tag" and "untagged accounts show only under All" become: every account Personal or Work, chosen when added and changed from the menu; the control whenever the Summary exists; upgraded accounts Personal. Its iOS line gains the I4 follow-up. CCRM-113 (Sample Port), iOS follow-up: "Lab untagged" becomes Lab Work. CCRM-115 (Row Tag Glyph) has no entry yet.</li>
+<li><code>fixtures/tags/cases.json</code>: a <code>null</code> tag now reads as <code>personal</code>; the cases "no tags: no control, everything under All", "… Lab untagged; Work chosen" and "Personal chosen: the untagged account shows only under All" go; the upgrade case, the one-account case, <code>storedAfter</code> and <code>memory</code> come from <code>cases-personal-work.json</code>. <code>gen_v20_fixtures.py</code>: <code>build_tags()</code> and its note retire and <code>build_tags_pw()</code> writes <code>cases.json</code>. No core change.</li></ul></div>
+<div class="spec"><b>Build impact.</b><ul class="ann">
+<li><b>Lane A4 (Android, nothing built).</b> Registry: an additive <code>tag</code> string per profile; the reader returns Work for <code>work</code> and Personal for anything else, so there is no migration and no one-time write; an unknown value is written back untouched; v1.9 ignores the key. <code>addProfile(provider, tag)</code>. <code>AddAccountSheet</code>: the control, its state reset to Personal on each open, and a scroll. <code>TokenCard</code>: the chip on every card, "Tag…", the dialog; in the sample both bind to the sample store. Summary: the control whenever there are two accounts, segments enabled by count, the fallback that stores All, the glyph column and its fit rule, the snapshot rule. Sample accounts carry Work, Personal, Work. Tests read the folded <code>cases.json</code>.</li>
+<li><b>Lane I4 (iOS, I3 built with None).</b> <code>AccountTag(stored:)</code> and <code>Account.accountTag</code> become non-optional (absent or unknown is Personal; the raw string still survives a save). <code>TagPickerRows</code> loses "None"; <code>setTag</code> takes a tag; <code>TagSubmenu</code>'s icon is always the glyph; the Settings chip and the account page's value lose their <code>if let</code>. <code>SummaryFilter.resolve</code>: the control shows from two accounts, and a stored value that is not in force is rewritten to All (I3 left it). A pending tag on <code>AppModel</code>: set by <code>AddAccountSheet</code>, read by <code>addAccount</code> for a new account, ignored for <code>reauthTarget</code>, cleared with the sheet; the first-launch buttons leave it Personal. <code>DemoData</code>: Lab is Work in every scenario. Summary rows and the snapshot gain the glyph. The captures <code>summary-untagged-no-control-*</code> and <code>i3-header-untagged-*</code> no longer describe a reachable state. The 17e row order, if T4 is taken.</li></ul></div>
+<h3 id="ta-q">Forks (adding and tagging)</h3>
+<table class="t"><tr><th>#</th><th>Question</th><th>Options</th><th>Recommendation</th></tr>
+<tr><td>T1 · Robin</td><td>Where the Personal / Work choice sits when an account is added</td><td><b>(i)</b> on the Add account sheet, above the provider rows. <b>(ii)</b> a step after the provider is picked: Android a dialog before the browser, iOS on the sign-in sheet. <b>(iii)</b> after sign-in, a card on the new account's tab.</td><td><b>(i)</b>: the row tap is already the commit, so the choice costs at most one tap and no new screen. (ii) puts a dialog in front of every Android add. (iii) creates the account as Personal first and is easy to close unread.</td></tr>
+<tr><td>T2 · Robin</td><td>The first account, which never passes the sheet (Android's built-in Claude card; iOS's first-launch buttons)</td><td><b>A</b> Personal without asking; its Settings chip changes it. <b>B</b> ask there too: iOS shows the control on the sign-in sheet when it opens from the first-launch screen (drawn as (ii)); Android puts it on the not-signed-in card.</td><td><b>A</b>: a tag does nothing until there is a second account, and that one comes through the sheet. It is the upgrade rule applied to one more account.</td></tr>
+<tr><td>T3 · Robin</td><td>A tap on a disabled segment</td><td><b>A</b> nothing (rev B). <b>B</b> one line under the header for 3 s: "No Work accounts yet. Tag one in Settings."</td><td><b>B</b>: after a silent upgrade the greyed "Work" is in every header with nothing to explain it.</td></tr>
+<tr><td>T4 · fit call</td><td>An iPhone 17e Settings row that cannot hold everything</td><td><b>A</b> as built: "Signed in" shrinks and truncates; beside a warning the name gives. <b>B</b> "Signed in" leaves whole; beside a warning the chip drops its word before the name gives.</td><td><b>B</b>.</td></tr>
+<tr><td>T5 · fit call</td><td>The sheet's pre-selection</td><td><b>A</b> Personal on every open. <b>B</b> the last choice.</td><td><b>A</b>, as Robin said it.</td></tr>
+<tr><td>T6 · fit call</td><td>The dialog's help line</td><td><b>A</b> "Tags group accounts on the Summary: All · Personal · Work." <b>B</b> no help line.</td><td><b>A</b>.</td></tr>
+<tr><td>T7 · fit call</td><td>"the plan tag comes from Anthropic" on the Claude sign-in sheet</td><td><b>A</b> "the plan name". <b>B</b> leave it.</td><td><b>A</b>.</td></tr></table>
+<h3>Unverified (adding and tagging)</h3>
+<ul class="ann">
+<li>The Android prerequisite box inside the code sheet is drawn from its strings, not from a capture. The Claude paste-code step and the Gemini card body are not drawn; neither changes.</li>
+<li>iOS: Add account's content is already taller than the medium detent with three provider rows (its render test uses 620 pt). The control adds about 90 pt; I4 checks whether the sheet should open at large.</li>
+<li>The 17e row arithmetic is the em model set against the capture (about 300 pt of row, 28 pt around the spacer). "Teams · Team · Personal · Signed in" is about 3 pt over, so close calls fall either way on a device.</li>
+<li>Font 2.0 on a 360 dp phone lands exactly on the segmented row's limit (160 of 160 dp). Whether Material's segmented button takes a custom glyph in place of its check is assumed, not tried.</li>
+<li>The iOS sample's Teams plan reads "Team" as built (I3 captures); rev B §9 says Max, which is drawn.</li>
+<li>This section's script was written without a browser: check that every figure renders with no error box.</li></ul>
+<style>
+.ta-p{font-weight:700;color:#fff;border-radius:4px;padding:0 5px;font-size:10px;margin-right:5px}.ta-pa{background:#2a7d4f}.ta-pi{background:#2f5d9a}
+.ta-g{flex:none;vertical-align:-2px}
+.ta-new{outline:2px dashed #c9a21a;outline-offset:3px;border-radius:6px}
+.ta-sheet{background:var(--card);color:var(--ink);border-radius:24px 24px 0 0;padding:20px 20px 24px;font-size:13px}
+.ta-ios{font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif}
+.ta-sheet.ta-ios,.card.ta-ios{background:#fff}.dk .ta-sheet.ta-ios,.dk .card.ta-ios{background:#1C1C1E}.card.ta-ios{border-radius:18px}
+.ta-seg{display:flex;border:1px solid var(--ink3);border-radius:20px;overflow:hidden;min-height:40px}
+.ta-seg i{font-style:normal;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;padding:4px 12px;border-left:1px solid var(--ink3);white-space:nowrap}
+.ta-seg i:first-child{border-left:0}.ta-seg i.on{background:rgba(var(--mink),.13);font-weight:600}
+.ta-seg.ta-is{border-radius:10px;min-height:36px}.ta-is i{font-size:15px;gap:6px}
+.ta-ir{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;background:rgba(var(--mink),.06);margin-bottom:12px}
+.ta-dlg{background:var(--scard);color:var(--ink);border-radius:28px;padding:24px;width:300px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.ta-r{width:20px;height:20px;border:2px solid var(--ink2);border-radius:50%;flex:none;position:relative}.ta-r.on{border-color:var(--ink)}.ta-r.on:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--ink)}
+.ta-ah{display:flex;align-items:center;white-space:nowrap}
+.ta-pc{margin-left:6px;padding:0 8px;border-radius:10px;line-height:18px;background:color-mix(in srgb,currentColor 14%,transparent);flex:none}
+.ta-chip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:0 8px;border:1px solid var(--ink3);border-radius:10px;line-height:16px;color:var(--ink2);flex:none;white-space:nowrap}
+.ta-ic{margin-left:0;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;gap:3px}
+.ta-irow{display:flex;align-items:center;gap:10px;width:326px;height:52px;border-top:1px solid var(--line);white-space:nowrap;font-size:17px}.ta-irow:first-child{border-top:0}
+.ta-in{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ta-ip{font-size:12px;font-weight:600;padding:2px 8px;border-radius:7px;background:rgba(var(--mink),.1);color:var(--ink2);flex:none}
+.ta-iw{font-size:14px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ta-pr{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:17px}.ta-pr:first-child{border-top:0}
+.ta-im{background:var(--scard);color:var(--ink);border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.2);font-size:17px;padding:4px 0;width:220px}.ta-im>div{display:flex;align-items:center;gap:10px;padding:11px 16px}
+</style>
+<script>
+(function(){function run(){
+const M='−';
+const put=(id,fn)=>{const el=document.getElementById(id);if(!el)return;try{el.innerHTML=fn()}catch(e){el.innerHTML='<div class="err">'+id+': '+e.message+'</div>'}};
+const fig=(c,h)=>'<figure><figcaption>'+c+'</figcaption>'+h+'</figure>';
+function mk(k,c,s){let i='';if(k==='claude'){for(let r=0;r<10;r++)i+='<path d="M12 12L12 2.6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" transform="rotate('+(r*36+(r%2?7:0))+' 12 12)"/>'}else if(k==='gpt'){for(let r=0;r<3;r++)i+='<ellipse cx="12" cy="7.2" rx="3.5" ry="5.8" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate('+r*120+' 12 12)"/>'}else i='<path d="M12 2C12.8 8 16 11.2 22 12C16 12.8 12.8 16 12 22C11.2 16 8 12.8 2 12C8 11.2 11.2 8 12 2Z" fill="currentColor"/>';
+ return '<svg class="mk" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" style="color:'+c+'">'+i+'</svg>'}
+const EMC=c=>/[0-9]/.test(c)?.56:/[iltrfj]/.test(c)?.30:/[mw]/.test(c)?.86:/[a-z]/.test(c)?.54:/[WMO]/.test(c)?.80:/[A-Z]/.test(c)?.62:c===' '?.25:c==='·'?.29:c===':'?.23:c==='%'?.46:(c==='+'||c===M)?.58:.5;
+const em=s=>[...s].reduce((a,c)=>a+EMC(c),0);
+const GP='<circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="2"/>',GW='<rect x="2.5" y="6.5" width="19" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 6.5V4.5h7v2M2.5 12h19" fill="none" stroke="currentColor" stroke-width="2"/>';
+const tg=(k,s)=>'<svg class="ta-g" width="'+s+'" height="'+s+'" viewBox="0 0 24 24">'+(k==='Work'?GW:GP)+'</svg>';
+const AN='<span class="ta-p ta-pa">Android</span>',IO='<span class="ta-p ta-pi">iOS</span>',TXT='Groups it on the Summary. You can change it later.',SMP='Three made-up accounts to look around. Nothing is saved or sent.';
+// the new control: label, two segments, caption. k = Android font scale; gl = glyphs shown; ios = the iOS form
+const seg=(sel,k,gl,ios)=>'<div class="ta-seg'+(ios?' ta-is':'')+'">'+['Personal','Work'].map(t=>'<i class="'+(t===sel?'on':'')+'"'+(k>1?' style="font-size:'+14*k+'px"':'')+'>'+(gl?tg(t,ios?14:18):'')+t+'</i>').join('')+'</div>';
+const ask=(sel,k,gl,ios)=>'<div class="ta-new"><div class="mut" style="font-size:'+(ios?13.5:14*k)+'px;margin-bottom:'+(ios?6:8)+'px">This account is</div>'+seg(sel,k,gl,ios)+'<div class="mut" style="font-size:'+(ios?12.5:12*k)+'px;margin-top:6px">'+TXT+'</div></div>';
+// Android Add account sheet as built (rows, strings) with rev B §9's sample row; o.ctl===0 draws it without the control
+const AR=[['claude','Claude','Signs in through your browser, then paste the code back — as before.'],['gpt','ChatGPT','Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security.'],['gem','Gemini','Signs in with Google in your browser, then paste the code back.']];
+const sg='<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="#7C4DFF" stroke-width="2.4"/><circle cx="14" cy="14" r="4.5" fill="#7C4DFF"/></svg>';
+function asheet(W,o){o=o||{};const k=o.k||1,gl=em('Personal')*14*k+50<=(W-40)/2-4,
+ r=(g,t,s)=>'<div style="display:flex;gap:14px;padding:4px 0"><span style="flex:none;width:28px;line-height:0">'+g+'</span><div><div style="font-size:'+16*k+'px">'+t+'</div><div class="mut" style="font-size:'+12*k+'px;margin-top:2px">'+s+'</div></div></div>';
+ return '<div class="ta-sheet" style="width:'+W+'px"><div style="font-size:'+22*k+'px;margin-bottom:16px">Add account</div>'+(o.ctl===0?'':ask(o.sel||'Personal',k,gl)+'<div style="height:16px"></div>')+AR.map(x=>r(mk(x[0],'var(--'+x[0]+')',28),x[1],x[2])).join('<div style="height:14px"></div>')+'<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:10px">'+r(sg,'Try with sample data',SMP)+'</div></div>'}
+// iOS Add account sheet as built
+const IR=[['claude','Claude','Sign in with your Claude account in the browser, then paste the code it shows.'],['gpt','ChatGPT','Sign in with a code on any device — no password in this app.'],['gem','Gemini','Signs in with Google in your browser, then paste the code back.']];
+const am='<svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1d1d1f"/><path d="M5 17h6l3-7 4 13 3-6h6" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+function isheet(o){o=o||{};const r=(g,t,s)=>'<div class="ta-ir"><span style="flex:none;line-height:0">'+g+'</span><div style="flex:1"><b style="font-size:17px;font-weight:600">'+t+'</b><div class="mut" style="font-size:13.5px;margin-top:2px">'+s+'</div></div><span class="mut">›</span></div>';
+ return '<div class="ta-sheet ta-ios" style="width:390px"><div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:22px">Add account</div>'+(o.ctl===0?'':ask(o.sel||'Personal',1,1,1)+'<div style="height:12px"></div>')+IR.map(x=>r(mk(x[0],'var(--'+x[0]+')',32),x[1],x[2])).join('')+r(am,'Try with sample data',SMP)+'<div class="mut" style="font-size:12.5px;margin-top:2px">Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.</div></div>'}
+// iOS "Sign in to Claude" as built; ctl puts the control under its title (placement ii)
+function isign(ctl){const pill=(t,dk)=>'<span style="display:inline-block;padding:9px 16px;border-radius:99px;font-size:15px;font-weight:600;'+(dk?'background:var(--ink);color:var(--bg);opacity:.45':'background:rgba(var(--mink),.08)')+'">'+t+'</span>';
+ return '<div class="ta-sheet ta-ios" style="width:390px"><div style="font-size:20px;font-weight:700;margin-bottom:8px">Sign in to Claude</div>'+(ctl?ask('Personal',1,1,1)+'<div style="height:12px"></div>':'')+'<div class="mut" style="font-size:15px">1. Open the sign-in page and approve Cooldown.<br>2. Copy the code Claude shows you and paste it here.</div><div style="margin:16px 0"><span style="display:inline-block;padding:10px 16px;border-radius:99px;background:var(--claude);color:#000;font-size:15px;font-weight:600">Open claude.com sign-in</span></div><div style="padding:13px 14px;border-radius:12px;background:rgba(var(--mink),.06);color:var(--ink3);font-size:16px">Paste the code</div><div style="display:flex;gap:10px;margin-top:16px">'+pill('Cancel')+pill('Sign in',1)+'</div><div class="mut" style="font-size:12.5px;margin-top:14px">Name this account after signing in (e.g. “Teams”); the plan tag comes from Anthropic.</div></div>'}
+// Android dialogs
+const adlg=(t,b,btn)=>'<div class="ta-dlg"><div style="font-size:22px;margin-bottom:14px">'+t+'</div>'+b+'<div style="text-align:right;margin-top:18px;font-weight:600;font-size:14px">'+btn+'</div></div>';
+const rad=(t,on)=>'<div style="display:flex;align-items:center;gap:14px;height:48px;font-size:16px"><span class="ta-r'+(on?' on':'')+'"></span>'+tg(t,18)+'<span style="margin-left:-6px">'+t+'</span></div>';
+const tdlg=(n,sel)=>adlg('Tag · '+n,rad('Personal',sel!=='Work')+rad('Work',sel==='Work')+'<div class="mut" style="font-size:12px;margin-top:6px">Tags group accounts on the Summary: All · Personal · Work.</div>','Close');
+// placement (iii): a one-time card on the new account’s tab
+const note=(W,ios)=>'<div class="card ta-new'+(ios?' ta-ios':'')+'" style="width:'+W+'px"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:10px"><span>Is ChatGPT a Personal or a Work account?</span><span class="mut">✕</span></div>'+seg('Personal',1,1,ios)+'<div class="mut" style="font-size:12px;margin-top:6px">Groups it on the Summary. Personal until you choose.</div></div>';
+// Android account card (Settings › Accounts): header as built plus the tag chip. st: 'in' | 're' (needs re-auth) | 'out' (not signed in); smp = in the sample
+const C=(n,m,plan,tag,st,col)=>({n:n,mk:m,col:col||'var(--'+m+')',plan:plan,tag:tag,st:st});
+function acard(a,W,o){o=o||{};const k=o.k||1,dot=a.st==='in'||a.st==='re',pl=a.plan&&(dot||a.smp),gp=a.mk==='gpt',
+ room=W-86-(dot?16:0)-(pl?em(a.plan)*11*k+22:0)-(em(a.tag)*11*k+38)-(a.smp?50:0),word=room>=Math.min(em(a.n)*16*k,64*k),
+ hd='<div class="ta-ah">'+mk(a.mk,a.col,20)+'<span class="nm" style="font-size:'+16*k+'px;font-weight:500;margin-left:6px">'+a.n+'</span>'+(dot?'<i class="cd" style="width:8px;height:8px;margin-left:8px;background:'+(a.st==='re'?'var(--red)':'#188038')+'"></i>':'')+(pl?'<span class="ta-pc" style="font-size:'+11*k+'px;color:'+a.col+'">'+a.plan+'</span>':'')+'<span class="ta-chip'+(o.hl?' ta-new':'')+'" style="font-size:'+11*k+'px">'+tg(a.tag,12)+(word?a.tag:'')+'</span><span style="flex:1"></span>'+(a.smp?'<span class="mut" style="font-size:12px">Sample</span>':'')+'<span style="font-size:18px;width:28px;text-align:center;flex:none">⋮</span></div>',
+ cell=(i,t,c)=>'<div style="flex:1;text-align:center;font-size:'+11*k+'px'+(c?';color:'+c:'')+'"><div style="font-size:16px;line-height:20px">'+i+'</div>'+t+'</div>',
+ stl=t=>'<div class="mut" style="font-size:'+12*k+'px;margin-top:8px;display:flex"><span style="flex:1">'+t+'</span><span>↻</span></div>',
+ act='<div style="display:flex;gap:8px;border-top:1px solid var(--line);margin-top:10px;padding-top:10px">'+cell('⟳',gp?'Sign in with a code':'Re-sign in',a.col)+cell('✕','Clear','var(--red)')+cell(gp?'⚙':'↗',gp?'Settings':'Dashboard')+'</div>',
+ out='<div class="mut" style="font-size:'+12*k+'px;margin-top:2px">Not signed in</div><div style="margin:12px 0 4px"><span style="display:inline-block;padding:10px 22px;border-radius:99px;background:'+a.col+';color:var(--bg);font-size:'+14*k+'px;font-weight:500">'+(gp?'Sign in with a code':'Sign in on this phone')+'</span></div><div class="mut" style="font-size:'+12*k+'px">'+(gp?'Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security.':'Opens Claude’s sign-in in your browser — no computer needed. Needs a paid plan: Claude reports no usage for Free accounts.')+'</div>';
+ return '<div class="card" style="width:'+W+'px;margin-bottom:10px">'+hd+(a.smp?'':a.st==='out'?out:stl(a.st==='re'?'Checked 3h ago':gp?'Checked 12m ago':'Checked 12m ago · renews in 6h 4m')+(a.st==='re'?'<div class="r" style="font-size:'+12*k+'px;margin-top:4px">Renewal has stopped working — re-sign in below.</div>':'')+act)+'</div>'}
+const amenu=()=>'<div class="menu"><div>Details…</div><div>Clear usage history…</div><div>Rename…</div><div><span class="ta-new">Tag…</span></div><div>Accent colour…</div><div>Headline…</div><div class="r">Remove account</div></div>';
+// Android code sheet as built (DeviceCodeSheet, DeviceCodeCopy), unchanged
+const dcs=W=>'<div class="ta-sheet" style="width:'+W+'px"><div style="font-size:22px;margin-bottom:12px">Sign in to ChatGPT</div><div class="mut" style="font-size:14px">Open the page in any browser — it can be a different device — sign in to ChatGPT, and enter this code.</div><div class="mut" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:10px;font-size:12px">First time? Turn on device code sign-in in ChatGPT → Settings → Security, or the code won’t be accepted. Work accounts need their admin to allow it.<div style="color:var(--gpt);font-weight:600;margin-top:4px">Open ChatGPT security settings</div></div><div class="mut" style="font-size:12px;margin-top:16px">Go to</div><div style="font-size:16px;font-weight:600;color:var(--gpt)">auth.openai.com/codex/device</div><div class="mut" style="font-size:12px">and enter this code</div><div style="font:30px ui-monospace,Menlo,monospace;letter-spacing:2px;margin-top:14px">QK7M-4RDX</div><div class="mut" style="font-size:12px;margin-top:10px;display:flex;justify-content:space-between"><span>Code expires in 14:32</span><span>Waiting for you to finish…</span></div><div style="display:flex;gap:8px;margin-top:16px;font-size:14px;font-weight:500"><span style="padding:10px 22px;border-radius:99px;background:var(--gpt);color:var(--bg)">Open in browser</span><span style="padding:9px 22px;border-radius:99px;border:1px solid var(--ink3)">Copy code</span></div></div>';
+// iOS ChatGPT sheet, "Signed in" state as built
+const idone=()=>'<div class="ta-sheet ta-ios" style="width:390px"><div style="font-size:20px;font-weight:700;margin-bottom:6px">Sign in to ChatGPT</div><div style="text-align:center;padding-top:22px">'+mk('gpt','var(--gpt)',48)+'<div style="font-size:18px;font-weight:600;margin-top:6px">Signed in</div><div class="mut" style="font-size:14.5px;margin-top:6px">ChatGPT · Plus</div></div><div style="margin-top:22px;padding:12px;border-radius:99px;background:var(--ink);color:var(--bg);text-align:center;font-size:16px;font-weight:600">Done</div></div>';
+// iOS Settings › Accounts row. The row holds about 300 pt (17e capture). lad = the suggested order; otherwise as built in I3
+const I=(n,m,plan,tag,w)=>({n:n,mk:m,col:'var(--'+m+')',plan:plan,tag:tag,w:w||'Signed in'});
+function irow(a,lad){const warn=a.w!=='Signed in',ok=(a.plan?84+em(a.plan)*12:58)+em(a.n)*17+em(a.tag)*11.33+33+em(a.w)*14<=300,
+ word=lad&&warn&&!ok?'':a.tag,st=lad&&!warn&&!ok?'':'<span class="ta-iw" style="'+(warn?'flex:none;color:var(--org)':ok?'':'font-size:10.5px')+'">'+a.w+'</span>';
+ return '<div class="ta-irow">'+mk(a.mk,a.col,20)+'<span class="ta-in"'+(warn?'':' style="flex:none"')+'>'+a.n+'</span>'+(a.plan?'<span class="ta-ip">'+a.plan+'</span>':'')+'<span class="ta-chip ta-ic">'+tg(a.tag,12)+word+'</span><span style="flex:1 0 8px"></span>'+st+'<span class="mut" style="flex:none;width:14px;text-align:right">›</span></div>'}
+const ilist=(rows,lad)=>'<div class="ta-ios"><div class="mut" style="font-size:15px;font-weight:600;margin:0 0 6px 16px">Accounts</div><div class="card ta-ios" style="width:358px;padding:0 16px">'+rows.map(a=>irow(a,lad)).join('')+'<div class="ta-irow" style="color:#0A84FF"><span style="width:20px;text-align:center">+</span>Add account</div></div></div>';
+// iOS pickers: two rows, a check on the current one
+const irows=tag=>['Personal','Work'].map(t=>'<div><span style="width:14px;flex:none">'+(t===tag?'✓':'')+'</span>'+tg(t,17)+t+'</div>').join('');
+const ipage=(tag,open)=>'<div class="card ta-ios" style="width:358px;padding:0 16px;position:relative">'+[['Name','Teams ›'],['Plan<span class="mut" style="display:block;font-size:15px">Max</span>',''],['Accent colour…<span style="display:block;width:12px;height:12px;border-radius:50%;background:var(--claude);margin-top:6px"></span>','']].map(x=>'<div class="ta-pr"><span>'+x[0]+'</span><span>'+x[1]+'</span></div>').join('')+'<div class="ta-pr ta-new"><span>Tag</span><span class="mut">'+tg(tag,13)+' '+tag+' <small>⌃⌄</small></span></div>'+(open?'<div class="ta-im" style="position:absolute;right:16px;bottom:40px">'+irows(tag)+'</div>':'')+'</div>';
+const ihold=tag=>'<div class="ta-im" style="width:250px">'+['Rename','<span class="ta-new" style="display:flex;gap:10px;flex:1">'+tg(tag,17)+'Tag<span style="margin-left:auto">›</span></span>','Details…','Accent colour…','Sign in again','Clear usage history…','<span class="r">Remove</span>'].map(t=>'<div>'+t+'</div>').join('')+'</div>';
+const isub=tag=>'<div class="ta-im" style="width:250px"><div style="font-weight:600;border-bottom:1px solid var(--line)">'+tg(tag,17)+'Tag<span style="margin-left:auto">⌄</span></div>'+irows(tag)+'</div>';
+// the Summary header alone (rev B §6), with the rows it would show named under it
+const sh=(W,f,dis,rows,hint,ios)=>'<div class="card'+(ios?' ta-ios':'')+'" style="width:'+(W+32)+'px"><div class="sh" style="width:'+W+'px;margin:0"><b>Weekly</b><span class="seg">'+['All','Personal','Work'].map(t=>'<i class="'+(t===f?'on':'')+(t===dis?' off':'')+'">'+t+'</i>').join('')+'</span><span style="flex:1"></span><span class="sort">'+(W<300||ios?'⇅':'your order')+' ▾</span></div>'+(hint?'<div class="mut ta-new" style="font-size:12px;margin-top:6px">'+hint+'</div>':'')+'<div class="mut" style="font-size:12px;border-top:1px solid var(--line);margin-top:8px;padding-top:8px">Rows shown: '+rows+'</div></div>';
+const R=(t,n)=>tg(t,12)+' '+n,P3=R('Personal','Teams')+' · '+R('Personal','Personal')+' · '+R('Personal','Lab');
+
+put('ta-a',()=>fig(AN+'cover 411 dp · TODAY (with rev B §9’s sample row): a row tap adds the account, nothing is asked',asheet(411,{ctl:0}))
+ +fig(AN+'(i) RECOMMENDED · the choice on the sheet, above the provider rows; Personal pre-selected each time it opens',asheet(411))
+ +fig(AN+'(ii) a step after the row: a dialog before the browser, on every add (Claude and Gemini have no sign-in sheet to hold it)',adlg('Add Claude account',ask('Personal',1,1),'Cancel &nbsp; &nbsp; Continue'))
+ +fig(AN+'(iii) after sign-in: a card on the new account’s tab, above its tile; closed unanswered, the account stays Personal',note(371)));
+put('ta-a2',()=>fig(IO+'iPhone 17e 390 pt · TODAY, as built: a row opens that provider’s sign-in sheet',isheet({ctl:0}))
+ +fig(IO+'(i) RECOMMENDED · the same three lines above the rows',isheet())
+ +fig(IO+'(ii) on the sign-in sheet, under its title; hidden when the sheet is a "Sign in again"',isign(1))
+ +fig(IO+'(iii) after sign-in: the same card on the new account’s tab',note(358,1)));
+put('ta-b',()=>fig(AN+'cover · Work chosen, then a row is tapped: that account is added as Work',asheet(411,{sel:'Work'}))
+ +fig(AN+'360 dp phone: sheet 360, content 320, each segment 160 dp',asheet(360))
+ +fig(AN+'360 dp phone, font scale 2.0: "Personal" and its glyph need 160 of 160 dp, so the glyphs leave both segments; the sheet scrolls',asheet(360,{k:2}))
+ +fig(IO+'Work chosen · the fonts are fixed sizes, so the largest Dynamic Type looks the same',isheet({sel:'Work'})));
+put('ta-bd',()=>fig(AN+'360 dp phone, dark',asheet(360))+fig(AN+'cover, dark · Work chosen',asheet(411,{sel:'Work'}))+fig(IO+'iPhone 17e, dark · Work chosen',isheet({sel:'Work'})));
+put('ta-c',()=>fig(AN+'ChatGPT tapped with Work chosen: the card exists at once with its tag, and the code sheet opens over it, unchanged',acard(C('ChatGPT','gpt',null,'Work','out'),371,{hl:1})+dcs(371))
+ +fig(AN+'The first account is never added (one Claude card always exists): Personal, and its chip is where to change it',acard(C('Claude','claude',null,'Personal','out'),371,{hl:1}))
+ +fig(AN+'"Re-sign in" runs on the card: no sheet, no choice, the tag stays',acard(C('Atlas','claude','Max','Work','re','var(--rose)'),371))
+ +fig(IO+'ChatGPT’s code sheet and its "Signed in" state are unchanged; the account is created here, as Work',idone()+'<div style="height:10px"></div>'+ilist([I('ChatGPT','gpt','Plus','Work')],1))
+ +fig(IO+'"Sign in again" opens the provider’s sheet as built: no choice, the tag stays',isign()));
+const ad=()=>fig(AN+'cover, card 371 dp · one account, so no Summary: the chip is still there, and a tap on it opens the dialog',acard(C('Teams','claude','Max','Personal','in'),371,{hl:1}))
+ +fig(AN+'cover · many accounts after the upgrade: every chip reads Personal; the third needs re-auth',[C('Teams','claude','Max','Personal','in'),C('Personal','gpt','Plus','Personal','in'),C('Atlas','claude','Max','Personal','re','var(--rose)')].map(a=>acard(a,371)).join(''))
+ +fig(AN+'⋮ on a card: "Tag…" after "Rename…"',amenu())
+ +fig(AN+'Dialog from "Tag…" or from the chip · Personal is the current tag',tdlg('Teams','Personal'))
+ +fig(AN+'A tap on Work applies at once (the chip behind changes); "Close" dismisses',tdlg('Teams','Work'))
+ +fig(AN+'360 dp phone, card 320 dp · a long name beside "Enterprise": the name gives first, as built, and the chip keeps its word while the name has 64 dp',acard(C('Personal Max 20x','gpt','Enterprise','Personal','in'),320))
+ +fig(AN+'360 dp phone, font scale 2.0: the chip keeps its glyph and drops its word, so "Teams" stays whole',acard(C('Teams','claude','Max','Personal','in'),320,{k:2}))
+ +fig(AN+'In the sample (rev B §9): the word "Sample"; Tag… works in memory and is dropped on Exit',[['Teams','claude','Max','Work'],['Personal','gpt','Plus','Personal'],['Lab','gem','Pro','Work']].map(x=>acard(Object.assign(C(x[0],x[1],x[2],x[3]),{smp:1}),371)).join(''));
+put('ta-d',ad);put('ta-dd',ad);
+const UPG=[I('Teams','claude','Max','Personal'),I('Personal','gpt','Plus','Personal'),I('Lab','gem','Pro','Personal','Sign in again')],WRN=[I('Personal','gpt','Plus','Personal','Sign in again'),I('Research','gpt','Enterprise','Work','Sign in again')];
+const ie=()=>fig(IO+'iPhone 17e · after the upgrade, the I3 rule as built: every row now has a chip, and "Signed in" shrinks and truncates beside it (capture settings-tag-chips)',ilist(UPG))
+ +fig(IO+'the same rows · SUGGESTED: "Signed in" leaves whole when it does not fit; a warning never leaves',ilist(UPG,1))
+ +fig(IO+'iPhone 17e · a warning beside a long name, as built: the warning outranks the name (capture settings-warning-beside-chips)',ilist(WRN))
+ +fig(IO+'the same rows · SUGGESTED: the chip drops its word before the name loses a letter',ilist(WRN,1))
+ +fig(IO+'One account: no Summary, the chip is still there',ilist([I('Teams','claude','Max','Personal')],1))
+ +fig(IO+'Account page › Account · the Tag row: glyph, word, chevrons',ipage('Work'))
+ +fig(IO+'Its menu: two rows, a check on the current one; no "None"',ipage('Work',1))
+ +fig(IO+'Touch and hold on a row: "Tag" after "Rename", its icon the current glyph',ihold('Work'))
+ +fig(IO+'The submenu, open',isub('Work'));
+put('ta-e',ie);put('ta-ed',ie);
+put('ta-f',()=>fig(AN+'cover, list 339 · BEFORE: Work is the filter, and Teams is the only Work account',sh(339,'Work',null,R('Work','Teams')))
+ +fig(AN+'AFTER "Tag…" sets Teams to Personal: Work has no accounts, so the filter is All at once, and All is what is stored',sh(339,'All','Work',P3))
+ +fig(AN+'LATER Lab is marked Work: the segment is live again; the filter stays All until it is tapped',sh(339,'All',null,R('Personal','Teams')+' · '+R('Personal','Personal')+' · '+R('Work','Lab')))
+ +fig(AN+'360 dp phone, list 288 · straight after the upgrade · SUGGESTED (T3): a tap on the disabled segment shows this line for 3 s',sh(288,'All','Work',P3,'No Work accounts yet. Tag one in Settings.'))
+ +fig(IO+'iPhone 17e, list 326 · before',sh(326,'Work',null,R('Work','Teams'),'',1))
+ +fig(IO+'iPhone 17e · after',sh(326,'All','Work',P3,'',1)));
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
+</script>
+</main></body></html>

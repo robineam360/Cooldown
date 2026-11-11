@@ -253,6 +253,52 @@ spent, no reading) whatever the order; the Pace map is unaffected; widgets that 
 An absent or unknown value reads as `yours`; v1.9 does not read the key. Cases in
 [`fixtures/summary/cases.json`](fixtures/summary/cases.json) → `order`.
 
+**Account tags and the Summary filter — CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot)** (rev B §6 and §8,
+approved 2026-11-10; changed by Robin on 2026-11-11: no "None", and a filter memory that is the same on both
+clients). Both clients follow this paragraph and test it on
+[`fixtures/tags/cases-personal-work.json`](fixtures/tags/cases-personal-work.json) (Step 2 folds it into
+`cases.json`); none of it is core (the desktop has no Summary).
+
+- **The tag.** Every account is **Personal** or **Work**, chosen when the account is added (Personal pre-selected;
+  signing in again keeps it) and changed from the account's menu. There is no "None". Stored additively as `personal`
+  or `work`: a missing, empty or unknown stored value **reads as Personal**, so every account an earlier version
+  saved becomes Personal at upgrade with nothing written (Robin 2026-11-11: no prompt), an unknown value survives a
+  round trip, and v1.9 ignores the key. The sample's accounts carry fixed tags (§7).
+- **The control.** An All · Personal · Work control sits beside "Weekly" whenever the Summary exists (two or more
+  accounts). A segment with no accounts is disabled; All never is.
+- **The filter in force** is the remembered value when it names an enabled segment, otherwise **All**. It narrows the
+  list, the ranking, the rank numbers, the Pace map with its foot-line count, the one-line threshold (six rows
+  **shown**, not six accounts) and the share snapshot, whose header names it ("All accounts", "Personal accounts",
+  "Work accounts"). The filter never touches polling, the status footer or refresh, and never changes the order.
+- **The memory rule (the same on both clients).** The remembered value (`summaryFilter`: `all`, `personal`, `work`)
+  is the last segment the user tapped, and nothing else writes it **except one fallback**: whenever the accounts, a
+  tag or the Summary change, and when the Summary comes on screen, a stored value that the filter in force does not
+  match — it is unknown, or its group has no accounts — is replaced by **`all`** at once. A missing value stays
+  missing (it already reads as All). Marking an account later **never brings the earlier choice back**: the filter
+  changes only when the user taps a segment, and a segment can be tapped only while it is enabled. The rule is
+  evaluated only while the Summary exists (two or more accounts, the registry loaded, never on an empty start-up)
+  and, in sample mode (§7), only against the sample's in-memory copy of the setting.
+- **The row glyph** (CCRM-115 (Row Tag Glyph); Robin 2026-11-11, approved in
+  `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`). Wherever the Summary is drawn every row leads
+  with its tag's glyph before the provider's mark: a person for Personal, a briefcase for Work, in the muted ink,
+  never a colour, never the word. There is no empty slot (every account has a tag). A full row's glyph is 14 dp
+  (iOS 14 pt box) and 4 dp, 18 dp in all; a one-line row (six or more rows shown, no provider mark) puts a 12 dp glyph
+  and 4 dp between the rank disc and the name. The glyph belongs to line 1 and dims with it. **Drop-out, the same on
+  both clients:** the name ellipsizes first down to its floor (64 dp at its own text scale, or its own width if
+  shorter), then the glyph column leaves **every row shown** at once (never one row), then the name carries on
+  ellipsizing; on a one-line list the bar's floor is 40 dp (Android) / 50 pt (iOS), and the column leaves when the bar
+  would fall under it. It is measured on the tightest row shown and re-measured on a width, filter, display or font
+  change. Under a Personal or Work filter the glyph stays. **The share snapshot** draws the glyph column only while
+  the rows on it carry both tags (so only under All; an install whose accounts are all Personal shares the card
+  without it). TalkBack and VoiceOver read the tag on the row's name — "Teams, Work account" — whether or not the
+  glyph is drawn; the glyph itself is hidden from accessibility. A tap on a disabled segment shows one line under the
+  header for 3 s: "No Work accounts yet. Tag one in Settings." (Personal likewise). **Adding an account** (both
+  clients alike): a Personal | Work control sits above the provider rows of the Add account sheet, Personal selected
+  every time it opens; the row tap commits the account with that tag; signing in again keeps the tag; "Try with sample
+  data" ignores it. The very first account, which never passes the sheet, is Personal without asking.
+  Cases: `filter[].expected.storedAfter` and `memory` (sequences of tag, add, remove and choose steps, each with the
+  filter in force and the value stored after it); each client replays them against its own store.
+
 ---
 
 ## 7. Sample mode — CCRM-113 (Sample Port) · planned, approved 2026-11-10
@@ -263,8 +309,8 @@ describes iOS only.
 
 - **What it is.** A reviewer or a curious user taps "Try with sample data" ("Three made-up accounts to look around.
   Nothing is saved or sent.") on the first screen or in Add account, and the app's screens show three made-up
-  accounts, one per provider: Teams (Claude), Personal (ChatGPT), Lab (Gemini). (iOS shows two Claude and one
-  ChatGPT until its follow-up swaps one Claude account for Gemini, on Robin's word.) A banner "● Sample data —
+  accounts, one per provider: Teams (Claude, Max, **Work**), Personal (ChatGPT, Plus, **Personal**), Lab (Gemini, Pro,
+  **Work**) — the tags are fixed at entry, and "Tag…" works only on the in-memory copy (§6). A banner "● Sample data —
   made-up accounts" with "Exit" stays visible on every page.
 - **Held in memory only.** The mode is a process-wide flag that is never written. Settings changed in the sample go
   to an in-memory copy seeded from the user's own and are dropped on Exit. No token, account, history or setting is

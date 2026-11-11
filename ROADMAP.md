@@ -1949,6 +1949,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   pace. Narrow: the bar absorbs, the name ellipsizes to 24 dp, then the state word drops its tail. Expanded keeps
   the two headers with the figure 36 → 24 sp. Collapsed text is capped in dp at large font scales (Robin's exception
   to foundations §2). **Unverified:** the cover's and the inner shade's collapsed content widths for this layout.
+- **Amended 2026-11-11:** the narrow shade is CCRM-114 (Narrow Duet), built in RUNBOOK Step A6 after A5.
 
 ### CCRM-106 · 7d Chip — the 7-day "All" chip and label read "7d"
 - **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
@@ -1985,11 +1986,18 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
 - **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
-- **What:** an optional tag None · Personal · Work, set from the account's menu (Android "Tag…", iOS account page
-  and long-press), shown in Settings as a neutral chip with a person or briefcase glyph and the word. Once any
-  account has a tag, an All · Personal · Work control sits beside the Summary's "Weekly" (remembered) and filters
-  the list, the map and the snapshot; untagged accounts show only under All. "your order" becomes a sort menu of
-  the four orders (Appearance keeps its setting).
+- **What:** every account is **Personal** or **Work** (Robin, 2026-11-11: no "None"), chosen on the Add account sheet
+  when the account is added and changed from the account's menu (Android "Tag…", iOS account page and long-press);
+  accounts that exist at the upgrade, and the very first account, are Personal, silently. Settings shows it on every
+  account as a neutral chip with a person or briefcase glyph and the word. Whenever the Summary exists (two or more
+  accounts) an All · Personal · Work control sits beside its "Weekly" (remembered; a segment with no accounts
+  disabled) and filters the list, the map and the snapshot. When the remembered group goes empty the filter falls
+  back to All **and is stored as All**; tagging later never brings it back (BEHAVIOR-MOBILE §6; both clients test the
+  same sequences in `fixtures/tags/cases-personal-work.json`). "your order" becomes a sort menu of the four orders
+  (Appearance keeps its setting). The rev B optional-tag design (None, "untagged show only under All") is replaced
+  by `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §Adding and tagging (approved 2026-11-11).
+- **Amended 2026-11-11:** Android builds this in RUNBOOK Step A4; iOS (I3 built the optional tag) converts in Step I4:
+  `AccountTag` loses None, the Add sheet gains the control, a stored value that is not in force is rewritten to All.
 - **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): CooldownCore `AccountTag` and `SummaryFilter` on `spec/mobile/fixtures/tags`; the account's additive `tag` string (absent = None, an unknown value survives a round trip, a v1.9-era reader ignores it); the "Tag" row on the account page (menu picker, glyphs leading), a "Tag" submenu in the touch-and-hold menu, the neutral glyph + word chip after the plan chip in Settings; the All · Personal · Work control (13 pt, 28 pt high) beside "Weekly", remembered, filtering the list, the map and the snapshot, a segment with no accounts disabled; "your order" is a native pull-down of the four orders (glyph alone, then the control wrapping under the title, where the line cannot hold it). Captures `design/research/2026-11-v20-build/I3/`.
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
@@ -2008,6 +2016,8 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
   callout. Names shown, e-mail addresses never.
+- **Amended 2026-11-11 (CCRM-115 (Row Tag Glyph)):** the card's rows carry the tag glyph before the mark **only while
+  the rows on it carry both tags**; under a filter, or with every row the same tag, the card is as drawn in rev B.
 - **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): "Share snapshot" replaces "Share card" in the All tab's ellipsis menu; `SummarySnapshotView` (300 pt at 3×) — header with the filter's name, the newest reading's time and the order's name, full rows in the screen's order and filter (one line each from six), the Pace map with the layers saved on screen and the foot line, never the chips or a callout; names, never e-mail addresses; the violet "SAMPLE DATA" band in the sample; "Nothing to share yet — no account has a reading." Captures `design/research/2026-11-v20-build/I3/`.
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
@@ -2023,9 +2033,38 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   The always-on notification, status-bar icon, reset pings and widgets **stay on the real accounts** (Robin: A).
   Isolation rules: real polling carries on into the real stores; only the app's screens read the settings copy; a
   sample edit binds to the sample store; the debug synthetic series pauses while the sample is open.
+- **Amended 2026-11-11:** the sample's tags are fixed at entry on both platforms: Teams Work, Personal Personal, Lab
+  Work (a Fable fit call; rev B §9 had Lab untagged); "Tag…" in the sample edits the in-memory copy only.
 - **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
   stores' review notes describe the same three accounts.
-- **iOS follow-up:** built 2026-11-11 (a43afb4, RUNBOOK Step I3): the iOS sample's Product (Claude) is Lab (Gemini, Pro) — Teams · Claude, Personal · ChatGPT, Lab · Gemini, as Android's; Teams Work, Personal Personal, Lab untagged, so the filter shows in the sample. Captures `design/research/2026-11-v20-build/I3/iphone17pro/sample-mode-*`.
+- **iOS follow-up:** built 2026-11-11 (a43afb4, RUNBOOK Step I3): the iOS sample's Product (Claude) is Lab (Gemini, Pro) — Teams · Claude, Personal · ChatGPT, Lab · Gemini, as Android's; Teams Work, Personal Personal, Lab untagged (**changes in Step I4: Lab is Work**, Robin 2026-11-11 — no account is untagged any more), so the filter shows in the sample. Captures `design/research/2026-11-v20-build/I3/iphone17pro/sample-mode-*`.
+
+### CCRM-114 · Narrow Duet — the two-account notification on a 360 dp phone's shade
+- **Status:** Planned · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1) · **in v2.0** · Android only.
+- **Why:** Step A2 measured the AOSP shade giving a 360 dp phone **220 dp** of collapsed content (rev B drew 328): a word
+  with no tail ("No reading", "Not started", "Sign in") squeezed the account name to ".." (finding F1); the pace line
+  was cut mid-clock instead of dropping its weekday (finding F2, CCBG-80 (Fixed Pace Columns)).
+- **What (F1, Robin: variant C):** under 256 dp of content (smallest width under 396 dp) a Duet row with no figure
+  gives its "—" to the state word, which sits right-aligned in the 42 dp figure slot (the name line runs 50 dp
+  further; the bar keeps its length); new ladder rung 5: a bare word that still leaves the name under 32 dp (or its own
+  width) goes — "Held", "Out", "No reading", "Not started"; "Stale" leaves its fault-red dot; "Sign in" never goes.
+  The cover (272 dp) and wider keep rev B's "—". TalkBack hears the full word whichever rung printed. Expanded: the
+  ring's time line is sized in dp, "· Weekly" gives before the name (Fable fit calls, all at the page's
+  recommendations).
+- **Build note (F2, no decision):** the pace line's column widths come from the screen's smallest width, for both the
+  single layout and the Duet: content = `Duet.contentDp(sw)` (sw − 140 below 600 dp, 352 above), expanded +40, column =
+  (content − ring box − gaps − the figure's own width) × 0.965, sizes in dp from the system (Android 14 scales large
+  text non-linearly), never wider than today's 142 / 141 / 186 until Step 3 measures the Fold 7.
+- **Unverified until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220).
+
+### CCRM-115 · Row Tag Glyph — the Personal/Work glyph before the logo on Summary rows
+- **Status:** Planned · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
+- **Why:** Robin, 2026-11-11: "Also on summary rows please (next to or better: before the account logos?)".
+- **What:** a person (Personal) or briefcase (Work) glyph, neutral ink, before the provider mark on every Summary row,
+  full (14 dp + 4) and one-line (12 dp + 4, between the rank disc and the name); the column leaves every row at once
+  when a name would fall under its floor; the share snapshot draws it only while its rows carry both tags. The rule
+  is in BEHAVIOR-MOBILE §6; it comes with CCRM-110 (Account Tags)'s Personal/Work-only model (no empty slot).
+  Android builds it in Step A4, iOS in Step I4.
 
 ## Next — small, high value, ready to build
 

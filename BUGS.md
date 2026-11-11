@@ -16,6 +16,17 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > alert crashes. **Worked the same evening:** CCBG-31 to CCBG-34 are fixed and
 > **shipped in v1.8 (2026-09-27)**.
 
+> **v2.0 feedback build, 2026-11-11 (RUNBOOK Lane A, Step A2 judge).**
+
+### CCBG-80 · Fixed Pace Columns — the pace line is picked for a fixed column width, so a narrow shade clips it
+- **Status:** Open · to be fixed in RUNBOOK Step A6 together with CCRM-114 (Narrow Duet) · Android
+- **Severity:** Medium (the approved drop order is not followed; the line is cut mid-clock)
+- **Symptom:** on a 360 dp phone's AOSP shade the Duet's expanded header column measures 133 dp, but the pace line's
+  form is chosen for 186 dp, so it is cut ("Sun 6:…", `design/research/2026-11-v20-build/A2/25-360-dark-vs-expanded.png`)
+  instead of dropping to "· Wed 12:30 PM" → "· Wed" → the floor. The single layout's 142 / 141 dp constants have the
+  same gap at 360 dp.
+- **Fix:** derive the column from the screen's smallest width for both layouts (the build note in CCRM-114).
+
 > **v2.0 device pass, 2026-11-02 (RUNBOOK-v2.0 Step 7, Fold 7, build 5636bde, github release).** CCBG-56 to
 > CCBG-66 were found on the v2.0 branch against `design/2026-11-02-shape-grammar.html` rev D (CCRM-103 (Hybrid
 > Notification)); captures in `design/research/2026-11-02-v20-device-pass/`. None ships in v1.9. Robin decides

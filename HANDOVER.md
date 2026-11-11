@@ -13,12 +13,22 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A4 · Summary (written 2026-11-11, after A3 landed)
+## ▶ Next — Lane A (Android): Step A4 · Summary (written 2026-11-11, after A3 landed; amended the same day)
+
+**Amended 2026-11-11.** Robin changed the arc after A1–A3 landed: A4 now builds CCRM-110 (Account Tags) as **Personal or
+Work only (no None)**, the filter-memory rule, and CCRM-115 (Row Tag Glyph) beside CCRM-112 (Summary Snapshot); a new
+step **A6** (after A5) builds CCRM-114 (Narrow Duet) with CCBG-80 (Fixed Pace Columns). Read the approved addendum
+`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` — §Row glyph and §Adding and tagging for A4 (it wins over
+rev B §6 and §8 where they differ), §N1 for A6 — and BEHAVIOR-MOBILE §6 (the tag rules, the memory rule, the row glyph
+and the Add sheet in one place). Tests for tags read `spec/mobile/fixtures/tags/cases-personal-work.json` (not
+`cases.json`, which is the rev B optional-tag file iOS's I3 still reads until I4): every `filter` case with `storedAfter`
+and every `memory` sequence replayed against the real store. Order from here: **A4, A5, A6**, then Step 2 (which also waits
+for iOS's I4).
 
 Step A3 (Pace map: CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers), closing the Android side of CCBG-79 (Leader Reads as
 Trail)) landed on `main`; RUNBOOK's Lane A Log has the commits, the judge round and the captures
-(`design/research/2026-11-v20-build/A3/`). Q5 is answered ("After v2.0": A4 is CCRM-110 (Account Tags) and CCRM-112
-(Summary Snapshot) only; the Android half of CCRM-24 (Share Card) is not in v2.0). What A3 leaves A4: `SummaryScreen`
+(`design/research/2026-11-v20-build/A3/`). Q5 is answered ("After v2.0": A4 is CCRM-110 (Account Tags), CCRM-112
+(Summary Snapshot) and CCRM-115 (Row Tag Glyph) only; the Android half of CCRM-24 (Share Card) is not in v2.0). What A3 leaves A4: `SummaryScreen`
 now builds `mapEntries` from `rows.filter { it.plotted }` and a `PaceMapRules.foot` over **every** row — the Summary
 filter (CCRM-110) must filter `rows` before both, so the list, the map, its foot-line count and its empty message follow
 the filter; the snapshot (CCRM-112) draws `PaceMap(entries, layers, mode, empty, pinned = null, onTap = {})` with the
@@ -31,26 +41,46 @@ to find a node. Much faster than the jdb route; rebuild it from this description
 
 > Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A4),
 > the HANDOVER.md block "Next — Lane A", the wireframe sections Step A4 names in
-> design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
+> design/2026-11-10-v20-feedback-wireframes.html AND its approved addendum
+> design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html (the addendum wins), BEHAVIOR-MOBILE §6, and the ROADMAP
+> entries it builds (CCRM-110, CCRM-112, CCRM-115); load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
 > answers" (Convention 10; ask and record first if not). Build Step A4 on Android only (repo root, never ios/). Write
 > only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
 > "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
-> fixtures (spec/mobile/fixtures/tags for CCRM-110 (Account Tags)) for the changed rules. Check every state the
-> wireframe draws for these items on the fold7inner emulator (port 5556, headless; never emulator-5554) at the
+> fixtures (spec/mobile/fixtures/tags/cases-personal-work.json for CCRM-110 (Account Tags) and CCRM-115 (Row Tag Glyph))
+> for the changed rules. Check every state the
+> wireframe and the addendum draw for these items on the fold7inner emulator (port 5556, headless; never emulator-5554) at the
 > cover-like, inner and 360 dp widths, dark and light; save the captures in design/research/2026-11-v20-build/A4/.
 > Stop and report at anything the wireframe does not draw. One fresh Opus judge round, then close out per Convention 9
-> and land per WORKTREE.md.
+> and land per WORKTREE.md. Before stopping, replace this block with Step A5's prompt (then A6's).
 
-## ▶ Next — Lane I (iOS): Lane I done (written 2026-11-11, after I3 landed)
+## ▶ Next — Lane I (iOS): Step I4 · Row glyph and the Personal/Work model (written 2026-11-11, after the amendment)
 
-Lane I done: Steps I1, I2 and I3 are on `main` (I3: CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot) and the iOS
-follow-up to CCRM-113 (Sample Port) built on iOS; code a43afb4, close-out in the commit after it). RUNBOOK's Lane I Log has
-the judge round, the fit calls, the captures (`design/research/2026-11-v20-build/I3/`) and the "For Step 2" notes (§8 calls the
-iOS item "Share card", the "Product" widget-gallery placeholder in `FaceViews.swift`, demo launches reading the real
-`summaryFilter` key). Open for Robin (not Lane I's): whether a remembered filter that fell back to All is cleared (judge F4),
-and whether the tag chip may appear beyond Settings (fit g). Lane I has no further steps; Step 2 (fold-in) waits for Lane A's
-A5.
+I1–I3 are on `main`. **Amended 2026-11-11** (Robin): iOS gets one more step. I3 built the optional tag (None · Personal ·
+Work); Robin dropped "None" (every account Personal or Work, chosen on the Add account sheet, all existing accounts
+Personal at upgrade), asked for the tag glyph before the provider logo on Summary rows and the snapshot (CCRM-115 (Row Tag
+Glyph)), and for the filter memory to be the same on both clients — a stored filter whose group is empty becomes `all`
+(I3 kept the old value; judge F4). RUNBOOK Step I4 lists the five parts; the approved addendum
+`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` (§Row glyph, §Adding and tagging) is the contract, and
+BEHAVIOR-MOBILE §6 has the rules. Tests read `spec/mobile/fixtures/tags/cases-personal-work.json` (every `filter` case
+with `storedAfter`, every `memory` sequence replayed against the real store); I3's tests on `cases.json` are retired
+in the same commit (Step 2 folds the new file into `cases.json` later). Lane I's open items from I3 are closed by
+this step (the remembered-filter question; the chip beyond Settings is now the row glyph). Step 2 waits for I4 and A6.
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I4),
+> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I4 names in
+> design/2026-11-10-v20-feedback-wireframes.html AND its approved addendum
+> design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html (the addendum wins), BEHAVIOR-MOBILE §6, and the ROADMAP
+> entries it builds (CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot), CCRM-115 (Row Tag Glyph), CCRM-113 (Sample Port));
+> load the model-mesh skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in
+> "Robin's answers" (Convention 10; ask and record first if not). Build Step I4 on iOS only (ios/, never the Android
+> code). Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
+> inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with its tests
+> reading spec/mobile/fixtures/tags/cases-personal-work.json, then the app. Check every state the addendum draws on the
+> iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the captures
+> in design/research/2026-11-v20-build/I4/. Stop and report at anything the wireframe does not draw. One fresh Opus judge
+> round, then close out per Convention 9 and land per WORKTREE.md. Before stopping, replace this block with "Lane I done".
 
 ## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
 

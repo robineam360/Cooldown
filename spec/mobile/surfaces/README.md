@@ -48,8 +48,15 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
     `app.md` tile lines, Summary line 3, "The pace line on iOS", `widgets.md` Weekly lines.
   - CCRM-109 (Quiet Accounts): `app.md` Pace map — accounts whose Weekly figure prints "0%" leave the map, foot-line count
     ("2 at 0%", joined with "· 1 no reading"), the all-at-0% message.
-  - CCRM-110 (Account Tags): `app.md` Settings › Accounts (Tag… with person/briefcase glyph + word, neutral),
-    the account menu, iOS account page; Summary header (All · Personal · Work filter, remembered; the sort menu).
+  - CCRM-110 (Account Tags): `app.md` Settings › Accounts (the chip with person/briefcase glyph + word on every
+    account, neutral; Tag… with two rows, **no None** — Robin 2026-11-11), the Add account sheet (a Personal | Work
+    control above the provider rows), the account menu, iOS account page; Summary header (All · Personal · Work
+    filter, remembered, shown whenever the Summary exists; the sort menu).
+  - CCRM-114 (Narrow Duet), 2026-11-11: `notification.md` §2.2/§2.4 (the word takes the figure's slot under 256 dp;
+    ladder rungs 4–5; the 32 dp floor), §2.3 (the ring's time line in dp; "· Weekly" gives), §1.4 (derived columns
+    replace 142 / 141 / 186; CCBG-80 (Fixed Pace Columns)).
+  - CCRM-115 (Row Tag Glyph), 2026-11-11: `app.md` §2.8 Summary rows (Android and iOS: the glyph before the mark, the
+    one-line row, the drop-out), the snapshot (glyph only while both tags show), Settings chips on every row.
   - CCRM-111 (Map Layers): `app.md` Pace map (Figures · Trails · Projection chips on the title line, the callout,
     heavier last 24 h, dotted leaders).
   - CCRM-112 (Summary Snapshot): `app.md` share card (the Summary version: rows, then the map).

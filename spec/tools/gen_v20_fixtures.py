@@ -8,7 +8,9 @@ design/2026-11-10-v20-feedback-wireframes.html rev B, sections 3, 4, 5, 6 and 7.
 Writes:
   spec/core/fixtures/pace-distance/printed-v20.json   (core: every family)
   spec/mobile/fixtures/map-foot/cases.json            (mobile: the Pace map's foot-line count)
-  spec/mobile/fixtures/tags/cases.json                (mobile: the tag filter)
+  spec/mobile/fixtures/tags/cases.json                (mobile: the tag filter, tags optional: rev B, as built on iOS in I3)
+  spec/mobile/fixtures/tags/cases-personal-work.json  (mobile: Robin 2026-11-11, every account Personal or Work; A4 and I4 read it;
+                                                       Step 2 folds it into cases.json)
 
 Run from the repo root:  python3 spec/tools/gen_v20_fixtures.py          (writes)
                          python3 spec/tools/gen_v20_fixtures.py --check  (fails if a file would change)
@@ -767,6 +769,119 @@ def build_tags():
     }
 
 
+PW_NOTE = ("Account tags and the Summary filter on mobile after Robin's 2026-11-11 change: there is no None; every account is "
+           "Personal or Work, chosen when it is added (Personal pre-selected). CCRM-110 (Account Tags), CCRM-112 (Summary "
+           "Snapshot); BEHAVIOR-MOBILE section 6. Derived by spec/tools/gen_v20_fixtures.py. A stored tag is 'personal' or "
+           "'work'; a missing, empty or unknown value reads as personal (that is how v1.9's accounts become Personal at "
+           "upgrade, with nothing written). Accounts are in your order; storedTag null = nothing stored. The All / Personal "
+           "/ Work control exists while the Summary does (two or more accounts); a segment with no accounts is disabled, All "
+           "never. The filter in force is the remembered value when it names an enabled segment of a shown control, else "
+           "All. It narrows the list, the ranking, the Pace map and the snapshot (the snapshot header names it). oneLineRows: "
+           "the one-line form from six rows shown. storedAfter: the remembered value once the memory rule has run (a stored "
+           "value the filter in force does not match becomes 'all'; an absent value stays absent). memory: sequences of "
+           "changes (open the Summary, tag an account, add, remove, choose a segment), each step followed by the filter in "
+           "force and the value stored; the client's test replays them against its own store. Tagging never brings an "
+           "earlier choice back.")
+
+
+def pw_tag(stored):
+    return stored if stored in ("personal", "work") else "personal"
+
+
+def pw_filter(accts, remembered):
+    ctrl = len(accts) >= 2
+    segs = {"all": True, "personal": any(pw_tag(x["storedTag"]) == "personal" for x in accts),
+            "work": any(pw_tag(x["storedTag"]) == "work" for x in accts)}
+    return ctrl, segs, (remembered if ctrl and remembered in segs and segs[remembered] else "all")
+
+
+def run_pw_memory(accts, stored, steps):
+    accts = [dict(x) for x in accts]
+    out = []
+    for st in steps:
+        do = st["do"]
+        if do == "tag":
+            next(x for x in accts if x["name"] == st["account"])["storedTag"] = st["tag"]
+        elif do == "add":
+            accts.append({"name": st["account"], "storedTag": st["tag"]})
+        elif do == "remove":
+            accts = [x for x in accts if x["name"] != st["account"]]
+        elif do == "choose":
+            assert pw_filter(accts, st["filter"])[2] == st["filter"], "a disabled segment cannot be chosen"
+            stored = st["filter"]
+        elif do != "open":
+            raise ValueError(do)
+        if len(accts) >= 2:  # the rule runs only while the Summary exists
+            eff = pw_filter(accts, stored)[2]
+            stored = None if stored is None else eff
+        else:
+            eff = "all"
+        out.append({"filter": eff, "stored": stored})
+    return out
+
+
+def build_tags_pw():
+    def a(name, tag):
+        return {"name": name, "storedTag": tag}
+
+    def run(accts, remembered):
+        ctrl, segs, eff = pw_filter(accts, remembered)
+        shown = [x["name"] for x in accts if eff == "all" or pw_tag(x["storedTag"]) == eff]
+        return {"effectiveTags": [pw_tag(x["storedTag"]) for x in accts], "controlShown": ctrl,
+                "segmentsEnabled": segs if ctrl else None, "filter": eff, "shown": shown,
+                "oneLineRows": len(shown) >= 6,
+                "snapshotHeader": {"all": "All accounts", "personal": "Personal accounts", "work": "Work accounts"}[eff],
+                "storedAfter": None if remembered is None else eff}
+
+    sample = [a("Teams", "work"), a("Personal", "personal"), a("Lab", "work")]
+    seven = [a("Teams", "work"), a("Personal", "personal"), a("Lab", "work"), a("Atlas", "work"), a("Side", "personal"),
+             a("Design", "work"), a("Gemini", "personal")]
+    cases = []
+    for name, accts, rem in [
+        ("upgrade from v1.9: nothing stored reads as Personal, Work is disabled, a leftover Work falls back to All",
+         [a("Teams", None), a("Lab", None)], "work"),
+        ("one account: no Summary, so no control and nothing to filter", [a("Teams", "work")], "work"),
+        ("the sample: Teams Work, Personal Personal, Lab Work; Work chosen", sample, "work"),
+        ("Personal chosen", sample, "personal"),
+        ("All", sample, "all"),
+        ("a segment with no accounts is disabled; a remembered filter on it falls back to All",
+         [a("Teams", "personal"), a("Lab", "personal")], "work"),
+        ("an unknown remembered value reads as All", sample, "family"),
+        ("an empty or unknown stored tag reads as Personal", [a("Teams", ""), a("Lab", "family"), a("Atlas", "work")],
+         "personal"),
+        ("seven accounts: one-line rows under All", seven, "all"),
+        ("the one-line form follows the rows shown, not the accounts: Work shows four", seven, "work"),
+        ("nothing remembered: reads as All and nothing is stored", sample, None),
+    ]:
+        cases.append({"name": name, "accounts": accts, "rememberedFilter": rem, "expected": run(accts, rem)})
+    three = [a("Teams", "work"), a("Personal", "personal"), a("Lab", "personal")]
+    memory = []
+    for name, accts, stored, steps in [
+        ("the last Work account becomes Personal: All is stored, and marking another Work later does not bring Work back",
+         three, "work",
+         [{"do": "open"}, {"do": "tag", "account": "Teams", "tag": "personal"},
+          {"do": "tag", "account": "Lab", "tag": "work"}, {"do": "choose", "filter": "work"}]),
+        ("removing the last Personal account falls back to All; adding a Personal one later leaves All",
+         [a("Teams", "work"), a("Atlas", "work"), a("Personal", "personal")], "personal",
+         [{"do": "remove", "account": "Personal"}, {"do": "add", "account": "Side", "tag": "personal"},
+          {"do": "choose", "filter": "personal"}]),
+        ("a choice that still has accounts survives other changes",
+         [a("Teams", "work"), a("Atlas", "work"), a("Personal", "personal")], "work",
+         [{"do": "tag", "account": "Personal", "tag": "work"}, {"do": "add", "account": "Side", "tag": "personal"},
+          {"do": "tag", "account": "Atlas", "tag": "personal"}]),
+        ("an unknown stored value is replaced by All", sample, "family", [{"do": "open"}]),
+        ("upgrade: nothing stored stays nothing stored until a segment is chosen; Work cannot be chosen yet",
+         [a("Teams", None), a("Lab", None)], None,
+         [{"do": "open"}, {"do": "choose", "filter": "personal"}, {"do": "tag", "account": "Lab", "tag": "work"},
+          {"do": "choose", "filter": "work"}]),
+        ("a second account added to a single-account install: the rule starts to run when the Summary appears",
+         [a("Teams", "work")], "work", [{"do": "open"}, {"do": "add", "account": "Lab", "tag": "personal"}]),
+    ]:
+        memory.append({"name": name, "accounts": accts, "storedFilter": stored, "steps": steps,
+                       "expected": run_pw_memory(accts, stored, steps)})
+    return {"_meta": {"note": PW_NOTE}, "filter": cases, "memory": memory}
+
+
 def dump(obj):
     return json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
 
@@ -825,11 +940,13 @@ def main():
     core = build_core()
     foot = build_map_foot()
     tags = build_tags()
+    tags_pw = build_tags_pw()
     wireframe_examples(core, foot, tags)
     outs = {
         "spec/core/fixtures/pace-distance/printed-v20.json": dump(core),
         "spec/mobile/fixtures/map-foot/cases.json": dump(foot),
         "spec/mobile/fixtures/tags/cases.json": dump(tags),
+        "spec/mobile/fixtures/tags/cases-personal-work.json": dump(tags_pw),
     }
     check = "--check" in sys.argv
     bad = []

@@ -1,0 +1,3 @@
+VERDICT: accept
+1. prior C1-1 [blocking] — fixed at Tests and gates added — the decision-gate checker was re-run on the amended runbook and passed; no change required.
+COVERAGE: changed text in full

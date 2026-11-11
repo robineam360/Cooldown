@@ -5,17 +5,29 @@ with one finding (C1-1, no decision gates on Robin's open questions), fixed by C
 named check (`reviews/v20-build-arc-gatecheck.py`, PASS). No delta call: no step added, no reversal changed.
 Table: `reviews/v20-build-arc-findings.md`; Step 0's Log.
 
+**Amended 2026-11-11 (Robin's three changes, after A1–A3 and I1–I3 had landed).** (1) A narrow Duet for a 360 dp
+phone's shade, Android only: CCRM-114 (Narrow Duet), with CCBG-80 (Fixed Pace Columns) as a build note — a new Lane A
+step **A6**, after A5. (2) The tag glyph before the provider logo on Summary rows and the snapshot, both platforms:
+CCRM-115 (Row Tag Glyph), folded into **A4** on Android and a new Lane I step **I4** on iOS. (3) The Summary filter's
+memory rule, the same on both clients — a spec rule, no wireframe. In the same stroke Robin **dropped "None"**: every
+account is Personal or Work, chosen on the Add account sheet, all existing accounts Personal at upgrade. The
+addendum `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` is **approved 2026-11-11** and is the
+contract for A4, A6 and I4 beside rev B; Step 2 waits for A6 and I4. One Astra delta review: see "Amendment
+review" below.
+
 This runbook takes `main` as of 2026-11-11 (v2.0 code on main, versionCode 25 / "1.9", the nine feedback
 items approved but not built) to a published **v2.0**: the GitHub release (APK, with the iOS build under the
 same version), the TestFlight build, and Day 0 of the Google Play closed test.
 
 **Items** (each on Android and iOS unless marked):
 - CCRM-105 (Duet Stack) — Android only (iOS has no ongoing notification);
+- CCRM-114 (Narrow Duet) — Android only, added 2026-11-11; CCBG-80 (Fixed Pace Columns) is its build note;
 - CCRM-106 (7d Chip);
 - CCRM-107 (Day Grid);
 - CCRM-108 (Reset Named);
 - CCRM-109 (Quiet Accounts);
-- CCRM-110 (Account Tags);
+- CCRM-110 (Account Tags) — Personal or Work only since 2026-11-11, plus the filter-memory rule;
+- CCRM-115 (Row Tag Glyph), added 2026-11-11;
 - CCRM-111 (Map Layers), which closes CCBG-79 (Leader Reads as Trail);
 - CCRM-112 (Summary Snapshot);
 - CCRM-113 (Sample Port) — Android, plus the iOS follow-up (the iOS sample swaps "Product" for a Gemini account).
@@ -26,17 +38,19 @@ up their open checks (listed there).
 CCRM-104 (Pace Line Parity) and CCBG-78 (Collapsed Pace Line Clip) are built and wait for the device check in
 Step 3. Earlier arcs are in git history: v1.9 at `1f8ee7b` (this file before it was replaced).
 
-**The design.** `design/2026-11-10-v20-feedback-wireframes.html`, **approved rev B 2026-11-10** (§1–§8 the
+**The design.** `design/2026-11-10-v20-feedback-wireframes.html`, **approved rev B 2026-11-10** (amended by the
+**addendum page of 2026-11-11**, which wins where they differ: no "None", the Add-sheet control, the row glyph, the
+narrow Duet) (§1–§8 the
 eight items, §9 the sample mode). Rules: BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback" (CCRM-107, 108, 109,
 111), BEHAVIOR-MOBILE §7 (sample mode), ROADMAP.md CCRM-105 to CCRM-113, and the per-file deltas in
 `spec/mobile/surfaces/README.md` § "Planned changes". The wireframe's §4 heading still says "since / until";
 Robin chose **B, the pace line names the reset** — ROADMAP's CCRM-108 and core §6.3 are the rule.
 
-## Closed decisions (Robin, 2026-11-04 to 2026-11-10)
+## Closed decisions (Robin, 2026-11-04 to 2026-11-11)
 
 1. All nine items ship in v2.0; v2.0 waits for their build and a second Fold 7 + iPad pass.
 2. The Duet keeps its +/− sign. Collapsed Duet text is capped in dp at large font scales.
-3. Tags are optional (None · Personal · Work); untagged accounts show only under All.
+3. ~~Tags are optional (None · Personal · Work)~~ **replaced 2026-11-11 (decision 9).**
 4. The pace line names the reset: "6d 23h behind · resets Wed 12:30 PM". Where it does not fit, a bare clock
    always means today: another day drops "resets", then the clock, then the weekday; later today drops
    "resets", then the clock (c1454d4).
@@ -47,6 +61,18 @@ Robin chose **B, the pace line names the reset** — ROADMAP's CCRM-108 and core
    EAM360. Terms risk accepted ("Proceed, risk accepted").
 8. Version: Android versionCode **26** / versionName **"2.0"**; iOS `MARKETING_VERSION` **2.0**, build
    (`CURRENT_PROJECT_VERSION`) **1**, both set in the release commit and never earlier.
+9. **No "None" (Robin, 2026-11-11).** Every account is Personal or Work. It is chosen on the Add account sheet
+   (a Personal | Work control above the provider rows, Personal selected each time), the first account (which never
+   passes the sheet) is Personal without asking, and every account that exists at the upgrade is Personal, silently
+   (a missing stored tag reads as Personal). The control shows whenever the Summary exists. Same on both platforms.
+10. **The tag glyph on Summary rows (Robin, 2026-11-11):** before the provider logo, both platforms; one column, it
+    leaves every row at once when a name would fall under its floor; the snapshot draws it only while its rows carry
+    both tags. BEHAVIOR-MOBILE §6.
+11. **The filter memory (Robin, 2026-11-11: "ensure specs and behaviour is the same across iOS and Android"):** a
+    remembered filter whose group has gone empty falls back to All **and is stored as All**; tagging later never
+    switches it back. iOS I3 kept the old value; I4 changes it. BEHAVIOR-MOBILE §6.
+12. **The narrow Duet (Robin, 2026-11-11: "Yes, wireframe it"):** variant C — under 256 dp of content a figure-less
+    row gives its "—" to the state word. CCRM-114.
 
 ## How the work is split, and why
 
@@ -68,8 +94,8 @@ per platform would be too big to judge in one round. So the items are grouped by
 |---|---|---|
 | Lines and labels | CCRM-106, CCRM-107, CCRM-108 | the pace-line formatter (`PaceText` · `PrintedForm`), the trend chart's painter, the tile chips; the §6.3 printed-form fixtures |
 | Pace map | CCRM-109, CCRM-111 (CCBG-79) | the map painter, its label placer and foot line; the `mapLabels` fixtures |
-| Summary | CCRM-110, CCRM-112 | the Summary header, the account settings, the share card |
-| Duet | CCRM-105 | the notification builder and its fit tables (Android only) |
+| Summary | CCRM-110, CCRM-112, CCRM-115 | the Summary header and rows, the account settings and Add sheet, the share card |
+| Duet | CCRM-105, then CCRM-114 (A6) | the notification builder and its fit tables (Android only) |
 | Sample | CCRM-113 | the account store, the first screen, every tab's notice slot |
 
 The four §6.3 items are split across two batches on purpose: the day grid and the reset wording change the
@@ -108,6 +134,12 @@ rules). Each lane points its own tests at them as it builds. Step 2 folds them i
 both clients' tests back in one commit, and promotes the §6.3 planned block into the rules. Until Step 2, the
 §6.3 rules "above the planned block" stay the shipped ones, as the spec already says.
 
+**The Personal/Work tag fixtures (amendment 2026-11-11).** `spec/mobile/fixtures/tags/cases.json` still holds the
+rev B optional-tag cases that iOS's I3 tests read; the new model's cases are in `cases-personal-work.json` (written
+by `spec/tools/gen_v20_fixtures.py`, filter cases with `storedAfter`, and `memory` sequences). **A4 and I4 read the
+new file**; I4 retires the old tag tests. Step 2 replaces `cases.json`'s content with the new file's and points both
+clients back at `cases.json`.
+
 ## Conventions — every session reads this block first
 
 1. **Start from the paste.** Each step's fenced prompt needs no earlier conversation. Open a fresh session in
@@ -135,7 +167,8 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
    push `gh pr create --base main --fill`. To land: `git fetch origin`, `git merge --no-edit origin/main`, the
    ID check, the verify command on that head, then `git push -u origin HEAD` and `git push origin HEAD:main`, each
    as its own call. Never force, in any spelling. A merge conflict means `git merge --abort`, stop and report.
-7. **The wireframe is the contract.** Anything visible that the approved rev B does not draw, or draws
+7. **The wireframe is the contract** — rev B plus its 2026-11-11 addendum (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`;
+   where they differ the addendum wins). Anything visible that they do not draw, or draw
    differently, stops the step and goes back to the orchestrating session. It is never improvised. Choosing
    among the wireframe's own drop orders and stated fallbacks is not a departure.
 8. **Machine.** Android checks run on the AVD `fold7inner`, booted headless on port 5556 (`emulator -avd
@@ -173,8 +206,9 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 | A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☑ 2026-11-11 |
 | A2 | Duet: CCRM-105 | A1 | ☑ 2026-11-11 |
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☑ 2026-11-11 |
-| A4 | Summary: CCRM-110, CCRM-112 | A3, Q5 | ☐ |
+| A4 | Summary: CCRM-110 (Personal/Work, filter memory), CCRM-112, CCRM-115 (row glyph) | A3, Q5 | ☐ |
 | A5 | Sample: CCRM-113 | A4 | ☐ |
+| A6 | Narrow Duet: CCRM-114, CCBG-80 | A5 | ☐ |
 
 ### Lane I — iOS (one step at a time; runs beside Lane A)
 
@@ -183,6 +217,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 | I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☑ 2026-11-11 |
 | I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☑ 2026-11-11 |
 | I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☑ 2026-11-11 |
+| I4 | Row glyph and the Personal/Work model: CCRM-115; CCRM-110 converted; filter memory; the sample's Lab is Work | I3 | ☐ |
 
 ### Lane D — release text and the graphic (beside the lanes)
 
@@ -201,7 +236,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 
 | Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
-| 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A5, I3 | ☐ |
+| 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☐ |
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☐ |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
@@ -236,6 +271,16 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
   | C1-1 | blocking | 97 | Shape; Steps 5–7; Reserved | Steps could start on Robin's open questions with no gate (parallel lanes, share-card scope, assets, release contents, Beta App Review timing) | Convention 10 decision gates; Q-numbers in *Gated on*; the "Robin's answers" table; every gated prompt checks it and asks first; Q6 asked in Step 1; Step 7 needs Beta App Review approval logged if Q2 says wait | `reviews/v20-build-arc-gatecheck.py` — PASS | fixed |
 
   No delta call (no step added, no reversal changed). Plan **FROZEN**.
+
+---
+
+## Amendment review — 2026-11-11
+
+Steps A6 and I4 were added and A4 and Step 2 changed, so the plan took its one delta call (cross-family review is ON):
+Astra at high, `reviews/v20-build-arc-astra-call2.txt`, **accept**, coverage "changed text in full", **no new finding**;
+the prior blocking finding C1-1 stays fixed (`reviews/v20-build-arc-gatecheck.py RUNBOOK.md` re-run on the amended
+runbook: RESULT PASS). Table: `reviews/v20-build-arc-findings.md`. The plan stays **FROZEN**; a further step would need
+an exception granted by Robin (model-mesh §5b).
 
 ---
 
@@ -393,28 +438,45 @@ account; dotted leaders of at most 48 dp, the name not drawn when nothing is fre
   `app.md` Android section.
 - ☑ Judge round recorded; landed.
 
-### Step A4 · Summary — CCRM-110, CCRM-112
+### Step A4 · Summary — CCRM-110, CCRM-112, CCRM-115
 
-**Builds:** wireframe §6 and §8. "Tag…" in the account menu (None · Personal · Work), the neutral chip with a
-person or briefcase glyph and the word in Settings › Accounts; the All · Personal · Work control beside "Weekly"
-once any account has a tag (remembered; untagged only under All), filtering the list, the map and the snapshot;
-"your order" becomes the sort menu of the four orders. "Share snapshot" in the Summary's ⋮: header with the
-filter's name and time, the rows in screen order, then the map with the on-screen layers, never the chips or a
-callout; names, never e-mail addresses; the CCRM-24 (Share Card) share dialog.
+**Builds:** wireframe §6 and §8 **as amended by the 2026-11-11 addendum** (`design/2026-11-11-v20-narrow-duet-and-
+row-glyph-wireframes.html`, §Row glyph and §Adding and tagging — read both pages; the addendum wins). **Personal or
+Work only, no None:** the Add account sheet's "This account is" control above the provider rows (Personal selected
+each time it opens, a scroll when the sheet outgrows the screen, "Try with sample data" ignores it, signing in again
+keeps the tag; the first account, the built-in Claude card, is Personal); "Tag…" in the account menu after "Rename…"
+(two radio rows, glyph + word); the neutral chip with the glyph and the word on **every** card in Settings › Accounts;
+the All · Personal · Work control beside "Weekly" whenever the Summary exists (a segment with no accounts disabled; a
+tap on it shows "No Work accounts yet. Tag one in Settings." for 3 s), remembered, filtering the list, the ranking,
+the map, its foot-line count and the snapshot; "your order" becomes the sort menu of the four orders. **The memory
+rule** (BEHAVIOR-MOBILE §6): a stored filter whose group is empty is replaced by `all` at once, and later tagging
+never switches it back. **The row glyph (CCRM-115):** a person or briefcase before the provider mark on every full
+row (14 dp + 4), between the rank disc and the name on a one-line row (12 dp + 4), the column leaving every row at
+once when a name would fall under its floor (64 dp at its own text scale) or a one-line bar under 40 dp, measured on
+the tightest row shown; TalkBack "Teams, Work account". "Share snapshot" in the Summary's ⋮: header with the filter's
+name and time, the rows in screen order — the glyph column only while the rows on the card carry both tags — then the
+map with the on-screen layers, never the chips or a callout; names, never e-mail addresses; the CCRM-24 (Share Card)
+share dialog. Sample accounts' tags are Teams Work, Personal Personal, Lab Work (A5 wires them).
 
 **Done when:**
-- ☐ The new tag preference is additive and downgrade-tested (v2.0 prefs read through v1.9's accessors give
-  v1.9's defaults); filter and sort tests on the mobile fixtures; both flavors' tests and lint.
-- ☐ Emulator captures: no tags (no control), one tag, each filter, the sort menu, the snapshot for six accounts
-  and for a filter, the share sheet.
-- ☐ CCRM-110 and CCRM-112 Status "Android built"; `app.md` Android section.
+- ☐ The tag preference is additive and downgrade-tested (a missing, empty or unknown value reads as Personal; an
+  unknown value is written back untouched; v2.0 prefs read through v1.9's accessors give v1.9's defaults). Tests read
+  `spec/mobile/fixtures/tags/cases-personal-work.json` — every `filter` case and every `memory` sequence replayed
+  against the real store — plus the row-fit rule (pure, in `ui/SummaryRows.kt`) at 360 dp, the cover and the inner
+  list, font scale 1.0 and 2.0; both flavors' tests and lint.
+- ☐ Emulator captures (the addendum's states): the Add sheet with Personal and Work selected, at 360 dp and font 2.0;
+  the chip on every card, the Tag dialog; the Summary after an "upgrade" (everything Personal, Work disabled) and
+  with both tags, each filter, the disabled-segment line, the sort menu; the row glyph at the cover, inner and 360 dp
+  widths, the glyph column dropped, one-line rows; the snapshot with both tags and with one (no glyph), the share
+  sheet; dark and light.
+- ☐ CCRM-110, CCRM-112 and CCRM-115 Status "Android built"; `app.md` Android section.
 - ☐ Judge round recorded; landed.
 
 ### Step A5 · Sample — CCRM-113
 
 **Builds:** wireframe §9 and BEHAVIOR-MOBILE §7. "Try with sample data" under the first screen's "No Claude
 account yet" card and as the last row of Add account; three made-up accounts (Teams · Claude, Personal ·
-ChatGPT, Lab · Gemini); the violet "● Sample data — made-up accounts · Exit" banner on every tab, Settings and
+ChatGPT, Lab · Gemini — tagged Work, Personal, Work, fixed at entry; "Tag…" edits the in-memory copy only); the violet "● Sample data — made-up accounts · Exit" banner on every tab, Settings and
 History; held in memory, settings in an in-memory copy. Isolation: real polling carries on into the real stores;
 only the app's screens read the copy; a sample edit binds to the sample store; the debug synthetic series pauses.
 
@@ -426,10 +488,39 @@ only the app's screens read the copy; a sample edit binds to the sample store; t
 - ☐ Emulator captures: entry points, the banner on every tab, Settings, History, the share band "● SAMPLE DATA",
   and exit; a process kill returns to the real app.
 - ☐ CCRM-113 Status "Android built"; `app.md`, `notification.md`, `widgets.md` Android sections.
+- ☐ Judge round recorded; landed.
+
+### Step A6 · Narrow Duet — CCRM-114, CCBG-80
+
+**Builds:** the addendum's §N1 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`), Robin's variant
+**C**, on top of A2's Duet. **F1:** under 256 dp of content (smallest width under 396 dp) a row with no figure ("Sign
+in", "No reading", "Not started") gives its "—" to the state word, which sits right-aligned in the 42 dp figure slot,
+the name line running 50 dp further and the bar keeping its length; new ladder rungs 4 and 5 (a bare word that still
+leaves the name under 32 dp, or its own width, goes — "Held", "Out", "No reading", "Not started"; "Stale" leaves its
+fault-red dot; "Sign in" never goes); the cover (272 dp) and wider keep rev B's "—"; TalkBack hears the full word
+whichever rung printed. Expanded: the ring's time line sized in dp, "· Weekly" giving before the name. **F2 (a build
+note, no wireframe; CCBG-80 (Fixed Pace Columns)):** the pace line's column widths come from the screen's smallest
+width for **both** layouts — the single layout (142 / 141 dp) and the Duet's expanded header (186 dp) — by the
+addendum's formula and table (content = `Duet.contentDp(sw)`, expanded +40, column = (content − ring box − gaps − the
+figure's own width) × 0.965, sizes in dp from the system), never wider than today's constants until Step 3 has
+measured the Fold 7; this restores the approved drop order ("· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" →
+the floor).
+
+**Done when:**
+- ☐ `DuetTest` has a case for every cell the addendum draws (226 · 220 · 200 · 176 dp, font 1.0 and 2.0, the states of
+  its grid); `TextFitTest` pins the derived-column table (360 · 411 · 420 · 750 dp at font 1.0 / 1.3 / 2.0) and the
+  pace line dropping its weekday where the column is short, for both layouts; both flavors' tests and lint; the
+  widget generator byte-identical.
+- ☐ Emulator captures at 360 dp, the cover-like and inner widths, font 1.0 and 2.0, dark and light: the Duet collapsed
+  and expanded with "Sign in", "No reading", "Not started", "Held", "Out", "Stale", a long name; the single layout
+  collapsed and expanded with a signed figure; the "Sun 6:…" cut of A2's capture 25 gone.
+- ☐ CCRM-114 Status "Android built"; CCBG-80 "Fixed" with the commit; `notification.md` Android section.
+- ☐ **UNVERIFIED until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220); write the measured
+  emulator widths in the Log.
 - ☐ Judge round recorded; landed. Lane A's HANDOVER block now says "Lane A done".
 
 **Lane A reversal:** each step is its own commits; `git revert` of them, newest first, restores the previous
-step. A4's tag preference is additive, so a revert leaves only an unread key.
+step. A4's tag preference is additive, so a revert leaves only an unread key; A6 changes only the Duet's layout and fit code.
 
 **Lane A Log:**
 
@@ -575,7 +666,39 @@ Gemini account, so both stores' review notes describe the same three accounts.
 - ☑ Simulator captures: tags, filters, the sort menu, the snapshot and share sheet, the sample's three accounts.
 - ☑ The "iOS:" lines of CCRM-110 and CCRM-112 and the "iOS follow-up:" line of CCRM-113 read "built"; the iOS
   section of `app.md`.
-- ☑ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
+- ☑ Judge round recorded; landed.
+
+### Step I4 · Row glyph and the Personal/Work model — CCRM-115, CCRM-110 converted, the filter memory
+
+**Builds** (added 2026-11-11; the addendum `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`, §Row glyph
+and §Adding and tagging, is the contract beside rev B §6 and §8): **(1) The model.** `AccountTag` loses None —
+`Account` carries a tag that is always Personal or Work (a missing, empty or unknown stored value reads as Personal;
+the raw string still survives a save, so the downgrade and unknown-value tests stay); `TagPickerRows` has two rows;
+`setTag` takes a tag; the touch-and-hold "Tag" submenu's icon is always the current glyph; the Settings chip and the
+account page's value show on every account. **(2) Adding.** The Add account sheet gains "This account is" with a
+Personal | Work control above the provider rows (Personal selected every time it opens, not remembered); a pending tag
+rides with the sign-in and is written when the account is created, ignored for "Sign in again"; the first-launch
+buttons leave Personal; "Try with sample data" ignores it. **(3) The Summary.** The All · Personal · Work control shows
+whenever the Summary exists; **the memory rule** (BEHAVIOR-MOBILE §6): a stored `summaryFilter` that is not in force
+is rewritten to `all` (I3 left it), evaluated while the Summary exists, and in the sample against its copy only; a tap
+on a disabled segment shows "No Work accounts yet. Tag one in Settings." for 3 s. **(4) The row glyph (CCRM-115):** a
+person or briefcase before the provider mark on every full row (a 14 pt box + 4), between the rank disc and the name on
+a one-line row, the column leaving every row at once by the fit rule (the name's floor 64 pt, a one-line bar under
+50 pt), VoiceOver "Teams, Work account"; the snapshot draws it only while its rows carry both tags. **(5)** The
+iPhone 17e Settings row order of the addendum (T4); the sample's Lab is **Work** in every demo scenario; "plan name"
+in the Claude sign-in footnote (T7).
+
+**Done when:**
+- ☐ CooldownCore tests read `spec/mobile/fixtures/tags/cases-personal-work.json` (every `filter` case with
+  `storedAfter`, every `memory` sequence replayed against the real store); I3's tests on the optional tag are
+  retired in the same commit; the downgrade and unknown-value tests pass; `swift test` and the app tests pass.
+- ☐ Simulator captures (the addendum's states) on the iPhone 17 Pro, iPhone 17e and iPad Pro 13″ (both orientations),
+  dark and light: the Add sheet with each choice, the chips on every row (the 17e's row order), the Tag row and
+  submenu without None, the Summary after an "upgrade" (everything Personal, Work disabled), both tags, each filter,
+  the glyph on full and one-line rows, the glyph column dropped, the snapshot with both tags and with one.
+- ☐ The "iOS:" lines of CCRM-110, CCRM-112 and CCRM-115 read "built"; CCRM-113's iOS follow-up notes Lab Work; the iOS
+  section of `app.md`.
+- ☐ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
 
 **Lane I reversal:** as Lane A: `git revert` of the step's commits, newest first.
 
@@ -755,7 +878,9 @@ and the lane-recorded defects.
 Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, Step 2 and the Logs of Lanes A, I and D) and HANDOVER.md;
 load the model-mesh skill; run the mode check and the sweeper. Lanes A and I are done. Do RUNBOOK Step 2: fold
 printed-v20.json into printed.json (the changed blocks replace theirs) and delete printed-v20.json; point both
-clients' tests back at printed.json in the same commit; move the BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"
+clients' tests back at printed.json in the same commit; replace `spec/mobile/fixtures/tags/cases.json`'s content with `cases-personal-work.json`'s (delete the new file; retire
+`build_tags()` in the generator, `build_tags_pw()` writes `cases.json`) and point A4's and I4's tests at `cases.json`;
+move the BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"
 rules into the rules they replace and drop the "planned" label; fold each surfaces file's "v2.0 feedback on
 Android/iOS" sections into the body where they replace a body rule (keep a platform section only where the
 platforms differ), and empty README's "Planned changes" of these items; rewrite each CCRM-105…113 Status and
@@ -765,7 +890,7 @@ Check: the Android suite and both iOS suites, check_no_code.sh. One fresh Opus j
 ```
 
 **Done when:**
-- ☐ One fixture file per topic, no `-v20` file left, both platforms green on it.
+- ☐ One fixture file per topic, no `-v20` file and no `cases-personal-work.json` left, both platforms green on it.
 - ☐ §6.3 has no planned block for these items; the surfaces folder describes v2.0 as built.
 - ☐ Tracker lines closed as above; lane-recorded defects filed in BUGS.md.
 - ☐ Judge round recorded; landed. The orchestrating session is told the commit, the desktop's core re-pin point
@@ -804,7 +929,13 @@ close out and land.
 - **The nine items** on the cover and inner screens, dark and light: the Duet collapsed and expanded on both
   shades (CCRM-105's real widths against A2's emulator numbers), "7d", the grid on every chart, the "resets"
   line and its drop order ("· Sun" on the cover), the quiet accounts, the chips and callout, tags, filter, sort,
-  the snapshot, the sample mode (entry, banner, exit, the notification and widgets still on real accounts).
+  the snapshot, the sample mode (entry, banner, exit, the notification and widgets still on real accounts); **the
+  2026-11-11 additions:** the narrow Duet (CCRM-114) on the Fold 7 cover and inner shades — the real widths against A6's
+  emulator numbers, "Sign in" / "No reading" / "Not started" with the word in the figure's slot, the pace line
+  dropping its weekday and not cut mid-clock (CCBG-80), One UI's vertical clip of the collapsed card's second row (A1
+  and A2 flagged it: blocking if One UI clips too); the tag glyph on every Summary row (the column dropping at 360 dp
+  and under large text), the Add sheet's Personal | Work control, an upgrade from v1.9 (everything Personal, Work
+  disabled), the filter falling back to All and staying there, the snapshot's glyph rule; on the iPad the same.
   The iPad: the same where iOS has them, both orientations; the iOS sample's three accounts.
 - **Carried from RUNBOOK-v2.0 Step 7:** CCBG-78's collapsed pace line on the cover; CCRM-104's pace line and
   signed Vs pace on both devices; CCBG-72 (Live Activity follows a Usage display change) and CCBG-73's plan
@@ -990,7 +1121,7 @@ replaced by a new versionCode on both channels.
 
 ## Reserved for Robin
 
-The physical device checks and which defects block; any visible change beyond rev B; the feature-graphic
+The physical device checks and which defects block; any visible change beyond rev B and its 2026-11-11 addendum; the feature-graphic
 approval; the TestFlight upload and App Store Connect; the release go; everything in the Play Console (account,
 fee, identity, device verification, PEPK, uploads, the closed track); recruiting and inviting testers; the
 answers to the open questions below.
@@ -1024,6 +1155,17 @@ Filled by the step that asks (Convention 10), in Robin's words, dated. Empty mea
 | Q5 | A4 | "After v2.0 (Recommended)" — the Android half of CCRM-24 (Share Card) is not in v2.0; A4 is CCRM-110 + CCRM-112 only. | 2026-11-11 |
 | Q6 | Step 1's close, A1, I1 | "Both at once (Recommended)" — Lanes A and I run side by side. | 2026-11-11 |
 
+**Added 2026-11-11 (the amendment, Robin in the amendment session; AskUserQuestion, options quoted):** the narrow Duet,
+**"C: word takes the figure's slot (Recommended)"**; the tag model, **"Always Personal or Work (Recommended)"**, after
+Robin asked why "None" should exist at all; existing accounts at upgrade, **"All Personal, silently (Recommended)"**; where
+the choice sits when adding, **"On the Add account sheet (Recommended)"**; the first account, which never passes the sheet
+— Robin: **"Pls ensure we have parity between both of the iOS/Android platforms"**, recorded as Personal without asking on
+both (the addendum's T2 A; both options drawn behave the same on both platforms; Robin may overrule at any step's
+captures); the snapshot glyph, **"Only while both tags appear (Recommended)"**; the addendum page **"Approved as drawn"**
+with Fable's fit calls; the filter reset **"As per your recommendation but ensure specs and behaviour is the same across
+iOS and Android"**; and Robin's two requests, the row glyph ("Also on summary rows please (next to or better: before the
+account logos?)") and the narrow Duet ("Yes, wireframe it"). No new gate: none of A4, A6, I4 waits on a question.
+
 All six were answered by Robin in the orchestrating session on 2026-11-11 (AskUserQuestion, options quoted
 verbatim) and relayed to the planning session, which recorded them. No answer adds or removes a step.
 
@@ -1034,6 +1176,13 @@ verbatim) and relayed to the planning session, which recorded them. No answer ad
 - **A fixture is wrong.** Spec leads: the orchestrator gives one session a spec-only fix; the other lane re-merges.
 - **The Duet does not fit the real shade.** A2 builds to the wireframe's widths; Step 3 measures; a new width is
   a wireframe revision for Robin.
+- **The narrow Duet's real widths differ (One UI at 360 dp is assumed to match AOSP's 220).** A6 derives its widths from
+  the screen and never widens past today's constants; Step 3 measures; a different width is a wireframe revision for
+  Robin, not a silent retune.
+- **A v1.9 user with work accounts upgrades.** Every account reads Personal until changed (Robin: silently); the glyph
+  and the disabled Work segment make it visible, and Tag… changes it. A mislabelled account is cosmetic, never data.
+- **Two clients drift on the filter memory.** Both replay the same `memory` sequences from one fixture; Step 2 folds the
+  file once.
 - **The sample leaks into real data.** A5's isolation tests; Step 3 checks the notification and widgets.
 - **Play refuses something.** The AAB checks run before the tag; Play's rules are re-read on the day; a
   `specialUse` objection falls back to CCRM-67 (Pin Service), a new release on both channels.
@@ -1044,7 +1193,7 @@ verbatim) and relayed to the planning session, which recorded them. No answer ad
 ## UNVERIFIED
 
 The Duet's real collapsed widths on the cover and inner shades and its expanded column (≈186 dp is
-arithmetic); iOS chip and segment widths; whether two worktree sessions building at once slow each other enough
+arithmetic), and One UI's widths at 360 dp (the narrow Duet's 220 dp is AOSP's); iOS chip and segment widths; whether two worktree sessions building at once slow each other enough
 to matter; whether a new closed-track build resets Play's 14-day clock (secondary sources say no); whether
 Play's reviewer accepts the sample mode as App access; Beta App Review's timing.
 
@@ -1055,9 +1204,11 @@ Play's reviewer accepts the sample mode as App access; Beta App Review's timing.
 - `sh spec/tools/check_no_code.sh` (Steps 1, 2)
 - The fixture generator script re-derives `printed-v20.json` and the mobile fixtures (Step 1)
 - `tools/widget_layouts.py` byte-identical (any step that changes a widget layout)
-- The downgrade test for the tag key (A4, I3)
+- The downgrade test for the tag key (A4, I3, I4)
+- The tag fixture replay, filter cases and memory sequences (`cases-personal-work.json`; A4, I4)
+- The Duet narrow-width and derived-column tests (A6)
 - The four sample-isolation tests (A5)
-- One fresh Opus judge round per code step (1, A1–A5, I1–I3, 2, 3's fixes, 4)
+- One fresh Opus judge round per code step (1, A1–A6, I1–I4, 2, 3's fixes, 4)
 - RELEASING.md §4 step 5 and §5's checks (Step 4 and 7); §6's archive checks (Step 4)
 - Fable judge, Sol cross-check and Robin's recorded go before publishing (Step 7)
 - The Play-signed APK's digest = the trusted digest (Step 8)
