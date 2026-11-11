@@ -839,6 +839,10 @@ Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named
   before. No layout file changes; `tools/widget_layouts.py` regenerates byte
   for byte. Captures 08/09 (Faces gallery, dark).
 
+Step A5 (2026-11-11, RUNBOOK Lane A) — CCRM-113 (Sample Port): sample mode never reaches the widgets. They read the real
+cache and registry throughout; nothing the sample does (an Appearance change included) redraws them. Only the debug
+synthetic series pauses while the sample is open. No layout file changes; `tools/widget_layouts.py` is untouched.
+
 ## v2.0 feedback on iOS
 
 Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4); renders in

@@ -1161,6 +1161,50 @@ CCRM-112 (Summary Snapshot), CCRM-115 (Row Tag Glyph)). Code `data/AccountTag.kt
   card carry both tags**. Spent rows read "Out until …" in red; unread rows are at 50% with "Sign in" / "No reading" and no
   bar fill; a stale row reads "Stale"; a held row reads "Held · back at …". Names, never e-mail addresses.
 
+Step A5 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-113 (Sample Port), CCRM-110 (Account Tags)'s Add-sheet
+rule. Captures: `design/research/2026-11-v20-build/A5/`.
+
+- **Sample mode** (`data/SampleMode.kt`, `ui/SampleUi.kt`; BEHAVIOR-MOBILE §7). A process-wide flag, never written. While it is
+  on the app's root hands every screen a **sample repository** — a `UsageRepository` over in-memory twins (`MemoryPrefs`
+  cache and registry, in-memory history and session log, no credentials) — and re-keys the whole tree, which closes every
+  dialog, sheet and menu and drops its pending edit. A dialog binds to the repository it opened with, never to the flag. Real
+  polling, reset checks and alerts build their own real repositories and never read it; `Surfaces.refresh` refuses a sample
+  cache, so the notification, status-bar icon and widgets stay on the real accounts. Entering suspends the debug synthetic
+  series in memory (restored on Exit). Opening the app from a real surface (a launch naming an account, or "refresh") exits the
+  sample first; process death returns to the real app.
+- **Accounts.** Teams (Claude, Max, **Work**), Personal (ChatGPT, Plus, **Personal**), Lab (Gemini, Pro, **Work**), tags fixed at
+  entry (the addendum wins over rev B §9's untagged Lab). Readings are the iOS demo's, parsed through the real parsers: Teams 46% at
+  46% elapsed, weekly 18%, a Fable limit, credits $123.90 / $400.00 · 31%; Personal 26% / 9% (well under); Lab 62% / 64% (above
+  pace, held). Seven days of history and sixteen closed windows per account. The sample's settings are an in-memory copy of
+  the user's Appearance and Summary settings (theme, time, usage display, end mark, reset form, over-pace, density, chart,
+  open-on-summary, order, filter, map layers); a change in the sample is dropped on Exit.
+- **Entry.** The first screen (no account) shows a 48 dp text button "Try with sample data" in the accent, 12 dp under the
+  unchanged "No … account yet" card, with the caption "Three made-up accounts to look around. Nothing is saved or sent."
+  (bodySmall, muted). The Add account sheet's last row, under a divider, is a 28 dp violet ring-and-dot glyph with the same
+  title (bodyLarge) and caption; it ignores the Personal | Work control. No confirmation. Entry lands on the All tab; Exit
+  returns to the tab the user was on (the first screen when there was no account).
+- **Banner** (`SampleBanner`): the first item under the app bar on every tab (All included), Settings and History; the band is
+  violet `#7C4DFF` at 16%, 12 dp radius, 36 dp tall, in a 48 dp row so "Exit" has a whole target; "● Sample data" SemiBold
+  violet (`#B388FF` on dark), " — made-up accounts" in the ink, 13 sp. Where the line does not fit (font 1.3 on a 360 dp phone,
+  and larger) the tail drops (`SampleBannerFit`); "● Sample data" and "Exit" never drop or wrap. At compact height it moves into
+  the scrolling column with the other notices. "Exit" and Settings › Accounts "Exit sample data" are the same exit.
+- **Account tab and Summary.** Unchanged layouts drawing the sample; the status line reads "Sample data · nothing is fetched"
+  (12.5 sp muted, no glyph, not a button) on an account and on the Summary; no fetch-error notice and no "Weekly now leads" card;
+  store and crash cards are the real ones. The share card and the Summary snapshot stay and their band reads "● SAMPLE DATA".
+- **Settings › Accounts.** Each card is the header alone: mark, name, the word "Sample" in place of the status dot, plan chip,
+  tag chip, ⋮ (Rename…, Tag…, Accent colour…, Headline… work on the in-memory copy; Details…, Clear usage history… and Remove
+  account are hidden); no e-mail line, no check line, no action row. "+ Add account" and "Reorder" give way to an outlined
+  "Exit sample data". **Alerts:** one card, "Off while the sample is open" with the real-surfaces sentence. **Appearance:** every
+  control works on the copy, with the caption "Changes here apply to the sample and are dropped when you exit." **More:**
+  Polling, Usage credits and Diagnostics are hidden; Updates and About stay.
+- **Add account sheet: the sign-in rule** (Robin 2026-11-11, both platforms). The row tap still creates the card (it hosts the
+  sign-in) but the account is **provisional** until its sign-in saves a token: Cancel (Claude, Gemini), dismissing the code sheet
+  (ChatGPT) and any dead end leave **no account and no tag** (`UsageRepository.abandonProfile`; slots are never reused), and a
+  provisional account with no token is swept at the next launch (`settleProvisional`) when no sign-in is pending for it or it is
+  more than an hour old (the browser-trip entries never expire). Abandoning runs under the repository's lock, so a dismiss that
+  races the token save keeps the account. No visible
+  design change. History tab (Android): "Personal" wraps at 360 dp with three accounts — CCBG-81 (History Tab Wrap).
+
 ## v2.0 feedback on iOS
 
 Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B

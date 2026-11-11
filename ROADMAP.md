@@ -2023,7 +2023,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS (Step I4):** built 2026-11-11: the snapshot draws the tag glyph (11 pt in a 12 pt box, before the mark) only while its rows carry both tags (`SummarySnapshotView.glyphs`, from `SummaryFilter.Resolved.snapshotGlyphs`); under a filter or with every row Personal the card is unchanged. Captures `design/research/2026-11-v20-build/I4/`.
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
-- **Status:** Planned · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
+- **Status:** **Android built** 2026-11-11 (RUNBOOK Step A5, emulator captures `design/research/2026-11-v20-build/A5/`) · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
   isolation rules adopted, `reviews/v20-sample-mode-findings.md`) · **in v2.0**, built with CCRM-105…112 so it is in
   the AAB for Play's closed track · Android; one iOS follow-up.
 - **Why:** Robin, 2026-11-10: "Port sample mode" — so Play's reviewer gets in with no credentials (Play App access,

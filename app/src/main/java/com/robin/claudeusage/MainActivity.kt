@@ -25,7 +25,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.sp
 import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.SyntheticSeries
-import com.robin.claudeusage.data.HistoryStore
 import com.robin.claudeusage.share.ShareCard
 import com.robin.claudeusage.share.SummarySnapshot
 import com.robin.claudeusage.widgets.WidgetHost
@@ -102,6 +101,9 @@ import com.robin.claudeusage.data.Profile
 import com.robin.claudeusage.data.ProfileRegistry
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.QuickLinks
+import com.robin.claudeusage.data.SampleMode
+import com.robin.claudeusage.ui.SampleBannerSlot
+import com.robin.claudeusage.ui.SampleEntry
 import com.robin.claudeusage.data.UsageCache
 import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.ui.ChartColumnMaxWidth
@@ -165,6 +167,10 @@ class MainActivity : ComponentActivity() {
         // CCRM-98 (Summary Tab): a launch that names an account (a notification or a
         // shortcut) opens that account; only a plain launch may open on the All tab.
         val explicitProfile = intent?.getStringExtra("profile") != null
+        // CCRM-113 (Sample Port): a real surface (the notification, a widget, a shortcut, a reset ping) never opens
+        // made-up numbers — a launch that names an account, or asks for a refresh, leaves the sample first.
+        // Only on a fresh launch: a recreation (dark mode, font scale, locale) keeps the sample, and keeps its intent.
+        if (savedInstanceState == null && (explicitProfile || intent?.getBooleanExtra("refresh", false) == true)) SampleMode.exit()
         setContent { ProvideWidthClass { App(startProfile, explicitProfile) } }
     }
 }
@@ -194,13 +200,63 @@ internal object LastAccount {
  */
 internal const val FIXED_TAB_LIMIT = 3
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * CCRM-113 (Sample Port): the root picks the repository the whole tree reads — the real one, or the sample's in-memory
+ * twin — and re-keys the tree when the mode flips, so every dialog, sheet and menu closes and its pending edit is dropped
+ * (isolation rule C1-3). Anything the tree opens binds to the repository it was composed with, never to the flag.
+ */
 @Composable
 private fun App(startProfile: Profile, explicitProfile: Boolean) {
     val context = LocalContext.current
     // CCBG-46 (Keystore Wedge): the one repository allowed to reset an unreadable
     // credential store — opening the app is the only path that may sign accounts out.
-    val repo = remember { UsageRepository(context, credentialResetAllowed = true) }
+    val realRepo = remember { UsageRepository(context, credentialResetAllowed = true) }
+    // Asked once per launch, outside the re-keyed tree: entering or leaving the sample never prompts again
+    // (a permission prompt over made-up data is what the sample's design avoids).
+    val notifPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+    val sampleOn by SampleMode.active.collectAsState()
+    val sampleRepo = if (sampleOn) SampleMode.repo() else null
+    // Where Exit returns to: the tab the user was on before entering (null: the launch's own choice).
+    var resumeKey by remember { mutableStateOf<String?>(null) }
+    val repo = sampleRepo ?: realRepo
+    val start = when {
+        sampleRepo != null -> sampleRepo.registry().first()
+        resumeKey != null && resumeKey != ALL_KEY -> realRepo.registry().resolve(resumeKey)
+        else -> startProfile
+    }
+    key(sampleRepo != null) {
+        AppBody(
+            repo = repo, realRepo = realRepo, startProfile = start, explicitProfile = explicitProfile,
+            sample = sampleRepo != null, resumeKey = resumeKey,
+            onEnterSample = { from -> SampleMode.enter(context, from) },
+            onExitSample = { resumeKey = SampleMode.exit() },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppBody(
+    repo: UsageRepository,
+    realRepo: UsageRepository,
+    startProfile: Profile,
+    explicitProfile: Boolean,
+    sample: Boolean,
+    resumeKey: String?,
+    onEnterSample: (String?) -> Unit,
+    onExitSample: () -> Unit,
+) {
+    val context = LocalContext.current
     val cache = remember { repo.cacheSettings() }
     var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
     // Deliberately not persisted: the debug easter egg re-locks on every launch.
@@ -214,8 +270,15 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
     // share or lay out, so Main takes Settings' neutral shell while it is up.
     var onSummary by remember { mutableStateOf(false) }
     val startOnSummary = remember {
-        !explicitProfile && SummaryRank.opensOnSummary(repo.configuredProfiles().size, cache.openOnSummary())
+        when {
+            // The sample has three accounts and opens on the All tab; Exit returns to the tab the user was on.
+            sample -> true
+            resumeKey != null -> resumeKey == ALL_KEY
+            else -> !explicitProfile && SummaryRank.opensOnSummary(repo.configuredProfiles().size, cache.openOnSummary())
+        }
     }
+    // Entry points hand over the tab they were opened from, so Exit can return to it.
+    val enterSample = { onEnterSample(if (onSummary) ALL_KEY else if (repo.configuredProfiles().isEmpty()) null else selectedProfile.key) }
     // CCRM-29 (Display Mode): the two three-way modes, hoisted so the Settings
     // chips recompose the whole app; the booleans every render site reads are
     // derived below.
@@ -263,20 +326,14 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
         }
     }
 
-    val notifPermission = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { }
+    // The Add-sheet rule: an account whose sign-in never finished (and has none pending) is swept at launch.
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 33 &&
-            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        if (!sample) withContext(Dispatchers.IO) { realRepo.settleProvisional() }
     }
 
     LaunchedEffect(Unit) {
-        if (repo.configuredProfiles().isNotEmpty()) {
+        // The sample never starts a fetch, and polling is real work that carries on without it.
+        if (!sample && repo.configuredProfiles().isNotEmpty()) {
             Polling.schedulePeriodic(context, cache.pollIntervalMinutes())
             val stalest = repo.configuredProfiles()
                 .minOfOrNull { repo.snapshot(it).fetchedAt } ?: 0L
@@ -474,7 +531,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                                                             if (summary) renderSummaryCard(
                                                                 context, repo, cache, dark, usageMode, use24h, showOverPace,
                                                             ) else renderShareCard(
-                                                                context, cache, profile, dark,
+                                                                context, repo, cache, profile, dark,
                                                                 usageMode == PaceText.Mode.LEFT, showOverPace,
                                                             )
                                                         }
@@ -507,9 +564,14 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                             density, chartSize, chartOrientation, layoutTick, tick,
                             startProfile, { screen = Screen.SETTINGS },
                             Modifier.padding(innerPadding),
+                            realRepo = realRepo,
+                            sample = sample,
+                            onEnterSample = enterSample,
+                            onExitSample = onExitSample,
                             onProfileChange = {
                                 selectedProfile = it
-                                LastAccount.set(context, it.key)
+                                // The sample's made-up accounts are never remembered as "the last account looked at".
+                                if (!sample) LastAccount.set(context, it.key)
                             },
                             startOnSummary = startOnSummary,
                             onSummaryChange = { onSummary = it },
@@ -546,6 +608,9 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                             onTheme = { themeName = it },
                             debugUnlocked = debugUnlocked,
                             onDebugUnlock = { debugUnlocked = true },
+                            sample = sample,
+                            onEnterSample = enterSample,
+                            onExitSample = onExitSample,
                             modifier = Modifier.padding(innerPadding),
                         )
                     else -> ContentColumn(
@@ -553,6 +618,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                         maxWidth = contentWidth,
                     ) {
                         Spacer(Modifier.height(8.dp))
+                        if (sample) com.robin.claudeusage.ui.SampleBanner(onExitSample, Modifier.padding(top = 6.dp))
                         HistoryScreen(repo, tick, onProfileChange = { selectedProfile = it })
                         Spacer(Modifier.height(24.dp))
                     }
@@ -609,6 +675,11 @@ private fun ProfileTabs(
     startOnSummary: Boolean = false,
     onSummaryChange: (Boolean) -> Unit = {},
     onLayoutChanged: () -> Unit = {},
+    /** CCRM-113 (Sample Port): the real repository, for the store and crash cards that stay real in the sample. */
+    realRepo: UsageRepository = repo,
+    sample: Boolean = false,
+    onEnterSample: () -> Unit = {},
+    onExitSample: () -> Unit = {},
 ) {
     // CCRM-6 (Multi-Account): only accounts with a token get a tab. Someone with one
     // account sees no strip at all and gains its ~48 dp; a new account appears the moment
@@ -721,8 +792,10 @@ private fun ProfileTabs(
                 .widthIn(max = ChartColumnMaxWidth - 40.dp)
                 .fillMaxWidth()
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                // The banner leads the slot on every tab, All included: there is always a way out (§9 b).
+                if (sample) SampleBannerSlot(onExitSample)
                 DegradedStoreNotice(use24h, slot)
-                StoreChangeCard(repo, use24h, onOpenSettings, slot)
+                StoreChangeCard(realRepo, use24h, onOpenSettings, slot)
                 CrashCard(use24h, slot)
                 notice(slot)
             }
@@ -786,8 +859,10 @@ private fun ProfileTabs(
                 Spacer(Modifier.height(16.dp))
                 if (compactHeight) {
                     val slot = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                    // At compact height the banner moves into the scrolling column, as the other notices do.
+                    if (sample) SampleBannerSlot(onExitSample)
                     DegradedStoreNotice(use24h, slot)
-                    StoreChangeCard(repo, use24h, onOpenSettings, slot)
+                    StoreChangeCard(realRepo, use24h, onOpenSettings, slot)
                     CrashCard(use24h, slot)
                     notice(slot)
                 }
@@ -803,6 +878,7 @@ private fun ProfileTabs(
                         ProfileScreen(
                             repo, profile, use24h, mode, resetClock, showOverPace,
                             density, chartSize, chartOrientation, layoutTick, tick, onOpenSettings,
+                            onEnterSample = onEnterSample,
                         )
                     }
                 }
@@ -851,6 +927,8 @@ private fun ProfileScreen(
     layoutTick: Int,
     tick: Int,
     onOpenSettings: () -> Unit,
+    /** CCRM-113 (Sample Port): the first screen's "Try with sample data". */
+    onEnterSample: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val cache = remember { repo.cacheSettings() }
@@ -894,6 +972,8 @@ private fun ProfileScreen(
                 )
             }
         }
+        // The first screen (no account at all) offers the sample, 12 dp under the card, which is unchanged.
+        if (!repo.isSample && repo.configuredProfiles().isEmpty()) SampleEntry(onEnterSample)
         return
     }
 
@@ -1033,6 +1113,7 @@ private fun ProfileScreen(
         refreshing = refreshing,
         // Recomputed every tick so "Checked 14m ago" ages without a new fetch.
         now = remember(tick) { System.currentTimeMillis() },
+        sample = repo.isSample,
     ) {
         scope.launch {
             refreshing = true
@@ -1136,6 +1217,7 @@ private fun ErrorNotice(
  */
 private fun renderShareCard(
     context: android.content.Context,
+    repo: UsageRepository,
     cache: UsageCache,
     profile: Profile,
     dark: Boolean,
@@ -1146,7 +1228,7 @@ private fun renderShareCard(
     // The ribbon follows the provenance of what is actually drawn — the snapshot's own
     // flag, or a synthetic history — never a mode read at some other moment (Astra, Step 6).
     val historySynthetic = SyntheticSeries.isOn
-    val history = HistoryStore(context).points(profile)
+    val history = repo.history().points(profile)
     val account = WidgetHost.accounts(context, cache, dark, withEstimates = false)
         .firstOrNull { it.key == profile.key } ?: return null
     // CCRM-24 (Share Card), Weekly first: the rows follow the account's Headline, and
@@ -1154,7 +1236,7 @@ private fun renderShareCard(
     val binding = AccountRead.sessionBinding(account.data, AccountRead.sessionHitsLimitAtMs(account.data, history))
     val model = ShareCard.model(
         account, history, dark, usageLeft, showOverPace,
-        synthetic = account.synthetic || historySynthetic,
+        synthetic = account.synthetic || historySynthetic || SampleMode.isOn,
         headline = cache.headline(profile), sessionBinding = binding,
     )
     return ShareCard.render(context, model)
@@ -1193,7 +1275,7 @@ private fun renderSummaryCard(
         use24h = use24h,
         dark = dark,
         showOverPace = showOverPace,
-        synthetic = SyntheticSeries.isOn || accounts.any { a -> a.synthetic && shown.any { it.key == a.key } },
+        synthetic = SyntheticSeries.isOn || SampleMode.isOn || accounts.any { a -> a.synthetic && shown.any { it.key == a.key } },
         accentOf = { Palette.color(Palette.accentName(cache, it.profile), dark) },
     )
     return SummarySnapshot.render(context, model)

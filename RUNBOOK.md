@@ -207,7 +207,7 @@ clients back at `cases.json`.
 | A2 | Duet: CCRM-105 | A1 | ☑ 2026-11-11 |
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☑ 2026-11-11 |
 | A4 | Summary: CCRM-110 (Personal/Work, filter memory), CCRM-112, CCRM-115 (row glyph) | A3, Q5 | ☑ 2026-11-11 |
-| A5 | Sample: CCRM-113 | A4 | ☐ |
+| A5 | Sample: CCRM-113 | A4 | ☑ 2026-11-11 |
 | A6 | Narrow Duet: CCRM-114, CCBG-80 | A5 | ☐ |
 
 ### Lane I — iOS (one step at a time; runs beside Lane A)
@@ -481,14 +481,15 @@ History; held in memory, settings in an in-memory copy. Isolation: real polling 
 only the app's screens read the copy; a sample edit binds to the sample store; the debug synthetic series pauses.
 
 **Done when:**
-- ☐ The four isolation tests from `reviews/v20-sample-mode-findings.md`: byte-identical real stores across
+- ☑ The four isolation tests from `reviews/v20-sample-mode-findings.md`: byte-identical real stores across
   enter and exit; an Appearance change in the sample leaves the live notification and a widget untouched; a
   Rename open across a switch never renames a real account; the synthetic flag suspended and restored, nothing
   written. Both flavors' tests and lint.
-- ☐ Emulator captures: entry points, the banner on every tab, Settings, History, the share band "● SAMPLE DATA",
+- ☑ Emulator captures: entry points, the banner on every tab, Settings, History, the share band "● SAMPLE DATA",
   and exit; a process kill returns to the real app.
-- ☐ CCRM-113 Status "Android built"; `app.md`, `notification.md`, `widgets.md` Android sections.
-- ☐ Judge round recorded; landed.
+- ☑ CCRM-113 Status "Android built"; `app.md`, `notification.md`, `widgets.md` Android sections.
+- ☑ Judge round recorded; landed.
+- ☑ (added) The Add-sheet sign-in rule: a cancelled or ended sign-in leaves no account and no tag; `AddSheetSignInTest`.
 
 ### Step A6 · Narrow Duet — CCRM-114, CCBG-80
 
@@ -654,6 +655,43 @@ step. A4's tag preference is additive, so a revert leaves only an unread key; A6
   other ten `filter` cases and every `memory` sequence are byte-identical, and the other three generated files are unchanged.
   Android needed no code change (A4 already left the value alone below two accounts); `AccountTagsTest` now asserts
   `storedAfter` for every case, the special case removed. `check_no_code.sh`, both flavors' unit tests and `swift test` pass.
+
+- **2026-11-11 · A5 Sample (Android).** Code in this step's commit (CCRM-113 (Sample Port): `data/SampleMode.kt` the flag and the
+  three accounts, `data/MemoryPrefs.kt`, in-memory twins of the cache / registry / history / session log, `UsageRepository`'s
+  sample variant (no credentials, never fetches), `ui/SampleUi.kt` banner, first-screen entry and Add-sheet row; the root
+  re-keys the tree and hands it the sample repository; Settings sample cards, Alerts card, Appearance caption, hidden More
+  items; share bands "● SAMPLE DATA"). Both flavors' tests, lint and both assembles green; `tools/widget_layouts.py --check` ok.
+  **The four isolation tests** are in `SampleModeTest` (C1-1 byte-identical real prefs + files across enter / use / exit, and a
+  real poll landing during the sample; C1-2 a real notification stays posted and the real settings unchanged after a sample
+  Appearance change; C1-3 a Rename held across exit reaches only the sample copy; C1-4 the debug series suspended, restored,
+  a second enter safe) plus the sample's contents, and `SampleBannerFitTest`. **Added fix (Robin, both platforms):** an Add-sheet
+  account is created provisional and removed on Cancel (Claude, Gemini), on dismissing the ChatGPT code sheet, or by the launch
+  sweep (`UsageRepository.abandonProfile` / `settleProvisional`); no account and no tag remain; `AddSheetSignInTest` (8 cases:
+  every provider × tag, slots never reused, a saved token keeps it, a racing dismiss keeps it, the sweep and its one-hour limit).
+  **For Step 2:** reword BEHAVIOR-MOBILE §6's "the row tap commits the account with that tag" as "the account is created with
+  that tag only when its sign-in succeeds" (spec files are read-only for the lanes). Also: BEHAVIOR-MOBILE §7 and the iOS
+  paragraph differ on settings — iOS's sample says display settings "apply and persist", §7 says an in-memory copy dropped on
+  Exit (Android follows §7); worth one line when the iOS surfaces are folded. **Captures**
+  `design/research/2026-11-v20-build/A5/` (33, fold7inner at 5556): cover dark 01–19 (first screen and entry, the All tab and each
+  account tab with the banner, Settings Accounts / Alerts / Appearance / More, History, the share snapshot "● SAMPLE DATA", exit,
+  process kill returning to the real app, the Add sheet and its sample row, entering with two real accounts present, an
+  Appearance change to Light inside the sample dropped on exit with the real dark accounts back), 360 dp dark 20–25 (font 1.3
+  drops the banner tail, font 2.0 keeps "● Sample data" and "Exit"), light 26–30, inner 750 dp 29–32. **Judge** (fresh Opus @
+  high): concerns, nothing blocking. Adopted: F1 the C1-2 test now posts the user's real notification and asserts it survives
+  (it could not fail before; the widget half is the same seam, `Surfaces.refresh`, and is not separately asserted); F2 the
+  POST_NOTIFICATIONS request moved out of the re-keyed tree so entering or leaving never prompts again; F3 the sample exits on
+  a real-surface launch only when `savedInstanceState == null`, so a dark-mode or font recreation keeps it; F4 `abandonProfile`
+  runs under the repository lock; F5 the sweep also takes a provisional account with no token older than one hour whatever is
+  pending (whether an abandoned browser trip counts as ended is Robin's call). Not changed: F6 (the byte-identity harness
+  scans prefs and `filesDir`, not the external AppLog; the AppLog line is unreachable from the sample's UI). **UNVERIFIED:** F2 /
+  F3 were fixed after the capture pass and not re-run on the emulator; the banner's 48 dp "Exit" target inside the wireframe's
+  36 dp band (a drawn-behind band in a 48 dp row, 6 dp more layout above and below); One UI. **Defect filed:** CCBG-81
+  (History Tab Wrap, "Personal" wraps at 360 dp in History's fixed strip, capture 23). **Wireframe calls, all within §9 and the
+  addendum:** the sample's settings are seeded from the user's Appearance / Summary settings; the first screen's card still
+  reads "No Personal account yet" (the registry's first account, unchanged); the sample's Teams reads Max (rev B), not iOS's
+  "Team". **Emulator notes:** a scratch debug-only `SeedActivity` seeded two real accounts for the entering-with-real-accounts
+  captures (never committed, deleted); afterwards app data cleared, size / density / font reset, dark mode off, airplane mode off,
+  emulator killed; `screen_off_timeout` was already 2147483647 and untouched. Sweeper skipped: the session list was not read.
 
 ---
 

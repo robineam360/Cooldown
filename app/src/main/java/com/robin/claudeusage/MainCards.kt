@@ -1373,8 +1373,19 @@ internal fun StatusLine(
     lastOk: Boolean,
     refreshing: Boolean,
     now: Long,
+    /** CCRM-113 (Sample Port): "Sample data · nothing is fetched", no refresh glyph, and the row is not a button. */
+    sample: Boolean = false,
     onRefresh: () -> Unit,
 ) {
+    if (sample) {
+        Text(
+            com.robin.claudeusage.data.SampleMode.STATUS_LINE,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        )
+        return
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

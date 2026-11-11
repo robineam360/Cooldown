@@ -20,12 +20,16 @@ import org.json.JSONObject
  * next account added gets a fresh slot and the retired one's notification IDs, alarm request
  * codes and tile binding go permanently quiet instead of being inherited.
  */
-class ProfileRegistry(context: Context) {
+class ProfileRegistry private constructor(
+    private val prefs: SharedPreferences,
+    /** The cache's own file, read once at the seed for pre-CCRM-6 labels; null for the sample's in-memory twin. */
+    private val legacy: SharedPreferences?,
+) {
 
-    private val appContext = context.applicationContext
-
-    private val prefs: SharedPreferences =
-        appContext.getSharedPreferences("profiles", Context.MODE_PRIVATE)
+    constructor(context: Context) : this(
+        context.applicationContext.getSharedPreferences("profiles", Context.MODE_PRIVATE),
+        context.applicationContext.getSharedPreferences("usage_cache", Context.MODE_PRIVATE),
+    )
 
     // Read ~40 times per composition, so the JSON is parsed only when something has
     // actually written. The revision int is the cheap validity check.
@@ -109,8 +113,36 @@ class ProfileRegistry(context: Context) {
         val next = remove(current, key)
         if (next.profiles.size == current.profiles.size) return false
         write(next)
+        clearProvisional(key)
         return true
     }
+
+    /**
+     * The Add-sheet rule (Robin 2026-11-11, both platforms): an account minted from the Add account sheet is
+     * **provisional** until its sign-in succeeds. A cancelled or ended sign-in removes it ([remove] drops the mark with
+     * it); a successful one calls [clearProvisional]. Its own key, so a v1.9 downgrade never reads it.
+     */
+    fun markProvisional(key: String, nowMs: Long = System.currentTimeMillis()) {
+        val entries = rawProvisional().filterNot { it.substringBefore('|') == key }.toSet() + "$key|$nowMs"
+        prefs.edit().putStringSet(PREF_PROVISIONAL, entries).apply()
+    }
+
+    fun clearProvisional(key: String) {
+        val entries = rawProvisional()
+        val kept = entries.filterNot { it.substringBefore('|') == key }.toSet()
+        if (kept.size != entries.size) prefs.edit().putStringSet(PREF_PROVISIONAL, kept).apply()
+    }
+
+    fun isProvisional(key: String): Boolean = key in provisionalKeys()
+
+    /** The marked keys, whether or not the account still exists. */
+    fun provisionalKeys(): Set<String> = rawProvisional().map { it.substringBefore('|') }.toSet()
+
+    /** When [key] was marked (epoch ms); 0 when it is not marked or the mark carries no time. */
+    fun provisionalSince(key: String): Long =
+        rawProvisional().firstOrNull { it.substringBefore('|') == key }?.substringAfter('|', "")?.toLongOrNull() ?: 0L
+
+    private fun rawProvisional(): Set<String> = prefs.getStringSet(PREF_PROVISIONAL, null)?.toSet().orEmpty()
 
     private fun state(): State {
         seedIfNeeded()
@@ -135,11 +167,10 @@ class ProfileRegistry(context: Context) {
         if (prefs.getBoolean(PREF_SEEDED, false)) return
         // Read the legacy labels straight from the cache's own file rather than through
         // UsageCache, which would recurse back into this registry to resolve a label.
-        val legacy = appContext.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
         write(
             seed(
-                personalLabel = legacy.getString("customLabel", null),
-                workLabel = legacy.getString("${Profile.WORK_KEY}.customLabel", null),
+                personalLabel = legacy?.getString("customLabel", null),
+                workLabel = legacy?.getString("${Profile.WORK_KEY}.customLabel", null),
             )
         )
     }
@@ -161,6 +192,23 @@ class ProfileRegistry(context: Context) {
         private const val PREF_NEXT_SLOT = "nextSlot"
         private const val PREF_SEEDED = "seeded"
         private const val PREF_REV = "rev"
+        private const val PREF_PROVISIONAL = "provisional"
+
+        /**
+         * CCRM-113 (Sample Port): the sample's registry — [accounts] held in memory, never persisted, with the slot counter
+         * and creation labels set as on a real one.
+         */
+        fun inMemory(accounts: List<Profile>): ProfileRegistry {
+            val registry = ProfileRegistry(MemoryPrefs(), null)
+            registry.write(
+                State(
+                    profiles = accounts,
+                    nextSlot = (accounts.maxOfOrNull { it.slot } ?: -1) + 1,
+                    defaults = accounts.associate { it.key to it.label },
+                ),
+            )
+            return registry
+        }
 
         /** Labels are the user's, and they have to fit a tab and a tile — 16 chars, as today. */
         const val MAX_LABEL = 16

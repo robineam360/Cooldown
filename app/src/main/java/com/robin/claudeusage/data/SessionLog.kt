@@ -10,7 +10,9 @@ import java.io.File
  * that finished — enough to draw the per-session and per-week history bars going
  * back a year. A line is written when a window rolls over (see Alerts.checkReset).
  */
-class SessionLog(context: Context) {
+class SessionLog private constructor(private val dir: File?, private val memory: MutableMap<String, List<String>>?) {
+
+    constructor(context: Context) : this(context.applicationContext.filesDir, null)
 
     /**
      * kind is "session" (5-hour) or "weekly" (7-day). resetAt is the window identity.
@@ -39,15 +41,16 @@ class SessionLog(context: Context) {
         val modelCap: String? = null,
     )
 
-    private val dir: File = context.applicationContext.filesDir
-
     companion object {
+        /** CCRM-113 (Sample Port): the sample's closed windows, held in memory and never written to a file. */
+        fun inMemory(): SessionLog = SessionLog(null, java.util.concurrent.ConcurrentHashMap())
+
         const val SESSION = "session"
         const val WEEKLY = "weekly"
         private const val MAX_AGE_MS = 366L * 24 * 60 * 60_000L
     }
 
-    private fun file(profile: Profile) = File(dir, "usage-sessions-${profile.key}.jsonl")
+    private fun file(profile: Profile) = File(dir!!, "usage-sessions-${profile.key}.jsonl")
 
     /**
      * Records one closed window. No-ops if this exact window was already logged.
@@ -76,17 +79,17 @@ class SessionLog(context: Context) {
         }.toString()
         val now = System.currentTimeMillis()
         val kept = readLines(profile).filter { resetAtOf(it) > now - MAX_AGE_MS }
-        writeAtomically(file(profile), kept + line)
+        if (memory != null) memory[profile.key] = kept + line else writeAtomically(file(profile), kept + line)
     }
 
     fun records(profile: Profile): List<Record> =
         readLines(profile).mapNotNull { parse(it) }.sortedBy { it.resetAt }
 
     fun clear(profile: Profile) {
-        file(profile).delete()
+        if (memory != null) memory.remove(profile.key) else file(profile).delete()
     }
 
-    private fun readLines(profile: Profile): List<String> = try {
+    private fun readLines(profile: Profile): List<String> = if (memory != null) memory[profile.key].orEmpty() else try {
         val f = file(profile)
         if (f.exists()) f.readLines().filter { it.isNotBlank() } else emptyList()
     } catch (_: Exception) {

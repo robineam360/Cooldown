@@ -283,7 +283,8 @@ internal object SummarySnapshot {
         if (m.synthetic) {
             c.drawRect(0f, 0f, ShareCard.WIDTH_PX.toFloat(), px(BAND_H), Paint().apply { color = SYNTHETIC })
             font(8.5f, true, 0xFFFFFFFF.toInt(), 0.06f)
-            val label = "● SYNTHETIC"
+            // CCRM-113 (Sample Port): the sample reuses the band, in iOS's words; the debug series keeps "● SYNTHETIC".
+            val label = if (com.robin.claudeusage.data.SampleMode.isOn) "● SAMPLE DATA" else "● SYNTHETIC"
             c.drawText(label, (ShareCard.WIDTH_PX - text.measureText(label)) / 2f, px(BAND_H) / 2f - (text.ascent() + text.descent()) / 2f, text)
             y += px(BAND_H)
         }

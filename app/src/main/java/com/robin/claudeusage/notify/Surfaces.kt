@@ -20,6 +20,8 @@ object Surfaces {
 
     /** Redraws the notification and every placed widget from [cache], then re-arms. */
     fun refresh(context: Context, cache: UsageCache) {
+        // CCRM-113 (Sample Port), C1-2: the sample's settings copy never reaches a real surface.
+        if (cache.isSample) return
         PinnedNotification.update(context, cache)
         // Off the caller's thread: most Settings changes land here from a click handler,
         // and every placed widget's whole size map is drawn. One thread, so two refreshes

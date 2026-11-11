@@ -60,9 +60,54 @@ data class Snapshot(
  * reset-ping mode) is keyed with the profile prefix; app-wide settings are unprefixed.
  * Personal keys carry no prefix so v0.5 data migrates transparently.
  */
-class UsageCache(context: Context) {
+class UsageCache private constructor(
+    context: Context,
+    prefsOverride: SharedPreferences?,
+    registryOverride: ProfileRegistry?,
+) {
+
+    constructor(context: Context) : this(context, null, null)
+
+    /**
+     * CCRM-113 (Sample Port): this cache is the sample's in-memory copy, never a file. The seam every real surface
+     * redraws through ([com.robin.claudeusage.notify.Surfaces.refresh]) refuses a sample cache, and [snapshot] never
+     * overlays the debug series on it.
+     */
+    val isSample: Boolean = prefsOverride != null
+
+    /**
+     * CCRM-113 (Sample Port): copies the Appearance and Summary settings into [target] — the sample's own in-memory
+     * preferences, "seeded from the user's own", so the sample looks like their app. Only the display keys: nothing that
+     * acts on a real surface (the pin, polling, notices) and no per-account entry is copied.
+     */
+    internal fun copyAppearanceTo(target: SharedPreferences) {
+        val e = target.edit()
+        for ((key, value) in prefs.all) {
+            if (key !in APPEARANCE_KEYS) continue
+            when (value) {
+                is String -> e.putString(key, value)
+                is Boolean -> e.putBoolean(key, value)
+                is Int -> e.putInt(key, value)
+                is Long -> e.putLong(key, value)
+                is Float -> e.putFloat(key, value)
+            }
+        }
+        e.apply()
+    }
 
     companion object {
+        /** The settings the sample inherits (see [copyAppearanceTo]), by their stored names, legacy spellings included. */
+        private val APPEARANCE_KEYS = setOf(
+            "themeMode", "timeFormat", "use24hTime", "usageDisplay", "usageEndMark", "resetDisplay", "tileSubtitle",
+            "showOverPace", "paceOverInApp", "density", "chartSize", "chartOrientation", "themeColor",
+            "openOnSummary", "summaryOrder", "summaryFilter",
+            MapLayers.KEY_FIGURES, MapLayers.KEY_TRAILS, MapLayers.KEY_PROJECTION,
+        )
+
+        /** CCRM-113 (Sample Port): the sample's cache over its own in-memory [prefs] and [registry]. */
+        internal fun sample(context: Context, prefs: SharedPreferences, registry: ProfileRegistry): UsageCache =
+            UsageCache(context, prefs, registry)
+
         const val RESET_OFF = "off"
         const val RESET_SMART = "smart"
         const val RESET_ALWAYS = "always"
@@ -118,10 +163,10 @@ class UsageCache(context: Context) {
     private val appContext = context.applicationContext
 
     private val prefs: SharedPreferences =
-        appContext.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
+        prefsOverride ?: appContext.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
 
     /** The registry is the owner of labels and of the account list; see [profileLabel]. */
-    private val registry: ProfileRegistry by lazy { ProfileRegistry(appContext) }
+    private val registry: ProfileRegistry by lazy { registryOverride ?: ProfileRegistry(appContext) }
 
     fun registry(): ProfileRegistry = registry
 
@@ -136,7 +181,8 @@ class UsageCache(context: Context) {
      * on ([SyntheticSeries]). Anything that *acts* on usage — alerts, reset pings, the
      * fetch — reads [realSnapshot] instead.
      */
-    fun snapshot(profile: Profile): Snapshot = SyntheticSeries.apply(realSnapshot(profile))
+    fun snapshot(profile: Profile): Snapshot =
+        if (isSample) realSnapshot(profile) else SyntheticSeries.apply(realSnapshot(profile))
 
     /** The cache as stored, never synthetic. */
     fun realSnapshot(profile: Profile): Snapshot {

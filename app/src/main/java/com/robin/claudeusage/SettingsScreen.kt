@@ -241,6 +241,10 @@ fun SettingsScreen(
     onTheme: (String) -> Unit,
     debugUnlocked: Boolean,
     onDebugUnlock: () -> Unit,
+    /** CCRM-113 (Sample Port): the sample's three accounts are showing — [repo] is its in-memory twin. */
+    sample: Boolean = false,
+    onEnterSample: () -> Unit = {},
+    onExitSample: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -261,6 +265,16 @@ fun SettingsScreen(
     // the other two for the same reason.
     var clearingHistory by remember { mutableStateOf<Profile?>(null) }
     val accountScope = rememberCoroutineScope()
+    // The Add-sheet rule (Robin 2026-11-11, both platforms): a cancelled or ended sign-in on an account the sheet just
+    // minted removes it — no card, no tag. A re-sign-in of an account that already signed in is never touched.
+    val abandon: (Profile) -> Unit = { p ->
+        accountScope.launch {
+            if (repo.abandonProfile(p)) {
+                namesTick++
+                Shortcuts.publish(context)
+            }
+        }
+    }
 
     var showAddSheet by remember { mutableStateOf(false) }
     // CCRM-56 (Provider Identity): the account the sheet just minted, so its
@@ -297,6 +311,7 @@ fun SettingsScreen(
                                 onDetails = { detailing = profile },
                                 onClearHistory = { clearingHistory = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
+                                onAbandon = { abandon(profile) },
                             )
                         }
                         Spacer(Modifier.height(10.dp))
@@ -315,6 +330,7 @@ fun SettingsScreen(
                                 onDetails = { detailing = profile },
                                 onClearHistory = { clearingHistory = profile },
                                 autoStartSignIn = profile.key == autoStartProfileKey,
+                                onAbandon = { abandon(profile) },
                             )
                         }
                         Spacer(Modifier.height(10.dp))
@@ -337,6 +353,7 @@ fun SettingsScreen(
                         onDetails = { detailing = profile },
                         onClearHistory = { clearingHistory = profile },
                         autoStartSignIn = profile.key == autoStartProfileKey,
+                                onAbandon = { abandon(profile) },
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -348,7 +365,13 @@ fun SettingsScreen(
         // CCRM-56 (Provider Identity), decision 5: the sheet picks the provider now too.
         // CCRM-71 (Account Order): "Reorder" rides beside it, list-level actions kept
         // together — hidden outright with one account, since there's nothing to order.
-        if (profiles.size > 1) {
+        if (sample) {
+            // CCRM-113 (Sample Port): "+ Add account" and "Reorder" give way to an outlined "Exit sample data".
+            OutlinedButton(
+                onClick = onExitSample,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Exit sample data") }
+        } else if (profiles.size > 1) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -368,9 +391,14 @@ fun SettingsScreen(
         if (showAddSheet) {
             AddAccountSheet(
                 onDismiss = { showAddSheet = false },
+                onSample = {
+                    showAddSheet = false
+                    onEnterSample()
+                },
                 onPick = { provider, tag ->
-                    // CCRM-110 (Account Tags): the account is created with the tag the sheet's control showed.
-                    val newProfile = repo.addProfile(provider = provider, tag = tag)
+                    // CCRM-110 (Account Tags): the account is created with the tag the sheet's control showed — and
+                    // is provisional until its sign-in succeeds (a cancelled sign-in leaves no account and no tag).
+                    val newProfile = repo.addProvisionalProfile(provider, tag)
                     namesTick++
                     Shortcuts.publish(context)
                     autoStartProfileKey = newProfile.key
@@ -400,6 +428,20 @@ fun SettingsScreen(
     }
 
     // --- Alerts tab ---
+    // CCRM-113 (Sample Port): one card in place of both sections — the real notification, status-bar icon, reset pings and
+    // widgets are not the sample's to set.
+    val sampleAlertsCard: @Composable () -> Unit = {
+        SectionCard {
+            Text("Off while the sample is open", style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                "The always-on notification, the status-bar icon, reset pings and widgets show real accounts only. " +
+                    "Exit the sample to set them up.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
     val alwaysOnCard: @Composable () -> Unit = {
         SectionLabel("Always-on notification")
         SectionCard {
@@ -934,9 +976,10 @@ fun SettingsScreen(
         profiles.filter { cacheSettings.snapshot(it).data?.credits?.isReportable == true }
     }
     val pollingUpdatesCredits: @Composable () -> Unit = {
-        SectionLabel("Polling")
-        PollingSection(repo)
-        if (creditProfiles.isNotEmpty()) {
+        // Polling and the Usage credits switches act on real accounts, so the sample hides them; Updates and About stay.
+        if (!sample) SectionLabel("Polling")
+        if (!sample) PollingSection(repo)
+        if (!sample && creditProfiles.isNotEmpty()) {
             Spacer(Modifier.height(24.dp))
             SectionLabel("Usage credits")
             SectionCard {
@@ -983,7 +1026,7 @@ fun SettingsScreen(
         SectionLabel("About")
         AboutCard(debugUnlocked, onDebugUnlock)
 
-        if (debugUnlocked) {
+        if (debugUnlocked && !sample) {
             Spacer(Modifier.height(24.dp))
             SectionLabel("Diagnostics")
             AppLogCard(cacheSettings)
@@ -1018,6 +1061,8 @@ fun SettingsScreen(
     val tabTitles = listOf("Accounts", "Alerts", "Appearance", "More")
 
     Column(modifier = modifier.fillMaxSize()) {
+        // CCRM-113 (Sample Port): the first item of the page, so there is always a way out.
+        if (sample) com.robin.claudeusage.ui.SampleBannerSlot(onExitSample)
         // CCBG-35 (Tab Clip), wireframe rev B §5: the fixed row (10 dp a side) whenever every
         // title fits its equal share at this width and font scale, which leaves the cover and
         // inner screens as they were; otherwise a scrolling row (16 dp a side, 90 dp minimum)
@@ -1075,7 +1120,7 @@ fun SettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 when (page) {
                     0 -> accountsTab()
-                    1 -> if (hasTwoColumns()) {
+                    1 -> if (sample) sampleAlertsCard() else if (hasTwoColumns()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -1090,6 +1135,15 @@ fun SettingsScreen(
                     }
                     2 -> {
                         SectionLabel("Appearance")
+                        if (sample) {
+                            Text(
+                                "Changes here apply to the sample and are dropped when you exit.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
                         if (hasTwoColumns()) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1145,8 +1199,8 @@ fun SettingsScreen(
                 repo.renameProfile(profile, name)
                 renaming = null
                 namesTick++
-                // CCRM-33 (App Shortcuts): shortcut labels follow renames.
-                Shortcuts.publish(context)
+                // CCRM-33 (App Shortcuts): shortcut labels follow renames (the real ones, never the sample's).
+                if (!sample) Shortcuts.publish(context)
                 com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
             },
         )
@@ -1608,6 +1662,8 @@ private fun TokenCard(
     onClearHistory: () -> Unit,
     /** CCRM-56 (Provider Identity): the Add-account sheet starts sign-in at once. */
     autoStartSignIn: Boolean = false,
+    /** The Add-sheet rule: the sign-in was cancelled or ended — remove the account if it is still provisional. */
+    onAbandon: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -1619,7 +1675,7 @@ private fun TokenCard(
     // Sign-in completion state. awaitingCode survives config changes; if the
     // process was killed during the browser trip, a persisted pending sign-in
     // for this profile re-opens the completion step on its own.
-    var awaitingCode by remember { mutableStateOf(repo.hasPendingSignIn(profile)) }
+    var awaitingCode by remember { mutableStateOf(!repo.isSample && repo.hasPendingSignIn(profile)) }
     var codeInput by remember { mutableStateOf("") }
     var authUrl by remember { mutableStateOf<String?>(null) }
 
@@ -1717,7 +1773,16 @@ private fun TokenCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false),
                     )
-                    if (hasToken) {
+                    if (repo.isSample) {
+                        // CCRM-113 (Sample Port): the word "Sample" in place of the status dot.
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            com.robin.claudeusage.data.SampleMode.ACCOUNT_WORD,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    } else if (hasToken) {
                         Spacer(Modifier.width(8.dp))
                         StatusDot(snapshot.authState)
                     }
@@ -1760,7 +1825,9 @@ private fun TokenCard(
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         // CCRM-65 (Accounts Redesign): first item, and only when there's
                         // something to show — an unsigned-in card has no history yet.
-                        if (hasToken) {
+                        // CCRM-113 (Sample Port): Details…, Clear usage history… and Remove account are hidden —
+                        // they act on real accounts or real storage.
+                        if (hasToken && !repo.isSample) {
                             DropdownMenuItem(
                                 text = { Text("Details…") },
                                 onClick = { menuOpen = false; onDetails() },
@@ -1768,10 +1835,12 @@ private fun TokenCard(
                         }
                         // CCRM-14 (Clear History): beside Details…, ahead of the identity
                         // items. Shown signed-out too — Clear keeps the history (CCBG-1).
-                        DropdownMenuItem(
-                            text = { Text("Clear usage history…") },
-                            onClick = { menuOpen = false; onClearHistory() },
-                        )
+                        if (!repo.isSample) {
+                            DropdownMenuItem(
+                                text = { Text("Clear usage history…") },
+                                onClick = { menuOpen = false; onClearHistory() },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("Rename…") },
                             onClick = { menuOpen = false; onRename() },
@@ -1797,7 +1866,7 @@ private fun TokenCard(
                         }
                         // Hidden on the last remaining card: the registry always keeps one
                         // account, which is what makes the zero-configured fallback work.
-                        if (canRemove) {
+                        if (canRemove && !repo.isSample) {
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -1831,6 +1900,9 @@ private fun TokenCard(
                 }
             }
 
+            // CCRM-113 (Sample Port): a sample card is the header alone — no e-mail line, no check line, no action row.
+            if (repo.isSample) return@Column
+
             // CCBG-34 (Account Display Name): the login under the name, in the app only.
             val email = remember(stateKey) { repo.cacheSettings().email(profile) }
             // The Gemini paste step has no email line either (rev B F4; judge b).
@@ -1846,6 +1918,7 @@ private fun TokenCard(
                 GeminiAccountBody(
                     repo, profile, label,
                     autoStart = autoStartSignIn,
+                    onAbandon = onAbandon,
                 ) { stateKey++ }
                 return@Column
             }
@@ -1865,6 +1938,7 @@ private fun TokenCard(
                         awaitingCode = false
                         codeInput = ""
                         message = null
+                        onAbandon()
                     },
                 )
                 message?.let {
@@ -1881,6 +1955,7 @@ private fun TokenCard(
                 ChatGptAccountBody(
                     repo, profile, label, use24h,
                     autoStart = autoStartSignIn,
+                    onAbandon = onAbandon,
                 ) { stateKey++ }
                 return@Column
             }
@@ -2188,6 +2263,8 @@ private fun ChatGptAccountBody(
     use24h: Boolean,
     /** CCRM-56 (Provider Identity): the Add-account sheet starts sign-in at once. */
     autoStart: Boolean = false,
+    /** The Add-sheet rule: the sheet was dismissed — remove the account if it is still provisional. */
+    onAbandon: () -> Unit = {},
     onStateChanged: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -2401,6 +2478,7 @@ private fun ChatGptAccountBody(
                 repo.cancelDeviceSignIn()
                 started = null
                 stage = null
+                onAbandon()
             },
         )
     }
@@ -2418,6 +2496,8 @@ private fun GeminiAccountBody(
     profile: Profile,
     label: String,
     autoStart: Boolean = false,
+    /** The Add-sheet rule: the sign-in was cancelled — remove the account if it is still provisional. */
+    onAbandon: () -> Unit = {},
     onStateChanged: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -2525,6 +2605,7 @@ private fun GeminiAccountBody(
                 error = null
                 message = null
                 onStateChanged()
+                onAbandon()
             }) { Text("Cancel") }
         }
         return
@@ -3014,7 +3095,11 @@ private fun providerOnlySwatch(dark: Boolean): Brush = Brush.sweepGradient(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider, com.robin.claudeusage.data.AccountTag) -> Unit) {
+private fun AddAccountSheet(
+    onDismiss: () -> Unit,
+    onSample: () -> Unit,
+    onPick: (Provider, com.robin.claudeusage.data.AccountTag) -> Unit,
+) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         // CCRM-110 (Account Tags), addendum "Adding and tagging": the Personal | Work control sits above the provider
         // rows (a row tap is the commit), Personal selected every time the sheet opens. The sheet scrolls once it
@@ -3052,6 +3137,8 @@ private fun AddAccountSheet(onDismiss: () -> Unit, onPick: (Provider, com.robin.
                     onClick = { onPick(Provider.ANTIGRAVITY, tag) },
                 )
             }
+            // CCRM-113 (Sample Port): the last row, under a divider; it ignores the Personal | Work control above.
+            com.robin.claudeusage.ui.SampleAddRow(onSample)
         }
     }
 }

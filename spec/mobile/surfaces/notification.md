@@ -556,3 +556,8 @@ These replace §2.1–§2.4's collapsed rows and §8's D3 row; the expanded head
 - **Not drawn by the wireframe, seen on the emulator:** at 360 dp on AOSP (220 dp content, under the narrowest drawn
   226) a tail-less word leaves the name at ".." ("No reading", "Not started", capture 31, 33); at font 2.0 the
   expanded headers ellipsize their labels and lines (13, 29). Reported to the orchestrating session; Step 3 measures.
+
+Step A5 (2026-11-11, RUNBOOK Lane A) — CCRM-113 (Sample Port): sample mode never reaches this surface. The always-on
+notification, the status-bar icon and the reset pings keep showing the real accounts (or nothing), and the sample's settings
+never redraw them (`Surfaces.refresh` refuses a sample cache). Only the debug synthetic series is touched: it pauses while the
+sample is open and resumes on Exit.

@@ -49,6 +49,26 @@ object SyntheticSeries {
         _mode.value = mode
     }
 
+    /**
+     * CCRM-113 (Sample Port), isolation rule C1-4: while the sample is open the debug series pauses. The mode it was in
+     * is held here, in memory, and [resumeAfterSample] puts it back as it was — the anchor is untouched, so the series
+     * resumes on the same windows. Neither state is written; process death clears both, as today.
+     */
+    @Volatile
+    private var pausedBySample: Mode? = null
+
+    fun suspendForSample() {
+        if (pausedBySample != null) return
+        pausedBySample = _mode.value
+        _mode.value = Mode.OFF
+    }
+
+    fun resumeAfterSample() {
+        val was = pausedBySample ?: return
+        pausedBySample = null
+        _mode.value = was
+    }
+
     private const val SESSION_MS = 5 * 3_600_000L
     private const val WEEKLY_MS = 7 * 24 * 3_600_000L
     private const val SAMPLE_MS = 15 * 60_000L

@@ -29,16 +29,49 @@ sealed class FetchResult(val message: String) {
  * Wedge) resets an unreadable credential store only when the app is opened, never from a
  * worker, the pinned service or anything a `BOOT_COMPLETED` starts.
  */
-class UsageRepository(private val context: Context, credentialResetAllowed: Boolean = false) {
+class UsageRepository private constructor(
+    private val context: Context,
+    /** Null only for the sample's repository (CCRM-113 (Sample Port)): it has no credentials and never opens a store. */
+    private val credStore: CredentialStore?,
+    private val cache: UsageCache,
+    private val registry: ProfileRegistry,
+    private val historyStore: HistoryStore,
+    private val sessionLogStore: SessionLog,
+) {
 
-    private val credStore = CredentialStore(context, resetAllowed = credentialResetAllowed)
-    private val cache = UsageCache(context)
-    private val registry = ProfileRegistry(context)
-    private val historyStore = HistoryStore(context)
-    private val sessionLogStore = SessionLog(context)
+    constructor(context: Context, credentialResetAllowed: Boolean = false) : this(
+        context,
+        CredentialStore(context, resetAllowed = credentialResetAllowed),
+        UsageCache(context),
+        ProfileRegistry(context),
+        HistoryStore(context),
+        SessionLog(context),
+    )
+
+    /**
+     * CCRM-113 (Sample Port): this repository is the sample's — its cache, registry and history are the in-memory
+     * copies, it holds no credentials, and every path that would fetch, sign in, remove or write a real file is a no-op.
+     * The screens read whichever repository they were handed, so a sample edit can only reach the sample copy.
+     */
+    val isSample: Boolean get() = credStore == null
+
+    /** The credential store, for the paths a sample repository never reaches. */
+    private val cred: CredentialStore
+        get() = checkNotNull(credStore) { "the sample repository holds no credentials" }
 
     companion object {
+        /** The sample's repository over its own in-memory stores. */
+        internal fun sample(
+            context: Context,
+            cache: UsageCache,
+            registry: ProfileRegistry,
+            history: HistoryStore,
+            sessionLog: SessionLog,
+        ): UsageRepository = UsageRepository(context, null, cache, registry, history, sessionLog)
+
         private val mutex = Mutex()
+        /** How long an Add-sheet account may wait for its sign-in before the launch sweep takes it (one hour). */
+        const val PROVISIONAL_MAX_AGE_MS = 60 * 60_000L
         private const val MANUAL_MIN_INTERVAL_MS = 180_000L // safe floor per community findings
         private const val EXPIRY_MARGIN_MS = 5 * 60_000L
 
@@ -56,13 +89,14 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
     fun sessionLog(): SessionLog = sessionLogStore
 
-    fun hasCredentials(profile: Profile): Boolean = credStore.load(profile) != null
+    fun hasCredentials(profile: Profile): Boolean =
+        if (credStore == null) registry.byKey(profile.key) != null else cred.load(profile) != null
 
-    fun tokenAddedAt(profile: Profile): Long = credStore.addedAt(profile)
+    fun tokenAddedAt(profile: Profile): Long = credStore?.addedAt(profile) ?: 0L
 
-    fun tokenTail(profile: Profile): String? = credStore.tokenTail(profile)
+    fun tokenTail(profile: Profile): String? = credStore?.tokenTail(profile)
 
-    fun tokenExpiresAt(profile: Profile): Long = credStore.load(profile)?.expiresAt ?: 0L
+    fun tokenExpiresAt(profile: Profile): Long = credStore?.load(profile)?.expiresAt ?: 0L
 
     fun refreshExpiresAt(profile: Profile): Long = cache.refreshExpiresAt(profile)
 
@@ -100,7 +134,8 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
      * anything genuinely stale ages out through the 8-day prune on its own.
      */
     fun clearCredentials(profile: Profile) {
-        credStore.clear(profile)
+        if (isSample) return
+        cred.clear(profile)
         OAuthSignIn.clearPending(context)
         CodexDeviceSignIn.clearPending(context)
         AntigravitySignIn.clearPending(context)
@@ -155,6 +190,48 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
     fun addProfile(label: String? = null, provider: Provider = Provider.CLAUDE, tag: AccountTag = AccountTag.PERSONAL): Profile =
         registry.add(label, provider, tag).also { settleSummaryFilter() }
 
+    /**
+     * The Add account sheet's account (Robin 2026-11-11, both platforms): created with its tag, but **provisional** until
+     * its sign-in succeeds. The card needs a profile to host the sign-in, so it exists meanwhile; a cancelled or ended
+     * sign-in calls [abandonProfile] and leaves no account and no tag, and a sign-in that never finishes is swept by
+     * [settleProvisional].
+     */
+    fun addProvisionalProfile(provider: Provider, tag: AccountTag): Profile =
+        addProfile(provider = provider, tag = tag).also { registry.markProvisional(it.key) }
+
+    /** True while [profile] is an Add-sheet account that has not signed in yet. */
+    fun isProvisional(profile: Profile): Boolean = registry.isProvisional(profile.key)
+
+    /**
+     * Removes [profile] when it is still provisional and holds no token — the cancel (or the dead end) of an Add-sheet
+     * sign-in. Anything else is left alone. The account's tag goes with it. Returns true when it was removed.
+     */
+    suspend fun abandonProfile(profile: Profile): Boolean = mutex.withLock {
+        // Under the same lock the sign-in's token save takes: a sheet dismissed while the exchange runs either sees the
+        // token and keeps the account, or removes it before the save — never a save under a retired key.
+        if (!registry.isProvisional(profile.key) || hasCredentials(profile)) return@withLock false
+        removeProfile(profile)
+    }
+
+    /**
+     * Sweeps provisional accounts nobody is signing in any more: no token and no sign-in pending for it (a process death
+     * after the browser trip keeps the pending one). Run when the app starts. A mark whose account is gone is dropped.
+     */
+    suspend fun settleProvisional() {
+        for (key in registry.provisionalKeys()) {
+            val profile = registry.byKey(key)
+            if (profile == null) { registry.clearProvisional(key); continue }
+            if (hasCredentials(profile)) { registry.clearProvisional(key); continue }
+            val pending = OAuthSignIn.pending(context)?.profile == profile ||
+                CodexDeviceSignIn.pending(context)?.profileKey == key ||
+                AntigravitySignIn.pending(context)?.profileKey == key
+            // A browser trip that was walked away from without Cancel is ended too: the pending entries never expire, so
+            // a provisional account older than [PROVISIONAL_MAX_AGE_MS] with no token goes whatever is pending.
+            val stale = System.currentTimeMillis() - registry.provisionalSince(key) > PROVISIONAL_MAX_AGE_MS
+            if (!pending || stale) abandonProfile(profile)
+        }
+    }
+
     /** CCRM-110 (Account Tags): the account's tag (Personal when none was ever written). */
     fun profileTag(profile: Profile): AccountTag = cache.tag(profile)
 
@@ -199,6 +276,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
      *   (CCBG-50), in which case nothing is touched.
      */
     suspend fun removeProfile(profile: Profile): Boolean {
+        if (isSample) return false
         if (!registry.canRemove()) return false
         // CCBG-50 (Degraded Store Notice): the saved sign-in sits in the locked file, which
         // must not be touched, so removing now would strand it under a retired slot.
@@ -206,7 +284,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
         Alerts.cancelAllFor(context, profile)
 
-        credStore.clear(profile)
+        cred.clear(profile)
         if (OAuthSignIn.pending(context)?.profile == profile) OAuthSignIn.clearPending(context)
         if (AntigravitySignIn.pending(context)?.profileKey == profile.key) AntigravitySignIn.clearPending(context)
         if (CodexDeviceSignIn.pending(context)?.profileKey == profile.key) {
@@ -276,6 +354,8 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
     /** Fetch one profile. Manual calls respect a 180s floor since last success. */
     suspend fun refreshNow(profile: Profile, manual: Boolean): FetchResult = withContext(Dispatchers.IO) {
+        // CCRM-113 (Sample Port): "nothing is fetched or sent" is the sample's guarantee.
+        if (isSample) return@withContext FetchResult.Success()
         val result = mutex.withLock {
             doFetch(profile, manual)
         }
@@ -285,6 +365,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
     /** Background path: fetch every profile that has a token. */
     suspend fun refreshAll(manual: Boolean = false): Map<Profile, FetchResult> = withContext(Dispatchers.IO) {
+        if (isSample) return@withContext emptyMap()
         val results = mutex.withLock {
             configuredProfiles().associateWith { doFetch(it, manual) }
         }
@@ -341,7 +422,8 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
                 }
                 val expiresIn = o.optLong("expires_in", 0L)
                 val expiresAt = if (expiresIn > 0) System.currentTimeMillis() + expiresIn * 1000 else 0L
-                credStore.save(profile, Credentials(access, refresh, expiresAt), stampAdded = true)
+                cred.save(profile, Credentials(access, refresh, expiresAt), stampAdded = true)
+                registry.clearProvisional(profile.key)
                 cache.setAuthState(profile, AuthState.OK)
                 val estExpiry = System.currentTimeMillis() + OAuthSignIn.ESTIMATED_FAMILY_MS
                 // Tolerant tier read (CCRM-38) — the token endpoint's spelling is
@@ -396,12 +478,13 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
                     "Sign-in failed (HTTP ${resp.code}) — get a new code and try again"
                 )
             }
-            val grant = ChatGptSource.parseTokenResponse(resp.body, credStore.load(profile))
+            val grant = ChatGptSource.parseTokenResponse(resp.body, cred.load(profile))
                 ?: return@withLock FetchResult.Error("Sign-in response was missing a token")
             if (grant.creds.refreshToken.isEmpty()) {
                 return@withLock FetchResult.Error("Sign-in response was missing a refresh token")
             }
-            credStore.save(profile, grant.creds, stampAdded = true)
+            cred.save(profile, grant.creds, stampAdded = true)
+            registry.clearProvisional(profile.key)
             cache.setAuthState(profile, AuthState.OK)
             cache.setTokenMeta(profile, 0L, grant.plan, null)
             cache.setEmail(profile, grant.email)
@@ -465,7 +548,8 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
                 } catch (_: IOException) {
                     null
                 }
-                credStore.save(profile, grant.creds.copy(accountId = assist?.project), stampAdded = true)
+                cred.save(profile, grant.creds.copy(accountId = assist?.project), stampAdded = true)
+                registry.clearProvisional(profile.key)
                 cache.setAuthState(profile, AuthState.OK)
                 cache.setTokenMeta(profile, 0L, assist?.plan, null)
                 cache.setEmail(profile, grant.email)
@@ -499,7 +583,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         path: String,
     ): HttpResult? = withContext(Dispatchers.IO) {
         mutex.withLock {
-            val creds = credStore.load(profile) ?: return@withLock null
+            val creds = cred.load(profile) ?: return@withLock null
             val now = System.currentTimeMillis()
             var token = creds.accessToken
             if (creds.expiresAt in 1 until now + EXPIRY_MARGIN_MS) {
@@ -508,7 +592,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
             try {
                 var resp = ApiClient.probe(token, host, path)
                 if (resp.code == 401) {
-                    val fresh = refreshAccessToken(profile, credStore.load(profile) ?: creds)
+                    val fresh = refreshAccessToken(profile, cred.load(profile) ?: creds)
                     if (fresh != null) resp = ApiClient.probe(fresh, host, path)
                 }
                 resp
@@ -525,7 +609,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
 
     private fun doFetch(profile: Profile, manual: Boolean, ignoreGates: Boolean = false): FetchResult {
         val now = System.currentTimeMillis()
-        val creds = credStore.load(profile) ?: run {
+        val creds = cred.load(profile) ?: run {
             cache.saveFailure(profile, "No token set", now, AuthState.NO_CREDENTIALS, ErrorKind.AUTH)
             return FetchResult.NoCredentials()
         }
@@ -579,7 +663,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         return try {
             var resp = source.fetchUsage(creds.copy(accessToken = token))
             if (source.isAuthFailure(resp.code)) {
-                token = refreshAccessToken(profile, credStore.load(profile) ?: creds)
+                token = refreshAccessToken(profile, cred.load(profile) ?: creds)
                     ?: return authFailure(profile, now)
                 resp = source.fetchUsage(creds.copy(accessToken = token))
             }
@@ -715,7 +799,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
                 lastRefreshFailDetail = "no token in response"
                 return null
             }
-            credStore.save(profile, grant.creds)
+            cred.save(profile, grant.creds)
             cache.setAuthState(profile, AuthState.OK)
             cache.setEmail(profile, grant.email)
             cache.setLastRenewedAt(profile, System.currentTimeMillis())

@@ -747,6 +747,7 @@ private fun SummaryStatus(repo: UsageRepository, profiles: List<Profile>, tick: 
         lastOk = snaps.all { it.lastStatus == "OK" },
         refreshing = refreshing,
         now = remember(tick) { System.currentTimeMillis() },
+        sample = repo.isSample,
     ) {
         scope.launch {
             refreshing = true

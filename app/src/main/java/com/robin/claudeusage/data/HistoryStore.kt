@@ -31,12 +31,15 @@ data class HistoryPoint(
  * The line format lives in the companion as pure functions ([encode], [parsePoint])
  * so the round trip is unit-testable without a Context.
  */
-class HistoryStore(context: Context) {
+class HistoryStore private constructor(private val dir: File?, private val memory: MutableMap<String, List<String>>?) {
 
-    private val dir: File = context.applicationContext.filesDir
+    constructor(context: Context) : this(context.applicationContext.filesDir, null)
 
     companion object {
         private const val MAX_AGE_MS = 8L * 24 * 60 * 60_000L
+
+        /** CCRM-113 (Sample Port): the sample's history, held in memory and never written to a file. */
+        fun inMemory(): HistoryStore = HistoryStore(null, java.util.concurrent.ConcurrentHashMap())
 
         /** One JSONL line for [data] fetched at [at]. Absent fields are omitted, never null. */
         fun encode(data: UsageData, at: Long): String = JSONObject().apply {
@@ -81,26 +84,31 @@ class HistoryStore(context: Context) {
         }
     }
 
-    private fun file(profile: Profile) = File(dir, "usage-history-${profile.key}.jsonl")
+    private fun file(profile: Profile) = File(dir!!, "usage-history-${profile.key}.jsonl")
+
+    /** CCRM-113 (Sample Port): fills the sample's in-memory history in one go; a no-op on the real, file-backed store. */
+    internal fun seedMemory(profile: Profile, lines: List<String>) {
+        memory?.put(profile.key, lines)
+    }
 
     fun record(profile: Profile, data: UsageData, at: Long) {
         val line = encode(data, at)
         val kept = readLines(profile).filter { timestampOf(it) > at - MAX_AGE_MS }
-        writeAtomically(file(profile), kept + line)
+        if (memory != null) memory[profile.key] = kept + line else writeAtomically(file(profile), kept + line)
     }
 
     /** What the chart and the estimates draw: the file, or R8's series while it is on. */
     fun points(profile: Profile): List<HistoryPoint> =
-        if (SyntheticSeries.isOn) SyntheticSeries.points(emptyList()) else realPoints(profile)
+        if (SyntheticSeries.isOn && memory == null) SyntheticSeries.points(emptyList()) else realPoints(profile)
 
     fun realPoints(profile: Profile): List<HistoryPoint> =
         readLines(profile).mapNotNull { parsePoint(it) }.sortedBy { it.at }
 
     fun clear(profile: Profile) {
-        file(profile).delete()
+        if (memory != null) memory.remove(profile.key) else file(profile).delete()
     }
 
-    private fun readLines(profile: Profile): List<String> = try {
+    private fun readLines(profile: Profile): List<String> = if (memory != null) memory[profile.key].orEmpty() else try {
         val f = file(profile)
         if (f.exists()) f.readLines().filter { it.isNotBlank() } else emptyList()
     } catch (_: Exception) {

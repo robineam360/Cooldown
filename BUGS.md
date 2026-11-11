@@ -27,6 +27,14 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   same gap at 360 dp.
 - **Fix:** derive the column from the screen's smallest width for both layouts (the build note in CCRM-114).
 
+### CCBG-81 · History Tab Wrap — a long account name wraps in the History tab strip at 360 dp
+- **Status:** Open · Android · found in RUNBOOK Step A5's captures (not caused by it)
+- **Severity:** Low (cosmetic)
+- **Symptom:** with three accounts the History screen keeps its fixed tab strip, and at 360 dp the tab "Personal" wraps to
+  "Person / al" (`design/research/2026-11-v20-build/A5/23-sample-history-360dp-dark.png`). The Main screen's strip scrolls from four
+  tabs and does not do this. The sample's three accounts make it the first thing a 360 dp reviewer sees on History.
+- **Fix:** let the History strip scroll, or ellipsize on one line, as Main's does; needs a wireframe (visible change).
+
 > **v2.0 device pass, 2026-11-02 (RUNBOOK-v2.0 Step 7, Fold 7, build 5636bde, github release).** CCBG-56 to
 > CCBG-66 were found on the v2.0 branch against `design/2026-11-02-shape-grammar.html` rev D (CCRM-103 (Hybrid
 > Notification)); captures in `design/research/2026-11-02-v20-device-pass/`. None ships in v1.9. Robin decides

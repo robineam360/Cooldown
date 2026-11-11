@@ -13,40 +13,32 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A5 · Sample (written 2026-11-11, after A4 landed)
+## ▶ Next — Lane A (Android): Step A6 · Narrow Duet (written 2026-11-11, after A5 landed)
 
-Step A4 (Summary: CCRM-110 (Account Tags) as Personal/Work only, the filter memory rule, CCRM-112 (Summary Snapshot),
-CCRM-115 (Row Tag Glyph)) landed on `main`; RUNBOOK's Lane A Log has the commit, the judge round, the captures
-(`design/research/2026-11-v20-build/A4/`) and two items for the orchestrator (a fixture contradiction for Step 2; a cancelled
-Add-sheet sign-in leaves a signed-out card on Android). Order from here: **A5, then A6** (Narrow Duet + CCBG-80), then Step 2
-(which also waits for iOS's I4). **What A4 leaves A5:** the sample must bind everything A4 wrote to the sample store, not the
-real one — `UsageCache.tag(profile)` / `UsageRepository.profileTag` / `setProfileTag` (the "Tag…" dialog and the Settings chip
-live in `SettingsScreen.kt`'s `TokenCard`; inside the sample "Tag…" edits the in-memory copy only and there is no Add account),
-the Summary's remembered filter (`UsageCache.summaryFilterStored/setSummaryFilter/settleSummaryFilter` — in the sample the
-memory rule runs only against the sample's in-memory copy of `summaryFilter`) and its sort menu (`setSummaryOrder`); the Add
-account sheet (`AddAccountSheet` in `SettingsScreen.kt`) gets "Try with sample data" as its last row (drawn in the addendum's
-sheet: a violet ring glyph, "Three made-up accounts to look around. Nothing is saved or sent."), which ignores the Personal |
-Work control; the sample's tags are fixed at entry: **Teams Work, Personal Personal, Lab Work**; the snapshot's "SAMPLE DATA"
-band replaces "SYNTHETIC" (`SummarySnapshot.Model.synthetic` and `ShareCard`'s band, 16 dp #7C4DFF, "● SAMPLE DATA").
-**Emulator without a sign-in:** a scratch debug-only `SeedActivity` (not committed; `app/src/debug/` plus a manifest entry)
-seeded the registry (with `tagRaw`), `UsageCache.saveSuccess` snapshots, `CredentialStore(this, true).save(...)` fake
-credentials and `setTokenMeta` plans, then started `MainActivity` (airplane mode on); `am force-stop` between scenarios;
-`uiautomator dump` to find a node. Rebuild it from this description, never commit it. In a real Add flow the debug build
-opens the browser: press back and the card stays signed out.
+Step A5 (Sample: CCRM-113 (Sample Port), plus the Add-sheet rule that a cancelled or failed sign-in leaves no account and no tag)
+landed on `main`; RUNBOOK's Lane A Log has the commit, the judge round, the captures (`design/research/2026-11-v20-build/A5/`) and
+two notes for Step 2 (reword BEHAVIOR-MOBILE §6 as "the account is created with that tag only when its sign-in succeeds"; the iOS
+sample's "display settings persist" against §7's in-memory copy). Order from here: **A6** (Narrow Duet: CCRM-114, closes CCBG-80
+(Fixed Pace Columns)), then Step 2 (which also waits for iOS's I4, done). **What A5 leaves A6:** nothing in the Duet or the
+notification was touched (`Surfaces.refresh` now returns early for a sample cache, nothing else there); the emulator's AOSP shade
+gives a 360 dp phone 220 dp of collapsed content, and the 360 dp captures of A2 (`design/research/2026-11-v20-build/A2/`, capture 25
+for the "Sun 6:…" cut) are the before. Seed real accounts on the emulator with a scratch debug-only `SeedActivity` (never committed:
+`app/src/debug/` plus a manifest entry; registry, `UsageCache.saveSuccess` snapshots, `CredentialStore(this, true).save(...)` fake
+credentials, `setTokenMeta` plans, pin on; airplane mode on); `am force-stop` between scenarios; `uiautomator dump` to find a node.
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A5),
-> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A5 names (design/2026-11-10-v20-feedback-wireframes.html §9
-> and its approved addendum design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html — the addendum wins: the sample's
-> tags, the Add-sheet row), BEHAVIOR-MOBILE §7 and `reviews/v20-sample-mode-findings.md`, and the ROADMAP entry it builds
-> (CCRM-113); load the model-mesh skill; run the mode check and the sweeper. Check the step's "Gated on" questions are
-> answered in "Robin's answers" (Convention 10; ask and record first if not). Build Step A5 on Android only (repo root, never
-> ios/). Write only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
-> "v2.0 feedback on Android". The four isolation tests are in `reviews/v20-sample-mode-findings.md` and in RUNBOOK Step A5's
-> "Done when". Check every state the wireframe and the addendum draw on the fold7inner emulator (port 5556, headless; never
-> emulator-5554) at the cover-like, inner and 360 dp widths, dark and light; save the captures in
-> design/research/2026-11-v20-build/A5/. Stop and report at anything neither wireframe draws. One fresh Opus judge round,
-> then close out per Convention 9 and land per WORKTREE.md. Before stopping, replace this block with Step A6's prompt (the
-> addendum's §N1 and F2; RUNBOOK Step A6).
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A6), the HANDOVER.md block
+> "Next — Lane A", the wireframe sections Step A6 names (design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html §N1 and the
+> F2 build note — Robin's variant C; the addendum wins over rev B where they differ), and the ROADMAP entries it builds (CCRM-114,
+> CCBG-80); load the model-mesh skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in
+> "Robin's answers" (Convention 10; ask and record first if not). Build Step A6 on Android only (repo root, never ios/). Write only the
+> files Lane A owns: in ROADMAP.md only each item's Status line, in BUGS.md CCBG-80, in spec/mobile/surfaces/ only inside "v2.0
+> feedback on Android". Tests: `DuetTest` for every cell the addendum draws (226 · 220 · 200 · 176 dp, font 1.0 and 2.0), `TextFitTest`
+> for the derived-column table and the pace line dropping its weekday for both layouts; the widget generator stays byte-identical.
+> Check every state on the fold7inner emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths,
+> dark and light, font 1.0 and 2.0; save the captures in design/research/2026-11-v20-build/A6/. Stop and report at anything the
+> wireframe does not draw; One UI's real widths at 360 dp stay UNVERIFIED until Step 3 (write the measured emulator widths in the
+> Log). One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md. Before stopping, replace this block
+> with "Lane A done" (RUNBOOK Step A6's last Done-when item).
 
 ## ▶ Next — Lane I (iOS): Lane I done (written 2026-11-11)
 
