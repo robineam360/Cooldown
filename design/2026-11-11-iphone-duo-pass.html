@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iPhone Duo pass (iOS, 2026-11-11)</title>
+<style>
+*{box-sizing:border-box}
+body{background:#f6f6f8;color:#1d1d1f;font:14px/1.45 -apple-system,"Segoe UI",Roboto,sans-serif;margin:0;padding:24px 16px 80px}
+main{max-width:1180px;margin:0 auto}
+h1{font-size:22px;margin:0 0 6px}
+h2{font-size:17px;margin:38px 0 6px;border-top:1px solid #d9d9de;padding-top:16px}
+h3{font-size:14px;margin:18px 0 4px}
+p,li{font-size:13px;color:#333;max-width:960px}
+code{font:12px ui-monospace,Menlo,monospace;background:#ececf0;padding:1px 4px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff;margin:8px 0}
+th,td{border:1px solid #dcdce2;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#efeff3}
+.ok{color:#1b7f3b;font-weight:600}.def{color:#b3261e;font-weight:700}.q{color:#9a6700;font-weight:700}.nt{color:#666;font-weight:600}
+.box{border-radius:8px;padding:10px 14px;margin:10px 0;max-width:960px;font-size:13px}
+.warn{border:2px solid #b3402a;background:#fdecea}.note{border:2px solid #c9a21a;background:#fff8e1}.info{border:1px solid #c7c7d1;background:#fff}
+.defect{background:#fff;border:1px solid #dcdce2;border-left:5px solid #b3261e;border-radius:8px;padding:12px 16px;margin:14px 0}
+.defect.qq{border-left-color:#c9a21a}
+.defect dl{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;margin:8px 0 0;font-size:13px}
+.defect dt{color:#666}.defect dd{margin:0}
+.shots{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0}
+figure{margin:0;background:#fff;border:1px solid #dcdce2;border-radius:8px;padding:6px;width:min(250px,100%)}
+figure.wide{width:min(560px,100%)}figure.xwide{width:100%}
+figure img{width:100%;display:block;border-radius:4px}
+figcaption{font-size:11.5px;color:#555;margin-top:4px}
+</style></head><body><main>
+
+<h1>iPhone Duo device pass — Cooldown iOS (v2.0, main @ 8916028)</h1>
+<p>2026-11-11. Check and report only: no app code, wireframes or tracker files were touched. The orchestrator allocates
+IDs. Simulator <b>iPhone Duo</b> (iPhone19,4) on its own runtime <code>iOS-27-2-iPhone19-4</code> (24B91016s); comparison
+on <b>iPhone 17e</b> (iOS 26.5 and 27.2). Content from the sample (“Try with sample data” on the first screen,
+CCRM-113 (Sample Port)) and the <code>-demo</code> scenarios (<code>standard</code>, <code>dense</code>, <code>fitdrop</code>,
+<code>quiet</code>, <code>upgraded</code>, <code>max</code>, <code>empty</code>). The surfaces were walked by a throwaway XCUITest in a scratch
+copy of <code>ios/</code>, never committed. It saved each screen and its accessibility tree, which gives the frame sizes quoted below.</p>
+
+<div class="box warn"><b>Coverage limit — only the folded posture was tested.</b> Xcode 27.2 on this Mac ships no Simulator.app, and
+neither <code>simctl</code> nor SimulatorKit exposes a hinge or fold control. Powering a display off with
+<code>simctl io … screenConfig</code> does not change the posture: SpringBoard takes the hinge state from CoreMotion
+(“MagicPose … hingeState: Closed”). The Claude app's simulator panel might have a fold control, but its device-access prompt
+went unanswered three times. The unfolded rows below are therefore predictions from the code, not observations. Fold ↔ unfold
+state survival was not tested.</div>
+
+<h2>Summary</h2>
+<ul>
+<li><b>Postures tested:</b> folded portrait (466 × 678 pt), and folded with the device turned to landscape (the app stays portrait).
+Unfolded portrait and landscape were not tested (see above).</li>
+<li><b>Defects:</b> 0 high · 3 medium · 1 low.
+  <ul>
+  <li><span class="def">D1 (medium)</span> One-line Summary row: a long name runs under the bar.</li>
+  <li><span class="def">D2 (medium)</span> Settings › Reset alerts: “Teams · 5h” and “Teams · Weekly” both truncate to “Teams ·…”. Seen on the 17e too.</li>
+  <li><span class="def">D3 (medium)</span> Folded rail: tabs show the provider mark only, so same-provider accounts look identical; with many tabs, History and Settings fold into “•••”.</li>
+  <li><span class="def">D4 (low)</span> History's account strip scrolls under the rail and shows through on its far side.</li>
+  </ul></li>
+<li><b>Questions:</b> Q1 the unfolded inner screen (669 pt) gets the phone page; Q2 tap targets under 44 pt (every iPhone); Q3 the sample opens on Teams, not All; Q4 the iPhone build is portrait-only.</li>
+<li><b>CCBG-81 (History Tab Wrap) twin on iOS: none.</b> The strip's names are <code>lineLimit(1)</code> at a fixed 16 pt, so they cannot wrap. “Personal” fits whole on the folded Duo (each tab 127 pt) and on the 17e (130 pt). It would truncate (“Perso…”), not wrap, below a ≈354 pt column.</li>
+<li><b>Not tested:</b> everything unfolded, fold/unfold transitions, widgets (placing them needs SpringBoard edit mode, which was not driven), Gemini sign-in rows (hidden by design in a local build without the Antigravity secret, <code>Antigravity.available</code>).</li>
+</ul>
+
+<h2>1 · Postures: what iOS reports and what the app picks</h2>
+<table>
+<tr><th>Posture</th><th>Window (pt)</th><th>Size class (h / v)</th><th>Layout the app picks</th><th>Right for the screen?</th></tr>
+<tr><td>Folded, portrait (cover, 5.37″, 1398 × 2034 px @3×)</td><td>466 × 678 measured (lldb on the key window). iOS 27 puts the status bar, the navigation toolbar and the tab bar in a <b>rail down the right edge</b> (x 382–466), so the page column is 0–382 and cards are 350 pt.</td><td>compact / regular (measured)</td><td>Phone page (<code>TabPage.iPad</code> needs regular ≥ 700; <code>sidebarLayout</code> needs regular, landscape, ≥ 1000). System rail for the tabs, icons only.</td><td class="ok">Yes. The 382 pt column is a little narrower than the 17e's 390, so this is now the narrowest column the app runs in (D1, the dense glyph drop).</td></tr>
+<tr><td>Folded, device turned to landscape</td><td>466 × 678, interface orientation still portrait (measured)</td><td>compact / regular</td><td>Same as portrait: the iPhone build lists only <code>UIInterfaceOrientationPortrait</code>.</td><td class="ok">As designed (Q4).</td></tr>
+<tr><td>Unfolded, portrait (inner, 7.58″, 2007 × 2853 px @3×)</td><td>≈ 669 × 951 expected from the framebuffer, <b>not measured</b></td><td>not measured</td><td>Predicted from code: <b>phone page</b> whatever the size class, because 669 &lt; 700, so cards about 637 pt wide with 16 pt margins. Never the iPad page or the sidebar.</td><td class="q">Question Q1: a phone page stretched to 637 pt. The iPad page (cards two across from 396 pt) would need the 700 pt threshold lowered.</td></tr>
+<tr><td>Unfolded, landscape</td><td>≈ 951 × 669 if it rotated; the app is portrait-only on iPhone</td><td>not measured</td><td>Predicted: stays portrait (or iOS letterboxes it). 951 pt would pick the iPad page with a wide Summary (≥ 900), but never the sidebar (&lt; 1000).</td><td class="q">Question Q4.</td></tr>
+</table>
+
+<h2>2 · Surfaces × posture</h2>
+<p>Folded = iPhone Duo folded (466 pt window, 382 pt page column). The unfolded column is not tested for any row.</p>
+<table>
+<tr><th>Surface</th><th>Folded</th><th>Notes</th></tr>
+<tr><td>First screen (no accounts)</td><td class="ok">OK</td><td>Claude and ChatGPT buttons and “Try with sample data”. No Gemini button in this build (no Antigravity secret), as designed.</td></tr>
+<tr><td>Sample entry and banner</td><td class="ok">OK</td><td>The banner fits whole at 350 pt. Q3: it opens on Teams, not All.</td></tr>
+<tr><td>All tab: Summary list (3 accounts), header with All · Personal · Work, sort</td><td class="ok">OK</td><td>The header holds on one line (title, the three segments, “⇅ ▾”). Pace and reset lines whole: “2d 9h behind · resets Sun 10:52 PM”, “Held · back at 1:49 am · resets Sun”.</td></tr>
+<tr><td>Filter Personal / Work; upgraded install (Work dimmed + notice)</td><td class="ok">OK</td><td>The map and the foot line follow the filter. “No Work accounts yet. Tag one in Settings.” shows under the header.</td></tr>
+<tr><td>Sort menu</td><td class="ok">OK</td><td>Native pull-down, four items, check on the current one.</td></tr>
+<tr><td>Pace map: trails, figures + projection, callout, all at 0%</td><td class="ok">OK</td><td>The chips fit on the title line. The callout stays inside the plot. “Nothing to plot yet” and “3 at 0%” both show.</td></tr>
+<tr><td>Dense one-line list (10 accounts)</td><td class="ok">OK by rule</td><td>The tag-glyph column drops on the Duo (318 pt row) but stays on the 17e (326 pt). That follows <code>RowGlyphFit</code>, because the bar would fall under 50 pt. Comparison below.</td></tr>
+<tr><td>One-line list with a long name (<code>fitdrop</code>)</td><td class="def">Defect D1</td><td>“Consultancy” runs under the bar.</td></tr>
+<tr><td>Account pages Teams / Personal / Lab; spent (<code>max</code>); sign-in and stale demos</td><td class="ok">OK</td><td>Tile, chips, Day Grid chart (seven columns, ordinals 2–6 all present), pace line with the reset named, credits card. The chart is not stretched at 318 pt.</td></tr>
+<tr><td>Tab chrome (the system rail)</td><td class="def">Defect D3</td><td>Icons only. With 6+ tabs, History and Settings collapse into “•••”.</td></tr>
+<tr><td>History: strip, 5-hour, 7-day with Plan Fit, week arrows</td><td class="ok">OK</td><td>“Teams · Personal · Lab” on one line, no wrap or truncation. The back button sits in the rail.</td></tr>
+<tr><td>History with 10 accounts (scrolling strip)</td><td class="def">Defect D4</td><td>The strip runs under the rail.</td></tr>
+<tr><td>Settings: Accounts (chips, “Sample”/“Signed in”), Usage credits, Reset alerts, Lock Screen, Appearance (all rows), About</td><td class="ok">OK, except Reset alerts (D2)</td><td>The sheet keeps to the 382 pt column. In the sample the Personal row drops its status word to keep the name and chip whole (the I4 order).</td></tr>
+<tr><td>Settings › Reset alerts</td><td class="def">Defect D2</td><td>Window word lost. Also on the 17e.</td></tr>
+<tr><td>Settings › account page (Account, Sign-in, Headline, Model limits, Usage)</td><td class="ok">OK</td><td>The Tag row reads “💼 Work ⌃⌄”.</td></tr>
+<tr><td>Settings row touch-and-hold menu</td><td class="ok">OK</td><td>Rename, Tag ›, Details…, Accent colour…, Sign in again, Clear usage history…, Remove.</td></tr>
+<tr><td>Add account sheet</td><td class="ok">OK</td><td>Personal | Work control, provider rows, sample row, footnote. No truncation at the large detent.</td></tr>
+<tr><td>Sign-in sheets: Claude, ChatGPT (device code), Gemini</td><td class="ok">OK</td><td>The ChatGPT code reads whole, and the button text “Open auth.openai.com/codex/device” fits.</td></tr>
+<tr><td>Layout sheet (one card and two cards)</td><td class="ok">OK</td><td></td></tr>
+<tr><td>Share card; Share snapshot (the All tab)</td><td class="ok">OK</td><td>Both cards stay 300 pt wide at 3× and centre in the column; the Share button is below.</td></tr>
+<tr><td>Dark theme (All tab)</td><td class="ok">OK</td><td></td></tr>
+<tr><td>Widgets, lock screen, Live Activity</td><td class="nt">Not tested</td><td>Placing widgets needs SpringBoard's edit mode. The widget faces do not depend on the app window, so the I-lane <code>SurfaceRenderTests</code> renders still hold.</td></tr>
+<tr><td>Fold ↔ unfold with the app open</td><td class="nt">Not tested</td><td>No fold control (see the coverage limit above).</td></tr>
+</table>
+
+<h2>3 · Defects</h2>
+
+<div class="defect"><h3>D1 · One-line Summary row: a long name runs under the bar — medium</h3>
+<dl>
+<dt>What I saw</dt><dd>With ten accounts (one-line rows) and the name “Consultancy”, the name's last letters sit under the bar's start dot. The glyph column has already left, as the rule says. The 17e, with the same data, shows a small gap.</dd>
+<dt>Width</dt><dd>Folded Duo: one-line row 318 pt (page column 382). The name is <code>.fixedSize()</code> (“it never truncates on a one-line row”) and the bar has <code>minWidth: 50</code>, so any row narrower than <b>246 pt + the name's width</b> overflows: 331 pt for “Consultancy”, which overflows by 13 pt here. <code>ios/App/UI/Summary.swift</code> ≈ l. 367–374.</dd>
+<dt>Proposed fix</dt><dd>Once the glyph has left, let the name ellipsize down to its 64 pt floor (or let the bar go under 50 pt), so the row never overflows.</dd>
+<dt>Changes what the user sees?</dt><dd><b>Yes, it needs a small wireframe.</b> The approved I4 rule never covered a row narrower than its minimum, so which part gives first is a design choice.</dd>
+</dl>
+<div class="shots">
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/crop-consultancy-overlap.jpg" alt="Consultancy overlapping its bar"><figcaption>Folded Duo, <code>-demo fitdrop</code>, row 8 at full resolution.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-fitdrop-all.jpg" alt=""><figcaption>Folded Duo, the whole list.</figcaption></figure>
+</div></div>
+
+<div class="defect"><h3>D2 · Settings › Reset alerts: the window word is truncated away — medium (every narrow iPhone)</h3>
+<dl>
+<dt>What I saw</dt><dd>Each account has two rows, “Teams · 5h” and “Teams · Weekly”. The segmented Off / If busy / Always control is <code>.fixedSize()</code> (≈ 186 pt), so the label truncates to <b>“Teams ·…”</b> on both rows, and “Personal” to “Persona…”. Only “Lab · 5h” fits, and “Lab · W…” already truncates. The two rows of an account cannot be told apart.</dd>
+<dt>Width</dt><dd>Folded Duo (350 pt card) and iPhone 17e (358 pt card). Any name longer than about 4 characters truncates. <code>ResetModeRow</code>, <code>ios/App/UI/SettingsHistory.swift</code> ≈ l. 601–616.</dd>
+<dt>Proposed fix</dt><dd>Name the account once (a sub-header or the first row) and label the two rows “5h” and “Weekly”, or put the control under the label.</dd>
+<dt>Changes what the user sees?</dt><dd><b>Yes, it needs a wireframe.</b></dd>
+</dl>
+<div class="shots">
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/crop-reset-alerts.jpg" alt=""><figcaption>Folded Duo, Reset alerts.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/e17-settings-reset-alerts.jpg" alt=""><figcaption>iPhone 17e (iOS 27.2), same rows.</figcaption></figure>
+</div></div>
+
+<div class="defect"><h3>D3 · Folded rail: account tabs lose their names — medium (needs a decision)</h3>
+<dl>
+<dt>What I saw</dt><dd>On the folded Duo, iOS 27 draws the <code>.sidebarAdaptable</code> TabView as a vertical rail on the right with <b>icons only</b>. On the 17e the bottom bar has labels. Each account tab's icon is its provider mark, so Teams, Lab and Atlas (all Claude) show three identical ✳. With 10 accounts the rail also folds the toolbar into “•••”, so History and Settings each take one more tap, and the extra accounts sit under “•••” too.</dd>
+<dt>Width</dt><dd>Folded Duo, 466 pt window. Not seen on the 17e.</dd>
+<dt>Proposed fix</dt><dd>Decide how a tab names its account where the system hides labels: a monogram or accent-tinted mark per account, or another tab style on this device class.</dd>
+<dt>Changes what the user sees?</dt><dd><b>Yes, it needs a wireframe</b>. The chrome is the system's (“Native everywhere”, Robin 2026-11-02), so this may also be accepted as is.</dd>
+</dl>
+<div class="shots">
+<figure><img src="2026-11-11-iphone-duo-pass/f-dense-all.jpg" alt=""><figcaption>Folded Duo, 10 accounts: the rail shows ✳ ✳ ✳ and “•••”, and the toolbar is a single “•••”.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-all-figures-projection.jpg" alt=""><figcaption>Folded Duo, 3 accounts: the rail carries the toolbar and the tabs.</figcaption></figure>
+</div></div>
+
+<div class="defect"><h3>D4 · History's account strip scrolls under the rail — low</h3>
+<dl>
+<dt>What I saw</dt><dd>With four or more accounts the strip scrolls horizontally. Its scroll view spans the whole 466 pt window (frame 0–466), not the 382 pt column, so tabs slide under the status rail, and “Gemini” shows as “em” on the far side of the rail. The divider under the strip does stop at the column.</dd>
+<dt>Width</dt><dd>Folded Duo. Not seen on the 17e (no side rail).</dd>
+<dt>Proposed fix</dt><dd>Keep the strip's scroll view inside the safe area (no trailing safe-area bleed, so it clips at the column edge), like the rest of the page. <code>AccountTabs</code>, <code>ios/App/UI/MainScreens.swift</code> ≈ l. 196.</dd>
+<dt>Changes what the user sees?</dt><dd>No. It restores the approved strip, which stays inside the page column.</dd>
+</dl>
+<div class="shots">
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/crop-history-strip-under-rail.jpg" alt=""><figcaption>Folded Duo, History, <code>-demo dense</code>: “em” of Gemini to the right of the rail.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-history-dense-strip.jpg" alt=""><figcaption>Whole screen.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/e17-history-dense-strip.jpg" alt=""><figcaption>iPhone 17e, same data: fine.</figcaption></figure>
+</div></div>
+
+<h2>4 · Questions</h2>
+
+<div class="defect qq"><h3>Q1 · The unfolded inner screen gets the phone page</h3>
+<p>Inner screen ≈ 669 × 951 pt. <code>TabPage.iPad</code> needs a regular width of 700 pt or more, so whatever size class iOS reports, the
+unfolded Duo shows the phone page with cards about 637 pt wide. The account tile and chart then run about 280 pt wider than on any
+phone, which risks the “charts too wide” look. Should the threshold come down to about 660 pt, so the inner screen gets the iPad page
+(header and cards two across from 396 pt)? That is a wireframe question. It also needs a real unfolded pass, in the simulator panel
+or on hardware, to measure the size class.</p></div>
+
+<div class="defect qq"><h3>Q2 · Tap targets under 44 pt (every iPhone, not Duo-specific)</h3>
+<p>Accessibility frames (the drawn frame; the hit area can be larger if a <code>contentShape</code> widens it, so tap-test before
+fixing):</p>
+<table>
+<tr><th>Control</th><th>Frame (pt)</th><th>Where</th></tr>
+<tr><td>History week arrows “Earlier week” / “Later week”</td><td>12.7 × 17.3</td><td>History card</td></tr>
+<tr><td>Sample banner “Exit”</td><td>24.7 × 16.3 (the whole banner, 350 × 34, is also a button)</td><td>every tab</td></tr>
+<tr><td>Summary sort button “⇅ ▾”</td><td>45 × 19.7</td><td>All tab header</td></tr>
+<tr><td>Settings › account “Check now”</td><td>28 × 28</td><td>Sign-in section</td></tr>
+<tr><td>Pace map chips Figures / Trails / Projection</td><td>54–84 × 25.7</td><td>All tab</td></tr>
+<tr><td>Tile chips 7d / Opus / 5h</td><td>45–63 × 26</td><td>account pages</td></tr>
+<tr><td>Summary filter segments All / Personal / Work</td><td>34–70 × 28</td><td>All tab header</td></tr>
+<tr><td>One-line Summary rows</td><td>318 × 18 (rows stack with no gap, so the effective target is the row pitch)</td><td>All tab, 6+ accounts</td></tr>
+<tr><td>History strip tab buttons</td><td>75–94 × 20 (the label; the tab is drawn 46 pt high)</td><td>History</td></tr>
+</table>
+<p>System controls (segmented pickers 32 pt, switches 28 pt, colour swatches 36 pt) are left out.</p></div>
+
+<div class="defect qq"><h3>Q3 · “Try with sample data” opens on Teams, not All</h3>
+<p>“Open on the summary” is on by default, but entering the sample lands on the Teams tab, because <code>DemoData</code> sets
+<code>selectedKey = "teams"</code> for the standard set. Every iPhone, not Duo-specific. Intended?</p>
+<div class="shots"><figure><img src="2026-11-11-iphone-duo-pass/f-sample-entry-teams.jpg" alt=""><figcaption>Folded Duo, right after “Try with sample data”.</figcaption></figure></div></div>
+
+<div class="defect qq"><h3>Q4 · The iPhone build is portrait-only</h3>
+<p>On the Duo, turning the folded phone keeps the app in portrait (measured). Unfolded, the 7.6″ inner screen is held in landscape
+as often as in portrait. Should the iPhone build allow landscape where the window is large (the iPad layouts already exist)?
+Not testable here.</p>
+<div class="shots"><figure><img src="2026-11-11-iphone-duo-pass/f-landscape-stays-portrait.jpg" alt=""><figcaption>Folded Duo turned to landscape: 466 × 678, interface still portrait.</figcaption></figure></div></div>
+
+<h2>5 · CCBG-81 (History Tab Wrap) check on iOS</h2>
+<p>No wrap anywhere. Each History strip tab is <code>lineLimit(1)</code> at a fixed 16 pt (no Dynamic Type), one third of the strip wide with
+three tabs, with a minimum of 80 pt and horizontal scrolling with four or more.</p>
+<table>
+<tr><th>Device</th><th>Strip column</th><th>Per tab (3 accounts)</th><th>“Personal”</th></tr>
+<tr><td>iPhone Duo folded (iOS 27.2)</td><td>382 pt</td><td>127 pt</td><td class="ok">whole, one line</td></tr>
+<tr><td>iPhone 17e (iOS 26.5 and 27.2)</td><td>390 pt</td><td>130 pt</td><td class="ok">whole, one line</td></tr>
+<tr><td>Predicted threshold</td><td>&lt; ≈ 354 pt</td><td>&lt; ≈ 118 pt</td><td class="q">would truncate to “Perso…”, never wrap</td></tr>
+</table>
+<div class="shots">
+<figure><img src="2026-11-11-iphone-duo-pass/f-history-personal.jpg" alt=""><figcaption>Folded Duo, History, Personal selected.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/e17-ios27-history.jpg" alt=""><figcaption>iPhone 17e, iOS 27.2.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/e17-ios265-history.jpg" alt=""><figcaption>iPhone 17e, iOS 26.5.</figcaption></figure>
+</div>
+
+<h2>6 · Dense list: 17e vs folded Duo</h2>
+<figure class="xwide"><img src="2026-11-11-iphone-duo-pass/cmp-dense-17e-vs-duo.jpg" alt=""><figcaption>From left: 17e dense (I4 capture, glyphs kept),
+17e fitdrop (I4 capture, glyphs dropped), Duo folded dense (glyphs dropped, by rule at a 318 pt row), Duo folded fitdrop (D1).</figcaption></figure>
+
+<h2>7 · Gallery — folded Duo</h2>
+<div class="shots">
+<figure><img src="2026-11-11-iphone-duo-pass/f-first-screen.jpg" alt=""><figcaption>First screen</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-all-figures-projection.jpg" alt=""><figcaption>All tab, Figures + Projection</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-map-callout.jpg" alt=""><figcaption>Pace map callout</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-filter-personal.jpg" alt=""><figcaption>Filter: Personal</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-filter-work.jpg" alt=""><figcaption>Filter: Work</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-upgraded-work-dimmed.jpg" alt=""><figcaption>Upgraded: Work dimmed + notice</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-sort-menu.jpg" alt=""><figcaption>Sort menu</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-quiet-map.jpg" alt=""><figcaption>All at 0%</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-all-dark.jpg" alt=""><figcaption>Dark</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-tab-lab.jpg" alt=""><figcaption>Lab tab</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-tab-personal.jpg" alt=""><figcaption>Personal tab</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-max-teams.jpg" alt=""><figcaption>Teams, 5h spent</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-history-lab.jpg" alt=""><figcaption>History, 5-hour</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-history-personal-7day.jpg" alt=""><figcaption>History, 7-day + Plan Fit</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-0.jpg" alt=""><figcaption>Settings (sample)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-1.jpg" alt=""><figcaption>Settings › Appearance</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-2.jpg" alt=""><figcaption>Settings › Appearance (cont.)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-about.jpg" alt=""><figcaption>Settings › About</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-reset-alerts.jpg" alt=""><figcaption>Settings › Reset alerts (D2)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-account-0.jpg" alt=""><figcaption>Settings › account</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-account-1.jpg" alt=""><figcaption>Settings › account (cont.)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-settings-row-menu.jpg" alt=""><figcaption>Settings row menu</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-add-account.jpg" alt=""><figcaption>Add account</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-signin-claude.jpg" alt=""><figcaption>Claude sign-in</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-signin-chatgpt.jpg" alt=""><figcaption>ChatGPT sign-in</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-signin-gemini.jpg" alt=""><figcaption>Gemini sign-in</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-layout-lab.jpg" alt=""><figcaption>Layout (one card)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-layout-teams-medium.jpg" alt=""><figcaption>Layout (medium detent)</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-share-card.jpg" alt=""><figcaption>Share card</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-snapshot-sheet.jpg" alt=""><figcaption>Share snapshot</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/f-empty.jpg" alt=""><figcaption>Empty (demo)</figcaption></figure>
+</div>
+
+<h2>8 · How to repeat</h2>
+<ul>
+<li>The Duo needs its own runtime. The generic iOS 27.2 runtime (24B8117) lists iPhone19,4 as unsupported.
+<code>xcodebuild -downloadPlatform iOS -buildVersion 27.1</code> fetched <code>iOS-27-2-iPhone19-4</code> (24B91016s), about 8 GB.
+Then <code>xcrun simctl create "iPhone Duo" com.apple.CoreSimulator.SimDeviceType.iPhone-Duo com.apple.CoreSimulator.SimRuntime.iOS-27-2-iPhone19-4</code>.</li>
+<li>Screenshots: <code>xcrun simctl io &lt;udid&gt; screenshot --display=1</code> (cover); the inner screen is display 3.</li>
+<li>Don't toggle display power with <code>screenConfig</code>: it crashed SpringBoard here (<code>restrictedClassicModeDisplayConfiguration…</code>), and only a reboot of the simulator fixed it.</li>
+<li>For the unfolded pass, open the simulator in the Claude app's panel (or in Xcode, if it shows a fold control there) and re-run section 2's surfaces at 669 pt.</li>
+</ul>
+</main></body></html>
