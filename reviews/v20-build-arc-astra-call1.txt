@@ -1,0 +1,6 @@
+[model-mesh] astra -> gpt-6-astra (resolved from the Codex catalogue, tier astra)
+[model-mesh] notice: codex-default has no recorded data-terms date; the reviewer will need one from the next release (D3)
+VERDICT: blocking
+1. [blocking · confidence 97] <where: Shape; Steps 5–7; Reserved for the owner> — "two code lanes run at the same time"; "whether publish waits for Beta App Review"; "two lanes at once on one machine" — The execution sequence assumes answers to explicitly reserved, unresolved decisions without a gate to obtain them. It starts parallel lanes unconditionally and permits publication without resolving the Beta App Review requirement or the IPA-versus-TestFlight-link choice. — Execution can bypass the owner's mandatory decisions, including a precondition for irreversible publication. — Add explicit decision gates before the affected work: concurrency before the lanes, share-card scope before implementation, asset choices before preparation, and release contents and review timing before publication. Record each answer and enforce it in the corresponding step.
+COVERAGE: full
+[model-mesh] tier=astra model=gpt-6-astra effort=high tokens=19,730 transcript=/var/folders/_h/p57yw3_54cd5brs6bb858bch0000gq/T/model-mesh.XXXXXX.hJfqKEJhGW/transcript.log

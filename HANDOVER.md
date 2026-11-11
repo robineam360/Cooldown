@@ -4,7 +4,22 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 is on main (2026-11-06) — the arc continues on main
+## ▶ Next session — v2.0 feedback build, RUNBOOK.md Step 1 (written 2026-11-11)
+
+RUNBOOK.md is now the v2.0 feedback build arc: CCRM-105 (Duet Stack) to CCRM-113 (Sample Port) on Android and
+iOS, then the release and Play Day 0. It replaces RUNBOOK-v2.0.md's open Steps 7 and 8. Step 1 is the spec step;
+after it lands, Lane A (Android) and Lane I (iOS) run at the same time and Lane D (release text) beside them, each
+from the prompt in its own HANDOVER block, which Step 1 creates. Robin can start R1 (Play Console Phases A–C) and
+R2 (recruiting testers) now. Six questions in RUNBOOK.md's "Questions for Robin" are open.
+
+New session in `~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**, paste:
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Step 1) and HANDOVER.md;
+> load the model-mesh skill; run the mode check and the sweeper. Do RUNBOOK Step 1 exactly as its fenced prompt
+> says (spec only, no app code), then close out per Convention 9 and land per WORKTREE.md. Report the fixtures
+> commit so the orchestrating session can send the frozen set to the desktop session.
+
+## ▶ (superseded by the block above) v2.0 is on main (2026-11-06) — the arc continues on main
 
 PR #21's branch `worktree-v20-arc-and-antigravity` was merged with v1.9's `main` and landed on `main` (Robin: "Yes, land it now"). Gate G0 is lifted; the next session works on `main` in a fresh worktree, not on the old branch. CCBG-75 (Antigravity Crash on Refresh) is closed by dropping `hasSource`; CCBG-76 (Probe Crash) and CCBG-77 (Gemini One-shot Retry) closed with it. versionCode and versionName are **not** bumped: that is RUNBOOK-v2.0 Step 8. The iOS parity PR #23 was based on the old branch and is retargeted by its own session.
 

@@ -68,8 +68,8 @@ Wireframes: `design/2026-11-02-weekly-first-pace.html` (Android), `-ios-weekly-f
 | 6b | CCRM-55 on Android: spec/core facts, AntigravitySource, credentials and secret, sign-in, every surface | 2, 5 | ☑ |
 | 6c | CCRM-55 on iOS: the same on CooldownCore and every iOS surface | 6, 6b's spec | ☑ |
 | 6d | CCRM-103 shape grammar (rev D, frozen): rings = 5h, bars = 7-day, end mark, tap readout, status-bar icon | 5, 6, Astra call 3 (accept) | ☑ (Robin's two calls built, see the log) |
-| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6d, G0 | ☐ |
-| 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ |
+| 7 | Device passes: Fold 7 (cover, inner, dark, light) and iPad; captures; bugs filed; a real Gemini Pro account | 4, 5, 6, 6a–6d, G0 | ☐ **Moved 2026-11-11** to RUNBOOK.md Step 3 (device pass 2, which carries this step's open checks) |
+| 8 | Release v2.0, APK + IPA, per RELEASING.md | 7 | ☐ **Moved 2026-11-11** to RUNBOOK.md Steps 4–7 |
 
 ## Steps
 

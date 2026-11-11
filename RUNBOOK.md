@@ -1,815 +1,820 @@
-# Runbook — the v1.9 arc: Play-ready and steady
+# Runbook — the v2.0 feedback build, then the v2.0 release and Play Day 0
 
-> **Next arc:** [RUNBOOK-v2.0.md](RUNBOOK-v2.0.md) (Weekly First, Pace, Summary; FROZEN 2026-11-02). This file's Step 8 is
-> ticked (v1.9 published 2026-11-05), so its Gate G0 is lifted, and the arc's code landed on `main` on 2026-11-06 (PR #21).
+**Plan status: FROZEN 2026-11-11.** Cross-family review: Astra at high, one full call, verdict **blocking**
+with one finding (C1-1, no decision gates on Robin's open questions), fixed by Convention 10 and closed by a
+named check (`reviews/v20-build-arc-gatecheck.py`, PASS). No delta call: no step added, no reversal changed.
+Table: `reviews/v20-build-arc-findings.md`; Step 0's Log.
 
-**Plan status: FROZEN 2026-09-27.** Cross-family review: Astra at xhigh. Rounds 1 and 2 were blocking, and round 3 returned **concerns**. All thirteen findings are adopted. Q4 (the Play account type) stayed open by Robin's choice and gated only Step 9; **Robin answered it on 2026-11-10: personal** (Step 9's Log). See Step 1's Log.
+This runbook takes `main` as of 2026-11-11 (v2.0 code on main, versionCode 25 / "1.9", the nine feedback
+items approved but not built) to a published **v2.0**: the GitHub release (APK, with the iOS build under the
+same version), the TestFlight build, and Day 0 of the Google Play closed test.
 
-This runbook takes `main` as of 2026-09-27 (v1.8 shipped, versionCode 24) to a released v1.9, and
-then to the same build on Google Play's internal-testing track. It is written as ordered, checkable
-steps.
+**Items** (each on Android and iOS unless marked):
+- CCRM-105 (Duet Stack) — Android only (iOS has no ongoing notification);
+- CCRM-106 (7d Chip);
+- CCRM-107 (Day Grid);
+- CCRM-108 (Reset Named);
+- CCRM-109 (Quiet Accounts);
+- CCRM-110 (Account Tags);
+- CCRM-111 (Map Layers), which closes CCBG-79 (Leader Reads as Trail);
+- CCRM-112 (Summary Snapshot);
+- CCRM-113 (Sample Port) — Android, plus the iOS follow-up (the iOS sample swaps "Product" for a Gemini account).
 
-**Items:**
-- CCRM-86 (Play Readiness), with its four parts: CCRM-87 (Update Channel), CCRM-88 (Scoped Queries),
-  CCRM-89 (Privacy Policy) and CCRM-90 (Listing Pack);
-- CCRM-91 (CI Gate);
-- CCRM-85 (Crash Capture);
-- CCBG-46 (Keystore Wedge);
-- visible fixes: CCBG-35 (Tab Clip), CCBG-45 (Single Panel Wording), and CCBG-48 (Reconfigure Label)
-  if it qualifies;
-- CCBG-50 (Degraded Store Notice), added by Robin on 2026-09-30 after the Step 4 judge. It needs a
-  wireframe and Robin's review call on the scope change.
-- CCBG-51 (Held Change Residue), added by Robin on 2026-10-01: pure logic, no wireframe;
-- the Debug section's Endpoint probe leaves release builds (Robin, 2026-10-01; `BuildConfig.DEBUG`).
+**Carried in from [RUNBOOK-v2.0.md](RUNBOOK-v2.0.md):** its Steps 7 (device passes) and 8 (release v2.0) are
+not ticked; this file's Steps 3 and 4–7 replace them (its Progress rows say so since Step 0), and Step 3 picks
+up their open checks (listed there).
+CCRM-104 (Pace Line Parity) and CCBG-78 (Collapsed Pace Line Clip) are built and wait for the device check in
+Step 3. Earlier arcs are in git history: v1.9 at `1f8ee7b` (this file before it was replaced).
 
-**Filed but not in v1.9:** CCBG-47 (Widget Theme Lag) and CCBG-49 (Unassigned Label Overflow).
+**The design.** `design/2026-11-10-v20-feedback-wireframes.html`, **approved rev B 2026-11-10** (§1–§8 the
+eight items, §9 the sample mode). Rules: BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback" (CCRM-107, 108, 109,
+111), BEHAVIOR-MOBILE §7 (sample mode), ROADMAP.md CCRM-105 to CCRM-113, and the per-file deltas in
+`spec/mobile/surfaces/README.md` § "Planned changes". The wireframe's §4 heading still says "since / until";
+Robin chose **B, the pace line names the reset** — ROADMAP's CCRM-108 and core §6.3 are the rule.
 
-**Out of scope:** CCRM-66 (Play Store Launch) stays the launch decision. It is gated on the
-Anthropic/OpenAI check and it is Robin's.
+## Closed decisions (Robin, 2026-11-04 to 2026-11-10)
 
-Earlier arcs are in git history: v1.8 at `6e4c1a0`, v1.7 at `4f30dba`, the dropped Play Store arc at
-`b827dc5` (read its research, never its conclusions, as current), and v1.6 at `a7dba1b`.
+1. All nine items ship in v2.0; v2.0 waits for their build and a second Fold 7 + iPad pass.
+2. The Duet keeps its +/− sign. Collapsed Duet text is capped in dp at large font scales.
+3. Tags are optional (None · Personal · Work); untagged accounts show only under All.
+4. The pace line names the reset: "6d 23h behind · resets Wed 12:30 PM". Where it does not fit, a bare clock
+   always means today: another day drops "resets", then the clock, then the weekday; later today drops
+   "resets", then the clock (c1454d4).
+5. An account leaves the Pace map only when its row reads "0%" (1f8ee7b).
+6. The sample mode never reaches the notification, the status-bar icon, the reset pings or the widgets.
+7. Play launches at v2.0 on a **personal** developer account (not yet registered). The closed test (12+
+   testers opted in for 14 days in a row) starts after these items land. iOS stays on TestFlight, published by
+   EAM360. Terms risk accepted ("Proceed, risk accepted").
+8. Version: Android versionCode **26** / versionName **"2.0"**; iOS `MARKETING_VERSION` **2.0**, build
+   (`CURRENT_PROJECT_VERSION`) **1**, both set in the release commit and never earlier.
 
-**Robin's answers (2026-09-27), recorded in ROADMAP.md's v1.9 section:**
-- **Q1:** v1.9 goes as far as a Console account and the internal-testing track (Step 9). It does not
-  start closed testing and does not publish to production.
-- **Q2:** CCBG-45 is fixed as-is, under CLAUDE.md §2's exemption.
-- **Q3:** Play App Signing uses our existing key.
-- **Q4:** the account type (personal or organisation) was **open**. **Answered 2026-11-10 by
-  Robin: personal** (see Step 9's Log).
+## How the work is split, and why
 
-**Five things the plan is built on:**
-1. **Nothing outside git or the phone changes before Step 8.** Steps 1–6 are commits, and
-   `git revert` reverses them. Step 7 changes the phone, and its *Always after* block restores it.
-   Step 8 is irreversible once published. So is Step 9 (the fee, the identity check, the key
-   enrolment, and the package name claimed on Play).
-2. **The Play build lacks out-of-store update code rather than hiding it.** The code lives in a
-   flavor source set, not behind a flag (CCRM-87).
-3. **One key, one versionCode sequence, one commit** for both channels. The AAB is built from the
-   release commit, and its signer is checked against RELEASING.md's trusted digest.
-4. **No session opens the Play Console on its own.** Step 9 is Robin's clicks, with the session
-   guiding. Every irreversible console action is named before it is taken.
-5. **The phone ends on the github flavor.** A play-flavor build left on the Fold 7 would strand
-   Robin without update checks.
+**Spec first, then two code lanes side by side, then one serial tail.**
 
-**How this arc is run.** Delegation follows the `model-mesh` skill (CLAUDE.md §4), and the seat
-builds by default. Minor spec or wireframe gaps go to a Fable judge, and Fable's answer goes to
-Astra. Only disagreements, major visual changes and reserved decisions come to Robin. Whoever writes
-code lands it with its Status line in one commit, and the session ticks this file. A session that
-runs out mid-arc is resumed by pasting the *Resume* block of the first unticked step. If Step 7 had
-begun, run its *Always after* block first.
+- **Step 1 (serial)** writes everything both platforms read: the new shared fixtures, and the lane-scoped
+  places in the shared files (below). Both lanes branch from `main` after Step 1 lands.
+- **Lane A (Android)** and **Lane I (iOS)** then run at the same time, each in its own session and worktree.
+  They share no code. Inside a lane the steps run one after another.
+- **Lane D (docs)** writes the release text and the feature-graphic wireframe. It touches no code and no
+  tracker file, so it may run beside the lanes.
+- **Steps 2–8 (serial)** fold the lanes together, run the device pass, cut the release and start Play.
+
+**Batches, not one item per step.** Nine items on two platforms as single steps would be seventeen sessions,
+each re-reading the same chart and pace-line code and each paying for a judge round and a landing. One step
+per platform would be too big to judge in one round. So the items are grouped by the code they share:
+
+| Batch | Items | Shared code (Android · iOS) |
+|---|---|---|
+| Lines and labels | CCRM-106, CCRM-107, CCRM-108 | the pace-line formatter (`PaceText` · `PrintedForm`), the trend chart's painter, the tile chips; the §6.3 printed-form fixtures |
+| Pace map | CCRM-109, CCRM-111 (CCBG-79) | the map painter, its label placer and foot line; the `mapLabels` fixtures |
+| Summary | CCRM-110, CCRM-112 | the Summary header, the account settings, the share card |
+| Duet | CCRM-105 | the notification builder and its fit tables (Android only) |
+| Sample | CCRM-113 | the account store, the first screen, every tab's notice slot |
+
+The four §6.3 items are split across two batches on purpose: the day grid and the reset wording change the
+*text and charts everywhere*, while quiet accounts and layers change *only the map*. The Pace map batch comes
+second so it draws over the finished grid and axis. The Duet comes after Lines and labels, so its fit is
+measured with the final pace line. The Sample comes last on Android, so the sample shows every new surface.
+
+**Why only two code lanes.** A second Android session would share the emulator, the gradle daemons and the
+app's UI files with the first. The Android batches touch overlapping screens, so they would have to take
+turns anyway.
+
+## Who owns each shared file
+
+Two writers never edit the same lines. Git merges two branches cleanly when at least one unchanged line
+separates their edits, and conflicts when the edits touch or abut (dry run 2026-11-11, Step 0's Log). Every
+rule below rests on that.
+
+| File | Owner during the lanes | Rule |
+|---|---|---|
+| `spec/core/**`, `spec/mobile/BEHAVIOR-MOBILE.md`, `spec/mobile/fixtures/**` | **Step 1** writes them; then **read-only** for every lane | A lane that finds a fixture or rule wrong stops and reports to the orchestrating session, which gives the fix to one session as a spec-only commit (spec leads). |
+| `ROADMAP.md` | Lane A: each item's **Status** line only. Lane I: each item's **iOS:** line only (Step 1 adds it as the entry's last bullet, so the What text separates the two lines) | Step 2 rewrites both lines into the closing status. Nobody else edits a CCRM-105…113 entry during the lanes. |
+| `BUGS.md` | **Lane A only** (the CCBG-79 Android note, any defect it files) | Lane I and Lane D never edit it; they record a defect in their step's Log, and Step 2 files it. From Step 2 on, the serial step in progress owns it. |
+| `spec/mobile/surfaces/*.md` | Lane A: only inside the section **"v2.0 feedback on Android"** of each file. Lane I: only inside **"v2.0 feedback on iOS"** | Step 1 adds both sections at the end of each file, Android first, each with a placeholder line, so the iOS heading always separates the two. `README.md`'s "Planned changes" list is Step 2's. |
+| `RUNBOOK.md` | Each lane ticks only its own Progress table and writes only under its own steps' **Log** | Tables are separated by headings. |
+| `HANDOVER.md` | Each lane replaces only its own block ("Next — Lane A", "Lane I", "Lane D") | Step 1 creates the three blocks under separate headings. |
+| `design/research/2026-11-v20-build/<step>/` | The step named in the folder | Captures only; Cooldown screens only, never home pages or the shade's other notifications. |
+| `app/**`, `tools/widget_layouts.py`, Android test code | Lane A | Step 2 then owns the fixture switch-over in tests. |
+| `ios/**` | Lane I | Same. |
+| `docs/privacy.md`, `release/play/*`, `release/docs/*`, `README.md`, a new `design/` page for the feature graphic | Lane D | From Step 4 on, the serial step in progress owns them. |
+
+**Fixtures without breaking `main`.** Both clients' tests read `spec/core/fixtures/pace-distance/printed.json`
+directly. Changing it in place would turn the other platform's tests red the moment one lane lands. So Step 1
+writes the changed and new cases into **new files** that today's tests do not read:
+`spec/core/fixtures/pace-distance/printed-v20.json` (and new files under `spec/mobile/fixtures/` for mobile-only
+rules). Each lane points its own tests at them as it builds. Step 2 folds them into the old files, switches
+both clients' tests back in one commit, and promotes the §6.3 planned block into the rules. Until Step 2, the
+§6.3 rules "above the planned block" stay the shipped ones, as the spec already says.
 
 ## Conventions — every session reads this block first
 
-1. **Start from the paste.** Each step's fenced block needs no earlier conversation.
-2. **Tests:** `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest` green and
-   `./gradlew assembleGithubDebug assemblePlayDebug` compiling before a step closes. These are the
-   flavor task names Step 3 confirmed on AGP 9.4 (2026-09-30); the old `testDebugUnitTest` is now
-   ambiguous and fails. Release outputs: `assembleGithubRelease` →
-   `app/build/outputs/apk/github/release/app-github-release.apk` (published as `app-release.apk`),
-   `bundlePlayRelease` → `app/build/outputs/bundle/playRelease/app-play-release.aab`.
-3. **Commits:** straight to `main`. Subjects look like `feat(CCRM-87): …` or `fix(CCBG-46): …`, and
-   the body names anything unrelated that rides along. Never stage `ccooldown-release.jks`,
-   `keystore.properties`, `local.properties` or any PEPK output.
-4. **Close-out, in order:**
-   1. every *Done when* item;
-   2. the roadmap and bug Status lines;
-   3. the Progress tick (☐ → ☑) and one dated line after **Log:**;
-   4. commit and push, with the tick in the same commit as the work.
-5. **Handover.** The session's last message covers three things: what changed (one paragraph), what
-   Robin must do himself before the next step, and the next step's *Resume* block. The same block
-   replaces the "Next session" section of [HANDOVER.md](HANDOVER.md).
-6. **Wireframe gate.** Step 2 draws every visible change in every state and both width classes.
-   Review happens in the `design/` HTML, never in chat. Questions go to Robin one at a time, and
-   silence is not approval. A later step that wants to change anything else the user sees stops and
-   goes back to the wireframe.
-7. **Mocks keep full functionality.** Notification sections use the Huge-number style as their base.
-8. **The Play Console is never opened by a session.** Only Robin opens it (Step 9).
-9. Tracker IDs carry their epic name on first use (CLAUDE.md §1). Two sub-agents never edit the same
-   file at once.
+1. **Start from the paste.** Each step's fenced prompt needs no earlier conversation. Open a fresh session in
+   `~/Projects/Cooldown` with **worktree ticked**, model **Opus 5.5**, and paste it.
+2. **Session start:** read `CLAUDE.md` and `WORKTREE.md`, load the `model-mesh` skill (you are the seat, Opus at
+   effort medium), run WORKTREE.md's mode check and its sweeper.
+3. **Tests.** Android: `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest lintGithubDebug` green and
+   `./gradlew assembleGithubDebug assemblePlayDebug` compiling. Set `JAVA_HOME=/opt/homebrew/opt/openjdk@21` and
+   `ANDROID_HOME=/opt/homebrew/share/android-commandlinetools` (a fresh worktree has no `local.properties`). If
+   a widget layout changes, `tools/widget_layouts.py` must regenerate the layouts byte for byte. iOS:
+   `swift test --package-path ios/Packages/CooldownCore`, then the app tests (`xcodegen generate` in `ios/`, then
+   `xcodebuild test … -only-testing:CooldownTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro'`).
+   Spec: `sh spec/tools/check_no_code.sh`.
+4. **One fresh Opus judge round per code step**, on the step's diff against the wireframe sections it builds,
+   before landing; then tests decide. Adopt each finding or record why not in the step's Log. Judges and other
+   sub-agents run as model-mesh workers on the product account: `model-mesh-review worker judge --repo <this
+   worktree> --spec <file> --model opus --account ~/.claude-product`. Workers cannot run gradle or xcodebuild,
+   so the seat runs every build and test and makes every commit.
+5. **Commits.** The commit that completes an item carries its remaining code, its ROADMAP (and, where it has
+   one, BUGS) status line, and its `spec/mobile/surfaces/` delta (CLAUDE.md §2). Earlier code-only commits on
+   the branch are fine. Subjects `feat(CCRM-110): …`, `fix(CCBG-79): …`. Tracker IDs carry their epic names on
+   first use in a body (CLAUDE.md §1). Never stage `ccooldown-release.jks`, `keystore.properties`,
+   `local.properties`, `ios/Config/Antigravity.secrets.xcconfig` or any PEPK output.
+6. **Landing — WORKTREE.md §4, never another way.** Commit and `git push -u origin HEAD` as you go; on the first
+   push `gh pr create --base main --fill`. To land: `git fetch origin`, `git merge --no-edit origin/main`, the
+   ID check, the verify command on that head, then `git push -u origin HEAD` and `git push origin HEAD:main`, each
+   as its own call. Never force, in any spelling. A merge conflict means `git merge --abort`, stop and report.
+7. **The wireframe is the contract.** Anything visible that the approved rev B does not draw, or draws
+   differently, stops the step and goes back to the orchestrating session. It is never improvised. Choosing
+   among the wireframe's own drop orders and stated fallbacks is not a departure.
+8. **Machine.** Android checks run on the AVD `fold7inner`, booted headless on port 5556 (`emulator -avd
+   fold7inner -port 5556 -no-window -no-audio -no-boot-anim -no-snapshot-save`), with `wm size`/`wm density` for the
+   cover-like (1080x2520 @411), inner (750 dp) and 360 dp widths, dark and light. It is reset and killed
+   (`adb -s emulator-5556 emu kill`) at the end of the step. **Never touch `testfone` (emulator-5554):** another
+   project may be driving it. A debug build allows `run-as com.robin.claudeusage` to seed preferences and the
+   debug synthetic series for states that need data. iOS checks run on the iPhone 17 Pro, iPhone 17e and iPad Pro
+   13″ simulators, both orientations on the iPad. **Robin does every physical Fold 7 and iPad check** (Step 3);
+   lane steps use the emulator and simulators only.
+9. **Close-out, in order:** every *Done when* item; the status lines; the Progress tick and one dated Log line
+   under the step; land; replace your own HANDOVER block with the next step's prompt. The last message gives
+   what changed, what Robin must do, and the next prompt.
+10. **Decision gates.** A step whose *Gated on* names a question (Q1–Q6) does not start until that question's
+    answer is in "Robin's answers" below, in his words with the date. If it is not there, the step's first act is
+    to ask Robin that question (one at a time, with the options listed), record the answer, and only then go on.
+    An answer that adds a step (Q5 "in v2.0": a wireframe and a build) stops the arc: the revision takes the plan's
+    one delta review before any session builds it. No session answers a question for Robin.
+11. **Questions go to Robin one at a time, with options.** Minor fit calls inside the wireframe go to a Fable
+    judge first (`--model fable`); Robin hears only a departure, a disagreement or a reserved decision.
 
 ## Progress
 
-| Step | Item | Who | Gated on | Status |
+### Plan and spec (serial)
+
+| Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
-| 1 | Plan: Fable draft, Robin's Q1–Q4, items filed, Astra xhigh, freeze | session | — | ☑ |
-| 2 | Wireframe: privacy row, crash card, play-flavor Updates absence, CCBG-35, CCBG-48 if exempt | Sonnet draws · session polishes · Robin approves | 1 | ☑ |
-| 3 | Channel split, scoped queries, CI (CCRM-87, 88, 91) | session · fresh Opus judge | 2 | ☑ |
-| 4 | Crash Capture and Keystore Wedge (CCRM-85, CCBG-46) | session · fresh Opus judge | 2, 3 | ☑ |
-| 5 | Visible fixes: About privacy row, CCBG-35, CCBG-45, CCBG-48; CCBG-50 once wireframed | session | 2, 3; CCBG-50: wireframe + Robin's review call | ☑ |
-| 6 | Docs and listing pack (CCRM-89, CCRM-90), RELEASING.md Play channel | session · Sonnet drafts copy · Robin approves the graphic | 3 | ☑ |
-| 7 | Fold 7 device pass, both flavors, phone restored, release gate | session · phone over USB · Robin unlocks | 3–6 | ☑ |
-| 8 | Release v1.9 on GitHub, APK only (the AAB was dropped from this step 2026-11-04) | session · fresh judge before publish · Robin at the phone | 7's gate | ☑ done 2026-11-05 |
-| 9 | Play Console: account, app, existing-key signing, internal-track upload | **Robin at the console** · session guides | 8, Q4 ☑ (personal, 2026-11-10) | **Moved to the v2.0 launch** (Robin, 2026-11-10): `release/play/CONSOLE-STEPS.md` |
+| 0 | This plan, Astra at high, freeze | planning session | — | ☑ 2026-11-11 |
+| 1 | Spec first: new fixtures, lane sections, tracker lines; **Q6 asked and recorded** | session · judge | 0 frozen | ☐ |
+
+### Lane A — Android (one step at a time)
+
+| Step | What | Gated on | Status |
+|---|---|---|---|
+| A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☐ |
+| A2 | Duet: CCRM-105 | A1 | ☐ |
+| A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☐ |
+| A4 | Summary: CCRM-110, CCRM-112 | A3, Q5 | ☐ |
+| A5 | Sample: CCRM-113 | A4 | ☐ |
+
+### Lane I — iOS (one step at a time; runs beside Lane A)
+
+| Step | What | Gated on | Status |
+|---|---|---|---|
+| I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☐ |
+| I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☐ |
+| I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☐ |
+
+### Lane D — release text and the graphic (beside the lanes)
+
+| Step | What | Gated on | Status |
+|---|---|---|---|
+| D1 | Privacy policy, Data safety, App access, listing copy, release notes draft, feature-graphic wireframe | 0 frozen; the graphic part on Q4 | ☐ |
+
+### Robin's own track (starts now; no session needed)
+
+| Step | What | Gated on | Status |
+|---|---|---|---|
+| R1 | Play Console Phases A–C (`release/play/CONSOLE-STEPS.md`): account, identity, device verification, app record, declarations | — | ☐ |
+| R2 | Recruit 15–18 testers ([TESTER-INVITE.md](release/play/TESTER-INVITE.md) §1 "the ask"), make the Google Group | — | ☐ |
+
+### Tail (serial)
+
+| Step | What | Who | Gated on | Status |
+|---|---|---|---|---|
+| 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A5, I3 | ☐ |
+| 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☐ |
+| 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
+| 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
+| 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
+| 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
+| 8 | Play Day 0: signing, internal upload, closed track, invites | **Robin at the console** · session guides | 4, 5, 7, R1, R2 | ☐ |
 
 ---
 
-## Step 1 · Plan, file, review, freeze
+## Step 0 · Plan, review, freeze
 
-**Who:** the planning session, 2026-09-27.
+**Who:** the planning session, 2026-11-11.
 
 **Done when:**
-- ☑ Fable (mesh-expert) drafted the plan, and the session checked its findings against the code
-  (`QUERY_ALL_PACKAGES` at `AndroidManifest.xml:29-30`, `CredentialStore.kt:20-32`,
-  `isMinifyEnabled = false`, and the highest IDs CCRM-85 and CCBG-45).
-- ☑ Robin answered Q1–Q4 one at a time. Q4 is open by his choice.
-- ☑ CCRM-86–91 and CCBG-46–49 are filed, the CCRM-66 split note is written, and CCBG-45, CCBG-35
-  and CCRM-85 read Planned v1.9.
-- ☑ Astra at xhigh returns non-blocking, or every remaining finding is answered in the text and
-  Robin accepts the residual on the record. Then **FROZEN** replaces DRAFT in the status line, with
-  the date.
+- ☑ This file and HANDOVER.md's next-session block are on `main`.
+- ☑ Astra (high, one full call) has returned; every finding is in the findings table
+  (`reviews/v20-build-arc-findings.md`); the `blocking` one is closed by a named check.
+- ☑ FROZEN replaces DRAFT in the status line, with the date.
 
-**Reversal:** documentation only — `git revert` of the planning commits.
+**Reversal:** documentation only — `git revert` of the planning commit.
 
 **Log:**
-- 2026-09-27 — Fable drafted the plan. Robin answered: Q1 account plus internal test, Q2 fix as-is,
-  Q3 existing key, Q4 open (a portfolio of small free apps, a possible one-time "Pro" IAP later).
-  Items filed and this runbook written.
-- 2026-09-27 — Astra xhigh round 1: **blocking**, with five findings, all adopted.
-  1. CCBG-46's wipe list was too broad (`InvalidKeyException` includes
-     `UserNotAuthenticatedException`), so wiping is narrowed to AEADBadTag and
-     KeyPermanentlyInvalidated, and the preserve cases get tests.
-  2. The AAB was built after publishing, so both artefacts are now built and verified before the tag.
-  3. The phone was restored to github only on the success path, so *Always after* now reinstalls the
-     kept github APK.
-  4. bundletool would have signed with the debug key, so it now gets the release keystore and a
-     signer check before install.
-  5. The privacy blob URL contradicted the "no github.com" check, so the check now targets update
-     endpoints and classes via a `tools/` script and is rerun at Step 8.
-- 2026-09-27 — Astra xhigh round 2: **blocking**, with four findings, all adopted in the text.
-  1. Permanent-key recovery now also deletes and rebuilds the master key, with a write/read probe
-     and tests (only CredentialStore uses that key).
-  2. The whole-plan reversal said the phone could be restored, but after v1.9 it can only roll
-     forward. Step 7 now keeps the v1.8 APK and says installing v1.9 is one-way for the phone.
-  3. Step 8 now requires CI green on the exact release commit.
-  4. CCRM-87's own acceptance criterion now matches the update-endpoint check.
-  Adoption stopped (no third round), so freezing is Robin's call.
-- 2026-09-27 — Robin: *"I allow up to 5 Astra rounds for this session. Go and let's get it cleared.
-  Just keep the open question on Company/Personal account open and think for both with PROs and
-  CONs of each."* The Q4 pros-and-cons table was added to Step 9, and round 3 was sent.
-- 2026-09-27 — Astra xhigh round 3: **concerns**, with four findings, all adopted.
-  1. Q4's disclosure rows were wrong: a personal account shows Robin's legal identity even on a free
-     app, monetised disclosure is Play's own rule, and an organisation at a home address shows that
-     address. The rows are corrected, with a read-on-the-day check before Robin pays.
-  2. Step 8 now checks Play's current upload requirements (target API, 16 KB pages) against the AAB
-     before publishing.
-  3. versionCode 25 now moves to the start of Step 7, and Step 8 installs the published APK on the
-     phone and checks it.
-  4. CI now runs both flavors' tests.
-  Plan **FROZEN**.
+- 2026-11-11 — Drafted from ROADMAP CCRM-105…113, core §6.3's planned block, BEHAVIOR-MOBILE §7, the surfaces
+  README, RUNBOOK-v2.0 (Steps 7–8 open), RELEASING.md and `release/play/*`. Merge dry run (scratch repo): two
+  branches editing lines separated by one unchanged line merged cleanly; two branches editing adjacent lines
+  conflicted. The shared-file table rests on this.
+- 2026-11-11 — Astra, high, one full call (`reviews/v20-build-arc-astra-call1.txt`): **blocking**, coverage
+  full, one finding.
+
+  | ID | Grade | Conf. | Where | What | Fix | Closed by | Status |
+  |---|---|---|---|---|---|---|---|
+  | C1-1 | blocking | 97 | Shape; Steps 5–7; Reserved | Steps could start on Robin's open questions with no gate (parallel lanes, share-card scope, assets, release contents, Beta App Review timing) | Convention 10 decision gates; Q-numbers in *Gated on*; the "Robin's answers" table; every gated prompt checks it and asks first; Q6 asked in Step 1; Step 7 needs Beta App Review approval logged if Q2 says wait | `reviews/v20-build-arc-gatecheck.py` — PASS | fixed |
+
+  No delta call (no step added, no reversal changed). Plan **FROZEN**.
 
 ---
 
-## Step 2 · Wireframe — every visible v1.9 change, reviewed to approval
+## Step 1 · Spec first — fixtures, lane sections, tracker lines
 
-**Who:** a Sonnet sub-agent draws (purpose b), the session does the polish pass and reviews, and
-Robin approves.
+**Owns:** `spec/core/fixtures/pace-distance/printed-v20.json` (new), new files under `spec/mobile/fixtures/`,
+the scaffolding in `ROADMAP.md`, `spec/mobile/surfaces/*.md` and `HANDOVER.md`, and this step's tick.
 
-**Resume in a fresh session:**
-
-```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 2; ROADMAP.md's v1.9 section, CCRM-85 (Crash
-Capture) in full; BUGS.md CCBG-35 (Tab Clip) and CCBG-48 (Reconfigure Label). Open
-design/2026-09-17-main-screen-redesign.html for conventions (CSS tokens, .phone frame, numbered
-h2 sections, a "For review" banner). Brief a Sonnet sub-agent (purpose b) to draw
-design/2026-09-2x-v19-play-ready.html with real dp/sp, on the Fold 7 cover and inner widths and at
-360 dp, dark and light: (1) the About card with a "Privacy policy" row, both flavors; (2) the
-CCRM-85 next-launch card "Cooldown crashed on <date> · Share report / Not now" — present, after
-Share, after Not now (gone), two crashes on file, a crash with no trace (ExitReasons only) — and
-where it sits relative to the existing status line and notices; (3) the Debug section (behind the
-7-tap unlock) with a "Crash now" entry for the Step 7 test; (4) the play flavor's Settings More tab
-with the Updates card absent, and the invalidResponse notice without its "Check for updates"
-action; (5) CCBG-35 — the Settings tab row at 360 dp and at font scale 2.0, with a proposed fix
-(e.g. scrollable tabs or shorter titles); (6) CCBG-48 — only if the approved rev D reconfigure view
-(design/2026-09-25-widgets-reborn.html) already shows "Save changes"; if it does, it is a
-restoration and needs no drawing, so say so. Do the polish pass yourself. Minor gaps go to a Fable
-judge, then Astra. Then name the file to Robin and ask one question at a time. On "change X",
-revise (rev B …). No code. When Robin says approved, write the revision and every decision into the
-Status lines of CCRM-85, CCRM-87, CCRM-89, CCBG-35 and CCBG-48; close out per Convention 4.
-```
-
-**Done when:**
-- ☑ Robin has said "approved" to a named revision.
-- ☑ Every decision is written into the items' Status lines, including whether CCBG-48 is a
-  restoration.
-
-**Reversal:** documentation only.
-
-**Log:**
-
-- 2026-09-30 — rev A drawn (Sonnet, 703e4a5). The seat's polish pass produced rev B: every existing element redrawn from the code, the crash card moved above the account tabs, share and exit-reason rules, fit-based tabs, a Crash reports card. Fable was out of credits, so a fresh Opus judge ruled instead: keep rev B on all 7 calls, 6 concerns adopted. Astra (high) agreed with all 7 and raised 2 concerns: one adopted, one (where Crash reports lives) goes to Robin as Q1. Verdict in `design/research/2026-09-30-v19-wireframe-revB-astra.txt`. Waiting for Robin.
-- 2026-09-30 — Robin answered Q1–Q7 one at a time, each as drawn (Crash reports stays behind the unlock), and **approved rev B**. Decisions are in the Status lines of CCRM-85, 87 and 89 and CCBG-35 and 48; CCBG-48 is a restoration. Step 2 done.
-
----
-
-## Step 3 · Channel split, scoped queries, CI
-
-**Who:** the session (rung 1). After it, a **fresh Opus judge** (mesh-judge, purpose c) reviews the
-diff, because it touches the release path and the signing config.
-
-**Resume in a fresh session:**
+**Prompt:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 3; ROADMAP.md CCRM-86 (Play Readiness), CCRM-87
-(Update Channel), CCRM-88 (Scoped Queries), CCRM-91 (CI Gate); RELEASING.md; app/build.gradle.kts;
-app/src/main/AndroidManifest.xml; .github/dependabot.yml; the approved Step 2 wireframe's
-play-flavor section. Build, one commit per item:
-CCRM-87 — flavor dimension "channel", flavors github and play, same applicationId; move
-UpdateCheck, UpdateNotification, the Polling auto-check hook, the Updates card and the
-invalidResponse "Check for updates" action behind a small UpdateChannel interface with the github
-implementation under src/github/ and a no-op under src/play/ that also clears an inherited
-latestKnownVersion; tests on both flavors, including the stale-latestKnownVersion case. Confirm the
-real task names on AGP (testGithubDebugUnitTest, assembleGithubDebug, assembleGithubRelease,
-bundlePlayRelease — or whatever the aggregate names are) and rewrite Convention 2 and RELEASING.md's
-build lines in the same commit. The release asset must keep the file name app-release.apk (copy
-the flavor output to that name in RELEASING.md's order).
-CCRM-88 — drop QUERY_ALL_PACKAGES from main, add a <queries> intent for ACTION_VIEW + BROWSABLE +
-https; the github re-add is decided at Step 7, not now.
-CCRM-91 — .github/workflows/ci.yml running BOTH flavors' unit tests (github and play), an unsigned assembleGithubRelease,
-bundlePlayRelease and lint (baseline if needed) on push and PR; no secrets; restore the
-github-actions entry in dependabot.yml.
-Check: `unzip -l` of both outputs has no .so; the play APK's dex and resources contain no
-"api.github.com", no "releases/latest" and no UpdateCheck/UpdateNotification class (the privacy
-policy's github.com/…/docs/privacy.md URL is allowed — write this check as a script in tools/ so
-Step 8 reruns it on the final artefact); bundlePlayRelease signed locally passes `bundletool validate` and its signer
-(keytool -printcert -jarfile) equals RELEASING.md's trusted digest. Then spawn a fresh mesh-judge
-(Opus, purpose c) on the diff against CCRM-87/88/91; adopt or answer every finding. Close out per
-Convention 4.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Step 1) and HANDOVER.md;
+load the model-mesh skill; run the mode check and the sweeper. Do RUNBOOK Step 1, spec only, no app code.
+First ask Robin Q6 (RUNBOOK "Questions for Robin") and record his answer in "Robin's answers" (Convention 10).
+(1) Write spec/core/fixtures/pace-distance/printed-v20.json from BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback":
+the paceLine, paceLineForms and endToEnd cases in their "resets" forms and the weekday-only form (both
+drop orders: another day, later today); the day grid (column edges at start + k x 24 h, sevenths, the 5h
+hourly columns, labels, the bold now-column, an ordinal yielding to "now" or an end label); mapLabels with a
+dense 200-wide map (leaders at 24/36/48, refusal across a placed name or dot, the name not drawn when nothing
+is free); the quiet rule (row prints "0%" -> not plotted; 0.5 rounding edge); the callout forecast ("~74% at
+reset", "100% at Wed 6:10 PM"); the projection layer (no tail when the estimate is null or the week is spent).
+Mobile-only forms go in new files under spec/mobile/fixtures/ (the foot-line count "2 at 0% · 1 no reading",
+the tag filter: untagged only under All). Derive every number by a script from the written rules, and check
+the wireframe's worked examples against it; do not edit printed.json or any file today's tests read.
+(2) Scaffold the shared files exactly as RUNBOOK's table says: in ROADMAP.md add a last bullet "- **iOS:** not
+started" to CCRM-106…112 and "- **iOS follow-up:** not started" to CCRM-113 (CCRM-105 gets none); at the end of
+spec/mobile/surfaces/app.md, foundations.md, notification.md and widgets.md add "## v2.0 feedback on Android"
+then "## v2.0 feedback on iOS" (notification.md: Android only), each with one placeholder line; in HANDOVER.md
+add three blocks "Next — Lane A", "Next — Lane I", "Next — Lane D" holding the A1, I1 and D1 prompts.
+Check: check_no_code.sh passes; both platforms' full test suites pass unchanged; the generator script is
+committed under spec/tools/. One fresh Opus judge round on the fixtures against §6.3 and the wireframe
+(Conventions 4). Close out per Convention 9 and land per WORKTREE.md.
 ```
 
 **Done when:**
-- ☑ Both flavors compile, both flavors' tests are green, and the stale-`latestKnownVersion` test
-  exists.
-- ☑ The play artefact holds no update endpoint or update class (checked by the `tools/` script;
-  the privacy URL is allowed), and every `.so` in either output is on the allowlist and ready for
-  16 KB pages (amended 2026-09-30 from "no `.so`"; see the Log).
-- ☑ The AAB passes `bundletool validate`, and its signer equals the trusted digest.
-- ☑ CI runs both flavors' unit tests and is green on `main`.
-- ☑ Convention 2 and RELEASING.md name the real tasks, and the release asset name stays
-  `app-release.apk`.
-- ☑ The judge's verdict is recorded and its findings are adopted or answered.
+- ☐ `printed-v20.json` and the mobile fixture files exist, every case derived by the committed script, and the
+  wireframe's worked examples agree with them.
+- ☐ `check_no_code.sh`, the Android suite and both iOS suites pass with no test changed.
+- ☐ The ROADMAP iOS lines, the two surfaces sections per file and the three HANDOVER lane blocks exist.
+- ☐ Q6 is answered and recorded in "Robin's answers", in the same commit.
+- ☐ Judge round recorded; landed on `main`.
+- ☐ The orchestrating session is told the fixtures commit and Q6's answer, so it can send the desktop session the frozen set
+  (outward step, the orchestrator's).
 
-**Reversal:** `git revert` per commit, newest first. Delete `ci.yml` with its commit's revert.
+**Reversal:** `git revert` of the step's commit; no test reads the new files yet.
 
 **Log:**
-- 2026-09-30 — CCRM-87 (Update Channel) built. Real task names on AGP 9.4: `testGithubDebugUnitTest`,
-  `testPlayDebugUnitTest`, `assembleGithubRelease`, `bundlePlayRelease` (`testDebugUnitTest` is now
-  ambiguous). Tests green on both flavors (657 github, 643 play). `bundletool` 1.18.3 installed from
-  Homebrew for the AAB checks (reversal: `brew uninstall bundletool`).
-- 2026-09-30 — **Spec gap: "no `.so`" was a false premise.** Every output, and v1.8's shipped APK,
-  carries `lib/<4 ABIs>/libandroidx.graphics.path.so` (androidx.graphics:graphics-path 1.0.1, via
-  Compose UI; PathIterator below API 34, and minSdk is 31, so it cannot be excluded). Fable was out
-  of usage credits, so a fresh Opus judge ruled: **accept**, a minor gap, not Robin's. Its two
-  concerns were adopted. Sol (GPT-6, high) cross-checked the verdict: **concerns**, two. Test the
-  real device splits and the AAB's alignment config: adopted. Pin full ABI paths: adopted; its "verify
-  the library's contents" half is answered, not adopted, because a hash pin would fail every Compose
-  bump, and the 16 KB checks already run on whatever the contents are. Verdicts are in
-  `design/research/2026-09-30-v19-step3-so-gap.txt`. The rule in `tools/check_artefact.py` is now: every `.so` sits at an allowlisted ABI
-  path; every ELF PT_LOAD has p_align ≥ 0x4000; in an APK (alone or in an `.apks` set) it is stored
-  uncompressed at a 16 KB offset; an AAB's BundleConfig asks for uncompressed native libraries with
-  `PAGE_ALIGNMENT_16K`. It passes on the play AAB, the play and github APKs, a bundletool universal
-  APK and all 172 device split APKs. A fake library fails it. Step 8 still reads Play's live
-  requirements on the day.
-- 2026-09-30 — CCRM-88 (Scoped Queries) built. A gap in the spec: the provider-app tap in the pinned
-  notification resolves its target with `getLaunchIntentForPackage`, which package visibility hides,
-  so `<queries>` also names the three provider packages (restores existing behaviour; nothing
-  visible changes). Step 7's device check covers the browser picker and that tap, in both flavors.
-- 2026-09-30 — CCRM-91 (CI Gate) built. Local lint on both flavors: 333 and 332 warnings, 0 errors,
-  so no baseline. Lint runs per flavor (`lintGithubDebug lintPlayDebug`) rather than the bare `lint`,
-  which covers only the default variant. Actions pinned to their current majors (checkout v7,
-  setup-java v6, setup-gradle v6, upload-artifact v7); Dependabot keeps them current.
-- 2026-09-30 — First CI run on 90271b3 **failed**: all 14 Robolectric classes, "Android SDK 36 requires
-  Java 21 (have Java 17)". The Mac passes only because `~/.gradle/gradle.properties` points Gradle at
-  JDK 21, which the repo never recorded. CI now sets up JDK 21.
-- 2026-09-30 — CI green on `main` at 02df435 (run 36740267293: both flavors' tests, unsigned
-  `assembleGithubRelease` + `bundlePlayRelease`, lint on both flavors). Signed artefacts rebuilt at
-  HEAD: AAB `bundletool validate` passes, AAB/APK signers equal the trusted digest, no
-  `QUERY_ALL_PACKAGES` in either merged manifest, and `tools/check_artefact.py` passes on the AAB,
-  the play APK, a universal APK and every device split.
-- 2026-09-30 — Fresh Opus judge on `126c701..90271b3` (Fable out of credits): **concerns**, six
-  findings. J1 (CI on JDK 17) was already fixed at 02df435; J2–J5 adopted (JDK 21 in the build docs,
-  a test rename, `UpdateInfo` and "Check for updates" added to the scan, `&&` in RELEASING §2); J6
-  (SHA-pin the actions) answered, not adopted. Table and reasons:
-  `design/research/2026-09-30-v19-step3-judge.md`. Two Dependabot PRs opened today ran on the old
-  JDK 17 workflow and are red; they need a rebase onto 02df435 before they can go green. **Step 3
-  closed.**
 
 ---
 
-## Step 4 · Crash Capture and Keystore Wedge
+## Lane A — Android
 
-**Who:** the session (rung 1). After it, a **fresh Opus judge** (purpose c), because CCBG-46 can
-sign accounts out.
-
-**Resume in a fresh session:**
+Every Lane A step uses the same prompt shape. Paste it with the step's ID:
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 4; ROADMAP.md CCRM-85 (Crash Capture) in full;
-BUGS.md CCBG-46 (Keystore Wedge); data/CredentialStore.kt, Shortcuts.kt, diag/AppLog.kt; the
-approved Step 2 wireframe's crash card and Debug "Crash now" entry. Build CCRM-85 exactly as
-specified (Application class with the chained handler in finally, pure diag/CrashReport.kt with
-the one scrubber and no exception messages, diag/ExitReasons.kt with the watermark rule, the
-next-launch card, the Debug "Crash now" entry, the README/user-guide sentence). Build CCBG-46 as
-its Fix line says: walk the cause chain; wipe ONLY on AEADBadTagException or
-KeyPermanentlyInvalidatedException from the store's own open/decrypt, and then delete both the
-prefs file and the MasterKey.DEFAULT_MASTER_KEY_ALIAS Keystore entry, rebuild, and prove it with a
-write/read probe (probe fails → the in-memory case, never a second wipe); every other failure
-(UserNotAuthenticatedException, locked device, other InvalidKey/KeyStore exceptions, a transient
-error still failing after one retry) runs with an empty in-memory store, logs WARN and leaves the
-file untouched; never from a BOOT_COMPLETED path. Tests: the scrubber strips tokens (with and
-without "Bearer"), emails and messages; the handler always chains; each exception case goes the
-right way and the preserve cases assert secure_credentials still exists; no wipe on the boot
-path. Spawn a fresh mesh-judge (Opus, purpose c) on the diff against the
-two specs; adopt or answer every finding. Close out per Convention 4.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step <A-n>),
+the HANDOVER.md block "Next — Lane A", the wireframe sections Step <A-n> names in
+design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
+skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
+answers" (Convention 10; ask and record first if not). Build Step <A-n> on Android only (repo root, never ios/). Write
+only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
+"v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
+fixtures for the changed rules. Check every state the wireframe draws for these items on the fold7inner
+emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths, dark and
+light; save the captures in design/research/2026-11-v20-build/<A-n>/. Stop and report at anything the
+wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+```
+
+### Step A1 · Lines and labels — CCRM-106, CCRM-107, CCRM-108
+
+**Builds:** wireframe §2, §3 and §4 (form B). The tile chips and the classic 7-day card read "7d" (TalkBack
+"7-day, all models"; the stored chip key unchanged). The day grid on every 7-day chart (Large, Small, share card)
+and on 5h charts; the Pace map's axis "week start", 2…6, "reset", and "each account's own week" moved to its foot
+line. The pace line's "resets" forms and the new drop order on the notification, the tile, the Summary line 3 and
+the widgets' Weekly lines, with the fit tables re-measured.
+
+**Done when:**
+- ☐ Unit tests on `printed-v20.json` (paceLine, paceLineForms, endToEnd, the grid) pass on both flavors, with
+  lint, and the widget generator is byte-identical.
+- ☐ Emulator captures: each chart with the grid (7-day and 5h, now-column bold, an ordinal yielding), the
+  notification's collapsed and expanded pace line at the cover-like width showing "· Sun" for a reset days away
+  (not "· 9:30 PM"), the tile and a widget's Weekly line.
+- ☐ ROADMAP Status lines of CCRM-106, 107 and 108 read "Android built" with the commit; the Android sections
+  of `app.md`, `foundations.md`, `notification.md` and `widgets.md` carry the delta.
+- ☐ Judge round recorded; landed.
+
+### Step A2 · Duet — CCRM-105
+
+**Builds:** wireframe §1. Collapsed 52 dp: two 36 dp 5h rings on the left (First left, unsigned, account
+colours), two stacked rows (14 dp mark, 12 sp name, right-aligned 11 sp state word; an 8 dp Weekly bar with tick
+and red slice, both bars on one edge and length; an 18 sp bold tabular signed figure in a fixed 42 dp slot). The
+narrow drop order: the bar absorbs, the name to its 24 dp floor, then the state word's tail. Expanded keeps both
+headers, figure 36 → 24 sp. Collapsed text capped in dp at large font scales. The bare 14 dp ring retires.
+
+**Done when:**
+- ☐ Fit tests for the new width budget (136 dp chrome, no halves) and the drop order; both flavors' tests and lint.
+- ☐ Emulator captures: collapsed and expanded at the three widths, font scale 1.0 and 2.0, both signs, one
+  account spent, one with no 5h.
+- ☐ CCRM-105 Status "Android built"; `notification.md` §2.1–§2.4 and §8 and `foundations.md` §2 deltas inside the
+  Android sections.
+- ☐ **UNVERIFIED until Step 3:** the real cover and inner shade widths. Write the measured emulator widths in the
+  Log so Step 3 can compare.
+- ☐ Judge round recorded; landed.
+
+### Step A3 · Pace map — CCRM-109, CCRM-111, closes CCBG-79
+
+**Builds:** wireframe §5 and §7. Accounts whose Weekly row prints "0%" leave the map; the foot line counts them
+("2 at 0%", "· 1 no reading"); all at 0% keeps the frame with "Nothing to plot yet". The Figures · Trails ·
+Projection chips (32 dp, defaults off/on/off, remembered, wrapping under the title at large text); the figure
+after the name; the projection's dashed tail and hollow ring (red on the 100% line when it runs out); the last
+24 h of each trail heavier; a tap pins the callout (others dim to 35%, "~74% at reset"), a second tap opens the
+account; dotted leaders of at most 48 dp, the name not drawn when nothing is free.
+
+**Done when:**
+- ☐ Tests on `mapLabels` (the dense 200-wide case), the quiet rule, the callout forecast and the projection layer;
+  both flavors' tests and lint.
+- ☐ Emulator captures: each chip combination, the callout pinned, a dense map with a refused label, all quiet,
+  two-column inner layout.
+- ☐ CCRM-109 and CCRM-111 Status "Android built"; CCBG-79's status notes the Android fix (Lane A owns BUGS.md);
+  `app.md` Android section.
+- ☐ Judge round recorded; landed.
+
+### Step A4 · Summary — CCRM-110, CCRM-112
+
+**Builds:** wireframe §6 and §8. "Tag…" in the account menu (None · Personal · Work), the neutral chip with a
+person or briefcase glyph and the word in Settings › Accounts; the All · Personal · Work control beside "Weekly"
+once any account has a tag (remembered; untagged only under All), filtering the list, the map and the snapshot;
+"your order" becomes the sort menu of the four orders. "Share snapshot" in the Summary's ⋮: header with the
+filter's name and time, the rows in screen order, then the map with the on-screen layers, never the chips or a
+callout; names, never e-mail addresses; the CCRM-24 (Share Card) share dialog.
+
+**Done when:**
+- ☐ The new tag preference is additive and downgrade-tested (v2.0 prefs read through v1.9's accessors give
+  v1.9's defaults); filter and sort tests on the mobile fixtures; both flavors' tests and lint.
+- ☐ Emulator captures: no tags (no control), one tag, each filter, the sort menu, the snapshot for six accounts
+  and for a filter, the share sheet.
+- ☐ CCRM-110 and CCRM-112 Status "Android built"; `app.md` Android section.
+- ☐ Judge round recorded; landed.
+
+### Step A5 · Sample — CCRM-113
+
+**Builds:** wireframe §9 and BEHAVIOR-MOBILE §7. "Try with sample data" under the first screen's "No Claude
+account yet" card and as the last row of Add account; three made-up accounts (Teams · Claude, Personal ·
+ChatGPT, Lab · Gemini); the violet "● Sample data — made-up accounts · Exit" banner on every tab, Settings and
+History; held in memory, settings in an in-memory copy. Isolation: real polling carries on into the real stores;
+only the app's screens read the copy; a sample edit binds to the sample store; the debug synthetic series pauses.
+
+**Done when:**
+- ☐ The four isolation tests from `reviews/v20-sample-mode-findings.md`: byte-identical real stores across
+  enter and exit; an Appearance change in the sample leaves the live notification and a widget untouched; a
+  Rename open across a switch never renames a real account; the synthetic flag suspended and restored, nothing
+  written. Both flavors' tests and lint.
+- ☐ Emulator captures: entry points, the banner on every tab, Settings, History, the share band "● SAMPLE DATA",
+  and exit; a process kill returns to the real app.
+- ☐ CCRM-113 Status "Android built"; `app.md`, `notification.md`, `widgets.md` Android sections.
+- ☐ Judge round recorded; landed. Lane A's HANDOVER block now says "Lane A done".
+
+**Lane A reversal:** each step is its own commits; `git revert` of them, newest first, restores the previous
+step. A4's tag preference is additive, so a revert leaves only an unread key.
+
+**Lane A Log:**
+
+---
+
+## Lane I — iOS
+
+Every Lane I step uses the same prompt shape:
+
+```
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step <I-n>),
+the HANDOVER.md block "Next — Lane I", the wireframe sections Step <I-n> names in
+design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
+skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
+answers" (Convention 10; ask and record first if not). Build Step <I-n> on iOS only (ios/, never the Android code).
+Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
+inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with
+its tests reading spec/core/fixtures/pace-distance/printed-v20.json and the new mobile fixtures, then the app,
+widgets, lock screen and Live Activity as the wireframe says. Check every state the wireframe draws on the
+iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the
+captures in design/research/2026-11-v20-build/<I-n>/. Stop and report at anything the wireframe does not
+draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+```
+
+### Step I1 · Lines and labels — CCRM-106, CCRM-107, CCRM-108
+
+**Builds:** wireframe §2, §3 and §4 on iOS: the "7d" chip and label (VoiceOver "7-day, all models"); the day
+grid on every 7-day and 5h chart and the Pace map's axis and foot line; the "resets" pace line and drop order on
+the tile, the Summary, "the pace line on iOS", the widgets, lock screen and Live Activity.
+
+**Done when:**
+- ☐ `swift test` on the v20 fixtures and the app tests pass.
+- ☐ Simulator captures of each chart and pace-line surface, including the iPhone 17e's narrowest Summary row.
+- ☐ The "iOS:" lines of CCRM-106, 107 and 108 read "built" with the commit; the iOS sections of `app.md`,
+  `foundations.md` and `widgets.md` carry the delta.
+- ☐ Judge round recorded; landed.
+
+### Step I2 · Pace map — CCRM-109, CCRM-111
+
+**Builds:** wireframe §5 and §7 on iOS (chips 13 pt, wrapping at large text; the callout; leaders; quiet
+accounts and the foot-line count). Fixes the leader defect of CCBG-79 on iOS; the bug's own status is written in
+Step 2.
+
+**Done when:**
+- ☐ `swift test` on `mapLabels`, quiet, callout and projection cases; the app tests pass.
+- ☐ Simulator captures: each chip combination, the callout, a dense map, all quiet, the iPad two-column Summary.
+- ☐ The "iOS:" lines of CCRM-109 and CCRM-111 read "built"; the iOS section of `app.md`.
+- ☐ Judge round recorded; landed.
+
+### Step I3 · Summary — CCRM-110, CCRM-112, and the CCRM-113 iOS follow-up
+
+**Builds:** wireframe §6 and §8 on iOS (the tag on the account page and by long-press; the filter control; the
+sort menu; "Share snapshot" in the Summary's ellipsis menu), and the iOS sample's swap of "Product" (Claude) for a
+Gemini account, so both stores' review notes describe the same three accounts.
+
+**Done when:**
+- ☐ The tag key is additive and round-trips through the v1.9-era reader; filter, sort and snapshot tests;
+  `swift test` and the app tests pass.
+- ☐ Simulator captures: tags, filters, the sort menu, the snapshot and share sheet, the sample's three accounts.
+- ☐ The "iOS:" lines of CCRM-110 and CCRM-112 and the "iOS follow-up:" line of CCRM-113 read "built"; the iOS
+  section of `app.md`.
+- ☐ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
+
+**Lane I reversal:** as Lane A: `git revert` of the step's commits, newest first.
+
+**Lane I Log:**
+
+---
+
+## Lane D — release text and the feature graphic
+
+### Step D1 · Release text, and the feature-graphic wireframe
+
+**Owns:** `docs/privacy.md`, `release/play/{data-safety,app-access,listing,fgs-declaration}.md`,
+`release/docs/release-notes-v2.0.md` (draft), and a new `design/2026-11-xx-play-feature-graphic-v20.html`.
+Never code, never a tracker file (anything for a tracker goes in this step's Log; Step 2 writes it).
+
+**Prompt:**
+
+```
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Step D1), the HANDOVER.md
+block "Next — Lane D", RELEASING.md §3 and §5, release/play/V2.0-ASSET-CHECK.md, CONSOLE-STEPS.md steps
+11-18 and docs/privacy.md; load the model-mesh skill; run the mode check and the sweeper. Before part (7),
+Q4 must be answered in "Robin's answers" (Convention 10; ask and record first if not). Do RUNBOOK Step D1,
+no code: (1) docs/privacy.md — the Android half gains the Google (Gemini) row (accounts.google.com,
+oauth2.googleapis.com, www.googleapis.com, daily-cloudcode-pa.googleapis.com), marked "from version 2.0", and
+the providers sentence names Google; (2) release/play/data-safety.md — Google joins the recipients of the
+OAuth tokens, the code table gains AntigravitySource and its sign-in, and say whether the Google account email
+stays on the device; (3) app-access.md — the reviewer path is "Try with sample data" per wireframe §9, the
+notification and widgets need a real account and the FGS video shows them; (4) listing.md — every row
+V2.0-ASSET-CHECK marks Rewrite, Wrong, Incomplete, Extend or Add, counted against Play's limits; (5)
+fgs-declaration.md — "Claude, ChatGPT or Gemini"; (6) a draft of release/docs/release-notes-v2.0.md (the app
+only, no model credits or build story); (7) the feature graphic redrawn on the Icon v3 "Shared pace" mark as a
+design/ page with variants, for Robin's approval (CLAUDE.md §2), one question at a time. Do not export it
+until Robin approves. Close out per Convention 9 and land per WORKTREE.md.
 ```
 
 **Done when:**
-- ☑ Every test named above exists and passes on both flavors.
-- ☑ The crash card matches the approved wireframe state by state (the copy is word for word, pinned
-  by `CrashCopyTest`; the look is checked on the phone in Step 7).
-- ☑ The judge's verdict is recorded.
+- ☐ The six text files are updated and land. The privacy page's Google row is marked "from version 2.0", so the
+  live page stays true for v1.9 users until v2.0 ships.
+- ☐ The feature-graphic page is in `design/` and Robin has approved a named variant (or the step's Log records
+  that the approval is still open; Step 5 waits on it).
 
-**Reversal:** `git revert`. CCBG-46 has wiped nothing yet, because it runs only on phones that get
-the build.
+**Reversal:** `git revert` of the step's commits.
 
 **Log:**
-- 2026-09-30 — Built. The tests are `CredentialStoreTest` (every exception case, preserve cases
-  assert the file survives, the reset reads back from a fresh store, the no-reset boot path and a
-  source scan for it), `CrashReportTest` (the scrubber with and without Bearer, emails, keyed
-  secrets, canaries in every kept field and in sample ANR and native tombstone traces, no messages),
-  `CrashHandlerTest` (always chains), `ExitReasonsTest` (whitelist, duplicates, watermark),
-  `CrashCopyTest` and `CrashStoreTest`. The gate is green: 707 github tests and 693 play tests,
-  both debug builds, lint on both. **Fresh Opus judge (purpose c):** round 1 was `blocking`
-  (a share of eight ANR-sized reports could throw TransactionTooLargeException), plus five
-  concerns and four nits. Every finding within the spec was fixed. The round 2 delta was `accept`.
-  A first judge spawn died on the account's weekly limit before reading anything and was re-run.
-  **Robin, 2026-09-30:** a corrupted *value* stays a preserve case, as specced. The degraded-store
-  notice is filed as CCBG-50 and is to be wireframed for v1.9. One ungraded note: at the 5-minute
-  background retry a main-thread getter can run the two-attempt retry (≈200 ms) under the opener's
-  lock. It applies only while degraded, and was accepted.
-- 2026-09-30 — **Astra xhigh call 4**, an exception Robin granted for the scope change and the
-  CCBG-46 rulings: **concerns**. The 13 prior findings are confirmed fixed, and three new ones were
-  adopted (table in `design/research/2026-09-30-v19-plan-findings.md`, verdict verbatim in
-  `…-astra-call4.txt`): C4-1, a degraded process that holds a write stays on memory, with no merge;
-  C4-2, a trace cut at the read cap drops its partial last line before scrubbing; C4-3, dismissal
-  is the chooser's pick callback only, and a failed launch keeps the card (fixing a missing
-  NEW_TASK flag for non-Activity contexts on the way). Robin's instruction: adopt everything agreed
-  and bring back only disagreements. There were none.
 
 ---
 
-## Step 5 · Visible fixes
+## Step 2 · Fold-in — one tree, one spec
 
-**Who:** the session (rung 1).
+**Owns:** `spec/**`, both clients' fixture-reading tests, `ROADMAP.md`, `BUGS.md`, `spec/mobile/surfaces/**`,
+and the lane-recorded defects.
 
-**Resume in a fresh session:**
+**Prompt:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 5; ROADMAP.md CCRM-89 (Privacy Policy); BUGS.md
-CCBG-35 (Tab Clip), CCBG-45 (Single Panel Wording), CCBG-48 (Reconfigure Label); the approved Step
-2 wireframe; ROADMAP's v1.8 R1 for the "5h"/"Weekly" wording. Build, one commit each: the About
-card's "Privacy policy" row (opens the docs/privacy.md blob URL on main); CCBG-35 as approved;
-CCBG-45 — the one-account notification uses the Duet wording, "5h" and "Weekly", collapsed and
-expanded (Robin's Q2: fix as-is); CCBG-48 only if Step 2 ruled it a restoration. Check each at 360
-dp and on the Fold 7 widths in the emulator. Close out per Convention 4.
-Before any of that: CCBG-50 (Degraded Store Notice) was added to v1.9 by Robin on 2026-09-30 and
-cleared by Astra's exception call 4 (concerns, adopted). Draw its wireframe in design/ (every state,
-both width classes) and get Robin's approval, then build it here too. The states must include:
-degraded with nothing written; a sign-in or sign-out made while degraded (the notice says it lasts
-only until the app restarts); recovery mid-session with nothing written (the notice goes); and the
-restart after a degraded write (the interim write is gone and the preserved file is back). The
-policy is fixed in code: once the in-memory store holds a write, the process stays on it, and nothing
-is merged into or overwrites the file. Also draw a Debug-only "simulate degraded store" entry,
-in memory only, so Step 7 can check every state without touching the Keystore. CredentialStoreTest
-already pins the policy.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, Step 2 and the Logs of Lanes A, I and D) and HANDOVER.md;
+load the model-mesh skill; run the mode check and the sweeper. Lanes A and I are done. Do RUNBOOK Step 2: fold
+printed-v20.json into printed.json (the changed blocks replace theirs) and delete printed-v20.json; point both
+clients' tests back at printed.json in the same commit; move the BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"
+rules into the rules they replace and drop the "planned" label; fold each surfaces file's "v2.0 feedback on
+Android/iOS" sections into the body where they replace a body rule (keep a platform section only where the
+platforms differ), and empty README's "Planned changes" of these items; rewrite each CCRM-105…113 Status and
+iOS line into one status ("Built, device check pending", with commits); file every defect the Lane I and Lane D
+Logs recorded; write CCBG-79's status.
+Check: the Android suite and both iOS suites, check_no_code.sh. One fresh Opus judge round. Close out and land.
 ```
 
 **Done when:**
-- ☑ Each fix matches the wireframe or the approved design it restores, and the tests are green.
+- ☐ One fixture file per topic, no `-v20` file left, both platforms green on it.
+- ☐ §6.3 has no planned block for these items; the surfaces folder describes v2.0 as built.
+- ☐ Tracker lines closed as above; lane-recorded defects filed in BUGS.md.
+- ☐ Judge round recorded; landed. The orchestrating session is told the commit, the desktop's core re-pin point
+  (outward step, the orchestrator's).
 
-**Reversal:** `git revert`.
+**Reversal:** `git revert` of the step's commit restores the lane state (both clients then read the v20 file again).
 
 **Log:**
-- 2026-10-01 — CCBG-50 (Degraded Store Notice): the wireframe is
-  `design/2026-10-01-ccbg50-degraded-store.mockup.html`. A Fable judge ruled rev A blocking, with 2
-  blocking findings and 7 concerns, all adopted; its delta check accepted rev B. Robin approved rev B
-  the same day with calls 1–7 all as drawn, including the reset card that rides along.
-- 2026-10-01 — CCBG-50 built and checked on a separate API 36 emulator (`fold7inner`, port 5556),
-  because another session was using `testfone`. On the inner screen the notice spans the full width,
-  as the crash card does: the slot caps at 760 dp. The held-change wordings are left for Step 7.
-- 2026-10-01 — Step 5 closed. The commits: d5cab22 is CCRM-89 (Privacy Policy)'s About row,
-  checked at 360 dp; fdbd957 is CCBG-35 (Tab Clip), checked at 360 dp, at 2.0×, at about 411 dp and
-  at 750 dp; 9af4482 is CCBG-45 (Single Panel Wording), with the collapsed row seen on the emulator;
-  17a4e73 is CCBG-48 (Reconfigure Label), checked by unit tests. Both flavors' tests are green, and
-  both debug builds compile. **For Step 7 on the phone:**
-  - CCBG-50: turn on Simulate in Debug, Clear an account, close the app from Recents and reopen it.
-    The "signed in again" card should appear, and the account should be signed in.
-  - CCBG-45: the expanded one-account notification should read "Weekly".
-  - CCBG-48: on One UI, place a widget without config, then use Widget settings. The button should
-    read "Save changes".
-  **For Step 6:** `docs/privacy.md` must cover CCBG-50's `store_held_changes` record, which holds
-  account keys, sign-in or sign-out, and times, never a token. The privacy link 404s until that
-  file is on main.
 
 ---
 
-## Step 6 · Docs and listing pack
+## Step 3 · Device pass 2 — Fold 7 and iPad
 
-**Who:** the session. A Sonnet sub-agent drafts the listing copy (purpose b) and the session edits
-it. The session draws the feature graphic, and Robin approves it in `design/`.
+**Who:** the session, with **Robin at the devices** (he connects the Fold 7 and unlocks it; he drives the iPad
+while a capture loop runs).
 
-**Resume in a fresh session:**
+**Owns:** `BUGS.md`, the fixes that follow, `design/research/2026-11-v20-build/device-pass/`.
+
+**Prompt:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 6; ROADMAP.md CCRM-89 (Privacy Policy), CCRM-90
-(Listing Pack), CCRM-67 (Pin Service)'s FGS risk note; README (the privacy and install sections);
-.github/SECURITY.md; AndroidManifest.xml (the specialUse subtype); data/AccountEmail.kt and the
-endpoints each provider calls. Write docs/privacy.md (true to the code, both flavors); write
-release/play/data-safety.md from code, question by question, taking the maximal honest answer
-wherever Play's definition is unclear and marking those lines "re-read on the day"; brief a
-Sonnet sub-agent (purpose b) to draft release/play/listing.md (title, short and full description;
-no provider mark in title/icon/graphic; nominative mentions only), then edit it; write
-release/play/fgs-declaration.md and release/play/app-access.md; draw
-design/2026-09-2x-play-feature-graphic.html (1024×500, the Pulse icon, no provider marks) and ask
-Robin to approve it; add a "Play channel" section to RELEASING.md (the AAB from the release
-commit, the checks, never attached to the GitHub release, versionCode shared). README keeps "not
-on any store" until a launch. Close out per Convention 4.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 3), HANDOVER.md, and RUNBOOK-v2.0.md's Step 7
+and its Log for how the first pass was run; load the model-mesh skill; run the mode check and the sweeper.
+Do RUNBOOK Step 3. Ask Robin to connect the Fold 7 and the iPad, one question at a time. Before anything,
+record each device's starting state in this step's Log (installed build and flavor, screen timeout, the
+Cooldown settings you will change, placed widgets, Live Activity); keep private captures (home pages, the
+shade's other notifications) in the scratchpad, never the repo. Install a release-signed github build of main
+on the Fold 7 (the keystore files copied from ~/Projects/Cooldown, deleted after; never staged) and a Debug
+build on the iPad. Check every item of Step 3's list, file every defect in BUGS.md, and ask Robin which ones
+block v2.0. Fix the blocking ones here, one commit per defect with its status, a fresh Opus judge round on the
+batch, and anything visible beyond the wireframe goes to Robin first. Run the "Always after" block, then
+close out and land.
+```
+
+**The check list:**
+- **The nine items** on the cover and inner screens, dark and light: the Duet collapsed and expanded on both
+  shades (CCRM-105's real widths against A2's emulator numbers), "7d", the grid on every chart, the "resets"
+  line and its drop order ("· Sun" on the cover), the quiet accounts, the chips and callout, tags, filter, sort,
+  the snapshot, the sample mode (entry, banner, exit, the notification and widgets still on real accounts).
+  The iPad: the same where iOS has them, both orientations; the iOS sample's three accounts.
+- **Carried from RUNBOOK-v2.0 Step 7:** CCBG-78's collapsed pace line on the cover; CCRM-104's pace line and
+  signed Vs pace on both devices; CCBG-72 (Live Activity follows a Usage display change) and CCBG-73's plan
+  names on the iPad; a running, binding and full 5h with Headline 5-hour and Auto; a spent week; Gemini's pool
+  shown once used and a refresh after an hour; the 4×2 picker previews; Robin removes the old Ring widget on the
+  iPad (CCBG-70 (Stale Ring Widget)). Any "For Robin" item still open in RUNBOOK-v2.0's Log is asked here.
+
+**Always after:** every recorded setting put back; widgets as recorded; the screen timeout restored before the
+phone disconnects; the v2.0 candidate stays installed on purpose, and the Log says so per device.
+
+**Done when:**
+- ☐ Every check above is ticked, or marked not reachable with the reason.
+- ☐ Robin has said which defects block; each blocking one is fixed, judged and rechecked on the device.
+- ☐ *Always after* done and logged. Landed.
+
+**Reversal:** the device: *Always after* against the recorded state. The fixes: `git revert`.
+
+**Log:**
+
+---
+
+## Step 4 · The release commit, and the three builds
+
+**Owns:** `app/build.gradle.kts` (versionCode 26, versionName "2.0"), `ios/project.yml` (`MARKETING_VERSION`
+"2.0", `CURRENT_PROJECT_VERSION` "1"), RELEASING.md §3's docs (README, the user guide, `release/docs/`), the final
+release notes.
+
+**Prompt:**
+
+```
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 4), RELEASING.md (all of it) and
+release/testflight/version-plan.md; load the model-mesh skill; run the mode check and the sweeper. Q1 must be
+answered in "Robin's answers" (Convention 10); if it is "attach an IPA", also export that IPA from the archive and
+log its sha256. Do RUNBOOK Step 4, stopping before any tag: bump Android to versionCode 26 / "2.0" and iOS to MARKETING_VERSION 2.0 /
+build 1; finish RELEASING.md §3's docs and release/docs/release-notes-v2.0.md (the app only); README and the
+guide gain Gemini and its ToS line. Make the release commit, land it per WORKTREE.md, and wait for CI green on
+that exact sha. Then, from a clean tree at that sha: check the Gemini secret is present for both platforms
+without printing it; build the github APK (RELEASING §2) and the play AAB with every §5 check (bundletool
+validate, signer = the trusted digest, versionCode 26 on both, check_artefact.py for both channels); run the
+iOS tests and the archive with the §6 checks. Record the APK's and AAB's sha256s and the archive's path in
+the Log. Install the APK on the Fold 7 for a smoke check (Robin connects). Nothing is tagged, uploaded or
+published in this step.
 ```
 
 **Done when:**
-- ☑ Every file above exists and agrees with the code.
-- ☑ Robin has said "approved" to the graphic (variant B, 2026-10-01).
-- ☑ RELEASING.md has the Play channel section.
+- ☐ The release commit is on `main` with CI green; its sha is in the Log.
+- ☐ APK and AAB built from that sha, every RELEASING §5 check passed, sha256s logged; the AAB is kept out of
+  the GitHub release.
+- ☐ The iOS archive built from that sha and passes RELEASING §6's checks (versions match in app and widget,
+  secret present, privacy manifests in, export compliance false).
+- ☐ The APK runs on the Fold 7 (Gemini row present, update check reads v1.9 as older).
 
-**Reversal:** `git revert`.
+**Reversal:** `git revert` of the release commit before anything is tagged. Built files are local.
 
 **Log:**
-- 2026-10-01 — Drafts in: `docs/privacy.md` (both flavors, every host and store, CCBG-50 (Degraded
-  Store Notice)'s `store_held_changes` record), `release/play/data-safety.md`, `listing.md` (Sonnet
-  drafted, purpose b; the seat edited the SDK claim), `fgs-declaration.md`, `app-access.md`, and
-  RELEASING.md §5 (the Play channel). `.github/SECURITY.md` was stale (paste/QR import, "Anthropic
-  only") and now agrees, and so does README's Privacy paragraph. A fresh Opus judge (purpose c) ruled
-  round 1 **blocking**: the hidden Debug endpoint probe sends the token to `claude.ai` and shows raw
-  bodies, which the policy did not disclose. It also raised 7 concerns and 5 notes: the last account
-  can't be removed, backup carries OpenAI's IDs and pending sign-ins, the held-changes details,
-  WorkManager's two permissions, ANR dumps, and the profile-call cadence. All are fixed in the docs,
-  and the delta was **accepted**. Its finding 4d is filed as CCBG-51 (Held Change Residue), Low.
-  **Open for Robin:** the feature graphic, A or B (`design/2026-10-01-play-feature-graphic.html`);
-  whether the Debug probe stays in release builds (it is disclosed now); whether CCBG-51 rides in
-  v1.9. Step 9 will need his call on which reviewer account to give (`app-access.md`).
-- 2026-10-01 — Step 6 closed. Robin approved graphic **B**; it is exported to
-  `release/play/feature-graphic.png` (1024×500, 8-bit RGB, no alpha) with the page's own headless
-  Chrome command and `?only=b`. Robin's other two calls, the same day: the Debug Endpoint probe is
-  **removed from release builds** (debug builds keep it), and CCBG-51 (Held Change Residue) **rides in
-  v1.9**. Both land as their own commits before Step 7's versionCode bump.
 
 ---
 
-## Step 7 · Fold 7 device pass
+## Step 5 · Store assets on the release build
 
-**Who:** the session, with the phone over USB adb. Robin unlocks the phone, and nobody stores the
-pattern. Keep the screen awake for the whole session, and put auto-off back before disconnecting.
+**Owns:** `release/play/screenshots/` (new), `release/play/fgs-demo.mp4`, `release/play/feature-graphic.png`,
+`release/play/listing.md`'s asset table.
 
-**Before and Always after:** use the v1.8 Step 7 blocks verbatim (`git show 6e4c1a0:RUNBOOK.md`,
-"Step 7 · Fold 7 device pass"). Record the phone's state into
-`design/research/2026-09-xx-v19-device-pass/phone-state-before.txt`. Restore every value that was
-**recorded**, never a default. A resumed session runs *Always after* first. v1.9 adds two things:
-- **To Before:** pull the installed APK and keep it in the research folder (outside git), with its
-  path, sha256 and versionCode. This is the pre-arc build, v1.8 (`2eea1a4c…8819`) as of 2026-09-27.
-- **To Always after, as its first line:** pull the installed APK. If its sha256 is not the github
-  build's (logged in the research folder when item 1 installs it; that APK is kept in the folder,
-  outside git), `adb install -r` that github APK and check its sha256 again. The phone never leaves
-  the cable on a play build, on success, failure or a cut-short session.
-
-**Two different restorations.** *After flavor testing:* the phone goes back to the v1.9 github
-candidate, as described above. *Rolling back the whole arc:* Android refuses to downgrade a
-non-debuggable app without an uninstall, and an uninstall loses data. So once item 1 installs
-versionCode 25, the phone's only rollback is **forward**: a build of the reverted `main` with a
-higher versionCode, installed with `adb install -r`. The kept v1.8 APK is the record and the
-last-resort reinstall after an uninstall, which only Robin may choose. Installing item 1 is
-therefore a one-way step for this phone, and Robin accepts it by starting Step 7.
-
-**Resume in a fresh session:**
+**Prompt:**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 7; the v1.8 Step 7 Before / Always-after blocks
-(git show 6e4c1a0:RUNBOOK.md); the Status lines of CCRM-85–91, CCBG-35, 45, 46, 48. Memory notes
-on the Fold 7 (screencap display ids, the secure bouncer, shade cropping) apply. Run Before. First commit versionCode 25 / versionName
-"1.9" (both flavors) — the candidate carries the release version, so the phone never needs a
-downgrade. Then:
-(1) install the github release build over v1.8 with adb install -r — accounts and history survive;
-(2) the browser picker lists Samsung Internet, Chrome and any other installed browser — if One UI
-under-reports, re-add QUERY_ALL_PACKAGES in src/github only and note the play-flavor gap; (3) the
-Updates card, auto-check and the update strip work as before on github; (4) the crash: Debug
-"Crash now" → the system dialog still appears → relaunch → the card shows → Share → the shared text
-has no token, email or exception message → Not now keeps it gone; also: backing out of the share
-sheet keeps the card, and picking an app removes it; (4b) CCBG-46 and CCBG-50, without touching the
-Keystore: sign-in persists across a force-stop and relaunch, and the CCBG-50 Debug "simulate degraded
-store" entry shows each approved notice state, including a sign-in made while degraded; (5) the pin survives
-MY_PACKAGE_REPLACED and a reboot; (6) the CCRM-90 FGS demo video with screenrecord (display id per
-the memory note), saved to release/play/; (7) the play flavor: bundletool build-apks --connected-
-device with --ks ccooldown-release.jks, --ks-key-alias and the passwords from keystore.properties
-(never the debug key), unzip the .apks and check every APK's signer with apksigner against the
-trusted digest BEFORE install-apks over the github build (same key, same versionCode — if the
-installer refuses the equal versionCode, adb uninstall is NOT allowed: build a signed play APK with
-assemblePlayRelease, check its signer, and adb install -r it instead) → no Updates card, no update strip
-even though github had written latestKnownVersion, no "Check for updates" action, the picker
-works; (8) end on the github build: adb install -r the github APK kept from item 1 and check its sha256
-(Always after repeats this if the session is cut short); (9) CCBG-35, CCBG-45 and the privacy row on the phone. File every defect in
-BUGS.md with a severity. Run Always after and diff. Gate for Step 8: no High open, and every
-deferral accepted in Robin's words. Close out per Convention 4.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 5), release/play/V2.0-ASSET-CHECK.md and
+CONSOLE-STEPS.md § Policy check 7; load the model-mesh skill. Q3 and Q4 must be answered in "Robin's
+answers" (Convention 10). Do RUNBOOK Step 5 on the Step 4 APK installed
+on the Fold 7 (Robin connects): the eight phone screenshots in V2.0-ASSET-CHECK's order, no e-mail address on
+screen, cropped per Robin's answer to Q3 to 1080x2160 (long side at most twice the short); the FGS video
+(switch on -> Duet notification -> refresh -> switch off, no e-mail on screen) for Robin to upload unlisted;
+export the feature graphic from the variant Robin approved in D1. Crop shade captures to the Cooldown card
+only. Commit the assets, close out and land.
 ```
 
 **Done when:**
-- ☑ Items 1–9 are recorded, with shots in the research folder (the private shade is cropped to the
-  card).
-- ☑ The phone ends on the github build, its sha256 is logged, and the *Always after* diff is empty.
-- ☑ Gate: no High open, and every deferral is accepted by Robin on the record (there are none:
-  CCBG-52 was fixed and verified; the Play-side work is deferred past v2.0 in Robin's words, Step 9).
+- ☐ Eight screenshots at the agreed size, each checked against Play's ratio rule.
+- ☐ The FGS video re-recorded on v2.0; the feature graphic exported from the approved variant at 1024×500.
 
-**Reversal:** the *Always after* block restores the phone, and code fixes are `git revert`. The
-phone never loses data in this pass. No uninstall is allowed and no destructive test runs.
+**Reversal:** `git revert`; the old assets come back.
 
 **Log:**
 
-- 2026-10-01 — Most of the pass is done (seat rung 1; findings in
-  `design/research/2026-10-01-v19-device-pass/findings.md`). Before was recorded over wireless adb,
-  then the pass moved to USB. versionCode 25 / 1.9 went in at 0e8ac99. A fresh Opus judge (purpose c)
-  checked the one-way install over v1.8 and returned **concerns**: record the app's state first, and
-  pin the device serial. Both were adopted.
-  - **Pass:** items 1, 2 (the picker lists every enabled browser; Chrome is disabled on this phone),
-    3, 4, 7 (every split's signer is the trusted digest), 8 and 9 (cover and inner screens).
-  - **Pass in 4b:** CCBG-46 (Keystore Wedge) after a force-stop and a reboot, and CCBG-50 (Degraded
-    Store Notice)'s live notice.
-  - **Pass, beyond the list:** the release build has no Endpoint probe, and CCBG-48 (Reconfigure
-    Label) reads "Save changes".
-  - **Item 5:** the pin survives MY_PACKAGE_REPLACED, and the alarm is re-armed at boot. After a
-    reboot, though, the pin took 5 min 45 s to come back, so I filed **CCBG-52 (Boot Pin Delay),
-    Low**.
-  - **Always after:** run; the phone is on the github build (sha256 73a1c1f9…846e); the diff
-    against Before is clean.
-  - **Still to do (Robin: next session):** CCBG-50's restart cards (a sign-in held while degraded, and
-    a sign-out held while degraded), item 6's FGS video, and Robin's word on CCBG-52 (fix it, or defer
-    it on the record).
-  - **Gate so far:** no High open.
-- 2026-10-02 — Robin's call on CCBG-52 (Boot Pin Delay): fix it in v1.9. The boot restart is now
-  expedited with no delay (`BootRequestTest`; both flavors' tests green, both debug builds compile).
-  The phone was not on the cable today, so the CCBG-50 restart cards, item 6's video and a reboot
-  that times the pin on the new candidate wait for the next session.
-  CI had been red since ce2b904 (Step 5) on one lint error in the CCBG-50 (Degraded Store Notice)
-  card; fixed the same day, so the candidate was rebuilt from the fix (see HANDOVER.md).
-- 2026-11-04 — **Step 7 closed** (seat rung 1; shots and state files in
-  `design/research/2026-11-04-v19-device-pass/`). The old 3c70538 candidate was stale (cf21ffc changed
-  `app/` after it), so a fresh github release candidate was built from main 1f7fa0b: 1.9 / 25, sha256
-  `fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed`, signer = the trusted digest
-  (kept outside git). Before recorded in `phone-state-before-2.txt` (screen timeout was 300000, not
-  the October value); the phone had held a different 1.9 / 25 build from 2026-11-02 (pulled, kept).
-  - **CCBG-52 (Boot Pin Delay): verified.** Pin back 20 s after unlock, 3 s after the process start
-    (was 5 min 45 s).
-  - **CCBG-50 (Degraded Store Notice) restart card: verified.** One card with both items after a
-    force-stop, both accounts still signed in, OK clears it.
-  - **CCRM-90 (Listing Pack) FGS video recorded** (`release/play/fgs-demo.mp4`) before the scope
-    change reached this session; the Accounts tab was cut because it shows email addresses; the Play
-    link stays empty. It shows v1.9's notification, so it is **re-recorded on the v2.0 build** before
-    Step 9, and no Play listing screenshot or icon was shot on v1.9 (checklist:
-    `release/play/CHECKLIST.md`, per Robin's 2026-11-04 scope call, to confirm in the morning).
-  - **Claude mark at 82%** seen on the new build: smaller than the ChatGPT mark beside it, as drawn.
-  - **Always after:** run; installed sha256 `fcd15940…ad3fed`; diff against Before empty; clock offset 0 s.
-  - **Gate:** no High open; no deferral.
-- 2026-11-05 — **Step 7 reopened by CCBG-75 (Antigravity Crash on Refresh) and closed again.** Robin found four
-  crash reports on the Fold 7 (the github 1.9 / 25 build, 23:20 to 06:16): a Gemini account left by a v2.0 build
-  made `refreshAll` throw `NotImplementedError` at `Sources.of`. The Step 7 pass of 2026-11-04 ran on that phone
-  and missed it: it never opened the crash-report screen, and the Gemini card read "Checked 2h 51m ago". **From
-  now on every device pass ends by reading the crash card/reports against the count at the start.** Fixed in
-  e6130b8 (`hasSource` skip in `UsageRepository`, `RefreshNoSourceTest` failing first); the v2.0 merge must drop
-  the guard. Redone on the Fold 7 (`design/research/2026-11-05-ccbg75/`): Before recorded (screen timeout 300000;
-  baseline crash card 7 reports, newest 10:18), fixed APK installed (`8dad5c87…2e7e`), the real
-  `UsagePollWorker` forced: Claude, ChatGPT and Work refreshed, Gemini untouched; manual refresh on every card
-  without a crash (Work and Product refreshed, Claude and ChatGPT answered "rate-limit floor", Gemini "Error:
-  not supported in this version"); crash card unchanged at 7 / 10:18 afterwards and no entry in the crash log
-  buffer. Always after run, diff empty, phone locked, still on the cable.
+---
+
+## Step 6 · TestFlight upload — Robin's
+
+**Who:** **Robin at the Mac.** A session never uploads, never opens App Store Connect and never changes signing.
+
+**What Robin does:** uploads Step 4's archive (Xcode Organizer → Distribute App → App Store Connect), creates
+the app record if it is not there, pastes `release/testflight/whats-to-test.md` and `beta-review-notes.md` (the
+sample-mode path, with the three accounts I3 made), fills the privacy-policy URL, answers App Privacy with *Data
+Not Collected*, submits for Beta App Review and creates the public link. The link stays unshared until Step 7.
+
+**Done when:** ☐ Robin reports the build "2.0 (1)" uploaded and its review state; the Log records it.
+
+**Reversal:** none once uploaded (the build number is spent; a new upload is "2.0 (2)"). A rejected build is
+fixed forward.
+
+**Log:**
 
 ---
 
-## Step 8 · Release v1.9
+## Step 7 · Publish GitHub v2.0
 
-**Who:** the session. A fresh judge reviews before publishing (RELEASING.md rule), and Robin
-confirms "Check for updates" on the phone. **Irreversible once published.**
+**Owns:** the tag `v2.0` and the GitHub release.
 
-**Resume in a fresh session:**
+**Prompt:**
 
 ```
-Read CLAUDE.md; RELEASING.md (with the Play channel section and Step 3's task names); RUNBOOK.md
-Conventions and Step 8; the Status lines Step 7 verified. versionCode 25 / versionName "1.9" is already set
-(Step 7). Docs: USER-GUIDE.md changelog; README bullets (crash reports stay on the phone;
-privacy policy link); guide.html and brochure.html rebuilt with release/docs/build.sh, every
-changed page read in the PDF; release notes (app only — no build story): crash capture, a steadier
-credential store, the privacy policy, the fixes. Then RELEASING.md's order, with the
-APK built and verified BEFORE anything is published: commit → push main → **CI green on
-that exact sha** (gh run list --commit <sha>; pending or failed stops here, and any recommit
-repeats this gate) → build it from that sha
-(assembleGithubRelease, asset copied to app-release.apk) → tag and push → draft with --verify-tag →
-download and verify the APK (sha256 equal, signer = trusted digest, versionCode 25 / 1.9) → a
-fresh mesh-judge verdict on the APK → stop and ask Robin for the go on the named commit and
-sha256 → publish with --latest → adb install -r the downloaded published APK on the Fold 7 and check the
-installed sha256 equals the asset (the phone already holds a versionCode 25 candidate, so "Check
-for updates" will not replace it; Robin's tap only confirms it reads up to date). Robin taps Check for updates.
-**Scope change, Robin 2026-11-04:** no AAB is built, verified or logged in this step, and Play's
-upload requirements are not checked; Play work waits until after v2.0 (Step 9). The `play` flavor
-stays in the tree and in CI.
-Set the shipped items to Shipped v1.9; close out per Convention 4.
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, Step 4's and Step 6's Logs, Step 7) and RELEASING.md
+§4 and §6; load the model-mesh skill. Q1 and Q2 must be answered in "Robin's answers" (Convention 10); if Q2
+says wait, Step 6's Log must show Beta App Review approved before the tag. Do RUNBOOK Step 7: on the Step 4 release commit, tag v2.0, push the tag,
+and create the draft release with the github APK as app-release.apk and release/docs/release-notes-v2.0.md as
+its notes; the notes carry the iOS build per Robin's answer to Q1 (the TestFlight public link and build
+"2.0 (1)", or an IPA asset). Verify the draft per RELEASING §4 step 5 (hashes equal Step 4's, signer = the
+trusted digest, 26 / "2.0"). Then the gate: a review packet on the publish command, a fresh Fable judge at high
+(author Opus, irreversible) and a Sol cross-check (it publishes). Then ask Robin for his go in chat, naming the
+commit and the APK sha256 (and the IPA's if one is attached); record his words verbatim in the Log. Publish
+only after that. Install the published asset on the Fold 7 and check "Check for updates" reads up to date.
 ```
 
 **Done when:**
-- ☑ v1.9 is published and `releases/latest` resolves to it (2026-11-05). The published asset's sha256 equals the
-  reviewed build. ☑ The Fold 7 (back on the cable later the same day): screen timeout restored to the recorded
-  300000; `adb install -r` of the downloaded published asset, installed sha256 = `6ff15bdc…6037`, 25 / 1.9; the crash card still
-  "7 reports, newest 10:18 AM" and the crash log buffer empty. ☑ Robin tapped "Check for updates" on the Fold 7 (2026-11-05) and it reads up to date. **Step 8 is done.**
-- ~~Play's current upload requirements were checked against the AAB before publishing.~~ Dropped
-  from v1.9, Robin 2026-11-04 (Play waits until after v2.0).
-- ☑ CI was green on the exact release commit before the tag (run 41972204923 on 3905c14: build, ios-core, ios-app).
-- ~~The AAB was built and verified from the release commit before publishing.~~ Dropped from v1.9,
-  Robin 2026-11-04. The APK's sha256 and signer are logged here instead.
-- ☑ Every arc item reads Shipped v1.9, or Deferred with a reason (CCRM-86 to CCRM-91, CCRM-85, CCBG-35, 45, 46, 48, 50, 51, 52 and 75; the Play side is deferred past v2.0).
+- ☐ The release is published with the APK, and the iOS build named under the same version, never an iOS-only
+  release.
+- ☐ The judge, Sol and Robin's go are in the Log; the installed asset's sha256 equals the published one.
 
-**If it goes wrong mid-way:** as in RELEASING.md.
-- Before the draft is published, nothing is public: delete the draft and move the tag only if it
-  must move.
-- After publishing, there are two recoveries. To withdraw distribution: `gh release edit v1.9
-  --draft`. To recover installed apps: v1.9.1 (versionCode 26) on both channels.
+**Reversal:** none for anyone who installed. `gh release edit v2.0 --draft` withdraws it from `releases/latest`;
+a fix ships as v2.0.1 with versionCode 27 on both channels.
 
 **Log:**
 
-- 2026-10-02 — Docs drafted ahead, before Step 7 closed (Robin: "Yes please"): guide.html (cover, contents,
-  New in v1.9 with the crash-card shot `v19-crash-card.jpg`, Settings reference, Troubleshooting,
-  version history, footers), brochure.html, USER-GUIDE.md, README (PDF links, 1.9 entry) and
-  `release/docs/release-notes-v1.9.md`; `build.sh` run and every changed page read in the PDF (page 12
-  overflowed once; the 1.8 row was shortened). **Still Step 8's:** the release day in USER-GUIDE.md's
-  header; drop CCBG-52 (Boot Pin Delay) from all five places if Step 7's reboot does not confirm it, and
-  touch up anything else Step 7 changes; then rebuild with `build.sh` and re-read the changed pages.
-- 2026-11-04 — **Ready, not published** (overnight, Robin asleep; his instruction: everything short of
-  publishing). Docs touch-up done (November 2026 on the guide, brochure and USER-GUIDE; `build.sh` run, cover and
-  brochure read). Release commit **`44c65b71c344b95ee5e0886bcc9a296b14305522`** on main; CI green on that exact sha
-  (run 41870554360: build, ios-core, ios-app). Release APK built from it (no AAB, per the scope change):
-  `app/build/asset/app-release.apk`, sha256 `fcd1594013538a559e39330ad42aacba86066ca51b87ce37c9fae0ce30ad3fed`
-  (equal to the Step 7 candidate on the phone), signer `8bc21a2a…f64f` = the trusted digest, 1.9 / 25,
-  `tools/check_artefact.py --channel github` PASS. Pre-clearance of the tag-push step: Fable judge and Sol both
-  **blocking** on a packet assembled before CI finished (CI pending, no headSha in the evidence, provenance only
-  claimed, the tag not fetched locally, Robin's go absent); the first and second are now closed (CI green; headSha
-  `44c65b71…`), the rest are done at execution on a fresh packet with Robin's go. Not tagged, drafted or published.
-- 2026-11-05 — **44c65b7 and APK `fcd15940…ad3fed` are superseded** by CCBG-75 (Antigravity Crash on Refresh):
-  the fix landed as e6130b8 (CI green: build, ios-core, ios-app) and the rebuilt APK is sha256
-  `8dad5c870de5415f26b69679967b4944ec0280c34e96804e26bf0fea8daf2e7e` (signer = trusted digest, 1.9 / 25,
-  `check_artefact.py --channel github` PASS), tested on the Fold 7 (Step 7 Log, 2026-11-05). The release commit
-  is the docs HEAD after e6130b8, named in HANDOVER.md and the report.
-- 2026-11-05 — **Published.** Robin's go (given in the session, "Confirmed, go", after the question "tag and publish
-  v1.9 at 3905c14 with APK 6ff15bdc…6037?"). Release commit **`3905c147865bee70da39429b3a6ab81873070575`**; tag `v1.9` pushed
-  with the commit named (`git push origin 3905c14…:refs/tags/v1.9`) and fetched back (`v1.9^{commit}` = 3905c14); CI green on that sha
-  (run 41972204923). **Uploaded asset: `app-release.apk`, sha256
-  `6ff15bdc64cf8544b28d948bd6ed59a8bb9961ffcd893c005154268180736037`** (1.9 / 25, signer = the trusted digest
-  `8bc21a2a…f64f`, `check_artefact.py --channel github` PASS), a clean `--rerun-tasks` build of the tagged commit under
-  `model-mesh-review evidence` (gradle exit 0, tree clean before and after). **Not the 8dad5c87…2e7e build** that HANDOVER.md
-  and the Step 7 Log of the same date name: a rerun build is not byte-identical, so the rebuild became the release and was installed and
-  tested on the Fold 7 as that file. Draft created with `--verify-tag` and `release/docs/release-notes-v1.9.md`; the downloaded
-  draft asset equalled the build (sha256, signer, 25 / 1.9); published with `gh release edit v1.9 --draft=false --latest`
-  (07:03 UTC); `releases/latest` = v1.9; the downloaded published asset equals 6ff15bdc…6037. Reviews: tag push (Fable concerns, Sol concerns,
-  both adopted) and publish (same); two earlier packets blocked on thin evidence and a stale CI state and were redone. No AAB (scope change).
-  Filed after release: CCBG-76 (Diagnostics probe), CCBG-77 (Gemini one-shot retry), both Low.
-
 ---
 
-## Step 9 · Play Console — account, app, existing-key signing, internal testing
+## Step 8 · Play Day 0 — Robin at the console
 
-> **Deferred 2026-11-04, Robin's words:** "Till v2.0, let's focus on getting the app out to everyone
-> via the Cooldown repo and TestFlight. After v2.0 is published, let's work to get our apps in the
-> public GooglePlay and Apple App Store (and not now in v1.9 or v2.0)." Out of scope for v1.9; Q4
-> stays open and is picked up after v2.0. The `play` flavor stays in the tree and in CI.
+**Who:** **Robin** clicks, pays, verifies, enrols and uploads; the session guides one screen at a time from
+`release/play/CONSOLE-STEPS.md` Phases D–E and `CLOSED-TEST-PLAN.md`'s Day 0–3 rows, and checks what can be
+checked.
 
-**Who:** **Robin at the console, every click his.** The session guides from `release/play/` and
-checks results, and never holds a console login. **Blocked until Q4 (the account type) is answered**,
-by Robin after his talk with Fable. That answer is recorded here before anything else.
+**Needs:** R1 done (identity verified), R2 done (15+ testers' Google accounts), Step 4's AAB and its sha256,
+Step 5's assets and Step 7 published.
 
-### Q4 — personal or organisation account (answered 2026-11-10: personal)
-
-Robin's context: a portfolio of small single-purpose apps (Cooldown, then simple timer or checklist
-apps) under one developer name. They are all free and open source now, with a possible one-time
-"Pro" in-app purchase later. Rows marked † are Play facts to re-read on the day, never trusted from
-this file.
-
-| | Personal | Organisation |
-|---|---|---|
-| Cost and paperwork | The one-time fee (US $25 †) and a government ID check. No company needed. | The same fee, plus a D-U-N-S number (free, but days to weeks †) for a legal entity **Robin owns**. Verification is longer, and a website and contact details may be asked for †. |
-| Getting to production | New personal accounts must run a closed test with **12 opted-in testers for 14 days in a row** † before they can apply for production. v1.9 stops at the internal track, so this bites only at launch, and again for **every new app** in the portfolio †. | No closed-test rule †. Straight to production once the app passes review. |
-| What the public sees | Play verifies and may display **Robin's legal identity** (name and country †) even on a free app. Once an app sells something (the "Pro" purchase), **address and contact details are shown publicly** †. That is Play's own monetisation rule, not only the EU's. A private address needs a business or virtual address †. | The organisation's name and its registered address †. It reads as a studio brand across many apps. An organisation **registered at Robin's home shows that address**, so keeping home private needs a separate business address either way. |
-| Payments ("Pro" later) | A payments profile in Robin's name. Income is personal income. | A payments profile in the organisation's name, which also suits tax and invoices. |
-| Changing course | Apps can be **transferred** to an organisation account later, keeping users, reviews and the signing key †. So "personal now, organisation later" is a real path. | Going back is also a transfer, but there is rarely a reason to. |
-| Fits v1.9 (internal track only) | Yes, today. | Yes, once the D-U-N-S arrives. That can delay Step 9 by weeks. |
-
-**The session's read, not a decision:**
-- **Personal** is cheapest and fastest for Step 9. Its costs arrive later: the 12-tester gate for each
-  new app, and a public home address once "Pro" ships.
-- **Organisation** costs time up front and fits the portfolio-and-"Pro" plan best.
-- **Personal now, transfer later** keeps v1.9 moving, at the price of one transfer. The Pulse key
-  enrolled under Q3 travels with the app.
-
-**Before Robin chooses and pays:** read Play's current identity and disclosure pages for both account
-types on the day. The † rows are the ones most likely to have moved.
-
-**Answered by Robin on 2026-11-10: personal** (Log below). (Originally: Robin decides after his talk with Fable, and the answer goes into this step's Log before anything
-else happens.) Everything below applies to both paths, except that the organisation path first waits
-for the D-U-N-S.
-
-**Irreversible, named up front:**
-1. the registration fee and the identity verification, with the developer name and country made
-   public;
-2. the package name `com.robin.claudeusage` claimed on Play for good. "claude" in the store URL is
-   a trademark risk, recorded for the launch decision;
-3. enrolling our existing key in Play App Signing (Q3). Google then holds a copy of the key;
-4. the app's **Free** setting, which can never become paid upfront. In-app purchases stay possible,
-   which fits Robin's possible "Pro" purchase.
-
-**Resume in a fresh session:**
+**Prompt (for the guiding session):**
 
 ```
-Read CLAUDE.md; RUNBOOK.md Conventions and Step 9 (Q4's answer must be in its Log — if not, stop);
-ROADMAP.md CCRM-66 (Play Store Launch) and CCRM-86–90; release/play/*; docs/privacy.md;
-RELEASING.md's Play channel section and trusted digest. Confirm the keystore backup exists where
-Robin keeps it before anything is exported. Guide Robin, one screen at a time, naming each
-irreversible choice before he makes it: (1) the developer account of the Q4 type; (2) create the
-app — name "Cooldown" (or the fallback Robin picks if taken), app, Free; (3) Play App Signing →
-use an existing key → export with Google's PEPK tool from ccooldown-release.jks into the
-scratchpad, upload, then delete the PEPK output (never in git); the same key stays the upload key;
-(4) the declarations the Console demands before an internal release, filled from release/play/ —
-re-read each Play definition on the day against our drafts, fix the drafts in the repo if they
-disagree; (5) Internal testing → create a release with the v1.9 AAB logged in Step 8 → testers:
-Robin's own address → roll out. Verify: App bundle explorer → the signed universal APK's signer =
-RELEASING.md's trusted digest; the release shows "available to internal testers"; the opt-in link
-opens. The Fold 7 keeps the github build (same versionCode — Play will show it as installed).
-Do not start closed testing, and do not touch production. Close out per Convention 4, and write
-HANDOVER.md's next block around the launch decision (the provider check, CCRM-66).
+Read CLAUDE.md, RUNBOOK.md (Step 8 and Step 4's Log), release/play/CONSOLE-STEPS.md Phases D-E,
+CLOSED-TEST-PLAN.md and TESTER-INVITE.md; load the model-mesh skill. Guide Robin through Play Day 0, one
+screen at a time. Never open the Play Console yourself, never see the keystore, its passwords or the PEPK
+output, and name every irreversible action before he takes it: Play App Signing with the existing key (PEPK);
+the AAB from Step 4 to Internal testing (the package name is claimed here, for good); then check App bundle
+explorer's signed universal APK SHA-256 against RELEASING.md's trusted digest before any tester installs;
+the same AAB to the Closed track with the release notes and countries; the App content declarations
+re-checked against the v2.0 drafts (data safety with Google, app access via the sample, the FGS declaration
+and video link). When Google approves the closed release, give Robin TESTER-INVITE §2 "the go" with the
+opt-in link filled. Log every action with the date; the clock (Day S) starts when 12 are opted in.
 ```
 
 **Done when:**
-- ☐ Q4's answer and the account are recorded. (Answer ☑ 2026-11-10: personal. The account: not yet
-  registered.)
-- ☐ The app exists, and the existing key is enrolled: the Play-signed APK's signer equals the
-  trusted digest.
-- ☐ v1.9 is available on the internal track, and no closed or production track has been touched.
-- ☐ No key material or PEPK output is left outside Robin's backup.
+- ☐ The AAB is on Internal testing and its Play-signed APK's digest matches; the same AAB is rolled out to
+  Closed testing; the invite is sent; the Log records Day 0 and, once reached, Day S.
 
-**Reversal:** none for items 1–4 above. The internal release can be halted and the app record left
-unpublished. Whether the app record can be deleted after an internal upload is unverified, so treat
-it as permanent.
+**Reversal:** none — the package name, the enrolled key and the fee are permanent. A bad closed release is
+replaced by a new versionCode on both channels.
 
 **Log:**
 
-- 2026-11-10 — **Q4 answered by Robin: a personal developer account**, which he registers and
-  verifies himself (it does not exist yet). Play launches at **v2.0**, not v1.9: this step's
-  internal-track upload of a v1.9 AAB is replaced by the v2.0 AAB, and it runs on into the
-  **closed test** (12 testers opted in for 14 continuous days, the rule read on 2026-11-10), which
-  starts only after the eight v2.0 feedback items of 2026-11-10 land, then the production
-  application. This supersedes Q1's "no closed testing" for the launch. iOS stays on TestFlight,
-  published by EAM360. The ordered checklist, with the dated policy check, is
-  `release/play/CONSOLE-STEPS.md`; the test is `release/play/CLOSED-TEST-PLAN.md`; the invite
-  draft `release/play/TESTER-INVITE.md`; the v2.0 listing and graphics check
-  `release/play/V2.0-ASSET-CHECK.md`. The *Resume* block above predates this and names the v1.9
-  AAB: follow CONSOLE-STEPS.md instead.
-- 2026-11-10 — Robin's two follow-up answers: the provider terms risk — **"Proceed, risk
-  accepted"** (CLOSED-TEST-PLAN.md § Risks); reviewer access — **"Port sample mode"**: the Android
-  app gets the iOS sample-data mode as item 9 of the v2.0 feedback work (wireframe first), and
-  App access answers "Try with sample data" (CONSOLE-STEPS.md step 12).
-
 ---
 
-## Risks and partial states
+## Whole-plan reversal
 
-- **Unverified until the step that meets it:**
-  - AGP's aggregate task names under flavors (Step 3);
-  - whether One UI reports every browser through scoped `<queries>` (Step 7);
-  - whether the installer accepts an equal-versionCode sibling-flavor install (Step 7 has the
-    fallback);
-  - `screenrecord` on the cover display (Step 7);
-  - Play's exact Data-safety definitions and the in-app privacy-link wording (Step 9, on the day);
-  - which declarations an internal release demands (Step 9).
-- **The flavor split renames every Gradle task.** Until Step 3's commit rewrites Convention 2, the
-  paste blocks name the old tasks.
-- **A play build left on the phone** strands Robin without update checks. Step 7 ends on the github
-  build by rule, and Step 9 never installs from Play onto the Fold 7.
-- **CCBG-46 wipes on a transient error** → every account signed out. This is guarded by the
-  transient/unrecoverable split, the boot-path exclusion, tests and a fresh judge. Only tokens are at
-  risk, and signing in mints them again.
-- **CCRM-85's handler hides a crash.** It is chained in `finally`, and Step 7 proves the system dialog
-  still appears.
-- **Play review sees the app before the provider check.** The internal track is not a public
-  listing and gets limited review. The check still comes before any closed test (Q1), and that
-  timing is Robin's accepted trade-off.
-- **Partial execution:**
-  - after Steps 3–6: unreleased commits, reversed with `git revert` newest first, each step on its
-    own;
-  - after Step 7 has begun: run *Always after* first;
-  - after Step 8 publishes: forward recovery only (v1.9.1, versionCode 26, both channels);
-  - Step 9: no reversal. See its list.
-- **Whole-plan reversal before Step 8:** revert the arc's commits newest first (this removes
-  `ci.yml` and restores `dependabot.yml`). Before Step 7, nothing outside git has changed. After
-  Step 7's item 1, the phone rolls **forward** to a build of the reverted `main` (see Step 7's "Two
-  different restorations"). *Always after* restores its settings.
+- **Steps 0–2 and the lanes are commits.** `git revert` of the arc's commits, newest first, restores the v2.0
+  candidate as it was on 2026-11-11. The only stored-data change is CCRM-110's additive tag key, downgrade-tested.
+- **From a partly built state** (one lane done, the other not): `main` stays green throughout, because each
+  lane tests against fixtures the other does not read and the spec keeps the shipped rules until Step 2. Either
+  finish the slower lane, or revert the faster lane's commits; nothing in between ships, because Step 4 needs
+  Step 2, which needs both lanes.
+- **Step 3 changes the devices**, restored by its *Always after* (only the candidate build stays).
+- **Steps 6, 7 and 8 cannot be undone** once done; a defect after them is fixed forward in a new versionCode on
+  both channels.
+
+## Reserved for Robin
+
+The physical device checks and which defects block; any visible change beyond rev B; the feature-graphic
+approval; the TestFlight upload and App Store Connect; the release go; everything in the Play Console (account,
+fee, identity, device verification, PEPK, uploads, the closed track); recruiting and inviting testers; the
+answers to the open questions below.
+
+## Questions for Robin — open, not decided
+
+- **Q1** (gates Steps 4 and 7). RELEASING.md §6 says the GitHub release carries the APK and, in its notes, the TestFlight public link
+  and the iOS build number (a TestFlight build cannot be installed from a GitHub asset). Keep that, or attach an
+  ad-hoc IPA as a second asset?
+- **Q2** (gates Step 7). Does the GitHub v2.0 publish (Step 7) wait for Beta App Review to approve the TestFlight build, so the
+  link in the notes works on the day? Or publish first and add the link when it is approved?
+- **Q3** (gates Step 5). Play screenshots: crop the Fold 7 full frames to 1080×2160 (drop the 149-px status band and 62 px of
+  the gesture bar), or pad them? And real accounts with names, or the sample mode (its violet banner shows)?
+- **Q4** (gates D1's graphic and Step 5). The feature graphic: redraw it on the Icon v3 mark for v2.0 (Lane D draws, you approve), or launch with
+  the v1.9 graphic and redraw later?
+- **Q5** (gates A4). The Android half of the Weekly-first share card (CCRM-24 (Share Card)) was left open after the first
+  v2.0 pass and needs its own wireframe. In v2.0, or after?
+- **Q6** (gates A1 and I1; asked in Step 1). Lanes A and I may run at the same time on this Mac (two sessions, one gradle, simulators beside the
+  emulator). Fine, or one lane at a time?
+
+## Robin's answers
+
+Filled by the step that asks (Convention 10), in Robin's words, dated. Empty means not decided.
+
+| Q | Gates | Answer | Date |
+|---|---|---|---|
+| Q1 | Steps 4, 7 | | |
+| Q2 | Step 7 | | |
+| Q3 | Step 5 | | |
+| Q4 | D1 part (7), Step 5 | | |
+| Q5 | A4 | | |
+| Q6 | Step 1's close, A1, I1 | | |
+
+## Failure modes
+
+- **A landing conflicts.** WORKTREE.md: the step aborts the merge, stops and reports; the orchestrating session
+  sorts it out. The shared-file table should make this rare.
+- **A fixture is wrong.** Spec leads: the orchestrator gives one session a spec-only fix; the other lane re-merges.
+- **The Duet does not fit the real shade.** A2 builds to the wireframe's widths; Step 3 measures; a new width is
+  a wireframe revision for Robin.
+- **The sample leaks into real data.** A5's isolation tests; Step 3 checks the notification and widgets.
+- **Play refuses something.** The AAB checks run before the tag; Play's rules are re-read on the day; a
+  `specialUse` objection falls back to CCRM-67 (Pin Service), a new release on both channels.
+- **Beta App Review or Play review is slow.** GitHub v2.0 does not wait for Play (CLOSED-TEST-PLAN.md); Q2
+  decides whether it waits for TestFlight.
+- **The tester count dips below 12.** Treated as restarting the 14 days; recruit 15–18.
+
+## UNVERIFIED
+
+The Duet's real collapsed widths on the cover and inner shades and its expanded column (≈186 dp is
+arithmetic); iOS chip and segment widths; whether two worktree sessions building at once slow each other enough
+to matter; whether a new closed-track build resets Play's 14-day clock (secondary sources say no); whether
+Play's reviewer accepts the sample mode as App access; Beta App Review's timing.
+
+## Tests and gates
+
+- `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest lintGithubDebug`, `assembleGithubDebug assemblePlayDebug` (every Android step, Steps 2–4)
+- `swift test --package-path ios/Packages/CooldownCore` and the iOS app tests on the iPhone 17 Pro simulator (every iOS step, Steps 2–4)
+- `sh spec/tools/check_no_code.sh` (Steps 1, 2)
+- The fixture generator script re-derives `printed-v20.json` and the mobile fixtures (Step 1)
+- `tools/widget_layouts.py` byte-identical (any step that changes a widget layout)
+- The downgrade test for the tag key (A4, I3)
+- The four sample-isolation tests (A5)
+- One fresh Opus judge round per code step (1, A1–A5, I1–I3, 2, 3's fixes, 4)
+- RELEASING.md §4 step 5 and §5's checks (Step 4 and 7); §6's archive checks (Step 4)
+- Fable judge, Sol cross-check and Robin's recorded go before publishing (Step 7)
+- The Play-signed APK's digest = the trusted digest (Step 8)
+- The merge dry run (Step 0's Log)
