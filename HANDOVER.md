@@ -10,7 +10,9 @@ RUNBOOK.md is now the v2.0 feedback build arc: CCRM-105 (Duet Stack) to CCRM-113
 iOS, then the release and Play Day 0. It replaces RUNBOOK-v2.0.md's open Steps 7 and 8. Step 1 is the spec step;
 after it lands, Lane A (Android) and Lane I (iOS) run at the same time and Lane D (release text) beside them, each
 from the prompt in its own HANDOVER block, which Step 1 creates. Robin can start R1 (Play Console Phases A–C) and
-R2 (recruiting testers) now. Six questions in RUNBOOK.md's "Questions for Robin" are open.
+R2 (recruiting testers) now. Robin answered all six questions on 2026-11-11; they are in RUNBOOK.md's
+"Robin's answers" (both lanes at once; no Android share card in v2.0; graphic redrawn; screenshots cropped,
+real accounts; TestFlight link in the notes; publish waits for Beta App Review).
 
 New session in `~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**, paste:
 

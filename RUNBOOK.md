@@ -249,7 +249,7 @@ the scaffolding in `ROADMAP.md`, `spec/mobile/surfaces/*.md` and `HANDOVER.md`, 
 ```
 Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Step 1) and HANDOVER.md;
 load the model-mesh skill; run the mode check and the sweeper. Do RUNBOOK Step 1, spec only, no app code.
-First ask Robin Q6 (RUNBOOK "Questions for Robin") and record his answer in "Robin's answers" (Convention 10).
+Q6 is already answered in "Robin's answers" (both lanes at once); do not ask it again.
 (1) Write spec/core/fixtures/pace-distance/printed-v20.json from BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback":
 the paceLine, paceLineForms and endToEnd cases in their "resets" forms and the weekday-only form (both
 drop orders: another day, later today); the day grid (column edges at start + k x 24 h, sevenths, the 5h
@@ -275,7 +275,7 @@ committed under spec/tools/. One fresh Opus judge round on the fixtures against 
   wireframe's worked examples agree with them.
 - ☐ `check_no_code.sh`, the Android suite and both iOS suites pass with no test changed.
 - ☐ The ROADMAP iOS lines, the two surfaces sections per file and the three HANDOVER lane blocks exist.
-- ☐ Q6 is answered and recorded in "Robin's answers", in the same commit.
+- ☑ Q6 is answered and recorded in "Robin's answers" (2026-11-11, before Step 1).
 - ☐ Judge round recorded; landed on `main`.
 - ☐ The orchestrating session is told the fixtures commit and Q6's answer, so it can send the desktop session the frozen set
   (outward step, the orchestrator's).
@@ -635,7 +635,8 @@ Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 5), release/play/V
 CONSOLE-STEPS.md § Policy check 7; load the model-mesh skill. Q3 and Q4 must be answered in "Robin's
 answers" (Convention 10). Do RUNBOOK Step 5 on the Step 4 APK installed
 on the Fold 7 (Robin connects): the eight phone screenshots in V2.0-ASSET-CHECK's order, no e-mail address on
-screen, cropped per Robin's answer to Q3 to 1080x2160 (long side at most twice the short); the FGS video
+screen, real accounts, cropped to 1080x2160 per Q3 (long side at most twice the short), every shot checked
+for visible account names before it is committed or uploaded; the FGS video
 (switch on -> Duet notification -> refresh -> switch off, no e-mail on screen) for Robin to upload unlisted;
 export the feature graphic from the variant Robin approved in D1. Crop shade captures to the Cooldown card
 only. Commit the assets, close out and land.
@@ -680,8 +681,8 @@ Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, Step 4's and Step 6's Logs
 §4 and §6; load the model-mesh skill. Q1 and Q2 must be answered in "Robin's answers" (Convention 10); if Q2
 says wait, Step 6's Log must show Beta App Review approved before the tag. Do RUNBOOK Step 7: on the Step 4 release commit, tag v2.0, push the tag,
 and create the draft release with the github APK as app-release.apk and release/docs/release-notes-v2.0.md as
-its notes; the notes carry the iOS build per Robin's answer to Q1 (the TestFlight public link and build
-"2.0 (1)", or an IPA asset). Verify the draft per RELEASING §4 step 5 (hashes equal Step 4's, signer = the
+its notes; per Q1 the notes carry the TestFlight public link and the iOS build "2.0 (1)", and there is no IPA
+asset. Verify the draft per RELEASING §4 step 5 (hashes equal Step 4's, signer = the
 trusted digest, 26 / "2.0"). Then the gate: a review packet on the publish command, a fresh Fable judge at high
 (author Opus, irreversible) and a Sol cross-check (it publishes). Then ask Robin for his go in chat, naming the
 commit and the APK sha256 (and the IPA's if one is attached); record his words verbatim in the Log. Publish
@@ -754,7 +755,7 @@ approval; the TestFlight upload and App Store Connect; the release go; everythin
 fee, identity, device verification, PEPK, uploads, the closed track); recruiting and inviting testers; the
 answers to the open questions below.
 
-## Questions for Robin — open, not decided
+## Questions for Robin — answered 2026-11-11 (see "Robin's answers")
 
 - **Q1** (gates Steps 4 and 7). RELEASING.md §6 says the GitHub release carries the APK and, in its notes, the TestFlight public link
   and the iOS build number (a TestFlight build cannot be installed from a GitHub asset). Keep that, or attach an
@@ -776,12 +777,15 @@ Filled by the step that asks (Convention 10), in Robin's words, dated. Empty mea
 
 | Q | Gates | Answer | Date |
 |---|---|---|---|
-| Q1 | Steps 4, 7 | | |
-| Q2 | Step 7 | | |
-| Q3 | Step 5 | | |
-| Q4 | D1 part (7), Step 5 | | |
-| Q5 | A4 | | |
-| Q6 | Step 1's close, A1, I1 | | |
+| Q1 | Steps 4, 7 | "Link in notes (Recommended)" — RELEASING.md §6: the APK is the asset; the notes carry the TestFlight public link and the iOS build number. No IPA asset. | 2026-11-11 |
+| Q2 | Step 7 | "Wait for approval (Recommended)" — Step 7 starts only once Step 6's Log records Beta App Review approval. | 2026-11-11 |
+| Q3 | Step 5 | "Crop to 1080×2160 (Recommended)" and "Real accounts (Recommended)" — check every shot for visible account names before upload. | 2026-11-11 |
+| Q4 | D1 part (7), Step 5 | "Redraw for v2.0 (Recommended)" — Lane D draws the graphic on the Icon v3 mark; Robin approves. | 2026-11-11 |
+| Q5 | A4 | "After v2.0 (Recommended)" — the Android half of CCRM-24 (Share Card) is not in v2.0; A4 is CCRM-110 + CCRM-112 only. | 2026-11-11 |
+| Q6 | Step 1's close, A1, I1 | "Both at once (Recommended)" — Lanes A and I run side by side. | 2026-11-11 |
+
+All six were answered by Robin in the orchestrating session on 2026-11-11 (AskUserQuestion, options quoted
+verbatim) and relayed to the planning session, which recorded them. No answer adds or removes a step.
 
 ## Failure modes
 
