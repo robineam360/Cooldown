@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Feature Graphic v2.0</title>
+<!--
+  CCRM-66 (Play Store Launch), RUNBOOK v2.0 build arc Step D1 part (7), Q4 "Redraw for v2.0":
+  the Google Play feature graphic, 1024 x 500, redrawn on CCRM-101 (Icon v3) "Shared pace".
+  Successor of design/2026-10-01-play-feature-graphic.html (variant B, approved 2026-10-01, drawn on
+  the v1.9 Pulse icon). The mark is copied coordinate for coordinate from design/icon-v3/shared-pace.svg.
+  No provider logo or name anywhere. Export (Step 5, only after Robin approves a variant): open with
+  ?only=a|b|c and screenshot the 1024 x 500 frame with headless Chrome (note at the bottom).
+  APPROVED: variant C, Robin, 2026-11-11.
+-->
+<style>
+  :root {
+    --page: #f4efea; --ink: #1f1b19; --muted: #6b625c; --card: #ffffff; --line: #e2d9d1;
+    --plate: #1F1B19; --cream: #F3EBE3; --track: #524944; --red: #FF5252;
+    --claude: #D97757; --chatgpt: #19C39A; --gemini: #8AB4F8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page: #141110; --ink: #f3ebe3; --muted: #a89d95; --card: #1f1b19; --line: #3a332f; }
+  }
+  :root[data-theme="dark"] { --page: #141110; --ink: #f3ebe3; --muted: #a89d95; --card: #1f1b19; --line: #3a332f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+         font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 40px 0 8px; }
+  p, li { color: var(--muted); max-width: 76ch; }
+  .scaler { width: 100%; max-width: 1024px; aspect-ratio: 1024 / 500; position: relative;
+            border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+  .scaler > .fg { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+  .thumbs { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .thumb { width: 328px; max-width: 100%; }
+  .thumb .scaler { border-radius: 4px; }
+  .thumb small { color: var(--muted); }
+  .note { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin-top: 16px; }
+  table { border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  td, th { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  code { font-size: 13px; overflow-wrap: anywhere; }
+
+  /* ---- the graphic itself: fixed 1024 x 500, never responsive ---- */
+  .fg { width: 1024px; height: 500px; background: var(--plate); color: var(--cream); overflow: hidden;
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .fg .wordmark { font-weight: 700; letter-spacing: -0.02em; line-height: 1; position: absolute; }
+  .fg .tag { color: rgba(243,235,227,0.78); font-weight: 500; position: absolute; white-space: nowrap; line-height: 1.3; }
+  .fg .icon { position: absolute; }
+  .fg .safebox { position: absolute; inset: 96px; border: 2px dashed rgba(255,82,82,0.55); border-radius: 4px; pointer-events: none; }
+  .fg .tab { font-variant-numeric: tabular-nums; }
+
+  /* Variant A: icon and wordmark; the mark's arcs, huge and faint, bleed off the right edge */
+  .a .ghost { position: absolute; left: 620px; top: -170px; width: 840px; height: 840px; opacity: 0.07; }
+  .a .icon { left: 112px; top: 130px; width: 240px; height: 240px; }
+  .a .wordmark { left: 392px; top: 160px; font-size: 104px; }
+  .a .tag { left: 398px; top: 292px; font-size: 29px; }
+
+  /* Variant B: wordmark left; one readout right in the v2.0 shape grammar (5h ring, Weekly bar, pace line) */
+  .b .icon { left: 96px; top: 96px; width: 112px; height: 112px; }
+  .b .wordmark { left: 96px; top: 236px; font-size: 84px; }
+  .b .tag { left: 100px; top: 340px; font-size: 25px; }
+  .b .panel { position: absolute; left: 544px; top: 128px; width: 384px; height: 244px; border-radius: 28px;
+              background: #2A2522; box-shadow: inset 0 0 0 1px rgba(243,235,227,0.08); padding: 28px; }
+  .b .head { display: flex; align-items: center; gap: 24px; height: 104px; }
+  .b .wk { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .b .lbl { font-size: 22px; font-weight: 600; color: rgba(243,235,227,0.72); }
+  .b .big { font-size: 76px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .b .big small { font-size: 40px; font-weight: 700; }
+  .b .bar { position: relative; height: 14px; border-radius: 7px; background: rgba(243,235,227,0.14); margin: 22px 0 14px; }
+  .b .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; }
+  .b .bar > b { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: var(--cream); opacity: 0.85; }
+  .b .pace { font-size: 18px; color: rgba(243,235,227,0.66); white-space: nowrap; }
+
+  /* Variant C: wordmark left; three Summary rows right, one per service colour (the icon's three arcs) */
+  .c .icon { left: 96px; top: 96px; width: 104px; height: 104px; }
+  .c .wordmark { left: 96px; top: 228px; font-size: 80px; }
+  .c .tag { left: 99px; top: 328px; font-size: 24px; }
+  .c .rows { position: absolute; left: 536px; top: 104px; width: 392px; display: flex; flex-direction: column; gap: 14px; }
+  .c .row { height: 88px; border-radius: 22px; background: #2A2522; box-shadow: inset 0 0 0 1px rgba(243,235,227,0.08);
+            display: flex; align-items: center; gap: 18px; padding: 0 22px 0 16px; }
+  .c .r { flex: 1; }
+  .c .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .c .nm { font-size: 24px; font-weight: 600; }
+  .c .fig { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .c .fig small { font-size: 20px; }
+  .c .bar { position: relative; height: 10px; border-radius: 5px; background: rgba(243,235,227,0.14); margin-top: 10px; }
+  .c .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+  .c .bar > b { position: absolute; top: -5px; bottom: -5px; width: 3px; border-radius: 2px; background: var(--cream); opacity: 0.85; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Play feature graphic v2.0 — 1024 × 500</h1>
+  <p>RUNBOOK Step D1 part (7). Robin's Q4 (2026-11-11): redraw the graphic on the Icon v3 mark,
+  CCRM-101 (Icon v3) "Shared pace". Shown on the Play listing above the screenshots, where Play may
+  trim the edges; everything that matters sits inside the dashed 96 px inset. No provider logo or
+  name appears. The three colours are the icon's own arcs, as approved for Icon v3; no shape
+  imitates a provider's mark.</p>
+  <p><strong>Approved: variant C, by Robin, 2026-11-11</strong> (asked with A, B and C as options; B
+  was recommended). RUNBOOK Step 5 exports C as drawn here with <code>?only=c</code>.</p>
+
+  <h2>A · Icon and wordmark</h2>
+  <p>The successor of v1.9's variant A. The Shared pace tile at 240 px, the name, one line. Behind
+  them, the mark's three arcs and the pace line at 840 px and 7 % opacity, cut by the right edge,
+  so the wide frame is not empty. The outer arc passes behind the last letters of "Cooldown"; at 7 %
+  it does not cut into them.</p>
+  <div class="scaler"><div class="fg a" id="fg-a">
+    <svg class="ghost" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark-arcs"/></svg>
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="Cooldown icon"><use href="#tile"/></svg>
+    <div class="wordmark">Cooldown</div>
+    <div class="tag">Your AI usage limits, always in sight.</div>
+    <div class="safebox"></div>
+  </div></div>
+
+  <h2>B · Wordmark and one readout <span style="font-weight:400">(recommended, not chosen)</span></h2>
+  <p>The successor of v1.9's approved variant B, redrawn in the v2.0 shape grammar: the 5-hour
+  window is a hollow ring with its figure inside (no "5h" label, as on every v2.0 surface), the
+  week is the bar with its pace tick, and under it the v2.0 pace line that names the reset,
+  CCRM-108 (Reset Named). Cream and red only, as in v1.9's B: no account colour, so it does not
+  read as one service. The numbers are illustrative and agree with each other: 38 % used with
+  the week 55 % gone is 1 day 4 hours behind the mark.</p>
+  <div class="scaler"><div class="fg b" id="fg-b">
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="Cooldown icon"><use href="#tile"/></svg>
+    <div class="wordmark">Cooldown</div>
+    <div class="tag">Your AI usage limits, always in sight.</div>
+    <div class="panel">
+      <div class="head">
+        <svg width="104" height="104" viewBox="0 0 104 104" aria-label="5-hour window 62%">
+          <circle cx="52" cy="52" r="46" fill="none" stroke="rgba(243,235,227,0.14)" stroke-width="11"/>
+          <!-- 62 % of the circumference (289.03) -->
+          <circle cx="52" cy="52" r="46" fill="none" stroke="#F3EBE3" stroke-width="11" stroke-linecap="round"
+                  stroke-dasharray="179.2 289.03" transform="rotate(-90 52 52)"/>
+          <text x="52" y="61" text-anchor="middle" fill="#F3EBE3" font-size="27" font-weight="700"
+                font-family="Inter, system-ui, sans-serif" style="font-variant-numeric:tabular-nums">62<tspan font-size="16">%</tspan></text>
+        </svg>
+        <div class="wk"><span class="lbl">Weekly</span><span class="big tab">38<small>%</small></span></div>
+      </div>
+      <div class="bar"><i style="width:38%;background:var(--cream);opacity:0.85"></i><b style="left:55%"></b></div>
+      <div class="pace">1d 4h behind · resets Wed 12:30 PM</div>
+    </div>
+    <div class="safebox"></div>
+  </div></div>
+
+  <h2>C · Wordmark and three Summary rows <span style="font-weight:400">— approved 2026-11-11</span></h2>
+  <p>The v2.0 story: three accounts on one page, one per service, each in the colour of its arc in
+  the icon (terracotta, green, blue), named as the sample mode names them (Teams, Personal, Lab),
+  never by service. Each row is a Summary row: the 5h ring, the name, the Weekly figure, the bar
+  with its pace tick. One row is over its mark, so its bar carries the red slice past the tick.
+  Busier than B: at the size Play shows it on a phone the names and figures still read, the pace
+  ticks do not.</p>
+  <div class="scaler"><div class="fg c" id="fg-c">
+    <svg class="icon" viewBox="0 0 100 100" role="img" aria-label="Cooldown icon"><use href="#tile"/></svg>
+    <div class="wordmark">Cooldown</div>
+    <div class="tag">Your AI usage limits, always in sight.</div>
+    <div class="rows" id="c-rows"></div>
+    <div class="safebox"></div>
+  </div></div>
+
+  <h2>At the size Play shows it</h2>
+  <p>On a phone the graphic spans the screen width, about 360 dp: roughly a third of the frame.
+  These are the three at 328 px wide (the page scales the same frame; the export is always full size).</p>
+  <div class="thumbs" id="thumbs"></div>
+
+  <h2>States and widths</h2>
+  <ul>
+    <li><strong>One size only.</strong> Play takes exactly 1024 × 500 (JPEG or 24-bit PNG, no alpha).
+    There is no narrow state: the page only scales the preview.</li>
+    <li><strong>Crop:</strong> Play may trim the edges. The dashed red box is a 96 px inset; the wordmark,
+    tag, icon and readouts are inside it. A's ghost arcs are meant to run off the edge. The box is not
+    in the export.</li>
+    <li><strong>Light or dark listing:</strong> the graphic carries the icon's own plate colour
+    (#1F1B19), so the store theme does not change it.</li>
+    <li><strong>Unchanged from v1.9:</strong> the tagline "Your AI usage limits, always in sight." and
+    the wordmark set in Inter Bold.</li>
+  </ul>
+
+  <table>
+    <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+    <tr><td>Says</td><td>The brand</td><td>What one account looks like in v2.0</td><td>Three services, one page</td></tr>
+    <tr><td>Colour</td><td>The icon's three arcs only</td><td>Cream and red</td><td>The three arc colours, one per row</td></tr>
+    <tr><td>At phone size</td><td>Clean</td><td>The figures read; the pace line is too small to read</td><td>Names and figures read; ticks lost</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Export</strong> (RUNBOOK Step 5, variant C): <code>"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    --headless --hide-scrollbars --window-size=1024,500 --screenshot=release/play/feature-graphic.png
+    "file://$PWD/design/2026-11-11-play-feature-graphic-v20.html?only=c"</code>,
+    then flatten to a no-alpha PNG.
+  </div>
+</main>
+
+<svg id="defs" width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- design/icon-v3/shared-pace.svg, the #mark group, unchanged -->
+    <g id="mark-arcs" fill="none" stroke-linecap="round">
+      <g stroke="#524944" stroke-width="2.5">
+        <path d="M 76.1347 72.5059 A 33 33 0 1 1 78.0044 29.6832"/>
+        <path d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 71.3063 34.9163"/>
+        <path d="M 63.7017 60.9120 A 16 16 0 1 1 64.6082 40.1494"/>
+      </g>
+      <g stroke-width="6.1">
+        <path stroke="#D97757" d="M 76.1347 72.5059 A 33 33 0 1 1 69.9731 22.3239"/>
+        <path stroke="#FF5252" d="M 69.9731 22.3239 A 33 33 0 0 1 78.0044 29.6832"/>
+        <path stroke="#19C39A" d="M 69.9182 66.7090 A 24.5 24.5 0 1 1 65.3437 29.4526"/>
+        <path stroke="#8AB4F8" d="M 63.7017 60.9120 A 16 16 0 1 1 50.0501 34.1193"/>
+      </g>
+      <path stroke="#1F1B19" stroke-width="6" d="M 58.5357 39.9360 L 72.1516 18.9692"/>
+      <path stroke="#FF5252" stroke-width="3.3" d="M 58.5357 39.9360 L 72.1516 18.9692"/>
+    </g>
+    <symbol id="tile" viewBox="0 0 100 100">
+      <clipPath id="tile-clip"><rect width="100" height="100" rx="22"/></clipPath>
+      <g clip-path="url(#tile-clip)">
+        <rect width="100" height="100" fill="#1F1B19"/>
+        <use href="#mark-arcs"/>
+      </g>
+      <rect x="0.4" y="0.4" width="99.2" height="99.2" rx="21.6" fill="none" stroke="#F3EBE3" stroke-opacity="0.14" stroke-width="0.8"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+  // Variant C's rows: name, accent, 5h used %, weekly used %, weekly pace mark %.
+  var ROWS = [
+    ['Teams',    '#D97757', 71, 64, 55],
+    ['Personal', '#19C39A', 35, 41, 55],
+    ['Lab',      '#8AB4F8', 12, 18, 40]
+  ];
+  var C = 2 * Math.PI * 23;
+  document.getElementById('c-rows').innerHTML = ROWS.map(function (r) {
+    var over = r[3] > r[4];
+    var fill = over
+      ? '<i style="width:' + r[4] + '%;background:' + r[1] + '"></i><i style="left:' + r[4] + '%;width:' + (r[3] - r[4]) + '%;background:#FF5252;border-radius:0 5px 5px 0"></i>'
+      : '<i style="width:' + r[3] + '%;background:' + r[1] + '"></i>';
+    return '<div class="row">' +
+      '<svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">' +
+        '<circle cx="28" cy="28" r="23" fill="none" stroke="rgba(243,235,227,0.14)" stroke-width="7"/>' +
+        '<circle cx="28" cy="28" r="23" fill="none" stroke="' + r[1] + '" stroke-width="7" stroke-linecap="round" ' +
+          'stroke-dasharray="' + (C * r[2] / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 28 28)"/>' +
+        '<text x="28" y="33" text-anchor="middle" fill="#F3EBE3" font-size="14" font-weight="700" font-family="Inter, system-ui, sans-serif">' + r[2] + '</text>' +
+      '</svg>' +
+      '<div class="r"><div class="top"><span class="nm">' + r[0] + '</span><span class="fig tab">' + r[3] + '<small>%</small></span></div>' +
+      '<div class="bar">' + fill + '<b style="left:' + r[4] + '%"></b></div></div></div>';
+  }).join('');
+
+  // Phone-size thumbnails: clones of the three frames.
+  var thumbs = document.getElementById('thumbs');
+  ['a', 'b', 'c'].forEach(function (k) {
+    var d = document.createElement('div'); d.className = 'thumb';
+    var s = document.createElement('div'); s.className = 'scaler';
+    var f = document.getElementById('fg-' + k).cloneNode(true); f.removeAttribute('id');
+    f.querySelectorAll('.safebox').forEach(function (b) { b.remove(); });
+    s.appendChild(f); d.appendChild(s);
+    var cap = document.createElement('small'); cap.textContent = k.toUpperCase() + ' at 328 px';
+    d.appendChild(cap); thumbs.appendChild(d);
+  });
+
+  function fit() {
+    document.querySelectorAll('.scaler').forEach(function (s) {
+      s.querySelector('.fg').style.transform = 'scale(' + (s.clientWidth / 1024) + ')';
+    });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ?only=a|b|c — export mode: just the frame, at 1:1, nothing else on the page.
+  var only = new URLSearchParams(location.search).get('only');
+  if (only) {
+    var fg = document.getElementById('fg-' + only);
+    var defs = document.getElementById('defs');
+    fg.querySelectorAll('.safebox').forEach(function (b) { b.remove(); });
+    document.body.innerHTML = '';
+    document.body.style.margin = '0';
+    document.body.style.background = '#1F1B19';
+    fg.style.transform = 'none';
+    document.body.appendChild(defs);
+    document.body.appendChild(fg);
+  }
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 # Play Console — foreground service declaration (`specialUse`)
 
-Drafted 2026-10-01 for RUNBOOK Step 6, CCRM-90 (Listing Pack). It is pasted into **App content →
+Drafted 2026-10-01 for RUNBOOK Step 6, CCRM-90 (Listing Pack). Updated 2026-11-11 for v2.0 (RUNBOOK Step D1): Gemini
+joins the services in the declaration text; the video is re-recorded on the v2.0 build (Step 5). It is pasted into **App content →
 Foreground service permissions** when the AAB is first uploaded (RUNBOOK Step 9). Seeded from
 `AndroidManifest.xml`. The decision and its risk are in CCRM-67 (Pin Service).
 
@@ -18,7 +19,7 @@ Foreground service permissions** when the AAB is first uploaded (RUNBOOK Step 9)
 ```text
 The always-on usage notification. When the user switches on Settings → Alerts → Always-on
 notification, Cooldown keeps one notification in the shade and a ring in the status bar that show
-how much of their Claude or ChatGPT usage window (5-hour and weekly) they have used, and when it
+how much of their Claude, ChatGPT or Gemini usage window (5-hour and weekly) they have used, and when it
 resets. The service runs only while that switch is on and stops as soon as the user turns it off.
 ```
 

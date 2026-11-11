@@ -188,7 +188,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 
 | Step | What | Gated on | Status |
 |---|---|---|---|
-| D1 | Privacy policy, Data safety, App access, listing copy, release notes draft, feature-graphic wireframe | 0 frozen; the graphic part on Q4 | ☐ |
+| D1 | Privacy policy, Data safety, App access, listing copy, release notes draft, feature-graphic wireframe | 0 frozen; the graphic part on Q4 | ☑ 2026-11-11 |
 
 ### Robin's own track (starts now; no session needed)
 
@@ -519,14 +519,38 @@ until Robin approves. Close out per Convention 9 and land per WORKTREE.md.
 ```
 
 **Done when:**
-- ☐ The six text files are updated and land. The privacy page's Google row is marked "from version 2.0", so the
+- ☑ The six text files are updated and land. The privacy page's Google row is marked "from version 2.0", so the
   live page stays true for v1.9 users until v2.0 ships.
-- ☐ The feature-graphic page is in `design/` and Robin has approved a named variant (or the step's Log records
+- ☑ The feature-graphic page is in `design/` and Robin has approved a named variant (or the step's Log records
   that the approval is still open; Step 5 waits on it).
 
 **Reversal:** `git revert` of the step's commits.
 
 **Log:**
+
+- 2026-11-11 · D1 done (Lane D session, worktree `hungry-williams-0089c1`, PR #36). Text in c4ebeb3, graphic
+  page in 4ee764f. **Listing** (`release/play/listing.md`): short description rewritten, 75/80; full
+  description rewritten row by row against V2.0-ASSET-CHECK (opening line, Gemini line, What it shows,
+  notification, widgets, accounts, sharing, privacy recipients; a new *Summary* and *Try it first*),
+  3,930/4,000; a new §6 Play release notes, 420/500; app name unchanged, 26/30. App access instructions
+  1,256 characters (Play's limit to be read on the day). **Graphic:** Robin approved **variant C** (three
+  Summary rows, Teams/Personal/Lab in the icon's arc colours) on 2026-11-11, asked once with A, B, C as
+  options (B recommended); `design/2026-11-11-play-feature-graphic-v20.html`, export `?only=c` at Step 5.
+  HANDOVER.md not edited: Step 1 had not landed its "Next — Lane D" block at close-out.
+  **For Step 2 (trackers and shared files D1 does not own):**
+  (a) RELEASING.md §5 still names `design/2026-10-01-play-feature-graphic.html` variant B as the source of
+  `feature-graphic.png`; it becomes the 2026-11-11 page, variant C.
+  (b) `release/testflight/privacy-ios-draft.md`, V2.0-ASSET-CHECK and CONSOLE-STEPS step 11 list
+  `www.googleapis.com` as a host; neither app contacts it (it appears only in the OAuth scope names, checked
+  by grep of `app/` and `ios/`). `docs/privacy.md` now says so in both halves; the TestFlight draft should too.
+  (c) listing.md §5 (Step 5's asset table) still says to export the icon from the Pulse and the graphic
+  from the v1.9 page.
+  (d) V2.0-ASSET-CHECK's "Pace in words (band and daily allowance)" predates CCRM-104 (Pace Line Parity),
+  which took the band words off the lines; the listing follows CCRM-104.
+  (e) The listing and app-access text use the wireframe's labels ("Try with sample data", "Exit",
+  Teams/Personal/Lab); Step 5 checks them on the release build before pasting.
+  (f) Gemini plans: only a Pro account has been measured; the listing says only "the usage windows that
+  Google's Antigravity reports", no plan list.
 
 ---
 

@@ -1,7 +1,8 @@
 # Cooldown privacy policy
 
 **Effective 1 October 2026 (Cooldown 1.9); the iPhone and iPad section is effective from the first
-TestFlight build of Cooldown 2.0 (date set when this text is merged).** This policy covers both builds
+TestFlight build of Cooldown 2.0 (date set when this text is merged); the Android entries marked
+"from version 2.0" (Google, for Gemini accounts) apply from Cooldown 2.0 for Android.** This policy covers both builds
 of the Android app Cooldown (package `com.robin.claudeusage`): the one downloaded from GitHub and the
 one installed from Google Play, and, in its own section below, Cooldown for iPhone and iPad. Where
 they differ, it says so.
@@ -15,7 +16,7 @@ Cooldown is made by Robin Richard Rajan, an individual developer. Questions abou
   usage numbers, no analytics, no crash reports, no identifiers.
 - Your sign-ins stay **on your phone**, encrypted with a key held by the Android Keystore. The app
   sends them only to the service they belong to: Anthropic for a Claude account, OpenAI for a
-  ChatGPT account.
+  ChatGPT account and, from version 2.0, Google for a Gemini account.
 - There are no ads, no analytics and no tracking, and no third-party SDK that collects data. The
   app is built on Google's AndroidX and Kotlin libraries and the OkHttp network library.
 - A crash report or a diagnostics log leaves your phone only if **you** tap Share and pick where it
@@ -32,13 +33,21 @@ Every connection uses HTTPS. The app makes the requests below and no others.
 | | `api.anthropic.com` | Reading your usage; and reading your plan and email, once a day (hourly while the email is not yet known) | The access token |
 | OpenAI (ChatGPT accounts) | `auth.openai.com` | Device-code sign-in, and renewing it | The app's client ID; while you approve, the device code it was given; then the authorisation code OpenAI issued; later, the refresh token |
 | | `chatgpt.com` | Reading your usage | The access token and your ChatGPT account ID, which that endpoint requires |
+| Google (Gemini accounts, **from version 2.0**) | `accounts.google.com`, opened in your browser | Signing in | You sign in on Google's own page, in your browser, and copy the code it shows. The app never sees your password. The page ends on `antigravity.google`, Google's own address, which only displays that code. |
+| | `oauth2.googleapis.com` | Finishing the sign-in, and renewing it | The app's client ID and its public client secret; the code you paste and the PKCE value that proves this phone started the sign-in; later, the refresh token. Google's reply includes your Google account email, which the app reads on the phone |
+| | `daily-cloudcode-pa.googleapis.com` | Reading your plan and your Gemini usage | The access token and the Google Cloud project ID that Google's own reply names for your account, which the usage request requires |
+| | `www.googleapis.com` | — | Nothing is sent there. It appears only in the names of the permissions the sign-in asks Google for (your email address and profile, and Google Cloud access, which Google's usage service requires) |
 | GitHub (**GitHub build only**) | `api.github.com` | Checking whether a newer release exists | A request for the latest release. No account, token or identifier is sent. |
 
 Every request carries the header `User-Agent: Cooldown/<version> (Android)`, except the GitHub
 check, which sends `Cooldown-android`, and Anthropic's token endpoint (sign-in and renewal), which
-receives the network library's own name (`okhttp/<version>`). Like any internet connection, each
-request reveals your IP address to the service that receives it. What those services do with it is
-covered by their own privacy policies: Anthropic's, OpenAI's and GitHub's.
+receives the network library's own name (`okhttp/<version>`). From version 2.0, the requests to Google
+send `Cooldown/<version>` followed by the identifier of Google's own Antigravity command-line tool
+(`antigravity/cli/<version> (aidev_client; os_type=android; arch=arm64; auth_method=consumer)`), because
+Google returns Gemini usage only to that identifier; that is also why the sign-in uses that tool's
+public client. Like any internet connection, each request reveals your IP address to the service
+that receives it. What those services do with it is covered by their own privacy policies:
+Anthropic's, OpenAI's, Google's and GitHub's.
 
 **The Google Play build makes no GitHub request at all.** Play updates the app, so the update check
 is not in that build.
@@ -61,11 +70,13 @@ Everything below lives in the app's private storage, which other apps cannot rea
 
 - **Sign-ins.** For each account: the access token, the refresh token, the token's expiry time, when
   it was added, its last four characters (so a support log can tell two sign-ins apart without
-  showing the token) and, for ChatGPT, the account ID. They are kept in `EncryptedSharedPreferences`
+  showing the token), for ChatGPT, the account ID and, for Gemini (from version 2.0), the Google Cloud
+  project ID that Google's usage request needs. They are kept in `EncryptedSharedPreferences`
   (AES-256-GCM, with the key in the Android Keystore). This encrypted store is **excluded from
   Android backup and device transfer**, so a new phone signs in again.
 - **While a sign-in is in progress:** the one-time values needed to finish it (the PKCE value for
-  Claude; the device code and the short user code for ChatGPT). They are deleted when the sign-in
+  Claude; the device code and the short user code for ChatGPT; for Gemini, from version 2.0, the PKCE
+  value and a random check value that ties the pasted code to this sign-in). They are deleted when the sign-in
   finishes or you cancel it. A sign-in you walk away from keeps them until the next sign-in, Cancel
   or Clear.
 - **Account details:** the name you gave each account, its service, its plan (for example "Pro" or
@@ -160,7 +171,8 @@ check stays on the phone.
 - **Uninstall the app**, or clear its storage in Android's settings, to delete everything, including
   your last account.
 - Removing an account here does not end the sign-in on the service's side. To revoke the sign-in
-  itself, sign out of your sessions in your Claude or ChatGPT account settings.
+  itself, sign out of your sessions in your Claude or ChatGPT account settings, or, for a Gemini
+  account, remove Antigravity's access in your Google account's third-party connections.
 - The developer holds no copy of your data, so there is nothing else to delete. The one exception is
   anything you emailed yourself, and you can ask for that to be deleted.
 
@@ -181,7 +193,7 @@ nothing from the app.
 |---|---|---|
 | Anthropic (Claude) | `claude.com`, `platform.claude.com` (sign-in, in your browser), `api.anthropic.com` | Signing in, renewing, reading usage, plan and email |
 | OpenAI (ChatGPT) | `auth.openai.com`, `chatgpt.com`, `api.openai.com` | Device-code sign-in, renewing, reading usage |
-| Google (Gemini) | `accounts.google.com`, `oauth2.googleapis.com`, `www.googleapis.com`, `daily-cloudcode-pa.googleapis.com` | Signing in with Google's own page, renewing, reading usage and your Google account email |
+| Google (Gemini) | `accounts.google.com`, `oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com` | Signing in with Google's own page, renewing, reading usage; your Google account email comes in the sign-in reply. Nothing is sent to `www.googleapis.com`, which appears only in the names of the permissions the sign-in asks for |
 
 Status pages (`status.anthropic.com`, `status.openai.com`, `status.cloud.google.com`) open in your
 browser only when you tap a link. Requests carry `User-Agent: Cooldown/<version> (iOS)` and reveal
