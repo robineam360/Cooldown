@@ -23,6 +23,10 @@
     and the panel's companion rows are gone — the 5h has its ring, the Weekly is the
     header — so the panel carries only the condition strip, well inside its budget.
 
+    CCRM-105 (Duet Stack), design/2026-11-10-v20-feedback-wireframes.html §1: the headers stay
+    as shipped, the figure drops 36 → 24 sp (sign kept), which widens the pace line's column
+    from 159 to about 186 dp (TextFit.DUET_EXPANDED_COLUMN_DP).
+
     Wording here is "5h" and "Weekly", never "5-hour window" / "7-day": two
     accounts doubled every label in this view and the account prefix has to come
     from somewhere.
@@ -179,7 +183,7 @@
                 style="@android:style/TextAppearance.Material.Notification.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="36sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:letterSpacing="-0.02"
                 android:fontFeatureSettings="tnum,lnum"
@@ -324,7 +328,7 @@
                 style="@android:style/TextAppearance.Material.Notification.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="36sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:letterSpacing="-0.02"
                 android:fontFeatureSettings="tnum,lnum"

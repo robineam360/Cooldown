@@ -1,108 +1,159 @@
 package com.robin.claudeusage.notify
 
 import com.robin.claudeusage.data.UsageCache
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * The pure decisions behind CCRM-62 (Duet Notification) — the always-on notification
- * carrying two accounts.
+ * carrying two accounts — in the stacked layout of CCRM-105 (Duet Stack).
  *
  * Everything that can be decided without a `Context`, a `Canvas` or a `SharedPreferences`
  * lives here so it is testable without Robolectric (`DuetTest`). Nothing in this file
- * touches Android: the two `UsageCache.RING_*` / [Conditions.MAX_STRIPS] references are
- * `const val`s, inlined at compile time, so no Android class is loaded to read them.
+ * touches Android: the `UsageCache.RING_*` / [Conditions.MAX_STRIPS] references are
+ * `const val`s, inlined at compile time, and [TextFit] is plain Kotlin.
  *
- * The numbers are the approved ones from `design/settings-diet-wireframe.html` section 2.
- * They are not adjustable knobs — each one falls out of the width or height arithmetic
- * drawn there, and the notes below say which.
+ * The numbers are the approved ones from `design/2026-11-10-v20-feedback-wireframes.html` §1
+ * (rev B). They are not adjustable knobs — each one falls out of the width or height
+ * arithmetic drawn there, and the notes below say which.
  */
 object Duet {
 
     /** Which of the two accounts a single-slot surface (the status-bar ring) is showing. */
     enum class Slot { FIRST, SECOND }
 
-    /**
-     * How wide a Duet half's account label may be, in dp.
-     *
-     * The width arithmetic: a 360 dp notification card less 16 dp of padding a side leaves
-     * 328 dp, and one 16 dp gutter down the middle leaves **156 dp per half**. The label's
-     * line holds the 14 dp provider mark and its 4 dp gap; the condition dot, when it
-     * shows, takes 6 dp plus its 5 dp margin, and so does the synthetic dot beside it
-     * (CCRM-15 (Above-Pace Verification)) — [dots] counts them. The label gets the rest.
-     *
-     * CCBG-24 (Duet Label Clamp) measured the figure and gave the label what it left; the
-     * Fold 7's unfolded shade then left one letter (CCBG-39 (Inner Duet Squeeze)), since a
-     * notification is one layout for every width and its halves run from ~101 to 156 dp.
-     * Wireframe rev G puts the label on its own line across the half, so the figure no
-     * longer takes from it: this is the ceiling at 156 dp, and on a narrower half the
-     * layout's weight ellipsizes the label against the width it really has. Never below
-     * [MIN_LABEL_DP].
-     */
-    fun labelClampDp(dots: Int = 0, ring: HalfRing = HalfRing.NONE): Int =
-        (HALF_DP - ringTakesDp(ring) - MARK_DP - MARK_GAP_DP - dots * DOT_DP).toInt().coerceAtLeast(MIN_LABEL_DP)
+    // --- the collapsed width budget (wireframe §1) -------------------------------------
 
-    private const val HALF_DP = 156f
-    private const val MARK_DP = 14f
-    private const val MARK_GAP_DP = 4f
-    private const val DOT_DP = 11f
-    const val MIN_LABEL_DP = 24
-
-    /**
-     * CCRM-103 (Hybrid Notification), shape grammar rev D §3 (D1–D3): the 5h ring a collapsed
-     * half carries. [FULL] is the 36 dp ring with its figure, at the half's left, 8 dp from the
-     * column; [BARE] is the 14 dp ring with no digits at the end of the label line, for a half
-     * under [RING_MIN_HALF_DP] (36 + 8 + a 40 dp bar + 8 + a 57 dp figure = 149); [NONE] is an
-     * account with no 5h (B1: today's half exactly).
-     */
-    enum class HalfRing { NONE, FULL, BARE }
-
+    /** The two 5h rings at the left, First then Second, 6 dp apart. */
     const val RING_DP = 36f
-    const val RING_GAP_DP = 8f
-    const val BARE_RING_DP = 14f
-    const val BARE_RING_GAP_DP = 4f
-    const val RING_MIN_HALF_DP = 150f
+    const val RING_GAP_DP = 6f
+    /** From the second ring to the rows, and from the rows to the figure slot. */
+    const val COLUMN_GAP_DP = 8f
+    /** The figure's fixed slot at each row's right: "+19%" is 2.25 em × 18 = 40.5 dp. */
+    const val FIGURE_SLOT_DP = 42f
 
-    /** The ring a half of [halfDp] carries; [hasFiveHour] false is B1's no ring at all. */
-    fun halfRing(hasFiveHour: Boolean, halfDp: Float): HalfRing = when {
-        !hasFiveHour -> HalfRing.NONE
-        halfDp >= RING_MIN_HALF_DP -> HalfRing.FULL
-        else -> HalfRing.BARE
+    /** 36 + 6 + 36 + 8 + 8 + 42: everything but the bar. Rings and the figure slot never shrink. */
+    const val CHROME_DP = RING_DP + RING_GAP_DP + RING_DP + COLUMN_GAP_DP + COLUMN_GAP_DP + FIGURE_SLOT_DP
+
+    /** The bar's minimum, as the halves' was: the layout floor is 136 + 40 = 176 dp. */
+    const val BAR_MIN_DP = 40f
+
+    // The name line, 15 dp tall over the bar: mark 14, 4, name 12 sp, state word 11 sp at the right.
+    const val MARK_DP = 14f
+    const val MARK_GAP_DP = 4f
+    /** The 6 dp condition dot and its 5 dp margin, after the name. */
+    const val DOT_DP = 11f
+    /** The state word's start padding. */
+    const val WORD_GAP_DP = 6f
+    /** The name ellipsizes down to this, and only then does the state word drop its tail. */
+    const val NAME_FLOOR_DP = 24f
+
+    const val NAME_SP = 12f
+    const val WORD_SP = 11f
+    const val FIGURE_SP = 18f
+
+    /**
+     * Wireframe §1 (Robin, 2026-11-10: "cap the collapsed text"): a fixed 42 dp slot and a 52 dp
+     * height cannot follow the font scale, so the collapsed Duet's text is capped in dp — as the
+     * ring's bore figure already is. A stated exception to foundations §2 ("true sp") for this one
+     * view; the expanded view scales as before.
+     */
+    const val FIGURE_CAP_DP = 18f
+    const val NAME_CAP_DP = 13.5f
+    const val WORD_CAP_DP = 12f
+
+    /** [sp] at [fontScale], in dp, never above [capDp]. */
+    fun cappedDp(sp: Float, fontScale: Float, capDp: Float): Float = min(sp * fontScale, capDp)
+
+    /**
+     * The collapsed content width the layout is drawn for. A RemoteViews never learns it, so it
+     * is a nominal per screen class (wireframe §1's table), keyed on the smallest width so a
+     * phone turned sideways stays a phone: the Fold 7 inner shade (≈352 dp) from 600 dp up; the
+     * Fold 7 cover's shade (272 dp, the v1.8 pass figure) for 400–599 dp; below that a phone's
+     * card less its 16 dp padding a side, at most 328 (a 360 dp phone). No width field tells the
+     * Fold 7 cover from a 411 dp phone, whose bar bitmap `fitXY` then stretches about 1.6×; Step 3
+     * measures the real shades (Fable fit call, 2026-11-11).
+     */
+    fun contentDp(smallestScreenWidthDp: Int): Float = when {
+        smallestScreenWidthDp >= 600 -> 352f
+        smallestScreenWidthDp >= 400 -> 272f
+        else -> min(328f, (smallestScreenWidthDp - 32).toFloat())
     }
 
-    /** The width a half's ring takes from its label line, gap included. */
-    fun ringTakesDp(ring: HalfRing): Float = when (ring) {
-        HalfRing.NONE -> 0f
-        HalfRing.FULL -> RING_DP + RING_GAP_DP
-        HalfRing.BARE -> BARE_RING_DP + BARE_RING_GAP_DP
+    /**
+     * The bar's length at [contentDp]: whatever the chrome leaves, never under [BAR_MIN_DP].
+     * Both rows' bars share it, so they share one left edge and one length. It is also the
+     * nominal width the bar bitmap is drawn at, so `fitXY` stretches it by a few percent at most.
+     */
+    fun barDp(contentDp: Float): Float = max(BAR_MIN_DP, contentDp - CHROME_DP)
+
+    // --- the state word ------------------------------------------------------------------
+
+    /**
+     * The word a row carries at its right, in precedence order (wireframe §1): the first that
+     * applies wins; the other row is unaffected.
+     */
+    enum class Word { SIGN_IN, NO_READING, STALE, OUT, HELD, NOT_STARTED }
+
+    fun word(
+        signIn: Boolean,
+        noReading: Boolean,
+        stale: Boolean,
+        weekSpent: Boolean,
+        held: Boolean,
+        notStarted: Boolean,
+    ): Word? = when {
+        signIn -> Word.SIGN_IN
+        noReading -> Word.NO_READING
+        stale -> Word.STALE
+        weekSpent -> Word.OUT
+        held -> Word.HELD
+        notStarted -> Word.NOT_STARTED
+        else -> null
     }
 
-    /** The collapsed figure: 28 sp beside the 36 dp ring (D1), today's 30 sp otherwise. */
-    fun figureSp(ring: HalfRing): Float = if (ring == HalfRing.FULL) 28f else 30f
+    /**
+     * A row's word in full and with its tail dropped: "Held · 3:40 PM" / "Held", "Out · Thu" /
+     * "Out"; the others have no tail. [clock] is the 5h's reset for [Word.HELD] and the Weekly's
+     * reset (its weekday, or the bare clock later today) for [Word.OUT]; null leaves the word bare.
+     */
+    fun wordText(word: Word, clock: String?): Pair<String, String> {
+        val head = when (word) {
+            Word.SIGN_IN -> "Sign in"
+            Word.NO_READING -> "No reading"
+            Word.STALE -> "Stale"
+            Word.OUT -> "Out"
+            Word.HELD -> "Held"
+            Word.NOT_STARTED -> "Not started"
+        }
+        val tailed = (word == Word.OUT || word == Word.HELD) && clock != null
+        return (if (tailed) "$head · $clock" else head) to head
+    }
+
+    /** The state word's width with its 6 dp gap, in dp; 0 for none. */
+    fun wordDp(word: String?, fontScale: Float): Float =
+        if (word == null) 0f
+        else WORD_GAP_DP + TextFit.widthDp(TextFit.em(word), 1f, cappedDp(WORD_SP, fontScale, WORD_CAP_DP))
 
     /**
-     * The nominal width a collapsed half's bar is drawn at: about 47 dp beside the 36 dp ring
-     * (156 − 36 − 8 − 8 − a 57 dp figure, D1), else the half's own width as before.
+     * How far the name line's end is padded so the name ellipsizes before the word: the word's
+     * estimated width plus 4%, since [TextFit]'s estimate ran about 2% narrow on the Fold 7.
      */
-    fun barDp(ring: HalfRing): Float = if (ring == HalfRing.FULL) RING_BAR_DP else HALF_DP
+    fun wordPadDp(word: String?, fontScale: Float): Float = if (word == null) 0f else wordDp(word, fontScale) * 1.04f
 
-    private const val RING_BAR_DP = 47f
-
-    /**
-     * The width the layout is drawn for. RemoteViews never learns a half's real width (it
-     * runs from about 101 dp on the Fold 7's inner shade to 156 on a phone), so the ring
-     * choice is made against this nominal half — see [halfRing].
-     */
-    const val NOMINAL_HALF_DP = HALF_DP
+    /** The name's room on its line: the bar's length less the mark, its gap, the dots and the word. */
+    fun nameRoomDp(barDp: Float, dots: Int, word: String?, fontScale: Float): Float =
+        barDp - MARK_DP - MARK_GAP_DP - dots * DOT_DP - wordDp(word, fontScale)
 
     /**
-     * The half's width as far as a notification can know it. CCBG-64 (Inner Duet Ring): the
-     * Step 7 pass measured the Fold 7 inner shade's halves at about 180 dp — wider than the
-     * cover's, not the 101 dp the 6d build assumed — and Robin chose the cover's 36 dp ring
-     * there too (2026-11-02). Every shade the app has met holds the 36 dp ring, so the bare
-     * 14 dp ring (D3) stays for a half [halfRing] is told is narrower; the service still
-     * re-posts on a configuration change.
+     * The narrow drop order (wireframe §1, Astra C1-4): the bar absorbs first (the layout's
+     * weight), then the name ellipsizes to its 24 dp floor, and only then does the state word
+     * drop its tail. True keeps [full]; the layout ellipsizes the name against what is left.
      */
-    @Suppress("UNUSED_PARAMETER")
-    fun halfDp(smallestScreenWidthDp: Int): Float = NOMINAL_HALF_DP
+    fun keepsTail(barDp: Float, dots: Int, name: String, full: String, fontScale: Float): Boolean {
+        val nameDp = TextFit.widthDp(TextFit.em(name, bold = true), 1f, cappedDp(NAME_SP, fontScale, NAME_CAP_DP))
+        return nameRoomDp(barDp, dots, full, fontScale) >= min(NAME_FLOOR_DP, nameDp)
+    }
 
     /**
      * How many condition strips the expanded panel may draw.
@@ -112,9 +163,7 @@ object Duet {
      * for take 78 of that as native rows (CCBG-26 (Panel Scaling)), which leaves room for
      * exactly **one** one-line strip (38 dp). So the CCRM-44 (One Surface) cap of
      * [Conditions.MAX_STRIPS] falls to 1 whenever a Second account is set; the rest fold
-     * into a "+ n more" tail on that one line. (It was 2 before CCBG-26, priced against
-     * strips the bitmap then drew taller than the table said, which is what made the
-     * whole panel shrink.)
+     * into a "+ n more" tail on that one line.
      */
     fun maxStrips(hasSecond: Boolean): Int = if (hasSecond) 1 else Conditions.MAX_STRIPS
 
@@ -132,9 +181,7 @@ object Duet {
      * Ties keep [Slot.FIRST]. The comparison is strictly "is Second ahead of First", so a
      * dead heat does not make the glyph flicker between two accounts on successive polls,
      * and First is the account the setting already treats as the default. A null on one
-     * side hands the ring to the other; both null falls back to First, because with no
-     * reading at all there is nothing to compare and the ring draws its no-data face
-     * either way.
+     * side hands the ring to the other; both null falls back to First.
      */
     fun ringAccount(mode: String, firstPct: Double?, secondPct: Double?): Slot = when (mode) {
         UsageCache.RING_SECOND -> Slot.SECOND

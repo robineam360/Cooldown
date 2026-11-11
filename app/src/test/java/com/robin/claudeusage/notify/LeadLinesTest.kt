@@ -132,4 +132,15 @@ class LeadLinesTest {
         assertNull(caption(w(null, hour), 38.9, PaceText.Mode.USED, 184f))
         assertNull(caption(null, null, PaceText.Mode.USED, 184f))
     }
+
+    @Test
+    fun `CCRM-105 Out takes the weekday, or the bare clock when the reset is later today`() {
+        // now = Wed 4 Nov 14:50 UTC. Core §6.3: a bare clock always means today.
+        val today = now.plusMillis(6 * hour) // Wed 20:50
+        val tomorrow = now.plusMillis(26 * hour) // Thu 16:50
+        assertEquals("8:50 PM", LeadLines.dayOrClock(today, now.toEpochMilli(), false, ZoneOffset.UTC, Locale.US))
+        assertEquals("20:50", LeadLines.dayOrClock(today, now.toEpochMilli(), true, ZoneOffset.UTC, Locale.US))
+        assertEquals("Thu", LeadLines.dayOrClock(tomorrow, now.toEpochMilli(), false, ZoneOffset.UTC, Locale.US))
+        assertEquals("Out · Thu" to "Out", Duet.wordText(Duet.Word.OUT, "Thu"))
+    }
 }

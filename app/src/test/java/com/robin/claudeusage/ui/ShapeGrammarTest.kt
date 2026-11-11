@@ -2,7 +2,6 @@ package com.robin.claudeusage.ui
 
 import android.text.Spanned
 import android.text.style.RelativeSizeSpan
-import com.robin.claudeusage.notify.Duet
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -65,14 +64,5 @@ class ShapeGrammarTest {
         assertEquals(2, s.getSpanStart(spans[0]))
         assertFalse(Grammar.smallPercent("—") is Spanned)
         assertFalse(Grammar.smallPercent("%") is Spanned)
-    }
-
-    @Test
-    fun `the cover and the inner shade both take the 36 dp Duet ring - CCBG-64`() {
-        assertEquals(Duet.HalfRing.FULL, Duet.halfRing(true, Duet.halfDp(411)))
-        assertEquals(Duet.HalfRing.FULL, Duet.halfRing(true, Duet.halfDp(673)))
-        assertEquals(Duet.HalfRing.NONE, Duet.halfRing(false, Duet.halfDp(673)))
-        // The bare ring stays for a half known to be under 150 dp.
-        assertEquals(Duet.HalfRing.BARE, Duet.halfRing(true, 120f))
     }
 }

@@ -7,6 +7,7 @@ import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.PaceText
 import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
@@ -38,6 +39,28 @@ internal object LeadLines {
      */
     fun ringDescription(figure: String): String =
         "5-hour window, " + if (figure == "—") "no reading" else figure.replace("%", " percent")
+
+    /** CCRM-105 (Duet Stack): the spoken label of a collapsed Duet ring slot whose plan has no 5h. */
+    const val NO_FIVE_HOUR = "No 5-hour window on this plan"
+
+    /**
+     * CCRM-105 (Duet Stack): the tail of "Out · Thu" — the reset's weekday, or its bare clock when
+     * it falls later today (core §6.3: a bare clock always means today).
+     */
+    fun dayOrClock(
+        reset: Instant,
+        nowMs: Long,
+        use24h: Boolean,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): String {
+        val pattern = when {
+            !PaceText.resetsToday(reset, nowMs, zone) -> "EEE"
+            use24h -> "HH:mm"
+            else -> "h:mm a"
+        }
+        return DateTimeFormatter.ofPattern(pattern, locale).withZone(zone).format(reset)
+    }
 
     /** Rev D §3 N2: the 5h's time left under the expanded ring, "in 2h 20m"; null without a clock. */
     fun ringTimeLeft(session: UsageWindow?): String? = session?.resetsAt?.let { Fmt.relIn(it) }

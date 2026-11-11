@@ -23,11 +23,13 @@ internal object TextFit {
      * so a 157 dp full line was ellipsized instead of dropping its weekday (D10). The constant is
      * 147 dp less about 3.5%, because this estimator ran 2% narrow of the rendered caption on that
      * phone. Expanded single and Duet keep the wireframe's numbers: the cover's expanded sub line
-     * measured 156 dp, against 141.
+     * measured 156 dp, against 141. CCRM-105 (Duet Stack), wireframe §1: the Duet's expanded figure
+     * dropped 36 → 24 sp, giving its header 2.25 em × 12 sp more: 159 + 27 ≈ 186 dp (arithmetic;
+     * Step 3 measures it on the Fold 7).
      */
     const val COLLAPSED_COLUMN_DP = 142f
     const val EXPANDED_COLUMN_DP = 141f
-    const val DUET_EXPANDED_COLUMN_DP = 159f
+    const val DUET_EXPANDED_COLUMN_DP = 186f
 
     /** Wireframe §8: a tinted (semi-bold) span is 3% wider. */
     private const val BOLD = 1.03

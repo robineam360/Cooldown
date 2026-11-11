@@ -94,16 +94,17 @@ class TextFitTest {
         )
         assertEquals(notification, row(TextFit.COLLAPSED_COLUMN_DP)) // collapsed single, 142
         assertEquals(notification, row(TextFit.EXPANDED_COLUMN_DP)) // expanded single, 141
-        assertEquals( // Duet expanded today (36 sp figure), 159
+        assertEquals( // Duet expanded, new (24 sp figure), 186 — CCRM-105 (Duet Stack), wireframe §4 B table
             listOf(
-                listOf("6d 23h behind · Wed@12", "6d 23h behind · Wed@12", "6d 23h behind@12"),
-                listOf("23h 59m ahead · Wed@12", "23h 59m ahead · Wed@12", "23h 59m ahead@10"),
-                listOf("5h 45m behind · 8:15 AM@12", "5h 45m behind@12", "5h 45m behind@10"),
+                listOf("6d 23h behind · Wed 12:30 PM@12", "6d 23h behind · Wed@12", "6d 23h behind@12"),
+                listOf("23h 59m ahead · Wed 12:30 PM@12", "23h 59m ahead · Wed@12", "23h 59m ahead@12"),
+                listOf("5h 45m behind · resets 8:15 AM@12", "5h 45m behind · 8:15 AM@12", "5h 45m behind@12"),
                 listOf("57m ahead · resets 2:57 PM@12", "57m ahead · 2:57 PM@12", "57m ahead@12"),
-                listOf("On the mark · Sat 8:00 AM@12", "On the mark · Sat@12", "On the mark@12"),
+                listOf("On the mark · resets Sat 8:00 AM@12", "On the mark · Sat 8:00 AM@12", "On the mark · Sat@12"),
             ),
             row(TextFit.DUET_EXPANDED_COLUMN_DP),
         )
+        assertEquals(186f, TextFit.DUET_EXPANDED_COLUMN_DP) // 159 + 2.25 em × 12 sp
     }
 
     @Test

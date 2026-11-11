@@ -135,6 +135,12 @@ object Conditions {
         reauth(cache, profile) != null || plan(cache, profile) != null || stale(cache, profile) != null
 
     /**
+     * CCRM-105 (Duet Stack), wireframe §1: the one account fault a collapsed Duet row has no
+     * state word for (a Free plan with no usage), so it keeps the 6 dp dot.
+     */
+    fun hasPlanFault(cache: UsageCache, profile: Profile): Boolean = plan(cache, profile) != null
+
+    /**
      * Whether an update strip is showing. App-global, not per account, so on a Duet it
      * marks the First half only — the dot has to hang somewhere, and First is the half
      * that also owns the notification's content intent.
