@@ -53,6 +53,7 @@ struct PrintedFormTests {
 
     @Test("paceLine: text, tinted span and tone side")
     func paceLine() throws {
+        // The shipped strings ("· Wed 12:30 PM"): the static helper still joins whatever reset it is given.
         for c in try list("paceLine") {
             let name = c.str("name") ?? "?"
             guard let side = c.str("side"), let s = PaceLine.Side(rawValue: side) else { continue }
@@ -64,47 +65,8 @@ struct PrintedFormTests {
         }
     }
 
-    @Test("end to end: numbers to the figure and the line")
-    func endToEnd() throws {
-        let fx = try Fixtures.json("pace-distance/printed.json")
-        let e2e = try #require(fx["endToEnd"] as? [String: Any])
-        let zone = TimeZone(identifier: "UTC")!
-        for c in try #require(e2e["cases"] as? [[String: Any]]) {
-            let name = c.str("name") ?? "?"
-            let now = i64(c, "nowMs") ?? 0, reset = i64(c, "resetMs") ?? 0, len = i64(c, "windowLengthMs") ?? 0
-            let elapsed = Fmt.elapsedPercent(resetsAtMs: reset, windowLengthMs: len, nowMs: now)
-            #expect(PaceText.signedVsPaceFigure(usedPct: c.num("usedPct"), elapsedPct: elapsed) == c.str("figure"), "\(name)")
-            let line = PaceText.paceLine(usedPct: c.num("usedPct"), resetMs: reset, windowLengthMs: len, nowMs: now, use24h: false, timeZone: zone)
-            #expect(line?.text() == c.str("line"), "\(name): \(line?.text() ?? "nil")")
-        }
-    }
-
-    @Test("paceLineForms: full, without the weekday, the floor")
-    func paceLineForms() throws {
-        let zone = TimeZone(identifier: "UTC")!
-        for c in try list("paceLineForms") {
-            let name = c.str("name") ?? "?"
-            let want = (c["forms"] as? [String]) ?? []
-            guard let side = c.str("side"), let s = PaceLine.Side(rawValue: side) else { #expect(want.isEmpty, "\(name)"); continue }
-            let now = local(c.str("nowLocal") ?? "", zone), reset = local(c.str("resetLocal") ?? "", zone)
-            let full = Fmt.dayClock(epochMs: reset, nowMs: now, use24h: c.flag("hour24") ?? false, timeZone: zone)
-            let parts = full.split(separator: " ", maxSplits: 1).map(String.init)
-            let hasDay = !Fmt.sameDay(reset, now, timeZone: zone)
-            let line = PaceLine(side: s, duration: s == .on ? nil : PaceText.behind(i64(c, "durationMs") ?? 0),
-                                weekday: hasDay ? parts.first : nil, clock: hasDay ? (parts.count > 1 ? parts[1] : full) : full)
-            #expect(line.forms == want, "\(name): \(line.forms)")
-        }
-    }
-
-    @Test("drop order: weekday, then clock, never the duration and word")
-    func dropOrder() {
-        let l = PaceLine(side: .over, duration: "23h 59m", weekday: "Wed", clock: "12:30 PM")
-        #expect(l.text(.none) == "23h 59m ahead · Wed 12:30 PM")
-        #expect(l.text(.weekday) == "23h 59m ahead · 12:30 PM")
-        #expect(l.text(.clock) == "23h 59m ahead")
-        #expect(PaceLine(side: .on, duration: nil, weekday: nil, clock: "11:00 PM").text() == "On the mark · 11:00 PM")
-        #expect(PaceLine(side: .under, duration: "1h 0m", weekday: nil, clock: "9:00 pm").text(.weekday) == "1h 0m behind · 9:00 pm")
-    }
+    // CCRM-108 (Reset Named): paceLine's resets forms, paceLineForms, endToEnd and the drop order read printed-v20.json
+    // until RUNBOOK Step 2 folds it into printed.json (`PrintedFormV20Tests`).
 
     @Test("caption: every printed case")
     func caption() throws {

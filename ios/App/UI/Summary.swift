@@ -300,7 +300,7 @@ struct SummaryOneLineRow: View {
 }
 
 /// The Pace map: each account's week as (share gone, used), "ahead of pace" above the diagonal and "behind pace" below it
-/// (CCRM-104 (Pace Line Parity), core §6.3's words). Names label every dot, never rank numbers, placed by
+/// (CCRM-104 (Pace Line Parity), core §6.3's words), over the day grid (CCRM-107 (Day Grid)). Names label every dot, never rank numbers, placed by
 /// `PaceMapLayout`; spent dots carry an ×; no-reading accounts are left off.
 struct PaceMapCard: View {
     let entries: [SummaryEntry]
@@ -317,6 +317,8 @@ struct PaceMapCard: View {
             }
             PaceMap(entries: entries.filter { $0.usedPct != nil && $0.elapsedPct != nil })
                 .frame(height: height).padding(.top, 10)
+            // CCRM-107 (Day Grid): the axis carries the ordinals now, so the note moves to the card's foot line, left.
+            Text(PaceText.MapWords.xCentre).font(.system(size: 11)).foregroundStyle(p.sub).padding(.top, 4)
         }
     }
 }
@@ -339,6 +341,12 @@ struct PaceMap: View {
             var over = Path()
             over.move(to: P(0, 0)); over.addLine(to: P(0, 100)); over.addLine(to: P(100, 100)); over.closeSubpath()
             ctx.fill(over, with: .color(p.red.opacity(0.08)))
+            // CCRM-107 (Day Grid): sevenths both ways under the frame lines and the diagonal (each account's own week, so
+            // the columns are the week's days, not dates); `line` at 60%, 0.5 pt, as the trend chart's.
+            for f in DayGrid.fractions(columns: 7) {
+                ctx.stroke(Path { $0.move(to: P(100 * f, 0)); $0.addLine(to: P(100 * f, 100)) }, with: .color(p.line.opacity(0.6)), lineWidth: 0.5)
+                ctx.stroke(Path { $0.move(to: P(0, 100 * f)); $0.addLine(to: P(100, 100 * f)) }, with: .color(p.line.opacity(0.6)), lineWidth: 0.5)
+            }
             for v in [0.0, 50, 100] {
                 ctx.stroke(Path { $0.move(to: P(0, v)); $0.addLine(to: P(100, v)) }, with: .color(p.line), lineWidth: 1)
                 label("\(Int(v))%", CGPoint(x: left - 4, y: P(0, v).y), p.sub, .trailing, 9.5)
@@ -361,10 +369,16 @@ struct PaceMap: View {
             label(PaceText.MapWords.belowDiagonal, behindAt, p.sub, .trailing, 10)
             label(PaceText.MapWords.xStart, CGPoint(x: left, y: bottom + 10), p.sub, .leading, 10)
             label(PaceText.MapWords.xEnd, CGPoint(x: right, y: bottom + 10), p.sub, .trailing, 10)
-            // The centre note is kept on both families (core §6.3), centred between the ends.
-            label(PaceText.MapWords.xCentre, CGPoint(x: (left + right) / 2, y: bottom + 10), p.sub, .center, 9.5)
-            let xCentre = measure(Text(PaceText.MapWords.xCentre).font(.system(size: 9.5)))
-            obstacles.append(CGRect(x: (left + right - xCentre.width) / 2, y: bottom + 10 - xCentre.height / 2, width: xCentre.width, height: xCentre.height))
+            // CCRM-107: "week start", 2…6, "reset" — the ordinals centred in their columns, giving way to an end word they
+            // would touch (core `DayGrid`, no "now": each dot has its own). The centre note is in the card's foot line.
+            let digit = measure(Text("4").font(.system(size: 10)))
+            for o in DayGrid.ordinals(columns: 7, plotWidth: Double(right - left), nowColumn: 0, nowAt: nil,
+                                      startWidth: Double(xStart.width), endWidth: Double(xEnd.width),
+                                      ordinalWidth: Double(digit.width), nowWidth: 0) where o.drawn {
+                label(o.text, CGPoint(x: left + CGFloat(o.centre), y: bottom + 10), p.sub, .center, 10)
+                obstacles.append(CGRect(x: left + CGFloat(o.centre) - digit.width / 2, y: bottom + 10 - digit.height / 2,
+                                        width: digit.width, height: digit.height))
+            }
             obstacles.append(CGRect(x: left, y: bottom + 10 - xStart.height / 2, width: xStart.width, height: xStart.height))
             obstacles.append(CGRect(x: right - xEnd.width, y: bottom + 10 - xEnd.height / 2, width: xEnd.width, height: xEnd.height))
 

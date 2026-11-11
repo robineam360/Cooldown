@@ -52,7 +52,7 @@ struct WindowCard: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(content.title), \(content.pct.map { "\(Int($0)) percent" } ?? "no reading"). \(weekGate ?? content.paceLine). \(content.resetsIn).")
+        .accessibilityLabel("\(CardContent.spokenTitle(content.title)), \(content.pct.map { "\(Int($0)) percent" } ?? "no reading"). \(weekGate ?? content.paceLine). \(content.resetsIn).")
     }
 
     /// Greyed: the chart when open, and the reset line alone (rev B §3b: "on track for ~N%" dropped).
@@ -123,7 +123,7 @@ struct WindowCard: View {
     }
 }
 
-/// The 7-day card: "All" and, when the account has one, a model cap side by side (Android's two halves).
+/// The 7-day card: "7d" (CCRM-106 (7d Chip); VoiceOver "7-day, all models") and, when the account has one, a model cap side by side (Android's two halves).
 struct WeeklyCard: View {
     let all: WindowContent
     let cap: WindowContent?
@@ -164,7 +164,7 @@ struct WeeklyCard: View {
     private func half(_ c: WindowContent, short: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(c.title).foregroundStyle(p.txt)
+                Text(c.title).foregroundStyle(p.txt).accessibilityLabel(CardContent.spokenTitle(c.title))
                 Spacer()
                 Display.pctText(c.pct, pace: c.pace, size: 17).font(.system(size: 17, weight: .bold)).monospacedDigit()
                     .foregroundStyle(dimmed ? p.sub : (Pace.isSpent(c.pct) ? p.red : p.ink))
@@ -388,7 +388,7 @@ struct AccountCards: View {
     @ViewBuilder
     private func poolTile(_ pool: UsagePool, accent: Color, notice: Notice?) -> some View {
         let dimmed = notice?.dimsCards == true
-        let weekly = CardContent.window(title: "All", window: pool.weekly, kind: HistoryStats.weeklyKind, history: [],
+        let weekly = CardContent.window(title: CardContent.sevenDayTitle, window: pool.weekly, kind: HistoryStats.weeklyKind, history: [],
                                         nowMs: model.nowMs, use24h: Display.use24h)
         let five = CardContent.window(title: "5-hour window", window: pool.session, kind: HistoryStats.sessionKind, history: [],
                                       nowMs: model.nowMs, use24h: Display.use24h)
@@ -408,7 +408,7 @@ struct AccountCards: View {
         let snapshot = model.snapshots[account.key]
         let dimmed = notice?.dimsCards == true
         let size = ChartSize(rawValue: chartSize) ?? .medium
-        let all = CardContent.window(title: "All", window: usage?.weekly, kind: HistoryStats.weeklyKind,
+        let all = CardContent.window(title: CardContent.sevenDayTitle, window: usage?.weekly, kind: HistoryStats.weeklyKind,
                                      history: history, nowMs: model.nowMs, use24h: Display.use24h)
         // CCRM-99 (Model Limits Toggle): hidden, the tile has the one Weekly bar and no model chip.
         let cap = usage?.modelCaps.first.flatMap { Prefs.showModelLimits(account.key) ? $0 : nil }.flatMap {
@@ -707,7 +707,7 @@ struct AccountTile: View {
     private func chipButton(_ c: TileChip) -> some View {
         let on = selected == c
         let name = switch c {
-        case .all: "All"
+        case .all: CardContent.sevenDayTitle
         case .model: cap?.title ?? ""
         case .five: "5h"
         }
@@ -718,7 +718,7 @@ struct AccountTile: View {
                 .overlay(RoundedRectangle(cornerRadius: 9).stroke(on ? p.fill : p.line, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(c == .five ? "5-hour window" : name)
+        .accessibilityLabel(c == .five ? "5-hour window" : CardContent.spokenTitle(name))
         .accessibilityAddTraits(on ? .isSelected : [])
     }
 

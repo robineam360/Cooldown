@@ -5,7 +5,8 @@ import UIKit
 
 @testable import Cooldown
 
-/// CCRM-104 (Pace Line Parity): the one drop order (weekday, then clock, never the duration and word — Astra C1-4) and
+/// CCRM-104 (Pace Line Parity) and CCRM-108 (Reset Named): the one drop order ("resets", then the clock — a reset on
+/// another day keeps its weekday to the last — never the duration and word; Astra C1-4) and
 /// the Pace map's name placement (D7, Astra C1-1).
 @MainActor
 @Suite("Pace line fit and Pace map placement")
@@ -29,8 +30,9 @@ struct PaceLineFitTests {
         for line in lines {
             let v = variants(line, size: 11.5)
             let natural = v.map { width($0.fixedSize(), in: 1000) }
-            #expect(natural[0] >= natural[1] && natural[1] >= natural[2], "\(line.text()): widest first")
-            for avail in [126.0, 160, 208, 300] {
+            #expect(zip(natural, natural.dropFirst()).allSatisfy { $0 >= $1 }, "\(line.text()): widest first")
+            #expect(v.count == line.forms.count, "\(line.text()): one variant per printed form")
+            for avail in [100.0, 126, 160, 208, 300] {
                 let got = width(FitLine(variants: v), in: avail)
                 let fitting = natural.first { $0 <= avail + 0.5 }
                 if let fitting {
