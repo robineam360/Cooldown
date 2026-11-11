@@ -143,10 +143,37 @@ struct PaceMapTests {
             }
         }
         #expect(s.hit(CGPoint(x: s.plot.minX + 4, y: s.plot.minY + 4)) == nil, "the empty top-left corner")
-        // Two dots both in reach: the nearer wins.
-        let a = s.items[0], b = s.items[1]
-        let mid = CGPoint(x: a.point.x * 0.7 + b.point.x * 0.3, y: a.point.y * 0.7 + b.point.y * 0.3)
-        if let got = s.hit(mid) { #expect(got == a.key || hypot(b.point.x - mid.x, b.point.y - mid.y) < hypot(a.point.x - mid.x, a.point.y - mid.y)) }
+        // Two dots both in reach (about 11 pt apart): the nearer wins, from either side (judge F3).
+        let close = PaceMapScene.make(entries: plotted(entries([Self.teams, Spec(name: "Near", provider: .chatgpt, used: 55, gone: 42)])),
+                                      size: CGSize(width: 339, height: 230), layers: MapLayers(), mode: .used)
+        let a = close.items[0], b = close.items[1]
+        #expect(hypot(a.point.x - b.point.x, a.point.y - b.point.y) < 24)
+        func at(_ t: CGFloat) -> CGPoint { CGPoint(x: a.point.x + t * (b.point.x - a.point.x), y: a.point.y + t * (b.point.y - a.point.y)) }
+        #expect(close.hit(at(0.3)) == a.key)
+        #expect(close.hit(at(0.7)) == b.key)
+    }
+
+    @Test("tap: the empty plot clears, a new account pins, the pinned one opens; a vanished account drops the pin")
+    func tapTransitions() {
+        #expect(PaceMap.tap(pinned: nil, hit: nil) == (nil, nil))
+        #expect(PaceMap.tap(pinned: "teams", hit: nil) == (nil, nil))
+        #expect(PaceMap.tap(pinned: nil, hit: "teams") == ("teams", nil))
+        #expect(PaceMap.tap(pinned: "lab", hit: "teams") == ("teams", nil))
+        #expect(PaceMap.tap(pinned: "teams", hit: "teams") == ("teams", "teams"))
+        #expect(PaceMap.keepPin("teams", keys: ["lab", "teams"]) == "teams")
+        #expect(PaceMap.keepPin("teams", keys: ["lab"]) == nil)
+        #expect(PaceMap.keepPin(nil, keys: ["lab"]) == nil)
+    }
+
+    @Test("a trail needs history: fewer than two samples draws none (as shipped)")
+    func trailNeedsHistory() {
+        #expect(PaceMap.trail([], gone: 70, used: 100) == nil)
+        #expect(PaceMap.trail([CGPoint(x: 10, y: 5)], gone: 70, used: 100) == nil)
+        let t = PaceMap.trail([CGPoint(x: 10, y: 5), CGPoint(x: 20, y: 9)], gone: 30, used: 120)
+        #expect(t == [CGPoint(x: 0, y: 0), CGPoint(x: 10, y: 5), CGPoint(x: 20, y: 9), CGPoint(x: 30, y: 100)])
+        // The render's spent Atlas has no history, so it gets a dot and no line.
+        let atlas = entries([Self.atlas])[0]
+        #expect(atlas.trail.count <= 1 && PaceMap.trail(atlas.trail, gone: 70, used: 100) == nil)
     }
 
     @Test("the callout opens above-right, flips left at the right edge and below at the top, clamped to the plot")

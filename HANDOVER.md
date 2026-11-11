@@ -35,28 +35,31 @@ profiles out and restored the network afterwards (A1 Log).
 > light; save the captures in design/research/2026-11-v20-build/A2/. Stop and report at anything the
 > wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
 
-## ▶ Next — Lane I (iOS): Step I2 · Pace map (written 2026-11-11, after I1 landed)
+## ▶ Next — Lane I (iOS): Step I3 · Summary (written 2026-11-11, after I2 landed)
 
-I1 (Lines and labels) is on main: CCRM-106 (7d Chip), CCRM-107 (Day Grid), CCRM-108 (Reset Named) built on iOS (PR #38).
+I2 (Pace map) is on main: CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers) built on iOS (PR #42).
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I2),
-> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I2 names in
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I3),
+> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I3 names in
 > design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
 > skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step I2 on iOS only (ios/, never the Android code).
-> Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
-> inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with
-> its tests reading spec/core/fixtures/pace-distance/printed-v20.json and the new mobile fixtures, then the app,
-> widgets, lock screen and Live Activity as the wireframe says. Check every state the wireframe draws on the
-> iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the
-> captures in design/research/2026-11-v20-build/I2/. Stop and report at anything the wireframe does not
-> draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
->
-> Notes from I1: the Pace map already draws the sevenths, "week start", 2…6, "reset" and the foot line's left note
-> ("each account's own week", `PaceMapCard` in ios/App/UI/Summary.swift); I2 adds the count on the foot line's right,
-> the chips, callout, leaders and layers. `DayGrid` and the "resets" `PaceLine` live in CooldownCore. One copy call is
-> still open with Robin through the orchestrating session: a spent account in Left mode on the map — "Teams 0%" (the
-> fixture and the drawing) or "Teams 0% left". Build to the fixture unless the answer is recorded by then.
+> answers" (Convention 10; ask and record first if not). Build Step I3 on iOS only (ios/, never the Android code).
+> Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line (and CCRM-113's "iOS follow-up:"
+> line), in spec/mobile/surfaces/ only inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's
+> Log). CooldownCore first, with its tests reading spec/core/fixtures/pace-distance/printed-v20.json and the new
+> mobile fixtures (spec/mobile/fixtures/tags for CCRM-110 (Account Tags)), then the app as the wireframe says. Check
+> every state the wireframe draws on the iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both
+> orientations), dark and light; save the captures in design/research/2026-11-v20-build/I3/. Stop and report at
+> anything the wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per
+> WORKTREE.md. Lane I's HANDOVER block then says "Lane I done".
+
+Notes from I2: the map is `PaceMapCard` / `PaceMap` in ios/App/UI/PaceMap.swift; the rules are CooldownCore
+`PaceMapRules` (quiet, foot line, figures, forecast, projection) and `MapLabels` (placement, leaders). The Summary
+filter (CCRM-110) must hand `PaceMapCard` the filtered entries: the map, its foot-line count and the empty message
+follow the filter. The snapshot (CCRM-112 (Summary Snapshot)) can draw `PaceMap(entries:layers:mode:empty:pinned:)`
+with the on-screen `MapLayers.saved` and `pinned: .constant(nil)` — never the chips or a callout; the
+`printed-v20.json` `mapLabels` dense case is the 200 × 120 snapshot map. `-demo map|dense|quiet|hidden` seed the
+simulator with the wireframe's accounts. Robin's "Teams 0%" (spent, Left; 2026-11-11) is recorded in the Lane I Log (the answers table has no row for it).
 
 ## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
 
