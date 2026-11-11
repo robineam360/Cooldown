@@ -4,7 +4,7 @@
     "tolerance": "exact strings; numbers to 1e-6",
     "dropOrder": "paceLineForms lists every form from widest to the floor. A reset on another day: 'resets Wed 12:30 PM' -> 'Wed 12:30 PM' -> 'Wed' -> the floor. Later the same local day: 'resets 11:00 PM' -> '11:00 PM' -> the floor. A bare clock always means today.",
     "dayGrid": "Inputs are the window start, now, the plot width and the label widths (measured by the wireframe's em model at 9.5 sp; a client tests its rule with these widths, not its own measurement). Verticals at start + k x 24 h (7-day) or + k x 1 h (5h), k = 1..n-1; horizontals at k/n of 100%, k = 1..n-1 (the 100% guide is the n-th). Ordinals 2..n-1 are centred in their columns; the start label is left-aligned at x 0 and the reset label right-aligned at the plot width. An ordinal gives way when its box is less than nowGap (6, the wireframe's words) from the 'now' label's box (centred on now), or less than endGap (4, the wireframe's drawing) from an end label's box; every ordinal drops when a column is under dropBelowColumn (14). nowColumn is 1-based; start + k x 24 h itself belongs to column k+1. Only an ordinal is bold: in columns 1 and n the end labels stay plain, as drawn.",
-    "quiet": "An account leaves the Pace map when its row prints '0%' Weekly used: the displayed percent rounds half up (section 2), so 0.5 prints 1% and is plotted. The list still shows the row.",
+    "quiet": "An account leaves the Pace map when its row prints '0%' Weekly used: the displayed percent truncates like a window row (section 2's window bars), so 0.99 prints 0% and is hidden, and 1.0 prints 1% and is plotted (a row reading 1% is always on the map). The list still shows the row. The map's figure labels truncate the same way; only the callout's estimate rounds half up.",
     "mapLabels": "Placement geometry for the test (units are dp/pt; each family keeps its own drawn offsets, and tests its placer with these). Plot origin top-left, x = week gone % x width, y = (100 - used) % x height. A dot's hit box is 2 x dotHalf square. Names go top-down (smallest y first, then smallest x). Spots in order: right (cx + rightDx, cy - h/2), below (cx + belowDx, cy + h/2 + belowDy), left (cx - leftDx - w, cy - h/2), above-left (cx - leftDx - w, cy - aboveDy - h). Then leaders: each distance in leaderDistances, and for each the eight directions clockwise from east in screen coordinates (E, SE, S, SW, W, NW, N, NE); the leader ends at the dot centre + distance along the direction, and the name box touches that end by its side or corner facing away from the dot (E: left-middle; SE: top-left; S: top-centre; ...). A spot is refused if the box leaves the name area (the plot plus nameAreaMargin), comes within fixedGap of a fixed word, overlaps any dot's hit box, comes within nameGap of a placed name, sits on any ring, or crosses its own projection tail; a leader is refused also if its segment (dot centre to end) crosses a placed name's box or another dot's hit box. Nothing free: spot 'none', the name is not drawn and takes no space (its dot stays and still opens its callout). refusedFor lists the reasons met on the way, for reading the case.",
     "forecast": "The callout's third line from section 3's estimate on the weekly samples: hitsLimitAtMs before the reset -> '100% at ' + the instant printed as a reset is (weekday dropped later the same local day); otherwise '~' + pctAtReset rounded half up + '% at reset'. No estimate, spent, or no reset clock -> no line. Times in UTC.",
     "projectionLayer": "A dashed tail from the dot to a ring. Runs out before the reset -> the ring sits on the 100% line at the week-gone % of hitsLimitAtMs, ring and tail end red; otherwise a hollow ring on the right edge (100% week gone) at pctAtReset. null = no tail, no ring."
@@ -1342,32 +1342,32 @@
       "plotted": false
     },
     {
-      "name": "just under the edge",
-      "usedPct": 0.49,
+      "name": "half a point still prints 0%",
+      "usedPct": 0.5,
       "rowPrints": "0%",
       "plotted": false
     },
     {
-      "name": "on the edge",
-      "usedPct": 0.5,
-      "rowPrints": "1%",
-      "plotted": true
+      "name": "just under the edge",
+      "usedPct": 0.99,
+      "rowPrints": "0%",
+      "plotted": false
     },
     {
-      "name": "just over",
-      "usedPct": 0.51,
-      "rowPrints": "1%",
-      "plotted": true
-    },
-    {
-      "name": "one point",
+      "name": "on the edge: prints 1%",
       "usedPct": 1.0,
       "rowPrints": "1%",
       "plotted": true
     },
     {
-      "name": "a reading of 52",
-      "usedPct": 52.0,
+      "name": "just over",
+      "usedPct": 1.01,
+      "rowPrints": "1%",
+      "plotted": true
+    },
+    {
+      "name": "a reading of 52.9 prints 52%",
+      "usedPct": 52.9,
       "rowPrints": "52%",
       "plotted": true
     },
@@ -1488,13 +1488,22 @@
         "label": "Teams 100%"
       },
       {
-        "name": "Used rounds half up like the row",
+        "name": "Used truncates like the row",
         "account": "Teams",
         "mode": "used",
         "usedPct": 51.5,
         "elapsedPct": 39.0,
         "spent": false,
-        "label": "Teams 52%"
+        "label": "Teams 51%"
+      },
+      {
+        "name": "Left truncates the remainder like the row",
+        "account": "Teams",
+        "mode": "left",
+        "usedPct": 51.5,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams 48% left"
       },
       {
         "name": "no reading: not on the map",

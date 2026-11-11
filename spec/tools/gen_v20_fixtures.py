@@ -233,8 +233,9 @@ def width(s, sp):
 # ---------------------------------------------------------------- CCRM-109 (Quiet Accounts)
 
 def row_percent(used):
-    """The row's printed Weekly used figure: a displayed percent rounds half up (section 2)."""
-    return None if used is None else half_up(used)
+    """The row's printed Weekly used figure: a window row truncates (section 2's window bars; Android
+    Palette.usageInt, iOS Formatting.windowPercentDisplay). Half up is for credits and estimates only."""
+    return None if used is None else math.trunc(used)
 
 
 # ---------------------------------------------------------------- CCRM-111 (Map Layers): figures, callout, projection
@@ -250,8 +251,8 @@ def map_figure(name, mode, used, elapsed, spent):
             return f"{name} {f}"
         mode = "used"
     if mode == "left":
-        return f"{name} {half_up(100 - used)}% left"
-    return f"{name} {half_up(used)}%"
+        return f"{name} {max(0, math.trunc(100 - used))}% left"  # as the row: Left truncates the remainder
+    return f"{name} {math.trunc(used)}%"  # as the row: Used truncates
 
 
 def forecast(case):
@@ -505,8 +506,9 @@ def build_core():
 
     # ---- quiet accounts
     quiet = []
-    for name, used in [("no use", 0.0), ("a sliver", 0.3), ("just under the edge", 0.49), ("on the edge", 0.5),
-                       ("just over", 0.51), ("one point", 1.0), ("a reading of 52", 52.0)]:
+    for name, used in [("no use", 0.0), ("a sliver", 0.3), ("half a point still prints 0%", 0.5),
+                       ("just under the edge", 0.99), ("on the edge: prints 1%", 1.0), ("just over", 1.01),
+                       ("a reading of 52.9 prints 52%", 52.9)]:
         rp = row_percent(used)
         quiet.append({"name": name, "usedPct": used, "rowPrints": f"{rp}%", "plotted": rp != 0})
     quiet.append({"name": "no reading", "usedPct": None, "rowPrints": None, "plotted": False,
@@ -523,7 +525,8 @@ def build_core():
         ("Vs pace with no reset clock falls back to Used", "vs", 12, None, False),
         ("spent, Used", "used", 100, 70.0, True), ("spent, Left prints 0% (as drawn, no 'left')", "left", 100, 70.0, True),
         ("spent, Vs pace prints the usage figure", "vs", 100, 70.0, True),
-        ("Used rounds half up like the row", "used", 51.5, 39.0, False),
+        ("Used truncates like the row", "used", 51.5, 39.0, False),
+        ("Left truncates the remainder like the row", "left", 51.5, 39.0, False),
     ]:
         figs.append({"name": name, "account": "Teams", "mode": mode, "usedPct": used, "elapsedPct": el,
                      "spent": spent, "label": map_figure("Teams", mode, used, el, spent)})
@@ -621,7 +624,9 @@ def build_core():
                         "dropBelowColumn (14). nowColumn is 1-based; start + k x 24 h itself belongs to column k+1. "
                         "Only an ordinal is bold: in columns 1 and n the end labels stay plain, as drawn."),
             "quiet": ("An account leaves the Pace map when its row prints '0%' Weekly used: the displayed percent "
-                      "rounds half up (section 2), so 0.5 prints 1% and is plotted. The list still shows the row."),
+                      "truncates like a window row (section 2's window bars), so 0.99 prints 0% and is hidden, and 1.0 prints 1% "
+                      "and is plotted (a row reading 1% is always on the map). The list still shows the row. The "
+                      "map's figure labels truncate the same way; only the callout's estimate rounds half up."),
             "mapLabels": ("Placement geometry for the test (units are dp/pt; each family keeps its own drawn "
                           "offsets, and tests its placer with these). Plot origin top-left, x = week gone % x width, "
                           "y = (100 - used) % x height. A dot's hit box is 2 x dotHalf square. Names go top-down "
@@ -663,10 +668,10 @@ def build_map_foot():
         return {"name": name, "usedPct": used, "clocked": reset}
 
     def foot(accts):
-        zero = sum(1 for a in accts if a["usedPct"] is not None and half_up(a["usedPct"]) == 0)
+        zero = sum(1 for a in accts if a["usedPct"] is not None and math.trunc(a["usedPct"]) == 0)
         # no reading, or a reading that prints 1% or more with no reset clock (no readout, core 6.1 / 6.3)
-        none = sum(1 for a in accts if a["usedPct"] is None or (half_up(a["usedPct"]) != 0 and not a["clocked"]))
-        plotted = [a["name"] for a in accts if a["usedPct"] is not None and half_up(a["usedPct"]) != 0 and a["clocked"]]
+        none = sum(1 for a in accts if a["usedPct"] is None or (math.trunc(a["usedPct"]) != 0 and not a["clocked"]))
+        plotted = [a["name"] for a in accts if a["usedPct"] is not None and math.trunc(a["usedPct"]) != 0 and a["clocked"]]
         parts = []
         if zero:
             parts.append(f"{zero} at 0%")
@@ -690,7 +695,8 @@ def build_map_foot():
          [acct("Teams", 52), acct("Fresh", 0.0, reset=False)]),
         ("a reading of 1% or more with no reset clock cannot be plotted: counted as no reading",
          [acct("Teams", 52), acct("Odd", 3.0, reset=False)]),
-        ("0.5 prints 1%, so it is plotted and not counted", [acct("Teams", 52), acct("Edge", 0.5)]),
+        ("0.99 prints 0%: hidden and counted", [acct("Teams", 52), acct("Edge", 0.99)]),
+        ("1.0 prints 1%, so it is plotted and not counted", [acct("Teams", 52), acct("Edge", 1.0)]),
         ("nothing unplotted: no count", [acct("Teams", 52), acct("Personal", 30)]),
         ("every account at 0%: the frame stays with the message",
          [acct("Tiny", 0.0), acct("Tiny 2", 0.3), acct("x", 0.2)]),

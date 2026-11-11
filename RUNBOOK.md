@@ -309,6 +309,15 @@ committed under spec/tools/. One fresh Opus judge round on the fixtures against 
   **Choices the fixtures fix where §6.3 is open** (in `_meta` and the §6.3 pointer): leader directions clockwise
   from east at each distance; the name box touches the leader's end by its side facing away from the dot; the
   fixture's own placement offsets (each family keeps its drawn ones); only ordinals are bold, never the end labels.
+- 2026-11-11 · **Correction** (spec only, on the orchestrating session's word, after the desktop ran the file): the
+  quiet rule and the map's figure labels used half up, which §2 gives for credits; window rows truncate (Android
+  `Palette.usageInt`, iOS `windowPercentDisplay`), and Robin's rule is "match the row". So a row prints "0%" below 1,
+  not 0.5: 0.99 is hidden, 1.0 is plotted; the labels truncate ("Teams 51%" and "48% left" at 51.5). Core §6.3's
+  planned sentence now reads "under 1: a window row truncates (§2's window bars)". The `quiet`, `mapLabels.figures`
+  and `map-foot` cases were regenerated; the callout's "~N% at reset" stays half up (an estimate), spent stays 100%.
+  No judge round (a one-rule correction applying Robin's existing call). Lane I's `PrintedFormV20Tests` reads only
+  the pace-line blocks, which are unchanged. ROADMAP CCRM-109's What text and the wireframe §5 still say "under
+  0.5"; neither is this step's to edit during the lanes (Step 2 rewrites the tracker lines).
 
 ---
 
