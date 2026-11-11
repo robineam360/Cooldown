@@ -160,6 +160,67 @@ object Duet {
         return nameRoomDp(barDp, dots, full, fontScale) >= min(NAME_FLOOR_DP, nameDp)
     }
 
+    // --- CCRM-114 (Narrow Duet): rungs 4 and 5 (addendum §N1, Robin's variant C) ---------------
+
+    /** Under this much collapsed content (smallest width under 396 dp) a row with no figure gives its slot to the word. */
+    const val NARROW_CONTENT_DP = 256f
+    /** How much further the name line runs over the gap and the empty figure slot: 8 + 42. */
+    const val SLOT_RUN_DP = COLUMN_GAP_DP + FIGURE_SLOT_DP
+    /** Rung 5's floor: about "Pers…" at 12 sp, what a 360 dp phone already prints beside "Held" (N1-Q3). */
+    const val NAME_FLOOR_BARE_DP = 32f
+
+    /**
+     * One collapsed row's text after the drop order: [word] as printed (null: none), whether it sits in the figure's
+     * slot ([inSlot]: the figure view goes, the bar's end is padded [SLOT_RUN_DP] so it keeps its length), and whether
+     * a word that went leaves "Stale"'s 6 dp fault-red dot ([staleDot]); [nameRoomDp] is what the name is left.
+     */
+    data class RowFit(val word: String?, val inSlot: Boolean, val staleDot: Boolean, val nameRoomDp: Float)
+
+    /**
+     * The narrow drop order, one order everywhere (addendum §N1):
+     * 1. the bar absorbs (the layout's weight);
+     * 2. the name ellipsizes to [NAME_FLOOR_DP] beside a word with a tail;
+     * 3. the word drops its tail ([keepsTail]);
+     * 4. under [NARROW_CONTENT_DP] a row with no figure ([dash]) gives its "—" to the word, which sits right-aligned
+     *    in the figure's slot, the name line [SLOT_RUN_DP] longer (variant C);
+     * 5. a bare word that still leaves the name under [NAME_FLOOR_BARE_DP] (or under the name's own width, if less)
+     *    goes — its row still says it (ring, red figure, "—", track) and the expanded view says it in full; "Stale"
+     *    leaves its fault-red dot while the name keeps that floor beside it; "Sign in" never goes, the name gives.
+     * Rung 5 is read as the page's text says, for a *bare* word: a word still carrying its tail has the 24 dp floor of
+     * rung 2, and loses its tail (3) before it can go (5).
+     */
+    fun rowFit(
+        contentDp: Float,
+        barDp: Float,
+        dots: Int,
+        name: String,
+        word: Word?,
+        full: String?,
+        short: String?,
+        dash: Boolean,
+        fontScale: Float,
+        /**
+         * The row's one condition dot view is already showing (the update strip on First, a Free-plan fault): a "Stale"
+         * that goes recolours it fault red (the row's own fault wins, as in the expanded header) and costs no more room.
+         */
+        dotShown: Boolean = false,
+    ): RowFit {
+        if (word == null || full == null) return RowFit(null, inSlot = false, staleDot = false, nameRoomDp(barDp, dots, null, fontScale))
+        val bare = short ?: full
+        val nameDp = TextFit.widthDp(TextFit.em(name, bold = true), 1f, cappedDp(NAME_SP, fontScale, NAME_CAP_DP))
+        fun room(w: String?, run: Float, extraDots: Int = 0) = nameRoomDp(barDp + run, dots + extraDots, w, fontScale)
+        val shown = if (keepsTail(barDp, dots, name, full, fontScale)) full else bare
+        val inSlot = dash && contentDp < NARROW_CONTENT_DP
+        val run = if (inSlot) SLOT_RUN_DP else 0f
+        val floor = min(NAME_FLOOR_BARE_DP, nameDp)
+        if (shown == bare && word != Word.SIGN_IN && room(shown, run) < floor) {
+            val extra = if (dotShown) 0 else 1
+            val dot = word == Word.STALE && room(null, 0f, extraDots = extra) >= floor
+            return RowFit(null, inSlot = false, staleDot = dot, room(null, 0f, extraDots = if (dot) extra else 0))
+        }
+        return RowFit(shown, inSlot, staleDot = false, room(shown, run))
+    }
+
     /**
      * How many condition strips the expanded panel may draw.
      *

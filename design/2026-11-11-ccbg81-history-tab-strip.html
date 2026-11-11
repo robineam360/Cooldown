@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History Tab Strip</title>
+<style>
+:root{--bg:#0e0e10;--card:#1b1b1f;--ink:#ececf1;--ink2:#a4a4ad;--line:#2c2c33;--ok:#4fbf7f;--bad:#e5675b;--acc:#d97757}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,system-ui,Roboto,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:34px 0 10px}
+p,li{color:var(--ink2);max-width:860px}
+b{color:var(--ink)}
+.status{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+figure img{display:block;width:100%;height:auto}
+figcaption{padding:8px 12px;font-size:13px;color:var(--ink2)}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:1px 7px;border-radius:5px;margin-right:6px}
+.before{background:#3a2422;color:#f1a79c}.after{background:#1f3527;color:#8fdcae}.ref{background:#2a2a33;color:#c4c4cf}
+table{border-collapse:collapse;margin:8px 0;font-size:14px}td,th{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{color:var(--ink)}td{color:var(--ink2)}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>CCBG-81 (History Tab Wrap) — the History strip scrolls like Main's</h1>
+<p>RUNBOOK Step A6, added by Robin 2026-11-11. Real emulator captures (fold7inner, AOSP, dark): before = <code>main</code> at 8916028; after = a local prototype of option A. 360 dp = a 1080×2400 phone at 480 dpi; cover = 1080×2520 at 411 (≈420 dp, the Fold 7 cover class).</p>
+<div class="status" style="border-color:#2a7d4f"><b>Status: Approved by Robin 2026-11-11 — option B, as captured</b> (CLAUDE.md §2; he first picked B over the recommended A, then approved B's captures). Built in RUNBOOK Step A6 for Main and History.</div>
+
+<h2>What is wrong</h2>
+<p>Main counts its <b>All</b> tab, so with three accounts it has four tabs and scrolls. History has no All tab, so with the same three accounts it keeps a fixed, equal-width strip, and at 360 dp "Personal" wraps to "Person / al". Four accounts already scroll on both screens.</p>
+<div class="grid">
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/b360-3-main.png" alt=""><figcaption><span class="tag ref">MAIN · TODAY</span>360 dp, 3 accounts: four tabs with All, scrolls</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/b360-3-hist.png" alt=""><figcaption><span class="tag before">BEFORE</span>History, 360 dp, 3 accounts: fixed strip, "Person / al"</figcaption></figure>
+</div>
+
+<h2>Option A — History counts tabs as Main does (recommended)</h2>
+<p>One rule for both strips: History scrolls whenever Main's strip would, i.e. from <b>three accounts</b> (Main's three accounts + All = four tabs). Two accounts stay a fixed strip on both screens. Scrolling tabs size to their label and start at the left edge, exactly as Main's do; the selected tab is scrolled into view.</p>
+<div class="grid">
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/b360-3-hist.png" alt=""><figcaption><span class="tag before">BEFORE</span>360 dp · 3 accounts</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/a360-3-hist.png" alt=""><figcaption><span class="tag after">AFTER</span>360 dp · 3 accounts: one line, scrolls</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/bcov-3-hist.png" alt=""><figcaption><span class="tag before">BEFORE</span>Cover · 3 accounts: fixed, centred thirds</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/acov-3-hist.png" alt=""><figcaption><span class="tag after">AFTER</span>Cover · 3 accounts: left-aligned, sized to labels (as Main)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/b360-4-hist.png" alt=""><figcaption><span class="tag before">BEFORE</span>360 dp · 4 accounts: already scrolls</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/a360-4-hist.png" alt=""><figcaption><span class="tag after">AFTER</span>360 dp · 4 accounts: unchanged</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/bcov-4-hist.png" alt=""><figcaption><span class="tag before">BEFORE</span>Cover · 4 accounts: already scrolls</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/acov-4-hist.png" alt=""><figcaption><span class="tag after">AFTER</span>Cover · 4 accounts: unchanged</figcaption></figure>
+</div>
+
+<h2>What option A does not fix (today on both screens)</h2>
+<p>With <b>two</b> accounts both strips stay fixed, so a long name (labels go up to 16 characters) still wraps at 360 dp — on Main as well, today. Option B below would cover it; A leaves it as shipped.</p>
+<div class="grid">
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/a360-2long-main.png" alt=""><figcaption><span class="tag ref">MAIN · TODAY</span>360 dp · 2 accounts, "Personal Max 20x": wraps</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/a360-2long-hist.png" alt=""><figcaption><span class="tag ref">HISTORY · A</span>360 dp · 2 accounts: wraps, same as Main</figcaption></figure>
+</div>
+
+<h2>Option B — scroll only when a label won't fit (Robin's pick, 2026-11-11) · captured</h2>
+<p>Built as a prototype and captured on the same emulator. One shared strip for Main and History: each tab's label (mark + name, All included) is measured at its one-line width in the tab's text style; if any label plus the tab's 32 dp padding is wider than its equal share of the strip, the strip scrolls, otherwise it is the fixed, equal-width row. It follows the names, the width and the font size, not the account count.</p>
+<div class="grid">
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/B360-3-hist.png" alt=""><figcaption><span class="tag after">B</span>History · 360 dp · 3 accounts: "Personal" won't fit a third → scrolls, one line</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Bcov-3-hist.png" alt=""><figcaption><span class="tag after">B</span>History · cover · 3 accounts: all fit → fixed thirds, as today</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/B360-4-hist.png" alt=""><figcaption><span class="tag after">B</span>History · 360 dp · 4 accounts: scrolls, as today</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Bcov-4-hist.png" alt=""><figcaption><span class="tag after">B</span>History · cover · 4 accounts: scrolls, as today</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/B360-2long-hist.png" alt=""><figcaption><span class="tag after">B</span>History · 360 dp · 2 accounts, "Personal Max 20x": scrolls, no wrap (was wrapping)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/B360-2long-main.png" alt=""><figcaption><span class="tag after">B</span>Main · 360 dp · 2 accounts, long name: scrolls, no wrap (was wrapping)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/bcov-3-main.png" alt=""><figcaption><span class="tag before">BEFORE</span>Main · cover · 3 accounts (4 tabs): scrolls today</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Bcov-3-main.png" alt=""><figcaption><span class="tag after">B</span>Main · cover · 3 accounts: all four fit → <b>fixed quarters</b> (new)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Binner-3-main.png" alt=""><figcaption><span class="tag after">B</span>Main · inner 750 dp · 3 accounts: fixed (today it scrolls from four tabs)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Binner-4-main.png" alt=""><figcaption><span class="tag after">B</span>Main · inner · 4 accounts (5 tabs): fixed fifths (new)</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Binner-3-hist.png" alt=""><figcaption><span class="tag after">B</span>History · inner · 3 accounts: fixed</figcaption></figure>
+<figure><img src="research/2026-11-v20-build/A6/ccbg81/Binner-4-hist.png" alt=""><figcaption><span class="tag after">B</span>History · inner · 4 accounts: fixed quarters (new)</figcaption></figure>
+</div>
+<p><b>What B changes beyond the bug:</b> on the cover and the inner screen Main's strip becomes the fixed, evenly spread row whenever the names fit (today it scrolls from four tabs at every width); at 360 dp nothing changes on Main except that a long name now scrolls instead of wrapping. Large text makes labels wider, so the same screen tips to scrolling sooner. Swiping between accounts and TalkBack are unchanged.</p>
+
+<h2>The choice</h2>
+<table>
+<tr><th>Option</th><th>Rule</th><th>Cost</th></tr>
+<tr><td><b>A · Count like Main</b> (recommended)</td><td>History scrolls from 3 accounts, at every width; one shared rule, so the two strips can never disagree.</td><td>On the cover, 3 short names lose the centred thirds and sit left-aligned, as Main's already do. A long name with 2 accounts still wraps on both screens.</td></tr>
+<tr><td><b>B · Scroll when a label won't fit</b></td><td>Both strips (Main and History) measure their labels and scroll only when one would not fit its equal share on one line.</td><td>Changes Main too (beyond the bug); the cover keeps centred thirds; the strip's look then depends on the names and the width, not the account count.</td></tr>
+</table>
+<p>TalkBack is unchanged either way (each tab reads its provider and name). iOS: Step 2 checks whether the iPhone 17e's History strip wraps the same way (Lane I is closed).</p>
+</main>
+</body>
+</html>

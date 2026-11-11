@@ -1205,6 +1205,17 @@ rule. Captures: `design/research/2026-11-v20-build/A5/`.
   races the token save keeps the account. No visible
   design change. History tab (Android): "Personal" wraps at 360 dp with three accounts — CCBG-81 (History Tab Wrap).
 
+Step A6 (2026-11-11, RUNBOOK Lane A) — CCBG-81 (History Tab Wrap), Robin's option B, approved as captured
+(`design/2026-11-11-ccbg81-history-tab-strip.html`; captures `design/research/2026-11-v20-build/A6/ccbg81/`). **Supersedes §1's
+"Fit" row and the All tab's fixed ≤ 3 count for Android:** Main's and History's account strips are one composable
+(`ui/ProfileTabStrip.kt`): each tab's label (mark + name, "All" included) is measured at its one-line width in the tab's
+titleSmall; while every label plus the tab's 32 dp padding fits its equal share of the strip, it is the fixed `TabRow`; as soon
+as one would not, the `ScrollableTabRow` (edge padding 0). It follows the names, the width and the font size, not the account
+count: History at 360 dp with three accounts scrolls ("Personal" on one line); the cover keeps three short names in fixed
+thirds; a long name with two accounts scrolls instead of wrapping, on Main too; on the cover and the inner screen Main's strip
+is now fixed whenever its labels fit (it scrolled from four tabs). `FIXED_TAB_LIMIT` is gone. iOS: Step 2 checks whether the
+iPhone 17e's History strip wraps the same way.
+
 ## v2.0 feedback on iOS
 
 Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B

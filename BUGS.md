@@ -19,7 +19,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > **v2.0 feedback build, 2026-11-11 (RUNBOOK Lane A, Step A2 judge).**
 
 ### CCBG-80 · Fixed Pace Columns — the pace line is picked for a fixed column width, so a narrow shade clips it
-- **Status:** Open · to be fixed in RUNBOOK Step A6 together with CCRM-114 (Narrow Duet) · Android
+- **Status:** **Fixed** `3ab1181` (RUNBOOK Step A6, with CCRM-114 (Narrow Duet)) · Android · the column is derived from the smallest width, the ring and the figure for both layouts, capped at 142 / 141 / 186 dp until Step 3 measures the Fold 7; on the emulator's 360 dp shade the Duet header now ends on its weekday, "21h 50m ahead · Mon", where A2 printed "Sun 6:…" (`design/research/2026-11-v20-build/A6/`)
 - **Severity:** Medium (the approved drop order is not followed; the line is cut mid-clock)
 - **Symptom:** on a 360 dp phone's AOSP shade the Duet's expanded header column measures 133 dp, but the pace line's
   form is chosen for 186 dp, so it is cut ("Sun 6:…", `design/research/2026-11-v20-build/A2/25-360-dark-vs-expanded.png`)
@@ -28,12 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** derive the column from the screen's smallest width for both layouts (the build note in CCRM-114).
 
 ### CCBG-81 · History Tab Wrap — a long account name wraps in the History tab strip at 360 dp
-- **Status:** Open · Android · found in RUNBOOK Step A5's captures (not caused by it)
+- **Status:** **Fixed** `3ab1181` (RUNBOOK Step A6; Robin chose option B 2026-11-11 and approved it as captured, `design/2026-11-11-ccbg81-history-tab-strip.html`) · Android: Main and History share one strip, fixed while every label fits its share on one line, scrolling once one would not · found in RUNBOOK Step A5's captures (not caused by it) · **iOS: Step 2 checks** whether the iPhone 17e's History strip wraps the same way
 - **Severity:** Low (cosmetic)
 - **Symptom:** with three accounts the History screen keeps its fixed tab strip, and at 360 dp the tab "Personal" wraps to
   "Person / al" (`design/research/2026-11-v20-build/A5/23-sample-history-360dp-dark.png`). The Main screen's strip scrolls from four
   tabs and does not do this. The sample's three accounts make it the first thing a 360 dp reviewer sees on History.
-- **Fix:** let the History strip scroll, or ellipsize on one line, as Main's does; needs a wireframe (visible change).
+- **Fix:** `ui/ProfileTabStrip.kt` measures each tab's label at its one-line width; a label plus 32 dp that will not fit its share makes the strip scroll (`TabStripFitTest`). Replaces `FIXED_TAB_LIMIT`; side effect approved with it: on the cover and inner screen Main's strip is fixed whenever its labels fit.
 
 > **v2.0 device pass, 2026-11-02 (RUNBOOK-v2.0 Step 7, Fold 7, build 5636bde, github release).** CCBG-56 to
 > CCBG-66 were found on the v2.0 branch against `design/2026-11-02-shape-grammar.html` rev D (CCRM-103 (Hybrid

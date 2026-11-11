@@ -561,3 +561,41 @@ Step A5 (2026-11-11, RUNBOOK Lane A) — CCRM-113 (Sample Port): sample mode nev
 notification, the status-bar icon and the reset pings keep showing the real accounts (or nothing), and the sample's settings
 never redraw them (`Surfaces.refresh` refuses a sample cache). Only the debug synthetic series is touched: it pauses while the
 sample is open and resumes on Exit.
+
+Step A6 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-114 (Narrow Duet), the addendum's §N1
+(`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`, variant C), and CCBG-80 (Fixed Pace Columns). Captures:
+`design/research/2026-11-v20-build/A6/`. This replaces A2's "Not drawn by the wireframe" note above.
+
+- **§2.2 Drop order, collapsed — rungs 4 and 5** (`Duet.rowFit`; 1–3 as A2). **4:** under **256 dp** of collapsed content
+  (smallest width under 396 dp; a 360 dp phone's 220) a row with no figure ("Sign in", "No reading", "Not started", and a
+  Stale row with no reading) gives its "—" to the state word: the figure view goes, the name line runs 50 dp further (over
+  the 8 dp gap and the 42 dp slot) and the word sits right-aligned where the figure would be; the bar's end is padded 50 dp,
+  so it keeps its length and left edge. The rule keys on the screen, so both rows behave alike; the Fold 7 cover (271) and
+  wider keep A2's "—". **5:** a bare word that still leaves the name under **32 dp** (or under the name's own width, if
+  less) goes — "Held", "Out", "No reading", "Not started"; "Stale" leaves the 6 dp fault-red dot while the name keeps that
+  floor beside it; "Sign in" never goes, the name gives. A word still carrying its tail keeps rung 2's 24 dp floor and
+  loses its tail before it can go. At 220 dp and font 1.0 only rung 4 fires for the drawn states; rung 5 fires at about
+  200 dp and under, and at font 2.0. 176 dp (the floor) stays one letter of name (N1-Q5 (a)).
+- **§2.4 TalkBack.** The word view's description is always the full form ("Held · 3:40 PM" while "Held" prints); with no
+  word printed the name reads "<name>, <word>" ("Design, No reading").
+- **§2.3 Expanded.** The ring's time line ("in 2h 20m") is sized in **11 dp**, both layouts (N1-Q6). The label
+  "<name> · Weekly" becomes the name alone when its bold width at 14 sp (13 sp on the single collapsed row) does not fit the
+  column less the mark's 18 dp (N1-Q7). The spent line "Out until Thu 8:00 AM · in 1d 18h" drops its second clause whole
+  when it does not fit.
+- **§1.4 Fitting the lines — derived columns** (CCBG-80, F2; `TextFit`). The column is no longer one constant per layout:
+  content = `Duet.contentDp(sw)` (sw − 140 below 600 dp, 352 from 600), expanded content + 40; column = content − (ring box
+  + 14) − 14 − the figure's width, where the ring box is 44 collapsed and, expanded, the wider of 44 and its time line, none
+  with no 5h; the figure's width is its em (bold, "%" at 58%, × 1.04) × its size in dp **as the system converts it**
+  (`TypedValue.applyDimension`: Android 14 scales large text non-linearly). The line is fitted to column × 0.965, never
+  wider than the old 142 / 141 / 186 dp until Step 3 measures the Fold 7. Beside "−13%" (`TextFitTest` pins the table):
+
+  | Column, dp, font 1.0 / 1.3 / 2.0 | 360 | 411 | 420 | 750 |
+  |---|---|---|---|---|
+  | Single, collapsed (32 sp) | 83 / 83 / 67 | 134 / 134 / 118 | 143 / 143 / 127 | 215 / 215 / 199 |
+  | Single, expanded (44 sp) | 93 / 93 / 80 | 144 / 144 / 131 | 153 / 153 / 140 | 225 / 225 / 212 |
+  | Duet, expanded (24 sp) | 134 / 129 / 110 | 185 / 180 / 161 | 194 / 189 / 170 | 266 / 261 / 242 |
+
+  On a 360 dp phone the Duet header now ends on its weekday ("23h 59m ahead · Wed") where A2 cut it ("Sun 6:…"); the single
+  row's collapsed line is at its floor (10 sp at 1.0, cut at 1.3 and up: derived, not measured — the page's own caveat).
+- **UNVERIFIED until Step 3:** One UI's real widths at 360 dp (assumed AOSP's 220); expanded content = collapsed + 40 on One
+  UI; the non-linear font curve on One UI.

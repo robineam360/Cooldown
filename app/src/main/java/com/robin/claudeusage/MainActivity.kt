@@ -59,11 +59,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -116,6 +114,7 @@ import com.robin.claudeusage.ui.LocalUsageEndMark
 import com.robin.claudeusage.ui.LocalWidthClass
 import com.robin.claudeusage.ui.Palette
 import com.robin.claudeusage.ui.ProviderMark
+import com.robin.claudeusage.ui.ProfileTabStrip
 import com.robin.claudeusage.ui.ProviderTabLabel
 import com.robin.claudeusage.ui.ProvideWidthClass
 import com.robin.claudeusage.ui.Rooms
@@ -191,14 +190,6 @@ internal object LastAccount {
         context.getSharedPreferences(FILE, android.content.Context.MODE_PRIVATE).edit().putString(KEY, key).apply()
     }
 }
-
-/**
- * CCRM-6 (Multi-Account): profile tab strips stay a fixed [TabRow] up to this many accounts
- * and become a [ScrollableTabRow] beyond it. Shared by the main screen and the History
- * screen so the two strips can never disagree. See the wireframe's state 5d–5f for the
- * measurement this comes from.
- */
-internal const val FIXED_TAB_LIMIT = 3
 
 /**
  * CCRM-113 (Sample Port): the root picks the repository the whole tree reads — the real one, or the sample's in-memory
@@ -824,8 +815,8 @@ private fun ProfileTabs(
                     )
                 }
             }
-            // CCRM-6 (Multi-Account): fixed up to three, scrollable at four or more, at
-            // every width; "All" counts as one (CCRM-98 (Summary Tab), rev B §2). The
+            // Fixed while every label (All included) fits its share on one line, scrolling once one
+            // would not — CCBG-81 (History Tab Wrap), the same strip as History's. The
             // indicator follows the accent by decision, CCRM-60 (Dual Identity).
             val tabIndicator: @Composable (List<TabPosition>) -> Unit = { tabPositions ->
                 TabRowDefaults.run {
@@ -835,20 +826,15 @@ private fun ProfileTabs(
                     )
                 }
             }
-            if (pages.size <= FIXED_TAB_LIMIT) {
-                TabRow(
-                    selectedTabIndex = selected,
-                    contentColor = tabContentColor,
-                    indicator = tabIndicator,
-                ) { tabs() }
-            } else {
-                ScrollableTabRow(
-                    selectedTabIndex = selected,
-                    edgePadding = 0.dp,
-                    contentColor = tabContentColor,
-                    indicator = tabIndicator,
-                ) { tabs() }
-            }
+            val cache = repo.cacheSettings()
+            ProfileTabStrip(
+                selected = selected,
+                contentColor = tabContentColor,
+                indicator = tabIndicator,
+                labels = pages.map { profile ->
+                    @Composable { if (profile == null) AllTabLabel() else ProviderTabLabel(cache, profile) }
+                },
+            ) { tabs() }
         }
         HorizontalPager(
             state = pagerState,

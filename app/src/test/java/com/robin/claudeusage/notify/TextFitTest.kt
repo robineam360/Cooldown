@@ -3,6 +3,7 @@ package com.robin.claudeusage.notify
 import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.ui.PaceText
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
@@ -184,5 +185,144 @@ class TextFitTest {
     @Test
     fun `no caption forms, no pick`() {
         assertEquals(null, TextFit.caption(PaceText.captionForms(PaceText.Mode.USED, 100.0, 80.0), 141f, 12f, 1f))
+    }
+
+    // --- CCBG-80 (Fixed Pace Columns): the column derived from the screen, addendum §N1 F2 ----------
+
+    /** AOSP's FontScaleConverterFactory (Android 14+), the table the page's F2 arithmetic uses, as the system would. */
+    private val nonLinear = mapOf(
+        1f to floatArrayOf(8f, 10f, 12f, 14f, 18f, 20f, 24f, 30f, 100f),
+        1.3f to floatArrayOf(10.4f, 13f, 15.6f, 18.8f, 21.6f, 23.6f, 26.4f, 30f, 100f),
+        2f to floatArrayOf(16f, 20f, 24f, 26f, 30f, 34f, 36f, 38f, 100f),
+    )
+
+    private fun aosp(scale: Float) = TextFit.SpToDp { sp ->
+        val from = nonLinear.getValue(1f)
+        val to = nonLinear.getValue(scale)
+        var dp = sp
+        for (i in 1 until from.size) if (sp <= from[i]) {
+            dp = to[i - 1] + (to[i] - to[i - 1]) * (sp - from[i - 1]) / (from[i] - from[i - 1]); break
+        }
+        dp
+    }
+
+    private enum class Layout { SC, SE, DE }
+
+    /** One cell of the page's derived-column table: layout, smallest width, font, the column, the form it takes. */
+    private data class Col(val layout: Layout, val sw: Int, val scale: Float, val column: Float, val sp: Float, val form: String)
+
+    // The page's table (F2), beside a signed two-digit figure ("−13%"), the ring's time line "in 2h 20m" in dp,
+    // and "23h 59m ahead · resets Wed 12:30 PM": 360 · 411 · 420 · 750 dp at font 1.0 / 1.3 / 2.0, both layouts.
+    private val columns = listOf(
+        Col(Layout.SC, 360, 1f, 82.53f, 10f, "23h 59m ahead"),
+        Col(Layout.SC, 360, 1.3f, 82.53f, 10f, "23h 59m ahead"),
+        Col(Layout.SC, 360, 2f, 66.63f, 10f, "23h 59m ahead"),
+        Col(Layout.SC, 411, 1f, 133.53f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SC, 411, 1.3f, 133.53f, 12f, "23h 59m ahead"),
+        Col(Layout.SC, 411, 2f, 117.63f, 10f, "23h 59m ahead"),
+        Col(Layout.SC, 420, 1f, 142.53f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SC, 420, 1.3f, 142.53f, 12f, "23h 59m ahead"),
+        Col(Layout.SC, 420, 2f, 126.63f, 10f, "23h 59m ahead"),
+        Col(Layout.SC, 750, 1f, 214.53f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
+        Col(Layout.SC, 750, 1.3f, 214.53f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SC, 750, 2f, 198.63f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 360, 1f, 93.36f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 360, 1.3f, 93.36f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 360, 2f, 80.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 411, 1f, 144.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 411, 1.3f, 144.36f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 411, 2f, 131.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 420, 1f, 153.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 420, 1.3f, 153.36f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 420, 2f, 140.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 750, 1f, 225.36f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
+        Col(Layout.SE, 750, 1.3f, 225.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 750, 2f, 212.26f, 12f, "23h 59m ahead"),
+        Col(Layout.DE, 360, 1f, 134.28f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 360, 1.3f, 129.37f, 12f, "23h 59m ahead"),
+        Col(Layout.DE, 360, 2f, 109.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 411, 1f, 185.28f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.DE, 411, 1.3f, 180.37f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 411, 2f, 160.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 420, 1f, 194.28f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.DE, 420, 1.3f, 189.37f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 420, 2f, 169.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 750, 1f, 266.28f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
+        Col(Layout.DE, 750, 1.3f, 261.37f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.DE, 750, 2f, 241.72f, 12f, "23h 59m ahead · Wed"),
+    )
+
+    private fun derived(c: Col): Float = when (c.layout) {
+        Layout.SC -> TextFit.collapsedColumnDp(c.sw, hasRing = true, figure = "−13%", spToDp = aosp(c.scale))
+        Layout.SE -> TextFit.expandedColumnDp(c.sw, true, "in 2h 20m", "−13%", TextFit.SINGLE_EXPANDED_FIGURE_SP, aosp(c.scale))
+        Layout.DE -> TextFit.expandedColumnDp(c.sw, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, aosp(c.scale))
+    }
+
+    @Test
+    fun `the derived columns are the page's table`() {
+        assertEquals(36, columns.size)
+        for (c in columns) assertEquals("${c.layout} ${c.sw} dp @ ${c.scale}", c.column, derived(c), 0.02f)
+    }
+
+    @Test
+    fun `in its derived column the pace line takes the page's form - the weekday drops where the column is short`() {
+        for (c in columns) {
+            val pick = TextFit.paceLine(ahead, derived(c) * TextFit.FIT_FACTOR, 12f, c.scale)!!
+            val at = "${c.layout} ${c.sw} dp @ ${c.scale}"
+            assertEquals(at, c.form, pick.form.text)
+            assertEquals(at, c.sp, pick.sp)
+        }
+    }
+
+    @Test
+    fun `the column is never wider than today's constants until Step 3 measures the Fold 7`() {
+        val wide = columns.filter { it.sw == 750 && it.scale == 1f }
+        assertEquals(TextFit.COLLAPSED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.SC }), TextFit.COLLAPSED_COLUMN_DP))
+        assertEquals(TextFit.EXPANDED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.SE }), TextFit.EXPANDED_COLUMN_DP))
+        assertEquals(TextFit.DUET_EXPANDED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.DE }), TextFit.DUET_EXPANDED_COLUMN_DP))
+        // A 360 dp phone's Duet header: 134 dp derived (A2 measured 133), so the line picked for 186 is gone.
+        val narrow = derived(columns.first { it.layout == Layout.DE && it.sw == 360 && it.scale == 1f })
+        assertEquals(134.28f * TextFit.FIT_FACTOR, TextFit.fitDp(narrow, TextFit.DUET_EXPANDED_COLUMN_DP), 0.05f)
+    }
+
+    @Test
+    fun `the column moves with the figure and the ring`() {
+        val one = aosp(1f)
+        // F2: 82 dp beside "−13%", 102 beside "52%" (the single collapsed row on a 360 dp phone).
+        assertEquals(82.5f, TextFit.collapsedColumnDp(360, true, "−13%", one), 0.1f)
+        assertEquals(TextFit.collapsedColumnDp(360, true, "52%", one) - TextFit.collapsedColumnDp(360, true, "−13%", one),
+            ((TextFit.figureEm("−13%") - TextFit.figureEm("52%")) * 32).toFloat(), 0.01f)
+        // No 5h: no ring box and one gap fewer (the column gains 58 dp).
+        assertEquals(58f, TextFit.collapsedColumnDp(360, false, "52%", one) - TextFit.collapsedColumnDp(360, true, "52%", one), 0.01f)
+        // A time line wider than the ring widens its box: "in 2h 20m" at 11 dp is 48.6 dp.
+        assertEquals(48.62f, (TextFit.em("in 2h 20m") * TextFit.TIME_LINE_DP).toFloat(), 0.01f)
+        assertEquals("—", "—"); assertEquals(1.0, TextFit.figureEm("—"), 0.0)
+    }
+
+    @Test
+    fun `Weekly gives before the name when the column cannot hold both`() {
+        val one = aosp(1f)
+        val two = aosp(2f)
+        val col360 = TextFit.expandedColumnDp(360, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
+        assertTrue(TextFit.titleKeepsWindow("Teams · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
+        assertFalse(TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
+        val col360x2 = TextFit.expandedColumnDp(360, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, two)
+        assertFalse(TextFit.titleKeepsWindow("Teams · Weekly", col360x2, two.dp(TextFit.EXPANDED_TITLE_SP)))
+        val col750 = TextFit.expandedColumnDp(750, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
+        assertTrue(TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col750, one.dp(TextFit.EXPANDED_TITLE_SP)))
+    }
+
+    @Test
+    fun `on a wide shade Weekly gives against the Duet label's own 142 dp bound, not only the column (judge F2)`() {
+        val one = aosp(1f)
+        val label = one.dp(TextFit.EXPANDED_TITLE_SP)
+        for (sw in listOf(411, 600)) {
+            val col = TextFit.expandedColumnDp(sw, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
+            assertTrue("column alone at $sw", TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col, label) || sw == 411)
+            assertFalse("bounded at $sw", TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col, label, TextFit.duetLabelMaxDp(true)))
+            assertTrue("short name at $sw", TextFit.titleKeepsWindow("Teams · Weekly", col, label, TextFit.duetLabelMaxDp(true)))
+        }
+        assertEquals(142f, TextFit.duetLabelMaxDp(true))
+        assertEquals(200f, TextFit.duetLabelMaxDp(false))
     }
 }
