@@ -49,30 +49,51 @@ struct SummaryEntry: Identifiable, Equatable {
     }
 }
 
+extension SummaryEntry {
+    /// CCRM-110 (Account Tags): the entries the Summary draws for the remembered filter and the chosen order — the filter
+    /// narrows the accounts before the order ranks them (the order is unchanged by the filter), so the list, the map, its
+    /// foot-line count and the snapshot all follow the same rows. `resolved` carries the control's state.
+    @MainActor
+    static func current(model: AppModel, filter remembered: String?, order: SummaryOrder)
+        -> (entries: [SummaryEntry], resolved: SummaryFilter.Resolved) {
+        let resolved = SummaryFilter.resolve(tags: model.accounts.map(\.accountTag), remembered: remembered)
+        let shown = resolved.shown.map { model.accounts[$0] }
+        let entries = SummaryEntry.build(
+            accounts: shown,
+            faces: Dictionary(uniqueKeysWithValues: shown.compactMap { a in model.face(a.key).map { (a.key, $0) } }),
+            plans: Dictionary(uniqueKeysWithValues: shown.compactMap { a in
+                model.states[a.key]?.plan.map { (a.key, PlanNames.display(a.provider, $0, tier: model.states[a.key]?.tier)) }
+            }),
+            histories: model.histories, nowMs: model.nowMs, order: order)
+        return (entries, resolved)
+    }
+}
+
 struct SummaryView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     var wide = false
+    /// The remembered filter and the order, mirrored here so a tap redraws at once (a Settings change redraws the page
+    /// through `displayStamp`, which re-reads both).
+    @State private var filterKey = Prefs.summaryFilter
+    @State private var order = Prefs.summaryOrder
 
     var body: some View {
-        // Read so a Settings change (the Summary order) re-sorts at once.
+        // Read so a Settings change (the Summary order, a tag) re-sorts at once.
         let _ = model.displayStamp
-        let entries = SummaryEntry.build(
-            accounts: model.accounts,
-            faces: Dictionary(uniqueKeysWithValues: model.accounts.compactMap { a in model.face(a.key).map { (a.key, $0) } }),
-            plans: Dictionary(uniqueKeysWithValues: model.accounts.compactMap { a in
-                model.states[a.key]?.plan.map { (a.key, PlanNames.display(a.provider, $0, tier: model.states[a.key]?.tier)) }
-            }),
-            histories: model.histories, nowMs: model.nowMs)
+        let (entries, resolved) = SummaryEntry.current(model: model, filter: filterKey, order: order)
+        let list = SummaryList(entries: entries, nowMs: model.nowMs, resolved: resolved, order: order,
+                               onFilter: { filterKey = $0.rawValue; Prefs.summaryFilter = $0.rawValue },
+                               onOrder: { order = $0; Prefs.summaryOrder = $0 }, onOpen: open)
         VStack(alignment: .leading, spacing: 12) {
             if model.noticeOwed { WeeklyFirstNoticeView() }
             if wide {
                 HStack(alignment: .top, spacing: 16) {
-                    SummaryList(entries: entries, nowMs: model.nowMs, onOpen: open)
+                    list
                     PaceMapCard(entries: entries, height: 340, onOpen: open)
                 }
             } else {
-                SummaryList(entries: entries, nowMs: model.nowMs, onOpen: open)
+                list
                 PaceMapCard(entries: entries, height: 230, onOpen: open)
             }
         }
@@ -81,24 +102,33 @@ struct SummaryView: View {
     private func open(_ key: String) { withAnimation { model.selectedKey = key } }
 }
 
-/// "Weekly · your order" (the Summary order's name, Robin 2026-11-02), then a row per account. From six accounts rows go to one line (rev B S2).
+/// "Weekly" with the filter beside it (once any account is tagged) and the sort menu at the right (CCRM-110), then a row per
+/// account. From six rows shown rows go to one line (rev B S2; the form follows the rows shown, not the accounts). Where the
+/// line cannot hold all three the sort button drops to its glyph, then the control wraps under the title.
 struct SummaryList: View {
     let entries: [SummaryEntry]
     let nowMs: Int64
+    var resolved = SummaryFilter.resolve(tags: [], remembered: nil)
+    var order = Prefs.summaryOrder
+    var onFilter: (SummaryFilter) -> Void = { _ in }
+    var onOrder: (SummaryOrder) -> Void = { _ in }
     var onOpen: (String) -> Void = { _ in }
     @Environment(\.palette) private var p
 
     var body: some View {
         CardBox {
-            HStack {
-                Text("Weekly").font(.system(size: 17)).foregroundStyle(p.ink)
-                Spacer()
-                Text(Prefs.summaryOrder.header).font(.system(size: 13)).foregroundStyle(p.sub)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: false) }
+                HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: true) }
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 10) { title; Spacer(minLength: 6); sort(glyphOnly: false) }
+                    if resolved.controlShown { SummaryFilterControl(resolved: resolved, fill: true, onSelect: onFilter) }
+                }
             }
             .padding(.bottom, 4)
             ForEach(entries) { entry in
                 Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 8)
-                if entries.count >= 6 {
+                if entries.count >= SummaryFilter.oneLineFrom {
                     // CCRM-104: not a Button, so a press on the figure can swap the word for its caption instead of opening.
                     SummaryOneLineRow(entry: entry, nowMs: nowMs)
                         .onTapGesture { onOpen(entry.account.key) }
@@ -112,6 +142,14 @@ struct SummaryList: View {
             }
         }
     }
+
+    private var title: some View { Text("Weekly").font(.system(size: 17)).foregroundStyle(p.ink).fixedSize() }
+
+    @ViewBuilder private var control: some View {
+        if resolved.controlShown { SummaryFilterControl(resolved: resolved, onSelect: onFilter) }
+    }
+
+    private func sort(glyphOnly: Bool) -> some View { SummarySortMenu(order: order, glyphOnly: glyphOnly, onSelect: onOrder) }
 }
 
 enum SummaryWords {

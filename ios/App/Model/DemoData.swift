@@ -1,14 +1,20 @@
 import CooldownCore
 import Foundation
 
-/// CCRM-94 (iOS App): the wireframe's sample accounts (Teams and Product on Claude, Personal on ChatGPT), so every
-/// state can be drawn in the simulator and checked against design/2026-10-23-ios-wireframes.html. Launch with
+/// CCRM-94 (iOS App): the wireframe's sample accounts (Teams on Claude, Personal on ChatGPT, Lab on Gemini since CCRM-113
+/// (Sample Port) — Product, a second Claude, gave way so both stores' review notes describe the same three accounts), so
+/// every state can be drawn in the simulator and checked against design/2026-10-23-ios-wireframes.html. Launch with
 /// `-demo <scenario>`; nothing here touches the network, the Keychain or the App Group.
 enum DemoScenario: String, CaseIterable {
     case standard, signin, plan, stale, max, empty
     /// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): the Pace map's states on the Summary — the wireframe's six
     /// (`map`), ten for a dense map (`dense`), every account at 0% (`quiet`), two hidden and one unread (`hidden`).
     case map, dense, quiet, hidden
+    /// CCRM-110 (Account Tags): the standard accounts with only Personal tagged, so the filter's Work segment is disabled
+    /// (`tagsdisabled`); every standard account untagged, so the Summary shows no control (`untagged`).
+    case tagsdisabled, untagged
+    /// CCRM-112 (Summary Snapshot): no account has a reading, so the snapshot says "Nothing to share yet".
+    case noreading
 
     static func fromLaunchArguments() -> DemoScenario? {
         let args = ProcessInfo.processInfo.arguments
@@ -24,7 +30,7 @@ enum DemoData {
         model.nowMs = now
         guard scenario != .empty else { model.accounts = []; return }
         if let set = mapSet(scenario) {
-            model.accounts = set.map { Account(key: $0.key, label: $0.label, provider: $0.provider) }
+            model.accounts = set.map { Account(key: $0.key, label: $0.label, provider: $0.provider, tag: $0.tag?.rawValue) }
             model.selectedKey = AppModel.summaryKey
             for a in set {
                 add(model, key: a.key, provider: a.provider, plan: a.provider == .chatgpt ? "Plus" : "Max", sessionPct: 20,
@@ -34,11 +40,17 @@ enum DemoData {
             return
         }
         model.accounts = [
-            Account(key: "teams", label: "Teams", provider: .claude, pinned: true),
-            Account(key: "product", label: "Product", provider: .claude),
-            Account(key: "personal", label: "Personal", provider: .chatgpt),
+            // CCRM-110 (Account Tags): Teams is Work and Personal is Personal, so the All · Personal · Work control shows;
+            // Lab is untagged (rev B §9).
+            Account(key: "teams", label: "Teams", provider: .claude, pinned: true, tag: AccountTag.work.rawValue),
+            Account(key: "personal", label: "Personal", provider: .chatgpt, tag: AccountTag.personal.rawValue),
+            Account(key: "lab", label: "Lab", provider: .antigravity),
         ]
         model.selectedKey = "teams"
+        if scenario == .untagged { for i in model.accounts.indices { model.accounts[i].tag = nil } }
+        if scenario == .tagsdisabled { model.accounts[0].tag = nil }
+        // The signed-out Lab carries a Work tag, so Settings shows its warning word beside both chips.
+        if scenario == .signin { model.accounts[2].tag = AccountTag.work.rawValue }
 
         // Teams: on even pace (46% at 46% elapsed), or at 100% in the `max` scenario.
         let teamsReset = now + (5 * 3600 - Int64(0.46 * 5 * 3600)) * 1000
@@ -47,20 +59,21 @@ enum DemoData {
             ? [(0, 0), (0.08, 15), (0.16, 33), (0.24, 52), (0.32, 70), (0.40, 86), (0.45, 97)]
             : [(0, 0), (0.06, 2), (0.11, 5), (0.18, 11), (0.24, 19), (0.30, 27), (0.36, 34), (0.41, 40)]
         add(model, key: "teams", provider: .claude, plan: "Team", sessionPct: teamsPct, sessionReset: teamsReset,
-            curve: teamsCurve, weeklyPct: scenario == .max ? 64 : 18, weeklyElapsed: 0.43, opus: 5, credits: true, now: now)
+            curve: teamsCurve, weeklyPct: scenario == .max ? 64 : 18, weeklyElapsed: 0.43, opus: 5, credits: true, now: now,
+            plan_: scenario == .noreading)
 
-        // Product: above pace (62% at 40% elapsed), unless the scenario breaks it.
-        let productReset = now + Int64(0.6 * 5 * 3600) * 1000
-        add(model, key: "product", provider: .claude, plan: "Max", sessionPct: 62, sessionReset: productReset,
+        // Lab (Gemini): above pace (62% at 40% elapsed), unless the scenario breaks it.
+        let labReset = now + Int64(0.6 * 5 * 3600) * 1000
+        add(model, key: "lab", provider: .antigravity, plan: "Pro", sessionPct: 62, sessionReset: labReset,
             curve: [(0, 0), (0.05, 6), (0.10, 13), (0.15, 21), (0.20, 30), (0.25, 38), (0.30, 47), (0.36, 55)],
             weeklyPct: 64, weeklyElapsed: 0.43, opus: nil, credits: false, now: now,
-            stale: scenario == .stale, signin: scenario == .signin, plan_: scenario == .plan)
+            stale: scenario == .stale, signin: scenario == .signin, plan_: scenario == .plan || scenario == .noreading)
 
         // Personal (ChatGPT): well below pace.
         let personalReset = now + (5 * 3600 - Int64(0.68 * 5 * 3600)) * 1000
         add(model, key: "personal", provider: .chatgpt, plan: "Plus", sessionPct: 26, sessionReset: personalReset,
             curve: [(0, 0), (0.2, 0), (0.29, 4), (0.38, 9), (0.49, 16), (0.55, 18), (0.64, 24)],
-            weeklyPct: 9, weeklyElapsed: 0.43, opus: nil, credits: false, now: now)
+            weeklyPct: 9, weeklyElapsed: 0.43, opus: nil, credits: false, now: now, plan_: scenario == .noreading)
     }
 
     private struct MapAccount {
@@ -68,33 +81,36 @@ enum DemoData {
         /// nil = no reading.
         let weekly: Double?
         let elapsed: Double
+        /// CCRM-110: the wireframe's tags (rev B §6); `quiet` and `hidden` leave every account untagged.
+        var tag: AccountTag? = nil
+        var untagged: MapAccount { MapAccount(key: key, label: label, provider: provider, weekly: weekly, elapsed: elapsed) }
     }
 
     /// The wireframe's Pace map accounts (rev B §5 and §7), by scenario; nil for the other scenarios.
     private static func mapSet(_ scenario: DemoScenario) -> [MapAccount]? {
         let six = [
-            MapAccount(key: "teams", label: "Teams", provider: .claude, weekly: 52, elapsed: 0.39),
-            MapAccount(key: "personal", label: "Personal", provider: .chatgpt, weekly: 50, elapsed: 0.68),
-            MapAccount(key: "chatgpt", label: "ChatGPT", provider: .chatgpt, weekly: 6, elapsed: 0.30),
-            MapAccount(key: "gemini", label: "Gemini", provider: .antigravity, weekly: 91, elapsed: 0.83),
+            MapAccount(key: "teams", label: "Teams", provider: .claude, weekly: 52, elapsed: 0.39, tag: .work),
+            MapAccount(key: "personal", label: "Personal", provider: .chatgpt, weekly: 50, elapsed: 0.68, tag: .personal),
+            MapAccount(key: "chatgpt", label: "ChatGPT", provider: .chatgpt, weekly: 6, elapsed: 0.30, tag: .personal),
+            MapAccount(key: "gemini", label: "Gemini", provider: .antigravity, weekly: 91, elapsed: 0.83, tag: .work),
             MapAccount(key: "lab", label: "Lab", provider: .claude, weekly: 61, elapsed: 0.61),
-            MapAccount(key: "atlas", label: "Atlas", provider: .claude, weekly: 100, elapsed: 0.70),
+            MapAccount(key: "atlas", label: "Atlas", provider: .claude, weekly: 100, elapsed: 0.70, tag: .work),
         ]
         switch scenario {
         case .map: return six
         case .dense:
             return six + [
-                MapAccount(key: "ops", label: "Ops", provider: .claude, weekly: 33, elapsed: 0.36),
-                MapAccount(key: "research", label: "Research", provider: .chatgpt, weekly: 28, elapsed: 0.33),
-                MapAccount(key: "client", label: "Client", provider: .antigravity, weekly: 74, elapsed: 0.90),
-                MapAccount(key: "work", label: "Work", provider: .claude, weekly: 30, elapsed: 0.44),
+                MapAccount(key: "ops", label: "Ops", provider: .claude, weekly: 33, elapsed: 0.36, tag: .work),
+                MapAccount(key: "research", label: "Research", provider: .chatgpt, weekly: 28, elapsed: 0.33, tag: .personal),
+                MapAccount(key: "client", label: "Client", provider: .antigravity, weekly: 74, elapsed: 0.90, tag: .work),
+                MapAccount(key: "work", label: "Work", provider: .claude, weekly: 30, elapsed: 0.44, tag: .work),
             ]
         case .quiet:
             return [MapAccount(key: "notes", label: "Notes", provider: .chatgpt, weekly: 0.4, elapsed: 0.22),
                     MapAccount(key: "sandbox", label: "Sandbox", provider: .antigravity, weekly: 0, elapsed: 0.09),
                     MapAccount(key: "spare", label: "Spare", provider: .claude, weekly: 0.2, elapsed: 0.40)]
         case .hidden:
-            return [six[0], six[1], six[4],
+            return [six[0].untagged, six[1].untagged, six[4],
                     MapAccount(key: "notes", label: "Notes", provider: .chatgpt, weekly: 0.4, elapsed: 0.22),
                     MapAccount(key: "sandbox", label: "Sandbox", provider: .antigravity, weekly: 0, elapsed: 0.09),
                     MapAccount(key: "product", label: "Product", provider: .claude, weekly: nil, elapsed: 0.43)]

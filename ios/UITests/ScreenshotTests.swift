@@ -28,7 +28,7 @@ final class ScreenshotTests: XCTestCase {
         let pad = UIDevice.current.userInterfaceIdiom == .pad
         shoot("main", ["-demo", "standard"])
         if pad {
-            shoot("main-landscape", ["-demo", "standard", "-tab", "product"], landscape: true)
+            shoot("main-landscape", ["-demo", "standard", "-tab", "lab"], landscape: true)
             shoot("main-landscape-personal", ["-demo", "standard", "-tab", "personal"], landscape: true)
         }
         XCUIDevice.shared.orientation = .portrait

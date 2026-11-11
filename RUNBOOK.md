@@ -182,7 +182,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 |---|---|---|---|
 | I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☑ 2026-11-11 |
 | I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☑ 2026-11-11 |
-| I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☐ |
+| I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☑ 2026-11-11 |
 
 ### Lane D — release text and the graphic (beside the lanes)
 
@@ -570,12 +570,12 @@ sort menu; "Share snapshot" in the Summary's ellipsis menu), and the iOS sample'
 Gemini account, so both stores' review notes describe the same three accounts.
 
 **Done when:**
-- ☐ The tag key is additive and round-trips through the v1.9-era reader; filter, sort and snapshot tests;
+- ☑ The tag key is additive and round-trips through the v1.9-era reader; filter, sort and snapshot tests;
   `swift test` and the app tests pass.
-- ☐ Simulator captures: tags, filters, the sort menu, the snapshot and share sheet, the sample's three accounts.
-- ☐ The "iOS:" lines of CCRM-110 and CCRM-112 and the "iOS follow-up:" line of CCRM-113 read "built"; the iOS
+- ☑ Simulator captures: tags, filters, the sort menu, the snapshot and share sheet, the sample's three accounts.
+- ☑ The "iOS:" lines of CCRM-110 and CCRM-112 and the "iOS follow-up:" line of CCRM-113 read "built"; the iOS
   section of `app.md`.
-- ☐ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
+- ☑ Judge round recorded; landed. Lane I's HANDOVER block now says "Lane I done".
 
 **Lane I reversal:** as Lane A: `git revert` of the step's commits, newest first.
 
@@ -641,6 +641,42 @@ Gemini account, so both stores' review notes describe the same three accounts.
   case at 99.7 (spent, "100%"; the row prints 99%) would pin judge F6. (d) A map with nothing plotted where some accounts
   have no reading is not drawn in rev B (the fixture says so): iOS shows the empty frame with the foot-line count and no
   message, as before I2.
+- 2026-11-11 · **Step I3 done** (worktree `jovial-mendel-a0b95c`). Code a43afb4, judge fixes and docs in the close-out
+  commit. CooldownCore `AccountTag` / `SummaryFilter` (`AccountTagsTests` reads `spec/mobile/fixtures/tags`, all eight cases);
+  `Account.tag` is a `String?` (additive: v1.9's `Account` shape reads a tagged file, and what it writes back reads as None; an
+  unknown value like "family" survives a round trip; `SummaryTagsTests.downgrade`, `.unknownTag`). App: `AccountTags.swift`
+  (glyphs, chip, picker rows, the filter control, the sort menu), `Summary.swift` (`SummaryEntry.current` filters the accounts
+  before ranking, so the list, the rank numbers, the map, its foot-line count and the snapshot read the same rows; the one-line
+  form follows the rows shown), `SummarySnapshot.swift`, the Tag row and submenu, "Share snapshot" on the All tab. The sample is
+  Teams · Personal · Lab (Gemini, Pro) with the tags of rev B §9; `-demo untagged|tagsdisabled|noreading` and a tagged `map` /
+  `dense` / `signin` seed the simulator. Tests: `swift test` 210 passed, app tests 121 passed (iPhone 17 Pro). **Captures**
+  `design/research/2026-11-v20-build/I3/`: `iphone17pro/` (Summary untagged / All / Work filter / disabled segment / six / ten,
+  sort menu open, Work + "most room first", Settings chips, account page row and picker, touch-and-hold Tag submenu, snapshot
+  sheets incl. the system share sheet and "Nothing to share yet", the sample's three accounts; light and dark where a launch
+  argument gives both), `iphone17e/` (Summary, Settings, snapshot, a warning word beside both chips), `ipadpro13/` (the two-column
+  Summary portrait and landscape, snapshot sheet), `render/` (the snapshot card in every state the wireframe draws, Left and Vs
+  pace, the header at 393 / 320 / 280 pt, the chips; the sort menu is drawn as its label there, `ImageRenderer` cannot draw a `Menu`).
+- 2026-11-11 · **Judge** (fresh Opus, high): **accept with concerns**, no blocking. F1 (concern) the snapshot sheet's wiring was
+  untested → `SummarySnapshotSheet.make(model:filter:order:layers:)` is tested (title, order name, rows, layers = the ones on
+  screen, "as of" = the newest reading shown, nil without a reading). F2 (concern) the sample-isolation test could not fail →
+  it asserts the demo store wrote no accounts file, and a new test runs `SampleStore.begin()`/`end()` around the filter key.
+  F3 (concern) "Signed in" shrinking beside two chips also clipped the amber warning words → a warning word outranks the name
+  (`layoutPriority`); checked on the iPhone 17e with a signed-out Work-tagged Lab (`iphone17e/settings-warning-beside-chips`).
+  F5 (nit) the Tag row's menu label read symbol names to VoiceOver → one label ("Work" / "None"). F4 (nit) the remembered filter
+  stays in `Prefs` after it fell back to All, so untagging the last Work account and tagging another later snaps back to
+  Work: **Robin's call**, left as built (the rev B wording reads either way). Fit calls (a)–(h) accepted: (a) the sort button
+  drops to its glyph when the order's name does not fit, then the control wraps under the title; (b) Settings' status word
+  shrinks and may truncate ("Signed…" on the 17e, never a warning); (c) the snapshot's "as of" is the newest reading shown, in
+  the account card's own form; (d) one-line snapshot rows use the short word; (e) a held row says "Held · 3:28 pm", a signed-out
+  row "Sign in again" at 50%; (f) a spent row keeps "Resets …" at the right; (g) the tag chip is in Settings only (rev B §6's
+  Settings clause), Robin may veto; (h) "Share card" is "Share snapshot" on the All tab.
+- 2026-11-11 · **For Step 2** (spec and tracker text, not defects): (a) wireframe §8 calls the iOS item "Share card"; it reads
+  "Share snapshot" on the All tab. (b) `ios/Shared/FaceViews.swift` still names a "Product" placeholder in the widget gallery's
+  preview data (not the sample mode). (c) The iOS "Share snapshot" opens a sheet with a preview (as the account card), where
+  Android's top-bar ⋮ opens a dialog: same image. (d) A `-demo` launch reads the real `summaryFilter` / `summaryOrder` keys
+  from the App Group (the sample copy seeds from them too), so a screenshot run can come out filtered; reset them in the
+  simulator's `group.com.robinrichardrajan.cooldown` plist if so. (e) Fixture gap: no case for the filter with a spent or
+  unread account among the rows (the rule does not look at readings).
 
 ---
 

@@ -46,18 +46,24 @@ struct SettingsScreen: View {
                         } label: {
                         HStack(spacing: 10) {
                             ProviderMark(provider: account.provider, size: 20)
-                            Text(account.label)
+                            // The name keeps its line (CCRM-110 adds a chip); the status word gives way first.
+                            Text(account.label).lineLimit(1).layoutPriority(2)
                             PlanChip(provider: account.provider, plan: model.states[account.key]?.plan,
                                      tier: model.states[account.key]?.tier)
+                            // CCRM-110 (Account Tags): a neutral chip after the plan chip, once the account is tagged.
+                            if let tag = account.accountTag { TagChip(tag: tag) }
                             Spacer()
                             let word = AccountStatus.listWord(provider: account.provider, state: model.states[account.key] ?? AccountState(),
                                                               addedAtMs: account.addedAtMs, nowMs: model.nowMs)
-                            Text(model.isSample ? SampleRules.accountWord : word.text).font(.system(size: 14))
+                            Text(model.isSample ? SampleRules.accountWord : word.text).font(.system(size: 14)).lineLimit(1).minimumScaleFactor(0.75)
                                 .foregroundStyle(model.isSample || word.tone == nil ? p.sub : p.orange)
+                                // A warning ("Sign in again", "Expires in 2d") outranks the name; "Signed in" gives way first.
+                                .layoutPriority(!model.isSample && word.tone != nil ? 3 : 0)
                         }
                         }
                         .contextMenu {
                             Button("Rename", systemImage: "pencil") { renaming = account }
+                            TagSubmenu(account: account)
                             Button("Details…", systemImage: "info.circle") { details = account }
                             Button("Accent colour…", systemImage: "paintpalette") { colouring = account }
                             if !model.isSample {
@@ -361,6 +367,26 @@ struct AccountPage: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Accent colour…").foregroundStyle(p.ink)
                         Circle().fill(account.accent(scheme)).frame(width: 12, height: 12)
+                    }
+                }
+                // CCRM-110 (Account Tags) rev B §6: a menu picker None · Personal · Work, glyphs leading; the Summary's
+                // filter groups by it, and untagged accounts show only under All.
+                LabeledContent("Tag") {
+                    Menu {
+                        TagPickerRows(selection: model.account(account.key)?.accountTag) { model.setTag(account.key, $0) }
+                    } label: {
+                        HStack(spacing: 5) {
+                            if let tag = model.account(account.key)?.accountTag {
+                                Image(systemName: TagGlyph.symbol(tag)).font(.system(size: 13))
+                                Text(tag.label)
+                            } else {
+                                Text("None")
+                            }
+                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 11, weight: .semibold))
+                        }
+                        .foregroundStyle(p.sub)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(model.account(account.key)?.accountTag?.label ?? "None")
                     }
                 }
             }
