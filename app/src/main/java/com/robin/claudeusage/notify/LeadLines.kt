@@ -69,6 +69,9 @@ internal object LeadLines {
     fun outUntil(weekly: UsageWindow, use24h: Boolean): String =
         "Out until ${Fmt.dayTime(weekly.resetsAt, use24h)}$DOT${Fmt.relIn(weekly.resetsAt)}"
 
+    /** CCRM-114 (Narrow Duet), F2: the spent line with its second clause dropped whole — "Out until Sun 9:30 PM". */
+    fun outUntilShort(weekly: UsageWindow, use24h: Boolean): String = "Out until ${Fmt.dayTime(weekly.resetsAt, use24h)}"
+
     /**
      * CCRM-104 (Pace Line Parity), wireframe D3/D10: the Weekly's pace line — "21h 50m ahead ·
      * Sun 9:30 PM" — replacing the band words and "≈11%/day". Null when there is no readout

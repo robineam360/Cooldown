@@ -203,4 +203,177 @@ class DuetTest {
         // pref) shows the account the picker itself calls First.
         assertEquals(Duet.Slot.FIRST, Duet.ringAccount("whatever", 10.0, 90.0))
     }
+
+    // --- CCRM-114 (Narrow Duet): rungs 4 and 5, addendum §N1 (variant C) ------------------------
+
+    /**
+     * One cell of the addendum's grids — collapsed content [w] dp at font [s] — with what its own `decide()` prints
+     * (generated from the page's script, `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`): the word
+     * shown (null: gone), whether it sits in the figure's slot, the "Stale" dot, and the name's room in dp.
+     */
+    private data class Cell(
+        val w: Int, val s: Float, val name: String, val word: Duet.Word, val full: String, val short: String,
+        val dash: Boolean, val shown: String?, val slot: Boolean, val dot: Boolean, val room: Int,
+    )
+
+    private val narrowCells = listOf(
+        Cell(226, 1f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 80), // P Sign in · No reading
+        Cell(226, 1f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 62), // P Sign in · No reading
+        Cell(220, 1f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 74), // P Sign in · No reading
+        Cell(220, 1f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 56), // P Sign in · No reading
+        Cell(200, 1f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 54), // P Sign in · No reading
+        Cell(200, 1f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 36), // P Sign in · No reading
+        Cell(176, 1f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 30), // P Sign in · No reading
+        Cell(176, 1f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // P Sign in · No reading
+        Cell(226, 1f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 62), // P No reading · Not started
+        Cell(226, 1f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 61), // P No reading · Not started
+        Cell(220, 1f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 56), // P No reading · Not started
+        Cell(220, 1f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 55), // P No reading · Not started
+        Cell(200, 1f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 36), // P No reading · Not started
+        Cell(200, 1f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 35), // P No reading · Not started
+        Cell(176, 1f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // P No reading · Not started
+        Cell(176, 1f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // P No reading · Not started
+        Cell(226, 1f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 80), // P Sign in · Not started
+        Cell(226, 1f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 61), // P Sign in · Not started
+        Cell(220, 1f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 74), // P Sign in · Not started
+        Cell(220, 1f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 55), // P Sign in · Not started
+        Cell(200, 1f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 54), // P Sign in · Not started
+        Cell(200, 1f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 35), // P Sign in · Not started
+        Cell(176, 1f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 30), // P Sign in · Not started
+        Cell(176, 1f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // P Sign in · Not started
+        Cell(226, 1f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 43), // S Held · spent
+        Cell(226, 1f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, "Out", false, false, 47), // S Held · spent
+        Cell(220, 1f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 37), // S Held · spent
+        Cell(220, 1f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, "Out", false, false, 41), // S Held · spent
+        Cell(200, 1f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 46), // S Held · spent
+        Cell(200, 1f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, null, false, false, 46), // S Held · spent
+        Cell(176, 1f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 22), // S Held · spent
+        Cell(176, 1f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, null, false, false, 22), // S Held · spent
+        Cell(226, 1f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 61), // S No 5h · not started
+        Cell(220, 1f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 55), // S No 5h · not started
+        Cell(200, 1f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 35), // S No 5h · not started
+        Cell(176, 1f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // S No 5h · not started
+        Cell(226, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 80), // S Sign in · no reading
+        Cell(226, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 62), // S Sign in · no reading
+        Cell(220, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 74), // S Sign in · no reading
+        Cell(220, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 56), // S Sign in · no reading
+        Cell(200, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 54), // S Sign in · no reading
+        Cell(200, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 36), // S Sign in · no reading
+        Cell(176, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 30), // S Sign in · no reading
+        Cell(176, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // S Sign in · no reading
+        Cell(226, 1f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, "Stale", false, false, 39), // S Stale · 91%
+        Cell(220, 1f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, "Stale", false, false, 33), // S Stale · 91%
+        Cell(200, 1f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, null, false, true, 35), // S Stale · 91%
+        Cell(176, 1f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, null, false, false, 22), // S Stale · 91%
+        Cell(226, 1f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 43), // S Long name · spent
+        Cell(220, 1f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 37), // S Long name · spent
+        Cell(200, 1f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 46), // S Long name · spent
+        Cell(176, 1f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 22), // S Long name · spent
+        Cell(226, 2f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 77), // P Sign in · No reading
+        Cell(226, 2f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 57), // P Sign in · No reading
+        Cell(220, 2f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 71), // P Sign in · No reading
+        Cell(220, 2f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 51), // P Sign in · No reading
+        Cell(200, 2f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 51), // P Sign in · No reading
+        Cell(200, 2f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 46), // P Sign in · No reading
+        Cell(176, 2f, "Teams", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 27), // P Sign in · No reading
+        Cell(176, 2f, "Personal Max 20x", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // P Sign in · No reading
+        Cell(226, 2f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 57), // P No reading · Not started
+        Cell(226, 2f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 56), // P No reading · Not started
+        Cell(220, 2f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 51), // P No reading · Not started
+        Cell(220, 2f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 50), // P No reading · Not started
+        Cell(200, 2f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 46), // P No reading · Not started
+        Cell(200, 2f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 46), // P No reading · Not started
+        Cell(176, 2f, "Teams", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // P No reading · Not started
+        Cell(176, 2f, "Personal Max 20x", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // P No reading · Not started
+        Cell(226, 2f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 77), // P Sign in · Not started
+        Cell(226, 2f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 56), // P Sign in · Not started
+        Cell(220, 2f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 71), // P Sign in · Not started
+        Cell(220, 2f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 50), // P Sign in · Not started
+        Cell(200, 2f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 51), // P Sign in · Not started
+        Cell(200, 2f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 46), // P Sign in · Not started
+        Cell(176, 2f, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 27), // P Sign in · Not started
+        Cell(176, 2f, "Teams", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // P Sign in · Not started
+        Cell(226, 2f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 41), // S Held · spent
+        Cell(226, 2f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, "Out", false, false, 45), // S Held · spent
+        Cell(220, 2f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 35), // S Held · spent
+        Cell(220, 2f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, "Out", false, false, 39), // S Held · spent
+        Cell(200, 2f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 46), // S Held · spent
+        Cell(200, 2f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, null, false, false, 46), // S Held · spent
+        Cell(176, 2f, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 22), // S Held · spent
+        Cell(176, 2f, "Atlas", Duet.Word.OUT, "Out · Thu", "Out", false, null, false, false, 22), // S Held · spent
+        Cell(226, 2f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 56), // S No 5h · not started
+        Cell(220, 2f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 50), // S No 5h · not started
+        Cell(200, 2f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, "Not started", true, false, 30), // S No 5h · not started
+        Cell(176, 2f, "Side", Duet.Word.NOT_STARTED, "Not started", "Not started", true, null, false, false, 22), // S No 5h · not started
+        Cell(226, 2f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 77), // S Sign in · no reading
+        Cell(226, 2f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 57), // S Sign in · no reading
+        Cell(220, 2f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 71), // S Sign in · no reading
+        Cell(220, 2f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 51), // S Sign in · no reading
+        Cell(200, 2f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 51), // S Sign in · no reading
+        Cell(200, 2f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 46), // S Sign in · no reading
+        Cell(176, 2f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 27), // S Sign in · no reading
+        Cell(176, 2f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, null, false, false, 22), // S Sign in · no reading
+        Cell(226, 2f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, "Stale", false, false, 37), // S Stale · 91%
+        Cell(220, 2f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, null, false, true, 55), // S Stale · 91%
+        Cell(200, 2f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, null, false, true, 35), // S Stale · 91%
+        Cell(176, 2f, "Studio", Duet.Word.STALE, "Stale", "Stale", false, null, false, false, 22), // S Stale · 91%
+        Cell(226, 2f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 41), // S Long name · spent
+        Cell(220, 2f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, "Held", false, false, 35), // S Long name · spent
+        Cell(200, 2f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 46), // S Long name · spent
+        Cell(176, 2f, "Personal Max 20x", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, null, false, false, 22), // S Long name · spent
+        Cell(272, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", false, false, 76), // vc2 272
+        Cell(272, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", false, false, 58), // vc2 272
+        Cell(253, 1f, "Product", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, "Sign in", true, false, 107), // vc2 253
+        Cell(253, 1f, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 89), // vc2 253
+        Cell(220, 1f, "Personal", Duet.Word.NO_READING, "No reading", "No reading", true, "No reading", true, false, 56), // vc2 220
+    )
+
+    @Test
+    fun `every cell the addendum draws prints what the page prints`() {
+        assertEquals(109, narrowCells.size)
+        for (c in narrowCells) {
+            val fit = Duet.rowFit(c.w.toFloat(), Duet.barDp(c.w.toFloat()), 0, c.name, c.word, c.full, c.short, c.dash, c.s)
+            val at = "${c.w} dp, font ${c.s}, ${c.name} / ${c.full}"
+            assertEquals(at, c.shown, fit.word)
+            assertEquals(at, c.slot, fit.inSlot)
+            assertEquals(at, c.dot, fit.staleDot)
+            assertEquals(at, c.room, Math.round(fit.nameRoomDp))
+        }
+    }
+
+    @Test
+    fun `the slot rule keys on the screen - under 256 dp only, so the cover keeps rev B's dash`() {
+        assertEquals(256f, Duet.NARROW_CONTENT_DP)
+        assertEquals(50f, Duet.SLOT_RUN_DP)
+        // 253 dp (a 393 dp phone): the widest shade in the class; 271 (the Fold 7 cover) and up: §1 unchanged.
+        assertTrue(Duet.rowFit(253f, Duet.barDp(253f), 0, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, 1f).inSlot)
+        assertFalse(Duet.rowFit(Duet.contentDp(411), Duet.barDp(Duet.contentDp(411)), 0, "Design", Duet.Word.NO_READING, "No reading", "No reading", true, 1f).inSlot)
+        assertFalse(Duet.rowFit(352f, Duet.barDp(352f), 0, "Design", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, 1f).inSlot)
+        // A row with a figure never gives it up, at any width.
+        assertFalse(Duet.rowFit(176f, 40f, 0, "Work", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, 1f).inSlot)
+    }
+
+    @Test
+    fun `Sign in never goes - the name gives instead`() {
+        for (w in listOf(226f, 220f, 200f, 176f)) for (s in listOf(1f, 2f)) {
+            val fit = Duet.rowFit(w, Duet.barDp(w), 0, "Personal Max 20x", Duet.Word.SIGN_IN, "Sign in", "Sign in", true, s)
+            assertEquals("Sign in", fit.word)
+        }
+    }
+
+    @Test
+    fun `a word that still has its tail keeps the 24 dp floor - it drops the tail before it can go`() {
+        // 124 dp of bar (a 400 dp phone): "Held · 3:40 PM" leaves the name 27 dp, under rung 5's 32 but over rung 2's
+        // 24, so it keeps its tail rather than vanishing whole (the page's text: rung 5 is for a bare word).
+        val fit = Duet.rowFit(260f, 124f, 0, "Personal", Duet.Word.HELD, "Held · 3:40 PM", "Held", false, 1f)
+        assertEquals("Held · 3:40 PM", fit.word)
+    }
+
+    @Test
+    fun `a row with no word is untouched`() {
+        val fit = Duet.rowFit(220f, 84f, 0, "Teams", null, null, null, false, 1f)
+        assertNull(fit.word)
+        assertFalse(fit.inSlot)
+        assertFalse(fit.staleDot)
+    }
 }

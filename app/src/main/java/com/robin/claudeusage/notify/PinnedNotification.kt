@@ -482,6 +482,13 @@ object PinnedNotification {
         /** "Personal · Weekly", on the single row and a Duet alike (CCBG-45 (Single Panel Wording)). */
         val title: String,
         /**
+         * The expanded header's label: [title], or the name alone when the derived column cannot hold "· Weekly" too
+         * (CCRM-114 (Narrow Duet), N1-Q7: "· Weekly" gives before the name). Single and Duet.
+         */
+        val headerTitle: String,
+        /** The single collapsed row's label, by the same rule at that row's column and 13 sp. */
+        val collapsedTitle: String,
+        /**
          * The expanded header's first line (single and Duet): the pace line in the form the
          * column holds (CCRM-104 (Pace Line Parity); CCBG-61 (Duet Line Clip)'s tight form is
          * its second drop-order step), at its size.
@@ -614,26 +621,6 @@ object PinnedNotification {
         } else if (weeklySpent) {
             LeadLines.outUntil(weekly!!, use24h)
         } else null
-        fun subFor(availDp: Float): Sub {
-            if (fixedLine != null) return Sub(fixedLine, SUB_SP)
-            val pick = LeadLines.weeklyPace(weekly, nowAt, use24h, availDp, SUB_SP, fontScale)
-                ?: return Sub("", SUB_SP)
-            return Sub(paceSpan(pick.form, dark, ink), pick.sp)
-        }
-        // The expanded header's first line (a Duet header's column is wider than the single's).
-        val headerSub = subFor(if (duet) TextFit.DUET_EXPANDED_COLUMN_DP else TextFit.EXPANDED_COLUMN_DP)
-        // Line 2: the pace-mark caption, permanently (D4, C1-3); a takeover keeps the 5h projection.
-        val sub2: Sub? = when {
-            duet || fallback != null -> null
-            takeover -> LeadLines.sessionSecondLine(hitsAt, use24h)?.let { Sub(it, SUB_SP) }
-            weeklySpent -> null
-            else -> LeadLines.weeklyCaption(
-                weekly, weeklyElapsed, mode, TextFit.EXPANDED_COLUMN_DP, SUB_SP, fontScale,
-            )?.let { Sub(it.form, it.sp) }
-        }
-        // Rev D §3 N1: the collapsed line is the pace line only — the ring replaced the "· 5h 34%"
-        // companion, and the pace line carries the reset, so a plan with no 5h needs no "resets Sun".
-        val collapsedSub = subFor(TextFit.COLLAPSED_COLUMN_DP)
         val fill = Palette.barColor(pct, accent, dark)
         val figureColor =
             if (mode == PaceText.Mode.VS_PACE && pct != null) {
@@ -665,12 +652,60 @@ object PinnedNotification {
                 description = LeadLines.ringDescription(rFigure),
             )
         }
+        // CCBG-80 (Fixed Pace Columns), CCRM-114 (Narrow Duet) F2: each line is fitted to its column as derived from
+        // the screen's smallest width, the ring (and its time line) and the figure beside it, sizes in dp from the
+        // system — never wider than the measured Fold 7 constants until Step 3 measures again.
+        val sw = context.resources.configuration.smallestScreenWidthDp
+        val metrics = context.resources.displayMetrics
+        val spToDp = TextFit.SpToDp { sp -> TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, metrics) / metrics.density }
+        val pctText = LeadLines.figure(pct, elapsed, mode)
+        val noReading = !broken && data == null
+        val notStarted = !broken && data != null && (weekly?.percent == null || weekly.resetsAt == null)
+        val dash = broken || noReading || notStarted
+        // A Duet header prints "—" for a row with no figure; the single layout prints its own figure.
+        val headerFigure = if (duet && dash) "—" else pctText
+        val headerColumn = TextFit.expandedColumnDp(
+            sw, hasRing = ring != null, ringTime = ring?.timeLeft, figure = headerFigure,
+            figureSp = if (duet) TextFit.DUET_EXPANDED_FIGURE_SP else TextFit.SINGLE_EXPANDED_FIGURE_SP, spToDp = spToDp,
+        )
+        val headerFit = TextFit.fitDp(headerColumn, if (duet) TextFit.DUET_EXPANDED_COLUMN_DP else TextFit.EXPANDED_COLUMN_DP)
+        val collapsedColumn = TextFit.collapsedColumnDp(sw, hasRing = ring != null, figure = pctText, spToDp = spToDp)
+        val collapsedFit = TextFit.fitDp(collapsedColumn, TextFit.COLLAPSED_COLUMN_DP)
+        fun subFor(availDp: Float): Sub {
+            if (fixedLine != null) {
+                // F2: the spent line has no drop order of its own; it drops its second clause whole.
+                if (weeklySpent && fallback == null && !takeover &&
+                    TextFit.widthDp(TextFit.em(fixedLine), SUB_SP, fontScale) > availDp
+                ) return Sub(LeadLines.outUntilShort(weekly!!, use24h), SUB_SP)
+                return Sub(fixedLine, SUB_SP)
+            }
+            val pick = LeadLines.weeklyPace(weekly, nowAt, use24h, availDp, SUB_SP, fontScale)
+                ?: return Sub("", SUB_SP)
+            return Sub(paceSpan(pick.form, dark, ink), pick.sp)
+        }
+        val headerSub = subFor(headerFit)
+        // Line 2: the pace-mark caption, permanently (D4, C1-3); a takeover keeps the 5h projection.
+        val sub2: Sub? = when {
+            duet || fallback != null -> null
+            takeover -> LeadLines.sessionSecondLine(hitsAt, use24h)?.let { Sub(it, SUB_SP) }
+            weeklySpent -> null
+            else -> LeadLines.weeklyCaption(
+                weekly, weeklyElapsed, mode, headerFit, SUB_SP, fontScale,
+            )?.let { Sub(it.form, it.sp) }
+        }
+        // Rev D §3 N1: the collapsed line is the pace line only — the ring replaced the "· 5h 34%"
+        // companion, and the pace line carries the reset, so a plan with no 5h needs no "resets Sun".
+        val collapsedSub = subFor(collapsedFit)
+        val title = LeadLines.headerTitle(label)
+        // N1-Q7: "· Weekly" gives before the name, both layouts.
+        val headerTitle =
+            if (TextFit.titleKeepsWindow(title, headerColumn, spToDp.dp(TextFit.EXPANDED_TITLE_SP))) title else label
+        val collapsedTitle =
+            if (TextFit.titleKeepsWindow(title, collapsedColumn, spToDp.dp(TextFit.COLLAPSED_TITLE_SP))) title else label
         val gaugeWindow = if (gaugeWeekly) weekly else data?.session
         val gaugePct = if (broken) null else gaugeWindow?.percent
         // CCRM-105 (Duet Stack), wireframe §1: the collapsed row's state word, by precedence.
         val stale = Conditions.isStale(cache, profile)
-        val noReading = !broken && data == null
-        val notStarted = !broken && data != null && (weekly?.percent == null || weekly.resetsAt == null)
         val word = Duet.word(
             signIn = snapshot.authState == AuthState.REAUTH_NEEDED,
             noReading = noReading,
@@ -693,11 +728,13 @@ object PinnedNotification {
             data = data,
             takeover = takeover,
             pct = pct,
-            pctText = LeadLines.figure(pct, elapsed, mode),
+            pctText = pctText,
             fill = fill,
             figureColor = figureColor,
             elapsed = elapsed,
-            title = LeadLines.headerTitle(label),
+            title = title,
+            headerTitle = headerTitle,
+            collapsedTitle = collapsedTitle,
             sub = headerSub,
             sub2 = sub2,
             collapsedSub = collapsedSub,
@@ -716,7 +753,7 @@ object PinnedNotification {
             wordFull = wordForms?.first,
             wordShort = wordForms?.second,
             heldColor = session?.percent?.let { Palette.barColor(it, accent, dark) },
-            dash = broken || noReading || notStarted,
+            dash = dash,
             planFault = Conditions.hasPlanFault(cache, profile),
         )
     }
@@ -791,7 +828,7 @@ object PinnedNotification {
             if (h.caption != null) android.view.View.VISIBLE else android.view.View.GONE,
         )
         if (h.caption != null) setTextViewText(R.id.pct_caption, h.caption)
-        setTextViewText(R.id.title, h.title)
+        setTextViewText(R.id.title, if (expanded) h.headerTitle else h.collapsedTitle)
         setTextViewText(R.id.sub, sub)
         setTextViewTextSize(R.id.sub, TypedValue.COMPLEX_UNIT_SP, subSp)
         // CCRM-96 (Weekly First), CCRM-104 (Pace Line Parity) D4: the expanded header's second
@@ -875,7 +912,12 @@ object PinnedNotification {
         setTextColor(ids.fig, ringFigureColor(r, accent, dark).toArgb())
         if (ids.time != null) {
             setViewVisibility(ids.time, if (r.timeLeft == null) android.view.View.GONE else android.view.View.VISIBLE)
-            if (r.timeLeft != null) setTextViewText(ids.time, r.timeLeft)
+            if (r.timeLeft != null) {
+                setTextViewText(ids.time, r.timeLeft)
+                // CCRM-114 (Narrow Duet), N1-Q6: sized in dp like the bore figure above it — at font 2.0 an sp line
+                // was cut in half by its 13 dp box and took 48 dp of the pace line's column.
+                setTextViewTextSize(ids.time, TypedValue.COMPLEX_UNIT_DIP, TextFit.TIME_LINE_DP)
+            }
         }
         if (stale) {
             setFloat(ids.img, "setAlpha", 0.45f)
@@ -1007,12 +1049,13 @@ object PinnedNotification {
             fillHalf(context, SECOND_IDS, second, dark, showOverPace, endMark, secondTap, secondDot)
         } else {
             val fontScale = context.resources.configuration.fontScale
-            val barDp = Duet.barDp(Duet.contentDp(context.resources.configuration.smallestScreenWidthDp))
+            val contentDp = Duet.contentDp(context.resources.configuration.smallestScreenWidthDp)
+            val barDp = Duet.barDp(contentDp)
             // Rev E §9c: app-global like the update dot, so First only.
             val synth = SyntheticSeries.isOn
-            fillRow(context, FIRST_IDS, first, dark, showOverPace, endMark, firstTap, firstDot, synth, barDp, fontScale)
+            fillRow(context, FIRST_IDS, first, dark, showOverPace, endMark, firstTap, firstDot, synth, contentDp, barDp, fontScale)
             showSyntheticDot(R.id.duet_synth_dot)
-            fillRow(context, SECOND_IDS, second, dark, showOverPace, endMark, secondTap, secondDot, false, barDp, fontScale)
+            fillRow(context, SECOND_IDS, second, dark, showOverPace, endMark, secondTap, secondDot, false, contentDp, barDp, fontScale)
         }
         if (panel != null) fillPanel(context, panel)
     }
@@ -1040,7 +1083,7 @@ object PinnedNotification {
         setOnClickPendingIntent(ids.root, tap)
         setImageViewResource(ids.mark, providerMarkRes(h.profile.provider))
         setInt(ids.mark, "setColorFilter", h.accent.toArgb())
-        setTextViewText(ids.label, h.title)
+        setTextViewText(ids.label, h.headerTitle)
         // CCRM-103 (Hybrid Notification), rev D §3 D4: every header with a 5h takes the 44 dp
         // ring and its time left; none for no 5h (B1).
         if (h.ring != null) {
@@ -1092,6 +1135,7 @@ object PinnedNotification {
         tap: PendingIntent,
         dotHue: Int?,
         synthDot: Boolean,
+        contentDp: Float,
         barDp: Float,
         fontScale: Float,
     ) {
@@ -1113,17 +1157,18 @@ object PinnedNotification {
             ring, Duet.RING_DP, h.accent, dark, showOverPace, endMark, h.stale,
         )
 
-        // The state word, by precedence, its tail dropped only once the name is at its floor.
+        // The state word, by precedence, through the narrow drop order (Duet.rowFit, CCRM-114 (Narrow Duet)): its
+        // tail dropped once the name is at its floor; under 256 dp of content a row with no figure gives the word the
+        // figure's slot; a bare word that would leave the name under 32 dp goes ("Stale" leaving its dot).
         val dots = (if (dotHue != null) 1 else 0) + (if (synthDot) 1 else 0)
-        if (h.word == null || h.wordFull == null) {
+        val fit = Duet.rowFit(contentDp, barDp, dots, h.label, h.word, h.wordFull, h.wordShort, h.dash, fontScale)
+        if (fit.word == null) {
             setViewVisibility(ids.word, android.view.View.GONE)
             setViewPadding(ids.line, 0, 0, 0, 0)
         } else {
-            val keep = Duet.keepsTail(barDp, dots, h.label, h.wordFull, fontScale)
-            val shown = if (keep) h.wordFull else h.wordShort
             setViewVisibility(ids.word, android.view.View.VISIBLE)
-            setTextViewText(ids.word, shown)
-            setViewPadding(ids.line, 0, 0, dp(context, Duet.wordPadDp(shown, fontScale)).toInt(), 0)
+            setTextViewText(ids.word, fit.word)
+            setViewPadding(ids.line, 0, 0, dp(context, Duet.wordPadDp(fit.word, fontScale)).toInt(), 0)
             setTextViewTextSize(ids.word, TypedValue.COMPLEX_UNIT_DIP, Duet.cappedDp(Duet.WORD_SP, fontScale, Duet.WORD_CAP_DP))
             val color: Color? = when (h.word) {
                 Duet.Word.SIGN_IN, Duet.Word.STALE -> Color(conditionHue(error = true, theme = h.accent, dark = dark))
@@ -1133,6 +1178,10 @@ object PinnedNotification {
             }
             if (color != null) setTextColor(ids.word, color.toArgb())
         }
+        // TalkBack hears the full word whichever rung printed: on the word ("Held · 3:40 PM" while "Held" prints), or,
+        // with no word printed, on the name ("Design, No reading").
+        setContentDescription(ids.word, h.wordFull)
+        setContentDescription(ids.label, if (fit.word == null && h.wordFull != null) "${h.label}, ${h.wordFull}" else null)
 
         // The Weekly bar and figure. Sign in / no reading / not started: "—", a bare track, no
         // tick; a spent week: the full red bar, no tick (wireframe §1).
@@ -1147,7 +1196,12 @@ object PinnedNotification {
         setTextViewText(ids.pct, Grammar.smallPercent(if (h.dash) "—" else h.pctText))
         setTextViewTextSize(ids.pct, TypedValue.COMPLEX_UNIT_DIP, Duet.cappedDp(Duet.FIGURE_SP, fontScale, Duet.FIGURE_CAP_DP))
         setTextColor(ids.pct, (if (h.dash) Grammar.ink(dark).copy(alpha = 0.5f) else h.figureColor).toArgb())
-        fillDot(ids, dotHue)
+        // Variant C: the "—" gives its slot to the word — the figure view goes, so the name line runs on over the gap
+        // and the slot to the row's edge, and the bar's end is padded by the same 50 dp so it keeps its length.
+        setViewVisibility(ids.pct, if (fit.inSlot) android.view.View.GONE else android.view.View.VISIBLE)
+        setViewPadding(ids.bar, 0, 0, if (fit.inSlot) dp(context, Duet.SLOT_RUN_DP).toInt() else 0, 0)
+        // A "Stale" that went leaves v2.0's 6 dp fault-red dot after the name.
+        fillDot(ids, if (fit.staleDot) conditionHue(error = true, theme = h.accent, dark = dark) else dotHue)
         // Stale: figure 50%, bar 45% (the ring's own dimming is in fillRing).
         if (h.stale) {
             setFloat(ids.pct, "setAlpha", 0.5f)

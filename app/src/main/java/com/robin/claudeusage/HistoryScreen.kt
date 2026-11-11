@@ -21,10 +21,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +48,7 @@ import com.robin.claudeusage.data.UsageRepository
 import com.robin.claudeusage.ui.Fmt
 import com.robin.claudeusage.ui.LocalWidthClass
 import com.robin.claudeusage.ui.Palette
+import com.robin.claudeusage.ui.ProfileTabStrip
 import com.robin.claudeusage.ui.ProviderTabLabel
 import com.robin.claudeusage.ui.twoPane
 import java.time.Instant
@@ -119,8 +118,8 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
     // stops being a choice you have to make — the comparison is the useful part.
     val sideBySide = LocalWidthClass.current.twoPane
 
-    // Same strip rule as the main screen (CCRM-6 (Multi-Account)): hidden at one account,
-    // fixed up to three, scrollable at four or more.
+    // Same strip rule as the main screen: hidden at one account, otherwise fixed while every
+    // label fits its share on one line and scrolling once one would not (CCBG-81 (History Tab Wrap)).
     if (profiles.size > 1) {
         val selected = tab
         // Neutral strip colour, matching Main's ProfileTabs — the label/indicator hue
@@ -148,20 +147,13 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
                 )
             }
         }
-        if (profiles.size <= FIXED_TAB_LIMIT) {
-            TabRow(
-                selectedTabIndex = selected,
-                contentColor = tabContentColor,
-                indicator = tabIndicator,
-            ) { tabs() }
-        } else {
-            ScrollableTabRow(
-                selectedTabIndex = selected,
-                edgePadding = 0.dp,
-                contentColor = tabContentColor,
-                indicator = tabIndicator,
-            ) { tabs() }
-        }
+        val cache = repo.cacheSettings()
+        ProfileTabStrip(
+            selected = selected,
+            contentColor = tabContentColor,
+            indicator = tabIndicator,
+            labels = profiles.map { p -> @Composable { ProviderTabLabel(cache, p) } },
+        ) { tabs() }
     }
     // Outside the strip: the top gap belongs to the screen, not to the tabs, so a
     // single-account view doesn't start hard against the app bar.
