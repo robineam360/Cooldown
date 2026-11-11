@@ -1108,6 +1108,59 @@ supersedes the Pace map paragraphs of §2.8 above wherever they differ. Code `ui
   fixture's (dot box 14 dp, 2 dp between names, 1 dp off a word, right +10, below +2/+3, left −10, above-left −6, margins
   2/6/8/6), which the map has always drawn. `printed-v20.json` → `mapLabels` pins them.
 
+Step A4 (Summary, Android), built 2026-11-11 from rev B §6 and §8 as amended by the 2026-11-11 addendum
+(`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`, §Row glyph and §Adding and tagging, which wins); it
+supersedes the Summary, Add sheet, account-card and share paragraphs above wherever they differ (CCRM-110 (Account Tags),
+CCRM-112 (Summary Snapshot), CCRM-115 (Row Tag Glyph)). Code `data/AccountTag.kt` (the tag and the filter's rules, pure),
+`ui/AccountTags.kt` (glyph, chip, dialog, the two controls), `ui/SummaryRows.kt` (the glyph fit rule, pure),
+`SummaryScreen.kt`, `SettingsScreen.kt`, `share/SummarySnapshot.kt`. Captures `design/research/2026-11-v20-build/A4/`.
+
+- **The tag.** Every account is **Personal or Work**, no "None". Stored additively as `"t"` (`personal` / `work`) in the
+  registry's account JSON; a missing, empty or unknown value reads as Personal (every v1.9 account is Personal at upgrade
+  and nothing is written), an unknown value is written back untouched, v1.9 ignores the key. The first account, which never
+  passes the Add sheet, is Personal.
+- **Add account sheet.** Under "Add account" (titleLarge): "This account is" (bodyMedium, `onSurfaceVariant`), 8 dp, a
+  full-width `SingleChoiceSegmentedButtonRow` (40 dp) of **Personal | Work** — an 18 dp glyph and the word in each
+  segment, the chosen one tonal and SemiBold, the glyph in place of Material's check — 6 dp, "Groups it on the Summary. You
+  can change it later." (bodySmall, muted), 16 dp, then the provider rows as built. Personal is selected **every time the
+  sheet opens**; a row tap commits the account with the shown tag. The glyphs leave both segments together when "Personal"
+  with its glyph no longer fits half the row (`AddSheetFit`; font 2.0 on a 360 dp phone). The sheet scrolls once it outgrows
+  the screen. "Try with sample data" is Step A5's and ignores the control.
+- **Account card (Settings › Accounts).** A neutral chip after the plan chip on **every** card, signed in or not: outline
+  1 dp `outlineVariant`, 10 dp radius, a 12 dp glyph and the word in `labelSmall`; a tap opens the Tag dialog. The name
+  gives first, as built, down to 64 dp at its own text scale (or its own width if shorter); then the chip drops its word and
+  keeps its glyph (`TagChipFit`). TalkBack "Tag: Personal", action "change". The ⋮ menu gains **"Tag…"** after "Rename…";
+  the dialog "Tag · <name>" has two 48 dp radio rows (glyph + word), the help "Tags group accounts on the Summary: All ·
+  Personal · Work." and "Close"; a tap applies at once. Signing in again never touches the tag.
+- **Summary header.** "Weekly", then the **All · Personal · Work** control (28 dp, 12 sp, the chosen segment tonal and
+  SemiBold; a segment with no accounts at 38%), then the sort menu at the right ("your order ▾", a 28 dp outlined button:
+  the four orders, "✓" on the current one; the same setting as Appearance › Summary order). On a list under 320 dp wide
+  (a 360 dp phone) the sort button is its glyph "⇅ ▾"; from font scale 1.5 the control wraps under the title across the
+  whole width. A tap on a disabled segment shows "No Work accounts yet. Tag one in Settings." (12 sp, muted) under the
+  header for 3 s ("Personal" likewise). The control shows whenever the Summary exists (two or more signed-in accounts).
+- **The filter.** The remembered value (`summaryFilter`, new key) is the last segment tapped. The filter in force is that
+  value when it names an enabled segment, else All; it narrows the list, the rank numbers, the Pace map with its foot-line
+  count, the one-line threshold (six rows **shown**) and the snapshot. **Memory rule:** when the Summary comes on screen and
+  whenever the accounts or a tag change, a stored value the filter in force does not match (unknown, or its group has no
+  accounts) is replaced by `all`; an absent value stays absent; tagging later never brings the old choice back.
+  `UsageCache.settleSummaryFilter`, called from `UsageRepository`'s add / tag / remove and by the Summary.
+- **Row glyph (CCRM-115).** A Material outlined person (Personal) or briefcase (Work) in `onSurfaceVariant`, never a colour
+  or the word: 14 dp + 4 dp before the provider mark on a full row (18 dp in all, on line 1 so it dims with it); 12 dp + 4
+  dp between the rank disc and the name on a one-line row (grouped with the name, so the bar pays 16 dp). **Drop-out:** the
+  name ellipsizes first down to its floor (64 dp at its own text scale, or its own width if shorter), then the glyph column
+  leaves **every** row at once, then the name goes on ellipsizing; a one-line bar keeps 40 dp, so the column leaves under a
+  295 dp list. Measured on the tightest row shown and re-measured on a width, filter, display or font change
+  (`SummaryRows.fullKeepsGlyph`, `oneLineKeepsGlyph`). Under a Personal or Work filter the glyph stays. TalkBack reads the
+  tag on the name — "Teams, Work account" — whether or not the glyph is drawn; the glyph is hidden.
+- **Share snapshot (CCRM-112).** The All tab's top-bar ⋮ returns with one item, "Share snapshot" (hidden when no shown
+  account has a reading); the CCRM-24 (Share Card) preview dialog. 360 dp at 4×: header (the filter's name 17 sp bold, "as
+  of" = the oldest reading shown, the order's name right), the rows in screen order and filter (5h ring 32 dp, mark 14 +
+  name 13 sp SemiBold, figure 17 sp bold, 8 dp bar with tick, the pace span left and "Resets …" right; one line each from
+  six rows), "Pace map" and the map (320 × 200 dp, the screen's own painter and scene, the layers on screen, never the
+  chips or a callout) with its foot line, COOLDOWN. The 12 dp glyph + 4 dp leads each mark **only while the rows on the
+  card carry both tags**. Spent rows read "Out until …" in red; unread rows are at 50% with "Sign in" / "No reading" and no
+  bar fill; a stale row reads "Stale"; a held row reads "Held · back at …". Names, never e-mail addresses.
+
 ## v2.0 feedback on iOS
 
 Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B

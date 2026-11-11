@@ -63,10 +63,21 @@ class ProfileRegistry(context: Context) {
      * the positional default ("Account 3" for the third account), which is also what a
      * cleared rename field restores.
      */
-    fun add(label: String? = null, provider: Provider = Provider.CLAUDE): Profile {
-        val (next, profile) = add(state(), label, provider)
+    fun add(label: String? = null, provider: Provider = Provider.CLAUDE, tag: AccountTag? = null): Profile {
+        val (next, profile) = add(state(), label, provider, tag)
         write(next)
         return profile
+    }
+
+    /**
+     * CCRM-110 (Account Tags): sets [key]'s tag. A no-op (no write, no revision) for an unknown key or when the stored
+     * value already is [tag]'s key.
+     */
+    fun setTag(key: String, tag: AccountTag) {
+        val current = state()
+        val next = setTag(current, key, tag)
+        if (next === current) return
+        write(next)
     }
 
     /** Blank clears back to the label the account was created with. */
@@ -195,17 +206,24 @@ class ProfileRegistry(context: Context) {
             )
         }
 
-        fun add(state: State, label: String?, provider: Provider = Provider.CLAUDE): Pair<State, Profile> {
+        fun add(state: State, label: String?, provider: Provider = Provider.CLAUDE, tag: AccountTag? = null): Pair<State, Profile> {
             val slot = state.nextSlot
             // Positional, not slot-derived: the third account you add reads "Account 3"
             // even if you removed one earlier. It is a starting label, not an identity.
             val default = "Account ${state.profiles.size + 1}"
-            val profile = Profile(key = "p$slot", slot = slot, label = clean(label) ?: default, provider = provider)
+            val profile = Profile(key = "p$slot", slot = slot, label = clean(label) ?: default, provider = provider, tagRaw = tag?.key)
             return State(
                 profiles = state.profiles + profile,
                 nextSlot = slot + 1,
                 defaults = state.defaults + (profile.key to default),
             ) to profile
+        }
+
+        /** The same [state] instance when [key] is unknown or already stores [tag]'s key. */
+        fun setTag(state: State, key: String, tag: AccountTag): State {
+            val at = state.profiles.firstOrNull { it.key == key } ?: return state
+            if (at.tagRaw == tag.key) return state
+            return state.copy(profiles = state.profiles.map { if (it.key == key) it.copy(tagRaw = tag.key) else it })
         }
 
         fun rename(state: State, key: String, label: String): State = state.copy(
@@ -257,6 +275,8 @@ class ProfileRegistry(context: Context) {
                         .put("l", p.label)
                         .put("d", state.defaultLabel(p.key))
                         .put("v", p.provider.key)
+                        // CCRM-110: additive; omitted until a tag is written, an unknown value is kept as it was.
+                        .also { o -> p.tagRaw?.let { o.put("t", it) } }
                 )
             }
             return arr.toString()
@@ -276,7 +296,8 @@ class ProfileRegistry(context: Context) {
                     if (slot < 0) continue
                     val label = o.optString("l").ifEmpty { key }
                     // Absent → CLAUDE: every pre-CCRM-53 (Provider Model) entry has no "v".
-                    val profile = Profile(key, slot, label, Provider.fromKey(o.optString("v")))
+                    val tagRaw = if (o.has("t") && !o.isNull("t")) o.optString("t") else null
+                    val profile = Profile(key, slot, label, Provider.fromKey(o.optString("v")), tagRaw)
                     profiles += profile
                     defaults[key] = o.optString("d").ifEmpty { fallbackLabel(profile) }
                 }

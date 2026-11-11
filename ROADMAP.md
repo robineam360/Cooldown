@@ -1985,7 +1985,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): CooldownCore `PaceMapRules` — an account whose row prints "0%" (truncated, as the row: 0.99 hidden, 1.0 plotted) leaves the map; the foot line counts "N at 0%" and "N no reading" (`spec/mobile/fixtures/map-foot`); every account at 0% keeps the frame with "Nothing to plot yet" / "every account is at 0% this week"; `printed-v20.json` → `quiet`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
-- **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
+- **Status:** **Android built** 2026-11-11 (RUNBOOK A4; emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-10 (§6), amended 2026-11-11 (Personal or Work only, chosen on the Add account sheet) · **in v2.0** · both apps.
 - **What:** every account is **Personal** or **Work** (Robin, 2026-11-11: no "None"), chosen on the Add account sheet
   when the account is added and changed from the account's menu (Android "Tag…", iOS account page and long-press);
   accounts that exist at the upgrade, and the very first account, are Personal, silently. Settings shows it on every
@@ -2012,7 +2012,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): Figures · Trails · Projection chips on the title line (13 pt capsules, remembered, wrapping under the title); figures after the name ("Teams 52%", "48% left", "−13%"; spent Left "Teams 0%"); the last 24 h of each trail heavier; dashed projection tails to rings, red on the 100% line where it runs out; the pinned callout (tap pins, again opens, others at 35%, "~74% at reset" / "100% at Wed 6:10 PM"); CooldownCore `MapLabels` places names with dotted leaders of at most 48 pt in eight directions, and draws no name when nothing is free — the iOS side of CCBG-79 (Leader Reads as Trail). `printed-v20.json` → `mapLabels`, `callout`, `projectionLayer`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-112 · Summary Snapshot — a share card for the whole Summary
-- **Status:** Planned · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.
+- **Status:** **Android built** 2026-11-11 (RUNBOOK A4; emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.
 - **What:** "Share snapshot" from the Summary (Android top-bar ⋮, iOS ellipsis menu), the same share dialog as
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
@@ -2061,7 +2061,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Unverified until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220).
 
 ### CCRM-115 · Row Tag Glyph — the Personal/Work glyph before the logo on Summary rows
-- **Status:** **iOS built** 2026-11-11 (RUNBOOK Step I4) · Android Planned (Step A4) · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
+- **Status:** **Built on both apps** 2026-11-11 (iOS: RUNBOOK Step I4; Android: RUNBOOK A4, emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
 - **Why:** Robin, 2026-11-11: "Also on summary rows please (next to or better: before the account logos?)".
 - **What:** a person (Personal) or briefcase (Work) glyph, neutral ink, before the provider mark on every Summary row,
   full (14 dp + 4) and one-line (12 dp + 4, between the rank disc and the name); the column leaves every row at once

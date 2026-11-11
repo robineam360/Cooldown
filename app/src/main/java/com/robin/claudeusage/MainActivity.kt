@@ -27,6 +27,7 @@ import com.robin.claudeusage.channel.Channel
 import com.robin.claudeusage.data.SyntheticSeries
 import com.robin.claudeusage.data.HistoryStore
 import com.robin.claudeusage.share.ShareCard
+import com.robin.claudeusage.share.SummarySnapshot
 import com.robin.claudeusage.widgets.WidgetHost
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -303,6 +304,13 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
     // CCRM-24 (Share Card): a card needs a reading to show. Every account with two cards
     // has one, so the ⋮ shows exactly when this is true and Share is never disabled.
     val canShare = remember(selectedProfile, tick) { repo.snapshot(selectedProfile).data != null } && !onSummary
+    // CCRM-112 (Summary Snapshot): the All tab's ⋮ returns with "Share snapshot", hidden when no account the filter
+    // shows has a reading. Read at the tick, like the rest of the Summary.
+    val canShareSummary = onSummary && remember(tick, cache.summaryFilterStored()) {
+        val configured = repo.configuredProfiles()
+        val filter = cache.summaryFilter(configured)
+        configured.any { filter.matches(cache.tag(it)) && repo.snapshot(it).data != null }
+    }
 
     val dark = resolveDark(themeMode, isSystemInDarkTheme())
     // A forced theme diverges from the system theme that the manifest's
@@ -434,7 +442,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                                 // leaves nothing to hide or fold. CCRM-24 (Share Card)
                                 // puts "Share snapshot" under it, so the ⋮ itself now
                                 // shows whenever the account has a reading (Fable, Step 6).
-                                if (canShare) {
+                                if (canShare || canShareSummary) {
                                     Box {
                                         IconButton(onClick = { layoutMenuOpen = true }) {
                                             Icon(
@@ -446,7 +454,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                                             expanded = layoutMenuOpen,
                                             onDismissRequest = { layoutMenuOpen = false },
                                         ) {
-                                            if (presentCards.size >= 2) {
+                                            if (!onSummary && presentCards.size >= 2) {
                                                 DropdownMenuItem(
                                                     text = { Text("Main screen layout") },
                                                     onClick = {
@@ -460,9 +468,12 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
                                                 onClick = {
                                                     layoutMenuOpen = false
                                                     val profile = selectedProfile
+                                                    val summary = onSummary
                                                     scope.launch {
                                                         shareCard = withContext(Dispatchers.Default) {
-                                                            renderShareCard(
+                                                            if (summary) renderSummaryCard(
+                                                                context, repo, cache, dark, usageMode, use24h, showOverPace,
+                                                            ) else renderShareCard(
                                                                 context, cache, profile, dark,
                                                                 usageMode == PaceText.Mode.LEFT, showOverPace,
                                                             )
@@ -1147,6 +1158,45 @@ private fun renderShareCard(
         headline = cache.headline(profile), sessionBinding = binding,
     )
     return ShareCard.render(context, model)
+}
+
+/**
+ * CCRM-112 (Summary Snapshot): the Summary as an image — the accounts the filter shows, in the screen's order, then
+ * the map with the layers on screen. Rendered off the main thread; every earlier snapshot in `cacheDir/share` goes
+ * first. Null when no account shown has a reading.
+ */
+private fun renderSummaryCard(
+    context: android.content.Context,
+    repo: UsageRepository,
+    cache: UsageCache,
+    dark: Boolean,
+    mode: PaceText.Mode,
+    use24h: Boolean,
+    showOverPace: Boolean,
+): Bitmap? {
+    ShareCard.Files.clear(context)
+    val configured = repo.configuredProfiles()
+    val filter = cache.summaryFilter(configured)
+    val shown = configured.filter { filter.matches(cache.tag(it)) }
+    val histories = shown.associateWith { repo.history().points(it) }
+    val rows = summaryRows(repo, shown, histories)
+    if (!SummarySnapshot.hasReading(rows)) return null
+    val accounts = WidgetHost.accounts(context, cache, dark, withEstimates = false)
+    val model = SummarySnapshot.model(
+        accounts = accounts,
+        rows = rows,
+        tags = shown.associate { it.key to cache.tag(it) },
+        filter = filter,
+        order = cache.summaryOrder(),
+        layers = cache.mapLayers(),
+        mode = mode,
+        use24h = use24h,
+        dark = dark,
+        showOverPace = showOverPace,
+        synthetic = SyntheticSeries.isOn || accounts.any { a -> a.synthetic && shown.any { it.key == a.key } },
+        accentOf = { Palette.color(Palette.accentName(cache, it.profile), dark) },
+    )
+    return SummarySnapshot.render(context, model)
 }
 
 /** The render-then-preview dialog: the card as it will be sent, then Cancel or Share. */

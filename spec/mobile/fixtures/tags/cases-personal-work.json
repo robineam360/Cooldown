@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "note": "Account tags and the Summary filter on mobile after Robin's 2026-11-11 change: there is no None; every account is Personal or Work, chosen when it is added (Personal pre-selected). CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot); BEHAVIOR-MOBILE section 6. Derived by spec/tools/gen_v20_fixtures.py. A stored tag is 'personal' or 'work'; a missing, empty or unknown value reads as personal (that is how v1.9's accounts become Personal at upgrade, with nothing written). Accounts are in your order; storedTag null = nothing stored. The All / Personal / Work control exists while the Summary does (two or more accounts); a segment with no accounts is disabled, All never. The filter in force is the remembered value when it names an enabled segment of a shown control, else All. It narrows the list, the ranking, the Pace map and the snapshot (the snapshot header names it). oneLineRows: the one-line form from six rows shown. storedAfter: the remembered value once the memory rule has run (a stored value the filter in force does not match becomes 'all'; an absent value stays absent). memory: sequences of changes (open the Summary, tag an account, add, remove, choose a segment), each step followed by the filter in force and the value stored; the client's test replays them against its own store. Tagging never brings an earlier choice back."
+    "note": "Account tags and the Summary filter on mobile after Robin's 2026-11-11 change: there is no None; every account is Personal or Work, chosen when it is added (Personal pre-selected). CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot); BEHAVIOR-MOBILE section 6. Derived by spec/tools/gen_v20_fixtures.py. A stored tag is 'personal' or 'work'; a missing, empty or unknown value reads as personal (that is how v1.9's accounts become Personal at upgrade, with nothing written). Accounts are in your order; storedTag null = nothing stored. The All / Personal / Work control exists while the Summary does (two or more accounts); a segment with no accounts is disabled, All never. The filter in force is the remembered value when it names an enabled segment of a shown control, else All. It narrows the list, the ranking, the Pace map and the snapshot (the snapshot header names it). oneLineRows: the one-line form from six rows shown. storedAfter: the remembered value once the memory rule has run (a stored value the filter in force does not match becomes 'all'; an absent value stays absent; with fewer than two accounts there is no Summary, the rule does not run, and the value stays as it was). memory: sequences of changes (open the Summary, tag an account, add, remove, choose a segment), each step followed by the filter in force and the value stored; the client's test replays them against its own store. Tagging never brings an earlier choice back."
   },
   "filter": [
     {
@@ -58,7 +58,7 @@
         ],
         "oneLineRows": false,
         "snapshotHeader": "All accounts",
-        "storedAfter": "all"
+        "storedAfter": "work"
       }
     },
     {

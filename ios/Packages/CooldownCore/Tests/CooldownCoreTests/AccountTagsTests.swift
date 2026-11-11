@@ -39,15 +39,9 @@ struct AccountTagsTests {
             #expect(r.shown.map { names[$0] } == (expected["shown"] as? [String]), "\(name): shown")
             #expect(r.oneLineRows == expected.flag("oneLineRows"), "\(name): one-line rows")
             #expect(r.snapshotHeader == expected.str("snapshotHeader"), "\(name): header")
-            // storedAfter is the value once the memory rule has run. The fixture's one-account case lists "all" there, but
-            // §6 runs the rule only while the Summary exists and the memory case "a second account added to a single-account
-            // install" keeps the stored value: the rule below is the §6 text, and the one-account case is checked as that.
-            let stored = SummaryFilter.memory(tags: tags, stored: c.str("rememberedFilter"))
-            if r.controlShown {
-                #expect(stored == expected.str("storedAfter"), "\(name): stored after")
-            } else {
-                #expect(stored == c.str("rememberedFilter"), "\(name): the rule does not run without a Summary")
-            }
+            // storedAfter is the value once the memory rule has run; the rule runs only while the Summary exists, so the
+            // one-account case keeps its stored value (the fixture says so since d4d1598).
+            #expect(SummaryFilter.memory(tags: tags, stored: c.str("rememberedFilter")) == expected.str("storedAfter"), "\(name): stored after")
         }
     }
 

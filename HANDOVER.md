@@ -13,47 +13,40 @@ RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/p
 own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
 pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-## ▶ Next — Lane A (Android): Step A4 · Summary (written 2026-11-11, after A3 landed; amended the same day)
+## ▶ Next — Lane A (Android): Step A5 · Sample (written 2026-11-11, after A4 landed)
 
-**Amended 2026-11-11.** Robin changed the arc after A1–A3 landed: A4 now builds CCRM-110 (Account Tags) as **Personal or
-Work only (no None)**, the filter-memory rule, and CCRM-115 (Row Tag Glyph) beside CCRM-112 (Summary Snapshot); a new
-step **A6** (after A5) builds CCRM-114 (Narrow Duet) with CCBG-80 (Fixed Pace Columns). Read the approved addendum
-`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` — §Row glyph and §Adding and tagging for A4 (it wins over
-rev B §6 and §8 where they differ), §N1 for A6 — and BEHAVIOR-MOBILE §6 (the tag rules, the memory rule, the row glyph
-and the Add sheet in one place). Tests for tags read `spec/mobile/fixtures/tags/cases-personal-work.json` (not
-`cases.json`, which is the rev B optional-tag file iOS's I3 still reads until I4): every `filter` case with `storedAfter`
-and every `memory` sequence replayed against the real store. Order from here: **A4, A5, A6**, then Step 2 (which also waits
-for iOS's I4).
+Step A4 (Summary: CCRM-110 (Account Tags) as Personal/Work only, the filter memory rule, CCRM-112 (Summary Snapshot),
+CCRM-115 (Row Tag Glyph)) landed on `main`; RUNBOOK's Lane A Log has the commit, the judge round, the captures
+(`design/research/2026-11-v20-build/A4/`) and two items for the orchestrator (a fixture contradiction for Step 2; a cancelled
+Add-sheet sign-in leaves a signed-out card on Android). Order from here: **A5, then A6** (Narrow Duet + CCBG-80), then Step 2
+(which also waits for iOS's I4). **What A4 leaves A5:** the sample must bind everything A4 wrote to the sample store, not the
+real one — `UsageCache.tag(profile)` / `UsageRepository.profileTag` / `setProfileTag` (the "Tag…" dialog and the Settings chip
+live in `SettingsScreen.kt`'s `TokenCard`; inside the sample "Tag…" edits the in-memory copy only and there is no Add account),
+the Summary's remembered filter (`UsageCache.summaryFilterStored/setSummaryFilter/settleSummaryFilter` — in the sample the
+memory rule runs only against the sample's in-memory copy of `summaryFilter`) and its sort menu (`setSummaryOrder`); the Add
+account sheet (`AddAccountSheet` in `SettingsScreen.kt`) gets "Try with sample data" as its last row (drawn in the addendum's
+sheet: a violet ring glyph, "Three made-up accounts to look around. Nothing is saved or sent."), which ignores the Personal |
+Work control; the sample's tags are fixed at entry: **Teams Work, Personal Personal, Lab Work**; the snapshot's "SAMPLE DATA"
+band replaces "SYNTHETIC" (`SummarySnapshot.Model.synthetic` and `ShareCard`'s band, 16 dp #7C4DFF, "● SAMPLE DATA").
+**Emulator without a sign-in:** a scratch debug-only `SeedActivity` (not committed; `app/src/debug/` plus a manifest entry)
+seeded the registry (with `tagRaw`), `UsageCache.saveSuccess` snapshots, `CredentialStore(this, true).save(...)` fake
+credentials and `setTokenMeta` plans, then started `MainActivity` (airplane mode on); `am force-stop` between scenarios;
+`uiautomator dump` to find a node. Rebuild it from this description, never commit it. In a real Add flow the debug build
+opens the browser: press back and the card stays signed out.
 
-Step A3 (Pace map: CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers), closing the Android side of CCBG-79 (Leader Reads as
-Trail)) landed on `main`; RUNBOOK's Lane A Log has the commits, the judge round and the captures
-(`design/research/2026-11-v20-build/A3/`). Q5 is answered ("After v2.0": A4 is CCRM-110 (Account Tags), CCRM-112
-(Summary Snapshot) and CCRM-115 (Row Tag Glyph) only; the Android half of CCRM-24 (Share Card) is not in v2.0). What A3 leaves A4: `SummaryScreen`
-now builds `mapEntries` from `rows.filter { it.plotted }` and a `PaceMapRules.foot` over **every** row — the Summary
-filter (CCRM-110) must filter `rows` before both, so the list, the map, its foot-line count and its empty message follow
-the filter; the snapshot (CCRM-112) draws `PaceMap(entries, layers, mode, empty, pinned = null, onTap = {})` with the
-on-screen `MapLayers` and never the chips or a callout (the `mapLabels` dense 200 × 120 case is the snapshot map).
-**Emulator without a sign-in:** a scratch debug-only `SeedActivity` (not committed; `app/src/debug/`, plus a manifest
-entry) seeded the registry, `UsageCache.saveSuccess` snapshots, `HistoryStore.record` history and fake credentials
-(`CredentialStore(this, true).save(profile, Credentials(...), stampAdded = true)`, airplane mode on) and then started
-`MainActivity`; scenarios via intent extras, `pm clear` + `pm grant POST_NOTIFICATIONS` between runs, `uiautomator dump`
-to find a node. Much faster than the jdb route; rebuild it from this description, never commit it.
-
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A4),
-> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A4 names in
-> design/2026-11-10-v20-feedback-wireframes.html AND its approved addendum
-> design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html (the addendum wins), BEHAVIOR-MOBILE §6, and the ROADMAP
-> entries it builds (CCRM-110, CCRM-112, CCRM-115); load the model-mesh
-> skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
-> answers" (Convention 10; ask and record first if not). Build Step A4 on Android only (repo root, never ios/). Write
-> only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
-> "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
-> fixtures (spec/mobile/fixtures/tags/cases-personal-work.json for CCRM-110 (Account Tags) and CCRM-115 (Row Tag Glyph))
-> for the changed rules. Check every state the
-> wireframe and the addendum draw for these items on the fold7inner emulator (port 5556, headless; never emulator-5554) at the
-> cover-like, inner and 360 dp widths, dark and light; save the captures in design/research/2026-11-v20-build/A4/.
-> Stop and report at anything the wireframe does not draw. One fresh Opus judge round, then close out per Convention 9
-> and land per WORKTREE.md. Before stopping, replace this block with Step A5's prompt (then A6's).
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A5),
+> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A5 names (design/2026-11-10-v20-feedback-wireframes.html §9
+> and its approved addendum design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html — the addendum wins: the sample's
+> tags, the Add-sheet row), BEHAVIOR-MOBILE §7 and `reviews/v20-sample-mode-findings.md`, and the ROADMAP entry it builds
+> (CCRM-113); load the model-mesh skill; run the mode check and the sweeper. Check the step's "Gated on" questions are
+> answered in "Robin's answers" (Convention 10; ask and record first if not). Build Step A5 on Android only (repo root, never
+> ios/). Write only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
+> "v2.0 feedback on Android". The four isolation tests are in `reviews/v20-sample-mode-findings.md` and in RUNBOOK Step A5's
+> "Done when". Check every state the wireframe and the addendum draw on the fold7inner emulator (port 5556, headless; never
+> emulator-5554) at the cover-like, inner and 360 dp widths, dark and light; save the captures in
+> design/research/2026-11-v20-build/A5/. Stop and report at anything neither wireframe draws. One fresh Opus judge round,
+> then close out per Convention 9 and land per WORKTREE.md. Before stopping, replace this block with Step A6's prompt (the
+> addendum's §N1 and F2; RUNBOOK Step A6).
 
 ## ▶ Next — Lane I (iOS): Lane I done (written 2026-11-11)
 

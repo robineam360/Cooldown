@@ -152,8 +152,23 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
      * Adds an account (CCRM-6 (Multi-Account)). Mints a fresh key and slot, then republishes
      * the shortcuts so the new entry appears the moment it has a token.
      */
-    fun addProfile(label: String? = null, provider: Provider = Provider.CLAUDE): Profile =
-        registry.add(label, provider)
+    fun addProfile(label: String? = null, provider: Provider = Provider.CLAUDE, tag: AccountTag = AccountTag.PERSONAL): Profile =
+        registry.add(label, provider, tag).also { settleSummaryFilter() }
+
+    /** CCRM-110 (Account Tags): the account's tag (Personal when none was ever written). */
+    fun profileTag(profile: Profile): AccountTag = cache.tag(profile)
+
+    /** Sets the tag and runs the filter's memory rule (a group that empties falls back to All, stored). */
+    fun setProfileTag(profile: Profile, tag: AccountTag) {
+        registry.setTag(profile.key, tag)
+        settleSummaryFilter()
+    }
+
+    /**
+     * The Summary's memory rule over the accounts it shows (those with a sign-in); the Summary runs it too when it
+     * comes on screen, which covers a sign-in or sign-out made in Settings.
+     */
+    fun settleSummaryFilter() = cache.settleSummaryFilter(configuredProfiles())
 
     fun renameProfile(profile: Profile, label: String) = registry.rename(profile.key, label)
 
@@ -203,6 +218,7 @@ class UsageRepository(private val context: Context, credentialResetAllowed: Bool
         HeldChanges.forgetAccount(context, profile.key)
 
         if (!registry.remove(profile.key)) return false
+        settleSummaryFilter()
 
         val replacement = registry.first()
         if (cache.pinnedProfile() == profile) cache.setPinnedProfile(replacement)
