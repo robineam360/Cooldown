@@ -306,7 +306,7 @@ private fun App(startProfile: Profile, explicitProfile: Boolean) {
     val canShare = remember(selectedProfile, tick) { repo.snapshot(selectedProfile).data != null } && !onSummary
     // CCRM-112 (Summary Snapshot): the All tab's ⋮ returns with "Share snapshot", hidden when no account the filter
     // shows has a reading. Read at the tick, like the rest of the Summary.
-    val canShareSummary = onSummary && remember(tick) {
+    val canShareSummary = onSummary && remember(tick, cache.summaryFilterStored()) {
         val configured = repo.configuredProfiles()
         val filter = cache.summaryFilter(configured)
         configured.any { filter.matches(cache.tag(it)) && repo.snapshot(it).data != null }

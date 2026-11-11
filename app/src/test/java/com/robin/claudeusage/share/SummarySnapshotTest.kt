@@ -103,7 +103,10 @@ class SummarySnapshotTest {
     @Test fun `one line each from six rows shown`() {
         assertFalse(model(specs(5, listOf(AccountTag.WORK))).oneLine)
         assertTrue(model(specs(6, listOf(AccountTag.WORK))).oneLine)
-        assertTrue(SummarySnapshot.heightPx(model(specs(6, listOf(AccountTag.WORK)))) < SummarySnapshot.heightPx(model(specs(5, listOf(AccountTag.WORK)))) + 100)
+        // Six one-line rows (24 dp each) are shorter than five full rows, by the difference of the two row heights.
+        val six = SummarySnapshot.heightPx(model(specs(6, listOf(AccountTag.WORK))))
+        val five = SummarySnapshot.heightPx(model(specs(5, listOf(AccountTag.WORK))))
+        assertTrue("six one-line rows $six px vs five full rows $five px", six < five)
     }
 
     @Test fun `the entry exists only while some account shown has a reading`() {
@@ -144,6 +147,13 @@ class SummarySnapshotTest {
             assertEquals(name, SummarySnapshot.heightPx(m), bmp.height)
             // What render drew ends where heightPx says: nothing clipped, no empty tail.
             assertEquals(name, SummarySnapshot.heightPx(m).toFloat(), end, 1f)
+            // A full row's last text (the 10.5 sp sub-line, baseline 11 dp under the bar's gap, descent about a quarter
+            // em) stays inside the row: the arithmetic heightPx and draw share cannot catch an overflow by itself.
+            if (!m.oneLine) {
+                val bar = com.robin.claudeusage.ui.BarRenderer.bitmapHeight(8f * ShareCard.SCALE) / ShareCard.SCALE
+                val subBottom = 12f + 20f + 4f + bar + 4f + 11f + 10.5f * 0.25f
+                assertTrue("$name: sub-line bottom $subBottom dp inside the 66 dp row", subBottom <= 12f + 20f + 4f + bar + 4f + 14f)
+            }
             dump?.let { d -> File(d, "$name-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) } }
         }
     }

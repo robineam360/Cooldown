@@ -206,7 +206,7 @@ clients back at `cases.json`.
 | A1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 | ☑ 2026-11-11 |
 | A2 | Duet: CCRM-105 | A1 | ☑ 2026-11-11 |
 | A3 | Pace map: CCRM-109, CCRM-111, CCBG-79 | A2 | ☑ 2026-11-11 |
-| A4 | Summary: CCRM-110 (Personal/Work, filter memory), CCRM-112, CCRM-115 (row glyph) | A3, Q5 | ☐ |
+| A4 | Summary: CCRM-110 (Personal/Work, filter memory), CCRM-112, CCRM-115 (row glyph) | A3, Q5 | ☑ 2026-11-11 |
 | A5 | Sample: CCRM-113 | A4 | ☐ |
 | A6 | Narrow Duet: CCRM-114, CCBG-80 | A5 | ☐ |
 
@@ -459,18 +459,18 @@ map with the on-screen layers, never the chips or a callout; names, never e-mail
 share dialog. Sample accounts' tags are Teams Work, Personal Personal, Lab Work (A5 wires them).
 
 **Done when:**
-- ☐ The tag preference is additive and downgrade-tested (a missing, empty or unknown value reads as Personal; an
+- ☑ The tag preference is additive and downgrade-tested (a missing, empty or unknown value reads as Personal; an
   unknown value is written back untouched; v2.0 prefs read through v1.9's accessors give v1.9's defaults). Tests read
   `spec/mobile/fixtures/tags/cases-personal-work.json` — every `filter` case and every `memory` sequence replayed
   against the real store — plus the row-fit rule (pure, in `ui/SummaryRows.kt`) at 360 dp, the cover and the inner
   list, font scale 1.0 and 2.0; both flavors' tests and lint.
-- ☐ Emulator captures (the addendum's states): the Add sheet with Personal and Work selected, at 360 dp and font 2.0;
+- ☑ Emulator captures (the addendum's states): the Add sheet with Personal and Work selected, at 360 dp and font 2.0;
   the chip on every card, the Tag dialog; the Summary after an "upgrade" (everything Personal, Work disabled) and
   with both tags, each filter, the disabled-segment line, the sort menu; the row glyph at the cover, inner and 360 dp
   widths, the glyph column dropped, one-line rows; the snapshot with both tags and with one (no glyph), the share
   sheet; dark and light.
-- ☐ CCRM-110, CCRM-112 and CCRM-115 Status "Android built"; `app.md` Android section.
-- ☐ Judge round recorded; landed.
+- ☑ CCRM-110, CCRM-112 and CCRM-115 Status "Android built"; `app.md` Android section.
+- ☑ Judge round recorded; landed.
 
 ### Step A5 · Sample — CCRM-113
 
@@ -607,6 +607,46 @@ step. A4's tag preference is additive, so a revert leaves only an unread key; A6
   credentials in-process and started `MainActivity` (airplane mode on); afterwards the app was cleared and uninstalled,
   size and density reset to 411, font 1.0, stay-awake off, airplane mode off, emulator killed. Sweeper skipped: the
   session list was not read (a landing step carries it, see WORKTREE.md).
+
+- **2026-11-11 · A4 Summary (Android).** Code `e2570e5` (CCRM-110 (Account Tags): `data/AccountTag.kt` the tag and the filter's rules,
+  pure; `Profile.tagRaw` + the registry's additive `"t"`; `UsageCache.summaryFilterStored/settleSummaryFilter/tag`;
+  `UsageRepository` add / tag / remove run the memory rule; `ui/AccountTags.kt` glyph, chip, dialog, the Add-sheet control and
+  the header control; Settings chip on every card, "Tag…", the scrolling Add sheet; the Summary header with the control and
+  the sort menu. CCRM-115 (Row Tag Glyph): `ui/SummaryRows.kt` `fullKeepsGlyph` / `oneLineKeepsGlyph`, one decision per list.
+  CCRM-112 (Summary Snapshot): `share/SummarySnapshot.kt` (the screen's own map painter drawn into the card), the All tab's
+  ⋮ "Share snapshot"), judge fixes and close-out in the following commit; both flavors' tests, lint and both assembles
+  green. Tests read `cases-personal-work.json` — every `filter` case and every `memory` sequence replayed against the real
+  store (registry + `UsageCache` prefs + `UsageRepository` add / tag / remove, a plain-file credential backend) — plus the
+  glyph fit rule, a v1.9 registry-decode downgrade test and the snapshot render. **Captures**
+  `design/research/2026-11-v20-build/A4/` (36, fold7inner at 5556): cover dark 01–19, 29; 360 dp 20–24; cover light 25;
+  inner 750 dp 26–28 — all states of the addendum: the Add sheet with Personal and Work, the chip on every card, "Tag…", the
+  Tag dialog, the upgrade Summary (Work disabled) and its 3 s note, each filter, the sort menu, one-line rows, the glyph
+  column dropped (one-line list at 360 dp, 288 < 295), the snapshot with both tags / one tag (no glyph) / one line each /
+  filter Work, font 2.0 header and Add sheet. **Judge** (fresh Opus @ high): concerns, nothing blocking. Adopted: F1 a
+  segment with no accounts is no longer `disabled()` in semantics (a disabled node has no click, so TalkBack could not reach
+  the note; T3), F2 the chip's "change" label moved to `clickable(onClickLabel)` and `selectableGroup()` on the dialog and
+  the control (the "1 of 2"), F3 the snapshot's glyph and mark dim with a faded row, F4 the downgrade test now decodes with a
+  verbatim v1.9 `decode` (incl. `"t":"family"`) and reads the v2.0 prefs through v1.9's keys, and the height test checks the
+  sub-line inside its row, F5a the ⋮'s visibility follows the stored filter. Not changed: F5b (the spent snapshot row prints
+  "Out until …" left and "Resets …" right, as the per-account card and §8's Atlas row do), F5d (measured, see below).
+  **For the orchestrator — fixture:** the `filter` case "one account" has `storedAfter: "all"` for a remembered `work`, but the
+  `memory` case "a second account added to a single-account install" expects the value to stay `work` while there is no
+  Summary; the build follows BEHAVIOR-MOBILE §6 ("evaluated only while the Summary exists") and the test skips that one
+  `storedAfter` — Step 2 should fix the generator (iOS I4 will meet it too). **Wireframe calls, all within the addendum:**
+  accounts counted for the filter are the signed-in ones (the Summary's tabs list only those; an Add-sheet account is
+  created before its sign-in, as shipped, so it counts once signed in); the snapshot's "as of" is the oldest reading shown;
+  a held row reads "Held · back at …" (not drawn); the Add sheet's glyphs stay at font 2.0 on AOSP (the control measures its
+  word: "Personal" 103 dp of the 160 dp half — AOSP's non-linear scaling; **UNVERIFIED on One UI**, Step 3); the filter
+  control shares the width by word length under large text so "Personal" is never cut; the control, sort button and Add
+  sheet grow rather than clip at font 2.0 (28 / 28 / 40 dp are the scale-1.0 minimums). **Orchestrator's two points:** (1)
+  Android creates the account on the Add-sheet row tap, before the browser or code sheet opens (the shipped CCRM-56 flow, and
+  the addendum draws it: "the account is created with the tag, and its card shows the chip before the browser … opens"), so
+  a cancelled or failed sign-in **leaves a signed-out card holding its tag** — unlike iOS, which creates the account on
+  success. Changing that is a design change; not done, Robin's call. (2) The control's TalkBack label stays the
+  wireframe's "This account is" (segments "Personal, selected, 1 of 2"), not Desktop's "Tag for the new account, Personal":
+  the addendum's TalkBack paragraph fixes it. **Emulator notes:** a scratch debug-only `SeedActivity` (never committed)
+  seeded the registry, snapshots and fake credentials (airplane mode on); afterwards the app was cleared, size / density /
+  font reset, dark mode off, airplane mode off, emulator killed. Sweeper skipped: the session list was not read.
 
 ---
 

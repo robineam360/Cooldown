@@ -109,12 +109,44 @@ class AccountTagsTest {
         assertEquals("personal", repo.registry().all().first { it.key == personal.key }.tagRaw)
     }
 
-    @Test fun `the filter key is new - a v1_9 install never reads it`() {
+    /** v1.9's `ProfileRegistry.decode`, verbatim in what it reads (k, s, l, d, v) and ignoring every other field. */
+    private fun v19Decode(json: String): List<List<Any>> {
+        val arr = JSONArray(json)
+        val out = ArrayList<List<Any>>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val key = o.optString("k")
+            if (key.isEmpty()) continue
+            val slot = o.optInt("s", -1)
+            if (slot < 0) continue
+            out += listOf(key, slot, o.optString("l").ifEmpty { key }, o.optString("d"), Provider.fromKey(o.optString("v")))
+        }
+        return out
+    }
+
+    @Test fun `downgrade - a v1_9 reader of the registry sees the same accounts, tagged or not, even with an unknown tag`() {
+        val before = listOf(Profile("personal", 0, "Personal"), Profile("work", 1, "Work"), Profile("p2", 2, "Lab", Provider.CHATGPT))
+        val v19 = ProfileRegistry.encode(ProfileRegistry.Companion.State(before, 3))
+        val tagged = before.mapIndexed { i, p -> p.copy(tagRaw = listOf("work", "family", "personal")[i]) }
+        val v20 = ProfileRegistry.encode(ProfileRegistry.Companion.State(tagged, 3))
+        assertEquals(v19Decode(v19), v19Decode(v20))
+    }
+
+    @Test fun `downgrade - v2_0 preferences read through v1_9's accessors give v1_9's values, the filter key included`() {
         val repo = store(listOf("A" to "work", "B" to "personal"), null)
-        repo.cacheSettings().setSummaryFilter(SummaryFilter.WORK)
+        val cache = repo.cacheSettings()
+        cache.setSummaryFilter(SummaryFilter.WORK)
+        cache.setSummaryOrder(SummaryOrder.MOST_USED)
+        cache.setOpenOnSummary(false)
         val prefs = context.getSharedPreferences("usage_cache", Context.MODE_PRIVATE)
+        // v1.9 reads summaryOrder and openOnSummary through these keys and has no accessor for summaryFilter at all.
+        assertEquals("used", prefs.getString("summaryOrder", null))
+        assertFalse(prefs.getBoolean("openOnSummary", true))
         assertEquals("work", prefs.getString("summaryFilter", null))
-        assertTrue(prefs.all.keys.contains("summaryFilter"))
+        // Nothing v1.9 reads moved: the layout and credits accessors keep their defaults.
+        val profile = cache.registry().all().first()
+        assertEquals(UsageCache(context).layout(profile), cache.layout(profile))
+        assertTrue(cache.creditsVisible(profile) == UsageCache(context).creditsVisible(profile))
     }
 
     // ---- fixtures: every filter case

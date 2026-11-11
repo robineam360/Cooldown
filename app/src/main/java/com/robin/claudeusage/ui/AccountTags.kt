@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,8 +42,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -106,13 +105,9 @@ fun TagChip(tag: AccountTag, showWord: Boolean, onClick: () -> Unit, modifier: M
         modifier
             .clip(shape)
             .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shape)
-            .clickable(onClick = onClick)
+            .clickable(onClickLabel = "change", role = Role.Button, onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 2.dp)
-            .semantics(mergeDescendants = true) {
-                contentDescription = "Tag: ${tag.label}"
-                role = Role.Button
-                onClick(label = "change") { onClick(); true }
-            },
+            .semantics(mergeDescendants = true) { contentDescription = "Tag: ${tag.label}" },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TagGlyph(tag, 12.dp, ink)
@@ -130,7 +125,7 @@ fun TagDialog(label: String, current: AccountTag, onPick: (AccountTag) -> Unit, 
         onDismissRequest = onDismiss,
         title = { Text("Tag · $label") },
         text = {
-            Column {
+            Column(Modifier.selectableGroup()) {
                 for (tag in AccountTag.entries) {
                     Row(
                         Modifier
@@ -234,6 +229,7 @@ fun SummaryFilterControl(
     val shape = RoundedCornerShape(8.dp)
     Row(
         modifier
+            .selectableGroup()
             .heightIn(min = 28.dp)
             .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
             .border(1.dp, MaterialTheme.colorScheme.outline, shape)
@@ -256,10 +252,10 @@ fun SummaryFilterControl(
                     .semantics(mergeDescendants = true) {
                         role = Role.RadioButton
                         selected = on
-                        if (!live) {
-                            disabled()
-                            stateDescription = "no accounts"
-                        }
+                        // Not disabled(): a disabled node has no click action, and a tap on this segment answers with the
+                        // note (addendum T3), TalkBack included.
+                        if (!live) stateDescription = "no accounts"
+
                     },
                 contentAlignment = Alignment.Center,
             ) {

@@ -334,13 +334,13 @@ internal object SummarySnapshot {
     }
 
     private fun drawGlyphAndMark(
-        c: Canvas, context: Context, r: Row, m: Model, x0: Float, baseline: Float, text: TextPaint, glyphDp: Float, markDp: Float,
+        c: Canvas, context: Context, r: Row, m: Model, x0: Float, baseline: Float, text: TextPaint, glyphDp: Float, markDp: Float, a: Float,
     ): Float {
         var x = x0
         if (m.glyphColumn) {
             val g = px(glyphDp)
             ContextCompat.getDrawable(context, tagGlyphRes(r.tag))?.mutate()?.let { d ->
-                d.setTint(ink(m.dark, 0.6f))
+                d.setTint(ink(m.dark, 0.6f * a))
                 val top = (baseline + (text.ascent() + text.descent()) / 2f - g / 2f).toInt()
                 d.setBounds(x.toInt(), top, (x + g).toInt(), top + g.toInt())
                 d.draw(c)
@@ -349,7 +349,7 @@ internal object SummarySnapshot {
         }
         val s = px(markDp)
         ContextCompat.getDrawable(context, providerMarkRes(r.provider))?.mutate()?.let { d ->
-            d.setTint(r.accentArgb)
+            d.setTint(fade(r.accentArgb, a))
             val top = (baseline + (text.ascent() + text.descent()) / 2f - s / 2f).toInt()
             d.setBounds(x.toInt(), top, (x + s).toInt(), top + s.toInt())
             d.draw(c)
@@ -383,7 +383,7 @@ internal object SummarySnapshot {
         val line1 = y + px(12f + 16f)
         font(13f, true, fade(ink(dark, 1f), a), 0f)
         val figureW = run { font(17f, true, 0, 0f); text.measureText(r.figure) }
-        val nameX = drawGlyphAndMark(c, context, r, m, tx, line1, text, SummaryRows.GLYPH_ONE_LINE_DP, 14f)
+        val nameX = drawGlyphAndMark(c, context, r, m, tx, line1, text, SummaryRows.GLYPH_ONE_LINE_DP, 14f, a)
         font(13f, true, fade(ink(dark, 1f), a), 0f)
         c.drawText(TextUtils.ellipsize(r.name, text, right - figureW - px(8f) - nameX, TextUtils.TruncateAt.END).toString(), nameX, line1, text)
         font(17f, true, fade(if (r.alarm) alarm else ink(dark, 1f), a), 0f)
@@ -419,7 +419,7 @@ internal object SummarySnapshot {
         val dark = m.dark
         val alarm = Palette.barColor(100.0, Color(r.accentArgb), dark).toArgb()
         val base = y + px(ONE_LINE_H / 2f) + px(4.5f)
-        val nameX = drawGlyphAndMark(c, context, r, m, left, base, text, SummaryRows.GLYPH_ONE_LINE_DP, 14f)
+        val nameX = drawGlyphAndMark(c, context, r, m, left, base, text, SummaryRows.GLYPH_ONE_LINE_DP, 14f, a)
         font(13f, true, fade(ink(dark, 1f), a), 0f)
         val nameW = px(74f)
         c.drawText(TextUtils.ellipsize(r.name, text, nameW, TextUtils.TruncateAt.END).toString(), nameX, base, text)
