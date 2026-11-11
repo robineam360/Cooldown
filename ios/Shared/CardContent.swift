@@ -98,7 +98,10 @@ enum CardContent {
             samples: points, nowX: nowX, projection: projection,
             over: (pct ?? 0) < 100 && pace.map { (pct ?? 0) > $0 + 3 } ?? false,
             startLabel: axisLabel(start, kind: kind, use24h: use24h, timeZone: timeZone),
-            endLabel: axisLabel(reset, kind: kind, use24h: use24h, timeZone: timeZone))
+            endLabel: axisLabel(reset, kind: kind, use24h: use24h, timeZone: timeZone),
+            grid: DayGrid.columns(windowLengthMs: length),
+            nowColumn: DayGrid.nowColumn(columns: DayGrid.columns(windowLengthMs: length), elapsedMs: nowMs - start,
+                                         windowLengthMs: length))
 
         var paceLine: String
         var alarm = false
@@ -154,6 +157,12 @@ enum CardContent {
     }
 
     static let notStartedLine = "Starts when a message is sent"
+
+    /// CCRM-106 (7d Chip): the account's whole 7-day window, all models — the tile's first chip and the classic 7-day
+    /// card's left half (was "All"). The stored chip selection is unchanged; only the label moved.
+    static let sevenDayTitle = "7d"
+    /// What VoiceOver reads for a window title: "7-day, all models" for the 7d label, the title itself otherwise.
+    static func spokenTitle(_ title: String) -> String { title == sevenDayTitle ? "7-day, all models" : title }
 
     /// CCRM-102 (Spent Week Gate): the one full-opacity line under a disabled 5h (spec mobile §5).
     /// Exactly Android's (`LeadLines.kt`): "Weekly limit reached — 5h can’t be used until Sat 4:51 pm"; with no reset

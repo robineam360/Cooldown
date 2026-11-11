@@ -180,7 +180,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 
 | Step | What | Gated on | Status |
 |---|---|---|---|
-| I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☐ |
+| I1 | Lines and labels: CCRM-106, CCRM-107, CCRM-108 | 1, Q6 ("one lane at a time" → also A5) | ☑ 2026-11-11 |
 | I2 | Pace map: CCRM-109, CCRM-111 | I1 | ☐ |
 | I3 | Summary: CCRM-110, CCRM-112; the CCRM-113 iOS follow-up | I2 | ☐ |
 
@@ -309,6 +309,15 @@ committed under spec/tools/. One fresh Opus judge round on the fixtures against 
   **Choices the fixtures fix where §6.3 is open** (in `_meta` and the §6.3 pointer): leader directions clockwise
   from east at each distance; the name box touches the leader's end by its side facing away from the dot; the
   fixture's own placement offsets (each family keeps its drawn ones); only ordinals are bold, never the end labels.
+- 2026-11-11 · **Correction** (spec only, on the orchestrating session's word, after the desktop ran the file): the
+  quiet rule and the map's figure labels used half up, which §2 gives for credits; window rows truncate (Android
+  `Palette.usageInt`, iOS `windowPercentDisplay`), and Robin's rule is "match the row". So a row prints "0%" below 1,
+  not 0.5: 0.99 is hidden, 1.0 is plotted; the labels truncate ("Teams 51%" and "48% left" at 51.5). Core §6.3's
+  planned sentence now reads "under 1: a window row truncates (§2's window bars)". The `quiet`, `mapLabels.figures`
+  and `map-foot` cases were regenerated; the callout's "~N% at reset" stays half up (an estimate), spent stays 100%.
+  No judge round (a one-rule correction applying Robin's existing call). Lane I's `PrintedFormV20Tests` reads only
+  the pace-line blocks, which are unchanged. ROADMAP CCRM-109's What text and the wireframe §5 still say "under
+  0.5"; neither is this step's to edit during the lanes (Step 2 rewrites the tracker lines).
 
 ---
 
@@ -475,11 +484,11 @@ grid on every 7-day and 5h chart and the Pace map's axis and foot line; the "res
 the tile, the Summary, "the pace line on iOS", the widgets, lock screen and Live Activity.
 
 **Done when:**
-- ☐ `swift test` on the v20 fixtures and the app tests pass.
-- ☐ Simulator captures of each chart and pace-line surface, including the iPhone 17e's narrowest Summary row.
-- ☐ The "iOS:" lines of CCRM-106, 107 and 108 read "built" with the commit; the iOS sections of `app.md`,
+- ☑ `swift test` on the v20 fixtures and the app tests pass.
+- ☑ Simulator captures of each chart and pace-line surface, including the iPhone 17e's narrowest Summary row.
+- ☑ The "iOS:" lines of CCRM-106, 107 and 108 read "built" with the commit; the iOS sections of `app.md`,
   `foundations.md` and `widgets.md` carry the delta.
-- ☐ Judge round recorded; landed.
+- ☑ Judge round recorded; landed.
 
 ### Step I2 · Pace map — CCRM-109, CCRM-111
 
@@ -510,6 +519,34 @@ Gemini account, so both stores' review notes describe the same three accounts.
 **Lane I reversal:** as Lane A: `git revert` of the step's commits, newest first.
 
 **Lane I Log:**
+
+- 2026-11-11 · **Step I1 done** (worktree `peaceful-aryabhata-f425f7`, PR #38). Code 7d479ba: CooldownCore `PaceLine.Drop`
+  (none → word → clock → floor: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor; later today one fewer)
+  and a new `DayGrid` (columns, the now column by integer maths, ordinals that give way); `FitLine` takes four variants;
+  `TrendChart` draws the grid (`line` 60%, 0.5 pt, after the wash, under the guides) and the ordinals on every 7-day and 5h
+  chart (Small: grid only; Time down: ordinals down the right edge); the Pace map draws sevenths, "week start", 2…6,
+  "reset", and the note moves to its foot line; the tile chip and `WeeklyCard`'s half read "7d" (VoiceOver "7-day, all
+  models"). Tests: CooldownCore reads `printed-v20.json` for `paceLine`, `paceLineForms`, `endToEnd`, `dayGrid`
+  (`PrintedFormV20Tests`); the three old printed.json tests those replace moved there; `swift test` 198 passed, app tests
+  98 passed (iPhone 17 Pro). Docs 2047cd9: ROADMAP "iOS:" lines, the iOS sections of `app.md`, `foundations.md`,
+  `widgets.md`. **Captures** `design/research/2026-11-v20-build/I1/`: `iphone17pro/` (tile 7d and 5h charts, Summary, Pace
+  map; light and dark), `iphone17e/` (Summary light/dark incl. compact density, tile), `ipadpro13/` (portrait and
+  landscape, light and dark), `render/` (36 widget, lock-screen, Live Activity and Island faces from `SurfaceRenderTests`,
+  e.g. `la-single` "21h 50m ahead · Sun", `bars-se` the floor, `dc-down-overview` the Time-down grid). The app's fonts are
+  fixed sizes, so Dynamic Type does not move the drop; the drop is shown by the narrow faces and pinned by
+  `PaceLineFitTests` at 100–300 pt.
+- 2026-11-11 · **Judge** (fresh Opus, high, worker on claude-product): **accept with concerns**, no blocking. F1 (concern)
+  the dayGrid horizontals had no count check → added. F2 (concern) the endToEnd spent case passed with no assertion, and
+  nowX was checked against the test's own formula → the spent case now asserts `Pace.isSpent`, the nowX self-check is
+  gone (the fixture's nowX feeds `DayGrid`). F3 (nit) ROADMAP's CCRM-106 line claimed the classic card's half reads "7d"
+  though `WeeklyCard` has no caller since CCRM-103 (Hybrid Notification) → the line says so. F4 (nit) see the defect
+  below. Fit calls (a)–(c) accepted. Fit call (a), the Time-down ordinals down the right edge (rev B says only "the grid
+  transposes"), went to a **Fable judge** (Convention 11): **keep** — the ordinals belong to the axis strip, which Time
+  down moves to the right edge; rev B reserves "no ordinals" for Small. Not a departure.
+- 2026-11-11 · **Defect for Step 2 to file** (Lane I never edits BUGS.md): on iOS the pace line's clock prints "AM/PM"
+  (core `Fmt.dayClock`, per the fixtures) while the older iOS lines built by `CardContent.clock` print "am/pm", so the open
+  tile now shows "resets Sun 10:17 AM" right above "Resets at Sun 10:17 am" (`iphone17pro/teams-tile-light.png`).
+  Pre-existing since CCRM-104 (Pace Line Parity); the new "resets" word makes it easier to see. Severity Low.
 
 ---
 

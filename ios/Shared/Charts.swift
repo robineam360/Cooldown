@@ -60,7 +60,8 @@ struct UsageBar: View {
 
 /// The trend chart as shipped on Android (ui/Sparkline.kt) and drawn in the approved wireframe: 80/90/100
 /// guides with labels, the even-pace diagonal and its legend, the samples with dots, the "now" marker,
-/// the dashed projection with its hollow end, and the time axis. Nothing removed.
+/// the dashed projection with its hollow end, and the time axis. Nothing removed. v2.0 (CCRM-107 (Day Grid)): the day
+/// grid under it all and the ordinals on the axis.
 struct TrendChart: View {
     struct Model: Equatable {
         /// (x in 0…1 of the window, percent)
@@ -71,6 +72,10 @@ struct TrendChart: View {
         var over: Bool
         var startLabel: String
         var endLabel: String
+        /// CCRM-107 (Day Grid): the grid's columns — 7 on a weekly chart, 5 on a 5h chart, 0 for none — and the
+        /// 1-based column holding now (its ordinal is bold).
+        var grid: Int = 0
+        var nowColumn: Int = 0
     }
     let model: Model
     let accent: Color
@@ -132,6 +137,21 @@ struct TrendChart: View {
             }
             func line(_ a: CGPoint, _ b: CGPoint) -> Path { Path { $0.move(to: a); $0.addLine(to: b) } }
             let dash = StrokeStyle(lineWidth: 1, dash: [2, 4])
+            // Rev B §5: the pace wash first — a faint red triangle above the even-pace diagonal, only while over pace.
+            if model.over {
+                let wash = Path { $0.move(to: P(0, 0)); $0.addLine(to: P(1, 100)); $0.addLine(to: P(0, 100)); $0.closeSubpath() }
+                ctx.fill(wash, with: .color(p.red.opacity(scheme == .dark ? 0.10 : 0.07)))
+            }
+            // CCRM-107 (Day Grid), wireframe v2.0 feedback §3: under everything but the wash — verticals at the window's
+            // start + k days (k hours on a 5h chart), horizontals at k/n of 100% (the n-th under the 100% guide), so every
+            // crossing sits on the diagonal. The quietest line on the chart: `line` at 60%, 0.5 pt. "Time down" transposes
+            // it with the chart; Small (lines only) keeps it.
+            let n = model.grid
+            if n > 1 {
+                let gridInk = GraphicsContext.Shading.color(p.line.opacity(0.6))
+                for f in DayGrid.fractions(columns: n) { ctx.stroke(line(P(f, 0), P(f, 100)), with: gridInk, lineWidth: 0.5) }
+                for k in 1...n { ctx.stroke(line(P(0, 100 * Double(k) / Double(n)), P(1, 100 * Double(k) / Double(n))), with: gridInk, lineWidth: 0.5) }
+            }
             let guides: [(Double, Color)] = [(80, p.yellow), (90, p.orange), (100, p.red)]
             for (v, c) in guides {
                 ctx.stroke(line(P(0, v), P(1, v)), with: .color(c.opacity(0.7)), style: dash)
@@ -152,11 +172,6 @@ struct TrendChart: View {
             ctx.stroke(line(P(0, 0), P(1, 0)), with: .color(p.line), lineWidth: 1)
 
             let pts = model.samples.map { P($0.x, $0.y) }
-            // Rev B §5: the pace wash first — a faint red triangle above the even-pace diagonal, only while over pace.
-            if model.over {
-                let wash = Path { $0.move(to: P(0, 0)); $0.addLine(to: P(1, 100)); $0.addLine(to: P(0, 100)); $0.closeSubpath() }
-                ctx.fill(wash, with: .color(p.red.opacity(scheme == .dark ? 0.10 : 0.07)))
-            }
             if let first = model.samples.first, let last = model.samples.last {
                 let split = Self.splitFill(model.samples)
                 var below = Path()
@@ -210,19 +225,46 @@ struct TrendChart: View {
                     label("\(Int(last.y))%", .init(x: lastPt.x + (early ? 8 : -8), y: lastPt.y - 13), p.ink, early ? .leading : .trailing, 12, true)
                 }
             }
+            // CCRM-107: the ordinals 2…n−1 centred in their columns between the end labels, 9.5 pt; the column holding now
+            // bold ink. An ordinal gives way within 6 pt of "now" and 4 pt of an end label, and all of them go when a
+            // column is under 14 pt (core `DayGrid`); on a "Time down" chart the same rule runs down the right edge.
+            func measure(_ t: String, _ s: CGFloat, _ b: Bool = false) -> CGSize {
+                ctx.resolve(Text(t).font(.system(size: s, weight: b ? .bold : .regular))).measure(in: CGSize(width: 300, height: 40))
+            }
+            func ordinals(span: Double, nowAt: Double?, start: Double, end: Double, digit: Double, now: Double) -> [DayGrid.Ordinal] {
+                guard n > 2, !linesOnly else { return [] }
+                return DayGrid.ordinals(columns: n, plotWidth: span, nowColumn: model.nowColumn, nowAt: nowAt,
+                                        startWidth: start, endWidth: end, ordinalWidth: digit, nowWidth: now)
+            }
+            func ordinal(_ o: DayGrid.Ordinal, at: CGPoint, _ anchor: UnitPoint) {
+                guard o.drawn else { return }
+                label(o.text, at, o.bold ? p.ink : p.sub, anchor, 9.5, o.bold)
+            }
             if down {
                 label(model.startLabel, .init(x: W, y: top + 8), p.sub, .trailing, 11, false)
-                if let nowX = model.nowX, P(nowX, 0).y > top + 18, P(nowX, 0).y < bottom - 18 {
+                let nowShown = model.nowX.map { P($0, 0).y > top + 18 && P($0, 0).y < bottom - 18 } ?? false
+                if nowShown, let nowX = model.nowX {
                     label("now", .init(x: W, y: P(nowX, 0).y), p.sub, .trailing, 11, false)
                 }
                 label(model.endLabel, .init(x: W, y: bottom - 2), p.sub, .trailing, 11, false)
+                let h = Double(measure("now", 11).height), d = Double(measure("4", 9.5).height)
+                for o in ordinals(span: Double(bottom - top), nowAt: nowShown ? model.nowX.map { Double(P($0, 0).y - top) } : nil,
+                                  start: 8 + h / 2, end: 2 + h / 2, digit: d, now: h) {
+                    ordinal(o, at: .init(x: W, y: top + CGFloat(o.centre)), .trailing)
+                }
             } else {
                 label(model.startLabel, .init(x: 0, y: bottom + 11), p.sub, .leading, 11, false)
                 // "now" only where it can't run into the start or end time.
-                if let nowX = model.nowX, P(nowX, 0).x > 56, P(nowX, 0).x < W - 56 {
+                let nowShown = model.nowX.map { P($0, 0).x > 56 && P($0, 0).x < W - 56 } ?? false
+                if nowShown, let nowX = model.nowX {
                     label("now", .init(x: P(nowX, 0).x, y: bottom + 11), p.sub, .center, 11, false)
                 }
                 label(model.endLabel, .init(x: W, y: bottom + 11), p.sub, .trailing, 11, false)
+                for o in ordinals(span: Double(right - left), nowAt: nowShown ? model.nowX.map { Double(P($0, 0).x - left) } : nil,
+                                  start: Double(measure(model.startLabel, 11).width), end: Double(measure(model.endLabel, 11).width),
+                                  digit: Double(measure("4", 9.5).width), now: Double(measure("now", 11).width)) {
+                    ordinal(o, at: .init(x: left + CGFloat(o.centre), y: bottom + 11), .center)
+                }
             }
         }
         .opacity(dimmed ? 0.45 : 1)

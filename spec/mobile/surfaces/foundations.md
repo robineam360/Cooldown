@@ -555,4 +555,12 @@ Step A1 (2026-11-11, RUNBOOK Lane A), built on Android:
 
 ## v2.0 feedback on iOS
 
-Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").
+Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4).
+
+- **Grid ink** (CCRM-107 (Day Grid)): `line` at 60%, 0.5 pt — the quietest line on a chart, under the guides (dashed
+  80/90/100 at 70%), the axis (`line`, 1 pt) and the diagonal. Used by `TrendChart` and the Pace map.
+- **Grid ordinals**: 9.5 pt regular `sub` on a chart's axis strip (bold `ink` in the column holding now); 10 pt `sub` on the
+  Pace map. The end labels stay 11 pt (chart) and 10 pt (map) and are never bold.
+- **The pace line** (CCRM-108 (Reset Named)): the reset reads "resets <weekday> <clock>"; the drop order is "resets", then
+  the clock (another day keeps its weekday to the last), then the floor, then 0.8 size (`PaceLine.Drop`: none, word, clock,
+  floor).

@@ -29,16 +29,29 @@ public struct PaceLine: Sendable, Equatable, Hashable, Codable {
     /// The line's first part: the tinted span, or "On the mark".
     public var lead: String { tinted ?? "On the mark" }
 
-    /// The drop order everywhere a line cannot fit: the weekday goes first, then the clock; the duration and word are the
-    /// floor and are never cut (Astra C1-4: each surface measures the scaled text per string).
-    public enum Drop: Int, Sendable, Equatable, CaseIterable { case none, weekday, clock }
+    /// CCRM-108 (Reset Named), core §6.3 "Planned — v2.0 feedback": the line names the reset ("· resets Wed 12:30 PM"),
+    /// and where it does not fit **a bare clock always means today**. A reset on another day: "resets Wed 12:30 PM" →
+    /// "Wed 12:30 PM" → "Wed" → the floor. Later the same local day: "resets 11:00 PM" → "11:00 PM" → the floor. The
+    /// duration and word are the floor and are never cut (Astra C1-4: each surface measures the scaled text per string).
+    public enum Drop: Int, Sendable, Equatable, CaseIterable {
+        /// "resets Wed 12:30 PM"
+        case none
+        /// "Wed 12:30 PM" — the word "resets" goes first.
+        case word
+        /// "Wed" — the clock goes next; a reset later today has no weekday, so this is already the floor.
+        case clock
+        /// The duration and its word alone.
+        case floor
+    }
 
-    /// The reset part at a drop level: "Sun 9:30 pm", "9:30 pm", or nil when the clock too is dropped.
+    /// The reset part at a drop level: "resets Sun 9:30 PM", "Sun 9:30 PM", "Sun", or nil at the floor.
     public func reset(_ drop: Drop = .none) -> String? {
+        let full = weekday.map { "\($0) \(clock)" } ?? clock
         switch drop {
-        case .none: return weekday.map { "\($0) \(clock)" } ?? clock
-        case .weekday: return clock
-        case .clock: return nil
+        case .none: return "resets " + full
+        case .word: return full
+        case .clock: return weekday
+        case .floor: return nil
         }
     }
 
@@ -48,14 +61,14 @@ public struct PaceLine: Sendable, Equatable, Hashable, Codable {
         return lead + PaceText.dot + r
     }
 
-    /// The distinct forms, widest first (core §6.3 `paceLineForms`): a reset with no weekday has one fewer.
+    /// The distinct forms, widest first (core §6.3 `paceLineForms`): a reset later today (no weekday) has one fewer.
     public var forms: [String] {
         var out: [String] = []
         for d in Drop.allCases { let t = text(d); if out.last != t { out.append(t) } }
         return out
     }
 
-    /// The same line from the printed pieces (the fixture's `side`, `durationMs`, `reset`).
+    /// The same line from the printed pieces (the fixture's `side`, `durationMs`, `reset` — "resets Wed 12:30 PM").
     public static func text(side: Side, durationMs: Int64?, reset: String) -> String {
         if side == .on { return "On the mark" + PaceText.dot + reset }
         let d = PaceText.behind(durationMs ?? 0)
@@ -118,7 +131,8 @@ extension PaceText {
         public static let diagonal = "even pace"
         public static let xStart = "week start"
         public static let xEnd = "reset"
-        /// Centred between the axis ends (kept on both families, core §6.3).
+        /// CCRM-107 (Day Grid): the axis carries the ordinals 2…6 now, so this note moves to the card's foot line, left
+        /// (core §6.3 "Planned — v2.0 feedback", "The Pace map's words").
         public static let xCentre = "each account's own week"
     }
 }

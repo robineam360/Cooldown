@@ -176,7 +176,7 @@
       }
     },
     {
-      "name": "0.5 prints 1%, so it is plotted and not counted",
+      "name": "0.99 prints 0%: hidden and counted",
       "accounts": [
         {
           "name": "Teams",
@@ -185,7 +185,30 @@
         },
         {
           "name": "Edge",
-          "usedPct": 0.5,
+          "usedPct": 0.99,
+          "clocked": true
+        }
+      ],
+      "expected": {
+        "plotted": [
+          "Teams"
+        ],
+        "left": "each account's own week",
+        "count": "1 at 0%",
+        "empty": null
+      }
+    },
+    {
+      "name": "1.0 prints 1%, so it is plotted and not counted",
+      "accounts": [
+        {
+          "name": "Teams",
+          "usedPct": 52,
+          "clocked": true
+        },
+        {
+          "name": "Edge",
+          "usedPct": 1.0,
           "clocked": true
         }
       ],

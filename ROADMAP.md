@@ -1954,7 +1954,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
 - **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
   and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): the tile's first chip reads "7d", as does the classic 7-day card's half (`WeeklyCard`, in code but placed by no layout since CCRM-103 (Hybrid Notification)) (VoiceOver "7-day, all models"); the stored chip key unchanged. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
 - **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
@@ -1962,7 +1962,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   even-pace diagonal; labels start date, 2…6, reset date. 5h charts: five hourly columns and 1/5 steps. The map's
   axis reads "week start", 2…6, "reset"; "each account's own week" moves to the foot line. Every existing chart
   element stays.
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): CooldownCore `DayGrid` on `printed-v20.json` → `dayGrid`; the grid and ordinals on every 7-day and 5h chart (tile, widgets, share card; Time down transposed, Small lines only) and on the Pace map ("week start", 2…6, "reset"; the note in the foot line). Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-108 · Reset Named — the pace line says "resets" before its clock
 - **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
@@ -1972,7 +1972,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   "· Wed" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. This replaces the shipped order
   that dropped the weekday first (so the Fold 7 cover will read "5h 45m behind · Sun", not "· 9:30 PM").
   Since/until (the mark instant) was drawn and not chosen.
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): `PaceLine` prints "· resets Wed 12:30 PM" and drops "resets", then the clock (another day keeps its weekday), then the floor, on every pace-line surface (tile, Summary, widgets, lock screen, Live Activity, Island); `printed-v20.json` → `paceLine`, `paceLineForms`, `endToEnd`. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
 - **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block

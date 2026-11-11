@@ -2,10 +2,11 @@ import CooldownCore
 import SwiftUI
 
 /// CCRM-104 (Pace Line Parity): drawing `PaceLine` (core §6.3 Printed form). The duration and word take the tone
-/// (green under the mark, red over it, ink on it) and are set semibold; the rest is the line's own ink. Where a column
-/// cannot hold the line the weekday goes first, then the clock, then the text steps to 0.8 of its size; the duration
-/// and word are the floor and are never cut (wireframe §8 D10, Astra C1-4: measured per string on the scaled text,
-/// so Dynamic Type drops earlier).
+/// (green under the mark, red over it, ink on it) and are set semibold; the rest is the line's own ink. CCRM-108 (Reset
+/// Named): the line names the reset ("· resets Wed 12:30 PM"); where a column cannot hold it, "resets" goes first, then
+/// the clock (a reset on another day keeps its weekday to the last: a bare clock always means today), then the text steps
+/// to 0.8 of its size; the duration and word are the floor and are never cut (Astra C1-4: measured per string on the
+/// scaled text, so Dynamic Type drops earlier).
 extension PaceLine {
 
     func tone(_ scheme: ColorScheme, ink: Color) -> Color {
@@ -23,13 +24,20 @@ extension PaceLine {
         return lead + Text(PaceText.dot + r).foregroundStyle(rest)
     }
 
-    /// Every drop level, widest first, for `FitLine`.
+    /// Every distinct drop level, widest first, for `FitLine` (a reset later today has one fewer: no weekday-only form).
     func variants(rest: Color, ink: Color, scheme: ColorScheme, weight: Font.Weight = .semibold) -> [Text] {
-        Drop.allCases.map { styled($0, rest: rest, ink: ink, scheme: scheme, weight: weight) }
+        var seen: [String] = []
+        return Drop.allCases.compactMap { d in
+            let t = text(d)
+            guard seen.last != t else { return nil }
+            seen.append(t)
+            return styled(d, rest: rest, ink: ink, scheme: scheme, weight: weight)
+        }
     }
 }
 
-/// The first variant that fits the width; the last (the floor) scales to 0.8 before it would truncate.
+/// The first variant that fits the width; the last (the floor) scales to 0.8 before it would truncate. Up to four
+/// variants (the pace line's "resets" form, the bare reset, the weekday alone, the floor); fewer repeat the last.
 struct FitLine: View {
     /// Widest first; at least one.
     let variants: [Text]
@@ -40,6 +48,7 @@ struct FitLine: View {
         ViewThatFits(in: .horizontal) {
             v[0].lineLimit(1).fixedSize(horizontal: true, vertical: false)
             v[min(1, last)].lineLimit(1).fixedSize(horizontal: true, vertical: false)
+            v[min(2, last)].lineLimit(1).fixedSize(horizontal: true, vertical: false)
             v[last].lineLimit(1).minimumScaleFactor(0.8)
         }
     }
