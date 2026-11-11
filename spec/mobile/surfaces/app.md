@@ -1024,3 +1024,11 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
   (`PaceMapLayout`, `PaceLineFitTests`); "even pace" slides along the diagonal to a free stretch; the centre note "each account's
   own week" stays, centred under the axis (core §6.3 keeps it on both families).
 - **Share card, Weekly row**: left slot the tinted span ("13h 59m ahead"), right slot "Resets …".
+
+## v2.0 feedback on Android
+
+Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+
+## v2.0 feedback on iOS
+
+Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").

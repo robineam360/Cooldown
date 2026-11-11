@@ -1954,6 +1954,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Status:** Planned · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
 - **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
   and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
+- **iOS:** not started
 
 ### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
 - **Status:** Planned · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
@@ -1961,6 +1962,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   even-pace diagonal; labels start date, 2…6, reset date. 5h charts: five hourly columns and 1/5 steps. The map's
   axis reads "week start", 2…6, "reset"; "each account's own week" moves to the foot line. Every existing chart
   element stays.
+- **iOS:** not started
 
 ### CCRM-108 · Reset Named — the pace line says "resets" before its clock
 - **Status:** Planned · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
@@ -1970,6 +1972,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   "· Wed" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. This replaces the shipped order
   that dropped the weekday first (so the Fold 7 cover will read "5h 45m behind · Sun", not "· 9:30 PM").
   Since/until (the mark instant) was drawn and not chosen.
+- **iOS:** not started
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
 - **Status:** Planned · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
@@ -1978,6 +1981,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **What:** an account whose Weekly figure prints "0%" (under 0.5; Robin, 2026-11-10: match the row, so a row
   reading "1%" is always plotted) leaves the map; the foot line counts them ("2 at 0%", "· 1 no reading"); all at
   0% keeps the frame with "Nothing to plot yet". The list still shows every account.
+- **iOS:** not started
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
 - **Status:** Planned · wireframe approved 2026-11-10 (§6) · **in v2.0** · both apps.
@@ -1986,6 +1990,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   account has a tag, an All · Personal · Work control sits beside the Summary's "Weekly" (remembered) and filters
   the list, the map and the snapshot; untagged accounts show only under All. "your order" becomes a sort menu of
   the four orders (Appearance keeps its setting).
+- **iOS:** not started
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
 - **Status:** Planned · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
@@ -1995,6 +2000,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   to a hollow ring at the projected % (red on the 100% line when it runs out); the last 24 h of each trail is
   heavier. A tap on a dot or name pins a callout (others dim to 35%; name, figure, pace line, "~74% at reset"; a
   second tap opens the account). Leaders are dotted and at most 48 dp; with nothing free the name is not drawn.
+- **iOS:** not started
 
 ### CCRM-112 · Summary Snapshot — a share card for the whole Summary
 - **Status:** Planned · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.
@@ -2002,6 +2008,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
   callout. Names shown, e-mail addresses never.
+- **iOS:** not started
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
 - **Status:** Planned · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
@@ -2018,6 +2025,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   sample edit binds to the sample store; the debug synthetic series pauses while the sample is open.
 - **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
   stores' review notes describe the same three accounts.
+- **iOS follow-up:** not started
 
 ## Next — small, high value, ready to build
 

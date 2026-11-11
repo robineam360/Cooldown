@@ -4,22 +4,49 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — v2.0 feedback build, RUNBOOK.md Step 1 (written 2026-11-11)
+## ▶ v2.0 feedback build — Step 1 landed (2026-11-11); Lanes A and I may start
 
-RUNBOOK.md is now the v2.0 feedback build arc: CCRM-105 (Duet Stack) to CCRM-113 (Sample Port) on Android and
-iOS, then the release and Play Day 0. It replaces RUNBOOK-v2.0.md's open Steps 7 and 8. Step 1 is the spec step;
-after it lands, Lane A (Android) and Lane I (iOS) run at the same time and Lane D (release text) beside them, each
-from the prompt in its own HANDOVER block, which Step 1 creates. Robin can start R1 (Play Console Phases A–C) and
-R2 (recruiting testers) now. Robin answered all six questions on 2026-11-11; they are in RUNBOOK.md's
-"Robin's answers" (both lanes at once; no Android share card in v2.0; graphic redrawn; screenshots cropped,
-real accounts; TestFlight link in the notes; publish waits for Beta App Review).
+RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/printed-v20.json`,
+`spec/mobile/fixtures/map-foot/cases.json`, `spec/mobile/fixtures/tags/cases.json`, from
+`spec/tools/gen_v20_fixtures.py`), the ROADMAP "iOS:" lines and the "v2.0 feedback on Android / iOS" sections in
+`spec/mobile/surfaces/`. Lane A (Android) and Lane I (iOS) run at the same time (Q6: "Both at once"), each in its
+own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
+pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
 
-New session in `~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**, paste:
+## ▶ Next — Lane A (Android): Step A1 · Lines and labels (written 2026-11-11)
 
-> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Step 1) and HANDOVER.md;
-> load the model-mesh skill; run the mode check and the sweeper. Do RUNBOOK Step 1 exactly as its fenced prompt
-> says (spec only, no app code), then close out per Convention 9 and land per WORKTREE.md. Report the fixtures
-> commit so the orchestrating session can send the frozen set to the desktop session.
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane A and Step A1),
+> the HANDOVER.md block "Next — Lane A", the wireframe sections Step A1 names in
+> design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
+> skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
+> answers" (Convention 10; ask and record first if not). Build Step A1 on Android only (repo root, never ios/). Write
+> only the files Lane A owns: in ROADMAP.md only each item's Status line, in spec/mobile/surfaces/ only inside
+> "v2.0 feedback on Android". Tests read spec/core/fixtures/pace-distance/printed-v20.json and the new mobile
+> fixtures for the changed rules. Check every state the wireframe draws for these items on the fold7inner
+> emulator (port 5556, headless; never emulator-5554) at the cover-like, inner and 360 dp widths, dark and
+> light; save the captures in design/research/2026-11-v20-build/A1/. Stop and report at anything the
+> wireframe does not draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+
+## ▶ Next — Lane I (iOS): Step I1 · Lines and labels (written 2026-11-11)
+
+> Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions, "Who owns each shared file", Lane I and Step I1),
+> the HANDOVER.md block "Next — Lane I", the wireframe sections Step I1 names in
+> design/2026-11-10-v20-feedback-wireframes.html, and the ROADMAP entries it builds; load the model-mesh
+> skill; run the mode check and the sweeper. Check the step's "Gated on" questions are answered in "Robin's
+> answers" (Convention 10; ask and record first if not). Build Step I1 on iOS only (ios/, never the Android code).
+> Write only the files Lane I owns: in ROADMAP.md only each item's "iOS:" line, in spec/mobile/surfaces/ only
+> inside "v2.0 feedback on iOS"; never BUGS.md (record a defect in this step's Log). CooldownCore first, with
+> its tests reading spec/core/fixtures/pace-distance/printed-v20.json and the new mobile fixtures, then the app,
+> widgets, lock screen and Live Activity as the wireframe says. Check every state the wireframe draws on the
+> iPhone 17 Pro, iPhone 17e and iPad Pro 13" simulators (iPad in both orientations), dark and light; save the
+> captures in design/research/2026-11-v20-build/I1/. Stop and report at anything the wireframe does not
+> draw. One fresh Opus judge round, then close out per Convention 9 and land per WORKTREE.md.
+
+## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
+
+Lane D done: Step D1 landed on `main` at f156f42 (text c4ebeb3, graphic page 4ee764f). Robin approved **variant C**
+of the feature graphic (`design/2026-11-11-play-feature-graphic-v20.html`). Lane D has no further steps; the
+graphic is exported in Step 5. Its notes for Step 2 are in RUNBOOK.md's Step D1 Log.
 
 ## ▶ (superseded by the block above) v2.0 is on main (2026-11-06) — the arc continues on main
 

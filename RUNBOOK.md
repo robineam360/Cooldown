@@ -164,7 +164,7 @@ both clients' tests back in one commit, and promotes the §6.3 planned block int
 | Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
 | 0 | This plan, Astra at high, freeze | planning session | — | ☑ 2026-11-11 |
-| 1 | Spec first: new fixtures, lane sections, tracker lines; **Q6 asked and recorded** | session · judge | 0 frozen | ☐ |
+| 1 | Spec first: new fixtures, lane sections, tracker lines; **Q6 asked and recorded** | session · judge | 0 frozen | ☑ 2026-11-11 |
 
 ### Lane A — Android (one step at a time)
 
@@ -271,18 +271,44 @@ committed under spec/tools/. One fresh Opus judge round on the fixtures against 
 ```
 
 **Done when:**
-- ☐ `printed-v20.json` and the mobile fixture files exist, every case derived by the committed script, and the
+- ☑ `printed-v20.json` and the mobile fixture files exist, every case derived by the committed script, and the
   wireframe's worked examples agree with them.
-- ☐ `check_no_code.sh`, the Android suite and both iOS suites pass with no test changed.
-- ☐ The ROADMAP iOS lines, the two surfaces sections per file and the three HANDOVER lane blocks exist.
+- ☑ `check_no_code.sh`, the Android suite and both iOS suites pass with no test changed.
+- ☑ The ROADMAP iOS lines, the two surfaces sections per file and the three HANDOVER lane blocks exist.
 - ☑ Q6 is answered and recorded in "Robin's answers" (2026-11-11, before Step 1).
-- ☐ Judge round recorded; landed on `main`.
-- ☐ The orchestrating session is told the fixtures commit and Q6's answer, so it can send the desktop session the frozen set
+- ☑ Judge round recorded; landed on `main`.
+- ☑ The orchestrating session is told the fixtures commit and Q6's answer, so it can send the desktop session the frozen set
   (outward step, the orchestrator's).
 
 **Reversal:** `git revert` of the step's commit; no test reads the new files yet.
 
 **Log:**
+
+- 2026-11-11 · Step 1 done (worktree `relaxed-bhaskara-eb72bc`). **Fixtures**, all from
+  `spec/tools/gen_v20_fixtures.py` (`--check` re-derives them; its self-check first reproduces printed.json's
+  shipped endToEnd, dayClock and duration cases, then asserts the wireframe's worked examples):
+  `spec/core/fixtures/pace-distance/printed-v20.json` (paceLine, paceLineForms with both drop orders and the
+  weekday-only form, endToEnd, dayGrid, quiet, mapLabels words / figures / placement incl. the dense 200-wide map
+  covering right, below, left, above-left, leaders 24/36/48 and "none", with path refusals across a placed name
+  and a dot, callout forecast, projectionLayer); `spec/mobile/fixtures/map-foot/cases.json` (the foot-line count);
+  `spec/mobile/fixtures/tags/cases.json` (the tag filter). No file a test reads today was changed. Pointers added
+  at the end of core §6.3's planned block and in `spec/core/fixtures/README.md`. **Checks:** check_no_code.sh;
+  Android `testGithubDebugUnitTest testPlayDebugUnitTest lintGithubDebug` green; `swift test` 196 passed; iOS
+  app tests 95 passed (iPhone 17 Pro). HANDOVER's "Next — Lane D" block records D1 as done (f156f42), on the
+  orchestrating session's word.
+- 2026-11-11 · **Judge** (fresh Opus, high, worker on claude-product): **accept with concerns**, five findings.
+  F1 (concern) the wireframe's iOS cap-half grid example disagrees with the prose rule (the drawing measures 5.2
+  per character, |Δx| < 16) → case added, rule kept; F2 (concern) a reading of 1% or more with no reset clock was
+  neither plotted nor counted → case added; F3 (concern) a spent account in Left mode is labelled "Teams 0%" (the
+  drawing's `figOf`); F4 (nit) name-area margin recorded in the §6.3 pointer, `nowLabel` off in the column-7 case;
+  F5 (nit) surfaces headings trimmed to the exact names. F1–F3 went to a **Fable judge** (Convention 11): F1 the
+  prose rule (6 to "now", 4 to an end label), not a departure; the §3 caption "day 5 bold" at now 68% is wrong
+  under either rule (the drawing itself omits the "5"). F2 count it "no reading", not a departure. F3 Fable
+  prefers "Teams 0% left", but that changes what Robin saw drawn (the SIX frame's "Atlas 0%"), so the fixture
+  keeps the drawn "Teams 0%" and the question goes to the orchestrating session for Robin.
+  **Choices the fixtures fix where §6.3 is open** (in `_meta` and the §6.3 pointer): leader directions clockwise
+  from east at each distance; the name box touches the leader's end by its side facing away from the dot; the
+  fixture's own placement offsets (each family keeps its drawn ones); only ordinals are bold, never the end labels.
 
 ---
 

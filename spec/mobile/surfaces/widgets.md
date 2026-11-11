@@ -827,3 +827,10 @@ Medium Overview with one account is the Strip (as before).
 (shrinking to 85% at most) when it does not fit, never "ChatGPT · We…". **A dropped widget kind** (the iOS "Ring",
 removed in rev C) keeps its last snapshot on a home screen until the user removes it (CCBG-70 (Stale Ring Widget)).
 
+## v2.0 feedback on Android
+
+Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+
+## v2.0 feedback on iOS
+
+Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").

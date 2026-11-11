@@ -499,3 +499,6 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 line is the pace line in the form the 159 dp column holds — the weekday drops first, as CCBG-61's tight form did — so
 a header with the 44 dp ring and one without take the same rule.
 
+## v2.0 feedback on Android
+
+Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").

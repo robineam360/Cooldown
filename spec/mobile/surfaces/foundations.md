@@ -540,3 +540,11 @@ wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar"
 - **Status-bar glyphs** (Android, rev D §4): the 5h ring (unchanged geometry, §3.3); a red cross alone (arms 7 of 24
   units, stroke 3.4) while out; the ring greyed (track 30%, arc 40%, no needle) while the week is spent; N3, the
   Weekly as a 21 × 10-unit capsule with its tick in a cleared halo.
+
+## v2.0 feedback on Android
+
+Nothing built yet; Lane A writes its deltas here (RUNBOOK "Who owns each shared file").
+
+## v2.0 feedback on iOS
+
+Nothing built yet; Lane I writes its deltas here (RUNBOOK "Who owns each shared file").

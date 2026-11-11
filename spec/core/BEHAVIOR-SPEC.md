@@ -532,6 +532,15 @@ rules above are what ships. Desktop pins this core and takes these as a frozen s
   before the reset. No tail and no ring when the estimate is null (§3: too little span or movement), or the week is
   spent.
 
+Cases, until the mobile fold-in moves them into `printed.json`: [`fixtures/pace-distance/printed-v20.json`](fixtures/pace-distance/printed-v20.json)
+→ `paceLine`, `paceLineForms`, `endToEnd`, `dayGrid`, `quiet`, `mapLabels` (words, figures, placement),
+`callout`, `projectionLayer`, derived by `spec/tools/gen_v20_fixtures.py` from the rules above. Where these rules
+leave a detail open, the fixture's `_meta` fixes it for the test: the leader tries its eight directions clockwise
+from east (E, SE, S, SW, W, NW, N, NE) at each distance; its name box touches the leader's end by the side facing
+away from the dot; an ordinal gives way within 6 of the "now" label and within 4 of an end label (the wireframe's
+words and drawing); placement offsets are the fixture's, including a name area a few units larger than the plot
+(as the shipped placers allow), and each family keeps its own drawn offsets.
+
 ---
 
 ## 6.4 Ranking accounts by room to spare
