@@ -41,7 +41,9 @@ struct AddAccountSheet: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 20).padding(.top, 24)
-        .presentationDetents([.medium, .large])
+        // The "This account is" control adds about 90 pt, so at the medium detent the provider rows truncated: it opens at
+        // large (addendum "Unverified": I4 checks whether the sheet should open at large).
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 

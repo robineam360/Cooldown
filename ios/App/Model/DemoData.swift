@@ -10,6 +10,9 @@ enum DemoScenario: String, CaseIterable {
     /// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): the Pace map's states on the Summary — the wireframe's six
     /// (`map`), ten for a dense map (`dense`), every account at 0% (`quiet`), two hidden and one unread (`hidden`).
     case map, dense, quiet, hidden
+    /// CCRM-115 (Row Tag Glyph): the dense ten with one long name ("Consultancy"), so on an iPhone 17e the one-line bar would
+    /// fall under its 50 pt floor beside the glyph and the column leaves every row at once.
+    case fitdrop
     /// CCRM-110 (Account Tags): the standard accounts as an upgrade from v1.9 leaves them — no stored tag, so all three read
     /// Personal and the filter's Work segment is disabled (`upgraded`).
     case upgraded
@@ -97,6 +100,13 @@ enum DemoData {
         ]
         switch scenario {
         case .map: return six
+        case .fitdrop:
+            return six + [
+                MapAccount(key: "ops", label: "Ops", provider: .claude, weekly: 33, elapsed: 0.36, tag: .work),
+                MapAccount(key: "research", label: "Consultancy", provider: .chatgpt, weekly: 28, elapsed: 0.33, tag: .personal),
+                MapAccount(key: "client", label: "Client", provider: .antigravity, weekly: 74, elapsed: 0.90, tag: .work),
+                MapAccount(key: "work", label: "Work", provider: .claude, weekly: 30, elapsed: 0.44, tag: .work),
+            ]
         case .dense:
             return six + [
                 MapAccount(key: "ops", label: "Ops", provider: .claude, weekly: 33, elapsed: 0.36, tag: .work),

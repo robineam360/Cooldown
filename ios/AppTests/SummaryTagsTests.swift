@@ -143,7 +143,7 @@ struct SummaryTagsTests {
         }
     }
 
-    @Test("a screenshot demo launch never writes the user's stored filter; nothing runs with fewer than two accounts")
+    @Test("a screenshot demo launch never writes the user's stored filter")
     func memoryGuards() {
         let realGroup = UserDefaults(suiteName: Shared.appGroup) ?? .standard
         let before = realGroup.object(forKey: "summaryFilter")
@@ -154,7 +154,7 @@ struct SummaryTagsTests {
         #expect(realGroup.string(forKey: "summaryFilter") == "family")
     }
 
-    @Test("the Add account control: Personal by default, written when the account is created, ignored by sign in again")
+    @Test("the Add account control: Personal by default; the account a sign-in creates carries the chosen tag and the provider's name")
     func pendingTag() {
         let model = AppModel(demo: .standard)
         #expect(model.pendingTag == .personal, "Personal is selected every time")
@@ -162,6 +162,16 @@ struct SummaryTagsTests {
         #expect(work.tag == "work" && work.accountTag == .work && work.label == "Claude")
         let second = AppModel.newAccount(key: "claude-2", provider: .claude, existing: [work], tag: .personal, addedAtMs: 2)
         #expect(second.tag == "personal" && second.label == "Claude 2")
+    }
+
+    @Test("a sign-in that is cancelled or fails leaves no account, so no tag; the choice is dropped with the sheets")
+    func failedSignInLeavesNothing() async {
+        let model = AppModel(demo: .standard)
+        let before = model.accounts
+        model.pendingTag = .work
+        let error = await model.completeClaudeSignIn(pasted: "")   // nothing pasted: no grant, no account
+        #expect(error != nil && model.accounts == before)
+        #expect(model.pendingTag == .work, "held for a retry inside the same sheets; MainScreens resets it when they close")
     }
 
     // MARK: The Summary's rows follow the filter and the order
@@ -399,6 +409,8 @@ struct SummaryTagsTests {
             }
             save("upgraded", list(personalOnly, SummaryFilter.resolve(tags: personalOnly.map(\.account.accountTag), remembered: "work")))
             save("all", list(three, SummaryFilter.resolve(tags: tags, remembered: nil)))
+            save("disabled-work-notice", SummaryList(entries: personalOnly, nowMs: now.ms, resolved: SummaryFilter.resolve(tags: personalOnly.map(\.account.accountTag), remembered: nil),
+                                                     previewNotice: .work).environment(\.menusAsLabels, true))
             save("work", list(three.filter { $0.account.accountTag == .work }, SummaryFilter.resolve(tags: tags, remembered: "work"), order: .room), height: 330)
             save("personal", list(three.filter { $0.account.accountTag == .personal }, SummaryFilter.resolve(tags: tags, remembered: "personal")), height: 240)
             save("narrow", list(three, SummaryFilter.resolve(tags: tags, remembered: nil)), width: 320, height: 420)

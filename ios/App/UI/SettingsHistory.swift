@@ -56,7 +56,9 @@ struct SettingsScreen: View {
         HStack(spacing: 10) {
             ProviderMark(provider: account.provider, size: 20)
             Text(account.label).lineLimit(1).fixedSize(horizontal: nameWhole, vertical: false).layoutPriority(2)
+            // The chips never give way before the name does (T4 B: only then does the name ellipsize).
             PlanChip(provider: account.provider, plan: model.states[account.key]?.plan, tier: model.states[account.key]?.tier)
+                .fixedSize()
             TagChip(tag: account.accountTag, showWord: chipWord)
             Spacer(minLength: 0)
             if showStatus {

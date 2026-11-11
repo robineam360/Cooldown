@@ -125,10 +125,14 @@ struct SummaryList: View {
     /// A tap on a dimmed segment shows its one line for 3 s (addendum T3 B).
     @State private var notice: SummaryFilter?
     @State private var noticeToken = 0
+    /// For renders only: the line as it reads right after a tap on a dimmed segment.
+    var previewNotice: SummaryFilter?
 
     private var oneLine: Bool { entries.count >= SummaryFilter.oneLineFrom }
     private var glyphs: Bool {
-        oneLine ? RowGlyphFit.keepsGlyph(oneLine: metrics.compactMap(\.oneLine)) : RowGlyphFit.keepsGlyph(full: metrics.compactMap(\.full))
+        // A row not yet measured reports a zero width: it is left out, so the first pass never drops the glyph for a moment.
+        oneLine ? RowGlyphFit.keepsGlyph(oneLine: metrics.compactMap(\.oneLine).filter { $0.line > 0 })
+                : RowGlyphFit.keepsGlyph(full: metrics.compactMap(\.full).filter { $0.line > 0 })
     }
 
     var body: some View {
@@ -145,7 +149,7 @@ struct SummaryList: View {
                 }
             }
             .padding(.bottom, 4)
-            if let notice {
+            if let notice = notice ?? previewNotice {
                 Text("No \(notice.label) accounts yet. Tag one in Settings.").font(.system(size: 12)).foregroundStyle(p.sub)
                     .padding(.top, 2).padding(.bottom, 2)
             }

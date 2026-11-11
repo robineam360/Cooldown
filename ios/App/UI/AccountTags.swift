@@ -130,7 +130,9 @@ struct SummaryFilterControl: View {
             ForEach(Array(SummaryFilter.allCases.enumerated()), id: \.element) { i, filter in
                 let on = resolved.filter == filter
                 let enabled = resolved.segmentsEnabled?[filter] ?? true
-                Button { onSelect(filter) } label: {
+                // A segment with no accounts is dimmed, not disabled: its tap answers with one line (T3 B, "No Work accounts
+                // yet. Tag one in Settings."), and VoiceOver reads "Work, dimmed". (A disabled Button swallowed the tap.)
+                Button { if enabled { onSelect(filter) } else { onDisabled(filter) } } label: {
                     Text(filter.label).font(.system(size: 13, weight: on ? .semibold : .regular))
                         .foregroundStyle(p.ink)
                         .padding(.horizontal, 9)
@@ -139,12 +141,9 @@ struct SummaryFilterControl: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(!enabled)
                 .opacity(enabled ? 1 : 0.38)
-                // A dimmed segment answers a tap with its one line (T3 B); VoiceOver reads it as dimmed.
-                .contentShape(Rectangle())
-                .onTapGesture { if !enabled { onDisabled(filter) } }
                 .overlay(alignment: .leading) { if i > 0 { Rectangle().fill(p.sub.opacity(0.5)).frame(width: 1) } }
+                .accessibilityValue(enabled ? "" : "dimmed")
                 .accessibilityAddTraits(on ? .isSelected : [])
             }
         }
