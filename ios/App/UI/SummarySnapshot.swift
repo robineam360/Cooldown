@@ -221,18 +221,22 @@ struct SummarySnapshotSheet: View {
         }
     }
 
-    private var current: (entries: [SummaryEntry], resolved: SummaryFilter.Resolved) {
-        SummaryEntry.current(model: model, filter: Prefs.summaryFilter, order: Prefs.summaryOrder)
+    private var title: String {
+        SummaryEntry.current(model: model, filter: Prefs.summaryFilter, order: Prefs.summaryOrder).resolved.snapshotHeader
     }
-    private var title: String { current.resolved.snapshotHeader }
 
-    /// Nil when no account shown has a reading.
     private var card: SummarySnapshotView? {
-        let (entries, resolved) = current
+        Self.make(model: model, filter: Prefs.summaryFilter, order: Prefs.summaryOrder, layers: .saved)
+    }
+
+    /// The card for the screen's filter, order and map layers; nil when no account shown has a reading. The "as of" time is
+    /// the newest reading among the rows shown.
+    static func make(model: AppModel, filter: String?, order: SummaryOrder, layers: MapLayers) -> SummarySnapshotView? {
+        let (entries, resolved) = SummaryEntry.current(model: model, filter: filter, order: order)
         guard entries.contains(where: { $0.usedPct != nil }) else { return nil }
         let asOf = entries.compactMap { model.snapshots[$0.account.key]?.fetchedAtMs }.max() ?? model.nowMs
-        return SummarySnapshotView(entries: entries, title: resolved.snapshotHeader, orderName: Prefs.summaryOrder.header,
-                                   asOfMs: asOf, nowMs: model.nowMs, layers: .saved, sample: model.isSample)
+        return SummarySnapshotView(entries: entries, title: resolved.snapshotHeader, orderName: order.header,
+                                   asOfMs: asOf, nowMs: model.nowMs, layers: layers, sample: model.isSample)
     }
 
     private func render(_ card: SummarySnapshotView) -> UIImage? {

@@ -57,6 +57,8 @@ struct SettingsScreen: View {
                                                               addedAtMs: account.addedAtMs, nowMs: model.nowMs)
                             Text(model.isSample ? SampleRules.accountWord : word.text).font(.system(size: 14)).lineLimit(1).minimumScaleFactor(0.75)
                                 .foregroundStyle(model.isSample || word.tone == nil ? p.sub : p.orange)
+                                // A warning ("Sign in again", "Expires in 2d") outranks the name; "Signed in" gives way first.
+                                .layoutPriority(!model.isSample && word.tone != nil ? 3 : 0)
                         }
                         }
                         .contextMenu {
@@ -383,6 +385,8 @@ struct AccountPage: View {
                             Image(systemName: "chevron.up.chevron.down").font(.system(size: 11, weight: .semibold))
                         }
                         .foregroundStyle(p.sub)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(model.account(account.key)?.accountTag?.label ?? "None")
                     }
                 }
             }

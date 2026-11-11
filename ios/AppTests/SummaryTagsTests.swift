@@ -64,6 +64,7 @@ struct SummaryTagsTests {
         let realBefore = AccountsStore(storage: Shared.storage).load()
         let model = AppModel(demo: .standard)
         model.isSample = true
+        try? FileManager.default.removeItem(at: model.storage.file("accounts.json"))
         model.setTag("lab", .personal)
         #expect(model.account("lab")?.accountTag == .personal)
         model.setTag("lab", nil)
@@ -71,6 +72,23 @@ struct SummaryTagsTests {
         model.setTag("nobody", .work)   // no such account: nothing happens
         #expect(model.accounts.map(\.key) == ["teams", "personal", "lab"])
         #expect(AccountsStore(storage: Shared.storage).load() == realBefore)
+        // Nothing was saved anywhere: the demo store has no accounts file either (the isDemo guard in `save`).
+        #expect(!FileManager.default.fileExists(atPath: model.storage.file("accounts.json").path()), "the sample wrote an accounts file")
+    }
+
+    @Test("the Summary filter set in the sample goes to the sample copy; the real suite is untouched after Exit")
+    func sampleFilterIsolated() {
+        let key = "summaryFilter"
+        let realGroup = UserDefaults(suiteName: Shared.appGroup) ?? .standard
+        let before = realGroup.object(forKey: key)
+        defer { realGroup.set(before, forKey: key); SampleStore.end() }
+        realGroup.set("personal", forKey: key)
+        SampleStore.begin()
+        #expect(Prefs.summaryFilter == "personal", "the sample starts from the user's own filter")
+        Prefs.summaryFilter = "work"
+        #expect(Prefs.summaryFilter == "work")
+        SampleStore.end()
+        #expect(realGroup.string(forKey: key) == "personal" && Prefs.summaryFilter == "personal")
     }
 
     // MARK: The Summary's rows follow the filter and the order
@@ -196,6 +214,41 @@ struct SummaryTagsTests {
         #expect(!SummarySnapshotView.dead(e.first { $0.account.label == "Stale" }!), "a stale reading still draws its bar")
         #expect(SummarySnapshotView.resets(e.first { $0.account.label == "Teams" }!, nowMs: now.ms)?.hasPrefix("Resets ") == true)
         #expect(SummarySnapshotView.resets(e.first { $0.account.label == "Product" }!, nowMs: now.ms) == nil)
+    }
+
+    @Test("the snapshot sheet's card follows the filter, the order and the layers, names the newest reading shown, and is nil without one")
+    func snapshotCard() throws {
+        let model = AppModel(demo: .standard)
+        let layers = MapLayers(figures: true, trails: false, projection: true)
+        let work = try #require(SummarySnapshotSheet.make(model: model, filter: "work", order: .room, layers: layers))
+        #expect(work.title == "Work accounts" && work.orderName == "most room first")
+        #expect(work.entries.map(\.account.key) == ["teams"])
+        #expect(work.layers == layers, "the layers drawn on screen, not the defaults")
+        #expect(work.asOfMs == model.snapshots["teams"]?.fetchedAtMs, "the newest reading among the rows shown")
+        #expect(!work.sample)
+
+        let all = try #require(SummarySnapshotSheet.make(model: model, filter: nil, order: .yours, layers: MapLayers()))
+        #expect(all.title == "All accounts" && all.entries.map(\.account.key) == ["teams", "personal", "lab"])
+        let newest = model.accounts.compactMap { model.snapshots[$0.key]?.fetchedAtMs }.max()
+        #expect(all.asOfMs == newest)
+        model.isSample = true
+        #expect(SummarySnapshotSheet.make(model: model, filter: nil, order: .yours, layers: MapLayers())?.sample == true)
+
+        #expect(SummarySnapshotSheet.make(model: AppModel(demo: .noreading), filter: nil, order: .yours, layers: MapLayers()) == nil)
+    }
+
+    @Test("the Settings row keeps a warning word whole beside a long name, a plan chip and a tag chip, iPhone 17e wide")
+    func settingsRowWarning() {
+        for scheme in [ColorScheme.dark, .light] {
+            let t = scheme == .dark ? "dark" : "light"
+            let row = HStack(spacing: 10) {
+                Text("Sixteen chars nm").lineLimit(1).layoutPriority(2)
+                PlanChip(provider: .claude, plan: "Max"); TagChip(tag: .work)
+                Spacer()
+                Text("Sign in again").font(.system(size: 14)).lineLimit(1).minimumScaleFactor(0.75).foregroundStyle(.orange).layoutPriority(3)
+            }
+            r.save("i3-settings-row-warning-\(t)", row, width: 358, height: 56, scheme: scheme)
+        }
     }
 
     // MARK: Renders

@@ -49,6 +49,8 @@ enum DemoData {
         model.selectedKey = "teams"
         if scenario == .untagged { for i in model.accounts.indices { model.accounts[i].tag = nil } }
         if scenario == .tagsdisabled { model.accounts[0].tag = nil }
+        // The signed-out Lab carries a Work tag, so Settings shows its warning word beside both chips.
+        if scenario == .signin { model.accounts[2].tag = AccountTag.work.rawValue }
 
         // Teams: on even pace (46% at 46% elapsed), or at 100% in the `max` scenario.
         let teamsReset = now + (5 * 3600 - Int64(0.46 * 5 * 3600)) * 1000

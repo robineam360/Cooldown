@@ -1131,3 +1131,48 @@ from the `-demo map|dense|quiet|hidden` scenarios; `render/` holds every chip co
   left, above-left, then a dotted leader (1 pt, 1.5/2.5, accent 55%, from the dot's edge) of 24, 36 or 48 pt in eight
   directions, refused across a placed name or another dot. A name never sits on a ring or its own tail. Nothing free:
   the name is not drawn; its dot stays and still opens the callout. "even pace" slides as before and also avoids rings.
+
+Step I3 (Summary), built 2026-11-11 at a43afb4 and its close-out commit from rev B §6, §8 and §9 (CCRM-110 (Account Tags),
+CCRM-112 (Summary Snapshot), the iOS follow-up to CCRM-113 (Sample Port)). Code `ios/App/UI/AccountTags.swift`,
+`Summary.swift`, `SummarySnapshot.swift`; rules CooldownCore `AccountTag` and `SummaryFilter`. Captures
+`design/research/2026-11-v20-build/I3/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape; `render/` holds the
+snapshot card in every state and the header at three widths).
+
+- **Tag.** None · Personal · Work, stored on the account as an additive `tag` string ("personal" / "work"; absent = None; a
+  value this build does not know is kept and reads as None). SF Symbols `person` / `briefcase` lead each picker row and the
+  chip, in the chip's ink, never a colour. Set from the account page's Account section, row "Tag" after Accent colour (a menu
+  picker, the current choice with its glyph and a chevron at the right, VoiceOver "Work" / "None"), and from the touch-and-hold
+  menu's "Tag" submenu (after Rename). In Settings › Accounts a set tag is a chip after the plan chip: 12 pt glyph + 11 pt
+  semibold word, a 1 pt `sub` 50% outline, radius 6. The name keeps its line; the status word gives way before it
+  ("Signed in" shrinks to 0.75 and may truncate on a narrow phone), except a warning word ("Sign in again"), which outranks
+  the name. The chip is on no other surface.
+- **Summary header.** "Weekly" 17 pt, then — once any account has a tag — the All · Personal · Work control (13 pt, 28 pt high,
+  an outlined bar of three segments, the chosen one a tonal fill and semibold, a segment with no accounts at 38% and
+  disabled), then at the right the sort menu: "your order ▾" (13 pt, a 1 pt `line` outline, radius 8), a native pull-down of
+  Your order · Most room first · Resets soonest · Most used with a check on the current one; it writes the same setting as
+  Appearance › Summary order, which stays. Where the line cannot hold all three: the sort button shows its glyph alone
+  ("⇅ ▾", VoiceOver "Sort: your order"), then the control wraps under the title at full width. The iPad's list column
+  carries the header; the map column follows it. Without a tag the control is absent and the sort menu stays.
+- **Filter.** Remembered (App Group key `summaryFilter`, new; v1.9 never reads it); an unknown, disabled or empty remembered
+  value reads as All (the stored value is left as it was). The filter narrows the accounts before the order ranks them, so the
+  list, the rank numbers, the Pace map, its foot-line count and empty message, the one-line threshold (six rows shown, not six
+  accounts) and the snapshot follow the same rows; untagged accounts show only under All. The footer and refresh still cover
+  every account.
+- **Share snapshot.** On the All tab the ellipsis menu's share item reads "Share snapshot" (the account tabs keep "Share
+  card"); a sheet titled "Share snapshot" previews the card above a Share button (the system share sheet), and says "Nothing to
+  share yet — no account has a reading." when no row shown has one. The card is 300 pt wide at 3× on the app ground, padding
+  20: the header (the filter's name 17 pt bold — "All accounts", "Work accounts", "Personal accounts" — the order's name right
+  at 11 pt `sub`, "as of 12:39 pm, Wed 11 Nov" 11 pt, the newest reading among the rows shown, the account card's own form); the
+  rows in the screen's order and filter; a rule; "Pace map" 10.5 pt; the map 200 pt high drawn with the layers saved on
+  screen (grid, trails, figures, projection; Vs pace draws as Used) and its foot line (9.5 pt) — never the chips, a pinned
+  callout or its dimming; "COOLDOWN". Full row: a 32 pt 5h ring (grey when spent), mark 14 pt, name 13 pt semibold, the figure
+  17 pt bold (Used; "left" in Left mode; Vs pace as Used), the 8 pt grammar bar with its pace tick, then the pace span left
+  (tinted, 10.5 pt) and "Resets Sun 9:30 PM" right. Spent: red figure, "Out until Fri 3:05 pm" left, the reset right. Signed out
+  or no reading: 50%, "Sign in again" / "No reading", no bar fill, no reset. Stale: "Stale" in the pace slot. Held: "Held ·
+  3:28 pm" in orange. From six rows shown, one line each (26 pt): mark, name 12 pt semibold (58 pt), bar 7 pt, the short word
+  ("13h 26m ahead", "Out · Fri"; 10 pt, 64 pt), the figure 14 pt bold. The sample adds the violet "● SAMPLE DATA" band across the
+  top (8.5 pt bold white, 16 pt high).
+- **Sample.** Teams (Claude, Team), Personal (ChatGPT, Plus), Lab (Gemini, Pro) — Product (a second Claude) is gone, so the
+  stores' review notes describe the same three accounts on both phones. Teams is Work, Personal is Personal, Lab is
+  untagged, so the control shows in the sample. A tag edited in the sample stays in memory (nothing is saved or written); the
+  filter and order go to the sample's own settings copy, seeded from the user's.

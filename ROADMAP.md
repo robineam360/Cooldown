@@ -1990,7 +1990,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   account has a tag, an All · Personal · Work control sits beside the Summary's "Weekly" (remembered) and filters
   the list, the map and the snapshot; untagged accounts show only under All. "your order" becomes a sort menu of
   the four orders (Appearance keeps its setting).
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): CooldownCore `AccountTag` and `SummaryFilter` on `spec/mobile/fixtures/tags`; the account's additive `tag` string (absent = None, an unknown value survives a round trip, a v1.9-era reader ignores it); the "Tag" row on the account page (menu picker, glyphs leading), a "Tag" submenu in the touch-and-hold menu, the neutral glyph + word chip after the plan chip in Settings; the All · Personal · Work control (13 pt, 28 pt high) beside "Weekly", remembered, filtering the list, the map and the snapshot, a segment with no accounts disabled; "your order" is a native pull-down of the four orders (glyph alone, then the control wrapping under the title, where the line cannot hold it). Captures `design/research/2026-11-v20-build/I3/`.
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
 - **Status:** Planned · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
@@ -2008,7 +2008,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
   callout. Names shown, e-mail addresses never.
-- **iOS:** not started
+- **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): "Share snapshot" replaces "Share card" in the All tab's ellipsis menu; `SummarySnapshotView` (300 pt at 3×) — header with the filter's name, the newest reading's time and the order's name, full rows in the screen's order and filter (one line each from six), the Pace map with the layers saved on screen and the foot line, never the chips or a callout; names, never e-mail addresses; the violet "SAMPLE DATA" band in the sample; "Nothing to share yet — no account has a reading." Captures `design/research/2026-11-v20-build/I3/`.
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
 - **Status:** Planned · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
@@ -2025,7 +2025,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   sample edit binds to the sample store; the debug synthetic series pauses while the sample is open.
 - **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
   stores' review notes describe the same three accounts.
-- **iOS follow-up:** not started
+- **iOS follow-up:** built 2026-11-11 (a43afb4, RUNBOOK Step I3): the iOS sample's Product (Claude) is Lab (Gemini, Pro) — Teams · Claude, Personal · ChatGPT, Lab · Gemini, as Android's; Teams Work, Personal Personal, Lab untagged, so the filter shows in the sample. Captures `design/research/2026-11-v20-build/I3/iphone17pro/sample-mode-*`.
 
 ## Next — small, high value, ready to build
 
