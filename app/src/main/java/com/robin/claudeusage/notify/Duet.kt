@@ -67,18 +67,20 @@ object Duet {
 
     /**
      * The collapsed content width the layout is drawn for. A RemoteViews never learns it, so it
-     * is a nominal per screen class (wireframe §1's table), keyed on the smallest width so a
-     * phone turned sideways stays a phone: the Fold 7 inner shade (≈352 dp) from 600 dp up; the
-     * Fold 7 cover's shade (272 dp, the v1.8 pass figure) for 400–599 dp; below that a phone's
-     * card less its 16 dp padding a side, at most 328 (a 360 dp phone). No width field tells the
-     * Fold 7 cover from a 411 dp phone, whose bar bitmap `fitXY` then stretches about 1.6×; Step 3
-     * measures the real shades (Fable fit call, 2026-11-11).
+     * is a nominal per screen class, keyed on the smallest width so a phone turned sideways stays
+     * a phone. From 600 dp up, the Fold 7 inner shade's ≈352 dp (wireframe §1's table). Below
+     * that, the screen less [PHONE_SHADE_CHROME_DP]: the shade's margins, the card's padding,
+     * the app icon's column and the expand button. Measured 2026-11-11 (Step A2): the AOSP shade
+     * gave 280 dp at 420 dp and 220 at 360; the Fold 7 cover's One UI shade gave 272 at 411 (the
+     * v1.8 pass). Only the bar bitmap's nominal width and the state word's tail depend on it.
      */
     fun contentDp(smallestScreenWidthDp: Int): Float = when {
         smallestScreenWidthDp >= 600 -> 352f
-        smallestScreenWidthDp >= 400 -> 272f
-        else -> min(328f, (smallestScreenWidthDp - 32).toFloat())
+        else -> (smallestScreenWidthDp.toFloat() - PHONE_SHADE_CHROME_DP).coerceAtLeast(CHROME_DP + BAR_MIN_DP)
     }
+
+    /** What a phone's shade takes around a collapsed custom view (see [contentDp]). */
+    const val PHONE_SHADE_CHROME_DP = 140f
 
     /**
      * The bar's length at [contentDp]: whatever the chrome leaves, never under [BAR_MIN_DP].

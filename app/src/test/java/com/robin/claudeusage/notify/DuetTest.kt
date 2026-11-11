@@ -37,12 +37,24 @@ class DuetTest {
 
     @Test
     fun `the nominal content width follows the screen class`() {
-        // Keyed on the smallest width: a phone in landscape stays a phone.
-        assertEquals(288f, Duet.contentDp(320))
-        assertEquals(328f, Duet.contentDp(360))
-        assertEquals(272f, Duet.contentDp(409)) // the Fold 7 cover
+        // Keyed on the smallest width (a phone in landscape stays a phone); a phone's shade takes
+        // about 140 dp around the view (measured on AOSP at 360 and 420 dp, One UI's cover at 411).
+        assertEquals(220f, Duet.contentDp(360))
+        assertEquals(271f, Duet.contentDp(411)) // the Fold 7 cover: the v1.8 pass measured 272
+        assertEquals(280f, Duet.contentDp(420))
         assertEquals(352f, Duet.contentDp(600))
         assertEquals(352f, Duet.contentDp(840)) // the Fold 7 inner, a tablet
+        assertEquals(176f, Duet.contentDp(300)) // never under the 136 + 40 floor
+    }
+
+    @Test
+    fun `on a 360 dp phone both tails drop and the names keep room`() {
+        val bar = Duet.barDp(Duet.contentDp(360)) // 84 dp, measured
+        assertEquals(84f, bar)
+        assertFalse(Duet.keepsTail(bar, 0, "Work", "Held · 3:40 PM", 1f))
+        assertFalse(Duet.keepsTail(bar, 0, "Atlas", "Out · Fri", 1f))
+        assertTrue(Duet.nameRoomDp(bar, 0, "Held", 1f) >= Duet.NAME_FLOOR_DP)
+        assertTrue(Duet.nameRoomDp(bar, 0, "Out", 1f) >= Duet.NAME_FLOOR_DP)
     }
 
     @Test
