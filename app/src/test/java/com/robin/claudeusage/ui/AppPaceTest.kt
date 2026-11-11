@@ -42,37 +42,37 @@ class AppPaceTest {
 
     @Test fun `open line over pace is the pace line, its span red`() {
         val line = AppPace.weeklyOpen(w(52.0, sun), 38.9, use24h = false, now = now)!!
-        assertEquals("22h 1m ahead · Sun 9:30 PM", line.text)
+        assertEquals("22h 1m ahead · resets Sun 9:30 PM", line.text)
         assertEquals("22h 1m ahead", line.emphasis)
         assertEquals(PaceText.VsTone.OVER, line.tone)
-        // The drop order: full, no weekday, duration+word.
+        // The drop order (CCRM-108 (Reset Named)): the reset named, the bare reset, the weekday, duration+word.
         assertEquals(
-            listOf("22h 1m ahead · Sun 9:30 PM", "22h 1m ahead · 9:30 PM", "22h 1m ahead"),
+            listOf("22h 1m ahead · resets Sun 9:30 PM", "22h 1m ahead · Sun 9:30 PM", "22h 1m ahead · Sun", "22h 1m ahead"),
             line.forms.map { it.text },
         )
     }
 
     @Test fun `open line under pace is behind, green`() {
         val line = AppPace.weeklyOpen(w(50.0, fri), 67.0, use24h = false, now = now)!!
-        assertEquals("1d 4h behind · Fri 10:18 PM", line.text)
+        assertEquals("1d 4h behind · resets Fri 10:18 PM", line.text)
         assertEquals("1d 4h behind", line.emphasis)
         assertEquals(PaceText.VsTone.UNDER, line.tone)
-        assertEquals("1d 4h behind · Fri 22:18", AppPace.weeklyOpen(w(50.0, fri), 67.0, use24h = true, now = now)!!.text)
+        assertEquals("1d 4h behind · resets Fri 22:18", AppPace.weeklyOpen(w(50.0, fri), 67.0, use24h = true, now = now)!!.text)
     }
 
     @Test fun `on the mark has no tinted span and the ink tone`() {
         val line = AppPace.weeklyOpen(w(39.0, sun), 38.9, use24h = false, now = now)!!
-        assertEquals("On the mark · Sun 9:30 PM", line.text)
+        assertEquals("On the mark · resets Sun 9:30 PM", line.text)
         assertNull(line.emphasis)
         assertEquals(PaceText.VsTone.ON, line.tone)
-        assertEquals(listOf("On the mark · Sun 9:30 PM", "On the mark · 9:30 PM", "On the mark"), line.forms.map { it.text })
+        assertEquals(listOf("On the mark · resets Sun 9:30 PM", "On the mark · Sun 9:30 PM", "On the mark · Sun", "On the mark"), line.forms.map { it.text })
     }
 
-    @Test fun `a reset later today drops the weekday from every form`() {
+    @Test fun `a reset later today has no weekday, so a bare clock (it means today)`() {
         val reset = now.plusSeconds(6 * 3600)
         val line = AppPace.weeklyOpen(w(60.0, reset), 96.0, use24h = false, now = now)!!
-        assertEquals("2d 13h behind · 8:50 PM", line.text)
-        assertEquals(listOf("2d 13h behind · 8:50 PM", "2d 13h behind"), line.forms.map { it.text })
+        assertEquals("2d 13h behind · resets 8:50 PM", line.text)
+        assertEquals(listOf("2d 13h behind · resets 8:50 PM", "2d 13h behind · 8:50 PM", "2d 13h behind"), line.forms.map { it.text })
     }
 
     @Test fun `spent week says out until, and nothing without a reading or a clock`() {
@@ -85,10 +85,10 @@ class AppPaceTest {
 
     @Test fun `folded line is the pace line, spent and not-started lines stay`() {
         val line = AppPace.weeklyFolded(w(52.0, sun), 38.9, false, now)
-        assertEquals("22h 1m ahead · Sun 9:30 PM", line.text)
+        assertEquals("22h 1m ahead · resets Sun 9:30 PM", line.text)
         assertEquals("22h 1m ahead", line.emphasis)
         assertEquals(PaceText.VsTone.OVER, line.tone)
-        assertEquals("1d 4h behind · Fri 10:18 PM", AppPace.weeklyFolded(w(50.0, fri), 67.0, false, now).text)
+        assertEquals("1d 4h behind · resets Fri 10:18 PM", AppPace.weeklyFolded(w(50.0, fri), 67.0, false, now).text)
         assertEquals("Starts when a message is sent", AppPace.weeklyFolded(w(0.0, null), null, false, now).text)
         assertEquals("Out until Sun 9:30 PM", AppPace.weeklyFolded(w(100.0, sun), 38.9, false, now).text)
         assertTrue(AppPace.weeklyFolded(w(100.0, sun), 38.9, false, now).forms.isEmpty())
@@ -176,9 +176,9 @@ class AppPaceTest {
     // --- Summary rows (rev B) ---
 
     @Test fun `row words`() {
-        assertEquals("1d 4h behind · Fri 10:18 PM", SummaryRows.words(w(50.0, fri), 67.0, false, now))
-        assertEquals("22h 1m ahead · Sun 9:30 PM", SummaryRows.words(w(52.0, sun), 38.9, false, now))
-        assertEquals("On the mark · Sun 9:30 PM", SummaryRows.words(w(39.0, sun), 38.9, false, now))
+        assertEquals("1d 4h behind · resets Fri 10:18 PM", SummaryRows.words(w(50.0, fri), 67.0, false, now))
+        assertEquals("22h 1m ahead · resets Sun 9:30 PM", SummaryRows.words(w(52.0, sun), 38.9, false, now))
+        assertEquals("On the mark · resets Sun 9:30 PM", SummaryRows.words(w(39.0, sun), 38.9, false, now))
         assertEquals("Out until Sun 9:30 PM", SummaryRows.words(w(100.0, sun), 89.8, false, now))
         assertEquals("No reading yet", SummaryRows.words(w(null, sun), 40.0, false, now))
         assertEquals("Not started yet", SummaryRows.words(w(0.0, null), null, false, now))

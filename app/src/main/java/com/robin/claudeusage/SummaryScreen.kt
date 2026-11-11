@@ -62,6 +62,7 @@ import com.robin.claudeusage.ui.grammarDigits
 import com.robin.claudeusage.ui.grammarFigure
 import com.robin.claudeusage.ui.PaceMap
 import com.robin.claudeusage.ui.PaceMapEntry
+import com.robin.claudeusage.ui.PaceMapFoot
 import com.robin.claudeusage.ui.PaceMapGeometry
 import com.robin.claudeusage.ui.PaceText
 import com.robin.claudeusage.ui.Palette
@@ -213,6 +214,7 @@ private fun MapCard(entries: List<PaceMapEntry>, plotHeight: androidx.compose.ui
             CardHeader("Pace map", "Weekly, where each account stands")
             Spacer(Modifier.height(8.dp))
             PaceMap(entries, modifier = Modifier.fillMaxWidth().height(plotHeight))
+            PaceMapFoot()
         }
     }
 }

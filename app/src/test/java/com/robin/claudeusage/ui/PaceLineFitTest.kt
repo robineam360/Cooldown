@@ -24,20 +24,21 @@ class PaceLineFitTest {
         PaceText.paceLineForms(mt, reset, now, false, zone, Locale.US).map { it.text }
 
     @Test
-    fun `three forms, longest first`() {
+    fun `four forms, longest first - the reset named, then a bare reset, then the weekday`() {
+        // CCRM-108 (Reset Named): a bare clock always means today, so a reset days away ends on its weekday.
         assertEquals(
-            listOf("23h 59m ahead · Wed 12:30 PM", "23h 59m ahead · 12:30 PM", "23h 59m ahead"),
+            listOf("23h 59m ahead · resets Wed 12:30 PM", "23h 59m ahead · Wed 12:30 PM", "23h 59m ahead · Wed", "23h 59m ahead"),
             forms(over, resetWed),
         )
         assertEquals(
-            listOf("On the mark · Wed 12:30 PM", "On the mark · 12:30 PM", "On the mark"),
+            listOf("On the mark · resets Wed 12:30 PM", "On the mark · Wed 12:30 PM", "On the mark · Wed", "On the mark"),
             forms(Pace.MarkTime.On, resetWed),
         )
     }
 
     @Test
     fun `a reset later today has no weekday form to drop`() {
-        assertEquals(listOf("23h 59m ahead · 11:00 PM", "23h 59m ahead"), forms(over, resetToday))
+        assertEquals(listOf("23h 59m ahead · resets 11:00 PM", "23h 59m ahead · 11:00 PM", "23h 59m ahead"), forms(over, resetToday))
     }
 
     @Test
@@ -48,8 +49,9 @@ class PaceLineFitTest {
     @Test
     fun `fit takes the first form that fits, else the floor`() {
         val f = PaceText.paceLineForms(over, resetWed, now, false, zone, Locale.US)
-        assertEquals("23h 59m ahead · Wed 12:30 PM", PaceText.fit(f) { true }?.text)
-        assertEquals("23h 59m ahead · 12:30 PM", PaceText.fit(f) { it.length <= 24 }?.text)
+        assertEquals("23h 59m ahead · resets Wed 12:30 PM", PaceText.fit(f) { true }?.text)
+        assertEquals("23h 59m ahead · Wed 12:30 PM", PaceText.fit(f) { it.length <= 28 }?.text)
+        assertEquals("23h 59m ahead · Wed", PaceText.fit(f) { it.length <= 24 }?.text)
         assertEquals("23h 59m ahead", PaceText.fit(f) { it.length <= 13 }?.text)
         // Nothing fits (large font scale): the floor still shows, never a cut phrase.
         assertEquals("23h 59m ahead", PaceText.fit(f) { false }?.text)

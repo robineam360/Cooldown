@@ -158,7 +158,7 @@ class WidgetFaceTest {
         // The shape grammar (rev D §5): the 5h ring at the left of the Weekly name, figure and
         // bar; the 2×1 stacks the name over the figure, the 4×1 keeps "Pro · Weekly".
         assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S1))
-        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
+        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · resets Sat 9:10 PM | as of 6:26 PM", joined(Bucket.NUMBER_4X1, StateId.S1))
         // The window chips went (both windows show); the cycler stays.
         assertEquals(
             "38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | as of 6:26 PM | Pro ⇄",
@@ -168,7 +168,7 @@ class WidgetFaceTest {
         // "Weekly" as its own second line.
         assertEquals("ChatGPT | Weekly | 31%", joined(Bucket.NUMBER_2X1, StateId.S4))
         assertEquals(
-            "ChatGPT · Weekly | 31% | 2d 17h behind · Sat 9:10 PM | as of 6:26 PM | ChatGPT ⇄",
+            "ChatGPT · Weekly | 31% | 2d 17h behind · resets Sat 9:10 PM | as of 6:26 PM | ChatGPT ⇄",
             joined(Bucket.NUMBER_4X2, StateId.S4),
         )
         // The 5h's states land on the ring.
@@ -180,7 +180,7 @@ class WidgetFaceTest {
         // Rev D's 84 dp 2×1 beside the ring has no height for the pill; the tap opens the config.
         assertEquals("38% | Pro | 20%", joined(Bucket.NUMBER_2X1, StateId.S10))
         // Rev H (Q4): the stamp slot says how to choose, the name stays whole.
-        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · Sat 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
+        assertEquals("38% | Pro · Weekly | 20% | 3d 11h behind · resets Sat 9:10 PM | tap to choose account", joined(Bucket.NUMBER_4X1, StateId.S10))
         // Left: the bare figure flips at 2×1; the LEFT caption from 4×1 up.
         assertEquals("62% | Pro | 80%", joined(Bucket.NUMBER_2X1, StateId.S11))
         assertTrue(joined(Bucket.NUMBER_4X1, StateId.S11).startsWith("62% | Pro · Weekly | 80% | LEFT"))
@@ -585,7 +585,7 @@ class WidgetFaceTest {
         assertEquals(FaceWindow.WEEKLY, s.cells.single().companion!!.window)
         val v = WidgetFace.render(context, Face.RING, Frame.at(Face.RING, 333f, 366f), s).apply(context, FrameLayout(context))
         val t = texts(v).joinToString(" | ")
-        assertTrue(t, t.startsWith("38% | Pro | Weekly | 20% | 3d 11h behind · Sat 9:10 PM"))
+        assertTrue(t, t.startsWith("38% | Pro | Weekly | 20% | 3d 11h behind · resets Sat 9:10 PM"))
         // A one-window account has no companion.
         assertNull(FaceStates.of(WidgetFixtures.input(Face.RING, listOf(WidgetFixtures.CHATGPT))).cells.single().companion)
         // The Strip: every account's ring carries its Weekly.

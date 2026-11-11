@@ -538,6 +538,20 @@ fun UsageSparkline(
             drawPath(abovePace, warn100.copy(alpha = if (dark) 0.10f else 0.07f))
         }
 
+        // --- CCRM-107 (Day Grid): day (or hour) columns and k/n lines, the quietest ink on the chart.
+        // Drawn after the wash and under the guides, diagonal and data; transposes with the chart, and
+        // draws at Small too (only the ordinals need the axis strip).
+        val gridN = DayGrid.columns(spanMs)
+        val gridInk = muted.copy(alpha = GRID_ALPHA)
+        for (k in 1 until gridN) {
+            val (from, to) = geo.timeLine(DayGrid.verticalAt(windowStartMs, spanMs, k, gridN))
+            drawLine(gridInk, from, to, strokeWidth = 1.dp.toPx())
+        }
+        for (pct in DayGrid.horizontals(gridN)) {
+            val (from, to) = geo.valueLine(pct)
+            drawLine(gridInk, from, to, strokeWidth = 1.dp.toPx())
+        }
+
         // --- threshold guides (the lines; their labels come last) ---
         for ((pct, c) in guides) {
             val (from, to) = geo.valueLine(pct)
@@ -748,8 +762,28 @@ fun UsageSparkline(
                 val clearOfStart = nowLeft > startLabel.size.width + 6.dp.toPx()
                 val clearOfEnd =
                     nowLeft + nowText.size.width < plotRight - endLabel.size.width - 6.dp.toPx()
-                if (clearOfStart && clearOfEnd) {
+                val nowShown = clearOfStart && clearOfEnd
+                if (nowShown) {
                     drawText(nowText, topLeft = Offset(nowLeft, axisY))
+                }
+
+                // CCRM-107 (Day Grid): the ordinals 2…n−1, centred in their columns; the one in
+                // now's column bold; each gives way to "now" and the end labels, never the reverse.
+                val bold = tiny.copy(color = onSurface.copy(alpha = 0.95f), fontWeight = FontWeight.Bold)
+                val ordinals = DayGrid.ordinals(
+                    n = gridN,
+                    plotWidth = plotRight.toDp().value,
+                    startWidth = startLabel.size.width.toDp().value,
+                    endWidth = endLabel.size.width.toDp().value,
+                    ordinalWidth = { measurer.measure(it, tiny).size.width.toDp().value },
+                    nowX = if (nowShown) nowX.toDp().value else null,
+                    nowWidth = nowText.size.width.toDp().value,
+                    nowColumn = DayGrid.nowColumn(windowStartMs, spanMs, nowAt, gridN),
+                )
+                for (o in ordinals) {
+                    if (!o.drawn) continue
+                    val l = measurer.measure(o.text, if (o.bold) bold else tiny)
+                    drawText(l, topLeft = Offset(o.centreX.dp.toPx() - l.size.width / 2f, axisY))
                 }
             }
 
@@ -797,6 +831,9 @@ fun UsageSparkline(
         }
     }
 }
+
+/** CCRM-107 (Day Grid): the grid's ink, muted at 13% — quieter than the axis (18%) and the dashed guides. */
+const val GRID_ALPHA = 0.13f
 
 /** Everything the selected-point callout needs, measured before anything is drawn. */
 private class Callout(

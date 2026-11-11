@@ -205,7 +205,23 @@ fun PaceMapCard(entries: List<PaceMapEntry>, plotHeight: Dp, modifier: Modifier 
             }
             Spacer(Modifier.height(8.dp))
             PaceMap(entries, modifier = Modifier.fillMaxWidth().height(plotHeight))
+            PaceMapFoot()
         }
+    }
+}
+
+/** CCRM-107 (Day Grid): the map's grid ink, ink at 10% as the wireframe draws it. */
+const val MAP_GRID_ALPHA = 0.10f
+
+/** CCRM-107 (Day Grid): the map's x-axis note leaves the axis for the card's foot line, left, 11 sp muted. */
+@Composable
+fun PaceMapFoot(modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth().padding(top = 4.dp)) {
+        Text(
+            PaceText.MAP_FOOT_NOTE,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -239,6 +255,13 @@ fun PaceMap(entries: List<PaceMapEntry>, modifier: Modifier = Modifier) {
             fixed += PaceMapGeometry.Rect(o.x, o.y, t.size.width.toFloat(), t.size.height.toFloat())
             drawText(t, topLeft = o)
         }
+        // CCRM-107 (Day Grid): the same sevenths both ways, under the 0 / 50 / 100% lines (which stay).
+        val gridInk = ink.copy(alpha = MAP_GRID_ALPHA)
+        for (k in 1 until 7) {
+            val g = 100.0 * k / 7
+            drawLine(gridInk, Offset(f.x(g), f.top), Offset(f.x(g), f.bottom), 1.dp.toPx())
+            drawLine(gridInk, Offset(f.x(0.0), f.y(g)), Offset(f.x(100.0), f.y(g)), 1.dp.toPx())
+        }
         for (v in listOf(0.0, 50.0, 100.0)) {
             drawLine(ink.copy(alpha = if (v == 0.0) 0.35f else 0.12f), Offset(f.x(0.0), f.y(v)), Offset(f.x(100.0), f.y(v)), 1.dp.toPx())
             val t = measurer.measure("${v.toInt()}%", tiny.copy(color = ink.copy(alpha = 0.6f)))
@@ -253,10 +276,28 @@ fun PaceMap(entries: List<PaceMapEntry>, modifier: Modifier = Modifier) {
         measurer.measure(PaceText.MAP_BEHIND, muted).let { fixedText(it, Offset(f.x(97.0) - it.size.width, f.y(6.0) - it.size.height)) }
         val axis = label.copy(color = ink.copy(alpha = 0.7f))
         val foot = size.height - 4.dp.toPx()
-        measurer.measure(PaceText.MAP_WEEK_START, axis).let { fixedText(it, Offset(f.x(0.0), foot - it.size.height)) }
-        measurer.measure(PaceText.MAP_RESET, axis).let { fixedText(it, Offset(f.x(100.0) - it.size.width, foot - it.size.height)) }
-        measurer.measure("each account's own week", tiny.copy(color = ink.copy(alpha = 0.45f))).let {
-            fixedText(it, Offset(f.x(50.0) - it.size.width / 2f, foot - it.size.height))
+        val start = measurer.measure(PaceText.MAP_WEEK_START, axis)
+        val end = measurer.measure(PaceText.MAP_RESET, axis)
+        fixedText(start, Offset(f.x(0.0), foot - start.size.height))
+        fixedText(end, Offset(f.x(100.0) - end.size.width, foot - end.size.height))
+        // The ordinals 2…6 centred in their columns (each account's own week, so none is bold); the
+        // note that sat here moved to the card's foot line ([PaceMapFoot]).
+        val ordinalStyle = tiny.copy(color = ink.copy(alpha = 0.6f))
+        val plotW = f.right - f.left
+        val ordinals = DayGrid.ordinals(
+            n = 7,
+            plotWidth = plotW.toDp().value,
+            startWidth = start.size.width.toDp().value,
+            endWidth = end.size.width.toDp().value,
+            ordinalWidth = { measurer.measure(it, ordinalStyle).size.width.toDp().value },
+            nowX = null,
+            nowWidth = 0f,
+            nowColumn = 0,
+        )
+        for (o in ordinals) {
+            if (!o.drawn) continue
+            val t = measurer.measure(o.text, ordinalStyle)
+            fixedText(t, Offset(f.left + o.centreX.dp.toPx() - t.size.width / 2f, foot - t.size.height))
         }
         // "even pace" slides along the diagonal to the first stretch no dot sits on
         val even = measurer.measure(PaceText.MAP_EVEN, tiny.copy(color = pace))

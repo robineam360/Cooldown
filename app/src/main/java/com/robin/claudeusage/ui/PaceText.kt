@@ -199,19 +199,24 @@ object PaceText {
         zone: ZoneId = ZoneId.systemDefault(),
         locale: Locale = Locale.getDefault(),
     ): String {
-        val today = reset.atZone(zone).toLocalDate() == Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate() &&
-            reset.toEpochMilli() >= nowMs
+        val today = resetsToday(reset, nowMs, zone)
         val clock = if (use24h) "HH:mm" else "h:mm a"
         val pattern = if (today) clock else "EEE $clock"
         return DateTimeFormatter.ofPattern(pattern, locale).withZone(zone).format(reset)
     }
 
+    /** The reset falls later the same local day: its clock alone means today, so it prints no weekday. */
+    fun resetsToday(reset: Instant, nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Boolean =
+        reset.atZone(zone).toLocalDate() == Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate() &&
+            reset.toEpochMilli() >= nowMs
+
     /** A pace line: [text] in full, [tinted] its leading "<duration> behind|ahead" span (null on the mark). */
     data class PaceLine(val text: String, val tinted: String?, val tone: VsTone)
 
     /**
-     * "6d 23h behind · Wed 12:30 PM", "13h 59m ahead · Thu 6:15 PM", "On the mark · Sat 8:00 AM".
-     * Null with no readout: the caller shows its held / spent / signed-out / no-reading line.
+     * "6d 23h behind · resets Wed 12:30 PM", "13h 59m ahead · resets Thu 6:15 PM", "On the mark · resets
+     * Sat 8:00 AM" with [reset] = [resetsClause] (CCRM-108 (Reset Named)); a shorter form passes the bare clock or
+     * the weekday. Null with no readout: the caller shows its held / spent / signed-out / no-reading line.
      */
     fun paceLine(mt: Pace.MarkTime?, reset: String): PaceLine? = when (mt) {
         null -> null
@@ -239,10 +244,15 @@ object PaceText {
     /** Vs pace mode caption: "41% used · 60% pace mark" — the figure's sign already says the side. */
     fun captionVsPace(usedFigure: Int, mark: Int): String = "$usedFigure% used$DOT$mark% pace mark"
 
+    /** CCRM-108 (Reset Named): the reset clause the pace line prints after its dot, "resets Wed 12:30 PM". */
+    fun resetsClause(dayClock: String): String = "resets $dayClock"
+
     /**
-     * The pace line's forms, longest first (wireframe D10): full, without the weekday, then the
-     * duration and its word alone — the floor, never cut. A reset later today has no weekday to drop.
-     * Empty with no readout.
+     * The pace line's forms, longest first — CCRM-108 (Reset Named), core §6.3 "Planned — v2.0 feedback": a
+     * bare clock always means today. A reset on another day: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" →
+     * "· Wed" → the floor; later the same local day: "· resets 11:00 PM" → "· 11:00 PM" → the floor. The floor
+     * (the duration and its word, or "On the mark") is never cut. Empty with no readout. Cases:
+     * `printed-v20.json` → `paceLineForms`.
      */
     fun paceLineForms(
         mt: Pace.MarkTime?,
@@ -252,12 +262,14 @@ object PaceText {
         zone: ZoneId = ZoneId.systemDefault(),
         locale: Locale = Locale.getDefault(),
     ): List<PaceLine> {
-        val full = paceLine(mt, dayClock(reset, nowMs, use24h, zone, locale)) ?: return emptyList()
-        val clock = DateTimeFormatter.ofPattern(if (use24h) "HH:mm" else "h:mm a", locale).withZone(zone).format(reset)
-        val noDay = paceLine(mt, clock)!!
-        val floorText = full.tinted ?: "On the mark"
-        val floor = PaceLine(floorText, full.tinted, full.tone)
-        return listOf(full, noDay, floor).distinctBy { it.text }
+        val bare = dayClock(reset, nowMs, use24h, zone, locale)
+        val full = paceLine(mt, resetsClause(bare)) ?: return emptyList()
+        val clauses = buildList {
+            add(bare)
+            if (!resetsToday(reset, nowMs, zone)) add(DateTimeFormatter.ofPattern("EEE", locale).withZone(zone).format(reset))
+        }
+        val floor = PaceLine(full.tinted ?: "On the mark", full.tinted, full.tone)
+        return (listOf(full) + clauses.map { paceLine(mt, it)!! } + floor).distinctBy { it.text }
     }
 
     /** The first form [fits] accepts, else the last (the floor); null with no forms. */
@@ -293,7 +305,9 @@ object PaceText {
     const val MAP_EVEN = "even pace"
     const val MAP_WEEK_START = "week start"
     const val MAP_RESET = "reset"
-    const val MAP_CENTRE = "each account's own week"
+    /** CCRM-107 (Day Grid): the map's x axis carries the ordinals 2…6; this note moved to the card's foot line. */
+    const val MAP_FOOT_NOTE = "each account's own week"
+    val MAP_ORDINALS = listOf("2", "3", "4", "5", "6")
 
     /** True = the caption starts 5 dp right of the mark; false = it ends 5 dp left of it. */
     fun captionRightOfMark(barWidth: Float, markPct: Double, captionWidth: Float, gap: Float = 5f): Boolean =

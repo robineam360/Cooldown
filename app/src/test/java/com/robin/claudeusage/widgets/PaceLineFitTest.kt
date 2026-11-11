@@ -25,14 +25,15 @@ import java.time.ZoneOffset
 /**
  * CCRM-104 (Pace Line Parity), Android widgets: the estimator that picks a pace line's form
  * by column width and font scale (wireframe §8's em classes, Astra C1-2 and C1-4), and the
- * faces that use it. The worst-case line is the wireframe's "23h 59m ahead · Fri 12:30 PM".
+ * faces that use it. The worst-case line is the wireframe's "23h 59m ahead · resets Fri 12:30 PM" (CCRM-108
+ * (Reset Named): the reset is named, then bare, then the weekday alone — a bare clock always means today).
  */
 class PaceLineFitTest {
     private val h = 3_600_000L
     private val now = Instant.parse("2026-11-04T14:00:00Z").toEpochMilli()
     private val scales = listOf(1.0f, 1.3f, 2.0f)
 
-    /** The worst case: full 161 dp, no weekday 144 dp, floor 85 dp at 12 sp and font scale 1.0. */
+    /** The worst case: full 197 dp, without "resets" 161 dp, the weekday alone 109 dp, floor 85 dp at 12 sp and font scale 1.0. */
     private val worst = PaceLineFit.forms(
         Pace.MarkTime.Over(now + 23 * h + 59 * 60_000L, 23 * h + 59 * 60_000L),
         Instant.parse("2026-11-06T12:30:00Z"), now, ZoneOffset.UTC,
@@ -42,24 +43,25 @@ class PaceLineFitTest {
 
     @Test fun formsFollowTheDropOrder_andTheWidgetsOwnClockRule() {
         assertEquals(
-            listOf("23h 59m ahead · Fri 12:30 PM", "23h 59m ahead · 12:30 PM", "23h 59m ahead"),
+            listOf("23h 59m ahead · resets Fri 12:30 PM", "23h 59m ahead · Fri 12:30 PM", "23h 59m ahead · Fri", "23h 59m ahead"),
             texts(worst),
         )
         assertEquals("23h 59m ahead", worst.last().tinted)
-        // Within 24 h the widget clock has no weekday, so there is no weekday form to drop.
+        // Later today the clock has no weekday: a bare clock means today, so there is no weekday form.
         val soon = PaceLineFit.forms(Pace.MarkTime.Under(2 * h), Instant.ofEpochMilli(now + 5 * h), now, ZoneOffset.UTC)
-        assertEquals(listOf("2h 0m behind · 7:00 PM", "2h 0m behind"), texts(soon))
+        assertEquals(listOf("2h 0m behind · resets 7:00 PM", "2h 0m behind · 7:00 PM", "2h 0m behind"), texts(soon))
         // On the mark: the floor is "On the mark".
         val on = PaceLineFit.forms(Pace.MarkTime.On, Instant.ofEpochMilli(now + 5 * h), now, ZoneOffset.UTC)
-        assertEquals(listOf("On the mark · 7:00 PM", "On the mark"), texts(on))
+        assertEquals(listOf("On the mark · resets 7:00 PM", "On the mark · 7:00 PM", "On the mark"), texts(on))
         assertTrue(PaceLineFit.forms(null, Instant.ofEpochMilli(now + 5 * h), now, ZoneOffset.UTC).isEmpty())
     }
 
     @Test fun theEstimatorMatchesTheWireframeMeasurements() {
         fun w(i: Int, sp: Float) = PaceLineFit.widthDp(worst[i], sp, 1f)
-        assertEquals(161f, w(0, 12f), 1f)
-        assertEquals(144f, w(1, 12f), 1f)
-        assertEquals(85f, w(2, 12f), 1f)
+        assertEquals(197f, w(0, 12f), 1f)
+        assertEquals(161f, w(1, 12f), 1f)
+        assertEquals(109f, w(2, 12f), 1f)
+        assertEquals(85f, w(3, 12f), 1f)
         // The estimate grows with the font scale and the size.
         assertEquals(w(0, 12f) * 1.3f, PaceLineFit.widthDp(worst[0], 12f, 1.3f), 0.01f)
         assertEquals(66f, PaceLineFit.stampDp(1f), 0.01f)
@@ -68,17 +70,18 @@ class PaceLineFitTest {
     // ---- the wireframe's own columns (§6, §8): Number 4×1 drawn at 333 and 244 dp ---------
 
     @Test fun numberAtTheWireframesColumns_weekdayDropsBesideTheStamp_andTheStampYieldsAt244() {
-        // 333 dp: a 221 dp column; beside the 66 dp stamp 155 dp — the weekday drops.
+        // 333 dp: a 221 dp column; beside the 66 dp stamp 155 dp — the line ends on the weekday.
         val at333 = PaceLineFit.pick(worst, 221f, hasStamp = true, sp = 12f, fontScale = 1f)!!
-        assertEquals("23h 59m ahead · 12:30 PM", at333.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", at333.choice.line.text)
         assertTrue(at333.stamp)
         // 244 dp: a 132 dp column; even the floor leaves no room beside the stamp (66 dp), so
-        // the stamp yields (Astra C1-2) and the drop order runs on the full column: the floor.
+        // the stamp yields (Astra C1-2) and the drop order runs on the full column: the weekday
+        // (the wireframe's fit table, "Widget Number 4×1 at 244 dp": −clock).
         val at244 = PaceLineFit.pick(worst, 132f, hasStamp = true, sp = 12f, fontScale = 1f)!!
-        assertEquals("23h 59m ahead", at244.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", at244.choice.line.text)
         assertFalse(at244.stamp)
         // No stamp on the row: the whole column.
-        assertEquals("23h 59m ahead · Fri 12:30 PM", PaceLineFit.pick(worst, 221f, false, 12f, 1f)!!.choice.line.text)
+        assertEquals("23h 59m ahead · resets Fri 12:30 PM", PaceLineFit.pick(worst, 221f, false, 12f, 1f)!!.choice.line.text)
     }
 
     // ---- the shipped geometry, at each cover width and font scale -----------------------
@@ -96,17 +99,17 @@ class PaceLineFitTest {
         PaceLineFit.choose(worst, ringLineDp(w), 13f, fs)!!
 
     @Test fun ringTwoByTwo_formByWidthAndFontScale() {
-        // 156: a 132 dp column → the floor; 244: 216 dp → full; 333: the ring beside, 129 dp → floor.
-        assertEquals("23h 59m ahead", ringPick(156f, 1f).line.text)
-        assertEquals("23h 59m ahead · Fri 12:30 PM", ringPick(244f, 1f).line.text)
-        assertEquals("23h 59m ahead", ringPick(333f, 1f).line.text)
-        assertEquals("23h 59m ahead · Fri 12:30 PM", ringPick(510f, 1f).line.text)
+        // 156: a 132 dp column → the weekday; 244: 216 dp → full; 333: the ring beside, 129 dp → the weekday.
+        assertEquals("23h 59m ahead · Fri", ringPick(156f, 1f).line.text)
+        assertEquals("23h 59m ahead · resets Fri 12:30 PM", ringPick(244f, 1f).line.text)
+        assertEquals("23h 59m ahead · Fri", ringPick(333f, 1f).line.text)
+        assertEquals("23h 59m ahead · resets Fri 12:30 PM", ringPick(510f, 1f).line.text)
         for (w in listOf(156f, 244f, 333f, 510f)) assertEquals(13f, ringPick(w, 1f).sp, 0f)
     }
 
     @Test fun ringTwoByTwo_largerTextDropsEarlier() {
-        // 244 dp at 1.3×: the full line (227 dp) no longer fits 216, the weekday drops.
-        assertEquals("23h 59m ahead · 12:30 PM", ringPick(244f, 1.3f).line.text)
+        // 244 dp at 1.3×: the full line (277 dp) and the bare reset (227) no longer fit 216: the weekday alone.
+        assertEquals("23h 59m ahead · Fri", ringPick(244f, 1.3f).line.text)
         // At 2.0× only the floor (183 dp) fits 216 dp; at 156 dp it fits nothing and steps to 10 sp.
         assertEquals("23h 59m ahead", ringPick(244f, 2f).line.text)
         assertEquals(13f, ringPick(244f, 2f).sp, 0f)
@@ -121,15 +124,15 @@ class PaceLineFitTest {
 
     @Test fun numberFourByOne_formByWidthAndFontScale() {
         // Shipped geometry: the ring is Ø60, so the column is 237 dp at 333 and 148 dp at 244.
-        // 333: the full line fits beside the stamp; 510: the same.
+        // 333: the bare reset fits beside the stamp (171 dp); 510: the full line.
         assertEquals("23h 59m ahead · Fri 12:30 PM", numberPick(333f, 1f).choice.line.text)
         assertTrue(numberPick(333f, 1f).stamp)
-        assertEquals("23h 59m ahead · Fri 12:30 PM", numberPick(510f, 1f).choice.line.text)
+        assertEquals("23h 59m ahead · resets Fri 12:30 PM", numberPick(510f, 1f).choice.line.text)
         // 244: the floor does not fit beside the stamp (82 dp < 85) → the stamp yields (C1-2), the
-        // weekday-less line takes the 148 dp column.
+        // line ending on the weekday takes the 148 dp column.
         val at244 = numberPick(244f, 1f)
         assertFalse(at244.stamp)
-        assertEquals("23h 59m ahead · 12:30 PM", at244.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", at244.choice.line.text)
         // 156: a 68 dp column holds not even the floor: no stamp, 10 sp.
         val at156 = numberPick(156f, 1f)
         assertFalse(at156.stamp)
@@ -138,21 +141,21 @@ class PaceLineFitTest {
     }
 
     @Test fun numberFourByOne_largerTextDropsEarlierAndTheStampYieldsFirst() {
-        // 333 at 1.3×: 237 − 75 (stamp) = 162 dp beside it: the weekday-less line (187) does not fit,
-        // the floor (110) does. The drop order runs before the stamp yields (as the weekday did at 1.0×).
+        // 333 at 1.3×: 237 − 83 (stamp) = 154 dp beside it: the bare reset (210) does not fit, the
+        // weekday alone (141) does. The drop order runs before the stamp yields.
         val a = numberPick(333f, 1.3f)
-        assertEquals("23h 59m ahead", a.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", a.choice.line.text)
         assertTrue(a.stamp)
         // 333 at 2.0×: 237 − 124 = 113 dp beside the stamp holds nothing (floor 169): the stamp
-        // yields, and the full 237 dp column holds the floor only.
+        // yields, and the full 237 dp column holds the weekday line (217).
         val b = numberPick(333f, 2f)
         assertFalse(b.stamp)
-        assertEquals("23h 59m ahead", b.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", b.choice.line.text)
         assertEquals(12f, b.choice.sp, 0f)
-        // 510 at 2.0×: 414 − 124 = 290 dp: the weekday-less line (274) fits beside the stamp.
+        // 510 at 2.0×: 414 − 124 = 290 dp: the weekday line (217) fits beside the stamp.
         val c = numberPick(510f, 2f)
         assertTrue(c.stamp)
-        assertEquals("23h 59m ahead · 12:30 PM", c.choice.line.text)
+        assertEquals("23h 59m ahead · Fri", c.choice.line.text)
     }
 
     @Test fun pickWithNoFormsIsNull() {

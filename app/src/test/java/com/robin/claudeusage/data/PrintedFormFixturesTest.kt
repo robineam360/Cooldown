@@ -14,11 +14,19 @@ import java.util.Locale
  * CCRM-104 (Pace Line Parity): core §6.3's printed form — the signed Vs pace figure, durations,
  * the reset's day and clock, the short pace line, the pace-mark caption and the Pace map's words —
  * read straight from `spec/core/fixtures/pace-distance/printed.json`, the strings the Mac prints too.
+ *
+ * CCRM-108 (Reset Named) and CCRM-107 (Day Grid), RUNBOOK Step A1: the blocks core §6.3 "Planned — v2.0
+ * feedback" changes — `paceLine`, `paceLineForms`, `endToEnd` and the map's words — are read from
+ * `printed-v20.json` until RUNBOOK Step 2 folds them back into `printed.json`; the rest stay on `printed.json`.
  */
 class PrintedFormFixturesTest {
 
     private val fx: JSONObject by lazy {
         JSONObject(javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed.json")!!.bufferedReader().readText())
+    }
+
+    private val v20: JSONObject by lazy {
+        JSONObject(javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed-v20.json")!!.bufferedReader().readText())
     }
 
     private fun JSONObject.str(name: String): String? = if (isNull(name)) null else getString(name)
@@ -63,7 +71,7 @@ class PrintedFormFixturesTest {
 
     @Test
     fun `pace line words and tint`() {
-        for (c in fx.getJSONArray("paceLine").objects()) {
+        for (c in v20.getJSONArray("paceLine").objects()) {
             val name = c.getString("name")
             val mt: Pace.MarkTime? = when (c.str("side")) {
                 null -> null
@@ -71,7 +79,7 @@ class PrintedFormFixturesTest {
                 "under" -> Pace.MarkTime.Under(c.getLong("durationMs"))
                 else -> Pace.MarkTime.Over(0L, c.getLong("durationMs"))
             }
-            val got = PaceText.paceLine(mt, c.getString("reset"))
+            val got = c.str("reset")?.let { PaceText.paceLine(mt, it) }
             assertEquals(name, c.str("text"), got?.text)
             assertEquals(name, c.str("tinted"), got?.tinted)
             assertEquals(name, c.str("tone"), got?.let { tone(it.tone) })
@@ -81,7 +89,7 @@ class PrintedFormFixturesTest {
     @Test
     fun `pace line forms follow the drop order`() {
         val zone = ZoneOffset.UTC
-        for (c in fx.getJSONArray("paceLineForms").objects()) {
+        for (c in v20.getJSONArray("paceLineForms").objects()) {
             val now = LocalDateTime.parse(c.getString("nowLocal")).toInstant(zone).toEpochMilli()
             val reset = LocalDateTime.parse(c.getString("resetLocal")).toInstant(zone)
             val mt: Pace.MarkTime? = when (c.str("side")) {
@@ -99,7 +107,7 @@ class PrintedFormFixturesTest {
     @Test
     fun `end to end from the numbers`() {
         val zone = ZoneId.of("UTC")
-        for (c in fx.getJSONObject("endToEnd").getJSONArray("cases").objects()) {
+        for (c in v20.getJSONObject("endToEnd").getJSONArray("cases").objects()) {
             val name = c.getString("name")
             val used = c.getDouble("usedPct")
             val now = c.getLong("nowMs")
@@ -107,10 +115,15 @@ class PrintedFormFixturesTest {
             val len = c.getLong("windowLengthMs")
             val untilReset = resetMs - now
             val elapsed = (len - untilReset).toDouble() / len * 100.0
+            // A spent week prints neither (the usage figure and the family's spent line instead).
+            if (c.isNull("figure")) {
+                assertEquals(name, true, Pace.isSpent(used))
+                continue
+            }
             assertEquals(name, c.getString("figure"), PaceText.vsPaceSigned(used, elapsed))
             val mt = Pace.markTime(used, untilReset, len, now)
-            val reset = PaceText.dayClock(java.time.Instant.ofEpochMilli(resetMs), now, false, zone, Locale.US)
-            assertEquals(name, c.getString("line"), PaceText.paceLine(mt, reset)?.text)
+            val forms = PaceText.paceLineForms(mt, java.time.Instant.ofEpochMilli(resetMs), now, false, zone, Locale.US)
+            assertEquals(name, c.str("line"), forms.firstOrNull()?.text)
         }
     }
 
@@ -129,12 +142,16 @@ class PrintedFormFixturesTest {
 
     @Test
     fun `pace map words`() {
-        val m = fx.getJSONObject("mapLabels")
+        val m = v20.getJSONObject("mapLabels").getJSONObject("words")
         assertEquals(m.getString("aboveDiagonal"), PaceText.MAP_AHEAD)
         assertEquals(m.getString("belowDiagonal"), PaceText.MAP_BEHIND)
         assertEquals(m.getString("diagonal"), PaceText.MAP_EVEN)
         assertEquals(m.getString("xStart"), PaceText.MAP_WEEK_START)
         assertEquals(m.getString("xEnd"), PaceText.MAP_RESET)
-        assertEquals(m.getString("xCentre"), PaceText.MAP_CENTRE)
+        val ord = m.getJSONArray("xOrdinals")
+        assertEquals((0 until ord.length()).map { ord.getString(it) }, PaceText.MAP_ORDINALS)
+        assertEquals(m.getString("footNote"), PaceText.MAP_FOOT_NOTE)
+        // CCRM-107 (Day Grid): the centre note left the axis for the card's foot line.
+        assertEquals(true, m.isNull("xCentre"))
     }
 }

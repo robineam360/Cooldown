@@ -40,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
@@ -122,7 +124,7 @@ import kotlin.math.roundToInt
  * rev D, frozen 2026-11-02, §1 and §2): the "7-day window" and "5-hour window" cards are one
  * [AccountTile] — the 5h ring on the left, the 7-day bars stacked on the right, the band line
  * and the 5h line under it. *Compact* shows the tile alone and opens on a tap; *Comfortable*
- * (or an opened tile) adds the chart under it, with the chips All · <model> · 5h.
+ * (or an opened tile) adds the chart under it, with the chips 7d · <model> · 5h (CCRM-106 (7d Chip)).
  * [CreditsCard] is not a window and keeps its bar; it is identical in both densities.
  *
  * Also here: CCRM-73 (Model Cap Chart)'s series chips, CCRM-75 (Chart Height) and CCRM-77
@@ -789,7 +791,7 @@ private fun tapCap(name: String) = "cap:$name"
  * limit shown) with its figure at the ring's number size, then each shown model limit —
  * each with its dashed room and V1 caption. Closed (Compact): under the tile the band line
  * and the 5h line, led by a 12 dp ring glyph. Open (Comfortable, or a tapped Compact
- * tile): the chips All · <model> · 5h and the chosen series' chart and lines; the 5h chip
+ * tile): the chips 7d · <model> · 5h and the chosen series' chart and lines; the 5h chip
  * also draws the ring's dotted projection. Tapping a figure swaps its own line for
  * [TAP_READOUT_MS] to the pace-mark readout; tapping the ring also picks the 5h chip on an
  * open tile (C5).
@@ -1188,9 +1190,14 @@ private fun weeklySamplesFor(
 }
 
 /**
- * The open tile's chips (rev D §2): "All · Fable · 5h". "5h" stays a word here — a chip
+ * The open tile's chips (rev D §2; CCRM-106 (7d Chip)): "7d · Fable · 5h". The 7d chip is the
+ * stored "no cap" selection (null), unchanged; only its label moved from "All". "5h" stays a word here — a chip
  * needs a name — and only on an account with a 5h; tapping the ring picks it too.
  */
+/** CCRM-106 (7d Chip): the 7-day series' chip, and what TalkBack reads for it. */
+internal const val SEVEN_DAY_CHIP = "7d"
+internal const val SEVEN_DAY_CHIP_SPOKEN = "7-day, all models"
+
 @Composable
 private fun TileChips(
     caps: List<ModelCap>,
@@ -1204,7 +1211,9 @@ private fun TileChips(
         FilterChip(
             selected = !fiveSelected && selectedCap == null,
             onClick = { onSelectCap(null) },
-            label = { Text("All") },
+            label = { Text(SEVEN_DAY_CHIP) },
+            // CCRM-106 (7d Chip): the label moved from "All"; TalkBack still says what it holds.
+            modifier = Modifier.semantics { contentDescription = SEVEN_DAY_CHIP_SPOKEN },
         )
         for (cap in caps) {
             FilterChip(

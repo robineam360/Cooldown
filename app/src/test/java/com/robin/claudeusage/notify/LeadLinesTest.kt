@@ -27,11 +27,13 @@ class LeadLinesTest {
     fun `the pace line replaces the band words and the allowance`() {
         // Teams: 52% used, 38.9% of the week gone, 102.7 h left, so 22h 3m ahead of the pace mark.
         val weekly = w(52.0, (102.7 * hour).toLong())
-        val full = pace(weekly, 184f)!!
-        assertEquals("22h 3m ahead · Sun 9:32 PM", full.form.text)
+        val full = pace(weekly, 190f)!!
+        // CCRM-108 (Reset Named): the reset is named, and a reset days away keeps its weekday to the last.
+        assertEquals("22h 3m ahead · resets Sun 9:32 PM", full.form.text)
         assertEquals("22h 3m ahead", full.form.tinted)
         assertEquals(PaceText.VsTone.OVER, full.form.tone)
-        assertEquals("22h 3m ahead · 9:32 PM", pace(weekly, 150f)!!.form.text)
+        assertEquals("22h 3m ahead · Sun 9:32 PM", pace(weekly, 184f)!!.form.text)
+        assertEquals("22h 3m ahead · Sun", pace(weekly, 150f)!!.form.text)
         assertEquals("22h 3m ahead", pace(weekly, 100f)!!.form.text)
         // The band words and the allowance leave the line.
         assertTrue(!full.form.text.contains("%/day") && !full.form.text.contains("Slow down"))

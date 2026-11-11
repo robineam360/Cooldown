@@ -10,7 +10,9 @@ import android.graphics.Typeface
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Density
+import com.robin.claudeusage.ui.DayGrid
 import com.robin.claudeusage.ui.Fmt
+import com.robin.claudeusage.ui.GRID_ALPHA
 import com.robin.claudeusage.ui.abovePaceWash
 import com.robin.claudeusage.ui.chartNowMs
 import com.robin.claudeusage.ui.Palette
@@ -81,6 +83,18 @@ object ChartBitmap {
             canvas.drawPath(wash, fill)
         }
 
+        // --- CCRM-107 (Day Grid): the in-app chart's grid, under the guides and the data ---
+        val span = windowEndMs - windowStartMs
+        val gridN = DayGrid.columns(span)
+        line.color = muted.copy(alpha = GRID_ALPHA).toArgb()
+        line.strokeWidth = dp(1f)
+        line.pathEffect = null
+        for (k in 1 until gridN) {
+            val x = geo.x(DayGrid.verticalAt(windowStartMs, span, k, gridN))
+            canvas.drawLine(x, geo.plotTop, x, geo.plotBottom, line)
+        }
+        for (pct in DayGrid.horizontals(gridN)) canvas.drawLine(0f, geo.y(pct), geo.plotRight, geo.y(pct), line)
+
         // --- threshold guides, ladder colours ---
         val guides = listOf(100.0 to warn100, 90.0 to warn90, 80.0 to warn80)
         for ((pct, c) in guides) {
@@ -111,6 +125,27 @@ object ChartBitmap {
         val endLabel = stamp(windowEndMs)
         canvas.drawText(startLabel, 0f, axisY, text)
         canvas.drawText(endLabel, geo.plotRight - text.measureText(endLabel), axisY, text)
+        // The ordinals 2…n−1 (no "now" label on the card, so they yield only to the end labels).
+        val ordinals = DayGrid.ordinals(
+            n = gridN,
+            plotWidth = geo.plotRight / density,
+            startWidth = text.measureText(startLabel) / density,
+            endWidth = text.measureText(endLabel) / density,
+            ordinalWidth = { text.measureText(it) / density },
+            nowX = null,
+            nowWidth = 0f,
+            nowColumn = DayGrid.nowColumn(windowStartMs, span, chartNowMs(nowMs, windowStartMs, windowEndMs, samples.lastOrNull()?.first ?: nowMs), gridN),
+        )
+        text.textAlign = Paint.Align.CENTER
+        for (o in ordinals) {
+            if (!o.drawn) continue
+            text.isFakeBoldText = o.bold
+            text.color = (if (o.bold) fg.copy(alpha = 0.95f) else muted).toArgb()
+            canvas.drawText(o.text, o.centreX * density, axisY, text)
+        }
+        text.textAlign = Paint.Align.LEFT
+        text.isFakeBoldText = false
+        text.color = muted.toArgb()
 
         if (samples.size >= 2) {
             // --- observed: line + one dot per real sample (polling gaps must show) ---

@@ -17,45 +17,58 @@ import kotlin.math.roundToInt
  */
 class TextFitTest {
 
-    private val now = Instant.parse("2026-11-02T14:00:00Z") // a Monday
-    private val reset = Instant.parse("2026-11-04T12:30:00Z") // Wed 12:30 PM
+    private val now = Instant.parse("2026-11-02T06:00:00Z") // a Monday, 6:00 AM
+    private val wed = Instant.parse("2026-11-04T12:30:00Z") // another day: Wed 12:30 PM
+    private val sat = Instant.parse("2026-11-07T08:00:00Z") // another day: Sat 8:00 AM
+    private val today815 = Instant.parse("2026-11-02T08:15:00Z") // later today
+    private val today257 = Instant.parse("2026-11-02T14:57:00Z") // later today
     private val us = Locale.US
 
-    private fun forms(mt: Pace.MarkTime?, r: Instant = reset) =
+    private fun forms(mt: Pace.MarkTime?, r: Instant) =
         PaceText.paceLineForms(mt, r, now.toEpochMilli(), false, ZoneOffset.UTC, us)
 
-    private val ahead = forms(Pace.MarkTime.Over(0, (23 * 60 + 59) * 60_000L)) // 23h 59m ahead
-    private val behind = forms(Pace.MarkTime.Under((6 * 1440 + 23 * 60) * 60_000L)) // 6d 23h behind
-    private val onMark = forms(Pace.MarkTime.On)
+    // The wireframe's §4 fit table (rev B, CCRM-108 (Reset Named)), its five columns.
+    private val behind = forms(Pace.MarkTime.Under((6 * 1440 + 23 * 60) * 60_000L), wed) // 6d 23h behind
+    private val ahead = forms(Pace.MarkTime.Over(0, (23 * 60 + 59) * 60_000L), wed) // 23h 59m ahead
+    private val behindToday = forms(Pace.MarkTime.Under((5 * 60 + 45) * 60_000L), today815) // 5h 45m behind
+    private val aheadToday = forms(Pace.MarkTime.Over(0, 57 * 60_000L), today257) // 57m ahead
+    private val onMark = forms(Pace.MarkTime.On, sat)
+    private val table = listOf(behind, ahead, behindToday, aheadToday, onMark)
 
     private fun dp(line: PaceText.PaceLine, sp: Float = 12f, scale: Float = 1f) =
         TextFit.widthDp(TextFit.em(line), sp, scale).roundToInt()
 
     @Test
-    fun `the forms are the wireframe's lines`() {
+    fun `the forms are the wireframe's lines - a bare clock always means today`() {
         assertEquals(
-            listOf("23h 59m ahead · Wed 12:30 PM", "23h 59m ahead · 12:30 PM", "23h 59m ahead"),
+            listOf("23h 59m ahead · resets Wed 12:30 PM", "23h 59m ahead · Wed 12:30 PM", "23h 59m ahead · Wed", "23h 59m ahead"),
             ahead.map { it.text },
+        )
+        assertEquals(
+            listOf("5h 45m behind · resets 8:15 AM", "5h 45m behind · 8:15 AM", "5h 45m behind"),
+            behindToday.map { it.text },
+        )
+        assertEquals(
+            listOf("On the mark · resets Sat 8:00 AM", "On the mark · Sat 8:00 AM", "On the mark · Sat", "On the mark"),
+            onMark.map { it.text },
         )
     }
 
     @Test
-    fun `the estimator reproduces the wireframe's section 8 numbers at 12 sp`() {
-        val all = listOf(ahead, behind, onMark)
-        // What the wireframe's own §8 script prints for its five lines at 12 sp: widest full line
-        // 169 dp ("23h 59m ahead · Wed 12:30 PM"), without the weekday 144, the floor 85. (The
-        // build brief rounded these to 172 / 146 / 85; the script's output is what is pinned.)
-        assertEquals(169, all.maxOf { dp(it[0]) })
-        assertEquals(144, all.maxOf { dp(it[1]) })
-        assertEquals(85, all.maxOf { dp(it.last()) })
-        assertEquals(162, dp(behind[0])) // "6d 23h behind · Wed 12:30 PM"
-        assertEquals(150, dp(onMark[0])) // "On the mark · Wed 12:30 PM", no bold span
+    fun `the estimator reproduces the wireframe's widths at 12 sp`() {
+        assertEquals(109, dp(behind[2])) // "6d 23h behind · Wed"
+        assertEquals(117, dp(ahead[2])) // "23h 59m ahead · Wed"
+        assertEquals(134, dp(behindToday[1])) // "5h 45m behind · 8:15 AM"
+        assertEquals(113, dp(aheadToday[1])) // "57m ahead · 2:57 PM"
+        assertEquals(138, dp(onMark[1])) // "On the mark · Sat 8:00 AM"
+        assertEquals(149, dp(aheadToday[0])) // "57m ahead · resets 2:57 PM"
     }
 
     @Test
     fun `the tinted span is 3 percent wider, a line on the mark has none`() {
         assertEquals(TextFit.em("23h 59m ahead") * 1.03, TextFit.em(ahead.last()), 1e-9)
         assertEquals(TextFit.em("On the mark"), TextFit.em(onMark.last()), 1e-9)
+        assertEquals(null, onMark.last().tinted)
     }
 
     @Test
@@ -65,53 +78,54 @@ class TextFitTest {
         assertEquals(0.46, TextFit.em("%"), 1e-9)
     }
 
-    private fun texts(avail: Float, scale: Float, line: List<PaceText.PaceLine> = ahead): Pair<String, Float> {
-        val p = TextFit.paceLine(line, avail, 12f, scale)!!
-        return p.form.text to p.sp
+    /** One row of the wireframe's table: each column's pick at font scale 1.0, 1.3 and 2.0, "text@sp". */
+    private fun row(col: Float): List<List<String>> = table.map { f ->
+        listOf(1f, 1.3f, 2f).map { scale -> TextFit.paceLine(f, col, 12f, scale)!!.let { "${it.form.text}@${it.sp.toInt()}" } }
     }
 
     @Test
-    fun `form choice at font scale 1_0`() {
-        assertEquals("23h 59m ahead" to 12f, texts(141f, 1f)) // expanded single column: weekday and clock drop
-        assertEquals("23h 59m ahead · 12:30 PM" to 12f, texts(159f, 1f)) // Duet expanded header: the weekday drops
-        assertEquals("23h 59m ahead · Wed 12:30 PM" to 12f, texts(184f, 1f)) // collapsed column
-        assertEquals("23h 59m ahead · Wed 12:30 PM" to 12f, texts(328f, 1f))
+    fun `the notification columns follow the wireframe's fit table`() {
+        val notification = listOf(
+            listOf("6d 23h behind · Wed@12", "6d 23h behind@12", "6d 23h behind@10"),
+            listOf("23h 59m ahead · Wed@12", "23h 59m ahead@12", "23h 59m ahead@10"),
+            listOf("5h 45m behind · 8:15 AM@12", "5h 45m behind@12", "5h 45m behind@10"),
+            listOf("57m ahead · 2:57 PM@12", "57m ahead@12", "57m ahead@12"),
+            listOf("On the mark · Sat 8:00 AM@12", "On the mark · Sat@12", "On the mark@12"),
+        )
+        assertEquals(notification, row(TextFit.COLLAPSED_COLUMN_DP)) // collapsed single, 142
+        assertEquals(notification, row(TextFit.EXPANDED_COLUMN_DP)) // expanded single, 141
+        assertEquals( // Duet expanded today (36 sp figure), 159
+            listOf(
+                listOf("6d 23h behind · Wed@12", "6d 23h behind · Wed@12", "6d 23h behind@12"),
+                listOf("23h 59m ahead · Wed@12", "23h 59m ahead · Wed@12", "23h 59m ahead@10"),
+                listOf("5h 45m behind · 8:15 AM@12", "5h 45m behind@12", "5h 45m behind@10"),
+                listOf("57m ahead · resets 2:57 PM@12", "57m ahead · 2:57 PM@12", "57m ahead@12"),
+                listOf("On the mark · Sat 8:00 AM@12", "On the mark · Sat@12", "On the mark@12"),
+            ),
+            row(TextFit.DUET_EXPANDED_COLUMN_DP),
+        )
+    }
+
+    @Test
+    fun `a reset days away keeps its weekday on the cover - never a bare clock`() {
+        // RUNBOOK A1: the collapsed line at the cover-like width shows "· Sun" for a reset days away, not "· 9:30 PM".
+        val tue = Instant.parse("2026-11-10T14:00:00Z")
+        val forms = PaceText.paceLineForms(
+            Pace.MarkTime.Under((5 * 60 + 45) * 60_000L), Instant.parse("2026-11-15T21:30:00Z"),
+            tue.toEpochMilli(), false, ZoneOffset.UTC, us,
+        )
+        assertEquals(
+            "5h 45m behind · Sun",
+            TextFit.paceLine(forms, TextFit.COLLAPSED_COLUMN_DP, 12f, 1f)!!.form.text,
+        )
+        // No form a reset days away prints is a bare clock.
+        forms.forEach { assertTrue(it.text, it.text == "5h 45m behind" || it.text.contains("Sun")) }
     }
 
     @Test
     fun `CCBG-78 the collapsed column fits the Fold 7 cover's 147 dp`() {
         // Measured on the Fold 7 cover (One UI 8): the collapsed sub line is 385 px at 2.625, about 147 dp.
-        val measured = 147f
-        assertTrue(TextFit.COLLAPSED_COLUMN_DP <= measured * 0.97f) // room for the estimator's ~2% error
-        // The line the pass saw ellipsized drops its weekday, as D10 orders, and keeps the clock.
-        val pass = PaceText.paceLineForms(
-            Pace.MarkTime.Under((5 * 60 + 45) * 60_000L),
-            Instant.parse("2026-11-08T16:00:00Z"), now.toEpochMilli(), false, ZoneOffset.UTC, us,
-        )
-        assertEquals("5h 45m behind · Sun 4:00 PM", pass[0].text)
-        assertEquals(
-            "5h 45m behind · 4:00 PM" to 12f,
-            TextFit.paceLine(pass, TextFit.COLLAPSED_COLUMN_DP, 12f, 1f)!!.let { it.form.text to it.sp },
-        )
-        // No line the old 184 dp let through stays full-width: every full form is wider than the column.
-        listOf(ahead, behind, onMark).forEach { assertTrue(dp(it[0]) > TextFit.COLLAPSED_COLUMN_DP) }
-    }
-
-    @Test
-    fun `larger text drops earlier, at 1_3`() {
-        assertEquals("23h 59m ahead" to 12f, texts(141f, 1.3f))
-        assertEquals("23h 59m ahead" to 12f, texts(159f, 1.3f))
-        assertEquals("23h 59m ahead" to 12f, texts(184f, 1.3f)) // 224 and 190 do not fit 184
-        assertEquals("23h 59m ahead · Wed 12:30 PM" to 12f, texts(328f, 1.3f))
-    }
-
-    @Test
-    fun `at 2_0 the floor steps down to 10 sp before it would clip, and never changes wording`() {
-        // Floor 170 dp at 12 sp x2: too wide for 141 and 159, fits 184 at 12 sp.
-        assertEquals("23h 59m ahead" to 10f, texts(141f, 2f))
-        assertEquals("23h 59m ahead" to 10f, texts(159f, 2f))
-        assertEquals("23h 59m ahead" to 12f, texts(184f, 2f))
-        assertEquals("23h 59m ahead · 12:30 PM" to 12f, texts(328f, 2f)) // 292 fits, the full 344 does not
+        assertTrue(TextFit.COLLAPSED_COLUMN_DP <= 147f * 0.97f) // room for the estimator's ~2% error
     }
 
     @Test
@@ -122,17 +136,10 @@ class TextFitTest {
     }
 
     @Test
-    fun `per string, not per size class - the shorter clock keeps itself`() {
-        // "6d 23h behind · Wed 12:30 PM" is narrower than "23h 59m ahead · ...": both fit 184 at 1.0.
-        assertEquals("6d 23h behind · Wed 12:30 PM" to 12f, texts(184f, 1f, behind))
-        assertTrue(dp(behind[0]) <= dp(ahead[0]))
-    }
-
-    @Test
-    fun `a reset later today has no weekday to drop, on the mark has no tinted span`() {
-        val later = forms(Pace.MarkTime.Over(0, 3_600_000L), Instant.parse("2026-11-02T23:00:00Z"))
-        assertEquals(listOf("1h 0m ahead · 11:00 PM", "1h 0m ahead"), later.map { it.text })
-        assertEquals(null, onMark.last().tinted)
+    fun `per string, not per size class - the shorter line keeps more`() {
+        // "6d 23h behind · Wed 12:30 PM" is narrower than "23h 59m ahead · Wed 12:30 PM".
+        assertEquals("6d 23h behind · Wed 12:30 PM", TextFit.paceLine(behind, 165f, 12f, 1f)!!.form.text)
+        assertEquals("23h 59m ahead · Wed", TextFit.paceLine(ahead, 165f, 12f, 1f)!!.form.text)
     }
 
     // ---- the caption (C1-3) ----
