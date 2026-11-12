@@ -841,6 +841,8 @@ object PinnedNotification {
             setTextViewText(R.id.sub2, h.sub2.text)
             setTextViewTextSize(R.id.sub2, TypedValue.COMPLEX_UNIT_SP, h.sub2.sp)
             setViewVisibility(R.id.sub2, android.view.View.VISIBLE)
+        } else if (expanded) {
+            setViewVisibility(R.id.sub2, android.view.View.GONE) // CCBG-83: no line 2 left from the last state
         }
         setImageViewBitmap(
             R.id.bar, drawBarBitmap(context, h.pct, h.elapsed, h.accent, dark, showOverPace, endMark),
@@ -851,16 +853,16 @@ object PinnedNotification {
                 context, RingIds(R.id.ring_box, R.id.ring_img, R.id.ring_fig, if (expanded) R.id.ring_time else null),
                 h.ring, HEADER_RING_DP, h.accent, dark, showOverPace, endMark, stale,
             )
+        } else {
+            setViewVisibility(R.id.ring_box, android.view.View.GONE) // CCBG-83: no 5h (B1) after a state with one
         }
         if (panel != null) fillPanel(context, panel)
         // CCBG-12 (Status Icon Swap): a stale reading drawn as crisply as a live one is the
         // actual hazard — the old separate alert said "stale" somewhere else in the shade
         // while the number here still looked authoritative. Fading the number and its bar
         // puts the doubt on the figure itself. The strip below names the cause.
-        if (stale) {
-            setFloat(R.id.pct, "setAlpha", 0.5f)
-            setFloat(R.id.bar, "setAlpha", 0.45f)
-        }
+        setFloat(R.id.pct, "setAlpha", if (stale) 0.5f else 1f)
+        setFloat(R.id.bar, "setAlpha", if (stale) 0.45f else 1f)
     }
 
     /** CCRM-104 (Pace Line Parity): the sub lines are 12 sp; [TextFit.STEP_DOWN_SP] is the last-resort step. */
@@ -920,10 +922,8 @@ object PinnedNotification {
                 setTextViewTextSize(ids.time, TypedValue.COMPLEX_UNIT_DIP, TextFit.TIME_LINE_DP)
             }
         }
-        if (stale) {
-            setFloat(ids.img, "setAlpha", 0.45f)
-            setFloat(ids.fig, "setAlpha", 0.5f)
-        }
+        setFloat(ids.img, "setAlpha", if (stale) 0.45f else 1f)
+        setFloat(ids.fig, "setAlpha", if (stale) 0.5f else 1f)
     }
 
     /** The ring figure's colour, as `GrammarRingBox` draws it: dimmed grey / no reading, else its own, loud, or ink. */
@@ -1095,6 +1095,10 @@ object PinnedNotification {
             // The layout's 200 dp label bound assumed the full 328 dp row; the ring and
             // its 14 dp gap take 58 of it, so the dot after the label stays on screen.
             setInt(ids.label, "setMaxWidth", dp(context, TextFit.duetLabelMaxDp(hasRing = true)).toInt())
+        } else {
+            // CCBG-83 (Duet Reapply Residue): a re-apply onto a view that had a ring must not keep its narrower bound.
+            setInt(ids.label, "setMaxWidth", dp(context, TextFit.duetLabelMaxDp(hasRing = false)).toInt())
+            setViewVisibility(ids.ringBox, android.view.View.GONE)
         }
         // Sign in, no reading, a Weekly not started: "—" and a bare track (notification.md §1.4;
         // CCRM-105 keeps the two views agreeing on it).
@@ -1113,11 +1117,10 @@ object PinnedNotification {
         setViewVisibility(ids.caption, if (h.caption != null) android.view.View.VISIBLE else android.view.View.GONE)
         if (h.caption != null) setTextViewText(ids.caption, h.caption)
         fillDot(ids, dotHue)
-        // Per-account staleness: the doubt belongs to one figure, not the whole notification.
-        if (h.stale) {
-            setFloat(ids.pct, "setAlpha", 0.5f)
-            setFloat(ids.bar, "setAlpha", 0.45f)
-        }
+        // Per-account staleness: the doubt belongs to one figure, not the whole notification. Set both ways, so a
+        // SystemUI re-apply never keeps a stale dimming (CCBG-83 (Duet Reapply Residue)).
+        setFloat(ids.pct, "setAlpha", if (h.stale) 0.5f else 1f)
+        setFloat(ids.bar, "setAlpha", if (h.stale) 0.45f else 1f)
     }
 
     /**
@@ -1180,7 +1183,10 @@ object PinnedNotification {
                 Duet.Word.HELD -> h.heldColor
                 else -> null // the layout's info colour
             }
+            // CCBG-83: the info colour is set back explicitly (the layout's Notification.Info text colour, resolved in
+            // the shade's own theme), so a re-apply after "Sign in" or "Out" never keeps their colour on "No reading".
             if (color != null) setTextColor(ids.word, color.toArgb())
+            else setColorStateListAttr(ids.word, "setTextColor", android.R.attr.textColorSecondary)
         }
         // TalkBack hears the full word whichever rung printed: on the word ("Held · 3:40 PM" while "Held" prints), or,
         // with no word printed, on the name ("Design, No reading").
@@ -1206,11 +1212,9 @@ object PinnedNotification {
         setViewPadding(ids.bar, 0, 0, if (fit.inSlot) dp(context, Duet.SLOT_RUN_DP).toInt() else 0, 0)
         // A "Stale" that went leaves v2.0's 6 dp fault-red dot after the name.
         fillDot(ids, if (fit.staleDot) conditionHue(error = true, theme = h.accent, dark = dark) else dotHue)
-        // Stale: figure 50%, bar 45% (the ring's own dimming is in fillRing).
-        if (h.stale) {
-            setFloat(ids.pct, "setAlpha", 0.5f)
-            setFloat(ids.bar, "setAlpha", 0.45f)
-        }
+        // Stale: figure 50%, bar 45% (the ring's own dimming is in fillRing); set both ways (CCBG-83).
+        setFloat(ids.pct, "setAlpha", if (h.stale) 0.5f else 1f)
+        setFloat(ids.bar, "setAlpha", if (h.stale) 0.45f else 1f)
     }
 
     // --- drawing ---
