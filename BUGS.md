@@ -108,7 +108,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Cause:** iOS draws the 100/90/80% guide labels inside the plot at its right edge (`TrendChart`, `ios/Shared/Charts.swift`); Android keeps them in a gutter (CCBG-7 (Chart Label Collision)).
 
 ### CCBG-99 · Live Activity 5h Cut — the single-account Live Activity cuts its 5h line mid-phrase
-- **Status:** Open · iOS · found checking CCBG-91 (One UI Expanded Column) on iOS (SurfaceRenderTests `la-single`, every display mode) · **needs a wireframe** (`design/2026-11-12-ios-step3-fix-wireframes.html` §4)
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · approved by Robin 2026-11-12 as drawn (`design/2026-11-12-ios-step3-fix-wireframes.html` §4): `FitLine` over whole → the fold short ("~64%", "out ~3:25 PM") → the countdown alone ("runs out ~3:25 PM" alone when running out); `LiveFiveLineTests` · iOS · found checking CCBG-91 (One UI Expanded Column) on iOS (SurfaceRenderTests `la-single`, every display mode)
 - **Severity:** Medium
 - **Symptom:** line 2, "resets in 2h 19m · on track for ~64%" (200 pt at 12.5 pt), has about 185 pt beside the 52 pt figure and reads "resets in 2h 19m · on trac…" / "· on t…".
 - **Cause:** `LiveLines.fiveLine` (`ios/Shared/FaceViews.swift`) is one `Text` with `lineLimit(1)` and no drop order.

@@ -1059,13 +1059,29 @@ enum PanelLines {
     /// "◔ resets in 2h 20m · on track for ~69%": the 5h's own line, led by a small ring glyph (orange while it binds).
     static func fiveLine(_ row: CooldownActivityAttributes.Row, _ p: Palette) -> AnyView? {
         guard let five = row.five, !row.isWeekGated, let reset = row.fiveReset, reset > .now else { return nil }
-        var words = "resets in \(Fmt.compactDuration(ms: reset.ms - Date.now.ms))"
-        if let fold = row.fiveFold { words += " · \(fold)" }
+        let words = fiveVariants(countdown: "resets in \(Fmt.compactDuration(ms: reset.ms - Date.now.ms))", fold: row.fiveFold)
+        let ink = (row.companionLoud ?? false) ? p.orange : p.sub
         return AnyView(HStack(spacing: 4) {
             FiveGlyph(pct: row.signIn ? nil : five.pct, pace: five.pace, accent: row.accent, greyed: false)
                 .frame(width: 11, height: 11).accessibilityHidden(true)
-            Text(words).lineLimit(1).foregroundStyle((row.companionLoud ?? false) ? p.orange : p.sub)
+            FitLine(variants: words.map { Text($0).foregroundStyle(ink) })
         })
+    }
+
+    /// CCBG-99 (Live Activity 5h Cut), approved by Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html`
+    /// §4): the 5h line's drop order, widest first, never cut mid-phrase — whole; the fold short ("~64%", "out ~3:25 PM");
+    /// then the countdown alone, or "runs out ~3:25 PM" alone, since the warning outranks the countdown.
+    static func fiveVariants(countdown: String, fold: String?) -> [String] {
+        guard let fold else { return [countdown] }
+        let onTrack = "on track for "
+        if fold.hasPrefix(onTrack) {
+            return ["\(countdown) · \(fold)", "\(countdown) · \(fold.dropFirst(onTrack.count))", countdown]
+        }
+        let runsOut = "runs out "
+        if fold.hasPrefix(runsOut) {
+            return ["\(countdown) · \(fold)", "\(countdown) · out \(fold.dropFirst(runsOut.count))", fold]
+        }
+        return ["\(countdown) · \(fold)", countdown]
     }
 }
 

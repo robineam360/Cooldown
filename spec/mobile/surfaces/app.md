@@ -1072,7 +1072,7 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
   the duration and word tinted (semibold), the rest in the surface's own ink. Where: tile folded line 1 (14.5 pt semibold) and the
   open tile's lines, the classic Weekly/5h cards, Summary line 3 (13 pt), Strip (12.5), Overview T1–T4, Bars small (11.5 pt, 126 pt
   wide), the Live Activity (single: line 1 is the pace line, line 2 the 5h line led by a ring glyph "resets in 2h 20m · on track
-  for ~69%"; Duet: the pace line alone), the Island expanded (13 pt; "· in 4d 6h" is gone). A spent, held, signed-out, unclocked
+  for ~69%", which drops to "resets in 2h 20m · ~69%", then "resets in 2h 20m" (running out: "· out ~3:25 PM", then "runs out ~3:25 PM" alone), never cut mid-phrase — CCBG-99 (Live Activity 5h Cut); Duet: the pace line alone), the Island expanded (13 pt; "· in 4d 6h" is gone). A spent, held, signed-out, unclocked
   or no-reading window keeps its own line; the Lock Screen widgets and the Number face are unchanged.
 - **Drop order, one everywhere** (§1.2's pace-line row since v2.0): "resets", then the clock, then the weekday, then the floor steps to 0.8 of its size; the duration and word are never cut.
   `FitLine` is a `ViewThatFits` over the four variants, so the choice is made on the real text width per string (Dynamic Type
