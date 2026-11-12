@@ -4,33 +4,19 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — RUNBOOK Step 3, device pass 2 (written 2026-11-12, after Step 2)
+## ▶ Next session — RUNBOOK Step 3's iPad half, then Step 4 (written 2026-11-12, after Step 3's Fold 7 half)
 
-Step 2 (fold-in) landed on `main`: one fixture file per topic (`printed.json`, `tags/cases.json`; no `-v20` or
-`cases-personal-work` file), core §6.3 with no planned block, `spec/mobile/surfaces/` describing v2.0 as built, the
-CCRM-105…115 status lines closed as "Built, device check pending", and CCBG-82…89 filed (none marked blocking; Robin
-decides). Lanes A, I and D are closed. **Open questions for Robin** before or during Step 3 (not filed, from the iPhone
-Duo pass `design/2026-11-11-iphone-duo-pass.html` §4): Q1 the unfolded Duo gets the phone page (lower the 700 pt
-iPad-page threshold to ≈660?); Q2 tap targets under 44 pt on every iPhone; Q3 "Try with sample data" opens on Teams,
-not All; Q4 the iPhone build is portrait-only. Also Robin's: which of CCBG-82…89 block v2.0. RUNBOOK's Step 2 Log
-lists the I3 captures the current build can no longer reach.
+Step 3's **Fold 7 half** landed on `main` (RUNBOOK Step 3 Log): CCBG-91…97 filed, and every Android defect fixed and
+rechecked, because Robin made every open defect block v2.0 ("we have to fix all our bugs and not keep it after
+v2.0"). spec/core §5 changed (Amber #B07D00 / #D9A84A; always-on chrome may wear the accent below 80%): Desktop
+re-pins. **The iPad half and the iOS fixes run in the sister session "v2.0 iOS bug fixes + iPad device pass"**, from
+the findings note `v20-step3-fold7-findings-2026-11-12.md` in the side-session notes folder and the iOS items in
+BUGS.md: CCBG-15's hex in `ios/Shared/Display.swift`, CCBG-55 item 2 (Claude Orange in the iOS picker), CCBG-82, 84,
+85, 87, 88, and an iOS check of CCBG-89 and 92–97. CCBG-86 and 90 ship with CCRM-116 (Inner Panes), which is approved
+and scheduled after this pass; CCRM-117 (Fold Panes) is only proposed.
 
-Open a fresh session in `~/Projects/Cooldown` with **worktree ticked**, model **Opus 5.5**, and paste RUNBOOK.md
-Step 3's fenced prompt:
-
-```
-Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 3), HANDOVER.md, and RUNBOOK-v2.0.md's Step 7
-and its Log for how the first pass was run; load the model-mesh skill; run the mode check and the sweeper.
-Do RUNBOOK Step 3. Ask Robin to connect the Fold 7 and the iPad, one question at a time. Before anything,
-record each device's starting state in this step's Log (installed build and flavor, screen timeout, the
-Cooldown settings you will change, placed widgets, Live Activity); keep private captures (home pages, the
-shade's other notifications) in the scratchpad, never the repo. Install a release-signed github build of main
-on the Fold 7 (the keystore files copied from ~/Projects/Cooldown, deleted after; never staged) and a Debug
-build on the iPad. Check every item of Step 3's list, file every defect in BUGS.md, and ask Robin which ones
-block v2.0. Fix the blocking ones here, one commit per defect with its status, a fresh Opus judge round on the
-batch, and anything visible beyond the wireframe goes to Robin first. Run the "Always after" block, then
-close out and land.
-```
+When the iOS session has landed and ticked Step 3's iPad items, Step 4 (the release commit) starts from RUNBOOK
+Step 4's fenced prompt in a fresh worktree session (Opus 5.5).
 
 ## ▶ (superseded by the block above) v2.0 is on main (2026-11-06) — the arc continues on main
 

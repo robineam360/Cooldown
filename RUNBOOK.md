@@ -237,7 +237,7 @@ clients back at `cases.json`.
 | Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
 | 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
-| 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☐ |
+| 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ◐ Fold 7 half 2026-11-12; iPad half and the iOS fixes in the iOS bug-fix session |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
@@ -1173,6 +1173,57 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
 **Reversal:** the device: *Always after* against the recorded state. The fixes: `git revert`.
 
 **Log:**
+
+- **2026-11-12 · Fold 7 half** (session "v2.0 Step 3 — Fold 7 device pass", branch `claude/peaceful-meninsky-959f27`, PR
+  robineam360/Cooldown#55). **iPad half deferred by Robin's choice (2026-11-12)**: it runs in the separate iOS bug-fix
+  session with the iOS defects; every iPad item below stays ☐ "deferred: iPad half".
+  - **Starting state, Fold 7 (USB adb, RZCY70YN0LJ):** installed the 2026-11-06 github release candidate (labelled 1.9 /
+    25, release-signed, updated 2026-11-06 19:45); screen timeout 300000 ms; dark mode; font 1.0; density 420; folded;
+    Cooldown settings: theme System, time System, Usage display Vs pace, end mark Line, Open on the summary on, Reset
+    time Countdown, red past the mark on, theme Per provider, notification on, Duet First Claude / Second ChatGPT, tap
+    opens Cooldown, status icon "Whichever is higher"; five accounts (Claude Pro, ChatGPT Plus, Gemini Pro, Work and
+    Product Team Premium), all Personal; widgets: two Number 4×1 (ids 125, 127) on the cover home; no Live Activity
+    (Android). Changed during the pass and put back: Second account (Gemini, None, back to ChatGPT), dark/light,
+    font 2.0, density 480 (360 dp), sample mode (entered, exited).
+  - **Builds:** github release of main 3d4aed2 (sha256 a7d530ea…3eed) for the pass; fix candidates 8894d64
+    (18f81ab2…6e04) and a5e3e7e (e2e3c0d1…b121), all release-signed over the existing install (accounts kept). Keystore
+    copied per build and deleted after; never staged. **The a5e3e7e candidate stays installed on purpose.**
+  - **Checks ☑ on the Fold 7:** the Duet collapsed and expanded on the cover and inner shades, dark and light (real
+    widths: expanded header column 183 dp at 411, 134 at 360, 265 inner; collapsed half 181 / 133 / 262 dp, bar
+    131 / 83 / 212; A6's emulator said 144 / 84 / 265); "7d"; the grid on every chart; the "resets" line and its drop
+    order (collapsed single "2h 2m ahead · Fri", CCBG-78 (Collapsed Pace Line Clip) whole); quiet accounts ("1 at 0%");
+    chips; tags (person glyph on every row; the column stays at 360 dp, the list being ≥ 295 dp, and drops at font 2.0);
+    filter; sort; the snapshot and its glyph rule (no column, all Personal); sample mode (entry, banner, exit; the
+    notification stayed on Claude/ChatGPT and Robin saw the widgets stay on real accounts); the narrow Duet: "Not
+    started" keeps the "—" over 256 dp (cover 411, inner) and takes the figure's slot at 360 dp; the pace line drops
+    its weekday and clock, never cut, after CCBG-91; One UI does not clip the collapsed card's second row (360 and
+    411); the Add sheet's Personal | Work; the upgrade from the old candidate (all Personal, Work disabled); the filter
+    falling back to All after the sample; CCRM-104 (Pace Line Parity)'s signed Vs pace; CCBG-79 (Leader Reads as Trail)
+    looks right; the picker previews (no 4×2 entry by design: Number and Strip pick at 4×1).
+  - **Not reachable on the Fold 7, with the reason:** a binding or full 5h with Headline 5-hour and Auto, and a spent
+    week (no account was in that state, and the release build has no synthetic series); Gemini's pool once used and a
+    refresh after an hour (Gemini had not started its week); "Open on the summary" off relaunching the last account (a
+    process restart needs a force-stop, which the memory forbids on Robin's phone); the Countdown 2×2 "~ runs out"
+    note (no 2×2 placed). CCBG-72 / CCBG-73 / CCBG-70 are iPad items: deferred.
+  - **Filed:** CCBG-91 (One UI Expanded Column) to CCBG-96 (Picker Preview Truncation) in the pass, CCBG-97 (Map Foot
+    Clip) in the recheck. **Robin's blocker decision:** "v2.0 will be our first public beta and public release build.
+    So we have to fix all our bugs and not keep it after v2.0": every open defect blocks, "only if it's still
+    applicable in the updated/new design"; iOS ones go to a sister iOS bug-fix session that also runs the iPad half.
+  - **Fixed here, one commit each, rechecked on the Fold 7:** CCBG-91, 92, 93 (Robin kept the short caption form), 89,
+    94, 53, 83, 3, 95 (Robin: the projection label yields, OK as built), 97, 96, 15 (Amber → #B07D00 / #D9A84A),
+    55 items 1 (core §5 follows Android) and 3 (Android names its three forecast silences); closed CCBG-47 (fixed by
+    design since CCRM-103 (Hybrid Notification); Robin saw the widgets follow a theme switch) and CCBG-49 (no longer
+    applies). Wireframe `design/2026-11-12-step3-fix-wireframes.html`, options A approved by Robin. CCBG-95 and
+    CCBG-55 item 3 could not be seen on the device (no projection near the now label; the 5h was over 5%): unit tests.
+  - **Judge** (fresh Opus @ high, product account): concerns, five, all adopted (6082eea, a5e3e7e). F1 was real: the
+    state word's theme-attribute colour drew dark grey on the dark shade; it now takes an explicit ink, rechecked
+    light and dark.
+  - **Shared:** spec/core §5 changed (Amber, always-on chrome); the parent session was asked to tell Desktop, which
+    re-pins after this lands. iOS items (CCBG-15's hex, CCBG-55 item 2's Claude Orange, a check of CCBG-89/92–97 on
+    iOS, CCBG-82/84/85/87/88) were sent to the iOS bug-fix session with the findings note.
+  - **Always after:** every changed setting put back (Second ChatGPT, dark, font 1.0, density reset, sample exited);
+    widgets untouched. **The screen timeout was not restored by adb**: the phone dropped off USB first, and Robin set
+    it back to 5 minutes himself. The a5e3e7e candidate stays installed on purpose.
 
 ---
 
