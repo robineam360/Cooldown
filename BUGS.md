@@ -401,8 +401,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   accounts out.
 
 ### CCBG-47 · Widget Theme Lag — widgets keep the old theme after a system light/dark switch
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (it needs design:
-  no R7 trigger exists for a theme change).
+- **Status:** **Closed — fixed by design since CCRM-103 (Hybrid Notification)** (checked in RUNBOOK Step 3,
+  2026-11-12): `PinnedService.onConfigurationChanged` refreshes every surface, widgets included, on any configuration
+  change, a theme switch among them. On the Fold 7 Robin saw both Number widgets turn light within seconds of a
+  switch. With the always-on notification off there is no running service, and the widgets follow at the next poll;
+  no trigger exists for that case without a process (filed 2026-09-27 from the v1.8 HANDOVER notes).
 - **Severity:** Low
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
@@ -422,8 +425,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   config screen's button reads "Add widget".
 
 ### CCBG-49 · Unassigned Label Overflow — "Personal (unassigned)" pushes the Ring 2×2 stamp off its row
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (visible, so it
-  needs a wireframe).
+- **Status:** **Closed — no longer applies** (RUNBOOK Step 3, 2026-11-12; Robin: fix all bugs "only if it's still
+  applicable in the updated/new design"). Since CCRM-78 (Widgets Reborn), R5, an unassigned widget resolves to the
+  first account and shows that account's own name, so no "(unassigned)" label is drawn anywhere (`WidgetHost`,
+  `Transitions`). Filed 2026-09-27 from the v1.8 HANDOVER notes.
 - **Severity:** Low
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
@@ -505,7 +510,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
 
 ### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
-- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker (the iOS bug-fix session); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS (to build in Step 3).
+- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker (the iOS bug-fix session); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout).
 - **Severity:** Low (no wrong number; two installs could disagree in colour)
 - **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
   Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
