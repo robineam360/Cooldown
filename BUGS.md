@@ -18,7 +18,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 > **v2.0 fold-in, 2026-11-12 (RUNBOOK Step 2).** CCBG-82 (Clock Case Mix) to CCBG-89 (Map Axis Clip): defects the lane Logs recorded (Lane I, Lane A's
 > A3 and A6 judges) and the iPhone Duo simulator pass (`design/2026-11-11-iphone-duo-pass.html` §3, folded posture only,
-> main @ 8916028). None is marked as blocking v2.0: Robin decides which block the release.
+> main @ 8916028). None is marked as blocking v2.0: Robin decides which block the release. **2026-11-12:** the unfolded pass
+> (same report, "Unfolded" U1–U7) added CCBG-90 (Inner Portrait Stretch) and an "Unfolded" line to CCBG-84 to CCBG-88;
+> not blocking either, Robin decides in RUNBOOK Step 3.
 
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
 - **Status:** Open · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
@@ -50,6 +52,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Cause:** on a one-line row the name is `.fixedSize()` and the bar has `minWidth: 50`, so a row narrower than 246 pt +
   the name overflows (331 pt for "Consultancy", 13 pt over). `ios/App/UI/Summary.swift` ≈ l. 367–374.
 - **Fix (wireframe first):** once the glyph has left, let the name ellipsize down to its 64 pt floor, or let the bar go under 50 pt.
+- **Unfolded (2026-11-12, `design/2026-11-11-iphone-duo-pass.html` U2):** not present on the inner screen; with it wide the one-line row is 795 pt, the glyph stays and
+  "Consultancy" fits. Cover screen only.
 
 ### CCBG-85 · Reset Alert Labels — Settings › Reset alerts truncates the window word on every narrow iPhone
 - **Status:** Open · iOS · iPhone Duo pass D2 (`design/2026-11-11-iphone-duo-pass.html` §3 "D2"), also on the iPhone 17e · **needs a wireframe**
@@ -60,6 +64,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   about four characters truncates. `ResetModeRow`, `ios/App/UI/SettingsHistory.swift` ≈ l. 601–616.
 - **Fix (wireframe first):** name the account once (a sub-header or the first row) and label the rows "5h" and "Weekly",
   or put the control under the label.
+- **Unfolded (2026-11-12, `design/2026-11-11-iphone-duo-pass.html` U2, U5):** not present on the inner screen; Settings is a 653 pt form sheet and all six labels
+  read whole. Folding with the sheet open brings "Teams ·…" back on the cover screen.
 
 ### CCBG-86 · Rail Marks Alike — the folded iPhone Duo's tab rail shows identical provider marks
 - **Status:** Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **needs Robin's decision** (and then a wireframe, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
@@ -69,6 +75,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   toolbar and the extra accounts into "•••", so History and Settings each take one more tap.
 - **Fix (decision first):** a monogram or accent-tinted mark per account where the system hides labels, another tab style
   on this device class, or accept it as is.
+- **Unfolded (2026-11-12, `design/2026-11-11-iphone-duo-pass.html` U2):** also present with the inner screen **wide** (951 × 669 pt), which keeps the same
+  icon-only rail on the right; with ten accounts it shows All, six marks and "•••", and the toolbar folds into one "•••". Not
+  present with the inner screen **tall** (669 × 951 pt): iOS draws a bottom tab bar with labels there.
 
 ### CCBG-87 · Strip Under Rail — History's scrolling account strip runs under the folded Duo's rail
 - **Status:** Open · iOS · iPhone Duo pass D4 (`design/2026-11-11-iphone-duo-pass.html` §3 "D4"), folded Duo only · no wireframe needed: the fix restores the approved strip, which stays inside the page column
@@ -76,6 +85,8 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** with four or more accounts History's strip scrolls across the whole 466 pt window, not the 382 pt column, so
   tabs slide under the status rail and "Gemini" shows as "em" on its far side; the divider under it stops at the column.
 - **Fix:** keep the strip's scroll view inside the safe area (no trailing bleed). `AccountTabs`, `ios/App/UI/MainScreens.swift` ≈ l. 196.
+- **Unfolded (2026-11-12, `design/2026-11-11-iphone-duo-pass.html` U2):** same cause with the inner screen wide: the strip's scroll view spans the whole 951 pt
+  window, not the 867 pt column beside the rail. Not applicable with the inner screen tall (no rail).
 
 ### CCBG-88 · Tab Strip Truncates — iOS's History strip would truncate a label where the shared rule scrolls
 - **Status:** Open · iOS · latent: no current iPhone or iPad column is narrow enough to show it (`design/2026-11-11-iphone-duo-pass.html` §5) · the rule is approved (Robin's option B for CCBG-81 (History Tab Wrap), 2026-11-11), so no wireframe is needed
@@ -86,6 +97,21 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   354 pt a three-account strip would print "Perso…" instead of scrolling. Android follows the rule since `3ab1181`.
 - **Fix:** measure each label at one line (mark + name + padding) and scroll when one does not fit its share, as Android's
   `ui/ProfileTabStrip.kt`; a test at a 340 pt column.
+- **Unfolded (2026-11-12, `design/2026-11-11-iphone-duo-pass.html` U2):** the count rule also wastes width: with ten accounts on the wide inner screen (867 pt
+  column) each scrolling tab is a third of the strip (≈ 293 pt), so only three names show and seven sit off screen, where the
+  shared rule would size tabs to their labels.
+
+### CCBG-90 · Inner Portrait Stretch — the iPhone Duo's tall inner screen gets the phone page stretched to 637 pt
+- **Status:** Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **needs a wireframe**
+- **Severity:** Medium
+- **Symptom:** unfolded with the inner screen tall (669 × 951 pt, regular / regular), the main tabs show the phone page with
+  the tile, chart and credits card stretched to 637 pt; held wide (951 pt) the same screen gets the iPad page, and History at
+  669 pt already goes two columns, so opening History switches layout family.
+- **Cause:** fixed width breakpoints between 600 and 1000 pt: `TabPage.iPad` needs ≥ 700 pt (`ios/App/UI/MainScreens.swift`
+  ≈ l. 393), `HistoryLayout.twoColumnWidth` is 600 pt (`ios/App/UI/SettingsHistory.swift` l. 688). Apple's iPhone Duo
+  guidance asks for a regular-width layout on the inner display in every pose and no fixed widths (report U6).
+- **Fix (wireframe first):** an inner-screen layout of its own for both orientations and the half-open pose (Robin's starting
+  ideas in report U6), with one rule shared by the main page and History.
 
 ### CCBG-89 · Map Axis Clip — Android's Pace map prints "00%" for its "100%" label at font scale 2.0
 - **Status:** Open · Android · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3

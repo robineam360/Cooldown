@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>iPhone Duo pass (iOS, 2026-11-11)</title>
+<title>iPhone Duo pass (iOS, 2026-11-11/12)</title>
 <style>
 *{box-sizing:border-box}
 body{background:#f6f6f8;color:#1d1d1f;font:14px/1.45 -apple-system,"Segoe UI",Roboto,sans-serif;margin:0;padding:24px 16px 80px}
@@ -27,7 +27,7 @@ figure img{width:100%;display:block;border-radius:4px}
 figcaption{font-size:11.5px;color:#555;margin-top:4px}
 </style></head><body><main>
 
-<h1>iPhone Duo device pass — Cooldown iOS (v2.0, main @ 8916028)</h1>
+<h1>iPhone Duo device pass — Cooldown iOS (v2.0, folded main @ 8916028, unfolded main @ 539f1a5)</h1>
 <p>2026-11-11. Check and report only: no app code, wireframes or tracker files were touched. The orchestrator allocates
 IDs. Simulator <b>iPhone Duo</b> (iPhone19,4) on its own runtime <code>iOS-27-2-iPhone19-4</code> (24B91016s); comparison
 on <b>iPhone 17e</b> (iOS 26.5 and 27.2). Content from the sample (“Try with sample data” on the first screen,
@@ -35,7 +35,12 @@ CCRM-113 (Sample Port)) and the <code>-demo</code> scenarios (<code>standard</co
 <code>quiet</code>, <code>upgraded</code>, <code>max</code>, <code>empty</code>). The surfaces were walked by a throwaway XCUITest in a scratch
 copy of <code>ios/</code>, never committed. It saved each screen and its accessibility tree, which gives the frame sizes quoted below.</p>
 
-<div class="box warn"><b>Coverage limit — only the folded posture was tested.</b> Xcode 27.2 on this Mac ships no Simulator.app, and
+<div class="box info"><b>2026-11-12 — the unfolded part is now measured</b> (<a href="#unfolded">“Unfolded”, sections U1–U7</a>). Robin folded,
+unfolded, turned and half-opened the simulator by hand in Xcode 27.2's <b>Device Hub</b>, a separate app at
+<code>/Applications/Xcode.app/Contents/Applications/DeviceHub.app</code>, not an item in Xcode's Window menu. The session drove
+everything else. Rows below that used to say “predicted” now give measured values. The box that follows records the first day's limit.</div>
+
+<div class="box warn"><b>2026-11-11 coverage limit — only the folded posture was tested that day.</b> Xcode 27.2 on this Mac ships no Simulator.app, and
 neither <code>simctl</code> nor SimulatorKit exposes a hinge or fold control. Powering a display off with
 <code>simctl io … screenConfig</code> does not change the posture: SpringBoard takes the hinge state from CoreMotion
 (“MagicPose … hingeState: Closed”). The Claude app's simulator panel might have a fold control, but its device-access prompt
@@ -45,7 +50,7 @@ state survival was not tested.</div>
 <h2>Summary</h2>
 <ul>
 <li><b>Postures tested:</b> folded portrait (466 × 678 pt), and folded with the device turned to landscape (the app stays portrait).
-Unfolded portrait and landscape were not tested (see above).</li>
+<b>2026-11-12:</b> unfolded with the inner screen wide (951 × 669 pt) and tall (669 × 951 pt), half-open at about 90°, and fold ↔ unfold with the app open (U1–U7).</li>
 <li><b>Defects:</b> 0 high · 3 medium · 1 low.
   <ul>
   <li><span class="def">D1 (medium)</span> One-line Summary row: a long name runs under the bar.</li>
@@ -53,9 +58,12 @@ Unfolded portrait and landscape were not tested (see above).</li>
   <li><span class="def">D3 (medium)</span> Folded rail: tabs show the provider mark only, so same-provider accounts look identical; with many tabs, History and Settings fold into “•••”.</li>
   <li><span class="def">D4 (low)</span> History's account strip scrolls under the rail and shows through on its far side.</li>
   </ul></li>
+<li><b>Unfolded (2026-11-12):</b> 1 new defect, CCBG-90 (Inner Portrait Stretch, medium). CCBG-84 and CCBG-85 do not show on the inner
+screen. CCBG-86 and CCBG-87 do, but only while the inner screen is wide. Fold ↔ unfold kept the tab, History, its strip selection,
+an open sheet and its scroll in every run but one (U5). Q1 and Q4 are answered in U1.</li>
 <li><b>Questions:</b> Q1 the unfolded inner screen (669 pt) gets the phone page; Q2 tap targets under 44 pt (every iPhone); Q3 the sample opens on Teams, not All; Q4 the iPhone build is portrait-only.</li>
 <li><b>CCBG-81 (History Tab Wrap) twin on iOS: none.</b> The strip's names are <code>lineLimit(1)</code> at a fixed 16 pt, so they cannot wrap. “Personal” fits whole on the folded Duo (each tab 127 pt) and on the 17e (130 pt). It would truncate (“Perso…”), not wrap, below a ≈354 pt column.</li>
-<li><b>Not tested:</b> everything unfolded, fold/unfold transitions, widgets (placing them needs SpringBoard edit mode, which was not driven), Gemini sign-in rows (hidden by design in a local build without the Antigravity secret, <code>Antigravity.available</code>).</li>
+<li><b>Not tested:</b> widgets (placing them needs SpringBoard edit mode, which was not driven), Gemini sign-in rows (hidden by design in a local build without the Antigravity secret, <code>Antigravity.available</code>).</li>
 </ul>
 
 <h2>1 · Postures: what iOS reports and what the app picks</h2>
@@ -63,8 +71,8 @@ Unfolded portrait and landscape were not tested (see above).</li>
 <tr><th>Posture</th><th>Window (pt)</th><th>Size class (h / v)</th><th>Layout the app picks</th><th>Right for the screen?</th></tr>
 <tr><td>Folded, portrait (cover, 5.37″, 1398 × 2034 px @3×)</td><td>466 × 678 measured (lldb on the key window). iOS 27 puts the status bar, the navigation toolbar and the tab bar in a <b>rail down the right edge</b> (x 382–466), so the page column is 0–382 and cards are 350 pt.</td><td>compact / regular (measured)</td><td>Phone page (<code>TabPage.iPad</code> needs regular ≥ 700; <code>sidebarLayout</code> needs regular, landscape, ≥ 1000). System rail for the tabs, icons only.</td><td class="ok">Yes. The 382 pt column is a little narrower than the 17e's 390, so this is now the narrowest column the app runs in (D1, the dense glyph drop).</td></tr>
 <tr><td>Folded, device turned to landscape</td><td>466 × 678, interface orientation still portrait (measured)</td><td>compact / regular</td><td>Same as portrait: the iPhone build lists only <code>UIInterfaceOrientationPortrait</code>.</td><td class="ok">As designed (Q4).</td></tr>
-<tr><td>Unfolded, portrait (inner, 7.58″, 2007 × 2853 px @3×)</td><td>≈ 669 × 951 expected from the framebuffer, <b>not measured</b></td><td>not measured</td><td>Predicted from code: <b>phone page</b> whatever the size class, because 669 &lt; 700, so cards about 637 pt wide with 16 pt margins. Never the iPad page or the sidebar.</td><td class="q">Question Q1: a phone page stretched to 637 pt. The iPad page (cards two across from 396 pt) would need the 700 pt threshold lowered.</td></tr>
-<tr><td>Unfolded, landscape</td><td>≈ 951 × 669 if it rotated; the app is portrait-only on iPhone</td><td>not measured</td><td>Predicted: stays portrait (or iOS letterboxes it). 951 pt would pick the iPad page with a wide Summary (≥ 900), but never the sidebar (&lt; 1000).</td><td class="q">Question Q4.</td></tr>
+<tr><td>Unfolded, device held upright: the inner screen is <b>wide</b> (7.58″, framebuffer 2007 × 2853 px @3×)</td><td><b>951 × 669 measured</b>, interface orientation landscapeLeft. The inner screen's natural orientation is landscape. The system rail stays on the right (84 pt), so the page column is 867 pt.</td><td>regular / regular (measured)</td><td><b>iPad page</b>: <code>TabPage.iPad</code> is true at 867 ≥ 700, so the account header sits over the cards. The Summary is <i>not</i> wide (867 &lt; 900), and there is no sidebar (&lt; 1000). Tabs are in the icon-only rail.</td><td class="ok">Yes, mostly. See U2 for the dense list and the rail.</td></tr>
+<tr><td>Unfolded, device turned a quarter: the inner screen is <b>tall</b></td><td><b>669 × 951 measured</b>, portraitUpsideDown or portrait. No rail. Bottom tab bar with labels and a floating toolbar top right, safe area 82 / 34.</td><td>regular / regular (measured)</td><td><b>Phone page stretched</b>: 669 &lt; 700, so cards are 637 pt wide with 16 pt margins. History, whose own threshold is 600 pt, goes two columns, so the two screens disagree.</td><td class="def">No: CCBG-90 (Inner Portrait Stretch), Q1.</td></tr>
 </table>
 
 <h2>2 · Surfaces × posture</h2>
@@ -93,7 +101,7 @@ Unfolded portrait and landscape were not tested (see above).</li>
 <tr><td>Share card; Share snapshot (the All tab)</td><td class="ok">OK</td><td>Both cards stay 300 pt wide at 3× and centre in the column; the Share button is below.</td></tr>
 <tr><td>Dark theme (All tab)</td><td class="ok">OK</td><td></td></tr>
 <tr><td>Widgets, lock screen, Live Activity</td><td class="nt">Not tested</td><td>Placing widgets needs SpringBoard's edit mode. The widget faces do not depend on the app window, so the I-lane <code>SurfaceRenderTests</code> renders still hold.</td></tr>
-<tr><td>Fold ↔ unfold with the app open</td><td class="nt">Not tested</td><td>No fold control (see the coverage limit above).</td></tr>
+<tr><td>Fold ↔ unfold with the app open</td><td class="ok">Tested 2026-11-12</td><td>See U5. Tab, History and its strip selection, an open sheet and its scroll survive. One scroll reset was seen once and did not repeat.</td></tr>
 </table>
 
 <h2>3 · Defects</h2>
@@ -150,6 +158,9 @@ Unfolded portrait and landscape were not tested (see above).</li>
 <h2>4 · Questions</h2>
 
 <div class="defect qq"><h3>Q1 · The unfolded inner screen gets the phone page</h3>
+<p><b>Answered 2026-11-12 (U1): half yes.</b> With the inner screen wide (951 pt), the app already shows the iPad page. With it tall
+(669 pt), it shows the phone page stretched to 637 pt, filed as CCBG-90 (Inner Portrait Stretch). Apple's guidance asks for a regular-width
+layout on the inner display in every pose, and warns against fixed width breakpoints (U6). The original question follows.</p>
 <p>Inner screen ≈ 669 × 951 pt. <code>TabPage.iPad</code> needs a regular width of 700 pt or more, so whatever size class iOS reports, the
 unfolded Duo shows the phone page with cards about 637 pt wide. The account tile and chart then run about 280 pt wider than on any
 phone, which risks the “charts too wide” look. Should the threshold come down to about 660 pt, so the inner screen gets the iPad page
@@ -180,8 +191,10 @@ fixing):</p>
 
 <div class="defect qq"><h3>Q4 · The iPhone build is portrait-only</h3>
 <p>On the Duo, turning the folded phone keeps the app in portrait (measured). Unfolded, the 7.6″ inner screen is held in landscape
-as often as in portrait. Should the iPhone build allow landscape where the window is large (the iPad layouts already exist)?
-Not testable here.</p>
+as often as in portrait. Should the iPhone build allow landscape where the window is large (the iPad layouts already exist)?</p>
+<p><b>Answered 2026-11-12 (U1): no, and it needs no change.</b> On the inner screen iOS ignores the portrait-only list. Cooldown ran in
+landscapeLeft, landscapeRight, portrait and portraitUpsideDown, following the device, and the inner screen's natural orientation is landscape.
+The cover screen stays portrait-only, as measured on day one.</p>
 <div class="shots"><figure><img src="2026-11-11-iphone-duo-pass/f-landscape-stays-portrait.jpg" alt=""><figcaption>Folded Duo turned to landscape: 466 × 678, interface still portrait.</figcaption></figure></div></div>
 
 <h2>5 · CCBG-81 (History Tab Wrap) check on iOS</h2>
@@ -238,6 +251,128 @@ three tabs, with a minimum of 80 pt and horizontal scrolling with four or more.<
 <figure><img src="2026-11-11-iphone-duo-pass/f-empty.jpg" alt=""><figcaption>Empty (demo)</figcaption></figure>
 </div>
 
+<h2 id="unfolded" style="font-size:20px">Unfolded — 2026-11-12</h2>
+<p>Same simulator and runtime (<code>iPhone Duo</code>, <code>iOS-27-2-iPhone19-4</code>), app built from main @ 539f1a5, sample data
+through <code>-demo standard</code>, <code>dense</code> and <code>fitdrop</code>. Robin worked the hinge and the rotation in Device Hub, one step at a time. The
+session measured the window with lldb on the running app, and read frames from an XCUITest that attached to the running app without
+relaunching it (scratch copy of <code>ios/</code>, never committed). Inner-screen captures are <code>simctl io … screenshot --display=3</code>.
+On the inner screen XCUITest <b>taps</b> landed but <b>swipes</b> did not, so Robin did the scrolling. While unfolded, the cover display is dark.</p>
+
+<h2>U1 · Unfolded postures, measured</h2>
+<table>
+<tr><th>Posture</th><th>Window (pt)</th><th>Size class (h / v)</th><th>Interface orientation</th><th>Chrome</th><th>Layout the app picks</th></tr>
+<tr><td>Inner screen wide (device upright)</td><td>951 × 669 (screen 951 × 669; framebuffer 2007 × 2853 px is rotated)</td><td>regular / regular</td><td>landscapeLeft (landscapeRight when turned the other way)</td><td>Icon-only rail on the right, as when folded: toolbar group on top, tabs below. Safe-area right inset 84, so the page column is 867.</td><td><b>iPad page</b> (<code>TabPage.iPad</code>, 867 ≥ 700): <code>AccountHeader</code> above the cards, 20 pt margins. Summary not wide (867 &lt; 900). No sidebar (needs ≥ 1000). History two columns (≥ 600).</td></tr>
+<tr><td>Inner screen tall (device turned a quarter)</td><td>669 × 951</td><td>regular / regular</td><td>portraitUpsideDown or portrait</td><td><b>Bottom tab bar with labels</b> (“All · Teams · Personal · Lab”), floating toolbar top right; safe area 82 top, 34 bottom. No rail.</td><td><b>Phone page</b> (669 &lt; 700): cards 637 pt, 16 pt margins. History two columns (669 ≥ 600). CCBG-90 (Inner Portrait Stretch).</td></tr>
+<tr><td>Half open, about 90° (inner tall)</td><td>669 × 951, unchanged</td><td>regular / regular</td><td>unchanged</td><td>unchanged; no inset for the fold</td><td>Unchanged. The fold runs across the middle (y ≈ 475), and the Summary list and Pace map run straight over it (U4).</td></tr>
+</table>
+<p><b>Q4:</b> the iPhone build's portrait-only list does not hold on the inner screen. Cooldown turned with the device in all four
+orientations there, and stayed portrait on the cover screen. <b>Q1:</b> the inner screen gets the iPad page when wide and a stretched
+phone page when tall (CCBG-90).</p>
+<div class="shots">
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-teams.jpg" alt=""><figcaption>Inner wide, Teams: iPad page (header over the card), icon rail on the right.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/u-port-teams.jpg" alt=""><figcaption>Inner tall, Teams: phone page at 637 pt, labelled bottom tab bar (CCBG-90).</figcaption></figure>
+</div>
+
+<h2>U2 · Surfaces unfolded</h2>
+<table>
+<tr><th>Surface</th><th>Inner wide (867 pt column)</th><th>Inner tall (669 pt)</th><th>Notes</th></tr>
+<tr><td>All tab: Summary (3 accounts), filter, sort, Pace map</td><td class="ok">OK</td><td class="ok">OK, stretched</td><td>Rows are 795 pt (wide) and 605 pt (tall). Pace map chips, callout and labels inside the plot. The sort control reads “your order ⌄” at both widths (“⇅ ⌄” on the cover screen).</td></tr>
+<tr><td>Filter Personal</td><td class="ok">OK</td><td>—</td><td>The map shrinks to the one account, and the foot line follows.</td></tr>
+<tr><td>Account pages Teams / Lab</td><td class="ok">OK</td><td class="def">CCBG-90</td><td>Wide: header row (name, plan chip, credits on the right) above one card. Tall: the phone tile and chart stretched to 637 pt, credits as its own card.</td></tr>
+<tr><td>Dense one-line list (10 accounts)</td><td class="ok">OK by rule</td><td>not run</td><td>The glyph column stays (795 pt row). The bar keeps its 110 pt cap, so each row fills about half the card, as on an 11″ iPad in portrait (867 is that wide too). A design point for the inner-screen wireframe (U6), not a defect.</td></tr>
+<tr><td>One-line list with a long name (<code>fitdrop</code>), CCBG-84</td><td class="ok">Not present</td><td>not run</td><td>“Consultancy” 85 pt, glyph kept, a 795 pt row, no overrun.</td></tr>
+<tr><td>Tab chrome, CCBG-86</td><td class="def">Present</td><td class="ok">Not present</td><td>Wide: the same icon-only rail. With 10 accounts it shows All + 6 marks + “•••”, the toolbar collapses into one “•••” (<code>BottomOverflowBarButtonItem</code>), and Teams, Lab and Atlas are three identical ✳. Tall: a labelled bottom tab bar, so the names show.</td></tr>
+<tr><td>History (3 accounts)</td><td class="ok">OK</td><td class="ok">OK</td><td>Two columns (5-hour | 7-day) at both widths. The strip is three equal tabs.</td></tr>
+<tr><td>History, 10 accounts, CCBG-87 / CCBG-88</td><td class="def">CCBG-87 cause present</td><td>not run</td><td>Wide: the strip's scroll view spans the whole 951 pt window (frame 0–951), not the 867 pt column, so scrolled tabs pass under the rail as on the cover screen. Each tab is a third of the strip (about 293 pt), so only Teams, Personal and ChatGPT show and the other seven start beyond x 951 (CCBG-88).</td></tr>
+<tr><td>Settings sheet; Reset alerts, CCBG-85</td><td class="ok">Not present</td><td class="ok">Not present</td><td>A 653 pt form sheet. All six labels whole (“Personal · Weekly” 134 pt). Folding back to the cover screen brings back “Teams ·…” (U5).</td></tr>
+</table>
+<div class="shots">
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-all.jpg" alt=""><figcaption>Inner wide, All tab.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-filter-personal.jpg" alt=""><figcaption>Inner wide, filter Personal.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-lab.jpg" alt=""><figcaption>Inner wide, Lab (iPad page).</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-history.jpg" alt=""><figcaption>Inner wide, History, two columns.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-settings.jpg" alt=""><figcaption>Inner wide, Settings form sheet.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-reset-alerts.jpg" alt=""><figcaption>Inner wide, Reset alerts: labels whole.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-dense-all.jpg" alt=""><figcaption>Inner wide, 10 accounts: rail ✳ ✳ ✳ and “•••” (CCBG-86); half-empty one-line rows.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-dense-history.jpg" alt=""><figcaption>Inner wide, History with 10 accounts: three tabs of a third each (CCBG-88).</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/u-land-fitdrop.jpg" alt=""><figcaption>Inner wide, <code>fitdrop</code>: no overrun (CCBG-84 absent).</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/u-port-all.jpg" alt=""><figcaption>Inner tall, All tab.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/u-port-history.jpg" alt=""><figcaption>Inner tall, History: two columns while the main page is the phone page.</figcaption></figure>
+</div>
+
+<h2>U3 · New defect</h2>
+<div class="defect"><h3>CCBG-90 · Inner Portrait Stretch — the tall inner screen gets the phone page stretched to 637 pt — medium</h3>
+<dl>
+<dt>What I saw</dt><dd>With the Duo unfolded and the inner screen tall (669 × 951 pt, regular / regular), the main tabs show the phone page:
+the account tile, chart and credits card stretched to 637 pt. Held the other way (951 pt) the same screen gets the iPad page. History, at
+the same 669 pt, goes two columns, so opening it switches layout family.</dd>
+<dt>Width</dt><dd><code>TabPage.iPad</code> needs a regular width ≥ 700 pt (<code>ios/App/UI/MainScreens.swift</code> ≈ l. 393), History's
+<code>HistoryLayout.twoColumnWidth</code> is 600 pt (<code>ios/App/UI/SettingsHistory.swift</code> l. 688). 669 falls between them.</dd>
+<dt>Proposed fix</dt><dd>Design the inner screen as a regular-width display in every pose (Apple's guidance, U6) instead of a width
+breakpoint: one rule for the main page and History, and a layout made for 669 × 951, not a stretched phone page. See U6 for Robin's
+starting ideas.</dd>
+<dt>Changes what the user sees?</dt><dd><b>Yes, it needs a wireframe.</b></dd>
+</dl></div>
+
+<h2>U4 · Half open at about 90°</h2>
+<p>Robin dragged Device Hub's hinge slider (hold ⌥) slowly from flat to about 90° with the All tab on the tall inner screen. Nothing
+changed: the window stayed 669 × 951, the safe area stayed 82 / 34, no reserved region was applied, and nothing moved. The fold crosses the page at
+about y 475, through the Lab row and the Pace map's title. Not a defect today; Apple leaves it to the app (“Prefer a layout container that adapts
+automatically”), and it is the opening for U6.</p>
+<div class="shots"><figure><img src="2026-11-11-iphone-duo-pass/t-half-open-90.jpg" alt=""><figcaption>Half open at about 90°: same layout as flat; the fold runs across the middle.</figcaption></figure></div>
+
+<h2>U5 · Fold ↔ unfold with the app open</h2>
+<table>
+<tr><th>Start</th><th>Action</th><th>After</th><th>Result</th></tr>
+<tr><td>Inner tall, All tab, History open (Teams)</td><td>Fold</td><td>Cover screen: All tab, History open, Teams; one column with the 5-hour / 7-day picker</td><td class="ok">Kept</td></tr>
+<tr><td>Cover, History with Lab picked in the strip</td><td>Unfold</td><td>Inner tall: History, Lab, two columns</td><td class="ok">Kept</td></tr>
+<tr><td>Inner tall, Lab tab, Settings open, scrolled to Reset alerts</td><td>Fold</td><td>Cover: Lab tab, Settings open at Reset alerts (labels “Teams ·…”, CCBG-85)</td><td class="ok">Kept</td></tr>
+<tr><td>Cover, same</td><td>Unfold</td><td>Inner tall: Lab tab, Settings at Reset alerts, labels whole</td><td class="ok">Kept</td></tr>
+<tr><td>Inner tall, All tab</td><td>Hinge to about 90°</td><td>Unchanged (U4)</td><td class="ok">No clipping</td></tr>
+<tr><td>Inner wide, All tab scrolled about 180 pt (Pace map title at y 285)</td><td>Fold</td><td>Cover: All tab at the <b>top</b> (“Weekly” at y 100)</td><td class="q">Scroll reset, seen once</td></tr>
+<tr><td>Cover, scrolled to the Pace map</td><td>Unfold</td><td>Inner wide: same offset (Pace map at y 294)</td><td class="ok">Kept</td></tr>
+<tr><td>Inner wide, same offset</td><td>Fold (repeat of the reset run)</td><td>Cover: same offset (Pace map at y 294)</td><td class="ok">Kept; the reset did not repeat</td></tr>
+</table>
+<p>Nothing clipped and nothing stayed in the wrong layout: every change switched page family (iPad ↔ phone, rail ↔ bottom bar,
+History two columns ↔ picker) on the first frame captured. The one scroll reset came on the first fold straight after a rotation. It did not
+repeat, so it is not filed; watch for it in the RUNBOOK Step 3 device pass.</p>
+<div class="shots">
+<figure><img src="2026-11-11-iphone-duo-pass/t-fold-history-kept.jpg" alt=""><figcaption>Folded from inner tall: History kept.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/t-unfold-history-kept.jpg" alt=""><figcaption>Unfolded again: History on Lab kept.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/t-fold-settings-kept.jpg" alt=""><figcaption>Folded with Settings open: scroll kept.</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/t-unfold-settings-kept.jpg" alt=""><figcaption>Unfolded again: Settings kept.</figcaption></figure>
+<figure class="wide"><img src="2026-11-11-iphone-duo-pass/t-land-scrolled.jpg" alt=""><figcaption>Inner wide, scrolled to the Pace map, before the fold…</figcaption></figure>
+<figure><img src="2026-11-11-iphone-duo-pass/t-fold-scroll-reset.jpg" alt=""><figcaption>…and after it: back at the top (seen once).</figcaption></figure>
+</div>
+
+<h2>U6 · Apple's guidance, and the ask for the inner screen</h2>
+<p>Apple's HIG page <a href="https://developer.apple.com/tutorials/data/design/human-interface-guidelines/designing-for-iphone-duo.md">Designing for iPhone Duo</a> (dated 2026-09-09), read 2026-11-12:</p>
+<ul>
+<li>A compact-width layout on the outer display and a regular-width layout on the inner display “give you the fundamentals for every pose”.</li>
+<li>Show “an additional level of hierarchy on the larger inner display if it makes sense”: split views expand there and collapse on the outer display (Mail: list on the cover screen, list plus message side by side inside).</li>
+<li>“Avoid fixed widths and display-specific dependencies”: use size classes, layout margins and safe areas, not breakpoints. Cooldown's 600 / 700 / 900 / 1000 pt rules are exactly such breakpoints.</li>
+<li>Bars move to a vertical strip on the side, except on the inner display held tall, which keeps horizontal bars. Both match what was measured.</li>
+<li>Keep the state the same between displays. It is kept (U5).</li>
+<li>Half open, the fold is a reserved region. Prefer an even number of columns so content divides cleanly, and “avoid extreme layout changes as people fold the device”.</li>
+</ul>
+<p><b>Robin's starting ideas (2026-11-12, thinking out loud, not decided):</b> rather than a bigger phone page, use the inner screen's space
+and the half-open pose:</p>
+<ul>
+<li><b>Tall, half open</b> (the fold runs across): the usage list in the top half, scrolling on its own, with the Pace map in the bottom half.</li>
+<li><b>Wide, half open</b> (the fold runs down the middle): usage bars on the left and pace on the right.</li>
+<li>The same thinking applies to the flat inner screen in both orientations: an inner-screen layout of its own, not the phone design blown up.</li>
+</ul>
+<p>That is a wireframe task (CLAUDE.md §2) covering CCBG-90 and probably CCBG-86, outside this check-and-report pass.</p>
+
+<h2>U7 · Not tested unfolded</h2>
+<ul>
+<li>Dense and <code>fitdrop</code> data with the inner screen tall, and History with 10 accounts there. Each would need a relaunch while turned.</li>
+<li>Sheets other than Settings (Add account, sign-in, Layout, Share) on the inner screen, and the half-open pose with the inner screen wide.</li>
+<li>Widgets, Lock Screen and Live Activity (as on day one).</li>
+<li>Simulator note, not Cooldown: PosterBoard (the system wallpaper service) crashed twice right after the simulator booted
+(<code>pf_posterPathInstanceURLForVersionsURL</code>, SIGTRAP), and iOS restarted it. It touched nothing in the app.</li>
+</ul>
+
 <h2>8 · How to repeat</h2>
 <ul>
 <li>The Duo needs its own runtime. The generic iOS 27.2 runtime (24B8117) lists iPhone19,4 as unsupported.
@@ -245,6 +380,11 @@ three tabs, with a minimum of 80 pt and horizontal scrolling with four or more.<
 Then <code>xcrun simctl create "iPhone Duo" com.apple.CoreSimulator.SimDeviceType.iPhone-Duo com.apple.CoreSimulator.SimRuntime.iOS-27-2-iPhone19-4</code>.</li>
 <li>Screenshots: <code>xcrun simctl io &lt;udid&gt; screenshot --display=1</code> (cover); the inner screen is display 3.</li>
 <li>Don't toggle display power with <code>screenConfig</code>: it crashed SpringBoard here (<code>restrictedClassicModeDisplayConfiguration…</code>), and only a reboot of the simulator fixed it.</li>
-<li>For the unfolded pass, open the simulator in the Claude app's panel (or in Xcode, if it shows a fold control there) and re-run section 2's surfaces at 669 pt.</li>
+<li>Unfolded: open <code>/Applications/Xcode.app/Contents/Applications/DeviceHub.app</code> (Xcode 27.2 has no Window-menu item for it) and pick
+the Duo. The fold and unfold buttons are at the bottom of its window, holding ⌥ shows the hinge slider, and ⌘← / ⌘→ turns the device.</li>
+<li>Window and size class: attach lldb to the app's pid (<code>simctl spawn … launchctl list</code>) and print the scene's <code>effectiveGeometry</code> and the key
+window's frame, size classes and safe area. End with <code>process detach</code>, or the batch exit kills the app.</li>
+<li>On the inner screen XCUITest taps land but swipes do not, so ask for the scroll. Tap by element, not by coordinate: coordinates are
+off once the interface is in a landscape orientation.</li>
 </ul>
 </main></body></html>
