@@ -247,7 +247,7 @@ class WidgetFaceTest {
             android.widget.RemoteViews(context.packageName, id).apply(context, FrameLayout(context)),
         ).joinToString(" | ")
         assertEquals("38% | Pro | Weekly | 20%", preview(com.robin.claudeusage.R.layout.widget_preview_ring))
-        assertEquals("38% | Pro · Weekly | 20% | Resets Sat 9:10 PM | as of 6:29 PM", preview(com.robin.claudeusage.R.layout.widget_preview_number))
+        assertEquals("38% | Pro | 20% | Resets Sat 9:10 PM | as of 6:29 PM", preview(com.robin.claudeusage.R.layout.widget_preview_number))
         assertEquals("38% | 2:41:07 | at 9:10 PM | Pro", preview(com.robin.claudeusage.R.layout.widget_preview_countdown))
         assertEquals("38% | Pro | 62% | Work | 20% | ChatGPT", preview(com.robin.claudeusage.R.layout.widget_preview_strip))
     }
