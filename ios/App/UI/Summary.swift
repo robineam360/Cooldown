@@ -346,6 +346,13 @@ struct SummaryRow: View {
 }
 
 struct SummaryOneLineRow: View {
+    /// CCBG-84: the narrowest a name gets once the glyph has left — 64 pt, or its own width when shorter (never under 44,
+    /// the column the names have always kept).
+    static func nameFloor(_ label: String) -> CGFloat {
+        let own = ceil((label as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: 15)]).width)
+        return max(44, min(own, 64))
+    }
+
     let entry: SummaryEntry
     let nowMs: Int64
     /// CCRM-115: the glyph between the rank disc and the name (12 pt box + 4), while the bar keeps its 50 pt floor.
@@ -366,9 +373,13 @@ struct SummaryOneLineRow: View {
                 .frame(width: 16, height: 16).background(accent, in: Circle())
             HStack(spacing: 4) {
                 if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                // CCBG-84 (One-line Name Overrun), option A (Robin 2026-11-12): beside the glyph the name is whole, as
+                // `RowGlyphFit` decided; once the glyph has left, a name that still does not fit ellipsizes down to its
+                // 64 pt floor (or its own width) and the bar keeps its 50 pt.
                 Text(entry.account.label).font(.system(size: 15)).foregroundStyle(p.ink).lineLimit(1)
                     .accessibilityLabel("\(entry.account.label), \(entry.account.accountTag.accountWord)")
-                    .fixedSize().frame(minWidth: 44, alignment: .leading)
+                    .fixedSize(horizontal: glyph, vertical: false)
+                    .frame(minWidth: glyph ? 44 : Self.nameFloor(entry.account.label), alignment: .leading)
             }
             .layoutPriority(1)
             UsageBar(pct: entry.usedPct, pace: entry.elapsedPct, accent: accent, height: 7).frame(minWidth: 50, maxWidth: 110)

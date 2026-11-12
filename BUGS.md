@@ -44,7 +44,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DuetTest` that applies two builds in turn to one inflated view.
 
 ### CCBG-84 · One-line Name Overrun — a long name runs under the bar on a one-line Summary row
-- **Status:** Open · iOS · iPhone Duo pass D1 (`design/2026-11-11-iphone-duo-pass.html` §3 "D1"), folded Duo, `-demo fitdrop` · **needs a wireframe** (the approved CCRM-115 (Row Tag Glyph) rule never covered a row narrower than its minimum)
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §1): once the glyph has left, the one-line name ellipsizes to its 64 pt floor and the bar keeps 50; folded Duo `-demo fitdrop` reads "Consult…" · iOS · iPhone Duo pass D1 (`design/2026-11-11-iphone-duo-pass.html` §3 "D1"), folded Duo, `-demo fitdrop` · **needs a wireframe** (the approved CCRM-115 (Row Tag Glyph) rule never covered a row narrower than its minimum)
 - **Severity:** Medium
 - **Symptom:** with ten accounts (one-line rows) the name "Consultancy" runs its last letters under the bar's start dot
   on the folded Duo (318 pt row, 382 pt page column); the 17e (326 pt) shows a small gap. The glyph column has already
