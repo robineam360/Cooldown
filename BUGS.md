@@ -29,7 +29,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
 ### CCBG-91 · One UI Expanded Column — a 360 dp One UI shade cuts the expanded header's pace line mid-clock
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 with its display size forced to 360 dp · `TextFitTest` pins One UI's measured columns
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 with its display size forced to 360 dp · `TextFitTest` pins One UI's measured columns · **iOS: not affected** (2026-11-12): no shade; iOS lines are fitted by `ViewThatFits`/`FitLine` on the real text, never a derived column (the Live Activity's own mid-phrase cut is CCBG-99 (Live Activity 5h Cut))
 - **Severity:** Medium (the approved drop order is not followed; CCBG-80 (Fixed Pace Columns) on One UI)
 - **Symptom:** expanded Duet "2h 4m ahead · Fri 12:30 …" and the expanded single title "Claude · Wee…" (N1-Q7 says
   "· Weekly" gives first). The Fold 7 at its own 411 dp is fine.
@@ -38,7 +38,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** + 24, which holds on both shades (AOSP drops a form slightly sooner, never cuts one).
 
 ### CCBG-92 · Summary Line Measure — Summary line 3 is cut mid-clock at 360 dp and at large text
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png`
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png` · **iOS: not affected** (2026-11-12): `FitLine` measures the real text, and iOS surfaces use fixed point sizes (no Dynamic Type), so large text does not change them
 - **Severity:** Medium (the approved drop order is not followed)
 - **Symptom:** "13h 58m behind · resets Tue 5:37 …" at 360 dp; "8h 38m behind · …" at font 2.0, where the forms
   should drop to "· Tue 5:37 PM", "· Tue" or the span alone.
@@ -47,14 +47,14 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** measure with the style the `Text` uses.
 
 ### CCBG-93 · Summary Caption Clip — the Summary row's line 2 is cut through at large text
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures · **iOS: not affected** (2026-11-12): fixed 10.5–13 pt text, no Dynamic Type
 - **Severity:** Low (only at large text, but the line is unreadable there)
 - **Symptom:** "95% used · 94% pace mark" shows only the top half of its glyphs; the row's line 3 overlaps it.
 - **Fix:** the caption's line is at least 17 dp and grows with the text (no change at font 1.0); a caption wider than
   its bar takes its short form ("95% used", "13 over"), the forms the notification already uses (`PaceText.captionForms`).
 
 ### CCBG-94 · Snapshot Not Started — the Summary snapshot draws a not-started account as unread
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot · `SummarySnapshotTest`
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot · `SummarySnapshotTest` · **iOS: not affected** (2026-11-12): `SummarySnapshotView` reads the same `SummaryEntry` and `SummaryWords.line` as the Summary row, so a not-started account reads alike on both
 - **Severity:** Low
 - **Symptom:** Gemini (0%, no reset clock yet) is dimmed with "—" and "No reading" on the snapshot, while the Summary on
   screen shows "0%", an empty bar and "Not started yet".
@@ -62,19 +62,19 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   matching the Summary's wording 2026-11-12.
 
 ### CCBG-95 · Snapshot Label Overlap — the account share card's "~100%" sits on its "95%"
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · no wireframe after all: the fix restores the in-app chart's approved rule (CCRM-74 (Chart Polish): the projection label yields to the now label), which the share card's `ChartBitmap` never had. Unlike the app, the card has no "At this pace" caption, so where the two meet the card keeps the hollow end marker without its number — put to Robin at the recheck · RUNBOOK Step 3, Fold 7, Claude › Share snapshot
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · no wireframe after all: the fix restores the in-app chart's approved rule (CCRM-74 (Chart Polish): the projection label yields to the now label), which the share card's `ChartBitmap` never had. Unlike the app, the card has no "At this pace" caption, so where the two meet the card keeps the hollow end marker without its number — put to Robin at the recheck · RUNBOOK Step 3, Fold 7, Claude › Share snapshot · **iOS: affected differently** (2026-11-12): no label-on-label overlap, but the trend chart's in-plot guide labels collide with the now figure and dot at a high late-week reading — filed and fixed as CCBG-98 (Chart End Labels)
 - **Severity:** Low
 - **Symptom:** in the share card's Weekly trend, the projection label "~100%" is drawn over the now-label "95%" at the
   plot's right end (unlike CCBG-7 (Chart Label Collision), this one is real at full resolution).
 
 ### CCBG-96 · Picker Preview Truncation — two widget picker previews truncate their labels
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §1, options A approved 2026-11-12: Countdown ring 1 : count 2, Number label "Pro" · RUNBOOK Step 3, Fold 7 cover, One UI widget picker
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §1, options A approved 2026-11-12: Countdown ring 1 : count 2, Number label "Pro" · RUNBOOK Step 3, Fold 7 cover, One UI widget picker · **iOS: not affected** (2026-11-12): Countdown "at 4:46 PM" and Number "Teams · Weekly" render whole at 158 pt in every display mode (`SurfaceRenderTests`)
 - **Severity:** Low
 - **Symptom:** the Countdown 2×1 preview reads "at 9:10…" and the Number 4×1 preview "Pro · W…". Placed widgets are
   unaffected. The picker has no 4×2 entry: every face picks at its target cells (Number and Strip 4×1), as specified.
 
 ### CCBG-97 · Map Foot Clip — the Pace map's foot note loses "week" at large text
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · found in the Step 3 recheck at font 2.0 · wireframe `design/2026-11-12-step3-fix-wireframes.html` §3, option A approved 2026-11-12
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · found in the Step 3 recheck at font 2.0 · wireframe `design/2026-11-12-step3-fix-wireframes.html` §3, option A approved 2026-11-12 · **iOS: not affected** (2026-11-12): the iOS foot note (`PaceMap.swift`, 11 pt fixed) has no line limit, so it wraps rather than clips
 - **Severity:** Low
 - **Symptom:** at font 2.0 the foot line read "each account's own" beside "1 at 0%".
 - **Fix:** the note wraps to a second line (`PaceMapFoot`, at most two lines); one line at font 1.0 as before.
@@ -183,7 +183,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   ideas in report U6), with one rule shared by the main page and History.
 
 ### CCBG-89 · Map Axis Clip — Android's Pace map prints "00%" for its "100%" label at font scale 2.0
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12; seen on the Fold 7 at font 2.0 the same day) · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3 · `PaceMapGeometry.leftPx`: the inset is 30 dp or the measured "100%" + 6 dp, whichever is wider
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12; seen on the Fold 7 at font 2.0 the same day) · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3 · `PaceMapGeometry.leftPx`: the inset is 30 dp or the measured "100%" + 6 dp, whichever is wider · **iOS: not affected** (2026-11-12, iOS sister session): fixed 9.5 pt axis labels, no Dynamic Type on iOS surfaces
 - **Severity:** Low (cosmetic)
 - **Symptom:** at font scale 2.0 the map's y-axis "100%" is cut to "00%".
 - **Cause:** the map's fixed 30 dp left inset does not grow with the label's scaled width.
@@ -522,7 +522,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
 
 ### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
-- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker (the iOS bug-fix session); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout).
+- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker — **done on iOS** 2026-11-12 (2020365): `ThemeColours.options` leads with Claude Orange `#D97757` / `#E59980`, the twelve accents of §5, render approved by Robin; iOS already conformed to (1) (`Palette.severity` gives the accent below 80); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout).
 - **Severity:** Low (no wrong number; two installs could disagree in colour)
 - **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
   Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
@@ -1059,7 +1059,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Duet wireframe first.
 
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
-- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **iOS pending** (`ios/Shared/Display.swift:142`, the iOS bug-fix session) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12
+- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **Fixed on iOS** (2026-11-12, 2020365): `ThemeColours` Amber is the same `#B07D00` / `#D9A84A` pair, render approved by Robin; no other iOS accent equals a severity colour · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12
 - **Severity:** Low (one theme, and the orange/red rungs still land)
 - **Symptom:** Noticed 2026-08-21 during CCRM-50 (Weekly Flag) design. The Amber
   theme's accent pair (#F9A825 / #FDD663) is **identical** to `Palette.barColor`'s
