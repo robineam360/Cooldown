@@ -101,6 +101,18 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   column) each scrolling tab is a third of the strip (≈ 293 pt), so only three names show and seven sit off screen, where the
   shared rule would size tabs to their labels.
 
+### CCBG-98 · Chart End Labels — late in a heavy week the iOS trend chart's now figure runs into its guide labels
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · iOS · found checking CCBG-95 (Snapshot Label Overlap) on iOS · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §3): a guide label gives way within 4 pt of the now figure, the now-dot, the projection's end or its label; rendered at 3× for 95/99.6, 97/99.6, 88/120, 92 late, 60/80 and 40 — only the colliding labels drop
+- **Severity:** Low
+- **Symptom:** at 95% used with 95% of the week gone (~100% projected), the "95%" figure butts into the "100%" guide label and the now-dot covers "90%". Every iOS trend chart: the open tile and the share card.
+- **Cause:** iOS draws the 100/90/80% guide labels inside the plot at its right edge (`TrendChart`, `ios/Shared/Charts.swift`); Android keeps them in a gutter (CCBG-7 (Chart Label Collision)).
+
+### CCBG-99 · Live Activity 5h Cut — the single-account Live Activity cuts its 5h line mid-phrase
+- **Status:** Open · iOS · found checking CCBG-91 (One UI Expanded Column) on iOS (SurfaceRenderTests `la-single`, every display mode) · **needs a wireframe** (`design/2026-11-12-ios-step3-fix-wireframes.html` §4)
+- **Severity:** Medium
+- **Symptom:** line 2, "resets in 2h 19m · on track for ~64%" (200 pt at 12.5 pt), has about 185 pt beside the 52 pt figure and reads "resets in 2h 19m · on trac…" / "· on t…".
+- **Cause:** `LiveLines.fiveLine` (`ios/Shared/FaceViews.swift`) is one `Text` with `lineLimit(1)` and no drop order.
+
 ### CCBG-90 · Inner Portrait Stretch — the iPhone Duo's tall inner screen gets the phone page stretched to 637 pt
 - **Status:** Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes)
 - **Severity:** Medium

@@ -162,9 +162,35 @@ struct TrendChart: View {
                            with: .color(p.pace), style: StrokeStyle(lineWidth: 2.6, dash: [4, 3]))
                 label("even pace", .init(x: 22, y: bottom - 6), p.pace, .leading, 10.5, false)
             } else {
-                label("100%", .init(x: W, y: P(0, 100).y - 8), p.red, .trailing, 10, false)
-                label("90%", .init(x: W, y: P(0, 90).y), p.orange, .trailing, 10, false)
-                label("80%", .init(x: W, y: P(0, 80).y + 7), p.yellow, .trailing, 10, false)
+                // CCBG-98 (Chart End Labels), option A (Robin 2026-11-12): a guide label gives way — is not drawn — when it
+                // would come within 4 pt of the now figure, the now-dot, the projection's end or its label (the axis
+                // ordinals' give-way rule). The dashed guide lines always stay.
+                func box(_ t: String, _ at: CGPoint, _ a: UnitPoint, _ s: CGFloat, _ b: Bool) -> CGRect {
+                    let m = ctx.resolve(Text(t).font(.system(size: s, weight: b ? .bold : .regular))).measure(in: CGSize(width: 300, height: 40))
+                    return CGRect(x: at.x - a.x * m.width, y: at.y - a.y * m.height, width: m.width, height: m.height)
+                }
+                var keepOut: [CGRect] = []
+                if let last = model.samples.last {
+                    let lastPt = P(last.x, last.y)
+                    keepOut.append(CGRect(x: lastPt.x - 5, y: lastPt.y - 5, width: 10, height: 10))
+                    let early = lastPt.x < 34
+                    keepOut.append(box("\(Int(last.y))%", .init(x: lastPt.x + (early ? 8 : -8), y: lastPt.y - 13),
+                                       early ? .leading : .trailing, 12, true))
+                    if let proj = model.projection {
+                        let end = Self.projectionEnd(last: last, proj: proj, P)
+                        keepOut.append(CGRect(x: end.x - 4, y: end.y - 4, width: 8, height: 8))
+                        if proj < 100 {
+                            let v = min(proj, 100)
+                            keepOut.append(box("~\(Int(proj.rounded()))%", CGPoint(x: P(1, v).x - 34, y: P(1, v).y + (v >= 60 ? 13 : -13)),
+                                               .trailing, 11.5, true))
+                        }
+                    }
+                }
+                for (t, at, c) in [("100%", CGPoint(x: W, y: P(0, 100).y - 8), p.red), ("90%", CGPoint(x: W, y: P(0, 90).y), p.orange),
+                                   ("80%", CGPoint(x: W, y: P(0, 80).y + 7), p.yellow)] {
+                    let r = box(t, at, .trailing, 10, false).insetBy(dx: -4, dy: -4)
+                    if !keepOut.contains(where: { $0.intersects(r) }) { label(t, at, c, .trailing, 10, false) }
+                }
                 ctx.stroke(line(.init(x: 0, y: P(0, 95).y), .init(x: 13, y: P(0, 95).y)),
                            with: .color(p.pace), style: StrokeStyle(lineWidth: 2.6, dash: [4, 3]))
                 label("even pace", .init(x: 18, y: P(0, 95).y), p.pace, .leading, 10.5, false)
@@ -193,10 +219,7 @@ struct TrendChart: View {
             }
             if let last = model.samples.last, let lastPt = pts.last {
                 if let proj = model.projection {
-                    let x0 = last.x, v0 = last.y
-                    let ex = proj > 100 ? x0 + (1 - x0) * (100 - v0) / (proj - v0) : 1
-                    var end = P(ex, min(proj, 100))
-                    if ex >= 1 { if down { end.y -= 4 } else { end.x -= 4 } }
+                    let end = Self.projectionEnd(last: last, proj: proj, P, down: down)
                     ctx.stroke(line(lastPt, end), with: .color(accent.opacity(0.75)), style: StrokeStyle(lineWidth: 2, dash: [4, 3]))
                     ctx.stroke(Path(ellipseIn: CGRect(x: end.x - 4, y: end.y - 4, width: 8, height: 8)),
                                with: .color(proj >= 100 ? p.red : accent.opacity(0.85)), lineWidth: 1.8)
@@ -269,6 +292,15 @@ struct TrendChart: View {
         }
         .opacity(dimmed ? 0.45 : 1)
         .accessibilityHidden(true)
+    }
+
+    /// The projection's end: the crossing of 100% when it gets there before the reset, else the reset, pulled 4 pt in.
+    static func projectionEnd(last: CGPoint, proj: Double, _ P: (Double, Double) -> CGPoint, down: Bool = false) -> CGPoint {
+        let x0 = Double(last.x), v0 = Double(last.y)
+        let ex = proj > 100 ? x0 + (1 - x0) * (100 - v0) / (proj - v0) : 1
+        var end = P(ex, min(proj, 100))
+        if ex >= 1 { if down { end.y -= 4 } else { end.x -= 4 } }
+        return end
     }
 
     private nonisolated static func label(_ ctx: GraphicsContext, _ text: String, at point: CGPoint, colour: Color,
