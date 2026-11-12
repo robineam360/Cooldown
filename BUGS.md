@@ -56,7 +56,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Consultancy" fits. Cover screen only.
 
 ### CCBG-85 · Reset Alert Labels — Settings › Reset alerts truncates the window word on every narrow iPhone
-- **Status:** Open · iOS · iPhone Duo pass D2 (`design/2026-11-11-iphone-duo-pass.html` §3 "D2"), also on the iPhone 17e · **needs a wireframe**
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §2): the account once as a header row, its rows "5h" and "Weekly"; checked on the folded Duo simulator · iOS · iPhone Duo pass D2 (`design/2026-11-11-iphone-duo-pass.html` §3 "D2"), also on the iPhone 17e · **needs a wireframe**
 - **Severity:** Medium
 - **Symptom:** each account's two rows "Teams · 5h" and "Teams · Weekly" both read "Teams ·…" ("Personal" → "Persona…";
   only "Lab · 5h" fits), so an account's two rows cannot be told apart.

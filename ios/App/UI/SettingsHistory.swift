@@ -121,7 +121,10 @@ struct SettingsScreen: View {
                 // The sample data has no notifications or Live Activity to configure (rev B §7).
                 if !model.isSample {
                 Section {
+                    // CCBG-85 (Reset Alert Labels), option A (Robin 2026-11-12): the account once, as a header row, then
+                    // its "5h" and "Weekly" rows — Android's Reset pings layout; every label reads whole on a narrow iPhone.
                     ForEach(model.accounts) { account in
+                        ResetAccountHeader(account: account)
                         ResetModeRow(account: account, weekly: false)
                         ResetModeRow(account: account, weekly: true)
                     }
@@ -598,6 +601,18 @@ struct AccountDetailsSheet: View {
     }
 }
 
+/// CCBG-85 (Reset Alert Labels): the account's name once, above its two rows — mark 18 + name 15 pt semibold.
+struct ResetAccountHeader: View {
+    let account: Account
+    var body: some View {
+        HStack(spacing: 10) {
+            ProviderMark(provider: account.provider, size: 18)
+            Text(account.label).font(.system(size: 15, weight: .semibold)).lineLimit(1)
+        }
+        .accessibilityAddTraits(.isHeader)
+    }
+}
+
 /// One account's window: Off / If busy / Always (spec mobile §2). Turning one on asks for notification permission.
 struct ResetModeRow: View {
     @Environment(AppModel.self) private var model
@@ -607,13 +622,14 @@ struct ResetModeRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ProviderMark(provider: account.provider, size: 18)
-            Text("\(account.label) · \(weekly ? "Weekly" : "5h")").lineLimit(1)
+            // Under the header's name: the mark's 18 pt and its 10 pt gap.
+            Text(weekly ? "Weekly" : "5h").lineLimit(1).padding(.leading, 28)
             Spacer(minLength: 8)
             Picker("", selection: $mode) {
                 Text("Off").tag("off"); Text("If busy").tag("smart"); Text("Always").tag("always")
             }
             .pickerStyle(.segmented).fixedSize()
+            .accessibilityLabel("\(account.label), \(weekly ? "Weekly" : "5h") reset alert")
         }
         .onAppear { mode = Prefs.resetMode(account.key, weekly: weekly) }
         .onChange(of: mode) { _, new in
