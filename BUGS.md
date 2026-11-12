@@ -89,7 +89,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   window, not the 867 pt column beside the rail. Not applicable with the inner screen tall (no rail).
 
 ### CCBG-88 · Tab Strip Truncates — iOS's History strip would truncate a label where the shared rule scrolls
-- **Status:** Open · iOS · latent: no current iPhone or iPad column is narrow enough to show it (`design/2026-11-11-iphone-duo-pass.html` §5) · the rule is approved (Robin's option B for CCBG-81 (History Tab Wrap), 2026-11-11), so no wireframe is needed
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `AccountTabs` measures each one-line label and is fixed in equal shares only while all fit, else scrolls with tabs sized to their labels; `TabStripFitTests` at 340 pt · iOS · latent: no current iPhone or iPad column is narrow enough to show it (`design/2026-11-11-iphone-duo-pass.html` §5) · the rule is approved (Robin's option B for CCBG-81 (History Tab Wrap), 2026-11-11), so no wireframe is needed
 - **Severity:** Low
 - **Symptom:** the shared rule (`spec/mobile/surfaces/app.md` §2.3) keeps an account strip fixed while every label fits on
   one line and makes it scroll once one would not. iOS's History strip (`AccountTabs`) uses the account count instead —

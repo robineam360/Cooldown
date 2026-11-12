@@ -193,6 +193,11 @@ struct AppTitle: View {
 
 /// The account tabs: mark + name, underline in the selected account's accent. Since 2026-11-02 ("Native everywhere")
 /// only History's account picker uses this strip; the main screen's tabs are the system `TabView` (`MainTabs`).
+///
+/// CCBG-88 (Tab Strip Truncates), the shared rule (`spec/mobile/surfaces/app.md` §2.3 Fit, Robin's option B for
+/// CCBG-81 (History Tab Wrap)): the strip is fixed, in equal shares, while every tab's one-line label (mark + name +
+/// padding) fits its share, and scrolls, each tab sized to its label, once one would not — as Android's
+/// `ui/ProfileTabStrip.kt`. `ViewThatFits` measures; nothing follows the account count.
 struct AccountTabs: View {
     let accounts: [Account]
     @Binding var selected: String?
@@ -201,52 +206,77 @@ struct AccountTabs: View {
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
-    private var count: Int { accounts.count + (showsAll ? 1 : 0) }
+    /// Material's scrollable tab minimum (90 dp), so a short name keeps a tappable tab once the strip scrolls.
+    static let scrollingMinWidth: CGFloat = 90
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
-                if showsAll {
-                    let on = selected == AppModel.summaryKey
-                    Button { withAnimation { selected = AppModel.summaryKey } } label: {
-                        HStack(spacing: 7) {
-                            Image(systemName: "text.alignleft").font(.system(size: 15, weight: .semibold))
-                            Text("All").font(.system(size: 16, weight: .medium))
-                        }
-                        .foregroundStyle(on ? p.ink : p.sub)
-                        .padding(.horizontal, 12)
-                        .frame(height: 46)
-                        .frame(minWidth: count <= 3 ? nil : 80)
-                        .overlay(alignment: .bottom) { if on { Capsule().fill(p.ink).frame(height: 3) } }
-                    }
-                    .buttonStyle(.plain)
-                    .containerRelativeFrame(.horizontal, count: max(min(count, 3), 1), spacing: 0)
-                    .accessibilityLabel("All accounts")
-                    .accessibilityAddTraits(on ? .isSelected : [])
-                }
-                ForEach(accounts) { account in
-                    let on = account.key == selected
-                    Button { withAnimation { selected = account.key } } label: {
-                        HStack(spacing: 7) {
-                            ProviderMark(provider: account.provider, size: 20)
-                            Text(account.label).font(.system(size: 16, weight: .medium)).lineLimit(1)
-                        }
-                        .foregroundStyle(on ? p.ink : p.sub)
-                        .padding(.horizontal, 12)
-                        .frame(height: 46)
-                        .frame(minWidth: count <= 3 ? nil : 110)
-                        .overlay(alignment: .bottom) {
-                            if on { Capsule().fill(account.accent(scheme)).frame(height: 3) }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .containerRelativeFrame(.horizontal, count: max(min(count, 3), 1), spacing: 0)
-                    .accessibilityAddTraits(on ? .isSelected : [])
-                }
+        ViewThatFits(in: .horizontal) {
+            EqualShares { tabs(scrolling: false) }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) { tabs(scrolling: true) }
             }
         }
-        .scrollDisabled(count <= 3)
         .overlay(alignment: .bottom) { Rectangle().fill(p.line).frame(height: 1) }
+    }
+
+    @ViewBuilder private func tabs(scrolling: Bool) -> some View {
+        if showsAll {
+            let on = selected == AppModel.summaryKey
+            tab(on: on, underline: p.ink, scrolling: scrolling, action: { selected = AppModel.summaryKey }) {
+                Image(systemName: "text.alignleft").font(.system(size: 15, weight: .semibold))
+                Text("All").font(.system(size: 16, weight: .medium)).fixedSize()
+            }
+            .accessibilityLabel("All accounts")
+        }
+        ForEach(accounts) { account in
+            tab(on: account.key == selected, underline: account.accent(scheme), scrolling: scrolling,
+                action: { selected = account.key }) {
+                ProviderMark(provider: account.provider, size: 20)
+                Text(account.label).font(.system(size: 16, weight: .medium)).lineLimit(1).fixedSize()
+            }
+        }
+    }
+
+    private func tab<Label: View>(on: Bool, underline: Color, scrolling: Bool, action: @escaping () -> Void,
+                                  @ViewBuilder label: () -> Label) -> some View {
+        Button { withAnimation { action() } } label: {
+            HStack(spacing: 7) { label() }
+                .foregroundStyle(on ? p.ink : p.sub)
+                .padding(.horizontal, 12)
+                .frame(height: 46)
+                .frame(minWidth: scrolling ? Self.scrollingMinWidth : nil)
+                .contentShape(Rectangle())
+                .overlay(alignment: .bottom) { if on { Capsule().fill(underline).frame(height: 3) } }
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
+}
+
+/// Equal shares of the proposed width. Its ideal width is the widest child's times the count, so inside
+/// `ViewThatFits` it is chosen only while every child fits its share (CCBG-88 (Tab Strip Truncates)).
+struct EqualShares: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let ideal = subviews.map { $0.sizeThatFits(.unspecified) }
+        let height = ideal.map(\.height).max() ?? 0
+        let widest = ideal.map(\.width).max() ?? 0
+        guard let width = proposal.width, width.isFinite else { return CGSize(width: widest * CGFloat(subviews.count), height: height) }
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard !subviews.isEmpty else { return }
+        let share = bounds.width / CGFloat(subviews.count)
+        for (i, view) in subviews.enumerated() {
+            let frame = ProposedViewSize(width: share, height: bounds.height)
+            view.place(at: CGPoint(x: bounds.minX + share * CGFloat(i), y: bounds.minY), anchor: .topLeading, proposal: frame)
+        }
+    }
+
+    /// The rule itself, pure, for the test: fixed while every label fits its equal share of `width`.
+    static func fits(labelWidths: [CGFloat], width: CGFloat) -> Bool {
+        guard !labelWidths.isEmpty else { return true }
+        return (labelWidths.max() ?? 0) * CGFloat(labelWidths.count) <= width
     }
 }
 
