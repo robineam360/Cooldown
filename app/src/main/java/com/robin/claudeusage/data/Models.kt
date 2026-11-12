@@ -83,8 +83,8 @@ data class SpendCredits(
      *
      * Note the deliberate gap: an uncapped account that has spent nothing yet stays
      * hidden until its first spend. Conservative on purpose — it can't be told apart
-     * from a no-credits account without trusting `spend.enabled`, which is still
-     * unverified (CCBG-3).
+     * from a no-credits account without trusting `spend.enabled`. (CCBG-3: a payload that says
+     * `enabled: false` with nothing spent is already dropped by the parser.)
      */
     val isReportable: Boolean
         get() = !unlimited && (hasLimit || usedMinor > 0L || (balanceMinor ?: 0L) > 0L)
@@ -217,6 +217,12 @@ object UsageParser {
     private fun creditsFrom(root: JSONObject): SpendCredits? {
         val spend = root.optJSONObject("spend")
         val used = spend?.optJSONObject("used")
+        // CCBG-3 (Credits Visibility): extra usage switched off with nothing spent is "no credits", however large its
+        // limit. Only an explicit `false` counts (a missing flag keeps today's reading), and spend already made stays
+        // reportable, so the card never hides money that was really used.
+        if (spend != null && spend.has("enabled") && !spend.isNull("enabled") && !spend.optBoolean("enabled", true) &&
+            (used?.optLong("amount_minor", 0L) ?: 0L) == 0L
+        ) return null
         if (used != null) {
             val limit = spend.optJSONObject("limit")
             return SpendCredits(
@@ -241,6 +247,9 @@ object UsageParser {
         // Fallback shape. Either figure alone is enough to say credits exist; only an
         // account reporting neither has no credit budget.
         val extra = root.optJSONObject("extra_usage") ?: return null
+        if (extra.has("is_enabled") && !extra.isNull("is_enabled") && !extra.optBoolean("is_enabled", true) &&
+            extra.optDouble("used_credits", 0.0) == 0.0
+        ) return null // CCBG-3, as above
         val hasLimit = !extra.isNull("monthly_limit")
         val hasUsed = !extra.isNull("used_credits")
         if (!hasLimit && !hasUsed) return null

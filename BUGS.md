@@ -1053,7 +1053,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-3 · Credits Visibility — credits card ignores extra-usage being switched off
 - **2026-09-09:** Re-scoped to the in-app credits card — the widget credits bar is removed by CCRM-61 (Settings Diet).
-- **Status:** Open
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · the parser drops credits only when the payload says `enabled: false` (`spend`) or `is_enabled: false` (`extra_usage`) **and** nothing was spent — a missing flag or real spend keeps today's reading, so the card never hides money used (`UsageParserTest`). Still unobserved on a real account
 - **Severity:** Low (misleading display, no data loss) — and possibly unreachable
 - **Symptom:** Suspected, not observed. The credits card renders whenever
   `limit > 0`, so an account that has *switched extra usage off* while keeping a
