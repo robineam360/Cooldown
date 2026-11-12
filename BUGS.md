@@ -505,8 +505,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
 
 ### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
-- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/`. Needs a decision:
-  change the spec or the code, per item.
+- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker (the iOS bug-fix session); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS (to build in Step 3).
 - **Severity:** Low (no wrong number; two installs could disagree in colour)
 - **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
   Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
@@ -1043,7 +1042,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Duet wireframe first.
 
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
-- **Status:** Open
+- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **iOS pending** (`ios/Shared/Display.swift:142`, the iOS bug-fix session) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12
 - **Severity:** Low (one theme, and the orange/red rungs still land)
 - **Symptom:** Noticed 2026-08-21 during CCRM-50 (Weekly Flag) design. The Amber
   theme's accent pair (#F9A825 / #FDD663) is **identical** to `Palette.barColor`'s
