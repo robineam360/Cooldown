@@ -145,4 +145,52 @@ object Projection {
             if (v != null && r > 0L && abs(r - resetAtMs) <= tol) p.at to v else null
         }.sortedBy { it.first }
     }
+
+    // --- CCBG-55 (Spec Drift) item 3: the three silences, core §3.1 --------------------------------
+
+    /** No verdict under this much usage (core §3.1, "Minimum usage"). */
+    const val PACE_MIN_USED = 5.0
+
+    /** The young-window floor: 1% of the window, never under a minute (core §3.1). */
+    fun paceMinElapsedMs(windowLengthMs: Long): Long = maxOf(windowLengthMs / 100, 60_000L)
+
+    /**
+     * Why there is no forecast, worded three ways (core §3.1: "a client must phrase them differently"). The words are
+     * iOS's (`Projection.PaceSuppression.explanation`), so both apps say the same thing.
+     */
+    enum class Suppression(val explanation: String) {
+        YOUNG_WINDOW("Too early in this window to project a pace"),
+        TOO_LITTLE_USAGE("Not enough usage yet to project a pace"),
+        NO_PROJECTION("Not enough readings yet to project a pace"),
+    }
+
+    /**
+     * Core §3.1's two floors, then the estimate: null when a forecast may be drawn, or when the window is spent
+     * (≥ 99.5%, which needs no forecast). A suppressed window draws no projection tail and no estimate line.
+     */
+    fun suppression(usedPct: Double?, elapsedMs: Long, windowLengthMs: Long, estimate: Estimate?): Suppression? {
+        if (elapsedMs < paceMinElapsedMs(windowLengthMs)) return Suppression.YOUNG_WINDOW
+        val used = usedPct ?: return Suppression.NO_PROJECTION
+        if (used < PACE_MIN_USED) return Suppression.TOO_LITTLE_USAGE
+        if (used >= 99.5) return null
+        return if (estimate == null) Suppression.NO_PROJECTION else null
+    }
+
+    /**
+     * The forecast a surface may draw: [estimate] unless core §3.1 suppresses it (young window, under 5% used, no
+     * fit). "A surface must not draw a forecast it refuses to name" — every tail, "~ runs out" and callout forecast
+     * reads from here (CCBG-55 (Spec Drift) item 3).
+     */
+    fun forecast(
+        samples: List<Pair<Long, Double>>,
+        resetAtMs: Long,
+        usedPct: Double?,
+        windowLengthMs: Long,
+        nowMs: Long = System.currentTimeMillis(),
+    ): Estimate? {
+        val e = estimate(samples, resetAtMs) ?: return null
+        val elapsed = windowLengthMs - (resetAtMs - nowMs)
+        return if (elapsed < paceMinElapsedMs(windowLengthMs) || (usedPct ?: 0.0) < PACE_MIN_USED) null else e
+    }
 }
+

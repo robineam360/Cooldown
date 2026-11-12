@@ -692,6 +692,10 @@ internal fun TrendBlock(
     }
     val est = Projection.estimate(samples, resetMs)
     val atLimit = (window.percent ?: 0.0) >= 100.0
+    // CCBG-55 (Spec Drift) item 3, core §3.1: the young-window and minimum-usage floors, then the estimate. A
+    // suppressed window draws no tail and says which silence it is, in iOS's words.
+    val nowMs = System.currentTimeMillis()
+    val suppressed = Projection.suppression(window.percent, windowLengthMs - (resetMs - nowMs), windowLengthMs, est)
 
     Spacer(Modifier.height(10.dp))
     // Measured here rather than derived from the window width: the chart sits inside a
@@ -708,7 +712,7 @@ internal fun TrendBlock(
             // the same moment and the divider walks with the mark instead of waiting for
             // the next poll (CCRM-74 (Chart Polish) item 1).
             nowMs = System.currentTimeMillis(),
-            projectedEnd = est?.takeIf { !gated }?.let { e ->
+            projectedEnd = est?.takeIf { !gated && suppressed == null }?.let { e ->
                 if (e.hitsLimitAtMs != null) e.hitsLimitAtMs to 100.0 else resetMs to e.pctAtReset
             },
             color = barFill(window.percent),
@@ -727,15 +731,15 @@ internal fun TrendBlock(
         SwapText(readout, MaterialTheme.typography.bodySmall.fontSize)
         return
     }
-    if (est == null && !atLimit && !gated) {
+    if (suppressed != null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         Text(
-            "Usage hasn't moved enough yet to project a pace",
+            suppressed.explanation,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-    if (est != null && !atLimit && !gated) {
+    if (est != null && suppressed == null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         val hits = est.hitsLimitAtMs
         val rate = " · ${String.format(Locale.US, "%.1f", est.ratePctPerHour)}%/h"
@@ -860,7 +864,7 @@ internal fun AccountTile(
     val sessionSamples = session?.resetsAt?.let {
         Projection.sessionSamples(history, it.toEpochMilli(), SESSION_MS)
     } ?: emptyList()
-    val sessionEstimate = session?.resetsAt?.let { Projection.estimate(sessionSamples, it.toEpochMilli()) }
+    val sessionEstimate = session?.resetsAt?.let { Projection.forecast(sessionSamples, it.toEpochMilli(), session.percent, SESSION_MS) }
 
     val ringState = tileRingState(session, data.weekly)
     val ringFigure = if (session == null) null else AppPace.figure(session.percent, sessionElapsed, mode).first

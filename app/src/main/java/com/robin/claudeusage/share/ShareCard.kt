@@ -266,7 +266,7 @@ object ShareCard {
         val length = c.window.lengthMs
         val samples = if (c.window == FaceWindow.WEEKLY) Projection.weeklySamples(history, reset, length)
         else Projection.sessionSamples(history, reset, length)
-        val est = if (samples.size >= 2) Projection.estimate(samples, reset) else null
+        val est = if (samples.size >= 2) Projection.forecast(samples, reset, c.pct, length) else null
         return Trend(
             title = "${c.window.word} trend",
             samples = samples,

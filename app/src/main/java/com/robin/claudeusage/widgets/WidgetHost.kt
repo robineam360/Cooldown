@@ -120,10 +120,10 @@ object WidgetHost {
             if (history != null && data != null) {
                 val points = history.points(p)
                 data.session?.resetsAt?.toEpochMilli()?.let { r ->
-                    sessionOut = Projection.estimate(Projection.sessionSamples(points, r, Projection.SESSION_MS), r)?.hitsLimitAtMs
+                    sessionOut = Projection.forecast(Projection.sessionSamples(points, r, Projection.SESSION_MS), r, data.session?.percent, Projection.SESSION_MS)?.hitsLimitAtMs
                 }
                 data.weekly?.resetsAt?.toEpochMilli()?.let { r ->
-                    weeklyOut = Projection.estimate(Projection.weeklySamples(points, r, Projection.WEEKLY_MS), r)?.hitsLimitAtMs
+                    weeklyOut = Projection.forecast(Projection.weeklySamples(points, r, Projection.WEEKLY_MS), r, data.weekly?.percent, Projection.WEEKLY_MS)?.hitsLimitAtMs
                 }
             }
             AccountInput(

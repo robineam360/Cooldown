@@ -247,4 +247,27 @@ class PaceFixturesTest {
         assertEquals(SummaryOrder.YOURS, SummaryOrder.fromKey("alphabetical"))
         assertEquals(listOf("your order", "most room first", "resets soonest", "most used"), SummaryOrder.entries.map { it.header })
     }
+
+    @Test
+    fun `CCBG-55 - the three silences match core 3_1's severity cases`() {
+        val keys = mapOf(
+            "youngWindow" to Projection.Suppression.YOUNG_WINDOW,
+            "tooLittleUsage" to Projection.Suppression.TOO_LITTLE_USAGE,
+            "noProjection" to Projection.Suppression.NO_PROJECTION,
+        )
+        val cases = load("core/fixtures/projection/cases.json").getJSONArray("severity").objects()
+        assertTrue(cases.size >= 10)
+        for (c in cases) {
+            val e = if (c.isNull("estimate")) null else c.getJSONObject("estimate").let {
+                Projection.Estimate(1.0, it.lng("hitsLimitAtMs"), it.getDouble("pctAtReset"))
+            }
+            val exp = c.getJSONObject("expected")
+            val want = if (exp.has("suppression")) keys.getValue(exp.getString("suppression")) else null
+            assertEquals(c.getString("name"), want,
+                Projection.suppression(c.dbl("usedPct"), c.getLong("elapsedMs"), c.getLong("windowLengthMs"), e))
+        }
+        // Three different sentences, iOS's words.
+        assertEquals(3, Projection.Suppression.entries.map { it.explanation }.toSet().size)
+    }
 }
+

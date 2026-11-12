@@ -10,7 +10,7 @@ object AccountRead {
     fun sessionHitsLimitAtMs(data: UsageData?, points: List<HistoryPoint>?): Long? {
         val reset = data?.session?.resetsAt?.toEpochMilli() ?: return null
         if (points == null) return null
-        return Projection.estimate(Projection.sessionSamples(points, reset, Projection.SESSION_MS), reset)
+        return Projection.forecast(Projection.sessionSamples(points, reset, Projection.SESSION_MS), reset, data.session?.percent, Projection.SESSION_MS)
             ?.hitsLimitAtMs
     }
 
