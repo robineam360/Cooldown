@@ -1222,8 +1222,8 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
     re-pins after this lands. iOS items (CCBG-15's hex, CCBG-55 item 2's Claude Orange, a check of CCBG-89/92–97 on
     iOS, CCBG-82/84/85/87/88) were sent to the iOS bug-fix session with the findings note.
   - **Always after:** every changed setting put back (Second ChatGPT, dark, font 1.0, density reset, sample exited);
-    widgets untouched. **The screen timeout was not restored by adb**: the phone dropped off USB first, and Robin set
-    it back to 5 minutes himself. The a5e3e7e candidate stays installed on purpose.
+    widgets untouched. **The screen timeout was not restored by adb**: the phone dropped off USB first, and Robin said he would set
+    it back to 5 minutes himself (his word, 2026-11-12; not seen by adb). The a5e3e7e candidate stays installed on purpose.
 
 ---
 
