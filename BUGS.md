@@ -80,7 +80,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   present with the inner screen **tall** (669 × 951 pt): iOS draws a bottom tab bar with labels there.
 
 ### CCBG-87 · Strip Under Rail — History's scrolling account strip runs under the folded Duo's rail
-- **Status:** Open · iOS · iPhone Duo pass D4 (`design/2026-11-11-iphone-duo-pass.html` §3 "D4"), folded Duo only · no wireframe needed: the fix restores the approved strip, which stays inside the page column
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · the scrolling strip is clipped to its own frame, so it stops at the page column; checked on the folded Duo simulator with `-demo dense` (without the clip a mark drew right of the rail; with it the strip ends at x 382 pt) · iOS · iPhone Duo pass D4 (`design/2026-11-11-iphone-duo-pass.html` §3 "D4"), folded Duo only · no wireframe needed: the fix restores the approved strip, which stays inside the page column
 - **Severity:** Low
 - **Symptom:** with four or more accounts History's strip scrolls across the whole 466 pt window, not the 382 pt column, so
   tabs slide under the status rail and "Gemini" shows as "em" on its far side; the divider under it stops at the column.

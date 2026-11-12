@@ -212,9 +212,13 @@ struct AccountTabs: View {
     var body: some View {
         ViewThatFits(in: .horizontal) {
             EqualShares { tabs(scrolling: false) }
+            // CCBG-87 (Strip Under Rail): the scroll view stays inside the page column; it never bleeds into the
+            // trailing safe area (the folded iPhone Duo's rail).
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) { tabs(scrolling: true) }
             }
+            .scrollClipDisabled(false)
+            .clipped()
         }
         .overlay(alignment: .bottom) { Rectangle().fill(p.line).frame(height: 1) }
     }
