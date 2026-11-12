@@ -221,7 +221,8 @@ object UsageParser {
         // limit. Only an explicit `false` counts (a missing flag keeps today's reading), and spend already made stays
         // reportable, so the card never hides money that was really used.
         if (spend != null && spend.has("enabled") && !spend.isNull("enabled") && !spend.optBoolean("enabled", true) &&
-            (used?.optLong("amount_minor", 0L) ?: 0L) == 0L
+            (used?.optLong("amount_minor", 0L) ?: 0L) == 0L &&
+            (spend.optJSONObject("balance")?.optLong("amount_minor", 0L) ?: 0L) == 0L
         ) return null
         if (used != null) {
             val limit = spend.optJSONObject("limit")

@@ -518,7 +518,13 @@ internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?
     if (forms.isEmpty() || elapsed == null) return
     val onSurface = MaterialTheme.colorScheme.onSurface
     fun annotate(text: String): AnnotatedString = buildAnnotatedString {
-        val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
+        // The leading value is bold in the full caption; a short form ("13 over", "On the mark") bolds nothing, except
+        // Vs pace's "52% used", which is that same leading value (judge F4, CCBG-93 (Summary Caption Clip)).
+        val strongPart = when {
+            mode == PaceText.Mode.VS_PACE -> text.substringBefore(" · ")
+            text == forms.first() -> text.substringBefore(" ")
+            else -> ""
+        }
         // CCRM-104 (Pace Line Parity) D5: a press underlines the caption for 3 s (the font's own underline).
         withStyle(SpanStyle(textDecoration = if (underline) TextDecoration.Underline else null)) {
             withStyle(SpanStyle(color = onSurface, fontWeight = FontWeight.SemiBold)) {

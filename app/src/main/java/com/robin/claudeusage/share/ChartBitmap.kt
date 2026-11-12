@@ -252,11 +252,11 @@ object ChartBitmap {
         return bmp
     }
 
-    /** [s] on a card-coloured backing rect, so a line crossing behind it can't eat it. */
     /** CCBG-95 (Snapshot Label Overlap): the projection's "~N%" yields when its box, grown by [pad], meets the now label's. */
     internal fun projectionYields(projection: android.graphics.RectF, now: android.graphics.RectF, pad: Float): Boolean =
         android.graphics.RectF(projection).apply { inset(-pad, -pad) }.let { android.graphics.RectF.intersects(it, now) }
 
+    /** [s] on a card-coloured backing rect, so a line crossing behind it can't eat it. */
     private fun haloed(c: Canvas, text: Paint, s: String, x: Float, baseline: Float, halo: Paint, pad: Float) {
         val m = text.fontMetrics
         c.drawRect(RectF(x - pad, baseline + m.ascent * 0.8f, x + text.measureText(s) + pad, baseline + m.descent * 0.5f), halo)

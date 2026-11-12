@@ -115,6 +115,11 @@ class UsageParserTest {
                "limit":{"amount_minor":10000,"currency":"USD","exponent":2},"enabled":$enabled}}""".replace("\n", "")
         )?.credits
         assertNull(spend("false", 0))
+        // Judge F2: a positive balance is money too, so it keeps the card even when switched off with nothing spent.
+        assertNotNull(UsageParser.parse(
+            """{"spend":{"used":{"amount_minor":0,"currency":"USD","exponent":2},"enabled":false,
+               "balance":{"amount_minor":500,"currency":"USD","exponent":2}}}""".replace("\n", "")
+        )?.credits)
         assertNotNull(spend("false", 250))
         assertNotNull(spend("true", 0))
         assertNotNull(spend("null", 0))

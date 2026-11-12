@@ -293,7 +293,7 @@ on macOS. It has no fixed value — each client resolves it at draw time.
 
 Android's status-bar gauge icon and the Mac's menu-bar item are both system chrome. Below the
 first breakpoint the gauge may wear the account's accent (Android has since its Duet
-notification, mobile CCRM-62) or stay monochrome where the platform tints the image itself (the
+notification, mobile CCRM-62 (Duet Notification)) or stay monochrome where the platform tints the image itself (the
 Mac's menu bar); past it, every client draws the severity colour, so **the warning colours are
 the signal**, never the accent. A client setting may disable colouring entirely. Decided
 2026-11-12 (mobile CCBG-55 (Spec Drift) item 1: the spec follows Android); before, this section
