@@ -38,7 +38,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** + 24, which holds on both shades (AOSP drops a form slightly sooner, never cuts one).
 
 ### CCBG-92 · Summary Line Measure — Summary line 3 is cut mid-clock at 360 dp and at large text
-- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png`
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png`
 - **Severity:** Medium (the approved drop order is not followed)
 - **Symptom:** "13h 58m behind · resets Tue 5:37 …" at 360 dp; "8h 38m behind · …" at font 2.0, where the forms
   should drop to "· Tue 5:37 PM", "· Tue" or the span alone.

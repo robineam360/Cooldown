@@ -29,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -593,10 +594,19 @@ internal fun PaceLineText(
             } else append(f.text)
         }
     }
+    // CCBG-92 (Summary Line Measure): measure with the style the Text below draws with — the theme's body
+    // style (its 0.5 sp letter spacing included), not a bare TextStyle, or every form measures narrow and the
+    // line is cut mid-clock instead of dropping to its next form.
+    val drawn = LocalTextStyle.current
     BoxWithConstraints(modifier) {
         val avail = constraints.maxWidth
         fun width(f: PaceText.PaceLine, sp: TextUnit): Int =
-            measurer.measure(styled(f), TextStyle(fontSize = sp, fontWeight = weight)).size.width
+            measurer.measure(
+                styled(f),
+                drawn.merge(TextStyle(fontSize = sp, fontWeight = weight, lineHeight = lineHeight)),
+                softWrap = false,
+                maxLines = 1,
+            ).size.width
         var size = fontSize
         var chosen = PaceText.fit(line.forms) { t -> line.forms.first { it.text == t }.let { width(it, size) <= avail } }
             ?: line.forms.first()
