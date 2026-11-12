@@ -54,7 +54,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   its bar takes its short form ("95% used", "13 over"), the forms the notification already uses (`PaceText.captionForms`).
 
 ### CCBG-94 · Snapshot Not Started — the Summary snapshot draws a not-started account as unread
-- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot · `SummarySnapshotTest`
 - **Severity:** Low
 - **Symptom:** Gemini (0%, no reset clock yet) is dimmed with "—" and "No reading" on the snapshot, while the Summary on
   screen shows "0%", an empty bar and "Not started yet".

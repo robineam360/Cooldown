@@ -130,6 +130,21 @@ class SummarySnapshotTest {
         assertEquals("Stale", rows[3].pace); assertNull(rows[3].reset)
     }
 
+    @Test fun `CCBG-94 - a week with a reading but no clock reads as the Summary does, not as unread`() {
+        val s = listOf(Spec("g", "Gemini", AccountTag.PERSONAL, week(0.0, reset = null), Provider.ANTIGRAVITY, group = SummaryRank.Group.ELIGIBLE))
+        val r = model(s).rows.single()
+        assertFalse(r.faded)
+        assertEquals("0%", r.figure)
+        assertEquals(0.0, r.pct!!, 0.0)
+        assertNull(r.elapsed)
+        assertEquals("Not started yet", r.pace)
+        assertNull(r.reset)
+        assertNull(r.paceTone)
+        // The same week with no reading at all stays unread.
+        val none = model(listOf(Spec("g", "Gemini", AccountTag.PERSONAL, week(null, reset = null), Provider.ANTIGRAVITY, group = SummaryRank.Group.NO_READING))).rows.single()
+        assertTrue(none.faded); assertEquals("No reading", none.pace); assertEquals("—", none.figure)
+    }
+
     @Test fun `every card renders at 4x and ends where heightPx says, light and dark`() {
         val dump = System.getenv("SUMMARY_SNAPSHOT_DUMP")?.let { File(it).also { d -> d.mkdirs() } }
         val both = listOf(AccountTag.WORK, AccountTag.PERSONAL)

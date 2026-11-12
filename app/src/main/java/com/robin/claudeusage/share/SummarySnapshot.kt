@@ -199,13 +199,18 @@ internal object SummarySnapshot {
         val ring = FaceStates.cell(input, a, FaceWindow.SESSION, unassigned = false)
         val week = FaceStates.cell(input, a, FaceWindow.WEEKLY, unassigned = false)
         val data = a.data
-        val unread = data == null || data.weekly == null || week.pct == null
+        // CCBG-94 (Snapshot Not Started): a week with a reading but no clock yet (Gemini before its first use) is drawn
+        // as the Summary draws it — its figure, a bare track, "Not started yet" — not as an unread row.
+        val notStarted = a.authState == AuthState.OK && week.pct == null &&
+            data?.weekly?.percent != null && data.weekly.resetsAt == null
+        val unread = !notStarted && (data == null || data.weekly == null || week.pct == null)
         val spent = !unread && Pace.isSpent(week.pct)
         val stale = StateId.S8 in week.states
         val base = ShareCard.rowOf(week, usageLeft, nowMs)
         val held = r.group == SummaryRank.Group.HELD
         val unreadWord = if (a.authState != AuthState.OK) "Sign in" else "No reading"
         val pace: String? = when {
+            notStarted -> NOT_STARTED
             unread -> unreadWord
             spent -> week.resetsAt?.let { "Out until ${Fmt.widgetClock(it, nowMs, zone)}" }
             stale -> "Stale"
@@ -213,21 +218,35 @@ internal object SummarySnapshot {
             else -> base.pace
         }
         val reset = when {
-            unread || stale -> null
+            notStarted || unread || stale -> null
             else -> base.reset
         }
         val word = when {
+            notStarted -> "Not started"
             unread -> unreadWord
             else -> SummaryRows.compactWord(r.group, r.weekly, r.elapsed, r.data?.session, use24h)
         }
         return Row(
             name = a.label, provider = a.provider, accentArgb = a.accentArgb, tag = tag, ring = ring,
-            hasSession = data?.session != null, figure = if (unread) "—" else week.figure, pct = if (unread) null else week.pct,
-            elapsed = week.elapsed, pace = pace,
-            paceTone = if (!unread && !spent && !stale && !held) base.paceTone else null,
+            hasSession = data?.session != null,
+            figure = when {
+                notStarted -> "${Fmt.usageInt(data!!.weekly!!.percent!!, usageLeft)}%"
+                unread -> "—"
+                else -> week.figure
+            },
+            pct = when {
+                notStarted -> data!!.weekly!!.percent
+                unread -> null
+                else -> week.pct
+            },
+            elapsed = if (notStarted) null else week.elapsed, pace = pace,
+            paceTone = if (!notStarted && !unread && !spent && !stale && !held) base.paceTone else null,
             reset = reset, alarm = spent, faded = unread, word = word, fillArgb = week.fillArgb,
         )
     }
+
+    /** The Summary's line-3 words for a week with no clock yet (`SummaryRows.words`). */
+    private const val NOT_STARTED = "Not started yet"
 
     // ---- layout (dp) ------------------------------------------------------------------
 
