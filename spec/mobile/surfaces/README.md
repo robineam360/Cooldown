@@ -32,3 +32,4 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
 - CCRM-96 (Weekly First) and CCRM-97 (Pace Number): weekly leads every surface, the 5h companion,
   the per-account Headline, and the pace words — [BEHAVIOR-MOBILE §5](../BEHAVIOR-MOBILE.md) and
   `design/2026-11-02-weekly-first-pace.html`. Fold them into these files when they are built.
+- CCRM-116 (Inner Panes): the iPhone Duo's inner screen (and every regular-width window) as two panes, Usage | Pace, one rule for the main page and History, the account-header tag glyph, the rail marks — `design/2026-11-12-iphone-duo-inner-screen.html`. Fold it into `app.md` (§2.2, Native tabs, §5.1) when it is built.

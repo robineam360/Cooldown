@@ -2053,6 +2053,25 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   is in BEHAVIOR-MOBILE §6; it comes with CCRM-110 (Account Tags)'s Personal/Work-only model (no empty slot).
   Android builds it in Step A4, iOS in Step I4.
 
+### CCRM-116 · Inner Panes — the iPhone Duo's inner screen gets a Usage | Pace layout of its own
+- **Status:** **Wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`, Robin, question by question) · iOS · **to build after the v2.0 device pass (RUNBOOK Step 3)** · closes CCBG-90 (Inner Portrait Stretch) and, with it, CCBG-86 (Rail Marks Alike)
+- **Why:** Robin, 2026-11-12: use the inner screen and the half-open pose properly, as on the Galaxy Z Fold 7, not a bigger phone page.
+- **What (approved):** one rule for the main page and History, no pt breakpoints: regular width → two panes, Usage and Pace;
+  wider than tall side by side, taller than wide stacked; flat an even split, half open the divider on the fold; the same
+  views in every pose, so a fold or a turn only moves frames. Tall: the title moves into the top bar (28 pt) and History
+  stacks 5-hour over 7-day. Account tab: the tile splits into a Usage card and a Pace card; the fold toggle and chart-height
+  setting apply only on the cover screen. Empty state: two groups, one per pane. Scroll position survives a fold by row id.
+  iPad follows the same rule. The account page header gets the person / briefcase glyph before the provider mark (Android
+  too, same build). CCBG-86: the wide inner screen's rail marks take the account's accent colour plus a small tag-glyph
+  badge (B + C), after a spike that checks the iOS 27 rail keeps the colour; colour stripped → badge alone.
+- **Not decided here:** the real reserved-region width (assumed 32 pt; measure in the build).
+
+### CCRM-117 · Fold Panes — Android's Fold 7 gets Usage | Pace panes and a half-open pose
+- **Status:** **Proposed, wireframe first** · Android · raised by Robin's question on CCRM-116 (Inner Panes), 2026-11-12 · after v2.0
+- **Why:** Android reads no folding feature today; the Fold 7's inner screen is a MEDIUM-width page (≈ 750 dp).
+- **What:** the same rule in dp for the 7.6″ inner screen and the half-open (tabletop) pose, with a wireframe before any
+  build. The account-header glyph of CCRM-116 ships on Android with the iOS build, not here.
+
 ## Next — small, high value, ready to build
 
 ### CCRM-66 · Play Store Launch — a public Google Play listing beside the GitHub releases

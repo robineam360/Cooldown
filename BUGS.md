@@ -68,7 +68,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   read whole. Folding with the sheet open brings "Teams ·…" back on the cover screen.
 
 ### CCBG-86 · Rail Marks Alike — the folded iPhone Duo's tab rail shows identical provider marks
-- **Status:** Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **needs Robin's decision** (and then a wireframe, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
+- **Status:** Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **decided 2026-11-12: fix, B + C** — accent-coloured mark plus a person / briefcase badge on the wide inner screen's rail, after a colour spike; wireframe in `design/2026-11-12-iphone-duo-inner-screen.html` §9a; built with CCRM-116 (Inner Panes) · (earlier: needed Robin's decision, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
 - **Severity:** Medium
 - **Symptom:** iOS 27 draws the `.sidebarAdaptable` TabView as an icons-only rail on the right; each account tab's icon is
   its provider mark, so Teams, Lab and Atlas (all Claude) show three identical marks. With ten accounts the rail folds the
@@ -102,7 +102,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   shared rule would size tabs to their labels.
 
 ### CCBG-90 · Inner Portrait Stretch — the iPhone Duo's tall inner screen gets the phone page stretched to 637 pt
-- **Status:** Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **needs a wireframe**
+- **Status:** Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes)
 - **Severity:** Medium
 - **Symptom:** unfolded with the inner screen tall (669 × 951 pt, regular / regular), the main tabs show the phone page with
   the tile, chart and credits card stretched to 637 pt; held wide (951 pt) the same screen gets the iPad page, and History at
