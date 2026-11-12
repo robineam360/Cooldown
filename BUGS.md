@@ -47,10 +47,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** measure with the style the `Text` uses.
 
 ### CCBG-93 · Summary Caption Clip — the Summary row's line 2 is cut through at large text
-- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures
 - **Severity:** Low (only at large text, but the line is unreadable there)
 - **Symptom:** "95% used · 94% pace mark" shows only the top half of its glyphs; the row's line 3 overlaps it.
-- **Fix:** let the caption take its full line height (no change at font 1.0).
+- **Fix:** the caption's line is at least 17 dp and grows with the text (no change at font 1.0); a caption wider than
+  its bar takes its short form ("95% used", "13 over"), the forms the notification already uses (`PaceText.captionForms`).
 
 ### CCBG-94 · Snapshot Not Started — the Summary snapshot draws a not-started account as unread
 - **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot

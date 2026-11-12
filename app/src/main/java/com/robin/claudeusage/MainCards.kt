@@ -514,13 +514,14 @@ internal fun SwapText(text: String, fontSize: TextUnit, modifier: Modifier = Mod
  */
 @Composable
 internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?, underline: Boolean = false) {
-    val text = PaceText.caption(mode, percent, elapsed) ?: return
-    if (elapsed == null) return
-    val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
-    val annotated = buildAnnotatedString {
+    val forms = PaceText.captionForms(mode, percent, elapsed)
+    if (forms.isEmpty() || elapsed == null) return
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    fun annotate(text: String): AnnotatedString = buildAnnotatedString {
+        val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
         // CCRM-104 (Pace Line Parity) D5: a press underlines the caption for 3 s (the font's own underline).
         withStyle(SpanStyle(textDecoration = if (underline) TextDecoration.Underline else null)) {
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
+            withStyle(SpanStyle(color = onSurface, fontWeight = FontWeight.SemiBold)) {
                 append(strongPart)
             }
             append(text.removePrefix(strongPart))
@@ -532,13 +533,17 @@ internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?
     )
     val measurer = rememberTextMeasurer()
     val gap = with(LocalDensity.current) { 5.dp.toPx() }
+    // CCBG-93 (Summary Caption Clip): the line is 17 dp at font 1.0 and grows with the text, so large text is never
+    // cut through; a caption wider than the bar takes its short form ("52% used", "13 over"), as the notification does.
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .padding(top = 5.dp)
-            .height(17.dp),
+            .heightIn(min = 17.dp),
     ) {
         val width = constraints.maxWidth.toFloat()
+        val text = PaceText.fitText(forms) { measurer.measure(annotate(it), style).size.width <= width } ?: forms.first()
+        val annotated = annotate(text)
         val textWidth = measurer.measure(annotated, style).size.width.toFloat()
         val mark = width * BarGeometry.tickFraction(elapsed)
         val right = PaceText.captionRightOfMark(width, elapsed, textWidth, gap)

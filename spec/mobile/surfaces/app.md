@@ -725,7 +725,7 @@ distance to the mark (CCRM-104 (Pace Line Parity) D1, core §6.3, rounded toward
 Under pace (used < mark) the room from the fill to the tick is a dashed outline: 1.3 dp, onSurface 55%, dash
 3 dp / gap 2 dp, inset 1 dp top and bottom, open on the fill side. **V1 caption** under every in-app window bar
 (the tile's Weekly and each model limit, Summary rows; the 5h is a ring and has none): 11.5 sp bodySmall in onSurfaceVariant, 5 dp above, 17 dp line (22 dp in
-all), starting 5 dp right of the tick or ending 5 dp left of it when it would not fit (`PaceText.captionRightOfMark`).
+all; the line grows with large text, CCBG-93 (Summary Caption Clip)), starting 5 dp right of the tick or ending 5 dp left of it when it would not fit (`PaceText.captionRightOfMark`); a caption wider than the bar takes its short form, "52% used" / "13 over" (`PaceText.captionForms`, as the notification).
 Text `PaceText.caption`: "39% pace mark · 13 over" / "· 10 under" / "· on it"; Left "40% pace mark · 10 to spare";
 Vs pace "52% used · 39% pace mark" (D6). The leading value ("39%"; Vs pace "52% used") is onSurface SemiBold. No caption when
 spent, unclocked or unread. A press on a figure underlines this caption for 3 s (§2.4.4). Credits bars unchanged.
