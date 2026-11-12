@@ -208,7 +208,7 @@ struct SettingsScreen: View {
                            note: "Time down puts usage on the same axis as the bar above it.")
                     choice("Reset time", $clockFirst, [("Countdown", false), ("Clock time", true)],
                            note: "Which form leads wherever a reset is shown. Where there's room, the other form keeps the second slot. "
-                               + (clockFirst ? "Leads with “resets at 9:50 pm”." : "Leads with “resets in 2h 14m”, collapsing to “resets soon” inside five minutes."))
+                               + (clockFirst ? "Leads with “resets at 9:50 PM”." : "Leads with “resets in 2h 14m”, collapsing to “resets soon” inside five minutes."))
                     VStack(alignment: .leading, spacing: 6) {
                         Toggle("Show red past the pace mark", isOn: $redPastPace).onChange(of: redPastPace) { model.displayChanged() }
                         Text("Colours the bar past the even-pace tick, in the app, widgets and Live Activity. Off keeps the tick without the colour.")
@@ -261,7 +261,7 @@ struct SettingsScreen: View {
 }
 
 extension SettingsScreen {
-    /// "Thu 11:45 pm" in the chosen format, for the Time format note.
+    /// "Thu 11:45 PM" in the chosen format, for the Time format note.
     static let sampleTime: Int64 = {
         var c = DateComponents(); c.year = 2026; c.month = 10; c.day = 22; c.hour = 23; c.minute = 45
         return Int64((Calendar.current.date(from: c) ?? .now).timeIntervalSince1970 * 1000)

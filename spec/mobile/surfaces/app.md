@@ -33,7 +33,7 @@ Differs from `design/dual-identity-wireframe.html` (rooms): the dark Claude room
 | Used / Left | Settings "Usage display"; flips only the words and figures. Bars, colours, guides and the pace tick always show what is spent. Used truncates, Left floors the remainder, over-limit clamps Left at 0 | `A/ui/Palette.kt:420-430`, `I/Shared/Display.swift:50` |
 | Reset wording | countdown "Resets in 2h 41m" (days form "Resets in 1d 3h"); "Resets soon" inside 5 minutes; clock "Resets at Thu 9:50 PM". Settings "Reset time" decides which leads; the other keeps the second slot where there is room | `A/ui/Palette.kt:311`, `A/MainCards.kt:222` |
 | Window not started | no reset time: "Starts when a message is sent", no chart, no pace, no projection (CCBG-30 (Phantom Window)) | `A/MainCards.kt:222`, `I/Shared/CardContent.swift:44` |
-| Pace line (v2.0, both platforms) | the Weekly line names the reset (CCRM-108 (Reset Named)): "21h 50m ahead · resets Sun 5:08 PM", "1d 18h behind · resets Sun 10:17 AM", "On the mark · resets Sat 8:00 AM"; the duration and word are the tinted span (semibold; red ahead, green behind, ink on the mark), the rest the surface's ink. Drop order by measured width, one everywhere: another day "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor (the span alone, never cut); a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today. Below the floor Android steps the text to 10 sp, then ellipsizes; iOS steps the floor to 0.8 of its size (`FitLine`, four variants). Where: the tile's folded and open pace lines and the Summary's line 3; spent, held ("Held · back at … · resets Fri"), signed-out, unclocked and no-reading lines are unchanged; the one-line Summary row's word slot is still the tinted span alone and the share card's Weekly row keeps "Resets …" in its right slot. iOS prints this line's clock "AM"/"PM" while its card lines (reset row, "Out until Fri 1:48 pm") print "pm" in lower case — filed as CCBG-82 (Clock Case Mix) | Android `PaceText.paceLineForms`; iOS `I/Shared/PaceLineView.swift` (`FitLine`) |
+| Pace line (v2.0, both platforms) | the Weekly line names the reset (CCRM-108 (Reset Named)): "21h 50m ahead · resets Sun 5:08 PM", "1d 18h behind · resets Sun 10:17 AM", "On the mark · resets Sat 8:00 AM"; the duration and word are the tinted span (semibold; red ahead, green behind, ink on the mark), the rest the surface's ink. Drop order by measured width, one everywhere: another day "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor (the span alone, never cut); a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today. Below the floor Android steps the text to 10 sp, then ellipsizes; iOS steps the floor to 0.8 of its size (`FitLine`, four variants). Where: the tile's folded and open pace lines and the Summary's line 3; spent, held ("Held · back at … · resets Fri"), signed-out, unclocked and no-reading lines are unchanged; the one-line Summary row's word slot is still the tinted span alone and the share card's Weekly row keeps "Resets …" in its right slot. Both platforms print every clock in core's case, "AM"/"PM" (iOS since CCBG-82 (Clock Case Mix)) | Android `PaceText.paceLineForms`; iOS `I/Shared/PaceLineView.swift` (`FitLine`) |
 
 ---
 
@@ -124,7 +124,7 @@ Source: `A/MainCards.kt:152`, `A/ui/BarGeometry.kt`, `I/Shared/Charts.swift:6`. 
 
 Anatomy, Comfortable (Android): row (2.4.2) · 8 dp · bar · [10 dp · trend block (section 3)] · 8 dp · reset row. Reset row: leading form left, other form right, bodySmall muted (`A/MainCards.kt:222`); no reset time → one line "Starts when a message is sent".
 
-iOS: row · bar (12 pt gap) · 12 pt · chart · 6 pt · pace line · 4 pt · projection line · 10 pt · reset row, text 14.5 pt `txt` (`I/App/UI/Cards.swift:19`). Reset row is "Resets in 3h 0m" left, "Resets at Sat 7:43 pm" right.
+iOS: row · bar (12 pt gap) · 12 pt · chart · 6 pt · pace line · 4 pt · projection line · 10 pt · reset row, text 14.5 pt `txt` (`I/App/UI/Cards.swift:19`). Reset row is "Resets in 3h 0m" left, "Resets at Sat 7:43 PM" right.
 
 | State | What shows |
 |---|---|
@@ -136,7 +136,7 @@ iOS: row · bar (12 pt gap) · 12 pt · chart · 6 pt · pace line · 4 pt · pr
 | At 100% | bar red; Android keeps the pace readout and drops the projection line; iOS replaces them with "Limit reached" (red) and "Opens again when the window resets" |
 | No history yet | Android: the line "Not enough history in this window yet to chart a pace" replaces the chart and pace lines; iOS: chart draws from the current reading alone |
 
-The folded line (`A/ui/CompactLineCopy.kt:38`): "Resets in 2h 41m · 32% below pace"; "Resets in 2h 41m · 12% above pace" with only the pace clause bold in `barFill(95)` (orange); "Resets in 2h 41m · on pace"; when the reset form is Clock time, iOS leads with "Resets at Sat 7:43 pm"; no reset time: "Starts when a message is sent". The short forms "above pace" / "below pace" are used here and the long "above even pace" under the chart; both use the same 3-point dead zone. iOS draws the whole folded line red when above pace (`I/Shared/CardContent.swift:118`).
+The folded line (`A/ui/CompactLineCopy.kt:38`): "Resets in 2h 41m · 32% below pace"; "Resets in 2h 41m · 12% above pace" with only the pace clause bold in `barFill(95)` (orange); "Resets in 2h 41m · on pace"; when the reset form is Clock time, iOS leads with "Resets at Sat 7:43 PM"; no reset time: "Starts when a message is sent". The short forms "above pace" / "below pace" are used here and the long "above even pace" under the chart; both use the same 3-point dead zone. iOS draws the whole folded line red when above pace (`I/Shared/CardContent.swift:118`).
 
 Defaults on first run: Android Comfortable shows every card open, Compact folded. iOS Comfortable opens the 5-hour card and keeps 7-day folded on iPhone, both open on iPad; a weekly-only plan opens its Weekly card instead (`I/App/UI/Cards.swift:218`).
 
@@ -209,21 +209,21 @@ Fetch error kinds (`A/data/ErrorKind.kt:46`, action in `A/MainActivity.kt:1000`;
 | internal | yes | "Something unexpected went wrong in the app." | none |
 | plan | yes | "<Provider> doesn't report usage on this plan — it needs a paid plan (Pro, Max or Team)." | "See <Provider> plans" |
 
-iOS shows one notice at a time, in this order: plan refusal › sign-in needed › the last fetch's error › stale › expiring. A fetch error absorbs staleness: its evidence line ends " · last reading Thu 9:50 pm" when the last good reading is over 6 hours old. A "quiet" notice (the plan refusal, expiring) draws on the grey card fill instead of orange (2026-11-05).
+iOS shows one notice at a time, in this order: plan refusal › sign-in needed › the last fetch's error › stale › expiring. A fetch error absorbs staleness: its evidence line ends " · last reading Thu 9:50 PM" when the last good reading is over 6 hours old. A "quiet" notice (the plan refusal, expiring) draws on the grey card fill instead of orange (2026-11-05).
 
-iOS notices (`I/Shared/CardContent.swift:171`, `I/App/UI/Cards.swift:177`): one `NoticeView` above the cards, 14 pt radius, orange (or red for sign-in) at 16% fill, padding 13 / 11 pt, title 15 pt semibold, body 14 pt, an optional capsule button (ink fill, 14.5 pt semibold). Cards dim to 45% opacity under an error or warning notice, and the 5-hour card's right reset line becomes "as of 9:41 pm".
+iOS notices (`I/Shared/CardContent.swift:171`, `I/App/UI/Cards.swift:177`): one `NoticeView` above the cards, 14 pt radius, orange (or red for sign-in) at 16% fill, padding 13 / 11 pt, title 15 pt semibold, body 14 pt, an optional capsule button (ink fill, 14.5 pt semibold). Cards dim to 45% opacity under an error or warning notice, and the 5-hour card's right reset line becomes "as of 9:41 PM".
 
 | iOS notice | When | Copy |
 |---|---|---|
 | Plan | the account's plan reports no usage | title "Usage isn’t available on the <plan> plan"; body "<Provider> only reports usage windows for paid plans (the account's own provider as the app names it: Claude, ChatGPT or Gemini). This account stays signed in and will show numbers if the plan changes."; no button, cards hidden |
 | Sign-in | re-auth needed | title "<label>: Sign-in stopped working"; body "The saved sign-in failed and couldn’t renew. The numbers below are the last ones that worked."; button "Sign in again" |
-| Rate limited | last attempt rate-limited or backed off | title "Rate limited — backing off, retries on its own."; evidence "<message> · next try ~3:40 pm"; no body, no button (2026-11-05, parity wireframes rev B §3) |
+| Rate limited | last attempt rate-limited or backed off | title "Rate limited — backing off, retries on its own."; evidence "<message> · next try ~3:40 PM"; no body, no button (2026-11-05, parity wireframes rev B §3) |
 | Network | last attempt was a transport failure | title "Couldn’t reach <Vendor> — check your connection, or see if it’s them."; evidence = the message; button "Check <Vendor> status" opens the provider's status page; no body |
 | Server | HTTP status other than 200/401/403/429 | title "<Vendor>’s server errored — usually theirs, usually brief."; evidence "HTTP 503"; button "Check <Vendor> status"; no body |
 | Invalid reply | a 200 the parser cannot read (Gemini keeps its own notice below) | title "The server answered in a shape this app doesn’t know — an app update may be needed."; evidence = the message; no button, no body; warning tone |
 | Internal | anything uncategorised | title "Something unexpected went wrong in the app."; evidence = the message; red tint; no button |
 | Expiring | Claude only, sign-in within 3 days of its ~30-day life (BEHAVIOR-MOBILE §3; both apps, settled by the owner 2026-11-05), not while sign-in is broken | quiet note on the grey card fill (not orange), never dims the cards: title "Sign-in expires in 2d 3h"; body "Sign in again to keep polling going."; button "Sign in again" |
-| Stale | no reading for over 6 hours | title "Stale — nothing since Thu 9:50 pm"; body "Cooldown hasn’t had a reading for over 6 hours. Pull down to try again." |
+| Stale | no reading for over 6 hours | title "Stale — nothing since Thu 9:50 PM"; body "Cooldown hasn’t had a reading for over 6 hours. Pull down to try again." |
 
 Differs from Android: iOS draws the three conditions of `spec/mobile/BEHAVIOR-MOBILE.md` §3 as one notice, and has no fetch-error taxonomy, store notices or crash card in the app (Android draws stale and expiring conditions in the pinned notification, and the expiry line inside the Settings account card).
 
@@ -320,7 +320,7 @@ iOS across: plot top 20 pt, bottom H − 20 pt, right edge W; down: right edge W
 | Projection tail | dashed line from the current dot to the end point, 2.5 dp, series colour at 65%, dash 7/8; end point a hollow ring 4 dp radius, 1.8 dp stroke, 80% alpha. The tail ends where it crosses 100% when the limit is hit first. Withheld whenever the projection is suppressed | dashed 2 pt, accent at 75%, dash 4/3; ring 8 pt, red at or above 100% | all |
 | Projection label | "~74%" 11 sp bold muted, beside the end ring, only when it clears the guide labels, the current label and the callout; not drawn when the limit is hit | "~74%" 11.5 pt bold, only below 100% | M, L |
 | X axis line | 1 dp, muted 18%, across the plot floor | 1 pt `line` | M, L (across) |
-| Time labels | 9.5 sp muted under the floor: window start at left, reset at right; "now" centred under the divider only when it clears both end labels by 6 dp. 5-hour window: clock time ("9:50 AM" or "09:50"); 7-day: "d MMM" ("23 Jul"). Since v2.0 (CCRM-107 (Day Grid)), between the end labels the ordinals 2…n−1 (2…6 on a 7-day chart, 2…4 on a 5h) at 9.5 sp `onSurfaceVariant`, centred in their columns; the one in now's column (an instant on a line belongs to the later column) bold, `onSurface` at 95%. An ordinal gives way when its box comes within 6 dp of the "now" label or within 4 dp of an end label, and all drop below a 14 dp column; "now" and the end labels never move for an ordinal. Small (no axis strip) and Time down: grid lines, no ordinals. Inner two stacks: each stack has its own grid and ordinals | 11 pt `sub`; "now" shown only more than 56 pt from either edge; 5-hour clock "9:50 am" (am/pm lowercase), 7-day "23 Oct". Ordinals as on Android (9.5 pt `sub`, the now column bold `ink`, start label 11 pt; same give-way and 14 pt column rule); Small: the grid, no ordinals; Time down: the ordinals run down the right edge under the same rule (measured by label height) | M, L |
+| Time labels | 9.5 sp muted under the floor: window start at left, reset at right; "now" centred under the divider only when it clears both end labels by 6 dp. 5-hour window: clock time ("9:50 AM" or "09:50"); 7-day: "d MMM" ("23 Jul"). Since v2.0 (CCRM-107 (Day Grid)), between the end labels the ordinals 2…n−1 (2…6 on a 7-day chart, 2…4 on a 5h) at 9.5 sp `onSurfaceVariant`, centred in their columns; the one in now's column (an instant on a line belongs to the later column) bold, `onSurface` at 95%. An ordinal gives way when its box comes within 6 dp of the "now" label or within 4 dp of an end label, and all drop below a 14 dp column; "now" and the end labels never move for an ordinal. Small (no axis strip) and Time down: grid lines, no ordinals. Inner two stacks: each stack has its own grid and ordinals | 11 pt `sub`; "now" shown only more than 56 pt from either edge; 5-hour clock "9:50 AM" (core's AM/PM, CCBG-82), 7-day "23 Oct". Ordinals as on Android (9.5 pt `sub`, the now column bold `ink`, start label 11 pt; same give-way and 14 pt column rule); Small: the grid, no ordinals; Time down: the ordinals run down the right edge under the same rule (measured by label height) | M, L |
 | Selection callout | tap a sample to pin; tap it again to clear; long-press then drag to scrub. Snaps to the nearest real sample, never interpolates. Draws a 1.5 dp crosshair in the series colour at 55%, a 4.5 dp dot on a 6.5 dp surface halo, and a 6 dp-radius pill (surface at 95%, series-colour 1 dp border at 55%) with two lines: the time (9.5 sp muted; 5-hour "9:50 AM", 7-day "Thu 9:50 AM") and bold 11 sp in core's printed form (CCRM-104 (Pace Line Parity) D8, `paceLabel`, rounded toward zero): "14% · −8%" red over the mark, "14% · +10%" green under it, "14% · 0%" ink within a point (Left mode "86% left · …"), so "+" never means over on mobile. The pill avoids the guide labels | none | M, L; Android only |
 | Accessibility | one-line summary: "Usage chart. 62% at 9:50 AM, 8% above even pace. Projected 74% by 2:50 PM. Tap a point for its value." | hidden from accessibility (the card's combined label reads the numbers) | |
 
@@ -335,7 +335,7 @@ Shown in every size (at Small they are the only place the numbers are left). And
 | Line | Android copy and style | iOS copy and style | Source |
 |---|---|---|---|
 | Pace readout | 6 dp under the chart. Above pace: "12% above even pace" bold, orange (`barFill(95)`); below: "32% below even pace" muted; inside the dead zone: "On even pace" muted | same wording; above pace red, never bold; at 100%: "Limit reached" red | `A/ui/Sparkline.kt:822`, `I/Shared/CardContent.swift:84` |
-| Projection, runs out | 2 dp under the pace line, error colour, with a trailing ⓘ: "At this pace: 100% at Thu 3:10 PM — 1d 2h before the reset · 4.2%/h". Tap toggles the provenance note | "At this pace: runs out ~Thu 3:10 pm · 4.2%/h" (clock only, no day, on a 5-hour card when the time is today); no ⓘ | `A/MainCards.kt:448`, `I/Shared/CardContent.swift:96` |
+| Projection, runs out | 2 dp under the pace line, error colour, with a trailing ⓘ: "At this pace: 100% at Thu 3:10 PM — 1d 2h before the reset · 4.2%/h". Tap toggles the provenance note | "At this pace: runs out ~Thu 3:10 PM · 4.2%/h" (clock only, no day, on a 5-hour card when the time is today); no ⓘ | `A/MainCards.kt:448`, `I/Shared/CardContent.swift:96` |
 | Projection, reaches reset | muted, ⓘ: "At this pace: ~74% when the window resets · 4.2%/h" | "At this pace: ~74% when the window resets · 4.2%/h" | |
 | Provenance note | "Projected from this window's samples — a least-squares fit anchored on the latest reading. It shifts as new polls land." in a pill (8 dp radius, 9/6 dp padding, 8% muted fill) | none | `A/ui/Estimates.kt` |
 | Suppressed, few samples | Android only, replaces the chart and pace lines, 8 dp above, muted: "Not enough history in this window yet to chart a pace" | (chart still draws) | `A/MainCards.kt:379` |
@@ -551,8 +551,8 @@ Android: ⋮ → "Share snapshot" renders off the main thread then shows a dialo
 |---|---|---|
 | Surface | dark `#0D0D0D`, light `#F5EFE8`, ink `#EDE8E4` / `#26211E`; no margin shown | palette background; 20 pt padding |
 | Synthetic band | 16 dp band `#7C4DFF` at the top, "● SYNTHETIC" 8.5 sp bold white, only when the data is synthetic | shown only in the reviewer sample data (2026-11-05): a 16 pt `#7C4DFF` band, "● SAMPLE DATA" 8.5 pt bold white |
-| Header | 88 dp ring (8 dp stroke) with the headline figure inside (22 sp bold, severity colour), 14 dp gap; at right the provider mark 16 dp in the account accent, the account name (17 sp bold, ellipsised), under it "as of 6:26 PM, Thu Oct 23" (11 sp, 60% ink) | 80 pt ring (7 pt stroke, 20 pt figure) beside the mark 22 pt, the name 21 pt bold, "as of 6:26 pm, Thu 23 Oct" 13 pt |
-| Rows | per window present: 12 dp gap, label 12.5 sp ("5h" / "Weekly", "… left" in Left mode) and figure 17 sp bold right-aligned, a 10 dp bar with a pace tick, then pace slot (10.5 sp) left and the reset right; on the Weekly row the slot is the tinted span of the pace line (CCRM-104 D9, `ShareCard.weeklyPace`): "13h 59m ahead" red / "6d 23h behind" green / "On the mark" ink, semibold, the reset keeping the right (the card renders Used, so the figure is unchanged); the 5h row keeps its even-pace phrase | the lead row first (24 pt figure), then the other (19 pt). The lead follows the account's Headline through the widgets' rule — Weekly by default, 5h under Headline 5-hour or when Auto sees the 5h binding; a spent week leads whatever the Headline, red, with its "Out until Sun 9:30 pm" line, and the 5h row dims to 45% with an empty phrase slot; a plan with no 5h has one row (2026-11-05). A 10 pt bar, then the pace line 12.5 pt left and "Resets Thu 9:50 pm" right |
+| Header | 88 dp ring (8 dp stroke) with the headline figure inside (22 sp bold, severity colour), 14 dp gap; at right the provider mark 16 dp in the account accent, the account name (17 sp bold, ellipsised), under it "as of 6:26 PM, Thu Oct 23" (11 sp, 60% ink) | 80 pt ring (7 pt stroke, 20 pt figure) beside the mark 22 pt, the name 21 pt bold, "as of 6:26 PM, Thu 23 Oct" 13 pt |
+| Rows | per window present: 12 dp gap, label 12.5 sp ("5h" / "Weekly", "… left" in Left mode) and figure 17 sp bold right-aligned, a 10 dp bar with a pace tick, then pace slot (10.5 sp) left and the reset right; on the Weekly row the slot is the tinted span of the pace line (CCRM-104 D9, `ShareCard.weeklyPace`): "13h 59m ahead" red / "6d 23h behind" green / "On the mark" ink, semibold, the reset keeping the right (the card renders Used, so the figure is unchanged); the 5h row keeps its even-pace phrase | the lead row first (24 pt figure), then the other (19 pt). The lead follows the account's Headline through the widgets' rule — Weekly by default, 5h under Headline 5-hour or when Auto sees the 5h binding; a spent week leads whatever the Headline, red, with its "Out until Sun 9:30 PM" line, and the 5h row dims to 45% with an empty phrase slot; a plan with no 5h has one row (2026-11-05). A 10 pt bar, then the pace line 12.5 pt left and "Resets Thu 9:50 PM" right |
 | Trend | divider, "5h trend" or "Weekly trend" 10.5 sp, a 120 dp chart (drawn with the same elements as 3.3, no callout) when the window has a reset time and is not idle | "<lead> trend" ("Weekly trend" or "5h trend") 13 pt, 130 pt chart of the lead window; the header ring stays the 5h gauge (Weekly only on a plan with no 5h) |
 | Footer | "COOLDOWN" 9.5 sp, letter-spacing 0.06, 45% ink | "COOLDOWN" 11 pt medium, tracked |
 
@@ -565,9 +565,9 @@ On the All tab the share item reads "Share snapshot" (the account tabs keep thei
 | | Android | iOS |
 |---|---|---|
 | Opening it | the All tab's top-bar ⋮ returns with one item, "Share snapshot" (hidden when no shown account has a reading), opening the CCRM-24 (Share Card) preview **dialog** | the ellipsis menu's share item; a **sheet** titled "Share snapshot" previews the card above a Share button (the system share sheet), as the account card's share does; with no row shown having a reading it says "Nothing to share yet — no account has a reading." |
-| Card | 360 dp at 4×; "as of" = the **oldest** reading shown; map 320 × 200 dp, the screen's own painter and scene | 300 pt at 3× on the app ground, padding 20; "as of 12:39 pm, Wed 11 Nov" 11 pt = the **newest** reading among the rows shown (the account card's own form); order name 11 pt `sub`; a rule, "Pace map" 10.5 pt, the map 200 pt high, its foot line 9.5 pt |
+| Card | 360 dp at 4×; "as of" = the **oldest** reading shown; map 320 × 200 dp, the screen's own painter and scene | 300 pt at 3× on the app ground, padding 20; "as of 12:39 PM, Wed 11 Nov" 11 pt = the **newest** reading among the rows shown (the account card's own form); order name 11 pt `sub`; a rule, "Pace map" 10.5 pt, the map 200 pt high, its foot line 9.5 pt |
 | Rows | the glyph 12 dp + 4 dp | pace span 10.5 pt; one-line rows 26 pt: mark, name 12 pt semibold (58 pt), bar 7 pt, the short word ("13h 26m ahead", "Out · Fri"; 10 pt, 64 pt), the figure 14 pt bold; glyph 11 pt in a 12 pt box |
-| Unread / held | "Sign in" / "No reading"; "Held · back at …" | "Sign in again" / "No reading"; "Held · 3:28 pm" in orange; spent "Out until Fri 3:05 pm" left, the reset right |
+| Unread / held | "Sign in" / "No reading"; "Held · back at …" | "Sign in again" / "No reading"; "Held · 3:28 PM" in orange; spent "Out until Fri 3:05 PM" left, the reset right |
 
 The opening differs (Android a dialog, iOS a sheet with a preview); the image is the same card, with the per-platform sizes and the "as of" rule above. Code `A/share/SummarySnapshot.kt`, `I/App/UI/SummarySnapshot.swift`; `render/` in the I3/I4 captures holds the card in every state.
 
@@ -606,11 +606,11 @@ iPhone (both on iPad)." `CardLayout.ordered(by:)`, `AppModel.drawnLayout`.
 
 #### §2.4.4 5-hour card — iOS
 Remove "N% below/above even pace" / "On even pace". Under the bar: the V1 caption and dashed room. Open: the
-projection line, then the reset row. Folded: "Resets in 2h 20m · on track for ~69%" (red with "runs out ~3:25 pm").
+projection line, then the reset row. Folded: "Resets in 2h 20m · on track for ~69%" (red with "runs out ~3:25 PM").
 
 #### §2.4.5 7-day card — iOS
 Each half (All, model cap): bar, V1 caption, chart, band line ("Slow down · ≈11%/day", full width "… until Fri"),
-projection line, reset. Spent: red figure, "Out until Sun 9:30 pm", no caption. **Show model limits off**
+projection line, reset. Spent: red figure, "Out until Sun 9:30 PM", no caption. **Show model limits off**
 (per account, default on): no model half, All takes the full width.
 
 #### §2.6 Notices above the cards — add
@@ -622,10 +622,10 @@ existed). "Keep 5h first" sets every account's Headline to 5-hour.
 
 #### New §2.8 The Summary (All tab) — iOS
 List card "Weekly · most room first", rows by `SummaryRank` (eligible by Pace, held, spent, no reading). Row: mark
-18 · name 15 · plan chip · companion 12 ("no 5h" / "5h 34%" / held "5h 93% · back 3:40 pm" bold orange) · figure
+18 · name 15 · plan chip · companion 12 ("no 5h" / "5h 34%" / held "5h 93% · back 3:40 PM" bold orange) · figure
 17 bold in the severity colour (Usage display mode, no "vs pace" word); bar 10 pt with dashed room; V1 caption;
-"Room to spare · ≈22%/day · resets Fri" 13 pt (spent "Out until Thu 8:00 am", row at 60%; "No reading"). From
-six accounts, one-line rows: rank disc 16 pt in the accent, name, bar, word ("Slow down", "5h · 3:40 pm",
+"Room to spare · ≈22%/day · resets Fri" 13 pt (spent "Out until Thu 8:00 AM", row at 60%; "No reading"). From
+six accounts, one-line rows: rank disc 16 pt in the accent, name, bar, word ("Slow down", "5h · 3:40 PM",
 "Out · Thu", "No reading"), figure. Pace map card below (iPhone 230 pt; iPad two columns, list left, map 340 pt
 right, title "All accounts" 30 pt bold): over-pace triangle red 8%, 0/50/100% lines, dashed even-pace diagonal
 labelled "even pace"; a 9 pt dot per plotted account; spent: ring with ×. Header, filter, row glyph, wedge words,
@@ -914,7 +914,7 @@ readout as their hint; the ring's label stays "5-hour window, N percent".
 | No 5h (weekly-only plan) | `.notApplicable`: grey track and cross, no figure; slot kept | band line only |
 | 5h not started | ring at 0% | "Starts when a message is sent" |
 | No reading | ring "—" (the tile with no 5h shows the cross) | as `compactLine` says |
-| Week spent (CCRM-102 (Spent Week Gate)) | `.grey`, figure dim | the spent line, then the gate note ("Weekly limit reached — 5h can’t be used until Sun 9:30 pm") at full opacity, no glyph |
+| Week spent (CCRM-102 (Spent Week Gate)) | `.grey`, figure dim | the spent line, then the gate note ("Weekly limit reached — 5h can’t be used until Sun 9:30 PM") at full opacity, no glyph |
 | Error / stale notice | ring and bars at 45% | unchanged |
 
 Pool (CCRM-55 (Antigravity Account) E2): its own tile, "Weekly" bar and 5h ring, with the pool's name as the last folded
@@ -924,7 +924,7 @@ line (page T6b) instead of the old label above two cards.
 
 A 48 pt `GrammarRing` (the 5h) left of each row, centred on its lines, 12 pt gap, in place of the "5h 34%" companion;
 every row has the same frame: a plan with no 5h shows the grey cross, a spent week the grey ring, no reading "—". Nothing
-sits beside the name but the plan chip: a held row says why in line 3 only, "Held · back at 3:40 pm · resets Fri"
+sits beside the name but the plan chip: a held row says why in line 3 only, "Held · back at 3:40 PM · resets Fri"
 (rev D S1, Fable D1), beside its loud ring. The Weekly figure is 17 pt `grammarFigure`,
 Vs pace coloured. Bars take the end mark. Tapping the figure swaps line 3 for the readout for 3 s; tapping elsewhere
 opens the account. Rows of the one-line form (six rows shown or more) are unchanged. The row glyph (Personal/Work) leads
@@ -968,7 +968,7 @@ behind it, so the stored layout can never contradict the row. "Usage credits" is
   changes, so a fold or unfold brings the full text back where it fits.
 - **iOS Summary rows**: the figure's target is at least 48 pt wide and 12 pt past it above and below; the name gives
   way before the pill; line 3 drops "· resets <day>" when it does not fit; the six-account word for a held row is
-  "Held · 3:40 pm" (never "5h").
+  "Held · 3:40 PM" (never "5h").
 - **iPad sidebar** (CCBG-68 (iPad Plan Chip Wrap)): the plan chip stays on one line and gives way to the name.
   CCBG-67 (iPad Sidebar Tap)'s highlight-and-scroll is superseded by the layout below.
 

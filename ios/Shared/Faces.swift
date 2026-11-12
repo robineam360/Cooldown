@@ -135,7 +135,7 @@ struct Face: Equatable, Sendable {
     /// CCRM-102 (Spent Week Gate): the 5h ring greys while the week is spent, on a Weekly-led face or a 5h-led one.
     var fiveGreyed: Bool { leadsWeekly ? leadSpent && companionPct != nil : weekGated }
 
-    /// The main reset, written for its window: "5:50 pm" for 5h, "Thu 9:16 pm" for Weekly.
+    /// The main reset, written for its window: "5:50 PM" for 5h, "Thu 9:16 PM" for Weekly.
     func resetClock(_ date: Date) -> String {
         leadsWeekly ? CardContent.dayClock(date.ms, Date.now.ms, Display.use24h, .current) : shortClock(date)
     }
@@ -223,7 +223,7 @@ extension Date {
     var ms: Int64 { Int64(timeIntervalSince1970 * 1000) }
 }
 
-/// Lower-case "9:50 pm", as on Android.
+/// "9:50 PM", core's case (CCBG-82 (Clock Case Mix)).
 func shortClock(_ date: Date) -> String {
     CardContent.clock(date.ms, Display.use24h, .current)
 }

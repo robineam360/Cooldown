@@ -24,8 +24,8 @@ struct PaceLineFitTests {
     func dropOrder() {
         let lines = [
             PaceLine(side: .over, duration: "23h 59m", weekday: "Wed", clock: "12:30 PM"),
-            PaceLine(side: .under, duration: "6d 23h", weekday: "Sun", clock: "9:30 pm"),
-            PaceLine(side: .on, duration: nil, weekday: nil, clock: "9:30 pm"),
+            PaceLine(side: .under, duration: "6d 23h", weekday: "Sun", clock: "9:30 PM"),
+            PaceLine(side: .on, duration: nil, weekday: nil, clock: "9:30 PM"),
         ]
         for line in lines {
             let v = variants(line, size: 11.5)

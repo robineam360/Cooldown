@@ -93,7 +93,7 @@ struct ShareCardView: View {
         .opacity(greyed ? 0.45 : 1)
     }
 
-    /// "as of 6:26 pm, Thu 23 Oct" — the reading's own time, never the moment of sharing.
+    /// "as of 6:26 PM, Thu 23 Oct" — the reading's own time, never the moment of sharing.
     private var asOf: String { Self.asOf(fetchedAtMs) }
 
     /// CCRM-112 (Summary Snapshot) writes the same line, for the newest reading shown.

@@ -448,7 +448,7 @@ surfaces read, so they keep the real accounts and settings (BEHAVIOR-MOBILE §7)
 | Accent | The account's own colour, else the theme colour, else the provider's (Claude terracotta #E59980 dark / #D97757, ChatGPT green #19C39A / #10A37F) | `ios/Shared/Display.swift`, `Theme.swift` |
 | Provider mark | Real mark, tinted; Claude drawn at 82% inside its square to match ChatGPT's apparent size | `Theme.swift` |
 | Used / Left | Setting "Usage display": a figure reads "62%" or "38%" with a smaller "left" (42% of the figure's size, min 10 pt, semibold) after it; bars never flip. Text-only surfaces say "38% left" | `Display.swift` |
-| Clocks | Lower-case "9:50 pm" (or 24-hour per the Time format setting); Weekly clocks always name the day: "Thu 9:16 pm". The pace line prints core's en-US "PM" ("· resets Sun 9:30 PM") — filed as CCBG-82 (Clock Case Mix) | `ios/Shared/CardContent.swift:140,146` |
+| Clocks | "9:50 PM" in core's case (or 24-hour per the Time format setting), the same as the pace line since CCBG-82 (Clock Case Mix); Weekly clocks always name the day: "Thu 9:16 PM" | `ios/Shared/CardContent.swift:140,146` |
 | Usage bar | Capsule, track = accent at 26%; fill min width = bar height (any reading above 0 shows); above pace (3 points over the even-pace line) and "red past the pace mark" on: fill to the tick in severity colour, then red from a straight edge at the tick to the tip; tick = 3 pt wide, bar height + 2 × max(3, 0.45 × height) tall, rounded 1.5 pt, in the tick colour; dimmed = 45% opacity; no reading = empty track, no tick | `ios/Shared/Charts.swift:6` |
 | Usage ring | Track stroke max(1.5, 0.3 × line width) in ring-track colour (mono: 32% of white); fill round-capped; red arc from the tick; tick = capsule max(2, 0.42 × line width) × 1.9 × line width at the pace angle; label bold, mono-digit, default 0.22 × ring diameter | `Charts.swift:186` |
 | Status | `fresh`; `aging` (older than 30 min: "as of" appears); `stale` (older than 6 h: dimmed numbers, orange "as of"); `signIn` (dimmed); `plan` (no usage); `noData` | `ios/Shared/Faces.swift:9,63,85` |
@@ -465,17 +465,17 @@ surfaces read, so they keep the real accounts and settings (BEHAVIOR-MOBILE §7)
 |---|---|---|---|
 | 1 | signIn | "Sign in again" | orange |
 | 2 | plan | "No usage on the Free plan" (Claude) | secondary |
-| 3 | stale | "as of 9:50 pm" | orange |
+| 3 | stale | "as of 9:50 PM" | orange |
 | 4 | noData | "Open Cooldown to check" | secondary |
-| 5 | aging (5h footnotes only) | "as of 9:50 pm" | secondary |
-| 6 | Weekly footnote | "Resets Thu 9:16 pm" | secondary |
-| 7 | at 100% with a reset | "Limit · resets 5:50 pm" | red |
-| 8 | on a path to 100% before reset (projection) | "~ runs out 7:51 pm" | secondary |
-| 9 | otherwise | "Resets 5:50 pm", or "No window running" | secondary |
+| 5 | aging (5h footnotes only) | "as of 9:50 PM" | secondary |
+| 6 | Weekly footnote | "Resets Thu 9:16 PM" | secondary |
+| 7 | at 100% with a reset | "Limit · resets 5:50 PM" | red |
+| 8 | on a path to 100% before reset (projection) | "~ runs out 7:51 PM" | secondary |
+| 9 | otherwise | "Resets 5:50 PM", or "No window running" | secondary |
 
 Pace and projection: the projection only exists when usage is above pace by more than 3 points (`Faces.swift:75`). Pace
 line copy (Overview, Line B): "On even pace", "<n>% below even pace", "<n>% above even pace" (red), "Limit reached"; narrow tiers
-replace "even pace" with "pace"; projection short form "~ runs out 7:51 pm" or "~<n>% at reset" (`CardContent.swift:80-109`).
+replace "even pace" with "pace"; projection short form "~ runs out 7:51 PM" or "~<n>% at reset" (`CardContent.swift:80-109`).
 
 **Timelines:** one entry now, a second one second after the next reset (so a closed window reads 0%), refreshed after 30 min;
 the app also reloads timelines after each fetch. Source: `ios/Widget/Widgets.swift:28,124`.
@@ -508,7 +508,7 @@ Picker name "Countdown". Description "Time until an account's 5-hour window rese
 |---|---|
 | Caption | "5h reset" (14 pt, text colour); "Weekly reset" on a weekly-only plan |
 | Count | **35 pt** bold mono-digit, ink colour, 8 pt below the caption, scales to 60%: a live timer to the reset (H:MM:SS); Weekly counts down in days and hours, not live (compact duration, e.g. "3d 4h") |
-| Under the count | "at 5:50 pm" 13.5 pt secondary; at 100%: "Limit · opens 5:50 pm" in red |
+| Under the count | "at 5:50 PM" 13.5 pt secondary; at 100%: "Limit · opens 5:50 PM" in red |
 | No reset or signIn | "—:—" 35 pt bold secondary and the footnote at 13.5 pt (the ladder's sign-in / plan / stale / no-data lines) |
 | Account line | Bottom, mark + name only (no window), 13 pt, after a flexible spacer |
 
@@ -525,11 +525,11 @@ Approved: `2026-10-24-ios-widgets.html` §1.
 | 5h footnote | 11.5 pt, 2 pt below the bar, the ladder |
 | Weekly row | "Weekly" 13 pt text colour, then the Weekly number at the trailing edge 15 pt semibold; 8 pt above (6 when the 5h footnote is gone) |
 | Weekly bar | 6 pt, 3 pt below its row |
-| Weekly footnote | 11.5 pt, "Resets Thu 9:16 pm" |
+| Weekly footnote | 11.5 pt, "Resets Thu 9:16 PM" |
 | Weekly-only plan | The 5h block alone, led by Weekly (28 pt figure, bar, Weekly footnote); no second row |
 
 **Drop rules** (the layout that fits the height wins, in order): full → without the Weekly footnote (below about 136 pt tall)
-→ also without the 5h footnote, its clock moving into the header as "<name> · 5h · 9:50 pm" (below about 119 pt). The pace tick
+→ also without the 5h footnote, its clock moving into the header as "<name> · 5h · 9:50 PM" (below about 119 pt). The pace tick
 is kept on both bars.
 
 ## 2.3 Strip (medium)
@@ -546,7 +546,7 @@ with exactly one account draws the same face.
 | Weekly-only plan | No Weekly row; the main figure is Weekly |
 
 Line copy (priority): sign-in / plan / no data / stale / aging → the footnote ladder; at 100%: "Limit reached" (red) + " · resets
-5:50 pm"; projection: "~ runs out 7:51 pm · resets 5:50 pm"; normal: "Resets in 1h 35m · 5:50 pm" (Clock first on: "Resets at 5:50
+5:50 PM"; projection: "~ runs out 7:51 PM · resets 5:50 PM"; normal: "Resets in 1h 35m · 5:50 PM" (Clock first on: "Resets at 5:50
 pm · in 1h 35m"); no reset: the footnote.
 
 ## 2.4 Overview (Medium, Large, Extra Large)
@@ -587,12 +587,12 @@ column in the Extra Large is capped at 420 pt wide so no bar runs longer. Past t
 Card elements: bar tick kept at every tier ("below a Mini, a bar loses its tick" is the stated limit, not reached); Weekly row
 label 13 pt (52 wide) with a 6 pt bar and a 13 pt semibold figure (40 wide); line A and B 12.5 pt, Weekly line 11.5 pt; the "as of"
 stamp 11 pt under the card for aging/stale (orange when stale). T4 and T5 header foot-status: "· sign in again", "· as of
-9:50 pm", "· no usage", "· open Cooldown", "· no window", "· resets Thu 9:16 pm", "· limit · 5:50 pm", "· runs out 7:51 pm"
-(red), "· resets 5:50 pm".
+9:50 PM", "· no usage", "· open Cooldown", "· no window", "· resets Thu 9:16 PM", "· limit · 5:50 PM", "· runs out 7:51 PM"
+(red), "· resets 5:50 PM".
 
 Card title: "<name>" by default; "<name> · 5h" on the Extra Large 5h-only card; "<name> · Weekly" on a Weekly card at T1–T3.
 A weekly-only account always leads with Weekly. Line A copy: "Sign in again", "No usage on this plan", "Open Cooldown to check",
-"No window running", "Resets Thu 9:16 pm" (Weekly), "Resets in 1:35:00 · 5:50 pm" (live timer), at 100% "Limit · resets in …"
+"No window running", "Resets Thu 9:16 PM" (Weekly), "Resets in 1:35:00 · 5:50 PM" (live timer), at 100% "Limit · resets in …"
 (red). Line B at 100%: "Opens again when the window resets". With no reading the chart still draws its guides and pace line, dimmed.
 
 Differs from `2026-10-24-ios-widgets.html` D3: the wireframe caps Medium at three; the code caps at three for up to three
@@ -609,8 +609,8 @@ account. `ios/Widget/Widgets.swift:146`; faces `FaceViews.swift:563`.
 | Family | Anatomy | Copy |
 |---|---|---|
 | Circular | System accessory background; ring of line width 5 (white, track 32%) with the pace tick, 2 pt padding; figure 19 pt bold in the ring, sublabel under it | Figure: the number (Used or Left, no "%"), "MAX" at 100%, "—" on signIn. Sublabel "5h" (or "W" for a weekly-only plan) |
-| Rectangular | Mark 14 (white), "<name> · 5h" 14 pt semibold, flexible gap, figure 17 pt bold; bar 6 pt with pace tick (white); line 13 pt at 85% opacity, all spacing 4 | "Sign in again"; "Limit · resets 5:50 pm"; "Resets in 1h 35m" (relative, ticking); "No window running" |
-| Inline | One line: "<name> 5h 46% · resets 5:50 pm"; falls back to without the reset when it does not fit | No account: "Cooldown: add an account" |
+| Rectangular | Mark 14 (white), "<name> · 5h" 14 pt semibold, flexible gap, figure 17 pt bold; bar 6 pt with pace tick (white); line 13 pt at 85% opacity, all spacing 4 | "Sign in again"; "Limit · resets 5:50 PM"; "Resets in 1h 35m" (relative, ticking); "No window running" |
+| Inline | One line: "<name> 5h 46% · resets 5:50 PM"; falls back to without the reset when it does not fit | No account: "Cooldown: add an account" |
 
 No lock-screen state shows "as of", stale, or the Free-plan line: signIn shows "—", and the rest read as fresh numbers.
 Differs from `2026-10-24-ios-lock-circular.html`: Robin asked for no circle counter and both windows; the file offers A (two numbers
@@ -628,7 +628,7 @@ the first). Tapping opens the app on that account. `ios/Widget/LiveAndControl.sw
 | Value | The percentage, per below |
 | Gallery preview | "Teams · Weekly" / "52%" |
 
-Value copy: "Sign in again"; "No usage on this plan"; stale or aging: "46% · as of 9:50 pm"; at 100%: "Limit reached"; otherwise the percentage
+Value copy: "Sign in again"; "No usage on this plan"; stale or aging: "46% · as of 9:50 PM"; at 100%: "Limit reached"; otherwise the percentage
 (Used or Left). No account: title "Cooldown", value "Add an account".
 
 ## 2.7 Live Activity (lock screen) — the Duet with Weekly
@@ -651,12 +651,12 @@ Line copy (short = Duet, long = single):
 | Condition | Short | Long |
 |---|---|---|
 | signIn | "sign in again" (orange) | "Sign-in stopped working · open Cooldown" |
-| older than 30 min | "as of 9:50 pm" (orange) | same |
-| window already reset | "reset · 0%" | "5h reset at 5:50 pm · back at 0%" |
-| weekly-only plan | "Thu 9:16 pm" | "Resets Thu 9:16 pm" |
+| older than 30 min | "as of 9:50 PM" (orange) | same |
+| window already reset | "reset · 0%" | "5h reset at 5:50 PM · back at 0%" |
+| weekly-only plan | "Thu 9:16 PM" | "Resets Thu 9:16 PM" |
 | at 100% | "limit · 0:42:10" (live; red label) | "Limit reached · resets in 0:42:10" |
-| on a path to 100% | "runs out 7:51 pm" | same |
-| otherwise | "1:35:00" (live, max 58 pt) | "Resets in 1:35:00 · 5:50 pm" (Clock first: "Resets at 5:50 pm · in 1:35:00") |
+| on a path to 100% | "runs out 7:51 PM" | same |
+| otherwise | "1:35:00" (live, max 58 pt) | "Resets in 1:35:00 · 5:50 PM" (Clock first: "Resets at 5:50 PM · in 1:35:00") |
 | no window | "no window running" | same |
 
 Big number colour: severity, secondary when signIn or older than 30 min. **Final frame at a reset:** mark 26 + "<name> · 5h reset"
@@ -704,28 +704,28 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the face it amends,
   open item). Bars, Strip, lock rectangular: fixed Weekly-first. Overview big number, lock circular and inline,
   Live Activity rows, Island: follow the Headline live (Auto takes over while the 5h binds). Control Center:
   unchanged (5h).
-- **Bars (small)**: "Teams · Weekly", 28 pt figure, 8 pt bar, footnote "Resets Sun 9:30 pm" (spent "Limit · Sun
-  9:30 pm" red); then "5h" row (15 pt figure, heavy and in its colour step while binding) with a 6 pt bar, no reset
+- **Bars (small)**: "Teams · Weekly", 28 pt figure, 8 pt bar, footnote "Resets Sun 9:30 PM" (spent "Limit · Sun
+  9:30 PM" red); then "5h" row (15 pt figure, heavy and in its colour step while binding) with a 6 pt bar, no reset
   line. Too short: the footnote goes and the day joins the header ("Teams · Weekly · Sun"). Spent or no 5h: no 5h row.
 - **Strip (medium)**: "Teams · Weekly" + 34 pt figure, bar, the reset line ("Limit reached · resets …" when spent);
   bottom row "5h" bar figure (loud while binding); no 5h reset clock on the Strip.
-- **Overview**: title "Teams · Weekly" (or "· 5h") down to Regular; Weekly lead line A "Resets Sun 9:30 pm · in 4d
-  6h" (spent "Limit · resets in 3d 4h" red), line B band words (red over pace) plus " · ~ runs out Sat 3:10 am" only
+- **Overview**: title "Teams · Weekly" (or "· 5h") down to Regular; Weekly lead line A "Resets Sun 9:30 PM · in 4d
+  6h" (spent "Limit · resets in 3d 4h" red), line B band words (red over pace) plus " · ~ runs out Sat 3:10 AM" only
   when the projection runs out; a cell under 300 pt words the band alone. Second row = the other window: under a
   Weekly lead "5h" with "Resets in 2h 20m · on track for ~69%" (binding: orange, live countdown, "runs out ~3:25
-  pm"; narrow "Resets 5:10 pm · ~69%"); under a 5h lead "Weekly" with "Resets Sun 9:30 pm · Slow down". Spent: no
-  second row, "Out until Sun 9:30 pm". Compact/Mini: lead bar first, then the companion. Extra Large, one account:
+  pm"; narrow "Resets 5:10 PM · ~69%"); under a 5h lead "Weekly" with "Resets Sun 9:30 PM · Slow down". Spent: no
+  second row, "Out until Sun 9:30 PM". Compact/Mini: lead bar first, then the companion. Extra Large, one account:
   Weekly card left, 5h card right.
 - **Lock screen**: rectangular "Teams · Weekly 52%" (title scales to 80%), bar, "Resets Sun · 5h 34%" (5h bold while
-  binding; weekly-only "Resets Fri 10:18 pm"; spent "Limit · resets Sun 9:30 pm", no 5h). Circular: the Headline
+  binding; weekly-only "Resets Fri 10:18 PM"; spent "Limit · resets Sun 9:30 PM", no 5h). Circular: the Headline
   window's figure without "%", sublabel "W" or "5h"; spent "MAX". Inline: "Teams Weekly 52% · resets Sun" (5h:
-  "· resets 3:40 pm"), falling back without the reset.
-- **Live Activity**: each row leads with its Headline window: "Teams · Weekly · Sun 9:30 pm", big figure, thin "5h"
+  "· resets 3:40 PM"), falling back without the reset.
+- **Live Activity**: each row leads with its Headline window: "Teams · Weekly · Sun 9:30 PM", big figure, thin "5h"
   line (bold in its colour step while binding); Auto binding: "Teams · 5h · runs out …", thin "Weekly" line; spent:
-  "· out · Sun 9:30 pm" red, no thin line. Row state gains optional `companionLoud`, `spent`, `projection` (older
+  "· out · Sun 9:30 PM" red, no thin line. Row state gains optional `companionLoud`, `spent`, `projection` (older
   states decode). Stale date = the earliest of every shown window's reset, the 5h companion included.
-- **Dynamic Island**: expanded line "Resets Sun 9:30 pm · 5h 34%" (Vs pace: "52% used (mark 39%) · resets Sun ·
-  5h 34%"); Auto binding "~ runs out 3:25 pm · resets in 0:50:12 · Weekly 52%". Compact and minimal follow the lead
+- **Dynamic Island**: expanded line "Resets Sun 9:30 PM · 5h 34%" (Vs pace: "52% used (mark 39%) · resets Sun ·
+  5h 34%"); Auto binding "~ runs out 3:25 PM · resets in 0:50:12 · Weekly 52%". Compact and minimal follow the lead
   window (Weekly: "4d 6h", not live).
 - Gallery descriptions: Bars "One account's Weekly and 5h, each with its bar."; Strip "One account: Weekly big,
   with 5h under it."; Lock "One account's Weekly and 5h on the lock screen."
@@ -735,7 +735,7 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the face it amends,
 As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
 
 - **CCRM-102 gate on faces showing the 5h:** Number (window 5h) — label, figure and bar at 45%, the footnote replaced by
-  "Weekly spent" (12.5 pt, ink). Countdown — the timer at 45%, "Weekly spent" in place of "at 5:10 pm". Overview with a 5h
+  "Weekly spent" (12.5 pt, ink). Countdown — the timer at 45%, "Weekly spent" in place of "at 5:10 PM". Overview with a 5h
   lead (Headline 5-hour) — header, bar, line A and chart at 45% (no projection), line B "Weekly spent". Lock circular
   (5h lead) — ring dimmed; inline (5h lead) — "Teams 5h · Weekly spent". Live Activity / Island row with a 5h lead — bar
   and big figure dimmed, the line reads "Weekly spent" (row state gains optional `weekGated`). Control Center (5h) —
@@ -783,13 +783,13 @@ CCRM-103 (Hybrid Notification), frozen design
 
 | Face | Layout | States |
 |---|---|---|
-| **Bars** (small) | Mark 15 + "Teams · Weekly" (14 pt); 8 pt below, ring **50** left (10 gap) of the Weekly figure **28 pt** over its **8 pt** bar (5 pt gap); 6 pt below, the Weekly pace line (11.5 pt) in the form it fits, where "Resets Sun 9:30 pm" stood; 6 pt below, the first model limit (`FaceModelRow`): name (12 pt, 38 pt wide, "Claude " dropped), its **5 pt** bar with the end mark, figure 12 pt (28 pt wide), 6 gaps. iPhone SE (141): the pace line keeps its floor (CCRM-108); the older rule — the reset line goes and " · Sun" joins the header — predates the pace line. | Spent: "Limit · Sun 9:30 pm" red; sign in / stale / no data as `FaceFootnote`. No 5h: no ring. No model limit (none reported, or Model limits off for the account), sign in or no usage on the plan: no model row. |
-| **Number**, window 5h | Mark + "Teams" (no "· 5h"); the ring hero **84 pt**, figure **24 pt**, centred; "Resets in 2h 20m · 5:10 pm" (Clock first: "Resets at 5:10 pm · in 2h 20m"), 12.5 pt. | Runs out / limit / stale / sign in: `FaceFootnote`. Spent week: grey ring, "Weekly spent" (ink). No 5h: the Weekly face below. |
-| **Number**, window Weekly | Unchanged layout: "Teams · Weekly", figure 46 pt (40 at 100%), 8 pt bar, "Resets Sun 9:30 pm". Grammar figure and bar end. | As before. |
-| **Countdown** (small) | Ring **40** + "Resets" (13 pt, grey); 10 pt below the live count **35 pt** bold; "at 5:10 pm" 13.5 pt; the account (mark + name, 13 pt) at the foot. | Limit: "Limit · opens 5:10 pm" red. Spent week: grey ring, count dimmed, "Weekly spent". No 5h / sign in / no window: today's face ("Weekly reset", days-and-hours count). |
-| **Strip** (medium) | Ring **84** (figure **22 pt**) left, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) with the Weekly figure **30 pt** right-aligned; **8 pt** bar (6 below); the Weekly pace line (12.5 pt, "21h 50m ahead · resets Sun 9:30 PM" in the form it fits; it replaced "Slow down · ≈11%/day · resets Sun"; spent "Out until Sun 9:30 pm" in red); 10 pt below, the first model limit: name (13 pt, 44 pt wide), its **6 pt** bar with the end mark, figure 13 pt (36 pt wide), 8 gaps. The 5h row under the Weekly is gone. | States replace the line (`FaceWeeklyLine`). No 5h: no ring. No model limit, sign in or no usage on the plan: no model row. |
+| **Bars** (small) | Mark 15 + "Teams · Weekly" (14 pt); 8 pt below, ring **50** left (10 gap) of the Weekly figure **28 pt** over its **8 pt** bar (5 pt gap); 6 pt below, the Weekly pace line (11.5 pt) in the form it fits, where "Resets Sun 9:30 PM" stood; 6 pt below, the first model limit (`FaceModelRow`): name (12 pt, 38 pt wide, "Claude " dropped), its **5 pt** bar with the end mark, figure 12 pt (28 pt wide), 6 gaps. iPhone SE (141): the pace line keeps its floor (CCRM-108); the older rule — the reset line goes and " · Sun" joins the header — predates the pace line. | Spent: "Limit · Sun 9:30 PM" red; sign in / stale / no data as `FaceFootnote`. No 5h: no ring. No model limit (none reported, or Model limits off for the account), sign in or no usage on the plan: no model row. |
+| **Number**, window 5h | Mark + "Teams" (no "· 5h"); the ring hero **84 pt**, figure **24 pt**, centred; "Resets in 2h 20m · 5:10 PM" (Clock first: "Resets at 5:10 PM · in 2h 20m"), 12.5 pt. | Runs out / limit / stale / sign in: `FaceFootnote`. Spent week: grey ring, "Weekly spent" (ink). No 5h: the Weekly face below. |
+| **Number**, window Weekly | Unchanged layout: "Teams · Weekly", figure 46 pt (40 at 100%), 8 pt bar, "Resets Sun 9:30 PM". Grammar figure and bar end. | As before. |
+| **Countdown** (small) | Ring **40** + "Resets" (13 pt, grey); 10 pt below the live count **35 pt** bold; "at 5:10 PM" 13.5 pt; the account (mark + name, 13 pt) at the foot. | Limit: "Limit · opens 5:10 PM" red. Spent week: grey ring, count dimmed, "Weekly spent". No 5h / sign in / no window: today's face ("Weekly reset", days-and-hours count). |
+| **Strip** (medium) | Ring **84** (figure **22 pt**) left, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) with the Weekly figure **30 pt** right-aligned; **8 pt** bar (6 below); the Weekly pace line (12.5 pt, "21h 50m ahead · resets Sun 9:30 PM" in the form it fits; it replaced "Slow down · ≈11%/day · resets Sun"; spent "Out until Sun 9:30 PM" in red); 10 pt below, the first model limit: name (13 pt, 44 pt wide), its **6 pt** bar with the end mark, figure 13 pt (36 pt wide), 8 gaps. The 5h row under the Weekly is gone. | States replace the line (`FaceWeeklyLine`). No 5h: no ring. No model limit, sign in or no usage on the plan: no model row. |
 | **Overview** T1 Full / T2 Chart-narrow / T3 Regular | The tile: ring **72** (cell ≥ 300 pt) or **64**, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) and the Weekly figure (0.25 × ring: 18 / 16 pt), 8 pt bar. Under the tile: the Weekly pace line (14.5 pt semibold, in the form it fits), then the 5h line led by a **12 pt ring glyph**: "resets in 2h 20m · on track for ~69%" (14.5 pt; orange while it binds or runs out, red at the limit). T1/T2 add the Weekly's trend chart (60–170 pt; T2 lines only) with the day grid (ordinals on T1 only). Stale / aging: "as of …" under. | No 5h: greyed ring with a cross, no 5h line. Spent week: grey ring; the 5h line "Weekly spent". |
-| **Overview** T4 Compact | Ring **46**, 10 gap; mark 14 + name (14 pt) with the Weekly figure **20 pt** right; **7 pt** bar (5 below); the Weekly line 12 pt (stale: "as of 3:10 pm" orange). | No 5h: flush left. |
+| **Overview** T4 Compact | Ring **46**, 10 gap; mark 14 + name (14 pt) with the Weekly figure **20 pt** right; **7 pt** bar (5 below); the Weekly line 12 pt (stale: "as of 3:10 PM" orange). | No 5h: flush left. |
 | **Overview** T5 Mini | One 42 pt row: ring **30** with "34" (**11 pt**, no "%"), mark 13, name (13 pt, 58 pt wide), the Weekly's **5 pt** bar, its figure **12 pt** (30 pt wide). | No 5h: an empty 30 pt slot. |
 | **Overview** Extra Large, one account | One tile (≤ 420 pt wide) instead of the two side-by-side window cards — see "needs a decision". | |
 
@@ -802,7 +802,7 @@ Medium Overview with one account is the Strip (as before).
   (see "needs a decision").
 - **Rectangular** (172 × 76): ring **44** (mono, "34%"), 8 gap; right: mark 13 + "Teams" (13 pt semibold) with the
   Weekly figure **17 pt** right; **6 pt** bar (5 above, 4 below); "Weekly · Sun" (12 pt, 88%). Spent: "Limit · resets
-  Sun 9:30 pm"; sign in: "Sign in again". No 5h: no ring, the Weekly takes the width.
+  Sun 9:30 PM"; sign in: "Sign in again". No 5h: no ring, the Weekly takes the width.
 - **Inline**: the ring glyph rendered as an image (16 pt, no digits), then **"34% · Teams Weekly 52%"**; where that does
   not fit "34% · Weekly 52%" with the glyph, then the text alone. No 5h: "Personal Weekly 50%".
 
@@ -810,17 +810,17 @@ Medium Overview with one account is the Strip (as before).
 
 - **One account**: ring **48** left (12 gap); "Teams · Weekly" (mark 15, 15 pt semibold), **8 pt** bar (6 below), two
   12.5 pt lines, the Weekly pace line (where "Slow down · ≈11%/day" stood; at its usual width "21h 50m ahead · Sun") /
-  "Resets Sun 9:30 pm"; the Weekly figure **44 pt** semibold right.
-- **Duet**: per row ring **36**, one line, the pace line in the form it fits (where "Slow down · Sun 9:30 pm" stood),
+  "Resets Sun 9:30 PM"; the Weekly figure **44 pt** semibold right.
+- **Duet**: per row ring **36**, one line, the pace line in the form it fits (where "Slow down · Sun 9:30 PM" stood),
   figure **36 pt**; rows 10 apart. No 5h: an empty
   36 pt slot. The thin companion line is gone.
-- Lines' states: "Sign in again" (one account: "Sign-in stopped working · open Cooldown") orange; "as of 3:10 pm"
-  orange; "Out until Sun 9:30 pm" red; a Weekly that reset "Weekly reset · 0%"; "Weekly not started". A 5h that reset
+- Lines' states: "Sign in again" (one account: "Sign-in stopped working · open Cooldown") orange; "as of 3:10 PM"
+  orange; "Out until Sun 9:30 PM" red; a Weekly that reset "Weekly reset · 0%"; "Weekly not started". A 5h that reset
   since the row was written reads 0% in its ring (`Row.fiveReset`).
 - **Island compact**: leading ring **30** with "34" (11 pt, no "%"); trailing the Weekly figure (15 pt semibold,
   coloured). No 5h: the provider mark leads.
 - **Island expanded**: ring **48** left (14 gap); "Teams · Weekly" (mark 18, 15 pt semibold) with the figure **34 pt**;
-  8 pt bar; the Weekly pace line in the form it fits (13 pt; where "Resets Sun 9:30 pm · in 4d 6h" stood; spent "Out
+  8 pt bar; the Weekly pace line in the form it fits (13 pt; where "Resets Sun 9:30 PM · in 4d 6h" stood; spent "Out
   until …").
 - **Minimal**: the bare ring (provider mark with no 5h).
 - **The small 5h glyph** (the 5h line's 12 pt lead, the inline lock image at 16 pt) is `FiveGlyph`, the page's

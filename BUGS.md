@@ -23,7 +23,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > not blocking either, Robin decides in RUNBOOK Step 3.
 
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
-- **Status:** Open · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `CardContent.clock` prints core's "AM/PM", so every iOS clock matches the pace line and Android; the surfaces spec drops its "pm" examples · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
 - **Severity:** Low (cosmetic)
 - **Symptom:** the open tile reads "resets Sun 10:17 AM" right above "Resets at Sun 10:17 am".
 - **Cause:** the pace line uses CooldownCore `Fmt.dayClock` (en-US "AM/PM", core §6.3 and `printed.json`'s note), while

@@ -24,7 +24,7 @@ struct CooldownActivityAttributes: ActivityAttributes {
         /// `weeklyPct`/`weeklyPace` then carry the 5h companion. Optional so older states still decode.
         var weeklyLeads: Bool?
         /// CCRM-96 (Weekly First): the 5h companion binds (bold, its colour step); the lead week is spent (no
-        /// companion, "out · Sun 9:30 pm"); and the 5h projection for the Island ("~ runs out 3:25 pm"). Optional,
+        /// companion, "out · Sun 9:30 PM"); and the 5h projection for the Island ("~ runs out 3:25 PM"). Optional,
         /// so states written before v2.0 still decode.
         var companionLoud: Bool?
         var spent: Bool?

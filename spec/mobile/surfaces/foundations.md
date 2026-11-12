@@ -350,7 +350,7 @@ drops out: the token decides order, not presence.
 | Form | Wording | Notes |
 |---|---|---|
 | Countdown | "Resets in 4h 47m", "in 2d 5h" past 24 h, "in 12m" under an hour | **"Resets soon" inside five minutes** (no stale seconds on a 15-minute cadence). Android past reset: "any moment" |
-| Clock | "Resets at Thu 11:45 PM" or "Thu 23:45" | Android cards always name the weekday, 5h included; iOS lowercases "pm" ("Thu 9:50 pm") on card lines while its pace line prints core's en-US "PM" ("· resets Sun 9:30 PM") — filed as CCBG-82 (Clock Case Mix) |
+| Clock | "Resets at Thu 11:45 PM" or "Thu 23:45" | Android cards always name the weekday, 5h included; both platforms print core's "AM"/"PM" everywhere (iOS lower-cased its card lines until CCBG-82 (Clock Case Mix)) |
 | Widget clock (Android) | 12-hour always, "9:10 PM", weekday only when more than 24 h from now ("Sat 9:10 PM"), AM/PM dropped where it does not fit | Ignores the Time format chip |
 | Time only | "11:45 PM" / "23:45" | 5h window only, where the day is never in question |
 | Chart axis | 5h: clock; 7-day: "23 Jul" (a bare weekday would repeat) | |
@@ -488,9 +488,9 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the section it amen
 |---|---|---|
 | Weekly, a band | "Slow down · ≈11%/day until Sun" (halves drop " until …") | "Slow down · ≈11%/day · resets Sun" |
 | Weekly over pace (Slow down, Nearly out) | whole line red | whole line red |
-| Weekly spent (≥ 99.5) | "Out until Sun 9:30 pm" red + "Opens again when the window resets" | "Out until Sun 9:30 pm" |
+| Weekly spent (≥ 99.5) | "Out until Sun 9:30 PM" red + "Opens again when the window resets" | "Out until Sun 9:30 PM" |
 | Allowance | "≈11%/day", "<1%/day", "40% left, 6h", "40% left, <1h" (under 30 min) | same |
-| 5h | no pace line; the "At this pace …" projection line stays; "Limit reached" at 100 | "Resets in 2h 20m · on track for ~69%" / "· runs out ~3:25 pm" (red) / "· Limit reached" |
+| 5h | no pace line; the "At this pace …" projection line stays; "Limit reached" at 100 | "Resets in 2h 20m · on track for ~69%" / "· runs out ~3:25 PM" (red) / "· Limit reached" |
 | Pace-mark caption (V1), under every in-app bar (5h, Weekly, model half, Summary row) | "39% pace mark · 13 over" / "· 19 under" / "· on it"; Left "61% pace mark · 13 over" / "· 10 to spare"; Vs pace "52% used · 39% pace mark" (core §6.3, since CCRM-104); 11.5 pt (10.5 in a half), first word bold; starts 5 pt right of the mark, else ends 5 pt left; none when spent, unclocked or unread | none |
 | Dashed room | under pace by ≥ 1 point, a 1 pt dashed outline (sub at 80%) from the fill to the mark, in-app bars only | |
 Source: `ios/Shared/CardContent.swift`, `ios/Shared/Charts.swift` (`UsageBar.showsRoom`, `PaceCaption`),
@@ -509,7 +509,7 @@ As built on the v2.0 branch (RUNBOOK-v2.0 Steps 6a and 6c, iOS).
   display name is "Gemini" everywhere on iOS.
 - **Theme colour, "Per provider" swatch (iOS):** three equal bands (Claude, ChatGPT, Gemini), was two (rev B §6 default).
 - **§4.5 / copy, new iOS rows:**
-  | Weekly spent, 5h shown | card: figure, bar, chart (no projection) and reset line at 45%, no caption; one full-ink line "Weekly limit reached — 5h can't be used until Thu 10:21 pm" (weekly reset, `dayClock`) | widgets/faces showing the 5h: dimmed to 45%, stamp "Weekly spent" at full opacity |
+  | Weekly spent, 5h shown | card: figure, bar, chart (no projection) and reset line at 45%, no caption; one full-ink line "Weekly limit reached — 5h can't be used until Thu 10:21 PM" (weekly reset, `dayClock`) | widgets/faces showing the 5h: dimmed to 45%, stamp "Weekly spent" at full opacity |
   Source: `CardContent.weekGateNote`, `CardContent.weekSpentStamp`, `WindowCard.weekGate`.
 
 ## The shape grammar — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d

@@ -192,8 +192,8 @@ struct SummaryList: View {
 }
 
 enum SummaryWords {
-    /// Line 3 of a row: the pace line "1d 7h behind · Fri 9:00 am" (CCRM-104), "Held · back at 3:40 pm · resets Fri",
-    /// "Out until Thu 8:00 am", "No reading".
+    /// Line 3 of a row: the pace line "1d 7h behind · Fri 9:00 AM" (CCRM-104), "Held · back at 3:40 PM · resets Fri",
+    /// "Out until Thu 8:00 AM", "No reading".
     static func line(_ e: SummaryEntry, nowMs: Int64) -> String {
         let f = e.face
         guard let used = e.usedPct else { return "No reading" }
@@ -215,7 +215,7 @@ enum SummaryWords {
                                  use24h: Display.use24h)
     }
 
-    /// The held reason's time, "back 3:40 pm". CCRM-103 (Hybrid Notification) rev D S1: no longer drawn beside the
+    /// The held reason's time, "back 3:40 PM". CCRM-103 (Hybrid Notification) rev D S1: no longer drawn beside the
     /// name (the held row says it in line 3, `line`); kept for the tests that read it.
     static func companion(_ e: SummaryEntry) -> String? {
         guard e.usedPct != nil, e.hasSession, e.group == .held, let back = e.face.reset else { return nil }
@@ -226,7 +226,7 @@ enum SummaryWords {
     /// shows in the word slot) for 3 s; nil when spent, unclocked or unread.
     static func caption(_ e: SummaryEntry) -> String? { PaceText.caption(mode: Display.mode, usedPct: e.usedPct, elapsedPct: e.elapsedPct) }
 
-    /// The one-line row's word: the band, "Held · 3:40 pm" when held (never "5h", as on Android), "Out · Thu" when spent.
+    /// The one-line row's word: the band, "Held · 3:40 PM" when held (never "5h", as on Android), "Out · Thu" when spent.
     static func word(_ e: SummaryEntry) -> String {
         switch e.group {
         case .noReading: return "No reading"

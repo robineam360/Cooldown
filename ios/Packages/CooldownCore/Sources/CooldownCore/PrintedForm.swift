@@ -10,7 +10,7 @@ public struct PaceLine: Sendable, Equatable, Hashable, Codable {
     public let duration: String?
     /// The reset's weekday ("Sun"); nil when the reset falls later the same local day.
     public let weekday: String?
-    /// The reset's clock in the device's time format ("9:30 pm", "09:30").
+    /// The reset's clock in the device's time format ("9:30 PM", "09:30").
     public let clock: String
 
     public init(side: Side, duration: String?, weekday: String?, clock: String) {
@@ -103,7 +103,7 @@ extension PaceText {
         else { return nil }
         let full = Fmt.dayClock(epochMs: resetMs, nowMs: nowMs, use24h: use24h, timeZone: timeZone)
         let parts = full.split(separator: " ", maxSplits: 1).map(String.init)
-        // "Sun 9:30 pm" is weekday + clock; "9:30 pm" (later today) has no weekday. A 12-hour clock has a space too.
+        // "Sun 9:30 PM" is weekday + clock; "9:30 PM" (later today) has no weekday. A 12-hour clock has a space too.
         let hasWeekday = !Fmt.sameDay(resetMs, nowMs, timeZone: timeZone)
         let weekday = hasWeekday ? parts.first : nil
         let clock = hasWeekday ? (parts.count > 1 ? parts[1] : full) : full

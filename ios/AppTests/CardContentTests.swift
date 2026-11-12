@@ -104,12 +104,12 @@ struct CardContentTests {
         #expect(c.chart?.projection.map { Int($0.rounded()) } == 60)
     }
 
-    @Test("reset lines name the day and use lower-case am/pm, as on Android")
+    @Test("reset lines name the day and use core's AM/PM (CCBG-82)")
     func resetLines() throws {
         let c = try #require(content(10, elapsed: 0.5))
         #expect(c.resetsIn == "Resets in 2h 30m")
         #expect(c.resetsAt.hasPrefix("Resets at "))
-        #expect(c.resetsAt.hasSuffix("am") || c.resetsAt.hasSuffix("pm"))
+        #expect(c.resetsAt.hasSuffix("AM") || c.resetsAt.hasSuffix("PM"))  // CCBG-82: core's case
     }
 
     @Test("credits read as used of limit with a percent, or as a balance")

@@ -41,7 +41,7 @@ enum Demo {
 struct FaceFootnote: View {
     let face: Face
     var weekly = false
-    /// Bars' tight form: "Limit · Sun 9:30 pm" ("resets" dropped to fit, rev B).
+    /// Bars' tight form: "Limit · Sun 9:30 PM" ("resets" dropped to fit, rev B).
     var limitShort = false
     /// CCRM-104: Bars small prints the Weekly's pace line here; the Number face keeps "Resets …" (not in the wireframe).
     var paceLine = false
@@ -62,7 +62,7 @@ struct FaceFootnote: View {
                 } else if face.atLimit || face.leadSpent, let reset = face.reset {
                     Text("Limit · \(limitShort ? "" : "resets ")\(face.resetClock(reset))").foregroundStyle(p.red)
                 } else if paceLine, face.leadsWeekly, let line = face.session?.line {
-                    // CCRM-104 (Pace Line Parity): Bars small — "6d 23h behind · 9:30 pm"; the weekday drops, then the clock.
+                    // CCRM-104 (Pace Line Parity): Bars small — "6d 23h behind · 9:30 PM"; the weekday drops, then the clock.
                     FitLine(variants: line.variants(rest: p.sub, ink: p.ink, scheme: colorSchemeFor(p)))
                 } else if let runOut = face.runOut {
                     Text("~ runs out \(shortClock(runOut))").foregroundStyle(p.sub)
@@ -390,7 +390,7 @@ struct NumberFace: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// "Resets in 2h 20m · 5:10 pm" (Clock first: "Resets at 5:10 pm · in 2h 20m"), or what replaces it; "Weekly
+    /// "Resets in 2h 20m · 5:10 PM" (Clock first: "Resets at 5:10 PM · in 2h 20m"), or what replaces it; "Weekly
     /// spent" at full opacity while the week is spent (CCRM-102).
     @ViewBuilder private func heroLine(_ face: Face) -> some View {
         if face.weekGated {
@@ -424,7 +424,7 @@ struct NumberFace: View {
 
 // MARK: - Countdown (small)
 
-/// To the 5h reset: the 40 pt ring and "Resets" lead, the count, "at 5:10 pm", the account at the foot (rev D §6 iCd).
+/// To the 5h reset: the 40 pt ring and "Resets" lead, the count, "at 5:10 PM", the account at the foot (rev D §6 iCd).
 /// A Weekly countdown (a plan with no 5h) keeps today's face, with no ring.
 struct CountdownFace: View {
     let entry: FaceEntry
@@ -597,7 +597,7 @@ struct StripFace: View {
     }
 }
 
-/// The Weekly's line on a grammar face: the pace line "6d 23h behind · Sun 9:30 pm", "Out until Sun 9:30 pm", or the
+/// The Weekly's line on a grammar face: the pace line "6d 23h behind · Sun 9:30 PM", "Out until Sun 9:30 PM", or the
 /// state that replaces it.
 struct FaceWeeklyLine: View {
     let face: Face
@@ -1034,7 +1034,7 @@ struct LockPanel: View {
 }
 
 /// The Weekly's lines in the Live Activity (CCRM-104 (Pace Line Parity)). One account: the pace line "6d 23h behind · Sun
-/// 9:30 pm" over the 5h's line led by its ring glyph ("◔ resets in 2h 20m · on track for ~69%"); the Duet: the pace line
+/// 9:30 PM" over the 5h's line led by its ring glyph ("◔ resets in 2h 20m · on track for ~69%"); the Duet: the pace line
 /// alone. States replace them: sign in, "as of", spent, reset, not started.
 enum PanelLines {
     private static func text(_ t: Text) -> AnyView { AnyView(t.lineLimit(1)) }
@@ -1070,7 +1070,7 @@ enum PanelLines {
 }
 
 /// The expanded Island (rev D §6 LA3): ring 48 left; "Teams · Weekly" (15 pt) with the Weekly figure (34 pt), the
-/// 8 pt bar and "Resets Sun 9:30 pm · in 4d 6h" right.
+/// 8 pt bar and "Resets Sun 9:30 PM · in 4d 6h" right.
 struct IslandExpanded: View {
     let row: CooldownActivityAttributes.Row
     @Environment(\.palette) private var p
@@ -1102,7 +1102,7 @@ struct IslandExpanded: View {
     }
 }
 
-/// The Island's expanded line: the pace line "6d 23h behind · Sun 9:30 pm" (CCRM-104; "Out until …" while the week is
+/// The Island's expanded line: the pace line "6d 23h behind · Sun 9:30 PM" (CCRM-104; "Out until …" while the week is
 /// spent), or the state that replaces it.
 struct IslandLine: View {
     let row: CooldownActivityAttributes.Row

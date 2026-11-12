@@ -11,14 +11,14 @@ struct WindowContent: Equatable {
     var pace: Double?
     var chart: TrendChart.Model?
     /// First line under the chart. CCRM-97 (Pace Number): on a weekly window the band and allowance in words
-    /// ("Slow down · ≈11%/day"), or "Out until Sun 9:30 pm" when spent; on the 5h window empty (its line is the
+    /// ("Slow down · ≈11%/day"), or "Out until Sun 9:30 PM" when spent; on the 5h window empty (its line is the
     /// projection), or "Limit reached" at 100%.
     var paceLine: String
     /// Red: a weekly band over pace (Slow down, Nearly out) or spent; the 5h at its limit or projected to run out.
     var paceLineAlarm: Bool
     /// Second line: the projection, or why there isn't one.
     var projectionLine: String?
-    /// The projection alone, short, for widgets: "~ runs out 6:51 pm" / "~70% at reset"; nil when there's none.
+    /// The projection alone, short, for widgets: "~ runs out 6:51 PM" / "~70% at reset"; nil when there's none.
     var projectionShort: String? = nil
     var resetsIn: String
     var resetsAt: String
@@ -29,14 +29,14 @@ struct WindowContent: Equatable {
     /// "… until Sun" / "… · resets Sun".
     var band: Pace.Band? = nil
     var resetDay: String = ""
-    /// The 5h window's folded projection: "on track for ~69%" / "runs out ~3:25 pm"; nil when there is none.
+    /// The 5h window's folded projection: "on track for ~69%" / "runs out ~3:25 PM"; nil when there is none.
     var projectionFold: String? = nil
     var isWeekly = false
     /// CCRM-104 (Pace Line Parity): the weekly window's pace line (core §6.3 Printed form), nil when spent, unclocked,
     /// unread or not weekly — the held, spent, signed-out or no-reading line stands instead.
     var line: PaceLine? = nil
 
-    /// The weekly pace line at full width: "1d 7h behind · Fri 9:00 am" (CCRM-104); the band words only where there is
+    /// The weekly pace line at full width: "1d 7h behind · Fri 9:00 AM" (CCRM-104); the band words only where there is
     /// no readout (they stay for alerts and help text).
     var paceLineFull: String {
         if let line { return line.text() }
@@ -48,8 +48,8 @@ struct WindowContent: Equatable {
     /// The V1 pace-mark caption under an in-app bar (spec mobile §5), in the current Usage display mode.
     var caption: String? { notStarted ? nil : PaceText.caption(mode: Display.mode, usedPct: pct, elapsedPct: pace) }
 
-    /// Settings → Reset time: the form that leads ("Resets in 3h 0m", or "Resets at Sat 7:43 pm" with Clock time) and
-    /// the other form for the second slot ("Resets at Sat 7:43 pm", or "in 3h 0m").
+    /// Settings → Reset time: the form that leads ("Resets in 3h 0m", or "Resets at Sat 7:43 PM" with Clock time) and
+    /// the other form for the second slot ("Resets at Sat 7:43 PM", or "in 3h 0m").
     var leadReset: String { Display.clockFirst && !notStarted ? resetsAt : resetsIn }
     var secondReset: String {
         guard Display.clockFirst else { return resetsAt }
@@ -111,7 +111,7 @@ enum CardContent {
         let weeklyKind = kind == HistoryStats.weeklyKind
         let band = weeklyKind ? Pace.band(usedPct: pct, elapsedPct: pace) : nil
         if weeklyKind && Pace.isSpent(pct) {
-            // Core §6.1's spent line (99.5): "Out until Sun 9:30 pm", no pace, no projection.
+            // Core §6.1's spent line (99.5): "Out until Sun 9:30 PM", no pace, no projection.
             paceLine = "Out until \(dayClock(reset, nowMs, use24h, timeZone))"; alarm = true
             projectionLine = "Opens again when the window resets"
         } else if (pct ?? 0) >= 100 {
@@ -165,7 +165,7 @@ enum CardContent {
     static func spokenTitle(_ title: String) -> String { title == sevenDayTitle ? "7-day, all models" : title }
 
     /// CCRM-102 (Spent Week Gate): the one full-opacity line under a disabled 5h (spec mobile §5).
-    /// Exactly Android's (`LeadLines.kt`): "Weekly limit reached — 5h can’t be used until Sat 4:51 pm"; with no reset
+    /// Exactly Android's (`LeadLines.kt`): "Weekly limit reached — 5h can’t be used until Sat 4:51 PM"; with no reset
     /// clock still ahead it can't name a time, so it reads "Weekly limit reached".
     static func weekGateNote(weeklyResetMs: Int64?, nowMs: Int64, use24h: Bool = Display.use24h, timeZone: TimeZone = .current) -> String {
         guard let reset = weeklyResetMs, reset > nowMs else { return weekGateShort }
@@ -175,8 +175,8 @@ enum CardContent {
     /// A widget face showing the 5h while the week is spent.
     static let weekSpentStamp = "Weekly spent"
 
-    /// A folded card's one line: Weekly the pace line "21h 50m ahead · Sun 9:30 pm" (CCRM-104), or "Out until Sun 9:30 pm";
-    /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 pm".
+    /// A folded card's one line: Weekly the pace line "21h 50m ahead · Sun 9:30 PM" (CCRM-104), or "Out until Sun 9:30 PM";
+    /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 PM".
     static func compactLine(_ c: WindowContent) -> String {
         if c.notStarted { return notStartedLine }
         if c.isWeekly {
@@ -238,14 +238,14 @@ enum CardContent {
                                   footer: "No monthly spend limit — credits cover you when you hit your plan limits", footerAlarm: false)
     }
 
-    // MARK: - Times, written the Android way: "9:50 pm", "Thu 9:50 pm", "13 Oct"
+    // MARK: - Times: "9:50 PM", "Thu 9:50 PM", "13 Oct"
 
+    /// Core's form (§6.3, en-US "AM/PM"), the same case as the pace line beside it — CCBG-82 (Clock Case Mix).
     static func clock(_ ms: Int64, _ use24h: Bool, _ tz: TimeZone) -> String {
-        let s = Fmt.clock(epochMs: ms, use24h: use24h, timeZone: tz)
-        return use24h ? s : s.replacingOccurrences(of: "AM", with: "am").replacingOccurrences(of: "PM", with: "pm")
+        Fmt.clock(epochMs: ms, use24h: use24h, timeZone: tz)
     }
 
-    /// Android's card always names the day: "Resets at Thu 9:50 pm", today included.
+    /// Android's card always names the day: "Resets at Thu 9:50 PM", today included.
     static func dayClock(_ ms: Int64, _ nowMs: Int64, _ use24h: Bool, _ tz: TimeZone) -> String {
         "\(weekday(ms, tz)) \(clock(ms, use24h, tz))"
     }
