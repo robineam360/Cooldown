@@ -210,9 +210,15 @@ fun HistoryScreen(repo: UsageRepository, tick: Int, onProfileChange: (Profile) -
     }
 
     Spacer(Modifier.height(12.dp))
+    // CCBG-53 (History Footnote): the footnote names the window(s) shown — it printed a literal "%s". As iOS words it.
+    val peaks = when {
+        sideBySide && hasSession && hasWeekly -> "5h and weekly readings"
+        effectiveWeekly -> "weekly readings"
+        else -> "5h readings"
+    }
     Text(
         "History is recorded as each window closes, so it fills in over time. " +
-            "Peak %s are sampled at the polling interval.",
+            "Peak $peaks are sampled at the polling interval.",
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )

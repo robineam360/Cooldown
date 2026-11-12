@@ -216,7 +216,7 @@ object ShareCard {
             asOf = asOf(account.fetchedAt, zone),
             headline = ring,
             rows = rows,
-            trend = cells.firstOrNull()?.let { trend(it, account, history) },
+            trend = cells.firstOrNull()?.let { trend(it, account, history, nowMs) },
             ringDimmed = weekSpent,
             nowMs = nowMs,
             dark = dark,
@@ -260,13 +260,14 @@ object ShareCard {
         )
     }
 
-    private fun trend(c: Cell, account: AccountInput, history: List<HistoryPoint>): Trend? {
+    private fun trend(c: Cell, account: AccountInput, history: List<HistoryPoint>, nowMs: Long): Trend? {
         val reset = c.resetsAt?.toEpochMilli() ?: return null
         if (StateId.S5 in c.states || StateId.S6 in c.states) return null
         val length = c.window.lengthMs
         val samples = if (c.window == FaceWindow.WEEKLY) Projection.weeklySamples(history, reset, length)
         else Projection.sessionSamples(history, reset, length)
-        val est = if (samples.size >= 2) Projection.estimate(samples, reset) else null
+        // The card's own clock, so a fixed-clock render applies core §3.1's floors at that moment (judge F3).
+        val est = if (samples.size >= 2) Projection.forecast(samples, reset, c.pct, length, nowMs) else null
         return Trend(
             title = "${c.window.word} trend",
             samples = samples,

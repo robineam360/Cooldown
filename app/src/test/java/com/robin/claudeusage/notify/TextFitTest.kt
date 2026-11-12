@@ -226,30 +226,30 @@ class TextFitTest {
         Col(Layout.SC, 750, 1f, 214.53f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
         Col(Layout.SC, 750, 1.3f, 214.53f, 12f, "23h 59m ahead · Wed"),
         Col(Layout.SC, 750, 2f, 198.63f, 12f, "23h 59m ahead"),
-        Col(Layout.SE, 360, 1f, 93.36f, 12f, "23h 59m ahead"),
-        Col(Layout.SE, 360, 1.3f, 93.36f, 10f, "23h 59m ahead"),
-        Col(Layout.SE, 360, 2f, 80.26f, 10f, "23h 59m ahead"),
-        Col(Layout.SE, 411, 1f, 144.36f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.SE, 411, 1.3f, 144.36f, 12f, "23h 59m ahead"),
-        Col(Layout.SE, 411, 2f, 131.26f, 10f, "23h 59m ahead"),
-        Col(Layout.SE, 420, 1f, 153.36f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.SE, 420, 1.3f, 153.36f, 12f, "23h 59m ahead"),
-        Col(Layout.SE, 420, 2f, 140.26f, 10f, "23h 59m ahead"),
-        Col(Layout.SE, 750, 1f, 225.36f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
-        Col(Layout.SE, 750, 1.3f, 225.36f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.SE, 750, 2f, 212.26f, 12f, "23h 59m ahead"),
-        Col(Layout.DE, 360, 1f, 134.28f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.DE, 360, 1.3f, 129.37f, 12f, "23h 59m ahead"),
-        Col(Layout.DE, 360, 2f, 109.72f, 10f, "23h 59m ahead"),
-        Col(Layout.DE, 411, 1f, 185.28f, 12f, "23h 59m ahead · Wed 12:30 PM"),
-        Col(Layout.DE, 411, 1.3f, 180.37f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.DE, 411, 2f, 160.72f, 10f, "23h 59m ahead"),
-        Col(Layout.DE, 420, 1f, 194.28f, 12f, "23h 59m ahead · Wed 12:30 PM"),
-        Col(Layout.DE, 420, 1.3f, 189.37f, 12f, "23h 59m ahead · Wed"),
-        Col(Layout.DE, 420, 2f, 169.72f, 10f, "23h 59m ahead"),
-        Col(Layout.DE, 750, 1f, 266.28f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
-        Col(Layout.DE, 750, 1.3f, 261.37f, 12f, "23h 59m ahead · Wed 12:30 PM"),
-        Col(Layout.DE, 750, 2f, 241.72f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 360, 1f, 77.36f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 360, 1.3f, 77.36f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 360, 2f, 64.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 411, 1f, 128.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 411, 1.3f, 128.36f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 411, 2f, 115.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 420, 1f, 137.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 420, 1.3f, 137.36f, 12f, "23h 59m ahead"),
+        Col(Layout.SE, 420, 2f, 124.26f, 10f, "23h 59m ahead"),
+        Col(Layout.SE, 750, 1f, 209.36f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.SE, 750, 1.3f, 209.36f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.SE, 750, 2f, 196.26f, 12f, "23h 59m ahead"),
+        Col(Layout.DE, 360, 1f, 118.28f, 12f, "23h 59m ahead"),
+        Col(Layout.DE, 360, 1.3f, 113.37f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 360, 2f, 93.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 411, 1f, 169.28f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 411, 1.3f, 164.37f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 411, 2f, 144.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 420, 1f, 178.28f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.DE, 420, 1.3f, 173.37f, 12f, "23h 59m ahead · Wed"),
+        Col(Layout.DE, 420, 2f, 153.72f, 10f, "23h 59m ahead"),
+        Col(Layout.DE, 750, 1f, 250.28f, 12f, "23h 59m ahead · resets Wed 12:30 PM"),
+        Col(Layout.DE, 750, 1.3f, 245.37f, 12f, "23h 59m ahead · Wed 12:30 PM"),
+        Col(Layout.DE, 750, 2f, 225.72f, 12f, "23h 59m ahead"),
     )
 
     private fun derived(c: Col): Float = when (c.layout) {
@@ -280,9 +280,10 @@ class TextFitTest {
         assertEquals(TextFit.COLLAPSED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.SC }), TextFit.COLLAPSED_COLUMN_DP))
         assertEquals(TextFit.EXPANDED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.SE }), TextFit.EXPANDED_COLUMN_DP))
         assertEquals(TextFit.DUET_EXPANDED_COLUMN_DP, TextFit.fitDp(derived(wide.first { it.layout == Layout.DE }), TextFit.DUET_EXPANDED_COLUMN_DP))
-        // A 360 dp phone's Duet header: 134 dp derived (A2 measured 133), so the line picked for 186 is gone.
+        // A 360 dp phone's Duet header beside "−13%": 118 dp derived (One UI measured 134 beside "−1%",
+        // CCBG-91 (One UI Expanded Column)), so the line picked for 186 is gone.
         val narrow = derived(columns.first { it.layout == Layout.DE && it.sw == 360 && it.scale == 1f })
-        assertEquals(134.28f * TextFit.FIT_FACTOR, TextFit.fitDp(narrow, TextFit.DUET_EXPANDED_COLUMN_DP), 0.05f)
+        assertEquals(118.28f * TextFit.FIT_FACTOR, TextFit.fitDp(narrow, TextFit.DUET_EXPANDED_COLUMN_DP), 0.05f)
     }
 
     @Test
@@ -304,7 +305,9 @@ class TextFitTest {
         val one = aosp(1f)
         val two = aosp(2f)
         val col360 = TextFit.expandedColumnDp(360, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
-        assertTrue(TextFit.titleKeepsWindow("Teams · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
+        // CCBG-91: One UI's 360 dp header beside a two-digit signed figure keeps "· Weekly" after a short name only.
+        assertTrue(TextFit.titleKeepsWindow("Pro · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
+        assertFalse(TextFit.titleKeepsWindow("Claude · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
         assertFalse(TextFit.titleKeepsWindow("Personal Max 20x · Weekly", col360, one.dp(TextFit.EXPANDED_TITLE_SP)))
         val col360x2 = TextFit.expandedColumnDp(360, true, "in 2h 20m", "−13%", TextFit.DUET_EXPANDED_FIGURE_SP, two)
         assertFalse(TextFit.titleKeepsWindow("Teams · Weekly", col360x2, two.dp(TextFit.EXPANDED_TITLE_SP)))
@@ -324,5 +327,20 @@ class TextFitTest {
         }
         assertEquals(142f, TextFit.duetLabelMaxDp(true))
         assertEquals(200f, TextFit.duetLabelMaxDp(false))
+    }
+
+    @Test
+    fun `CCBG-91 - the fitted Duet header never exceeds One UI's measured column on the Fold 7`() {
+        // RUNBOOK Step 3, Fold 7 (One UI 8): the expanded Duet header column beside "−1%" and "in 3h 8m" measured
+        // 134 dp at 360 dp (display size forced) and 183 dp on the 411 dp cover; the inner shade measured 265 dp.
+        val one = aosp(1f)
+        for ((sw, measured) in listOf(360 to 134f, 411 to 183f, 750 to 265f)) {
+            val col = TextFit.expandedColumnDp(sw, true, "in 3h 8m", "−1%", TextFit.DUET_EXPANDED_FIGURE_SP, one)
+            assertTrue("$sw dp: fitted ${TextFit.fitDp(col, TextFit.DUET_EXPANDED_COLUMN_DP)} > measured $measured",
+                TextFit.fitDp(col, TextFit.DUET_EXPANDED_COLUMN_DP) <= measured)
+        }
+        // The line that was cut at 360 ("2h 4m ahead · Fri 12:30 …") now drops its clock.
+        val at360 = TextFit.fitDp(TextFit.expandedColumnDp(360, true, "in 3h 8m", "−1%", TextFit.DUET_EXPANDED_FIGURE_SP, one), TextFit.DUET_EXPANDED_COLUMN_DP)
+        assertTrue(at360 < 134f)
     }
 }

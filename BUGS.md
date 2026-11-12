@@ -22,6 +22,63 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > (same report, "Unfolded" U1–U7) added CCBG-90 (Inner Portrait Stretch) and an "Unfolded" line to CCBG-84 to CCBG-88;
 > not blocking either, Robin decides in RUNBOOK Step 3.
 
+> **v2.0 device pass 2, 2026-11-12 (RUNBOOK Step 3, Fold 7 half).** Robin at the Fold 7: "v2.0 will be our first
+> public beta and public release build. So we have to fix all our bugs and not keep it after v2.0." **Every open defect
+> blocks v2.0** where it still applies to the current design, Android and iOS. Android ones are fixed in Step 3; iOS
+> ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
+> Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
+
+### CCBG-91 · One UI Expanded Column — a 360 dp One UI shade cuts the expanded header's pace line mid-clock
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 with its display size forced to 360 dp · `TextFitTest` pins One UI's measured columns
+- **Severity:** Medium (the approved drop order is not followed; CCBG-80 (Fixed Pace Columns) on One UI)
+- **Symptom:** expanded Duet "2h 4m ahead · Fri 12:30 …" and the expanded single title "Claude · Wee…" (N1-Q7 says
+  "· Weekly" gives first). The Fold 7 at its own 411 dp is fine.
+- **Cause:** `TextFit.EXPANDED_EXTRA_DP` assumed AOSP's + 40 dp of expanded content; One UI 8 gives + 24 (411 dp) to
+  + 27 (360 dp), so the derived column was 153 dp where the shade has 134.
+- **Fix:** + 24, which holds on both shades (AOSP drops a form slightly sooner, never cuts one).
+
+### CCBG-92 · Summary Line Measure — Summary line 3 is cut mid-clock at 360 dp and at large text
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png`
+- **Severity:** Medium (the approved drop order is not followed)
+- **Symptom:** "13h 58m behind · resets Tue 5:37 …" at 360 dp; "8h 38m behind · …" at font 2.0, where the forms
+  should drop to "· Tue 5:37 PM", "· Tue" or the span alone.
+- **Cause:** `PaceLineText` measures each form with a bare `TextStyle(fontSize, fontWeight)`, while the `Text` draws with
+  the theme's body style (letter spacing 0.5 sp), so every form measures narrower than it draws.
+- **Fix:** measure with the style the `Text` uses.
+
+### CCBG-93 · Summary Caption Clip — the Summary row's line 2 is cut through at large text
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures
+- **Severity:** Low (only at large text, but the line is unreadable there)
+- **Symptom:** "95% used · 94% pace mark" shows only the top half of its glyphs; the row's line 3 overlaps it.
+- **Fix:** the caption's line is at least 17 dp and grows with the text (no change at font 1.0); a caption wider than
+  its bar takes its short form ("95% used", "13 over"), the forms the notification already uses (`PaceText.captionForms`).
+
+### CCBG-94 · Snapshot Not Started — the Summary snapshot draws a not-started account as unread
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot · `SummarySnapshotTest`
+- **Severity:** Low
+- **Symptom:** Gemini (0%, no reset clock yet) is dimmed with "—" and "No reading" on the snapshot, while the Summary on
+  screen shows "0%", an empty bar and "Not started yet".
+- **Fix:** the snapshot follows the screen for a not-started row ("0%", bare track, "Not started yet"); Robin approved
+  matching the Summary's wording 2026-11-12.
+
+### CCBG-95 · Snapshot Label Overlap — the account share card's "~100%" sits on its "95%"
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · no wireframe after all: the fix restores the in-app chart's approved rule (CCRM-74 (Chart Polish): the projection label yields to the now label), which the share card's `ChartBitmap` never had. Unlike the app, the card has no "At this pace" caption, so where the two meet the card keeps the hollow end marker without its number — put to Robin at the recheck · RUNBOOK Step 3, Fold 7, Claude › Share snapshot
+- **Severity:** Low
+- **Symptom:** in the share card's Weekly trend, the projection label "~100%" is drawn over the now-label "95%" at the
+  plot's right end (unlike CCBG-7 (Chart Label Collision), this one is real at full resolution).
+
+### CCBG-96 · Picker Preview Truncation — two widget picker previews truncate their labels
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §1, options A approved 2026-11-12: Countdown ring 1 : count 2, Number label "Pro" · RUNBOOK Step 3, Fold 7 cover, One UI widget picker
+- **Severity:** Low
+- **Symptom:** the Countdown 2×1 preview reads "at 9:10…" and the Number 4×1 preview "Pro · W…". Placed widgets are
+  unaffected. The picker has no 4×2 entry: every face picks at its target cells (Number and Strip 4×1), as specified.
+
+### CCBG-97 · Map Foot Clip — the Pace map's foot note loses "week" at large text
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · found in the Step 3 recheck at font 2.0 · wireframe `design/2026-11-12-step3-fix-wireframes.html` §3, option A approved 2026-11-12
+- **Severity:** Low
+- **Symptom:** at font 2.0 the foot line read "each account's own" beside "1 at 0%".
+- **Fix:** the note wraps to a second line (`PaceMapFoot`, at most two lines); one line at font 1.0 as before.
+
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
 - **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `CardContent.clock` prints core's "AM/PM", so every iOS clock matches the pace line and Android; the surfaces spec drops its "pm" examples · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
 - **Severity:** Low (cosmetic)
@@ -34,7 +91,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   capture that shows "pm" changes) — or, if Robin prefers lower case, change core and both clients together.
 
 ### CCBG-83 · Duet Reapply Residue — a SystemUI re-apply can leave a stale colour, alpha or width on the notification
-- **Status:** Open · Android · judge finding F4 of RUNBOOK Step A6 (older than A6)
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Android · judge finding F4 of RUNBOOK Step A6 (older than A6) · every build now sets the stale alpha both ways (single, Duet header, row, ring), the Duet header label's bound and ring box with or without a 5h, the single layout's line 2 and ring box, and the plain state word's colour, an explicit ink at 72% (the theme attribute tried first drew dark grey on the dark shade on the Fold 7: judge F1). No reapply test: the Duet halves have no Robolectric harness; the Fold 7 recheck covered the word colour, light and dark
 - **Severity:** Low
 - **Symptom (by reading, not seen on a device):** when SystemUI re-applies a notification's RemoteViews, a few view
   settings that one update sets and the next leaves at default are not reset: the state word's colour, the stale alpha
@@ -126,7 +183,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   ideas in report U6), with one rule shared by the main page and History.
 
 ### CCBG-89 · Map Axis Clip — Android's Pace map prints "00%" for its "100%" label at font scale 2.0
-- **Status:** Open · Android · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12; seen on the Fold 7 at font 2.0 the same day) · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3 · `PaceMapGeometry.leftPx`: the inset is 30 dp or the measured "100%" + 6 dp, whichever is wider
 - **Severity:** Low (cosmetic)
 - **Symptom:** at font scale 2.0 the map's y-axis "100%" is cut to "00%".
 - **Cause:** the map's fixed 30 dp left inset does not grow with the label's scaled width.
@@ -356,8 +413,11 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   accounts out.
 
 ### CCBG-47 · Widget Theme Lag — widgets keep the old theme after a system light/dark switch
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (it needs design:
-  no R7 trigger exists for a theme change).
+- **Status:** **Closed — fixed by design since CCRM-103 (Hybrid Notification)** (checked in RUNBOOK Step 3,
+  2026-11-12): `PinnedService.onConfigurationChanged` refreshes every surface, widgets included, on any configuration
+  change, a theme switch among them. On the Fold 7 Robin saw both Number widgets turn light within seconds of a
+  switch. With the always-on notification off there is no running service, and the widgets follow at the next poll;
+  no trigger exists for that case without a process (filed 2026-09-27 from the v1.8 HANDOVER notes).
 - **Severity:** Low
 - **Symptom:** after a system theme switch, the widgets keep the old theme until the next redraw.
 
@@ -377,8 +437,10 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   config screen's button reads "Add widget".
 
 ### CCBG-49 · Unassigned Label Overflow — "Personal (unassigned)" pushes the Ring 2×2 stamp off its row
-- **Status:** Open — filed 2026-09-27 from the v1.8 HANDOVER notes. Not in v1.9 (visible, so it
-  needs a wireframe).
+- **Status:** **Closed — no longer applies** (RUNBOOK Step 3, 2026-11-12; Robin: fix all bugs "only if it's still
+  applicable in the updated/new design"). Since CCRM-78 (Widgets Reborn), R5, an unassigned widget resolves to the
+  first account and shows that account's own name, so no "(unassigned)" label is drawn anywhere (`WidgetHost`,
+  `Transitions`). Filed 2026-09-27 from the v1.8 HANDOVER notes.
 - **Severity:** Low
 - **Symptom:** a long unassigned label pushes the Ring 2×2's "as of" stamp off its row.
 
@@ -447,7 +509,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   work cannot be delayed); the KDoc no longer promises "a handful of seconds".
 
 ### CCBG-53 · History Footnote — the History screen prints a literal "%s"
-- **Status:** **iOS fixed 2026-11-04** (the footnote names the window: "Peak 5h readings…", "Peak weekly readings…"); **Android still open** (`HistoryScreen.kt`, v2.0 arc) — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
+- **Status:** **Fixed in code on Android** (RUNBOOK Step 3, 2026-11-12, blocked v2.0 per Robin; "Peak 5h readings…", "Peak weekly readings…", side by side "Peak 5h and weekly readings…") · **iOS fixed 2026-11-04** (the footnote names the window: "Peak 5h readings…", "Peak weekly readings…") — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
 - **Severity:** Low (cosmetic, every History visit)
 - **Symptom:** both History footnotes read "Peak %s are sampled at the polling interval." The
   string is never formatted (`HistoryScreen.kt:228`); it should name the window ("Peak 5h
@@ -460,8 +522,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
 
 ### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
-- **Status:** Open — found 2026-11-02 while writing `spec/mobile/surfaces/`. Needs a decision:
-  change the spec or the code, per item.
+- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker (the iOS bug-fix session); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout).
 - **Severity:** Low (no wrong number; two installs could disagree in colour)
 - **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
   Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
@@ -998,7 +1059,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Duet wireframe first.
 
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
-- **Status:** Open
+- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **iOS pending** (`ios/Shared/Display.swift:142`, the iOS bug-fix session) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12
 - **Severity:** Low (one theme, and the orange/red rungs still land)
 - **Symptom:** Noticed 2026-08-21 during CCRM-50 (Weekly Flag) design. The Amber
   theme's accent pair (#F9A825 / #FDD663) is **identical** to `Palette.barColor`'s
@@ -1014,7 +1075,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 
 ### CCBG-3 · Credits Visibility — credits card ignores extra-usage being switched off
 - **2026-09-09:** Re-scoped to the in-app credits card — the widget credits bar is removed by CCRM-61 (Settings Diet).
-- **Status:** Open
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · the parser drops credits only when the payload says `enabled: false` (`spend`) or `is_enabled: false` (`extra_usage`) **and** nothing was spent — a missing flag or real spend keeps today's reading, so the card never hides money used (`UsageParserTest`). Still unobserved on a real account
 - **Severity:** Low (misleading display, no data loss) — and possibly unreachable
 - **Symptom:** Suspected, not observed. The credits card renders whenever
   `limit > 0`, so an account that has *switched extra usage off* while keeping a

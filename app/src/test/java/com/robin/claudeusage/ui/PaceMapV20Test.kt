@@ -358,4 +358,14 @@ class PaceMapV20Test {
         assertEquals("Lab, plus 19 percent", PaceMapRules.spoken("Lab", "+19%", null, null))
         assertEquals("Lab", PaceMapRules.spoken("Lab", null, null, null))
     }
+
+    @Test
+    fun `CCBG-89 - the left inset grows with the 100 percent label, never under the wireframe's 30 dp`() {
+        // Font 1.0: "100%" at 10 sp is about 22 dp, so the inset stays 30 (no change at normal text).
+        assertEquals(30f, PaceMapGeometry.leftPx(22f, 1f), 0f)
+        // Font 2.0 (≈ 44 dp label): the label keeps its 5 dp gap and 1 dp from the edge, so nothing is cut.
+        assertEquals(50f, PaceMapGeometry.leftPx(44f, 1f), 0f)
+        assertEquals(PaceMapGeometry.leftPx(44f, 2.625f), PaceMapGeometry.frame(400f, 300f, 2.625f, 44f).left, 0f)
+        assertTrue(PaceMapGeometry.frame(400f, 300f, 2.625f, 44f * 2.625f).left - 5 * 2.625f - 44f * 2.625f >= 0f)
+    }
 }

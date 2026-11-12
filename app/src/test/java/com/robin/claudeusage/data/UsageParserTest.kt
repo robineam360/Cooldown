@@ -109,6 +109,30 @@ class UsageParserTest {
     }
 
     @Test
+    fun `CCBG-3 - extra usage switched off with nothing spent is no credits, spend made stays`() {
+        fun spend(enabled: String, used: Long) = UsageParser.parse(
+            """{"spend":{"used":{"amount_minor":$used,"currency":"USD","exponent":2},
+               "limit":{"amount_minor":10000,"currency":"USD","exponent":2},"enabled":$enabled}}""".replace("\n", "")
+        )?.credits
+        assertNull(spend("false", 0))
+        // Judge F2: a positive balance is money too, so it keeps the card even when switched off with nothing spent.
+        assertNotNull(UsageParser.parse(
+            """{"spend":{"used":{"amount_minor":0,"currency":"USD","exponent":2},"enabled":false,
+               "balance":{"amount_minor":500,"currency":"USD","exponent":2}}}""".replace("\n", "")
+        )?.credits)
+        assertNotNull(spend("false", 250))
+        assertNotNull(spend("true", 0))
+        assertNotNull(spend("null", 0))
+        fun extra(enabled: String, used: Double) = UsageParser.parse(
+            """{"extra_usage":{"is_enabled":$enabled,"monthly_limit":5000,"used_credits":$used,
+               "currency":"USD","decimal_places":2}}""".replace("\n", "")
+        )?.credits
+        assertNull(extra("false", 0.0))
+        assertNotNull(extra("false", 12.0))
+        assertNotNull(extra("true", 0.0))
+    }
+
+    @Test
     fun `no credits when the account has none`() {
         val data = UsageParser.parse(
             """{"limits":[{"kind":"session","percent":12,"severity":"normal",

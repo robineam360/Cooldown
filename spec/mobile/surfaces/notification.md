@@ -137,7 +137,7 @@ figures are signed, coloured distances too.
 **Fitting the lines (CCRM-104 D10, C1-3, C1-4; CCBG-80 (Fixed Pace Columns), CCRM-114 (Narrow Duet) F2;
 `notify/TextFit.kt`).** A RemoteViews cannot measure text and never learns its real width, so the form is chosen from a
 column derived from the screen's smallest width (sw): content = `Duet.contentDp(sw)` (sw − 140 below 600 dp, 352 from
-600; 2.1), expanded content + 40; column = content − (ring box + 14) − 14 − the figure's width, where the ring box is 44
+600; 2.1), expanded content + 24 (CCBG-91 (One UI Expanded Column): AOSP gives back +39, One UI 8 only +24 to +27, so the smaller holds on both); column = content − (ring box + 14) − 14 − the figure's width, where the ring box is 44
 collapsed and, expanded, the wider of 44 and its time line, none with no 5h; the figure's width is its em (bold, "%" at
 58%, × 1.04) × its size in dp **as the system converts it** (`TypedValue.applyDimension`: Android 14 scales large text
 non-linearly). The line is fitted to column × 0.965, and never wider than the fixed columns it replaced until RUNBOOK
@@ -149,13 +149,16 @@ Stack)). Beside "−13%" (`TextFitTest` pins the table):
 | Column, dp, font 1.0 / 1.3 / 2.0 | 360 | 411 | 420 | 750 |
 |---|---|---|---|---|
 | Single, collapsed (32 sp) | 83 / 83 / 67 | 134 / 134 / 118 | 143 / 143 / 127 | 215 / 215 / 199 |
-| Single, expanded (44 sp) | 93 / 93 / 80 | 144 / 144 / 131 | 153 / 153 / 140 | 225 / 225 / 212 |
-| Duet, expanded (24 sp) | 134 / 129 / 110 | 185 / 180 / 161 | 194 / 189 / 170 | 266 / 261 / 242 |
+| Single, expanded (44 sp) | 77 / 77 / 64 | 128 / 128 / 115 | 137 / 137 / 124 | 209 / 209 / 196 |
+| Duet, expanded (24 sp) | 118 / 113 / 94 | 169 / 164 / 145 | 178 / 173 / 154 | 250 / 245 / 226 |
 
-On a 360 dp phone the Duet header ends on its weekday ("23h 59m ahead · Wed") where the fixed 186 dp column cut it
-("Sun 6:…"); the single row's collapsed line is at its floor (10 sp at 1.0, cut at 1.3 and up: derived, not measured —
-the wireframe's own caveat). Unverified on hardware until RUNBOOK Step 3 (device pass): One UI's real widths at 360 dp
-(assumed AOSP's 220), expanded content = collapsed + 40 on One UI, and the non-linear font curve on One UI.
+On a 360 dp phone the Duet header beside "−13%" ends on its span ("23h 59m ahead"; beside "−1%" on its weekday) where the
+fixed 186 dp column cut it ("Sun 6:…"); the single row's collapsed line is at its floor (10 sp at 1.0, cut at 1.3 and up).
+**Measured on the Fold 7 (RUNBOOK Step 3, 2026-11-12, One UI 8):** expanded Duet header column 183 dp on the 411 dp cover,
+134 at 360 dp (display size forced), 265 on the inner shade; expanded content 295 at 411 and 247 at 360 (collapsed + 24 / + 27);
+collapsed Duet half 181 / 133 / 262 dp, its bar 131 / 83 / 212; the collapsed single sub line 146 dp at 411 and 99 at 360;
+One UI does not clip the collapsed Duet's second row at 360 or 411. With + 40 the 360 dp header was cut mid-clock
+("2h 4m ahead · Fri 12:30 …") and the single title read "Claude · Wee…": CCBG-91.
 
 The string's width is an estimate: the wireframe's per-character em classes (digit .56, narrow lowercase i l t r f j
 .30, m w .86, other lowercase .54, W M O .80, other capitals .62, space .25, "·" .29, ":" .23, sign .58, small "%"
@@ -265,8 +268,8 @@ status-bar icon's "Whichever is higher" compares the gauge windows (4).
 | Collapsed chrome, left to right | First's 5h ring 36 · 6 · Second's 36 · 8 · two stacked rows · 8 · each row's figure in a fixed 42 dp slot: **136 dp of chrome** | the bars take the rest, never under 40; the floor is 176 dp of content. Both bars share one left edge and one length |
 | Collapsed content width | `Duet.contentDp(smallestWidth)`: below 600 dp the screen less **140 dp** of shade chrome; from 600 up 352 | measured on the emulator's AOSP shade: 280 dp of content at 420, 220 at 360; One UI's Fold 7 cover gave 272 at 411 |
 | Collapsed bar | the bitmap's nominal width is `Duet.barDp(Duet.contentDp(smallestWidth))` | **measured** (fold7inner AVD, AOSP): cover-like 420 dp → content 280, bar 144; inner 750 dp → content 402, bar 265; 360 dp → content 220, bar 84 |
-| Collapsed content height | 52 dp, unchanged | 1 + 24 + 2 + 24 + 1; collapsed custom views get about 48 to 64 dp depending on skin. The AOSP collapsed slot shows ≈46 dp at font 1.0, clipping the second bar; One UI gave 52. Unverified on hardware until RUNBOOK Step 3 (device pass) |
-| Expanded content width | collapsed content + 40 | used by the derived columns (1.4); unverified on One UI until RUNBOOK Step 3 (device pass) |
+| Collapsed content height | 52 dp, unchanged | 1 + 24 + 2 + 24 + 1; collapsed custom views get about 48 to 64 dp depending on skin. The AOSP collapsed slot shows ≈46 dp at font 1.0, clipping the second bar; One UI gave 52, and RUNBOOK Step 3 saw no clip of the second row on the Fold 7 at 360 or 411 dp |
+| Expanded content width | collapsed content + 24 | used by the derived columns (1.4); AOSP measured + 39, One UI 8 on the Fold 7 + 24 (411 dp) and + 27 (360 dp), RUNBOOK Step 3; CCBG-91 (One UI Expanded Column) |
 | Expanded cap | about 256 dp | Android's limit on an expanded custom view |
 | Expanded header chrome | 136 dp, up to 140 dp | two header blocks of 58 dp (label 19, bar 13 + 4 margin, sub 16 + 4 margin; the 24 sp figure fits inside), 60 dp for a header with the 44 dp ring and its time line, 10 dp between them, 10 dp before the panel |
 | Expanded panel budget | about 116 dp (Fold 7 about 132) | 256 - 140 |

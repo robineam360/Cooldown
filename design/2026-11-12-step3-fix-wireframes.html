@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Step 3 fix wireframes</title>
+<style>
+:root{--bg:#f6f4f1;--card:#fff;--ink:#1d1b1a;--muted:#6b6560;--line:#e2ddd6;--accent:#d97757;--face:#1f1d1c;--faceInk:#ede8e4;--rec:#188038}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151413;--card:#1f1d1c;--ink:#ede8e4;--muted:#a59e97;--line:#38332f;--rec:#81c995}}
+:root[data-theme="dark"]{--bg:#151413;--card:#1f1d1c;--ink:#ede8e4;--muted:#a59e97;--line:#38332f;--rec:#81c995}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 6px}h3{font-size:15px;margin:18px 0 6px}
+.sub{color:var(--muted);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.row{display:flex;flex-wrap:wrap;gap:16px}
+.opt{flex:1 1 280px;min-width:0}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.tag.rec{color:var(--rec);border-color:var(--rec)}
+svg{max-width:100%;height:auto;display:block}
+.note{color:var(--muted);font-size:13.5px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.sw{display:inline-block;width:18px;height:18px;border-radius:4px;vertical-align:-4px;margin-right:6px;border:1px solid rgba(0,0,0,.15)}
+code{font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Step 3 fix wireframes</h1>
+<p class="sub">RUNBOOK Step 3 (device pass 2, Fold 7 half), 2026-11-12. <strong>Approved by Robin 2026-11-12: option A in every section</strong> (Countdown ring 1 : count 2; Number label "Pro"; Amber → #B07D00 / #D9A84A; map foot line wraps). Everything else from the pass restores an approved design and is already built.</p>
+
+<h2>1 · CCBG-96 (Picker Preview Truncation)</h2>
+<p class="note">The One UI picker draws each preview in its own box. On the Fold 7 cover: Countdown 2×1 reads "at 9:10…", Number 4×1 reads "Pro · W…". The placed widgets are fine; only these static previews are cut.</p>
+
+<h3>Countdown 2×1</h3>
+<div class="row">
+ <div class="opt card"><span class="tag">Today</span>
+  <svg viewBox="0 0 300 140" role="img" aria-label="Countdown preview today: ring two fifths, column three fifths, at 9:10 cut">
+   <rect x="10" y="10" width="280" height="120" rx="26" fill="#1f1d1c"/>
+   <circle cx="66" cy="70" r="30" fill="none" stroke="#3a3735" stroke-width="7"/><path d="M66 40 A30 30 0 0 1 94 62" fill="none" stroke="#e59980" stroke-width="7"/>
+   <text x="66" y="75" fill="#ede8e4" font-size="13" font-weight="700" text-anchor="middle">38%</text>
+   <text x="132" y="58" fill="#ede8e4" font-size="22" font-weight="700">2:41:07</text>
+   <text x="132" y="80" fill="#c7c1bb" font-size="12">at 9:10…</text>
+   <text x="132" y="102" fill="#ede8e4" font-size="12">✳ Pro</text>
+   <line x1="122" y1="16" x2="122" y2="124" stroke="#555" stroke-dasharray="3 3"/>
+   <text x="200" y="128" fill="#8a847e" font-size="9" text-anchor="middle">ring 2 : count 3</text>
+  </svg></div>
+ <div class="opt card"><span class="tag rec">A · Recommended</span> ring 1 : count 2
+  <svg viewBox="0 0 300 140" role="img" aria-label="Option A: ring one third, column two thirds, at 9:10 PM whole">
+   <rect x="10" y="10" width="280" height="120" rx="26" fill="#1f1d1c"/>
+   <circle cx="56" cy="70" r="26" fill="none" stroke="#3a3735" stroke-width="6"/><path d="M56 44 A26 26 0 0 1 80 63" fill="none" stroke="#e59980" stroke-width="6"/>
+   <text x="56" y="74" fill="#ede8e4" font-size="11" font-weight="700" text-anchor="middle">38%</text>
+   <text x="104" y="58" fill="#ede8e4" font-size="22" font-weight="700">2:41:07</text>
+   <text x="104" y="80" fill="#c7c1bb" font-size="12">at 9:10 PM</text>
+   <text x="104" y="102" fill="#ede8e4" font-size="12">✳ Pro</text>
+  </svg>
+  <p class="note">The live 2×1 face's own proportion (ring Ø44 beside a 105 dp column), so the preview looks like the widget you'll get. Ring stays as tall as it fits.</p></div>
+ <div class="opt card"><span class="tag">B</span> keep 2 : 3, "at …" 10 sp
+  <svg viewBox="0 0 300 140" role="img" aria-label="Option B: same layout, smaller at line">
+   <rect x="10" y="10" width="280" height="120" rx="26" fill="#1f1d1c"/>
+   <circle cx="66" cy="70" r="30" fill="none" stroke="#3a3735" stroke-width="7"/><path d="M66 40 A30 30 0 0 1 94 62" fill="none" stroke="#e59980" stroke-width="7"/>
+   <text x="66" y="75" fill="#ede8e4" font-size="13" font-weight="700" text-anchor="middle">38%</text>
+   <text x="132" y="58" fill="#ede8e4" font-size="22" font-weight="700">2:41:07</text>
+   <text x="132" y="79" fill="#c7c1bb" font-size="10">at 9:10 PM</text>
+   <text x="132" y="102" fill="#ede8e4" font-size="12">✳ Pro</text>
+  </svg>
+  <p class="note">Smallest change, but 10 sp is under the live face's 11 sp and may still cut on a narrower picker box.</p></div>
+</div>
+
+<h3>Number 4×1</h3>
+<div class="row">
+ <div class="opt card"><span class="tag">Today</span>
+  <svg viewBox="0 0 360 120" role="img" aria-label="Number preview today: Pro · W cut">
+   <rect x="10" y="10" width="340" height="100" rx="30" fill="#1f1d1c"/>
+   <circle cx="64" cy="60" r="34" fill="none" stroke="#3a3735" stroke-width="8"/><path d="M64 26 A34 34 0 0 1 96 50" fill="none" stroke="#e59980" stroke-width="8"/>
+   <text x="64" y="65" fill="#ede8e4" font-size="14" font-weight="700" text-anchor="middle">38%</text>
+   <text x="118" y="54" fill="#ede8e4" font-size="15">✳ Pro · W…</text>
+   <text x="336" y="60" fill="#e59980" font-size="34" font-weight="700" text-anchor="end">20%</text>
+   <rect x="118" y="76" width="216" height="6" rx="3" fill="#5a3f36"/><rect x="118" y="76" width="44" height="6" rx="3" fill="#e59980"/>
+  </svg></div>
+ <div class="opt card"><span class="tag rec">A · Recommended</span> "· Weekly" gives first
+  <svg viewBox="0 0 360 120" role="img" aria-label="Option A: label Pro alone">
+   <rect x="10" y="10" width="340" height="100" rx="30" fill="#1f1d1c"/>
+   <circle cx="64" cy="60" r="34" fill="none" stroke="#3a3735" stroke-width="8"/><path d="M64 26 A34 34 0 0 1 96 50" fill="none" stroke="#e59980" stroke-width="8"/>
+   <text x="64" y="65" fill="#ede8e4" font-size="14" font-weight="700" text-anchor="middle">38%</text>
+   <text x="118" y="54" fill="#ede8e4" font-size="15">✳ Pro</text>
+   <text x="336" y="60" fill="#e59980" font-size="34" font-weight="700" text-anchor="end">20%</text>
+   <rect x="118" y="76" width="216" height="6" rx="3" fill="#5a3f36"/><rect x="118" y="76" width="44" height="6" rx="3" fill="#e59980"/>
+  </svg>
+  <p class="note">The rule the notification titles follow (N1-Q7: "· Weekly" gives before the name). The bar under it is the Weekly bar, as on the face.</p></div>
+ <div class="opt card"><span class="tag">B</span> figure 32 → 26 sp
+  <svg viewBox="0 0 360 120" role="img" aria-label="Option B: smaller figure, Pro · Weekly whole">
+   <rect x="10" y="10" width="340" height="100" rx="30" fill="#1f1d1c"/>
+   <circle cx="64" cy="60" r="34" fill="none" stroke="#3a3735" stroke-width="8"/><path d="M64 26 A34 34 0 0 1 96 50" fill="none" stroke="#e59980" stroke-width="8"/>
+   <text x="64" y="65" fill="#ede8e4" font-size="14" font-weight="700" text-anchor="middle">38%</text>
+   <text x="118" y="54" fill="#ede8e4" font-size="15">✳ Pro · Weekly</text>
+   <text x="336" y="58" fill="#e59980" font-size="27" font-weight="700" text-anchor="end">20%</text>
+   <rect x="118" y="76" width="216" height="6" rx="3" fill="#5a3f36"/><rect x="118" y="76" width="44" height="6" rx="3" fill="#e59980"/>
+  </svg>
+  <p class="note">Keeps the words; the big number shrinks below the placed widget's.</p></div>
+</div>
+
+<h2>2 · CCBG-15 (Amber Ladder Blindness)</h2>
+<p class="note">Amber's accent is exactly the 80–90% warning yellow, so an Amber user's bar at 46% and at 84% look the same. The orange (&gt;90) and red (100) steps still read. The accent table lives in <code>spec/core</code>, shared with Desktop, which gets told before any build.</p>
+<div class="card"><table>
+<tr><th></th><th>Light</th><th>Dark</th><th>vs. the 80–90% step</th></tr>
+<tr><td>Warning step (unchanged)</td><td><span class="sw" style="background:#F9A825"></span>#F9A825</td><td><span class="sw" style="background:#FDD663"></span>#FDD663</td><td>—</td></tr>
+<tr><td>Amber today</td><td><span class="sw" style="background:#F9A825"></span>#F9A825</td><td><span class="sw" style="background:#FDD663"></span>#FDD663</td><td>identical</td></tr>
+<tr><td><span class="tag rec">A · Recommended</span> Amber → deeper ochre</td><td><span class="sw" style="background:#B07D00"></span>#B07D00</td><td><span class="sw" style="background:#D9A84A"></span>#D9A84A</td><td>clearly darker and browner; still reads "amber"</td></tr>
+<tr><td><span class="tag">B</span> Drop Amber from the picker</td><td colspan="2">existing Amber users fall back to their provider colour</td><td>no clash ever; eleven accents instead of twelve (core spec change)</td></tr>
+</table>
+<svg viewBox="0 0 640 110" role="img" aria-label="Bars at 46 and 84 percent for Amber today and option A">
+ <text x="0" y="22" font-size="13" fill="currentColor">Today</text>
+ <rect x="110" y="12" width="220" height="12" rx="6" fill="#f3e3b8"/><rect x="110" y="12" width="101" height="12" rx="6" fill="#F9A825"/><text x="340" y="23" font-size="12" fill="currentColor">46%</text>
+ <rect x="390" y="12" width="220" height="12" rx="6" fill="#f3e3b8"/><rect x="390" y="12" width="185" height="12" rx="6" fill="#F9A825"/><text x="620" y="23" font-size="12" fill="currentColor">84%</text>
+ <text x="0" y="72" font-size="13" fill="currentColor">Option A</text>
+ <rect x="110" y="62" width="220" height="12" rx="6" fill="#ead9b0"/><rect x="110" y="62" width="101" height="12" rx="6" fill="#B07D00"/><text x="340" y="73" font-size="12" fill="currentColor">46%</text>
+ <rect x="390" y="62" width="220" height="12" rx="6" fill="#ead9b0"/><rect x="390" y="62" width="185" height="12" rx="6" fill="#F9A825"/><text x="620" y="73" font-size="12" fill="currentColor">84%</text>
+</svg></div>
+
+<h2>3 · CCBG-97 (Map Foot Clip), new from the recheck</h2>
+<p class="note">At font 2.0 the Pace map's foot line reads "each account's own" ("week" is cut) beside "1 at 0%". At font 1.0 it's whole.</p>
+<div class="row">
+ <div class="opt card"><span class="tag rec">A · Recommended</span> wrap to two lines
+  <svg viewBox="0 0 320 80" role="img" aria-label="Foot line wrapping"><rect x="0" y="0" width="320" height="80" rx="10" fill="#2a2725"/>
+   <text x="14" y="30" fill="#ede8e4" font-size="19">each account's own</text><text x="14" y="58" fill="#ede8e4" font-size="19">week</text><text x="306" y="30" fill="#ede8e4" font-size="19" text-anchor="end">1 at 0%</text></svg>
+  <p class="note">Nothing is lost; the card grows one line only at large text.</p></div>
+ <div class="opt card"><span class="tag">B</span> the note gives way
+  <svg viewBox="0 0 320 80" role="img" aria-label="Foot note dropped"><rect x="0" y="0" width="320" height="80" rx="10" fill="#2a2725"/>
+   <text x="306" y="44" fill="#ede8e4" font-size="19" text-anchor="end">1 at 0%</text></svg>
+  <p class="note">The note goes whole when it doesn't fit; the count stays.</p></div>
+</div>
+
+<h2>Already built, for the record</h2>
+<div class="card"><table>
+<tr><td>CCBG-91 (One UI Expanded Column)</td><td>Notification lines drop their clock instead of being cut at 360 dp on One UI.</td></tr>
+<tr><td>CCBG-92 (Summary Line Measure)</td><td>Summary line 3 follows its drop order at 360 dp and at large text.</td></tr>
+<tr><td>CCBG-93 (Summary Caption Clip)</td><td>Line 2 grows with large text; a caption wider than its bar takes its short form (you approved).</td></tr>
+<tr><td>CCBG-94 (Snapshot Not Started)</td><td>"0%" and "Not started yet" on the snapshot.</td></tr>
+<tr><td>CCBG-95 (Snapshot Label Overlap)</td><td>"~100%" yields to the now label on the share card (you approved).</td></tr>
+<tr><td>CCBG-89, 83, 53, 3</td><td>Map axis "100%", notification re-apply residue, History footnote, credits switched off.</td></tr>
+</table></div>
+</main>
+</body>
+</html>

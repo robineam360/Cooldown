@@ -66,7 +66,9 @@ object Palette {
         ThemeOption("Cyan", Color(0xFF00ACC1), Color(0xFF4DD0E1), PACE_VIOLET_LIGHT, PACE_VIOLET_DARK),
         ThemeOption("Teal", Color(0xFF00897B), Color(0xFF4DB6AC), PACE_VIOLET_LIGHT, PACE_VIOLET_DARK),
         ThemeOption("Green", Color(0xFF188038), Color(0xFF81C995)),
-        ThemeOption("Amber", Color(0xFFF9A825), Color(0xFFFDD663)),
+        // CCBG-15 (Amber Ladder Blindness): a deeper ochre, off the 80–90% warning yellow (#F9A825 / #FDD663) it used to
+        // equal (design/2026-11-12-step3-fix-wireframes.html §2 A, approved 2026-11-12).
+        ThemeOption("Amber", Color(0xFFB07D00), Color(0xFFD9A84A)),
         ThemeOption("Deep Orange", Color(0xFFE64A19), Color(0xFFFF8A65)),
         ThemeOption("Red", Color(0xFFD93025), Color(0xFFF28B82)),
         ThemeOption("Pink", Color(0xFFD81B60), Color(0xFFF48FB1)),

@@ -165,7 +165,7 @@ Rules that hold on every surface:
   but is stripped to an alpha mask in the Quick Settings tile, so **colour is an enhancement only**:
   shape and alpha carry the level and the pace mark; colour adds severity. Below 80% the glyph wears
   the shown account's accent, above it the severity ladder takes the hue (CCRM-62 (Duet
-  Notification)). Differs from core §5, which says always-on chrome is monochrome until 80%.
+  Notification)). Core §5 allows it since 2026-11-12 (CCBG-55 (Spec Drift) item 1, the spec follows Android).
 - **iOS lock-screen widgets** are mono: the system tints them, so the ring and bars draw in one
   colour with the track at 32% alpha and tick and red in that same colour (wireframe rev B section
   5). Source: `ios/Shared/Charts.swift:206`.

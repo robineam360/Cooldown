@@ -43,8 +43,13 @@ internal object TextFit {
     const val RING_BOX_DP = 44f
     /** The gap each side of the column; one only, with no ring. */
     const val COLUMN_GAP_DP = 14f
-    /** Expanded content is the collapsed content plus the expander's column, which comes back (A2: 133 + 126 = 259). */
-    const val EXPANDED_EXTRA_DP = 40f
+    /**
+     * Expanded content is the collapsed content plus the expander's column, which comes back. AOSP gives it back whole
+     * (A2: 133 + 126 = 259, +39); One UI 8 only in part — the Fold 7 measured +27 at 360 dp and +24 at 411 (RUNBOOK
+     * Step 3, CCBG-91 (One UI Expanded Column)), so a line picked for +40 was cut mid-clock there. The smaller one
+     * holds on both shades: AOSP drops a form a little sooner, never cuts one.
+     */
+    const val EXPANDED_EXTRA_DP = 24f
     /** CCBG-78 (Collapsed Pace Line Clip)'s 3.5% off the derived column, for the estimate's error. */
     const val FIT_FACTOR = 0.965f
     /** N1-Q6: the expanded ring's time line ("in 2h 20m") is sized in dp, not sp. */

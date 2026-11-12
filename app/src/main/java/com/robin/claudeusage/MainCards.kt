@@ -29,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -513,13 +514,20 @@ internal fun SwapText(text: String, fontSize: TextUnit, modifier: Modifier = Mod
  */
 @Composable
 internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?, underline: Boolean = false) {
-    val text = PaceText.caption(mode, percent, elapsed) ?: return
-    if (elapsed == null) return
-    val strongPart = if (mode == PaceText.Mode.VS_PACE) text.substringBefore(" · ") else text.substringBefore(" ")
-    val annotated = buildAnnotatedString {
+    val forms = PaceText.captionForms(mode, percent, elapsed)
+    if (forms.isEmpty() || elapsed == null) return
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    fun annotate(text: String): AnnotatedString = buildAnnotatedString {
+        // The leading value is bold in the full caption; a short form ("13 over", "On the mark") bolds nothing, except
+        // Vs pace's "52% used", which is that same leading value (judge F4, CCBG-93 (Summary Caption Clip)).
+        val strongPart = when {
+            mode == PaceText.Mode.VS_PACE -> text.substringBefore(" · ")
+            text == forms.first() -> text.substringBefore(" ")
+            else -> ""
+        }
         // CCRM-104 (Pace Line Parity) D5: a press underlines the caption for 3 s (the font's own underline).
         withStyle(SpanStyle(textDecoration = if (underline) TextDecoration.Underline else null)) {
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)) {
+            withStyle(SpanStyle(color = onSurface, fontWeight = FontWeight.SemiBold)) {
                 append(strongPart)
             }
             append(text.removePrefix(strongPart))
@@ -531,13 +539,17 @@ internal fun PaceCaption(mode: PaceText.Mode, percent: Double?, elapsed: Double?
     )
     val measurer = rememberTextMeasurer()
     val gap = with(LocalDensity.current) { 5.dp.toPx() }
+    // CCBG-93 (Summary Caption Clip): the line is 17 dp at font 1.0 and grows with the text, so large text is never
+    // cut through; a caption wider than the bar takes its short form ("52% used", "13 over"), as the notification does.
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .padding(top = 5.dp)
-            .height(17.dp),
+            .heightIn(min = 17.dp),
     ) {
         val width = constraints.maxWidth.toFloat()
+        val text = PaceText.fitText(forms) { measurer.measure(annotate(it), style).size.width <= width } ?: forms.first()
+        val annotated = annotate(text)
         val textWidth = measurer.measure(annotated, style).size.width.toFloat()
         val mark = width * BarGeometry.tickFraction(elapsed)
         val right = PaceText.captionRightOfMark(width, elapsed, textWidth, gap)
@@ -593,10 +605,19 @@ internal fun PaceLineText(
             } else append(f.text)
         }
     }
+    // CCBG-92 (Summary Line Measure): measure with the style the Text below draws with — the theme's body
+    // style (its 0.5 sp letter spacing included), not a bare TextStyle, or every form measures narrow and the
+    // line is cut mid-clock instead of dropping to its next form.
+    val drawn = LocalTextStyle.current
     BoxWithConstraints(modifier) {
         val avail = constraints.maxWidth
         fun width(f: PaceText.PaceLine, sp: TextUnit): Int =
-            measurer.measure(styled(f), TextStyle(fontSize = sp, fontWeight = weight)).size.width
+            measurer.measure(
+                styled(f),
+                drawn.merge(TextStyle(fontSize = sp, fontWeight = weight, lineHeight = lineHeight)),
+                softWrap = false,
+                maxLines = 1,
+            ).size.width
         var size = fontSize
         var chosen = PaceText.fit(line.forms) { t -> line.forms.first { it.text == t }.let { width(it, size) <= avail } }
             ?: line.forms.first()
@@ -677,6 +698,10 @@ internal fun TrendBlock(
     }
     val est = Projection.estimate(samples, resetMs)
     val atLimit = (window.percent ?: 0.0) >= 100.0
+    // CCBG-55 (Spec Drift) item 3, core §3.1: the young-window and minimum-usage floors, then the estimate. A
+    // suppressed window draws no tail and says which silence it is, in iOS's words.
+    val nowMs = System.currentTimeMillis()
+    val suppressed = Projection.suppression(window.percent, windowLengthMs - (resetMs - nowMs), windowLengthMs, est)
 
     Spacer(Modifier.height(10.dp))
     // Measured here rather than derived from the window width: the chart sits inside a
@@ -693,7 +718,7 @@ internal fun TrendBlock(
             // the same moment and the divider walks with the mark instead of waiting for
             // the next poll (CCRM-74 (Chart Polish) item 1).
             nowMs = System.currentTimeMillis(),
-            projectedEnd = est?.takeIf { !gated }?.let { e ->
+            projectedEnd = est?.takeIf { !gated && suppressed == null }?.let { e ->
                 if (e.hitsLimitAtMs != null) e.hitsLimitAtMs to 100.0 else resetMs to e.pctAtReset
             },
             color = barFill(window.percent),
@@ -712,15 +737,15 @@ internal fun TrendBlock(
         SwapText(readout, MaterialTheme.typography.bodySmall.fontSize)
         return
     }
-    if (est == null && !atLimit && !gated) {
+    if (suppressed != null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         Text(
-            "Usage hasn't moved enough yet to project a pace",
+            suppressed.explanation,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-    if (est != null && !atLimit && !gated) {
+    if (est != null && suppressed == null && !atLimit && !gated) {
         Spacer(Modifier.height(2.dp))
         val hits = est.hitsLimitAtMs
         val rate = " · ${String.format(Locale.US, "%.1f", est.ratePctPerHour)}%/h"
@@ -845,7 +870,7 @@ internal fun AccountTile(
     val sessionSamples = session?.resetsAt?.let {
         Projection.sessionSamples(history, it.toEpochMilli(), SESSION_MS)
     } ?: emptyList()
-    val sessionEstimate = session?.resetsAt?.let { Projection.estimate(sessionSamples, it.toEpochMilli()) }
+    val sessionEstimate = session?.resetsAt?.let { Projection.forecast(sessionSamples, it.toEpochMilli(), session.percent, SESSION_MS) }
 
     val ringState = tileRingState(session, data.weekly)
     val ringFigure = if (session == null) null else AppPace.figure(session.percent, sessionElapsed, mode).first

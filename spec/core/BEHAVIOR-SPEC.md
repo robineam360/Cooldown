@@ -269,7 +269,7 @@ different colours at 90.5% is a bug.
 ### Accent themes
 
 Twelve named accents, each with a light and a dark variant, plus one platform-dynamic
-pseudo-option. Every client ships the same twelve so the apps look like one product.
+pseudo-option. Every client ships the same twelve so the apps look like one product. No accent may equal a severity colour (the breakpoints above): Amber was the `> 80` yellow until 2026-11-12, which hid the first warning step from Amber users (mobile CCBG-15 (Amber Ladder Blindness)).
 
 | Theme | Light | Dark |
 |---|---|---|
@@ -279,7 +279,7 @@ pseudo-option. Every client ships the same twelve so the apps look like one prod
 | Cyan | `#00ACC1` | `#4DD0E1` |
 | Teal | `#00897B` | `#4DB6AC` |
 | Green | `#188038` | `#81C995` |
-| Amber | `#F9A825` | `#FDD663` |
+| Amber | `#B07D00` | `#D9A84A` |
 | Deep orange | `#E64A19` | `#FF8A65` |
 | Red | `#D93025` | `#F28B82` |
 | Pink | `#D81B60` | `#F48FB1` |
@@ -289,12 +289,15 @@ pseudo-option. Every client ships the same twelve so the apps look like one prod
 The dynamic option follows the OS: **Material You** on Android, the **system accent colour**
 on macOS. It has no fixed value — each client resolves it at draw time.
 
-### Always-on surfaces stay monochrome until 80%
+### Always-on surfaces: the accent below 80%, the warning colours past it
 
-Android's status-bar gauge icon and the Mac's menu-bar item are both system chrome, and both
-platforms expect an image that adapts to the bar's own tint. So they render monochrome below
-the first breakpoint and take colour only past it — **colour appearing at all is the
-signal**. A client setting may disable colouring entirely; none may make it constant.
+Android's status-bar gauge icon and the Mac's menu-bar item are both system chrome. Below the
+first breakpoint the gauge may wear the account's accent (Android has since its Duet
+notification, mobile CCRM-62 (Duet Notification)) or stay monochrome where the platform tints the image itself (the
+Mac's menu bar); past it, every client draws the severity colour, so **the warning colours are
+the signal**, never the accent. A client setting may disable colouring entirely. Decided
+2026-11-12 (mobile CCBG-55 (Spec Drift) item 1: the spec follows Android); before, this section
+required monochrome below 80%.
 
 ### The pace dead zone
 

@@ -314,4 +314,12 @@ class ShareCardTest {
         ShareCard.Files.clear(context)
         assertEquals(0, dir.listFiles()!!.size)
     }
+
+    @Test
+    fun `CCBG-95 - the projection label yields to the now label when their boxes meet`() {
+        val now = android.graphics.RectF(100f, 40f, 140f, 56f)
+        assertTrue(ChartBitmap.projectionYields(android.graphics.RectF(110f, 50f, 150f, 64f), now, 4f))
+        assertTrue(ChartBitmap.projectionYields(android.graphics.RectF(142f, 40f, 180f, 56f), now, 4f)) // 2 px apart, inside the pad
+        org.junit.Assert.assertFalse(ChartBitmap.projectionYields(android.graphics.RectF(160f, 70f, 200f, 86f), now, 4f))
+    }
 }

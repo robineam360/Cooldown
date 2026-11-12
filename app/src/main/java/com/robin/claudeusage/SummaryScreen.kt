@@ -243,7 +243,7 @@ internal data class SummaryRowModel(
         val gone = elapsed ?: return null
         val reset = weekly?.resetsAt?.toEpochMilli() ?: return null
         val trail = PaceMapGeometry.trail(samples, reset, Projection.WEEKLY_MS, gone, u)
-        val estimate = Projection.estimate(samples, reset)
+        val estimate = Projection.forecast(samples, reset, u, Projection.WEEKLY_MS, now.toEpochMilli())
         val spent = Pace.isSpent(u)
         val held = group == SummaryRank.Group.HELD
         val pace = if (held) null else SummaryRows.paceLine(weekly, use24h, now)
