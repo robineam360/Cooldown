@@ -508,7 +508,9 @@ private fun MapChip(label: String, on: Boolean, onToggle: (Boolean) -> Unit) {
 fun PaceMapFoot(foot: PaceMapRules.Foot, modifier: Modifier = Modifier) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Row(modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(foot.left, fontSize = 11.sp, color = muted, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+        // CCBG-97 (Map Foot Clip): the note wraps at large text rather than losing its last word (approved 2026-11-12,
+        // design/2026-11-12-step3-fix-wireframes.html §3 A); one line at font 1.0 as before.
+        Text(foot.left, fontSize = 11.sp, color = muted, maxLines = 2, modifier = Modifier.weight(1f, fill = false))
         foot.count?.let {
             Spacer(Modifier.size(8.dp))
             Text(it, fontSize = 11.sp, color = muted, maxLines = 1, softWrap = false)

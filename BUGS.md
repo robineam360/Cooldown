@@ -26,7 +26,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > public beta and public release build. So we have to fix all our bugs and not keep it after v2.0." **Every open defect
 > blocks v2.0** where it still applies to the current design, Android and iOS. Android ones are fixed in Step 3; iOS
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
-> Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2).
+> Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
 ### CCBG-91 · One UI Expanded Column — a 360 dp One UI shade cuts the expanded header's pace line mid-clock
 - **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 with its display size forced to 360 dp · `TextFitTest` pins One UI's measured columns
@@ -72,6 +72,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Severity:** Low
 - **Symptom:** the Countdown 2×1 preview reads "at 9:10…" and the Number 4×1 preview "Pro · W…". Placed widgets are
   unaffected. The picker has no 4×2 entry: every face picks at its target cells (Number and Strip 4×1), as specified.
+
+### CCBG-97 · Map Foot Clip — the Pace map's foot note loses "week" at large text
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · found in the Step 3 recheck at font 2.0 · wireframe `design/2026-11-12-step3-fix-wireframes.html` §3, option A approved 2026-11-12
+- **Severity:** Low
+- **Symptom:** at font 2.0 the foot line read "each account's own" beside "1 at 0%".
+- **Fix:** the note wraps to a second line (`PaceMapFoot`, at most two lines); one line at font 1.0 as before.
 
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
 - **Status:** Open · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
