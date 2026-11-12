@@ -170,6 +170,23 @@ object ChartBitmap {
             line.strokeWidth = dp(1f)
             canvas.drawLine(divider, geo.plotTop, divider, geo.plotBottom, line)
 
+            // The now label's box, worked out first so the projection's label can yield to it (CCBG-95 (Snapshot
+            // Label Overlap)), as the in-app chart's does since CCRM-74 (Chart Polish): the caption spells that
+            // number out, so the marker keeps its label and this one goes.
+            text.textSize = dp(11f)
+            text.isFakeBoldText = true
+            val nowLabel = "${nowPct.toInt()}%"
+            val nowW = text.measureText(nowLabel)
+            val nowY = geo.y(nowPct)
+            // Above-left of its marker, off the rising curve; once the marker is up among
+            // the guides, below-right of it instead, where the curve isn't.
+            val high = nowY < geo.plotTop + (geo.plotBottom - geo.plotTop) / 3f
+            val nx = if (high) (nowX + dp(8f)).coerceAtMost(geo.plotRight - nowW - dp(30f))
+            else (nowX - nowW - dp(6f)).coerceAtLeast(0f)
+            val ny = (if (high) nowY + dp(6f) + text.textSize else nowY - dp(6f))
+                .coerceIn(text.textSize, geo.plotBottom - dp(2f))
+            val nowBox = android.graphics.RectF(nx, ny - text.textSize, nx + nowW, ny + dp(2f))
+
             // --- projection: dashed tail to a hollow, labelled endpoint ---
             projectedEnd?.let { (t, pct) ->
                 if (t <= nowT) return@let
@@ -192,7 +209,8 @@ object ChartBitmap {
                 // kept clear of the guide-label column.
                 val lx = (ex + dp(6f)).coerceAtMost(geo.plotRight - lw - dp(30f)).coerceAtLeast(0f)
                 val ly = (ey + dp(6f) + text.textSize).coerceAtMost(geo.plotBottom - dp(2f))
-                haloed(canvas, text, l, lx, ly, halo, dp(2f))
+                val box = android.graphics.RectF(lx, ly - text.textSize, lx + lw, ly + dp(2f))
+                if (!projectionYields(box, nowBox, dp(2f))) haloed(canvas, text, l, lx, ly, halo, dp(2f))
             }
 
             fill.color = color.toArgb()
@@ -200,16 +218,6 @@ object ChartBitmap {
             text.color = fg.toArgb()
             text.textSize = dp(11f)
             text.isFakeBoldText = true
-            val nowLabel = "${nowPct.toInt()}%"
-            val nowW = text.measureText(nowLabel)
-            val nowY = geo.y(nowPct)
-            // Above-left of its marker, off the rising curve; once the marker is up among
-            // the guides, below-right of it instead, where the curve isn't.
-            val high = nowY < geo.plotTop + (geo.plotBottom - geo.plotTop) / 3f
-            val nx = if (high) (nowX + dp(8f)).coerceAtMost(geo.plotRight - nowW - dp(30f))
-            else (nowX - nowW - dp(6f)).coerceAtLeast(0f)
-            val ny = (if (high) nowY + dp(6f) + text.textSize else nowY - dp(6f))
-                .coerceIn(text.textSize, geo.plotBottom - dp(2f))
             haloed(canvas, text, nowLabel, nx, ny, halo, dp(2f))
         } else {
             // Honest-empty: the plot stays, with the reason in words.
@@ -245,6 +253,10 @@ object ChartBitmap {
     }
 
     /** [s] on a card-coloured backing rect, so a line crossing behind it can't eat it. */
+    /** CCBG-95 (Snapshot Label Overlap): the projection's "~N%" yields when its box, grown by [pad], meets the now label's. */
+    internal fun projectionYields(projection: android.graphics.RectF, now: android.graphics.RectF, pad: Float): Boolean =
+        android.graphics.RectF(projection).apply { inset(-pad, -pad) }.let { android.graphics.RectF.intersects(it, now) }
+
     private fun haloed(c: Canvas, text: Paint, s: String, x: Float, baseline: Float, halo: Paint, pad: Float) {
         val m = text.fontMetrics
         c.drawRect(RectF(x - pad, baseline + m.ascent * 0.8f, x + text.measureText(s) + pad, baseline + m.descent * 0.5f), halo)

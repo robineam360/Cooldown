@@ -62,7 +62,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   matching the Summary's wording 2026-11-12.
 
 ### CCBG-95 · Snapshot Label Overlap — the account share card's "~100%" sits on its "95%"
-- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · **needs a wireframe** · RUNBOOK Step 3, Fold 7, Claude › Share snapshot
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · no wireframe after all: the fix restores the in-app chart's approved rule (CCRM-74 (Chart Polish): the projection label yields to the now label; the caption spells the number out), which the share card's `ChartBitmap` never had · RUNBOOK Step 3, Fold 7, Claude › Share snapshot
 - **Severity:** Low
 - **Symptom:** in the share card's Weekly trend, the projection label "~100%" is drawn over the now-label "95%" at the
   plot's right end (unlike CCBG-7 (Chart Label Collision), this one is real at full resolution).
