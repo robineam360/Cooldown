@@ -90,8 +90,19 @@ object PaceMapGeometry {
         fun y(usedPct: Double): Float = bottom - (bottom - top) * (usedPct.coerceIn(0.0, 100.0) / 100.0).toFloat()
     }
 
-    fun frame(width: Float, height: Float, dpPx: Float): Frame =
-        Frame(LEFT_DP * dpPx, width - RIGHT_DP * dpPx, TOP_DP * dpPx, height - BOTTOM_DP * dpPx)
+    fun frame(width: Float, height: Float, dpPx: Float, axisLabelPx: Float = 0f): Frame =
+        Frame(leftPx(axisLabelPx, dpPx), width - RIGHT_DP * dpPx, TOP_DP * dpPx, height - BOTTOM_DP * dpPx)
+
+    /** The y-axis labels end [AXIS_GAP_DP] left of the plot and keep [AXIS_MARGIN_DP] from the card's edge. */
+    const val AXIS_GAP_DP = 5f
+    const val AXIS_MARGIN_DP = 1f
+
+    /**
+     * CCBG-89 (Map Axis Clip): the left inset is the wireframe's 30 dp, or wider when the widest y label ("100%", measured
+     * at the current font scale, [axisLabelPx]) would not fit beside the plot — at font 2.0 it printed "00%".
+     */
+    fun leftPx(axisLabelPx: Float, dpPx: Float): Float =
+        maxOf(LEFT_DP * dpPx, axisLabelPx + (AXIS_GAP_DP + AXIS_MARGIN_DP) * dpPx)
 
     /**
      * The trail: this week's samples as (week gone %, used %), oldest first, ending on the
@@ -238,14 +249,14 @@ internal class PaceMapScene(
             ink: Color,
             dark: Boolean,
         ): PaceMapScene {
-            val f = PaceMapGeometry.frame(width, height, d)
             val tiny = TextStyle(fontSize = 10.sp)
+            val f = PaceMapGeometry.frame(width, height, d, measurer.measure("100%", tiny).size.width.toFloat())
             val label = TextStyle(fontSize = 10.5.sp)
             val pace = Palette.barColor(85.0, ink, dark)
             val words = ArrayList<Word>()
             for (v in listOf(0.0, 50.0, 100.0)) {
                 val t = measurer.measure("${v.toInt()}%", tiny.copy(color = ink.copy(alpha = 0.6f)))
-                words += Word(t, Offset(f.left - 5 * d - t.size.width, f.y(v) - t.size.height / 2f))
+                words += Word(t, Offset(f.left - PaceMapGeometry.AXIS_GAP_DP * d - t.size.width, f.y(v) - t.size.height / 2f))
             }
             val muted = label.copy(color = ink.copy(alpha = 0.55f))
             measurer.measure(PaceText.MAP_AHEAD, muted).let { words += Word(it, Offset(f.x(3.0), f.y(91.0) - it.size.height)) }

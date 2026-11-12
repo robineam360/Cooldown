@@ -165,7 +165,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   ideas in report U6), with one rule shared by the main page and History.
 
 ### CCBG-89 · Map Axis Clip — Android's Pace map prints "00%" for its "100%" label at font scale 2.0
-- **Status:** Open · Android · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12; seen on the Fold 7 at font 2.0 the same day) · noted in RUNBOOK Step A3's Log (its font 2.0 captures, `design/research/2026-11-v20-build/A3/`), older than A3 · `PaceMapGeometry.leftPx`: the inset is 30 dp or the measured "100%" + 6 dp, whichever is wider
 - **Severity:** Low (cosmetic)
 - **Symptom:** at font scale 2.0 the map's y-axis "100%" is cut to "00%".
 - **Cause:** the map's fixed 30 dp left inset does not grow with the label's scaled width.
