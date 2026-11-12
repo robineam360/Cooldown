@@ -134,12 +134,15 @@ struct ThemeOption: Identifiable, Equatable {
 enum ThemeColours {
     static let perProvider = "Per provider"
     static let options: [ThemeOption] = [
+        // CCBG-55 (Spec Drift) item 2, Robin 2026-11-12: Claude Orange is pickable, so iOS ships the core's twelve.
+        ThemeOption(name: "Claude Orange", light: Color(hex: 0xD97757), dark: Color(hex: 0xE59980)),
         ThemeOption(name: "Blue", light: Color(hex: 0x1A73E8), dark: Color(hex: 0x8AB4F8)),
         ThemeOption(name: "Indigo", light: Color(hex: 0x3949AB), dark: Color(hex: 0x9FA8DA)),
         ThemeOption(name: "Cyan", light: Color(hex: 0x00ACC1), dark: Color(hex: 0x4DD0E1)),
         ThemeOption(name: "Teal", light: Color(hex: 0x00897B), dark: Color(hex: 0x4DB6AC)),
         ThemeOption(name: "Green", light: Color(hex: 0x188038), dark: Color(hex: 0x81C995)),
-        ThemeOption(name: "Amber", light: Color(hex: 0xF9A825), dark: Color(hex: 0xFDD663)),
+        // CCBG-15 (Amber Ladder Blindness), Robin 2026-11-12: off the >80 yellow rung (was #F9A825 / #FDD663).
+        ThemeOption(name: "Amber", light: Color(hex: 0xB07D00), dark: Color(hex: 0xD9A84A)),
         ThemeOption(name: "Deep Orange", light: Color(hex: 0xE64A19), dark: Color(hex: 0xFF8A65)),
         ThemeOption(name: "Red", light: Color(hex: 0xD93025), dark: Color(hex: 0xF28B82)),
         ThemeOption(name: "Pink", light: Color(hex: 0xD81B60), dark: Color(hex: 0xF48FB1)),

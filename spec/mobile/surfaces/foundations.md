@@ -44,10 +44,10 @@ third level. Source: `ui/Palette.kt` (`resolveAccent`), `ios/Shared/Display.swif
 
 | Token | Android | iOS | Used by |
 |---|---|---|---|
-| Theme colour (global) | "Per provider" default; the 11 named colours below plus "Claude Orange" and "Material You" | "Per provider" default; the 11 named colours below | Settings, every surface's bars and figures |
+| Theme colour (global) | "Per provider" default; the 11 named colours below plus "Claude Orange" and "Material You" | "Per provider" default; the twelve named colours below (Claude Orange since CCBG-55 (Spec Drift) item 2) | Settings, every surface's bars and figures |
 | Per-account accent | Account card colour grid; "Provider colour (default)" clears it | Same | That account only, on every surface |
 | "Material You" | System dynamic colour (Android 12+) | **None** | App only; widgets, notification and charts resolve it through Claude Orange |
-| "Claude Orange" as a pickable colour | Yes (also the pseudo-default name) | **Not offered**: Claude's orange is reachable only through "Per provider" or the provider default | Differs from the core's twelve (see 1.2 note) |
+| "Claude Orange" as a pickable colour | Yes (also the pseudo-default name) | Yes, first in the grid (since CCBG-55 item 2, 2026-11-12) | The core's twelve on both |
 | ChatGPT Green, Gemini Blue | Resolvable by name, **not offered in the grids** | Not present | Provider default only |
 
 The twelve named accents with light and dark hexes are the core's table (BEHAVIOR-SPEC §5, "Accent
@@ -55,8 +55,8 @@ themes"); Android's `Palette.options` and iOS's `ThemeColours.options` carry the
 Display order in the Android grid: Claude Orange, Blue, Indigo, Cyan, Teal, Green, Amber, Deep
 Orange, Red, Pink, Purple, Brown. Source: `ui/Palette.kt:62`, `ios/Shared/Display.swift:91`.
 
-Note: iOS lists eleven (Claude Orange left out) where the core says every client ships twelve. A
-shared-core gap, recorded here rather than silently fixed.
+iOS lists the same twelve in the same order since CCBG-55 (Spec Drift) item 2 (2026-11-12); Amber is #B07D00 / #D9A84A
+on both since CCBG-15 (Amber Ladder Blindness), so no accent equals a severity rung.
 
 ### 1.3 Rooms: the surface the colour sits on
 
