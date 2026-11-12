@@ -486,7 +486,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   work cannot be delayed); the KDoc no longer promises "a handful of seconds".
 
 ### CCBG-53 · History Footnote — the History screen prints a literal "%s"
-- **Status:** **iOS fixed 2026-11-04** (the footnote names the window: "Peak 5h readings…", "Peak weekly readings…"); **Android still open** (`HistoryScreen.kt`, v2.0 arc) — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
+- **Status:** **Fixed in code on Android** (RUNBOOK Step 3, 2026-11-12, blocked v2.0 per Robin; "Peak 5h readings…", "Peak weekly readings…", side by side "Peak 5h and weekly readings…") · **iOS fixed 2026-11-04** (the footnote names the window: "Peak 5h readings…", "Peak weekly readings…") — found 2026-11-02 while writing `spec/mobile/surfaces/app.md`.
 - **Severity:** Low (cosmetic, every History visit)
 - **Symptom:** both History footnotes read "Peak %s are sampled at the polling interval." The
   string is never formatted (`HistoryScreen.kt:228`); it should name the window ("Peak 5h
