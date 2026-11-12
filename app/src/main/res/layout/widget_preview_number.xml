@@ -35,7 +35,7 @@
                 <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/ic_provider_claude" android:tint="#FFE59980" android:importantForAccessibility="no" android:layout_marginEnd="4dp" />
                 <TextView style="@style/WFace" android:layout_width="0dp" android:layout_weight="1"
                     android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:ellipsize="end"
-                    android:text="Pro · Weekly" android:textSize="13sp" android:textColor="#FFEDE8E4" />
+                    android:text="Pro" android:textSize="13sp" android:textColor="#FFEDE8E4" />
                 <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="20%" android:textSize="32sp" android:textColor="#FFE59980" android:textStyle="bold" android:fontFeatureSettings="tnum,lnum" android:layout_marginStart="10dp" />
             </LinearLayout>
             <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"

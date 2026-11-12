@@ -62,8 +62,8 @@ activity opens on add (no `configuration_optional`, CCBG-43 (Widget Settings Hid
 **Picker previews** (`res/layout/widget_preview_{ring,number,countdown,strip}.xml`, static views and vector drawables
 `widget_preview_ring_5h*`, `widget_preview_bar_*`; the picker inflates them with no code; Fable C6): a Solid, dark, S1
 face in the shape grammar, filling whatever box the picker gives. Ring: the 5h ring (38%), "Pro", the Weekly row
-("Weekly", bar, "20%"). Number: the 5h ring at the left (square, as tall as the box, ≤96 dp), "Pro · Weekly" with "20%"
-(32 sp), the Weekly bar, "Resets Sat 9:10 PM" · "as of 6:29 PM". Countdown: the ring and the count share the width 2 : 3,
+("Weekly", bar, "20%"). Number: the 5h ring at the left (square, as tall as the box, ≤96 dp), "Pro" with "20%" ("· Weekly" gives first, as the notification titles do; CCBG-96 (Picker Preview Truncation))
+(32 sp), the Weekly bar, "Resets Sat 9:10 PM" · "as of 6:29 PM". Countdown: the ring and the count share the width 1 : 2 (the live face's proportion; 2 : 3 cut "at 9:10…" in One UI's picker, CCBG-96),
 the count "2:41:07" auto-sized 10–24 sp, "at 9:10 PM", "Pro". Strip: Pro 38% and Work 62% rings, ChatGPT's Weekly "20%"
 where its ring would be (B1), each over its Weekly bar, then the name (10 sp). No window chips anywhere. Rings are drawn
 as `GrammarRing` draws them (track, fill, Line end mark, pace tick behind the fill, so no dashed room); bars as

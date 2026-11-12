@@ -20,7 +20,9 @@
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="horizontal" android:gravity="center_vertical"
         android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
-        <FrameLayout android:layout_width="0dp" android:layout_weight="2" android:layout_height="match_parent"
+        <!-- CCBG-96 (Picker Preview Truncation): ring 1 : count 2, the live 2×1 face's proportion, so "at 9:10 PM" fits
+             (design/2026-11-12-step3-fix-wireframes.html §1 A, approved 2026-11-12). -->
+        <FrameLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
             android:layout_marginEnd="8dp">
             <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
                 android:scaleType="fitCenter"
@@ -29,7 +31,7 @@
                 android:fontFeatureSettings="tnum,lnum"
                 android:autoSizeTextType="uniform" android:autoSizeMinTextSize="7sp" android:autoSizeMaxTextSize="13sp" android:autoSizeStepGranularity="1sp" />
         </FrameLayout>
-        <LinearLayout android:layout_width="0dp" android:layout_weight="3" android:layout_height="match_parent"
+        <LinearLayout android:layout_width="0dp" android:layout_weight="2" android:layout_height="match_parent"
             android:orientation="vertical">
             <TextView style="@style/WFace" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
                 android:gravity="bottom|start" android:includeFontPadding="false" android:maxLines="1"

@@ -68,7 +68,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   plot's right end (unlike CCBG-7 (Chart Label Collision), this one is real at full resolution).
 
 ### CCBG-96 · Picker Preview Truncation — two widget picker previews truncate their labels
-- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · **needs a wireframe** · RUNBOOK Step 3, Fold 7 cover, One UI widget picker
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · wireframe `design/2026-11-12-step3-fix-wireframes.html` §1, options A approved 2026-11-12: Countdown ring 1 : count 2, Number label "Pro" · RUNBOOK Step 3, Fold 7 cover, One UI widget picker
 - **Severity:** Low
 - **Symptom:** the Countdown 2×1 preview reads "at 9:10…" and the Number 4×1 preview "Pro · W…". Placed widgets are
   unaffected. The picker has no 4×2 entry: every face picks at its target cells (Number and Strip 4×1), as specified.
