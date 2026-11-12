@@ -624,6 +624,7 @@ struct ResetModeRow: View {
         HStack(spacing: 10) {
             // Under the header's name: the mark's 18 pt and its 10 pt gap.
             Text(weekly ? "Weekly" : "5h").lineLimit(1).padding(.leading, 28)
+                .accessibilityHidden(true)  // the control reads "<name>, 5h reset alert"
             Spacer(minLength: 8)
             Picker("", selection: $mode) {
                 Text("Off").tag("off"); Text("If busy").tag("smart"); Text("Always").tag("always")

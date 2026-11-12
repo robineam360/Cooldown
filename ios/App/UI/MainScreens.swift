@@ -273,7 +273,8 @@ struct EqualShares: Layout {
         let share = bounds.width / CGFloat(subviews.count)
         for (i, view) in subviews.enumerated() {
             let frame = ProposedViewSize(width: share, height: bounds.height)
-            view.place(at: CGPoint(x: bounds.minX + share * CGFloat(i), y: bounds.minY), anchor: .topLeading, proposal: frame)
+            // Centred in its share, as the old `containerRelativeFrame` and Android's `TabRow` place a tab.
+            view.place(at: CGPoint(x: bounds.minX + share * (CGFloat(i) + 0.5), y: bounds.minY), anchor: .top, proposal: frame)
         }
     }
 

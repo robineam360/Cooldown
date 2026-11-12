@@ -547,7 +547,7 @@ with exactly one account draws the same face.
 
 Line copy (priority): sign-in / plan / no data / stale / aging → the footnote ladder; at 100%: "Limit reached" (red) + " · resets
 5:50 PM"; projection: "~ runs out 7:51 PM · resets 5:50 PM"; normal: "Resets in 1h 35m · 5:50 PM" (Clock first on: "Resets at 5:50
-pm · in 1h 35m"); no reset: the footnote.
+PM · in 1h 35m"); no reset: the footnote.
 
 ## 2.4 Overview (Medium, Large, Extra Large)
 
@@ -713,7 +713,7 @@ As built on the v2.0 branch (RUNBOOK-v2.0); each entry names the face it amends,
   6h" (spent "Limit · resets in 3d 4h" red), line B band words (red over pace) plus " · ~ runs out Sat 3:10 AM" only
   when the projection runs out; a cell under 300 pt words the band alone. Second row = the other window: under a
   Weekly lead "5h" with "Resets in 2h 20m · on track for ~69%" (binding: orange, live countdown, "runs out ~3:25
-  pm"; narrow "Resets 5:10 PM · ~69%"); under a 5h lead "Weekly" with "Resets Sun 9:30 PM · Slow down". Spent: no
+  PM"; narrow "Resets 5:10 PM · ~69%"); under a 5h lead "Weekly" with "Resets Sun 9:30 PM · Slow down". Spent: no
   second row, "Out until Sun 9:30 PM". Compact/Mini: lead bar first, then the companion. Extra Large, one account:
   Weekly card left, 5h card right.
 - **Lock screen**: rectangular "Teams · Weekly 52%" (title scales to 80%), bar, "Resets Sun · 5h 34%" (5h bold while
