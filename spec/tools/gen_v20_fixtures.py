@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Derive the v2.0 feedback fixtures from the written rules (RUNBOOK Step 1).
+"""Derive the v2.0 fixtures from the written rules (RUNBOOK Step 1; folded into the shipped files at Step 2).
 
-Rules: spec/core/BEHAVIOR-SPEC.md section 6.3 "Planned - v2.0 feedback" (CCRM-107 (Day Grid), CCRM-108 (Reset
-Named), CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers)) and the approved wireframe
-design/2026-11-10-v20-feedback-wireframes.html rev B, sections 3, 4, 5, 6 and 7.
+Rules: spec/core/BEHAVIOR-SPEC.md section 6.3 (CCRM-107 (Day Grid), CCRM-108 (Reset Named), CCRM-109 (Quiet
+Accounts), CCRM-111 (Map Layers)), spec/mobile/BEHAVIOR-MOBILE.md section 6 (CCRM-110 (Account Tags)), and the
+approved wireframe design/2026-11-10-v20-feedback-wireframes.html rev B with its 2026-11-11 addendum.
 
 Writes:
-  spec/core/fixtures/pace-distance/printed-v20.json   (core: every family)
-  spec/mobile/fixtures/map-foot/cases.json            (mobile: the Pace map's foot-line count)
-  spec/mobile/fixtures/tags/cases.json                (mobile: the tag filter, tags optional: rev B, as built on iOS in I3)
-  spec/mobile/fixtures/tags/cases-personal-work.json  (mobile: Robin 2026-11-11, every account Personal or Work; A4 and I4 read it;
-                                                       Step 2 folds it into cases.json)
+  spec/core/fixtures/pace-distance/printed.json  (core, every family): the derived blocks paceLine, paceLineForms,
+                                                  endToEnd, dayGrid, quiet, mapLabels, callout, projectionLayer and
+                                                  their _meta keys; the hand-kept blocks (figure, duration, dayClock,
+                                                  caption) and the _meta note are read from the file and kept as they are
+  spec/mobile/fixtures/map-foot/cases.json       (mobile: the Pace map's foot-line count)
+  spec/mobile/fixtures/tags/cases.json           (mobile: Personal or Work, the filter and its memory; Robin 2026-11-11)
 
 Run from the repo root:  python3 spec/tools/gen_v20_fixtures.py          (writes)
                          python3 spec/tools/gen_v20_fixtures.py --check  (fails if a file would change)
 
-Standard library only. Nothing here is read by a test until a lane points its tests at the files; Step 2 folds
-printed-v20.json into printed.json.
+Standard library only.
 """
 import datetime as dt
 import json
@@ -121,7 +121,7 @@ def floor_text(side, dur_ms):
 
 
 def pace_line_forms(side, dur_ms, now, reset, hour24):
-    """The planned drop order: a bare clock always means today."""
+    """The drop order (core section 6.3, 2026-11-10): a bare clock always means today."""
     if side is None:
         return []
     f = floor_text(side, dur_ms)
@@ -604,13 +604,12 @@ def build_core():
 
     return {
         "_meta": {
-            "note": ("BEHAVIOR-SPEC section 6.3 'Planned - v2.0 feedback' (approved 2026-11-10, wireframe "
+            "derived": ("BEHAVIOR-SPEC section 6.3 (v2.0, wireframe "
                      "design/2026-11-10-v20-feedback-wireframes.html rev B): CCRM-107 (Day Grid), CCRM-108 (Reset "
-                     "Named), CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers). Derived by spec/tools/gen_v20_fixtures.py "
-                     "from the written rules; do not edit by hand. These blocks replace their namesakes in printed.json "
-                     "at RUNBOOK Step 2; blocks not here (figure, duration, dayClock, caption) are unchanged and stay "
-                     "in printed.json. Conventions as printed.json: MINUS is U+2212, the separator is ' · ', clock "
-                     "strings en-US, local times naive."),
+                     "Named), CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers). paceLine, paceLineForms, endToEnd, "
+                     "dayGrid, quiet, mapLabels, callout and projectionLayer are derived by spec/tools/gen_v20_fixtures.py "
+                     "from the written rules; do not edit them by hand. figure, duration, dayClock and caption are "
+                     "hand-kept. Local times are naive."),
             "tolerance": "exact strings; numbers to 1e-6",
             "dropOrder": ("paceLineForms lists every form from widest to the floor. A reset on another day: "
                           "'resets Wed 12:30 PM' -> 'Wed 12:30 PM' -> 'Wed' -> the floor. Later the same local day: "
@@ -707,7 +706,7 @@ def build_map_foot():
     return {
         "_meta": {
             "note": ("The Pace map's foot line on mobile (CCRM-109 (Quiet Accounts), wireframe rev B section 5; core "
-                     "section 6.3 'Planned - v2.0 feedback': each family words the count). Derived by "
+                     "section 6.3 'Quiet accounts leave the map': each family words the count). Derived by "
                      "spec/tools/gen_v20_fixtures.py. Each case lists the accounts the map covers (after the Summary "
                      "filter: the map follows it). usedPct is the Weekly reading (null = no reading or signed out); "
                      "clocked = the week has a reset clock. left is the foot line's left text, count its right text "
@@ -718,54 +717,6 @@ def build_map_foot():
             "notDrawn": ("A map with nothing plotted where some accounts have no reading is not drawn in rev B; no "
                          "case covers it.")},
         "footLine": cases,
-    }
-
-
-def build_tags():
-    def a(name, tag):
-        return {"name": name, "tag": tag}
-
-    def run(accts, remembered):
-        tagged = [x for x in accts if x["tag"]]
-        shown_ctrl = bool(tagged)
-        segs = {"all": True, "personal": any(x["tag"] == "personal" for x in accts),
-                "work": any(x["tag"] == "work" for x in accts)}
-        eff = remembered if shown_ctrl and remembered in segs and segs[remembered] else "all"
-        shown = [x["name"] for x in accts if eff == "all" or x["tag"] == eff]
-        return {"controlShown": shown_ctrl, "segmentsEnabled": segs if shown_ctrl else None, "filter": eff,
-                "shown": shown, "oneLineRows": len(shown) >= 6,
-                "snapshotHeader": {"all": "All accounts", "personal": "Personal accounts", "work": "Work accounts"}[eff]}
-
-    six = [a("Teams", "work"), a("Personal", "personal"), a("Lab", None), a("Atlas", "work"), a("Side", "personal"),
-           a("Design", "work"), a("Gemini", "work")]
-    cases = []
-    for name, accts, rem in [
-        ("no tags: no control, everything under All", [a("Teams", None), a("Personal", None)], "work"),
-        ("the sample: Teams Work, Personal Personal, Lab untagged; Work chosen",
-         [a("Teams", "work"), a("Personal", "personal"), a("Lab", None)], "work"),
-        ("Personal chosen: the untagged account shows only under All",
-         [a("Teams", "work"), a("Personal", "personal"), a("Lab", None)], "personal"),
-        ("All", [a("Teams", "work"), a("Personal", "personal"), a("Lab", None)], "all"),
-        ("a segment with no accounts is disabled; a remembered filter on it falls back to All",
-         [a("Teams", "work"), a("Lab", None)], "personal"),
-        ("an unknown remembered value reads as All", [a("Teams", "work"), a("Lab", None)], "family"),
-        ("seven accounts: one-line rows under All", six, "all"),
-        ("the one-line form follows the rows shown, not the accounts: Work shows four", six, "work"),
-    ]:
-        cases.append({"name": name, "accounts": accts, "rememberedFilter": rem, "expected": run(accts, rem)})
-    return {
-        "_meta": {
-            "note": ("Account tags and the Summary filter on mobile (CCRM-110 (Account Tags), CCRM-112 (Summary "
-                     "Snapshot); wireframe rev B sections 6 and 8; BEHAVIOR-MOBILE section 6). Derived by "
-                     "spec/tools/gen_v20_fixtures.py. tag is null (None), 'personal' or 'work'; the stored key and "
-                     "its spelling are each client's (additive, absent = None). accounts are in your order. The "
-                     "All / Personal / Work control shows once any account has a tag; a segment with no accounts is "
-                     "disabled; a remembered filter that is unknown, disabled or has no accounts reads as All. The "
-                     "filter narrows the list, the Pace map and the snapshot; untagged accounts show only under All. "
-                     "oneLineRows: the one-line row form from six rows shown. snapshotHeader: the share snapshot's "
-                     "header under the filter. The sort order is unchanged by the filter (summary/cases.json order "
-                     "applies to the rows shown).")},
-        "filter": cases,
     }
 
 
@@ -890,20 +841,31 @@ def dump(obj):
     return json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
 
 
-def self_check():
-    """The unchanged rules must reproduce printed.json's shipped cases before the new ones are trusted."""
-    old = json.load(open(os.path.join(ROOT, "spec/core/fixtures/pace-distance/printed.json"), encoding="utf-8"))
-    for c in old["endToEnd"]["cases"]:
-        e = elapsed_pct(c["nowMs"], c["resetMs"], c["windowLengthMs"])
-        mt = mark_time(c["usedPct"], c["nowMs"], c["resetMs"], c["windowLengthMs"])
-        assert figure(c["usedPct"], e) == c["figure"], c["name"]
-        side, dur = mt
-        shipped = f"{floor_text(side, dur)}{DOT}{day_clock(utc_local(c['nowMs']), utc_local(c['resetMs']), False)}"
-        assert shipped == c["line"], (c["name"], shipped)
+def self_check(old):
+    """The unchanged rules must reproduce printed.json's hand-kept cases before the derived ones are trusted. (Until
+    RUNBOOK Step 2 this also re-derived the shipped endToEnd lines; that block is derived here now.)"""
     for c in old["dayClock"]:
         assert day_clock(local(c["nowLocal"]), local(c["resetLocal"]), c["hour24"]) == c["text"], c["name"]
     for c in old["duration"]:
         assert duration(c["ms"]) == c["text"], c
+
+
+DERIVED = ["paceLine", "paceLineForms", "endToEnd", "dayGrid", "quiet", "mapLabels", "callout", "projectionLayer"]
+HAND_META = ["note"]
+
+
+def merge_printed(old, core):
+    """printed.json = its hand-kept blocks and _meta note, with the derived blocks and their _meta keys from core."""
+    meta = {k: old["_meta"][k] for k in HAND_META}
+    meta.update(core["_meta"])
+    out = {"_meta": meta}
+    for k, v in old.items():
+        if k == "_meta":
+            continue
+        out[k] = core[k] if k in DERIVED else v
+    for k in DERIVED:
+        out.setdefault(k, core[k])
+    return out
 
 
 def wireframe_examples(core, foot, tags):
@@ -936,21 +898,21 @@ def wireframe_examples(core, foot, tags):
     assert w7["nowColumn"] == 3 and not w7["ordinals"][1]["drawn"]  # "3" gives way to "now"
     assert w5["nowColumn"] == 3 and not w5["ordinals"][1]["drawn"]  # 5h: "3" gives way
     work = [c for c in tags["filter"] if c["name"].startswith("the sample")][0]
-    assert work["expected"]["shown"] == ["Teams"]
+    assert work["expected"]["shown"] == ["Teams", "Lab"]
 
 
 def main():
-    self_check()
+    printed = os.path.join(ROOT, "spec/core/fixtures/pace-distance/printed.json")
+    old = json.load(open(printed, encoding="utf-8"))
+    self_check(old)
     core = build_core()
     foot = build_map_foot()
-    tags = build_tags()
-    tags_pw = build_tags_pw()
+    tags = build_tags_pw()
     wireframe_examples(core, foot, tags)
     outs = {
-        "spec/core/fixtures/pace-distance/printed-v20.json": dump(core),
+        "spec/core/fixtures/pace-distance/printed.json": dump(merge_printed(old, core)),
         "spec/mobile/fixtures/map-foot/cases.json": dump(foot),
         "spec/mobile/fixtures/tags/cases.json": dump(tags),
-        "spec/mobile/fixtures/tags/cases-personal-work.json": dump(tags_pw),
     }
     check = "--check" in sys.argv
     bad = []

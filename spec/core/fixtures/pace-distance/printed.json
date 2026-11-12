@@ -1,7 +1,14 @@
 {
   "_meta": {
     "note": "BEHAVIOR-SPEC section 6.3, 'Printed form' (Robin, 2026-11-06; CooldownDesktop CCM-200 (Readout) and CCM-201 (Pace), Cooldown CCRM-104 (Pace Line Parity)). The strings every family prints for the numbers in cases.json, so two installs read the same. tone: under = the green tone, over = the red tone, ink = plain, usage = the fallback usage figure's own colour. MINUS is U+2212, never a hyphen. The separator is ' · ' (U+00B7 with a space each side). Clock strings are en-US; a client may let its platform's locale spell AM/PM and weekday names, but the shape (weekday, then clock; weekday dropped when the reset is later today) is fixed.",
-    "tolerance": "exact strings"
+    "derived": "BEHAVIOR-SPEC section 6.3 (v2.0, wireframe design/2026-11-10-v20-feedback-wireframes.html rev B): CCRM-107 (Day Grid), CCRM-108 (Reset Named), CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers). paceLine, paceLineForms, endToEnd, dayGrid, quiet, mapLabels, callout and projectionLayer are derived by spec/tools/gen_v20_fixtures.py from the written rules; do not edit them by hand. figure, duration, dayClock and caption are hand-kept. Local times are naive.",
+    "tolerance": "exact strings; numbers to 1e-6",
+    "dropOrder": "paceLineForms lists every form from widest to the floor. A reset on another day: 'resets Wed 12:30 PM' -> 'Wed 12:30 PM' -> 'Wed' -> the floor. Later the same local day: 'resets 11:00 PM' -> '11:00 PM' -> the floor. A bare clock always means today.",
+    "dayGrid": "Inputs are the window start, now, the plot width and the label widths (measured by the wireframe's em model at 9.5 sp; a client tests its rule with these widths, not its own measurement). Verticals at start + k x 24 h (7-day) or + k x 1 h (5h), k = 1..n-1; horizontals at k/n of 100%, k = 1..n-1 (the 100% guide is the n-th). Ordinals 2..n-1 are centred in their columns; the start label is left-aligned at x 0 and the reset label right-aligned at the plot width. An ordinal gives way when its box is less than nowGap (6, the wireframe's words) from the 'now' label's box (centred on now), or less than endGap (4, the wireframe's drawing) from an end label's box; every ordinal drops when a column is under dropBelowColumn (14). nowColumn is 1-based; start + k x 24 h itself belongs to column k+1. Only an ordinal is bold: in columns 1 and n the end labels stay plain, as drawn.",
+    "quiet": "An account leaves the Pace map when its row prints '0%' Weekly used: the displayed percent truncates like a window row (section 2's window bars), so 0.99 prints 0% and is hidden, and 1.0 prints 1% and is plotted (a row reading 1% is always on the map). The list still shows the row. The map's figure labels truncate the same way; only the callout's estimate rounds half up.",
+    "mapLabels": "Placement geometry for the test (units are dp/pt; each family keeps its own drawn offsets, and tests its placer with these). Plot origin top-left, x = week gone % x width, y = (100 - used) % x height. A dot's hit box is 2 x dotHalf square. Names go top-down (smallest y first, then smallest x). Spots in order: right (cx + rightDx, cy - h/2), below (cx + belowDx, cy + h/2 + belowDy), left (cx - leftDx - w, cy - h/2), above-left (cx - leftDx - w, cy - aboveDy - h). Then leaders: each distance in leaderDistances, and for each the eight directions clockwise from east in screen coordinates (E, SE, S, SW, W, NW, N, NE); the leader ends at the dot centre + distance along the direction, and the name box touches that end by its side or corner facing away from the dot (E: left-middle; SE: top-left; S: top-centre; ...). A spot is refused if the box leaves the name area (the plot plus nameAreaMargin), comes within fixedGap of a fixed word, overlaps any dot's hit box, comes within nameGap of a placed name, sits on any ring, or crosses its own projection tail; a leader is refused also if its segment (dot centre to end) crosses a placed name's box or another dot's hit box. Nothing free: spot 'none', the name is not drawn and takes no space (its dot stays and still opens its callout). refusedFor lists the reasons met on the way, for reading the case.",
+    "forecast": "The callout's third line from section 3's estimate on the weekly samples: hitsLimitAtMs before the reset -> '100% at ' + the instant printed as a reset is (weekday dropped later the same local day); otherwise '~' + pctAtReset rounded half up + '% at reset'. No estimate, spent, or no reset clock -> no line. Times in UTC.",
+    "projectionLayer": "A dashed tail from the dot to a ring. Runs out before the reset -> the ring sits on the 100% line at the week-gone % of hitsLimitAtMs, ring and tail end red; otherwise a hollow ring on the right edge (100% week gone) at pctAtReset. null = no tail, no ring."
   },
   "figure": [
     {
@@ -150,8 +157,11 @@
       "name": "behind, widest",
       "side": "under",
       "durationMs": 604799999,
-      "reset": "Wed 12:30 PM",
-      "text": "6d 23h behind · Wed 12:30 PM",
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-11T12:30",
+      "hour24": false,
+      "reset": "resets Wed 12:30 PM",
+      "text": "6d 23h behind · resets Wed 12:30 PM",
       "tinted": "6d 23h behind",
       "tone": "under"
     },
@@ -159,8 +169,11 @@
       "name": "ahead",
       "side": "over",
       "durationMs": 50340000,
-      "reset": "Thu 6:15 PM",
-      "text": "13h 59m ahead · Thu 6:15 PM",
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-05T18:15",
+      "hour24": false,
+      "reset": "resets Thu 6:15 PM",
+      "text": "13h 59m ahead · resets Thu 6:15 PM",
       "tinted": "13h 59m ahead",
       "tone": "over"
     },
@@ -168,16 +181,34 @@
       "name": "on the mark",
       "side": "on",
       "durationMs": null,
-      "reset": "Sat 8:00 AM",
-      "text": "On the mark · Sat 8:00 AM",
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-07T08:00",
+      "hour24": false,
+      "reset": "resets Sat 8:00 AM",
+      "text": "On the mark · resets Sat 8:00 AM",
       "tinted": null,
       "tone": "ink"
+    },
+    {
+      "name": "behind, reset later today",
+      "side": "under",
+      "durationMs": 20700000,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-04T23:00",
+      "hour24": false,
+      "reset": "resets 11:00 PM",
+      "text": "5h 45m behind · resets 11:00 PM",
+      "tinted": "5h 45m behind",
+      "tone": "under"
     },
     {
       "name": "no readout",
       "side": null,
       "durationMs": null,
-      "reset": "Sat 8:00 AM",
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-07T08:00",
+      "hour24": false,
+      "reset": null,
       "text": null,
       "tinted": null,
       "tone": null,
@@ -194,7 +225,7 @@
         "resetMs": 1794038400000,
         "windowLengthMs": 604800000,
         "figure": "+20%",
-        "line": "1d 10h behind · Sat 8:00 AM",
+        "line": "1d 10h behind · resets Sat 8:00 AM",
         "why": "elapsed 60.71, markWasAtUsedAgoMs 125280000"
       },
       {
@@ -204,8 +235,8 @@
         "resetMs": 1793902500000,
         "windowLengthMs": 604800000,
         "figure": "−7%",
-        "line": "13h 7m ahead · Thu 6:15 PM",
-        "why": "elapsed 83.18, inMs 47268000; figure -7.82 toward zero is -7"
+        "line": "13h 7m ahead · resets Thu 6:15 PM",
+        "why": "elapsed 83.18, inMs 47268000"
       },
       {
         "name": "on the mark, under by a fraction",
@@ -214,8 +245,8 @@
         "resetMs": 1794038400000,
         "windowLengthMs": 604800000,
         "figure": "0%",
-        "line": "On the mark · Sat 8:00 AM",
-        "why": "elapsed 60.71: within a point, floor(0.21) = 0"
+        "line": "On the mark · resets Sat 8:00 AM",
+        "why": "elapsed 60.71"
       },
       {
         "name": "on the mark, over by a fraction",
@@ -224,8 +255,28 @@
         "resetMs": 1794038400000,
         "windowLengthMs": 604800000,
         "figure": "0%",
-        "line": "On the mark · Sat 8:00 AM",
-        "why": "elapsed 60.71: within a point, so the line is on the mark and the figure rounds -0.49 toward zero to 0 (Robin, 2026-11-06)"
+        "line": "On the mark · resets Sat 8:00 AM",
+        "why": "elapsed 60.71"
+      },
+      {
+        "name": "behind, reset later today",
+        "usedPct": 20,
+        "nowMs": 1793800800000,
+        "resetMs": 1793833200000,
+        "windowLengthMs": 604800000,
+        "figure": "+74%",
+        "line": "5d 5h behind · resets 11:00 PM",
+        "why": "elapsed 94.64, markWasAtUsedAgoMs 451440000"
+      },
+      {
+        "name": "spent: no figure, no line",
+        "usedPct": 99.6,
+        "nowMs": 1793800800000,
+        "resetMs": 1793902500000,
+        "windowLengthMs": 604800000,
+        "figure": null,
+        "line": null,
+        "why": "elapsed 83.18; used >= 99.5 is spent (section 6.1): the usage figure and the family's spent line instead"
       }
     ]
   },
@@ -289,63 +340,673 @@
     }
   ],
   "mapLabels": {
-    "aboveDiagonal": "ahead of pace",
-    "belowDiagonal": "behind pace",
-    "diagonal": "even pace",
-    "xStart": "week start",
-    "xEnd": "reset",
-    "xCentre": "each account's own week"
+    "words": {
+      "aboveDiagonal": "ahead of pace",
+      "belowDiagonal": "behind pace",
+      "diagonal": "even pace",
+      "xStart": "week start",
+      "xOrdinals": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "xEnd": "reset",
+      "footNote": "each account's own week",
+      "xCentre": null,
+      "_note": "xCentre is gone: the centre note moves from the axis to the card's foot line (footNote)."
+    },
+    "figures": [
+      {
+        "name": "Used",
+        "account": "Teams",
+        "mode": "used",
+        "usedPct": 52,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams 52%"
+      },
+      {
+        "name": "Left",
+        "account": "Teams",
+        "mode": "left",
+        "usedPct": 52,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams 48% left"
+      },
+      {
+        "name": "Vs pace, over",
+        "account": "Teams",
+        "mode": "vs",
+        "usedPct": 52,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams −13%"
+      },
+      {
+        "name": "Vs pace, under",
+        "account": "Teams",
+        "mode": "vs",
+        "usedPct": 30,
+        "elapsedPct": 49.2,
+        "spent": false,
+        "label": "Teams +19%"
+      },
+      {
+        "name": "Vs pace, on the mark",
+        "account": "Teams",
+        "mode": "vs",
+        "usedPct": 60.5,
+        "elapsedPct": 60.71,
+        "spent": false,
+        "label": "Teams 0%"
+      },
+      {
+        "name": "Vs pace with no reset clock falls back to Used",
+        "account": "Teams",
+        "mode": "vs",
+        "usedPct": 12,
+        "elapsedPct": null,
+        "spent": false,
+        "label": "Teams 12%"
+      },
+      {
+        "name": "spent, Used",
+        "account": "Teams",
+        "mode": "used",
+        "usedPct": 100,
+        "elapsedPct": 70.0,
+        "spent": true,
+        "label": "Teams 100%"
+      },
+      {
+        "name": "spent, Left prints 0% (as drawn, no 'left')",
+        "account": "Teams",
+        "mode": "left",
+        "usedPct": 100,
+        "elapsedPct": 70.0,
+        "spent": true,
+        "label": "Teams 0%"
+      },
+      {
+        "name": "spent, Vs pace prints the usage figure",
+        "account": "Teams",
+        "mode": "vs",
+        "usedPct": 100,
+        "elapsedPct": 70.0,
+        "spent": true,
+        "label": "Teams 100%"
+      },
+      {
+        "name": "Used truncates like the row",
+        "account": "Teams",
+        "mode": "used",
+        "usedPct": 51.5,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams 51%"
+      },
+      {
+        "name": "Left truncates the remainder like the row",
+        "account": "Teams",
+        "mode": "left",
+        "usedPct": 51.5,
+        "elapsedPct": 39.0,
+        "spent": false,
+        "label": "Teams 48% left"
+      },
+      {
+        "name": "no reading: not on the map",
+        "account": "Teams",
+        "mode": "used",
+        "usedPct": null,
+        "elapsedPct": null,
+        "spent": false,
+        "label": null
+      }
+    ],
+    "placement": [
+      {
+        "name": "dense 200-wide snapshot map",
+        "plot": {
+          "width": 200,
+          "height": 120
+        },
+        "geometry": {
+          "dotHalf": 7,
+          "nameGap": 2,
+          "fixedGap": 1,
+          "nameAreaMargin": {
+            "left": 2,
+            "top": 6,
+            "right": 8,
+            "bottom": 6
+          },
+          "spots": {
+            "rightDx": 10,
+            "belowDx": 2,
+            "belowDy": 3,
+            "leftDx": 10,
+            "aboveDy": 6
+          },
+          "leaderDistances": [
+            24,
+            36,
+            48
+          ]
+        },
+        "fixed": [
+          {
+            "word": "ahead of pace",
+            "box": [
+              4,
+              4,
+              65.1,
+              13
+            ]
+          },
+          {
+            "word": "behind pace",
+            "box": [
+              139.2,
+              103,
+              56.8,
+              13
+            ]
+          },
+          {
+            "word": "even pace",
+            "box": [
+              128,
+              34,
+              30,
+              30
+            ]
+          }
+        ],
+        "dots": [
+          {
+            "name": "Teams",
+            "weekGonePct": 62,
+            "usedPct": 74,
+            "nameWidth": 32.55,
+            "nameHeight": 13
+          },
+          {
+            "name": "Atlas",
+            "weekGonePct": 62,
+            "usedPct": 64,
+            "nameWidth": 24.15,
+            "nameHeight": 13
+          },
+          {
+            "name": "Lab",
+            "weekGonePct": 62,
+            "usedPct": 70,
+            "nameWidth": 17.85,
+            "nameHeight": 13
+          },
+          {
+            "name": "Work",
+            "weekGonePct": 56,
+            "usedPct": 48,
+            "nameWidth": 22.89,
+            "nameHeight": 13
+          },
+          {
+            "name": "Personal",
+            "weekGonePct": 68,
+            "usedPct": 58,
+            "nameWidth": 41.16,
+            "nameHeight": 13
+          },
+          {
+            "name": "Side",
+            "weekGonePct": 74,
+            "usedPct": 68,
+            "nameWidth": 21.0,
+            "nameHeight": 13
+          },
+          {
+            "name": "Gemini",
+            "weekGonePct": 88,
+            "usedPct": 92,
+            "nameWidth": 33.18,
+            "nameHeight": 13
+          },
+          {
+            "name": "Pro",
+            "weekGonePct": 58,
+            "usedPct": 62,
+            "nameWidth": 15.33,
+            "nameHeight": 13
+          },
+          {
+            "name": "Max",
+            "weekGonePct": 25,
+            "usedPct": 26,
+            "nameWidth": 19.74,
+            "nameHeight": 13
+          },
+          {
+            "name": "Plus",
+            "weekGonePct": 44,
+            "usedPct": 89,
+            "nameWidth": 21.0,
+            "nameHeight": 13
+          },
+          {
+            "name": "Ultra",
+            "weekGonePct": 37,
+            "usedPct": 38,
+            "nameWidth": 21.63,
+            "nameHeight": 13
+          }
+        ],
+        "expected": {
+          "order": [
+            "Gemini",
+            "Plus",
+            "Teams",
+            "Lab",
+            "Side",
+            "Atlas",
+            "Pro",
+            "Personal",
+            "Work",
+            "Ultra",
+            "Max"
+          ],
+          "names": [
+            {
+              "name": "Teams",
+              "spot": "left",
+              "box": [
+                81.45,
+                24.7,
+                32.55,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "overlaps a word"
+              ]
+            },
+            {
+              "name": "Atlas",
+              "spot": "leader",
+              "box": [
+                111.925,
+                79.2,
+                24.15,
+                13
+              ],
+              "leader": {
+                "distance": 36,
+                "direction": "S",
+                "end": [
+                  124.0,
+                  79.2
+                ]
+              },
+              "refusedFor": [
+                "overlaps a dot",
+                "overlaps a placed name",
+                "overlaps a word",
+                "path crosses a dot"
+              ]
+            },
+            {
+              "name": "Lab",
+              "spot": "none",
+              "box": null,
+              "leader": null,
+              "refusedFor": [
+                "leaves the plot",
+                "overlaps a dot",
+                "overlaps a placed name",
+                "overlaps a word",
+                "path crosses a dot",
+                "path crosses a placed name"
+              ]
+            },
+            {
+              "name": "Work",
+              "spot": "aboveLeft",
+              "box": [
+                79.11,
+                43.4,
+                22.89,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "overlaps a dot",
+                "overlaps a placed name",
+                "overlaps a word"
+              ]
+            },
+            {
+              "name": "Personal",
+              "spot": "leader",
+              "box": [
+                152.9706,
+                67.3706,
+                41.16,
+                13
+              ],
+              "leader": {
+                "distance": 24,
+                "direction": "SE",
+                "end": [
+                  152.9706,
+                  67.3706
+                ]
+              },
+              "refusedFor": [
+                "overlaps a dot",
+                "overlaps a placed name",
+                "overlaps a word"
+              ]
+            },
+            {
+              "name": "Side",
+              "spot": "leader",
+              "box": [
+                172.0,
+                31.9,
+                21.0,
+                13
+              ],
+              "leader": {
+                "distance": 24,
+                "direction": "E",
+                "end": [
+                  172.0,
+                  38.4
+                ]
+              },
+              "refusedFor": [
+                "overlaps a dot",
+                "overlaps a word"
+              ]
+            },
+            {
+              "name": "Gemini",
+              "spot": "left",
+              "box": [
+                132.82,
+                3.1,
+                33.18,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "leaves the plot"
+              ]
+            },
+            {
+              "name": "Pro",
+              "spot": "leader",
+              "box": [
+                52.67,
+                39.1,
+                15.33,
+                13
+              ],
+              "leader": {
+                "distance": 48,
+                "direction": "W",
+                "end": [
+                  68.0,
+                  45.6
+                ]
+              },
+              "refusedFor": [
+                "overlaps a dot",
+                "overlaps a placed name",
+                "overlaps a word",
+                "path crosses a dot"
+              ]
+            },
+            {
+              "name": "Max",
+              "spot": "below",
+              "box": [
+                52.0,
+                98.3,
+                19.74,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "overlaps a placed name"
+              ]
+            },
+            {
+              "name": "Plus",
+              "spot": "right",
+              "box": [
+                98.0,
+                6.7,
+                21.0,
+                13
+              ],
+              "leader": null,
+              "refusedFor": []
+            },
+            {
+              "name": "Ultra",
+              "spot": "below",
+              "box": [
+                76.0,
+                83.9,
+                21.63,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "overlaps a dot"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "Projection layer on: a name does not sit on its own tail or on any ring",
+        "plot": {
+          "width": 200,
+          "height": 120
+        },
+        "geometry": {
+          "dotHalf": 7,
+          "nameGap": 2,
+          "fixedGap": 1,
+          "nameAreaMargin": {
+            "left": 2,
+            "top": 6,
+            "right": 8,
+            "bottom": 6
+          },
+          "spots": {
+            "rightDx": 10,
+            "belowDx": 2,
+            "belowDy": 3,
+            "leftDx": 10,
+            "aboveDy": 6
+          },
+          "leaderDistances": [
+            24,
+            36,
+            48
+          ]
+        },
+        "fixed": [],
+        "rings": [
+          {
+            "of": "Teams",
+            "box": [
+              196.5,
+              26.5,
+              7,
+              7
+            ]
+          }
+        ],
+        "dots": [
+          {
+            "name": "Teams",
+            "weekGonePct": 60,
+            "usedPct": 52,
+            "nameWidth": 32.55,
+            "nameHeight": 13,
+            "tail": {
+              "toWeekGonePct": 100,
+              "toUsedPct": 75
+            }
+          },
+          {
+            "name": "Lab",
+            "weekGonePct": 40,
+            "usedPct": 20,
+            "nameWidth": 17.85,
+            "nameHeight": 13
+          }
+        ],
+        "expected": {
+          "order": [
+            "Teams",
+            "Lab"
+          ],
+          "names": [
+            {
+              "name": "Teams",
+              "spot": "below",
+              "box": [
+                122.0,
+                67.1,
+                32.55,
+                13
+              ],
+              "leader": null,
+              "refusedFor": [
+                "sits on its own tail"
+              ]
+            },
+            {
+              "name": "Lab",
+              "spot": "right",
+              "box": [
+                90.0,
+                89.5,
+                17.85,
+                13
+              ],
+              "leader": null,
+              "refusedFor": []
+            }
+          ]
+        }
+      }
+    ]
   },
   "paceLineForms": [
     {
-      "name": "full, then without the weekday, then the floor",
+      "name": "another day: resets, then the bare reset, then the weekday alone, then the floor",
       "side": "over",
       "durationMs": 86399999,
       "nowLocal": "2026-11-04T14:00",
       "resetLocal": "2026-11-11T12:30",
       "hour24": false,
       "forms": [
+        "23h 59m ahead · resets Wed 12:30 PM",
         "23h 59m ahead · Wed 12:30 PM",
-        "23h 59m ahead · 12:30 PM",
+        "23h 59m ahead · Wed",
         "23h 59m ahead"
       ]
     },
     {
-      "name": "on the mark",
+      "name": "tomorrow, under 24 h: still another day, so the weekday stays to the last",
+      "side": "under",
+      "durationMs": 3600000,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-05T09:00",
+      "hour24": false,
+      "forms": [
+        "1h 0m behind · resets Thu 9:00 AM",
+        "1h 0m behind · Thu 9:00 AM",
+        "1h 0m behind · Thu",
+        "1h 0m behind"
+      ]
+    },
+    {
+      "name": "on the mark, another day",
       "side": "on",
       "durationMs": null,
       "nowLocal": "2026-11-04T14:00",
-      "resetLocal": "2026-11-11T12:30",
+      "resetLocal": "2026-11-07T08:00",
       "hour24": false,
       "forms": [
-        "On the mark · Wed 12:30 PM",
-        "On the mark · 12:30 PM",
+        "On the mark · resets Sat 8:00 AM",
+        "On the mark · Sat 8:00 AM",
+        "On the mark · Sat",
         "On the mark"
       ]
     },
     {
-      "name": "a reset later today has no weekday to drop",
+      "name": "later today: no weekday, so a bare clock (it means today), then the floor",
       "side": "under",
       "durationMs": 125280000,
       "nowLocal": "2026-11-04T14:00",
       "resetLocal": "2026-11-04T23:00",
       "hour24": false,
       "forms": [
+        "1d 10h behind · resets 11:00 PM",
         "1d 10h behind · 11:00 PM",
         "1d 10h behind"
       ]
     },
     {
-      "name": "24-hour",
+      "name": "24-hour, another day",
       "side": "under",
       "durationMs": 604799999,
       "nowLocal": "2026-11-04T14:00",
       "resetLocal": "2026-11-05T09:00",
       "hour24": true,
       "forms": [
+        "6d 23h behind · resets Thu 09:00",
         "6d 23h behind · Thu 09:00",
-        "6d 23h behind · 09:00",
+        "6d 23h behind · Thu",
         "6d 23h behind"
+      ]
+    },
+    {
+      "name": "24-hour, later today",
+      "side": "over",
+      "durationMs": 3540000,
+      "nowLocal": "2026-11-04T14:00",
+      "resetLocal": "2026-11-04T23:00",
+      "hour24": true,
+      "forms": [
+        "59m ahead · resets 23:00",
+        "59m ahead · 23:00",
+        "59m ahead"
+      ]
+    },
+    {
+      "name": "the wireframe's moment (Tue 10 Nov 2:00 PM): a reset days away ends on the weekday, never a bare clock",
+      "side": "under",
+      "durationMs": 20700000,
+      "nowLocal": "2026-11-10T14:00",
+      "resetLocal": "2026-11-15T21:30",
+      "hour24": false,
+      "forms": [
+        "5h 45m behind · resets Sun 9:30 PM",
+        "5h 45m behind · Sun 9:30 PM",
+        "5h 45m behind · Sun",
+        "5h 45m behind"
       ]
     },
     {
@@ -356,6 +1017,1382 @@
       "resetLocal": "2026-11-11T12:30",
       "hour24": false,
       "forms": []
+    }
+  ],
+  "dayGrid": [
+    {
+      "name": "7-day, the wireframe's first drawing: now at 39% is in column 3, so \"3\" gives way",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-07T02:58",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 132.1024,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 72.6429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": false,
+            "why": "gives way to now: gap -0.84 < 6"
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": false
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 217.9286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": true,
+            "centreX": 266.3571,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, now late in column 3: \"3\" stays and is bold",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-07T08:30",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 143.2679,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 72.6429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 121.0714,
+            "bold": true
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": false
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 217.9286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": true,
+            "centreX": 266.3571,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, now on a column line belongs to the later column (start + 2 x 24 h is column 3)",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-06T09:30",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 96.8571,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 72.6429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 121.0714,
+            "bold": true
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": false
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 217.9286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": true,
+            "centreX": 266.3571,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, now in column 7 (the reset's): no ordinal is bold; the end labels never are (\"now\" hidden this close to the end, as the family's chart does)",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-10T14:00",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": false,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 7,
+        "nowX": 299.6518,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 72.6429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 121.0714,
+            "bold": false
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": false
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 217.9286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": true,
+            "centreX": 266.3571,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, narrow (two-stack half, 150 wide): ordinals that touch an end label give way",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-07T21:30",
+      "hour24": false,
+      "plotWidth": 150,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 4,
+        "nowX": 75.0,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 32.1429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 53.5714,
+            "bold": false
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": false,
+            "why": "gives way to now: gap -5.32 < 6"
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 96.4286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": false,
+            "why": "gives way to an end label: gap 0.31 < 4"
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, the wireframe's iOS cap half (150 wide, now at 39%): by the rule \"2\" and \"5\" stay (the drawing, measured at 5.2 per character, shows \"4\" and \"5\")",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-07T02:58",
+      "hour24": false,
+      "plotWidth": 150,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 58.4524,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 32.1429,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": false,
+            "why": "gives way to now: gap -5.32 < 6"
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": false,
+            "why": "gives way to now: gap 4.67 < 6"
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": true,
+            "centreX": 96.4286,
+            "bold": false
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": false,
+            "why": "gives way to an end label: gap 0.31 < 4"
+          }
+        ]
+      }
+    },
+    {
+      "name": "7-day, columns under 14 wide: no ordinals at all (the grid lines still draw)",
+      "columns": 7,
+      "startLocal": "2026-11-04T09:30",
+      "nowLocal": "2026-11-07T21:30",
+      "hour24": false,
+      "plotWidth": 90,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.85,
+        "end": 29.17,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-05T09:30",
+            "xFraction": 0.14285714285714285
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-06T09:30",
+            "xFraction": 0.2857142857142857
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-07T09:30",
+            "xFraction": 0.42857142857142855
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-08T09:30",
+            "xFraction": 0.5714285714285714
+          },
+          {
+            "k": 5,
+            "atLocal": "2026-11-09T09:30",
+            "xFraction": 0.7142857142857143
+          },
+          {
+            "k": 6,
+            "atLocal": "2026-11-10T09:30",
+            "xFraction": 0.8571428571428571
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 14.285714285714286
+          },
+          {
+            "k": 2,
+            "pct": 28.571428571428573
+          },
+          {
+            "k": 3,
+            "pct": 42.857142857142854
+          },
+          {
+            "k": 4,
+            "pct": 57.142857142857146
+          },
+          {
+            "k": 5,
+            "pct": 71.42857142857143
+          },
+          {
+            "k": 6,
+            "pct": 85.71428571428571
+          }
+        ],
+        "nowColumn": 4,
+        "nowX": 45.0,
+        "startLabel": "4 Nov",
+        "endLabel": "11 Nov",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": false,
+            "why": "column 12.86 < 14"
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": false,
+            "why": "column 12.86 < 14"
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": false,
+            "why": "column 12.86 < 14"
+          },
+          {
+            "text": "5",
+            "column": 5,
+            "drawn": false,
+            "why": "column 12.86 < 14"
+          },
+          {
+            "text": "6",
+            "column": 6,
+            "drawn": false,
+            "why": "column 12.86 < 14"
+          }
+        ]
+      }
+    },
+    {
+      "name": "5h, the wireframe's drawing: now at 52% is in column 3, so \"3\" gives way",
+      "columns": 5,
+      "startLocal": "2026-11-10T09:00",
+      "nowLocal": "2026-11-10T11:36",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 34.01,
+        "end": 34.01,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-10T10:00",
+            "xFraction": 0.2
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-10T11:00",
+            "xFraction": 0.4
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-10T12:00",
+            "xFraction": 0.6
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-10T13:00",
+            "xFraction": 0.8
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 20.0
+          },
+          {
+            "k": 2,
+            "pct": 40.0
+          },
+          {
+            "k": 3,
+            "pct": 60.0
+          },
+          {
+            "k": 4,
+            "pct": 80.0
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 176.28,
+        "startLabel": "9:00 AM",
+        "endLabel": "2:00 PM",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 101.7,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": false,
+            "why": "gives way to now: gap -5.09 < 6"
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 237.3,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "5h, now early in column 3: \"3\" stays and is bold",
+      "columns": 5,
+      "startLocal": "2026-11-10T09:00",
+      "nowLocal": "2026-11-10T11:05",
+      "hour24": false,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 34.01,
+        "end": 34.01,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-10T10:00",
+            "xFraction": 0.2
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-10T11:00",
+            "xFraction": 0.4
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-10T12:00",
+            "xFraction": 0.6
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-10T13:00",
+            "xFraction": 0.8
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 20.0
+          },
+          {
+            "k": 2,
+            "pct": 40.0
+          },
+          {
+            "k": 3,
+            "pct": 60.0
+          },
+          {
+            "k": 4,
+            "pct": 80.0
+          }
+        ],
+        "nowColumn": 3,
+        "nowX": 141.25,
+        "startLabel": "9:00 AM",
+        "endLabel": "2:00 PM",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 101.7,
+            "bold": false
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": true
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 237.3,
+            "bold": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "5h, 24-hour clocks at the ends",
+      "columns": 5,
+      "startLocal": "2026-11-10T09:00",
+      "nowLocal": "2026-11-10T10:10",
+      "hour24": true,
+      "plotWidth": 339,
+      "nowLabel": true,
+      "widths": {
+        "start": 23.47,
+        "end": 23.47,
+        "ordinal": 5.32,
+        "now": 18.43
+      },
+      "nowGap": 6,
+      "endGap": 4,
+      "dropBelowColumn": 14,
+      "expected": {
+        "verticals": [
+          {
+            "k": 1,
+            "atLocal": "2026-11-10T10:00",
+            "xFraction": 0.2
+          },
+          {
+            "k": 2,
+            "atLocal": "2026-11-10T11:00",
+            "xFraction": 0.4
+          },
+          {
+            "k": 3,
+            "atLocal": "2026-11-10T12:00",
+            "xFraction": 0.6
+          },
+          {
+            "k": 4,
+            "atLocal": "2026-11-10T13:00",
+            "xFraction": 0.8
+          }
+        ],
+        "horizontals": [
+          {
+            "k": 1,
+            "pct": 20.0
+          },
+          {
+            "k": 2,
+            "pct": 40.0
+          },
+          {
+            "k": 3,
+            "pct": 60.0
+          },
+          {
+            "k": 4,
+            "pct": 80.0
+          }
+        ],
+        "nowColumn": 2,
+        "nowX": 79.1,
+        "startLabel": "09:00",
+        "endLabel": "14:00",
+        "ordinals": [
+          {
+            "text": "2",
+            "column": 2,
+            "drawn": true,
+            "centreX": 101.7,
+            "bold": true
+          },
+          {
+            "text": "3",
+            "column": 3,
+            "drawn": true,
+            "centreX": 169.5,
+            "bold": false
+          },
+          {
+            "text": "4",
+            "column": 4,
+            "drawn": true,
+            "centreX": 237.3,
+            "bold": false
+          }
+        ]
+      }
+    }
+  ],
+  "quiet": [
+    {
+      "name": "no use",
+      "usedPct": 0.0,
+      "rowPrints": "0%",
+      "plotted": false
+    },
+    {
+      "name": "a sliver",
+      "usedPct": 0.3,
+      "rowPrints": "0%",
+      "plotted": false
+    },
+    {
+      "name": "half a point still prints 0%",
+      "usedPct": 0.5,
+      "rowPrints": "0%",
+      "plotted": false
+    },
+    {
+      "name": "just under the edge",
+      "usedPct": 0.99,
+      "rowPrints": "0%",
+      "plotted": false
+    },
+    {
+      "name": "on the edge: prints 1%",
+      "usedPct": 1.0,
+      "rowPrints": "1%",
+      "plotted": true
+    },
+    {
+      "name": "just over",
+      "usedPct": 1.01,
+      "rowPrints": "1%",
+      "plotted": true
+    },
+    {
+      "name": "a reading of 52.9 prints 52%",
+      "usedPct": 52.9,
+      "rowPrints": "52%",
+      "plotted": true
+    },
+    {
+      "name": "no reading",
+      "usedPct": null,
+      "rowPrints": null,
+      "plotted": false,
+      "why": "off the map as before; counted by the foot line"
+    },
+    {
+      "name": "not started (no reset clock, section 1.1)",
+      "usedPct": 0.0,
+      "resetMs": null,
+      "rowPrints": "0%",
+      "plotted": false,
+      "why": "an untouched window prints 0%; with no reset clock it has no x either"
+    }
+  ],
+  "callout": {
+    "forecast": [
+      {
+        "name": "projects under 100: the projected % at the reset",
+        "usedPct": 52,
+        "nowMs": 1793800800000,
+        "resetMs": 1794038400000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 74.4,
+          "hitsLimitAtMs": null
+        },
+        "spent": false,
+        "text": "~74% at reset"
+      },
+      {
+        "name": "rounds half up",
+        "usedPct": 52,
+        "nowMs": 1793800800000,
+        "resetMs": 1794038400000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 73.5,
+          "hitsLimitAtMs": null
+        },
+        "spent": false,
+        "text": "~74% at reset"
+      },
+      {
+        "name": "runs out on another day (the wireframe's Wed 6:10 PM, seen on Tue): the instant, as a reset is printed",
+        "usedPct": 91,
+        "nowMs": 1794319200000,
+        "resetMs": 1794578400000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 100.0,
+          "hitsLimitAtMs": 1794420600000
+        },
+        "spent": false,
+        "text": "100% at Wed 6:10 PM"
+      },
+      {
+        "name": "runs out later today: a bare clock (it means today)",
+        "usedPct": 91,
+        "nowMs": 1793800800000,
+        "resetMs": 1793902500000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 100.0,
+          "hitsLimitAtMs": 1793815800000
+        },
+        "spent": false,
+        "text": "100% at 6:10 PM"
+      },
+      {
+        "name": "a projection of 99.6 that does not run out prints ~100% at reset",
+        "usedPct": 80,
+        "nowMs": 1793800800000,
+        "resetMs": 1794038400000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 99.6,
+          "hitsLimitAtMs": null
+        },
+        "spent": false,
+        "text": "~100% at reset"
+      },
+      {
+        "name": "no estimate (too little span or movement): no third line, no tail",
+        "usedPct": 52,
+        "nowMs": 1793800800000,
+        "resetMs": 1794038400000,
+        "hour24": false,
+        "estimate": null,
+        "spent": false,
+        "text": null
+      },
+      {
+        "name": "spent: no forecast, no tail",
+        "usedPct": 100,
+        "nowMs": 1793800800000,
+        "resetMs": 1794038400000,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 100.0,
+          "hitsLimitAtMs": null
+        },
+        "spent": true,
+        "text": null
+      },
+      {
+        "name": "no reset clock: no forecast, no tail",
+        "usedPct": 12,
+        "nowMs": 1793800800000,
+        "resetMs": null,
+        "hour24": false,
+        "estimate": {
+          "pctAtReset": 40.0,
+          "hitsLimitAtMs": null
+        },
+        "spent": false,
+        "text": null
+      }
+    ]
+  },
+  "projectionLayer": [
+    {
+      "name": "projects under 100: the projected % at the reset",
+      "usedPct": 52,
+      "nowMs": 1793800800000,
+      "resetMs": 1794038400000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 74.4,
+        "hitsLimitAtMs": null
+      },
+      "spent": false,
+      "layer": {
+        "endWeekGonePct": 100.0,
+        "endUsedPct": 74.4,
+        "ring": "hollow",
+        "tailEnd": "accent"
+      }
+    },
+    {
+      "name": "rounds half up",
+      "usedPct": 52,
+      "nowMs": 1793800800000,
+      "resetMs": 1794038400000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 73.5,
+        "hitsLimitAtMs": null
+      },
+      "spent": false,
+      "layer": {
+        "endWeekGonePct": 100.0,
+        "endUsedPct": 73.5,
+        "ring": "hollow",
+        "tailEnd": "accent"
+      }
+    },
+    {
+      "name": "runs out on another day (the wireframe's Wed 6:10 PM, seen on Tue): the instant, as a reset is printed",
+      "usedPct": 91,
+      "nowMs": 1794319200000,
+      "resetMs": 1794578400000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 100.0,
+        "hitsLimitAtMs": 1794420600000
+      },
+      "spent": false,
+      "layer": {
+        "endWeekGonePct": 73.90873,
+        "endUsedPct": 100.0,
+        "ring": "red",
+        "tailEnd": "red"
+      }
+    },
+    {
+      "name": "runs out later today: a bare clock (it means today)",
+      "usedPct": 91,
+      "nowMs": 1793800800000,
+      "resetMs": 1793902500000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 100.0,
+        "hitsLimitAtMs": 1793815800000
+      },
+      "spent": false,
+      "layer": {
+        "endWeekGonePct": 85.664683,
+        "endUsedPct": 100.0,
+        "ring": "red",
+        "tailEnd": "red"
+      }
+    },
+    {
+      "name": "a projection of 99.6 that does not run out prints ~100% at reset",
+      "usedPct": 80,
+      "nowMs": 1793800800000,
+      "resetMs": 1794038400000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 99.6,
+        "hitsLimitAtMs": null
+      },
+      "spent": false,
+      "layer": {
+        "endWeekGonePct": 100.0,
+        "endUsedPct": 99.6,
+        "ring": "hollow",
+        "tailEnd": "accent"
+      }
+    },
+    {
+      "name": "no estimate (too little span or movement): no third line, no tail",
+      "usedPct": 52,
+      "nowMs": 1793800800000,
+      "resetMs": 1794038400000,
+      "hour24": false,
+      "estimate": null,
+      "spent": false,
+      "layer": null
+    },
+    {
+      "name": "spent: no forecast, no tail",
+      "usedPct": 100,
+      "nowMs": 1793800800000,
+      "resetMs": 1794038400000,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 100.0,
+        "hitsLimitAtMs": null
+      },
+      "spent": true,
+      "layer": null
+    },
+    {
+      "name": "no reset clock: no forecast, no tail",
+      "usedPct": 12,
+      "nowMs": 1793800800000,
+      "resetMs": null,
+      "hour24": false,
+      "estimate": {
+        "pctAtReset": 40.0,
+        "hitsLimitAtMs": null
+      },
+      "spent": false,
+      "layer": null
     }
   ]
 }

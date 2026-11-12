@@ -33,6 +33,7 @@ Differs from `design/dual-identity-wireframe.html` (rooms): the dark Claude room
 | Used / Left | Settings "Usage display"; flips only the words and figures. Bars, colours, guides and the pace tick always show what is spent. Used truncates, Left floors the remainder, over-limit clamps Left at 0 | `A/ui/Palette.kt:420-430`, `I/Shared/Display.swift:50` |
 | Reset wording | countdown "Resets in 2h 41m" (days form "Resets in 1d 3h"); "Resets soon" inside 5 minutes; clock "Resets at Thu 9:50 PM". Settings "Reset time" decides which leads; the other keeps the second slot where there is room | `A/ui/Palette.kt:311`, `A/MainCards.kt:222` |
 | Window not started | no reset time: "Starts when a message is sent", no chart, no pace, no projection (CCBG-30 (Phantom Window)) | `A/MainCards.kt:222`, `I/Shared/CardContent.swift:44` |
+| Pace line (v2.0, both platforms) | the Weekly line names the reset (CCRM-108 (Reset Named)): "21h 50m ahead · resets Sun 5:08 PM", "1d 18h behind · resets Sun 10:17 AM", "On the mark · resets Sat 8:00 AM"; the duration and word are the tinted span (semibold; red ahead, green behind, ink on the mark), the rest the surface's ink. Drop order by measured width, one everywhere: another day "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor (the span alone, never cut); a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today. Below the floor Android steps the text to 10 sp, then ellipsizes; iOS steps the floor to 0.8 of its size (`FitLine`, four variants). Where: the tile's folded and open pace lines and the Summary's line 3; spent, held ("Held · back at … · resets Fri"), signed-out, unclocked and no-reading lines are unchanged; the one-line Summary row's word slot is still the tinted span alone and the share card's Weekly row keeps "Resets …" in its right slot. iOS prints this line's clock "AM"/"PM" while its card lines (reset row, "Out until Fri 1:48 pm") print "pm" in lower case — filed as CCBG-82 (Clock Case Mix) | Android `PaceText.paceLineForms`; iOS `I/Shared/PaceLineView.swift` (`FitLine`) |
 
 ---
 
@@ -47,7 +48,7 @@ Android, top to bottom: optional synthetic-data banner, top app bar, [app-wide n
 | Synthetic banner | 34 dp tall, `#9A6B1E` fill, text "SYNTHETIC DATA · tap to turn off" 11.5 sp bold `#1A1400`, letter-spacing 0.35 sp; whole bar taps to turn it off. Main only, debug-only | `A/MainActivity.kt:351` |
 | Title | The app's identity (Robin, 2026-11-02): Claude, ChatGPT and Gemini marks, always all three, 20 dp each in its provider colour (the drawables' own optical sizing: Claude at 82% of its box, the ChatGPT blossom ~93%, the Gemini spark 93%), 4 dp apart, 8 dp gap, text "Cooldown". Where the three do not fit beside the text in the width the top bar leaves (measured: 76 dp of marks and gaps + the text's measured width; about 180 dp, so a 320 dp phone falls back), the app's own "Shared pace" tile (`ic_app_mark`, 24 dp, CCRM-101 (Icon v3)'s master on a rounded plate) stands in for the three. Other screens show a plain text title: "Settings", "Usage history" | `A/MainActivity.kt` (`AppTitle`, `AppTitleMarks`) |
 | Actions | History (calendar icon, "Usage history"), Settings (gear, "Settings"), then the ⋮ ("More options") only when the selected account has a reading | `A/MainActivity.kt` (`canShare`) |
-| ⋮ menu | "Main screen layout" (only when the account has two or more cards), "Share snapshot" | `A/MainActivity.kt:425` |
+| ⋮ menu | "Main screen layout" (only when the account has two or more cards), "Share snapshot"; on the All tab one item, "Share snapshot" (the Summary snapshot, §8; hidden when no shown account has a reading) | `A/MainActivity.kt:425` |
 | Content column | horizontal padding 20 dp, capped at 760 dp wide (`ChartColumnMaxWidth`), centred, vertical scroll; 16 dp above the first card, 24 dp below the last | `A/ui/Adaptive.kt:93,184`, `A/MainActivity.kt` (`ProfileTabs`) |
 | One account at a time | at every width, tabs and swipe included; a wide window never splits into two profile panes | `A/MainActivity.kt:543` |
 | Back | system back walks Settings/History → Main instead of exiting | `A/MainActivity.kt` (`BackHandler`) |
@@ -71,7 +72,7 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 | Visibility | none with one account (no strip, the ~48 dp is given back); tab only for accounts holding a token | strip shown whenever there are accounts | `A/MainActivity.kt:553`, `I/App/UI/MainScreens.swift:168` |
 | Label | provider mark 20 dp in the account accent, 6 dp gap, account name (max 16 characters); label text neutral (`onSurface`, unselected 60% alpha), never the accent, to avoid a mid-swipe colour crossfade | mark 20 pt, 7 pt gap, name 16 pt medium; selected ink, unselected sub | `A/ui/ProviderMark.kt:54` |
 | Indicator | secondary indicator in the selected account's accent | 3 pt capsule in the account accent under the selected tab | same |
-| Fit | fixed `TabRow` up to 3 accounts, `ScrollableTabRow` from 4, the same on cover and inner | 1–3 accounts share the width equally and do not scroll; 4+ tabs are at least 110 pt and scroll | `A/MainActivity.kt:165` (`FIXED_TAB_LIMIT`) |
+| Fit | the shared rule (CCBG-81 (History Tab Wrap), Robin's option B, approved 2026-11-11, `design/2026-11-11-ccbg81-history-tab-strip.html`): an account strip is fixed (equal shares) while every tab's label fits its share on one line, and scrolls once one would not — it follows the names, the width and the font size, not the account count. Android as built: Main's and History's strips are one composable; each tab's label (mark + name, "All" included) is measured at its one-line width in titleSmall plus the tab's 32 dp padding; while all fit their equal share it is the fixed `TabRow`, else the `ScrollableTabRow` (edge padding 0). History at 360 dp with three accounts scrolls ("Personal" on one line); the cover keeps three short names in fixed thirds; a long name with two accounts scrolls instead of wrapping, on Main too; on the cover and the inner screen Main's strip is fixed whenever its labels fit (it used to scroll from four tabs). `FIXED_TAB_LIMIT` is gone. Captures `design/research/2026-11-v20-build/A6/ccbg81/` | iOS differs today: Main uses native tabs ("Native tabs" below). The History strip (`AccountTabs`, `I/App/UI/MainScreens.swift`) is one line at a fixed 16 pt (`lineLimit(1)`, no Dynamic Type): 1–3 accounts in equal shares, scrolling from four (tabs ≥ 110 pt). It cannot wrap: "Personal" fits whole on the folded iPhone Duo (127 pt per tab) and the iPhone 17e (130 pt); below a column of about 354 pt a label would truncate ("Perso…") instead of the strip scrolling — filed as CCBG-88 (Tab Strip Truncates). Source `design/2026-11-11-iphone-duo-pass.html` §5 | `A/ui/ProfileTabStrip.kt`; `I/App/UI/MainScreens.swift` (`AccountTabs`) |
 | Selection | keyed on the account key, not position, so reordering accounts in Settings keeps the same account on screen | `selectedKey` | `A/MainActivity.kt:557-600` |
 | Reduce motion | tab tap jumps instead of animating when the system animator scale is 0 | `withAnimation` | `A/ui/Adaptive.kt:Motion` |
 
@@ -148,11 +149,11 @@ Android anatomy: title "7-day window" (titleSmall, chevron beside it in Compact)
 | Part | Rule | Source |
 |---|---|---|
 | Chips | `FilterChip` row, 8 dp gap, "All" plus one chip per cap; shown only when the account has a cap; selects which series the chart, pace line, projection and reset row follow; stored per account, survives collapse; a stored name the account no longer has falls back to All | `A/MainCards.kt:717`, `weeklyChartSelection` |
-| Two stacks | when the card is open, has a cap, and the window is ≥ 700 dp: All on the left, one cap on the right, 16 dp gutter, each a full stack (row, bar, chart, pace, projection, divider, reset row). With two or more caps the right stack carries the chip pair choosing the cap (no "All" chip); with one cap there is no toggle. "All" selected resolves to the first cap | `A/MainCards.kt:634` |
+| Two stacks | (v1.9 card; on Android the account tile replaced it, so its "All" row label no longer exists — v2.0's chip is "7d", see the tile) when the card is open, has a cap, and the window is ≥ 700 dp: All on the left, one cap on the right, 16 dp gutter, each a full stack (row, bar, chart, pace, projection, divider, reset row). With two or more caps the right stack carries the chip pair choosing the cap (no "All" chip); with one cap there is no toggle. "All" selected resolves to the first cap | `A/MainCards.kt:634` |
 | Compact folded | title, every bar (All plus caps), then one line for All only: "Resets in 3d 4h · 8% below pace" | `A/MainCards.kt:547` |
 | Weekly only | a plan with no 5-hour window shows this card first; the account tab and sidebar show Weekly | |
 
-iOS (`I/App/UI/Cards.swift:87`): title "7-day window" with chevron; with a cap, two halves side by side (16 pt gap): "All" and the first cap with "Claude " stripped from its name; each half has its own row (16 pt label, 17 pt bold figure), 9 pt bar, chart (height min(chart height, 120) with a cap), pace line 13.5 pt, projection line, reset line (short form: leading reset only). Without a cap one full-width half. Folded: title, both halves' rows and bars, then the folded line for All at 13.5 pt.
+iOS (`I/App/UI/Cards.swift:87`): title "7-day window" with chevron; with a cap, two halves side by side (16 pt gap): "All" and the first cap with "Claude " stripped from its name; each half has its own row (16 pt label, 17 pt bold figure), 9 pt bar, chart (height min(chart height, 120) with a cap), pace line 13.5 pt, projection line, reset line (short form: leading reset only). Without a cap one full-width half. Folded: title, both halves' rows and bars, then the folded line for All at 13.5 pt. Since v2.0 the left half reads "7d" (CCRM-106 (7d Chip)); the card (`WeeklyCard`) is kept in code but placed by no layout since CCRM-103 (Hybrid Notification).
 
 Differs from `design/2026-09-17-main-screen-redesign.html` §4/§8 on iOS: there are no All/cap chips; the cap half shows no history chart samples (iOS passes no history for the cap), only its bar and reading.
 
@@ -232,8 +233,46 @@ Differs from Android: iOS draws the three conditions of `spec/mobile/BEHAVIOR-MO
 |---|---|---|
 | Android | zero accounts | the registry's first account's page with "No Claude account yet" (above); no tab strip; a notification-permission prompt on Android 13+. There is no onboarding screen |
 | iOS | zero accounts | `EmptyStateView`: title "Cooldown" 34 pt bold top-left; centred Claude and ChatGPT marks 54 pt, 14 pt apart; headline "Track your usage windows" 22 pt bold; body "See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude and ChatGPT." 15.5 pt centred; two 260 pt-wide capsule buttons "Add a Claude account" and "Add a ChatGPT account" (accent fill, black text); footnote "Not affiliated with Anthropic or OpenAI." 12.5 pt; toolbar buttons hidden |
+| Both | sample entry | "Try with sample data" on the first screen (Android: a 48 dp text button in the accent, 12 dp under the "No … account yet" card, caption "Three made-up accounts to look around. Nothing is saved or sent." bodySmall muted; iOS: under the capsules); see "Sample data" below |
 
 Approved by `design/2026-10-23-ios-wireframes.html` rev B (first launch). Differs from it on Android: the wireframe is iOS only; Android has no equivalent screen.
+
+### 2.8 The Summary — header, Personal/Work filter, row glyph and Pace map (v2.0, both platforms)
+
+The Summary's rows and per-platform layout are in "New §2.8 The Summary (All tab)" under "v2.0 on Android" and "v2.0 on iOS" below; this section holds what both platforms built on 2026-11-11 from `design/2026-11-10-v20-feedback-wireframes.html` rev B §5–§9 as amended by the addendum `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` (§Row glyph, §Adding and tagging, which wins), CCRM-109 (Quiet Accounts), CCRM-110 (Account Tags), CCRM-111 (Map Layers), CCRM-115 (Row Tag Glyph). Android code: `data/AccountTag.kt` (tag and filter rules), `ui/AccountTags.kt`, `ui/SummaryRows.kt`, `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/PaceMapRules.kt` (quiet rule, foot line, figures, callout forecast, projection end, pin and hit test), `ui/MapLabels.kt`. iOS code: `I/App/UI/AccountTags.swift`, `Summary.swift`, `SummarySnapshot.swift`, `SignInSheets.swift`, `SettingsHistory.swift`, `AppModel.swift`, `I/App/UI/PaceMap.swift` (the old `PaceMapLayout` is gone); rules CooldownCore `AccountTag`, `SummaryFilter` (`resolve`, `memory`), `RowGlyphFit`, `PaceMapRules`, `MapLabels`. Captures `design/research/2026-11-v20-build/A3/`, `A4/` (Android); `I2/` (built at 42ad02e; iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape, dark and light, from the `-demo map|dense|quiet|hidden` scenarios; `render/` holds every chip combination, callout and quiet state from `PaceMapTests`), `I3/` (built at a43afb4 and its close-out commit), `I4/` (iOS).
+
+#### Header
+
+"Weekly", then the **All · Personal · Work** control (the chosen segment tonal and semibold; a segment with no accounts at 38%), then the sort menu at the right ("your order ▾": the four orders with a check on the current one; the same setting as Appearance › Summary order, which stays). The control shows whenever the Summary exists (two or more accounts). Where the line cannot hold all three the sort button shows its glyph alone ("⇅ ▾"), then the control wraps under the title across the whole width. A tap on a dimmed segment shows "No Work accounts yet. Tag one in Settings." ("Personal" likewise) under the header for 3 s.
+
+| | Android | iOS |
+|---|---|---|
+| Sizes | "Weekly" titleSmall; control 28 dp, 12 sp; sort a 28 dp outlined button | "Weekly" 17 pt; control 13 pt, 28 pt high, an outlined bar of three segments; sort 13 pt, 1 pt `line` outline, radius 8, a native pull-down |
+| When it narrows | the sort button is its glyph on a list under 320 dp wide (a 360 dp phone); from font scale 1.5 the control wraps | by measured line width (VoiceOver "Sort: your order"); the iPad's list column carries the header and the map column follows it |
+| Dimmed segment | the 3 s line 12 sp muted | 12 pt `sub`, also announced to VoiceOver; the segment is a Button that is never disabled, so the tap arrives, read as "Work, dimmed" |
+
+#### The filter
+
+The remembered value (`summaryFilter`, a new key; v1.9 never reads it; Android in its preferences, iOS in the App Group) is the last segment tapped. The filter in force is that value when it names an enabled segment, else All; the filter narrows the accounts before the order ranks them, so the list, the rank numbers, the Pace map with its foot-line count and empty message, the one-line threshold (six rows **shown**, not six accounts) and the snapshot follow the same rows. The footer and refresh still cover every account. **Memory rule:** a stored value the filter in force does not match (unknown, or its group has no accounts) is rewritten to `all` at once; an absent value stays absent; tagging later never brings the old choice back. It runs when the Summary comes on screen and whenever the accounts or a tag change (Android `UsageCache.settleSummaryFilter`, called from `UsageRepository`'s add / tag / remove and by the Summary); iOS (`SummaryFilter.memory`, run by `AppModel.runFilterMemory`) also runs it at launch and when the Summary changes, while the Summary exists; in the sample it touches only the sample's settings copy, and a screenshot `-demo` launch leaves the user's key alone; the view reads the stored value on every draw.
+
+#### Row glyph (CCRM-115 (Row Tag Glyph))
+
+An outlined person (Personal) or briefcase (Work) in the muted ink, never a colour or the word, hidden from TalkBack / VoiceOver, which read the tag on the name — "Teams, Work account" — whether or not the glyph is drawn. Full row: a 14 dp/pt box + 4 before the provider mark (on line 1, so it dims with it); one-line row: a 12 dp/pt box + 4 between the rank disc and the name (grouped with the name, so the bar pays 16). Under a Personal or Work filter it stays. **Drop-out:** the name ellipsizes first down to its floor (64 dp/pt at its own text scale, or its own width if shorter), then the glyph column leaves **every** row shown at once, then the name goes on ellipsizing. Decided on the tightest row shown from measured widths and re-decided on a width, filter, rows, display or font change. Android: Material outlined icons; a one-line bar keeps 40 dp, so the column leaves under a 295 dp list (`SummaryRows.fullKeepsGlyph`, `oneLineKeepsGlyph`). iOS: SF Symbols `person` / `briefcase` (12 pt symbol in the full row's box, 11 pt in the one-line box); one-line rows drop it when the bar would fall under 50 pt (`RowGlyphFit`; the mark, plan chip, figure and gaps are measured, the name by its font); iPad never drops it; an iPhone 17e drops it on a one-line list with a long name.
+
+#### Pace map
+
+Supersedes the Pace map paragraphs of the per-platform Summary sections and "The pace line on iOS" wherever they differ.
+
+- **Title line.** "Pace map" left (Android titleSmall, iOS 17 pt); on the right, in place of "Weekly, where each account stands", three chips **Figures · Trails · Projection**: selected = ink at 13% fill (iOS `fill`) and semibold, unselected = a 1 dp/pt outline and regular; no check glyph. Defaults Figures off, Trails on, Projection off, remembered under the new keys `paceMap.figures|trails|projection` (Android in `usage_cache`, iOS in the app's own defaults; v1.9 ignores them). When the title and the chips do not fit one line the chips wrap under the title, left-aligned, 6 below. Android: 32 dp high **including** the touch target (Material's 48 dp minimum is not applied, so the header is the 32 dp the wireframe draws), 12 sp, 10 dp side padding, 6 dp apart, 8 dp radius; a switch for TalkBack; `FlowRow`. iOS: 13 pt capsules, 10 pt side padding, 5 pt vertical, 6 pt apart; the app's fonts are fixed sizes, so only a narrow width wraps them (iPad split view; every iPhone holds one line).
+- **Grid** (CCRM-107 (Day Grid)). Sevenths both ways under the 0/50/100% lines, which stay (Android ink 10%, `MAP_GRID_ALPHA`; iOS the chart's grid ink). The x axis reads "week start", 2…6, "reset" (10 sp/pt, Android ink 60%, iOS `sub`; never bold — each dot has its own week, so there is no now column); an ordinal gives way to an end word it would touch (at 360 dp the "2" yields to "week start"). Wedge words "ahead of pace" above the diagonal and "behind pace" below it; "even pace" slides along the diagonal to a free stretch and also keeps off every ring.
+- **Who is plotted (the quiet edge).** A window row truncates, so the map hides an account whose Weekly row prints "0%" (under 1: 0.99 is hidden, 1.0 is plotted); so do accounts with no reading and a reading with no reset clock (it has no x; before, Android sat it on the origin). The list still shows every row. Spent: × on the dot. Android: stale shows the last reading, undimmed (as shipped).
+- **Foot line** (Android `PaceMapFoot`). 4 dp/pt under the plot: left "each account's own week" (11 sp/pt muted; it left the axis); right, the same size, the count of accounts left off: "2 at 0%", "1 no reading", joined "2 at 0% · 1 no reading"; nothing when none. Android counts a not-started week as 0% and a reading of 1% or more with no reset clock as no reading.
+- **All at 0%.** The frame, grid, diagonal and words stay at full height; in the behind wedge, right-aligned at (96%, 26%), 10.5 sp/pt ink 55%: "Nothing to plot yet" (semibold) over "every account is at 0% this week"; Android's TalkBack reads it as the map's state. With nothing plotted but some accounts unread, the empty frame shows the foot line's count and no message.
+- **Figures layer.** "Teams 52%" (Used), "Teams 48% left" (Left; a spent account reads "Teams 0%", Robin 2026-11-11), "Teams −13%" / "+19%" / "0%" (Vs pace; no reset clock falls back to Used). Name 11.5 sp/pt semibold ink; figure bold (iOS 11.5 pt) in the severity colour (Used, Left, the Vs fallback) or green / red / ink (Vs pace). The figure labels truncate like the row (51.5 → "51%", "48% left"); only the callout's "~N% at reset" rounds half up.
+- **Trails layer.** The week at 1.6 dp/pt, accent 55%; the last 24 h (a seventh of the week before the dot) 2.6, accent 90%, round caps; an account with fewer than two samples has no trail (the trail ends on the live point, so it needs two behind it; Android `PaceMapRules.hasTrail`). Off: dots only.
+- **Projection layer.** A dashed tail (1.6, 5/4, accent 65%) from the dot to a ring (r 3.5, 1.5 stroke, card fill) on the right edge at the projected %; where the estimate runs out before the reset the ring sits on the 100% line at that moment, red, and the tail fades from the accent to red. The estimate is the account chart's (`Projection.estimate` on the week's samples). No tail and no ring with no estimate, spent, or no reset clock.
+- **Callout.** A tap on a dot (48 dp/pt target) or a name pins it (Android widens the name's box to 48 dp high); the nearest dot wins. The others dim to 35% (trails, tails, leaders, dots, names, and on Android the rings; not the frame or its words). Pill: 8 radius, card at 97%, 1 border in the account colour at 55% (iOS padding 9 × 6 pt). Line 1: a 7 dp/pt accent dot, the name 12 semibold, the figure 12 bold at the right; line 2, 11: the pace line (its drop order measured to the plot's width) or the row's line where there is none ("Out until Fri 1:48 PM", iOS "pm", red when spent; "Held · …"); line 3, 11: "~74% at reset" (muted) or "100% at Wed 6:10 PM" (red; a bare clock later today), none without a projection. It opens 10 right and 8 above the dot, flips left when it would pass the plot's right edge by 6, below the dot at the top, and is clamped to the plot. The same account again opens its page; another dot moves the pin; the empty plot clears it. Android: drawn in the canvas; the lines stack from their measured heights (24 + 15 + 15 dp at scale 1.0, taller as the text grows); the pin is held by the Summary (one for the cover and the inner layout, so a fold keeps it) and is dropped, not just hidden, when its account leaves the map; TalkBack one node per dot on its 48 dp target, "Teams, 52 percent, 21h 50m ahead · resets Sun 5:58 PM, ~74% at reset", click label "Pin, again to open" (then "Open"). iOS: VoiceOver one element per dot with the same label, hint "Double-tap to pin, again to open".
+- **Names and leaders** (closes CCBG-79 (Leader Reads as Trail)). `MapLabels`, the same rules on both, top-down: right, below, left, above-left; then a dotted leader (1, 1.5/2.5, accent 55%; iOS from the dot's edge) 24, 36 or 48 from the dot in eight directions, refused across a placed name or another dot (so a stack of dots at one point shows two names and no leader), never longer than 48 and never to the far edge. A name never sits on its own tail or a ring. Nothing free: the name is not drawn and takes no room; its dot stays and its target still pins a callout that names it. The fixture's offsets (`printed.json` → `mapLabels`): dot box 14, 2 between names, 1 off a word, right +10, below +2/+3, left −10, above-left −6; margins Android 2/6/8/6 dp, iOS a 4 pt right margin.
 
 ---
 
@@ -267,6 +306,7 @@ iOS across: plot top 20 pt, bottom H − 20 pt, right edge W; down: right edge W
 | Element | Android | iOS | Shown at |
 |---|---|---|---|
 | Pace wash | a faint red triangle above the diagonal (red guide colour at 10% dark / 7% light), drawn under everything, only when the newest reading is above pace + 3 at the divider's instant (CCBG-21 (Zero-Point Shading)) | a faint red triangle above the diagonal (red at 10% dark / 7% light), drawn first, only while the window is over pace; at every size (2026-11-05, rev B §5) | M, L (S too on Android) |
+| Day grid (v2.0, CCRM-107 (Day Grid)) | drawn after the pace wash and before the 80/90/100 guides, so the guides, the diagonal and the data sit over it: vertical lines at window start + k × (span / n), k = 1…n−1, and horizontal lines at k/n of 100%, k = 1…n (the n-th lies under the 100% guide); n = 7 for a window measured in days (seven equal day columns, lines at k/7), 5 for the 5h (hourly columns, 20% steps). 1 dp solid, `onSurfaceVariant` at 13% (`GRID_ALPHA`); pure layout in `A/ui/DayGrid.kt` | same rule (CooldownCore `DayGrid`, the core rule), ink `line` at 60%, 0.5 pt, in `TrendChart` | all; Time down transposes it (day lines across, percent lines down); not started: no chart, no grid |
 | Guides | dashed lines at 80, 90, 100% in yellow, orange, red (bar ladder at 85/95/100), 1 dp, 32% alpha, dash 5/7 | same colours at 70% alpha, 1 pt, dash 2/4 | all |
 | Guide labels | "100%", "90%", "80%", 9.5 sp, in the guide colour at 85%, inside the plot at the right end, just above their own line, on a card-coloured halo (2 dp pad); down: left of each vertical line, right-aligned, stacked in three rows, 28 dp below the top | 10 pt, right-aligned at the right edge | M, L |
 | Even-pace diagonal | dashed line from (start, 0%) to (reset, 100%), 2.5 dp, yellow at 90%, dash 10/6 | 2.6 pt, `Palette.pace` (`#FDD663` dark / `#E0A000` light), dash 5/4 | all |
@@ -280,11 +320,13 @@ iOS across: plot top 20 pt, bottom H − 20 pt, right edge W; down: right edge W
 | Projection tail | dashed line from the current dot to the end point, 2.5 dp, series colour at 65%, dash 7/8; end point a hollow ring 4 dp radius, 1.8 dp stroke, 80% alpha. The tail ends where it crosses 100% when the limit is hit first. Withheld whenever the projection is suppressed | dashed 2 pt, accent at 75%, dash 4/3; ring 8 pt, red at or above 100% | all |
 | Projection label | "~74%" 11 sp bold muted, beside the end ring, only when it clears the guide labels, the current label and the callout; not drawn when the limit is hit | "~74%" 11.5 pt bold, only below 100% | M, L |
 | X axis line | 1 dp, muted 18%, across the plot floor | 1 pt `line` | M, L (across) |
-| Time labels | 9.5 sp muted under the floor: window start at left, reset at right; "now" centred under the divider only when it clears both end labels by 6 dp. 5-hour window: clock time ("9:50 AM" or "09:50"); 7-day: "d MMM" ("23 Jul") | 11 pt `sub`; "now" shown only more than 56 pt from either edge; 5-hour clock "9:50 am" (am/pm lowercase), 7-day "23 Oct" | M, L |
+| Time labels | 9.5 sp muted under the floor: window start at left, reset at right; "now" centred under the divider only when it clears both end labels by 6 dp. 5-hour window: clock time ("9:50 AM" or "09:50"); 7-day: "d MMM" ("23 Jul"). Since v2.0 (CCRM-107 (Day Grid)), between the end labels the ordinals 2…n−1 (2…6 on a 7-day chart, 2…4 on a 5h) at 9.5 sp `onSurfaceVariant`, centred in their columns; the one in now's column (an instant on a line belongs to the later column) bold, `onSurface` at 95%. An ordinal gives way when its box comes within 6 dp of the "now" label or within 4 dp of an end label, and all drop below a 14 dp column; "now" and the end labels never move for an ordinal. Small (no axis strip) and Time down: grid lines, no ordinals. Inner two stacks: each stack has its own grid and ordinals | 11 pt `sub`; "now" shown only more than 56 pt from either edge; 5-hour clock "9:50 am" (am/pm lowercase), 7-day "23 Oct". Ordinals as on Android (9.5 pt `sub`, the now column bold `ink`, start label 11 pt; same give-way and 14 pt column rule); Small: the grid, no ordinals; Time down: the ordinals run down the right edge under the same rule (measured by label height) | M, L |
 | Selection callout | tap a sample to pin; tap it again to clear; long-press then drag to scrub. Snaps to the nearest real sample, never interpolates. Draws a 1.5 dp crosshair in the series colour at 55%, a 4.5 dp dot on a 6.5 dp surface halo, and a 6 dp-radius pill (surface at 95%, series-colour 1 dp border at 55%) with two lines: the time (9.5 sp muted; 5-hour "9:50 AM", 7-day "Thu 9:50 AM") and bold 11 sp in core's printed form (CCRM-104 (Pace Line Parity) D8, `paceLabel`, rounded toward zero): "14% · −8%" red over the mark, "14% · +10%" green under it, "14% · 0%" ink within a point (Left mode "86% left · …"), so "+" never means over on mobile. The pill avoids the guide labels | none | M, L; Android only |
 | Accessibility | one-line summary: "Usage chart. 62% at 9:50 AM, 8% above even pace. Projected 74% by 2:50 PM. Tap a point for its value." | hidden from accessibility (the card's combined label reads the numbers) | |
 
 Differs from the iOS code comment and `design/2026-10-23-ios-wireframes.html` rev B ("Nothing removed" from Android's chart): the iOS chart has no pace wash, no orange overshoot fill, no selection callout and no ⓘ provenance marks. The Android chart is the reference.
+
+The day grid draws wherever the chart does: the open tile (7d, model and 5h chips) and the share card's trend on both platforms — Android's share-card chart (`ChartBitmap`) has the same grid and ordinals, bold in now's column, and no "now" label, so its ordinals yield only to the end labels — and on iOS the Overview/Large and XL widgets' chart. The Pace map's grid is in §2.8. Captures `design/research/2026-11-v20-build/A1/` (Android) and `I1/` (iOS, built at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B §2–§4; iPhone 17 Pro, iPhone 17e, iPad Pro 13″ both orientations; `render/` holds the widget, lock-screen and Live Activity faces from `SurfaceRenderTests`).
 
 ### 3.4 Text lines under the chart
 
@@ -394,14 +436,16 @@ iOS section order (`I/App/UI/SettingsHistory.swift:7`): Accounts, Usage credits 
 | Degraded notice | `DegradedStoreNotice` at the top of the page (2.6) | none |
 | Account card | `Card`, 16 dp padding. Header row: provider mark 20 dp in the account accent, 6 dp, name (titleMedium, one line, ellipsis), 8 dp, 8 dp status dot (green `#188038` light / `#81C995` dark "Active", or error colour "Needs re-auth"; only with a token), 6 dp, plan chip (labelSmall in accent on accent at 14%, 10 dp radius; the plan's name per spec/core API-CONTRACT §11 — "Pro 100", "Max", "Ultra", "Ultra 5x" — never a multiplier, since 2026-11-02), spinner 18 dp while busy, ⋮ ("Account options", 28 dp button) | list row: mark 20 pt, name, plan chip, right text "Signed in" (sub) or "Sign in again" (orange); touch and hold opens the menu |
 | Email line | under the header, 26 dp indent, bodySmall muted, local part truncates before the domain; shown only when it adds something beyond the name | Details sheet only |
-| Menu | "Details…" (with a token), "Clear usage history…", "Rename…", "Accent colour…", "Remove account" (error colour; only with two or more accounts) | "Rename", "Details…", "Accent colour…", "Sign in again", "Clear usage history…", "Remove" (destructive) |
+| Tag (v2.0, CCRM-110 (Account Tags)) | Both: every account is **Personal or Work**, no "None"; stored additively (Android `"t"` in the registry's account JSON, iOS a `tag` string on the account; `personal` / `work`); a missing, empty or unknown value reads as Personal and nothing is written at upgrade (every v1.9 account is Personal); an unknown value round-trips untouched; v1.9 ignores the key. The first account, which never passes the Add sheet, is Personal. Signing in again never touches the tag; a change applies at once. Android: a neutral chip after the plan chip on **every** card, signed in or not — outline 1 dp `outlineVariant`, 10 dp radius, a 12 dp glyph and the word in labelSmall; a tap opens the Tag dialog; the name gives first, down to 64 dp at its own text scale (or its own width if shorter), then the chip drops its word and keeps its glyph (`TagChipFit`); TalkBack "Tag: Personal", action "change" | the chip after the plan chip on **every** account: 12 pt glyph (SF Symbols `person` / `briefcase`, in the chip's ink, never a colour) + 11 pt semibold word, a 1 pt `sub` 50% outline, radius 6. Narrow phone (addendum T4 B, iPhone 17e): the whole row; then a plain "Signed in" leaves whole (never "Signed…"); beside a warning word ("Sign in again", which outranks the name) the chip drops its word and keeps its glyph (VoiceOver still "Tag: Work"); only then does the name ellipsize. The account page's Account section has a "Tag" row after Accent colour (a menu picker, the current choice with its glyph and a chevron, always a value; VoiceOver "Work") |
+| Menu | "Details…" (with a token), "Clear usage history…", "Rename…", "Tag…" (v2.0, after "Rename…": the dialog "Tag · <name>", two 48 dp radio rows (glyph + word), the help "Tags group accounts on the Summary: All · Personal · Work." and "Close"), "Accent colour…", "Remove account" (error colour; only with two or more accounts) | "Rename", "Tag" (v2.0, a submenu after Rename, two rows with glyphs leading; its icon is always the current glyph), "Details…", "Accent colour…", "Sign in again", "Clear usage history…", "Remove" (destructive) |
 | Claude, signed out | "Not signed in" (bodySmall muted), filled button "Sign in on this phone", then "Opens Claude's sign-in in your browser — no computer needed. Needs a paid plan: Claude reports no usage for Free accounts." | taps open the Claude sign-in sheet |
 | Claude, signed in | status line (bodySmall muted) with a 28 dp refresh button ("Check token now"): "Checking…", "Checked 12m ago", "Checked 12m ago · renews in 6h 4m", "… · renewal due at next check", "Not checked yet"; then red lines as they apply: free plan ("Free plan: Claude doesn't report usage — upgrade to Pro, Max or Team to see numbers."), renewal dead ("Renewal has stopped working — re-sign in below." and day-count variants), amber expiry-soon ("Sign-in expires in 2d 3h — re-sign in to keep polling going."), red "Rate-limited — next try in 12m"; divider; a three-cell action row (min 44 dp, 10 dp radius, 20 dp icon over a labelSmall label): "Re-sign in" (accent, outlined when re-auth is needed), "Clear" (error), "Dashboard" (opens the Claude usage page) | account page (2026-11-05, parity wireframes rev B §1-2): section "Sign-in" — the status line 13.5 pt muted with a 28 pt ↻ "Check now" button (a spinner while checking; same fetch as pull-to-refresh), the condition rows in this order (free plan, sign-in stopped, expiring, rate-limited; red, amber for expiring), then the action row "Sign in again" in the account accent, semibold while sign-in is broken. No Clear, no Dashboard (iOS keeps its six-item menu). The status text "renews in …" comes from the Keychain token's expiry and is absent when unreadable; Gemini gets the same lines minus the ~30-day estimate; ChatGPT shows no renewal clause. The Settings row reads "Sign in again" › "Expires in 2d" › "Signed in" |
 | ChatGPT, signed out | "Not signed in", filled "Sign in with a code", then "Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security." | tap opens the device-code sheet |
 | ChatGPT, signed in | status line "Checked 12m ago" with refresh; red "Sign-in stopped working — sign in with a code below."; "Rate-limited — next try in 12m"; action row "Sign in with a code", "Clear", "Settings" | account page, section "Sign-in": status line with ↻, then "Sign-in stopped working — sign in with a code below." / "Rate-limited — next try in 12m" as they apply, the action "Sign in with a code" and the footer "Shows a short code to type at auth.openai.com — on this phone or any other device." No Clear, no Settings row |
 | Messages | "Claude signed in — usage fetched, polling started."; "Token checked — working."; "Checked — working."; "<name> signed out." or "<name> signed out — until Cooldown restarts." while degraded | |
 | Add / reorder | with one account a full-width outlined "+ Add account"; with two or more a row of "+ Add account" and a text button "Reorder" | "Add account" row with a plus glyph; reorder by dragging while Edit is on, "the order is the same everywhere" |
-| Add sheet | modal bottom sheet "Add account" (titleLarge); rows: Claude (28 dp mark) "Signs in through your browser, then paste the code back — as before." and ChatGPT "Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security." Picking a row adds the account and starts its sign-in | sheet "Add account" 20 pt bold, two rows (32 pt mark, 17 pt name): Claude "Sign in with your Claude account in the browser, then paste the code it shows." and ChatGPT "Sign in with a code on any device — no password in this app."; footnote "Cooldown reads the same usage numbers the Claude and ChatGPT apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic or OpenAI." |
+| Add sheet | modal bottom sheet "Add account" (titleLarge); rows: Claude (28 dp mark) "Signs in through your browser, then paste the code back — as before." and ChatGPT "Shows a short code to type at auth.openai.com — on this phone or any other device. Needs device code sign-in turned on in ChatGPT → Settings → Security." Picking a row starts that provider's sign-in. v2.0 (CCRM-110 (Account Tags)): under the title "This account is" (bodyMedium, `onSurfaceVariant`), 8 dp, a full-width `SingleChoiceSegmentedButtonRow` (40 dp) of **Personal | Work** — an 18 dp glyph and the word in each segment, the chosen one tonal and SemiBold, the glyph in place of Material's check — 6 dp, "Groups it on the Summary. You can change it later." (bodySmall, muted), 16 dp, then the provider rows. The glyphs leave both segments together when "Personal" with its glyph no longer fits half the row (`AddSheetFit`; font 2.0 on a 360 dp phone). The sheet scrolls once it outgrows the screen. Last row, under a divider: a 28 dp violet ring-and-dot glyph, "Try with sample data" (bodyLarge) and "Three made-up accounts to look around. Nothing is saved or sent." | sheet "Add account" 20 pt bold, two rows (32 pt mark, 17 pt name): Claude "Sign in with your Claude account in the browser, then paste the code it shows." and ChatGPT "Sign in with a code on any device — no password in this app."; footnote "Cooldown reads the same usage numbers the Claude and ChatGPT apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic or OpenAI." v2.0: above the provider rows "This account is" (13.5 pt `txt`), a two-segment control in the Summary control's style (36 pt high, radius 10, 15 pt words with 14 pt glyphs, the chosen one a 13% fill and semibold) and "Groups it on the Summary. You can change it later." (12.5 pt `sub`); VoiceOver reads "This account is" then "Personal, selected". The sheet opens at the large detent only (the control's ~90 pt made the provider rows truncate at medium). The fourth row is "Try with sample data" (see "Sample data") |
+| Adding an account (v2.0, both platforms) | Personal is selected **every time the sheet opens** (not remembered); the shown tag is written when the account is created; "Try with sample data" ignores the control; the first-launch buttons leave it Personal. An account is created only when its sign-in succeeds: a cancelled or failed sign-in leaves no account and no tag (Robin 2026-11-11). Android implementation: the row tap makes a provisional card that hosts the sign-in; Cancel (Claude, Gemini), dismissing the code sheet (ChatGPT) or a dead end removes it (`UsageRepository.abandonProfile`, under the repository's lock, so a dismiss that races the token save keeps the account; slots are never reused), and a provisional account with no token is swept at the next launch once it is over an hour old or nothing is pending for it (`settleProvisional`) | the choice rides on `AppModel.pendingTag` with the sign-in; "Sign in again" ignores it; closing the sheets drops it |
 | Reorder sheet | bottom sheet "Account order" (titleMedium) with "Sets the tab order everywhere." and a drag-handle list; "Done" | inline (Edit) |
 | Browser picker | with two or more browsers installed, a dialog "Open with": "Pick the browser where you're signed in to the Work Claude account." and one row per browser (32 dp icon, bodyLarge name); Cancel | iOS opens the default browser |
 
@@ -463,7 +507,7 @@ Controls are 32 dp `FilterChip` rows with 8 dp gaps on Android and segmented pic
 |---|---|---|
 | Start | "Sign in on this phone" opens Claude's sign-in in a browser (the picker first when two or more are installed) | "Sign in to Claude" 20 pt bold; steps "1. Open the sign-in page and approve Cooldown. 2. Copy the code Claude shows you and paste it here."; capsule "Open claude.com sign-in" (Claude accent, black text) |
 | Paste | "Finish signing in" (titleSmall); "Sign in on the page that opened, then copy the code it shows and paste it here."; outlined field "Paste the sign-in code" with a trailing "Paste" button; row "Finish sign-in" (enabled with text), "Reopen page", "Cancel" (flow-wrapped, the last button right-aligned) | field "Paste the code" (no autocapitalisation); "Cancel" and "Sign in" capsules (disabled until the page was opened and a code is present; "Signing in…" while working); an error line in red under the field |
-| Done | message "<name> signed in — usage fetched, polling started."; polling starts | sheet dismisses; note "Name this account after signing in (e.g. “Teams”); the plan tag comes from Anthropic." |
+| Done | message "<name> signed in — usage fetched, polling started."; polling starts | sheet dismisses; note "Name this account after signing in (e.g. “Teams”); the plan name comes from Anthropic." (v2.0, addendum T7; was "the plan tag") |
 
 ### 7.2 ChatGPT (device code)
 
@@ -483,9 +527,17 @@ The sheet polls at the server-given interval while waiting. Approved by `design/
 
 ---
 
-### Reviewer sample data (iOS, 2026-11-05, parity wireframes rev B §7)
+### Sample data (both platforms, CCRM-113 (Sample Port))
 
-Entered from "Try with sample data" under the capsules on the first-launch screen, or from the fourth row of Add account ("Try with sample data" · "Three made-up accounts to look around. Nothing is saved or sent."). The app swaps its model for the built-in demo (temporary storage, no Keychain, nothing persisted) and swaps back on Exit. A purple banner (`#7C4DFF` at 16%, 12 pt radius, "● Sample data — made-up accounts", trailing "Exit") tops each tab page. Settings account rows read "Sample"; Add account, Reset alerts, Lock Screen, Sign in again and Remove are hidden; the account page hides Remove and the sign-in action; the share card stays and carries the 16 pt `#7C4DFF` "● SAMPLE DATA" band. Display settings still apply and persist (they are the user's own).
+iOS since 2026-11-05 (parity wireframes rev B §7); Android since 2026-11-11 (`data/SampleMode.kt`, `ui/SampleUi.kt`; captures `design/research/2026-11-v20-build/A5/`); BEHAVIOR-MOBILE §7.
+
+- **Entry.** "Try with sample data" · "Three made-up accounts to look around. Nothing is saved or sent." on the first screen (§2.7) and as a row of Add account (§6.2: Android the last row, under a divider; iOS the fourth row); it ignores the Personal | Work control. No confirmation. Android: entry lands on the All tab; Exit returns to the tab the user was on (the first screen when there was no account).
+- **Isolation.** The app swaps to the built-in demo (temporary storage, no Keychain or credentials, nothing persisted) and swaps back on Exit. The widgets, notification, reset pings and status-bar icon stay real throughout. Android: a process-wide flag, never written; while it is on the app's root hands every screen a sample repository — a `UsageRepository` over in-memory twins (`MemoryPrefs` cache and registry, in-memory history and session log, no credentials) — and re-keys the whole tree, which closes every dialog, sheet and menu and drops its pending edit; a dialog binds to the repository it opened with, never to the flag. Real polling, reset checks and alerts build their own real repositories and never read it; `Surfaces.refresh` refuses a sample cache. Entering suspends the debug synthetic series in memory (restored on Exit). Opening the app from a real surface (a launch naming an account, or "refresh") exits the sample first; process death returns to the real app.
+- **Settings in the sample.** Settings changed in the sample apply inside it, start from the user's own, and are dropped on Exit (BEHAVIOR-MOBILE §7). Android keeps them in an in-memory copy (`data/MemoryPrefs.kt`) of the user's Appearance and Summary settings (theme, time, usage display, end mark, reset form, over-pace, density, chart, open-on-summary, order, filter, map layers); iOS in two throwaway `UserDefaults` suites seeded from the real ones and deleted on Exit and at launch (`SampleStore`, `I/Shared/Faces.swift`, tested by `SampleStoreTests`). A tag edited in the sample stays in memory; nothing is saved or written.
+- **Accounts.** Teams (Claude, **Work**), Personal (ChatGPT, Plus, **Personal**), Lab (Gemini, Pro, **Work**), tags fixed in every demo scenario (the addendum wins over rev B §9's untagged Lab); Teams' plan is Max on Android, Team on iOS. iOS's former fourth account, Product (a second Claude), is gone, so the stores' review notes describe the same three accounts on both phones. Readings are the iOS demo's, parsed on Android through the real parsers: Teams 46% at 46% elapsed, weekly 18%, a Fable limit, credits $123.90 / $400.00 · 31%; Personal 26% / 9% (well under); Lab 62% / 64% (above pace, held); seven days of history and sixteen closed windows per account. iOS `-demo upgraded` is the v1.9 upgrade (nothing stored, all Personal, Work disabled).
+- **Banner.** Violet `#7C4DFF` at 16%, 12 dp/pt radius, "● Sample data — made-up accounts", trailing "Exit". iOS: tops each tab page. Android (`SampleBanner`): the first item under the app bar on every tab (All included), Settings and History; 36 dp tall in a 48 dp row so "Exit" has a whole target; "● Sample data" SemiBold violet (`#B388FF` on dark), " — made-up accounts" in the ink, 13 sp; where the line does not fit (font 1.3 on a 360 dp phone, and larger) the tail drops (`SampleBannerFit`); "● Sample data" and "Exit" never drop or wrap; at compact height it moves into the scrolling column with the other notices. "Exit" and Settings › Accounts "Exit sample data" are the same exit.
+- **Main screen.** Unchanged layouts drawing the sample. The share card and the Summary snapshot stay and carry the 16 dp/pt `#7C4DFF` "● SAMPLE DATA" band (8.5 bold white). Android: the status line reads "Sample data · nothing is fetched" (12.5 sp muted, no glyph, not a button) on an account and on the Summary; no fetch-error notice and no "Weekly now leads" card; store and crash cards are the real ones.
+- **Settings.** Account rows read "Sample". iOS: Add account, Reset alerts, Lock Screen, Sign in again and Remove are hidden; the account page hides Remove and the sign-in action. Android › Accounts: each card is the header alone — mark, name, the word "Sample" in place of the status dot, plan chip, tag chip, ⋮ (Rename…, Tag…, Accent colour…, Headline… work on the in-memory copy; Details…, Clear usage history… and Remove account are hidden); no e-mail line, no check line, no action row; "+ Add account" and "Reorder" give way to an outlined "Exit sample data". Alerts: one card, "Off while the sample is open" with the real-surfaces sentence. Appearance: every control works on the copy, with the caption "Changes here apply to the sample and are dropped when you exit." More: Polling, Usage credits and Diagnostics are hidden; Updates and About stay.
 
 ---
 
@@ -505,6 +557,19 @@ Android: ⋮ → "Share snapshot" renders off the main thread then shows a dialo
 | Footer | "COOLDOWN" 9.5 sp, letter-spacing 0.06, 45% ink | "COOLDOWN" 11 pt medium, tracked |
 
 Differs from Android: iOS shows the band only for sample data; a weekly-only plan has the one row. **Android half of the Weekly-first card (listed for the v2.0 Android session, 2026-11-05):** order the rows by the Headline rule, 24 sp lead figure vs 17 sp, the trend follows the lead, the ring stays the 5h gauge, a spent week leads and dims the 5h row.
+
+### 8.1 Summary snapshot (v2.0, both platforms, CCRM-112 (Summary Snapshot))
+
+On the All tab the share item reads "Share snapshot" (the account tabs keep their own share). It shares one image of the Summary as filtered: the header (the filter's name 17 bold — "All accounts", "Work accounts", "Personal accounts" — "as of …", the order's name at the right), the rows in the screen's order and filter, "Pace map" and the map drawn with the layers saved on screen (grid, trails, figures, projection; Vs pace draws as Used) and its foot line — never the chips, a pinned callout or its dimming — then "COOLDOWN". Full row: a 32 dp/pt 5h ring (grey when spent), mark 14, name 13 semibold, the figure 17 bold (Used; "left" in Left mode; Vs pace as Used), an 8 bar with its pace tick, then the pace span left (tinted) and "Resets Sun 9:30 PM" right; from six rows shown, one line each. Spent rows read "Out until …" in red; signed-out or unread rows are at 50% with no bar fill and no reset; a stale row reads "Stale" in the pace slot; held rows read "Held · …". The glyph column (12 box + 4, before the mark) shows **only while the rows on the card carry both tags** (iOS `Resolved.snapshotGlyphs`), so only under All; an install whose accounts are all Personal shares the card without it. Names, never e-mail addresses. The sample adds the "● SAMPLE DATA" band.
+
+| | Android | iOS |
+|---|---|---|
+| Opening it | the All tab's top-bar ⋮ returns with one item, "Share snapshot" (hidden when no shown account has a reading), opening the CCRM-24 (Share Card) preview **dialog** | the ellipsis menu's share item; a **sheet** titled "Share snapshot" previews the card above a Share button (the system share sheet), as the account card's share does; with no row shown having a reading it says "Nothing to share yet — no account has a reading." |
+| Card | 360 dp at 4×; "as of" = the **oldest** reading shown; map 320 × 200 dp, the screen's own painter and scene | 300 pt at 3× on the app ground, padding 20; "as of 12:39 pm, Wed 11 Nov" 11 pt = the **newest** reading among the rows shown (the account card's own form); order name 11 pt `sub`; a rule, "Pace map" 10.5 pt, the map 200 pt high, its foot line 9.5 pt |
+| Rows | the glyph 12 dp + 4 dp | pace span 10.5 pt; one-line rows 26 pt: mark, name 12 pt semibold (58 pt), bar 7 pt, the short word ("13h 26m ahead", "Out · Fri"; 10 pt, 64 pt), the figure 14 pt bold; glyph 11 pt in a 12 pt box |
+| Unread / held | "Sign in" / "No reading"; "Held · back at …" | "Sign in again" / "No reading"; "Held · 3:28 pm" in orange; spent "Out until Fri 3:05 pm" left, the reset right |
+
+The opening differs (Android a dialog, iOS a sheet with a preview); the image is the same card, with the per-platform sizes and the "as of" rule above. Code `A/share/SummarySnapshot.kt`, `I/App/UI/SummarySnapshot.swift`; `render/` in the I3/I4 captures holds the card in every state.
 
 ---
 
@@ -563,9 +628,8 @@ List card "Weekly · most room first", rows by `SummaryRank` (eligible by Pace, 
 six accounts, one-line rows: rank disc 16 pt in the accent, name, bar, word ("Slow down", "5h · 3:40 pm",
 "Out · Thu", "No reading"), figure. Pace map card below (iPhone 230 pt; iPad two columns, list left, map 340 pt
 right, title "All accounts" 30 pt bold): over-pace triangle red 8%, 0/50/100% lines, dashed even-pace diagonal
-labelled "even pace", "over pace"/"room to spare", axis "week start · each account's own week · reset"; per account
-its week's trail (accent 70%, 1.4 pt) and a 9 pt dot named in bold 11 pt; spent: ring with ×; 6+: numbered dots;
-no reading: off the map. Tapping a row opens that account. `ios/App/UI/Summary.swift`.
+labelled "even pace"; a 9 pt dot per plotted account; spent: ring with ×. Header, filter, row glyph, wedge words,
+grid, axis, foot line, layers, callout and names: §2.8. Tapping a row opens that account. `ios/App/UI/Summary.swift`.
 
 #### §2.2 iPad sidebar
 Segments "Headline · Weekly · 5h", default Headline (a stored v1.9 choice is kept). Headline: each row shows its
@@ -631,9 +695,9 @@ As built on the v2.0 branch; each entry names the section it amends, which still
 
 #### §2.3 Account tabs — add
 Android: with two or more signed-in accounts an **"All"** tab comes first (a three-bar glyph, 20 dp, in ink, then
-"All"); it counts as one tab for the fixed/scrollable rule (fixed ≤ 3 tabs, so two accounts + All stay fixed).
+"All"); its label is measured like the others for the fixed/scrollable rule (§2.3 Fit).
 While All is showing the shell takes Settings' neutral scheme (global accent, no room tint) and the top bar's ⋮
-(layout, share) is hidden. Launch: a notification or shortcut naming an account opens that account; otherwise All
+carries only "Share snapshot" (§8.1). Launch: a notification or shortcut naming an account opens that account; otherwise All
 when Open on the summary is on and 2+ accounts; otherwise the last account looked at (stored `lastAccount` in its
 own `main_ui` preferences file), else the first. `MainActivity.kt` (`ProfileTabs`, `LastAccount`).
 
@@ -683,20 +747,23 @@ left", "… 19 percent under/over pace"; no reading "… no reading yet"). **Bar
 bar 7 dp. Label and figure share a 20 dp row (label ellipsises), 5 dp above the bar; every bar carries the dashed
 room and the V1 caption (§2.4.3).
 **Closed (Compact, the default fold):** under the tile, 10 dp below, the **pace line** 13.5 sp SemiBold onSurface
-(`AppPace.weeklyFolded`, CCRM-104 (Pace Line Parity) D3: "21h 50m ahead · Sun 9:30 PM" — the span "<duration> ahead|behind"
-semibold in the tone (red over, green under), "On the mark · Sun 9:30 PM" with the span in the ink, the rest onSurface;
+(`AppPace.weeklyFolded`, CCRM-104 (Pace Line Parity) D3 and CCRM-108 (Reset Named): "21h 50m ahead · resets Sun 9:30 PM" — the span "<duration> ahead|behind"
+semibold in the tone (red over, green under), "On the mark · resets Sun 9:30 PM" with the span in the ink, the rest onSurface;
 the band words and "≈X%/day" are gone from the line; spent "Out until Sun 9:30 PM"; no clock "Starts when a message is
-sent"). The form is measured at run time on the scaled text width (`PaceLineText`, `PaceText.fit`): full →
-weekday dropped ("21h 50m ahead · 9:30 PM") → the span alone ("21h 50m ahead", never cut); if even that does not fit
+sent"). The form is measured at run time on the scaled text width (`PaceLineText`, `PaceText.fit`), dropping per the
+pace-line row of §1.2 ("· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the span alone, never cut); if even that does not fit
 the text steps down to 10 sp, then ellipsizes; 2 dp below, the **5h line** 13.5 sp
 onSurfaceVariant led by a 12 dp ring glyph (the status-bar ring geometry, the severity colour, red slice, × at 100%)
 and a 4 dp gap instead of the word "5h": "resets in 2h 20m · on track for ~69%" (on course to run out: "resets in
 1h 30m · on track for 100% at 3:25 PM", that clause bold orange; no projection: "resets in 2h 20m"); no 5h line
 before the 5h has a reading and a clock. Lines wrap rather than ellipsise. No chevron: the whole card is the tap
 target and opens the tile.
-**Open (Comfortable, or a tapped Compact tile):** no lines under the tile; 12 dp below it the chips **All ·
-<model> · 5h** (FilterChips, 8 dp apart; "5h" only on an account with a 5h, model chips only while model limits
-show; no chips with neither) and the chosen series under them. All or a model: the Weekly chart as before (§3), then
+**Open (Comfortable, or a tapped Compact tile):** no lines under the tile; 12 dp below it the chips **7d ·
+<model> · 5h** (CCRM-106 (7d Chip), both platforms; FilterChips, 8 dp apart; "5h" only on an account with a 5h, model chips only while model limits
+show; no chips with neither; `TileChips`, `SEVEN_DAY_CHIP`; TalkBack reads the 7d chip as "7-day, all models"; the
+selection key is unchanged — null = the 7-day series — so a stored choice survives; "Weekly · All models" on the lead
+bar row is unchanged; the inner screen's two stacks take the same chip row) and the chosen series under them. 7d
+or a model: the Weekly chart as before (§3), then
 the pace line (`AppPace.weeklyOpen`, the same forms in bodySmall onSurfaceVariant, span in the tone; spent "Out until
 …" bold orange), the projection line, a divider and the reset row. **5h:** the 5h chart, "At this pace: ~69% when the window resets · 15.0%/h ⓘ", a divider and the
 5h reset row, and the ring draws its **projection**: a dotted arc (0.4 of the band, the fill colour at 75%) from
@@ -704,8 +771,8 @@ just past the fill to the projected end (~69%, or 100% when it gets there first)
 chosen. Tapping the ring on an open tile chooses the 5h chip **and** swaps the 5h chart's projection line for the
 5h window's caption for 3 s (rev D C5, "both on one tap"). The 5h chip is not stored (session only); the tile starts on
 5h when the drawn card order leads with the 5h (Headline 5-hour, or the 5-hour card dragged first; credits don't
-count), else on All — as iOS (`tileStartsOnFive`). The series choice is still stored. Inner screen (≥ 700 dp) with a model limit shown and All or a model chosen: two chart columns, All
-left and the chosen model (All → the first) right, each with its lines and reset row; the tile's bars above, not
+count), else on 7d — as iOS (`tileStartsOnFive`). The series choice is still stored. Inner screen (≥ 700 dp) with a model limit shown and 7d or a model chosen: two chart columns, all models
+left and the chosen model (7d → the first) right, each with its lines and reset row; the tile's bars above, not
 repeated.
 **Press a figure (CCRM-104 (Pace Line Parity) D5; replaces rev D §2b's "Pace catches up …" readout):** the Weekly figure
 or a model figure underlines its V1 caption (§2.4.3) for 3 s (the font's own underline; `PaceCaption(underline)`),
@@ -740,7 +807,7 @@ Shown while `weeklyFirstNotice` is pending, on every tab including All, until a 
 marks it shown. "Keep 5h first" sets every account's Headline to 5-hour, re-posts the surfaces and re-reads the order.
 
 #### New §2.8 The Summary (All tab) — Android
-List card "Weekly" (titleSmall) · "most room first" (bodySmall muted), rows by `SummaryRank`, hairline dividers,
+List card headed by "Weekly" (titleSmall), the All · Personal · Work control and the sort menu (§2.8), rows by `SummaryRank`, hairline dividers,
 each row tappable (opens that account's tab). Full row (shape grammar rev D S1, CCRM-103 (Hybrid Notification)):
 a **48 dp 5h ring** on the left, centred on the row, then a 12 dp gap and the three lines. The ring is §2.4.4's
 ring at 48 dp (band 0.10 of the ring, figure up to 0.29 fitted to the bore, the account colour and its step, the
@@ -750,9 +817,9 @@ dimmed with the row. Line 1: mark 18 dp in the accent · name 15 sp (ellipsised)
 border, 6 dp radius) · figure 17 sp bold in the grammar's type (§2.4.2) in the severity colour (Usage display;
 Left "48% left"; Vs pace signed ("+19%" green, "−13%" red, "0%" onSurface; D1); "—" unread). **No companion text** — the ring replaced
 "5h 34%" and "no 5h". Bar 10 dp with neutral tick, red past it per the toggle, dashed room; V1 caption; line 3:
-13 sp, the **pace line** (D3: "1d 7h behind · Fri 9:00 AM", span semibold in the tone, the rest onSurface,
-`SummaryRows.paceLine`; forms measured on the row's width, weekday → clock → never the duration+word, so on the cover
-279 dp nothing drops; 10 sp then ellipsis as the last resort), starting at the row's text edge — no pace pip since 2026-11-02 (Robin: "what is the point of showing
+13 sp, the **pace line** (D3 and CCRM-108 (Reset Named): "1d 7h behind · resets Fri 9:00 AM", span semibold in the tone, the rest onSurface,
+`SummaryRows.paceLine`; forms measured on the row's width and dropped per §1.2's pace-line row, never the duration+word;
+10 sp then ellipsis as the last resort), starting at the row's text edge — no pace pip since 2026-11-02 (Robin: "what is the point of showing
 that indicator … just below the actual bar which also shows that anyway"; the freed 48 dp goes to the words, so
 "resets <day>" survives on narrower widths) (spent "Out until Thu 8:00 AM",
 "Not started yet", "No reading yet"; a row its 5h holds: "Held · back at 3:40 PM · resets Fri",
@@ -769,19 +836,13 @@ in the 5h colour — the full row's words without "resets", never "5h" (judge F3
 Thu", "No reading"), figure 15 sp bold in the grammar's type (Vs pace signed), 40 dp right-aligned. Having no
 caption on the row, a press on the figure (clickable, 40 dp wide; TalkBack label the caption) swaps the word slot for the
 caption's form that fits 90 dp ("13 over", "52% used"; semibold, underlined) for 3 s; the row's tap opens the account.
-Pace map card under it (title "Pace map" · "Weekly, where each account stands"; plot 230 dp on the cover): insets
+Pace map card under it (plot 230 dp on the cover): insets
 30/10/12/26 dp; ahead-of-pace triangle red 7% dark / 5% light; 0/50/100% lines (ink 35% / 12%) with 10 sp labels;
 dashed even-pace diagonal in the 80% step; wedge words 10.5 sp ink 55%: "ahead of pace" top-left above the
 diagonal, "behind pace" bottom-right below it (`PaceText.MAP_AHEAD` / `MAP_BEHIND`, CCRM-104 (Pace Line Parity));
 "even pace" 10 sp along the diagonal, starting at 62% of the week and sliding (6% steps) to the first stretch no
-dot sits on; axis "week start · each account's own week · reset". Per account with a reading: its real trail this
-week (history samples, accent 55%, 1.6 dp) to a 5.5 dp dot with a 2 dp card ring; spent: × on the dot; unread: off
-the map; an unclocked week sits at week gone 0. **Names label every dot at every count** (11.5 sp SemiBold, no
-numbered dots): `PaceMapGeometry.placeLabels` goes top-down (highest used % first, so the lower label moves) and
-tries right of the dot, below, left, above-left; a candidate is refused if it leaves the plot or overlaps a placed
-label (2 dp), a dot, a wedge word, an axis word, the centre note or "even pace"; all four refused, a short leader
-line (1 dp, the dot's colour at 55%) to a free spot at the plot's right edge, y offsets 0, -18, +18, -36, +36,
--54, +54 dp. Inner screen
+dot sits on. Per plotted account a 5.5 dp dot with a 2 dp card ring; spent: × on the dot. Title chips, grid, axis,
+foot line, who is plotted, layers, callout and names: §2.8. Inner screen
 (≥ 700 dp): two columns, list left, square map right. Footer: the status line with the stalest account's check;
 tapping refreshes every account. `SummaryScreen.kt`, `ui/PaceMap.kt`, `ui/SummaryRows.kt`.
 
@@ -808,7 +869,7 @@ Usage display chips "Used · Left · Vs pace"; Vs pace note "Shows "+10%" — ho
 subtitle "With two or more accounts, start on the All tab. Off: start on the last account you looked at."
 
 #### §8 Share card — Android
-Unchanged in this step (share/ not touched): Vs pace renders the share card as Used.
+Unchanged in this step (share/ not touched): Vs pace renders the share card as Used. The Summary snapshot is §8.1.
 
 
 ## The shape grammar on iOS — CCRM-103 (Hybrid Notification), RUNBOOK-v2.0 Step 6d
@@ -829,10 +890,10 @@ One card (`CardBox`: 16 pt padding, 18 pt corners, `p.card`) per account, as the
 | Figure colour | Used / Left: the severity colour of the account accent; Vs pace: `Display.figureColour` (green under, red over, ink on the mark), unsigned, no "vs pace" word; dimmed (error/stale notice): `p.sub` |
 | Bar end | `GrammarBar` = `UsageBar` + the Usage end mark: Round = today's capsule; Line / Pace colour = square end, a 1.5 pt line 1.5 pt past each edge over a 1 pt gap in the card colour, coloured per `UsageEndMark.role`; the pace tick on top |
 | Folded lines | line 1: the band line (`CardContent.compactLine` of Weekly) 14.5 pt semibold, red when alarmed; line 2: a 12 pt ring glyph (`GrammarRing`, no figure) then the 5h's folded line ("Resets in 2h 20m · on track for ~69%") 14.5 pt `p.sub` (red when alarmed); 10 pt above line 1, 2 pt between |
-| Open | chips All · <model> · 5h (14 pt, 4 × 14 pt padding, 9 pt corners, selected `p.fill`, others a 1 pt `p.line` outline; 12 pt above, 8 below), then the chosen chart (chart height setting) and its lines: Weekly / model = pace line (with "until <day>"), projection line, reset row (countdown left, clock right); 5h = "Limit reached" when at it, projection line, reset row ("as of …" on the right while dimmed) |
+| Open | chips 7d · <model> · 5h (CCRM-106 (7d Chip): "7d · Opus · 5h"; one chip only → no row; no 5h → "7d · Opus"; model limits hidden → "7d · 5h"; VoiceOver "7-day, all models", `CardContent.spokenTitle`; the stored chip selection is unchanged; the lead bar label "Weekly · All models" is unchanged, wireframe Q4 (a); 14 pt, 4 × 14 pt padding, 9 pt corners, selected `p.fill`, others a 1 pt `p.line` outline; 12 pt above, 8 below), then the chosen chart (chart height setting) and its lines: Weekly / model = pace line (with "until <day>"), projection line, reset row (countdown left, clock right); 5h = "Limit reached" when at it, projection line, reset row ("as of …" on the right while dimmed) |
 | Ring projection | the dotted arc to the projection only while the tile is open on the 5h chip |
 | Open / fold | a tap on the tile (not on a figure) toggles; default Comfortable open, Compact folded, behind More folded |
-| Default chip | 5h when the drawn card order leads with the 5h (Headline 5-hour or reordered), else All; the chips row is dropped when only one chip exists |
+| Default chip | 5h when the drawn card order leads with the 5h (Headline 5-hour or reordered), else 7d; the chips row is dropped when only one chip exists |
 
 Layout sheet: `.session` and `.weekly` still order, hide and fold; the tile sits where the first visible one of the two
 does (in More only when both are in More). The iPad halves show the tile at full width (credits stay in the header).
@@ -866,7 +927,8 @@ every row has the same frame: a plan with no 5h shows the grey cross, a spent we
 sits beside the name but the plan chip: a held row says why in line 3 only, "Held · back at 3:40 pm · resets Fri"
 (rev D S1, Fable D1), beside its loud ring. The Weekly figure is 17 pt `grammarFigure`,
 Vs pace coloured. Bars take the end mark. Tapping the figure swaps line 3 for the readout for 3 s; tapping elsewhere
-opens the account. Rows of the one-line form (six accounts or more) are unchanged.
+opens the account. Rows of the one-line form (six rows shown or more) are unchanged. The row glyph (Personal/Work) leads
+the mark on both forms (§2.8).
 
 ### iPad sidebar (`IPadLandscape.sidebarRow`, `ios/App/UI/MainScreens.swift`)
 
@@ -934,7 +996,7 @@ picked "Only that account" over "All stacked, scroll to it".
 Appearance › **Summary order**, right after "Open on the summary" and shown with it (two or more accounts):
 Android a wrapping row of four FilterChips — "Your order" (default) · "Most room first" · "Resets soonest" · "Most
 used" — under the bodyLarge SemiBold title, no subtitle; iOS a Picker row "Summary order" with the same four labels.
-The All tab's list header names the choice in lower case on the right of "Weekly": "your order", "most room first",
+The All tab's list header names the choice in lower case on its sort menu at the right (§2.8; the same setting): "your order ▾", "most room first",
 "resets soonest", "most used". Rows keep their group's words and styling (held, spent, no reading) in every order;
 the rank number on a one-line row and the Pace map's labels follow the list's order. The Pace map's dots are
 unaffected; widgets that list accounts (Android Strip, iOS Overview) keep their own order (`SummaryRank.ordered`,
@@ -1006,374 +1068,20 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
   Rings stay unsigned, tone only (`Display.ringNumber`: tile ring, Summary ring, 5h rings on faces, the Island's compact ring,
   the end-mark previews). The notification-style "vs pace" words never appear. The Vs pace share card still renders as Used.
 - **The pace line replaces every Weekly band line** (`WindowContent.line`, drawn by `PaceLineView`/`FitLine`,
-  `ios/Shared/PaceLineView.swift`): "21h 50m ahead · Sun 9:30 pm", "6d 23h behind · Wed 12:30 pm", "On the mark · Sat 8:00 am";
+  `ios/Shared/PaceLineView.swift`), naming the reset since v2.0 (§1.2's pace-line row, CCRM-108 (Reset Named)): "21h 50m ahead · resets Sun 4:59 PM", "1d 18h behind · resets Sun 10:17 AM", "On the mark · resets Sat 8:00 AM";
   the duration and word tinted (semibold), the rest in the surface's own ink. Where: tile folded line 1 (14.5 pt semibold) and the
   open tile's lines, the classic Weekly/5h cards, Summary line 3 (13 pt), Strip (12.5), Overview T1–T4, Bars small (11.5 pt, 126 pt
   wide), the Live Activity (single: line 1 is the pace line, line 2 the 5h line led by a ring glyph "resets in 2h 20m · on track
   for ~69%"; Duet: the pace line alone), the Island expanded (13 pt; "· in 4d 6h" is gone). A spent, held, signed-out, unclocked
   or no-reading window keeps its own line; the Lock Screen widgets and the Number face are unchanged.
-- **Drop order, one everywhere**: weekday, then clock, then the text steps to 0.8 of its size; the duration and word are never cut.
-  `FitLine` is a `ViewThatFits` over the three variants, so the choice is made on the real text width per string (Dynamic Type
+- **Drop order, one everywhere** (§1.2's pace-line row since v2.0): "resets", then the clock, then the weekday, then the floor steps to 0.8 of its size; the duration and word are never cut.
+  `FitLine` is a `ViewThatFits` over the four variants, so the choice is made on the real text width per string (Dynamic Type
   included). `PaceLineFitTests` pins it. CCBG-60 (Summary Line Clip)'s " · resets <day>" drop is this rule now.
 - **Captions.** Vs pace "52% used · 39% pace mark" (was "· mark 39%"). A press on a bar figure underlines its caption for 3 s;
   on the ring it puts the 5h's caption in the 5h line for 3 s; in a one-line Summary row it swaps the word slot (the pace line's
   tinted span) for the caption. VoiceOver offers the caption as the figure's action. The markTime readout ("Pace catches up …",
   "1d 4h behind pace") is gone from the app (`PaceText.markReadout` stays in core for the shared fixture).
 - **Pace map.** Wedge words "ahead of pace" (above the diagonal) and "behind pace" (below); names on every dot at any count, no
-  rank numbers; placement right → below → left → above-left → a leader line to the right edge, from the top down
-  (`PaceMapLayout`, `PaceLineFitTests`); "even pace" slides along the diagonal to a free stretch; the centre note "each account's
-  own week" stays, centred under the axis (core §6.3 keeps it on both families).
+  rank numbers; "even pace" slides along the diagonal to a free stretch. Placement, leaders and the "each account's own week"
+  note (now the foot line): §2.8.
 - **Share card, Weekly row**: left slot the tinted span ("13h 59m ahead"), right slot "Resets …".
-
-## v2.0 feedback on Android
-
-Step A1 (2026-11-11, RUNBOOK Lane A), built on Android; until Step 2 folds it into the sections above, this
-overrides them where they disagree. Captures: `design/research/2026-11-v20-build/A1/`.
-
-- **CCRM-106 (7d Chip)** — §2.4.4/§2.4.5 the open tile's chips read **"7d · <model> · 5h"** (`MainCards.kt`,
-  `TileChips`, `SEVEN_DAY_CHIP`); TalkBack reads the 7d chip as "7-day, all models". The selection key is unchanged
-  (null = the 7-day series), so a stored choice survives. "Weekly · All models" on the lead bar row is unchanged.
-  The inner screen's two stacks take the same chip row. (The classic card's "All" row label of §3 no longer exists
-  on Android since the account tile replaced it.)
-- **CCRM-107 (Day Grid)** — §3.3 gains a **Grid** element, drawn after the pace wash and before the 80/90/100
-  guides: vertical lines at window start + k × (span / n), k = 1…n−1, and horizontal lines at k/n of 100%, k = 1…n
-  (the n-th lies under the 100% guide); n = 7 for a window measured in days, 5 for the 5h. 1 dp solid,
-  `onSurfaceVariant` at 13% (`GRID_ALPHA`). Pure layout in `ui/DayGrid.kt`.
-  - **Time labels** (§3.3 row): start and reset labels as before; between them the ordinals 2…n−1 at 9.5 sp
-    `onSurfaceVariant`, centred in their columns; the one in now's column (an instant on a line belongs to the
-    later column) bold, `onSurface` at 95%. An ordinal gives way when its box comes within 6 dp of the "now" label
-    or within 4 dp of an end label, and all drop below a 14 dp column. "now" and the end labels never move for an
-    ordinal.
-  - **Small (72 dp)**: grid lines, no ordinals (no axis strip). **Time down**: the grid transposes with the chart
-    (day lines across, percent lines down); no ordinals (no axis strip there either). **Inner two stacks**: each
-    stack has its own grid and ordinals. **Share card chart** (`ChartBitmap`): the same grid and ordinals, bold in
-    now's column; it has no "now" label, so the ordinals yield only to the end labels.
-  - **Pace map** (§2.8 Android): sevenths both ways at ink 10% (`MAP_GRID_ALPHA`) under the 0/50/100% lines, which
-    stay; the x axis reads "week start", 2…6 (10 sp, ink 60%, never bold — each account's own week), "reset", with the
-    same end-label give-way (at 360 dp the "2" yields to "week start"). "each account's own week" leaves the axis for
-    the card's **foot line** (`PaceMapFoot`): left, 11 sp `onSurfaceVariant`, 4 dp under the plot.
-- **CCRM-108 (Reset Named)** — the tile's folded and open pace lines and the Summary's line 3 read
-  "21h 50m ahead · **resets** Sun 5:08 PM" and drop, by measured width, to "· Sun 5:08 PM" → "· Sun" → the floor;
-  a reset later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. A bare clock always means today.
-  `PaceText.paceLineForms`; the held line ("Held · back at … · resets Fri") is unchanged.
-
-Step A3 (Pace map, Android), built 2026-11-11 from rev B §5 and §7 (CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers)); it
-supersedes the Pace map paragraphs of §2.8 above wherever they differ. Code `ui/PaceMap.kt` (card, scene, drawing),
-`ui/PaceMapRules.kt` (quiet rule, foot line, figures, callout forecast, projection end, pin and hit test) and
-`ui/MapLabels.kt` (the placer, the same rules as iOS's `MapLabels`). Captures `design/research/2026-11-v20-build/A3/`.
-
-- **Title line.** "Pace map" (titleSmall) left; on the right, in place of "Weekly, where each account stands", three chips
-  Figures · Trails · Projection: 32 dp high, 12 sp, 10 dp side padding, 6 dp apart, an 8 dp radius; selected = ink at 13%
-  fill and SemiBold, unselected = a 1 dp `outline` border and regular; no check glyph. A switch for TalkBack (the chip
-  turns a layer on or off). The chips are 32 dp **including** their touch target (Material's 48 dp minimum is not applied,
-  so the header is the 32 dp the wireframe draws). Defaults Figures off, Trails on, Projection off, remembered in
-  `usage_cache` (`paceMap.figures|trails|projection`, new keys, ignored by v1.9). `FlowRow`: when the title and the chips
-  do not fit one line the chips wrap under the title, left-aligned, 6 dp below.
-- **Who is plotted.** An account whose Weekly row prints "0%" (the row truncates: 0.99 → 0%, 1.0 → 1%) leaves the map; so
-  do accounts with no reading and a reading with no reset clock (it has no x; before, it sat on the origin). The list
-  still shows every row. Spent: × on the dot. Stale: the last reading, undimmed (as shipped).
-- **Foot line (`PaceMapFoot`).** Left "each account's own week"; right, 11 sp `onSurfaceVariant`, the count of accounts left
-  off: "2 at 0%", "1 no reading", joined "2 at 0% · 1 no reading"; nothing when none (a not-started week counts as 0%; a
-  reading of 1% or more with no reset clock counts as no reading).
-- **All at 0%.** The frame, grid, diagonal and words stay at full height; in the behind wedge, right-aligned at (96%, 26%),
-  10.5 sp ink 55%: "Nothing to plot yet" (SemiBold) over "every account is at 0% this week"; TalkBack reads it as the
-  map's state. With nothing plotted but some accounts unread, the empty frame shows the foot line's count and no message
-  (not drawn in rev B; as iOS).
-- **Figures.** "Teams 52%" (Used), "Teams 48% left" (Left; a spent account reads "Teams 0%", Robin 2026-11-11), "Teams −13%" /
-  "+19%" / "0%" (Vs pace; no reset clock falls back to Used). Name 11.5 sp SemiBold ink; figure bold in the severity colour
-  (Used, Left, the Vs fallback) or green / red / ink (Vs pace). Used and Left truncate like the row (51.5 → "51%", "48% left").
-- **Trails.** The week at 1.6 dp, accent 55%; the last 24 h (a seventh of the week before the dot) 2.6 dp, accent 90%,
-  round caps; an account with fewer than two samples has no trail (`PaceMapRules.hasTrail`: the trail ends on the live
-  point, so it needs two behind it, as iOS). Off: dots only.
-- **Projection.** A dashed tail (1.6 dp, 5/4, accent 65%) from the dot to a ring (r 3.5 dp, 1.5 dp, card fill) on the right
-  edge at the projected %; where the estimate runs out before the reset the ring sits on the 100% line at that moment, red,
-  and the tail fades from the accent to red. The estimate is the account chart's (`Projection.estimate` on the Summary's
-  weekly samples). No tail and no ring with no estimate, spent, or no reset clock. "even pace" also keeps off every ring.
-- **Callout.** A tap on a dot (48 dp target) or a name (its box widened to 48 dp high) pins it; the nearest dot wins. The
-  others dim to 35% (trails, tails, rings, leaders, dots, names; not the frame or its words). Drawn in the canvas: 8 dp
-  radius, card at 97%, 1 dp border in the account colour at 55%; line 1 a 3.5 dp accent dot, the name 12 sp SemiBold, the
-  figure 12 sp bold at the right; line 2, 11 sp, the pace line (its drop order measured to the plot's width) or the row's
-  line where there is none ("Out until Fri 1:48 PM" red when spent, "Held · …"); line 3, 11 sp, "~74% at reset" (muted) or
-  "100% at Wed 6:10 PM" (red; a bare clock later today), none without a projection. It opens 10 dp right and 8 dp above the
-  dot, flips left past the plot's right edge by 6 dp, below the dot at the top, and is clamped to the plot. The same account
-  again opens its page; another dot moves the pin; the empty plot clears it; the pin is held by the Summary (one for the cover
-  and the inner layout, so a fold keeps it) and is dropped, not just hidden, when its account leaves the map. The lines
-  of the callout stack from their measured heights (the drawn 24 + 15 + 15 dp at scale 1.0, taller as the text grows). TalkBack: one node per dot on its 48 dp target, "Teams, 52 percent, 21h 50m
-  ahead · resets Sun 5:58 PM, ~74% at reset", click label "Pin, again to open" (then "Open").
-- **Names and leaders (closes CCBG-79 (Leader Reads as Trail)).** `MapLabels`, top-down: right, below, left, above-left;
-  then a dotted leader (1 dp, 1.5/2.5, accent 55%) 24, 36 or 48 dp from the dot in eight directions, refused across a
-  placed name or another dot (so a stack of dots at one point shows two names and no leader), never longer than 48 dp and
-  never to the far edge. With Projection on a name does not sit on its own tail or on a ring. Nothing free: the name is not
-  drawn and takes no room; its dot stays and its 48 dp target still pins a callout that names it. The offsets are the
-  fixture's (dot box 14 dp, 2 dp between names, 1 dp off a word, right +10, below +2/+3, left −10, above-left −6, margins
-  2/6/8/6), which the map has always drawn. `printed-v20.json` → `mapLabels` pins them.
-
-Step A4 (Summary, Android), built 2026-11-11 from rev B §6 and §8 as amended by the 2026-11-11 addendum
-(`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`, §Row glyph and §Adding and tagging, which wins); it
-supersedes the Summary, Add sheet, account-card and share paragraphs above wherever they differ (CCRM-110 (Account Tags),
-CCRM-112 (Summary Snapshot), CCRM-115 (Row Tag Glyph)). Code `data/AccountTag.kt` (the tag and the filter's rules, pure),
-`ui/AccountTags.kt` (glyph, chip, dialog, the two controls), `ui/SummaryRows.kt` (the glyph fit rule, pure),
-`SummaryScreen.kt`, `SettingsScreen.kt`, `share/SummarySnapshot.kt`. Captures `design/research/2026-11-v20-build/A4/`.
-
-- **The tag.** Every account is **Personal or Work**, no "None". Stored additively as `"t"` (`personal` / `work`) in the
-  registry's account JSON; a missing, empty or unknown value reads as Personal (every v1.9 account is Personal at upgrade
-  and nothing is written), an unknown value is written back untouched, v1.9 ignores the key. The first account, which never
-  passes the Add sheet, is Personal.
-- **Add account sheet.** Under "Add account" (titleLarge): "This account is" (bodyMedium, `onSurfaceVariant`), 8 dp, a
-  full-width `SingleChoiceSegmentedButtonRow` (40 dp) of **Personal | Work** — an 18 dp glyph and the word in each
-  segment, the chosen one tonal and SemiBold, the glyph in place of Material's check — 6 dp, "Groups it on the Summary. You
-  can change it later." (bodySmall, muted), 16 dp, then the provider rows as built. Personal is selected **every time the
-  sheet opens**; a row tap commits the account with the shown tag. The glyphs leave both segments together when "Personal"
-  with its glyph no longer fits half the row (`AddSheetFit`; font 2.0 on a 360 dp phone). The sheet scrolls once it outgrows
-  the screen. "Try with sample data" is Step A5's and ignores the control.
-- **Account card (Settings › Accounts).** A neutral chip after the plan chip on **every** card, signed in or not: outline
-  1 dp `outlineVariant`, 10 dp radius, a 12 dp glyph and the word in `labelSmall`; a tap opens the Tag dialog. The name
-  gives first, as built, down to 64 dp at its own text scale (or its own width if shorter); then the chip drops its word and
-  keeps its glyph (`TagChipFit`). TalkBack "Tag: Personal", action "change". The ⋮ menu gains **"Tag…"** after "Rename…";
-  the dialog "Tag · <name>" has two 48 dp radio rows (glyph + word), the help "Tags group accounts on the Summary: All ·
-  Personal · Work." and "Close"; a tap applies at once. Signing in again never touches the tag.
-- **Summary header.** "Weekly", then the **All · Personal · Work** control (28 dp, 12 sp, the chosen segment tonal and
-  SemiBold; a segment with no accounts at 38%), then the sort menu at the right ("your order ▾", a 28 dp outlined button:
-  the four orders, "✓" on the current one; the same setting as Appearance › Summary order). On a list under 320 dp wide
-  (a 360 dp phone) the sort button is its glyph "⇅ ▾"; from font scale 1.5 the control wraps under the title across the
-  whole width. A tap on a disabled segment shows "No Work accounts yet. Tag one in Settings." (12 sp, muted) under the
-  header for 3 s ("Personal" likewise). The control shows whenever the Summary exists (two or more signed-in accounts).
-- **The filter.** The remembered value (`summaryFilter`, new key) is the last segment tapped. The filter in force is that
-  value when it names an enabled segment, else All; it narrows the list, the rank numbers, the Pace map with its foot-line
-  count, the one-line threshold (six rows **shown**) and the snapshot. **Memory rule:** when the Summary comes on screen and
-  whenever the accounts or a tag change, a stored value the filter in force does not match (unknown, or its group has no
-  accounts) is replaced by `all`; an absent value stays absent; tagging later never brings the old choice back.
-  `UsageCache.settleSummaryFilter`, called from `UsageRepository`'s add / tag / remove and by the Summary.
-- **Row glyph (CCRM-115).** A Material outlined person (Personal) or briefcase (Work) in `onSurfaceVariant`, never a colour
-  or the word: 14 dp + 4 dp before the provider mark on a full row (18 dp in all, on line 1 so it dims with it); 12 dp + 4
-  dp between the rank disc and the name on a one-line row (grouped with the name, so the bar pays 16 dp). **Drop-out:** the
-  name ellipsizes first down to its floor (64 dp at its own text scale, or its own width if shorter), then the glyph column
-  leaves **every** row at once, then the name goes on ellipsizing; a one-line bar keeps 40 dp, so the column leaves under a
-  295 dp list. Measured on the tightest row shown and re-measured on a width, filter, display or font change
-  (`SummaryRows.fullKeepsGlyph`, `oneLineKeepsGlyph`). Under a Personal or Work filter the glyph stays. TalkBack reads the
-  tag on the name — "Teams, Work account" — whether or not the glyph is drawn; the glyph is hidden.
-- **Share snapshot (CCRM-112).** The All tab's top-bar ⋮ returns with one item, "Share snapshot" (hidden when no shown
-  account has a reading); the CCRM-24 (Share Card) preview dialog. 360 dp at 4×: header (the filter's name 17 sp bold, "as
-  of" = the oldest reading shown, the order's name right), the rows in screen order and filter (5h ring 32 dp, mark 14 +
-  name 13 sp SemiBold, figure 17 sp bold, 8 dp bar with tick, the pace span left and "Resets …" right; one line each from
-  six rows), "Pace map" and the map (320 × 200 dp, the screen's own painter and scene, the layers on screen, never the
-  chips or a callout) with its foot line, COOLDOWN. The 12 dp glyph + 4 dp leads each mark **only while the rows on the
-  card carry both tags**. Spent rows read "Out until …" in red; unread rows are at 50% with "Sign in" / "No reading" and no
-  bar fill; a stale row reads "Stale"; a held row reads "Held · back at …". Names, never e-mail addresses.
-
-Step A5 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-113 (Sample Port), CCRM-110 (Account Tags)'s Add-sheet
-rule. Captures: `design/research/2026-11-v20-build/A5/`.
-
-- **Sample mode** (`data/SampleMode.kt`, `ui/SampleUi.kt`; BEHAVIOR-MOBILE §7). A process-wide flag, never written. While it is
-  on the app's root hands every screen a **sample repository** — a `UsageRepository` over in-memory twins (`MemoryPrefs`
-  cache and registry, in-memory history and session log, no credentials) — and re-keys the whole tree, which closes every
-  dialog, sheet and menu and drops its pending edit. A dialog binds to the repository it opened with, never to the flag. Real
-  polling, reset checks and alerts build their own real repositories and never read it; `Surfaces.refresh` refuses a sample
-  cache, so the notification, status-bar icon and widgets stay on the real accounts. Entering suspends the debug synthetic
-  series in memory (restored on Exit). Opening the app from a real surface (a launch naming an account, or "refresh") exits the
-  sample first; process death returns to the real app.
-- **Accounts.** Teams (Claude, Max, **Work**), Personal (ChatGPT, Plus, **Personal**), Lab (Gemini, Pro, **Work**), tags fixed at
-  entry (the addendum wins over rev B §9's untagged Lab). Readings are the iOS demo's, parsed through the real parsers: Teams 46% at
-  46% elapsed, weekly 18%, a Fable limit, credits $123.90 / $400.00 · 31%; Personal 26% / 9% (well under); Lab 62% / 64% (above
-  pace, held). Seven days of history and sixteen closed windows per account. The sample's settings are an in-memory copy of
-  the user's Appearance and Summary settings (theme, time, usage display, end mark, reset form, over-pace, density, chart,
-  open-on-summary, order, filter, map layers); a change in the sample is dropped on Exit.
-- **Entry.** The first screen (no account) shows a 48 dp text button "Try with sample data" in the accent, 12 dp under the
-  unchanged "No … account yet" card, with the caption "Three made-up accounts to look around. Nothing is saved or sent."
-  (bodySmall, muted). The Add account sheet's last row, under a divider, is a 28 dp violet ring-and-dot glyph with the same
-  title (bodyLarge) and caption; it ignores the Personal | Work control. No confirmation. Entry lands on the All tab; Exit
-  returns to the tab the user was on (the first screen when there was no account).
-- **Banner** (`SampleBanner`): the first item under the app bar on every tab (All included), Settings and History; the band is
-  violet `#7C4DFF` at 16%, 12 dp radius, 36 dp tall, in a 48 dp row so "Exit" has a whole target; "● Sample data" SemiBold
-  violet (`#B388FF` on dark), " — made-up accounts" in the ink, 13 sp. Where the line does not fit (font 1.3 on a 360 dp phone,
-  and larger) the tail drops (`SampleBannerFit`); "● Sample data" and "Exit" never drop or wrap. At compact height it moves into
-  the scrolling column with the other notices. "Exit" and Settings › Accounts "Exit sample data" are the same exit.
-- **Account tab and Summary.** Unchanged layouts drawing the sample; the status line reads "Sample data · nothing is fetched"
-  (12.5 sp muted, no glyph, not a button) on an account and on the Summary; no fetch-error notice and no "Weekly now leads" card;
-  store and crash cards are the real ones. The share card and the Summary snapshot stay and their band reads "● SAMPLE DATA".
-- **Settings › Accounts.** Each card is the header alone: mark, name, the word "Sample" in place of the status dot, plan chip,
-  tag chip, ⋮ (Rename…, Tag…, Accent colour…, Headline… work on the in-memory copy; Details…, Clear usage history… and Remove
-  account are hidden); no e-mail line, no check line, no action row. "+ Add account" and "Reorder" give way to an outlined
-  "Exit sample data". **Alerts:** one card, "Off while the sample is open" with the real-surfaces sentence. **Appearance:** every
-  control works on the copy, with the caption "Changes here apply to the sample and are dropped when you exit." **More:**
-  Polling, Usage credits and Diagnostics are hidden; Updates and About stay.
-- **Add account sheet: the sign-in rule** (Robin 2026-11-11, both platforms). The row tap still creates the card (it hosts the
-  sign-in) but the account is **provisional** until its sign-in saves a token: Cancel (Claude, Gemini), dismissing the code sheet
-  (ChatGPT) and any dead end leave **no account and no tag** (`UsageRepository.abandonProfile`; slots are never reused), and a
-  provisional account with no token is swept at the next launch (`settleProvisional`) when no sign-in is pending for it or it is
-  more than an hour old (the browser-trip entries never expire). Abandoning runs under the repository's lock, so a dismiss that
-  races the token save keeps the account. No visible
-  design change. History tab (Android): "Personal" wraps at 360 dp with three accounts — CCBG-81 (History Tab Wrap).
-
-Step A6 (2026-11-11, RUNBOOK Lane A) — CCBG-81 (History Tab Wrap), Robin's option B, approved as captured
-(`design/2026-11-11-ccbg81-history-tab-strip.html`; captures `design/research/2026-11-v20-build/A6/ccbg81/`). **Supersedes §1's
-"Fit" row and the All tab's fixed ≤ 3 count for Android:** Main's and History's account strips are one composable
-(`ui/ProfileTabStrip.kt`): each tab's label (mark + name, "All" included) is measured at its one-line width in the tab's
-titleSmall; while every label plus the tab's 32 dp padding fits its equal share of the strip, it is the fixed `TabRow`; as soon
-as one would not, the `ScrollableTabRow` (edge padding 0). It follows the names, the width and the font size, not the account
-count: History at 360 dp with three accounts scrolls ("Personal" on one line); the cover keeps three short names in fixed
-thirds; a long name with two accounts scrolls instead of wrapping, on Main too; on the cover and the inner screen Main's strip
-is now fixed whenever its labels fit (it scrolled from four tabs). `FIXED_TAB_LIMIT` is gone. iOS: Step 2 checks whether the
-iPhone 17e's History strip wraps the same way.
-
-## v2.0 feedback on iOS
-
-Step I1 (Lines and labels), built 2026-11-11 at 7d479ba from `design/2026-11-10-v20-feedback-wireframes.html` rev B
-§2–§4. It supersedes "The pace line on iOS" and the iOS tile/Pace map paragraphs above wherever they differ. Captures
-`design/research/2026-11-v20-build/I1/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ both orientations; `render/` holds the
-widget, lock-screen and Live Activity faces from `SurfaceRenderTests`).
-
-- **7d** (CCRM-106 (7d Chip)). The open tile's chips read "7d · Opus · 5h" (was "All · …"); one chip only → no row, no 5h →
-  "7d · Opus", model limits hidden → "7d · 5h". The classic 7-day card's left half (`WeeklyCard`, kept in code, not placed
-  by any layout since CCRM-103) reads "7d". VoiceOver: "7-day, all models" (`CardContent.spokenTitle`). The stored chip
-  selection is unchanged. The lead bar label "Weekly · All models" is unchanged (wireframe Q4 (a)).
-- **Day grid** (CCRM-107 (Day Grid)), `TrendChart` in `ios/Shared/Charts.swift`. Every 7-day chart draws seven equal
-  columns (the window's start + k days) and lines at k/7 of 100%; a 5h chart five hourly columns and 20% steps. Ink
-  `line` at 60%, 0.5 pt, drawn after the pace wash and before the guides, so the 80/90/100 guides, the diagonal and the data
-  sit over it. Axis strip: the start label left (11 pt), the ordinals 2…6 (2…4 on a 5h chart) centred in their columns at
-  9.5 pt in `sub`, the reset label right; the column holding now is bold `ink`. An ordinal gives way within 6 pt of "now"
-  and 4 pt of an end label, and every ordinal drops below a 14 pt column (CooldownCore `DayGrid`, the core rule). Small
-  (lines only): the grid, no ordinals. "Time down": the grid transposes, and the ordinals run down the right edge under the
-  same rule (measured by label height). Not started: no chart, no grid. Where: the open tile (7d, model and 5h chips), the
-  share card's trend, the Overview/Large and XL widgets' chart.
-- **Pace map** (CCRM-107). Sevenths both ways in the same grid ink under the 0/50/100% lines, which stay; the x axis reads
-  "week start", 2…6, "reset" (10 pt, `sub`; an ordinal gives way to an end word it would touch; never bold — each dot has
-  its own week, so there is no now column). "each account's own week" leaves the axis for the card's foot line, left, 11 pt
-  `sub`, 4 pt under the plot (the right side of the foot line is CCRM-109's count, Step I2). Labels, leaders and layers are
-  unchanged until Step I2.
-- **The pace line names the reset** (CCRM-108 (Reset Named)). "1d 18h behind · resets Sun 10:17 AM", "21h 50m ahead · resets
-  Sun 4:59 PM", "On the mark · resets Sat 8:00 AM". Drop order, one everywhere (`FitLine`, now four variants): another day
-  "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the
-  floor; then the floor steps to 0.8 of its size. A bare clock always means today. The tinted span and the floor are
-  unchanged; spent, held, signed-out, unclocked and no-reading lines are unchanged. The one-line Summary row's word slot
-  is still the tinted span alone, and the share card's Weekly row keeps "Resets …" in its right slot.
-
-Step I2 (Pace map), built 2026-11-11 at 42ad02e from rev B §5 and §7 (CCRM-109 (Quiet Accounts), CCRM-111 (Map Layers)).
-It supersedes the iOS Pace map paragraphs above wherever they differ. Code `ios/App/UI/PaceMap.swift` (the old
-`PaceMapLayout` is gone); rules CooldownCore `PaceMapRules` and `MapLabels`. Captures
-`design/research/2026-11-v20-build/I2/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape, dark and light,
-from the `-demo map|dense|quiet|hidden` scenarios; `render/` holds every chip combination, callout and quiet state from
-`PaceMapTests`).
-
-- **Title line.** "Pace map" 17 pt left; on the right, in place of "Weekly, where each account stands", three chips
-  Figures · Trails · Projection: 13 pt capsules, 10 pt side padding, 5 pt vertical, 6 pt apart; selected = `fill` and
-  semibold `ink`, unselected = a 1 pt `line` outline and regular `txt`; no check glyph. Defaults Figures off, Trails on,
-  Projection off, remembered in the app's own defaults (`paceMap.figures|trails|projection`, new keys). When the line
-  cannot hold the title and the chips they wrap to their own line under the title, 6 pt below (the app's fonts are fixed
-  sizes, so only a narrow width wraps them — iPad split view; every iPhone holds one line).
-- **Who is plotted.** An account whose Weekly row prints "0%" (the row truncates: 0.99 → 0%) leaves the map; so do
-  accounts with no reading and a reading with no reset clock. The list still shows every row. Spent: × on the dot.
-- **Foot line.** Left "each account's own week"; right, 11 pt `sub`, the count of accounts left off: "2 at 0%",
-  "1 no reading", joined "2 at 0% · 1 no reading"; nothing when none.
-- **All at 0%.** The frame, grid, diagonal and words stay at full height; in the behind wedge, right-aligned at (96%, 26%),
-  10.5 pt `ink` 55%: "Nothing to plot yet" (semibold) over "every account is at 0% this week".
-- **Figures.** "Teams 52%" (Used), "Teams 48% left" (Left; spent "Teams 0%"), "Teams −13%" / "+19%" / "0%" (Vs pace;
-  no reset clock falls back to Used). Name 11.5 pt semibold `ink`; figure 11.5 pt bold in the severity colour (Used, Left,
-  the Vs fallback) or green / red / `ink` (Vs pace). Used and Left truncate like the row.
-- **Trails.** The week at 1.6 pt, accent 55%; the last 24 h (a seventh of the week before the dot) 2.6 pt, accent 90%,
-  round caps; an account with fewer than two samples has no trail (as shipped). Off: dots only.
-- **Projection.** A dashed tail (1.6 pt, 5/4, accent 65%) from the dot to a ring (r 3.5 pt, 1.5 pt, `card` fill) on the
-  right edge at the projected %; where the estimate runs out before the reset the ring sits on the 100% line at that
-  moment and is red, and the tail fades from the accent to red at its end. The estimate is the account chart's
-  (`Projection.estimate` on the week's samples). No tail and no ring with no estimate, spent, or no reset clock.
-- **Callout.** A tap on a dot (48 pt target) or a name pins it; the nearest dot wins. The others dim to 35% (trails, tails,
-  leaders, dots, names). Pill: 8 pt radius, `card` at 97%, 1 pt border in the account colour at 55%, padding 9 × 6 pt.
-  Line 1: a 7 pt accent dot, the name 12 pt semibold, the figure 12 pt bold right. Line 2, 11 pt: the pace line (its own
-  drop order), or the row's line where there is none ("Out until Fri 1:48 pm" red when spent, "Held · …"). Line 3, 11 pt:
-  "~74% at reset" (`sub`) or "100% at Wed 6:10 PM" (red; a bare clock later today); no third line without a projection.
-  It opens 10 pt right and 8 pt above the dot, flips left when it would pass the plot's right edge by 6 pt, below the dot
-  when it would leave the top, and is clamped to the plot. The same account again opens its page; another dot moves the
-  pin; the empty plot clears it. VoiceOver: one element per dot, "Teams, 52 percent, 21h 50m ahead · resets Sun 5:58 PM,
-  ~74% at reset", hint "Double-tap to pin, again to open".
-- **Names and leaders.** Placed top-down by CooldownCore `MapLabels` with the fixture's geometry (dot box 14 pt, 2 pt
-  between names, 1 pt off a word; right +10, below +2/+3, left −10, above-left −6) and a 4 pt right margin: right, below,
-  left, above-left, then a dotted leader (1 pt, 1.5/2.5, accent 55%, from the dot's edge) of 24, 36 or 48 pt in eight
-  directions, refused across a placed name or another dot. A name never sits on a ring or its own tail. Nothing free:
-  the name is not drawn; its dot stays and still opens the callout. "even pace" slides as before and also avoids rings.
-
-Step I3 (Summary), built 2026-11-11 at a43afb4 and its close-out commit from rev B §6, §8 and §9 (CCRM-110 (Account Tags),
-CCRM-112 (Summary Snapshot), the iOS follow-up to CCRM-113 (Sample Port)). Code `ios/App/UI/AccountTags.swift`,
-`Summary.swift`, `SummarySnapshot.swift`; rules CooldownCore `AccountTag` and `SummaryFilter`. Captures
-`design/research/2026-11-v20-build/I3/` (iPhone 17 Pro, iPhone 17e, iPad Pro 13″ portrait and landscape; `render/` holds the
-snapshot card in every state and the header at three widths).
-
-- **Tag.** (Converted in Step I4 below: Personal · Work only, no None.) Stored on the account as an additive `tag` string
-  ("personal" / "work"; a value this build does not know is kept and, since I4, reads as Personal). SF Symbols `person` / `briefcase` lead each picker row and the
-  chip, in the chip's ink, never a colour. Set from the account page's Account section, row "Tag" after Accent colour (a menu
-  picker, the current choice with its glyph and a chevron at the right, VoiceOver "Work"), and from the touch-and-hold
-  menu's "Tag" submenu (after Rename). In Settings › Accounts a set tag is a chip after the plan chip: 12 pt glyph + 11 pt
-  semibold word, a 1 pt `sub` 50% outline, radius 6. The name keeps its line; the status word gives way before it
-  ("Signed in" shrinks to 0.75 and may truncate on a narrow phone), except a warning word ("Sign in again"), which outranks
-  the name. (Since I4: the chip is on every account, and its glyph alone also leads the Summary's rows.)
-- **Summary header.** "Weekly" 17 pt, then — since I4 whenever the Summary exists — the All · Personal · Work control (13 pt, 28 pt high,
-  an outlined bar of three segments, the chosen one a tonal fill and semibold, a segment with no accounts at 38% and
-  disabled), then at the right the sort menu: "your order ▾" (13 pt, a 1 pt `line` outline, radius 8), a native pull-down of
-  Your order · Most room first · Resets soonest · Most used with a check on the current one; it writes the same setting as
-  Appearance › Summary order, which stays. Where the line cannot hold all three: the sort button shows its glyph alone
-  ("⇅ ▾", VoiceOver "Sort: your order"), then the control wraps under the title at full width. The iPad's list column
-  carries the header; the map column follows it.
-- **Filter.** Remembered (App Group key `summaryFilter`, new; v1.9 never reads it); an unknown, disabled or empty remembered
-  value reads as All (since I4 the memory rule stores All instead, below). The filter narrows the accounts before the order ranks them, so the
-  list, the rank numbers, the Pace map, its foot-line count and empty message, the one-line threshold (six rows shown, not six
-  accounts) and the snapshot follow the same rows. The footer and refresh still cover
-  every account.
-- **Share snapshot.** On the All tab the ellipsis menu's share item reads "Share snapshot" (the account tabs keep "Share
-  card"); a sheet titled "Share snapshot" previews the card above a Share button (the system share sheet), and says "Nothing to
-  share yet — no account has a reading." when no row shown has one. The card is 300 pt wide at 3× on the app ground, padding
-  20: the header (the filter's name 17 pt bold — "All accounts", "Work accounts", "Personal accounts" — the order's name right
-  at 11 pt `sub`, "as of 12:39 pm, Wed 11 Nov" 11 pt, the newest reading among the rows shown, the account card's own form); the
-  rows in the screen's order and filter; a rule; "Pace map" 10.5 pt; the map 200 pt high drawn with the layers saved on
-  screen (grid, trails, figures, projection; Vs pace draws as Used) and its foot line (9.5 pt) — never the chips, a pinned
-  callout or its dimming; "COOLDOWN". Full row: a 32 pt 5h ring (grey when spent), mark 14 pt, name 13 pt semibold, the figure
-  17 pt bold (Used; "left" in Left mode; Vs pace as Used), the 8 pt grammar bar with its pace tick, then the pace span left
-  (tinted, 10.5 pt) and "Resets Sun 9:30 PM" right. Spent: red figure, "Out until Fri 3:05 pm" left, the reset right. Signed out
-  or no reading: 50%, "Sign in again" / "No reading", no bar fill, no reset. Stale: "Stale" in the pace slot. Held: "Held ·
-  3:28 pm" in orange. From six rows shown, one line each (26 pt): mark, name 12 pt semibold (58 pt), bar 7 pt, the short word
-  ("13h 26m ahead", "Out · Fri"; 10 pt, 64 pt), the figure 14 pt bold. The sample adds the violet "● SAMPLE DATA" band across the
-  top (8.5 pt bold white, 16 pt high).
-- **Sample.** Teams (Claude, Team), Personal (ChatGPT, Plus), Lab (Gemini, Pro) — Product (a second Claude) is gone, so the
-  stores' review notes describe the same three accounts on both phones. Teams is Work, Personal is Personal, Lab is Work
-  (Step I4; I3 left it untagged). A tag edited in the sample stays in memory (nothing is saved or written); the
-  filter and order go to the sample's own settings copy, seeded from the user's.
-
-Step I4 (Row glyph and the Personal/Work model), built 2026-11-11 from `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`
-(§Row glyph, §Adding and tagging; it wins over rev B §6 where they differ) and BEHAVIOR-MOBILE §6 (CCRM-115 (Row Tag Glyph),
-CCRM-110 (Account Tags) converted, the iOS follow-up to CCRM-113 (Sample Port)). Code `ios/App/UI/AccountTags.swift`,
-`Summary.swift`, `SummarySnapshot.swift`, `SignInSheets.swift`, `SettingsHistory.swift`, `AppModel.swift`; rules CooldownCore
-`AccountTag`, `SummaryFilter` (`resolve`, `memory`) and `RowGlyphFit`. Captures `design/research/2026-11-v20-build/I4/`
-(iPhone 17 Pro, iPhone 17e, iPad Pro 13″; `render/` holds the list, snapshot and control states from the app tests).
-
-- **No None.** `AccountTag` is Personal · Work. A missing, empty or unknown stored `tag` reads as Personal and nothing is
-  written at upgrade; the raw string survives a save (an unknown value round-trips; v1.9 ignores the key). The Tag picker
-  (account page row, touch-and-hold submenu) has two rows, glyphs leading; the submenu's icon is always the current glyph;
-  Settings shows the chip on **every** account, and the account page's Tag row always shows a value.
-- **Adding.** The Add account sheet has "This account is" (13.5 pt `txt`) above the provider rows, a two-segment control in the
-  Summary control's style (36 pt high, radius 10, 15 pt words with 14 pt glyphs, the chosen one a 13% fill and semibold) and
-  "Groups it on the Summary. You can change it later." (12.5 pt `sub`). Personal is selected every time the sheet opens
-  (not remembered). The choice rides on `AppModel.pendingTag` with the sign-in and is written when the account is created
-  (stored as `personal` or `work`); "Sign in again" ignores it, closing the sheets drops it, the first-launch buttons leave it
-  Personal, and "Try with sample data" ignores it. VoiceOver reads "This account is" then "Personal, selected". The sheet opens at the large detent only (the control's
-  ~90 pt made the provider rows truncate at medium; a fit call the addendum left to I4).
-- **Summary.** The All · Personal · Work control is shown whenever the Summary exists. A tap on a dimmed segment answers with
-  one line under the header for 3 s, "No Work accounts yet. Tag one in Settings." (12 pt `sub`; also announced to VoiceOver;
-  the segment is a Button that is never disabled, so the tap arrives, and VoiceOver reads it as "Work, dimmed").
-  **Memory rule** (`SummaryFilter.memory`, run by `AppModel.runFilterMemory`): a stored `summaryFilter` that the filter in
-  force does not match — unknown, or its group empty — is rewritten to `all` at once; a missing value stays missing; it runs
-  while the Summary exists (two or more accounts), at launch, when an account, a tag or the Summary changes, and when the
-  Summary comes on screen; in the sample it touches only the sample's settings copy, and a screenshot `-demo` launch leaves
-  the user's key alone. Tagging later never brings an earlier choice back; the view reads the stored value on every draw.
-- **Row glyph** (CCRM-115). A person (Personal) or briefcase (Work), SF Symbols `person` / `briefcase`, `sub` ink, never a colour
-  or the word, hidden from VoiceOver. Full row: a 14 pt box (12 pt symbol) + 4 pt before the provider mark. One-line row: a
-  12 pt box (11 pt symbol) + 4 pt between the rank disc and the name. VoiceOver reads the name as "Teams, Work account" whether
-  or not the glyph is drawn. It dims with its row. Under a Personal or Work filter it stays. **Drop-out:** the name
-  ellipsizes first, down to its floor (64 pt, or its own width if shorter); then the column leaves every row shown at once;
-  one-line rows: when the bar would fall under 50 pt. Decided on the tightest row shown from measured widths
-  (`RowGlyphFit`; the mark, plan chip, figure and gaps are measured, the name by its font) and re-decided when the width, the
-  filter or the rows change. iPad never drops it; an iPhone 17e drops it on a one-line list with a long name.
-- **Snapshot.** The card draws the glyph column (11 pt in a 12 pt box, before the mark) only while the rows on it carry both
-  tags (`Resolved.snapshotGlyphs`), so only under All; an install whose accounts are all Personal shares the card without it.
-- **Settings row order on a narrow phone** (addendum T4 B, iPhone 17e): the whole row; then a plain "Signed in" leaves whole
-  (never "Signed…"); beside a warning word the tag chip drops its word and keeps its glyph (VoiceOver still "Tag: Work");
-  only then does the name ellipsize.
-- **Sample.** Teams Work, Personal Personal, Lab Work in every demo scenario; `-demo upgraded` is the v1.9 upgrade (nothing
-  stored, all Personal, Work disabled). The Claude sign-in footnote reads "the plan name comes from Anthropic" (T7).

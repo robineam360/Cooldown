@@ -1931,8 +1931,8 @@ desktop repo picks it up with its pinned core. Every visible change waits for an
 eight ship in v2.0, so v2.0 waits for their build and a second Fold 7 + iPad pass. One wireframe covers them:
 `design/2026-11-10-v20-feedback-wireframes.html`, **approved rev B 2026-11-10** (Fable drew it, the seat polished
 it, Astra reviewed: concerns, C1-2 and C1-4 adopted, C1-1 and C1-3 disputed — `reviews/v20-feedback-wireframes-findings.md`).
-Core rules are in BEHAVIOR-SPEC §6.3 "Planned — v2.0 feedback"; the surface deltas are listed in
-`spec/mobile/surfaces/README.md`. CCRM-107, CCRM-108 and CCRM-111 change `spec/core`, which CooldownDesktop pins:
+Core rules are in BEHAVIOR-SPEC §6.3 (promoted from its planned block at RUNBOOK Step 2, 2026-11-12); the surfaces
+are described as built in `spec/mobile/surfaces/`. CCRM-107, CCRM-108 and CCRM-111 change `spec/core`, which CooldownDesktop pins:
 they go to the desktop session as one frozen set. **Desktop's calls (2026-11-10, re-pinned core to 4b45df9):** adopts CCRM-107 (CCM-211), CCRM-108 (CCM-212),
 CCRM-111's words (CCM-213) and CCRM-109 (CCM-214); adapts the callout to hover-to-show, click-to-open; holds
 CCRM-110 for two calls of Robin's; CCRM-112 later in its Share epic; files its widget's "All" as CCM-216 after
@@ -1942,7 +1942,7 @@ rows then the map; "Weekly · All models" stays; collapsed Duet text is capped a
 sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 
 ### CCRM-105 · Duet Stack — the two-account notification: two rings left, two stacked Weekly rows
-- **Status:** **Android built** 2026-11-11 (abb323f, 2a97300, RUNBOOK A2; emulator captures `design/research/2026-11-v20-build/A2/`) · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification).
+- **Status:** **Built, device check pending** · Android `abb323f`, `2a97300`, `6fa4ea8` (RUNBOOK A2; captures `design/research/2026-11-v20-build/A2/`) · wireframe approved 2026-11-10 (§1) · **in v2.0** · Android only (iOS has no ongoing notification) · the cover's and inner shade's real widths are checked on the Fold 7 in RUNBOOK Step 3.
 - **What:** collapsed at 52 dp: two 36 dp 5h rings (First left, unsigned, each in its account colour), then two
   rows — mark 14 dp + name 12 sp with a right-aligned 11 sp state word, under it an 8 dp Weekly bar with tick and
   red slice; both bars share one edge and length; the figure 18 sp bold tabular in a fixed 42 dp slot, signed Vs
@@ -1952,40 +1952,34 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Amended 2026-11-11:** the narrow shade is CCRM-114 (Narrow Duet), built in RUNBOOK Step A6 after A5.
 
 ### CCRM-106 · 7d Chip — the 7-day "All" chip and label read "7d"
-- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§2) · **in v2.0** · Android and iOS.
+- **Status:** **Built, device check pending** · Android `bdbb90a`, `3b4ded6` (RUNBOOK A1; captures `design/research/2026-11-v20-build/A1/`) · iOS `7d479ba`, `2047cd9` (RUNBOOK I1; captures `design/research/2026-11-v20-build/I1/`; the classic `WeeklyCard`'s "7d" is in code but placed by no layout since CCRM-103 (Hybrid Notification)) · wireframe approved 2026-11-10 (§2) · **in v2.0** · both apps.
 - **What:** "All · Fable · 5h" → "7d · Fable · 5h" on the tile chips and the classic 7-day card; model-cap names
   and "Weekly · All models" unchanged; the stored chip key is unchanged; screen readers say "7-day, all models".
-- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): the tile's first chip reads "7d", as does the classic 7-day card's half (`WeeklyCard`, in code but placed by no layout since CCRM-103 (Hybrid Notification)) (VoiceOver "7-day, all models"); the stored chip key unchanged. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-107 · Day Grid — day columns and sevenths on every 7-day chart and the Pace map, hours on 5h charts
-- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§3) · core §6/§6.3 planned · **in v2.0** · Android and iOS.
+- **Status:** **Built, device check pending** · Android `bdbb90a`, `3b4ded6` (RUNBOOK A1) · iOS `7d479ba`, `2047cd9` (RUNBOOK I1) · wireframe approved 2026-11-10 (§3) · core §6.3 "The day grid" · **in v2.0** · both apps.
 - **What:** vertical lines at each window-relative day, horizontal lines at 1/7 steps so the crossings sit on the
   even-pace diagonal; labels start date, 2…6, reset date. 5h charts: five hourly columns and 1/5 steps. The map's
   axis reads "week start", 2…6, "reset"; "each account's own week" moves to the foot line. Every existing chart
   element stays.
-- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): CooldownCore `DayGrid` on `printed-v20.json` → `dayGrid`; the grid and ordinals on every 7-day and 5h chart (tile, widgets, share card; Time down transposed, Small lines only) and on the Pace map ("week start", 2…6, "reset"; the note in the foot line). Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-108 · Reset Named — the pace line says "resets" before its clock
-- **Status:** **Android built** 2026-11-11 (bdbb90a, RUNBOOK A1; emulator captures `design/research/2026-11-v20-build/A1/`) · wireframe approved 2026-11-10 (§4, form B) · core §6.3 planned · **in v2.0** · both apps.
+- **Status:** **Built, device check pending** · Android `bdbb90a`, `3b4ded6` (RUNBOOK A1) · iOS `7d479ba`, `2047cd9` (RUNBOOK I1; every pace-line surface incl. lock screen, Live Activity, Island) · wireframe approved 2026-11-10 (§4, form B) · core §6.3 "The pace line names the reset" · **in v2.0** · both apps.
 - **What:** "6d 23h behind · resets Wed 12:30 PM", "On the mark · resets Sat 8:00 AM". Robin had read the clock
   as the reset, and it is the reset, so the line now says so. Where it does not fit, a bare clock always means
   today (Robin, 2026-11-10, on desktop's proposal): another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM" →
   "· Wed" → the floor; later today "· resets 11:00 PM" → "· 11:00 PM" → the floor. This replaces the shipped order
   that dropped the weekday first (so the Fold 7 cover will read "5h 45m behind · Sun", not "· 9:30 PM").
   Since/until (the mark instant) was drawn and not chosen.
-- **iOS:** built 2026-11-11 (7d479ba, RUNBOOK Step I1): `PaceLine` prints "· resets Wed 12:30 PM" and drops "resets", then the clock (another day keeps its weekday), then the floor, on every pace-line surface (tile, Summary, widgets, lock screen, Live Activity, Island); `printed-v20.json` → `paceLine`, `paceLineForms`, `endToEnd`. Captures `design/research/2026-11-v20-build/I1/`.
 
 ### CCRM-109 · Quiet Accounts — the Pace map hides accounts under 1% weekly
-- **Status:** **Android built** 2026-11-11 (92b4244, RUNBOOK A3; emulator captures `design/research/2026-11-v20-build/A3/`) · wireframe approved 2026-11-10 (§5) · **in v2.0** · both apps · moved into core §6.3's planned block
-  once desktop adopted it (CCM-214, 2026-11-10). Foot line: mobile keeps the count, desktop names the accounts in a
-  sentence (Robin approved both forms, 2026-11-10).
-- **What:** an account whose Weekly figure prints "0%" (under 0.5; Robin, 2026-11-10: match the row, so a row
-  reading "1%" is always plotted) leaves the map; the foot line counts them ("2 at 0%", "· 1 no reading"); all at
+- **Status:** **Built, device check pending** · Android `92b4244`, `e55cb5b` (RUNBOOK A3; captures `design/research/2026-11-v20-build/A3/`) · iOS `42ad02e`, `6158b37` (RUNBOOK I2; captures `design/research/2026-11-v20-build/I2/`) · wireframe approved 2026-11-10 (§5) · core §6.3 "Quiet accounts leave the map" (desktop adopted it as CCM-214, 2026-11-10; foot line: mobile keeps the count, desktop names the accounts in a sentence, Robin approved both) · **in v2.0** · both apps.
+- **What:** an account whose Weekly figure prints "0%" (under 1: a window row truncates; Robin, 2026-11-10: match the row, so a
+  row reading "1%" is always plotted) leaves the map; the foot line counts them ("2 at 0%", "· 1 no reading"); all at
   0% keeps the frame with "Nothing to plot yet". The list still shows every account.
-- **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): CooldownCore `PaceMapRules` — an account whose row prints "0%" (truncated, as the row: 0.99 hidden, 1.0 plotted) leaves the map; the foot line counts "N at 0%" and "N no reading" (`spec/mobile/fixtures/map-foot`); every account at 0% keeps the frame with "Nothing to plot yet" / "every account is at 0% this week"; `printed-v20.json` → `quiet`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-110 · Account Tags — Personal/Work, a Summary filter, and a sort menu
-- **Status:** **Android built** 2026-11-11 (RUNBOOK A4; emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-10 (§6), amended 2026-11-11 (Personal or Work only, chosen on the Add account sheet) · **in v2.0** · both apps.
+- **Status:** **Built, device check pending** · Android `e2570e5`, `4e0b730` (RUNBOOK A4; captures `design/research/2026-11-v20-build/A4/`), the Add-sheet sign-in rule `8916028` (A5) · iOS `a43afb4`, `e02aeea` (RUNBOOK I3, the optional tag) converted to Personal/Work in `cfcd998`, `b3421b8`, `11b3a23` (RUNBOOK I4; captures `design/research/2026-11-v20-build/I4/`) · fixture fix `d4d1598` · wireframe approved 2026-11-10 (§6), amended 2026-11-11 (Personal or Work only, chosen on the Add account sheet) · **in v2.0** · both apps.
 - **What:** every account is **Personal** or **Work** (Robin, 2026-11-11: no "None"), chosen on the Add account sheet
   when the account is added and changed from the account's menu (Android "Tag…", iOS account page and long-press);
   accounts that exist at the upgrade, and the very first account, are Personal, silently. Settings shows it on every
@@ -1993,39 +1987,31 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   accounts) an All · Personal · Work control sits beside its "Weekly" (remembered; a segment with no accounts
   disabled) and filters the list, the map and the snapshot. When the remembered group goes empty the filter falls
   back to All **and is stored as All**; tagging later never brings it back (BEHAVIOR-MOBILE §6; both clients test the
-  same sequences in `fixtures/tags/cases-personal-work.json`). "your order" becomes a sort menu of the four orders
+  same sequences in `spec/mobile/fixtures/tags/cases.json`). "your order" becomes a sort menu of the four orders
   (Appearance keeps its setting). The rev B optional-tag design (None, "untagged show only under All") is replaced
   by `design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §Adding and tagging (approved 2026-11-11).
 - **Amended 2026-11-11:** Android builds this in RUNBOOK Step A4; iOS (I3 built the optional tag) converts in Step I4:
   `AccountTag` loses None, the Add sheet gains the control, a stored value that is not in force is rewritten to All.
-- **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): CooldownCore `AccountTag` and `SummaryFilter` on `spec/mobile/fixtures/tags`; the account's additive `tag` string (absent = None, an unknown value survives a round trip, a v1.9-era reader ignores it); the "Tag" row on the account page (menu picker, glyphs leading), a "Tag" submenu in the touch-and-hold menu, the neutral glyph + word chip after the plan chip in Settings; the All · Personal · Work control (13 pt, 28 pt high) beside "Weekly", remembered, filtering the list, the map and the snapshot, a segment with no accounts disabled; "your order" is a native pull-down of the four orders (glyph alone, then the control wrapping under the title, where the line cannot hold it). Captures `design/research/2026-11-v20-build/I3/`.
-- **iOS (Step I4):** built 2026-11-11 (RUNBOOK Step I4; code and captures `design/research/2026-11-v20-build/I4/`): converted to Personal · Work only — `AccountTag(stored:)` reads a missing, empty or unknown value as Personal (nothing written at upgrade, the raw string survives), the pickers have two rows, `setTag` takes a tag, the Settings chip and the account page's Tag row show on every account; "This account is" on the Add account sheet (Personal each open, `pendingTag` written at creation, ignored by "Sign in again", the first-launch buttons leave it Personal); the control shows whenever the Summary exists, a tap on a dimmed segment shows "No Work accounts yet. Tag one in Settings." for 3 s; the memory rule (`SummaryFilter.memory`, `AppModel.runFilterMemory`) stores All when the stored group is empty and tagging later never switches it back, tested on every `cases-personal-work.json` sequence against the real model and store; the Settings row order of addendum T4 B.
 
 ### CCRM-111 · Map Layers — Figures · Trails · Projection chips, a callout, short dotted leaders
-- **Status:** **Android built** 2026-11-11 (92b4244, RUNBOOK A3; emulator captures `design/research/2026-11-v20-build/A3/`) · wireframe approved 2026-11-10 (§7) · core §6.3 planned · **in v2.0** · both apps.
-  Closes CCBG-79 (Leader Reads as Trail) with the build.
+- **Status:** **Built, device check pending** · Android `92b4244`, `e55cb5b` (RUNBOOK A3) · iOS `42ad02e`, `6158b37` (RUNBOOK I2) · wireframe approved 2026-11-10 (§7) · core §6.3 (the map's words, leaders, forecast, projection) · **in v2.0** · both apps · closes CCBG-79 (Leader Reads as Trail).
 - **What:** three chips right on the map's title line (defaults off / on / off, remembered; Android 32 dp, iOS
   13 pt; wrap under the title at large text). Figures puts the figure after the name; Projection draws a dashed tail
   to a hollow ring at the projected % (red on the 100% line when it runs out); the last 24 h of each trail is
   heavier. A tap on a dot or name pins a callout (others dim to 35%; name, figure, pace line, "~74% at reset"; a
   second tap opens the account). Leaders are dotted and at most 48 dp; with nothing free the name is not drawn.
-- **iOS:** built 2026-11-11 (42ad02e, RUNBOOK Step I2): Figures · Trails · Projection chips on the title line (13 pt capsules, remembered, wrapping under the title); figures after the name ("Teams 52%", "48% left", "−13%"; spent Left "Teams 0%"); the last 24 h of each trail heavier; dashed projection tails to rings, red on the 100% line where it runs out; the pinned callout (tap pins, again opens, others at 35%, "~74% at reset" / "100% at Wed 6:10 PM"); CooldownCore `MapLabels` places names with dotted leaders of at most 48 pt in eight directions, and draws no name when nothing is free — the iOS side of CCBG-79 (Leader Reads as Trail). `printed-v20.json` → `mapLabels`, `callout`, `projectionLayer`. Captures `design/research/2026-11-v20-build/I2/`.
 
 ### CCRM-112 · Summary Snapshot — a share card for the whole Summary
-- **Status:** **Android built** 2026-11-11 (RUNBOOK A4; emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps.
+- **Status:** **Built, device check pending** · Android `e2570e5`, `4e0b730` (RUNBOOK A4) · iOS `a43afb4`, `e02aeea` (RUNBOOK I3), the glyph column `cfcd998`, `11b3a23` (RUNBOOK I4) · wireframe approved 2026-11-10 (§8) · **in v2.0** · both apps · iOS opens a sheet with a preview, Android a dialog; the same image.
 - **What:** "Share snapshot" from the Summary (Android top-bar ⋮, iOS ellipsis menu), the same share dialog as
   CCRM-24 (Share Card). One card: header with the filter's name and the time, the rows in the screen's order and
   filter (one-line rows from six accounts), then the map with the on-screen layers — never the chips or a pinned
   callout. Names shown, e-mail addresses never.
 - **Amended 2026-11-11 (CCRM-115 (Row Tag Glyph)):** the card's rows carry the tag glyph before the mark **only while
   the rows on it carry both tags**; under a filter, or with every row the same tag, the card is as drawn in rev B.
-- **iOS:** built 2026-11-11 (a43afb4 and the close-out commit, RUNBOOK Step I3): "Share snapshot" replaces "Share card" in the All tab's ellipsis menu; `SummarySnapshotView` (300 pt at 3×) — header with the filter's name, the newest reading's time and the order's name, full rows in the screen's order and filter (one line each from six), the Pace map with the layers saved on screen and the foot line, never the chips or a callout; names, never e-mail addresses; the violet "SAMPLE DATA" band in the sample; "Nothing to share yet — no account has a reading." Captures `design/research/2026-11-v20-build/I3/`.
-- **iOS (Step I4):** built 2026-11-11: the snapshot draws the tag glyph (11 pt in a 12 pt box, before the mark) only while its rows carry both tags (`SummarySnapshotView.glyphs`, from `SummaryFilter.Resolved.snapshotGlyphs`); under a filter or with every row Personal the card is unchanged. Captures `design/research/2026-11-v20-build/I4/`.
 
 ### CCRM-113 · Sample Port — Android gets the iPhone app's reviewer sample-data mode
-- **Status:** **Android built** 2026-11-11 (RUNBOOK Step A5, emulator captures `design/research/2026-11-v20-build/A5/`) · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four
-  isolation rules adopted, `reviews/v20-sample-mode-findings.md`) · **in v2.0**, built with CCRM-105…112 so it is in
-  the AAB for Play's closed track · Android; one iOS follow-up.
+- **Status:** **Built, device check pending** · Android `8916028` (RUNBOOK A5; captures `design/research/2026-11-v20-build/A5/`) · iOS follow-up `a43afb4`, `e02aeea` (RUNBOOK I3: Product swapped for Lab · Gemini) and `11b3a23` (RUNBOOK I4: Lab is Work) · wireframe approved 2026-11-10 (§9 of the same file; Fable drew, Astra: concerns, four isolation rules adopted, `reviews/v20-sample-mode-findings.md`) · **in v2.0**, so it is in the AAB for Play's closed track · both apps.
 - **Why:** Robin, 2026-11-10: "Port sample mode" — so Play's reviewer gets in with no credentials (Play App access,
   `release/play/CONSOLE-STEPS.md` step 12).
 - **What:** "Try with sample data" under the first screen's "No Claude account yet" card and as the last row of Add
@@ -2039,11 +2025,9 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   Work (a Fable fit call; rev B §9 had Lab untagged); "Tag…" in the sample edits the in-memory copy only.
 - **iOS follow-up (Robin: iOS follows):** the iOS sample swaps "Product" (Claude) for a Gemini account, so both
   stores' review notes describe the same three accounts.
-- **iOS follow-up:** built 2026-11-11 (a43afb4, RUNBOOK Step I3): the iOS sample's Product (Claude) is Lab (Gemini, Pro) — Teams · Claude, Personal · ChatGPT, Lab · Gemini, as Android's; Teams Work, Personal Personal, Lab untagged (**changes in Step I4: Lab is Work**, Robin 2026-11-11 — no account is untagged any more), so the filter shows in the sample. Captures `design/research/2026-11-v20-build/I3/iphone17pro/sample-mode-*`.
-- **iOS follow-up (Step I4):** built 2026-11-11: Lab is **Work** in every demo scenario (Teams Work, Personal Personal, Lab Work); `-demo upgraded` shows the upgrade state.
 
 ### CCRM-114 · Narrow Duet — the two-account notification on a 360 dp phone's shade
-- **Status:** **Android built** 2026-11-11 (RUNBOOK Step A6, code `3ab1181`; emulator captures `design/research/2026-11-v20-build/A6/`) · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1, variant C) · **in v2.0** · Android only · One UI's 360 dp widths UNVERIFIED until Step 3.
+- **Status:** **Built, device check pending** · Android `3ab1181`, `a6c3525` (RUNBOOK A6; captures `design/research/2026-11-v20-build/A6/`) · wireframe approved 2026-11-11 (`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html` §N1, variant C) · **in v2.0** · Android only · One UI's 360 dp widths are checked in RUNBOOK Step 3.
 - **Why:** Step A2 measured the AOSP shade giving a 360 dp phone **220 dp** of collapsed content (rev B drew 328): a word
   with no tail ("No reading", "Not started", "Sign in") squeezed the account name to ".." (finding F1); the pace line
   was cut mid-clock instead of dropping its weekday (finding F2, CCBG-80 (Fixed Pace Columns)).
@@ -2061,14 +2045,13 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Unverified until Step 3:** One UI's real widths at 360 dp (assumed to match AOSP's 220).
 
 ### CCRM-115 · Row Tag Glyph — the Personal/Work glyph before the logo on Summary rows
-- **Status:** **Built on both apps** 2026-11-11 (iOS: RUNBOOK Step I4; Android: RUNBOOK A4, emulator captures `design/research/2026-11-v20-build/A4/`) · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
+- **Status:** **Built, device check pending** · Android `e2570e5`, `4e0b730` (RUNBOOK A4) · iOS `cfcd998`, `b3421b8`, `11b3a23` (RUNBOOK I4; captures `design/research/2026-11-v20-build/I4/`) · wireframe approved 2026-11-11 (same page, §Row glyph and §Adding and tagging) · **in v2.0** · both apps.
 - **Why:** Robin, 2026-11-11: "Also on summary rows please (next to or better: before the account logos?)".
 - **What:** a person (Personal) or briefcase (Work) glyph, neutral ink, before the provider mark on every Summary row,
   full (14 dp + 4) and one-line (12 dp + 4, between the rank disc and the name); the column leaves every row at once
   when a name would fall under its floor; the share snapshot draws it only while its rows carry both tags. The rule
   is in BEHAVIOR-MOBILE §6; it comes with CCRM-110 (Account Tags)'s Personal/Work-only model (no empty slot).
   Android builds it in Step A4, iOS in Step I4.
-- **iOS:** built 2026-11-11 (RUNBOOK Step I4): `TagRowGlyph` (SF Symbols `person` / `briefcase`, `sub` ink) before the provider mark on full rows (14 pt box + 4) and between the rank disc and the name on one-line rows (12 pt box + 4), VoiceOver "Teams, Work account"; the column leaves every row at once by CooldownCore `RowGlyphFit` (name floor 64 pt or its own width; one-line bar floor 50 pt), decided on measured widths; the snapshot draws it only while its rows carry both tags. Captures `design/research/2026-11-v20-build/I4/`.
 
 ## Next — small, high value, ready to build
 

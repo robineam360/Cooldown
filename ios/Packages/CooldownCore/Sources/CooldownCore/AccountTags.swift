@@ -2,7 +2,7 @@ import Foundation
 
 /// CCRM-110 (Account Tags): every account is Personal or Work — chosen when it is added, changed from its menu — and the
 /// Summary's All · Personal · Work filter (wireframes design/2026-11-10-v20-feedback-wireframes.html rev B §6 and the
-/// 2026-11-11 addendum, BEHAVIOR-MOBILE §6). Pure, so `spec/mobile/fixtures/tags/cases-personal-work.json` tests every
+/// 2026-11-11 addendum, BEHAVIOR-MOBILE §6). Pure, so `spec/mobile/fixtures/tags/cases.json` tests every
 /// rule without drawing.
 public enum AccountTag: String, Sendable, Equatable, CaseIterable {
     case personal, work

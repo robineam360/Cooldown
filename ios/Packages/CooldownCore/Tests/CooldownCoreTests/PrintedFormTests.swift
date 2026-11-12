@@ -4,7 +4,7 @@ import Testing
 @testable import CooldownCore
 
 /// CCRM-104 (Pace Line Parity): core §6.3 "Printed form", read from the fixture Android's PrintedFormFixturesTest reads.
-@Suite("printed form: signed figure, durations, pace line, caption, map words")
+@Suite("printed form: signed figure, durations, day clock, caption, map words")
 struct PrintedFormTests {
 
     private func list(_ key: String) throws -> [[String: Any]] {
@@ -51,22 +51,7 @@ struct PrintedFormTests {
         }
     }
 
-    @Test("paceLine: text, tinted span and tone side")
-    func paceLine() throws {
-        // The shipped strings ("· Wed 12:30 PM"): the static helper still joins whatever reset it is given.
-        for c in try list("paceLine") {
-            let name = c.str("name") ?? "?"
-            guard let side = c.str("side"), let s = PaceLine.Side(rawValue: side) else { continue }
-            #expect(PaceLine.text(side: s, durationMs: i64(c, "durationMs"), reset: c.str("reset") ?? "") == c.str("text"), "\(name)")
-            if let tinted = c.str("tinted") {
-                let l = PaceLine(side: s, duration: PaceText.behind(i64(c, "durationMs") ?? 0), weekday: nil, clock: "")
-                #expect(l.tinted == tinted, "\(name)")
-            }
-        }
-    }
-
-    // CCRM-108 (Reset Named): paceLine's resets forms, paceLineForms, endToEnd and the drop order read printed-v20.json
-    // until RUNBOOK Step 2 folds it into printed.json (`PrintedFormV20Tests`).
+    // paceLine (the reset named), paceLineForms, endToEnd and the day grid: `PrintedFormV20Tests`, on this same file.
 
     @Test("caption: every printed case")
     func caption() throws {
@@ -97,12 +82,14 @@ struct PrintedFormTests {
     @Test("map words")
     func mapLabels() throws {
         let fx = try Fixtures.json("pace-distance/printed.json")
-        let m = try #require(fx["mapLabels"] as? [String: Any])
+        let labels = try #require(fx["mapLabels"] as? [String: Any])
+        let m = try #require(labels["words"] as? [String: Any])
         #expect(PaceText.MapWords.aboveDiagonal == m.str("aboveDiagonal"))
         #expect(PaceText.MapWords.belowDiagonal == m.str("belowDiagonal"))
         #expect(PaceText.MapWords.diagonal == m.str("diagonal"))
         #expect(PaceText.MapWords.xStart == m.str("xStart"))
         #expect(PaceText.MapWords.xEnd == m.str("xEnd"))
-        #expect(PaceText.MapWords.xCentre == "each account's own week")
+        // CCRM-107 (Day Grid): the centre note left the axis for the card's foot line.
+        #expect(PaceText.MapWords.xCentre == m.str("footNote"))
     }
 }

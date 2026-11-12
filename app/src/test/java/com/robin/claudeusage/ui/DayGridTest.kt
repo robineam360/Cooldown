@@ -9,14 +9,14 @@ import java.time.ZoneOffset
 
 /**
  * CCRM-107 (Day Grid): the grid lines, now's column and the ordinals' verdicts, read from
- * `spec/core/fixtures/pace-distance/printed-v20.json` → `dayGrid` (core §6.3 "Planned — v2.0 feedback").
+ * `spec/core/fixtures/pace-distance/printed.json` → `dayGrid` (core §6.3).
  * The fixture gives the label widths (the wireframe's em model at 9.5 sp); the rule is tested with them.
  */
 class DayGridTest {
 
     private val fx: JSONArray by lazy {
         JSONObject(
-            javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed-v20.json")!!
+            javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed.json")!!
                 .bufferedReader().readText(),
         ).getJSONArray("dayGrid")
     }

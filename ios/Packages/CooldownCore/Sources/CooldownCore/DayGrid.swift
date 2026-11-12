@@ -1,11 +1,11 @@
 import Foundation
 
-/// CCRM-107 (Day Grid), core §6.3 "Planned — v2.0 feedback": the grid under every 7-day chart, 5h chart and the Pace map.
+/// CCRM-107 (Day Grid), core §6.3: the grid under every 7-day chart, 5h chart and the Pace map.
 /// Vertical lines at the window's start + k × (length / n), k = 1…n−1 (window-relative days or hours, not midnights, so
 /// the n columns are equal); horizontal lines at k/n of 100%, so each crossing (k, k) sits on the even-pace diagonal.
 /// The axis strip: the start label at the left edge, the ordinals 2…n−1 centred in their columns, the reset label at the
 /// right edge. The column holding now is bold; an ordinal gives way to "now" or to an end label it would touch, and every
-/// ordinal drops when a column is narrower than `dropBelowColumn`. Cases: `printed-v20.json` → `dayGrid`. Ink and sizes
+/// ordinal drops when a column is narrower than `dropBelowColumn`. Cases: `printed.json` → `dayGrid`. Ink and sizes
 /// are the family's (iOS: `line` at 60%, 0.5 pt; ordinals 9.5 pt).
 public enum DayGrid {
 

@@ -16,7 +16,7 @@ nothing from the app.
 |---|---|---|
 | Anthropic (Claude) | `claude.com`, `platform.claude.com` (sign-in, in your browser), `api.anthropic.com` | Signing in, renewing, reading usage, plan and email |
 | OpenAI (ChatGPT) | `auth.openai.com`, `chatgpt.com`, `api.openai.com` | Device-code sign-in, renewing, reading usage |
-| Google (Gemini) | `accounts.google.com`, `oauth2.googleapis.com`, `www.googleapis.com`, `daily-cloudcode-pa.googleapis.com` | Signing in with Google's own page, renewing, reading usage and your Google account email |
+| Google (Gemini) | `accounts.google.com`, `oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com` | Signing in with Google's own page, renewing, reading usage; your Google account email comes in the sign-in reply. Nothing is sent to `www.googleapis.com`, which appears only in the names of the permissions the sign-in asks for |
 
 Status pages (`status.anthropic.com`, `status.openai.com`, `status.cloud.google.com`) open in your
 browser only when you tap a link. Requests carry `User-Agent: Cooldown/<version> (iOS)` and reveal

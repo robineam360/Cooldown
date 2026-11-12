@@ -4,34 +4,33 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ v2.0 feedback build — Step 1 landed (2026-11-11); Lanes A and I may start
+## ▶ Next session — RUNBOOK Step 3, device pass 2 (written 2026-11-12, after Step 2)
 
-RUNBOOK.md Step 1 is done: the new fixtures (`spec/core/fixtures/pace-distance/printed-v20.json`,
-`spec/mobile/fixtures/map-foot/cases.json`, `spec/mobile/fixtures/tags/cases.json`, from
-`spec/tools/gen_v20_fixtures.py`), the ROADMAP "iOS:" lines and the "v2.0 feedback on Android / iOS" sections in
-`spec/mobile/surfaces/`. Lane A (Android) and Lane I (iOS) run at the same time (Q6: "Both at once"), each in its
-own fresh session (`~/Projects/Cooldown`, **worktree ticked**, model **Opus 5.5**),
-pasting its block below. Each lane replaces only its own block (RUNBOOK "Who owns each shared file").
+Step 2 (fold-in) landed on `main`: one fixture file per topic (`printed.json`, `tags/cases.json`; no `-v20` or
+`cases-personal-work` file), core §6.3 with no planned block, `spec/mobile/surfaces/` describing v2.0 as built, the
+CCRM-105…115 status lines closed as "Built, device check pending", and CCBG-82…89 filed (none marked blocking; Robin
+decides). Lanes A, I and D are closed. **Open questions for Robin** before or during Step 3 (not filed, from the iPhone
+Duo pass `design/2026-11-11-iphone-duo-pass.html` §4): Q1 the unfolded Duo gets the phone page (lower the 700 pt
+iPad-page threshold to ≈660?); Q2 tap targets under 44 pt on every iPhone; Q3 "Try with sample data" opens on Teams,
+not All; Q4 the iPhone build is portrait-only. Also Robin's: which of CCBG-82…89 block v2.0. RUNBOOK's Step 2 Log
+lists the I3 captures the current build can no longer reach.
 
-## ▶ Next — Lane A (Android): Lane A done (written 2026-11-11)
+Open a fresh session in `~/Projects/Cooldown` with **worktree ticked**, model **Opus 5.5**, and paste RUNBOOK.md
+Step 3's fenced prompt:
 
-Lane A done: Step A6 (Narrow Duet) landed on `main` with CCRM-114 (Narrow Duet) built to the addendum's §N1 variant C,
-CCBG-80 (Fixed Pace Columns) fixed (the pace line's column derived from the screen for both layouts), and CCBG-81 (History Tab
-Wrap) fixed by Robin's option B (Main and History share one strip that scrolls only when a label will not fit). Its notes for
-Step 2 are in RUNBOOK.md's Step A6 Log (the iPhone 17e History-strip check, the rung-5 reading, One UI's 360 dp widths
-UNVERIFIED until Step 3). Both lanes are closed: Step 2 (fold-in) is next.
-
-## ▶ Next — Lane I (iOS): Lane I done (written 2026-11-11)
-
-Lane I done: Step I4 (Row glyph and the Personal/Work model) landed on `main` with CCRM-115 (Row Tag Glyph), CCRM-110 (Account Tags)
-converted to Personal · Work and the filter memory, and the sample's Lab as Work. Its notes for Step 2 are in RUNBOOK.md's Step I4
-Log (the one-account `storedAfter` fixture case, the full-row drop only unit-tested). Step 2 waits for Lane A's A6.
-
-## ▶ Next — Lane D (release text): Lane D done (written 2026-11-11)
-
-Lane D done: Step D1 landed on `main` at f156f42 (text c4ebeb3, graphic page 4ee764f). Robin approved **variant C**
-of the feature graphic (`design/2026-11-11-play-feature-graphic-v20.html`). Lane D has no further steps; the
-graphic is exported in Step 5. Its notes for Step 2 are in RUNBOOK.md's Step D1 Log.
+```
+Read CLAUDE.md, WORKTREE.md, RUNBOOK.md (Conventions and Step 3), HANDOVER.md, and RUNBOOK-v2.0.md's Step 7
+and its Log for how the first pass was run; load the model-mesh skill; run the mode check and the sweeper.
+Do RUNBOOK Step 3. Ask Robin to connect the Fold 7 and the iPad, one question at a time. Before anything,
+record each device's starting state in this step's Log (installed build and flavor, screen timeout, the
+Cooldown settings you will change, placed widgets, Live Activity); keep private captures (home pages, the
+shade's other notifications) in the scratchpad, never the repo. Install a release-signed github build of main
+on the Fold 7 (the keystore files copied from ~/Projects/Cooldown, deleted after; never staged) and a Debug
+build on the iPad. Check every item of Step 3's list, file every defect in BUGS.md, and ask Robin which ones
+block v2.0. Fix the blocking ones here, one commit per defect with its status, a fresh Opus judge round on the
+batch, and anything visible beyond the wireframe goes to Robin first. Run the "Always after" block, then
+close out and land.
+```
 
 ## ▶ (superseded by the block above) v2.0 is on main (2026-11-06) — the arc continues on main
 

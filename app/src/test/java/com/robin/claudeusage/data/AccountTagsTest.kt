@@ -17,7 +17,7 @@ import org.robolectric.RobolectricTestRunner
 /**
  * CCRM-110 (Account Tags), as amended 2026-11-11: Personal or Work only, a stored tag that reads as Personal when
  * missing, empty or unknown, the filter in force, and the memory rule — every `filter` case and every `memory`
- * sequence of `spec/mobile/fixtures/tags/cases-personal-work.json` replayed against the real store (the registry, the
+ * sequence of `spec/mobile/fixtures/tags/cases.json` replayed against the real store (the registry, the
  * cache's preferences and [UsageRepository]'s own add / tag / remove paths). iOS reads the same file.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -27,7 +27,7 @@ class AccountTagsTest {
     private val token = Credentials("access", "refresh", 0L)
 
     private val fx: JSONObject by lazy {
-        JSONObject(javaClass.classLoader!!.getResourceAsStream("mobile/fixtures/tags/cases-personal-work.json")!!.bufferedReader().readText())
+        JSONObject(javaClass.classLoader!!.getResourceAsStream("mobile/fixtures/tags/cases.json")!!.bufferedReader().readText())
     }
 
     @Before

@@ -9,7 +9,7 @@ import UIKit
 /// Port) on iOS, wireframe design/2026-11-10-v20-feedback-wireframes.html rev B §6, §8 and §9 with its 2026-11-11 addendum:
 /// the additive tag key (every account Personal or Work, no None), the filter and its memory over the Summary's rows, the
 /// snapshot's rows, and the sample's three accounts. The filter rules are pinned by CooldownCore's `AccountTagsTests` on
-/// `spec/mobile/fixtures/tags/cases-personal-work.json`, and the memory sequences are replayed here against the real model and
+/// `spec/mobile/fixtures/tags/cases.json`, and the memory sequences are replayed here against the real model and
 /// store; every drawn state is rendered to SHOT_DIR when it is set.
 @MainActor
 @Suite("Summary tags, snapshot and sample (v2.0)", .serialized)
@@ -103,7 +103,7 @@ struct SummaryTagsTests {
         let before = realGroup.object(forKey: "summaryFilter")
         defer { realGroup.set(before, forKey: "summaryFilter"); SampleStore.end() }
         let file = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appending(path: "spec/mobile/fixtures/tags/cases-personal-work.json")
+            .appending(path: "spec/mobile/fixtures/tags/cases.json")
         let json = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
         let sequences = try #require(json["memory"] as? [[String: Any]])
         #expect(sequences.count >= 5)

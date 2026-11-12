@@ -3,14 +3,14 @@ import Testing
 
 @testable import CooldownCore
 
-/// CCRM-108 (Reset Named) and CCRM-107 (Day Grid): core §6.3 "Planned — v2.0 feedback", read from
-/// `spec/core/fixtures/pace-distance/printed-v20.json` (RUNBOOK Step 1) until Step 2 folds it into `printed.json`.
+/// CCRM-108 (Reset Named) and CCRM-107 (Day Grid): core §6.3, read from
+/// `spec/core/fixtures/pace-distance/printed.json` (written at RUNBOOK Step 1 as `printed-v20.json`, folded in at Step 2).
 @Suite("printed form v2.0: the reset named, its drop order, the day grid")
 struct PrintedFormV20Tests {
 
     private let utc = TimeZone(identifier: "UTC")!
 
-    private func fixture() throws -> [String: Any] { try Fixtures.json("pace-distance/printed-v20.json") }
+    private func fixture() throws -> [String: Any] { try Fixtures.json("pace-distance/printed.json") }
 
     private func list(_ key: String) throws -> [[String: Any]] {
         let list = try #require(try fixture()[key] as? [[String: Any]], "fixture section \(key) missing")

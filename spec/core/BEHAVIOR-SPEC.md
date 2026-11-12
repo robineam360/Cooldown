@@ -456,41 +456,43 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
 - **The reset** in a line: the weekday's short name and the clock in the device's time format — "Wed 12:30 PM",
   or "Wed 12:30" in 24-hour (hours two digits: "Thu 09:00"); the weekday is dropped when the reset falls later
   the same local day ("11:00 PM").
-- **The pace line** (a 7-day window's line under its bar or figure, from `markTime`):
-  under "6d 23h behind · Wed 12:30 PM"; over "13h 59m ahead · Thu 6:15 PM"; on "On the mark · Sat 8:00 AM".
-  The duration and its word ("6d 23h behind", "13h 59m ahead") take the under or over tone and may be set
-  semibold; the rest is the line's secondary ink. The separator is " · " (U+00B7, a space each side). The
+- **The pace line names the reset** (a 7-day window's line under its bar or figure, from `markTime`; CCRM-108
+  (Reset Named), Robin's choice B, 2026-11-10): under "6d 23h behind · resets Wed 12:30 PM"; over "13h 59m ahead ·
+  resets Thu 6:15 PM"; on "On the mark · resets Sat 8:00 AM"; later the same local day "5h 45m behind · resets
+  11:00 PM". The duration and its word ("6d 23h behind", "13h 59m ahead") take the under or over tone and may be
+  set semibold; the rest is the line's secondary ink. The separator is " · " (U+00B7, a space each side). The
   §6.1 band words and the allowance ("≈X%/day") are not on any pace line; they remain for alerts and as help
   text. With no readout (spent, no reset clock, no reading) the family's held, spent, signed-out or
   no-reading line shows instead, unchanged. The 5-hour session keeps its projection line (§3), not this one.
-  **Where the line does not fit** (2026-11-06, both families): drop the weekday ("23h 59m ahead · 12:30 PM"),
-  then the clock ("23h 59m ahead"); the duration and its word are the floor and are never cut or ellipsised, and
-  "On the mark" is its own floor. Each string is measured on its own at the text's real (scaled) size, so a short
-  line keeps its clock where a long one drops it. Only if the floor itself does not fit may a surface step its
-  text down (and truncate as the last resort); the words never change.
+  Since/until wording (the mark instant) was considered and not chosen.
+  **Where the line does not fit — a bare clock always means today** (Robin, 2026-11-10, on CooldownDesktop's
+  proposal after its Astra and Fable review; it replaced the 2026-11-06 order, which dropped the weekday first and
+  so printed a reset days away as a bare clock that read as today's). A reset on another day: "· resets Wed
+  12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor. A reset later the same local day: "· resets 11:00 PM" →
+  "· 11:00 PM" → the floor. "· Wed" is narrower than any clock. The duration and its word are the floor and are
+  never cut or ellipsised, and "On the mark" is its own floor. Each string is measured on its own at the text's
+  real (scaled) size, so a short line keeps its clock where a long one drops it. Only if the floor itself does not
+  fit may a surface step its text down (and truncate as the last resort); the words never change.
 - **The pace-mark caption** (help on a figure: hover on desktop, a press on mobile, and a bar's caption where a
   family draws one): Used mode "40% pace mark · 12 over", "60% pace mark · 19 under", "60% pace mark · on it"
   (§6.3's mark, distance and on-the-mark rule); Left mode in remaining terms, the mark as `100 − mark`: "40% pace
   mark · 10 to spare", "40% pace mark · 20 over", "40% pace mark · on it" (Robin, 2026-11-06: mobile's form for
   every family); Vs pace mode "41% used · 60% pace mark" (the sign already says the side).
 - **The Pace map's words:** "ahead of pace" in the wedge above the even-pace diagonal, "behind pace" below it,
-  the diagonal "even pace", the x axis "week start" and "reset" with "each account's own week" centred between
-  them. Account names label the dots, never numbers.
+  the diagonal "even pace"; the x axis reads "week start", 2…6, "reset" (each account's own week, so no dates;
+  CCRM-107 (Day Grid)), and "each account's own week" sits on the card's foot line, no longer on the axis.
+  **Account names label the dots; with the Figures layer on, the figure follows the name** in the account's figure
+  form — "Teams 52%" (Used), "48% left" (Left), "−13%" (Vs pace, signed as above); the figure truncates as the
+  account's window row does (§2's window bars), so 51.5 prints "Teams 51%" and "48% left"; a spent account in Left
+  mode reads "Teams 0%" (Robin, as drawn).
   Labels are placed top-down (highest usage first), so on a collision the lower label is the one that moves; each
-  tries, in order, right of its dot, below it, left of it, above-left, and then a short leader line to a free spot
-  at the plot's right edge (CooldownDesktop's wireframe C1-3). A spot is refused if it leaves the plot or overlaps
-  a placed label, a dot, a wedge or axis label or "even pace"; "even pace" slides along the diagonal to the first
-  free stretch.
-
-Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
-`dayClock`, `paceLine`, `paceLineForms`, `endToEnd`, `caption`, `mapLabels`.
-
-### Planned — v2.0 feedback (approved 2026-11-10, not built)
-
-**Status:** approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` rev B (Fable drew
-it, Astra reviewed: concerns, two adopted and two disputed, `reviews/v20-feedback-wireframes-findings.md`). These
-rules replace the matching ones above **when the mobile build lands**, together with their fixtures; until then the
-rules above are what ships. Desktop pins this core and takes these as a frozen set.
+  tries, in order, right of its dot, below it, left of it, above-left. **Leaders** (CCRM-111 (Map Layers), closing
+  CCBG-79 (Leader Reads as Trail)): then the name tries 24, 36 and 48 from its dot in eight directions, joined by a
+  dotted leader never longer than 48 and never to the far edge; a leader is refused if its path crosses a placed
+  name or dot; with nothing free, the name is not drawn — the dot stays and still opens its callout. A spot is
+  refused if it leaves the plot or overlaps a placed label, a dot, a wedge or axis label or "even pace"; with the
+  Projection layer on, a name does not sit on its own tail or ring. "even pace" slides along the diagonal to the
+  first free stretch.
 
 - **The day grid** (§6, CCRM-107 (Day Grid)). Every 7-day chart and the Pace map draw a grid under everything else:
   vertical lines at the window's start + k × 24 h (k = 1…6: window-relative days, not midnights, so the seven columns
@@ -499,47 +501,34 @@ rules above are what ships. Desktop pins this core and takes these as a frozen s
   the left edge, the ordinals 2…6 (2…4 on a 5h chart) centred in their columns, the reset at the right edge; the
   column holding now is bold, and an ordinal gives way to "now" or to an end label it would touch. The grid is the
   quietest line on the chart; guides, the diagonal and the data draw over it. Ink values are each family's.
-- **The pace line names the reset** (CCRM-108 (Reset Named), Robin's choice B). The clock after the dot is still
-  the reset and now says so: under "6d 23h behind · resets Wed 12:30 PM"; over "13h 59m ahead · resets Thu
-  6:15 PM"; on "On the mark · resets Sat 8:00 AM". **Where the line does not fit — a bare clock always means
-  today** (Robin, 2026-11-10, on CooldownDesktop's proposal after its Astra and Fable review; it replaces the
-  2026-11-06 order above, which dropped the weekday first and so printed a reset days away as a bare clock that
-  read as today's). A reset on another day: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor.
-  A reset later the same local day: "· resets 11:00 PM" → "· 11:00 PM" → the floor. "· Wed" is narrower than any
-  clock, so no surface loses a form it fits today. The floor (the duration and its word, or "On the mark") is
-  unchanged. Since/until wording (the mark instant) was considered and not chosen. Fixtures `paceLine`,
-  `paceLineForms` and `endToEnd` gain the "resets" forms and the weekday-only form.
-- **The Pace map's words** (CCRM-107 and CCRM-111 (Map Layers)). The x axis reads "week start", 2…6, "reset"
-  (each account's own week, so no dates); "each account's own week" moves from the axis to the card's foot line.
-  **Account names label the dots; with the Figures layer on, the figure follows the name** in the account's figure
-  form — "Teams 52%" (Used), "48% left" (Left), "−13%" (Vs pace, signed as above). **Leaders:** after the four
-  spots fail, the name tries 24, 36 and 48 from its dot in eight directions, joined by a dotted leader never longer
-  than 48 and never to the far edge; a leader is refused if its path crosses a placed name or dot; with nothing
-  free, the name is not drawn — the dot stays and still opens its callout (closes CCBG-79 (Leader Reads as Trail)).
-  With the Projection layer on, a name does not sit on its own tail or ring. Fixture `mapLabels` gains a dense
-  200-wide map.
-- **Quiet accounts leave the map** (CCRM-109 (Quiet Accounts); mobile approved 2026-11-10, desktop adopted it as
-  CCM-214 the same day). An account whose row prints "0%" weekly used is not plotted — under 1: a window
-  row truncates (§2's window bars) (Robin, 2026-11-10, on desktop's judge note: match the row, so a row
-  reading "1%" is always on the map); the list still shows it. The foot line
-  accounts for every unplotted account (at 0%, not started, no reading). Its form is each family's: mobile counts
-  them ("2 at 0% · 1 no reading", Robin 2026-11-10: the count fits one line on a phone); desktop names them in one
-  sentence (Robin approved 2026-11-10). With every account at 0%, the frame, grid and diagonal stay.
-- **The callout's forecast** (CCRM-111): "~74% at reset", or, when the projection reaches 100% before the reset,
-  "100% at Wed 6:10 PM" — the instant it runs out, as a reset clock is printed (desktop CCM-213 follows the same).
+- **Quiet accounts leave the map** (CCRM-109 (Quiet Accounts); desktop CCM-214). An account whose row prints "0%"
+  weekly used is not plotted — under 1: a window row truncates (§2's window bars), so 0.99 is hidden and 1.0 is
+  plotted (Robin, 2026-11-10, on desktop's judge note: match the row, so a row reading "1%" is always on the map);
+  the list still shows it. The foot line accounts for every unplotted account (at 0%, not started, no reading). Its
+  form is each family's: mobile counts them ("2 at 0% · 1 no reading", Robin 2026-11-10: the count fits one line on a
+  phone); desktop names them in one sentence (Robin approved 2026-11-10). With every account at 0%, the frame, grid
+  and diagonal stay.
+- **The callout's forecast** (CCRM-111): "~74% at reset" (rounded half up: an estimate), or, when the projection
+  reaches 100% before the reset, "100% at Wed 6:10 PM" — the instant it runs out, as a reset clock is printed
+  (desktop CCM-213 follows the same).
 - **The Projection layer** (CCRM-111). A dashed tail from the dot to a hollow ring at the projected weekly % (§3's
   estimate on the weekly samples) on the plot's right edge, or to a red ring on the 100% line where it runs out
   before the reset. No tail and no ring when the estimate is null (§3: too little span or movement), or the week is
   spent.
 
-Cases, until the mobile fold-in moves them into `printed.json`: [`fixtures/pace-distance/printed-v20.json`](fixtures/pace-distance/printed-v20.json)
-→ `paceLine`, `paceLineForms`, `endToEnd`, `dayGrid`, `quiet`, `mapLabels` (words, figures, placement),
-`callout`, `projectionLayer`, derived by `spec/tools/gen_v20_fixtures.py` from the rules above. Where these rules
-leave a detail open, the fixture's `_meta` fixes it for the test: the leader tries its eight directions clockwise
-from east (E, SE, S, SW, W, NW, N, NE) at each distance; its name box touches the leader's end by the side facing
-away from the dot; an ordinal gives way within 6 of the "now" label and within 4 of an end label (the wireframe's
-words and drawing); placement offsets are the fixture's, including a name area a few units larger than the plot
-(as the shipped placers allow), and each family keeps its own drawn offsets.
+The day grid, the "resets" pace line and its drop order, the map's axis, figures, leaders, quiet accounts, forecast
+and projection were approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` rev B
+(Astra-reviewed, `reviews/v20-feedback-wireframes-findings.md`) and built on both mobile clients for v2.0 (RUNBOOK
+Lanes A and I, folded in at Step 2, 2026-11-12); desktop took them as a frozen set.
+
+Cases in [`fixtures/pace-distance/printed.json`](fixtures/pace-distance/printed.json) → `figure`, `duration`,
+`dayClock`, `caption` (hand-kept) and `paceLine`, `paceLineForms`, `endToEnd`, `dayGrid`, `quiet`, `mapLabels`
+(words, figures, placement), `callout`, `projectionLayer`, derived by `spec/tools/gen_v20_fixtures.py` from the rules
+above (`--check` re-derives them). Where the rules leave a detail open, the fixture's `_meta` fixes it for the test:
+the leader tries its eight directions clockwise from east (E, SE, S, SW, W, NW, N, NE) at each distance; its name box
+touches the leader's end by the side facing away from the dot; an ordinal gives way within 6 of the "now" label and
+within 4 of an end label (the wireframe's words and drawing); placement offsets are the fixture's, including a name
+area a few units larger than the plot (as the shipped placers allow), and each family keeps its own drawn offsets.
 
 ---
 

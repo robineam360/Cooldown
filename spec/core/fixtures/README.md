@@ -19,13 +19,11 @@ projection/  cases.json           — burn-rate estimate cases
 pace/        cases.json           — the Pace number, the allowance and the session-binding
                                      predicate (BEHAVIOR-SPEC §6.1–6.2), spec-first
 pace-distance/ cases.json         — the Vs pace figure and the distance from the pace mark (§6.3)
-             printed.json         — the printed form every family shows: sign, durations, the pace
-                                     line, the reset, the caption, the Pace map's words (§6.3)
-             printed-v20.json     — §6.3's "Planned — v2.0 feedback" cases (the "resets" pace line, the
-                                     day grid, quiet accounts, map figures and leaders, the callout
-                                     forecast, the projection layer); written by
-                                     spec/tools/gen_v20_fixtures.py, folded into printed.json at the
-                                     mobile fold-in (RUNBOOK Step 2)
+             printed.json         — the printed form every family shows: sign, durations, the "resets"
+                                     pace line and its drop order, the caption, the Pace map's words,
+                                     figures and leaders, the day grid, quiet accounts, the callout
+                                     forecast, the projection layer (§6.3); the derived blocks are
+                                     written by spec/tools/gen_v20_fixtures.py (v2.0, 2026-11-12)
 ranking/     cases.json           — accounts ranked by room to spare (§6.4)
 history/     cases.json           — bar-building and week-grouping cases
 plans/       cases.json           — the label for each provider's plan code (API-CONTRACT §11)

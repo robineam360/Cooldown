@@ -14,19 +14,13 @@ import java.util.Locale
  * CCRM-104 (Pace Line Parity): core §6.3's printed form — the signed Vs pace figure, durations,
  * the reset's day and clock, the short pace line, the pace-mark caption and the Pace map's words —
  * read straight from `spec/core/fixtures/pace-distance/printed.json`, the strings the Mac prints too.
- *
- * CCRM-108 (Reset Named) and CCRM-107 (Day Grid), RUNBOOK Step A1: the blocks core §6.3 "Planned — v2.0
- * feedback" changes — `paceLine`, `paceLineForms`, `endToEnd` and the map's words — are read from
- * `printed-v20.json` until RUNBOOK Step 2 folds them back into `printed.json`; the rest stay on `printed.json`.
+ * Since v2.0 the same file carries CCRM-108 (Reset Named) and CCRM-107 (Day Grid): `paceLine`, `paceLineForms`,
+ * `endToEnd` and the map's words in their "resets" forms (RUNBOOK Step 2 folded the lane-era `printed-v20.json` into it).
  */
 class PrintedFormFixturesTest {
 
     private val fx: JSONObject by lazy {
         JSONObject(javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed.json")!!.bufferedReader().readText())
-    }
-
-    private val v20: JSONObject by lazy {
-        JSONObject(javaClass.classLoader!!.getResourceAsStream("core/fixtures/pace-distance/printed-v20.json")!!.bufferedReader().readText())
     }
 
     private fun JSONObject.str(name: String): String? = if (isNull(name)) null else getString(name)
@@ -71,7 +65,7 @@ class PrintedFormFixturesTest {
 
     @Test
     fun `pace line words and tint`() {
-        for (c in v20.getJSONArray("paceLine").objects()) {
+        for (c in fx.getJSONArray("paceLine").objects()) {
             val name = c.getString("name")
             val mt: Pace.MarkTime? = when (c.str("side")) {
                 null -> null
@@ -89,7 +83,7 @@ class PrintedFormFixturesTest {
     @Test
     fun `pace line forms follow the drop order`() {
         val zone = ZoneOffset.UTC
-        for (c in v20.getJSONArray("paceLineForms").objects()) {
+        for (c in fx.getJSONArray("paceLineForms").objects()) {
             val now = LocalDateTime.parse(c.getString("nowLocal")).toInstant(zone).toEpochMilli()
             val reset = LocalDateTime.parse(c.getString("resetLocal")).toInstant(zone)
             val mt: Pace.MarkTime? = when (c.str("side")) {
@@ -107,7 +101,7 @@ class PrintedFormFixturesTest {
     @Test
     fun `end to end from the numbers`() {
         val zone = ZoneId.of("UTC")
-        for (c in v20.getJSONObject("endToEnd").getJSONArray("cases").objects()) {
+        for (c in fx.getJSONObject("endToEnd").getJSONArray("cases").objects()) {
             val name = c.getString("name")
             val used = c.getDouble("usedPct")
             val now = c.getLong("nowMs")
@@ -142,7 +136,7 @@ class PrintedFormFixturesTest {
 
     @Test
     fun `pace map words`() {
-        val m = v20.getJSONObject("mapLabels").getJSONObject("words")
+        val m = fx.getJSONObject("mapLabels").getJSONObject("words")
         assertEquals(m.getString("aboveDiagonal"), PaceText.MAP_AHEAD)
         assertEquals(m.getString("belowDiagonal"), PaceText.MAP_BEHIND)
         assertEquals(m.getString("diagonal"), PaceText.MAP_EVEN)

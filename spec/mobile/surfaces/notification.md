@@ -1,8 +1,8 @@
 # Surface spec: the always-on notification, the status-bar ring, the reset pings (Android)
 
 Covers the pinned always-on notification (single account and the Duet, collapsed and expanded), its
-status-bar ring glyph, the condition strips, and the reset-ping notifications. Describes **v1.9 as
-shipped**; the approving wireframe for each part is linked in that part's Sources. Code is the truth:
+status-bar ring glyph, the condition strips, and the reset-ping notifications. Describes **v2.0 as
+built**; the approving wireframe for each part is linked in that part's Sources. Code is the truth:
 where an approved wireframe and the code disagree, the code is documented and a "Differs from" line says
 so. **When you change a surface, update this file in the same commit.**
 
@@ -34,6 +34,10 @@ Settings that drive this surface (Settings, "Always-on notification" section, pl
 | Appearance: "Show red past the pace mark" | on / off | Gates the red slice past the pace mark on bars and ring; the pace mark itself always draws. |
 | Appearance: "Time format", "Theme color" | | 12/24 h in reset lines; accent colour ("Per provider" by default, so two accounts differ by colour as well as by mark). |
 
+The sample mode (CCRM-113 (Sample Port)) never reaches the notification, the status-bar icon or the reset pings: they read
+the real accounts and settings (or show nothing), and the sample's settings never redraw them (`Surfaces.refresh` refuses a
+sample cache). Only the debug synthetic series is touched: it pauses while the sample is open and resumes on Exit.
+
 ## 1. The pinned notification, single account (Second = None)
 
 ### 1.1 Delivery facts
@@ -45,7 +49,7 @@ Settings that drive this surface (Settings, "Always-on notification" section, pl
 | Style | DecoratedCustomViewStyle: the system draws icon, app name and chrome; the app owns only the content strip | `notify/PinnedNotification.kt:312` |
 | Action button | one, "Refresh" (refreshes every account) | `notify/PinnedNotification.kt:229` |
 | App-name accent | the severity colour of the shown figure (Duet: of the ring's account) | `notify/PinnedNotification.kt:226` |
-| Redraw | every poll and every relevant Settings change, via the one refresh seam | `notify/Surfaces.kt` |
+| Redraw | every poll and every relevant Settings change, via the one refresh seam; each update builds new RemoteViews. On a SystemUI re-apply of the same RemoteViews, the word colour, the stale alpha and the label's maxWidth are not reset — filed as CCBG-83 (Duet Reapply Residue), Low | `notify/Surfaces.kt` |
 | Plain-string fallback (lock screen, TalkBack, skins ignoring custom views) | title = "<Label> · Weekly" (always, since CCRM-103 (Hybrid Notification)); text = the collapsed line, prefixed "Synthetic data · " while the synthetic series is on | `notify/PinnedNotification.kt` |
 
 Text colours come from the platform's own notification text appearances, never from the app theme, so
@@ -65,10 +69,10 @@ remaining width; the figure block trails.
 | 5h ring (left of the column) | 44 dp, 14 dp gap right, vertically centred | `ui/ShapeGrammar.kt` `GrammarRing.paint` bitmap (band 0.10 S, track, fill in the account accent with its severity step, dashed room to the pace tick, red slice past it, the Usage end mark, the tick) | **gone for a plan with no 5h (B1: today's row exactly)**; shown with no reading yet (hairline ring, "—") |
 | Ring figure (in the bore) | 0.29 × 44 ≈ 12.8 dp before fitting (0.24 for four characters), shrunk until it clears the band by 1.5 dp; sized in dp, so font scale cannot push it into the band | bold, tabular lining digits, its "%" at 58%; ink (`#ECECEC` dark / `#1F1F1F` light); the ladder colour above 90 **or while the 5h binds**; Vs pace green / red / ink; 50% ink with no reading; 45% ink when greyed | the 5h in the Usage display ("34%", "66%" Left, "19%" Vs pace — **unsigned**, the tone carries the side; CCRM-104 (Pace Line Parity) D1); **no "5h" label** anywhere; TalkBack hears "5-hour window, 34 percent" |
 | Provider mark (left of label) | 14 dp square, 4 dp gap right | tinted with the account accent | the Claude / ChatGPT mark of the account's provider |
-| Label (title) | 13 sp, platform notification Title style, 1 line, ellipsis | platform title colour | "<Account label> · Weekly", whatever leads |
+| Label (title) | 13 sp, platform notification Title style, 1 line, ellipsis | platform title colour | "<Account label> · Weekly", whatever leads; the name alone when the label's bold width at 13 sp does not fit the column less the mark's 18 dp (CCRM-114 (Narrow Duet) N1-Q7) |
 | Synthetic dot | 7 dp circle, 5 dp margin left, after the label, at the end of the row | violet `#B388FF` | visible only while the synthetic series is on; contentDescription "Synthetic data" |
 | Bar (full width of the left column) | ImageView 13 dp high, 3 dp margin top, bitmap stretched to fit | see 1.6 | the Weekly's usage with its pace tick and the Usage end mark |
-| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4; the pace line's form is picked for a 142 dp column (CCRM-104 (Pace Line Parity) D10, `notify/TextFit.kt`; the Fold 7 cover's measured 147 dp less a margin, CCBG-78 (Collapsed Pace Line Clip)), at 12 sp, or 10 sp when even its floor would not fit |
+| Sub line | 12 sp, platform Info style, 1 line, ellipsis, 4 dp margin top | platform info colour | the highest-priority strip behind a "●" or, quiet, the line in 1.4; the pace line's form is picked for the column derived from the screen (1.4 "Fitting the lines"; CCRM-104 (Pace Line Parity) D10, CCBG-80 (Fixed Pace Columns), `notify/TextFit.kt`), never wider than 142 dp (the Fold 7 cover's measured 147 dp less a margin, CCBG-78 (Collapsed Pace Line Clip)), at 12 sp, or 10 sp when even its floor would not fit |
 | Figure | 32 sp bold, letter-spacing −0.02, tabular lining digits, "%" at 58%, no font padding, 14 dp margin left of the left column | severity colour (1.4); in Vs pace **signed** (D1) and coloured (`#9CCC65` / `#2E7D32` under the mark, `#FF5252` / `#C62828` over, ink on it, the severity colour when it falls back to usage) | the Weekly: "52%", in Vs pace "+19%" / "−12%" (U+2212) / "0%", or "—" |
 | Caption | 10 sp, letter-spacing 0.08, under the figure, centred on it | platform info colour | "LEFT" in Left mode only; none in Used and Vs pace (the "UNDER PACE" / "OVER PACE" / "ON PACE" caption went with D2: the sign is the cue) |
 
@@ -78,8 +82,12 @@ Layout order: [ring] then [mark] [label ........ synth dot] / [bar] / [sub] in t
 ```text
  ╭──╮  [mark] Teams · Weekly                   −13%
  │34│  [==========|---------------------]
- ╰──╯  22h 3m ahead · Sun 9:32 PM
+ ╰──╯  22h 3m ahead · Sun
 ```
+
+The AOSP shade on the fold7inner emulator clips this card's third text row vertically
+(`design/research/2026-11-v20-build/A1/06-cover-dark-notification-collapsed.png`); One UI showed the row whole
+(CCBG-78's pass). Unverified on hardware until RUNBOOK Step 3 (device pass).
 
 ### 1.3 Anatomy, expanded (`res/layout/notif_big_number_expanded.xml`)
 
@@ -87,11 +95,11 @@ Layout order: [ring] then [mark] [label ........ synth dot] / [bar] / [sub] in t
 
 | Element | Difference from collapsed | Rule |
 |---|---|---|
-| 5h ring | the 44 dp ring with the **5h's time left under it**: 11 sp, 13 dp line, 3 dp gap, tabular digits, platform info colour ("in 2h 20m"); ring plus line 60 dp, centred on the header | the time line is gone without a reset clock, and while the week is spent (the 5h cannot be used); no ring for a plan with no 5h (B1) |
-| Label | 14 sp | same text |
+| 5h ring | the 44 dp ring with the **5h's time left under it**: sized in **11 dp** (not sp; CCRM-114 (Narrow Duet) N1-Q6, single and Duet), 13 dp line, 3 dp gap, tabular digits, platform info colour ("in 2h 20m"); ring plus line 60 dp, centred on the header | the time line is gone without a reset clock, and while the week is spent (the 5h cannot be used); no ring for a plan with no 5h (B1) |
+| Label | 14 sp | same text; the name alone when its bold width at 14 sp does not fit the column less the mark's 18 dp (N1-Q7) |
 | Bar | 13 dp high, 4 dp margin top | same drawing |
 | Sub line | always the line in 1.4, **never a strip** | the strips live in the panel below |
-| Line 2 (`sub2`) | 12 sp, 2 dp margin, gone when empty | CCRM-104 (Pace Line Parity) D4: the pace-mark caption, permanently (no hover on a notification); the 5h projection under a takeover. Picked for the 141 dp column (C1-3) |
+| Line 2 (`sub2`) | 12 sp, 2 dp margin, gone when empty | CCRM-104 (Pace Line Parity) D4: the pace-mark caption, permanently (no hover on a notification); the 5h projection under a takeover. Picked for the expanded column (1.4, C1-3) |
 | Figure | **44 sp** bold | the height is generous, so the figure grows; signed in Vs pace like the collapsed one (D1) |
 | Synthetic marker | none in the row | the whole view sits under the full-width band instead (1.7) |
 | Panel (`notif_panel_single.xml` included under the header) | 10 dp margin top | section 3: **no 5h row any more** (the ring and its time line replace it, −43 dp) and no Weekly row (the header is the Weekly) |
@@ -115,8 +123,8 @@ follows its own Status-bar icon choice, not the Headline.
 
 | Lead | Collapsed line | Expanded line 1 / line 2 | Ring |
 |---|---|---|---|
-| Weekly | the pace line, "22h 3m ahead · Sun 9:32 PM" (its "ahead" / "behind" span tinted red / green and semi-bold; "On the mark · Sun 9:32 PM" untinted); the band words and "≈11%/day" are gone (CCRM-104 (Pace Line Parity) D3). The ring replaced v2.0's "· 5h 34%" companion; the line carries the reset, so a plan with no 5h (B1) has no extra "· resets Sun" | the same pace line (141 dp column) / the pace-mark caption "39% pace mark · 13 over" (D4; Left "61% pace mark · 13 to spare"; Vs pace "52% used · 39% pace mark") | quiet: ink figure; **while the 5h binds** (Q1) the arc and the figure take the ladder colour, the red slice shows |
-| Weekly, spent | "Out until Sun 9:30 PM · in 3d 4h" | same / none | **greyed** (CCRM-102 (Spent Week Gate)): the track alone at 22%, the figure ("34%") at 45% ink, no time line |
+| Weekly | the pace line, "22h 3m ahead · resets Sun 9:32 PM" in the form the column holds (CCRM-108 (Reset Named); its "ahead" / "behind" span tinted red / green and semi-bold; "On the mark · resets Sun 9:32 PM" untinted); the band words and "≈11%/day" are gone (CCRM-104 (Pace Line Parity) D3). The ring replaced v2.0's "· 5h 34%" companion; the line carries the reset, so a plan with no 5h (B1) has no extra "· resets Sun" | the same pace line (the expanded column) / the pace-mark caption "39% pace mark · 13 over" (D4; Left "61% pace mark · 13 to spare"; Vs pace "52% used · 39% pace mark") | quiet: ink figure; **while the 5h binds** (Q1) the arc and the figure take the ladder colour, the red slice shows |
+| Weekly, spent | "Out until Sun 9:30 PM · in 3d 4h"; the second clause drops whole when it does not fit (CCRM-114 (Narrow Duet)) | same / none | **greyed** (CCRM-102 (Spent Week Gate)): the track alone at 22%, the figure ("34%") at 45% ink, no time line |
 | Takeover (5-hour, or Auto while the 5h binds) | the 5h's reset line, "Back at 3:40 PM · in 50m" while it binds | the 5h's reset line / "Projected to hit 100% at 3:25 PM" when core §3 projects a hit (as v2.0) | loud, as above |
 | Weekly not started (Q6) | "Weekly not started" | same / none | as its 5h reads ("—" and the hairline without a reading) |
 | No reading yet (Q7), single and Duet | "No reading yet" | same / none | hairline ring, "—" |
@@ -126,19 +134,44 @@ Used / Left / Vs pace; in Vs pace it is **signed** ("+19%", "−12%", "0%") and 
 (CCRM-104 (Pace Line Parity) D1, D2; "LEFT" stays in Left mode), the ring's figure stays unsigned, and panel row
 figures are signed, coloured distances too.
 
-**Fitting the lines (CCRM-104 D10, C1-3, C1-4; `notify/TextFit.kt`).** A RemoteViews cannot measure text, so the
-form is chosen from the column's width in dp — collapsed 142 (CCBG-78 (Collapsed Pace Line Clip): the wireframe's 328 dp
+**Fitting the lines (CCRM-104 D10, C1-3, C1-4; CCBG-80 (Fixed Pace Columns), CCRM-114 (Narrow Duet) F2;
+`notify/TextFit.kt`).** A RemoteViews cannot measure text and never learns its real width, so the form is chosen from a
+column derived from the screen's smallest width (sw): content = `Duet.contentDp(sw)` (sw − 140 below 600 dp, 352 from
+600; 2.1), expanded content + 40; column = content − (ring box + 14) − 14 − the figure's width, where the ring box is 44
+collapsed and, expanded, the wider of 44 and its time line, none with no 5h; the figure's width is its em (bold, "%" at
+58%, × 1.04) × its size in dp **as the system converts it** (`TypedValue.applyDimension`: Android 14 scales large text
+non-linearly). The line is fitted to column × 0.965, and never wider than the fixed columns it replaced until RUNBOOK
+Step 3 (device pass) measures the Fold 7 — collapsed 142 (CCBG-78 (Collapsed Pace Line Clip): the wireframe's 328 dp
 skin gave 184, but the Fold 7 cover's collapsed sub line measured about 147 dp, so 147 less about 3.5% for the
-estimate's error), expanded single 141 (the cover measured 156), Duet expanded header 159 — against an estimate of the string's width: the wireframe's per-character em classes
-(digit .56, narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80, other capitals .62, space
-.25, "·" .29, ":" .23, sign .58, small "%" .46; the tinted span +3%) × text size in sp × the system font
-scale. Pace line forms, longest first (`PaceText.paceLineForms`): full, without the weekday, the duration and its
-word alone (the floor, never cut); caption forms (`PaceText.captionForms`): the full caption, then its distance
-clause alone ("13 over", "13 to spare", "On the mark"; Vs pace "52% used"). If even the floor does not fit, the
-line steps down to 10 sp, then ellipsizes. At 12 sp the widest line ("23h 59m ahead · Wed 12:30 PM") is 169 dp,
-without the weekday 144, the floor 85; at font scale 2.0 the 141 dp column takes the floor at 10 sp. The tight
-width is the only width a notification knows, so a wider skin simply has spare room. Held, spent, signed-out,
-no-reading and Weekly-not-started lines are unchanged. Before CCRM-103: the panel's
+estimate's error), expanded single 141 (the cover measured 156), Duet expanded header 186 (159 before CCRM-105 (Duet
+Stack)). Beside "−13%" (`TextFitTest` pins the table):
+
+| Column, dp, font 1.0 / 1.3 / 2.0 | 360 | 411 | 420 | 750 |
+|---|---|---|---|---|
+| Single, collapsed (32 sp) | 83 / 83 / 67 | 134 / 134 / 118 | 143 / 143 / 127 | 215 / 215 / 199 |
+| Single, expanded (44 sp) | 93 / 93 / 80 | 144 / 144 / 131 | 153 / 153 / 140 | 225 / 225 / 212 |
+| Duet, expanded (24 sp) | 134 / 129 / 110 | 185 / 180 / 161 | 194 / 189 / 170 | 266 / 261 / 242 |
+
+On a 360 dp phone the Duet header ends on its weekday ("23h 59m ahead · Wed") where the fixed 186 dp column cut it
+("Sun 6:…"); the single row's collapsed line is at its floor (10 sp at 1.0, cut at 1.3 and up: derived, not measured —
+the wireframe's own caveat). Unverified on hardware until RUNBOOK Step 3 (device pass): One UI's real widths at 360 dp
+(assumed AOSP's 220), expanded content = collapsed + 40 on One UI, and the non-linear font curve on One UI.
+
+The string's width is an estimate: the wireframe's per-character em classes (digit .56, narrow lowercase i l t r f j
+.30, m w .86, other lowercase .54, W M O .80, other capitals .62, space .25, "·" .29, ":" .23, sign .58, small "%"
+.46; the tinted span +3%) × text size in sp × the system font scale. Pace line forms, longest first
+(`PaceText.paceLineForms`, CCRM-108 (Reset Named)): a reset on another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM"
+→ "· Wed" → the duration and its word alone (the floor, never cut); later the same day "· resets 11:00 PM" → "· 11:00
+PM" → the floor. Caption forms (`PaceText.captionForms`): the full caption, then its distance clause alone ("13 over",
+"13 to spare", "On the mark"; Vs pace "52% used"). If even the floor does not fit, the line steps down to 10 sp, then
+ellipsizes. At 12 sp "23h 59m ahead · Wed 12:30 PM" is 169 dp, the clock without its weekday (a form before CCRM-108)
+144, the floor 85; at font scale 2.0 the 141 dp column takes the floor at 10 sp. At the 142 / 141 dp columns the forms
+printed at 12 sp follow the §4 B table of `design/2026-11-10-v20-feedback-wireframes.html` (`TextFitTest` pins it): a
+reset days away ends on its weekday, "6d 23h behind · Wed", "23h 59m ahead · Wed"; later today the bare clock, "5h
+45m behind · 8:15 AM"; on the mark "On the mark · Sat 8:00 AM" (1.3×: "· Sat"). At 1.3× and 2.0× the floor, at 2.0×
+stepped to 10 sp where it does not fit 12. The emulator's cover-like shade printed "21h 49m ahead · Sun" collapsed and
+expanded (`design/research/2026-11-v20-build/A1/` captures 06, 07). Held, spent, signed-out, no-reading and
+Weekly-not-started lines are unchanged. Before CCRM-103: the panel's
 first row was the companion — the 5h under a Weekly lead, the Weekly under a 5h lead — and a 5h lead swapped the
 label and the figure to the 5h.
 
@@ -184,7 +217,7 @@ Drawn by `ui/BarRenderer.kt` to a bitmap; RemoteViews cannot host a tick, so the
 
 | Part | Rule |
 |---|---|
-| Nominal width | 340 dp for single bars and panel rows; 156 dp for a Duet collapsed half, 47 dp beside its 36 dp ring (`Duet.barDp`); the ImageView stretches it (`fitXY`), so a few percent of residual stretch is expected |
+| Nominal width | 340 dp for single bars and panel rows; a Duet collapsed row's bar `Duet.barDp(Duet.contentDp(smallestWidth))` (2.1); the ImageView stretches it (`fitXY`), so a few percent of residual stretch is expected |
 | End (CCRM-103 (Hybrid Notification), rev D §1e) | Appearance › Usage end mark: round (as before), or a square fill end with the short end-mark line over a 1 dp gap cleared to the shade (`BarRenderer.draw(endMark, surfaceArgb = null)`); the ring takes the same mark |
 | Bar height in the bitmap | 8 dp, full pill (radius = height / 2) |
 | Bitmap height | 8 dp plus 0.3 x height overhang above and below (about 12.8 dp), so the tick is never clipped; side padding is half a tick width |
@@ -211,55 +244,72 @@ about 12.8 dp tall, so 13 dp shows it 1:1 while 10 dp and 8 dp scale it down ver
 
 ## 2. The Duet (Second set)
 
-Two accounts side by side collapsed, two stacked header blocks expanded. Chosen by one value (Second not
-None); an install that never sets Second never sees any of this.
+Two accounts stacked in one collapsed block, two stacked header blocks expanded: CCRM-105 (Duet Stack), wireframe
+`design/2026-11-10-v20-feedback-wireframes.html` rev B §1, and CCRM-114 (Narrow Duet), §N1 variant C of
+`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`. Captures: `design/research/2026-11-v20-build/A2/`
+and `A6/`. Chosen by one value (Second not None); an install that never sets Second never sees any of this.
 
-**CCRM-103 (Hybrid Notification), rev D §3 D1–D4:** each half is the Weekly (label, bar, figure) with its 5h as
-a ring; the Headline picks only the expanded sub's words, per account (1.4). Collapsed halves have no sub line, as
-before. An expanded header's sub is the pace line ("22h 3m ahead · Sun 9:32 PM", CCRM-104 (Pace Line Parity); the
-weekday drops in the 159 dp column when it does not fit, then the clock) under a Weekly lead, the 5h's reset line in
-a takeover. **The panel has no bar rows any more** — the companion rows left with the grammar (each 5h is its
-header's ring with its time left, each Weekly its header) — so it carries only the condition strip. An account with
-no 5h has no ring anywhere on the Duet (B1). The status-bar icon's "Whichever is higher" compares the gauge windows (4).
+**CCRM-103 (Hybrid Notification), rev D §3 D1–D4:** each account is the Weekly (name, bar, figure) with its 5h as
+a ring; the Headline picks only the expanded sub's words, per account (1.4). Collapsed rows have no sub line; a state
+word speaks for the row instead (2.4). An expanded header's sub is the pace line ("22h 3m ahead · resets Sun 9:32 PM",
+CCRM-104 (Pace Line Parity), CCRM-108 (Reset Named); in the form the derived Duet column holds, 1.4) under a Weekly lead,
+the 5h's reset line in a takeover. **The panel has no bar rows any more** — the companion rows left with the grammar
+(each 5h is its ring with its time left, each Weekly its header) — so it carries only the condition strip. An account
+with no 5h keeps its collapsed ring slot as the track and a cross, and its expanded header has no ring (B1). The
+status-bar icon's "Whichever is higher" compares the gauge windows (4).
 
 ### 2.1 Width and height budget
 
 | Quantity | Value | Arithmetic |
 |---|---|---|
-| Collapsed half width | **156 dp** | 360 dp card - 2 x 16 dp system padding = 328 dp; minus one 16 dp gutter = 312; split two ways. The gutter is a start margin on Second so halves stay equal. A skin giving the full card width makes halves 172 dp; the Step 7 pass measured the Fold 7 inner shade's halves at about 150–180 dp (440 px at its density), wide enough for the 36 dp ring (CCBG-64); the layout is still built for the tight case |
-| Collapsed content height | about 52 dp | label line about 14 dp, 1 dp gap, figure about 35 dp (30 sp), plus 1 dp padding each side; collapsed custom views get about 48 to 64 dp depending on skin |
-| Collapsed label ceiling | 138 dp, 127 dp with one dot, 116 dp with two (never below 24 dp); less 44 dp beside the 36 dp ring (94 / 83 / 72), less 18 dp beside the bare 14 dp ring | 156 - ring and its gap - 14 mark - 4 gap - 11 per dot (6 dp dot + 5 dp margin); on narrower halves the layout's weight ellipsizes against the real width (`Duet.labelClampDp`) |
-| Collapsed ring | 36 dp at a half of 150 dp or more — the cover and the Fold 7 inner shade alike (CCBG-64 (Inner Duet Ring), Robin 2026-11-02: the Step 7 pass measured the inner halves at about 150–180 dp); the bare 14 dp ring only for a half known to be under 150 | 36 + 8 gap + a 40 dp bar + 8 + a 57 dp figure = 149 (`Duet.halfRing`, `Duet.halfDp`) |
+| Collapsed chrome, left to right | First's 5h ring 36 · 6 · Second's 36 · 8 · two stacked rows · 8 · each row's figure in a fixed 42 dp slot: **136 dp of chrome** | the bars take the rest, never under 40; the floor is 176 dp of content. Both bars share one left edge and one length |
+| Collapsed content width | `Duet.contentDp(smallestWidth)`: below 600 dp the screen less **140 dp** of shade chrome; from 600 up 352 | measured on the emulator's AOSP shade: 280 dp of content at 420, 220 at 360; One UI's Fold 7 cover gave 272 at 411 |
+| Collapsed bar | the bitmap's nominal width is `Duet.barDp(Duet.contentDp(smallestWidth))` | **measured** (fold7inner AVD, AOSP): cover-like 420 dp → content 280, bar 144; inner 750 dp → content 402, bar 265; 360 dp → content 220, bar 84 |
+| Collapsed content height | 52 dp, unchanged | 1 + 24 + 2 + 24 + 1; collapsed custom views get about 48 to 64 dp depending on skin. The AOSP collapsed slot shows ≈46 dp at font 1.0, clipping the second bar; One UI gave 52. Unverified on hardware until RUNBOOK Step 3 (device pass) |
+| Expanded content width | collapsed content + 40 | used by the derived columns (1.4); unverified on One UI until RUNBOOK Step 3 (device pass) |
 | Expanded cap | about 256 dp | Android's limit on an expanded custom view |
-| Expanded header chrome | 136 dp, up to 140 dp | two header blocks of 58 dp (label 19, bar 13 + 4 margin, sub 16 + 4 margin; the 36 sp figure fits inside), 60 dp for a header with the 44 dp ring and its time line, 10 dp between them, 10 dp before the panel |
+| Expanded header chrome | 136 dp, up to 140 dp | two header blocks of 58 dp (label 19, bar 13 + 4 margin, sub 16 + 4 margin; the 24 sp figure fits inside), 60 dp for a header with the 44 dp ring and its time line, 10 dp between them, 10 dp before the panel |
 | Expanded panel budget | about 116 dp (Fold 7 about 132) | 256 - 140 |
 | Panel pieces | one-line strip 38 dp; no bar rows | well inside the budget |
 
 ### 2.2 Anatomy, collapsed (`res/layout/notif_duet.xml`)
 
-Two halves, each a **two-line** block (rev G: the label on its own line so the figure never competes with
-it). 1 dp padding top and bottom.
+The two 5h rings at the left, then two stacked rows, First over Second, each 24 dp: a name line, 1 dp, the 8 dp
+Weekly bar; 2 dp between the rows, 1 dp padding top and bottom. **Collapsed text is sized in dp and capped:** figure
+18 dp, name 13.5 dp, word 12 dp (`Duet.*_CAP_DP`; the stated exception to foundations §2).
 
 | Element | Size | Colour / style | Rule |
 |---|---|---|---|
+| 5h ring | 36 dp each, First's then 6 dp then Second's, 8 dp to the rows | as 1.2 (the figure in the bore at its dp size; dashed room kept at 28 dp and up) | the figure unsigned, Vs pace by its tone; TalkBack "5-hour window, 34 percent". A plan with no 5h keeps the slot as the track and a cross (TalkBack "No 5-hour window on this plan") |
 | Provider mark | 14 dp, 4 dp gap | account accent | |
-| Label | 12 sp, platform Title style, no font padding, 1 line, ellipsis, max width per 2.1 | platform title colour | the account label only; **no window name** collapsed |
-| Condition dot | 6 dp, 5 dp margin left, after the label | fixed red (`#B3402A` light / `#E0705A` dark) for an account fault; the First account's accent for the app-global update strip | visible when that account has a sign-in, plan or stale fault; First also for an update strip. The dot is a pointer to the strip in the expanded panel, not a message. The expiry warning does not raise it |
-| Synthetic dot | 6 dp, after First's condition dot | `#B388FF` | synthetic series on |
-| 5h ring, half ≥ 150 dp (D1) | 36 dp at the half's left, 8 dp to the column, vertically centred; the half stays 52 dp | as 1.2 (the figure 0.29 × 36 before fitting, about 10 dp; dashed room kept at 28 dp and up) | gone for an account with no 5h (B1); TalkBack "5-hour window, 34 percent" |
-| 5h ring, half < 150 dp (D3) | the bare 14 dp ring, no digits, no dashed room, at the far end of the label line; the line's end is padded 18 dp so the label ellipsizes before it | as 1.2 | same |
-| Bar | 8 dp high ImageView (see 1.6 note), weight 1, 1 dp margin top | account accent, ladder above 80 | the Weekly; drawn at 156 dp nominal width, 47 dp beside the 36 dp ring (about what it gets) |
-| Figure | 30 sp bold, **28 sp beside the 36 dp ring**, tabular lining digits, "%" at 58%, 8 dp margin left of the bar, no caption collapsed | severity colour; Vs pace signed and coloured (1.2; CCRM-104 (Pace Line Parity) D1: "+19%" at 28 sp is 63 dp, so 36 + 8 + 40 + 8 + 63 = 155 keeps the 156 dp budget) | the Weekly: "52%", in Vs pace "+19%" / "−12%" / "0%", or "—" |
+| Name | 12 sp (capped 13.5 dp), platform Title style, no font padding, 1 line, ellipsis | platform title colour | the account label only; **no window name** collapsed |
+| Condition dot | 6 dp, 5 dp margin left, after the name | fixed red (`#B3402A` light / `#E0705A` dark) for an account fault; the First account's accent for the app-global update strip | only for conditions with no state word: the Free-plan fault, and the update strip on First (and Stale's dot at rung 5 below). The dot is a pointer to the strip in the expanded panel, not a message. The expiry warning does not raise it |
+| Synthetic dot | 6 dp, after First's name | `#B388FF` | synthetic series on |
+| State word | 11 sp (capped 12 dp), right-aligned, 6 dp before it | per 2.4 | 2.4. TalkBack: the word view's description is always the full form ("Held · 3:40 PM" while "Held" prints); with no word printed the name reads "<name>, <word>" ("Design, No reading") |
+| Bar | 8 dp high ImageView (see 1.6 note), weight 1, 1 dp under the name line | account accent, ladder above 80 | the Weekly with its tick and red slice; both rows' bars share one left edge and one length |
+| Figure | 18 sp bold (capped 18 dp), tabular lining digits, "%" at 58%, right-aligned in its 42 dp slot, 8 dp after the bar, no caption | Used: severity colour; Vs pace signed and coloured (1.2) | the Weekly: Used "52%", Left the remainder (no caption), Vs pace "+19%" / "−12%" / "0%", or "—" |
 
-```text
- ╭──╮ [mark] Teams           [mark] Personal ●
- │34│ [===|---]  52%         [======|-------]  50%
- ╰──╯
-```
+**Drop order** (one order everywhere; `Duet.rowFit`):
 
-Which ring a collapsed half takes is decided against the **nominal** 156 dp half (`Duet.NOMINAL_HALF_DP`):
-RemoteViews never learns a half's real width, so today every half with a 5h draws the 36 dp ring and the D3 bare
-ring is built but not selected (see 8).
+1. The bar absorbs (weight).
+2. The name ellipsizes to its 24 dp floor.
+3. The word drops its tail, "Held · 3:40 PM" → "Held", "Out · Thu" → "Out" (`Duet.keepsTail`, against the nominal
+   bar). The name line's end is padded by the word's estimated width + 4% (`Duet.wordPadDp`), so the name ellipsizes
+   before the word, never under it; the tail decision counts the same padded width. At 272 dp the name keeps about
+   39 dp beside "Held · 3:40 PM" (42 in the wireframe's arithmetic, less the pad); at 250 Held drops its tail; at 226
+   both drop; at 360 dp on AOSP (220) both drop.
+4. Under **256 dp** of collapsed content (smallest width under 396 dp; a 360 dp phone's 220) a row with no figure
+   ("Sign in", "No reading", "Not started", and a Stale row with no reading) gives its "—" to the state word: the figure
+   view goes, the name line runs 50 dp further (over the 8 dp gap and the 42 dp slot) and the word sits right-aligned
+   where the figure would be; the bar's end is padded 50 dp, so it keeps its length and left edge. The rule keys on the
+   screen, so both rows behave alike; the Fold 7 cover (271 by `Duet.contentDp` at 411 dp; One UI measured 272) and wider keep the "—".
+5. A bare word that still leaves the name under **32 dp** (or under the name's own width, if less) goes — "Held",
+   "Out", "No reading", "Not started"; "Stale" leaves the 6 dp fault-red dot while the name keeps that floor beside it;
+   "Sign in" never goes, the name gives. A word still carrying its tail keeps rung 2's 24 dp floor and loses its tail
+   before it can go.
+
+At 220 dp and font 1.0 only rung 4 fires for the drawn states; rung 5 fires at about 200 dp and under, and at font 2.0.
+176 dp (the floor) stays one letter of name (N1-Q5 (a)).
 
 ### 2.3 Anatomy, expanded (`res/layout/notif_duet_expanded.xml`)
 
@@ -267,30 +317,35 @@ Two header blocks, 2 dp padding top and 4 dp bottom, Second 10 dp under First, t
 
 | Element | Size | Rule |
 |---|---|---|
-| 5h ring (D4) | 44 dp with the 5h's time left under it, as the single header (1.3), 14 dp to the column; that header is 60 dp | gone for an account with no 5h (B1: "Personal's header is today's") |
+| 5h ring (D4) | 44 dp with the 5h's time left under it (11 dp), as the single header (1.3), 14 dp to the column; that header is 60 dp | gone for an account with no 5h (B1: "Personal's header is today's") |
 | Mark | 14 dp, 4 dp gap | |
-| Label | 14 sp, max width 200 dp, ellipsis | "<Account label> · Weekly" |
-| Condition dot | 6 dp, 5 dp margin left | as 2.2 |
+| Label | 14 sp, max width 200 dp, ellipsis | "<Account label> · Weekly"; the name alone when its bold width at 14 sp does not fit the column less the mark's 18 dp (CCRM-114 (Narrow Duet) N1-Q7) |
+| Condition dot | 6 dp, 5 dp margin left | as before CCRM-105: any fault, and the update strip on First |
 | Bar | 13 dp high, 4 dp margin top, full width | the Weekly, drawn at 340 dp nominal |
-| Sub | 12 sp, 4 dp margin top | 1.4's words for that account (the pace line, "22h 3m ahead · Sun 9:32 PM", fitted to the 159 dp column and set at 12 sp or 10; or the 5h's reset line in a takeover), or "No reading yet" |
-| Figure | **36 sp** bold, tabular lining digits, "%" at 58%, 14 dp margin left | severity colour; Vs pace signed and coloured |
+| Sub | 12 sp, 4 dp margin top | 1.4's words for that account (the pace line, "22h 3m ahead · resets Sun 9:32 PM", fitted to the derived Duet column of 1.4 and set at 12 sp or 10; or the 5h's reset line in a takeover), or "No reading yet". At the 186 dp cap "23h 59m ahead · Wed 12:30 PM" / "5h 45m behind · resets 8:15 AM" print in full at font 1.0. Measured column (AOSP): 194 dp at 420, 315–328 at 750, 133 at 360; at font 2.0 ≈121 (420) and 61 (360); unverified on the Fold 7 until RUNBOOK Step 3 (device pass) |
+| Figure | **24 sp** bold (36 before CCRM-105 (Duet Stack)), tabular lining digits, "%" at 58%, 14 dp margin left | severity colour; Vs pace signed and coloured |
 | Caption | 10 sp, letter-spacing 0.08 | "LEFT" only, under the figure (no Vs pace caption since CCRM-104 D2) |
 
-### 2.4 States (per half; the other half is unaffected)
+### 2.4 States (per account; the other row or header is unaffected)
+
+The collapsed state word, by precedence: **Sign in** (fault red) › **No reading** › **Stale** (fault red) › **Out ·
+Thu** (red; the weekday, or the bare clock when the reset is later today) › **Held · 3:40 PM** (the 5h's ladder colour;
+the 5h's reset clock, with its weekday when that falls after midnight: "Held · Thu 1:40 AM") › **Not started**; the rest
+in the info colour. It shortens and drops by 2.2's drop order.
 
 | State | Collapsed | Expanded |
 |---|---|---|
-| Quiet | ring, label, bar, figure | ring with its time left, "Teams · Weekly", the pace words, figure |
+| Quiet | ring, name, bar, figure | ring with its time left, "Teams · Weekly", the pace words, figure |
 | 5h binding (D2) | the ring carries the loud state (ladder colour, red slice, figure in that colour); the Weekly figure is unchanged | same; a takeover's sub is the 5h's words |
-| Week spent | the ring greyed (CCRM-102 (Spent Week Gate)), the figure at 45% ink | same, no time line |
-| No reading, or sign-in broken | ring hairline with "—", figure "—", empty track, **no tick**, red dot after the label (broken only) | sub "No reading yet" and the red strip. A broken sign-in is stricter here than on the single layout: no cached figure is shown |
-| Stale | that half's figure and ring figure at 50% alpha, bar and ring at 45% | same; the other half stays crisp |
-| Free-plan fault | red dot | red strip; the half is **not** dimmed (dimming keys on stale only on the Duet) |
-| No 5h window (B1) | no ring: today's half, 30 sp figure | no ring: today's header |
+| Week spent | grey ring (CCRM-102 (Spent Week Gate)), its figure at 45% ink; "100%" (Left "0%") and the full bar in red, no tick (stale or not) | same, no time line |
+| Sign in, No reading, Not started | the word; figure "—", a bare track, **no tick**; the ring hairline with "—" | figure "—", a bare track, no tick (1.4); sub "No reading yet" and, for a broken sign-in, the red strip. A broken sign-in is stricter here than on the single layout: no cached figure is shown |
+| Stale | "Stale"; that row's figure 50%, bar and ring 45% | same; the other header stays crisp |
+| Free-plan fault | red dot | red strip; the row is **not** dimmed (dimming keys on stale only on the Duet) |
+| No 5h window (B1) | the ring slot keeps the track and a cross | no ring: today's header |
 | Update strip present | accent dot on **First** only | strip in the panel |
-| 100% | red figure and full red bar; a four-character figure takes about 74 dp so the label ellipsizes sooner | "100%" or "0%" + "LEFT" |
+| 100% | red figure and full red bar | "100%" or "0%" + "LEFT" |
 | Left mode | remainder figures, no caption | remainder figures with "LEFT" captions |
-| Synthetic series on | violet dot after First's dots | band over the whole view; **no strip at all** (it would cost 19 dp of a 120 dp panel); halves keep their dots |
+| Synthetic series on | violet dot after First's name | band over the whole view; **no strip at all** (it would cost 19 dp of a 120 dp panel); rows keep their dots |
 
 Plain-string fallback title: "<First label> 42% · <Second label> 63%"; text: the collapsed line.
 
@@ -298,8 +353,8 @@ Plain-string fallback title: "<First label> 42% · <Second label> 63%"; text: th
 
 | Region | Target |
 |---|---|
-| First half (collapsed and expanded header) | First account, resolved by "Tapping a number opens" against First's provider |
-| Second half | Second account, resolved against Second's provider |
+| First's ring and row (collapsed), First's header (expanded) | First account, resolved by "Tapping a number opens" against First's provider |
+| Second's ring and row, Second's header | Second account, resolved against Second's provider |
 | Anything else (row edges, the expanded panel) | First (the content intent) |
 | "Refresh" | one button, refreshes both |
 
@@ -436,10 +491,10 @@ prefixed**, including the shown accounts'.
 
 Where a strip appears: always in the expanded panel; the collapsed single row gives its sub line to the
 highest-priority strip as "●  <short>" with the dot in the strip's hue (the reset line stays in the
-expanded header); the Duet shows no strip collapsed, only the per-half dot.
+expanded header); the Duet shows no strip collapsed, only the per-row state word or dot (2.2, 2.4).
 
 Single-layout stale dimming: figure 50% and bar 45% when the shown account is stale or on a Free-plan
-fault. Duet: per half, stale only.
+fault. Duet: per row, stale only.
 
 ## 6. Quick Settings tile (not shipped), and where the facts went
 
@@ -471,10 +526,10 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 
 | Wireframe | Differs |
 |---|---|
-| settings-diet-wireframe.html section 2, collapsed option 1 | wireframe: one top line (mark, label clamped about 72 dp, bar, 30 sp figure on one row, content about 40 dp). Code: rev G two-line halves, label 12 sp on its own line, ceiling 138 dp, content about 52 dp (design/2026-09-26-v18-gate-fixes.html, CCBG-39 (Inner Duet Squeeze)) |
+| settings-diet-wireframe.html section 2, collapsed option 1 | wireframe: one top line (mark, label clamped about 72 dp, bar, 30 sp figure on one row, content about 40 dp). Code: two stacked rows (2.2, CCRM-105 (Duet Stack)); before it, rev G two-line halves, label 12 sp on its own line, ceiling 138 dp, content about 52 dp (design/2026-09-26-v18-gate-fixes.html, CCBG-39 (Inner Duet Squeeze)) |
 | settings-diet-wireframe.html section 2, single row | wireframe: "ChatGPT · 5-hour window", "7-day" row. Code: "<Label> · 5h" and "Weekly" (CCBG-45 (Single Panel Wording)) |
 | settings-diet-wireframe.html section 2, Duet strips | wireframe: two-line strips, cap 2. Code: one-line, cap 1 (CCBG-26 (Panel Scaling)) |
-| 2026-11-02-shape-grammar.html rev D §3 D3 | the bare 14 dp ring for a Duet half under 150 dp is built (`Duet.halfRing`, `notif_duet.xml`); every shade measured so far (the cover, the Fold 7 inner at ~180 dp halves) takes the 36 dp ring (CCBG-64, Robin's call) |
+| 2026-11-02-shape-grammar.html rev D §3 D3 | the bare 14 dp ring for a Duet half under 150 dp is retired with the halves by CCRM-105 (Duet Stack), with the halves' arithmetic (`labelClampDp`, `halfRing`, `halfDp`, `figureSp`); before that every shade measured (the cover, the Fold 7 inner at ~180 dp halves) took the 36 dp ring (CCBG-64 (Inner Duet Ring), Robin's call) |
 | 2026-11-02-shape-grammar.html rev D §3 N2 | the page draws line 2 as "Resets Sun 9:30 pm · in 4d 6h"; the code kept v2.0's distance line until CCRM-104 (Pace Line Parity) D4 made line 2 the pace-mark caption ("39% pace mark · 13 over"), permanently |
 | 2026-11-02-shape-grammar.html rev D §3 D4 | the page's expanded Duet panel shows a model-cap row ("Teams · Fable"); the code keeps the Duet panel free of model caps (CCBG-26 (Panel Scaling)) |
 | rails-gauge-wireframe.html | see section 4.3 |
@@ -487,7 +542,7 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 |---|---|---|
 | The 5h ring, figures, end mark (CCRM-103 (Hybrid Notification)) | `ui/ShapeGrammar.kt` (`GrammarRing`, `Grammar`), `notify/LeadLines.kt`, `notify/Duet.kt` | design/2026-11-02-shape-grammar.html rev D §3, §7, §7b (frozen 2026-11-02) |
 | Pinned notification, both layouts | `notify/PinnedNotification.kt`, `res/layout/notif_big_number.xml`, `notif_big_number_expanded.xml`, `notif_duet.xml`, `notif_duet_expanded.xml`, `notif_panel_single.xml`, `notif_panel_duet.xml`, `notif_synthetic_wrap.xml`, drawables `notif_condition_dot`, `notif_strip_bg`, `notif_synth_dot`, `notif_synthetic_band` | design/settings-diet-wireframe.html (CCRM-62 (Duet Notification)), design/2026-09-26-v18-gate-fixes.html, design/duet-panel-fit-wireframe.html (CCBG-26 (Panel Scaling)) |
-| Duet maths | `notify/Duet.kt` | same |
+| Duet maths | `notify/Duet.kt`, `notify/TextFit.kt` | design/2026-11-10-v20-feedback-wireframes.html rev B §1 (CCRM-105 (Duet Stack)), design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html §N1 variant C (CCRM-114 (Narrow Duet)) |
 | Conditions | `notify/Conditions.kt`, `channel/UpdateChannel.kt`, `github/.../Channel.kt` | design/notification-one-surface-wireframe.html, design/fold-all-alerts-wireframe.html |
 | Bars | `ui/BarRenderer.kt`, `ui/BarGeometry.kt`, `ui/Palette.kt` | design/bar-pace-marks-wireframe.html (CCRM-43 (Bar Pace Marks)) |
 | Ring glyph | `ui/RingRenderer.kt`, `ui/RingGeometry.kt`, `ui/UsageIcon.kt` | design/rails-gauge-wireframe.html (CCRM-51 (Rails Gauge)), design/status-bar-glyph-legibility-wireframe.html (CCRM-49 (Glyph Legibility)), design/spent-ring-wireframe.html |
@@ -495,107 +550,6 @@ pin on) are in [BEHAVIOR-MOBILE.md](../BEHAVIOR-MOBILE.md) section 2. Layout and
 | Reset pings | `alerts/Alerts.kt`, `alerts/ResetRollover.kt` | BEHAVIOR-MOBILE.md section 2 |
 | Settings rows | `SettingsScreen.kt` | design/settings-diet-wireframe.html |
 
-**Expanded Duet header** (CCBG-61 (Duet Line Clip), superseded by CCRM-104 (Pace Line Parity) D10): every header's
-line is the pace line in the form the 159 dp column holds — the weekday drops first, as CCBG-61's tight form did — so
-a header with the 44 dp ring and one without take the same rule.
-
-## v2.0 feedback on Android
-
-Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named), the re-measured fits:
-
-- **§1.2 / §1.4** The Weekly pace line uses core's new forms (foundations "v2.0 feedback on Android"). The columns are
-  unchanged — collapsed 142 dp, expanded 141 dp, Duet expanded 159 dp (`TextFit`) — and the forms each prints at
-  12 sp now follow the wireframe's §4 B table (`TextFitTest` pins it): a reset days away ends on its weekday,
-  "6d 23h behind · Wed", "23h 59m ahead · Wed"; later today the bare clock, "5h 45m behind · 8:15 AM"; on the mark
-  "On the mark · Sat 8:00 AM" (1.3×: "· Sat"). At 1.3× and 2.0× the floor, at 2.0× stepped to 10 sp where it does
-  not fit 12. The emulator's cover-like shade printed "21h 49m ahead · Sun" collapsed and expanded (captures 06, 07).
-- **§2.3** Duet expanded (159 dp, 36 sp figure, until A2 rebuilds the Duet): "· Wed" at 1.0 and 1.3, "57m ahead ·
-  resets 2:57 PM" in full where it fits; the floor at 2.0. A2 re-measures with its own column.
-- Emulator note: the AOSP shade on the fold7inner AVD clips the collapsed card's third text row vertically (06); the
-  layout is unchanged by A1 and One UI showed the row whole (CCBG-78's pass), so this is left for Step 3's device check.
-
-Step A2 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-105 (Duet Stack), wireframe v2.0 feedback rev B §1.
-These replace §2.1–§2.4's collapsed rows and §8's D3 row; the expanded headers are otherwise as shipped.
-
-- **§2.1 Width budget (no halves).** Collapsed, left to right: First's 5h ring 36 · 6 · Second's 36 · 8 · two stacked
-  rows · 8 · each row's figure in a fixed 42 dp slot: **136 dp of chrome**, the bars take the rest (never under 40; the
-  floor is 176). Both bars share one left edge and one length. The bar bitmap's nominal width is
-  `Duet.barDp(Duet.contentDp(smallestWidth))`: below 600 dp the screen less **140 dp** of shade chrome (measured on the
-  emulator's AOSP shade: 280 dp of content at 420, 220 at 360; One UI's Fold 7 cover gave 272 at 411), from 600 up
-  352. Height 1 + 24 + 2 + 24 + 1 = 52 dp, unchanged. **Measured** (fold7inner, AOSP): cover-like 420 dp → content
-  280, bar 144; inner 750 dp → content 402, bar 265; 360 dp → content 220, bar 84. The AOSP collapsed slot shows
-  ≈46 dp at font 1.0, clipping the second bar (One UI gave 52; Step 3 checks).
-- **§2.2 Anatomy, collapsed (`notif_duet.xml`, rewritten).** Ring: 36 dp, the 5h, figure unsigned (Vs pace by tone),
-  in the bore at its dp size; a plan with no 5h keeps the slot as the track and a cross (TalkBack "No 5-hour window on
-  this plan"). Row (24 dp): name line — mark 14, 4, name 12 sp (platform Title), the condition dot when any, the state
-  word 11 sp right-aligned with 6 dp before it — then 1 dp and the 8 dp Weekly bar with tick and red slice. Figure
-  18 sp bold tabular, "%" at 58%, right-aligned in its 42 dp slot, 8 dp after the bar: Used in the severity colour,
-  Left the remainder (no caption), Vs pace signed and coloured. **Collapsed text is sized in dp and capped:** figure
-  18 dp, name 13.5 dp, word 12 dp (`Duet.*_CAP_DP`; the stated exception to foundations §2). Ring and row each open
-  their account.
-- **Drop order** (one order everywhere): the bar absorbs (weight); the name ellipsizes to its 24 dp floor; then the
-  word drops its tail, "Held · 3:40 PM" → "Held", "Out · Thu" → "Out" (`Duet.keepsTail`, against the nominal bar).
-  The name line's end is padded by the word's estimated width + 4% (`Duet.wordPadDp`), so the name ellipsizes before
-  the word, never under it; the tail decision counts the same padded width. At 272 dp the name keeps about 39 dp
-  beside "Held · 3:40 PM" (42 in the wireframe's arithmetic, less the pad); at 250 Held drops its tail; at
-  226 both drop; at 360 dp on AOSP (220) both drop.
-- **§2.3 Expanded.** Headers as shipped; the figure **36 → 24 sp**, sign kept; the pace line's column **159 → 186 dp**
-  (`TextFit.DUET_EXPANDED_COLUMN_DP`), so "23h 59m ahead · Wed 12:30 PM" / "5h 45m behind · resets 8:15 AM" print
-  in full at 1.0. Measured column: 194 dp at 420 (AOSP), 315–328 at 750, **133 at 360** (the line ellipsizes there,
-  "Sun 6:…"); at font 2.0 ≈121 (420) and 61 (360) — Step 3 compares the Fold 7.
-- **§2.4 States, collapsed (per row; the other row is unaffected).** The state word, by precedence: **Sign in** (fault
-  red) › **No reading** › **Stale** (fault red) › **Out · Thu** (red; the weekday, or the bare clock when the reset is
-  later today) › **Held · 3:40 PM** (the 5h's ladder colour; the 5h's reset clock, with its weekday when that falls after
-  midnight: "Held · Thu 1:40 AM") › **Not started**; the rest in the
-  info colour. Sign in / No reading / Not started: figure "—", a bare track, no tick — in the expanded header too
-  (§1.4). Spent week: grey ring, "100%" (Left "0%") and the full bar in red, no tick (stale or not). Stale: figure 50%, bar and ring
-  45%. The 6 dp dot stays only for conditions with no word: the Free-plan fault, and the update strip on First; the
-  violet synthetic marker stays after First's name. Expanded keeps today's dots (any fault, the update on First).
-- **§8.** The D3 bare 14 dp ring and the halves' arithmetic (`labelClampDp`, `halfRing`, `halfDp`, `figureSp`) are
-  retired with the halves.
-- **Not drawn by the wireframe, seen on the emulator:** at 360 dp on AOSP (220 dp content, under the narrowest drawn
-  226) a tail-less word leaves the name at ".." ("No reading", "Not started", capture 31, 33); at font 2.0 the
-  expanded headers ellipsize their labels and lines (13, 29). Reported to the orchestrating session; Step 3 measures.
-
-Step A5 (2026-11-11, RUNBOOK Lane A) — CCRM-113 (Sample Port): sample mode never reaches this surface. The always-on
-notification, the status-bar icon and the reset pings keep showing the real accounts (or nothing), and the sample's settings
-never redraw them (`Surfaces.refresh` refuses a sample cache). Only the debug synthetic series is touched: it pauses while the
-sample is open and resumes on Exit.
-
-Step A6 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-114 (Narrow Duet), the addendum's §N1
-(`design/2026-11-11-v20-narrow-duet-and-row-glyph-wireframes.html`, variant C), and CCBG-80 (Fixed Pace Columns). Captures:
-`design/research/2026-11-v20-build/A6/`. This replaces A2's "Not drawn by the wireframe" note above.
-
-- **§2.2 Drop order, collapsed — rungs 4 and 5** (`Duet.rowFit`; 1–3 as A2). **4:** under **256 dp** of collapsed content
-  (smallest width under 396 dp; a 360 dp phone's 220) a row with no figure ("Sign in", "No reading", "Not started", and a
-  Stale row with no reading) gives its "—" to the state word: the figure view goes, the name line runs 50 dp further (over
-  the 8 dp gap and the 42 dp slot) and the word sits right-aligned where the figure would be; the bar's end is padded 50 dp,
-  so it keeps its length and left edge. The rule keys on the screen, so both rows behave alike; the Fold 7 cover (271) and
-  wider keep A2's "—". **5:** a bare word that still leaves the name under **32 dp** (or under the name's own width, if
-  less) goes — "Held", "Out", "No reading", "Not started"; "Stale" leaves the 6 dp fault-red dot while the name keeps that
-  floor beside it; "Sign in" never goes, the name gives. A word still carrying its tail keeps rung 2's 24 dp floor and
-  loses its tail before it can go. At 220 dp and font 1.0 only rung 4 fires for the drawn states; rung 5 fires at about
-  200 dp and under, and at font 2.0. 176 dp (the floor) stays one letter of name (N1-Q5 (a)).
-- **§2.4 TalkBack.** The word view's description is always the full form ("Held · 3:40 PM" while "Held" prints); with no
-  word printed the name reads "<name>, <word>" ("Design, No reading").
-- **§2.3 Expanded.** The ring's time line ("in 2h 20m") is sized in **11 dp**, both layouts (N1-Q6). The label
-  "<name> · Weekly" becomes the name alone when its bold width at 14 sp (13 sp on the single collapsed row) does not fit the
-  column less the mark's 18 dp (N1-Q7). The spent line "Out until Thu 8:00 AM · in 1d 18h" drops its second clause whole
-  when it does not fit.
-- **§1.4 Fitting the lines — derived columns** (CCBG-80, F2; `TextFit`). The column is no longer one constant per layout:
-  content = `Duet.contentDp(sw)` (sw − 140 below 600 dp, 352 from 600), expanded content + 40; column = content − (ring box
-  + 14) − 14 − the figure's width, where the ring box is 44 collapsed and, expanded, the wider of 44 and its time line, none
-  with no 5h; the figure's width is its em (bold, "%" at 58%, × 1.04) × its size in dp **as the system converts it**
-  (`TypedValue.applyDimension`: Android 14 scales large text non-linearly). The line is fitted to column × 0.965, never
-  wider than the old 142 / 141 / 186 dp until Step 3 measures the Fold 7. Beside "−13%" (`TextFitTest` pins the table):
-
-  | Column, dp, font 1.0 / 1.3 / 2.0 | 360 | 411 | 420 | 750 |
-  |---|---|---|---|---|
-  | Single, collapsed (32 sp) | 83 / 83 / 67 | 134 / 134 / 118 | 143 / 143 / 127 | 215 / 215 / 199 |
-  | Single, expanded (44 sp) | 93 / 93 / 80 | 144 / 144 / 131 | 153 / 153 / 140 | 225 / 225 / 212 |
-  | Duet, expanded (24 sp) | 134 / 129 / 110 | 185 / 180 / 161 | 194 / 189 / 170 | 266 / 261 / 242 |
-
-  On a 360 dp phone the Duet header now ends on its weekday ("23h 59m ahead · Wed") where A2 cut it ("Sun 6:…"); the single
-  row's collapsed line is at its floor (10 sp at 1.0, cut at 1.3 and up: derived, not measured — the page's own caveat).
-- **UNVERIFIED until Step 3:** One UI's real widths at 360 dp (assumed AOSP's 220); expanded content = collapsed + 40 on One
-  UI; the non-linear font curve on One UI.
+**Expanded Duet header** (CCBG-61 (Duet Line Clip), superseded by CCRM-104 (Pace Line Parity) D10 and CCBG-80 (Fixed
+Pace Columns)): every header's line is the pace line in the form its derived column holds (1.4) — the ring box counts
+only for a header that has the 44 dp ring — so a header with the ring and one without take the same rule.

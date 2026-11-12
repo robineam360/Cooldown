@@ -3,14 +3,14 @@ package com.robin.claudeusage.ui
 import kotlin.math.hypot
 
 /**
- * CCRM-111 (Map Layers), core §6.3 "Planned — v2.0 feedback": where the Pace map's names go, closing CCBG-79
+ * CCRM-111 (Map Layers), core §6.3: where the Pace map's names go, closing CCBG-79
  * (Leader Reads as Trail) on Android. Names go top-down (smallest y, then smallest x); each takes the first
  * free of right, below, left and above-left, then a short dotted leader 24, 36 or 48 from its dot in eight
  * directions (E, SE, S, SW, W, NW, N, NE). A spot is refused when it leaves the name area, comes near a fixed
  * word, overlaps a dot's hit box, comes near a placed name, sits on a ring or crosses its own projection tail;
  * a leader also when its path crosses a placed name or another dot. Nothing free: the name is not drawn (its
  * dot stays and still opens its callout). Pure and unit-agnostic (the app calls it in px, with [Geometry.scaled]);
- * `printed-v20.json` → `mapLabels.placement` pins it in dp, as iOS's `MapLabels` is pinned in pt.
+ * `printed.json` → `mapLabels.placement` pins it in dp, as iOS's `MapLabels` is pinned in pt.
  */
 object MapLabels {
 

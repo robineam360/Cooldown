@@ -1,8 +1,8 @@
 import Foundation
 
-/// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers), core §6.3 "Planned — v2.0 feedback" and the mobile foot line
+/// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers), core §6.3 and the mobile foot line
 /// (wireframe design/2026-11-10-v20-feedback-wireframes.html rev B §5 and §7). Pure, so the fixtures
-/// (`printed-v20.json` `quiet`, `mapLabels.figures`, `callout`, `projectionLayer`; `spec/mobile/fixtures/map-foot`) test
+/// (`printed.json` `quiet`, `mapLabels.figures`, `callout`, `projectionLayer`; `spec/mobile/fixtures/map-foot`) test
 /// every rule without drawing.
 public enum PaceMapRules {
 

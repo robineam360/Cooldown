@@ -14,16 +14,16 @@ import java.time.ZoneOffset
 import java.util.Locale
 
 /**
- * CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): core §6.3 "Planned — v2.0 feedback", read from
- * `spec/core/fixtures/pace-distance/printed-v20.json` (`quiet`, `mapLabels`, `callout`, `projectionLayer`) and the
- * mobile foot line from `spec/mobile/fixtures/map-foot/cases.json`, until RUNBOOK Step 2 folds them into the old files.
+ * CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): core §6.3, read from
+ * `spec/core/fixtures/pace-distance/printed.json` (`quiet`, `mapLabels`, `callout`, `projectionLayer`) and the
+ * mobile foot line from `spec/mobile/fixtures/map-foot/cases.json`.
  * iOS reads the same files (`PaceMapV20Tests`).
  */
 class PaceMapV20Test {
 
     private fun load(path: String) = JSONObject(javaClass.classLoader!!.getResourceAsStream(path)!!.bufferedReader().readText())
 
-    private val fx: JSONObject by lazy { load("core/fixtures/pace-distance/printed-v20.json") }
+    private val fx: JSONObject by lazy { load("core/fixtures/pace-distance/printed.json") }
     private val footFx: JSONObject by lazy { load("mobile/fixtures/map-foot/cases.json") }
 
     private fun JSONArray.objects() = (0 until length()).map { getJSONObject(it) }

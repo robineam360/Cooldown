@@ -1,51 +1,89 @@
 {
   "_meta": {
-    "note": "Account tags and the Summary filter on mobile (CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot); wireframe rev B sections 6 and 8; BEHAVIOR-MOBILE section 6). Derived by spec/tools/gen_v20_fixtures.py. tag is null (None), 'personal' or 'work'; the stored key and its spelling are each client's (additive, absent = None). accounts are in your order. The All / Personal / Work control shows once any account has a tag; a segment with no accounts is disabled; a remembered filter that is unknown, disabled or has no accounts reads as All. The filter narrows the list, the Pace map and the snapshot; untagged accounts show only under All. oneLineRows: the one-line row form from six rows shown. snapshotHeader: the share snapshot's header under the filter. The sort order is unchanged by the filter (summary/cases.json order applies to the rows shown)."
+    "note": "Account tags and the Summary filter on mobile after Robin's 2026-11-11 change: there is no None; every account is Personal or Work, chosen when it is added (Personal pre-selected). CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot); BEHAVIOR-MOBILE section 6. Derived by spec/tools/gen_v20_fixtures.py. A stored tag is 'personal' or 'work'; a missing, empty or unknown value reads as personal (that is how v1.9's accounts become Personal at upgrade, with nothing written). Accounts are in your order; storedTag null = nothing stored. The All / Personal / Work control exists while the Summary does (two or more accounts); a segment with no accounts is disabled, All never. The filter in force is the remembered value when it names an enabled segment of a shown control, else All. It narrows the list, the ranking, the Pace map and the snapshot (the snapshot header names it). oneLineRows: the one-line form from six rows shown. storedAfter: the remembered value once the memory rule has run (a stored value the filter in force does not match becomes 'all'; an absent value stays absent; with fewer than two accounts there is no Summary, the rule does not run, and the value stays as it was). memory: sequences of changes (open the Summary, tag an account, add, remove, choose a segment), each step followed by the filter in force and the value stored; the client's test replays them against its own store. Tagging never brings an earlier choice back."
   },
   "filter": [
     {
-      "name": "no tags: no control, everything under All",
+      "name": "upgrade from v1.9: nothing stored reads as Personal, Work is disabled, a leftover Work falls back to All",
       "accounts": [
         {
           "name": "Teams",
-          "tag": null
+          "storedTag": null
         },
         {
-          "name": "Personal",
-          "tag": null
+          "name": "Lab",
+          "storedTag": null
         }
       ],
       "rememberedFilter": "work",
       "expected": {
+        "effectiveTags": [
+          "personal",
+          "personal"
+        ],
+        "controlShown": true,
+        "segmentsEnabled": {
+          "all": true,
+          "personal": true,
+          "work": false
+        },
+        "filter": "all",
+        "shown": [
+          "Teams",
+          "Lab"
+        ],
+        "oneLineRows": false,
+        "snapshotHeader": "All accounts",
+        "storedAfter": "all"
+      }
+    },
+    {
+      "name": "one account: no Summary, so no control and nothing to filter",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        }
+      ],
+      "rememberedFilter": "work",
+      "expected": {
+        "effectiveTags": [
+          "work"
+        ],
         "controlShown": false,
         "segmentsEnabled": null,
         "filter": "all",
         "shown": [
-          "Teams",
-          "Personal"
+          "Teams"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "All accounts"
+        "snapshotHeader": "All accounts",
+        "storedAfter": "work"
       }
     },
     {
-      "name": "the sample: Teams Work, Personal Personal, Lab untagged; Work chosen",
+      "name": "the sample: Teams Work, Personal Personal, Lab Work; Work chosen",
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Personal",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         }
       ],
       "rememberedFilter": "work",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
@@ -54,30 +92,37 @@
         },
         "filter": "work",
         "shown": [
-          "Teams"
+          "Teams",
+          "Lab"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "Work accounts"
+        "snapshotHeader": "Work accounts",
+        "storedAfter": "work"
       }
     },
     {
-      "name": "Personal chosen: the untagged account shows only under All",
+      "name": "Personal chosen",
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Personal",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         }
       ],
       "rememberedFilter": "personal",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
@@ -89,7 +134,8 @@
           "Personal"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "Personal accounts"
+        "snapshotHeader": "Personal accounts",
+        "storedAfter": "personal"
       }
     },
     {
@@ -97,19 +143,24 @@
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Personal",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         }
       ],
       "rememberedFilter": "all",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
@@ -123,7 +174,8 @@
           "Lab"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "All accounts"
+        "snapshotHeader": "All accounts",
+        "storedAfter": "all"
       }
     },
     {
@@ -131,20 +183,24 @@
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "personal"
         }
       ],
-      "rememberedFilter": "personal",
+      "rememberedFilter": "work",
       "expected": {
+        "effectiveTags": [
+          "personal",
+          "personal"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
-          "personal": false,
-          "work": true
+          "personal": true,
+          "work": false
         },
         "filter": "all",
         "shown": [
@@ -152,7 +208,8 @@
           "Lab"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "All accounts"
+        "snapshotHeader": "All accounts",
+        "storedAfter": "all"
       }
     },
     {
@@ -160,28 +217,78 @@
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         }
       ],
       "rememberedFilter": "family",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
-          "personal": false,
+          "personal": true,
           "work": true
         },
         "filter": "all",
         "shown": [
           "Teams",
+          "Personal",
           "Lab"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "All accounts"
+        "snapshotHeader": "All accounts",
+        "storedAfter": "all"
+      }
+    },
+    {
+      "name": "an empty or unknown stored tag reads as Personal",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": ""
+        },
+        {
+          "name": "Lab",
+          "storedTag": "family"
+        },
+        {
+          "name": "Atlas",
+          "storedTag": "work"
+        }
+      ],
+      "rememberedFilter": "personal",
+      "expected": {
+        "effectiveTags": [
+          "personal",
+          "personal",
+          "work"
+        ],
+        "controlShown": true,
+        "segmentsEnabled": {
+          "all": true,
+          "personal": true,
+          "work": true
+        },
+        "filter": "personal",
+        "shown": [
+          "Teams",
+          "Lab"
+        ],
+        "oneLineRows": false,
+        "snapshotHeader": "Personal accounts",
+        "storedAfter": "personal"
       }
     },
     {
@@ -189,35 +296,44 @@
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Personal",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         },
         {
           "name": "Atlas",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Side",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Design",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Gemini",
-          "tag": "work"
+          "storedTag": "personal"
         }
       ],
       "rememberedFilter": "all",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work",
+          "work",
+          "personal",
+          "work",
+          "personal"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
@@ -235,7 +351,8 @@
           "Gemini"
         ],
         "oneLineRows": true,
-        "snapshotHeader": "All accounts"
+        "snapshotHeader": "All accounts",
+        "storedAfter": "all"
       }
     },
     {
@@ -243,35 +360,44 @@
       "accounts": [
         {
           "name": "Teams",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Personal",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Lab",
-          "tag": null
+          "storedTag": "work"
         },
         {
           "name": "Atlas",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Side",
-          "tag": "personal"
+          "storedTag": "personal"
         },
         {
           "name": "Design",
-          "tag": "work"
+          "storedTag": "work"
         },
         {
           "name": "Gemini",
-          "tag": "work"
+          "storedTag": "personal"
         }
       ],
       "rememberedFilter": "work",
       "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work",
+          "work",
+          "personal",
+          "work",
+          "personal"
+        ],
         "controlShown": true,
         "segmentsEnabled": {
           "all": true,
@@ -281,13 +407,316 @@
         "filter": "work",
         "shown": [
           "Teams",
+          "Lab",
           "Atlas",
-          "Design",
-          "Gemini"
+          "Design"
         ],
         "oneLineRows": false,
-        "snapshotHeader": "Work accounts"
+        "snapshotHeader": "Work accounts",
+        "storedAfter": "work"
       }
+    },
+    {
+      "name": "nothing remembered: reads as All and nothing is stored",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
+        },
+        {
+          "name": "Lab",
+          "storedTag": "work"
+        }
+      ],
+      "rememberedFilter": null,
+      "expected": {
+        "effectiveTags": [
+          "work",
+          "personal",
+          "work"
+        ],
+        "controlShown": true,
+        "segmentsEnabled": {
+          "all": true,
+          "personal": true,
+          "work": true
+        },
+        "filter": "all",
+        "shown": [
+          "Teams",
+          "Personal",
+          "Lab"
+        ],
+        "oneLineRows": false,
+        "snapshotHeader": "All accounts",
+        "storedAfter": null
+      }
+    }
+  ],
+  "memory": [
+    {
+      "name": "the last Work account becomes Personal: All is stored, and marking another Work later does not bring Work back",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
+        },
+        {
+          "name": "Lab",
+          "storedTag": "personal"
+        }
+      ],
+      "storedFilter": "work",
+      "steps": [
+        {
+          "do": "open"
+        },
+        {
+          "do": "tag",
+          "account": "Teams",
+          "tag": "personal"
+        },
+        {
+          "do": "tag",
+          "account": "Lab",
+          "tag": "work"
+        },
+        {
+          "do": "choose",
+          "filter": "work"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "work",
+          "stored": "work"
+        },
+        {
+          "filter": "all",
+          "stored": "all"
+        },
+        {
+          "filter": "all",
+          "stored": "all"
+        },
+        {
+          "filter": "work",
+          "stored": "work"
+        }
+      ]
+    },
+    {
+      "name": "removing the last Personal account falls back to All; adding a Personal one later leaves All",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        },
+        {
+          "name": "Atlas",
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
+        }
+      ],
+      "storedFilter": "personal",
+      "steps": [
+        {
+          "do": "remove",
+          "account": "Personal"
+        },
+        {
+          "do": "add",
+          "account": "Side",
+          "tag": "personal"
+        },
+        {
+          "do": "choose",
+          "filter": "personal"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "all",
+          "stored": "all"
+        },
+        {
+          "filter": "all",
+          "stored": "all"
+        },
+        {
+          "filter": "personal",
+          "stored": "personal"
+        }
+      ]
+    },
+    {
+      "name": "a choice that still has accounts survives other changes",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        },
+        {
+          "name": "Atlas",
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
+        }
+      ],
+      "storedFilter": "work",
+      "steps": [
+        {
+          "do": "tag",
+          "account": "Personal",
+          "tag": "work"
+        },
+        {
+          "do": "add",
+          "account": "Side",
+          "tag": "personal"
+        },
+        {
+          "do": "tag",
+          "account": "Atlas",
+          "tag": "personal"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "work",
+          "stored": "work"
+        },
+        {
+          "filter": "work",
+          "stored": "work"
+        },
+        {
+          "filter": "work",
+          "stored": "work"
+        }
+      ]
+    },
+    {
+      "name": "an unknown stored value is replaced by All",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        },
+        {
+          "name": "Personal",
+          "storedTag": "personal"
+        },
+        {
+          "name": "Lab",
+          "storedTag": "work"
+        }
+      ],
+      "storedFilter": "family",
+      "steps": [
+        {
+          "do": "open"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "all",
+          "stored": "all"
+        }
+      ]
+    },
+    {
+      "name": "upgrade: nothing stored stays nothing stored until a segment is chosen; Work cannot be chosen yet",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": null
+        },
+        {
+          "name": "Lab",
+          "storedTag": null
+        }
+      ],
+      "storedFilter": null,
+      "steps": [
+        {
+          "do": "open"
+        },
+        {
+          "do": "choose",
+          "filter": "personal"
+        },
+        {
+          "do": "tag",
+          "account": "Lab",
+          "tag": "work"
+        },
+        {
+          "do": "choose",
+          "filter": "work"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "all",
+          "stored": null
+        },
+        {
+          "filter": "personal",
+          "stored": "personal"
+        },
+        {
+          "filter": "personal",
+          "stored": "personal"
+        },
+        {
+          "filter": "work",
+          "stored": "work"
+        }
+      ]
+    },
+    {
+      "name": "a second account added to a single-account install: the rule starts to run when the Summary appears",
+      "accounts": [
+        {
+          "name": "Teams",
+          "storedTag": "work"
+        }
+      ],
+      "storedFilter": "work",
+      "steps": [
+        {
+          "do": "open"
+        },
+        {
+          "do": "add",
+          "account": "Lab",
+          "tag": "personal"
+        }
+      ],
+      "expected": [
+        {
+          "filter": "all",
+          "stored": "work"
+        },
+        {
+          "filter": "work",
+          "stored": "work"
+        }
+      ]
     }
   ]
 }

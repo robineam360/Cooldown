@@ -192,9 +192,9 @@ anything new) so a published GitHub release never has to be replaced before the 
   `release/play/data-safety.md` if the release changes what leaves the phone. A change like that
   updates `docs/privacy.md` and the Console's Data safety form in the same release.
 - **The listing copy, the FGS declaration and the App access note** live in `release/play/`. The
-  feature graphic is `release/play/feature-graphic.png`, variant B of
-  `design/2026-10-01-play-feature-graphic.html` (approved 2026-10-01); re-export it from that page
-  with `?only=b` if the design changes.
+  feature graphic is `release/play/feature-graphic.png`, variant C of
+  `design/2026-11-11-play-feature-graphic-v20.html` (approved 2026-11-11, RUNBOOK Step D1; it replaced the
+  v1.9 page's variant B); export it from that page with `?only=c` (RUNBOOK Step 5).
 
 ## 6. The iOS channel — early beta before v2.0 (CCRM-95 (Dual Release) phase B)
 

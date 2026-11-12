@@ -218,8 +218,8 @@ the model-cap rows and chips on the 7-day card and the notification panel; nothi
 
 ## 6. The Summary tab — CCRM-98 (Summary Tab)
 
-**Status:** decided 2026-11-02; wireframe approved (`design/2026-11-02-summary-tab.html` rev B); no client
-implements it yet.
+**Status:** decided 2026-11-02; wireframe approved (`design/2026-11-02-summary-tab.html` rev B); built on both
+clients for v2.0, with the tags, the filter, the row glyph and the snapshot below (RUNBOOK Lanes A and I, 2026-11-11).
 
 **When it exists:** with two or more accounts an **All** tab comes first in the account tabs (on iPad an "All
 accounts" row tops the sidebar). Appearance › **Open on the summary** (default on) opens the app on it at launch;
@@ -255,9 +255,8 @@ An absent or unknown value reads as `yours`; v1.9 does not read the key. Cases i
 
 **Account tags and the Summary filter — CCRM-110 (Account Tags), CCRM-112 (Summary Snapshot)** (rev B §6 and §8,
 approved 2026-11-10; changed by Robin on 2026-11-11: no "None", and a filter memory that is the same on both
-clients). Both clients follow this paragraph and test it on
-[`fixtures/tags/cases-personal-work.json`](fixtures/tags/cases-personal-work.json) (Step 2 folds it into
-`cases.json`); none of it is core (the desktop has no Summary).
+clients). Both clients follow this paragraph and test it on [`fixtures/tags/cases.json`](fixtures/tags/cases.json)
+(derived by `spec/tools/gen_v20_fixtures.py`); none of it is core (the desktop has no Summary).
 
 - **The tag.** Every account is **Personal** or **Work**, chosen when the account is added (Personal pre-selected;
   signing in again keeps it) and changed from the account's menu. There is no "None". Stored additively as `personal`
@@ -294,18 +293,21 @@ clients). Both clients follow this paragraph and test it on
   glyph is drawn; the glyph itself is hidden from accessibility. A tap on a disabled segment shows one line under the
   header for 3 s: "No Work accounts yet. Tag one in Settings." (Personal likewise). **Adding an account** (both
   clients alike): a Personal | Work control sits above the provider rows of the Add account sheet, Personal selected
-  every time it opens; the row tap commits the account with that tag; signing in again keeps the tag; "Try with sample
-  data" ignores it. The very first account, which never passes the sheet, is Personal without asking.
+  every time it opens; **an account is created, with that tag, only when its sign-in succeeds** — a cancelled, failed
+  or abandoned sign-in leaves no account and no tag (Robin 2026-11-11, both clients). Android hosts the sign-in on a
+  provisional card made by the row tap: Cancel, dismissing the code sheet or a dead end removes it, and a half-added
+  account abandoned in the browser is removed at the next launch once it is over an hour old. Signing in again keeps
+  the tag; "Try with sample data" ignores it. The very first account, which never passes the sheet, is Personal without asking.
   Cases: `filter[].expected.storedAfter` and `memory` (sequences of tag, add, remove and choose steps, each with the
   filter in force and the value stored after it); each client replays them against its own store.
 
 ---
 
-## 7. Sample mode — CCRM-113 (Sample Port) · planned, approved 2026-11-10
+## 7. Sample mode — CCRM-113 (Sample Port)
 
-**Status:** approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` §9. iOS ships this
-mode today (CCRM-94 (iOS App), `ios/App/UI/SampleMode.swift`); Android builds it for v2.0. Until then this section
-describes iOS only.
+**Status:** approved by Robin on 2026-11-10 in `design/2026-11-10-v20-feedback-wireframes.html` §9. iOS has shipped
+the mode since CCRM-94 (iOS App) (`ios/App/UI/SampleMode.swift`); Android built it for v2.0 (RUNBOOK Step A5,
+2026-11-11). Both clients follow this section.
 
 - **What it is.** A reviewer or a curious user taps "Try with sample data" ("Three made-up accounts to look around.
   Nothing is saved or sent.") on the first screen or in Add account, and the app's screens show three made-up
@@ -313,7 +315,9 @@ describes iOS only.
   **Work**) — the tags are fixed at entry, and "Tag…" works only on the in-memory copy (§6). A banner "● Sample data —
   made-up accounts" with "Exit" stays visible on every page.
 - **Held in memory only.** The mode is a process-wide flag that is never written. Settings changed in the sample go
-  to an in-memory copy seeded from the user's own and are dropped on Exit. No token, account, history or setting is
+  to a copy seeded from the user's own and are dropped on Exit (Android: an in-memory copy, `data/MemoryPrefs.kt`;
+  iOS: two throwaway `UserDefaults` suites, deleted on Exit and again at launch after a kill, `SampleStore` — the
+  same behaviour). No token, account, history or setting is
   written, and the sample never fetches or sends. Process death, a reboot or an update returns to the real app.
 - **Isolation.** Only the app's screens read the sample and its settings copy. The always-on notification, the
   status-bar icon, reset pings, widgets and polling read the real accounts and real settings throughout (Robin: they

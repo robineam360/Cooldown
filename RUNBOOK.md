@@ -236,7 +236,7 @@ clients back at `cases.json`.
 
 | Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
-| 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☐ |
+| 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☐ |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
@@ -1045,15 +1045,79 @@ Check: the Android suite and both iOS suites, check_no_code.sh. One fresh Opus j
 ```
 
 **Done when:**
-- ☐ One fixture file per topic, no `-v20` file and no `cases-personal-work.json` left, both platforms green on it.
-- ☐ §6.3 has no planned block for these items; the surfaces folder describes v2.0 as built.
-- ☐ Tracker lines closed as above; lane-recorded defects filed in BUGS.md.
-- ☐ Judge round recorded; landed. The orchestrating session is told the commit, the desktop's core re-pin point
+- ☑ One fixture file per topic, no `-v20` file and no `cases-personal-work.json` left, both platforms green on it.
+- ☑ §6.3 has no planned block for these items; the surfaces folder describes v2.0 as built.
+- ☑ Tracker lines closed as above; lane-recorded defects filed in BUGS.md.
+- ☑ Judge round recorded; landed. The orchestrating session is told the commit, the desktop's core re-pin point
   (outward step, the orchestrator's).
 
 **Reversal:** `git revert` of the step's commit restores the lane state (both clients then read the v20 file again).
 
 **Log:**
+
+- **2026-11-12 · Step 2 done** (worktree `jovial-mendel-a0b95c`). **Fixtures:** `printed-v20.json`'s blocks replace their
+  namesakes in `printed.json` (paceLine, paceLineForms, endToEnd, mapLabels) and add dayGrid, quiet, callout,
+  projectionLayer; the hand-kept blocks (figure, duration, dayClock, caption) and `_meta.note` are byte-identical to before,
+  `_meta.tolerance` is now "exact strings; numbers to 1e-6". `tags/cases.json` holds the Personal/Work cases. Both lane-era
+  files are deleted. `spec/tools/gen_v20_fixtures.py` now writes `printed.json`'s derived blocks (merging the hand-kept ones
+  from the file) and `tags/cases.json`; `build_tags()` is retired; `self_check` keeps the dayClock and duration
+  re-derivation (the shipped endToEnd lines it also re-derived are now generated). **Tests** point at `printed.json` and
+  `tags/cases.json` (Android `PrintedFormFixturesTest`, `DayGridTest`, `PaceMapV20Test`, `AccountTagsTest`; iOS
+  `PrintedFormTests` — its old paceLine test dropped, `PrintedFormV20Tests` covers it on the same file, map words read
+  `mapLabels.words` — `PrintedFormV20Tests`, `PaceMapV20Tests`, `AccountTagsTests`, `SummaryTagsTests`); comments in main
+  code no longer name the planned block. **Spec:** core §6.3's planned block promoted: the pace line names the reset with the
+  2026-11-10 drop order (the 2026-11-06 order is recorded as replaced), the map's words / figures / leaders replace the
+  "leader to the right edge" rule, and the day grid, quiet accounts, forecast and projection join the printed form;
+  `spec/core/fixtures/README.md` follows. BEHAVIOR-MOBILE §6: built on both clients, the fixture path, and "an account is
+  created only when its sign-in succeeds" (Android's provisional card and one-hour launch sweep noted); §7: no longer
+  planned, settings in a copy dropped on Exit on both (Android in memory, iOS in throwaway suites). **Surfaces:** every
+  "v2.0 feedback on Android/iOS" section folded into its file's body by two Opus builders (purpose (d), product account;
+  app.md, and foundations / notification / widgets / README), the seat reviewing; app.md §2.3 carries the shared tab-strip
+  rule (Robin's option B: fixed while every label fits on one line, scrolling once one would not) with iOS's difference
+  (CCBG-88); the "Reviewer sample data" section is both platforms; README's "Planned changes" lost the v2.0 feedback items.
+  **Trackers:** CCRM-105…115 each carry one status, "Built, device check pending", with their commits (the "iOS:" lines
+  folded in); CCRM-109's What text and wireframe §5's note read "under 1" (window rows truncate, c24e675). CCBG-79 Fixed,
+  device check pending; CCBG-81's iOS line written (no wrap: one line at 16 pt, "Personal" whole at 127 / 130 pt, it would
+  truncate below a ≈354 pt column; `design/2026-11-11-iphone-duo-pass.html` §5). **Filed** (none marked blocking — Robin
+  decides): CCBG-82 (Clock Case Mix, iOS, Low — Lane I's AM/am defect; the spec and Android print "PM", iOS's older lines
+  lower-case it), CCBG-83 (Duet Reapply Residue, Android, Low — A6 judge F4), CCBG-84 (One-line Name Overrun, iOS, Medium,
+  wireframe — Duo D1), CCBG-85 (Reset Alert Labels, iOS, Medium, wireframe — Duo D2), CCBG-86 (Rail Marks Alike, iOS,
+  Medium, Robin's decision — Duo D3), CCBG-87 (Strip Under Rail, iOS, Low — Duo D4), CCBG-88 (Tab Strip Truncates, iOS,
+  Low, latent), CCBG-89 (Map Axis Clip, Android, Low — A3's "00%" at font 2.0). **Not filed:** the orchestrator's "iOS
+  sample mode persists display settings" — the code does not (`SampleStore` redirects `Prefs` to throwaway suites seeded
+  from the real ones, deleted on Exit and at launch; `.id(model.isSample)` rebuilds the tree so every `@AppStorage` binds to
+  them; `SampleStoreTests`); only app.md's sentence "Display settings still apply and persist" was stale, and it is fixed;
+  the judge confirmed the reading. **Lane D's notes:** RELEASING.md §5 and listing.md §5 name the 2026-11-11 graphic page,
+  variant C, and the Shared pace icon; the TestFlight privacy draft, CONSOLE-STEPS step 11 and V2.0-ASSET-CHECK drop
+  `www.googleapis.com` as a recipient; V2.0-ASSET-CHECK's "since/until" is the reset-named line. **Checks:** Android
+  `testGithubDebugUnitTest testPlayDebugUnitTest lintGithubDebug` and `assembleGithubDebug assemblePlayDebug` green;
+  `swift test` 214 passed; iOS app tests 124 passed (iPhone 17 Pro, iOS 26.5); `check_no_code.sh`; the generator's
+  `--check`. **spec/core changed:** `BEHAVIOR-SPEC.md` §6.3, `fixtures/pace-distance/printed.json` (derived blocks; the
+  endToEnd lines now carry "resets", so the desktop's pinned tests change at its re-pin), `fixtures/README.md`; the
+  v20 file is gone.
+- **2026-11-12 · Judge** (fresh Opus @ high, worker on claude-product, read-only): **accept with concerns**, nothing blocking.
+  F1 (results not shown; seven hashes unchecked; `_meta` keys dropped) → closed by the runs above, `git log` on each hash
+  (all real close-out commits), and `_meta` at HEAD held only `note` and `tolerance` (tolerance superseded as above). F2
+  (wireframe §5 still "under 0.5") → a dated correction on the page. F3 (stale "planned" wording in the generator and in
+  map-foot's note; Tests and gates naming the deleted files) → fixed, regenerated, `--check` passes. F4 (lane follow-ups
+  dropped) → the asset-check rows fixed; **deferred, on purpose:** I2's judge F6 (a `quiet`/`figures` case between 99.5 and
+  99.99, where §6.1 calls the week spent and the map prints "100%" while the row truncates to 99%) needs Robin's call on
+  which wins before a fixture can pin it — for Step 3 / the orchestrator; I3's (e) (a filter case with a spent or unread
+  row) adds nothing the rule reads (it never looks at readings). F5 (nits) → foundations' drop-order attribution and
+  BUGS' heading names fixed; notification.md's "271" kept (it is `Duet.contentDp` at 411 dp; One UI measured 272), now
+  said so; README's CCRM-96/97 bullet predates this step (left).
+- **For Step 3 — open questions for Robin** (iPhone Duo pass §4, not filed): **Q1** the unfolded Duo (≈669 pt) gets the
+  phone page; lower the 700 pt iPad-page threshold to ≈660? (a wireframe question, needs an unfolded pass); **Q2** tap
+  targets under 44 pt on every iPhone (History week arrows, the banner's "Exit", the sort button, "Check now", the map and
+  tile chips, the filter segments, one-line rows, History strip tabs); **Q3** "Try with sample data" opens on Teams, not
+  All (`DemoData` selects "teams"); **Q4** the iPhone build is portrait-only (landscape on the unfolded Duo?). And which of
+  CCBG-82…89 block v2.0.
+- **For Step 3 — captures the build can no longer reach** (superseded by I4's Personal/Work model and the sample's Lab as
+  Work; I4's captures show the current states): `I3/iphone17pro/` and `I3/iphone17e/` `summary-untagged-no-control-*`
+  and `I3/render/i3-header-untagged-*` (the control now shows whenever the Summary exists); `I3/iphone17pro/sample-mode-
+  three-accounts-all-*` (Lab untagged in the sample); `I3/iphone17pro/account-page-tag-picker-light`,
+  `long-press-menu-tag-submenu-light`, `long-press-tag-submenu-open-light` (a "None" row); `I3/*/settings-tag-chips-*` and
+  `I3/render/i3-tag-chips-*` (chips only on tagged accounts). Step 3 checks the current states, not these.
 
 ---
 
@@ -1364,10 +1428,10 @@ Play's reviewer accepts the sample mode as App access; Beta App Review's timing.
 - `./gradlew testGithubDebugUnitTest testPlayDebugUnitTest lintGithubDebug`, `assembleGithubDebug assemblePlayDebug` (every Android step, Steps 2–4)
 - `swift test --package-path ios/Packages/CooldownCore` and the iOS app tests on the iPhone 17 Pro simulator (every iOS step, Steps 2–4)
 - `sh spec/tools/check_no_code.sh` (Steps 1, 2)
-- The fixture generator script re-derives `printed-v20.json` and the mobile fixtures (Step 1)
+- The fixture generator script re-derives `printed-v20.json` and the mobile fixtures (Step 1); since Step 2 it writes `printed.json`'s derived blocks and `tags/cases.json` (`--check`)
 - `tools/widget_layouts.py` byte-identical (any step that changes a widget layout)
 - The downgrade test for the tag key (A4, I3, I4)
-- The tag fixture replay, filter cases and memory sequences (`cases-personal-work.json`; A4, I4)
+- The tag fixture replay, filter cases and memory sequences (`cases-personal-work.json`; A4, I4; `tags/cases.json` since Step 2)
 - The Duet narrow-width and derived-column tests (A6)
 - The four sample-isolation tests (A5)
 - One fresh Opus judge round per code step (1, A1–A6, I1–I4, 2, 3's fixes, 4)

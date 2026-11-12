@@ -248,11 +248,11 @@ object PaceText {
     fun resetsClause(dayClock: String): String = "resets $dayClock"
 
     /**
-     * The pace line's forms, longest first — CCRM-108 (Reset Named), core §6.3 "Planned — v2.0 feedback": a
+     * The pace line's forms, longest first — CCRM-108 (Reset Named), core §6.3: a
      * bare clock always means today. A reset on another day: "· resets Wed 12:30 PM" → "· Wed 12:30 PM" →
      * "· Wed" → the floor; later the same local day: "· resets 11:00 PM" → "· 11:00 PM" → the floor. The floor
      * (the duration and its word, or "On the mark") is never cut. Empty with no readout. Cases:
-     * `printed-v20.json` → `paceLineForms`.
+     * `printed.json` → `paceLineForms`.
      */
     fun paceLineForms(
         mt: Pace.MarkTime?,

@@ -131,11 +131,11 @@ Account risk: Cooldown reads undocumented usage endpoints using your own sign-in
 
 ## 5. Graphics checklist
 
-- [ ] **App icon, 512×512 PNG** — export from the Pulse launcher icon (the ECG beat on charcoal).
-  No provider marks on it.
-- [x] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha),
-  variant B of `design/2026-10-01-play-feature-graphic.html`, approved by Robin on 2026-10-01. No
-  provider mark in it either.
+- [ ] **App icon, 512×512 PNG** — export from the v2.0 launcher icon, CCRM-101 (Icon v3)'s "Shared pace"
+  (`design/icon-v3/`). No provider marks on it.
+- [ ] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha), to be
+  re-exported at RUNBOOK Step 5 from variant C of `design/2026-11-11-play-feature-graphic-v20.html`
+  (`?only=c`), approved by Robin on 2026-11-11 (the v1.9 file is variant B of the 2026-10-01 page).
 - [ ] **Phone screenshots, 2 minimum, 4–8 recommended.** Candidates in `release/screenshots/`
   (`token-guide.png` is excluded: it shows a removed feature):
   1. `hero.png` — the README hero, if it works as a plain phone shot

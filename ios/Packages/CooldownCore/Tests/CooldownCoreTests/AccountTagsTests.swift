@@ -4,11 +4,11 @@ import Testing
 @testable import CooldownCore
 
 /// CCRM-110 (Account Tags) and CCRM-112 (Summary Snapshot) after Robin's 2026-11-11 change — every account Personal or
-/// Work, a filter memory that falls back to All — read from `spec/mobile/fixtures/tags/cases-personal-work.json`
-/// (BEHAVIOR-MOBILE §6). Step 2 folds that file into `cases.json`; this suite follows it.
+/// Work, a filter memory that falls back to All — read from `spec/mobile/fixtures/tags/cases.json`
+/// (BEHAVIOR-MOBILE §6).
 @Suite("Account tags and the Summary filter (CCRM-110)")
 struct AccountTagsTests {
-    static let file = "tags/cases-personal-work.json"
+    static let file = "tags/cases.json"
 
     private func cases(_ key: String) throws -> [[String: Any]] {
         let list = try #require(try Fixtures.mobileJSON(Self.file)[key] as? [[String: Any]])

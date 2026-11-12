@@ -136,6 +136,11 @@ The even-pace maths is the core's (§6) and the dead zone is the core's (§5). W
 | Above-pace wash under the curve | orange rung at 34% dark / 30% light; red wash 10% / 7% | curve and last dot turn red | `ui/Sparkline.kt:534,575` |
 | Chart now divider | `muted` at 28%, now dot 4.5 dp | `sub` 70%, 1 pt | `ui/Sparkline.kt:600` |
 | Chart axis | `muted` at 18% | `line`, 1 pt | `ui/Sparkline.kt:730` |
+| Chart day grid (CCRM-107 (Day Grid)) | `onSurfaceVariant` at 13%, 1 dp solid (`GRID_ALPHA`); the Pace map's at 10% (`MAP_GRID_ALPHA`) | `line` at 60%, 0.5 pt, in `TrendChart` and the Pace map | `ui/Sparkline.kt`, `ios/Shared/Charts.swift` |
+| Grid ordinals | 9.5 sp (Pace map 10 sp); the now column's bold at 95% ink | 9.5 pt regular `sub` on a chart's axis strip, bold `ink` in the column holding now; 10 pt `sub` on the Pace map; the end labels stay 11 pt (chart) and 10 pt (map) and are never bold | |
+
+The day grid is the quietest line on a chart: under the axis, the dashed 80/90/100 guides and the
+even-pace diagonal. Wireframe: `design/2026-11-10-v20-feedback-wireframes.html` rev B §3–§4 (iOS built at 7d479ba).
 
 Rules that hold on every surface:
 
@@ -172,6 +177,9 @@ Android's app uses Material 3's baseline typography unchanged (no custom `Typogr
 device font. iOS uses the system font (SF) with explicit point sizes, digits monospaced on figures.
 **Window and figure type is never baked into a bitmap**: rings and bars are bitmaps, every number is
 a real text view at true sp (the notification and widgets) so it follows the system font scale.
+One stated exception (Android, CCRM-105 (Duet Stack), Robin 2026-11-10): the collapsed Duet's text is
+sized in dp and capped — figure 18 dp, name 13.5 dp, state word 12 dp — as the ring's bore figure
+already is; its expanded view scales.
 
 ### 2.1 App screens
 
@@ -193,9 +201,10 @@ authoritative per-element map is [notification.md](notification.md).
 | Element | Size | Layout |
 |---|---|---|
 | Collapsed figure, single | 32 sp | `notif_big_number.xml` |
-| Collapsed figure, Duet half | 30 sp | `notif_duet.xml` |
+| Collapsed figure, Duet row (CCRM-105 (Duet Stack)) | 18 sp (capped at 18 dp), right-aligned in a 42 dp slot; 30 / 28 sp per half before | `notif_duet.xml` |
+| Collapsed Duet name, state word | 12 sp, 11 sp (capped at 13.5 dp, 12 dp) | `notif_duet.xml` |
 | Expanded figure, single | 44 sp | `notif_big_number_expanded.xml` |
-| Expanded figure, Duet half | 36 sp | `notif_duet_expanded.xml` |
+| Expanded figure, Duet header | 24 sp (36 before CCRM-105) | `notif_duet_expanded.xml` |
 | Panel row label and value | 13.5 sp (13 sp in the Duet panel's tighter rows) | `notif_panel_single.xml`, `notif_panel_duet.xml` |
 | Panel secondary line | 12 sp | |
 | Panel headline row | 16 sp | `notif_panel_single.xml` |
@@ -341,7 +350,7 @@ drops out: the token decides order, not presence.
 | Form | Wording | Notes |
 |---|---|---|
 | Countdown | "Resets in 4h 47m", "in 2d 5h" past 24 h, "in 12m" under an hour | **"Resets soon" inside five minutes** (no stale seconds on a 15-minute cadence). Android past reset: "any moment" |
-| Clock | "Resets at Thu 11:45 PM" or "Thu 23:45" | Android cards always name the weekday, 5h included; iOS lowercases "pm" ("Thu 9:50 pm") |
+| Clock | "Resets at Thu 11:45 PM" or "Thu 23:45" | Android cards always name the weekday, 5h included; iOS lowercases "pm" ("Thu 9:50 pm") on card lines while its pace line prints core's en-US "PM" ("· resets Sun 9:30 PM") — filed as CCBG-82 (Clock Case Mix) |
 | Widget clock (Android) | 12-hour always, "9:10 PM", weekday only when more than 24 h from now ("Sat 9:10 PM"), AM/PM dropped where it does not fit | Ignores the Time format chip |
 | Time only | "11:45 PM" / "23:45" | 5h window only, where the day is never in question |
 | Chart axis | 5h: clock; 7-day: "23 Jul" (a bare weekday would repeat) | |
@@ -533,41 +542,13 @@ wherever the two disagree; the rules are in BEHAVIOR-MOBILE §5 ("Shape grammar"
   stays unsigned and the colour alone gives the side. A fallback usage figure keeps its severity colour. The
   notification's "UNDER PACE" / "OVER PACE" / "ON PACE" caption is gone (the sign carries the side). Wireframe
   `design/2026-11-06-mobile-pace-line-wireframe.html`.
-- **The pace line** (CCRM-104): every Weekly band line ("Slow down · ≈11%/day · resets Sun") is now core's short line,
-  "6d 23h behind · Wed 12:30 PM" / "13h 59m ahead · Thu 6:15 PM" / "On the mark · Sat 8:00 AM", duration and word in
-  the tone. Narrow columns drop the weekday, then the clock; the duration and word are the floor (wireframe D10).
+- **The pace line** (CCRM-104, CCRM-108 (Reset Named)): every Weekly band line ("Slow down · ≈11%/day · resets Sun")
+  is now core's short line with the reset named, "6d 23h behind · resets Wed 12:30 PM" / "On the mark · resets Sat
+  8:00 AM", duration and word in the tone. Forms, widest first, one drop order on both platforms (core §6.3, 2026-11-10, replacing CCRM-104's D10 order, which dropped the weekday first):
+  another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM" → "· Wed" → the floor; later the same day "· resets 11:00 PM"
+  → "· 11:00 PM" → the floor. The floor (the duration and its word, or "On the mark") is never cut; below it the text
+  steps down — Android: to 10 sp, then the ellipsis; iOS: to 0.8 size (`PaceLine.Drop`: none, word, clock, floor).
   Band words and "≈X%/day" survive only in alerts. Per-surface sizes are in app.md, notification.md and widgets.md.
 - **Status-bar glyphs** (Android, rev D §4): the 5h ring (unchanged geometry, §3.3); a red cross alone (arms 7 of 24
   units, stroke 3.4) while out; the ring greyed (track 30%, arc 40%, no needle) while the week is spent; N3, the
   Weekly as a 21 × 10-unit capsule with its tick in a cleared halo.
-
-## v2.0 feedback on Android
-
-Step A1 (2026-11-11, RUNBOOK Lane A), built on Android:
-
-- **§1.5 chart tokens — grid ink (CCRM-107 (Day Grid))**: charts `onSurfaceVariant` at 13%, 1 dp solid
-  (`GRID_ALPHA`); the Pace map ink at 10% (`MAP_GRID_ALPHA`). The quietest line on a chart: below the axis (18%) and
-  the dashed 80/90/100 guides. Ordinals: 9.5 sp (map 10 sp), the now-column one bold at 95% ink.
-- **The pace line (CCRM-108 (Reset Named))**: the clock after the dot is named, "6d 23h behind · resets Wed 12:30
-  PM", "On the mark · resets Sat 8:00 AM". Forms, widest first: another day "· resets Wed 12:30 PM" → "· Wed 12:30 PM"
-  → "· Wed" → the floor; later the same day "· resets 11:00 PM" → "· 11:00 PM" → the floor. The floor (the duration
-  and its word, or "On the mark") is never cut; below it the 10 sp step-down and the ellipsis are unchanged.
-
-Step A2 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-105 (Duet Stack):
-
-- **§2.2 Pinned notification sizes:** collapsed figure, Duet row **18 sp** (was 30 / 28 per half), right-aligned in a
-  42 dp slot; expanded figure, Duet header **24 sp** (was 36). Collapsed Duet name 12 sp, state word 11 sp.
-- **§2 "true sp", one stated exception:** the collapsed Duet's text is sized in dp and capped — figure 18 dp, name
-  13.5 dp, state word 12 dp — as the ring's bore figure already is (Robin, 2026-11-10). Its expanded view scales.
-
-## v2.0 feedback on iOS
-
-Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4).
-
-- **Grid ink** (CCRM-107 (Day Grid)): `line` at 60%, 0.5 pt — the quietest line on a chart, under the guides (dashed
-  80/90/100 at 70%), the axis (`line`, 1 pt) and the diagonal. Used by `TrendChart` and the Pace map.
-- **Grid ordinals**: 9.5 pt regular `sub` on a chart's axis strip (bold `ink` in the column holding now); 10 pt `sub` on the
-  Pace map. The end labels stay 11 pt (chart) and 10 pt (map) and are never bold.
-- **The pace line** (CCRM-108 (Reset Named)): the reset reads "resets <weekday> <clock>"; the drop order is "resets", then
-  the clock (another day keeps its weekday to the last), then the floor, then 0.8 size (`PaceLine.Drop`: none, word, clock,
-  floor).

@@ -3,15 +3,15 @@ import Testing
 
 @testable import CooldownCore
 
-/// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): core §6.3 "Planned — v2.0 feedback", read from
-/// `spec/core/fixtures/pace-distance/printed-v20.json` (`quiet`, `mapLabels`, `callout`, `projectionLayer`) and the mobile
-/// foot line from `spec/mobile/fixtures/map-foot/cases.json`, until RUNBOOK Step 2 folds them into the old files.
+/// CCRM-109 (Quiet Accounts) and CCRM-111 (Map Layers): core §6.3, read from
+/// `spec/core/fixtures/pace-distance/printed.json` (`quiet`, `mapLabels`, `callout`, `projectionLayer`) and the mobile
+/// foot line from `spec/mobile/fixtures/map-foot/cases.json`.
 @Suite("Pace map v2.0: quiet accounts, figures, callout, projection, labels")
 struct PaceMapV20Tests {
 
     private let utc = TimeZone(identifier: "UTC")!
 
-    private func fixture() throws -> [String: Any] { try Fixtures.json("pace-distance/printed-v20.json") }
+    private func fixture() throws -> [String: Any] { try Fixtures.json("pace-distance/printed.json") }
 
     private func list(_ object: [String: Any], _ key: String) throws -> [[String: Any]] {
         let list = try #require(object[key] as? [[String: Any]], "fixture section \(key) missing")

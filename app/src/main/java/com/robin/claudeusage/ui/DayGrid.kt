@@ -4,9 +4,9 @@ import kotlin.math.floor
 
 /**
  * CCRM-107 (Day Grid): the grid every 7-day chart, 5h chart and the Pace map draw under everything
- * else, and the ordinals on their time axis (core §6.3 "Planned — v2.0 feedback", wireframe
+ * else, and the ordinals on their time axis (core §6.3, wireframe
  * `design/2026-11-10-v20-feedback-wireframes.html` §3). Pure, so `DayGridTest` pins it against
- * `printed-v20.json` → `dayGrid`.
+ * `printed.json` → `dayGrid`.
  *
  * A 7-day window has seven equal columns (start + k × 24 h, window-relative days, not midnights) and
  * lines at k/7 of 100%; a 5-hour window five hourly columns and lines at k/5. Each crossing (k, k)

@@ -358,7 +358,7 @@ A wide row becomes a centred group (the pitch cap), not rings spread to thirds. 
 Weekly figure go on 4×1 (the name remains, with the inline reset where it fits); the label's window word is never shown.
 At S9 the account simply leaves the strip. Source: `WidgetFace.kt` (`stripRing`, `stripBar`, `stripFace`).
 
-### The pace line on a widget — CCRM-104 (Pace Line Parity)
+### The pace line on a widget — CCRM-104 (Pace Line Parity), CCRM-108 (Reset Named)
 
 Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §6, §8, D1, D10, Q1, Astra C1-2 and C1-4. Built in
 `widgets/PaceLineFit.kt` and `WidgetFace.kt` (`FaceStates.cell`: `Cell.textFigure`, `Cell.paceForms`; `numberFace`, `ringFace`).
@@ -366,18 +366,18 @@ Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §6, §8, D1, D10,
 - **Figure.** In Vs pace mode every Weekly text figure is signed (`Cell.textFigure`): Number, Countdown (2×2 figure row
   and the wide side figure), Strip (the 4×2 Weekly figures; also a weekly-only account's figure where its ring
   would be), the Ring's Weekly row. Ring bores (`Cell.figure`) stay unsigned in the tone. Used and Left are never signed.
-- **The line (Q1).** Where a face shows a Weekly "Resets Sat 9:10 PM" line it shows the pace line instead:
-  "21h 50m ahead · Sun 9:30 PM" ("<duration> behind|ahead" tinted semibold, green under the mark, red over; "On the
-  mark · 9:30 PM" in ink). It applies in every usage mode. The forms are core's (`PaceText.paceLineForms`: the weekday
-  dropped when the reset is later today), pinned to 12-hour as every widget clock is (R2); the width estimator is the
-  notification's (`notify/TextFit`). The Number 4×1 keeps its shipped Ø60 ring, so its column is 237 dp at 333 and 148 at
-  244 (the wireframe drew Ø76): at 333 the full line fits beside the stamp, at 244 the stamp yields and the line drops
-  the weekday. Faces: Number 4×1, 4×2 and the tall 2×1 (sub row); Ring 2×2 and the wide 1×1
+- **The line (Q1).** Where a face shows a Weekly "Resets Sat 9:10 PM" line it shows the pace line instead, with the
+  reset named (CCRM-108 (Reset Named)): "21h 50m ahead · resets Sun 9:30 PM" ("<duration> behind|ahead" tinted semibold,
+  green under the mark, red over; "On the mark · resets 9:30 PM" in ink). It applies in every usage mode. The forms are
+  core's (`PaceText.paceLineForms`: the weekday dropped when the reset is later today), pinned to 12-hour as every widget
+  clock is (R2); the width estimator is the notification's (`notify/TextFit`). The Number 4×1 keeps its shipped Ø60 ring,
+  so its column is 237 dp at 333 and 148 at 244 (the wireframe drew Ø76). Faces: Number 4×1, 4×2 and the tall 2×1 (sub row); Ring 2×2 and the wide 1×1
   (the reset line's slot, replacing the 5h's reset line when the account has a Weekly). Faces with no line (Ring 1×1,
   Number 2×1, Strip, Countdown) change only the figure. Held, spent ("Weekly spent"), stale, signed-out (S7), no-reading
   and not-started lines are untouched; so is the 5h's own line on a 5h-only account.
-- **Form by width (D10).** Longest first: full, without the weekday, then "<duration> behind|ahead" ("On the mark"),
-  the floor, never cut. `PaceLineFit.choose` picks the first form whose estimated width fits the column; the estimate is
+- **Form by width (D10).** Longest first, one order on every surface: a reset on another day "· resets Sat 9:10 PM" →
+  "· Sat 9:10 PM" → "· Sat" → "<duration> behind|ahead" ("On the mark"), the floor, never cut; later the same day
+  "· resets 9:10 PM" → "· 9:10 PM" → the floor. `PaceLineFit.choose` picks the first form whose estimated width fits the column; the estimate is
   wireframe §8's em classes (digit .56, narrow lowercase i l t r f j .30, m w .86, other lowercase .54, W M O .80,
   other capitals .62, space .25, "·" .29, ":" .23, sign .58, "%" .46; the tinted span +3%) × sp × `Configuration.fontScale`
   (Astra C1-4: larger text drops earlier). If the floor does not fit it steps to 10 sp, then the TextView ellipsizes.
@@ -386,10 +386,15 @@ Wireframe `design/2026-11-06-mobile-pace-line-wireframe.html` §6, §8, D1, D10,
 - **The stamp yields first (Astra C1-2).** On a Number whose stamp shares the row (4×1, 4×2): the stamp stays while some form
   fits beside it (column − 66 dp at font scale 1.0, 58 × scale + 8); when even the floor does not, the stamp hides and the
   drop order runs on the full column. The 2×2's stamp has its own line and never yields. Worst case "23h 59m ahead ·
-  Fri 12:30 PM" at 12 sp: 161 dp full, 144 without the weekday, 85 the floor. At the shipped geometry (the Number's ring
-  is Ø60 at 4×1, so its column is 237 dp at a 333 dp widget and 148 dp at 244): 333 and 510 full beside the stamp; 244 the
-  stamp yields and the weekday-less line shows; 156 the floor at 10 sp. Ring 2×2: 156 floor, 244 full, 333 (ring beside,
-  129 dp) floor, 510 full; 1.3× drops 244 to no-weekday; 2.0× to the floor (at 156 the floor at 10 sp).
+  Fri 12:30 PM" at 12 sp: 161 dp, 144 without the weekday (a form before CCRM-108), 85 the floor.
+- **What prints (Faces gallery, dark; `design/research/2026-11-v20-build/A1/` captures 08, 09).** "3d 11h behind ·
+  resets Sat 9:10 PM" where it fits (the gallery's Number 4×1; the Ring 2×2 at 244 dp), then "· Sat 9:10 PM" (the Number
+  4×2 beside its stamp; the worst-case "23h 59m ahead" line on a Number 4×1 at 333 dp), then "· Sat" (Number 4×1 at 244
+  dp, Ring 2×2 at 156 and 333 dp — 129 dp beside the ring — where the order before CCRM-108 printed a bare clock or the
+  floor), then the floor and the 10 sp step-down as before. Before CCRM-108 the record was: Number 333 and 510 full
+  beside the stamp, 244 the stamp yields and the weekday-less line shows, 156 the floor at 10 sp; Ring 2×2 510 full;
+  1.3× dropped 244 to no-weekday, 2.0× to the floor (at 156 the floor at 10 sp). No layout file changed for CCRM-108;
+  `tools/widget_layouts.py` regenerates byte for byte.
 - **Unchanged.** The " · vs pace" name suffix stays. The TalkBack description still reads the "Resets …" sub line.
 
 ## 1.10 Refresh and transitions
@@ -400,6 +405,10 @@ reset (S6), last fetch + 6 h (dim), last fetch + 24 h + 1 ms (the stamp gains it
 draw together); a Countdown counts its own. It redraws all placed widgets from the cache and fetches nothing.
 Boot, app update, clock change and time-zone change redraw all and re-arm. Source: `W/Transitions.kt`,
 `W/WidgetSystemReceiver.kt`, `W/WidgetActionReceiver.kt`.
+
+The sample mode (CCRM-113 (Sample Port)) never reaches the widgets, the status-bar icon or the reset pings: they read the
+real cache, registry and settings throughout, and nothing the sample does (an Appearance change included) redraws them.
+Only the debug synthetic series pauses while the sample is open.
 
 ## 1.11 Faces gallery (debug)
 
@@ -426,6 +435,10 @@ available size and is not specified here. The wireframes were drawn on the iPad 
 Space"): Small 160×160, Medium 346×157, Large 346×346, Extra Large 724×346; the tightest phone case is the iPhone SE Small
 at 141 pt (109 pt inside).
 
+The sample mode (CCRM-113 (Sample Port)) never reaches the widgets, the lock screen, the Control Center control or the
+Live Activity: while it is open the app writes its settings to throwaway suites (`SampleStore`), never the App Group these
+surfaces read, so they keep the real accounts and settings (BEHAVIOR-MOBILE §7).
+
 ## 2.1 Shared pieces
 
 | Piece | Rule | Source |
@@ -435,7 +448,7 @@ at 141 pt (109 pt inside).
 | Accent | The account's own colour, else the theme colour, else the provider's (Claude terracotta #E59980 dark / #D97757, ChatGPT green #19C39A / #10A37F) | `ios/Shared/Display.swift`, `Theme.swift` |
 | Provider mark | Real mark, tinted; Claude drawn at 82% inside its square to match ChatGPT's apparent size | `Theme.swift` |
 | Used / Left | Setting "Usage display": a figure reads "62%" or "38%" with a smaller "left" (42% of the figure's size, min 10 pt, semibold) after it; bars never flip. Text-only surfaces say "38% left" | `Display.swift` |
-| Clocks | Lower-case "9:50 pm" (or 24-hour per the Time format setting); Weekly clocks always name the day: "Thu 9:16 pm" | `ios/Shared/CardContent.swift:140,146` |
+| Clocks | Lower-case "9:50 pm" (or 24-hour per the Time format setting); Weekly clocks always name the day: "Thu 9:16 pm". The pace line prints core's en-US "PM" ("· resets Sun 9:30 PM") — filed as CCBG-82 (Clock Case Mix) | `ios/Shared/CardContent.swift:140,146` |
 | Usage bar | Capsule, track = accent at 26%; fill min width = bar height (any reading above 0 shows); above pace (3 points over the even-pace line) and "red past the pace mark" on: fill to the tick in severity colour, then red from a straight edge at the tick to the tip; tick = 3 pt wide, bar height + 2 × max(3, 0.45 × height) tall, rounded 1.5 pt, in the tick colour; dimmed = 45% opacity; no reading = empty track, no tick | `ios/Shared/Charts.swift:6` |
 | Usage ring | Track stroke max(1.5, 0.3 × line width) in ring-track colour (mono: 32% of white); fill round-capped; red arc from the tick; tick = capsule max(2, 0.42 × line width) × 1.9 × line width at the pace angle; label bold, mono-digit, default 0.22 × ring diameter | `Charts.swift:186` |
 | Status | `fresh`; `aging` (older than 30 min: "as of" appears); `stale` (older than 6 h: dimmed numbers, orange "as of"); `signIn` (dimmed); `plan` (no usage); `noData` | `ios/Shared/Faces.swift:9,63,85` |
@@ -757,17 +770,25 @@ CCRM-103 (Hybrid Notification), frozen design
   the Live Activity keeps an empty slot so bars line up). Overview tiles (T1–T3) keep the slot as the greyed ring with a
   cross (rev C, the tile default); Compact (T4) aligns flush left; Mini (T5) keeps an empty 30 pt slot.
 - **Sign-in / no reading**: grey ring with "—", figure "—".
+- **The Weekly pace line** (CCRM-108 (Reset Named); iOS built at 7d479ba, renders in
+  `design/research/2026-11-v20-build/I1/render/`): every face that prints it — Strip, Bars, the Overview tiers, the
+  Large/XL account card, the Live Activity (single and Duet) and the Island expanded — prints the "resets" form where it
+  fits and drops by the one order of Part 1 ("The pace line on a widget"): "· resets Sun 9:30 PM" → "· Sun 9:30 PM" →
+  "· Sun" → the floor. The Live Activity's single row at its usual width reads "21h 50m ahead · Sun"; the Bars small
+  at iPhone SE width keeps the floor. The lock-screen faces and the Number face are unchanged by it.
+- **Charts** (CCRM-107 (Day Grid)): the Large/XL account card's trend chart draws the day grid and ordinals as the app's
+  (`TrendChart`, foundations §1.5); the narrow tier (lines only) draws the grid with no ordinals.
 
 ### Home widgets (iPhone small 158, medium 338 × 158, large 338 × 354 pt; 16 pt padding)
 
 | Face | Layout | States |
 |---|---|---|
-| **Bars** (small) | Mark 15 + "Teams · Weekly" (14 pt); 8 pt below, ring **50** left (10 gap) of the Weekly figure **28 pt** over its **8 pt** bar (5 pt gap); 6 pt below, the Weekly reset "Resets Sun 9:30 pm" (11.5 pt); 6 pt below, the first model limit (`FaceModelRow`): name (12 pt, 38 pt wide, "Claude " dropped), its **5 pt** bar with the end mark, figure 12 pt (28 pt wide), 6 gaps. iPhone SE (141): the reset line goes and " · Sun" joins the header. | Spent: "Limit · Sun 9:30 pm" red; sign in / stale / no data as `FaceFootnote`. No 5h: no ring. No model limit (none reported, or Model limits off for the account), sign in or no usage on the plan: no model row. |
+| **Bars** (small) | Mark 15 + "Teams · Weekly" (14 pt); 8 pt below, ring **50** left (10 gap) of the Weekly figure **28 pt** over its **8 pt** bar (5 pt gap); 6 pt below, the Weekly pace line (11.5 pt) in the form it fits, where "Resets Sun 9:30 pm" stood; 6 pt below, the first model limit (`FaceModelRow`): name (12 pt, 38 pt wide, "Claude " dropped), its **5 pt** bar with the end mark, figure 12 pt (28 pt wide), 6 gaps. iPhone SE (141): the pace line keeps its floor (CCRM-108); the older rule — the reset line goes and " · Sun" joins the header — predates the pace line. | Spent: "Limit · Sun 9:30 pm" red; sign in / stale / no data as `FaceFootnote`. No 5h: no ring. No model limit (none reported, or Model limits off for the account), sign in or no usage on the plan: no model row. |
 | **Number**, window 5h | Mark + "Teams" (no "· 5h"); the ring hero **84 pt**, figure **24 pt**, centred; "Resets in 2h 20m · 5:10 pm" (Clock first: "Resets at 5:10 pm · in 2h 20m"), 12.5 pt. | Runs out / limit / stale / sign in: `FaceFootnote`. Spent week: grey ring, "Weekly spent" (ink). No 5h: the Weekly face below. |
 | **Number**, window Weekly | Unchanged layout: "Teams · Weekly", figure 46 pt (40 at 100%), 8 pt bar, "Resets Sun 9:30 pm". Grammar figure and bar end. | As before. |
 | **Countdown** (small) | Ring **40** + "Resets" (13 pt, grey); 10 pt below the live count **35 pt** bold; "at 5:10 pm" 13.5 pt; the account (mark + name, 13 pt) at the foot. | Limit: "Limit · opens 5:10 pm" red. Spent week: grey ring, count dimmed, "Weekly spent". No 5h / sign in / no window: today's face ("Weekly reset", days-and-hours count). |
-| **Strip** (medium) | Ring **84** (figure **22 pt**) left, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) with the Weekly figure **30 pt** right-aligned; **8 pt** bar (6 below); the Weekly line "Slow down · ≈11%/day · resets Sun" (12.5 pt, red when over pace or spent: "Out until Sun 9:30 pm"); 10 pt below, the first model limit: name (13 pt, 44 pt wide), its **6 pt** bar with the end mark, figure 13 pt (36 pt wide), 8 gaps. The 5h row under the Weekly is gone. | States replace the line (`FaceWeeklyLine`). No 5h: no ring. No model limit, sign in or no usage on the plan: no model row. |
-| **Overview** T1 Full / T2 Chart-narrow / T3 Regular | The tile: ring **72** (cell ≥ 300 pt) or **64**, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) and the Weekly figure (0.25 × ring: 18 / 16 pt), 8 pt bar. Under the tile: the Weekly line (14.5 pt semibold), then the 5h line led by a **12 pt ring glyph**: "resets in 2h 20m · on track for ~69%" (14.5 pt; orange while it binds or runs out, red at the limit). T1/T2 add the Weekly's trend chart (60–170 pt; T2 lines only). Stale / aging: "as of …" under. | No 5h: greyed ring with a cross, no 5h line. Spent week: grey ring; the 5h line "Weekly spent". |
+| **Strip** (medium) | Ring **84** (figure **22 pt**) left, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) with the Weekly figure **30 pt** right-aligned; **8 pt** bar (6 below); the Weekly pace line (12.5 pt, "21h 50m ahead · resets Sun 9:30 PM" in the form it fits; it replaced "Slow down · ≈11%/day · resets Sun"; spent "Out until Sun 9:30 pm" in red); 10 pt below, the first model limit: name (13 pt, 44 pt wide), its **6 pt** bar with the end mark, figure 13 pt (36 pt wide), 8 gaps. The 5h row under the Weekly is gone. | States replace the line (`FaceWeeklyLine`). No 5h: no ring. No model limit, sign in or no usage on the plan: no model row. |
+| **Overview** T1 Full / T2 Chart-narrow / T3 Regular | The tile: ring **72** (cell ≥ 300 pt) or **64**, 14 gap; right: mark 16 + "Teams · Weekly" (15 pt) and the Weekly figure (0.25 × ring: 18 / 16 pt), 8 pt bar. Under the tile: the Weekly pace line (14.5 pt semibold, in the form it fits), then the 5h line led by a **12 pt ring glyph**: "resets in 2h 20m · on track for ~69%" (14.5 pt; orange while it binds or runs out, red at the limit). T1/T2 add the Weekly's trend chart (60–170 pt; T2 lines only) with the day grid (ordinals on T1 only). Stale / aging: "as of …" under. | No 5h: greyed ring with a cross, no 5h line. Spent week: grey ring; the 5h line "Weekly spent". |
 | **Overview** T4 Compact | Ring **46**, 10 gap; mark 14 + name (14 pt) with the Weekly figure **20 pt** right; **7 pt** bar (5 below); the Weekly line 12 pt (stale: "as of 3:10 pm" orange). | No 5h: flush left. |
 | **Overview** T5 Mini | One 42 pt row: ring **30** with "34" (**11 pt**, no "%"), mark 13, name (13 pt, 58 pt wide), the Weekly's **5 pt** bar, its figure **12 pt** (30 pt wide). | No 5h: an empty 30 pt slot. |
 | **Overview** Extra Large, one account | One tile (≤ 420 pt wide) instead of the two side-by-side window cards — see "needs a decision". | |
@@ -788,8 +809,10 @@ Medium Overview with one account is the Strip (as before).
 ### Live Activity and Dynamic Island (≤ 160 pt)
 
 - **One account**: ring **48** left (12 gap); "Teams · Weekly" (mark 15, 15 pt semibold), **8 pt** bar (6 below), two
-  12.5 pt lines "Slow down · ≈11%/day" / "Resets Sun 9:30 pm"; the Weekly figure **44 pt** semibold right.
-- **Duet**: per row ring **36**, one line "Slow down · Sun 9:30 pm", figure **36 pt**; rows 10 apart. No 5h: an empty
+  12.5 pt lines, the Weekly pace line (where "Slow down · ≈11%/day" stood; at its usual width "21h 50m ahead · Sun") /
+  "Resets Sun 9:30 pm"; the Weekly figure **44 pt** semibold right.
+- **Duet**: per row ring **36**, one line, the pace line in the form it fits (where "Slow down · Sun 9:30 pm" stood),
+  figure **36 pt**; rows 10 apart. No 5h: an empty
   36 pt slot. The thin companion line is gone.
 - Lines' states: "Sign in again" (one account: "Sign-in stopped working · open Cooldown") orange; "as of 3:10 pm"
   orange; "Out until Sun 9:30 pm" red; a Weekly that reset "Weekly reset · 0%"; "Weekly not started". A 5h that reset
@@ -797,7 +820,8 @@ Medium Overview with one account is the Strip (as before).
 - **Island compact**: leading ring **30** with "34" (11 pt, no "%"); trailing the Weekly figure (15 pt semibold,
   coloured). No 5h: the provider mark leads.
 - **Island expanded**: ring **48** left (14 gap); "Teams · Weekly" (mark 18, 15 pt semibold) with the figure **34 pt**;
-  8 pt bar; "Resets Sun 9:30 pm · in 4d 6h" (13 pt; spent "Out until …").
+  8 pt bar; the Weekly pace line in the form it fits (13 pt; where "Resets Sun 9:30 pm · in 4d 6h" stood; spent "Out
+  until …").
 - **Minimal**: the bare ring (provider mark with no 5h).
 - **The small 5h glyph** (the 5h line's 12 pt lead, the inline lock image at 16 pt) is `FiveGlyph`, the page's
   `gauge()` — the Android status-bar ring's geometry (needle, hub, the cross from 99.5; greyed: the arc at 40%, no
@@ -826,32 +850,3 @@ Medium Overview with one account is the Strip (as before).
 **iOS face titles** (CCBG-71 (iPad Number Title Clip)): a face's "<name> · <window>" title drops to the name alone
 (shrinking to 85% at most) when it does not fit, never "ChatGPT · We…". **A dropped widget kind** (the iOS "Ring",
 removed in rev C) keeps its last snapshot on a home screen until the user removes it (CCBG-70 (Stale Ring Widget)).
-
-## v2.0 feedback on Android
-
-Step A1 (2026-11-11, RUNBOOK Lane A), built on Android — CCRM-108 (Reset Named):
-
-- **The pace line on a widget**: a Weekly line takes core's new forms, still in 12-hour clocks (R2) and picked by
-  `PaceLineFit` from the column width and font scale: "3d 11h behind · resets Sat 9:10 PM" where it fits (the
-  gallery's Number 4×1; the Ring 2×2 at 244 dp), then "· Sat 9:10 PM" (the Number 4×2 beside its stamp; the
-  worst-case "23h 59m ahead" line on a Number 4×1 at 333 dp), then "· Sat" (Number 4×1 at 244 dp, Ring 2×2 at 156
-  and 333 dp, where the shipped order printed a bare clock or the floor), then the floor and the 10 sp step-down as
-  before. No layout file changes; `tools/widget_layouts.py` regenerates byte
-  for byte. Captures 08/09 (Faces gallery, dark).
-
-Step A5 (2026-11-11, RUNBOOK Lane A) — CCRM-113 (Sample Port): sample mode never reaches the widgets. They read the real
-cache and registry throughout; nothing the sample does (an Appearance change included) redraws them. Only the debug
-synthetic series pauses while the sample is open. No layout file changes; `tools/widget_layouts.py` is untouched.
-
-## v2.0 feedback on iOS
-
-Step I1, built 2026-11-11 at 7d479ba (wireframe v2.0 feedback rev B §3–§4); renders in
-`design/research/2026-11-v20-build/I1/render/`.
-
-- **Weekly lines** (CCRM-108 (Reset Named)): every face that prints the pace line — Strip, Bars, Overview tiers, the
-  Large/XL account card, the Live Activity (single and Duet) and the Island expanded — prints the "resets" form where it
-  fits and drops by the one order: "· resets Sun 9:30 PM" → "· Sun 9:30 PM" → "· Sun" → the floor. The Live Activity's
-  single row at its usual width reads "21h 50m ahead · Sun"; the Bars small (iPhone SE width) keeps the floor. The Lock
-  Screen faces and the Number face are unchanged.
-- **Charts** (CCRM-107 (Day Grid)): the Large/XL account card's trend chart draws the day grid and ordinals as the app's
-  (`TrendChart`); the narrow tier (lines only) draws the grid with no ordinals.

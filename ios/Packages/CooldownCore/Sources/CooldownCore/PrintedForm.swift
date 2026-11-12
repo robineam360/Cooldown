@@ -29,7 +29,7 @@ public struct PaceLine: Sendable, Equatable, Hashable, Codable {
     /// The line's first part: the tinted span, or "On the mark".
     public var lead: String { tinted ?? "On the mark" }
 
-    /// CCRM-108 (Reset Named), core §6.3 "Planned — v2.0 feedback": the line names the reset ("· resets Wed 12:30 PM"),
+    /// CCRM-108 (Reset Named), core §6.3: the line names the reset ("· resets Wed 12:30 PM"),
     /// and where it does not fit **a bare clock always means today**. A reset on another day: "resets Wed 12:30 PM" →
     /// "Wed 12:30 PM" → "Wed" → the floor. Later the same local day: "resets 11:00 PM" → "11:00 PM" → the floor. The
     /// duration and word are the floor and are never cut (Astra C1-4: each surface measures the scaled text per string).
@@ -132,7 +132,7 @@ extension PaceText {
         public static let xStart = "week start"
         public static let xEnd = "reset"
         /// CCRM-107 (Day Grid): the axis carries the ordinals 2…6 now, so this note moves to the card's foot line, left
-        /// (core §6.3 "Planned — v2.0 feedback", "The Pace map's words").
+        /// (core §6.3, "The Pace map's words").
         public static let xCentre = "each account's own week"
     }
 }

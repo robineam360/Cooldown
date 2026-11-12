@@ -6,7 +6,7 @@ package com.robin.claudeusage.data
  * additively as `personal` / `work` ([ProfileRegistry]'s `"t"` field); a missing, empty or unknown stored value
  * **reads as Personal**, so every account an earlier version saved becomes Personal at upgrade with nothing written,
  * and an unknown value survives a round trip untouched. BEHAVIOR-MOBILE §6; cases in
- * `spec/mobile/fixtures/tags/cases-personal-work.json`.
+ * `spec/mobile/fixtures/tags/cases.json`.
  */
 enum class AccountTag(val key: String, val label: String) {
     PERSONAL("personal", "Personal"),

@@ -78,8 +78,8 @@ fix the draft in the repo first if they disagree.
 11. **Privacy policy URL** 📄 — `https://github.com/robineam360/Cooldown/blob/main/docs/privacy.md`.
     **Blocker before the first upload:** the Android half of `docs/privacy.md` still lists only
     Anthropic, OpenAI and GitHub; v2.0's Android app also talks to Google for Gemini
-    (`accounts.google.com`, `oauth2.googleapis.com`, `www.googleapis.com`,
-    `daily-cloudcode-pa.googleapis.com`). The v2.0 release adds that row (RELEASING.md §5: a change
+    (`accounts.google.com`, `oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com`; `www.googleapis.com`
+    appears only in the sign-in's permission names, nothing is sent there). The v2.0 release adds that row (RELEASING.md §5: a change
     to what leaves the phone updates the policy and the Data safety form in the same release).
 12. **App access** 📄 [app-access.md](app-access.md) — "All or some functionality is restricted".
     **Decided by Robin, 2026-11-10: port the sample mode.** The Android app gets the iPhone app's
