@@ -1181,12 +1181,12 @@ object PinnedNotification {
                 Duet.Word.SIGN_IN, Duet.Word.STALE -> Color(conditionHue(error = true, theme = h.accent, dark = dark))
                 Duet.Word.OUT -> Palette.barColor(100.0, h.accent, dark)
                 Duet.Word.HELD -> h.heldColor
-                else -> null // the layout's info colour
+                else -> null // the muted ink below
             }
-            // CCBG-83 (Duet Reapply Residue): the info colour is set back explicitly (the layout's Notification.Info text colour, resolved in
-            // the shade's own theme), so a re-apply after "Sign in" or "Out" never keeps their colour on "No reading".
-            if (color != null) setTextColor(ids.word, color.toArgb())
-            else setColorStateListAttr(ids.word, "setTextColor", android.R.attr.textColorSecondary)
+            // CCBG-83 (Duet Reapply Residue): the plain words get an explicit muted ink, so a re-apply after "Sign in" or
+            // "Out" never keeps their colour. Not the theme attribute: on the Fold 7 that resolved dark grey on the dark
+            // shade (judge F1, RUNBOOK Step 3); ink at 72% reads as the layout's info colour did, light and dark.
+            setTextColor(ids.word, (color ?: Grammar.ink(dark).copy(alpha = 0.72f)).toArgb())
         }
         // TalkBack hears the full word whichever rung printed: on the word ("Held · 3:40 PM" while "Held" prints), or,
         // with no word printed, on the name ("Design, No reading").

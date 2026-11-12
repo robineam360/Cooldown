@@ -91,7 +91,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   capture that shows "pm" changes) — or, if Robin prefers lower case, change core and both clients together.
 
 ### CCBG-83 · Duet Reapply Residue — a SystemUI re-apply can leave a stale colour, alpha or width on the notification
-- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Android · judge finding F4 of RUNBOOK Step A6 (older than A6) · every build now sets the stale alpha both ways (single, Duet header, row, ring), the Duet header label's bound and ring box with or without a 5h, the single layout's line 2 and ring box, and the word's info colour (`setColorStateListAttr` … `textColorSecondary`, the shade's own theme). No reapply test: the Duet halves have no Robolectric harness; the Fold 7 recheck covers the word colour
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin) · Android · judge finding F4 of RUNBOOK Step A6 (older than A6) · every build now sets the stale alpha both ways (single, Duet header, row, ring), the Duet header label's bound and ring box with or without a 5h, the single layout's line 2 and ring box, and the plain state word's colour, an explicit ink at 72% (the theme attribute tried first drew dark grey on the dark shade on the Fold 7: judge F1). No reapply test: the Duet halves have no Robolectric harness; the Fold 7 recheck covered the word colour, light and dark
 - **Severity:** Low
 - **Symptom (by reading, not seen on a device):** when SystemUI re-applies a notification's RemoteViews, a few view
   settings that one update sets and the next leaves at default are not reset: the state word's colour, the stale alpha
