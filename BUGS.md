@@ -22,6 +22,56 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > (same report, "Unfolded" U1–U7) added CCBG-90 (Inner Portrait Stretch) and an "Unfolded" line to CCBG-84 to CCBG-88;
 > not blocking either, Robin decides in RUNBOOK Step 3.
 
+> **v2.0 device pass 2, 2026-11-12 (RUNBOOK Step 3, Fold 7 half).** Robin at the Fold 7: "v2.0 will be our first
+> public beta and public release build. So we have to fix all our bugs and not keep it after v2.0." **Every open defect
+> blocks v2.0** where it still applies to the current design, Android and iOS. Android ones are fixed in Step 3; iOS
+> ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
+> Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2).
+
+### CCBG-91 · One UI Expanded Column — a 360 dp One UI shade cuts the expanded header's pace line mid-clock
+- **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-12; Fold 7 recheck pending) · Android · **blocked v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 with its display size forced to 360 dp · `TextFitTest` pins One UI's measured columns
+- **Severity:** Medium (the approved drop order is not followed; CCBG-80 (Fixed Pace Columns) on One UI)
+- **Symptom:** expanded Duet "2h 4m ahead · Fri 12:30 …" and the expanded single title "Claude · Wee…" (N1-Q7 says
+  "· Weekly" gives first). The Fold 7 at its own 411 dp is fine.
+- **Cause:** `TextFit.EXPANDED_EXTRA_DP` assumed AOSP's + 40 dp of expanded content; One UI 8 gives + 24 (411 dp) to
+  + 27 (360 dp), so the derived column was 153 dp where the shade has 134.
+- **Fix:** + 24, which holds on both shades (AOSP drops a form slightly sooner, never cuts one).
+
+### CCBG-92 · Summary Line Measure — Summary line 3 is cut mid-clock at 360 dp and at large text
+- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at 360 dp and at font 2.0; also in A4's emulator capture `22b-summary-both-360dp-font2-light-reseed.png`
+- **Severity:** Medium (the approved drop order is not followed)
+- **Symptom:** "13h 58m behind · resets Tue 5:37 …" at 360 dp; "8h 38m behind · …" at font 2.0, where the forms
+  should drop to "· Tue 5:37 PM", "· Tue" or the span alone.
+- **Cause:** `PaceLineText` measures each form with a bare `TextStyle(fontSize, fontWeight)`, while the `Text` draws with
+  the theme's body style (letter spacing 0.5 sp), so every form measures narrower than it draws.
+- **Fix:** measure with the style the `Text` uses.
+
+### CCBG-93 · Summary Caption Clip — the Summary row's line 2 is cut through at large text
+- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7 cover at font 2.0; also in A4's emulator captures
+- **Severity:** Low (only at large text, but the line is unreadable there)
+- **Symptom:** "95% used · 94% pace mark" shows only the top half of its glyphs; the row's line 3 overlaps it.
+- **Fix:** let the caption take its full line height (no change at font 1.0).
+
+### CCBG-94 · Snapshot Not Started — the Summary snapshot draws a not-started account as unread
+- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · RUNBOOK Step 3, Fold 7, All tab › Share snapshot
+- **Severity:** Low
+- **Symptom:** Gemini (0%, no reset clock yet) is dimmed with "—" and "No reading" on the snapshot, while the Summary on
+  screen shows "0%", an empty bar and "Not started yet".
+- **Fix:** the snapshot follows the screen for a not-started row ("0%", bare track, "Not started yet"); Robin approved
+  matching the Summary's wording 2026-11-12.
+
+### CCBG-95 · Snapshot Label Overlap — the account share card's "~100%" sits on its "95%"
+- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · **needs a wireframe** · RUNBOOK Step 3, Fold 7, Claude › Share snapshot
+- **Severity:** Low
+- **Symptom:** in the share card's Weekly trend, the projection label "~100%" is drawn over the now-label "95%" at the
+  plot's right end (unlike CCBG-7 (Chart Label Collision), this one is real at full resolution).
+
+### CCBG-96 · Picker Preview Truncation — two widget picker previews truncate their labels
+- **Status:** Open · Android · **blocks v2.0** (Robin 2026-11-12) · **needs a wireframe** · RUNBOOK Step 3, Fold 7 cover, One UI widget picker
+- **Severity:** Low
+- **Symptom:** the Countdown 2×1 preview reads "at 9:10…" and the Number 4×1 preview "Pro · W…". Placed widgets are
+  unaffected. The picker has no 4×2 entry: every face picks at its target cells (Number and Strip 4×1), as specified.
+
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
 - **Status:** Open · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
 - **Severity:** Low (cosmetic)
