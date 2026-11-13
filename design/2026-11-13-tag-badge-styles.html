@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Badge styles for the badged provider mark — 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--tp:#7E57C2;--tw:#00838F;--ontag:#fff;--fill:rgba(28,27,31,.13);--y:#F9A825;--o:#F57C00;--r:#C62828;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.13);--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--tp:#B39DDB;--tw:#4DD0E1;--ontag:#1C1B1F;--fill:rgba(230,225,229,.13);--y:#FDD663;--o:#FFA726;--r:#FF5252;--ios-bg:#000;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.16);--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930}}
+.dark{--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--tp:#B39DDB;--tw:#4DD0E1;--ontag:#1C1B1F;--fill:rgba(230,225,229,.13);--y:#FDD663;--o:#FFA726;--r:#FF5252;--ios-bg:#000;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.16)}
+.light{--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--tp:#7E57C2;--tw:#00838F;--ontag:#fff;--fill:rgba(28,27,31,.13);--y:#F9A825;--o:#F57C00;--r:#C62828;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.13)}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1500px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}h3{font-size:15px;margin:22px 0 6px}
+p,li{max-width:920px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:920px}.rec b{color:inherit}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+figure{margin:0 0 14px}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:5px;max-width:420px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--lv);position:relative;font-family:Roboto,"Helvetica Neue",Arial,sans-serif}
+.ios{background:var(--ios-bg);color:var(--ink);border:1px solid var(--ios-line);font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.bx{flex:none;overflow:visible;display:block}
+.strip{position:relative;display:flex;height:48px;border-bottom:1px solid var(--lv)}
+.tab{display:flex;align-items:center;justify-content:center;height:48px;font-size:14px;font-weight:500;white-space:nowrap;flex:none;gap:2px}
+.tab .nm{margin-left:0}.tab.off .nm{opacity:.6}
+.ind{position:absolute;bottom:-1px;height:3px;background:var(--c);border-radius:3px 3px 0 0}
+.rail{display:flex;flex-direction:column;gap:6px;padding:10px 8px;width:60px;align-items:center}
+.ri{width:44px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}.ri.on{background:var(--ios-fill)}
+.hd{display:flex;align-items:center;gap:9px;height:36px;padding:0 14px}.hd .nm{font-size:21px;font-weight:700}
+.six{display:flex;gap:14px;align-items:center;padding:10px 14px;flex-wrap:wrap}
+.six .a{display:flex;align-items:center;gap:2px;font-size:14px;font-weight:500;white-space:nowrap}
+.sw{display:inline-block;width:22px;height:22px;border-radius:5px;vertical-align:middle;margin-right:4px;border:1px solid var(--lv)}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:920px}.cost b{color:var(--ink)}
+small.u{color:var(--anno);font-weight:600}
+ol.q li{margin-bottom:8px}
+.lbl{font-size:11px;color:var(--mute);margin:0 0 4px}
+.grid{display:grid;grid-template-columns:repeat(2,max-content);gap:16px}
+kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+.guide{fill:none;stroke:var(--anno);stroke-width:.3;stroke-dasharray:.8 .5}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs">
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="mk-gpt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(60 12 12)"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(120 12 12)"/></g></symbol>
+<symbol id="mk-gem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.2C12.7 7.3 16.7 11.3 22.8 12C16.7 12.7 12.7 16.7 12 22.8C11.3 16.7 7.3 12.7 1.2 12C7.3 11.3 11.3 7.3 12 1.2Z"/></symbol>
+<symbol id="gf-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+<symbol id="gf-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></symbol>
+<symbol id="g-all" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="5" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="12" height="3" rx="1.5"/><rect x="3" y="16" width="15" height="3" rx="1.5"/></g></symbol>
+<!-- colour-blindness simulations (Viénot / Brettel linear approximations, as used by Chrome's rendering emulation) -->
+<filter id="prot" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/></filter>
+<filter id="deut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/></filter>
+</defs></svg>
+
+<h1>Badge styles for the badged provider mark — B0 … B4</h1>
+<p class="lead">Design for Robin, 2026-11-13 · Fable (expertise) · answers his question on <code>design/2026-11-13-tag-glyph-android-and-filter.html</code> §1 ("does the badge have to be the same colour as the provider logo? why no circular border? why not a colour per tag?"). The badge is the one built on the iOS rail (<code>RailIcon</code>, <code>ios/App/UI/InnerPanes.swift</code>: 25 pt box, mark 21 at the top-left in the account's accent, a 13 pt disc cleared 1.5 wider out of the lower right, SF <code>person.fill</code> / <code>briefcase.fill</code> 9 pt semibold in ink; captures <code>design/research/2026-11-13-ccrm116/spike-light.jpg</code> / <code>spike-dark.jpg</code>), and the same badge at 24 dp for Android's tabs and 26 pt for the iOS header. Drawn at 1 dp = 1 px and at 4×. The page follows your system's light / dark; panels marked <b>light</b> / <b>dark</b> are forced. CCRM-110 (Account Tags), CCRM-116 (Inner Panes), CCRM-118 (Header Glyphs), CCBG-86 (Rail Marks Alike).</p>
+
+<div class="rec"><b>Recommendation: keep B0.</b> <b>Same colour as the provider?</b> No — the badge is a second mark drawn <i>on</i> the mark; it reads only by contrasting with it, and ink is the one colour that contrasts with all twelve account accents in both schemes (B2 shows what an accent badge does: it reads as a leftover piece of the mark). <b>No circular border?</b> It has one: the 1.5 pt cleared gap around the disc is a ring in the surface colour, drawn by subtraction, so it is right on every background (the Claude tab's ivory, dark mode, a card). A painted 1 pt ring (B1) adds a line inside a 13 pt disc that already holds a 9 pt figure, and leaves 1 pt of air. <b>A colour per tag?</b> Drawn as B3, honestly, and I advise against it on three counts: the twelve theme accents cover the whole hue circle, so any tag colour equals some account's accent (the pair proposed below is the Purple and Cyan themes); red–green colour-blindness leaves only the blue–yellow axis, and yellow / orange / red are the severity ladder; and an 8 pt figure has too little area to carry a colour that is meant to be identified, not just noticed. If Robin wants a second channel beyond the figure, <b>B4 (round for Personal, rounded square for Work)</b> is the one that keeps the never-a-colour rule, costs no legibility and needs no change elsewhere.</div>
+
+<h2>0 · The standing rule, and what revisiting it for the badge would mean</h2>
+<p>BEHAVIOR-MOBILE §6 (CCRM-115 (Row Tag Glyph), Robin 2026-11-11): the row glyph is "in the muted ink, <b>never a colour</b>, never the word". The reason recorded with CCRM-110 (Account Tags) on 2026-11-10: the app already spends colour twice — <b>accents mean provider / account</b> (Claude orange, ChatGPT green, Gemini blue, and any of the twelve themes per account) and <b>severity colours mean usage</b> (yellow &gt; 80, orange &gt; 90, red at 100). A third colour meaning has nowhere to live. Relaxing it "for the badge only" is not possible in practice: the badge, the Summary row glyph, the Settings chip, the filter segments and the share snapshot all show the same tag, and a Personal that is violet in the tab strip and ink in the row below it is one tag drawn two ways. So B3 is a decision about <i>every</i> tag surface on both platforms and the desktop, not about the badge.</p>
+
+<h3>0.1 The palette the tag colours would have to avoid</h3>
+<div id="pal"></div>
+<p>Any hue picked for a tag sits within a few degrees of a theme accent an account may already wear. The pair drawn in B3 — <b>Personal violet</b> <kbd>#7E57C2</kbd> / dark <kbd>#B39DDB</kbd>, <b>Work teal</b> <kbd>#00838F</kbd> / dark <kbd>#4DD0E1</kbd> — is the best I can find: off the three provider hues, off the severity ladder, 5.2:1 and 4.5:1 against a white figure in light, and distinct in lightness as well as hue so the colour-blind rows keep <i>some</i> difference. It still equals the Purple and Cyan themes, and under deuteranopia both drift towards blue (§3).</p>
+
+<h2>1 · The options — each at real size and 4×, light and dark</h2>
+<p>Each strip: Claude · briefcase, ChatGPT · person, Gemini · briefcase, Claude · person, ChatGPT · briefcase, Gemini · person; then the badge at an unselected Android tab's 60% (figure only; the mark never dims — today's rule); then the dimmed state (spent / signed-out: the whole icon at 50%, as a dimmed row). Android geometry (24 box, mark 20, disc 13 at 17.5 / 17.5, cleared circle 16, figure 12-box = 8 dp tall). The 4× panels carry the guides: mark box, icon box, disc, cleared circle.</p>
+<div id="opts"></div>
+
+<h2>2 · On the surfaces — iOS rail (25 pt), Android tab label (24 dp), iOS account header (26 pt), six same-provider accounts</h2>
+<p>The rail: the built <code>RailIcon</code> is an original-rendering image, so the icon is the same selected and unselected; selection is the system's pill. The Android tab: name at 26 dp as today, text and figure at 60% unselected. The header: box 26, mark 22. The six-account row is the case colour is meant to help — Teams, Lab, Atlas, Ops, Research, Client, all Claude orange, tags W · W · P · W · P · W — drawn as Android tab labels at real size and the icons at 4×.</p>
+<div id="surf"></div>
+
+<h2>3 · Colour-blind simulation — deuteranopia and protanopia</h2>
+<p>The six-account row and the three-provider strip for the options that use colour (B2b, B3a, B3b), with B0 and B4 beside them as the control. Filters are the linear Viénot / Brettel matrices (what Chrome's rendering emulation uses), applied to the whole panel, so the provider marks shift too.</p>
+<div id="cvd"></div>
+
+<h2>4 · Cost / risk, one line each, and where else the tag would then have to match</h2>
+<table>
+<tr><th>Option</th><th>Legibility at the 8 pt figure</th><th>Clashes</th><th>Never-a-colour rule</th><th>Must then match elsewhere</th><th>Code</th></tr>
+<tr><td><b>B0</b> today</td><td>Ink on the surface, ≈16:1 light / ≈14:1 dark; the figure is the only thing inside the disc.</td><td>None; the cleared ring is the surface, never a second colour.</td><td>Kept.</td><td>Nothing new (row glyph, chip, filter already ink).</td><td>Built (iOS); Android port only.</td></tr>
+<tr><td><b>B1</b> surface disc + 1 pt ring in sub</td><td>Same figure, 1 pt of air between it and the ring; the ring at 1 pt on a 2.6 px/dp Fold is a 2–3 px grey line, on the iPhone 3 px.</td><td>A ring the mute colour sits inside a mark in the accent: on ChatGPT green and Gemini blue it reads as a grey "no" circle at a glance.</td><td>Kept (ring is ink / sub).</td><td>Nothing elsewhere; the rail must paint the disc instead of clearing it (it then covers the Claude tab's ivory with the page's bg — two surfaces).</td><td>Small: fill + stroke instead of clear.</td></tr>
+<tr><td><b>B2a</b> accent figure</td><td>Claude #D97757 on the light surface ≈3.1:1, ChatGPT ≈3.2:1, Gemini ≈3.6:1 — the graphical floor (3:1) only; the figure is the same colour as the arms around it.</td><td>The badge becomes a fragment of the mark; under a Purple-themed account the figure is purple etc.</td><td>Broken (accent = account).</td><td>Row glyph and chip would have to turn accent too, or the tag is drawn two ways.</td><td>Trivial.</td></tr>
+<tr><td><b>B2b</b> accent disc, white figure</td><td>White on Claude ≈3.1:1, on ChatGPT ≈3.2:1, on Gemini ≈3.6:1; in dark the accents are lighter and white drops under 3:1 (E59980 ≈2.1:1).</td><td>A solid accent blob inside the mark; a red-themed account's disc equals the 100% severity red.</td><td>Broken.</td><td>Same as B2a.</td><td>Trivial.</td></tr>
+<tr><td><b>B3a</b> tag colour disc, white figure (ink in dark)</td><td>Violet 5.2:1, teal 4.5:1 light; dark flips to an ink figure (white on #B39DDB would be 2:1).</td><td>Equals the Purple and Cyan themes; a Cyan-themed Work account is teal on teal; under deuteranopia both discs drift to blue and the row is told apart by lightness.</td><td><b>Broken</b> — a decision for every tag surface.</td><td>Summary row glyph, one-line row glyph, Settings chip, filter segments, snapshot, desktop — all in the same build; BEHAVIOR-MOBILE §6 rewritten.</td><td>Two colour tokens per scheme in both apps + spec + desktop.</td></tr>
+<tr><td><b>B3b</b> tag colour ring, ink figure</td><td>Figure as B0; the colour lives in a 1 pt ring — ≈6% of the badge's area, under a 13 pt disc: the colour is noticed, not identified.</td><td>As B3a, weaker; the ring colour vanishes at 60% and at the dimmed 50%.</td><td>Broken, for the least gain of the four.</td><td>As B3a.</td><td>As B1 + tokens.</td></tr>
+<tr><td><b>B4</b> round Personal / rounded-square Work, ink figure</td><td>As B0; the square's corner radius 3 at 13 pt reads at real size and clearly at 4×.</td><td>None.</td><td>Kept.</td><td>Optional: the Settings chip could take the shape (its glyph has no disc today, so nothing must change); row glyph unchanged.</td><td>One branch in the draw: <kbd>fillEllipse</kbd> vs a rounded rect.</td></tr>
+</table>
+
+<h2>5 · Questions for Robin — one decision each, my answer first</h2>
+<ol class="q">
+<li><b>Badge style.</b> <b>B0 as built</b> — knockout disc, ink figure, the cleared gap as the ring. Else B1 (painted disc + 1 pt sub ring) or B4 (B0 + shape per tag).</li>
+<li><b>Does the never-a-colour rule stand for the badge?</b> <b>Yes.</b> If No, it is B3a (disc in the tag colour; violet Personal, teal Work, white figure in light, ink in dark), and in the same build the Summary row glyph, the one-line row glyph, the Settings chip, the filter segments and the snapshot take the two colours, BEHAVIOR-MOBILE §6 loses "never a colour", and the desktop session hears before either side builds.</li>
+<li><b>A second channel beyond the figure?</b> <b>No, not now</b> — the person and briefcase are already two shapes; add B4's round / square only if the device pass finds the 8 pt figures confused. Else B4 now, in the same commit as the Android badge.</li>
+<li><b>iOS header and History strip take the chosen badge</b> (carried over from the earlier page's questions 2 and 3): <b>Yes</b>, so rail, header and strip are one drawing. Else keep the built separate 18 pt header glyph.</li>
+</ol>
+<p><b>Desktop impact, one line:</b> B0 / B1 / B4 change nothing for CooldownDesktop beyond the badge it was already to copy; B3 changes its sidebar rows, tabs, chips and filter to two new colour tokens, so it must hear before the build (Robin's 2026-11-11 rule) — what it shows today is <small class="u">UNVERIFIED</small> from here.</p>
+
+<h2>6 · States checklist</h2>
+<ul>
+<li>Selected / unselected (Android 60% figure + text; iOS rail unchanged, pill moves) — §2.</li>
+<li>Dimmed (spent / signed-out) at 50% — §1 strips, last icon.</li>
+<li>Light / dark — every panel twice.</li>
+<li>Same accent, many accounts — §2 six-row.</li>
+<li>Deuteranopia / protanopia — §3.</li>
+<li>Not drawn: the Material You dynamic accent (no fixed value) and a 1 pt ring on a real 2.6 px/dp panel — <small class="u">UNVERIFIED</small>, device pass.</li>
+</ul>
+
+<script>
+(function(){
+const PROV={c:'mk-claude',g:'mk-gpt',m:'mk-gem'};
+const TAG={p:'gf-person',w:'gf-work'};
+const tagc=t=>t=='p'?'var(--tp)':'var(--tw)';
+const OPTS={
+ B0:{t:'B0 · today — knockout disc, ink figure, no ring',s:t=>({disc:'none',ring:'none',gl:'var(--ink)',sh:'r'}),
+     cost:'<b>Cost / risk:</b> none new; 8 dp figure in ink on the surface, ≈16:1. The ring is the cleared 1.5 dp, in whatever is behind the icon.'},
+ B1:{t:'B1 · surface disc with a 1 pt ring in the sub colour, ink figure',s:t=>({disc:'var(--bg)',ring:'var(--mute)',gl:'var(--ink)',sh:'r'}),
+     cost:'<b>Cost / risk:</b> a 1 pt grey ring inside a 13 pt disc that holds a 9 pt figure leaves 1 pt of air; on the green and blue marks the grey ring reads as a "no" circle; the painted disc must match the surface behind it (two surfaces on Android: page bg and the Claude tab\'s ivory).'},
+ B2a:{t:'B2a · the figure in the account accent (cleared disc)',s:t=>({disc:'none',ring:'none',gl:'currentColor',sh:'r'}),
+     cost:'<b>Cost / risk:</b> figure ≈3.1–3.6:1 on the light surface (graphical floor only) and the same colour as the arms around it, so it reads as a leftover fragment of the mark; breaks the never-a-colour rule with the accent, which already means the account.'},
+ B2b:{t:'B2b · disc filled in the account accent, white figure',s:t=>({disc:'currentColor',ring:'none',gl:'#fff',sh:'r'}),
+     cost:'<b>Cost / risk:</b> white on the accents ≈3.1–3.6:1 light, ≈2.1–2.6:1 dark (fails); the mark gains a solid blob; a Red-themed account\'s disc equals the 100% severity red; breaks the rule.'},
+ B3a:{t:'B3a · tag colour disc (violet Personal, teal Work), white figure — ink figure in dark',s:t=>({disc:tagc(t),ring:'none',gl:'var(--ontag)',sh:'r'}),
+     cost:'<b>Cost / risk:</b> 5.2:1 / 4.5:1 in light; the colours equal the Purple and Cyan themes; under deuteranopia both drift to blue (§3); breaks the rule, so the row glyph, Settings chip, filter, snapshot and desktop take the same two colours in the same build.'},
+ B3b:{t:'B3b · tag colour ring only, ink figure (cleared disc)',s:t=>({disc:'none',ring:tagc(t),gl:'var(--ink)',sh:'r'}),
+     cost:'<b>Cost / risk:</b> the colour is a 1 pt ring, ≈6% of the badge; noticed, not identified; gone at 60% and at the dimmed 50%; breaks the rule for the least gain.'},
+ B4:{t:'B4 · shape per tag — round disc for Personal, rounded square for Work, ink figure (anything better)',s:t=>({disc:'none',ring:'none',gl:'var(--ink)',sh:t=='p'?'r':'q'}),
+     cost:'<b>Cost / risk:</b> as B0; the square (radius 3) is a second cue that survives colour-blindness, dimming and any theme; the only cost is that the Settings chip and row glyph stay figure-only, so the shape is a badge-only extra, not the tag\'s identity.'}
+};
+// masks per box size
+const defs=document.getElementById('defs');
+[22,24,25,26].forEach(S=>{const c=S-6.5;
+ defs.insertAdjacentHTML('beforeend',`<mask id="cut${S}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${S+4}" height="${S+4}"><rect x="-2" y="-2" width="${S+4}" height="${S+4}" fill="#fff"/><circle cx="${c}" cy="${c}" r="8" fill="#000"/></mask><mask id="sq${S}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${S+4}" height="${S+4}"><rect x="-2" y="-2" width="${S+4}" height="${S+4}" fill="#fff"/><rect x="${c-8}" y="${c-8}" width="16" height="16" rx="4.5" fill="#000"/></mask>`);});
+function badge(pv,tg,op,S,o){o=o||{};const st=OPTS[op].s(tg),M=S-4,c=S-6.5,g=S-12.5,z=o.z||1;
+ const cut=st.sh=='r'?`url(#cut${S})`:`url(#sq${S})`;
+ const el=st.sh=='r'?`<circle cx="${c}" cy="${c}" r="6.5" fill="${st.disc}" stroke="${st.ring}" stroke-width="1"/>`
+   :`<rect x="${c-6.5}" y="${c-6.5}" width="13" height="13" rx="3" fill="${st.disc}" stroke="${st.ring}" stroke-width="1"/>`;
+ const guides=o.guides?`<rect class="guide" x="0" y="0" width="${M}" height="${M}"/><rect class="guide" x="0" y="0" width="${S}" height="${S}"/>`+(st.sh=='r'?`<circle class="guide" cx="${c}" cy="${c}" r="6.5"/><circle class="guide" cx="${c}" cy="${c}" r="8"/>`:`<rect class="guide" x="${c-6.5}" y="${c-6.5}" width="13" height="13" rx="3"/><rect class="guide" x="${c-8}" y="${c-8}" width="16" height="16" rx="4.5"/>`):'';
+ const col=o.pv===false?'var(--ink)':`var(--${pv})`;
+ return `<svg class="bx" width="${S*z}" height="${S*z}" viewBox="${z>1?-1:0} ${z>1?-1:0} ${z>1?S+2:S} ${z>1?S+2:S}" style="color:${col}"${o.dim?` opacity="${o.dim}"`:''}><use href="#${PROV[pv]}" width="${M}" height="${M}" mask="${cut}"/>${el}<g style="color:${st.gl}"${o.gdim?` opacity="${o.gdim}"`:''}><use href="#${TAG[tg]}" x="${g}" y="${g}" width="12" height="12"/></g>${guides}</svg>`;}
+const SIX=[['c','w','Teams'],['g','p','Personal'],['m','w','Gemini'],['c','p','Claude'],['g','w','ChatGPT'],['m','p','Lab']];
+const SAME=[['c','w','Teams'],['c','w','Lab'],['c','p','Atlas'],['c','w','Ops'],['c','p','Research'],['c','w','Client']];
+function strip(op,S,z,guides,scheme){let h=`<div class="ph ${scheme}" style="padding:12px 14px;display:flex;align-items:flex-end;gap:${z>1?24:16}px">`;
+ SIX.forEach(a=>h+=badge(a[0],a[1],op,S,{z,guides}));
+ h+=badge('c','w',op,S,{z,guides,gdim:.6})+badge('g','p',op,S,{z,guides,dim:.5});return h+'</div>';}
+function fig(inner,cap){return `<figure>${inner}<figcaption>${cap}</figcaption></figure>`;}
+let H='';
+for(const op in OPTS){H+=`<h3>${OPTS[op].t}</h3><div class="row">`+
+ fig(strip(op,24,1,false,'light'),'<b>Real size, light.</b> 24 dp box; last two: unselected 60%, dimmed 50%.')+
+ fig(strip(op,24,1,false,'dark'),'<b>Real size, dark.</b>')+
+ '</div><div class="row">'+
+ fig(strip(op,24,4,true,'light'),'<b>4×, light, with the guides.</b>')+
+ fig(strip(op,24,4,true,'dark'),'<b>4×, dark.</b>')+
+ `</div><p class="cost">${OPTS[op].cost}</p>`;}
+document.getElementById('opts').innerHTML=H;
+// surfaces
+function rail(op,scheme){let h=`<div class="ios ${scheme}" style="display:flex"><div class="rail">`;
+ h+=`<div class="ri"><svg class="bx" width="25" height="25" viewBox="0 0 24 24" style="color:var(--ink)"><use href="#g-all"/></svg></div>`;
+ h+=`<div class="ri on">${badge('c','w',op,25)}</div><div class="ri">${badge('g','p',op,25)}</div><div class="ri">${badge('m','w',op,25)}</div></div>`;
+ h+=`<div style="padding:10px 12px 0 0;display:flex;flex-direction:column;gap:10px">${badge('c','w',op,25,{z:4,guides:true})}</div></div>`;return h;}
+function tabs(op,scheme){return `<div class="ph ${scheme}" style="width:360px"><div class="strip"><div class="tab off" style="width:120px"><svg class="bx" width="20" height="20" viewBox="0 0 24 24" style="color:var(--ink);margin-right:6px"><use href="#g-all"/></svg><span class="nm">All</span></div><div class="tab" style="width:120px">${badge('c','w',op,24)}<span class="nm">Teams</span></div><div class="tab off" style="width:120px">${badge('g','p',op,24,{gdim:.6})}<span class="nm">Personal</span></div><div class="ind" style="left:120px;width:120px"></div></div><div style="display:flex;gap:20px;padding:12px 14px">${badge('c','w',op,24,{z:4,guides:true})}${badge('g','p',op,24,{z:4,guides:true,gdim:.6})}</div></div>`;}
+function head(op,scheme){return `<div class="ios ${scheme}" style="width:300px"><div class="hd">${badge('c','w',op,26)}<span class="nm">Teams</span><span style="margin-left:auto;font-size:14px;color:var(--ios-sub)">Weekly 52%</span></div><div style="padding:6px 14px 12px">${badge('c','w',op,26,{z:4,guides:true})}</div></div>`;}
+function sixrow(op,scheme,z){let h=`<div class="ph ${scheme}"><div class="six">`;SAME.forEach(a=>h+=`<span class="a">${badge(a[0],a[1],op,24)}<span style="margin-left:2px">${a[2]}</span></span>`);
+ h+='</div>';if(z){h+='<div class="six" style="gap:22px">';SAME.forEach(a=>h+=badge(a[0],a[1],op,24,{z:4}));h+='</div>';}return h+'</div>';}
+let S2='';
+for(const op in OPTS){S2+=`<h3>${OPTS[op].t.split(' — ')[0]}</h3><div class="row">`+
+ fig(rail(op,'light'),'<b>iOS rail, light.</b> Teams selected (pill); the icon itself is the same in both states.')+
+ fig(rail(op,'dark'),'<b>iOS rail, dark.</b>')+
+ fig(tabs(op,'light'),'<b>Android tabs, light.</b> Teams selected; Personal at 60% (text and figure).')+
+ fig(tabs(op,'dark'),'<b>Android tabs, dark.</b>')+
+ fig(head(op,'light'),'<b>iOS account header, light.</b> 26 pt box, mark 22.')+
+ fig(head(op,'dark'),'<b>iOS account header, dark.</b>')+
+ '</div><div class="row">'+
+ fig(sixrow(op,'light',true),'<b>Six Claude accounts, light.</b> W · W · P · W · P · W. Real size, then 4×.')+
+ fig(sixrow(op,'dark',true),'<b>Six Claude accounts, dark.</b>')+'</div>';}
+document.getElementById('surf').innerHTML=S2;
+// cvd
+function cvdBlock(op){const one=(f,lbl)=>`<figure><p class="lbl">${lbl}</p><div style="filter:${f}">${sixrow(op,'light',false)}${strip(op,24,1,false,'light')}</div></figure>`;
+ return `<h3>${OPTS[op].t.split(' — ')[0]}</h3><div class="row">${one('none','normal vision')}${one('url(#deut)','deuteranopia')}${one('url(#prot)','protanopia')}</div>`;}
+document.getElementById('cvd').innerHTML=['B0','B2b','B3a','B3b','B4'].map(cvdBlock).join('')+
+ '<p class="cost"><b>Read-out:</b> B0 and B4 are unchanged by the filters (ink and shape carry no hue). B2b loses Claude-vs-ChatGPT separation entirely (both go ochre). B3a keeps violet-vs-teal only as "darker blue vs lighter blue"; B3b\'s ring is below what the filter leaves. The figure itself — person vs briefcase — is what tells the tag apart in every panel.</p>';
+// palette
+const P=[['Claude','--c'],['ChatGPT','--g'],['Gemini','--m'],['severity > 80','--y'],['severity > 90','--o'],['severity 100','--r'],['tag Personal (proposed)','--tp'],['tag Work (proposed)','--tw']];
+const TH=[['Blue','#1A73E8'],['Indigo','#3949AB'],['Cyan','#00ACC1'],['Teal','#00897B'],['Green','#188038'],['Amber','#B07D00'],['Deep orange','#E64A19'],['Red','#D93025'],['Pink','#D81B60'],['Purple','#8E24AA'],['Brown','#6D4C41']];
+let pal=`<div class="ph light" style="padding:10px 14px;display:flex;flex-wrap:wrap;gap:12px;font-size:12px">`;
+P.forEach(x=>pal+=`<span><i class="sw" style="background:var(${x[1]})"></i>${x[0]}</span>`);pal+='</div><div class="ph light" style="padding:10px 14px;display:flex;flex-wrap:wrap;gap:12px;font-size:12px;border-top:0">';
+TH.forEach(x=>pal+=`<span><i class="sw" style="background:${x[1]}"></i>${x[0]} theme</span>`);pal+='</div>';
+document.getElementById('pal').innerHTML=pal;
+})();
+</script>
+</body>
+</html>

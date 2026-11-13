@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Android account switcher — top tabs, bottom bar or rail? — 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--sc:#E8DEF8;--c:#D97757;--g:#10A37F;--m:#4285F4;--o:#F57C00;--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--sc:#4A4458;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--o:#FFA726;--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930}}
+.dark{--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--sc:#4A4458;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--o:#FFA726}
+.light{--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--sc:#E8DEF8;--c:#D97757;--g:#10A37F;--m:#4285F4;--o:#F57C00}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1700px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}h3{font-size:15px;margin:22px 0 6px}
+p,li{max-width:960px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:960px}.rec b{color:inherit}
+.ans{font-size:15px;font-weight:600;max-width:960px;padding:8px 12px;border-left:4px solid var(--ink)}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+figure{margin:0 0 14px}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:5px;max-width:420px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--lv);position:relative;font-family:Roboto,"Helvetica Neue",Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden;flex:none}
+.tb{height:64px;display:flex;align-items:center;padding:0 4px 0 16px;flex:none}
+.ttl{display:flex;align-items:center;gap:4px;font-size:22px;flex:1;white-space:nowrap}.ttl span{margin-left:4px}
+.acts{display:flex}.act{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+.strip{position:relative;display:flex;height:48px;border-bottom:1px solid var(--lv);flex:none;overflow:hidden}
+.tab{display:flex;align-items:center;justify-content:center;height:48px;font-size:14px;font-weight:500;white-space:nowrap;flex:none}
+.tab.off .nm{opacity:.6}.nm{margin-left:6px}
+.ind{position:absolute;bottom:0;height:3px;border-radius:3px 3px 0 0}
+.body{flex:1;display:flex;overflow:hidden}
+.card{background:var(--card);border-radius:12px;padding:16px;margin:16px 20px 0}
+.cr{display:flex;justify-content:space-between;color:var(--mute)}.cr b{color:var(--ink)}
+.bar{height:12px;border-radius:6px;background:color-mix(in srgb,var(--c) 25%,transparent);margin:8px 0;position:relative}.bar div{height:12px;border-radius:6px;background:var(--c)}.bar i{position:absolute;top:-3px;width:3px;height:18px;background:var(--ink);opacity:.5}
+.rs{font-size:12px;color:var(--mute)}
+.nb{height:80px;display:flex;align-items:center;flex:none;background:var(--card);border-top:1px solid transparent}
+.nbi{display:flex;flex-direction:column;align-items:center;gap:4px;overflow:hidden}
+.pill{width:64px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}.pill.on{background:var(--sc)}
+.nbl{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nbl.on{font-weight:700}
+.gest{height:24px;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none;border-top:1px dashed var(--lv)}.gest i{width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.6}
+.rail{width:80px;flex:none;display:flex;flex-direction:column;align-items:center;padding-top:44px;gap:12px;background:var(--bg);border-right:1px solid var(--lv);overflow:hidden}
+.rli{display:flex;flex-direction:column;align-items:center;gap:4px;height:56px}
+.rpill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}.rpill.on{background:var(--sc)}
+.rll{font-size:12px;font-weight:500;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet{background:var(--card);border-radius:28px 28px 0 0;padding:12px 0 24px;flex:none}.sheet .h{width:32px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.srow{height:56px;display:flex;align-items:center;gap:16px;padding:0 24px;font-size:16px}.srow.on{background:var(--sc)}.srow small{color:var(--mute);font-size:12px;margin-left:auto}
+.chip{display:flex;align-items:center;gap:6px;height:32px;padding:0 10px 0 8px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:500;margin-right:8px}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:960px}.cost b{color:var(--ink)}
+small.u{color:var(--anno);font-weight:600}
+ol.q li{margin-bottom:8px}
+.lbl{font-size:11px;color:var(--mute);margin:0 0 4px}
+kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+.dim{opacity:.38}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="mk-gpt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(60 12 12)"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(120 12 12)"/></g></symbol>
+<symbol id="mk-gem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.2C12.7 7.3 16.7 11.3 22.8 12C16.7 12.7 12.7 16.7 12 22.8C11.3 16.7 7.3 12.7 1.2 12C7.3 11.3 11.3 7.3 12 1.2Z"/></symbol>
+<symbol id="gf-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+<symbol id="gf-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></symbol>
+<symbol id="g-all" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="5" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="12" height="3" rx="1.5"/><rect x="3" y="16" width="15" height="3" rx="1.5"/></g></symbol>
+<symbol id="g-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/></g></symbol>
+<symbol id="g-dots" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="12" cy="6" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="18" r="1.8"/></g></symbol>
+<symbol id="g-cal" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></symbol>
+<symbol id="g-gear" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 0 1 8.4 12 3.6 3.6 0 0 1 12 8.4a3.6 3.6 0 0 1 3.6 3.6 3.6 3.6 0 0 1-3.6 3.6z"/></symbol>
+<symbol id="g-usage" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="11" width="18" height="3" rx="1.5"/><rect x="3" y="11" width="11" height="3" rx="1.5" opacity=".4"/><rect x="12" y="8" width="2" height="9" rx="1"/></g></symbol>
+<symbol id="g-down" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></symbol>
+</defs></svg>
+
+<h1>Android account switcher — top tabs, bottom bar or rail?</h1>
+<p class="lead">Design for Robin, 2026-11-13 · Fable (expertise) · answers "is it right to continue using tabs at the top on Android when iOS has the switcher in the bottom and the Duo has it in the right? Let's go as per the best design on the native platforms." Drawn at 1 dp = 1 px at 360 / 412 / 750 / 840 dp, light and dark, with 2 / 4 / 10 accounts, every account tab wearing the CCRM-118 (Header Glyphs) icon (accent mark, person / briefcase badge, name; B0 of <code>design/2026-11-13-tag-badge-styles.html</code>). Panels marked <b>light</b> / <b>dark</b> are forced. Today's code: <code>MainActivity.kt</code> ≈ 777–875 (strip + <code>HorizontalPager</code>), <code>ui/ProfileTabStrip.kt</code> (fixed ↔ scrolling by measured labels, CCBG-81 (History Tab Wrap)), <code>HistoryScreen.kt</code> 120–157 (the same strip, no All). CCRM-116 (Inner Panes), CCRM-117 (Fold Panes), CCRM-118 (Header Glyphs), CCBG-86 (Rail Marks Alike).</p>
+
+<p class="ans">Short answer: <b>yes, keep the tabs at the top on Android.</b> The accounts are peer views of one "Usage" screen, and Material 3's component for peer views is tabs — with swipe. iOS's bottom bar and the Duo's rail are iOS's native containers for the <i>same</i> role (SwiftUI's <code>TabView</code> is the only system switcher there), not a cross-platform rule. Material's bottom bar and rail are for <i>destinations</i> (Usage, History, Settings), and the app would have to turn its three screens into destinations to use them honestly.</p>
+
+<div class="rec"><b>Recommendation: T, unchanged, for v2.0 — and not a v2.0 item at all.</b> Android's strip already is the Material answer; the one visible change due is the CCRM-118 icon on its tabs, already in review. Parity with iOS is in the <i>icon</i> (same accent mark + badge on the iPhone bar, the Duo rail, the iPad sidebar and Android's strip), not in where the strip sits. A bottom navigation bar (B) fails at one or two accounts (a bar needs three destinations), overflows at six (M3 has no "More" — that is an iOS pattern), and takes 80 dp + the gesture inset from every page; it also has no swipe, which is the real reach answer on Android (a swipe anywhere on the page switches accounts; the strip need never be reached). A rail (R) on the Fold's inner screen spends 80 dp of the one screen wide enough for a good chart (the 2026-08-04 one-column decision) and collides with CCRM-117 (Fold Panes), which wants that width for Usage | Pace. The top-app-bar picker (E) hides the thing people open the app to switch. The destinations bar (D: Usage · History · Settings at the bottom, account tabs under the top bar) is the only option that is <i>more</i> Material than today; it is a restructure of three screens, after v2.0, only if the beta says the toolbar icons are hard to find. Desktop impact: none.</div>
+
+<h2>0 · The guidance, component by component</h2>
+<p>Quoted from memory — this session has no web access — so wording is <small class="u">UNVERIFIED</small>; the rules themselves are the standing M3 ones. Material 3 Expressive (May 2025) changed sizes and added variants; it did not change what each component is <i>for</i>.</p>
+<table>
+<tr><th>Component</th><th>Material 3 rule (guidance name)</th><th>What it means here</th></tr>
+<tr><td><b>Navigation bar</b> ("Navigation bar › Guidelines › Usage")</td><td>"Navigation bars offer a persistent and convenient way to switch between primary destinations"; <b>3–5 top-level destinations</b> of equal importance; "don't use for fewer than three"; destinations don't scroll and there is no overflow item (M3 dropped M2's tapered "more"). Expressive: short (64 dp) and tall (80 dp) bars, horizontal item layout in the "flexible" bar; still 3–5. <small class="u">UNVERIFIED</small> exact sizes.</td><td>One account = one destination = forbidden; two accounts + All = 3, legal; five accounts + All = 6, over the limit; ten is out of the question. A "More" destination is a custom pattern, not Material.</td></tr>
+<tr><td><b>Navigation rail</b> ("Navigation rail › Usage")</td><td>"Navigation rails provide access to primary destinations in apps when using tablet and desktop screens" — medium and expanded window classes; <b>3–7 destinations</b>; 80 dp wide (Expressive: a collapsed rail and an expanded 220 dp rail that can be modal). Whether the rail's items scroll past seven: <small class="u">UNVERIFIED</small>; the M3 Compose rail is a Column with no scroll.</td><td>The Fold 7 inner (750 dp, MEDIUM) and tablets qualify by width; the contents (accounts) do not qualify by kind, and ten accounts exceed seven.</td></tr>
+<tr><td><b>Tabs</b> ("Tabs › Usage")</td><td>"Tabs organize content across different screens, data sets, and other interactions"; "Primary tabs are placed at the top of the content pane under a top app bar; they display the main content destinations"; "Secondary tabs are used within a content area to further separate related content"; "fixed tabs display all tabs on one screen … scrollable tabs when there are more than can fit"; <b>"on mobile, swiping horizontally between tabs"</b> is a listed interaction. Expressive keeps both kinds.</td><td>The accounts are <i>data sets</i> of the same content. That is tabs by definition. The strip today is a primary tab row with a secondary indicator (the accent line) — fine; M3 says the indicator variants are stylistic.</td></tr>
+<tr><td><b>Navigation drawer</b> ("Navigation drawer › Usage")</td><td>"Five or more top-level destinations"; modal on compact and medium, standard on expanded.</td><td>Would hide the accounts behind a hamburger; the Settings Diet (CCRM-61) already rejected a drawer for the app. Not drawn.</td></tr>
+<tr><td><b>Top app bar</b> ("Top app bar › Usage")</td><td>"Up to three actions"; the trailing avatar is Google's account switcher (Gmail, Drive, Photos, YouTube, Maps: tap for an account sheet; Gmail also swipes the avatar to cycle accounts). <small class="u">UNVERIFIED</small> against today's builds, from memory.</td><td>History, Settings and ⋮ already fill the three slots. An account avatar would be a fourth, or replace ⋮.</td></tr>
+</table>
+<p class="cost"><b>What Android apps with accounts as peers do:</b> none of the ones I know put accounts in the bottom bar. Google's apps keep the destinations in the bar and the account behind the avatar (one account "in use", switching is rare). Slack keeps workspaces in a leading column on wide windows and behind the Home header on phones. X and Telegram keep accounts in the drawer. All of these treat the account as a <i>context</i> you set and forget; Cooldown is the opposite — switching accounts <i>is</i> the use ("how much is left on the one I'm about to spend"), which is why the visible strip with a swipe beats every hidden switcher. <small class="u">UNVERIFIED</small>: patterns from memory, not re-checked today.</p>
+
+<h2>1 · What the accounts are, and what History and Settings are</h2>
+<ul>
+<li><b>Accounts = peer views (data sets) of one "Usage" destination.</b> Every account page is the same screen with different numbers: same cards, same toolbar, same History, same Settings. The All tab is the Summary of the same data. Nothing about an account is a "section of the app".</li>
+<li><b>History and Settings = secondary screens</b> reached by top-app-bar actions, with system Back walking home (<code>BackHandler</code>). Material allows this: a single primary destination with secondary screens needs no navigation bar at all (Clock-style apps with a bar are the ones with several primary sections). They would become <i>destinations</i> only under option D.</li>
+<li><b>Consequence:</b> Material's container for "same content, other data set, at the top of the content pane, swipeable" is the tab row. Android already has the native answer; the question is really whether reach (thumb) justifies breaking the rule. It does not, because the swipe is the reach answer and it exists only on T.</li>
+</ul>
+
+<h2>2 · The icon used on every panel</h2>
+<p>Android 24 dp box: provider mark 20 dp at the top-left in the account accent; a 13 dp disc cleared 1.5 dp wider out of the lower right (surface colour, so it is right on the ivory Claude room and in dark); the filled person / briefcase 8 dp in ink. Unselected tab: the name at 60 %, the icon never dims (a colour at 60 % is another hue). The All tab: three bars, 20 dp, ink.</p>
+<div id="iconrow" class="row"></div>
+
+<h2>3 · T — today's top tabs, with the new icon</h2>
+<p>Fixed equal shares while every label (icon 24 + 6 + name, All included, plus the tab's 32 dp padding) fits its share; scrolling with each tab at its label (min 90 dp) once one would not. 360 dp with All + 2 is fixed; All + 4 scrolls on every phone; ten always scroll, and the strip's scroll follows the pager. Swipe anywhere on the page switches accounts — the strip is never the only control. History shows the same strip without All (drawn once, §7).</p>
+<div id="optT"></div>
+
+<h2>4 · B — a Material 3 navigation bar at the bottom</h2>
+<p>80 dp tall bar plus the gesture-navigation inset the bar extends under (24 dp drawn; 48 dp with three-button navigation). All + accounts as destinations: 3 items at two accounts, 5 at four, and at ten the two honest drawings — what Compose's <code>NavigationBar</code> does with 11 items (each 32 dp wide, labels cut) and a custom "More" destination (All + 3 + More, the rest in a sheet, iOS's pattern, not Material's). The top strip is gone; <b>the swipe is gone with it</b> (a navigation bar's destinations do not page). One account: no bar at all, as no strip today. On 750 / 840 Material says a bar is wrong — it becomes the rail (§5) — so B is drawn only at 360 / 412.</p>
+<div id="optB"></div>
+
+<h2>5 · R — a navigation rail on medium / expanded widths (T on compact)</h2>
+<p>80 dp rail at the leading edge (Material puts it left; the Duo's iOS rail is at the trailing edge — a difference Robin would see when he folds either phone), full height, items 56 dp with 12 dp between: All + accounts. Content column loses 80 dp: the Fold inner's chart goes from ≈ 678 to ≈ 598 dp; on a 840 dp window the 760 dp column still fits beside it. At ten accounts the eleven items need ≈ 740 dp of height: fine on the Fold inner (832), <b>not on a landscape tablet</b> (≈ 600) — the Compose rail does not scroll (<small class="u">UNVERIFIED</small> whether Expressive's does). Swipe between accounts stays if the pager stays, but a rail selection and a pager page are then two models of one state. Compact widths keep T.</p>
+<div id="optR"></div>
+
+<h2>6 · E — an account picker in the top app bar (All as the home)</h2>
+<p>Google's pattern: the selected account's icon sits as the trailing "avatar"; tap opens a bottom sheet (All, then every account with its Weekly figure); the page is All by default. The strip and the swipe are gone; every switch is two taps; the account in view is said only by the 24 dp icon in the corner. Drawn at 412 dp, sheet open, four and ten accounts. It solves reach and ten accounts at once, and it hides the one thing the app is for.</p>
+<div id="optE"></div>
+
+<h2>7 · D — the destinations bar: Usage · History · Settings at the bottom, account tabs on top</h2>
+<p>The only option that makes the app <i>more</i> Material than today: three real destinations in a navigation bar, and the account tabs (secondary tabs, swipeable) under the top bar on Usage and on History — the same strip as today. Settings keeps its four tabs. Reach improves for History and Settings (today two 48 dp icons at the top right), not for accounts. Costs a back-stack and deep-link rework, the toolbar's redesign, every screenshot and the surfaces file. Drawn at 412 and 750, four accounts; and History's strip (no All) as it is today and as it would stay.</p>
+<div id="optD"></div>
+
+<h2>8 · Side by side</h2>
+<table>
+<tr><th></th><th>T today + icon</th><th>B bottom bar</th><th>R rail (+ T compact)</th><th>E top-bar picker</th><th>D destinations bar</th></tr>
+<tr><td>Swipe between accounts</td><td><b>kept</b></td><td>lost (bar items don't page)</td><td>kept on compact; on the rail a second model of the same state</td><td>lost</td><td><b>kept</b></td></tr>
+<tr><td>Reach (thumb, 412 dp)</td><td>strip at 64–112 dp from the top: a stretch; <b>the swipe needs no reach</b></td><td>bar in the thumb zone</td><td>as T on phones</td><td>top-right corner, worst spot, then a sheet in reach</td><td>destinations in reach, accounts as T</td></tr>
+<tr><td>All / Summary</td><td>first tab</td><td>first destination</td><td>first rail item</td><td>the home page; a sheet row</td><td>first tab of Usage</td></tr>
+<tr><td>History's strip</td><td>same strip, no All</td><td>a second bar on History? or the strip returns there — two switchers</td><td>the rail stays on History</td><td>the picker stays in History's bar</td><td>same strip, no All</td></tr>
+<tr><td>1 / 2 / 6+ accounts</td><td>no strip / fixed / scrolls</td><td>no bar / 3 items / <b>over M3's five</b>; "More" is custom</td><td>no rail / 3 / over seven at 7+, no scroll on a short window</td><td>no change</td><td>bar always 3; accounts as T</td></tr>
+<tr><td>Edge-to-edge, gesture insets</td><td>none to handle</td><td>bar draws under the 24 / 48 dp inset; page loses 80 dp + inset</td><td>rail under the status bar; page loses 80 dp of width</td><td>none</td><td>as B's bar, with 3 items</td></tr>
+<tr><td>TalkBack</td><td>"Teams, Work account, tab 2 of 5, selected"</td><td>same role (tab), bottom; "More" announces a button then a list</td><td>same role; reading order rail first</td><td>"Account, Teams, button" then a list of options</td><td>bar: "Usage, tab 1 of 3"; accounts as T</td></tr>
+<tr><td>Cost in v2.0</td><td><b>0</b> beyond CCRM-118 (the icon)</td><td>2–3 sessions: bar, More sheet, strip and pager removal, History, insets, tests, docs</td><td>1–2 sessions + a conflict with CCRM-117</td><td>1 session + the loss</td><td>3+ sessions: three screens, back stack, deep links, toolbar, screenshots</td></tr>
+<tr><td>Parity with iOS</td><td>same icon, same order, same All first; placement differs by platform — <b>that is "native"</b></td><td>same placement on iPhone; Android would copy an iOS overflow pattern</td><td>same placement on the Duo only; opposite edge</td><td>no counterpart on iOS</td><td>no counterpart on iOS</td></tr>
+</table>
+
+<h2>9 · Questions for Robin — one decision each, my answer first</h2>
+<ol class="q">
+<li><b>Keep the account tabs at the top on Android?</b> <b>Yes.</b> They are the Material 3 component for peer data sets, and they are the only option that keeps the swipe. The CCRM-118 icon lands on them; nothing else changes.</li>
+<li><b>Is this a v2.0 change?</b> <b>No — no change at all in v2.0.</b> If any of B / R / D is wanted later it is a new CCRM (allocated from the highest number in ROADMAP.md), after v2.0, wireframe first under CLAUDE.md §2; this page is the research, not the wireframe.</li>
+<li><b>Should History and Settings become bottom destinations (D) after v2.0?</b> <b>Not unless the beta says so.</b> File it only if testers report not finding History or Settings; reach for <i>accounts</i> is solved by the swipe already.</li>
+<li><b>A rail on the Fold 7 inner screen?</b> <b>No.</b> That width goes to Usage | Pace panes (CCRM-117 (Fold Panes)), and a rail of accounts is a rail of data sets, not destinations.</li>
+<li><b>Keep the swipe between accounts on Android even though iOS lost it on 2026-11-02?</b> <b>Yes.</b> iOS lost it as the price of the system <code>TabView</code>; Android's system component for this role keeps it. Losing it for symmetry would make Android worse to match a constraint Android does not have.</li>
+</ol>
+<p class="cost"><b>Desktop impact:</b> none — the desktop's switcher is its own surface and nothing here touches <code>spec/core</code>; the shared part is the CCRM-118 icon, which the desktop session sees with the frozen pages (Robin 2026-11-11).</p>
+
+<h2>10 · UNVERIFIED, in one place</h2>
+<ul>
+<li>M3 sentence wording and the Expressive sizes (no web access this session); the rules cited are the long-standing ones.</li>
+<li>Whether an M3 Expressive rail scrolls past its items; the Compose <code>NavigationRail</code> does not.</li>
+<li>The account-switcher patterns of Gmail, Drive, Slack, X, Telegram — from memory, not re-checked today.</li>
+<li>Label widths here are estimated (14 sp medium ≈ 7.4 px per character); the fixed ↔ scroll point on a real device follows the measured text, so "All + 4 scrolls at 412" could be fixed with shorter names.</li>
+</ul>
+
+<script>
+const ACC=[['Teams','c','W'],['Personal','c','P'],['ChatGPT','g','P'],['Lab','c','W'],['Atlas','c','P'],['Gemini','m','W'],['Ops','g','W'],['Research','c','P'],['Client','g','W'],['Consulting','m','P']];
+const COL={c:'var(--c)',g:'var(--g)',m:'var(--m)'},MK={c:'mk-claude',g:'mk-gpt',m:'mk-gem'};
+const tw=s=>s.length*7.4;
+function icon(a,box=24){return `<svg width="${box}" height="${box}" viewBox="0 0 24 24" style="flex:none"><use href="#${MK[a[1]]}" width="20" height="20" color="${COL[a[1]]}"/><circle cx="17.5" cy="17.5" r="8" fill="var(--bg)"/><use href="#${a[2]=='W'?'gf-work':'gf-person'}" x="13.5" y="13.5" width="8" height="8" color="var(--ink)"/></svg>`}
+function g(id,sz=24,c='var(--ink)'){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" style="flex:none;color:${c}"><use href="#${id}"/></svg>`}
+const marks=`<svg width="20" height="20" viewBox="0 0 24 24" style="color:var(--c)"><use href="#mk-claude"/></svg><svg width="20" height="20" viewBox="0 0 24 24" style="color:var(--g)"><use href="#mk-gpt"/></svg><svg width="20" height="20" viewBox="0 0 24 24" style="color:var(--m)"><use href="#mk-gem"/></svg>`;
+function topbar(w,acts,title=marks+'<span>Cooldown</span>'){acts=acts||[g('g-cal'),g('g-gear'),g('g-dots')];return `<div class="tb" style="width:${w}px"><div class="ttl">${title}</div><div class="acts">${acts.map(a=>`<div class="act">${a}</div>`).join('')}</div></div>`}
+function strip(w,accs,all,sel){const items=(all?[null]:[]).concat(accs);const labels=items.map(a=>a?30+tw(a[0]):26+tw('All'));const scroll=labels.some(l=>l+32>w/items.length);const widths=scroll?labels.map(l=>Math.max(90,l+32)):items.map(()=>w/items.length);let x=0,ix=0,iw=0,h='';items.forEach((a,i)=>{const on=i==sel;if(on){ix=x;iw=widths[i]}h+=`<div class="tab${on?'':' off'}" style="width:${widths[i]}px">${a?icon(a):g('g-all',20)}<span class="nm">${a?a[0]:'All'}</span></div>`;x+=widths[i]});const selA=items[sel];return `<div class="strip" style="width:${w}px"><div style="display:flex;position:absolute;left:0;top:0">${h}</div><div class="ind" style="left:${ix}px;width:${iw}px;background:${selA?COL[selA[1]]:'var(--ink)'}"></div><div class="lbl" style="position:absolute;right:6px;top:-14px">${scroll?'scrolls':'fixed'}</div></div>`}
+function card(w){return `<div class="card" style="width:${w-40}px"><div class="cr"><span>5-hour window</span><b>62%</b></div><div class="bar"><div style="width:62%"></div><i style="left:48%"></i></div><div class="rs">Resets in 2h 41m · 14% above pace</div></div>`}
+function navbar(w,items,sel){const n=items.length,share=w/n;return `<div class="nb" style="width:${w}px">${items.map((it,i)=>`<div class="nbi" style="width:${share}px"><div class="pill${i==sel?' on':''}" style="width:${Math.min(64,share)}px">${it[0]}</div><span class="nbl${i==sel?' on':''}" style="max-width:${share-4}px">${it[1]}</span></div>`).join('')}</div><div class="gest" style="width:${w}px"><i></i></div>`}
+function rail(items,sel){return `<div class="rail">${items.map((it,i)=>`<div class="rli"><div class="rpill${i==sel?' on':''}">${it[0]}</div><span class="rll">${it[1]}</span></div>`).join('')}</div>`}
+function frame(w,h,scheme,p){return `<div class="ph ${scheme}" style="width:${w}px;height:${h}px">${p.rail?`<div class="body">${p.rail}<div style="flex:1;display:flex;flex-direction:column;min-width:0">${p.top}${p.strip||''}<div style="flex:1;overflow:hidden">${p.body}</div></div></div>`:`${p.top}${p.strip||''}<div style="flex:1;overflow:hidden">${p.body}</div>${p.bottom||''}`}</div>`}
+function fig(html,cap){return `<figure><div class="lbl">${cap.split('|')[0]}</div>${html}<figcaption>${cap.split('|')[1]||''}</figcaption></figure>`}
+const items=(accs,all)=>(all?[[g('g-all'),'All']]:[]).concat(accs.map(a=>[icon(a),a[0]]));
+const W=[360,412,750,840],N=[2,4,10],S=['light','dark'];
+
+// icon row
+document.getElementById('iconrow').innerHTML=S.map(s=>`<div class="ph ${s}" style="padding:12px;flex-direction:row;gap:14px;align-items:center">${g('g-all',20)}${ACC.slice(0,6).map(a=>icon(a)).join('')}<span style="width:12px"></span>${ACC.slice(0,6).map(a=>`<svg width="96" height="96" viewBox="0 0 24 24">${icon(a).replace(/<svg[^>]*>|<\/svg>/g,'')}</svg>`).join('')}<div class="lbl">${s}</div></div>`).join('');
+
+// T
+let h='';W.forEach(w=>{N.forEach(n=>{h+='<div class="row">';S.forEach(s=>{const accs=ACC.slice(0,n);h+=fig(frame(w,300,s,{top:topbar(w),strip:strip(w,accs,true,1),body:card(w)}),`T · ${w} dp · All + ${n} · ${s}|${w<600?'COMPACT':w<840?'MEDIUM (Fold 7 inner)':'EXPANDED'}; swipe pages the accounts; the strip follows.`)});h+='</div>'})});document.getElementById('optT').innerHTML=h;
+
+// B
+h='';[360,412].forEach(w=>{N.forEach(n=>{h+='<div class="row">';S.forEach(s=>{const accs=ACC.slice(0,n);if(n<10){h+=fig(frame(w,360,s,{top:topbar(w),body:card(w),bottom:navbar(w,items(accs,true),1)}),`B · ${w} dp · All + ${n} · ${s}|${n+1} destinations${n+1>5?' — over five':''}; no swipe; page loses 104 dp.`)}else{h+=fig(frame(w,360,s,{top:topbar(w),body:card(w),bottom:navbar(w,items(accs,true),1)}),`B · ${w} dp · All + 10 as Compose draws it · ${s}|Eleven items at ${Math.round(w/11)} dp each: every label clipped — what NavigationBar does with no overflow.`);h+=fig(frame(w,360,s,{top:topbar(w),body:card(w),bottom:navbar(w,items(accs.slice(0,3),true).concat([[g('g-more'),'More']]),1)}),`B · ${w} dp · All + 3 + More · ${s}|Custom "More" (iOS's pattern): seven accounts behind a sheet, two taps each.`)}});h+='</div>'})});document.getElementById('optB').innerHTML=h;
+
+// R
+h='';[750,840].forEach(w=>{N.forEach(n=>{h+='<div class="row">';S.forEach(s=>{const accs=ACC.slice(0,n);const hh=w==750?420:300;h+=fig(frame(w,hh,s,{rail:rail(items(accs,true),1),top:topbar(w-80),body:card(w-80)}),`R · ${w} dp · All + ${n} · ${s}|${n+1} rail items ≈ ${(n+1)*68} dp tall${(n+1)*68>hh?' — clipped: the rail does not scroll':''}; column ${w-80} dp.`)});h+='</div>'})});document.getElementById('optR').innerHTML=h;
+
+// E
+h='';[4,10].forEach(n=>{h+='<div class="row">';S.forEach(s=>{const accs=ACC.slice(0,n);const rows=[[g('g-all'),'All','']].concat(accs.map(a=>[icon(a),a[0],['52%','18%','74%','9%','31%','0%','66%','12%','44%','27%'][ACC.indexOf(a)]]));const sheet=`<div class="sheet"><div class="h"></div>${rows.slice(0,6).map((r,i)=>`<div class="srow${i==1?' on':''}">${r[0]}<span>${r[1]}</span><small>${r[2]}</small></div>`).join('')}${rows.length>6?`<div class="srow" style="color:var(--mute);height:40px;font-size:13px">… ${rows.length-6} more, scrolls</div>`:''}</div>`;h+=fig(frame(412,520,s,{top:topbar(412,[g('g-cal'),g('g-gear'),icon(accs[0])]),body:`<div class="dim">${card(412)}</div>`,bottom:sheet}),`E · 412 dp · ${n} accounts, sheet open · ${s}|The trailing icon is the switcher (replaces ⋮, which moves into the sheet or the overflow); page dimmed under a modal sheet.`)});h+='</div>'});document.getElementById('optE').innerHTML=h;
+
+// D
+h='';[412,750].forEach(w=>{h+='<div class="row">';S.forEach(s=>{const accs=ACC.slice(0,4);h+=fig(frame(w,360,s,{top:topbar(w,[g('g-dots')]),strip:strip(w,accs,true,1),body:card(w),bottom:navbar(w,[[g('g-usage'),'Usage'],[g('g-cal'),'History'],[g('g-gear'),'Settings']],0)}),`D · ${w} dp · Usage · All + 4 · ${s}|Three destinations at the bottom; accounts stay secondary tabs with swipe; the top bar keeps only ⋮.`)});h+='</div>'});h+='<div class="row">';S.forEach(s=>{h+=fig(frame(412,170,s,{top:topbar(412,[],'<span style="font-size:22px">Usage history</span>'),strip:strip(412,ACC.slice(0,4),false,0),body:'<div style="padding:12px 20px;display:flex"><span class="chip">5-hour</span><span class="chip" style="opacity:.6">7-day</span></div>'}),`History's strip · 412 dp · 4 accounts, no All · ${s}|Unchanged under T and D; under B it would need a second bar or keep this strip (two switchers in one app).`)});h+='</div>';document.getElementById('optD').innerHTML=h;
+</script>
+</body>
+</html>

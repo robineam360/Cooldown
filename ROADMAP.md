@@ -2082,9 +2082,9 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   build. The account-header glyph of CCRM-116 goes to Android through CCRM-118 (Header Glyphs), not here.
 
 ### CCRM-118 · Header Glyphs — the Summary header and Android's account tabs speak in glyphs
-- **Status:** **Wireframes in review** (Robin, 2026-11-13, question by question) · iOS and Android · **v2.0**, built
-  after CCRM-116 (Inner Panes) lands · desktop session to see the frozen pages before the build (tag display, Robin
-  2026-11-11)
+- **Status:** **Wireframe approved 2026-11-13** (`design/2026-11-13-ccrm118-header-glyphs.html`, Robin, question by
+  question) · iOS and Android · **v2.0** · next: the frozen page to the desktop session (tag display, Robin
+  2026-11-11), then the build
 - **Why:** Robin, 2026-11-13: the Summary's "Work" segment read as greyed out (none of his accounts is tagged Work, so the
   empty group is dimmed by design), and glyphs read better than words; Android has no account header for CCRM-116's
   tag glyph.
@@ -2093,9 +2093,18 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   the closed sort button is always the current order's glyph (drag handle · ring 20 % · timer · ring 85 %), the words
   only in the menu, custom glyphs on both platforms; Android's account tabs (History's strip too) show the badged mark
   (provider mark in the accent with a person / briefcase badge, as iOS's rail) + the name.
-- **Open:** the badge's style (ring, colour per tag or not — Robin asked for options; the standing rule says the tag is
-  ink, never a colour), whether iOS's header and History strip take the badge too. Pages:
-  `design/2026-11-13-tag-glyph-android-and-filter.html`, `design/2026-11-13-summary-header-glyphs.html`.
+- **Decided 2026-11-13 (after the pages above):** one account icon on every account tab — the provider mark in the
+  account's accent with the person / briefcase badge as built on the Duo rail (B0; the tag stays never a colour) — on
+  the iPhone tab bar and More list, the iPad sidebar, the Duo rails and tall bar, Android's main and History strips,
+  iOS's History strip and account header; iPad portrait's top bar stays names only. The spike passed: the iPhone 17e
+  tab bar and the iPad sidebar keep the icon's colour, light and dark (`design/research/2026-11-13-ccrm118/`). A new
+  Appearance setting "Tag marks" (after Summary order, two or more accounts) turns the Personal and Work marks on or off,
+  both on by default, everywhere the tag shows as a mark (tab icons, Summary rows, the iOS header, the snapshot), not
+  the Settings chip or the filter; a hidden mark leaves a blank slot in a mixed list and a plain mark stays top-left.
+  Android keeps its account tabs at the top with swipe (`design/2026-11-13-android-account-switcher.html`, Fable's
+  review against Material 3); any Usage · History · Settings bottom bar is a later item, only if beta testers ask.
+  Pages: `design/2026-11-13-tag-glyph-android-and-filter.html`, `-summary-header-glyphs.html`,
+  `-tag-badge-styles.html`, `-tab-icon-tag-dot.html`, `-ccrm118-header-glyphs.html` (the one to build).
 
 ## Next — small, high value, ready to build
 
