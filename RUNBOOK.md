@@ -237,7 +237,7 @@ clients back at `cases.json`.
 | Step | What | Who | Gated on | Status |
 |---|---|---|---|---|
 | 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
-| 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ◐ Fold 7 half 2026-11-12; iPad half and the iOS fixes in the iOS bug-fix session |
+| 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☑ 2026-11-13 (Fold 7 and iPad halves; open: TalkBack on the Tag marks note, VoiceOver on the filter, see the Log) |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
@@ -1166,9 +1166,9 @@ close out and land.
 phone disconnects; the v2.0 candidate stays installed on purpose, and the Log says so per device.
 
 **Done when:**
-- ☐ Every check above is ticked, or marked not reachable with the reason.
-- ☐ Robin has said which defects block; each blocking one is fixed, judged and rechecked on the device.
-- ☐ *Always after* done and logged. Landed.
+- ☑ Every check above is ticked, or marked not reachable with the reason.
+- ☑ Robin has said which defects block; each blocking one is fixed, judged and rechecked on the device.
+- ☑ *Always after* done and logged. Landed.
 
 **Reversal:** the device: *Always after* against the recorded state. The fixes: `git revert`.
 
@@ -1301,6 +1301,13 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
   - **Always after:** every setting identical to the start (the Settings screens diffed before and after: Vs pace, Tag
     marks both on, Live Activity on…); Split View closed; the iPad unlocked and at Cooldown. No setting of the iPad was
     changed outside Cooldown. The CCBG-102 candidate stays installed on purpose.
+
+- **2026-11-13 · Step 3 closed** (Fold 7 session; iPad half landed by its own session at e7eb79b). Defects filed and fixed
+  in this pass: CCBG-100 (Picker Number Clip), CCBG-101 (Filter Glyph Low Centre), CCBG-102 (Number Footer Cut); no
+  defect is open in code. **Two assistive-technology checks were not done, carried to the release pass:** TalkBack on the
+  Tag marks note (Robin skipped it on the Fold 7) and VoiceOver on the Summary filter (the iPad half read the
+  accessibility tree, not the speech). The iPhone Duo items and the iPhone More list are not reachable (no Duo; an iPad
+  has no More list).
 
 ---
 
