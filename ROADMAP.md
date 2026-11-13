@@ -3575,6 +3575,17 @@ keys) would still make this a different product. Not filed, not an open question
 
 ## Needs design — decide the shape before building
 
+### CCRM-119 · Share Tint — a model cap drawn inside the Weekly bar instead of its own row
+- **Status:** **Parked, after v2.0** (Robin 2026-11-13) · mobile (iOS and Android); Desktop told once the design is
+  frozen · first wireframe by Fable (high): `design/2026-11-13-model-share-tint.html`, decisions D1–D8 open
+- **Why:** Robin, 2026-11-13: Claude's Settings › Usage draws Fable's use inside "Weekly limit · All models" as a lighter
+  leading segment (Fable 55% of a cap that is "up to 50% of your weekly limit" → about 27.5% of the bar), so the separate
+  Fable row could go. An option off the existing "Show model limits" switch; the row's pace line, projection and readout
+  are knowingly lost when it is on.
+- **Open (D1, Robin):** the share is in no payload, and it is **not one constant**: it has to be known per cap. Fable is
+  50% of the Weekly limit; a cap such as Argon that is its own limit, not part of the Weekly usage, cannot be combined at
+  all. Work out where each cap's share (or "not nested") comes from before any other decision on the page.
+
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
 - **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Crash now → the system recorded APP CRASH (EXCEPTION) → the card on relaunch → the shared text carries no token, email or message; backing out keeps the card, picking an app ends it, Not now keeps it gone across a restart. **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
   Wireframe rev B approved by Robin 2026-09-30 (`design/2026-09-28-v19-play-ready.mockup.html` §1 and
