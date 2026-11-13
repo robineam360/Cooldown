@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -267,9 +268,11 @@ fun SummaryFilterControl(
             ) {
                 val weight = if (on) FontWeight.SemiBold else FontWeight.Normal
                 if (f.tag == null) {
-                    Text(f.label, fontSize = 12.sp, fontWeight = weight, maxLines = 1, softWrap = false, modifier = Modifier.padding(vertical = 4.dp))
+                    Text(f.label, fontSize = 12.sp, fontWeight = weight, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 4.dp, bottom = 4.dp).offset(y = 1.dp))
                 } else {
-                    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    // The glyph and count sat about 1.5 dp above the bar's middle (the 24 dp glyph box and the text line
+                    // both carry their air below); 1.5 dp down centres them on the 28 dp bar.
+                    Row(Modifier.padding(vertical = 4.dp).offset(y = 1.5.dp), verticalAlignment = Alignment.CenterVertically) {
                         TagGlyph(f.tag, (16f * fontScale).dp, ink)
                         Spacer(Modifier.width(4.dp))
                         Text(

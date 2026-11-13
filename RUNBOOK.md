@@ -1250,6 +1250,7 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
   - **Filed and fixed:** CCBG-100 (Picker Number Clip): the Number 4×1 picker preview clipped its "Resets …" line;
     preview padding 8 → 4 dp and figure 32 → 28 sp, rechecked in the One UI picker (this restores the preview's own
     intent, the whole face; the placed widget is unchanged).
+  - **Filed and fixed after the log above (Robin, on the device):** CCBG-101 (Filter Glyph Low Centre): the Summary filter's glyph and count sat about 1.5 dp above the bar's middle; moved down, rechecked on the Fold 7 cover.
   - **Always after:** screen timeout back to 600000 ms by adb; dark, font 1.0, density 420, Theme per provider, both Tag
     marks on; widgets untouched. The fcc8bfd + CCBG-100 candidate stays installed on purpose.
 

@@ -28,6 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+### CCBG-101 · Filter Glyph Low Centre — the Summary filter's person / briefcase glyph and count sit about 1.5 dp above the bar's middle
+- **Status:** **Fixed in code** (2026-11-13; rechecked on the Fold 7 cover the same day) · Android · **blocked v2.0** (Robin 2026-11-13, seen on the Fold 7) · restores CCRM-118 (Header Glyphs)'s approved layout (glyph and count centred in the 28 dp bar): the glyph and count row, and "All", move down 1.5 / 1 dp in `SummaryFilterControl` · **iOS: not checked** (the iPad session looks at its own filter)
+- **Severity:** Low
+- **Symptom:** the glyph and its count read slightly high in the segmented bar.
+- **Where:** `AccountTags.kt` `SummaryFilterControl`.
+
 ### CCBG-100 · Picker Number Clip — the Number 4×1 widget-picker preview cuts its "Resets …" line in half
 - **Status:** **Fixed in code** (RUNBOOK Step 3, 2026-11-13; rechecked on the Fold 7 inner screen's One UI picker the same day) · Android · **blocked v2.0** (Robin 2026-11-12: every defect blocks) · found rechecking CCBG-96 (Picker Preview Truncation) · the preview's own padding 8 → 4 dp and its figure 32 → 28 sp, so the whole face (name, figure, bar, reset line, stamp) fits One UI's 4×1 slot; the placed widget is untouched (it draws through `WidgetFace.render`) · **iOS: not affected** (its previews are SwiftUI snapshots)
 - **Severity:** Low
