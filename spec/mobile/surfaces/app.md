@@ -61,7 +61,7 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 
 | Class | Android | iPhone | iPad |
 |---|---|---|---|
-| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar ("All accounts" plus one row per account) and the Summary or only the tapped account, full width. Portrait or Split View ≥ 700 pt: the phone's model, tabs for All and every account, one page at a time. Narrower than 700 pt: the iPhone layout. No pinned account since 2026-11-02 (Robin) |
+| Width classes | COMPACT < 600 dp, MEDIUM 600–840, EXPANDED ≥ 840 (`A/ui/Adaptive.kt:ProvideWidthClass`). Fold cover ≈ 411 dp, inner ≈ 750 dp (MEDIUM) | one account per screen, swipe between accounts | landscape ≥ 1000 pt wide: sidebar ("All accounts" plus one row per account) and the Summary or only the tapped account, full width. Since CCRM-116 (Inner Panes): any regular width (iPad either way, the iPhone Duo's inner screen) is two panes, Usage | Pace, by aspect ("Inner panes" at the end of this file); compact (iPhone, the Duo's cover, narrow Split View): the iPhone layout. No pinned account since 2026-11-02 (Robin) |
 | Cards per account | one column at every width; the 7-day card runs two stacks side by side when the card has a model cap and the window is ≥ 700 dp (`hasTwoColumns`) | one column; 7-day card pairs All with the first cap side by side | `twoAcross`: the account's windows sit side by side in a row |
 | Chart width | cover ≈ 339 dp (411 − 40 − 32); inner ≈ 678 dp (750 − 40 − 32), or ≈ 331 dp per stack in the two-stack 7-day card | card width, Large height keyed to it | card width 356 (portrait) or 396 (landscape) |
 
@@ -78,7 +78,7 @@ Differs from the Android frame: iOS puts Refresh, Add account and Layout in one 
 
 iPad sidebar (landscape, 300 pt wide): large title 30 pt, a segmented "5h" / "Weekly" switch (remembered), one row per account (mark 22 pt, name 16 pt, plan chip 11 pt, 5 pt-high bar with pace tick, right-aligned percent in the severity colour), selected row tinted with the account accent at 18%, the Footer at the bottom. A plan with no 5-hour window always shows Weekly and labels the percentage "Weekly". Approved by `design/2026-10-24-ios-sidebar-window.html`; the pin glyph, the "Touch and hold an account to pin it to the top." note and the "Pin to the top" menu are gone since 2026-11-02 (Robin: no pinned account), and the shape grammar rows below supersede the switch.
 
-iPad account page header (21 pt bold name, mark 22 pt, plan chip 12 pt, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). Since 2026-11-02 the iPad shows one account at a time, full width, or the Summary — no pinned half, no "Pinned" label, no divider.
+iPad / inner-screen account page header (CCRM-116: the person / briefcase first, SF Symbol 15 pt in an 18 pt box, `sub` ink, 4 pt before the mark, hidden from VoiceOver, which reads the name as "Lab, Work account"; 21 pt bold name, mark 22 pt, plan chip 12 pt, credits text right-aligned: "Usage credits $12.00 / $40.00 · 30%" or "Credits $4.20 balance"). Since 2026-11-02 the iPad shows one account at a time, full width, or the Summary — no pinned half, no "Pinned" label, no divider.
 
 ### 2.4 Cards, in order
 
@@ -397,7 +397,7 @@ Android, top to bottom: account tab strip (only with two or more accounts; same 
 
 iOS: account tabs (same control), a segmented "5-hour" / "7-day" picker (200 pt wide) always shown, one card per week with chevron arrows ("Earlier week" / "Later week"), title ("This week", "Last week", or a range), range line, "<n> sessions" or "<n> weeks" plus " · <m> maxed out", bar rows (label column 104 pt with the clock-and-weekday start time, an 11 pt bar, 44 pt peak; peak red at 100%), the footnote "… Peak 5h readings are sampled when the app checks." ("weekly" on the 7-day pane; CCBG-53 (History Footnote) fixed on iOS), empty text "No closed windows yet." iOS has no side-by-side layout and no Plan Fit block.
 
-**iOS, from 2026-11-05 (parity wireframes rev B §4):** the Plan Fit block (the Android rules and copy, ported with its tests; no plan-change or model-cap wording yet because iOS history records carry no plan or model tag, so the header plan is the live one and the cap reads "the cap") sits above the 7-day week card for every account except a plan-refused one, new accounts included ("First week in progress." / "The reading starts after four weeks."); the header drops its "LAST 8 WEEKS" token on the single-column layout (every iPhone). From 600 pt wide (iPad, wide Split View) the picker goes and the two panes sit side by side — headings "5-hour windows" / "7-day windows" in the account accent, 16 pt gutter, Plan Fit on top of the right column, content at most 1100 pt, one footnote ("… Peak 5h and weekly readings are sampled when the app checks."). A plan with no 5-hour window shows the 7-day pane alone at any width, with no picker.
+**iOS, from 2026-11-05 (parity wireframes rev B §4):** the Plan Fit block (the Android rules and copy, ported with its tests; no plan-change or model-cap wording yet because iOS history records carry no plan or model tag, so the header plan is the live one and the cap reads "the cap") sits above the 7-day week card for every account except a plan-refused one, new accounts included ("First week in progress." / "The reading starts after four weeks."); the header drops its "LAST 8 WEEKS" token on the single-column layout (every iPhone). On a regular width (iPad, the iPhone Duo's inner screen, a wide Split View — CCRM-116 (Inner Panes) replaced the 600 pt rule, so History never disagrees with the page, CCBG-90 (Inner Portrait Stretch)) the picker goes and the two kinds are two panes by the main page's rule (`PaneGeometry`): wider than tall side by side, taller than wide 5-hour on top and 7-day below (the inline title "Usage history" beside the back button), the divider on the fold when half open — headings "5-hour windows" / "7-day windows" in the account accent, Plan Fit on top of the 7-day pane, each pane scrolling on its own, the account strip above the panes at the column's width, one footnote ("… Peak 5h and weekly readings are sampled when the app checks.") closing the 7-day pane. A plan with no 5-hour window shows the 7-day pane alone (flat: the even split's size, centred; half open: the first pane, never across the fold), with no picker.
 
 Known defect on Android only (CCBG-53 (History Footnote)): both footnotes contain a literal "%s" that renders as typed (the string is never formatted). Fixed on iOS 2026-11-04; fix Android in code, then here.
 
@@ -1019,8 +1019,15 @@ sections, and the "Summary and one account at a time" layout, whose selection ru
   then one tab per account in `model.accounts` order (Settings › Account order). Each account tab shows the provider
   mark and the account label.
   - **Tab icon:** the provider mark's asset (`ClaudeMark` / `ChatGPTMark` / `GeminiMark`, 24 × 24 template SVGs) via
-    `Tab(_:image:value:)`. The system draws it in its own tint (selected or unselected), **not the account accent**.
-    Claude's 82 % optical scale from `ProviderMark` doesn't apply there.
+    `Tab(value:content:label:)`. The system draws it in its own tint (selected or unselected), **not the account accent**.
+    Claude's 82 % optical scale from `ProviderMark` doesn't apply there. **Exception, CCBG-86 (Rail Marks Alike), B + C
+    (2026-11-13):** where iOS 27 draws its icon-only rail — the iPhone Duo folded (cover) and its inner screen held wide
+    (Robin 2026-11-13: the cover too) — each account's icon is `RailIcon`: a 25 pt original-rendering image, the mark
+    (21 pt) in the account's accent with a 13 pt disc knocked out at its lower right holding the filled person /
+    briefcase (9 pt, ink), redrawn with the accent, tag and scheme. Detected by the window's trailing safe-area inset
+    (the rail's 84 pt column, ≥ 40 pt) on an iPhone-idiom device; plain iPhones, the Duo held tall (labelled bottom
+    bar) and iPad keep the template marks. The spike on the Duo simulator showed the rail keeps the colour, light and
+    dark (`design/research/2026-11-13-ccrm116/spike-*.jpg`).
   - **Sidebar rows** show the mark and name only. The per-row 5h ring, Weekly bar, Weekly figure and plan chip are
     gone (Robin accepted this). The "All accounts" row is now titled **All**, with no account count.
 - **Selection:** `AppModel.selectedKey` (`AppModel.summaryKey` for All). The rule stays the pure helper
@@ -1031,17 +1038,17 @@ sections, and the "Summary and one account at a time" layout, whose selection ru
 - **Each tab has its own `NavigationStack`** with today's toolbar (History, Settings, the ⋯ menu: Refresh, Layout,
   Share card, Add account). History is pushed on the tab it was opened from. `-screen history` opens it on whichever
   tab is selected.
-- **Page content (`TabPage`):**
-  - **Regular width ≥ 700 pt (iPad):** an account is the full-width page, `AccountHeader` over
-    `AccountCards(twoAcross: true, cardWidth: max(396, width − 40))`, 20 pt side margins. The Summary is
-    `SummaryView(wide:)` from 900 pt.
-  - **Narrower (iPhone, narrow Split View):** the phone page, `AccountCards` with 16 pt margins.
-  - Every page has `.refreshable` and the `Footer` at the end.
+- **Page content (`TabPage`)** — since CCRM-116 (Inner Panes), 2026-11-13; see "Inner panes" below:
+  - **Regular width (iPad, the iPhone Duo's inner screen, a wide Split View):** two panes, Usage and Pace, by
+    `PaneGeometry` — no pt breakpoints (the 700 / 900 pt rules are gone).
+  - **Compact width (iPhone, the Duo's cover, a narrow Split View):** the phone page, `AccountCards` with 16 pt
+    margins, unchanged.
+  - Every page has `.refreshable` and the `Footer` at the end of its Usage side.
   - **App title** (`AppTitle`, 34 pt) tops every page, except in iPad landscape (regular, wider than tall,
     ≥ 1000 pt). There the sidebar header carries it (`tabViewSidebarHeader`, 30 pt) and the Summary page is headed
     "All accounts" (30 pt bold), as before.
-- **Unchanged:** the empty state (`EmptyStateView`, in its own stack, no tabs), the sign-in and other sheets, and the
-  one-account case (no All tab, so one tab).
+- **Unchanged:** the sign-in and other sheets, and the one-account case (no All tab, so one tab). The empty state
+  (`EmptyStateView`, in its own stack, no tabs) splits into two groups on a regular width (below).
 - **Removed:** `PhoneMain`, `IPadTabs`, `IPadLandscape` (the custom sidebar, its rows and the All row).
   `AccountTabs` **stays**: History's account picker (`SettingsHistory.swift`) still uses it.
 
@@ -1085,3 +1092,43 @@ read by `PrintedFormTests`). This section supersedes the readout, unsigned-figur
   rank numbers; "even pace" slides along the diagonal to a free stretch. Placement, leaders and the "each account's own week"
   note (now the foot line): §2.8.
 - **Share card, Weekly row**: left slot the tinted span ("13h 59m ahead"), right slot "Resets …".
+
+### Inner panes — CCRM-116 (Inner Panes), iOS, 2026-11-13
+
+Wireframe `design/2026-11-12-iphone-duo-inner-screen.html` (approved by Robin 2026-11-12). Captures
+`design/research/2026-11-13-ccrm116/` (Duo inner wide and tall, flat and half open; cover; iPad Pro 11" portrait and
+landscape). Closes CCBG-90 (Inner Portrait Stretch) and CCBG-86 (Rail Marks Alike).
+
+- **The rule (`PaneGeometry`, CooldownCore, `PaneGeometryTests`):** a regular-width window gets two panes. Wider than
+  tall → side by side; taller than wide (a square too) → stacked. Flat: an even split of the content area with a 16 pt
+  gap. Half open: the system's active division region (`GeometryProxy.reservedRegions(kind: .division)`, iOS 27.1+)
+  is the gap, when it runs across the split axis and leaves both panes ≥ 120 pt; else the even split. **Measured on the
+  Duo simulator (iOS 27.2): the region is 40 pt wide, margins included** (wide: x 455.5–495.5 of the window, centred on
+  the fold at 475.5; tall: y 455.5–495.5), not the 32 pt the wireframe assumed — so wide half open gives Usage 435.5 |
+  Pace 351.5 at the 827 pt content width. The same view tree in every pose (`PaneSplit` offsets two frames in a
+  `ZStack`): a fold or a turn only moves frames.
+- **Page:** 20 pt side margins. Wide: `AppTitle` (34 pt) above the panes, as before (the sidebar's "All accounts"
+  heading on iPad landscape). Tall: the title moves into the top bar's leading side at 28 pt as plain text (no glass
+  capsule; `BarTitle`), and the panes fill the page down to the tab bar.
+- **All tab:** Usage pane = the Weekly list (header, filter, sort, rows) with the `Footer` at its end, scrolling on its
+  own, `.refreshable`; Pace pane = the Pace map card, fixed, its plot taking the height left (`PaneFill`: measured
+  chrome, plot ≥ 160 pt and ≤ 1.15 × the card's inner width); spare room stays empty below. Ten one-line rows fit the
+  wide pane without scrolling; tall they scroll by ~57 pt.
+- **Account tab:** the tile splits (`TilePart`): the Usage card (ring, Weekly and model bars with their captions, the
+  5h line or the spent-week gate note) under `AccountHeader`, notices and the pool tile, `Footer` last; the Pace card
+  (chips 7d · model · 5h, the chart, the pace line, the projection line, the reset row), the chart taking the pane's
+  height (≥ 160 pt). Both halves share one `TileInteraction`, so a ring tap still picks the 5h chart. No tap-to-open:
+  the Layout sheet's open/folded and chart-height choices apply only to the cover / phone page. No window reading
+  (plan refused, not signed in): the Usage pane alone.
+- **Empty state:** group 1 (marks, headline, body) centred in the first pane, group 2 (the Add buttons, "Try with
+  sample data", the footnote at the pane's foot) in the second; "Cooldown" above (wide) or in the bar (tall).
+- **Across a fold (§4):** the selected tab, History and its strip, sheets, chips, filter and sort were already kept;
+  the Pace map's pinned callout moved into the model (`AppModel.mapPin`). The Summary's scroll position is kept by row,
+  not offset (`TrackedScroll`, `AppModel.topRow`): the first row at least half on screen, stored only after a scroll
+  the user makes (a pane too short to reach the row does not overwrite it), restored on appear (`scrollTo` the
+  namespaced id `row.<key>`; a bare key also matched the map's dots) and nudged back for 2 s while the fold animates.
+  Scrolled past the rows (to the map), nothing is stored and the other side starts at its top. Simulator: restores on
+  launch (`-topRow <key>` seeds it) land the row at the top; a real fold round trip on the simulator was inconclusive
+  — **real-device check**.
+- **iPad** follows the same rule: portrait = Usage over Pace (title in the bar beside the floating tab bar);
+  landscape = sidebar plus Usage | Pace side by side.

@@ -72,7 +72,11 @@ extension SummaryEntry {
 struct SummaryView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
-    var wide = false
+    /// CCRM-116 (Inner Panes) §3: the Usage pane (the list, scrolling on its own, the footer at its end) and the Pace
+    /// pane (the map card, fixed; its plot follows the pane, at most 1.15 × its width) — on a regular-width window.
+    var panes = false
+    /// The tab, for the scroll position kept across a fold.
+    var tab: String = AppModel.summaryKey
     /// The order, mirrored here so a tap redraws at once (a Settings change redraws the page through `displayStamp`, which
     /// re-reads it). The remembered filter is read straight from `Prefs` on every draw — never mirrored — so the memory
     /// rule's fallback to All (BEHAVIOR-MOBILE §6) shows at once and a stale copy can never bring an earlier choice back;
@@ -88,16 +92,32 @@ struct SummaryView: View {
         let list = SummaryList(entries: entries, nowMs: model.nowMs, resolved: resolved, order: order,
                                onFilter: { Prefs.summaryFilter = $0.rawValue; filterTick += 1 },
                                onOrder: { order = $0; Prefs.summaryOrder = $0 }, onOpen: open)
-        VStack(alignment: .leading, spacing: 12) {
-            if model.noticeOwed { WeeklyFirstNoticeView() }
-            if wide {
-                HStack(alignment: .top, spacing: 16) {
-                    list
-                    PaceMapCard(entries: entries, height: 340, onOpen: open)
+        let pin = Binding(get: { model.mapPin }, set: { model.mapPin = $0 })
+        Group {
+            if panes {
+                PaneSplit {
+                    TrackedScroll(tab: tab) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if model.noticeOwed { WeeklyFirstNoticeView() }
+                            list
+                            Footer()
+                        }
+                        .padding(.bottom, 16)
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                    .refreshable { await model.refresh(manual: true) }
+                } second: {
+                    // The card's padding is 16 a side; the plot is the card's inner width.
+                    PaneFill(minimum: 160, cap: { ($0 - 32) * 1.15 }) { h in
+                        PaceMapCard(entries: entries, height: h, onOpen: open, sharedPin: pin)
+                    }
                 }
             } else {
-                list
-                PaceMapCard(entries: entries, height: 230, onOpen: open)
+                VStack(alignment: .leading, spacing: 12) {
+                    if model.noticeOwed { WeeklyFirstNoticeView() }
+                    list
+                    PaceMapCard(entries: entries, height: 230, onOpen: open, sharedPin: pin)
+                }
             }
         }
         // The memory rule runs when the Summary comes on screen and whenever the accounts or a tag change (`displayStamp`).
@@ -160,11 +180,13 @@ struct SummaryList: View {
                     SummaryOneLineRow(entry: entry, nowMs: nowMs, glyph: glyphs)
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
+                        .trackedRow(entry.account.key)
                 } else {
                     // CCRM-103: not a Button, so a tap on the row's figure can show its readout instead of opening.
                     SummaryRow(entry: entry, nowMs: nowMs, glyph: glyphs)
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
+                        .trackedRow(entry.account.key)
                 }
             }
         }

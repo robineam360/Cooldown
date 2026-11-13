@@ -125,7 +125,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   read whole. Folding with the sheet open brings "Teams ·…" back on the cover screen.
 
 ### CCBG-86 · Rail Marks Alike — the folded iPhone Duo's tab rail shows identical provider marks
-- **Status:** Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **decided 2026-11-12: fix, B + C** — accent-coloured mark plus a person / briefcase badge on the wide inner screen's rail, after a colour spike; wireframe in `design/2026-11-12-iphone-duo-inner-screen.html` §9a; built with CCRM-116 (Inner Panes) · (earlier: needed Robin's decision, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
+- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes): where iOS 27 draws the icon-only rail (the Duo folded and held wide; Robin 2026-11-13: the cover too) each account's icon is its mark in the account's accent with a person / briefcase badge (B + C); the spike showed the rail keeps the colour, light and dark (`design/research/2026-11-13-ccrm116/spike-*.jpg`, `duo-cover-rail.jpg`); plain iPhones, the Duo held tall and iPad keep the system marks · same-provider accounts with one tag and one accent (e.g. three Claude Work accounts) still match: only a per-account accent separates them · was: Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **decided 2026-11-12: fix, B + C** — accent-coloured mark plus a person / briefcase badge on the wide inner screen's rail, after a colour spike; wireframe in `design/2026-11-12-iphone-duo-inner-screen.html` §9a; built with CCRM-116 (Inner Panes) · (earlier: needed Robin's decision, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
 - **Severity:** Medium
 - **Symptom:** iOS 27 draws the `.sidebarAdaptable` TabView as an icons-only rail on the right; each account tab's icon is
   its provider mark, so Teams, Lab and Atlas (all Claude) show three identical marks. With ten accounts the rail folds the
@@ -171,7 +171,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Cause:** `LiveLines.fiveLine` (`ios/Shared/FaceViews.swift`) is one `Text` with `lineLimit(1)` and no drop order.
 
 ### CCBG-90 · Inner Portrait Stretch — the iPhone Duo's tall inner screen gets the phone page stretched to 637 pt
-- **Status:** Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes)
+- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes): every regular-width window is two panes by aspect (`PaneGeometry`), the 700 / 900 / 600 pt rules are gone, and History follows the same rule; checked on the Duo simulator tall and wide, flat and half open, and on iPad (`design/research/2026-11-13-ccrm116/`) · real-device check pending · was: Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes)
 - **Severity:** Medium
 - **Symptom:** unfolded with the inner screen tall (669 × 951 pt, regular / regular), the main tabs show the phone page with
   the tile, chart and credits card stretched to 637 pt; held wide (951 pt) the same screen gets the iPad page, and History at

@@ -19,6 +19,11 @@ final class AppModel {
     }
     /// CCRM-96 (Weekly First): the one-time "Weekly now leads" notice is showing.
     var noticeOwed = false
+    /// CCRM-116 (Inner Panes) §4: per tab, the id of the first visible Summary row, so the phone page and the inner
+    /// screen's Usage pane hand the scroll position to each other on a fold (by row, not by pt offset). Not saved.
+    var topRow: [String: String] = [:]
+    /// CCRM-116 §4: the Pace map's pinned callout lives here, so a fold (which swaps the page for the panes) keeps it.
+    var mapPin: String?
     var nowMs: Int64 = AppModel.clock()
     private(set) var snapshots: [String: Snapshot] = [:]
     private(set) var states: [String: AccountState] = [:]

@@ -314,12 +314,14 @@ struct MainTabs: View {
     @Environment(AppModel.self) private var model
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
     @Binding var sheet: Sheet?
     /// A History request from outside the tabs (the `-screen history` launch argument): taken into `historyOpen`.
     @Binding var historyKey: String?
     /// The tabs whose own stack shows History. Per tab, so opening it on one tab never pops or dismisses another's.
     @State private var historyOpen: Set<String> = []
     @State private var window: CGSize = .zero
+    @State private var railInset: CGFloat = 0
 
     /// `historyKey` for "open History on whichever tab is selected" (the `-screen history` launch argument).
     static let currentTab = "__current__"
@@ -328,6 +330,15 @@ struct MainTabs: View {
     private var sidebarLayout: Bool {
         sizeClass == .regular && window.width > window.height && window.width >= 1000
     }
+
+    /// CCBG-86 (Rail Marks Alike): where iOS 27 draws its icon-only rail — the iPhone Duo folded (the cover) and held
+    /// wide (Robin 2026-11-13: the cover too). The rail sits in the window's trailing safe area (84 pt), which no other
+    /// iPhone page has (the app is portrait-only there); iPad draws labelled tabs and a sidebar, the Duo held tall a
+    /// labelled bottom bar.
+    private var railIcons: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone && railInset >= Self.railInsetMinimum
+    }
+    static let railInsetMinimum: CGFloat = 40
 
     var body: some View {
         let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
@@ -346,10 +357,24 @@ struct MainTabs: View {
             }
             ForEach(model.accounts) { account in
                 // The provider mark is a 24 × 24 template SVG in the asset catalog, so the system tab bar and sidebar
-                // draw it like a symbol, in their own tint.
-                Tab(account.label, image: account.provider.markAsset, value: account.key) {
+                // draw it like a symbol, in their own tint. CCBG-86 (Rail Marks Alike), B + C: where iOS draws an
+                // icon-only rail on a regular width (the iPhone Duo's wide inner screen), the icon is the mark in the
+                // account's accent with its person / briefcase badge, so same-provider accounts tell apart.
+                Tab(value: account.key) {
                     stack(account.key) {
                         TabPage(account: account, showsTitle: !sidebarLayout, sheet: $sheet)
+                    }
+                } label: {
+                    if railIcons {
+                        Label {
+                            Text(account.label)
+                                .accessibilityLabel("\(account.label), \(account.accountTag == .work ? "Work" : "Personal") account")
+                        } icon: {
+                            Image(uiImage: RailIcon.image(provider: account.provider, accent: account.accent(scheme),
+                                                          tag: account.accountTag, scheme: scheme, ink: p.ink, surface: p.bg))
+                        }
+                    } else {
+                        Label(account.label, image: account.provider.markAsset)
                     }
                 }
             }
@@ -357,6 +382,7 @@ struct MainTabs: View {
         .tabViewStyle(.sidebarAdaptable)
         .tabViewSidebarHeader { AppTitle(size: 30) }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { window = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.trailing } action: { railInset = $0 }
         .onChange(of: historyKey, initial: true) { _, request in
             guard let request else { return }
             historyOpen.insert(request == Self.currentTab ? selection.wrappedValue : request)
@@ -408,55 +434,83 @@ struct MainTabs: View {
     }
 }
 
-/// One tab's page: the Summary (`account` nil) or one account. On a regular width of 700 pt or more (iPad, and iPad
-/// Split View that wide) an account is the full-width page — `AccountHeader` over the cards two across — and the
-/// Summary goes wide from 900 pt; narrower (iPhone, narrow Split View) it is the phone's page. The app title tops the
-/// page except where the sidebar carries it (iPad landscape), where the Summary is headed "All accounts" instead.
+/// One tab's page: the Summary (`account` nil) or one account.
+///
+/// CCRM-116 (Inner Panes), design/2026-11-12-iphone-duo-inner-screen.html: a regular-width window (the iPhone Duo's inner
+/// screen, iPad, a wide Split View) gets two panes, Usage and Pace — side by side when wider than tall, stacked when
+/// taller than wide, the divider on the fold when half open (`PaneSplit`). No pt breakpoints. Taller than wide, the app
+/// title moves into the top bar (28 pt). A compact window (the cover screen, iPhone, a narrow Split View) keeps the phone
+/// page. The app title tops the page except where the sidebar carries it (iPad landscape), where the Summary is headed
+/// "All accounts" instead.
 struct TabPage: View {
     @Environment(AppModel.self) private var model
     @Environment(\.horizontalSizeClass) private var sizeClass
     let account: Account?
     let showsTitle: Bool
     @Binding var sheet: Sheet?
-    @State private var width: CGFloat = 0
+    @State private var size: CGSize = .zero
 
-    /// Before the first measurement the size class alone decides.
-    private var iPad: Bool { sizeClass == .regular && (width == 0 || width >= 700) }
+    private var panes: Bool { sizeClass == .regular }
+    /// Taller than wide: the panes stack and the title goes into the bar.
+    private var tall: Bool { panes && size != .zero && PaneGeometry.axis(for: size) == .stacked }
+    private var tabKey: String { account?.key ?? AppModel.summaryKey }
 
     var body: some View {
-        ScrollView {
+        Group {
+            if panes { panedPage } else { phonePage }
+        }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .toolbar {
+            if tall && showsTitle { BarTitle { AppTitle(size: 28).fixedSize() } }
+        }
+    }
+
+    private var phonePage: some View {
+        TrackedScroll(tab: tabKey) {
             VStack(alignment: .leading, spacing: 12) {
                 if model.isSample { SampleBanner() }
                 if showsTitle { AppTitle().frame(maxWidth: .infinity, alignment: .leading) }
                 if let account {
-                    if iPad {
-                        VStack(alignment: .leading, spacing: 10) {
-                            AccountHeader(account: account)
-                            AccountCards(account: account, twoAcross: true, cardWidth: max(396, width - 40),
-                                         onSignIn: { signIn(account) })
-                        }
-                    } else {
-                        AccountCards(account: account, onSignIn: { signIn(account) })
-                    }
+                    AccountCards(account: account, onSignIn: { signIn(account) })
                 } else {
-                    if !showsTitle {
-                        Text("All accounts").font(.system(size: 30, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    SummaryView(wide: iPad && width >= 900)
+                    if !showsTitle { allHeading }
+                    SummaryView()
                 }
                 Footer()
             }
-            .padding(.horizontal, iPad ? 20 : 16).padding(.top, 4).padding(.bottom, 24)
+            .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 24)
         }
         .refreshable { await model.refresh(manual: true) }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+    }
+
+    /// The two panes fill the page under the title; each pane scrolls on its own (`AccountCards` / `SummaryView`).
+    private var panedPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if model.isSample { SampleBanner() }
+            if !tall {
+                if showsTitle { AppTitle().frame(maxWidth: .infinity, alignment: .leading) }
+                else if account == nil { allHeading }
+            }
+            if let account {
+                AccountCards(account: account, panes: true, onSignIn: { signIn(account) })
+            } else {
+                SummaryView(panes: true, tab: tabKey)
+            }
+        }
+        .padding(.horizontal, 20).padding(.top, 4).padding(.bottom, 12)
+        .environment(\.panesActive, true)
+    }
+
+    private var allHeading: some View {
+        Text("All accounts").font(.system(size: 30, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func signIn(_ account: Account) { sheet = model.signInAgain(account) }
 }
 
-/// An iPad account page's header: mark, name, plan chip, and the account's credits on the right.
+/// The account page's header on a regular-width window (iPad, the iPhone Duo's inner screen): the person / briefcase,
+/// the mark, the name, the plan chip, and the account's credits on the right. CCRM-116 (Inner Panes) §5: the tag glyph
+/// leads (an 18 pt box, `sub` ink, never a colour), hidden from VoiceOver, which reads the name as "Lab, Work account".
 struct AccountHeader: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
@@ -464,8 +518,14 @@ struct AccountHeader: View {
 
     var body: some View {
         HStack(spacing: 9) {
+            Image(systemName: TagGlyph.symbol(account.accountTag)).font(.system(size: 15, weight: .regular))
+                .foregroundStyle(p.sub)
+                .frame(width: 18, height: 18)
+                .accessibilityHidden(true)
+                .padding(.trailing, -5)
             ProviderMark(provider: account.provider, size: 22)
             Text(account.label).font(.system(size: 21, weight: .bold))
+                .accessibilityLabel("\(account.label), \(account.accountTag == .work ? "Work" : "Personal") account")
             PlanChip(provider: account.provider, plan: model.states[account.key]?.plan, tier: model.states[account.key]?.tier, size: 12)
             Spacer()
             if let credits = CardContent.credits(model.usage(account.key)?.credits) {
@@ -500,19 +560,56 @@ struct PlanChip: View {
     }
 }
 
-/// First launch: no accounts yet.
+/// First launch: no accounts yet. CCRM-116 (Inner Panes) §7: on a regular-width window the screen is two groups, one
+/// per pane (the mark, headline and body; the buttons, the sample and the footnote), so no text sits on the fold.
 struct EmptyStateView: View {
     @Binding var sheet: Sheet?
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     @Environment(\.sampleControl) private var control
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var size: CGSize = .zero
+
+    private var panes: Bool { sizeClass == .regular }
+    private var tall: Bool { panes && size != .zero && PaneGeometry.axis(for: size) == .stacked }
 
     var body: some View {
+        Group {
+            if panes {
+                VStack(spacing: 0) {
+                    if !tall { title }
+                    PaneSplit {
+                        VStack(spacing: 0) { Spacer(minLength: 0); intro; Spacer(minLength: 0) }
+                    } second: {
+                        VStack(spacing: 0) { Spacer(minLength: 0); actions; Spacer(minLength: 0); footnote }
+                    }
+                    .padding(.horizontal, 20)
+                }
+            } else {
+                VStack(spacing: 0) {
+                    title
+                    Spacer()
+                    intro
+                    actions
+                    Spacer()
+                    footnote
+                }
+            }
+        }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .toolbar {
+            if tall { BarTitle { Text("Cooldown").font(.system(size: 28, weight: .bold)).fixedSize() } }
+        }
+    }
+
+    private var title: some View {
+        Text("Cooldown").font(.system(size: 34, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+    }
+
+    private var intro: some View {
         VStack(spacing: 0) {
-            Text("Cooldown").font(.system(size: 34, weight: .bold)).frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-            Spacer()
             HStack(spacing: 14) {
                 ProviderMark(provider: .claude, size: 54); ProviderMark(provider: .chatgpt, size: 54)
                 if Antigravity.available { ProviderMark(provider: .antigravity, size: 54) }
@@ -523,6 +620,11 @@ struct EmptyStateView: View {
                  : "See how much of your 5-hour and weekly limits you’ve used, and when they reset — for Claude and ChatGPT.")
                 .font(.system(size: 15.5)).foregroundStyle(p.txt).multilineTextAlignment(.center).padding(.top, 8)
                 .padding(.horizontal, 32)
+        }
+    }
+
+    private var actions: some View {
+        VStack(spacing: 0) {
             VStack(spacing: 12) {
                 // CCRM-110: the first account never passes the Add sheet, so it is Personal without asking (addendum T2 A).
                 addButton("Add a Claude account", .claude) { model.pendingTag = .personal; sheet = .claudeSignIn }
@@ -533,10 +635,12 @@ struct EmptyStateView: View {
             // Reviewers (and the curious) can look around without an account.
             Button(SampleRules.entryTitle) { control.enter() }
                 .font(.system(size: 15)).foregroundStyle(p.ink).padding(.top, 20)
-            Spacer()
-            Text("Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
-                .font(.system(size: 12.5)).foregroundStyle(p.sub).multilineTextAlignment(.center).padding(.horizontal, 24).padding(.bottom, 24)
         }
+    }
+
+    private var footnote: some View {
+        Text("Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
+            .font(.system(size: 12.5)).foregroundStyle(p.sub).multilineTextAlignment(.center).padding(.horizontal, 24).padding(.bottom, 24)
     }
 
     private func addButton(_ title: String, _ provider: Provider, action: @escaping () -> Void) -> some View {

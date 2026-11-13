@@ -699,12 +699,12 @@ enum RemoveCopy {
     }
 }
 
-/// CCRM-94 (iOS App) parity wireframes rev B §4: History's layout rules.
+/// CCRM-94 (iOS App) parity wireframes rev B §4: History's layout rules. Since CCRM-116 (Inner Panes) the two panes
+/// follow the main page's rule (`PaneGeometry`): a regular-width window shows 5-hour and 7-day as two panes — side by
+/// side when wider than tall, 5-hour over 7-day when taller — so History never disagrees with the page (CCBG-90 (Inner
+/// Portrait Stretch)). The 600 pt breakpoint is gone.
 enum HistoryLayout {
-    /// iPad (and a wide Split View) shows 5-hour and 7-day side by side from this width.
-    static let twoColumnWidth: CGFloat = 600
-    static func twoColumns(width: CGFloat) -> Bool { width >= twoColumnWidth }
-    static let maxContentWidth: CGFloat = 1100
+    static func twoColumns(regularWidth: Bool) -> Bool { regularWidth }
 
     static func footnote(twoColumns: Bool, kind: String) -> String {
         "History is recorded as each window closes, so it fills in over time. Peak "
@@ -717,11 +717,15 @@ struct HistoryScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var key: String?
     @State private var kind = HistoryStats.sessionKind
     @State private var weekIndex5 = 0
     @State private var weekIndex7 = 0
-    @State private var width: CGFloat = 0
+    @State private var size: CGSize = .zero
+
+    private var panes: Bool { HistoryLayout.twoColumns(regularWidth: sizeClass == .regular) }
+    private var tall: Bool { panes && size != .zero && PaneGeometry.axis(for: size) == .stacked }
 
     private func index(_ kind: String) -> Binding<Int> {
         kind == HistoryStats.sessionKind ? $weekIndex5 : $weekIndex7
@@ -730,43 +734,75 @@ struct HistoryScreen: View {
     var body: some View {
         let account = model.account(key ?? model.selectedKey) ?? model.accounts.first
         let state = account.flatMap { model.states[$0.key] }
-        // A plan with no 5-hour window has one pane at every width (no picker, no columns).
+        // A plan with no 5-hour window has one pane at every width (no picker, no second pane).
         let usage = account.flatMap { model.usage($0.key) }
         let hasSession = usage == nil || usage?.session != nil
-        let two = hasSession && HistoryLayout.twoColumns(width: width)
+        let two = hasSession && panes
         let activeKind = hasSession ? kind : HistoryStats.weeklyKind
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                AccountTabs(accounts: model.accounts, selected: Binding(get: { account?.key }, set: { key = $0; weekIndex5 = 0; weekIndex7 = 0 }))
-                    .padding(.horizontal, -16)
-                if let account {
-                    if two {
-                        HStack(alignment: .top, spacing: 16) {
-                            pane(account, kind: HistoryStats.sessionKind, heading: "5-hour windows", state: state, two: true)
-                            pane(account, kind: HistoryStats.weeklyKind, heading: "7-day windows", state: state, two: true)
-                        }
-                    } else {
-                        if hasSession {
-                            Picker("Window", selection: $kind) {
-                                Text("5-hour").tag(HistoryStats.sessionKind)
-                                Text("7-day").tag(HistoryStats.weeklyKind)
+        let strip = AccountTabs(accounts: model.accounts, selected: Binding(get: { account?.key }, set: { key = $0; weekIndex5 = 0; weekIndex7 = 0 }))
+        Group {
+            if panes {
+                // The strip stays above the panes at the column's width; the footnote closes the 7-day pane.
+                VStack(alignment: .leading, spacing: 14) {
+                    strip.padding(.horizontal, -20)
+                    if let account {
+                        PaneSplit(hasSecond: hasSession) {
+                            ScrollView {
+                                if hasSession {
+                                    pane(account, kind: HistoryStats.sessionKind, heading: "5-hour windows", state: state, two: true)
+                                        .padding(.bottom, 16)
+                                } else {
+                                    weeklyPane(account, state: state, two: two, kind: activeKind)
+                                }
                             }
-                            .pickerStyle(.segmented).frame(width: 200)
+                            .scrollBounceBehavior(.basedOnSize)
+                        } second: {
+                            ScrollView { weeklyPane(account, state: state, two: two, kind: activeKind) }
+                                .scrollBounceBehavior(.basedOnSize)
                         }
-                        pane(account, kind: activeKind, heading: nil, state: state, two: false)
                     }
                 }
-                Text(HistoryLayout.footnote(twoColumns: two, kind: activeKind))
-                    .font(.system(size: 13.5)).foregroundStyle(p.txt)
+                .padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 12)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        strip.padding(.horizontal, -16)
+                        if let account {
+                            if hasSession {
+                                Picker("Window", selection: $kind) {
+                                    Text("5-hour").tag(HistoryStats.sessionKind)
+                                    Text("7-day").tag(HistoryStats.weeklyKind)
+                                }
+                                .pickerStyle(.segmented).frame(width: 200)
+                            }
+                            pane(account, kind: activeKind, heading: nil, state: state, two: false)
+                        }
+                        footnote(two: false, kind: activeKind)
+                    }
+                    .padding(.horizontal, 16).padding(.top, 8)
+                }
             }
-            .frame(maxWidth: HistoryLayout.maxContentWidth)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16).padding(.top, 8)
         }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .background(p.bg.ignoresSafeArea())
         .navigationTitle("Usage history")
-        .navigationBarTitleDisplayMode(.large)
+        // CCRM-116 §6: taller than wide, the back button and the title share the bar, as on the main page.
+        .navigationBarTitleDisplayMode(tall ? .inline : .large)
+    }
+
+    /// The 7-day pane: Plan Fit, the week card, then the footnote that closes it.
+    private func weeklyPane(_ account: Account, state: AccountState?, two: Bool, kind: String) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            pane(account, kind: HistoryStats.weeklyKind, heading: two ? "7-day windows" : nil, state: state, two: two)
+            footnote(two: two, kind: kind)
+        }
+        .padding(.bottom, 16)
+    }
+
+    private func footnote(two: Bool, kind: String) -> some View {
+        Text(HistoryLayout.footnote(twoColumns: two, kind: kind))
+            .font(.system(size: 13.5)).foregroundStyle(p.txt)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// One window kind's column: an optional heading, Plan Fit on the 7-day side, then the week card.

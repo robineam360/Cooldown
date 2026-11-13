@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Tag glyph on Android's account page · the Summary filter as glyphs — 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--fill:rgba(28,27,31,.13);--green:#2E7D32;--red:#C62828;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.13);--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--fill:rgba(230,225,229,.13);--green:#9CCC65;--red:#F28B82;--ios-bg:#000;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.16);--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930}}
+.dark{--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--fill:rgba(230,225,229,.13);--green:#9CCC65;--red:#F28B82;--ios-bg:#000;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.16)}
+.light{--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--fill:rgba(28,27,31,.13);--green:#2E7D32;--red:#C62828;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.13)}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1500px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}h3{font-size:15px;margin:22px 0 6px}
+p,li{max-width:900px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:900px}
+.rec b{color:inherit}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+figure{margin:0 0 18px}
+figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:6px;max-width:420px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--lv);overflow:hidden;position:relative;font-family:Roboto,"Helvetica Neue",Arial,sans-serif}
+.top{height:64px;display:flex;align-items:center;padding:0 16px;gap:8px}
+.top .mk{width:20px;height:20px;margin:0}.top .mk+.mk{margin-left:-4px}
+.top .ttl{font-size:22px;margin-left:4px}.top .ic{margin-left:auto;display:flex;gap:22px;color:var(--mute);font-size:18px}
+.strip{position:relative;display:flex;height:48px;border-bottom:1px solid var(--lv)}
+.strip.sc{width:max-content}
+.tab{display:flex;align-items:center;justify-content:center;height:48px;font-size:14px;font-weight:500;letter-spacing:.1px;white-space:nowrap;flex:none}
+.tab .mk{width:20px;height:20px;margin-right:6px;flex:none}
+.tab .tg{width:14px;height:14px;margin-right:4px;color:var(--mute);flex:none}
+.tab .tg.s16{width:16px;height:16px}
+.tab.off span,.tab.off .tg{opacity:.6}
+.ind{position:absolute;bottom:-1px;height:3px;background:var(--claude);border-radius:3px 3px 0 0}
+.c{color:var(--claude)}.g{color:var(--gpt)}.m{color:var(--gem)}.k{color:var(--ink)}
+/* A-badge: the 24 dp icon box — the 20 dp mark at its top-left, the badge hanging 4 dp past it at the lower right */
+.bm{width:24px;height:24px;flex:none;overflow:visible}
+.bm .bg{color:var(--ink)}
+.tab .bm{margin-right:2px}            /* 24 + 2 = 26: the name starts where it starts today (20 + 6) */
+.tab.off .bm .bg{opacity:.6}          /* the badge dims with the text; the mark keeps its accent */
+.bm26{width:26px;height:26px;flex:none;overflow:visible}.bm26 .bg{color:var(--ink)}
+.bm22{width:22px;height:22px;flex:none;overflow:visible}.bm22 .bg{color:var(--ink)}
+.zoom{width:104px;height:104px;overflow:visible}
+.zoom .bg{color:var(--ink)}
+.guide{fill:none;stroke:var(--anno);stroke-width:.3;stroke-dasharray:.8 .5}
+.page{padding:16px 20px 0}
+.ahead{display:flex;align-items:center;gap:8px;height:32px;margin-bottom:10px}
+.ahead .tg{width:18px;height:18px;color:var(--mute);margin-right:-2px}.ahead .mk{width:22px;height:22px}
+.ahead .nm{font-size:22px;font-weight:700}.ahead .cr{margin-left:auto;font-size:14px;color:var(--mute)}
+.pill{font-size:11px;border:1px solid var(--lv);border-radius:6px;padding:1px 6px;color:var(--mute);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;border:1px solid var(--lv);border-radius:10px;padding:2px 4px;color:var(--mute);white-space:nowrap}
+.chip svg{width:12px;height:12px}
+.dot{width:8px;height:8px;border-radius:4px;background:var(--green);flex:none}
+.card{background:var(--card);border-radius:12px;padding:16px}
+.tile{display:flex;gap:14px;align-items:center}
+.tile .tb{flex:1}
+.l1{display:flex;align-items:center;gap:7px;height:22px}
+.l1 .nm{font-size:15px}.l1 .tg{width:14px;height:14px;color:var(--mute);margin-right:-3px}.l1 .mk{width:18px;height:18px}
+.fg{margin-left:auto;font-size:17px;font-weight:700;color:var(--claude)}
+.fg.r{color:var(--red)}
+.ub{position:relative;height:10px;border-radius:5px;background:color-mix(in srgb,var(--claude) 25%,transparent);margin:6px 0 4px}
+.ub.h12{height:12px;border-radius:6px}
+.ub i{position:absolute;left:0;top:0;height:100%;border-radius:5px;background:var(--claude)}
+.ub i.r{background:var(--red);border-radius:0 5px 5px 0}
+.ub u{position:absolute;top:-3px;width:3px;height:calc(100% + 6px);background:var(--mute);border-radius:1px}
+.cap{font-size:12px;color:var(--mute);text-align:right}
+.l3{font-size:13px;margin-top:4px}.l3 b{color:var(--green)}.l3 b.r{color:var(--red)}
+.fl{font-size:13px;color:var(--mute);margin-top:10px}
+.foot{font-size:12.5px;color:var(--mute);padding:16px 20px}
+.hd{display:flex;align-items:center;gap:10px;min-height:28px}
+.hd .t{font-size:14px;font-weight:600}
+.ctl{display:inline-flex;height:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:12px;flex:none}
+.sg{display:flex;align-items:center;justify-content:center;height:26px;border-left:1px solid var(--line);flex:none;gap:4px;white-space:nowrap}
+.sg:first-child{border-left:0}.sg.on{background:var(--fill);font-weight:600}.sg.dim{opacity:.38}
+.sg svg{width:16px;height:16px}
+.sp{flex:1}
+.sort{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;color:var(--mute);flex:none;white-space:nowrap}
+.sort svg{width:14px;height:14px}.sort .ch{width:12px;height:12px}
+.note{font-size:12px;color:var(--mute);margin-top:6px}
+.r{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--lv)}
+.r.first{border-top:0;padding-top:6px}
+.ring{width:48px;height:48px;flex:none}
+.rc{flex:1;min-width:0}
+.dimr{opacity:.5}
+.rank{width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;flex:none}
+.ios{background:var(--ios-bg);color:var(--ink);border:1px solid var(--ios-line);padding:12px;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.ios .ic2{background:var(--ios-card);border-radius:14px;padding:14px}
+.ios .hd .t{font-size:17px;font-weight:600}
+.ios .ctl{border-color:var(--ios-line);border-radius:8px;font-size:13px}
+.ios .sg{border-left-color:var(--ios-line)}.ios .sg.on{background:var(--ios-fill)}
+.ios .sort{border-color:var(--ios-line);color:var(--ink);font-size:13px}
+.ios .strip{height:46px;border-bottom:1px solid var(--ios-line)}
+.ios .tab{height:46px;font-size:16px;font-family:inherit;padding:0 12px}
+.ios .tab .mk{margin-right:7px}.ios .tab .bm{margin-right:3px}   /* 24 + 3 = 27 = 20 + 7 */
+.ios .tab.off span{opacity:1;color:var(--ios-sub)}.ios .tab.off .bm .bg{opacity:1;color:var(--ios-sub)}
+.ios .ind{bottom:0;height:3px;border-radius:2px}
+.ios .ahead{gap:9px;height:32px;margin:0}
+.ios .ahead .tg{width:18px;height:18px;color:var(--ios-sub);margin-right:-5px}
+.ios .ahead .nm{font-size:21px;font-weight:700}.ios .ahead .cr{color:var(--ink)}
+.tbar{display:flex;justify-content:space-around;align-items:center;height:56px;padding:4px 8px;border-radius:28px;background:var(--ios-card);box-shadow:0 1px 5px rgba(0,0,0,.18);margin-top:8px}
+.tbi{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--ios-sub);width:62px;height:48px;justify-content:center;border-radius:24px}
+.tbi svg{width:24px;height:24px}.tbi .bm{width:26px;height:26px}
+.tbi.on{background:var(--ios-fill);color:var(--ink)}
+.badge{position:relative;display:inline-block;width:20px;height:20px;margin-right:14px}
+.badge .mk{width:20px;height:20px}
+.badge .b{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.badge .b svg{width:10px;height:10px;color:var(--mute)}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:900px}
+.cost b{color:var(--ink)}
+small.u{color:var(--anno);font-weight:600}
+ol.q li{margin-bottom:8px}
+kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="mk-gpt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(60 12 12)"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(120 12 12)"/></g></symbol>
+<symbol id="mk-gem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.2C12.7 7.3 16.7 11.3 22.8 12C16.7 12.7 12.7 16.7 12 22.8C11.3 16.7 7.3 12.7 1.2 12C7.3 11.3 11.3 7.3 12 1.2Z"/></symbol>
+<symbol id="g-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12,6c1.1,0 2,0.9 2,2s-0.9,2 -2,2 -2,-0.9 -2,-2 0.9,-2 2,-2m0,10c2.7,0 5.8,1.29 6,2L6,18c0.23,-0.72 3.31,-2 6,-2m0,-12C9.79,4 8,5.79 8,8s1.79,4 4,4 4,-1.79 4,-4 -1.79,-4 -4,-4zm0,10c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z"/></symbol>
+<symbol id="g-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20,6h-4V4c0,-1.11 -0.89,-2 -2,-2h-4c-1.11,0 -2,0.89 -2,2v2H4C2.89,6 2.01,6.89 2.01,8L2,19c0,1.11 0.89,2 2,2h16c1.11,0 2,-0.89 2,-2V8C22,6.89 21.11,6 20,6zM10,4h4v2h-4V4zM20,19H4V8h16V19z"/></symbol>
+<!-- the badge's filled figures: Material `person` / `work` filled (iOS draws SF `person.fill` / `briefcase.fill`, the same silhouettes) -->
+<symbol id="gf-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+<symbol id="gf-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></symbol>
+<!-- the knocked-out disc: Ø13 badge + a 1.5 ring = a cleared circle r 8, centred 6.5 in from the icon box's lower-right corner -->
+<mask id="cut20" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><circle cx="17.5" cy="17.5" r="8" fill="#000"/></mask>
+<mask id="cut22" maskUnits="userSpaceOnUse" x="0" y="0" width="26" height="26"><rect width="26" height="26" fill="#fff"/><circle cx="19.5" cy="19.5" r="8" fill="#000"/></mask>
+<mask id="cut18" maskUnits="userSpaceOnUse" x="0" y="0" width="22" height="22"><rect width="22" height="22" fill="#fff"/><circle cx="15.5" cy="15.5" r="8" fill="#000"/></mask>
+<symbol id="g-all" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="5" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="12" height="3" rx="1.5"/><rect x="3" y="16" width="15" height="3" rx="1.5"/></g></symbol>
+<symbol id="g-sort" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v16M4.5 7.5L8 4l3.5 3.5M16 20V4M12.5 16.5L16 20l3.5-3.5"/></g></symbol>
+<symbol id="g-chev" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></symbol>
+<symbol id="g-cal" viewBox="0 0 24 24"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM7 11h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></symbol>
+<symbol id="g-gear" viewBox="0 0 24 24"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3H9l-.4 2.8a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.5L4.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.3 7.3 0 0 0 1.7 1L9 21h6l.4-2.8a7.3 7.3 0 0 0 1.7-1l2.5 1 2-3.5L19.4 13zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></symbol>
+<symbol id="g-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></g></symbol>
+<!-- A-badge marks, 24 dp box (Android tab label, both History strips). mk 20 at (0,0); figure 12 box at (11.5,11.5) -->
+<symbol id="bm-c-w" viewBox="0 0 24 24"><use href="#mk-claude" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-work" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<symbol id="bm-c-p" viewBox="0 0 24 24"><use href="#mk-claude" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-person" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<symbol id="bm-g-w" viewBox="0 0 24 24"><use href="#mk-gpt" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-work" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<symbol id="bm-g-p" viewBox="0 0 24 24"><use href="#mk-gpt" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-person" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<symbol id="bm-m-w" viewBox="0 0 24 24"><use href="#mk-gem" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-work" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<symbol id="bm-m-p" viewBox="0 0 24 24"><use href="#mk-gem" width="20" height="20" mask="url(#cut20)"/><g class="bg"><use href="#gf-person" x="11.5" y="11.5" width="12" height="12"/></g></symbol>
+<!-- 26 pt box (iOS account-page header, mark 22) and 22 box (a Summary row's 18 mark — drawn to show why not) -->
+<symbol id="bm26-c-w" viewBox="0 0 26 26"><use href="#mk-claude" width="22" height="22" mask="url(#cut22)"/><g class="bg"><use href="#gf-work" x="13.5" y="13.5" width="12" height="12"/></g></symbol>
+<symbol id="bm26-m-w" viewBox="0 0 26 26"><use href="#mk-gem" width="22" height="22" mask="url(#cut22)"/><g class="bg"><use href="#gf-work" x="13.5" y="13.5" width="12" height="12"/></g></symbol>
+<symbol id="bm22-c-w" viewBox="0 0 22 22"><use href="#mk-claude" width="18" height="18" mask="url(#cut18)"/><g class="bg"><use href="#gf-work" x="9.5" y="9.5" width="12" height="12"/></g></symbol>
+<symbol id="bm22-m-p" viewBox="0 0 22 22"><use href="#mk-gem" width="18" height="18" mask="url(#cut18)"/><g class="bg"><use href="#gf-person" x="9.5" y="9.5" width="12" height="12"/></g></symbol>
+</defs></svg>
+
+<h1>Tag glyph on Android's account page · the Summary filter as glyphs</h1>
+<p class="lead">Design for Robin, 2026-11-13 · Fable (expertise) · follows <code>design/2026-11-12-iphone-duo-inner-screen.html</code> §5 / §9b (approved: the account page's header gets the person / briefcase before the provider mark; "the Android account page should match") and Robin's 2026-11-13 note on the greyed "Work". <b>§1 revised 2026-11-13</b> after Robin's answers — A (every account tab label), keep the glyph and let the strip scroll — and his follow-up: "why keep two icons when you can combine it and show it just like iOS … the provider logo with a badge". Drawn at 1 dp = 1 px, real numbers. The page follows your system's light / dark; panels marked <b>dark</b> or <b>light</b> are forced so both show at once. CCRM-110 (Account Tags), CCRM-115 (Row Tag Glyph), CCRM-116 (Inner Panes), CCBG-86 (Rail Marks Alike).</p>
+
+<div class="rec"><b>Recommendation.</b> <b>Problem 1 → A-badge:</b> the account tab's label becomes the iPhone Duo rail's icon beside the name — the 20 dp mark in the account's accent with the person / briefcase as a filled 8 dp figure on a 13 dp disc knocked out of the mark's lower-right corner, then the name at the same 26 dp as today. The badge hangs 4 dp past the mark into the existing gap, so <b>no tab gets wider and no strip scrolls sooner than today</b>; History's strip is the same composable. <b>One rule for both platforms:</b> wherever a mark is an account's <i>icon</i> (Android's tabs and History strip, iOS's History strip, the iOS account-page header, the Duo rail) the tag is the badge; wherever the mark sits in a <i>row</i> (Summary rows, the snapshot, Settings) the tag stays the separate glyph column or the chip, because an 18 dp mark cannot hold the badge and the one-line row has no mark at all. <b>Problem 2 → glyph segments + the gate</b>, unchanged: <b>All · person · briefcase</b>, not shown while only one tag is in use. Both platforms, and the desktop hears first.</div>
+
+<h2>1 · Problem 1 — where the tag goes on Android's account page</h2>
+<p><b>Settled 2026-11-13 (Robin):</b> in every account tab's label (A), and if it ever made a fixed strip scroll, let it scroll. The first draft put the tag there as a separate 14 dp glyph before the mark (+18 dp per tab, two strips flipped to scrolling). Robin then asked for the iOS rail's drawing instead — the mark with the tag as a badge — with the name beside it. That is drawn here as <b>A-badge</b>. It supersedes A's separate glyph; B, C and A+ from the first draft are closed by Robin's answer and are not redrawn.</p>
+<p>"Just like iOS" is <code>RailIcon</code> (<code>ios/App/UI/InnerPanes.swift</code>, CCBG-86 (Rail Marks Alike), built 2026-11-13; captures <code>design/research/2026-11-13-ccrm116/spike-light.jpg</code> / <code>spike-dark.jpg</code>): a 25 pt box, the mark 21 pt at the top-left in the account's accent, a 13 pt disc at the lower right cleared out of the mark 1.5 pt wider than itself, and SF <code>person.fill</code> / <code>briefcase.fill</code> 9 pt semibold in ink inside the disc. Android's tab mark is 20 dp (CCRM-56 (Provider Identity), rev B1), so the box becomes 24 dp with the same 13 dp badge: the badge is the same size on both platforms, only the mark is 1 dp smaller.</p>
+
+<h3>1.0 The badge, at real size and at 4× — three providers, both tags, light / dark, selected / unselected</h3>
+<div class="row">
+<figure><div class="ph light" style="width:300px;padding:14px 16px;display:flex;align-items:center;gap:18px">
+<svg class="bm"><use href="#bm-c-w"/></svg><svg class="bm g"><use href="#bm-g-p"/></svg><svg class="bm m"><use href="#bm-m-w"/></svg><svg class="bm c"><use href="#bm-c-p"/></svg><svg class="bm g"><use href="#bm-g-w"/></svg><svg class="bm m"><use href="#bm-m-p"/></svg>
+<span style="opacity:.6;display:flex;gap:18px"><svg class="bm c"><use href="#bm-c-w"/></svg></span>
+</div><figcaption><b>Real size, light.</b> Claude · briefcase, ChatGPT · person, Gemini · briefcase, Claude · person, ChatGPT · briefcase, Gemini · person; last, the badge at an unselected tab's 60% (the mark itself never dims — today's rule). The first Claude mark is drawn in ink to show the badge still reads when mark and glyph share a colour: the cleared ring does the separating.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px;padding:14px 16px;display:flex;align-items:center;gap:18px">
+<svg class="bm c"><use href="#bm-c-w"/></svg><svg class="bm g"><use href="#bm-g-p"/></svg><svg class="bm m"><use href="#bm-m-w"/></svg><svg class="bm c"><use href="#bm-c-p"/></svg><svg class="bm g"><use href="#bm-g-w"/></svg><svg class="bm m"><use href="#bm-m-p"/></svg>
+<span style="opacity:.6;display:flex;gap:18px"><svg class="bm c"><use href="#bm-c-w"/></svg></span>
+</div><figcaption><b>Real size, dark.</b> The disc is cleared, not painted: whatever is behind the strip shows through — the dark surface here, the Claude tab's warm ivory on a light phone (CCRM-56 (Provider Identity) "two rooms") — so the ring is always the surface and never a second colour.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:420px;padding:14px 16px;display:flex;align-items:flex-end;gap:28px">
+<svg class="zoom c" viewBox="-1 -1 27 27"><use href="#bm-c-w" width="24" height="24"/><rect class="guide" x="0" y="0" width="20" height="20"/><rect class="guide" x="0" y="0" width="24" height="24"/><circle class="guide" cx="17.5" cy="17.5" r="6.5"/><circle class="guide" cx="17.5" cy="17.5" r="8"/></svg>
+<svg class="zoom g" viewBox="-1 -1 27 27"><use href="#bm-g-p" width="24" height="24"/><rect class="guide" x="0" y="0" width="20" height="20"/><rect class="guide" x="0" y="0" width="24" height="24"/><circle class="guide" cx="17.5" cy="17.5" r="6.5"/><circle class="guide" cx="17.5" cy="17.5" r="8"/></svg>
+<svg class="zoom m" viewBox="-1 -1 27 27"><use href="#bm-m-w" width="24" height="24"/><rect class="guide" x="0" y="0" width="20" height="20"/><rect class="guide" x="0" y="0" width="24" height="24"/><circle class="guide" cx="17.5" cy="17.5" r="6.5"/><circle class="guide" cx="17.5" cy="17.5" r="8"/></svg>
+</div><figcaption><b>4× with the guides (Android, 24 dp box).</b> Dashed: the 20 dp mark box, the 24 dp icon box, the 13 dp disc and the 16 dp cleared circle (its centre 6.5 dp in from the box's lower-right corner, i.e. at 17.5 / 17.5). The figure is the filled Material <code>person</code> / <code>work</code> drawn in a 12 dp box, so the figure itself is 8 dp tall (the icons carry 2 of 24 padding); SF <code>person.fill</code> 9 pt semibold is the same 8 pt of figure. What the bite removes: the Claude starburst's lower-right diagonal arm from 2.6 dp off the hub, one of the ChatGPT knot's six lobes, the Gemini spark's lower-right point — exactly what the rail already removes at 25 pt (3.3 pt off the hub).</figcaption></figure>
+</div>
+<table>
+<tr><th></th><th class="n">iOS rail (built)</th><th class="n">Android tab · iOS History strip</th><th class="n">iOS header</th><th class="n">Summary row (not recommended)</th></tr>
+<tr><td>icon box</td><td class="n">25 pt</td><td class="n">24 dp / pt</td><td class="n">26 pt</td><td class="n">22</td></tr>
+<tr><td>mark (top-left)</td><td class="n">21</td><td class="n">20</td><td class="n">22</td><td class="n">18</td></tr>
+<tr><td>badge disc · cleared circle</td><td class="n">13 · 16</td><td class="n">13 · 16</td><td class="n">13 · 16</td><td class="n">13 · 16</td></tr>
+<tr><td>figure (filled, ink)</td><td class="n">SF 9 pt ≈ 8</td><td class="n">Material 12 dp box = 8 · SF 9 pt</td><td class="n">SF 9 pt</td><td class="n">8</td></tr>
+<tr><td>overhang past the mark (right and down)</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n">4</td></tr>
+<tr><td>bite begins, from the mark's hub</td><td class="n">3.3</td><td class="n">2.6</td><td class="n">4.0</td><td class="n">1.2</td></tr>
+<tr><td>figure ÷ mark</td><td class="n">0.38</td><td class="n">0.40</td><td class="n">0.36</td><td class="n">0.44</td></tr>
+<tr><td>pixels of figure on the Fold 7 (≈ 2.6 px/dp) · iPhone (3×)</td><td class="n">— · 24</td><td class="n">21 · 24</td><td class="n">— · 24</td><td class="n">21 · 24</td></tr>
+</table>
+<p>One badge whatever the mark: 13 dp disc, 8 dp figure, 4 dp overhang. At 20–22 the mark keeps its hub and seven of eight arms (Claude), five of six lobes (ChatGPT), three of four points (Gemini) and is still the mark. At 18 the bite starts 1.2 dp off the hub and the badge is nearly half the mark's height: that is the Summary row, where the first draft's "same blob" verdict still holds — see 1.3.</p>
+
+<h3>Widths (read off the A4 / A6 captures, ±2 dp) <small class="u">UNVERIFIED by measurement in code</small></h3>
+<p>A tab's label is the 24 dp icon box, 2 dp, the name — the name starts at 26 dp, where it starts today (mark 20 + 6), because the badge's 4 dp overhang lives in the gap: the figure's ink ends 4 dp before the name (the row glyph's own gap) and the mark's edge is 6 dp from it as before. So every width below is <b>today's width</b>, and the strip's fixed-or-scrolling decision (CCBG-81 (History Tab Wrap), <code>TabStripFit.scrolls</code>: fixed equal shares while every label + 32 fits its share, else scrolling with a 90 dp floor) does not move.</p>
+<table>
+<tr><th>Name (titleSmall 14 sp medium)</th><th class="n">text</th><th class="n">label today = A-badge<br>26 + text</th><th class="n">tab<br>label + 32 (min 90 scrolling)</th><th class="n">first draft's A<br>(glyph 14 + 4)</th></tr>
+<tr><td>All (bars icon 20 + 6 + "All")</td><td class="n">17</td><td class="n">43</td><td class="n">90</td><td class="n">90</td></tr>
+<tr><td>Teams</td><td class="n">43</td><td class="n">69</td><td class="n">101</td><td class="n">119</td></tr>
+<tr><td>Personal</td><td class="n">50</td><td class="n">76</td><td class="n">108</td><td class="n">126</td></tr>
+<tr><td>ChatGPT</td><td class="n">52</td><td class="n">78</td><td class="n">110</td><td class="n">128</td></tr>
+<tr><td>Gemini</td><td class="n">44</td><td class="n">70</td><td class="n">102</td><td class="n">120</td></tr>
+<tr><td>Lab</td><td class="n">24</td><td class="n">50</td><td class="n">90</td><td class="n">100</td></tr>
+<tr><td>Atlas</td><td class="n">33</td><td class="n">59</td><td class="n">91</td><td class="n">109</td></tr>
+<tr><td>Ops · Research · Client · Work</td><td class="n">27 · 60 · 38 · 35</td><td class="n">53 · 86 · 64 · 61</td><td class="n">90 · 118 · 96 · 93</td><td class="n">103 · 136 · 114 · 111</td></tr>
+<tr><td>Consulting Client (16 chars, the cap)</td><td class="n">≈112</td><td class="n">138</td><td class="n">170</td><td class="n">188</td></tr>
+</table>
+<table>
+<tr><th>Width · tabs</th><th class="n">share</th><th>Today = A-badge (widest tab "Personal" 108)</th><th>first draft's A (126), for the record</th></tr>
+<tr><td>360 · All + 2 accounts</td><td class="n">120</td><td><b>fixed</b> (names up to "Personal" / "ChatGPT"; a 16-character name scrolls, as today)</td><td>scrolled</td></tr>
+<tr><td>360 · All + 3 or more</td><td class="n">≤ 90</td><td>scrolls</td><td>scrolls</td></tr>
+<tr><td>412 (cover) · All + 2</td><td class="n">137</td><td>fixed</td><td>fixed</td></tr>
+<tr><td>412 · All + 3 or more</td><td class="n">≤ 103</td><td>scrolls ("Personal" 108 &gt; 103; three short names such as Teams · Lab · Atlas stay fixed)</td><td>scrolls</td></tr>
+<tr><td>750 (inner) · All + 2…5</td><td class="n">≥ 125</td><td><b>fixed</b></td><td>scrolled at five</td></tr>
+<tr><td>750 · All + 6 or more</td><td class="n">≤ 107</td><td>scrolls (by 1 dp with "Personal")</td><td>scrolls</td></tr>
+</table>
+<p><b>When the strip scrolls:</b> exactly when it scrolls today — at 360 dp from the third account, on the cover from the third unless every name is short, on the inner screen from the sixth. The two flips the first draft's A caused (360 dp with two accounts, 750 dp with five) do not happen, so Robin's "let it scroll" answer is never exercised.</p>
+
+<h3>1.1 Today — 360 dp, two accounts (Teams · Personal), Teams selected</h3>
+<div class="row">
+<figure><div class="ph light" style="width:360px">
+<div class="top"><svg class="mk c"><use href="#mk-claude"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="ttl">Cooldown</span><span class="ic"><svg width="22" height="22"><use href="#g-cal"/></svg><svg width="22" height="22"><use href="#g-gear"/></svg><svg width="22" height="22"><use href="#g-more"/></svg></span></div>
+<div class="strip"><div class="tab off" style="width:120px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:120px"><svg class="mk c"><use href="#mk-claude"/></svg><span>Teams</span></div><div class="tab off" style="width:120px"><svg class="mk g"><use href="#mk-gpt"/></svg><span>Personal</span></div><div class="ind" style="left:120px;width:120px"></div></div>
+<div class="page"><div class="card"><div class="tile"><svg class="ring" style="width:72px;height:72px" viewBox="0 0 72 72"><circle cx="36" cy="36" r="32" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="36" cy="36" r="32" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="36 201" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)">18<tspan font-size="9">%</tspan></text></svg><div class="tb"><div class="l1"><span class="nm">Weekly</span><span class="fg">52<small>%</small></span></div><div class="ub h12"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div></div></div><div class="fl">◔ Resets in 2h 20m · on track for ~69%</div></div></div>
+<div class="foot">Checked 4m ago ↻</div>
+</div><figcaption><b>Today, light.</b> Fixed thirds (120 dp each). Nothing on the page says Personal or Work.</figcaption></figure>
+<figure><div class="ph dark" style="width:360px">
+<div class="top"><svg class="mk c"><use href="#mk-claude"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="ttl">Cooldown</span><span class="ic"><svg width="22" height="22"><use href="#g-cal"/></svg><svg width="22" height="22"><use href="#g-gear"/></svg><svg width="22" height="22"><use href="#g-more"/></svg></span></div>
+<div class="strip"><div class="tab off" style="width:120px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:120px"><svg class="mk c"><use href="#mk-claude"/></svg><span>Teams</span></div><div class="tab off" style="width:120px"><svg class="mk g"><use href="#mk-gpt"/></svg><span>Personal</span></div><div class="ind" style="left:120px;width:120px"></div></div>
+<div class="page"><div class="card"><div class="tile"><svg class="ring" style="width:72px;height:72px" viewBox="0 0 72 72"><circle cx="36" cy="36" r="32" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="36" cy="36" r="32" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="36 201" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)">18<tspan font-size="9">%</tspan></text></svg><div class="tb"><div class="l1"><span class="nm">Weekly</span><span class="fg">52<small>%</small></span></div><div class="ub h12"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div></div></div><div class="fl">◔ Resets in 2h 20m · on track for ~69%</div></div></div>
+<div class="foot">Checked 4m ago ↻</div>
+</div><figcaption><b>Today, dark.</b> The mark keeps its accent on an unselected tab; only the text drops to 60%.</figcaption></figure>
+</div>
+
+<h3>1.2 A-badge — the badged mark in every account tab's label (recommended)</h3>
+<p>Label = icon box 24 dp (mark 20 in the accent, badge as in 1.0) · 2 dp · name in titleSmall; name at 26 dp as today. The badge's figure follows the text's colour and state (ink; 60% on an unselected tab), the mark keeps its accent as today. The "All" tab is unchanged. Same composable (<code>ProviderTabLabel</code>), so History's strip gets it too.</p>
+<div class="row">
+<figure><div class="ph light" style="width:360px">
+<div class="top"><svg class="mk c"><use href="#mk-claude"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="ttl">Cooldown</span><span class="ic"><svg width="22" height="22"><use href="#g-cal"/></svg><svg width="22" height="22"><use href="#g-gear"/></svg><svg width="22" height="22"><use href="#g-more"/></svg></span></div>
+<div class="strip"><div class="tab off" style="width:120px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:120px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:120px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:120px;width:120px"></div></div>
+<div class="page"><div class="card"><div class="tile"><svg class="ring" style="width:72px;height:72px" viewBox="0 0 72 72"><circle cx="36" cy="36" r="32" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="36" cy="36" r="32" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="36 201" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)">18<tspan font-size="9">%</tspan></text></svg><div class="tb"><div class="l1"><span class="nm">Weekly</span><span class="fg">52<small>%</small></span></div><div class="ub h12"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div></div></div><div class="fl">◔ Resets in 2h 20m · on track for ~69%</div></div></div>
+<div class="foot">Checked 4m ago ↻</div>
+</div><figcaption><b>A-badge · 360 dp · two accounts, light, Teams selected.</b> Fixed thirds of 120 dp, as today: "Personal" is still a 108 dp tab. The briefcase on Teams at full ink, the person on Personal at 60% with its text.</figcaption></figure>
+<figure><div class="ph dark" style="width:360px">
+<div class="top"><svg class="mk c"><use href="#mk-claude"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="ttl">Cooldown</span><span class="ic"><svg width="22" height="22"><use href="#g-cal"/></svg><svg width="22" height="22"><use href="#g-gear"/></svg><svg width="22" height="22"><use href="#g-more"/></svg></span></div>
+<div class="strip"><div class="tab off" style="width:120px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:120px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab" style="width:120px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:240px;width:120px;background:var(--gpt)"></div></div>
+<div class="page"><div class="card"><div class="tile"><svg class="ring" style="width:72px;height:72px" viewBox="0 0 72 72"><circle cx="36" cy="36" r="32" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="36" cy="36" r="32" fill="none" stroke="var(--gpt)" stroke-width="5" stroke-dasharray="96 201" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)">48<tspan font-size="9">%</tspan></text></svg><div class="tb"><div class="l1"><span class="nm">Weekly</span><span class="fg" style="color:var(--gpt)">50<small>%</small></span></div><div class="ub h12" style="background:color-mix(in srgb,var(--gpt) 25%,transparent)"><i style="width:50%;background:var(--gpt)"></i><u style="left:51%"></u></div><div class="cap">51% pace mark · 1 under</div></div></div><div class="fl">◔ Resets in 4h 05m · on track for ~68%</div></div></div>
+<div class="foot">Checked 4m ago ↻</div>
+</div><figcaption><b>A-badge · 360 dp · two accounts, dark, Personal selected.</b> The person badge at full ink on the selected tab, the briefcase at 60% on Teams; both marks in their accents. The ring between mark and figure is the dark surface.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:360px"><div style="height:8px"></div>
+<div class="strip sc" style="width:480px"><div class="tab off" style="width:90px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:101px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab" style="width:108px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:91px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="ind" style="left:191px;width:108px;background:var(--gpt)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 360 dp · four accounts</b> (Teams · Personal · Lab · Atlas), Personal selected, light: 480 dp of tabs, "Atlas" off screen — the same 480 as today. Teams and Atlas are both Claude and both Work: the badge does not separate them, their names do (the rail has the same limit, §9a of the Duo page).</figcaption></figure>
+<figure><div class="ph dark" style="width:360px"><div style="height:8px"></div>
+<div class="strip sc" style="width:1089px"><div class="tab" style="width:90px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:101px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:108px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:110px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>ChatGPT</span></div><div class="tab off" style="width:102px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Gemini</span></div><div class="tab off" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:91px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="tab off" style="width:90px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Ops</span></div><div class="tab off" style="width:118px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Research</span></div><div class="tab off" style="width:96px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Client</span></div><div class="tab off" style="width:93px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Work</span></div><div class="ind" style="left:0;width:90px;background:var(--ink)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 360 dp · ten accounts, All selected, dark.</b> 1,089 dp of tabs (today 1,089), 3½ on screen. The sample's ten names: Teams · Personal · ChatGPT · Gemini · Lab · Atlas · Ops · Research · Client · Work; the tags of the first six are the sample's (the rail capture), the last four as drawn.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:412px"><div style="height:8px"></div>
+<div class="strip"><div class="tab" style="width:137.3px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:137.3px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:137.3px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:0;width:137.3px;background:var(--ink)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 412 dp (Fold 7 cover) · two accounts, All selected, light.</b> Fixed thirds of 137 dp; "Personal" 108 fits with 29 to spare. As today.</figcaption></figure>
+<figure><div class="ph dark" style="width:412px"><div style="height:8px"></div>
+<div class="strip sc" style="width:480px"><div class="tab off" style="width:90px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:101px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:108px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:91px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="ind" style="left:299px;width:90px;background:var(--gem)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 412 dp · four accounts, Lab selected, dark.</b> Scrolls today (share 103 &lt; 108) and scrolls now; 480 dp, "Atlas" 68 dp off screen until the strip brings the selected tab into view as it does today.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:412px"><div style="height:8px"></div>
+<div class="strip sc" style="width:1089px"><div class="tab off" style="width:90px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:101px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:108px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:110px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>ChatGPT</span></div><div class="tab off" style="width:102px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Gemini</span></div><div class="tab off" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:91px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="tab off" style="width:90px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Ops</span></div><div class="tab off" style="width:118px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Research</span></div><div class="tab off" style="width:96px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Client</span></div><div class="tab off" style="width:93px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Work</span></div><div class="ind" style="left:90px;width:101px"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 412 dp · ten accounts, Teams selected, light.</b> 1,089 dp; four tabs on screen. Personal and ChatGPT (both ChatGPT accounts, both Personal) read as two green knots with a person; the names tell them apart, as on the rail.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:750px"><div style="height:8px"></div>
+<div class="strip"><div class="tab off" style="width:250px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:250px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:250px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:250px;width:250px"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 750 dp (Fold 7 inner, MEDIUM) · two accounts, Teams selected, light.</b> Fixed thirds of 250 dp.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph dark" style="width:750px"><div style="height:8px"></div>
+<div class="strip"><div class="tab off" style="width:150px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:150px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:150px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:150px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab" style="width:150px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="ind" style="left:600px;width:150px"></div></div>
+<div style="height:8px"></div>
+<div class="strip"><div class="tab off" style="width:125px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:125px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:125px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab" style="width:125px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Gemini</span></div><div class="tab off" style="width:125px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:125px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="ind" style="left:375px;width:125px;background:var(--gem)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 750 dp · four accounts (top, Atlas selected) and five (bottom, Gemini selected), dark.</b> Fixed fifths of 150 and fixed sixths of 125 — the five-account strip the first draft's A pushed to scrolling by 1 dp stays fixed, since "Personal" is still 108.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:750px"><div style="height:8px"></div>
+<div class="strip sc" style="width:1089px"><div class="tab" style="width:90px"><svg class="mk k"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:101px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:108px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:110px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>ChatGPT</span></div><div class="tab off" style="width:102px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Gemini</span></div><div class="tab off" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:91px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="tab off" style="width:90px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Ops</span></div><div class="tab off" style="width:118px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Research</span></div><div class="tab off" style="width:96px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Client</span></div><div class="tab off" style="width:93px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Work</span></div><div class="ind" style="left:0;width:90px;background:var(--ink)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>A-badge · 750 dp · ten accounts, All selected, light.</b> 1,089 dp of tabs, 7½ on screen (today the same). Teams · Atlas · Ops · Work (all Claude, all briefcase) are told apart by name only; the badge tells them from a Claude · person at a glance, which the names do not.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:360px"><div style="height:8px"></div>
+<div class="strip"><div class="tab off" style="width:120px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab" style="width:120px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:120px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="ind" style="left:120px;width:120px;background:var(--gpt)"></div></div>
+<div style="height:8px"></div></div><figcaption><b>History's strip · 360 dp · three accounts, Personal selected, light.</b> No "All" tab in History; thirds of 120, "Personal" 108 fits (CCBG-81 (History Tab Wrap)'s case). Same composable, same badge, same widths as today.</figcaption></figure>
+</div>
+<p class="cost"><b>A-badge costs:</b> 0 dp per tab, no height, no strip flips; a 24 dp icon drawn with a knock-out (an offscreen layer per label, see §5); the mark is bitten on the most-seen surface of the app — see 1.5. TalkBack gains ", Work account" after each tab's name. History's strip changes with it.</p>
+
+<h3>1.3 Should iOS follow, and where — before / after</h3>
+<p>The rule that makes the two platforms read the same is not "badge everywhere" but <b>badge on an account's icon, glyph column on a row</b>. The icon surfaces: Android's tabs and History strip, iOS's History strip (<code>AccountTabs</code>), the Duo rail (built), the iOS account-page header, and — the Android strip's true twin — the iPhone's bottom tab bar and the iPad sidebar. The row surfaces: Summary rows, the snapshot, Settings.</p>
+
+<h4>1.3a iOS History strip (<code>AccountTabs</code>) — follow: yes</h4>
+<div class="row">
+<figure><div class="ios light" style="width:390px;padding:0">
+<div class="strip"><div class="tab off" style="width:130px"><svg class="mk k" style="width:15px;height:15px"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:130px"><svg class="mk c"><use href="#mk-claude"/></svg><span>Teams</span></div><div class="tab off" style="width:130px"><svg class="mk g"><use href="#mk-gpt"/></svg><span>Personal</span></div><div class="ind" style="left:130px;width:130px"></div></div>
+<div style="height:8px"></div>
+<div class="strip"><div class="tab off" style="width:130px"><svg class="mk k" style="width:15px;height:15px"><use href="#g-all"/></svg><span>All</span></div><div class="tab" style="width:130px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:130px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:130px;width:130px"></div></div>
+<div style="height:8px"></div>
+<div class="strip sc" style="width:480px"><div class="tab off" style="width:90px"><svg class="mk k" style="width:15px;height:15px"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:99px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab" style="width:111px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="tab off" style="width:90px"><svg class="bm m"><use href="#bm-m-w"/></svg><span>Lab</span></div><div class="tab off" style="width:90px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Atlas</span></div><div class="ind" style="left:189px;width:111px;background:var(--gpt)"></div></div>
+</div><figcaption><b>iPhone 17e, 390 pt, light.</b> Top: today (mark 20 · 7 · name 16 pt medium). Middle: A-badge — icon box 24 · 3 · name, so the name starts at 27 as today and <code>TabStripFitTests</code> do not move; thirds of 130. Bottom: five tabs scroll (480 pt), as today. Unselected tabs are <code>sub</code>-coloured, badge included, as the text is.</figcaption></figure>
+<figure><div class="ios dark" style="width:390px;padding:0">
+<div class="strip"><div class="tab" style="width:130px"><svg class="mk k" style="width:15px;height:15px"><use href="#g-all"/></svg><span>All</span></div><div class="tab off" style="width:130px"><svg class="bm c"><use href="#bm-c-w"/></svg><span>Teams</span></div><div class="tab off" style="width:130px"><svg class="bm g"><use href="#bm-g-p"/></svg><span>Personal</span></div><div class="ind" style="left:0;width:130px;background:var(--ink)"></div></div>
+</div><figcaption><b>Dark, All selected.</b> Both account tabs unselected: marks in their accents, badges in <code>sub</code>.</figcaption></figure>
+</div>
+
+<h4>1.3b iOS account-page header (<code>AccountHeader</code>, regular width) — follow: yes, re-approval needed</h4>
+<p>Approved 2026-11-12 (§5 of the Duo page) as a separate 18 pt glyph before the 22 pt mark; built. On the Duo's wide inner screen this header and the rail sit on one screen 300 pt apart, so with the badge on the rail the header's separate glyph is the odd one out. Recommend the badge at the header's size (26 pt box, mark 22, the same 13 pt badge); the header gets 22 pt back for the credits text.</p>
+<div class="row">
+<figure><div class="ios light" style="width:620px"><div class="ic2" style="padding:12px 14px">
+<div class="ahead"><svg class="tg"><use href="#g-work"/></svg><svg class="mk c" style="width:22px;height:22px"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill" style="font-size:12px">Max</span><span class="cr">Usage credits $12.00 / $40.00 · <b>30%</b></span></div>
+<div style="height:14px"></div>
+<div class="ahead"><svg class="bm26 c"><use href="#bm26-c-w"/></svg><span class="nm">Teams</span><span class="pill" style="font-size:12px">Max</span><span class="cr">Usage credits $12.00 / $40.00 · <b>30%</b></span></div>
+</div></div><figcaption><b>Header, light: today (top) and A-badge (bottom).</b> Today: glyph 18 · 4 · mark 22 · 9 · "Teams" 21 pt bold → the name at 53. After: icon box 26 · 5 · name at 31. VoiceOver unchanged: "Teams, Work account" on the name, the icon hidden.</figcaption></figure>
+<figure><div class="ios dark" style="width:620px"><div class="ic2" style="padding:12px 14px">
+<div class="ahead"><svg class="bm26 m"><use href="#bm26-m-w"/></svg><span class="nm">Lab</span><span class="pill" style="font-size:12px">Pro</span><span class="cr">Credits $4.20 balance</span></div>
+</div></div><figcaption><b>Header, dark, Gemini · Work.</b></figcaption></figure>
+</div>
+
+<h4>1.3c iPhone tab bar and iPad sidebar — the Android strip's twin; a separate decision</h4>
+<p>Android's tab strip corresponds to the iPhone's bottom tab bar and the iPad's sidebar, not to the header. Today those draw the mark as a template image in the system's tint (selected / unselected grey). The rail already departs from that on the wide inner screen (original rendering, accent + badge, Robin's pick). Following through would put the same icon on every iPhone and iPad — a visible change on every device that needs its own wireframe and a spike (whether the iOS 27 bottom bar honours original-rendering images the way the rail did is <small class="u">UNVERIFIED</small>). Drawn once so the choice is visible; not part of this build.</p>
+<div class="row">
+<figure><div class="ios light" style="width:390px;padding:8px">
+<div class="tbar"><div class="tbi on"><svg class="k"><use href="#g-all"/></svg>All</div><div class="tbi"><svg style="color:var(--ios-sub)"><use href="#mk-claude"/></svg>Teams</div><div class="tbi"><svg style="color:var(--ios-sub)"><use href="#mk-gpt"/></svg>Personal</div><div class="tbi"><svg style="color:var(--ios-sub)"><use href="#mk-gem"/></svg>Lab</div><div class="tbi"><svg style="color:var(--ios-sub)"><use href="#mk-claude"/></svg>Atlas</div></div>
+<div class="tbar"><div class="tbi on"><svg class="k"><use href="#g-all"/></svg>All</div><div class="tbi"><svg class="bm c"><use href="#bm-c-w"/></svg>Teams</div><div class="tbi"><svg class="bm g"><use href="#bm-g-p"/></svg>Personal</div><div class="tbi"><svg class="bm m"><use href="#bm-m-w"/></svg>Lab</div><div class="tbi"><svg class="bm c"><use href="#bm-c-w"/></svg>Atlas</div></div>
+</div><figcaption><b>iPhone tab bar, light: today (top, system template tint) and if it followed the rail (bottom).</b> Unselected icons would keep their accent and badge; the glass pill and label colour would carry the selection. Teams and Atlas still need their labels. My answer: yes, as its own wireframe after the bar spike — not now.</figcaption></figure>
+</div>
+
+<h4>1.3d Summary rows (CCRM-115 (Row Tag Glyph), both platforms) — follow: no</h4>
+<div class="row">
+<figure><div class="ph light" style="width:360px;padding:12px 20px">
+<div class="card" style="padding:12px 16px">
+<div class="r first" style="padding-top:2px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="bm22 c" style="margin-right:3px"><use href="#bm22-c-w"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r" style="padding:8px 0"><span class="rank" style="background:var(--gem)">5</span><svg class="tg" style="width:12px;height:12px;color:var(--mute)"><use href="#g-person"/></svg><span style="font-size:15px;margin-left:-8px">Lab</span><span class="ub" style="flex:1;margin:0 8px;height:10px;background:color-mix(in srgb,var(--gem) 25%,transparent)"><i style="width:54%;background:var(--gem)"></i><u style="left:54%"></u></span><span style="font-size:13px;color:var(--green)">On the mark</span><span class="fg" style="color:var(--gem);margin-left:8px;font-size:15px">61<small>%</small></span></div>
+</div></div><figcaption><b>Full row today (1), full row with the badge on its 18 dp mark (2, not recommended), one-line row (3).</b> At 18 the badge covers the mark's lower-right quarter and the bite starts 1.2 dp off the hub (the "same blob" of the first draft's §1.4); growing the mark to 20 would still leave the one-line row, which has no mark at all — a rank disc, the glyph, the name — so the Summary would carry two treatments either way. The column also has an approved, built and tested drop rule on both platforms (<code>SummaryRows.fullKeepsGlyph</code>, <code>RowGlyphFit</code>); a badge has no width to give. The rows stay as built.</figcaption></figure>
+</div>
+
+<h4>1.3e Settings account rows (both platforms) — follow: no</h4>
+<div class="row">
+<figure><div class="ph light" style="width:360px;padding:10px 16px">
+<div style="display:flex;align-items:center;gap:0;height:40px"><svg class="mk c"><use href="#mk-claude"/></svg><span style="width:10px"></span><span style="font-size:16px;font-weight:500">Teams</span><span style="width:8px"></span><span class="dot"></span><span style="width:6px"></span><span class="pill">Max</span><span style="width:6px"></span><span class="chip"><svg><use href="#g-work"/></svg>Work</span></div>
+<div style="display:flex;align-items:center;gap:0;height:40px;opacity:.55"><svg class="bm c"><use href="#bm-c-w"/></svg><span style="width:6px"></span><span style="font-size:16px;font-weight:500">Teams</span><span style="width:8px"></span><span class="dot"></span><span style="width:6px"></span><span class="pill">Max</span><span style="width:6px"></span><span class="chip"><svg><use href="#g-work"/></svg>Work</span></div>
+</div><figcaption><b>Android Settings › Accounts: today (top) and with the badge as well (bottom, dimmed, not recommended).</b> The chip is the control that changes the tag and the one place the glyph is taught with its word (Robin 2026-11-10: glyph + text); a badge beside it says the tag twice. iOS's row (mark 20 · name · plan chip · tag chip · status) is the same case. Settings keeps the plain mark, as the Duo page's build table already says.</figcaption></figure>
+</div>
+
+<h3>1.4 Legibility, screen readers, colour-blind and dark checks</h3>
+<table>
+<tr><th>Check</th><th>Finding</th></tr>
+<tr><td>Badge at 24 dp (Android, iOS strip) vs 25 pt (rail)</td><td>The badge is identical — 13 disc, 16 cleared, 8 of figure; only the mark is 1 smaller (20 vs 21). On the Fold 7 the figure is ≈ 21 px, on an iPhone 24 px; the person's head is 4 dp across, the briefcase handle 2 dp wide. The figure is <b>filled</b>, not outlined: an outlined person at 8 dp is 1 dp strokes, which is why the first draft's 10 dp outlined badge read as a blob and the rail's filled one does not (spike captures).</td></tr>
+<tr><td>Unselected tab (Android 60% text alpha; iOS <code>sub</code>)</td><td>The badge follows the text, the mark keeps its accent (today's rule). At 60% on light the figure is ≈ #767378 on #FEF7FF, contrast 4.1:1; on dark ≈ #8C898F on #1C1B1F, 4.6:1 — the same as the tab's own text, which Material ships.</td></tr>
+<tr><td>Dark</td><td>The ring is the cleared surface: dark between a light accent (Claude #E59980, ChatGPT #19C39A, Gemini #8AB4F8) and a light-ink figure (#E6E1E5) — 1.5 dp (≈ 4 px) of separation that does not depend on hue. Drawn in 1.0.</td></tr>
+<tr><td>Colour-blind</td><td>The tag is a shape in ink, never a colour (the row glyph's rule); the provider is the mark's silhouette first and its accent second. Under deuteranopia Claude orange and ChatGPT green converge, but the starburst and the knot do not, and the badge is unaffected.</td></tr>
+<tr><td>Font scale</td><td>The label's text grows; the icon box stays 24 dp (as the 20 dp mark does today), so at scale 2.0 the badge is small beside a 28 sp name — the row glyph (14 dp fixed) and the rail (25 pt fixed) have the same proportion. The strip's fit still follows the measured label.</td></tr>
+<tr><td>TalkBack — Android tab</td><td>Today "Claude, Teams, tab 2 of 4, selected" (the mark's contentDescription, then the text). A-badge: the icon keeps "Claude" (the badge is drawn, not a node); the text gets <kbd>contentDescription = "Teams, Work account"</kbd> → "Claude, Teams, <b>Work account</b>, tab 2 of 4, selected" — the Summary row's wording, said once.</td></tr>
+<tr><td>VoiceOver — iOS History strip, rail</td><td>As built both read the bare name ("Teams") <small class="u">UNVERIFIED on device</small>; both get <kbd>.accessibilityLabel("\(label), \(tag) account")</kbd>: "Teams, Work account, selected". The header already reads "Lab, Work account".</td></tr>
+<tr><td>The bitten mark</td><td>CCRM-56 (Provider Identity) decision 4 keeps the traced marks "unmodified in shape", and every provider's brand page forbids adding elements to its mark. The drawables stay untouched; the bite is a render-time overlay, the same thing a presence dot on an avatar is. The rail already ships it on Robin's 2026-11-12 pick; A-badge puts it on the surface users see most. Robin's call, made once for the rail; this page asks him to make it for the tabs knowingly.</td></tr>
+</table>
+
+<h3>1.5 What changed since the first draft's §1.4 ("Rejected: a glyph badge on the mark")</h3>
+<div class="row"><figure><div class="ph light" style="width:220px;padding:14px 16px;display:flex;align-items:center;gap:6px">
+<span class="badge"><svg class="mk c"><use href="#mk-claude"/></svg><span class="b"><svg><use href="#g-work"/></svg></span></span><span class="badge"><svg class="mk g"><use href="#mk-gpt"/></svg><span class="b"><svg><use href="#g-person"/></svg></span></span><span class="badge"><svg class="mk m"><use href="#mk-gem"/></svg><span class="b"><svg><use href="#g-work"/></svg></span></span>
+</div><figcaption><b>The first draft's badge</b> (10 dp outlined glyph on a 14 dp surface-filled disc, muted ink, all inside the 20 dp box) next to <b>1.0's</b>: the difference is a filled figure, 13 dp of disc hung 4 dp past the box, and ink instead of muted. Those three changes are what make the rail readable, and they cost no width. The rejection's other point — the trademark — stands as a fact in 1.4 and is Robin's to weigh.</figcaption></figure></div>
+
+<h2>2 · Problem 2 — the All · Personal · Work control</h2>
+<h3>2.0 Why "Work" reads greyed (for Robin, from the code)</h3>
+<p>It is the designed state, not a bug. A segment whose group has no accounts is drawn at 38% (<code>ui/AccountTags.kt</code>, <code>SummaryFilterControl</code>: <kbd>.alpha(if (live) 1f else 0.38f)</kbd>), and <i>live</i> means "at least one account carries that tag" (<code>data/AccountTag.kt</code>, <code>SummaryFilters.enabled</code>). Every account that existed before v2.0, and every account added without choosing Work, is Personal: <code>AccountTag.read</code> maps anything but <kbd>"work"</kbd> to Personal, silently (ROADMAP CCRM-110, "accounts that exist at the upgrade … are Personal, silently"). So on your phone no account is tagged Work, the Work group is empty, and the segment dims; a tap on it shows "No Work accounts yet. Tag one in Settings." for 3 s (addendum T3, your pick B). The sample looks different because its Teams and Lab are Work. Tag any account Work (Settings › the account's ⋮ › Tag…) and the segment lights up. The colour is right (ink at 38%, the same dim as the Add sheet's disabled segments). Glyphs on their own would not change this: a briefcase at 38% reads just as "off" as the word does. What reads wrong is the thing underneath — a filter with one usable choice (All and Personal are the same list) shown permanently. The drawings below fix the symptom (glyphs) and the cause (the gate) separately so you can take either.</p>
+
+<h3>2.1 Today — 360 dp phone, list 288 dp, straight after the upgrade (every account Personal)</h3>
+<div class="row">
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:63px">Personal</div><div class="sg dim" style="width:47px">Work</div></div><span class="sp"></span><span class="sort"><svg><use href="#g-sort"/></svg><svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gem)" stroke-width="5" stroke-dasharray="0 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">0<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="nm">Lab</span><span class="pill">pro</span><span class="fg" style="color:var(--gem)">61<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gem) 25%,transparent)"><i style="width:54%;background:var(--gem)"></i><i class="r" style="left:54%;width:7%"></i><u style="left:54%"></u></div><div class="cap">54% pace mark · 7 over</div><div class="l3"><b class="r">11h 28m ahead</b> · resets Sat 9:14 PM</div></div></div>
+</div></div><figcaption><b>Today, 288 dp list, dark.</b> Control 149 dp (35 · 63 · 47); "Work" at 38%; the sort button is its glyph because the list is under 320 dp (44 + 10 + 149 + 89 = 292 would not fit). Every row carries the person glyph, so the dim "Work" is the only thing on the card that is not Personal.</figcaption></figure>
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:63px">Personal</div><div class="sg dim" style="width:47px">Work</div></div><span class="sp"></span><span class="sort"><svg><use href="#g-sort"/></svg><svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="note">No Work accounts yet. Tag one in Settings.</div>
+</div></div><figcaption><b>Today, after a tap on "Work":</b> the 3-second line (addendum T3 B). It explains the grey, once, to the person who taps it.</figcaption></figure>
+</div>
+<p class="cost"><b>Today costs:</b> 149 dp of header; a permanently dim segment for everyone who never tags a Work account (most users, and Robin today); the sort glyph on 360 dp phones and, by the 320 dp rule, on the Fold's inner screen too.</p>
+
+<h3>2.2 Glyph segments, dim kept — All · person · briefcase</h3>
+<p>Segments 35 · 36 · 36 (10 dp padding, a 16 dp glyph in ink, the chosen one tonal as now); 111 dp in all, 38 fewer. "All" stays a word: it has no glyph the rows teach. The words stay as the accessibility labels. The glyphs are the ones on the rows directly below, so the control is its own key: tap the person, the rows with a person remain.</p>
+<div class="row">
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:36px"><svg><use href="#g-person"/></svg></div><div class="sg dim" style="width:36px"><svg><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+</div></div><figcaption><b>Glyph-only, dim kept, 288 dp, dark.</b> 44 + 10 + 111 + 89 = 254 ≤ 288: the sort button keeps "your order ▾" on a 360 dp phone. The dim briefcase still reads "off" — because it is.</figcaption></figure>
+<figure><div class="ph light" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:36px"><svg><use href="#g-person"/></svg></div><div class="sg" style="width:36px"><svg><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="note">No Work accounts yet. Tag one in Settings.</div>
+</div></div><figcaption><b>Glyph-only, no dim, light, after a tap on the briefcase.</b> The segment looks live, so every tap on it is answered with the note instead of a filter. Honest only with the gate (2.4); without it, a small lie each time.</figcaption></figure>
+</div>
+<p class="cost"><b>Glyph-only costs:</b> a glyph to learn (taught by the rows and the Settings chips, which show glyph + word); both platforms change together; the dim question is untouched.</p>
+
+<h3>2.3 Glyph + count</h3>
+<div class="row">
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:47px"><svg><use href="#g-person"/></svg>3</div><div class="sg" style="width:47px"><svg><use href="#g-work"/></svg>0</div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+</div></div><figcaption><b>Glyph + count, 133 dp.</b> "0" explains the empty group without a dim and the segment can stay live. But a second set of numbers now sits over the figures column, and the counts change on every add — the header starts to compete with the rows.</figcaption></figure>
+</div>
+<p class="cost"><b>Glyph + count costs:</b> 22 dp over glyph-only; numbers in the header; "All 3" would be redundant so All stays bare, which makes the row uneven.</p>
+
+<h3>2.4 The gate — no control while only one tag is in use (recommended, with 2.2)</h3>
+<p>Rev B showed the control "once any account has a tag"; the 2026-11-11 model gave every account a tag, which turned that gate into "always". The same intent in the new model is: <b>show the control once both tags are in use</b> (at least one Personal and one Work account). Then every segment is always live, so the 38% state, the tap note and TalkBack's "no accounts" never occur, and the code loses them. With one tag in use the header is v1.9's "Weekly … your order ▾". The memory rule is unchanged (a stored value whose group empties is rewritten to All; the control disappearing is the same event). Discovery stays where it is: the Add sheet's "This account is Personal / Work" with its caption "Groups it on the Summary", and the Tag dialog's line "Tags group accounts on the Summary: All · Personal · Work."</p>
+<div class="row">
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gpt)" stroke-width="5" stroke-dasharray="63 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">48<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><span class="nm">Personal</span><span class="pill">plus</span><span class="fg" style="color:var(--gpt)">50<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gpt) 25%,transparent)"><i style="width:50%;background:var(--gpt)"></i><u style="left:51%"></u></div><div class="cap">51% pace mark · 1 under</div><div class="l3"><b>2h 0m behind</b> · resets Sun 2:14 AM</div></div></div>
+</div></div><figcaption><b>Gate · one tag in use (your phone today).</b> No control, nothing grey, the sort keeps its words. The row glyphs still say Personal. Empty state of the control = absent.</figcaption></figure>
+<figure><div class="ph dark" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:36px"><svg><use href="#g-person"/></svg></div><div class="sg" style="width:36px"><svg><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gpt)" stroke-width="5" stroke-dasharray="63 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">48<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-person"/></svg><svg class="mk g"><use href="#mk-gpt"/></svg><span class="nm">Personal</span><span class="pill">plus</span><span class="fg" style="color:var(--gpt)">50<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gpt) 25%,transparent)"><i style="width:50%;background:var(--gpt)"></i><u style="left:51%"></u></div><div class="cap">51% pace mark · 1 under</div><div class="l3"><b>2h 0m behind</b> · resets Sun 2:14 AM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gem)" stroke-width="5" stroke-dasharray="0 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">0<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="nm">Lab</span><span class="pill">pro</span><span class="fg" style="color:var(--gem)">61<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gem) 25%,transparent)"><i style="width:54%;background:var(--gem)"></i><i class="r" style="left:54%;width:7%"></i><u style="left:54%"></u></div><div class="cap">54% pace mark · 7 over</div><div class="l3"><b class="r">11h 28m ahead</b> · resets Sat 9:14 PM</div></div></div>
+</div></div><figcaption><b>Gate · both tags in use (Teams and Lab tagged Work).</b> The control appears, every segment live, All chosen. The sample looks like this from the start.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph light" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg" style="width:35px">All</div><div class="sg" style="width:36px"><svg><use href="#g-person"/></svg></div><div class="sg on" style="width:36px"><svg><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gem)" stroke-width="5" stroke-dasharray="0 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">0<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="nm">Lab</span><span class="pill">pro</span><span class="fg" style="color:var(--gem)">61<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gem) 25%,transparent)"><i style="width:54%;background:var(--gem)"></i><i class="r" style="left:54%;width:7%"></i><u style="left:54%"></u></div><div class="cap">54% pace mark · 7 over</div><div class="l3"><b class="r">11h 28m ahead</b> · resets Sat 9:14 PM</div></div></div>
+</div></div><figcaption><b>Briefcase chosen, light.</b> The tonal segment and the rows' briefcases are the same glyph; the snapshot header still says "Work accounts" in words.</figcaption></figure>
+<figure><div class="ph light" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div>
+<div class="r first" style="margin-top:6px"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--claude)" stroke-width="5" stroke-dasharray="24 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">18<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk c"><use href="#mk-claude"/></svg><span class="nm">Teams</span><span class="pill">max</span><span class="fg">52<small>%</small></span></div><div class="ub"><i style="width:52%"></i><u style="left:57%"></u></div><div class="cap">57% pace mark · 5 under</div><div class="l3"><b>8h 38m behind</b> · resets Sat 4:14 PM</div></div></div>
+<div class="r"><svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="var(--gem)" stroke-width="5" stroke-dasharray="0 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">0<tspan font-size="8">%</tspan></text></svg><div class="rc"><div class="l1"><svg class="tg"><use href="#g-work"/></svg><svg class="mk m"><use href="#mk-gem"/></svg><span class="nm">Lab</span><span class="pill">pro</span><span class="fg" style="color:var(--gem)">61<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--gem) 25%,transparent)"><i style="width:54%;background:var(--gem)"></i><i class="r" style="left:54%;width:7%"></i><u style="left:54%"></u></div><div class="cap">54% pace mark · 7 over</div><div class="l3"><b class="r">11h 28m ahead</b> · resets Sat 9:14 PM</div></div></div>
+</div></div><figcaption><b>Gate · the last Personal account removed.</b> Both rows Work, one tag in use: the control leaves and the stored "work" is rewritten to All (the memory rule as built). Nothing visibly changes but the header.</figcaption></figure>
+</div>
+<p class="cost"><b>Gate costs:</b> a change to the shared rule (BEHAVIOR-MOBILE §6 <code>controlShown</code>, the tags fixture both clients test, core <code>SummaryFilter.resolve</code>), so iOS builds it too; the 3-s note, the 38% alpha and TalkBack's "no accounts" are removed rather than redrawn; a user with one tag never sees the filter until a second kind of account exists; it makes addendum T3 B moot (Robin's call, question 7).</p>
+
+<h3>2.5 Narrow and large text (glyph segments)</h3>
+<p>Rule: the glyph is 16 dp at font scale 1.0 and grows with the font (16 × scale), so large-text users do not get a tiny icon beside a large "All". The control wraps under the title from scale 1.5 as today, its three segments sharing the width equally (today they share by word length, 3 : 8 : 4, which the glyphs no longer need). The sort button shows its words whenever they fit the measured line (the iOS rule), replacing Android's "glyph under 320 dp".</p>
+<div class="row">
+<figure><div class="ph light" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd" style="height:32px"><span class="t" style="font-size:21px">Weekly</span><span class="sp"></span><span class="sort" style="font-size:18px;height:36px">your order <svg class="ch" style="width:16px;height:16px"><use href="#g-chev"/></svg></span></div>
+<div class="ctl" style="width:288px;margin-top:8px;height:36px"><div class="sg on" style="width:95.3px;height:34px;font-size:18px">All</div><div class="sg" style="width:95.3px;height:34px"><svg style="width:24px;height:24px"><use href="#g-person"/></svg></div><div class="sg" style="width:95.3px;height:34px"><svg style="width:24px;height:24px"><use href="#g-work"/></svg></div></div>
+</div></div><figcaption><b>Font scale 1.5, 288 dp.</b> Title row "Weekly" 21 sp with "your order ▾" at 18 sp (66 + 128 = 194 fits, so the words return; today's 320 dp rule would draw the glyph); the control under it, full width, thirds of 95 dp, glyphs 24 dp, 36 dp tall.</figcaption></figure>
+<figure><div class="ph light" style="width:360px;padding:16px 20px">
+<div class="card"><div class="hd" style="height:40px"><span class="t" style="font-size:28px">Weekly</span><span class="sp"></span><span class="sort" style="height:36px"><svg style="width:20px;height:20px"><use href="#g-sort"/></svg><svg class="ch" style="width:16px;height:16px"><use href="#g-chev"/></svg></span></div>
+<div class="ctl" style="width:288px;margin-top:8px;height:44px"><div class="sg on" style="width:95.3px;height:42px;font-size:24px">All</div><div class="sg" style="width:95.3px;height:42px"><svg style="width:32px;height:32px"><use href="#g-person"/></svg></div><div class="sg" style="width:95.3px;height:42px"><svg style="width:32px;height:32px"><use href="#g-work"/></svg></div></div>
+</div></div><figcaption><b>Font scale 2.0, 288 dp.</b> "Weekly" 28 sp; "your order ▾" at 24 sp would be ≈ 170 dp (88 + 170 &gt; 288), so the sort is its glyph; glyphs 32 dp, control 44 dp tall. Compare the A4 capture <code>22-summary-both-360dp-font2-light</code>, where the words "Personal" and "Work" take the whole 288 dp.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ph dark" style="width:389px;padding:16px 20px">
+<div class="card"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:63px">Personal</div><div class="sg" style="width:47px">Work</div></div><span class="sp"></span><span class="sort"><svg><use href="#g-sort"/></svg><svg class="ch"><use href="#g-chev"/></svg></span></div></div>
+<div class="card" style="margin-top:10px"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:35px">All</div><div class="sg" style="width:36px"><svg><use href="#g-person"/></svg></div><div class="sg" style="width:36px"><svg><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div></div>
+</div><figcaption><b>Fold 7 inner, the list column (317 dp list in a 349 dp card):</b> today (top) the 320 dp rule gives the glyph sort even though 44 + 10 + 149 + 89 = 292 would fit; with glyph segments and a measured rule (bottom) the inner screen reads "your order ▾" again.</figcaption></figure>
+</div>
+
+<h3>2.6 iOS (iPhone 17e, list 326 pt)</h3>
+<div class="row">
+<figure><div class="ios light" style="width:358px"><div class="ic2"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:33px">All</div><div class="sg" style="width:68px">Personal</div><div class="sg dim" style="width:50px">Work</div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div></div></div><figcaption><b>iOS today</b> (13 pt, 28 pt, 9 pt padding; 155 pt): "Work" dimmed to 38%, VoiceOver "Work, dimmed".</figcaption></figure>
+<figure><div class="ios light" style="width:358px"><div class="ic2"><div class="hd"><span class="t">Weekly</span><div class="ctl"><div class="sg on" style="width:33px">All</div><div class="sg" style="width:32px"><svg style="width:15px;height:15px"><use href="#g-person"/></svg></div><div class="sg" style="width:32px"><svg style="width:15px;height:15px"><use href="#g-work"/></svg></div></div><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div></div></div><figcaption><b>iOS, glyph segments, both tags in use</b> (SF <code>person</code> / <code>briefcase</code> 14 pt; 101 pt). With the gate the dimmed form never draws. iPad and the Duo panes: the same control.</figcaption></figure>
+<figure><div class="ios dark" style="width:358px"><div class="ic2"><div class="hd"><span class="t">Weekly</span><span class="sp"></span><span class="sort">your order <svg class="ch"><use href="#g-chev"/></svg></span></div></div></div><figcaption><b>iOS, gate, one tag in use, dark:</b> no control.</figcaption></figure>
+</div>
+
+<h3>2.7 What the screen readers say</h3>
+<table>
+<tr><th></th><th>Android TalkBack</th><th>iOS VoiceOver</th></tr>
+<tr><td>Today</td><td>"All, radio button, selected" · "Personal, radio button, not selected" · "Work, no accounts, radio button, not selected"; a tap on Work announces the note (live region)</td><td>group "Filter"; "All, selected, button" · "Personal, button" · "Work, dimmed, button"</td></tr>
+<tr><td>Glyph segments</td><td>identical: each segment carries <kbd>contentDescription = filter.label</kbd>, so the word is spoken although it is not drawn</td><td>identical: <kbd>.accessibilityLabel(filter.label)</kbd> on the glyph button</td></tr>
+<tr><td>With the gate</td><td>no control to read while one tag is in use; once shown, no "no accounts" state exists</td><td>same</td></tr>
+<tr><td>Tab (A-badge)</td><td>"Claude, Teams, Work account, tab 2 of 4, selected"</td><td>History strip and the Duo rail: "Teams, Work account, selected"; the header reads "Lab, Work account" (1.4)</td></tr>
+</table>
+
+<h3>2.8 Rejected variants, one line each</h3>
+<ul>
+<li><b>Three glyphs</b> (the All tab's bars icon for All): a control with no word at all is cryptic; "All" is 15 dp and clearer than any icon.</li>
+<li><b>Glyph + word where it fits, glyph-only when narrow:</b> two looks for one control; a user on a 360 dp phone and one on the cover would describe it differently.</li>
+<li><b>Hide the empty segment only</b> ("All · Personal"): two segments that select the same rows; the gate is the honest form of this.</li>
+<li><b>Filled glyph for the chosen segment</b> (Material filled person / work as the "semibold"): a nice touch, two more drawables and two SF symbol variants; not a decision, the build may take it.</li>
+</ul>
+
+<h2>3 · Desktop</h2>
+<p>CooldownDesktop must show tags the same way (Robin 2026-11-11): wherever the Mac shows an account as an <i>icon</i> beside its name (sidebar rows, tabs, a page header) the mark carries the badge of 1.0; wherever the account is a <i>row</i> the tag is the leading glyph; and if its Summary filters by tag it takes the same All · person · briefcase segments and the same gate — the desktop session hears this page before either side builds; the desktop repo is not visible from here, so what it has today is <small class="u">UNVERIFIED</small>.</p>
+
+<h2>4 · Questions for Robin — one decision each, my answer first</h2>
+<p><b>Settled 2026-11-13 (Robin):</b> Problem 1 → A, the tag in every account tab's label; if the glyph made a fixed strip scroll, keep the glyph and let it scroll. With A-badge the second answer is never exercised (no width is added). What is left of §1:</p>
+<ol class="q">
+<li><b>A-badge as drawn in 1.0 / 1.2.</b> <b>Yes</b> — the rail's icon at 24 dp: mark 20 in the accent, a 13 dp disc cleared 1.5 wider out of its lower-right corner, a filled 8 dp person / briefcase in ink (60% on an unselected tab, with the text), the name at today's 26 dp; History's strip the same. Else the first draft's separate 14 dp glyph before the mark (A as first drawn, +18 dp per tab).</li>
+<li><b>iOS account-page header.</b> <b>Badge</b> (26 pt box, mark 22) in place of the separate 18 pt glyph approved 2026-11-12 §5 and built — so the Duo's rail and the page header above it are one drawing. Else keep the built header.</li>
+<li><b>iOS History strip.</b> <b>Badge</b>, the same 24 pt icon box, name at 27 as today (1.3a). Else leave the strip's plain mark, which would make it the one account strip without the tag.</li>
+<li><b>Summary rows and Settings rows stay as built</b> — the glyph column with its drop rule, the chip with its word (1.3d, 1.3e). <b>Yes.</b> Else badge the full rows' marks at 20 dp (the one-line rows and the snapshot keep the glyph regardless).</li>
+<li><b>iPhone tab bar and iPad sidebar icons.</b> <b>Not in this build</b>: their own wireframe after a spike of original-rendering images in the iOS 27 bottom bar (1.3c). Else include them now on the rail's evidence alone.</li>
+<li><b>Problem 2, glyph segments.</b> <b>Yes</b> — All (word) · person · briefcase, 16 dp glyphs growing with the font, the words kept for TalkBack / VoiceOver; both platforms. Else keep the words.</li>
+<li><b>The empty segment.</b> <b>The gate</b>: the control is not shown while only one tag is in use, so no segment is ever dim and the 3-s note goes (this replaces addendum T3 B, which was chosen for a world where the control was always there). Else keep the 38% dim with the note (2.2 left), or glyph + count (2.3).</li>
+<li><b>The sort button's rule.</b> <b>Measured fit</b> — words whenever "Weekly", the control and "your order ▾" fit the line (the iOS rule); the 360 dp phone and the Fold's inner screen get the words back. Else keep "glyph under 320 dp".</li>
+<li><b>Desktop.</b> <b>Send this page to the desktop session now</b>, before the build, as the 2026-11-11 rule asks. Else build mobile first and tell them after.</li>
+<li><b>Order of build.</b> <b>Both problems in one Android commit and one iOS commit</b> (spec, ROADMAP status and captures in the same commits), after the v2.0 device pass step they interrupt least. Else Problem 2 first (it is what you see every day) and the badge with CCRM-116 (Inner Panes).</li>
+</ol>
+
+<h2>5 ·Build notes (for after approval)</h2>
+<ul>
+<li><b>Android, A-badge:</b> a <code>BadgedMark(provider, tag, accent, ink, mark = 20.dp)</code> in <code>ui/ProviderMark.kt</code>: a 24 dp box, the mark drawn at the top-left, then inside <kbd>graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }</kbd> a <kbd>drawCircle(…, radius = 8.dp, blendMode = BlendMode.Clear)</kbd> at (17.5, 17.5) dp and the filled glyph (<code>ic_tag_personal_filled</code> / <code>ic_tag_work_filled</code>, two new drawables) in a 12 dp box centred there; <code>ProviderTabLabel</code> uses it with a 2 dp spacer and <kbd>semantics { contentDescription = "$name, ${tag.label} account" }</kbd> on its text; the icon keeps <kbd>contentDescription = provider.displayName</kbd>. <code>TabStripFit</code> unchanged; <code>TabStripFitTest</code> gains one assertion — the badged label measures what the plain one does (24 + 2 + text = 20 + 6 + text) — so the strip provably never flips.</li>
+<li><b>Android, Problem 2:</b> <code>SummaryFilterControl</code> draws <code>TagGlyph(f.tag, 16.dp × fontScale, onSurface)</code> for Personal / Work with <kbd>contentDescription = f.label</kbd>; with the gate, <code>SummaryFilters.controlShown(tags)</code> becomes "both tags present" and <code>enabled</code>, <code>disabledNote</code>, <code>NOTE_MS</code>, the alpha and the live-region note go; <code>SummaryHeader</code> measures the line for the sort words (as <code>AddSheetTagControl</code> measures "Personal") and drops the 320 dp constant; equal weights when wrapped.</li>
+<li><b>iOS:</b> <code>RailIcon.image</code> takes <kbd>side</kbd> and <kbd>markSide</kbd> (25/21 rail, 24/20 strip, 26/22 header) — one drawing; <code>AccountTabs</code> shows it as <code>Image(uiImage:)</code> with a 3 pt gap and <kbd>.accessibilityLabel("\(label), \(tag) account")</kbd> on the tab; the rail's <code>Label</code> gets the same label; <code>AccountHeader</code> replaces its glyph + mark with the 26 pt image (the name keeps its label). <code>SummaryTagsTests</code> renders the badged marks light / dark for the three providers and both tags. <code>SummaryFilterControl</code> draws <code>Image(systemName:)</code> for the two tags with <kbd>.accessibilityLabel(filter.label)</kbd>; core <code>SummaryFilter.resolve</code> takes the gate.</li>
+<li><b>Shared:</b> <code>spec/mobile/BEHAVIOR-MOBILE.md</code> §6 (control shown), <code>spec/mobile/fixtures/tags/cases.json</code> (both clients' sequences), <code>spec/mobile/surfaces/app.md</code> §2.3 (tab label: the badged mark, both platforms) and §2.8 (header, control), ROADMAP CCRM-110 / CCRM-115 / CCRM-116 amendments, BUGS CCBG-86 (the rail's icon is now the app's account icon), the 2026-11-12 page §5 and §9b (how Android matches: badge, not header), captures in <code>design/research/2026-11-v20-build/</code>.</li>
+<li><b>Unchanged:</b> the row glyph and its drop rule, the snapshot card (words in its header, glyph column by its own rule), the Settings chip (glyph + word), the Add sheet control, the Tag dialog, the iPhone tab bar and iPad sidebar (question 5).</li>
+</ul>
+
+<h2>6 · States checklist</h2>
+<table>
+<tr><th>State</th><th>Where drawn</th></tr>
+<tr><td>Badge: three providers × both tags, light / dark, selected / unselected, 4× with guides</td><td>1.0</td></tr>
+<tr><td>Tab selected / unselected, light / dark</td><td>1.1, 1.2</td></tr>
+<tr><td>2 / 4 / 10 accounts at 360, 412, 750 (+ 5 at 750; History at 360 with 3)</td><td>1.2</td></tr>
+<tr><td>Strip fixed → scrolling flips</td><td>none: widths equal today's (1.2 tables)</td></tr>
+<tr><td>iOS History strip fixed / scrolling, light / dark</td><td>1.3a</td></tr>
+<tr><td>iOS header before / after, light / dark</td><td>1.3b</td></tr>
+<tr><td>iPhone tab bar before / after</td><td>1.3c</td></tr>
+<tr><td>Summary full row, badge at 18, one-line row; Settings row with and without</td><td>1.3d, 1.3e</td></tr>
+<tr><td>Control: empty group, both tags, chosen segment</td><td>2.1 (dim + note), 2.4 (gate, both, briefcase chosen, last Personal removed)</td></tr>
+<tr><td>Narrow (288 dp list, sort glyph vs words), inner column 317</td><td>2.1, 2.2, 2.5</td></tr>
+<tr><td>Font scale 1.5 / 2.0</td><td>2.5</td></tr>
+<tr><td>iOS light / dark, gate</td><td>2.6</td></tr>
+<tr><td>Screen readers, colour-blind, dark</td><td>1.4, 2.7</td></tr>
+</table>
+<p class="lead">Unverified on this page: text widths are read off the A4 / A6 captures (±2 dp) and the 90 dp scrolling-tab floor is inferred from them; a measured <code>TabStripFitTest</code> run settles both before the build. The iOS 27 bottom tab bar's treatment of original-rendering images was not spiked (the rail's was). Whether the iOS strip and rail speak the tag today was read from the code, not heard. The desktop's current Summary is not visible from this repo.</p>
+</body>
+</html>

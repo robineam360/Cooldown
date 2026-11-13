@@ -178,12 +178,16 @@ struct PaceMapCard: View {
     var onOpen: (String) -> Void = { _ in }
     @State private var layers: MapLayers
     @State private var pinned: String?
+    /// CCRM-116 (Inner Panes) §4: the app keeps the pin in the model (`AppModel.mapPin`), so a fold keeps it; the
+    /// snapshot tests seed `pinned` instead.
+    var sharedPin: Binding<String?>? = nil
     @Environment(\.palette) private var p
 
     /// `layers` and `pinned` seed the card's state (the snapshot tests); the app passes neither.
     init(entries: [SummaryEntry], height: CGFloat = 230, onOpen: @escaping (String) -> Void = { _ in },
-         layers: MapLayers? = nil, pinned: String? = nil) {
+         layers: MapLayers? = nil, pinned: String? = nil, sharedPin: Binding<String?>? = nil) {
         self.entries = entries
+        self.sharedPin = sharedPin
         self.height = height
         self.onOpen = onOpen
         _layers = State(initialValue: layers ?? .saved)
@@ -206,7 +210,7 @@ struct PaceMapCard: View {
                 }
             }
             PaceMap(entries: entries.filter { PaceMapRules.isPlotted(usedPct: $0.usedPct, clocked: $0.clocked) },
-                    layers: layers, mode: Display.mode, empty: foot.empty, pinned: $pinned, onOpen: onOpen)
+                    layers: layers, mode: Display.mode, empty: foot.empty, pinned: sharedPin ?? $pinned, onOpen: onOpen)
                 .frame(height: height).padding(.top, 10)
             // CCRM-107 (Day Grid): the note is the foot line's left; CCRM-109 (Quiet Accounts): the count its right.
             HStack(alignment: .firstTextBaseline) {

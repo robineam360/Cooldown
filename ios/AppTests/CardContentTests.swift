@@ -216,11 +216,11 @@ struct CreditsCardTests {
 /// CCRM-94 (iOS App) parity wireframes rev B §4: History's width rule and footnote.
 @Suite("History layout (parity rev B)")
 struct HistoryLayoutTests {
-    @Test("two columns from 600 pt, one below")
+    @Test("two panes on a regular width, one on a compact width")
     func columns() {
-        #expect(HistoryLayout.twoColumns(width: 600))
-        #expect(!HistoryLayout.twoColumns(width: 599))
-        #expect(HistoryLayout.twoColumns(width: 744) && !HistoryLayout.twoColumns(width: 390))
+        // CCRM-116 (Inner Panes): two panes on any regular-width window, no pt breakpoint.
+        #expect(HistoryLayout.twoColumns(regularWidth: true))
+        #expect(!HistoryLayout.twoColumns(regularWidth: false))
     }
 
     @Test("the footnote names the pane's kind, or both when the columns are side by side")

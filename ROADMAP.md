@@ -2054,7 +2054,16 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   Android builds it in Step A4, iOS in Step I4.
 
 ### CCRM-116 · Inner Panes — the iPhone Duo's inner screen gets a Usage | Pace layout of its own
-- **Status:** **Wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`, Robin, question by question) · iOS · **to build after the v2.0 device pass (RUNBOOK Step 3)** · closes CCBG-90 (Inner Portrait Stretch) and, with it, CCBG-86 (Rail Marks Alike)
+- **Status:** **Built 2026-11-13** (iOS; in v2.0 on Robin's word of 2026-11-13) · checked on the iPhone Duo simulator (cover; inner wide and tall, flat and half open) and an iPad Pro 11" simulator (portrait, landscape); captures `design/research/2026-11-13-ccrm116/`; spec `spec/mobile/surfaces/app.md` "Inner panes" · **real-device check pending** (the Duo's scroll position across a fold; the real fold region) · closes CCBG-90 (Inner Portrait Stretch) and CCBG-86 (Rail Marks Alike) · wireframe approved 2026-11-12 (`design/2026-11-12-iphone-duo-inner-screen.html`)
+- **Build notes (2026-11-13):** the reserved division region measured **40 pt** (margins included) on the Duo simulator,
+  wide and tall, not 32; the panes read it from the system. The rail-colour spike passed (the iOS 27 rail keeps an
+  original-rendering icon's colour), so CCBG-86 is B + C — and on Robin's answer (2026-11-13) on the folded cover's rail
+  too, not only the wide inner screen. The account-header glyph shipped on iOS; Android has no account header, so its
+  match moved to CCRM-118 (Header Glyphs) on Robin's answers.
+- **Judge (2026-11-13, one fresh Opus round, packet ccrm116-r1): concerns, no block.** Fixed: the phone page restored
+  its row on every appearance (now once per view, and nothing is stored at the top); the pool tile could open on the
+  inner screen (now folded, no tap); the rail tab's VoiceOver now says "Lab, Work account"; rail icons are cached.
+  Left for the device pass: the fold-nudge reference (F2) and the scroll round trip across a real fold, three times.
 - **Why:** Robin, 2026-11-12: use the inner screen and the half-open pose properly, as on the Galaxy Z Fold 7, not a bigger phone page.
 - **What (approved):** one rule for the main page and History, no pt breakpoints: regular width → two panes, Usage and Pace;
   wider than tall side by side, taller than wide stacked; flat an even split, half open the divider on the fold; the same
@@ -2070,7 +2079,23 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
 - **Status:** **Proposed, wireframe first** · Android · raised by Robin's question on CCRM-116 (Inner Panes), 2026-11-12 · after v2.0
 - **Why:** Android reads no folding feature today; the Fold 7's inner screen is a MEDIUM-width page (≈ 750 dp).
 - **What:** the same rule in dp for the 7.6″ inner screen and the half-open (tabletop) pose, with a wireframe before any
-  build. The account-header glyph of CCRM-116 ships on Android with the iOS build, not here.
+  build. The account-header glyph of CCRM-116 goes to Android through CCRM-118 (Header Glyphs), not here.
+
+### CCRM-118 · Header Glyphs — the Summary header and Android's account tabs speak in glyphs
+- **Status:** **Wireframes in review** (Robin, 2026-11-13, question by question) · iOS and Android · **v2.0**, built
+  after CCRM-116 (Inner Panes) lands · desktop session to see the frozen pages before the build (tag display, Robin
+  2026-11-11)
+- **Why:** Robin, 2026-11-13: the Summary's "Work" segment read as greyed out (none of his accounts is tagged Work, so the
+  empty group is dimmed by design), and glyphs read better than words; Android has no account header for CCRM-116's
+  tag glyph.
+- **Decided so far:** the filter is "All" (word, no count) · person N · briefcase N (glyphs, the words kept for TalkBack
+  / VoiceOver); an empty group stays full ink with its 0, and a tap shows today's 3 s note (E1, no shared rule change);
+  the closed sort button is always the current order's glyph (drag handle · ring 20 % · timer · ring 85 %), the words
+  only in the menu, custom glyphs on both platforms; Android's account tabs (History's strip too) show the badged mark
+  (provider mark in the accent with a person / briefcase badge, as iOS's rail) + the name.
+- **Open:** the badge's style (ring, colour per tag or not — Robin asked for options; the standing rule says the tag is
+  ink, never a colour), whether iOS's header and History strip take the badge too. Pages:
+  `design/2026-11-13-tag-glyph-android-and-filter.html`, `design/2026-11-13-summary-header-glyphs.html`.
 
 ## Next — small, high value, ready to build
 

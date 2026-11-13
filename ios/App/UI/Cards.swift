@@ -311,7 +311,10 @@ struct AccountCards: View {
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
     let account: Account
-    var twoAcross = false
+    /// CCRM-116 (Inner Panes) §5: a regular-width window — the account page is two panes, the header and the Usage card
+    /// on one side, the Pace card on the other; the Layout sheet's open/folded and chart-height choices do not apply
+    /// (the pane sets the height, ≥ 160 pt). The cover screen and iPhone keep the phone page.
+    var panes = false
     /// The card's width, for Large chart heights.
     var cardWidth: CGFloat = 338
     var onSignIn: () -> Void = {}
@@ -322,6 +325,7 @@ struct AccountCards: View {
     @State private var tileOpen: Bool?
     @State private var poolOpen = false
     @State private var moreOpen = false
+    @State private var interaction = TileInteraction()
 
     private var defaultOpen: Bool { Density(rawValue: density) != .compact }
 
@@ -351,16 +355,36 @@ struct AccountCards: View {
         let layout = model.drawnLayout(account.key)
         let main = Self.merged(layout.main)
         let folded = Self.merged(layout.folded).filter { $0 == .credits || !main.contains(.weekly) }
+        if panes {
+            let hasTile = state.lastKind != "plan" && (main.contains(.weekly) || folded.contains(.weekly))
+                && tileContent(nowMs: model.nowMs) != nil
+            PaneSplit(hasSecond: hasTile) {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        AccountHeader(account: account)
+                        if model.noticeOwed { WeeklyFirstNoticeView() }
+                        if let notice { NoticeView(notice: notice, onAction: onSignIn) }
+                        if hasTile { tile(accent: accent, notice: notice, inMore: false, part: .usage) }
+                        if state.lastKind != "plan", let pool = model.usage(account.key)?.pools.first(where: \.shown) {
+                            // §5: no tap-to-open on the inner screen — the pool's tile stays folded here.
+                            poolTile(pool, accent: accent, notice: notice, foldedOnly: true)
+                        }
+                        Footer()
+                    }
+                    .padding(.bottom, 16)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .refreshable { await model.refresh(manual: true) }
+            } second: {
+                PaneFill(minimum: 160) { h in
+                    if hasTile { tile(accent: accent, notice: notice, inMore: false, part: .pace, chartHeight: h) }
+                }
+            }
+        } else {
         VStack(spacing: 12) {
             if model.noticeOwed { WeeklyFirstNoticeView() }
             if let notice { NoticeView(notice: notice, onAction: onSignIn) }
             if state.lastKind != "plan", model.usage(account.key) != nil {
-                if twoAcross {
-                    // The iPad half's header carries the credits; the tile takes the full width.
-                    if main.contains(.weekly) || folded.contains(.weekly) {
-                        tile(accent: accent, notice: notice, inMore: false)
-                    }
-                } else {
                     ForEach(main) { card($0, accent: accent, notice: notice, folded: false) }
                     if !folded.isEmpty {
                         Button { withAnimation(.easeInOut(duration: 0.2)) { moreOpen.toggle() } } label: {
@@ -375,25 +399,31 @@ struct AccountCards: View {
                         .buttonStyle(.plain)
                         if moreOpen { ForEach(folded) { card($0, accent: accent, notice: notice, folded: true) } }
                     }
-                }
                 // CCRM-55 (E2): the Claude + GPT pool inside Antigravity, only once it has been used.
                 if let pool = model.usage(account.key)?.pools.first(where: \.shown) {
                     poolTile(pool, accent: accent, notice: notice)
                 }
             }
         }
+        }
+    }
+
+    /// Whether the account has a window to draw, as `tile` decides (a Weekly or a 5-hour reading).
+    private func tileContent(nowMs: Int64) -> Bool? {
+        let usage = model.usage(account.key)
+        return usage?.weekly != nil || usage?.session != nil ? true : nil
     }
 
     /// The pool's own tile, same anatomy, its name as the last line under it (rev D T6). No history is kept for it.
     @ViewBuilder
-    private func poolTile(_ pool: UsagePool, accent: Color, notice: Notice?) -> some View {
+    private func poolTile(_ pool: UsagePool, accent: Color, notice: Notice?, foldedOnly: Bool = false) -> some View {
         let dimmed = notice?.dimsCards == true
         let weekly = CardContent.window(title: CardContent.sevenDayTitle, window: pool.weekly, kind: HistoryStats.weeklyKind, history: [],
                                         nowMs: model.nowMs, use24h: Display.use24h)
         let five = CardContent.window(title: "5-hour window", window: pool.session, kind: HistoryStats.sessionKind, history: [],
                                       nowMs: model.nowMs, use24h: Display.use24h)
         if weekly != nil || five != nil {
-            AccountTile(weekly: weekly, five: five, accent: accent, open: $poolOpen, dimmed: dimmed,
+            AccountTile(weekly: weekly, five: five, accent: accent, open: foldedOnly ? .constant(false) : $poolOpen, dimmed: dimmed,
                         weekGate: Pace.isSpent(pool.weekly?.percent)
                             ? CardContent.weekGateNote(weeklyResetMs: pool.weekly?.resetsAtMs, nowMs: model.nowMs) : nil,
                         footnote: pool.name)
@@ -402,7 +432,7 @@ struct AccountCards: View {
 
     /// The account's tile: Weekly (All models) and its model limit as bars, the 5h as the ring.
     @ViewBuilder
-    private func tile(accent: Color, notice: Notice?, inMore: Bool) -> some View {
+    private func tile(accent: Color, notice: Notice?, inMore: Bool, part: TilePart = .whole, chartHeight: CGFloat? = nil) -> some View {
         let usage = model.usage(account.key)
         let history = model.histories[account.key] ?? []
         let snapshot = model.snapshots[account.key]
@@ -421,9 +451,11 @@ struct AccountCards: View {
             AccountTile(weekly: all, cap: cap, five: five, accent: accent,
                         open: Binding(get: { tileOpen ?? (!inMore && defaultOpen) },
                                       set: { tileOpen = $0 }),
-                        defaultChip: defaultChip, chartHeight: size.height(width: cardWidth), linesOnly: size.linesOnly,
+                        defaultChip: defaultChip, chartHeight: chartHeight ?? size.height(width: cardWidth),
+                        linesOnly: chartHeight == nil && size.linesOnly,
                         dimmed: dimmed, weekGate: Self.weekGate(usage, nowMs: model.nowMs),
-                        rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, Display.use24h, .current))" : nil)
+                        rightResetLine: dimmed ? "as of \(CardContent.clock(snapshot?.fetchedAtMs ?? 0, Display.use24h, .current))" : nil,
+                        part: part, interaction: part == .whole ? nil : interaction)
         }
     }
 
@@ -520,6 +552,20 @@ enum TileChip: Hashable { case all, model, five }
 /// What a press underlines or replaces for 3 s: the ring's 5h line (its caption), or a bar's caption (underlined).
 enum TileTap: Hashable { case ring, weekly, model }
 
+/// CCRM-116 (Inner Panes) §5: on a regular-width window the tile splits into two cards in two panes — the Usage card
+/// (ring, bars, the 5h line) and the Pace card (chips, the chart, the pace and projection lines, the reset row). Both
+/// halves are always on screen, so there is no tap-to-open, and they share one `TileInteraction` so a ring tap still
+/// picks the 5h chart.
+enum TilePart: Hashable { case whole, usage, pace }
+
+/// The tile's chip and tap readout, shared by its two halves when it is split (`TilePart`).
+@MainActor @Observable
+final class TileInteraction {
+    var chip: TileChip?
+    var reveal: TileTap?
+    var revealToken = 0
+}
+
 /// One account: the 5h `GrammarRing` left (72 pt), the 7-day bars stacked right — "Weekly · All models" first, its figure
 /// at the ring's number size and an 8 pt bar, then the model limit (13.5 pt label, 15 pt figure, 6 pt bar) — each with
 /// its V1 `PaceCaption` and dashed room. Folded, the band line and the 5h line (led by a 12 pt ring glyph, no "5h") sit
@@ -542,9 +588,26 @@ struct AccountTile: View {
     var rightResetLine: String? = nil
     /// A last line under the folded tile (the pool's name).
     var footnote: String? = nil
-    @State private var chip: TileChip?
-    @State private var reveal: TileTap?
-    @State private var revealToken = 0
+    /// CCRM-116: the whole tile, or one of its two cards on the inner screen / iPad.
+    var part: TilePart = .whole
+    /// The halves' shared state; nil = the tile's own.
+    var interaction: TileInteraction? = nil
+    @State private var own = TileInteraction()
+    private var ui: TileInteraction { interaction ?? own }
+    private var chip: TileChip? {
+        get { ui.chip }
+        nonmutating set { ui.chip = newValue }
+    }
+    private var reveal: TileTap? {
+        get { ui.reveal }
+        nonmutating set { ui.reveal = newValue }
+    }
+    private var revealToken: Int {
+        get { ui.revealToken }
+        nonmutating set { ui.revealToken = newValue }
+    }
+    /// Split, both halves are always shown: the tile reads as open (the ring's projection, the 5h chip).
+    private var isOpen: Bool { part != .whole || open }
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
@@ -566,21 +629,36 @@ struct AccountTile: View {
     private var ringReadout: String? { weekGate == nil ? five?.caption : nil }
 
     var body: some View {
-        CardBox {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .center, spacing: 14) {
-                    ring
-                    VStack(alignment: .leading, spacing: 8) {
-                        if let weekly { barRow(weekly, lead: true) }
-                        if let cap { barRow(cap, lead: false) }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        switch part {
+        case .whole:
+            CardBox {
+                VStack(alignment: .leading, spacing: 0) {
+                    head
+                    if !open { foldedLines }
                 }
-                if !open { foldedLines }
+                .contentShape(Rectangle())
+                .onTapGesture { withAnimation(.easeInOut(duration: 0.2)) { open.toggle() } }
+                if open { openPart() }
             }
-            .contentShape(Rectangle())
-            .onTapGesture { withAnimation(.easeInOut(duration: 0.2)) { open.toggle() } }
-            if open { openPart }
+        case .usage:
+            // The Usage card: the head and the 5h line; the weekly band line belongs to the Pace card's chart.
+            CardBox {
+                head
+                fiveLine(includesWeekly: false)
+            }
+        case .pace:
+            CardBox { openPart(top: 0) }
+        }
+    }
+
+    private var head: some View {
+        HStack(alignment: .center, spacing: 14) {
+            ring
+            VStack(alignment: .leading, spacing: 8) {
+                if let weekly { barRow(weekly, lead: true) }
+                if let cap { barRow(cap, lead: false) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -594,7 +672,7 @@ struct AccountTile: View {
             figureColour: ringState == .normal && Display.isDistance(pct, pace: pace)
                 ? Display.figureColour(pct, pace: pace, ink: p.ink, usage: p.ink, scheme) : nil,
             state: ringState,
-            projection: open && selected == .five && weekGate == nil ? five?.chart?.projection : nil,
+            projection: isOpen && selected == .five && weekGate == nil ? five?.chart?.projection : nil,
             surface: p.card)
             .frame(width: ringSize, height: ringSize)
             .opacity(dimmed ? 0.45 : 1)
@@ -607,7 +685,7 @@ struct AccountTile: View {
 
     private func tapRing() {
         guard five != nil else { return }
-        if open { withAnimation(.easeInOut(duration: 0.2)) { chip = .five } }
+        if isOpen { withAnimation(.easeInOut(duration: 0.2)) { chip = .five } }
         show(.ring, ringReadout)
     }
 
@@ -660,7 +738,12 @@ struct AccountTile: View {
 
     // MARK: Folded: the band line and the 5h line
 
-    @ViewBuilder private var foldedLines: some View {
+    @ViewBuilder private var foldedLines: some View { fiveLine(includesWeekly: true) }
+
+    /// The folded tile's lines: the weekly band line (unless the Pace card carries it), then the 5h line or the gate note,
+    /// then the footnote.
+    @ViewBuilder private func fiveLine(includesWeekly: Bool) -> some View {
+        let weekly = includesWeekly ? self.weekly : nil
         if let weekly {
             WindowLine(content: weekly, folded: true).font(.system(size: 14.5, weight: .semibold)).padding(.top, 10)
         }
@@ -690,12 +773,12 @@ struct AccountTile: View {
 
     // MARK: Open: chips, the chosen chart and its lines
 
-    @ViewBuilder private var openPart: some View {
+    @ViewBuilder private func openPart(top: CGFloat = 12) -> some View {
         if chips.count > 1 {
             HStack(spacing: 8) { ForEach(chips, id: \.self) { chipButton($0) } }
-                .padding(.top, 12).padding(.bottom, 8)
+                .padding(.top, top).padding(.bottom, 8)
         } else {
-            Color.clear.frame(height: 12)
+            Color.clear.frame(height: top)
         }
         switch selected {
         case .all: if let weekly { weeklyDetail(weekly) }
