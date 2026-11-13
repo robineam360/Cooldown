@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>One account tab icon everywhere — accent mark + tag dot — 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--rw:#FF3B30;--rp:#1A73E8;--rg:#188038;--vw:#00838F;--vp:#7E57C2;--tint:#007AFF;--ios-bg:#F2F2F7;--ios-side:#E9E9EE;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.10);--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC;--green:#188038;--purple:#8E24AA;--teal:#00897B}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--rw:#FF453A;--rp:#8AB4F8;--rg:#81C995;--vw:#4DD0E1;--vp:#B39DDB;--tint:#0A84FF;--ios-bg:#000;--ios-side:#1C1C1E;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.14);--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930;--green:#81C995;--purple:#CE93D8;--teal:#4DB6AC}}
+.dark{--bg:#1C1B1F;--card:#2B2930;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--rw:#FF453A;--rp:#8AB4F8;--rg:#81C995;--vw:#4DD0E1;--vp:#B39DDB;--tint:#0A84FF;--ios-bg:#000;--ios-side:#1C1C1E;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.14);--green:#81C995;--purple:#CE93D8;--teal:#4DB6AC}
+.light{--bg:#FEF7FF;--card:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--rw:#FF3B30;--rp:#1A73E8;--rg:#188038;--vw:#00838F;--vp:#7E57C2;--tint:#007AFF;--ios-bg:#F2F2F7;--ios-side:#E9E9EE;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.10);--green:#188038;--purple:#8E24AA;--teal:#00897B}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1560px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}h3{font-size:15px;margin:22px 0 6px}
+p,li{max-width:940px}.lead{color:var(--mute)}
+.ans{font-size:15px;font-weight:600;max-width:940px;padding:8px 12px;border-left:4px solid var(--ink)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:940px}.rec b{color:inherit}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}td.n{text-align:right;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+figure{margin:0 0 14px}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:5px;max-width:440px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--lv);position:relative;font-family:Roboto,"Helvetica Neue",Arial,sans-serif}
+.ios{background:var(--ios-bg);color:var(--ink);border:1px solid var(--ios-line);font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;position:relative}
+.bx{flex:none;overflow:visible;display:block}
+.strip{position:relative;display:flex;height:48px;border-bottom:1px solid var(--lv)}
+.tab{display:flex;align-items:center;justify-content:center;height:48px;font-size:14px;font-weight:500;white-space:nowrap;flex:none}
+.tab.off .nm{opacity:.6}
+.ind{position:absolute;bottom:-1px;height:3px;border-radius:3px 3px 0 0}
+.ri{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center}.ri.on{background:var(--ios-fill)}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:940px}.cost b{color:var(--ink)}
+small.u{color:var(--anno);font-weight:600}
+ol.q li{margin-bottom:8px}
+.lbl{font-size:11px;color:var(--mute);margin:0 0 4px}
+kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+.guide{fill:none;stroke:var(--anno);stroke-width:.3;stroke-dasharray:.8 .5}
+.sw{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:4px;border:1px solid var(--lv)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs">
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="mk-gpt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(60 12 12)"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(120 12 12)"/></g></symbol>
+<symbol id="mk-gem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.2C12.7 7.3 16.7 11.3 22.8 12C16.7 12.7 12.7 16.7 12 22.8C11.3 16.7 7.3 12.7 1.2 12C7.3 11.3 11.3 7.3 12 1.2Z"/></symbol>
+<symbol id="gf-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+<symbol id="gf-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></symbol>
+<symbol id="gf-person-o" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM4.5 20c0-3 3.4-5 7.5-5s7.5 2 7.5 5"/></symbol>
+<symbol id="gf-work-o" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 8.5h18v11H3zM9 8.5V5h6v3.5"/></symbol>
+<symbol id="g-all" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="5" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="12" height="3" rx="1.5"/><rect x="3" y="16" width="15" height="3" rx="1.5"/></g></symbol>
+<symbol id="g-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/></g></symbol>
+<symbol id="g-side" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M9 5v14"/></g></symbol>
+<symbol id="g-dots" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="12" cy="6" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="18" r="1.8"/></g></symbol>
+<filter id="prot" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/></filter>
+<filter id="deut" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/></filter>
+</defs></svg>
+
+<h1>One account tab icon everywhere — the accent mark with a tag mark at its lower right</h1>
+<p class="lead">Design for Robin, 2026-11-13 · Fable (expertise) · answers "if we are building the iOS rail bar for the iPhone Duo anyway, why not make that design the same for the tabs on the normal iPhone, Android phone and iPad … the provider logo in the theme colour with a small red dot for Work and a small blue (or green) dot for Personal". Built today: <code>RailIcon</code> (<code>ios/App/UI/InnerPanes.swift</code>, main 2a62105) on the Duo's cover rail and wide inner rail; everywhere else iOS draws the template mark in the system tint, Android draws the 20 dp mark in the account accent (<code>ProviderTabLabel</code>). Drawn at 1 dp = 1 px and at 4×; the page follows your system's light / dark, panels marked <b>light</b> / <b>dark</b> are forced. CCRM-118 (Header Glyphs), CCRM-110 (Account Tags), CCRM-115 (Row Tag Glyph), CCRM-116 (Inner Panes), CCBG-86 (Rail Marks Alike).</p>
+
+<p class="ans">Per-account accent today? <b>Yes, on both platforms.</b> Android: account card ⋮ › "Accent colour…" (40 dp circles, provider colour first, then the eleven themes; <code>Palette.accentName</code>: account override › global Theme colour › provider colour). iOS: account page › "Accent colour…" (36 pt circles, the twelve; <code>Display.accentName(for:)</code>, same three levels). The rail icon already draws that accent. What does <i>not</i> exist is a colour per <i>tag</i>; that is what §8 draws.</p>
+
+<div class="rec"><b>Recommendation: one icon everywhere — yes; a colour dot — no.</b> Port the built rail icon (mark in the account accent, 13 pt knocked-out disc, person / briefcase in ink — B0 on the previous page) to the iPhone bottom bar, the iPad sidebar, Android's Main and History strips and iOS's History strip, after a one-hour simulator spike proves iOS's labelled bars keep an original-rendering image's colour (§9). The dot is drawn below in all four forms, honestly. What the drawings show: a hue-only 8 pt dot must be identified by colour alone, and the only red–green-safe pair is Robin's red / blue — whose red is the 100 % severity colour and iOS's badge red, and whose dark blue <kbd>#8AB4F8</kbd> <i>is</i> Gemini's dark accent. Violet / teal avoids the alert reading but both drift to blue under deuteranopia (§7). The figure badge needs no pair, no Settings row, no rule change, and matches the row glyph 10 dp below the tab. If Robin wants a dot anyway, the <b>ink dot — filled for Work, ring for Personal (D2)</b> — keeps the never-a-colour rule, survives colour-blindness and dimming, and costs one branch in the draw. Note from the captures: the iPad's portrait top bar shows <b>no icons at all</b> (text only, §3), so whichever icon is chosen never appears there.</div>
+
+<h2>0 · The icon — four forms, real size and 4×, light and dark</h2>
+<p>Same box on every surface: iOS 25 pt (the system's tab icon box) with the mark 21 at the top-left; Android 24 dp with the mark 20; iOS History strip 24 / 20; iOS account header 26 / 22. The tag mark hangs 4 past the mark's lower-right corner in every box, so it is in the same place everywhere. Strips: Claude · Work, ChatGPT · Personal, Gemini · Work, Claude · Personal, ChatGPT · Work, Gemini · Personal; then an unselected Android tab (text 60 %; the mark and the dot never dim with selection — a colour at 60 % is a different hue); then dimmed (spent / signed-out: whole icon 50 %).</p>
+<table>
+<tr><th>Form</th><th>Tag mark</th><th>Size</th><th>Centre (25 box · 24 box)</th><th>Cleared ring</th><th>Colour</th></tr>
+<tr><td><b>F</b> figure (built, B0)</td><td>person / briefcase filled, SF 9 pt semibold / Material 8 dp</td><td>13 disc</td><td>18.5, 18.5 · 17.5, 17.5</td><td>r 8 (1.5 gap)</td><td>ink; disc is the surface</td></tr>
+<tr><td><b>D1-R</b> Robin's colour dot</td><td>dot</td><td>8</td><td>21, 21 · 20, 20</td><td>r 5.5 (1.5 gap)</td><td>Work <kbd>#FF3B30</kbd> / dark <kbd>#FF453A</kbd> (iOS red); Personal <kbd>#1A73E8</kbd> / <kbd>#8AB4F8</kbd> (the Blue theme); green variant <kbd>#188038</kbd> / <kbd>#81C995</kbd></td></tr>
+<tr><td><b>D1-V</b> Fable's colour dot</td><td>dot</td><td>8</td><td>same</td><td>same</td><td>Work <kbd>#00838F</kbd> / <kbd>#4DD0E1</kbd>; Personal <kbd>#7E57C2</kbd> / <kbd>#B39DDB</kbd> (off the provider hues and the severity ladder; equal the Cyan and Purple themes)</td></tr>
+<tr><td><b>D2</b> ink dot, shape-coded</td><td>Work filled dot · Personal ring (stroke 1.6, outer 8)</td><td>8</td><td>same</td><td>same</td><td>ink</td></tr>
+<tr><td><b>D3</b> dot on Work only</td><td>Work filled ink dot · Personal nothing (mark whole)</td><td>8</td><td>same</td><td>Work only</td><td>ink</td></tr>
+</table>
+<div id="forms"></div>
+
+<h2>1 · iPhone Duo — folded cover rail, inner wide rail, inner tall bottom bar</h2>
+<p>The rail is the built case (84 pt trailing column, 50 pt pill, 44 pt items): All, up to six accounts, then "•••" (BUGS CCBG-86: ten accounts fold to All + six + •••). The tall inner screen (669 × 951 pt) draws the labelled bottom bar: today template marks in ink, the selected one in the system blue on a glass pill (capture <code>duo-tall-flat-all.jpg</code>). Drawn with four accounts and ten.</p>
+<div id="duo"></div>
+
+<h2>2 · A normal iPhone (iPhone 17e, 6.1″, 393 pt) — bottom tab bar and the More list</h2>
+<p>Five items fit; past five iOS keeps the first four and adds More, whose list holds the rest (44 pt rows). All + 4 accounts = five, fits. All + 10 accounts: All, Teams, Personal, ChatGPT, More › seven rows. <b>Liquid Glass selected state:</b> the system tints a template icon and its label blue on the pill; an original-rendering image is not tinted, so under this design the selected account's label turns blue while its icon stays in the accent (the rail already behaves so). <small class="u">UNVERIFIED</small> that the labelled bar keeps the image's colour at all — §9.</p>
+<div id="iphone"></div>
+
+<h2>3 · iPad — portrait floating top bar, landscape sidebar</h2>
+<p><b>Portrait (834 pt):</b> the capture <code>ipad-portrait-all.jpg</code> shows the top tab bar draws <b>text labels only</b> — no icon of any kind. This design cannot appear there; two Claude accounts named alike are told apart by name alone (as today). How that bar overflows past ~6 tabs is <small class="u">UNVERIFIED</small>. <b>Landscape (1194 pt):</b> the 320 pt sidebar draws rows of icon + 17 pt name (capture <code>ipad-landscape-all.jpg</code>, template marks in ink). Whether the sidebar scales a 25 pt image or draws it at 25 is <small class="u">UNVERIFIED</small>; drawn at 25.</p>
+<div id="ipad"></div>
+
+<h2>4 · Android — the account strip at 360 / 412 / 750 / ≥ 840 dp</h2>
+<p>Android's own composable (Main and History are one): label = icon + 6 dp + name (titleSmall), 32 dp tab padding, All included; fixed equal shares while every label fits its share, else scrolling with each tab at its label (CCBG-81 rule). Indicator 3 dp in the selected account's accent (History: onSurface). Unselected: text 60 %. Shown with form F (built badge port, CCRM-118's decided tab label) and D1-R; the other forms differ only in the icon (§0).</p>
+<div id="android"></div>
+
+<h2>5 · History strips, Summary rows, Settings rows — what changes and what does not</h2>
+<p><b>History strips take the same icon</b> on both platforms: Android automatically (one composable), iOS's <code>AccountTabs</code> by swapping its 20 pt mark for the 24-box icon (mark 20) — the earlier page's question 4, answered yes. <b>Summary rows and Settings rows do not change:</b> the row leads with the 14 dp tag glyph before a plain 18 dp mark (CCRM-115), and the Settings card keeps the plain 20 dp mark with the tag <i>chip</i> (glyph + word) — the one control that changes the tag and the place the glyph is taught. A badge there would say the tag twice.</p>
+<div id="hist"></div>
+
+<h2>6 · Same-provider accounts — three Claude with the default accent, and with three accents</h2>
+<p>Teams · Lab · Atlas, all Claude, tags W · W · P. With one accent the tag mark is the <i>only</i> difference, and two Work accounts stay identical in every form (CCBG-86's note: only a per-account accent separates them). With accents Claude orange · Purple · Teal, the Teal account under D1-V wears a teal Work dot on a teal mark — the case §8 asks about (may a dot colour equal an accent). Under D1-R the Blue-themed account would do the same with a Personal dot.</p>
+<div id="same"></div>
+
+<h2>7 · Colour-blind simulation — deuteranopia and protanopia</h2>
+<p>Viénot / Brettel linear matrices (what Chrome's rendering emulation uses), applied to whole panels, so the provider marks shift too. The six-provider strip and the three-accent row for D1-R, D1-V, with D2 and F as controls.</p>
+<div id="cvd"></div>
+<p class="cost"><b>Read-out:</b> D1-R keeps its two dots apart in both simulations (red → dark ochre, blue stays blue) — it is the one hue pair that survives; D1-R's green variant fails against red. D1-V's violet and teal both land on blue and are told apart by lightness only. D2 and F are unchanged (ink and shape carry no hue). A colour dot therefore has to be Robin's pair, and its red is the alert red.</p>
+
+<h2>8 · Settings — where two dot colours would be chosen (only for D1)</h2>
+<p>Appearance gains a row <b>"Tag colours"</b> after Theme (Android: bold bodyLarge title, bodySmall note, the two current swatches inline; iOS: a row with the two swatches and a chevron). It opens a page with two rows, "Personal" and "Work", each the current 24 dp swatch and its name; tapping one opens the same six-column grid the account accent uses, limited to the eleven themes (no provider colours, no Material You) and "Reset to defaults". A swatch that is some account's accent carries that account's name under it ("Teams") — a warning, not a block. <b>May a dot colour equal an account accent?</b> Yes: forbidding it would make the two colours depend on which accents exist, and the 1.5 dp cleared ring still separates the dot (§6 shows what it looks like). <b>Defaults:</b> Work <kbd>#FF3B30</kbd>, Personal <kbd>#1A73E8</kbd> if Robin's pair; <kbd>#00838F</kbd> / <kbd>#7E57C2</kbd> if mine. <b>My answer:</b> no picker at all — two fixed tokens in `spec/core` §5 if colour wins, a row only if someone asks; a colour nobody can change is a colour the row glyph, chip and filter can match.</p>
+<div id="settings"></div>
+
+<h2>9 · The spike iOS needs before any port (one hour, simulator)</h2>
+<ol>
+<li>In <code>MainTabs</code> (<code>MainScreens.swift</code> ~338) set <code>railIcons</code> to <code>true</code> unconditionally — a temporary edit, reverted after.</li>
+<li>Run <code>-demo dense</code> on an iPhone 17e simulator (iOS 26): the bottom bar with All + three + More, light and dark, each tab selected in turn; open More. Check: colour kept; what the pill tints; row rendering in More.</li>
+<li>iPad Pro 11″ portrait: confirm the top bar stays text-only; landscape: the sidebar rows (scale? colour?) and the collapsed-sidebar tab bar.</li>
+<li>Captures to <code>design/research/2026-11-13-tab-icon-spike/</code>; result recorded in BUGS CCBG-86 or ROADMAP CCRM-118. Colour stripped anywhere → that surface keeps the template mark and the badge alone (the CCRM-116 fallback already written).</li>
+</ol>
+
+<h2>10 · Risks — one line each</h2>
+<table>
+<tr><th>Risk</th><th>Line</th></tr>
+<tr><td>Red = alert</td><td>iOS's badge convention is a red dot for "unread / attention"; a red Work dot next to a 100 % red bar and red figure means two things in one colour, and in dark <kbd>#FF453A</kbd> and the severity <kbd>#FF5252</kbd> are indistinguishable.</td></tr>
+<tr><td>Blue = Gemini</td><td>The Blue theme's dark <kbd>#8AB4F8</kbd> is Gemini's dark accent, so a Gemini Personal account's dot is a fragment of its own mark, parted by a 1.5 dp gap.</td></tr>
+<tr><td>Colour-blind</td><td>Hue-only 8 pt: red / blue survives, violet / teal does not, red / green fails; no shape fallback unlike the figure (§7).</td></tr>
+<tr><td>Never-a-colour rule</td><td>BEHAVIOR-MOBILE §6 (Robin 2026-11-10) is overturned; then the Summary row glyph, one-line row glyph, Settings chip, Add-sheet control, CCRM-118's filter glyphs, the snapshot column and the desktop take the same two colours in the same build — or the tab says the tag in colour and the row 10 dp below says it in ink.</td></tr>
+<tr><td>Dot vs glyph</td><td>Even with colour everywhere, the tab's dot and the row's person / briefcase are two vocabularies for one tag; the figure badge is one.</td></tr>
+<tr><td>Equal to an accent</td><td>Every pickable colour is one of the twelve accents; §6 shows the collision; Material You's accent is unknown at design time.</td></tr>
+<tr><td>iOS colour kept?</td><td>Only the iOS 27 rail is proven; bottom bar, sidebar and More are <small class="u">UNVERIFIED</small> (§9).</td></tr>
+<tr><td>iPad portrait</td><td>No icons in the top bar at all, so same-named accounts are not helped there by any form.</td></tr>
+<tr><td>Liquid Glass selection</td><td>Label tints, original icon does not; on the rail today, more visible on a labelled bar.</td></tr>
+<tr><td>60 % unselected</td><td>A dimmed colour dot reads as another colour, so the dot never dims with selection (only the whole icon at 50 % when the account is dimmed).</td></tr>
+<tr><td>Trademark</td><td>The overlay bites the mark; a render-time overlay (as the built badge, accepted for the rail); each provider's brand page forbids altering the mark — Robin's call, already made once.</td></tr>
+<tr><td>Same tag, same accent</td><td>Three Claude Work accounts stay identical in every form; only a per-account accent separates them.</td></tr>
+</table>
+
+<h2>11 · Alternatives I think better</h2>
+<ol>
+<li><b>F — the built figure badge, everywhere.</b> One drawing, one vocabulary with the rows and chips, no pair to choose, no rule change, no Settings row, colour-blind-safe; cost: the Android port and the iOS spike.</li>
+<li><b>D2 — ink dot, filled Work / ring Personal.</b> If a dot is wanted: shape carries the tag, the rule stands, nothing else changes; cost: a dot to learn (the rows teach person / briefcase, not dot / ring).</li>
+<li><b>D3 — a dot only on Work accounts.</b> Fewest marks, Personal marks untouched, "dot = Work" is one sentence; cost: breaks the no-empty-slot model the rows follow (every row shows a glyph).</li>
+</ol>
+
+<h2>12 · Questions for Robin — one decision each, my answer first</h2>
+<ol class="q">
+<li><b>One icon on every account tab</b> (iPhone bottom bar + More, iPad sidebar, Android Main and History strips, iOS History strip, iOS header)? <b>Yes</b>, after the §9 spike passes; any iOS surface that strips the colour keeps the template mark + badge.</li>
+<li><b>What the tag mark is:</b> <b>F (the figure, as built)</b>. Else D2 (ink dot / ring). Else D1 (colour) — and then question 3.</li>
+<li><b>If colour:</b> the never-a-colour rule is withdrawn on the record and the row glyph, chip, filter glyphs, snapshot and desktop take the pair in the same build. Pair: <b>yours, red / blue</b> (the only colour-blind-safe one), with the alert collision accepted on the record; violet / teal only if the alert reading matters more than colour-blindness.</li>
+<li><b>A "Tag colours" picker in Settings?</b> <b>No</b> — fixed tokens; a dot colour may equal an account accent.</li>
+<li><b>iPad portrait's text-only top bar:</b> accept (the name alone), as today. <b>Yes.</b></li>
+<li><b>Summary rows and Settings rows stay as they are</b> (glyph before the mark; chip). <b>Yes.</b></li>
+</ol>
+<p><b>Desktop impact, one line:</b> F or D2 give CooldownDesktop one badge to copy on its sidebar rows and tabs; D1 gives it two colour tokens and changes its chips and filter too — either way the desktop session sees this page frozen before anyone builds (Robin 2026-11-11); what it shows today is <small class="u">UNVERIFIED</small> from here.</p>
+
+<h2>13 · States checklist</h2>
+<ul>
+<li>2 / 4 / 10 accounts — §1, §2, §3, §4.</li><li>Selected / unselected — every surface.</li><li>Dimmed (spent, Atlas) — 10-account panels, §0 last icon.</li><li>Same provider, one accent and three accents — §6.</li><li>Light / dark — every panel twice.</li><li>Deuteranopia / protanopia — §7.</li><li>Not drawn: Material You's dynamic accent; a real 2.6 px/dp Fold render; the iPad top bar's overflow — <small class="u">UNVERIFIED</small>, device pass.</li>
+</ul>
+
+<script>
+(function(){
+const PROV={c:'mk-claude',g:'mk-gpt',m:'mk-gem'};
+const TAG={p:'gf-person',w:'gf-work'};
+const DOT={R:{w:'var(--rw)',p:'var(--rp)'},V:{w:'var(--vw)',p:'var(--vp)'}};
+const defs=document.getElementById('defs');
+[24,25,26].forEach(S=>{
+ defs.insertAdjacentHTML('beforeend',`<mask id="cutF${S}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${S+4}" height="${S+4}"><rect x="-2" y="-2" width="${S+4}" height="${S+4}" fill="#fff"/><circle cx="${S-6.5}" cy="${S-6.5}" r="8" fill="#000"/></mask><mask id="cutD${S}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${S+4}" height="${S+4}"><rect x="-2" y="-2" width="${S+4}" height="${S+4}" fill="#fff"/><circle cx="${S-4}" cy="${S-4}" r="5.5" fill="#000"/></mask>`);});
+// o: z, guides, dim (whole), gdim (figure only), col (mark colour override)
+function icon(pv,tg,st,S,o){o=o||{};const z=o.z||1,col=o.col||`var(--${pv})`;
+ const badge=!(st==='N'||st==='T'||(st==='W'&&tg==='p'));const M=badge?S-4:S;
+ let mask='',over='',gl='';
+ if(st==='F'){const c=S-6.5,g=S-12.5;mask=`url(#cutF${S})`;over=`<g style="color:var(--ink)"${o.gdim?` opacity="${o.gdim}"`:''}><use href="#${TAG[tg]}" x="${g}" y="${g}" width="12" height="12"/></g>`;gl=`<circle class="guide" cx="${c}" cy="${c}" r="6.5"/><circle class="guide" cx="${c}" cy="${c}" r="8"/>`;}
+ else if(st==='R'||st==='V'){const c=S-4;mask=`url(#cutD${S})`;over=`<circle cx="${c}" cy="${c}" r="4" fill="${DOT[st][tg]}"/>`;gl=`<circle class="guide" cx="${c}" cy="${c}" r="4"/><circle class="guide" cx="${c}" cy="${c}" r="5.5"/>`;}
+ else if(st==='I'||(st==='W'&&tg==='w')){const c=S-4;mask=`url(#cutD${S})`;over=tg==='w'?`<circle cx="${c}" cy="${c}" r="4" fill="var(--ink)"/>`:`<circle cx="${c}" cy="${c}" r="3.2" fill="none" stroke="var(--ink)" stroke-width="1.6"/>`;gl=`<circle class="guide" cx="${c}" cy="${c}" r="4"/><circle class="guide" cx="${c}" cy="${c}" r="5.5"/>`;}
+ const guides=o.guides?`<rect class="guide" x="0" y="0" width="${M}" height="${M}"/>`+(badge?`<rect class="guide" x="0" y="0" width="${S}" height="${S}"/>`:'')+gl:'';
+ const vb=z>1?`-1 -1 ${S+2} ${S+2}`:`0 0 ${S} ${S}`;
+ return `<svg class="bx" width="${S*z}" height="${S*z}" viewBox="${vb}" style="color:${col}"${o.dim?` opacity="${o.dim}"`:''}><use href="#${PROV[pv]}" width="${M}" height="${M}"${mask?` mask="${mask}"`:''}/>${over}${guides}</svg>`;}
+function sys(id,on,S,a){return `<svg class="bx" width="${S}" height="${S}" viewBox="0 0 24 24" style="color:${on?'var(--tint)':'var(--ink)'}"${a?` opacity="${a}"`:''}><use href="#${id}"/></svg>`;}
+function fig(inner,cap){return `<figure>${inner}<figcaption>${cap}</figcaption></figure>`;}
+const SIX=[['c','w','Teams'],['g','p','Personal'],['m','w','Gemini'],['c','p','Claude'],['g','w','ChatGPT'],['m','p','Lab']];
+const A2=[['c','w','Teams'],['g','p','Personal']];
+const A4=A2.concat([['m','w','Lab'],['c','p','Atlas']]);
+const A10=[['c','w','Teams'],['g','p','Personal'],['g','p','ChatGPT'],['m','w','Gemini'],['c','w','Lab'],['c','p','Atlas',1],['c','w','Ops'],['g','p','Research'],['m','p','Client'],['c','w','Work']];
+const SAME=[['c','w','Teams'],['c','w','Lab'],['c','p','Atlas']];
+const ACC={Teams:'var(--c)',Lab:'var(--purple)',Atlas:'var(--teal)'};
+const FORMS={F:'F · figure badge (built on the rail)',R:'D1-R · colour dot — Robin\'s pair, Work red / Personal blue',V:'D1-V · colour dot — Fable\'s pair, Work teal / Personal violet',I:'D2 · ink dot — Work filled / Personal ring',W:'D3 · ink dot on Work only'};
+const COST={F:'<b>Cost:</b> Android port + iOS spike. The figure says the tag; nothing else changes.',
+ R:'<b>Cost / risk:</b> red is the 100 % severity colour and iOS\'s badge red (dark: indistinguishable from #FF5252); blue is the Blue theme and, in dark, Gemini\'s own accent; the never-a-colour rule falls, so row glyph, chip, filter, snapshot and desktop take the pair. Colour-blind: survives (§7).',
+ V:'<b>Cost / risk:</b> off the alert and provider hues, but equals the Cyan and Purple themes; both drift to blue under deuteranopia (§7); rule falls as for D1-R.',
+ I:'<b>Cost / risk:</b> a dot to learn (the rows teach person / briefcase); rule kept; survives colour-blindness and dimming. The ring\'s 1.6 stroke is 4 px on the iPhone, 4 px on the Fold.',
+ W:'<b>Cost / risk:</b> fewest marks; Personal marks untouched; breaks the no-empty-slot model (every row shows a glyph); "dot = Work" has to be learned once.'};
+function strip0(st,S,z,guides,scheme){let h=`<div class="ph ${scheme}" style="padding:12px 14px;display:flex;align-items:flex-end;gap:${z>1?24:16}px">`;
+ SIX.forEach(a=>h+=icon(a[0],a[1],st,S,{z,guides}));
+ h+=icon('c','w',st,S,{z,guides,gdim:st==='F'?.6:undefined})+icon('g','p',st,S,{z,guides,dim:.5});return h+'</div>';}
+let H='';
+for(const st in FORMS){H+=`<h3>${FORMS[st]}</h3><div class="row">`+
+ fig(strip0(st,25,1,false,'light'),'<b>iOS 25 pt box, real size, light.</b> Last two: unselected (figure 60 % where it applies), dimmed 50 %.')+
+ fig(strip0(st,25,1,false,'dark'),'<b>Real size, dark.</b>')+
+ fig(strip0(st,24,1,false,'light'),'<b>Android 24 dp box, real size, light.</b>')+
+ '</div><div class="row">'+
+ fig(strip0(st,25,4,true,'light'),'<b>4×, iOS box, light, guides:</b> mark box, icon box, mark, cleared ring.')+
+ fig(strip0(st,24,4,true,'dark'),'<b>4×, Android box, dark.</b>')+
+ `</div><p class="cost">${COST[st]}</p>`;}
+document.getElementById('forms').innerHTML=H;
+// ---- iOS surfaces
+function rail(st,accts,scheme,sel){const items=[{k:'all'}].concat(accts.slice(0,6).map(a=>({a})));if(accts.length>6)items.push({k:'more'});
+ let h=`<div class="ios ${scheme}" style="width:84px;padding:14px 0;display:flex;justify-content:center"><div style="width:50px;padding:3px 0;border-radius:25px;background:var(--ios-card);box-shadow:0 1px 4px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;gap:6px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div class="ri${on?' on':''}">${it.k==='all'?sys('g-all',on,25):it.k==='more'?sys('g-more',on,25):icon(it.a[0],it.a[1],st,25,{dim:it.a[3]?.5:undefined})}</div>`;});return h+'</div></div>';}
+function bar(st,accts,w,scheme,sel){let items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));if(items.length>5){items=items.slice(0,4);items.push({k:'more',n:'More'});}
+ const iw=Math.min(84,Math.floor((w-40)/items.length));
+ let h=`<div class="ios ${scheme}" style="width:${w}px;padding:12px 16px 20px"><div style="margin:0 auto;width:${iw*items.length+8}px;height:56px;border-radius:28px;background:var(--ios-card);box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 4px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="width:${iw}px;height:48px;border-radius:24px;${on?'background:var(--ios-fill);':''}display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="height:25px">${it.k==='all'?sys('g-all',on,25):it.k==='more'?sys('g-more',on,25):icon(it.a[0],it.a[1],st,25,{dim:it.a[3]?.5:undefined})}</div><span style="font-size:10px;font-weight:500;color:${on?'var(--tint)':'var(--ink)'}">${it.n}</span></div>`;});
+ return h+`</div><div style="font-size:11px;color:var(--ios-sub);text-align:center;margin-top:6px">${w} pt · ${items.length} items</div></div>`;}
+function more(st,accts,scheme){let h=`<div class="ios ${scheme}" style="width:393px;padding-bottom:12px"><div style="padding:10px 16px 6px;font-size:34px;font-weight:700">More</div><div style="margin:0 16px;background:var(--ios-card);border-radius:12px;overflow:hidden">`;
+ accts.forEach((a,i)=>{h+=`<div style="display:flex;align-items:center;height:44px;padding:0 16px;gap:14px;${i?'border-top:.5px solid var(--ios-line);':''}">${icon(a[0],a[1],st,25,{dim:a[3]?.5:undefined})}<span style="font-size:17px;flex:1;${a[3]?'opacity:.5':''}">${a[2]}</span><span style="color:var(--ios-sub)">›</span></div>`;});return h+'</div></div>';}
+function ipadTop(accts,scheme){const items=['All'].concat(accts.map(a=>a[2]));let h=`<div class="ios ${scheme}" style="width:834px;padding:10px 16px;display:flex;align-items:center"><div style="display:flex;align-items:center;gap:8px;font-size:26px;font-weight:700">${icon('c','w','N',20)}${icon('g','p','N',20)}${icon('m','w','N',20)} Cooldown</div><div style="margin-left:auto;margin-right:auto;height:44px;border-radius:22px;background:var(--ios-card);box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 6px;gap:4px">${sys('g-side',false,22)}`;
+ items.forEach((n,i)=>h+=`<span style="padding:0 14px;height:36px;line-height:36px;border-radius:18px;font-size:17px;${i===0?'background:var(--ios-fill);color:var(--tint);font-weight:600':''}">${n}</span>`);
+ return h+`</div><div style="width:120px"></div></div>`;}
+function side(st,accts,scheme,sel){const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));let h=`<div class="ios ${scheme}" style="width:320px;padding:12px 16px 16px;background:var(--ios-side)"><div style="font-size:30px;font-weight:700;margin:8px 0 12px">Cooldown</div>`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="display:flex;align-items:center;height:44px;padding:0 12px;gap:12px;border-radius:10px;${on?'background:var(--ios-fill);':''}">${it.k==='all'?sys('g-all',on,22):icon(it.a[0],it.a[1],st,25,{dim:it.a[3]?.5:undefined})}<span style="font-size:17px;${it.a&&it.a[3]?'opacity:.5':''}">${it.n}</span></div>`;});return h+'</div>';}
+let D='';
+[['F','form F'],['R','form D1-R']].forEach(([st,nm])=>{D+=`<h3>${nm}</h3><div class="row">`+
+ fig(rail(st,A4,'light',0),'<b>Cover rail, four accounts, light.</b> All selected (pill).')+
+ fig(rail(st,A4,'dark',1),'<b>Cover rail, dark.</b> Teams selected.')+
+ fig(rail(st,A10,'light',0),'<b>Inner wide rail, ten accounts.</b> All + six + •••; Atlas dimmed.')+
+ fig(bar(st,A4,669,'light',0),'<b>Inner tall bottom bar (669 pt), four accounts.</b>')+
+ fig(bar(st,A4,669,'dark',2),'<b>Dark, Personal selected:</b> the label tints, the icon does not.')+'</div>';});
+document.getElementById('duo').innerHTML=D;
+let P='';
+[['F','form F'],['R','form D1-R'],['I','form D2']].forEach(([st,nm])=>{P+=`<h3>${nm}</h3><div class="row">`+
+ fig(bar(st,A2,393,'light',1),'<b>Two accounts, Teams selected.</b>')+
+ fig(bar(st,A4,393,'light',0),'<b>Four accounts: five items, fits.</b>')+
+ fig(bar(st,A10,393,'dark',0),'<b>Ten accounts, dark: All + three + More.</b>')+
+ fig(more(st,A10.slice(3),'light'),'<b>The More list</b> (seven rows; Atlas dimmed).')+'</div>';});
+document.getElementById('iphone').innerHTML=P;
+let I='<div class="row">'+fig(ipadTop(A4,'light'),'<b>iPad portrait, 834 pt: text only.</b> No icon is drawn by the system; the capture shows the same.')+'</div>';
+[['F','form F'],['R','form D1-R'],['I','form D2']].forEach(([st,nm])=>{I+=`<h3>${nm}</h3><div class="row">`+
+ fig(side(st,A4,'light',0),'<b>Sidebar, four accounts, light.</b>')+
+ fig(side(st,A10,'dark',1),'<b>Sidebar, ten accounts, dark.</b> Teams selected; Atlas dimmed.')+'</div>';});
+document.getElementById('ipad').innerHTML=I;
+// ---- Android
+function tw(s){return Math.round(s.length*7.6);}
+function strip(st,accts,w,scheme,sel,hist){const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));
+ const lab=it=>(it.k==='all'?20:24)+6+tw(it.n);const widest=Math.max.apply(null,items.map(lab))+32;const fixed=widest*items.length<=w;
+ const W=it=>fixed?w/items.length:lab(it)+32;
+ let h=`<div class="ph ${scheme}" style="width:${w}px;overflow:hidden"><div class="strip" style="width:${fixed?w:items.reduce((s,it)=>s+W(it),0)}px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div class="tab${on?'':' off'}" style="width:${W(it)}px">${it.k==='all'?sys('g-all',false,20,on?1:.6):icon(it.a[0],it.a[1],st,24,{dim:it.a[3]?.5:undefined,gdim:(!on&&st==='F')?.6:undefined})}<span class="nm" style="margin-left:6px;${it.a&&it.a[3]?'opacity:.5':''}">${it.n}</span></div>`;});
+ let left=0;for(let i=0;i<sel;i++)left+=W(items[i]);const ind=hist?'var(--ink)':(items[sel].a?`var(--${items[sel].a[0]})`:'var(--ink)');
+ h+=`<div class="ind" style="left:${left}px;width:${W(items[sel])}px;background:${ind}"></div></div><div style="padding:5px 10px;font-size:11px;color:var(--mute)">${w} dp · ${items.length} tabs · ${fixed?'fixed, equal shares':'scrolls, each tab at its label, clipped at the edge'}</div></div>`;return h;}
+let AN='';
+[['F','form F'],['R','form D1-R']].forEach(([st,nm])=>{AN+=`<h3>${nm}</h3><div class="row">`+
+ fig(strip(st,A2,360,'light',1),'<b>360 dp phone, two accounts, Teams selected.</b>')+
+ fig(strip(st,A4,412,'dark',2),'<b>412 dp (Fold cover), four accounts, dark:</b> scrolls (CCBG-81 rule). Personal selected.')+
+ '</div><div class="row">'+
+ fig(strip(st,A4,750,'light',0),'<b>Fold 7 inner ≈ 750 dp, four accounts: fixed.</b>')+
+ fig(strip(st,A10,750,'light',4),'<b>750 dp, ten accounts: scrolls; Lab selected.</b>')+
+ '</div><div class="row">'+
+ fig(strip(st,A10,840,'dark',0),'<b>Tablet ≥ 840 dp, ten accounts, dark: scrolls.</b>')+'</div>';});
+document.getElementById('android').innerHTML=AN;
+// ---- History strips, Summary row, Settings rows
+function iosHist(st,accts,scheme,sel){const w=340;const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));const lab=it=>(it.k==='all'?20:24)+7+Math.round(it.n.length*8.2)+24;const widest=Math.max.apply(null,items.map(lab));const fixed=widest*items.length<=w;const W=it=>fixed?w/items.length:Math.max(90,lab(it));
+ let h=`<div class="ios ${scheme}" style="width:${w}px;overflow:hidden"><div style="position:relative;display:flex;height:48px;width:${fixed?w:items.reduce((s,it)=>s+W(it),0)}px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="width:${W(it)}px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:16px;font-weight:500;color:${on?'var(--ink)':'var(--ios-sub)'}">${it.k==='all'?sys('g-all',false,20):icon(it.a[0],it.a[1],st,24)}<span>${it.n}</span></div>`;});
+ let left=0;for(let i=0;i<sel;i++)left+=W(items[i]);const ind=items[sel].a?`var(--${items[sel].a[0]})`:'var(--ink)';
+ return h+`<div style="position:absolute;bottom:0;left:${left+12}px;width:${W(items[sel])-24}px;height:3px;border-radius:2px;background:${ind}"></div></div><div style="font-size:11px;color:var(--ios-sub);padding:5px 10px">iOS History strip, 340 pt, ${fixed?'fixed thirds':'scrolls'}</div></div>`;}
+function summaryRow(scheme){const ring=(c,pct,fig)=>{const r=21.6,C=2*Math.PI*r;return `<svg class="bx" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="${r}" fill="none" stroke="${c}" stroke-opacity=".25" stroke-width="4.8"/><circle cx="24" cy="24" r="${r}" fill="none" stroke="${c}" stroke-width="4.8" stroke-dasharray="${C*pct/100} ${C}" transform="rotate(-90 24 24)" stroke-linecap="round"/><text x="24" y="29" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">${fig}</text></svg>`;};
+ const row=(tg,pv,nm,plan,pct,fig,line,tone)=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--lv)">${ring(`var(--${pv})`,pct,fig)}<div style="flex:1"><div style="display:flex;align-items:center;gap:4px;font-size:15px"><svg class="bx" width="14" height="14" viewBox="0 0 24 24" style="color:var(--mute)"><use href="#${tg==='w'?'gf-work-o':'gf-person-o'}"/></svg>${icon(pv,tg,'N',18)}<span style="margin-left:2px">${nm}</span><span style="font-size:11px;border:1px solid var(--lv);border-radius:6px;padding:0 5px;margin-left:4px">${plan}</span><span style="margin-left:auto;font-size:17px;font-weight:700;color:var(--${pv})">${pct}<span style="font-size:10px">%</span></span></div><div style="position:relative;height:10px;border-radius:5px;background:var(--${pv});opacity:.25;margin:5px 0 4px"></div><div style="position:relative;height:10px;border-radius:5px;margin:-19px 0 9px;width:${pct}%;background:var(--${pv})"></div><div style="font-size:13px"><b style="color:${tone}">${line[0]}</b> · ${line[1]}</div></div></div>`;
+ return `<div class="ph ${scheme}" style="width:360px;padding:12px 16px"><div style="font-size:14px;font-weight:600;margin-bottom:6px">Weekly</div>${row('w','c','Teams','Max',52,'34',['21h 50m ahead','resets Sun 4:59 PM'],'var(--r)')}${row('p','g','Personal','Plus',50,'12',['1d 6h behind','resets Tue 9:44 AM'],'var(--green)')}</div>`;}
+function settingsRows(st,scheme){const chip=(tg,word)=>`<span style="display:inline-flex;align-items:center;gap:3px;border:1px solid var(--lv);border-radius:10px;padding:1px 7px;font-size:11px"><svg class="bx" width="12" height="12" viewBox="0 0 24 24" style="color:var(--ink)"><use href="#${tg==='w'?'gf-work-o':'gf-person-o'}"/></svg>${word}</span>`;
+ const and=(pv,tg,nm,plan)=>`<div style="display:flex;align-items:center;gap:6px;height:36px">${icon(pv,tg,st,st==='N'?20:24)}<span style="font-size:16px;font-weight:500">${nm}</span><span style="width:8px;height:8px;border-radius:4px;background:var(--green);margin-left:2px"></span><span style="font-size:11px;color:var(--${pv});background:var(--${pv});border-radius:10px;padding:1px 7px"><span style="color:var(--ink);opacity:.9">${plan}</span></span>${chip(tg,tg==='w'?'Work':'Personal')}<span style="margin-left:auto">${sys('g-dots',false,20)}</span></div>`;
+ const ios=(pv,tg,nm,plan)=>`<div style="display:flex;align-items:center;gap:8px;height:44px;border-top:.5px solid var(--ios-line);padding:0 16px">${icon(pv,tg,st,st==='N'?20:24)}<span style="font-size:17px">${nm}</span><span style="font-size:12px;color:var(--ios-sub);background:var(--ios-fill);border-radius:6px;padding:1px 6px">${plan}</span>${chip(tg,tg==='w'?'Work':'Personal')}<span style="margin-left:auto;font-size:15px;color:var(--ios-sub)">Signed in</span></div>`;
+ return `<div class="ph ${scheme}" style="width:360px;padding:12px 16px"><div class="lbl">ANDROID · SETTINGS › ACCOUNTS</div><div style="background:var(--card);border-radius:12px;padding:10px 16px">${and('c','w','Teams','Max')}${and('g','p','Personal','Plus')}</div></div><div class="ios ${scheme}" style="width:360px;padding:12px 0"><div class="lbl" style="padding:0 16px">iOS · SETTINGS › ACCOUNTS</div><div style="background:var(--ios-card)">${ios('c','w','Teams','Max')}${ios('g','p','Personal','Plus')}</div></div>`;}
+let HS='';
+[['F','form F'],['R','form D1-R']].forEach(([st,nm])=>{HS+=`<h3>${nm}</h3><div class="row">`+
+ fig(strip(st,[['c','w','Teams'],['g','p','Personal'],['m','w','Lab']],360,'light',1,true),'<b>Android History strip, 360 dp, three accounts:</b> same composable as Main, indicator in onSurface; scrolls ("Personal" on one line).')+
+ fig(iosHist(st,[['c','w','Teams'],['g','p','Personal'],['m','w','Lab']],'dark',1),'<b>iOS History strip (AccountTabs), dark:</b> the 24-box icon replaces the 20 pt mark; fixed thirds.')+'</div>';});
+HS+='<h3>For comparison — unchanged: Summary full rows and Settings rows (plain mark)</h3><div class="row">'+
+ fig(summaryRow('light'),'<b>Summary full row, Android 360 dp:</b> 48 dp ring, 14 dp tag glyph (muted), plain 18 dp mark, name, plan pill, figure, 10 dp bar, pace line. No badge.')+
+ fig(settingsRows('N','light'),'<b>Settings › Accounts, both platforms:</b> plain 20 mark + name + status + plan chip + tag chip (glyph + word) + ⋮ / "Signed in". No badge.')+
+ fig(settingsRows('R','dark'),'<b>Not recommended, drawn for the record:</b> the Settings rows with the D1-R icon as well — the tag said twice, 6 dp apart.')+'</div>';
+document.getElementById('hist').innerHTML=HS;
+// ---- same provider
+function sameRow(st,scheme,accents,z){let h=`<div class="ph ${scheme}" style="padding:10px 14px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">`;
+ SAME.forEach(a=>{const col=accents?ACC[a[2]]:undefined;h+=`<span style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500">${icon(a[0],a[1],st,24,{col})}${a[2]}</span>`;});
+ if(z){h+='</div><div style="display:flex;gap:22px;padding:4px 14px 12px">';SAME.forEach(a=>h+=icon(a[0],a[1],st,24,{z:4,col:accents?ACC[a[2]]:undefined}));}
+ return h+'</div>';}
+let SM='';
+for(const st of ['F','R','V','I','W']){SM+=`<h3>${FORMS[st].split(' — ')[0]}</h3><div class="row">`+
+ fig(sameRow(st,'light',false,true),'<b>Default accent (Claude orange), light:</b> W · W · P. Teams and Lab are identical.')+
+ fig(sameRow(st,'dark',true,true),'<b>Three accents (Claude orange · Purple · Teal), dark.</b>'+(st==='V'?' Atlas is Personal here, so the clash is Lab\'s (Purple) violet… no: Atlas\'s Teal accent vs a Personal violet dot is clear; swap Atlas to Work to see teal on teal — §8.':st==='R'?' A Blue-themed account would wear a blue Personal dot the same way.':''))+'</div>';}
+document.getElementById('same').innerHTML=SM;
+// ---- cvd
+function cvdBlock(st){const one=(f,lbl)=>`<figure><p class="lbl">${lbl}</p><div style="filter:${f}">${sameRow(st,'light',true,false)}${strip0(st,24,1,false,'light')}</div></figure>`;
+ return `<h3>${FORMS[st].split(' — ')[0]}</h3><div class="row">${one('none','normal vision')}${one('url(#deut)','deuteranopia')}${one('url(#prot)','protanopia')}</div>`;}
+document.getElementById('cvd').innerHTML=['R','V','I','F'].map(cvdBlock).join('');
+// ---- settings: Tag colours
+function tagSettings(scheme,pair){const w=pair==='R'?['var(--rw)','Red (iOS)']:['var(--vw)','Teal'];const p=pair==='R'?['var(--rp)','Blue']:['var(--vp)','Violet'];
+ const TH=[['Blue','#1A73E8'],['Indigo','#3949AB'],['Cyan','#00ACC1'],['Teal','#00897B'],['Green','#188038'],['Amber','#B07D00'],['Deep orange','#E64A19'],['Red','#D93025'],['Pink','#D81B60'],['Purple','#8E24AA'],['Brown','#6D4C41']];
+ let grid='';TH.forEach(t=>grid+=`<div style="width:40px;text-align:center"><div style="width:40px;height:40px;border-radius:20px;background:${t[1]};${t[0]==='Teal'?'box-shadow:0 0 0 3px var(--ink) inset':''}"></div>${t[0]==='Teal'?'<div style="font-size:9px;color:var(--mute)">Atlas</div>':''}</div>`);
+ return `<div class="ph ${scheme}" style="width:360px;padding:12px 16px"><div class="lbl">APPEARANCE</div><div style="background:var(--card);border-radius:12px;padding:12px 16px"><div style="font-size:16px;font-weight:700">Theme</div><div style="font-size:12px;color:var(--mute);margin-bottom:10px">System · Light · Dark</div><div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px">Tag colours<span style="margin-left:auto;display:inline-flex;gap:6px"><i class="sw" style="background:${p[0]}"></i><i class="sw" style="background:${w[0]}"></i></span><span style="color:var(--mute)">›</span></div><div style="font-size:12px;color:var(--mute)">Personal ${p[1]} · Work ${w[1]} — the dot on account tabs${pair==='R'?'':''}</div></div>
+ <div class="lbl" style="margin-top:12px">TAG COLOURS (page)</div><div style="background:var(--card);border-radius:12px;padding:12px 16px"><div style="display:flex;align-items:center;gap:10px;height:40px;font-size:16px"><i class="sw" style="background:${p[0]};width:24px;height:24px"></i>Personal<span style="margin-left:auto;color:var(--mute)">${p[1]} ›</span></div><div style="display:flex;align-items:center;gap:10px;height:40px;font-size:16px"><i class="sw" style="background:${w[0]};width:24px;height:24px"></i>Work<span style="margin-left:auto;color:var(--mute)">${w[1]} ›</span></div><div style="font-size:12px;color:var(--mute);margin:4px 0 10px">Used on account tabs only. The rows and chips keep the person and briefcase.</div><div style="display:flex;flex-wrap:wrap;gap:12px">${grid}</div><div style="font-size:12px;color:var(--mute);margin-top:8px">Selected: Teal · also Atlas's accent</div><div style="text-align:right;font-size:14px;font-weight:500;margin-top:8px">Reset to defaults</div></div></div>`;}
+document.getElementById('settings').innerHTML='<div class="row">'+fig(tagSettings('light','V'),'<b>Android, Fable\'s pair:</b> the Appearance row with both swatches, and the page it opens with the eleven-theme grid (Teal chosen for Work, captioned "also Atlas\'s accent").')+fig(tagSettings('dark','R'),'<b>Dark, Robin\'s pair.</b> iOS: the same two rows in the Appearance section, the grid in a medium sheet as the accent picker.')+'</div>';
+})();
+</script>
+</body>
+</html>

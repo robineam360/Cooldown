@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>CCRM-118 Header Glyphs — consolidated wireframe as decided 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--menu:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--green:#2E7D32;--tint:#007AFF;--fill:rgba(28,27,31,.13);--ios-bg:#F2F2F7;--ios-side:#E9E9EE;--ios-card:#fff;--ios-menu:#F9F9F9;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.10);--sw-on:#34C759;--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--menu:#36343B;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--green:#9CCC65;--tint:#0A84FF;--fill:rgba(230,225,229,.13);--ios-bg:#000;--ios-side:#1C1C1E;--ios-card:#1C1C1E;--ios-menu:#2C2C2E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.14);--sw-on:#30D158;--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930}}
+.dark{--bg:#1C1B1F;--card:#2B2930;--menu:#36343B;--ink:#E6E1E5;--mute:#CAC4D0;--line:#938F99;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--green:#9CCC65;--tint:#0A84FF;--fill:rgba(230,225,229,.13);--ios-bg:#000;--ios-side:#1C1C1E;--ios-card:#1C1C1E;--ios-menu:#2C2C2E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(255,255,255,.14);--sw-on:#30D158}
+.light{--bg:#FEF7FF;--card:#F3EDF7;--menu:#F3EDF7;--ink:#1C1B1F;--mute:#49454F;--line:#79747E;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--green:#2E7D32;--tint:#007AFF;--fill:rgba(28,27,31,.13);--ios-bg:#F2F2F7;--ios-side:#E9E9EE;--ios-card:#fff;--ios-menu:#F9F9F9;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(0,0,0,.10);--sw-on:#34C759}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1560px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}h3{font-size:15px;margin:22px 0 6px}h4{font-size:13.5px;margin:16px 0 4px}
+p,li{max-width:940px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:940px}.rec b{color:inherit}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+figure{margin:0 0 14px}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:5px;max-width:440px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--lv);position:relative;font-family:Roboto,"Helvetica Neue",Arial,sans-serif}
+.ios{background:var(--ios-bg);color:var(--ink);border:1px solid var(--ios-line);font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;position:relative}
+.bx{flex:none;overflow:visible;display:block}
+.strip{position:relative;display:flex;height:48px;border-bottom:1px solid var(--lv)}
+.tab{display:flex;align-items:center;justify-content:center;height:48px;font-size:14px;font-weight:500;white-space:nowrap;flex:none}
+.tab.off .nm{opacity:.6}
+.ind{position:absolute;bottom:-1px;height:3px;border-radius:3px 3px 0 0}
+.ri{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center}.ri.on{background:var(--ios-fill)}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:940px}.cost b{color:var(--ink)}
+small.u{color:var(--anno);font-weight:600}
+ol.q li{margin-bottom:8px}
+.lbl{font-size:11px;color:var(--mute);margin:0 0 4px}
+kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+.guide{fill:none;stroke:var(--anno);stroke-width:.3;stroke-dasharray:.8 .5}
+.card{background:var(--card);border-radius:12px;padding:16px}
+.hd{display:flex;align-items:center;gap:10px;min-height:28px}.hd .t{font-size:14px;font-weight:600;white-space:nowrap}
+.ctl{display:inline-flex;height:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:12px;flex:none}
+.sg{display:flex;align-items:center;justify-content:center;height:26px;border-left:1px solid var(--line);flex:none;gap:4px;white-space:nowrap;padding:0 10px}
+.sg:first-child{border-left:0}.sg.on{background:var(--fill);font-weight:600}
+.sg svg{width:16px;height:16px;flex:none}.sg .n{font-variant-numeric:tabular-nums}
+.sp{flex:1;min-width:0}
+.sort{display:inline-flex;align-items:center;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:8px;font-size:12px;color:var(--mute);flex:none;white-space:nowrap}
+.sort svg.o{width:16px;height:16px}.sort svg.ch{width:18px;height:18px}
+.note{font-size:12px;color:var(--mute);margin-top:6px}
+.r{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--lv)}.r.first{border-top:0;padding-top:6px}
+.ring{width:48px;height:48px;flex:none}.rc{flex:1;min-width:0}
+.l1{display:flex;align-items:center;gap:7px;height:22px}.l1 .nm{font-size:15px}.l1 .mk{width:18px;height:18px}
+.fg{margin-left:auto;font-size:17px;font-weight:700}.pill{font-size:11px;border:1px solid var(--lv);border-radius:6px;padding:1px 6px;color:var(--mute)}
+.ub{position:relative;height:10px;border-radius:5px;margin:6px 0 4px}.ub i{position:absolute;left:0;top:0;height:100%;border-radius:5px}.ub u{position:absolute;top:-3px;width:3px;height:calc(100% + 6px);background:var(--mute);border-radius:1px}
+.cap{font-size:12px;color:var(--mute);text-align:right}.l3{font-size:13px;margin-top:4px}
+.ios .ic2{background:var(--ios-card);border-radius:14px;padding:16px}
+.ios .hd{gap:10px}.ios .hd .t{font-size:17px;font-weight:600}
+.ios .ctl{border-color:var(--ios-line);font-size:13px}.ios .sg{border-left-color:var(--ios-line);padding:0 9px}.ios .sg.on{background:var(--ios-fill)}.ios .sg svg{width:15px;height:15px}
+.ios .sort{border-color:var(--ios-line);color:var(--ink);font-size:13px;padding:0 7px}.ios .sort svg.o{width:14px;height:14px;margin-right:4px}.ios .sort svg.ch{width:9px;height:9px}
+.ios .sp{min-width:6px}
+.menu{width:220px;background:var(--menu);border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,.3);padding:8px 0}
+.mi{display:flex;align-items:center;height:48px;padding:0 12px;gap:12px;font-size:16px}.mi svg.o{width:24px;height:24px;color:var(--mute)}.mi svg.k{width:24px;height:24px;margin-left:auto}
+.imenu{width:250px;background:var(--ios-menu);border-radius:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden}
+.imi{display:flex;align-items:center;height:44px;padding:0 16px;gap:10px;font-size:17px;border-top:1px solid var(--ios-line)}.imi:first-child{border-top:0}.imi svg.k{width:16px;height:16px;flex:none}.imi .kk{width:16px;flex:none}.imi svg.o{width:20px;height:20px;margin-left:auto}
+.sw{display:inline-block;width:52px;height:32px;border-radius:16px;background:var(--lv);position:relative;flex:none}.sw::after{content:"";position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:14px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.sw.on{background:var(--sw-on)}.sw.on::after{left:22px}
+.msw{width:52px;height:32px;border-radius:16px;background:var(--lv);position:relative;flex:none;border:2px solid var(--line)}.msw::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:8px;background:var(--line)}
+.msw.on{background:var(--c);border-color:var(--c)}.msw.on::after{left:24px;top:2px;width:24px;height:24px;background:#fff}
+.ans{font-size:15px;font-weight:600;max-width:940px;padding:8px 12px;border-left:4px solid var(--ink)}
+.combo{display:inline-block;font-size:11px;font-weight:700;color:var(--anno);background:var(--annobg);border-radius:4px;padding:0 6px;margin-right:6px}
+</style>
+</head>
+<body><p style="background:#e6f4ea;color:#0b3d1a;padding:10px 14px;border-radius:8px;font-weight:600">APPROVED by Robin 2026-11-13, question by question: Tag marks in Appearance after Summary order; blank slot on a mixed list; a plain mark stays top-left. Android keeps its account tabs at the top (design/2026-11-13-android-account-switcher.html). Frozen for the build.</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs">
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="mk-gpt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(60 12 12)"/><rect x="8.6" y="1.6" width="6.8" height="20.8" rx="3.4" transform="rotate(120 12 12)"/></g></symbol>
+<symbol id="mk-gem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.2C12.7 7.3 16.7 11.3 22.8 12C16.7 12.7 12.7 16.7 12 22.8C11.3 16.7 7.3 12.7 1.2 12C7.3 11.3 11.3 7.3 12 1.2Z"/></symbol>
+<symbol id="gf-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+<symbol id="gf-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></symbol>
+<symbol id="g-person" viewBox="0 0 24 24"><path fill="currentColor" d="M12,6c1.1,0 2,0.9 2,2s-0.9,2 -2,2 -2,-0.9 -2,-2 0.9,-2 2,-2m0,10c2.7,0 5.8,1.29 6,2L6,18c0.23,-0.72 3.31,-2 6,-2m0,-12C9.79,4 8,5.79 8,8s1.79,4 4,4 4,-1.79 4,-4 -1.79,-4 -4,-4zm0,10c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z"/></symbol>
+<symbol id="g-work" viewBox="0 0 24 24"><path fill="currentColor" d="M20,6h-4V4c0,-1.11 -0.89,-2 -2,-2h-4c-1.11,0 -2,0.89 -2,2v2H4C2.89,6 2.01,6.89 2.01,8L2,19c0,1.11 0.89,2 2,2h16c1.11,0 2,-0.89 2,-2V8C22,6.89 21.11,6 20,6zM10,4h4v2h-4V4zM20,19H4V8h16V19z"/></symbol>
+<symbol id="g-all" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3" y="5" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="12" height="3" rx="1.5"/><rect x="3" y="16" width="15" height="3" rx="1.5"/></g></symbol>
+<symbol id="g-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/></g></symbol>
+<symbol id="g-side" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M9 5v14"/></g></symbol>
+<symbol id="g-handle" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4.8 7.5h14.4M4.8 12h14.4M4.8 16.5h14.4"/></g></symbol>
+<symbol id="g-ring-low" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".3"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-dasharray="11.3 56.55" transform="rotate(-90 12 12)"/></symbol>
+<symbol id="g-ring-high" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".3"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-dasharray="48.1 56.55" transform="rotate(-90 12 12)"/></symbol>
+<symbol id="g-timer" viewBox="0 0 24 24"><path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></symbol>
+<symbol id="g-chev" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></symbol>
+<symbol id="g-ichev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" d="M5 9l7 7 7-7"/></symbol>
+<symbol id="g-check" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+</defs></svg>
+
+<h1>CCRM-118 (Header Glyphs) — the consolidated wireframe, as Robin decided it on 2026-11-13</h1>
+<p class="lead">Fable (expertise), 2026-11-13. This page replaces, for approval, the four pages it consolidates: <code>design/2026-11-13-tag-glyph-android-and-filter.html</code>, <code>-summary-header-glyphs.html</code>, <code>-tag-badge-styles.html</code>, <code>-tab-icon-tag-dot.html</code>. The icon is the built <code>RailIcon</code> (<code>ios/App/UI/InnerPanes.swift</code>, CCBG-86 (Rail Marks Alike)), proven on the iPhone 17e bottom bar and the iPad landscape sidebar by the spike captures in <code>design/research/2026-11-13-ccrm118/</code> (colour and badge kept, light and dark; the selected label tints, the icon does not). Drawn at 1 dp = 1 px (iOS 1 pt = 1 px), real numbers, generated from one icon function so every surface draws the same thing. The page follows your system's light / dark; panels marked <b>light</b> / <b>dark</b> are forced. Related: CCRM-110 (Account Tags), CCRM-115 (Row Tag Glyph), CCRM-116 (Inner Panes), CCRM-112 (Summary Snapshot).</p>
+
+<h2>0 · What this page builds (binding, Robin 2026-11-13)</h2>
+<ol>
+<li><b>One account icon on every account tab:</b> the provider mark in the account's accent, with the tag badge as built (B0 / F: a 13 disc cleared 1.5 wider out of the mark's lower-right corner, a filled person / briefcase in ink). Surfaces: iPhone bottom tab bar and its More list, iPad landscape sidebar, the Duo's cover rail, inner wide rail and tall bottom bar, Android's Main and History strips (phone, Fold 7 inner, tablet), the iOS History strip, the iOS account header. iPad portrait's top bar stays names only (accepted).</li>
+<li><b>The tag is never a colour.</b> Ink figure, the disc is the surface, the accent means the account and the severity colours mean usage. Unchanged.</li>
+<li><b>New setting — "Tag marks", Personal on/off and Work on/off, default both on.</b> It decides whether a tag's mark is <i>drawn</i> wherever the tag shows as a mark: every tab icon above, the Summary row glyph (full and one-line), the iOS account header, the snapshot's glyph column. It never touches the Settings tag chip, the Add sheet, the Tag dialog or the Summary filter segments (those set or pick the tag and always show both). Robin's own setting: Work on, Personal off — "if no briefcase, I'll know it's personal".</li>
+<li><b>Summary filter:</b> "All" (a word, no count) · person N · briefcase N. An empty group keeps full ink with its 0; a tap shows today's 3 s note (E1). The words stay for TalkBack / VoiceOver.</li>
+<li><b>Sort button:</b> always the current order's glyph — drag handle (your order) · ring 20 % (most room first) · timer (resets soonest) · ring 85 % (most used); the words only in the menu; the two rings are custom glyphs on both platforms. Android keeps its "wrap from font scale 1.5" rule.</li>
+</ol>
+<div class="rec"><b>Reading the three combinations.</b> <span class="combo">BOTH ON</span> today's look, the default. <span class="combo">PERSONAL OFF</span> Robin's: Work accounts carry the briefcase, Personal accounts carry a plain mark. <span class="combo">WORK OFF</span> the mirror. <span class="combo">BOTH OFF</span> no mark anywhere; every account icon is the plain mark, the row glyph column is gone, the header is mark + name. <b>Two things never move when a toggle flips:</b> the mark's position inside its icon box (the badge is drawn or not; the mark stays at the box's top-left so a badged and an unbadged tab align), and the screen-reader label ("Teams, Work account" whether or not anything is drawn).</div>
+
+<h2>1 · The icon — three providers, both tags, each tag on and off; real size and 4×; light / dark; unselected / dimmed</h2>
+<p>Boxes: iOS tab bar, rail, sidebar, More list <b>25</b> (mark 21); Android tabs and the iOS History strip <b>24</b> (mark 20); iOS account header <b>26</b> (mark 22). In every box the mark sits at the top-left and the badge disc is centred 6.5 in from the lower-right corner (cleared circle r 8, disc r 6.5, figure in a 12 box = 8 of figure). <b>Mark off:</b> the mark is whole (no bite), same size, same place; the 4 of overhang space at the lower right stays empty. Strips: Claude · Work, ChatGPT · Personal, Gemini · Work, Claude · Personal, ChatGPT · Work, Gemini · Personal; then an unselected Android tab (figure 60 % with the text; the mark keeps its accent); then dimmed (spent / signed-out: the whole icon 50 %).</p>
+<div id="icons"></div>
+
+<h2>2 · The setting — "Tag marks"</h2>
+<p class="ans">Where: <b>Appearance, right after "Summary order"</b> on both platforms, so the Summary group reads Open on the summary · Summary order · Tag marks and shares its gate (shown with two or more accounts — with one account no tab, header or row draws a tag on Android; the iOS single-account header still honours the stored value, both on by default). Not the Accounts tab: there the tag is <i>set</i>; here it is <i>drawn</i>. Not a per-account row: Robin's rule is per tag.</p>
+<p><b>Android:</b> under the Summary order chips and a <code>RowDivider</code>, the title "Tag marks" (bodyLarge SemiBold), the note (bodySmall `onSurfaceVariant`), then two 48 dp switch rows each with the tag's 20 dp outlined glyph (Material `person` / `work`, `onSurfaceVariant`) and its word in bodyLarge, the `Switch` at the right. <b>iOS:</b> in the Appearance section after the Summary order picker, a "Tag marks" label (17 pt), two `Toggle` rows with `Label(tag.label, systemImage:)` (SF `person` / `briefcase` 17 pt in `txt`), and the note under them (13 pt `sub`). <b>Keys:</b> `tagMarks.personal`, `tagMarks.work` (Android in `usage_cache` prefs, iOS in the App Group so the snapshot and any later widget read it); absent reads as on; v1.9 ignores them; sample mode edits its in-memory copy. <b>Copy (both):</b></p>
+<table>
+<tr><th>Element</th><th>Text</th></tr>
+<tr><td>Title</td><td>Tag marks</td></tr>
+<tr><td>Note</td><td>Draws the tag's mark on account tabs, the account header and the Summary rows. Off, the account keeps its tag — Settings and the Summary filter always show both.</td></tr>
+<tr><td>Row 1</td><td>[person] Personal — switch</td></tr>
+<tr><td>Row 2</td><td>[briefcase] Work — switch</td></tr>
+<tr><td>TalkBack / VoiceOver</td><td>"Tag marks" (heading) · "Personal, switch, on" · "Work, switch, off"; the note is read after the rows (Android `contentDescription` on the column; iOS the footer text)</td></tr>
+</table>
+<div id="settings"></div>
+
+<h2>3 · Android — Main and History strips at 360 / 412 / 750 / ≥ 840 dp; 2 / 4 / 10 accounts; the three combinations</h2>
+<p>Label = 24 dp icon box · 2 · name (titleSmall 14 sp medium) — the name starts at 26 as today, so <code>TabStripFit</code> (fixed equal shares while every label + 32 fits its share, else scrolling with each tab at its label, 90 dp floor) does not move. The "All" tab is unchanged (20 dp bars · 6 · "All"). Indicator 3 dp in the selected account's accent (History: `onSurface`). Unselected: text and figure 60 %; the mark keeps its accent. TalkBack: "Claude, Teams, Work account, tab 2 of 5, selected".</p>
+<div id="android"></div>
+
+<h2>4 · iPhone (17e, 393 pt) — bottom tab bar and the More list; the Duo's tall bar is the same bar at 669 pt</h2>
+<p>Five items fit; past five iOS keeps the first four and adds More (its list: 44 pt rows, the icon 25 at the left, 17 pt name). Original-rendering image: the Liquid Glass pill tints the <i>label</i> blue and leaves the icon in its accent — as the spike shows (capture <code>spike-iphone17e-tabbar-light.jpg</code>: "Lab" blue, the Gemini mark and briefcase untouched). Dimmed accounts: the icon at 50 %.</p>
+<div id="iphone"></div>
+
+<h2>5 · iPad — landscape sidebar (320 pt); portrait top bar stays text-only</h2>
+<p>Landscape: the spike (<code>spike-ipad-sidebar-dark.jpg</code>) draws the 25 pt image at 25 in a 44 pt row beside the 17 pt name, badge and accent kept, the selected row on the fill. Portrait (834 pt): the floating top bar draws names only; accepted — no icon of any kind appears there, so a same-named pair is told apart by name alone, as today.</p>
+<div id="ipad"></div>
+
+<h2>6 · iPhone Duo — cover rail (84 pt column), inner wide rail, inner tall bottom bar</h2>
+<p>The rail is the built case (50 pt pill, 44 pt items, All + up to six + "•••"); only the icon function changed: it now reads the setting. The tall inner screen draws the §4 bar at 669 pt.</p>
+<div id="duo"></div>
+
+<h2>7 · iOS History strip (<code>AccountTabs</code>) and the iOS account header (<code>AccountHeader</code>)</h2>
+<p><b>Strip:</b> the 24-box icon replaces the 20 pt mark; 3 pt gap, so the name starts at 27 as today; fixed thirds or scrolling as today. Unselected tabs are `sub`-coloured, figure included. <b>Header</b> (regular width, replaces the separate 18 pt glyph built 2026-11-12): a 26 box (mark 22) · 5 · name 21 pt bold; the name moves from 53 to 31 pt, giving the credits text 22 pt back. VoiceOver on the name: "Teams, Work account"; the icon is hidden.</p>
+<div id="hist"></div>
+
+<h2>8 · The Summary header — filter as glyph + count, sort as a glyph</h2>
+<p>Control: "All" 35 dp (iOS 33) · person + digit 47 (45) · briefcase + digit 47 (45) = <b>133 dp (iOS 125)</b>, 140 with a two-digit count; glyph 16 dp × font scale in the control's ink, 4, the digit at 12 sp (13 pt) tabular; chosen segment tonal (13 %) and semibold, digit included. The count is the group's size among all accounts, never the rows shown. Sort: <b>50 dp (iOS 41)</b>, glyph 16 (14) in `onSurfaceVariant` (`txt`) + ▾; one width for every order. Line at 360 dp: 44 + 10 + 133 + 50 = 237 of 288 (51 spare); iPhone 17e 52 + 10 + 125 + 6 + 41 = 234 of 326. Android wraps the control under the title from font scale 1.5 (equal thirds); iOS `ViewThatFits` keeps two forms (one line, or title + sort over a full-width control). <b>The filter segments always show both tags whatever Tag marks says.</b></p>
+<div id="header"></div>
+
+<h2>9 · Summary rows — the row glyph under the setting, and the column rule with <code>RowGlyphFit</code></h2>
+<p class="ans">Rule: <b>the glyph column exists while any row shown has a tag whose mark is on.</b> While it exists, every row shown keeps the slot (14 + 4 full, 12 + 4 one-line) — a row whose tag is off leaves its slot blank, so names align. When no row shown has a drawn mark (both off; or Personal off under the Personal filter; or Personal off and every account Personal — Robin's phone today), the column is absent and the name starts where the mark (full row) or the rank disc (one-line) ends. Then, and only then, the built drop rule runs unchanged: name to its 64 dp floor, then the column leaves every row at once, then the name ellipsizes on (one-line: bar floor 40 dp / 50 pt). In code: <kbd>column = rows.any { marks[it.tag] } && RowGlyphFit.keepsGlyph(rows)</kbd>; re-decided on a width, filter, rows, display, font <b>or Tag marks</b> change.</p>
+<div id="rows"></div>
+
+<h2>10 · The snapshot's glyph column</h2>
+<p>Today: the column (12 box + 4, before the mark) only while the rows on the card carry both tags. Now: <b>while the rows carry both tags and at least one of those tags is marked</b>; a row whose tag is off leaves its slot blank, as on screen. So Robin's All snapshot with mixed accounts shows briefcases and blanks; his all-Personal install shares the card without a column, as today. The snapshot never runs the drop rule (fixed 300 pt / 360 dp card).</p>
+<div id="snap"></div>
+
+<h2>11 · What the screen readers say — unchanged by the setting</h2>
+<table>
+<tr><th>Surface</th><th>Android TalkBack</th><th>iOS VoiceOver</th></tr>
+<tr><td>Account tab / sidebar row / More row</td><td>"Claude, Teams, Work account, tab 2 of 5, selected" — the icon keeps `contentDescription = provider.displayName`, the text carries "Teams, Work account"</td><td>"Teams, Work account, tab, 2 of 5, selected" (`.accessibilityLabel("\(label), \(tag) account")` on the tab item; rail, sidebar and More alike)</td></tr>
+<tr><td>Account header</td><td>—</td><td>"Teams, Work account" on the name; icon hidden</td></tr>
+<tr><td>Summary row</td><td>"Teams, Work account, 52 percent, …" whether or not the glyph is drawn (as built)</td><td>same</td></tr>
+<tr><td>Filter</td><td>"All, 5 accounts, radio button, selected" · "Personal, 3 accounts, radio button" · "Work, no accounts, radio button"; tap on 0 announces the note (live region)</td><td>"All, 5 accounts, selected, button" · "Personal, 3 accounts, button" · "Work, no accounts, button"; the "dimmed" value goes</td></tr>
+<tr><td>Sort</td><td>"Sort order: most room first, button" (closed); menu rows "Most room first, selected"</td><td>"Sort: most room first, button, pop-up"; native Picker rows</td></tr>
+<tr><td>Tag marks setting</td><td>"Tag marks" · "Personal, switch, on" · "Work, switch, on" · the note</td><td>same, the note as the section footer</td></tr>
+</table>
+
+<h2>12 · Questions for Robin — one decision each, my answer first</h2>
+<ol class="q">
+<li><b>Where the setting lives.</b> <b>Appearance, after Summary order, shown with two or more accounts</b> (§2) — the display settings' home, beside the two Summary rows it belongs with. Else at the top of Settings › Accounts above the cards (where the tags are set; then it shows with one account too).</li>
+<li><b>A mixed list with one tag off</b> (Robin's: Personal off, All filter, Work and Personal rows together). <b>Blank slot, column kept</b> (§9): names align, the briefcases line up, nothing shifts when a row's tag changes. Else collapse per row (a Personal row's name starts 18 dp earlier than a Work row's — ragged).</li>
+<li><b>Rows on the Duo rail and the iPad sidebar when the setting hides a mark.</b> <b>The plain mark stays at the box's top-left</b> (§1: nothing moves on a toggle). Else recentre the plain mark in its box (2 dp shift when the toggle flips; a Work and a Personal tab's marks then sit 2 dp apart).</li>
+</ol>
+<p><b>Desktop hand-off, one line:</b> CooldownDesktop gets one icon to copy (mark + badge, B0) for its sidebar rows and tabs, the two sort glyphs (ring 20 % / 85 %) and a per-tag "Tag marks" setting (keys `tagMarks.personal|work`, default on) that it should read the same way if it ever draws a tag; it has no Summary, so the filter and the row column do not apply — send this page frozen before either side builds (Robin 2026-11-11); what it shows today is <small class="u">UNVERIFIED</small> from here.</p>
+
+<h2>13 · Build notes</h2>
+<h3>Android</h3>
+<ul>
+<li><b>Icon:</b> <code>BadgedMark(provider, tag, accent, ink, mark = 20.dp, marked: Boolean)</code> in <code>ui/ProviderMark.kt</code>: a 24 dp box, the mark at the top-left; when <kbd>marked</kbd>, inside <kbd>graphicsLayer { compositingStrategy = Offscreen }</kbd> a <kbd>drawCircle(radius = 8.dp, blendMode = Clear)</kbd> at (17.5, 17.5) and the filled glyph (<code>ic_tag_personal_filled</code> / <code>ic_tag_work_filled</code>, new drawables) in a 12 dp box centred there. <code>ProviderTabLabel</code> uses it with a 2 dp spacer and <kbd>contentDescription = "$name, ${tag.label} account"</kbd> on the text; one composable for Main and History. <code>TabStripFitTest</code> gains one assertion: the badged label measures what the plain one did (24 + 2 + text = 20 + 6 + text).</li>
+<li><b>Setting:</b> <code>UsageCache.tagMarks(): Map&lt;AccountTag, Boolean&gt;</code> / <code>setTagMark(tag, on)</code>, keys <kbd>tagMarks.personal</kbd>, <kbd>tagMarks.work</kbd>, absent = true; <code>TagMarksGroup(cacheSettings)</code> in <code>SettingsScreen.kt</code> after <code>SummaryOrderGroup</code> inside the same <kbd>SummaryRank.tabShown</kbd> block; the sample's <code>MemoryPrefs</code> copy. A change calls <code>Surfaces.refresh</code> (nothing visible there today, but the snapshot reads it).</li>
+<li><b>Rows:</b> <code>SummaryRows.fullKeepsGlyph</code> / <code>oneLineKeepsGlyph</code> take <kbd>marks</kbd>: the column exists while <kbd>rows.any { marks[it.tag] }</kbd> and then the existing measure; <code>SummaryRow</code> draws a blank <code>Spacer</code> of the slot's width for an unmarked tag while the column exists. <code>share/SummarySnapshot.kt</code>: column while both tags present and any is marked; blank slot likewise.</li>
+<li><b>Header:</b> <code>SummaryFilterControl</code> takes <code>counts</code>; a tag segment draws <code>TagGlyph(f.tag, 16.dp × fontScale, onSurface)</code> + 4 + <code>Text(count, 12.sp, tabular)</code>, <kbd>contentDescription = "${f.label}, $count accounts"</kbd> (1 → "1 account", 0 → the existing "no accounts" state); the <kbd>.alpha(0.38f)</kbd> goes; <code>enabled</code> keeps routing the tap to <code>onDisabledTap</code>; equal weights when wrapped (from font scale 1.5, unchanged). <code>SortMenu</code> drops <code>glyphOnly</code>, <code>SummaryHeader</code> its <kbd>maxWidth &lt; 320.dp</kbd>; the button draws <code>sortGlyph(order)</code> at 16 dp (<code>DragHandleIcon</code>, <code>ic_sort_room</code>, <code>ic_sort_resets</code> (Material `timer`), <code>ic_sort_used</code>); menu rows get <code>leadingIcon</code> and the current one <code>trailingIcon = Check</code>; the ⇅ Canvas goes.</li>
+<li><b>Same commit:</b> ROADMAP CCRM-118 status, `spec/mobile/surfaces/app.md` §2.3 / §2.8 / §6.4 / §8.1, captures in <code>design/research/2026-11-v20-build/</code>.</li>
+</ul>
+<h3>iOS</h3>
+<ul>
+<li><b>Icon:</b> <code>RailIcon.image(provider:accent:tag:marked:scheme:ink:side:markSide:)</code> — the cache key gains <kbd>marked</kbd> and <kbd>side</kbd>; when <kbd>marked</kbd> is false the clear and the glyph are skipped. Sizes 25/21 (tab bar, rail, sidebar, More), 24/20 (<code>AccountTabs</code>), 26/22 (<code>AccountHeader</code>). <code>MainTabs</code> (<code>MainScreens.swift</code> ~338) sets <kbd>railIcons</kbd> true everywhere (the spike's temporary edit becomes permanent); every tab item gets <kbd>.accessibilityLabel("\(label), \(tag) account")</kbd>. <code>AccountHeader</code> replaces its glyph + mark with the 26 pt image. <code>SummaryTagsTests</code> renders the three providers × both tags × marked / unmarked, light and dark.</li>
+<li><b>Setting:</b> <code>Prefs.tagMarks[tag]</code> in the App Group (<kbd>tagMarks.personal</kbd>, <kbd>tagMarks.work</kbd>, absent = true); two <code>Toggle</code>s after the Summary order <code>Picker</code> in <code>SettingsHistory.swift</code>; <code>model.displayChanged()</code> on change; the sample's settings copy.</li>
+<li><b>Rows:</b> core <code>RowGlyphFit</code> gains <kbd>static func column(rows tags: [AccountTag], marks: [AccountTag: Bool]) -> Bool</kbd> (any marked) composed before <code>keepsGlyph</code>; <code>SummaryRow</code> / the one-line row draw a clear 14 / 12 box for an unmarked tag while the column exists; <code>Resolved.snapshotGlyphs</code> = both tags present && any marked.</li>
+<li><b>Header:</b> <code>SummaryFilterControl</code> draws <code>Image(systemName: TagGlyph.symbol(tag))</code> 14 pt + <code>Text("\(count)")</code> 13 pt monospacedDigit, <kbd>.accessibilityLabel("\(filter.label), \(count) accounts")</kbd>; <kbd>.opacity(0.38)</kbd> and "dimmed" go. <code>SummarySortMenu</code> loses <code>glyphOnly</code>; <code>SortGlyph.image(order)</code> → <code>line.3.horizontal</code>, <code>ring.low</code>, <code>timer</code>, <code>ring.high</code>; rows <code>Label(order.label, …)</code>; assets <code>ring.low.symbolset</code>, <code>ring.high.symbolset</code> (Regular-M).</li>
+</ul>
+<h3>Shared spec and fixtures (land first, in `spec/mobile/`)</h3>
+<ul>
+<li><code>BEHAVIOR-MOBILE.md</code> §6: "The control" (glyph + count, no dim; the tap on an empty group shows the note), a new "Tag marks" paragraph (the two keys, default on, what they govern and what they never touch), the row glyph paragraph (the column rule above, blank slots, re-decided on a Tag marks change), the snapshot sentence (both tags and any marked).</li>
+<li><code>fixtures/tags/cases.json</code> (via <code>spec/tools/gen_v20_fixtures.py</code>): a new <kbd>marks</kbd> array — each case the rows shown (tag per row), the two switches, and expected <kbd>column</kbd> (true / false) and <kbd>slots</kbd> (per row drawn / blank), plus <kbd>snapshotColumn</kbd>; the memory and filter cases unchanged (no rule moved).</li>
+<li><code>surfaces/app.md</code>: §2.3 (the tab label is the badged mark on both platforms, the setting), §2.8 Header (control, sort, "When it narrows"), §2.8 Row glyph (the column rule), §6.4 Appearance (the Tag marks rows), §8.1 (snapshot column). ROADMAP CCRM-118 → Built; BUGS CCBG-86 (the rail's icon is now the app's account icon).</li>
+<li>Not core: the desktop has no Summary; `spec/core` does not change.</li>
+</ul>
+
+<h2>14 · States checklist</h2>
+<table>
+<tr><th>State</th><th>Where</th></tr>
+<tr><td>Icon: 3 providers × 2 tags × on/off, 24 / 25 / 26 boxes, light / dark, 4× with guides, unselected, dimmed</td><td>§1</td></tr>
+<tr><td>Setting: Android card and iOS section, both on / Personal off / Work off / both off, light / dark</td><td>§2</td></tr>
+<tr><td>Android strips: 360 (2, 4), 412 (4), 750 (4, 10), 840 (10); History strip; three combinations at 360 × 4</td><td>§3</td></tr>
+<tr><td>iPhone bar: 2 / 4 / 10 (+ More), light / dark, selected moves, dimmed Atlas, combinations</td><td>§4</td></tr>
+<tr><td>iPad sidebar 4 / 10, portrait text-only</td><td>§5</td></tr>
+<tr><td>Duo cover rail, wide rail (10), tall bar</td><td>§6</td></tr>
+<tr><td>iOS History strip fixed / scrolling; header 3 providers, combinations</td><td>§7</td></tr>
+<tr><td>Header: All / person / briefcase chosen, 0 count and the note, 10 accounts (two digits), four sort glyphs closed, menus open, font 1.5, Fold inner 317, Duo 323.5</td><td>§8</td></tr>
+<tr><td>Rows: full and one-line under the four combinations and the Personal filter; the drop-rule hand-off</td><td>§9</td></tr>
+<tr><td>Snapshot: both on / Personal off / all-Personal install</td><td>§10</td></tr>
+<tr><td>Not drawn: Material You's dynamic accent; a real 2.6 px/dp Fold render; the iPad top bar's overflow; iOS AX text sizes beyond the §8 table on the summary-header page — <small class="u">UNVERIFIED</small>, device pass</td><td></td></tr>
+</table>
+<p class="lead">Unverified on this page: text widths (±2 dp / pt, from the A4 / I4 captures); that the iPad sidebar draws the 25 pt image unscaled (the capture reads so); the More list's rendering of an original-rendering image (not in the spike); the desktop's current state.</p>
+
+<script>
+(function(){
+const PROV={c:'mk-claude',g:'mk-gpt',m:'mk-gem'};
+const TAG={p:'gf-person',w:'gf-work'};
+const ON={p:1,w:1},NOP={p:0,w:1},NOW={p:1,w:0},OFF={p:0,w:0};
+const CN={ON:'BOTH ON',NOP:'PERSONAL OFF',NOW:'WORK OFF',OFF:'BOTH OFF'};
+const CM={ON:ON,NOP:NOP,NOW:NOW,OFF:OFF};
+const defs=document.getElementById('defs');
+[24,25,26].forEach(S=>{const c=S-6.5;defs.insertAdjacentHTML('beforeend',`<mask id="cut${S}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${S+4}" height="${S+4}"><rect x="-2" y="-2" width="${S+4}" height="${S+4}" fill="#fff"/><circle cx="${c}" cy="${c}" r="8" fill="#000"/></mask>`);});
+// o: marks, z, guides, dim (whole), gdim (figure), gcol (figure colour), col (mark colour)
+function icon(pv,tg,S,o){o=o||{};const z=o.z||1,col=o.col||`var(--${pv})`,marks=o.marks||ON,on=!!marks[tg];const M=S-4,c=S-6.5,g=S-12.5;
+ const mask=on?` mask="url(#cut${S})"`:'';
+ const over=on?`<g style="color:${o.gcol||'var(--ink)'}"${o.gdim?` opacity="${o.gdim}"`:''}><use href="#${TAG[tg]}" x="${g}" y="${g}" width="12" height="12"/></g>`:'';
+ const guides=o.guides?`<rect class="guide" x="0" y="0" width="${M}" height="${M}"/><rect class="guide" x="0" y="0" width="${S}" height="${S}"/>`+(on?`<circle class="guide" cx="${c}" cy="${c}" r="6.5"/><circle class="guide" cx="${c}" cy="${c}" r="8"/>`:''):'';
+ const vb=z>1?`-1 -1 ${S+2} ${S+2}`:`0 0 ${S} ${S}`;
+ return `<svg class="bx" width="${S*z}" height="${S*z}" viewBox="${vb}" style="color:${col}"${o.dim?` opacity="${o.dim}"`:''}><use href="#${PROV[pv]}" width="${M}" height="${M}"${mask}/>${over}${guides}</svg>`;}
+function sys(id,on,S,a){return `<svg class="bx" width="${S}" height="${S}" viewBox="0 0 24 24" style="color:${on?'var(--tint)':'var(--ink)'}"${a?` opacity="${a}"`:''}><use href="#${id}"/></svg>`;}
+function fig(inner,cap){return `<figure>${inner}<figcaption>${cap}</figcaption></figure>`;}
+const SIX=[['c','w'],['g','p'],['m','w'],['c','p'],['g','w'],['m','p']];
+const A2=[['c','w','Teams'],['g','p','Personal']];
+const A4=A2.concat([['m','w','Lab'],['c','p','Atlas']]);
+const A10=[['c','w','Teams'],['g','p','Personal'],['g','p','ChatGPT'],['m','w','Gemini'],['c','w','Lab'],['c','p','Atlas',1],['c','w','Ops'],['g','p','Research'],['m','p','Client'],['c','w','Work']];
+const ROBIN=[['c','p','Teams'],['g','p','Personal']];
+// ---- §1 icons
+function strip0(S,z,guides,scheme,marks){let h=`<div class="ph ${scheme}" style="padding:12px 14px;display:flex;align-items:flex-end;gap:${z>1?24:16}px">`;
+ SIX.forEach(a=>h+=icon(a[0],a[1],S,{z,guides,marks}));
+ h+=icon('c','w',S,{z,guides,marks,gdim:.6})+icon('g','p',S,{z,guides,marks,dim:.5});return h+'</div>';}
+let H='';
+[['ON','both on (default)'],['NOP','Personal off — Robin\'s setting'],['NOW','Work off'],['OFF','both off']].forEach(([k,t])=>{const m=CM[k];
+ H+=`<h3><span class="combo">${CN[k]}</span> ${t}</h3><div class="row">`+
+ fig(strip0(25,1,false,'light',m),'<b>iOS 25 box, real size, light.</b> Last two: unselected figure 60 % (Android only; iOS keeps the image), dimmed 50 %.')+
+ fig(strip0(25,1,false,'dark',m),'<b>iOS 25 box, dark.</b>')+
+ fig(strip0(24,1,false,'light',m),'<b>Android 24 box, real size, light.</b>')+
+ fig(strip0(26,1,false,'dark',m),'<b>iOS header 26 box, dark.</b>')+
+ '</div><div class="row">'+
+ fig(strip0(25,4,true,'light',m),'<b>4×, iOS box, light, guides:</b> mark box, icon box, disc r 6.5, cleared r 8. A mark that is off is whole and in the same place.')+
+ fig(strip0(24,4,true,'dark',m),'<b>4×, Android box, dark.</b>')+'</div>';});
+document.getElementById('icons').innerHTML=H;
+// ---- §2 settings
+function aSettings(scheme,m){const row=(tg,word)=>`<div style="display:flex;align-items:center;height:48px;gap:12px"><svg class="bx" width="20" height="20" viewBox="0 0 24 24" style="color:var(--mute)"><use href="#${tg==='p'?'g-person':'g-work'}"/></svg><span style="font-size:16px;flex:1">${word}</span><span class="msw${m[tg]?' on':''}"></span></div>`;
+ return `<div class="ph ${scheme}" style="width:360px;padding:12px 20px"><div class="lbl">APPEARANCE (card, continued)</div><div class="card" style="padding:12px 16px">
+ <div style="display:flex;align-items:center;height:40px"><div style="flex:1"><div style="font-size:16px;font-weight:700">Open on the summary</div><div style="font-size:12px;color:var(--mute)">With two or more accounts, start on the All tab. Off: start on the last account you looked at.</div></div><span class="msw on" style="margin-left:12px"></span></div>
+ <div style="border-top:1px solid var(--lv);margin:10px 0"></div>
+ <div style="font-size:16px;font-weight:700">Summary order</div><div style="display:flex;gap:8px;margin:6px 0 4px;flex-wrap:wrap">${['Your order','Most room first','Resets soonest','Most used'].map((w,i)=>`<span style="height:32px;line-height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;${i===0?'background:var(--fill);font-weight:600;':''}">${w}</span>`).join('')}</div>
+ <div style="border-top:1px solid var(--lv);margin:10px 0"></div>
+ <div style="font-size:16px;font-weight:700">Tag marks</div><div style="font-size:12px;color:var(--mute);margin-bottom:2px">Draws the tag's mark on account tabs, the account header and the Summary rows. Off, the account keeps its tag — Settings and the Summary filter always show both.</div>
+ ${row('p','Personal')}${row('w','Work')}
+ <div style="border-top:1px solid var(--lv);margin:10px 0"></div>
+ <div style="font-size:16px;font-weight:700">Density</div><div style="font-size:12px;color:var(--mute)">How much each card shows at once.</div></div></div>`;}
+function iSettings(scheme,m){const row=(tg,word,top)=>`<div style="display:flex;align-items:center;height:44px;padding:0 16px;gap:12px;${top?'':'border-top:.5px solid var(--ios-line);'}"><svg class="bx" width="17" height="17" viewBox="0 0 24 24" style="color:var(--ink)"><use href="#${tg==='p'?'g-person':'g-work'}"/></svg><span style="font-size:17px;flex:1">${word}</span><span class="sw${m[tg]?' on':''}"></span></div>`;
+ return `<div class="ios ${scheme}" style="width:393px;padding:12px 0"><div class="lbl" style="padding:0 16px">APPEARANCE (section, continued)</div><div style="background:var(--ios-card);margin:0 16px;border-radius:12px;overflow:hidden">
+ <div style="display:flex;align-items:center;height:44px;padding:0 16px;gap:12px"><span style="font-size:17px;flex:1">Open on the summary</span><span class="sw on"></span></div>
+ <div style="padding:0 16px 10px;font-size:13px;color:var(--ios-sub)">With two or more accounts, start on the All tab. Off: start on the last account you looked at.</div>
+ <div style="display:flex;align-items:center;height:44px;padding:0 16px;border-top:.5px solid var(--ios-line)"><span style="font-size:17px;flex:1">Summary order</span><span style="color:var(--ios-sub);font-size:17px">Your order ⌵</span></div>
+ <div style="display:flex;align-items:center;height:44px;padding:0 16px;border-top:.5px solid var(--ios-line)"><span style="font-size:17px">Tag marks</span></div>
+ ${row('p','Personal')}${row('w','Work')}
+ <div style="padding:6px 16px 12px;font-size:13px;color:var(--ios-sub);border-top:.5px solid var(--ios-line)">Draws the tag's mark on account tabs, the account header and the Summary rows. Off, the account keeps its tag — Settings and the Summary filter always show both.</div></div></div>`;}
+document.getElementById('settings').innerHTML='<div class="row">'+
+ fig(aSettings('light',ON),'<b>Android, light, both on (default).</b> The Summary group: Open on the summary · Summary order · Tag marks, then Density as today. Rows 48 dp, glyph 20 dp `onSurfaceVariant`, bodyLarge word, Material `Switch`.')+
+ fig(aSettings('dark',NOP),'<b>Android, dark, Personal off (Robin).</b>')+
+ fig(iSettings('light',NOW),'<b>iOS, light, Work off.</b> 44 pt rows; SF `person` / `briefcase` 17 pt in `txt`; the note is the group\'s footer in 13 pt `sub`.')+
+ fig(iSettings('dark',OFF),'<b>iOS, dark, both off.</b> Nothing else in Settings changes: the account rows keep their tag chip with its word.')+'</div>';
+// ---- §3 Android strips
+function tw(s){return Math.round(s.length*7.6);}
+function strip(accts,w,scheme,sel,hist,marks){const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));
+ const lab=it=>(it.k==='all'?26:26)+tw(it.n);const widest=Math.max.apply(null,items.map(lab))+32;const fixed=widest*items.length<=w;
+ const W=it=>fixed?w/items.length:Math.max(90,lab(it)+32);
+ let h=`<div class="ph ${scheme}" style="width:${w}px;overflow:hidden"><div class="strip" style="width:${fixed?w:items.reduce((s,it)=>s+W(it),0)}px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div class="tab${on?'':' off'}" style="width:${W(it)}px">${it.k==='all'?sys('g-all',false,20,on?1:.6)+'<span style="width:6px"></span>':icon(it.a[0],it.a[1],24,{marks,dim:it.a[3]?.5:undefined,gdim:on?undefined:.6})+'<span style="width:2px"></span>'}<span class="nm" style="${it.a&&it.a[3]?'opacity:.5':''}">${it.n}</span></div>`;});
+ let left=0;for(let i=0;i<sel;i++)left+=W(items[i]);const ind=hist?'var(--ink)':(items[sel].a?`var(--${items[sel].a[0]})`:'var(--ink)');
+ h+=`<div class="ind" style="left:${left}px;width:${W(items[sel])}px;background:${ind}"></div></div><div style="padding:5px 10px;font-size:11px;color:var(--mute)">${w} dp · ${items.length} tabs · ${fixed?'fixed, equal shares':'scrolls, each tab at its label (90 dp floor), clipped at the edge'}${hist?' · History':''}</div></div>`;return h;}
+let AN='<h3><span class="combo">BOTH ON</span> widths and counts</h3><div class="row">'+
+ fig(strip(A2,360,'light',1,false,ON),'<b>360 dp phone, two accounts, Teams selected.</b> Fixed thirds of 120; "Personal" is a 108 dp tab as today.')+
+ fig(strip(A4,412,'dark',2,false,ON),'<b>412 dp (Fold 7 cover), four accounts, dark:</b> scrolls (CCBG-81 (History Tab Wrap) rule). Personal selected; the ChatGPT indicator.')+
+ '</div><div class="row">'+
+ fig(strip(A4,750,'light',0,false,ON),'<b>Fold 7 inner ≈ 750 dp, four accounts: fixed.</b>')+
+ fig(strip(A10,750,'light',4,false,ON),'<b>750 dp, ten accounts: scrolls; Lab selected; Atlas dimmed.</b>')+
+ '</div><div class="row">'+
+ fig(strip(A10,840,'dark',0,false,ON),'<b>Tablet ≥ 840 dp, ten accounts, dark: scrolls.</b>')+
+ fig(strip([['c','w','Teams'],['g','p','Personal'],['m','w','Lab']],360,'light',1,true,ON),'<b>History strip, 360 dp, three accounts:</b> the same composable, indicator `onSurface`; scrolls.')+'</div>';
+AN+='<h3>The three other combinations — 360 dp, four accounts, Teams selected, and Robin\'s two-Personal phone</h3><div class="row">'+
+ fig(strip(A4,360,'light',1,false,NOP),'<b><span class="combo">PERSONAL OFF</span> light.</b> Teams and Lab carry the briefcase; Personal and Atlas are plain marks in the same place.')+
+ fig(strip(A4,360,'dark',1,false,NOW),'<b><span class="combo">WORK OFF</span> dark.</b>')+
+ fig(strip(A4,360,'light',1,false,OFF),'<b><span class="combo">BOTH OFF</span> light.</b> Every icon a plain mark; the strip is today\'s strip with the mark 2 dp higher (the 24 box).')+
+ fig(strip(ROBIN,360,'dark',1,false,NOP),'<b>Robin\'s phone — two Personal accounts, Personal off, dark.</b> No badge anywhere; "no briefcase → personal".')+'</div>';
+document.getElementById('android').innerHTML=AN;
+// ---- §4 iPhone bar + More
+function bar(accts,w,scheme,sel,marks){let items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));if(items.length>5){items=items.slice(0,4);items.push({k:'more',n:'More'});}
+ const iw=Math.min(84,Math.floor((w-40)/items.length));
+ let h=`<div class="ios ${scheme}" style="width:${w}px;padding:12px 16px 20px"><div style="margin:0 auto;width:${iw*items.length+8}px;height:56px;border-radius:28px;background:var(--ios-card);box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 4px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="width:${iw}px;height:48px;border-radius:24px;${on?'background:var(--ios-fill);':''}display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="height:25px">${it.k==='all'?sys('g-all',on,25):it.k==='more'?sys('g-more',on,25):icon(it.a[0],it.a[1],25,{marks,dim:it.a[3]?.5:undefined})}</div><span style="font-size:10px;font-weight:500;color:${on?'var(--tint)':'var(--ink)'}">${it.n}</span></div>`;});
+ return h+`</div><div style="font-size:11px;color:var(--ios-sub);text-align:center;margin-top:6px">${w} pt · ${items.length} items</div></div>`;}
+function more(accts,scheme,marks){let h=`<div class="ios ${scheme}" style="width:393px;padding-bottom:12px"><div style="padding:10px 16px 6px;font-size:34px;font-weight:700">More</div><div style="margin:0 16px;background:var(--ios-card);border-radius:12px;overflow:hidden">`;
+ accts.forEach((a,i)=>{h+=`<div style="display:flex;align-items:center;height:44px;padding:0 16px;gap:14px;${i?'border-top:.5px solid var(--ios-line);':''}">${icon(a[0],a[1],25,{marks,dim:a[3]?.5:undefined})}<span style="font-size:17px;flex:1;${a[3]?'opacity:.5':''}">${a[2]}</span><span style="color:var(--ios-sub)">›</span></div>`;});return h+'</div></div>';}
+document.getElementById('iphone').innerHTML='<div class="row">'+
+ fig(bar(A2,393,'light',1,ON),'<b>Two accounts, Teams selected, light.</b> The label tints; the icon keeps Claude orange and its briefcase.')+
+ fig(bar(A4,393,'light',0,ON),'<b>Four accounts: five items, fits.</b>')+
+ fig(bar(A10,393,'dark',3,ON),'<b>Ten accounts, dark: All + three + More; Gemini selected.</b>')+
+ fig(more(A10.slice(4),'light',ON),'<b>The More list</b> (six rows; Atlas dimmed).')+
+ '</div><div class="row">'+
+ fig(bar(A4,393,'light',1,NOP),'<b><span class="combo">PERSONAL OFF</span> four accounts, light.</b>')+
+ fig(bar(A4,393,'dark',2,NOW),'<b><span class="combo">WORK OFF</span> dark, Personal selected.</b>')+
+ fig(bar(A4,393,'light',0,OFF),'<b><span class="combo">BOTH OFF</span> light.</b> Accent marks, no badge — the pre-CCRM-116 look in colour.')+
+ fig(more(A10.slice(4),'dark',NOP),'<b>More list, Personal off, dark.</b>')+'</div>';
+// ---- §5 iPad
+function ipadTop(accts,scheme){const items=['All'].concat(accts.map(a=>a[2]));let h=`<div class="ios ${scheme}" style="width:834px;padding:10px 16px;display:flex;align-items:center"><div style="display:flex;align-items:center;gap:8px;font-size:26px;font-weight:700">${icon('c','w',20,{marks:OFF})}${icon('g','p',20,{marks:OFF})}${icon('m','w',20,{marks:OFF})} Cooldown</div><div style="margin-left:auto;margin-right:auto;height:44px;border-radius:22px;background:var(--ios-card);box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 6px;gap:4px">${sys('g-side',false,22)}`;
+ items.forEach((n,i)=>h+=`<span style="padding:0 14px;height:36px;line-height:36px;border-radius:18px;font-size:17px;${i===0?'background:var(--ios-fill);color:var(--tint);font-weight:600':''}">${n}</span>`);
+ return h+`</div><div style="width:120px"></div></div>`;}
+function side(accts,scheme,sel,marks){const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));let h=`<div class="ios ${scheme}" style="width:320px;padding:12px 16px 16px;background:var(--ios-side)"><div style="font-size:30px;font-weight:700;margin:8px 0 12px">Cooldown</div>`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="display:flex;align-items:center;height:44px;padding:0 12px;gap:12px;border-radius:10px;${on?'background:var(--ios-fill);':''}">${it.k==='all'?sys('g-all',on,22):icon(it.a[0],it.a[1],25,{marks,dim:it.a[3]?.5:undefined})}<span style="font-size:17px;${it.a&&it.a[3]?'opacity:.5':''}">${it.n}</span></div>`;});return h+'</div>';}
+document.getElementById('ipad').innerHTML='<div class="row">'+fig(ipadTop(A4,'light'),'<b>iPad portrait, 834 pt: text only (accepted).</b>')+'</div><div class="row">'+
+ fig(side(A4,'light',0,ON),'<b>Sidebar, four accounts, light, All selected.</b>')+
+ fig(side(A10,'dark',3,ON),'<b>Sidebar, ten accounts, dark, Gemini selected; Atlas dimmed.</b> As the spike capture.')+
+ fig(side(A4,'light',1,NOP),'<b><span class="combo">PERSONAL OFF</span> light.</b>')+
+ fig(side(A4,'dark',1,OFF),'<b><span class="combo">BOTH OFF</span> dark.</b>')+'</div>';
+// ---- §6 Duo
+function rail(accts,scheme,sel,marks){const items=[{k:'all'}].concat(accts.slice(0,6).map(a=>({a})));if(accts.length>6)items.push({k:'more'});
+ let h=`<div class="ios ${scheme}" style="width:84px;padding:14px 0;display:flex;justify-content:center"><div style="width:50px;padding:3px 0;border-radius:25px;background:var(--ios-card);box-shadow:0 1px 4px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;gap:6px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div class="ri${on?' on':''}">${it.k==='all'?sys('g-all',on,25):it.k==='more'?sys('g-more',on,25):icon(it.a[0],it.a[1],25,{marks,dim:it.a[3]?.5:undefined})}</div>`;});return h+'</div></div>';}
+document.getElementById('duo').innerHTML='<div class="row">'+
+ fig(rail(A4,'light',0,ON),'<b>Cover rail, four accounts, light.</b> All selected.')+
+ fig(rail(A4,'dark',1,ON),'<b>Cover rail, dark, Teams selected.</b>')+
+ fig(rail(A10,'light',0,ON),'<b>Inner wide rail, ten accounts.</b> All + six + •••; Atlas dimmed.')+
+ fig(rail(A4,'light',1,NOP),'<b><span class="combo">PERSONAL OFF</span></b>')+
+ fig(rail(A4,'dark',1,OFF),'<b><span class="combo">BOTH OFF</span></b>')+
+ '</div><div class="row">'+
+ fig(bar(A4,669,'light',0,ON),'<b>Inner tall bottom bar (669 pt), four accounts, light.</b>')+
+ fig(bar(A4,669,'dark',2,NOP),'<b>Dark, Personal selected, Personal off:</b> the label tints, the plain mark stays in the accent.')+'</div>';
+// ---- §7 iOS History strip + header
+function iosHist(accts,scheme,sel,marks){const w=340;const items=[{k:'all',n:'All'}].concat(accts.map(a=>({a,n:a[2]})));const lab=it=>27+Math.round(it.n.length*8.2)+24;const widest=Math.max.apply(null,items.map(lab));const fixed=widest*items.length<=w;const W=it=>fixed?w/items.length:Math.max(90,lab(it));
+ let h=`<div class="ios ${scheme}" style="width:${w}px;overflow:hidden"><div style="position:relative;display:flex;height:48px;width:${fixed?w:items.reduce((s,it)=>s+W(it),0)}px">`;
+ items.forEach((it,i)=>{const on=i===sel;h+=`<div style="width:${W(it)}px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:${on?'var(--ink)':'var(--ios-sub)'}">${it.k==='all'?sys('g-all',false,20)+'<span style="width:7px"></span>':icon(it.a[0],it.a[1],24,{marks,gcol:on?'var(--ink)':'var(--ios-sub)'})+'<span style="width:3px"></span>'}<span>${it.n}</span></div>`;});
+ let left=0;for(let i=0;i<sel;i++)left+=W(items[i]);const ind=items[sel].a?`var(--${items[sel].a[0]})`:'var(--ink)';
+ return h+`<div style="position:absolute;bottom:0;left:${left+12}px;width:${W(items[sel])-24}px;height:3px;border-radius:2px;background:${ind}"></div></div><div style="font-size:11px;color:var(--ios-sub);padding:5px 10px">iOS History strip, 340 pt, ${fixed?'fixed thirds':'scrolls'}</div></div>`;}
+function head(pv,tg,nm,plan,cr,scheme,marks){return `<div class="ios ${scheme}" style="width:620px"><div class="ic2" style="padding:12px 14px"><div style="display:flex;align-items:center;gap:9px;height:36px">${icon(pv,tg,26,{marks})}<span style="font-size:21px;font-weight:700;margin-left:-4px">${nm}</span><span class="pill" style="font-size:12px">${plan}</span><span style="margin-left:auto;font-size:14px;color:var(--ink)">${cr}</span></div></div></div>`;}
+document.getElementById('hist').innerHTML='<div class="row">'+
+ fig(iosHist([['c','w','Teams'],['g','p','Personal']],'light',1,ON),'<b>Strip, two accounts, light, Teams selected:</b> fixed thirds of 113.')+
+ fig(iosHist([['c','w','Teams'],['g','p','Personal'],['m','w','Lab'],['c','p','Atlas']],'dark',2,ON),'<b>Four accounts, dark: scrolls.</b> Unselected figures in `sub`.')+
+ fig(iosHist([['c','w','Teams'],['g','p','Personal']],'light',0,NOP),'<b><span class="combo">PERSONAL OFF</span> All selected.</b>')+
+ '</div><div class="row">'+
+ fig(head('c','w','Teams','Max','Usage credits $12.00 / $40.00 · <b>30%</b>','light',ON),'<b>Header, light, Claude · Work, both on.</b> 26 box · 5 · "Teams" at 31 pt (was 53 with the separate glyph).')+
+ fig(head('m','w','Lab','Pro','Credits $4.20 balance','dark',ON),'<b>Header, dark, Gemini · Work.</b> This replaces the capture\'s "briefcase · spark · Lab".')+
+ fig(head('g','p','Personal','Plus','','light',NOP),'<b><span class="combo">PERSONAL OFF</span> ChatGPT · Personal:</b> the plain 22 pt mark in the 26 box; the name still at 31.')+
+ fig(head('c','w','Teams','Max','Usage credits $12.00 / $40.00 · <b>30%</b>','dark',OFF),'<b><span class="combo">BOTH OFF</span> dark.</b>')+'</div>';
+// ---- §8 header
+const G=(id)=>`<svg><use href="#${id}"/></svg>`;
+function ctl(sel,np,nw,ios){const w1=ios?33:35,w2=ios?45:47,w3=ios?45:47;const d=n=>n>=10?7:0;
+ return `<div class="ctl"><div class="sg${sel==='all'?' on':''}" style="width:${w1}px">All</div><div class="sg${sel==='p'?' on':''}" style="width:${w2+d(np)}px">${G('g-person')}<span class="n">${np}</span></div><div class="sg${sel==='w'?' on':''}" style="width:${w3+d(nw)}px">${G('g-work')}<span class="n">${nw}</span></div></div>`;}
+function sort(order,ios){return `<span class="sort"><svg class="o"><use href="#${order}"/></svg><svg class="ch"><use href="#${ios?'g-ichev':'g-chev'}"/></svg></span>`;}
+function ahd(scheme,w,sel,np,nw,order,note){return `<div class="ph ${scheme}" style="width:${w}px;padding:16px 20px"><div class="card"><div class="hd"><span class="t">Weekly</span>${ctl(sel,np,nw,false)}<span class="sp"></span>${sort(order,false)}</div>${note?`<div class="note">${note}</div>`:''}</div></div>`;}
+function ihd(scheme,w,sel,np,nw,order){return `<div class="ios ${scheme}" style="width:${w}px;padding:12px"><div class="ic2"><div class="hd"><span class="t">Weekly</span>${ctl(sel,np,nw,true)}<span class="sp"></span>${sort(order,true)}</div></div></div>`;}
+let HD='<div class="row">'+
+ fig(ahd('light',360,'all',3,2,'g-handle'),'<b>Android, light, 3 Personal / 2 Work, All chosen, "your order".</b> 237 of 288.')+
+ fig(ahd('dark',360,'p',3,2,'g-ring-low'),'<b>Dark, person chosen, "most room first".</b>')+
+ fig(ahd('dark',360,'all',2,0,'g-handle'),'<b>E1 · Robin\'s phone (2 Personal, 0 Work), dark.</b> The briefcase at full ink with its 0; a button.')+
+ fig(ahd('light',360,'all',2,0,'g-handle','No Work accounts yet. Tag one in Settings.'),'<b>E1 · after a tap on the 0.</b> Today\'s 3 s line, live region.')+
+ '</div><div class="row">'+
+ fig(ihd('light',358,'all',3,2,'g-handle'),'<b>iOS, iPhone 17e (list 326), light.</b> 234 of 326.')+
+ fig(ihd('dark',358,'w',3,2,'g-timer'),'<b>iOS, dark, briefcase chosen, "resets soonest".</b>')+
+ fig(ahd('light',360,'all',10,0,'g-ring-high'),'<b>Ten accounts, all Personal, "most used":</b> 140 dp; 244 of 288.')+
+ fig(ahd('dark',389,'all',3,2,'g-handle'),'<b>Fold 7 inner list column (317 in a 349 card).</b> Same button as everywhere; the 320 dp constant is gone.')+
+ '</div><div class="row">'+
+ fig(`<div class="ph light" style="width:300px;padding:12px;display:flex;gap:12px;align-items:center">${sort('g-handle')}${sort('g-ring-low')}${sort('g-timer')}${sort('g-ring-high')}</div>`,'<b>Android, the four closed states, 50 dp each:</b> your order · most room first · resets soonest · most used.')+
+ fig(`<div class="ios dark" style="width:280px;padding:12px;display:flex;gap:12px;align-items:center">${sort('g-handle',1)}${sort('g-ring-low',1)}${sort('g-timer',1)}${sort('g-ring-high',1)}</div>`,'<b>iOS, 41 pt each, dark.</b>')+
+ fig(`<div class="ph light" style="width:360px;height:290px;padding:16px 20px"><div class="card" style="height:60px"><div class="hd"><span class="t">Weekly</span>${ctl('all',3,2)}<span class="sp"></span><span class="sort" style="background:var(--fill)"><svg class="o"><use href="#g-ring-low"/></svg><svg class="ch"><use href="#g-chev"/></svg></span></div></div><div class="menu" style="position:absolute;right:36px;top:76px"><div class="mi"><svg class="o"><use href="#g-handle"/></svg>Your order</div><div class="mi"><svg class="o"><use href="#g-ring-low"/></svg>Most room first<svg class="k"><use href="#g-check"/></svg></div><div class="mi"><svg class="o"><use href="#g-timer"/></svg>Resets soonest</div><div class="mi"><svg class="o"><use href="#g-ring-high"/></svg>Most used</div></div></div>`,'<b>Android menu open:</b> 220 dp, 48 dp rows, glyph as `leadingIcon`, Check on the current row.')+
+ fig(`<div class="ios dark" style="width:358px;height:290px;padding:12px"><div class="ic2" style="height:60px"><div class="hd"><span class="t">Weekly</span>${ctl('all',3,2,true)}<span class="sp"></span>${sort('g-ring-low',1)}</div></div><div class="imenu" style="position:absolute;right:12px;top:84px"><div class="imi"><span class="kk"></span>Your order<svg class="o"><use href="#g-handle"/></svg></div><div class="imi"><svg class="k"><use href="#g-check"/></svg>Most room first<svg class="o"><use href="#g-ring-low"/></svg></div><div class="imi"><span class="kk"></span>Resets soonest<svg class="o"><use href="#g-timer"/></svg></div><div class="imi"><span class="kk"></span>Most used<svg class="o"><use href="#g-ring-high"/></svg></div></div></div>`,'<b>iOS native pull-down:</b> `Menu { Picker }` with `Label` rows; the system puts the check leading and the image trailing.')+
+ '</div><div class="row">'+
+ fig(`<div class="ph light" style="width:360px;padding:16px 20px"><div class="card"><div class="hd" style="height:32px"><span class="t" style="font-size:21px">Weekly</span><span class="sp"></span><span class="sort" style="height:36px"><svg class="o" style="width:24px;height:24px"><use href="#g-handle"/></svg><svg class="ch"><use href="#g-chev"/></svg></span></div><div class="ctl" style="width:288px;margin-top:8px;height:36px"><div class="sg on" style="width:95.3px;height:34px;font-size:18px">All</div><div class="sg" style="width:95.3px;height:34px;font-size:18px"><svg style="width:24px;height:24px"><use href="#g-person"/></svg><span class="n">3</span></div><div class="sg" style="width:95.3px;height:34px;font-size:18px"><svg style="width:24px;height:24px"><use href="#g-work"/></svg><span class="n">2</span></div></div></div></div>`,'<b>Android font scale 1.5 (kept rule):</b> title + the sort glyph on one line, the control under it in equal thirds of 95 dp, glyphs 24 dp, digits 18 sp.')+'</div>';
+document.getElementById('header').innerHTML=HD;
+// ---- §9 rows
+function ring(c,pct,fg){return `<svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="var(--lv)" stroke-width="5"/><circle cx="24" cy="24" r="21" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${1.32*pct} 132" transform="rotate(-90 24 24)"/><text x="24" y="28" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">${fg}<tspan font-size="8">%</tspan></text></svg>`;}
+function slot(tg,marks,col,size){if(!col)return '';const on=marks[tg];return on?`<svg class="bx" width="${size}" height="${size}" viewBox="0 0 24 24" style="color:var(--mute);margin-right:-3px"><use href="#${tg==='p'?'g-person':'g-work'}"/></svg>`:`<span style="display:inline-block;width:${size}px;height:${size}px;margin-right:-3px"></span>`;}
+function fullRow(pv,tg,nm,plan,pct5,fg,pct,pace,l3,over,marks,col,first){return `<div class="r${first?' first':''}">${ring(`var(--${pv})`,pct5,fg)}<div class="rc"><div class="l1">${slot(tg,marks,col,14)}<svg class="bx mk" viewBox="0 0 24 24" style="color:var(--${pv})"><use href="#${PROV[pv]}"/></svg><span class="nm">${nm}</span><span class="pill">${plan}</span><span class="fg" style="color:var(--${pv})">${pct}<small>%</small></span></div><div class="ub" style="background:color-mix(in srgb,var(--${pv}) 25%,transparent)"><i style="width:${pct}%;background:var(--${pv})"></i><u style="left:${pace}%"></u></div><div class="cap">${pace}% pace mark · ${Math.abs(pace-pct)} ${over?'over':'under'}</div><div class="l3"><b style="color:${over?'var(--r)':'var(--green)'}">${l3[0]}</b> · ${l3[1]}</div></div></div>`;}
+function oneRow(i,pv,tg,nm,pct,word,marks,col){return `<div class="r" style="padding:8px 0;gap:8px"><span style="width:16px;height:16px;border-radius:8px;background:var(--${pv});color:#000;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">${i}</span>${col?(marks[tg]?`<svg class="bx" width="12" height="12" viewBox="0 0 24 24" style="color:var(--mute)"><use href="#${tg==='p'?'g-person':'g-work'}"/></svg>`:'<span style="width:12px;display:inline-block"></span>'):''}<span style="font-size:15px;width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</span><span class="ub" style="flex:1;margin:0;height:10px;background:color-mix(in srgb,var(--${pv}) 25%,transparent)"><i style="width:${pct}%;background:var(--${pv})"></i><u style="left:${Math.min(pct+5,96)}%"></u></span><span style="font-size:13px;color:var(--green);white-space:nowrap">${word}</span><span style="font-size:15px;font-weight:700;color:var(--${pv})">${pct}<small>%</small></span></div>`;}
+function rowsPanel(scheme,marks,rows,filterTag,title){const shown=filterTag?rows.filter(r=>r[1]===filterTag):rows;const col=shown.some(r=>marks[r[1]]);
+ let h=`<div class="ph ${scheme}" style="width:360px;padding:16px 20px"><div class="card"><div class="hd"><span class="t">Weekly</span>${ctl(filterTag||'all',rows.filter(r=>r[1]==='p').length,rows.filter(r=>r[1]==='w').length)}<span class="sp"></span>${sort('g-handle')}</div>`;
+ shown.forEach((r,i)=>h+=fullRow(r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],marks,col,i===0));
+ return h+`</div><div style="font-size:11px;color:var(--mute);padding:6px 0 0">${title} · column ${col?'drawn (18 dp)':'absent'}</div></div>`;}
+const R=[['c','w','Teams','max',18,18,52,57,['8h 38m behind','resets Sat 4:14 PM'],0],['g','p','Personal','plus',48,48,50,51,['2h 0m behind','resets Sun 2:14 AM'],0],['m','w','Lab','pro',0,0,61,54,['11h 28m ahead','resets Sat 9:14 PM'],1]];
+function oneLinePanel(scheme,marks,n){const acc=A10.slice(0,n);const col=acc.some(a=>marks[a[1]]);let h=`<div class="ph ${scheme}" style="width:360px;padding:16px 20px"><div class="card"><div class="hd"><span class="t">Weekly</span>${ctl('all',acc.filter(a=>a[1]==='p').length,acc.filter(a=>a[1]==='w').length)}<span class="sp"></span>${sort('g-ring-low')}</div><div style="height:4px"></div>`;
+ acc.forEach((a,i)=>h+=oneRow(i+1,a[0],a[1],a[2],[18,34,41,52,61,70][i]||40,['On the mark','Slow down','On the mark','Room to spare','Slow down','Room to spare'][i],marks,col));
+ return h+`</div><div style="font-size:11px;color:var(--mute);padding:6px 0 0">one-line rows (${n} shown) · column ${col?'drawn (16 dp)':'absent'}</div></div>`;}
+document.getElementById('rows').innerHTML='<div class="row">'+
+ fig(rowsPanel('light',ON,R,null,'<span class="combo">BOTH ON</span> All'),'<b>Full rows, both on (today).</b> Glyph 14 + 4 before the 18 mark, muted ink.')+
+ fig(rowsPanel('dark',NOP,R,null,'<span class="combo">PERSONAL OFF</span> All'),'<b>Personal off, All:</b> Teams and Lab keep the briefcase; Personal\'s slot is blank; names aligned (Q2).')+
+ fig(rowsPanel('light',NOP,R,'p','<span class="combo">PERSONAL OFF</span> person filter'),'<b>Personal off, person filter:</b> no shown row has a drawn mark → the column is absent; the name starts at the mark + 7.')+
+ fig(rowsPanel('dark',OFF,R,null,'<span class="combo">BOTH OFF</span> All'),'<b>Both off:</b> no column anywhere; the pre-CCRM-115 row.')+
+ '</div><div class="row">'+
+ fig(oneLinePanel('light',ON,6),'<b>One-line rows (six shown), both on.</b> Rank disc 16 · glyph 12 + 4 · name.')+
+ fig(oneLinePanel('dark',NOP,6),'<b>Personal off:</b> briefcases on Gemini and Lab, blanks on the three Personal rows.')+
+ fig(oneLinePanel('light',OFF,6),'<b>Both off:</b> the column is absent and the bar takes its 16 dp back.')+
+ fig(rowsPanel('light',NOW,R,'w','<span class="combo">WORK OFF</span> briefcase filter'),'<b>Work off, briefcase filter:</b> only Work rows, none marked → column absent.')+'</div>'+
+ '<p class="cost"><b>Drop rule hand-off:</b> the measured rule (`SummaryRows.fullKeepsGlyph` / `oneLineKeepsGlyph`, `RowGlyphFit.keepsGlyph`) runs only after the "any marked" test says the column exists; a blank slot counts as the column for width. So on a 288 dp list with Personal off, a long Work name can still make the whole column leave at once — as today — and when every shown row is unmarked no measurement happens at all. The rule is re-decided on a Tag marks change as it is on a filter change.</p>';
+// ---- §10 snapshot
+function snap(scheme,marks,rows,title){const both=rows.some(r=>r[1]==='p')&&rows.some(r=>r[1]==='w');const col=both&&rows.some(r=>marks[r[1]]);
+ let h=`<div class="ios ${scheme}" style="width:300px;padding:20px;background:var(--ios-bg)"><div style="display:flex;align-items:baseline"><span style="font-size:17px;font-weight:700">All accounts</span><span style="margin-left:auto;font-size:11px;color:var(--ios-sub)">your order</span></div><div style="font-size:11px;color:var(--ios-sub);margin-bottom:8px">as of 12:39 PM, Thu 13 Nov</div>`;
+ rows.forEach(r=>{h+=`<div style="display:flex;align-items:center;gap:6px;height:38px;border-top:.5px solid var(--ios-line)"><svg class="bx" width="32" height="32" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="var(--ios-line)" stroke-width="6"/><circle cx="24" cy="24" r="20" fill="none" stroke="var(--${r[0]})" stroke-width="6" stroke-dasharray="${1.257*r[4]} 126" transform="rotate(-90 24 24)"/></svg>${col?(marks[r[1]]?`<svg class="bx" width="12" height="12" viewBox="0 0 24 24" style="color:var(--ios-sub)"><use href="#${r[1]==='p'?'g-person':'g-work'}"/></svg>`:'<span style="width:12px;display:inline-block"></span>'):''}<svg class="bx" width="14" height="14" viewBox="0 0 24 24" style="color:var(--${r[0]})"><use href="#${PROV[r[0]]}"/></svg><div style="flex:1"><div style="display:flex;align-items:center"><span style="font-size:13px;font-weight:600">${r[2]}</span><span style="margin-left:auto;font-size:17px;font-weight:700;color:var(--${r[0]})">${r[6]}%</span></div><div style="position:relative;height:8px;border-radius:4px;background:color-mix(in srgb,var(--${r[0]}) 25%,transparent)"><i style="position:absolute;left:0;top:0;height:100%;width:${r[6]}%;border-radius:4px;background:var(--${r[0]})"></i><u style="position:absolute;top:-2px;left:${r[7]}%;width:2px;height:12px;background:var(--ios-sub)"></u></div></div></div>`;});
+ return h+`<div style="font-size:10.5px;color:var(--ios-sub);margin-top:8px">Pace map ↓ (unchanged, cropped here)</div><div style="font-size:11px;color:var(--mute);margin-top:6px">${title} · column ${col?'drawn':'absent'}</div></div>`;}
+document.getElementById('snap').innerHTML='<div class="row">'+
+ fig(snap('light',ON,R,'<span class="combo">BOTH ON</span>'),'<b>iOS snapshot (300 pt), both on:</b> both tags on the card → the column, as today.')+
+ fig(snap('dark',NOP,R,'<span class="combo">PERSONAL OFF</span>'),'<b>Personal off:</b> briefcases and a blank; the rows match the screen.')+
+ fig(snap('light',NOP,[R[1],['g','p','ChatGPT','plus',30,30,44,47,['',''],0]],'all-Personal install'),'<b>All-Personal install, Personal off:</b> one tag → no column, as today. Android\'s 360 dp card follows the same rule.')+'</div>';
+})();
+</script>
+</body>
+</html>
