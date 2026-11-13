@@ -1254,6 +1254,54 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
   - **Always after:** screen timeout back to 600000 ms by adb; dark, font 1.0, density 420, Theme per provider, both Tag
     marks on; widgets untouched. The fcc8bfd + CCBG-100 candidate stays installed on purpose.
 
+- **2026-11-13 · iPad half** (session "v2.0 final device pass: iPad half", iPad Pro 11-inch M4, iPadOS 27.2, USB, UDID
+  …001C; Debug build signed on the Sedin team; the app's in-app steps driven by `ios/UITests/Step3PadTests.swift`, Robin
+  did the lock, unlock and Split View). Private captures (Home Screen, lock screen) stayed in the scratchpad.
+  - **Starting state:** Cooldown 1.0 (1) installed (the 2026-11-06 PR #23 build); dark; airplane mode on, Wi-Fi on;
+    four accounts, all Personal (Claude Pro, ChatGPT Plus, Gemini Pro, Work Team Premium); Theme colour Per provider,
+    Time format System, Usage display Vs pace, end mark Line, Open on the summary on, Reset time Countdown, red past the
+    mark on, Density Comfortable, Chart height Large, Time across, Summary order Your order, Tag marks Personal and Work
+    both on, Live Activity on, Reset alerts Claude 5h If busy / Weekly Always (others Off); Home page 1 holds the Overview
+    and 2×2 large widgets, three small faces and a Strip; no old Ring widget on any page; the Live Activity runs
+    (Claude and Work, Weekly). **Build:** main merged to fcc8bfd → 7f67f6a, Debug, installed over the 1.0 (1) build (accounts and
+    settings kept); then the CCBG-102 fix installed over it. **That build stays installed on purpose.**
+  - **Rechecked ☑ on the iPad:** CCBG-82 (no lower-case "am/pm" in any screen), CCBG-85 (Reset alerts: account header, rows
+    "5h" and "Weekly", control whole), CCBG-86 (sidebar marks badged; portrait tab bar and the one-third Split View's bottom
+    bar badged), CCBG-88 (History strip fixed in equal shares, portrait and landscape), CCBG-87 (History strip inside its
+    column), CCBG-90 (CCRM-116 Inner Panes below), CCBG-98 (`-demo max` chart: no label collision), CCBG-15 (Amber swatch
+    measures #D9A84A dark) and CCBG-55 item 2 (Claude Orange leads the picker, #E59980 dark), CCBG-72 (Live Activity at
+    −4% / −20% followed a switch to Used at once, 16% / 90%, and back to Vs pace), CCBG-73 (Claude Pro, ChatGPT Plus, Work
+    Team Premium, Gemini Pro; no "Prolite"), CCBG-70 (no stale Ring on any Home page; the small ChatGPT ring is the Number
+    widget and offers Edit Widget, Robin; nothing to remove).
+  - **CCRM-116 (Inner Panes) ☑:** All and each account: Usage | Pace side by side in landscape, stacked (Usage over Pace)
+    in portrait and in a half-width Split View; at a one-third Split View the phone layout with the bottom tab bar; History:
+    5-hour | 7-day panes side by side in landscape, stacked in portrait; sidebar badges. **Not reachable: no Duo device**
+    — the iPhone Duo items (the scroll across a real fold, the 40 pt fold region, fold-nudge F2) and the Duo rail.
+  - **CCRM-118 (Header Glyphs) ☑:** the badged account icon in the sidebar and in every tab bar; the Summary filter (All · 4
+    · briefcase 0, the disabled Work segment, labelled "Work, no accounts") and the sort button with its four-item menu
+    ("Sort: your order"); Appearance › Tag marks in all four states (Personal on/off × Work on/off: rows and sidebar marks follow, the
+    filter keeps its glyphs); the demo's Work tags (briefcase 7 · person 3). VoiceOver: read from the accessibility tree
+    (the filter is a group "Filter" of "All, 4 accounts", "Personal, 4 accounts", "Work, no accounts"; the sort "Sort: your
+    order") — **not listened to with VoiceOver on**. **Not reachable:** the iPhone More list.
+  - **Smoke ☑ (dark; light on the main screens and an account, both orientations):** CCRM-96 (Weekly First: Weekly leads the
+    tile, sidebar, Live Activity), CCRM-97 (the Number widget's ring and Weekly), CCRM-98 (the All tab and the Summary), CCRM-99
+    (account pages opened; model chips Fable on Claude and Work, Argon on Gemini), CCRM-100 (signed Vs pace figures on the Summary,
+    tiles and Live Activity), CCRM-55 (Gemini as an account: "Starts when a message is sent", Weekly, Argon), the dense ten
+    and `fitdrop` (CCBG-84's name reads whole), the iOS sample mode (Add account › sample data: three accounts, exit
+    restores the four real ones), the widgets and the Live Activity on the Home and lock screens. **Not reachable:** the
+    single-account Live Activity (CCBG-99: the iPad's is the two-account Duet; `LiveFiveLineTests`), a binding or full 5h
+    (no account in that state), a spent week.
+  - **Filed and fixed:** **CCBG-102 (Number Footer Cut)**, found on the Home Screen: the small Number widget's 5h footer
+    read "Resets in 4h 25m · 10:41…". Wireframe `design/2026-11-13-ipad-step3-number-footer.html`, option A approved by
+    Robin (the lead part alone, never half a clock); `NumberFooterTests`; rechecked on the Home Screen ("Resets in 3h 52m").
+    CCBG-102's ID was free at the merge of origin/main (CCBG-100 and CCBG-101 are the Fold 7 half's).
+  - **Judge:** one fresh Opus round (high) on the CCBG-102 batch: concerns, three low, none blocking. Adopted: VoiceOver now reads the whole
+    footer line where the lead alone is drawn (`accessibilityLabel`); the device-pass tests' header now says which tests pair. Not adopted: a 158 pt render
+    test (the Home Screen recheck covers it).
+  - **Always after:** every setting identical to the start (the Settings screens diffed before and after: Vs pace, Tag
+    marks both on, Live Activity on…); Split View closed; the iPad unlocked and at Cooldown. No setting of the iPad was
+    changed outside Cooldown. The CCBG-102 candidate stays installed on purpose.
+
 ---
 
 ## Step 4 · The release commit, and the three builds

@@ -397,8 +397,9 @@ struct NumberFace: View {
             Text(CardContent.weekSpentStamp).foregroundStyle(p.ink).lineLimit(1)
         } else if face.status == .fresh, !face.atLimit, face.runOut == nil, let reset = face.reset {
             let left = Fmt.compactDuration(ms: max(reset.ms - Date.now.ms, 0))
-            FitLine(variants: CardContent.numberFooterVariants(left: left, clock: shortClock(reset), clockFirst: Display.clockFirst)
-                .map { Text($0).foregroundStyle(p.sub) })
+            let lines = CardContent.numberFooterVariants(left: left, clock: shortClock(reset), clockFirst: Display.clockFirst)
+            FitLine(variants: lines.map { Text($0).foregroundStyle(p.sub) })
+                .accessibilityLabel(lines[0])   // VoiceOver reads the whole line even where it draws the lead alone
         } else {
             FaceFootnote(face: face)
         }

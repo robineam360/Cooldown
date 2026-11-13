@@ -2,7 +2,7 @@ import XCTest
 
 /// RUNBOOK Step 3 (v2.0 device pass 2), iPad half: drives the real app on the connected iPad and attaches a screenshot and
 /// the accessibility tree of every step. Skipped unless TEST_RUNNER_DEVICE_PASS is set. Captures show private data and stay
-/// out of the repo. Tests that change a setting put it back.
+/// out of the repo. Tests that change a setting put it back, except that testP5 ends in dark mode (the iPad's starting appearance) and testL1_setUsed is paired with testL2_setVsPace (the starting Usage display): run both.
 final class Step3PadTests: XCTestCase {
     var app: XCUIApplication!
 
