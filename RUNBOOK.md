@@ -1225,6 +1225,35 @@ phone disconnects; the v2.0 candidate stays installed on purpose, and the Log sa
     widgets untouched. **The screen timeout was not restored by adb**: the phone dropped off USB first, and Robin said he would set
     it back to 5 minutes himself (his word, 2026-11-12; not seen by adb). The a5e3e7e candidate stays installed on purpose.
 
+- **2026-11-13 · Fold 7 recheck of main fcc8bfd** (session "v2.0 final device pass", USB adb RZCY70YN0LJ; the iPad half
+  runs in its own session and logs its own bullet).
+  - **Starting state:** the a5e3e7e candidate (1.9 / 25, release-signed); screen timeout 600000 ms (the 2026-11-12 Log said
+    300000; Robin had set it back to 10 minutes); dark; font 1.0; density 420; Theme per provider; Tag marks Personal and
+    Work both on; widgets two Number 4×1 on the cover home. **Build:** github release of fcc8bfd, installed over the
+    candidate (accounts kept); keystore files copied and deleted after, never staged. Then one fix candidate (CCBG-100).
+  - **Rechecked ☑ on the Fold 7:** CCBG-89 (font 2.0: "100%" whole), CCBG-91 (360 dp shade, collapsed and expanded: the
+    pace line drops to "· Fri", never cut), CCBG-92 and CCBG-93 (Summary lines at 360 dp and font 2.0: nothing cut
+    mid-clock), CCBG-94 (snapshot reads "Not started yet"), CCBG-96 (Countdown "at 9:10 PM", Number "Pro" whole),
+    CCBG-97 (foot note wraps whole at font 2.0), CCBG-15 (Amber `#D9A84A` is distinct from the yellow rung), CCBG-83
+    (the Duet draws correctly collapsed and expanded on cover 411 / 360 dp and the inner shade; the stale-residue case
+    itself did not occur). **Unit-tested only, not drawable on the device:** CCBG-95 (no account near its projection),
+    CCBG-3 (no payload switches extra usage off), CCBG-55 items 1 and 3 (core §5 changed; the three forecast silences
+    need a state the account was not in).
+  - **CCRM-118 (Header Glyphs) on Android ☑:** the badged account icon at real density on the cover's top tabs (person on
+    Claude, ChatGPT, Gemini) and on the inner screen's tabs and History strip (person and briefcase on all five); the
+    filter All · person 3 · briefcase 2 and the sort glyph with its four-item menu; Tag marks in all four states (both
+    on, Personal off, Work off, both off: an unmarked row keeps its blank slot). **TalkBack on the Tag marks note: not
+    checked** (Robin skipped it, 2026-11-13) — **open for the release pass.**
+  - **Smoke ☑ (cover and inner, dark and light):** Weekly first, Vs pace figures, the Summary tab, the Claude tab's
+    Model limits chip (Fable), Gemini "Not started yet", the notification collapsed and expanded on both screens, the
+    placed Number widget on the cover home, the picker previews. CCRM-55 (Antigravity Account) shows as a Gemini account.
+  - **Filed and fixed:** CCBG-100 (Picker Number Clip): the Number 4×1 picker preview clipped its "Resets …" line;
+    preview padding 8 → 4 dp and figure 32 → 28 sp, rechecked in the One UI picker (this restores the preview's own
+    intent, the whole face; the placed widget is unchanged).
+  - **Filed and fixed after the log above (Robin, on the device):** CCBG-101 (Filter Glyph Low Centre): the Summary filter's glyph and count sat about 1.5 dp above the bar's middle; moved down, rechecked on the Fold 7 cover.
+  - **Always after:** screen timeout back to 600000 ms by adb; dark, font 1.0, density 420, Theme per provider, both Tag
+    marks on; widgets untouched. The fcc8bfd + CCBG-100 candidate stays installed on purpose.
+
 ---
 
 ## Step 4 · The release commit, and the three builds

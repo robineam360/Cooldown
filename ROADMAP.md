@@ -2091,7 +2091,7 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   - Spec: `spec/mobile/surfaces/app.md` "Header glyphs".
   - Captures: `design/research/2026-11-13-ccrm118/` (Android Fold 7 inner screen: All, History, Tag marks with
     Personal off; iPhone 17e: All, account, Settings).
-  - Real-device check pending: the badge at real pixel density, the More list, the iPad sidebar on hardware.
+  - Real-device check: **Android done on the Fold 7, 2026-11-13** (the badge on the cover's top tabs and the inner screen's tabs and History strip at real density; the filter and sort glyphs; Tag marks in all four on/off states; TalkBack on the note **not checked**, Robin skipped it). Pending on the iPad: the sidebar on hardware, VoiceOver on the filter. The iPhone More list is not reachable on an iPad.
   - Judge (one fresh Opus round, packet ccrm118-r1): concerns, no block; all three fixed in this commit.
     - TalkBack now reads the Tag marks note after the rows.
     - The iOS History strip's badge figure goes `sub` on an unselected tab, as on Android.
