@@ -28,6 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+### CCBG-102 · Number Footer Cut — the small Number widget's 5h footer is cut mid-clock
+- **Status:** **Fixed in code** (RUNBOOK Step 3, iPad half, 2026-11-13; blocked v2.0 per Robin 2026-11-12) · iOS · option A, Robin 2026-11-13 (`design/2026-11-13-ipad-step3-number-footer.html`): `FitLine` over the whole line, then the part that leads, alone (`CardContent.numberFooterVariants`); `NumberFooterTests` · rechecked on the iPad Home Screen the same day
+- **Severity:** Low
+- **Symptom:** on Robin's iPad the small Number widget (5h window, 158 pt) read "Resets in 4h 25m · 10:41…": the second part cut mid-clock. Clock first cut the same way ("Resets at 10:41 PM · in 4…").
+- **Cause:** `NumberFace.heroLine` (`ios/Shared/FaceViews.swift`) is one `Text` at 12.5 pt with `lineLimit(1)` and a 0.8 scale floor, no drop order; the same class as CCBG-99 (Live Activity 5h Cut).
+
 ### CCBG-101 · Filter Glyph Low Centre — the Summary filter's person / briefcase glyph and count sit about 1.5 dp above the bar's middle
 - **Status:** **Fixed in code** (2026-11-13; rechecked on the Fold 7 cover the same day) · Android · **blocked v2.0** (Robin 2026-11-13, seen on the Fold 7) · restores CCRM-118 (Header Glyphs)'s approved layout (glyph and count centred in the 28 dp bar): the glyph and count row, and "All", move down 1.5 / 1 dp in `SummaryFilterControl` · **iOS: not checked** (the iPad session looks at its own filter)
 - **Severity:** Low
@@ -92,7 +98,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Fix:** the note wraps to a second line (`PaceMapFoot`, at most two lines); one line at font 1.0 as before.
 
 ### CCBG-82 · Clock Case Mix — iOS prints "pm" on older lines and "PM" on the pace line, side by side
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `CardContent.clock` prints core's "AM/PM", so every iOS clock matches the pace line and Android; the surfaces spec drops its "pm" examples · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets"
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `CardContent.clock` prints core's "AM/PM", so every iOS clock matches the pace line and Android; the surfaces spec drops its "pm" examples · iOS · found in RUNBOOK Step I1 (`design/research/2026-11-v20-build/I1/iphone17pro/teams-tile-light.png`); pre-existing since CCRM-104 (Pace Line Parity), easier to see since CCRM-108 (Reset Named) added "resets" · rechecked on the iPad 2026-11-13: no lower-case "am"/"pm" in any screen's accessibility tree, every clock reads "PM"/"AM"
 - **Severity:** Low (cosmetic)
 - **Symptom:** the open tile reads "resets Sun 10:17 AM" right above "Resets at Sun 10:17 am".
 - **Cause:** the pace line uses CooldownCore `Fmt.dayClock` (en-US "AM/PM", core §6.3 and `printed.json`'s note), while
@@ -113,7 +119,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   `DuetTest` that applies two builds in turn to one inflated view.
 
 ### CCBG-84 · One-line Name Overrun — a long name runs under the bar on a one-line Summary row
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §1): once the glyph has left, the one-line name ellipsizes to its 64 pt floor and the bar keeps 50; folded Duo `-demo fitdrop` reads "Consult…" · iOS · iPhone Duo pass D1 (`design/2026-11-11-iphone-duo-pass.html` §3 "D1"), folded Duo, `-demo fitdrop` · **needs a wireframe** (the approved CCRM-115 (Row Tag Glyph) rule never covered a row narrower than its minimum)
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §1): once the glyph has left, the one-line name ellipsizes to its 64 pt floor and the bar keeps 50; folded Duo `-demo fitdrop` reads "Consult…" · iOS · iPhone Duo pass D1 (`design/2026-11-11-iphone-duo-pass.html` §3 "D1"), folded Duo, `-demo fitdrop` · **needs a wireframe** (the approved CCRM-115 (Row Tag Glyph) rule never covered a row narrower than its minimum) · iPad 2026-11-13: not present on the iPad (rows are two-line at its widths; the demo ten with "Consultancy" reads whole, landscape and portrait); the cover-screen case stays a Duo item, not reachable here
 - **Severity:** Medium
 - **Symptom:** with ten accounts (one-line rows) the name "Consultancy" runs its last letters under the bar's start dot
   on the folded Duo (318 pt row, 382 pt page column); the 17e (326 pt) shows a small gap. The glyph column has already
@@ -125,7 +131,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   "Consultancy" fits. Cover screen only.
 
 ### CCBG-85 · Reset Alert Labels — Settings › Reset alerts truncates the window word on every narrow iPhone
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §2): the account once as a header row, its rows "5h" and "Weekly"; checked on the folded Duo simulator · iOS · iPhone Duo pass D2 (`design/2026-11-11-iphone-duo-pass.html` §3 "D2"), also on the iPhone 17e · **needs a wireframe**
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §2): the account once as a header row, its rows "5h" and "Weekly"; checked on the folded Duo simulator · iOS · iPhone Duo pass D2 (`design/2026-11-11-iphone-duo-pass.html` §3 "D2"), also on the iPhone 17e · **needs a wireframe** · rechecked on the iPad 2026-11-13: Settings › Reset alerts shows each account once as a header, rows "5h" and "Weekly", Off / If busy / Always whole
 - **Severity:** Medium
 - **Symptom:** each account's two rows "Teams · 5h" and "Teams · Weekly" both read "Teams ·…" ("Personal" → "Persona…";
   only "Lab · 5h" fits), so an account's two rows cannot be told apart.
@@ -137,7 +143,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   read whole. Folding with the sheet open brings "Teams ·…" back on the cover screen.
 
 ### CCBG-86 · Rail Marks Alike — the folded iPhone Duo's tab rail shows identical provider marks
-- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes); **since CCRM-118 (Header Glyphs), the same day, the rail's icon is the app's one account icon on every tab** (iPhone bar and More, iPad sidebar, both Duo rails, Android's strips; the person / briefcase badge follows the Appearance › Tag marks setting), so the rail-only detection below is gone. First fix: where iOS 27 draws the icon-only rail (the Duo folded and held wide; Robin 2026-11-13: the cover too) each account's icon is its mark in the account's accent with a person / briefcase badge (B + C); the spike showed the rail keeps the colour, light and dark (`design/research/2026-11-13-ccrm116/spike-*.jpg`, `duo-cover-rail.jpg`); plain iPhones, the Duo held tall and iPad keep the system marks · same-provider accounts with one tag and one accent (e.g. three Claude Work accounts) still match: only a per-account accent separates them · was: Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **decided 2026-11-12: fix, B + C** — accent-coloured mark plus a person / briefcase badge on the wide inner screen's rail, after a colour spike; wireframe in `design/2026-11-12-iphone-duo-inner-screen.html` §9a; built with CCRM-116 (Inner Panes) · (earlier: needed Robin's decision, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02)
+- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes); **since CCRM-118 (Header Glyphs), the same day, the rail's icon is the app's one account icon on every tab** (iPhone bar and More, iPad sidebar, both Duo rails, Android's strips; the person / briefcase badge follows the Appearance › Tag marks setting), so the rail-only detection below is gone. First fix: where iOS 27 draws the icon-only rail (the Duo folded and held wide; Robin 2026-11-13: the cover too) each account's icon is its mark in the account's accent with a person / briefcase badge (B + C); the spike showed the rail keeps the colour, light and dark (`design/research/2026-11-13-ccrm116/spike-*.jpg`, `duo-cover-rail.jpg`); plain iPhones, the Duo held tall and iPad keep the system marks · same-provider accounts with one tag and one accent (e.g. three Claude Work accounts) still match: only a per-account accent separates them · was: Open · iOS · iPhone Duo pass D3 (`design/2026-11-11-iphone-duo-pass.html` §3 "D3"), folded Duo only · **decided 2026-11-12: fix, B + C** — accent-coloured mark plus a person / briefcase badge on the wide inner screen's rail, after a colour spike; wireframe in `design/2026-11-12-iphone-duo-inner-screen.html` §9a; built with CCRM-116 (Inner Panes) · (earlier: needed Robin's decision, unless accepted as the system's chrome — "Native everywhere", Robin 2026-11-02) · rechecked on the iPad 2026-11-13: the sidebar's marks carry the person badge, and the portrait tab bar and the narrow Split View's bottom bar show the badged marks; the Duo rail is not reachable (no Duo device)
 - **Severity:** Medium
 - **Symptom:** iOS 27 draws the `.sidebarAdaptable` TabView as an icons-only rail on the right; each account tab's icon is
   its provider mark, so Teams, Lab and Atlas (all Claude) show three identical marks. With ten accounts the rail folds the
@@ -149,7 +155,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   present with the inner screen **tall** (669 × 951 pt): iOS draws a bottom tab bar with labels there.
 
 ### CCBG-87 · Strip Under Rail — History's scrolling account strip runs under the folded Duo's rail
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · the scrolling strip is clipped to its own frame, so it stops at the page column; checked on the folded Duo simulator with `-demo dense` (without the clip a mark drew right of the rail; with it the strip ends at x 382 pt) · iOS · iPhone Duo pass D4 (`design/2026-11-11-iphone-duo-pass.html` §3 "D4"), folded Duo only · no wireframe needed: the fix restores the approved strip, which stays inside the page column
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · the scrolling strip is clipped to its own frame, so it stops at the page column; checked on the folded Duo simulator with `-demo dense` (without the clip a mark drew right of the rail; with it the strip ends at x 382 pt) · iOS · iPhone Duo pass D4 (`design/2026-11-11-iphone-duo-pass.html` §3 "D4"), folded Duo only · no wireframe needed: the fix restores the approved strip, which stays inside the page column · iPad 2026-11-13: History's strip with four accounts sits inside its column in both orientations; the folded Duo case is not reachable (no Duo device)
 - **Severity:** Low
 - **Symptom:** with four or more accounts History's strip scrolls across the whole 466 pt window, not the 382 pt column, so
   tabs slide under the status rail and "Gemini" shows as "em" on its far side; the divider under it stops at the column.
@@ -158,7 +164,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   window, not the 867 pt column beside the rail. Not applicable with the inner screen tall (no rail).
 
 ### CCBG-88 · Tab Strip Truncates — iOS's History strip would truncate a label where the shared rule scrolls
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `AccountTabs` measures each one-line label and is fixed in equal shares only while all fit, else scrolls with tabs sized to their labels; `TabStripFitTests` at 340 pt · iOS · latent: no current iPhone or iPad column is narrow enough to show it (`design/2026-11-11-iphone-duo-pass.html` §5) · the rule is approved (Robin's option B for CCBG-81 (History Tab Wrap), 2026-11-11), so no wireframe is needed
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · `AccountTabs` measures each one-line label and is fixed in equal shares only while all fit, else scrolls with tabs sized to their labels; `TabStripFitTests` at 340 pt · iOS · latent: no current iPhone or iPad column is narrow enough to show it (`design/2026-11-11-iphone-duo-pass.html` §5) · the rule is approved (Robin's option B for CCBG-81 (History Tab Wrap), 2026-11-11), so no wireframe is needed · rechecked on the iPad 2026-11-13: History's four-account strip is fixed in equal shares while every label fits, portrait and landscape
 - **Severity:** Low
 - **Symptom:** the shared rule (`spec/mobile/surfaces/app.md` §2.3) keeps an account strip fixed while every label fits on
   one line and makes it scroll once one would not. iOS's History strip (`AccountTabs`) uses the account count instead —
@@ -171,19 +177,19 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   shared rule would size tabs to their labels.
 
 ### CCBG-98 · Chart End Labels — late in a heavy week the iOS trend chart's now figure runs into its guide labels
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · iOS · found checking CCBG-95 (Snapshot Label Overlap) on iOS · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §3): a guide label gives way within 4 pt of the now figure, the now-dot, the projection's end or its label; rendered at 3× for 95/99.6, 97/99.6, 88/120, 92 late, 60/80 and 40 — only the colliding labels drop
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · iOS · found checking CCBG-95 (Snapshot Label Overlap) on iOS · option A, Robin 2026-11-12 (`design/2026-11-12-ios-step3-fix-wireframes.html` §3): a guide label gives way within 4 pt of the now figure, the now-dot, the projection's end or its label; rendered at 3× for 95/99.6, 97/99.6, 88/120, 92 late, 60/80 and 40 — only the colliding labels drop · iPad 2026-11-13: the real accounts had no heavy late week; the `-demo max` chart (64% now, projection to the 100% line) shows no label collision; the 95%/99.6% case stays covered by the render tests
 - **Severity:** Low
 - **Symptom:** at 95% used with 95% of the week gone (~100% projected), the "95%" figure butts into the "100%" guide label and the now-dot covers "90%". Every iOS trend chart: the open tile and the share card.
 - **Cause:** iOS draws the 100/90/80% guide labels inside the plot at its right edge (`TrendChart`, `ios/Shared/Charts.swift`); Android keeps them in a gutter (CCBG-7 (Chart Label Collision)).
 
 ### CCBG-99 · Live Activity 5h Cut — the single-account Live Activity cuts its 5h line mid-phrase
-- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · approved by Robin 2026-11-12 as drawn (`design/2026-11-12-ios-step3-fix-wireframes.html` §4): `FitLine` over whole → the fold short ("~64%", "out ~3:25 PM") → the countdown alone ("runs out ~3:25 PM" alone when running out); `LiveFiveLineTests` · iOS · found checking CCBG-91 (One UI Expanded Column) on iOS (SurfaceRenderTests `la-single`, every display mode)
+- **Status:** Fixed 2026-11-12 (v2.0 Step 3, iOS sister session) · approved by Robin 2026-11-12 as drawn (`design/2026-11-12-ios-step3-fix-wireframes.html` §4): `FitLine` over whole → the fold short ("~64%", "out ~3:25 PM") → the countdown alone ("runs out ~3:25 PM" alone when running out); `LiveFiveLineTests` · iOS · found checking CCBG-91 (One UI Expanded Column) on iOS (SurfaceRenderTests `la-single`, every display mode) · iPad 2026-11-13: the iPad's Live Activity is the two-account Duet (no collision); the single-account line is not reachable on this iPad (it needs one account); `LiveFiveLineTests` stay the evidence
 - **Severity:** Medium
 - **Symptom:** line 2, "resets in 2h 19m · on track for ~64%" (200 pt at 12.5 pt), has about 185 pt beside the 52 pt figure and reads "resets in 2h 19m · on trac…" / "· on t…".
 - **Cause:** `LiveLines.fiveLine` (`ios/Shared/FaceViews.swift`) is one `Text` with `lineLimit(1)` and no drop order.
 
 ### CCBG-90 · Inner Portrait Stretch — the iPhone Duo's tall inner screen gets the phone page stretched to 637 pt
-- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes): every regular-width window is two panes by aspect (`PaneGeometry`), the 700 / 900 / 600 pt rules are gone, and History follows the same rule; checked on the Duo simulator tall and wide, flat and half open, and on iPad (`design/research/2026-11-13-ccrm116/`) · real-device check pending · was: Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes)
+- **Status:** **Fixed 2026-11-13** with CCRM-116 (Inner Panes): every regular-width window is two panes by aspect (`PaneGeometry`), the 700 / 900 / 600 pt rules are gone, and History follows the same rule; checked on the Duo simulator tall and wide, flat and half open, and on iPad (`design/research/2026-11-13-ccrm116/`) · real-device check pending · was: Open · iOS · iPhone Duo unfolded pass (`design/2026-11-11-iphone-duo-pass.html` U1, U3), simulator, 2026-11-12, main @ 539f1a5 · **wireframe approved 2026-11-12** (`design/2026-11-12-iphone-duo-inner-screen.html`); built as CCRM-116 (Inner Panes) · rechecked on the iPad 2026-11-13: Usage | Pace side by side in landscape, stacked in portrait and in a half-width Split View, the phone layout with the bottom tab bar at a one-third Split View; History follows (5-hour and 7-day panes). The Duo cases (the scroll across a real fold, the 40 pt fold region, fold-nudge F2) are not reachable: no Duo device
 - **Severity:** Medium
 - **Symptom:** unfolded with the inner screen tall (669 × 951 pt, regular / regular), the main tabs show the phone page with
   the tile, chart and credits card stretched to 637 pt; held wide (951 pt) the same screen gets the iPad page, and History at
@@ -328,7 +334,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** with the iPad locked, the lock-screen widgets show "??%" and "?d ??h" in place of figures.
 
 ### CCBG-70 · Stale Ring Widget — a dropped "Ring" widget keeps its last snapshot on the home screen
-- **Status:** **Not a code defect — Robin's action** (identified 2026-11-02; before removing it, check it offers no
+- **Status:** **Not a code defect — Robin's action** (identified 2026-11-02; before removing it, check it offers no · **checked on the iPad 2026-11-13**: no old Ring ("as of") widget on any Home Screen page; the small ChatGPT ring is the current Number widget (its menu offers Edit Widget, Robin)
   "Edit Widget", which confirms the orphaned kind). The small ChatGPT ring ("9%, as of 4:32
   pm") is the **Ring** widget kind, removed from the bundle in 5b79b42 (CCRM-94 iOS widgets rev C, 2026-10-24: "D1
   Ring goes"). A widget whose kind no longer exists is never asked for a timeline again, so WidgetKit keeps drawing
@@ -345,7 +351,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Symptom:** the small Number widget's title ellipsized to "ChatGPT · We…".
 
 ### CCBG-72 · Live Activity Stale Mode — the running Live Activity keeps the old Usage display after a change
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending). Found in the Step 7 iPad recheck
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; iPad recheck pending). Found in the Step 7 iPad recheck · **rechecked on the iPad 2026-11-13**: with Vs pace the lock-screen Live Activity read −4% / −20%; after switching Usage display to Used it read 16% / 90% at once; set back to Vs pace
   (Debug build of ae27988). The Live Activity is now pushed a fresh content state whenever Appearance › Usage display
   or Usage end mark changes, as after a fetch.
 - **Severity:** Low
@@ -354,7 +360,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   running activity until its next update.
 
 ### CCBG-73 · Plan Names — "Prolite" for ChatGPT Pro 100, and "Max 5x / 20x" outdated since 30 Oct
-- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; device recheck pending). Reported by Robin, who saw "Prolite"
+- **Status:** **Fixed in code 2026-11-02** (v2.0 branch; device recheck pending). Reported by Robin, who saw "Prolite" · **rechecked on the iPad 2026-11-13**: Settings reads Claude Pro, ChatGPT Plus, Work Team Premium, Gemini Pro; no "Prolite", no "Max 5x"
   on his ChatGPT account and asked to "find the right plan names for ChatGPT, Claude, and Gemini from the internet
   right now and use the right names"; he confirmed "ChatGPT has Free, Go, Plus, Pro 100, Pro 200, Pro 500. Claude has
   Free, Pro, Max, Ultra." spec/core API-CONTRACT §11 (57968bd) now names every provider's codes, with sources; both
@@ -534,7 +540,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   otherwise, so a ChatGPT face reads "No usage on the  plan" with a double space and no plan name.
 
 ### CCBG-55 · Spec Drift — the core spec and the apps disagree on chrome colour and the accent list
-- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker — **done on iOS** 2026-11-12 (2020365): `ThemeColours.options` leads with Claude Orange `#D97757` / `#E59980`, the twelve accents of §5, render approved by Robin; iOS already conformed to (1) (`Palette.severity` gives the accent below 80); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout).
+- **Status:** **Decided 2026-11-12 (Robin, RUNBOOK Step 3), all blocking v2.0:** (1) the spec follows Android — core §5 now allows the accent below 80% (done here; Desktop told); (2) iOS adds Claude Orange to its picker — **done on iOS** 2026-11-12 (2020365): `ThemeColours.options` leads with Claude Orange `#D97757` / `#E59980`, the twelve accents of §5, render approved by Robin; iOS already conformed to (1) (`Palette.severity` gives the accent below 80); (3) Android follows the spec — its three suppressions read differently and the young-window and minimum-usage floors withhold the tail, as iOS — **built** in Step 3: `Projection.suppression` (tested against core `projection/cases.json` severity cases) words the note, and `Projection.forecast` gates every Android forecast (chart tail, estimate line, share card, Summary map, widgets' "~ runs out", the tile's 5h readout). · item 2 rechecked on the iPad 2026-11-13: Claude Orange leads the Theme colour picker, swatch #E59980 (dark) = the spec's dark value
 - **Severity:** Low (no wrong number; two installs could disagree in colour)
 - **Symptom:** (1) core BEHAVIOR-SPEC §5 says always-on chrome stays monochrome below 80%; the
   Android status-bar gauge wears the account accent below 80 (since CCRM-62 (Duet Notification)).
@@ -1071,7 +1077,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
   Duet wireframe first.
 
 ### CCBG-15 · Amber Ladder Blindness — the Amber theme's accent is the yellow warning rung
-- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin; rechecked on the Fold 7 2026-11-13: Amber's accent is distinct from the yellow rung on the Summary, tabs and Pace map, dark) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **Fixed on iOS** (2026-11-12, 2020365): `ThemeColours` Amber is the same `#B07D00` / `#D9A84A` pair, render approved by Robin; no other iOS accent equals a severity colour · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12
+- **Status:** **Fixed on Android** (RUNBOOK Step 3, 2026-11-12; blocked v2.0 per Robin; rechecked on the Fold 7 2026-11-13: Amber's accent is distinct from the yellow rung on the Summary, tabs and Pace map, dark) · Amber is now `#B07D00` light / `#D9A84A` dark, off the `> 80` yellow; spec/core §5 updated (Desktop told) · **Fixed on iOS** (2026-11-12, 2020365): `ThemeColours` Amber is the same `#B07D00` / `#D9A84A` pair, render approved by Robin; no other iOS accent equals a severity colour · wireframe `design/2026-11-12-step3-fix-wireframes.html` §2, option A approved 2026-11-12 · **rechecked on the iPad 2026-11-13**: the Amber swatch in Settings measures #D9A84A (dark), the spec's iOS dark value
 - **Severity:** Low (one theme, and the orange/red rungs still land)
 - **Symptom:** Noticed 2026-08-21 during CCRM-50 (Weekly Flag) design. The Amber
   theme's accent pair (#F9A825 / #FDD663) is **identical** to `Palette.barColor`'s

@@ -397,8 +397,8 @@ struct NumberFace: View {
             Text(CardContent.weekSpentStamp).foregroundStyle(p.ink).lineLimit(1)
         } else if face.status == .fresh, !face.atLimit, face.runOut == nil, let reset = face.reset {
             let left = Fmt.compactDuration(ms: max(reset.ms - Date.now.ms, 0))
-            Text(Display.clockFirst ? "Resets at \(shortClock(reset)) · in \(left)" : "Resets in \(left) · \(shortClock(reset))")
-                .foregroundStyle(p.sub).lineLimit(1).minimumScaleFactor(0.8)
+            FitLine(variants: CardContent.numberFooterVariants(left: left, clock: shortClock(reset), clockFirst: Display.clockFirst)
+                .map { Text($0).foregroundStyle(p.sub) })
         } else {
             FaceFootnote(face: face)
         }

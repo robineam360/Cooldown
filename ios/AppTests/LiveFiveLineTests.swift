@@ -22,3 +22,20 @@ struct LiveFiveLineTests {
         #expect(PanelLines.fiveVariants(countdown: "resets in 2h 19m", fold: nil) == ["resets in 2h 19m"])
     }
 }
+
+/// CCBG-102 (Number Footer Cut): the small Number widget's 5h footer drops its second part whole, never mid-clock.
+@Suite("Number footer")
+struct NumberFooterTests {
+    @Test("countdown first: whole, then the countdown alone")
+    func countdownFirst() {
+        #expect(CardContent.numberFooterVariants(left: "4h 25m", clock: "10:41 PM", clockFirst: false)
+                == ["Resets in 4h 25m · 10:41 PM", "Resets in 4h 25m"])
+    }
+
+    @Test("clock first: whole, then the clock alone")
+    func clockFirst() {
+        #expect(CardContent.numberFooterVariants(left: "4h 25m", clock: "10:41 PM", clockFirst: true)
+                == ["Resets at 10:41 PM · in 4h 25m", "Resets at 10:41 PM"])
+    }
+}
+

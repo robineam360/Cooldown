@@ -175,6 +175,14 @@ enum CardContent {
     /// A widget face showing the 5h while the week is spent.
     static let weekSpentStamp = "Weekly spent"
 
+    /// CCBG-102 (Number Footer Cut): the small Number widget's 5h footer, widest first: the whole line, then the part that
+    /// leads, alone — never half a clock. "Resets in 4h 25m · 10:41 PM" → "Resets in 4h 25m"; Clock first "Resets at
+    /// 10:41 PM · in 4h 25m" → "Resets at 10:41 PM".
+    static func numberFooterVariants(left: String, clock: String, clockFirst: Bool) -> [String] {
+        clockFirst ? ["Resets at \(clock) · in \(left)", "Resets at \(clock)"]
+                   : ["Resets in \(left) · \(clock)", "Resets in \(left)"]
+    }
+
     /// A folded card's one line: Weekly the pace line "21h 50m ahead · Sun 9:30 PM" (CCRM-104), or "Out until Sun 9:30 PM";
     /// 5h "Resets in 2h 20m · on track for ~69%" or "… · runs out ~3:25 PM".
     static func compactLine(_ c: WindowContent) -> String {
