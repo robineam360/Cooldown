@@ -2082,9 +2082,20 @@ sample mode, was added and approved the same day as CCRM-113 (Sample Port).
   build. The account-header glyph of CCRM-116 goes to Android through CCRM-118 (Header Glyphs), not here.
 
 ### CCRM-118 · Header Glyphs — the Summary header and Android's account tabs speak in glyphs
-- **Status:** **Wireframe approved 2026-11-13** (`design/2026-11-13-ccrm118-header-glyphs.html`, Robin, question by
-  question) · iOS and Android · **v2.0** · next: the frozen page to the desktop session (tag display, Robin
-  2026-11-11), then the build
+- **Status:** **Built 2026-11-13** · iOS and Android · v2.0.
+  - Wireframe approved 2026-11-13 (`design/2026-11-13-ccrm118-header-glyphs.html`, Robin, question by question).
+  - The desktop session saw the frozen page first: no conflict. Desktop has a Summary with the filter and sort, and
+    is drawing icon versions from these glyphs.
+  - Rule: BEHAVIOR-MOBILE §6 "The control" and "Tag marks"; fixture `spec/mobile/fixtures/tags/cases.json` → `marks`
+    (core `TagMarks`, Android `TagMarks`).
+  - Spec: `spec/mobile/surfaces/app.md` "Header glyphs".
+  - Captures: `design/research/2026-11-13-ccrm118/` (Android Fold 7 inner screen: All, History, Tag marks with
+    Personal off; iPhone 17e: All, account, Settings).
+  - Real-device check pending: the badge at real pixel density, the More list, the iPad sidebar on hardware.
+  - Judge (one fresh Opus round, packet ccrm118-r1): concerns, no block; all three fixed in this commit.
+    - TalkBack now reads the Tag marks note after the rows.
+    - The iOS History strip's badge figure goes `sub` on an unselected tab, as on Android.
+    - CCBG-86's status names the shared account icon.
 - **Why:** Robin, 2026-11-13: the Summary's "Work" segment read as greyed out (none of his accounts is tagged Work, so the
   empty group is dimmed by design), and glyphs read better than words; Android has no account header for CCRM-116's
   tag glyph.

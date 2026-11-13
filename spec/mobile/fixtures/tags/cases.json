@@ -718,5 +718,155 @@
         }
       ]
     }
+  ],
+  "marks": [
+    {
+      "name": "both on (the default): every row draws its glyph",
+      "rows": [
+        "work",
+        "personal",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": true,
+        "work": true
+      },
+      "expected": {
+        "column": true,
+        "slots": [
+          "glyph",
+          "glyph",
+          "glyph"
+        ],
+        "snapshotColumn": true
+      }
+    },
+    {
+      "name": "Robin's choice, Personal off: Work rows draw the briefcase, Personal rows keep a blank slot",
+      "rows": [
+        "work",
+        "personal",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": false,
+        "work": true
+      },
+      "expected": {
+        "column": true,
+        "slots": [
+          "glyph",
+          "blank",
+          "glyph"
+        ],
+        "snapshotColumn": true
+      }
+    },
+    {
+      "name": "Work off: Personal rows draw the person, Work rows a blank slot",
+      "rows": [
+        "work",
+        "personal",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": true,
+        "work": false
+      },
+      "expected": {
+        "column": true,
+        "slots": [
+          "blank",
+          "glyph",
+          "blank"
+        ],
+        "snapshotColumn": true
+      }
+    },
+    {
+      "name": "both off: no column",
+      "rows": [
+        "work",
+        "personal",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": false,
+        "work": false
+      },
+      "expected": {
+        "column": false,
+        "slots": null,
+        "snapshotColumn": false
+      }
+    },
+    {
+      "name": "Personal off under the Personal filter: no row is marked, so no column",
+      "rows": [
+        "personal",
+        "personal"
+      ],
+      "tagMarks": {
+        "personal": false,
+        "work": true
+      },
+      "expected": {
+        "column": false,
+        "slots": null,
+        "snapshotColumn": false
+      }
+    },
+    {
+      "name": "Personal off, all accounts Personal: no column",
+      "rows": [
+        "personal",
+        "personal",
+        "personal"
+      ],
+      "tagMarks": {
+        "personal": false,
+        "work": true
+      },
+      "expected": {
+        "column": false,
+        "slots": null,
+        "snapshotColumn": false
+      }
+    },
+    {
+      "name": "Work off under the Work filter: no column",
+      "rows": [
+        "work",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": true,
+        "work": false
+      },
+      "expected": {
+        "column": false,
+        "slots": null,
+        "snapshotColumn": false
+      }
+    },
+    {
+      "name": "Personal off under the Work filter: every row draws the briefcase",
+      "rows": [
+        "work",
+        "work"
+      ],
+      "tagMarks": {
+        "personal": false,
+        "work": true
+      },
+      "expected": {
+        "column": true,
+        "slots": [
+          "glyph",
+          "glyph"
+        ],
+        "snapshotColumn": false
+      }
+    }
   ]
 }

@@ -235,8 +235,12 @@ struct AccountTabs: View {
         ForEach(accounts) { account in
             tab(on: account.key == selected, underline: account.accent(scheme), scrolling: scrolling,
                 action: { selected = account.key }) {
-                ProviderMark(provider: account.provider, size: 20)
+                // CCRM-118 (Header Glyphs) §7: the 24 pt badged icon (mark 20), a 3 pt gap (the 7 less the box's 4 pt
+                // overhang), so the name starts where it did.
+                AccountIcon(account: account, size: .strip, figure: account.key == selected ? p.ink : p.sub)
+                    .padding(.trailing, -4)
                 Text(account.label).font(.system(size: 16, weight: .medium)).lineLimit(1).fixedSize()
+                    .accessibilityLabel("\(account.label), \(account.accountTag.accountWord)")
             }
         }
     }
@@ -321,7 +325,6 @@ struct MainTabs: View {
     /// The tabs whose own stack shows History. Per tab, so opening it on one tab never pops or dismisses another's.
     @State private var historyOpen: Set<String> = []
     @State private var window: CGSize = .zero
-    @State private var railInset: CGFloat = 0
 
     /// `historyKey` for "open History on whichever tab is selected" (the `-screen history` launch argument).
     static let currentTab = "__current__"
@@ -331,18 +334,11 @@ struct MainTabs: View {
         sizeClass == .regular && window.width > window.height && window.width >= 1000
     }
 
-    /// CCBG-86 (Rail Marks Alike): where iOS 27 draws its icon-only rail — the iPhone Duo folded (the cover) and held
-    /// wide (Robin 2026-11-13: the cover too). The rail sits in the window's trailing safe area (84 pt), which no other
-    /// iPhone page has (the app is portrait-only there); iPad draws labelled tabs and a sidebar, the Duo held tall a
-    /// labelled bottom bar.
-    private var railIcons: Bool {
-        UIDevice.current.userInterfaceIdiom == .phone && railInset >= Self.railInsetMinimum
-    }
-    static let railInsetMinimum: CGFloat = 40
-
     var body: some View {
         let showsAll = SummaryRank.tabShown(accountCount: model.accounts.count)
         let keys = model.accounts.map(\.key)
+        let _ = model.displayStamp
+        let marks = Prefs.tagMarks
         let selection = Binding<String>(
             get: { Self.shownKey(selectedKey: model.selectedKey, accountKeys: keys, summaryShown: showsAll)
                 ?? AppModel.summaryKey },
@@ -365,24 +361,22 @@ struct MainTabs: View {
                         TabPage(account: account, showsTitle: !sidebarLayout, sheet: $sheet)
                     }
                 } label: {
-                    if railIcons {
-                        Label {
-                            Text(account.label)
-                                .accessibilityLabel("\(account.label), \(account.accountTag == .work ? "Work" : "Personal") account")
-                        } icon: {
-                            Image(uiImage: RailIcon.image(provider: account.provider, accent: account.accent(scheme),
-                                                          tag: account.accountTag, scheme: scheme, ink: p.ink, surface: p.bg))
-                        }
-                    } else {
-                        Label(account.label, image: account.provider.markAsset)
+                    // CCRM-118 (Header Glyphs) §4: the one account icon on every account tab (the iPhone bar and its More
+                    // list, the iPad sidebar, the Duo's rail) — original rendering, so the system never tints it.
+                    Label {
+                        Text(account.label)
+                    } icon: {
+                        Image(uiImage: RailIcon.image(provider: account.provider, accent: account.accent(scheme),
+                                                      tag: account.accountTag, marked: marks.shows(account.accountTag),
+                                                      scheme: scheme, ink: p.ink))
                     }
+                    .accessibilityLabel("\(account.label), \(account.accountTag.accountWord)")
                 }
             }
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabViewSidebarHeader { AppTitle(size: 30) }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { window = $0 }
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.trailing } action: { railInset = $0 }
         .onChange(of: historyKey, initial: true) { _, request in
             guard let request else { return }
             historyOpen.insert(request == Self.currentTab ? selection.wrappedValue : request)
@@ -517,15 +511,12 @@ struct AccountHeader: View {
     let account: Account
 
     var body: some View {
-        HStack(spacing: 9) {
-            Image(systemName: TagGlyph.symbol(account.accountTag)).font(.system(size: 15, weight: .regular))
-                .foregroundStyle(p.sub)
-                .frame(width: 18, height: 18)
-                .accessibilityHidden(true)
-                .padding(.trailing, -5)
-            ProviderMark(provider: account.provider, size: 22)
+        HStack(spacing: 5) {
+            // CCRM-118 (Header Glyphs) §7: one 26 pt icon (mark 22) with the tag badge replaces the separate glyph and mark.
+            AccountIcon(account: account, size: .header)
             Text(account.label).font(.system(size: 21, weight: .bold))
-                .accessibilityLabel("\(account.label), \(account.accountTag == .work ? "Work" : "Personal") account")
+                .accessibilityLabel("\(account.label), \(account.accountTag.accountWord)")
+                .padding(.trailing, 4)
             PlanChip(provider: account.provider, plan: model.states[account.key]?.plan, tier: model.states[account.key]?.tier, size: 12)
             Spacer()
             if let credits = CardContent.credits(model.usage(account.key)?.credits) {

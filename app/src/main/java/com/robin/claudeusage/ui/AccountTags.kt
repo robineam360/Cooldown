@@ -1,5 +1,6 @@
 package com.robin.claudeusage.ui
 
+import androidx.compose.ui.text.TextStyle
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.robin.claudeusage.R
 import com.robin.claudeusage.data.AccountTag
 import com.robin.claudeusage.data.SummaryFilter
+import com.robin.claudeusage.data.SummaryFilters
 
 /**
  * CCRM-110 (Account Tags) and CCRM-115 (Row Tag Glyph): the glyphs and controls of the Personal / Work tag, drawn from
@@ -212,13 +214,17 @@ object AddSheetFit {
 }
 
 /**
- * The Summary header's All · Personal · Work control: 28 dp high, 12 sp; the chosen segment tonal and SemiBold. A
- * segment with no accounts reads at 38% and, tapped, calls [onDisabledTap] (the one-line note); All never is.
+ * The Summary header's control (CCRM-118 (Header Glyphs)): "All" (a word), then the tag's glyph (16 dp × font scale)
+ * with the group's count (12 sp, tabular) for Personal and Work; 28 dp high; the chosen segment tonal and SemiBold. A
+ * segment with no accounts keeps full ink with its 0 and, tapped, calls [onDisabledTap] (the one-line note); All never
+ * is. TalkBack: "Personal, 3 accounts".
  */
 @Composable
 fun SummaryFilterControl(
     current: SummaryFilter,
     enabled: (SummaryFilter) -> Boolean,
+    /** The group's size among all accounts (All: every account), never the rows shown. */
+    count: (SummaryFilter) -> Int,
     onChoose: (SummaryFilter) -> Unit,
     onDisabledTap: (SummaryFilter) -> Unit,
     modifier: Modifier = Modifier,
@@ -226,6 +232,7 @@ fun SummaryFilterControl(
     fill: Boolean = false,
 ) {
     val ink = MaterialTheme.colorScheme.onSurface
+    val fontScale = LocalDensity.current.fontScale
     val shape = RoundedCornerShape(8.dp)
     Row(
         modifier
@@ -241,15 +248,14 @@ fun SummaryFilterControl(
             if (i > 0) Box(Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.outline))
             Box(
                 Modifier
-                    // Across the whole width the segments share it by the length of their words, so "Personal" is never
-                    // the one that is cut at the largest text.
-                    .then(if (fill) Modifier.weight(f.label.length.toFloat()) else Modifier)
+                    // Across the whole width the segments share it equally (the glyph and count are the same size).
+                    .then(if (fill) Modifier.weight(1f) else Modifier)
                     .background(if (on) ink.copy(alpha = 0.13f) else Color.Transparent)
                     .clickable { if (live) onChoose(f) else onDisabledTap(f) }
-                    .alpha(if (live) 1f else 0.38f)
                     .padding(horizontal = 10.dp)
                     .heightIn(min = 28.dp)
                     .semantics(mergeDescendants = true) {
+                        contentDescription = SummaryFilters.description(f.label, count(f))
                         role = Role.RadioButton
                         selected = on
                         // Not disabled(): a disabled node has no click action, and a tap on this segment answers with the
@@ -259,7 +265,19 @@ fun SummaryFilterControl(
                     },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(f.label, fontSize = 12.sp, fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1, softWrap = false, modifier = Modifier.padding(vertical = 4.dp))
+                val weight = if (on) FontWeight.SemiBold else FontWeight.Normal
+                if (f.tag == null) {
+                    Text(f.label, fontSize = 12.sp, fontWeight = weight, maxLines = 1, softWrap = false, modifier = Modifier.padding(vertical = 4.dp))
+                } else {
+                    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        TagGlyph(f.tag, (16f * fontScale).dp, ink)
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            count(f).toString(), fontSize = 12.sp, fontWeight = weight, maxLines = 1, softWrap = false,
+                            style = TextStyle(fontFeatureSettings = "tnum"),
+                        )
+                    }
+                }
             }
         }
     }

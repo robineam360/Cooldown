@@ -89,7 +89,9 @@ struct SummaryView: View {
         let _ = model.displayStamp
         let _ = filterTick
         let (entries, resolved) = SummaryEntry.current(model: model, filter: Prefs.summaryFilter, order: order)
-        let list = SummaryList(entries: entries, nowMs: model.nowMs, resolved: resolved, order: order,
+        let tags = model.accounts.map(\.accountTag)
+        let counts = [AccountTag.personal: tags.filter { $0 == .personal }.count, .work: tags.filter { $0 == .work }.count]
+        let list = SummaryList(entries: entries, nowMs: model.nowMs, resolved: resolved, order: order, counts: counts,
                                onFilter: { Prefs.summaryFilter = $0.rawValue; filterTick += 1 },
                                onOrder: { order = $0; Prefs.summaryOrder = $0 }, onOpen: open)
         let pin = Binding(get: { model.mapPin }, set: { model.mapPin = $0 })
@@ -136,6 +138,10 @@ struct SummaryList: View {
     let nowMs: Int64
     var resolved = SummaryFilter.resolve(tags: [], remembered: nil)
     var order = Prefs.summaryOrder
+    /// CCRM-118 (Header Glyphs): the filter's counts, the groups' sizes among all accounts (not the rows shown).
+    var counts: [AccountTag: Int] = [:]
+    /// CCRM-118: Appearance › Tag marks, read on every draw so a change redraws the column at once.
+    var marks = Prefs.tagMarks
     var onFilter: (SummaryFilter) -> Void = { _ in }
     var onOrder: (SummaryOrder) -> Void = { _ in }
     var onOpen: (String) -> Void = { _ in }
@@ -149,7 +155,11 @@ struct SummaryList: View {
     var previewNotice: SummaryFilter?
 
     private var oneLine: Bool { entries.count >= SummaryFilter.oneLineFrom }
+    /// CCRM-118 §9: the column exists while any row shown has a marked tag, and then `RowGlyphFit` decides as before.
     private var glyphs: Bool {
+        marks.column(rows: entries.map(\.account.accountTag)) && fits
+    }
+    private var fits: Bool {
         // A row not yet measured reports a zero width: it is left out, so the first pass never drops the glyph for a moment.
         oneLine ? RowGlyphFit.keepsGlyph(oneLine: metrics.compactMap(\.oneLine).filter { $0.line > 0 })
                 : RowGlyphFit.keepsGlyph(full: metrics.compactMap(\.full).filter { $0.line > 0 })
@@ -159,12 +169,11 @@ struct SummaryList: View {
         let glyphs = glyphs
         CardBox {
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: false) }
-                HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort(glyphOnly: true) }
+                HStack(spacing: 10) { title; control; Spacer(minLength: 6); sort }
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 10) { title; Spacer(minLength: 6); sort(glyphOnly: false) }
+                    HStack(spacing: 10) { title; Spacer(minLength: 6); sort }
                     if resolved.controlShown {
-                        SummaryFilterControl(resolved: resolved, fill: true, onSelect: onFilter, onDisabled: showNotice)
+                        SummaryFilterControl(resolved: resolved, counts: counts, fill: true, onSelect: onFilter, onDisabled: showNotice)
                     }
                 }
             }
@@ -177,13 +186,13 @@ struct SummaryList: View {
                 Rectangle().fill(p.line).frame(height: 1).padding(.vertical, 8)
                 if oneLine {
                     // CCRM-104: not a Button, so a press on the figure can swap the word for its caption instead of opening.
-                    SummaryOneLineRow(entry: entry, nowMs: nowMs, glyph: glyphs)
+                    SummaryOneLineRow(entry: entry, nowMs: nowMs, glyph: glyphs, marked: marks.shows(entry.account.accountTag))
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
                         .trackedRow(entry.account.key)
                 } else {
                     // CCRM-103: not a Button, so a tap on the row's figure can show its readout instead of opening.
-                    SummaryRow(entry: entry, nowMs: nowMs, glyph: glyphs)
+                    SummaryRow(entry: entry, nowMs: nowMs, glyph: glyphs, marked: marks.shows(entry.account.accountTag))
                         .onTapGesture { onOpen(entry.account.key) }
                         .accessibilityAddTraits(.isButton)
                         .trackedRow(entry.account.key)
@@ -207,10 +216,10 @@ struct SummaryList: View {
     private var title: some View { Text("Weekly").font(.system(size: 17)).foregroundStyle(p.ink).fixedSize() }
 
     @ViewBuilder private var control: some View {
-        if resolved.controlShown { SummaryFilterControl(resolved: resolved, onSelect: onFilter, onDisabled: showNotice) }
+        if resolved.controlShown { SummaryFilterControl(resolved: resolved, counts: counts, onSelect: onFilter, onDisabled: showNotice) }
     }
 
-    private func sort(glyphOnly: Bool) -> some View { SummarySortMenu(order: order, glyphOnly: glyphOnly, onSelect: onOrder) }
+    private var sort: some View { SummarySortMenu(order: order, onSelect: onOrder) }
 }
 
 enum SummaryWords {
@@ -266,6 +275,8 @@ struct SummaryRow: View {
     let nowMs: Int64
     /// CCRM-115: draw the tag's glyph before the provider's mark (the list's one decision, `RowGlyphFit`).
     var glyph = true
+    /// CCRM-118: this row's tag mark is on; off, the column's slot stays blank.
+    var marked = true
     @State private var lineWidth: CGFloat = 0
     @State private var chipWidth: CGFloat = 0
     @State private var figureWidth: CGFloat = 0
@@ -286,7 +297,7 @@ struct SummaryRow: View {
                     // CCRM-115 (Row Tag Glyph): a person or briefcase, 14 pt box + 4, before the mark; the list drops the
                     // column from every row at once when a name would fall under its 64 pt floor.
                     HStack(spacing: 4) {
-                        if glyph { TagRowGlyph(tag: entry.account.accountTag) }
+                        if glyph { TagRowGlyph(tag: entry.account.accountTag, marked: marked) }
                         ProviderMark(provider: entry.account.provider, size: 18)
                     }
                     // CCBG-60 (Summary Line Clip): the name gives way before the pill and the figure.
@@ -379,6 +390,7 @@ struct SummaryOneLineRow: View {
     let nowMs: Int64
     /// CCRM-115: the glyph between the rank disc and the name (12 pt box + 4), while the bar keeps its 50 pt floor.
     var glyph = true
+    var marked = true
     @State private var lineWidth: CGFloat = 0
     @State private var revealed = false
     @State private var revealToken = 0
@@ -394,7 +406,7 @@ struct SummaryOneLineRow: View {
             Text("\(entry.rank)").font(.system(size: 10, weight: .bold)).foregroundStyle(.black)
                 .frame(width: 16, height: 16).background(accent, in: Circle())
             HStack(spacing: 4) {
-                if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true, marked: marked) }
                 // CCBG-84 (One-line Name Overrun), option A (Robin 2026-11-12): beside the glyph the name is whole, as
                 // `RowGlyphFit` decided; once the glyph has left, a name that still does not fit ellipsizes down to its
                 // 64 pt floor (or its own width) and the bar keeps its 50 pt.

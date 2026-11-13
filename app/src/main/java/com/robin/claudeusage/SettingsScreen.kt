@@ -115,6 +115,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -786,6 +791,11 @@ fun SettingsScreen(
             RowDivider()
             // Robin, 2026-11-02: the All tab's order, beside Open on the summary and shown with it.
             SummaryOrderGroup(cacheSettings)
+            RowDivider()
+            // CCRM-118 (Header Glyphs): per tag, beside Summary order and behind the same gate.
+            TagMarksGroup(cacheSettings) {
+                com.robin.claudeusage.notify.Surfaces.refresh(context, cacheSettings)
+            }
             RowDivider()
         }
         // CCRM-72 (Main Screen Redesign), wireframe §10: global, not per-account, and
@@ -4330,6 +4340,53 @@ internal fun SummaryOrderGroup(cache: com.robin.claudeusage.data.UsageCache) {
                 },
                 label = { Text(value.label) },
             )
+        }
+    }
+}
+
+/**
+ * Appearance › Tag marks (CCRM-118 (Header Glyphs), approved 2026-11-13): whether a tag's mark is drawn on account tabs,
+ * the Summary rows and the snapshot; the tag itself, Settings and the Summary filter are untouched. Two 48 dp switch
+ * rows with the tag's 20 dp outlined glyph. TalkBack: "Tag marks" (heading), "Personal, switch, on", then the note.
+ */
+@Composable
+internal fun TagMarksGroup(cache: com.robin.claudeusage.data.UsageCache, onChanged: () -> Unit) {
+    var marks by remember { mutableStateOf(cache.tagMarks()) }
+    val note = "Draws the tag's mark on account tabs, the account header and the Summary rows. Off, the account " +
+        "keeps its tag \u2014 Settings and the Summary filter always show both."
+    Column(Modifier.fillMaxWidth().semantics { isTraversalGroup = true }) {
+        Text(
+            "Tag marks",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            note,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // CCRM-118 §11: drawn under the title, read after the two rows.
+            modifier = Modifier.semantics { traversalIndex = 1f },
+        )
+        for (tag in com.robin.claudeusage.data.AccountTag.entries) {
+            val on = marks[tag] != false
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .toggleable(value = on, role = Role.Switch) { v ->
+                        marks = marks + (tag to v)
+                        cache.setTagMark(tag, v)
+                        onChanged()
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                com.robin.claudeusage.ui.TagGlyph(tag, 20.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(12.dp))
+                Text(tag.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                // The row is the control; the switch only draws.
+                Switch(checked = on, onCheckedChange = null)
+            }
         }
     }
 }

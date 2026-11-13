@@ -88,6 +88,15 @@ class SummarySnapshotTest {
         assertNotNull(model(specs(2, listOf(AccountTag.PERSONAL))).asOf)
     }
 
+    @Test fun `CCRM-118 the column also needs a marked tag, and an unmarked row keeps a blank slot`() {
+        val both = listOf(AccountTag.WORK, AccountTag.PERSONAL)
+        val noPersonal = mapOf(AccountTag.PERSONAL to false, AccountTag.WORK to true)
+        val none = mapOf(AccountTag.PERSONAL to false, AccountTag.WORK to false)
+        assertTrue(SummarySnapshot.glyphColumn(both, noPersonal))
+        assertFalse(SummarySnapshot.glyphColumn(both, none))
+        assertFalse(SummarySnapshot.glyphColumn(listOf(AccountTag.WORK, AccountTag.WORK), noPersonal))
+    }
+
     @Test fun `the glyph column rides only while the rows on the card carry both tags`() {
         assertTrue(SummarySnapshot.glyphColumn(listOf(AccountTag.WORK, AccountTag.PERSONAL)))
         assertFalse(SummarySnapshot.glyphColumn(listOf(AccountTag.PERSONAL, AccountTag.PERSONAL)))

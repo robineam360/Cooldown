@@ -24,6 +24,7 @@ struct SettingsScreen: View {
     @State private var endMark = Display.usageEndMark
     @State private var openOnSummary = Prefs.openOnSummary
     @State private var summaryOrder = Prefs.summaryOrder
+    @State private var tagMarks = Prefs.tagMarks
     @AppStorage(Display.Key.chartDown, store: Prefs.defaults) private var chartDown = false
     @AppStorage(Display.Key.clockFirst, store: Prefs.defaults) private var clockFirst = false
     @AppStorage(Display.Key.redPastPace, store: Prefs.defaults) private var redPastPace = true
@@ -186,6 +187,23 @@ struct SettingsScreen: View {
                             model.displayChanged()
                         })) {
                             ForEach(SummaryOrder.allCases, id: \.self) { Text($0.label).tag($0) }
+                        }
+                        // CCRM-118 (Header Glyphs) §2: whether each tag's mark is drawn (tabs, header, Summary rows). Shares the
+                        // Summary group's gate; the Accounts tab and the filter always show both tags.
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Tag marks").font(.system(size: 17)).accessibilityAddTraits(.isHeader)
+                            ForEach(AccountTag.allCases, id: \.self) { tag in
+                                Toggle(isOn: Binding(get: { tagMarks.shows(tag) }, set: { on in
+                                    if tag == .work { tagMarks.work = on } else { tagMarks.personal = on }
+                                    Prefs.tagMarks = tagMarks
+                                    model.displayChanged()
+                                })) {
+                                    Label(tag.label, systemImage: TagGlyph.symbol(tag)).font(.system(size: 17)).foregroundStyle(p.txt)
+                                }
+                                .frame(minHeight: 44)
+                            }
+                            Text("Draws the tag's mark on account tabs, the account header and the Summary rows. Off, the account keeps its tag — Settings and the Summary filter always show both.")
+                                .font(.system(size: 13)).foregroundStyle(p.sub)
                         }
                     }
                     VStack(alignment: .leading, spacing: 8) {

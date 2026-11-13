@@ -834,7 +834,35 @@ def build_tags_pw():
     ]:
         memory.append({"name": name, "accounts": accts, "storedFilter": stored, "steps": steps,
                        "expected": run_pw_memory(accts, stored, steps)})
-    return {"_meta": {"note": PW_NOTE}, "filter": cases, "memory": memory}
+    return {"_meta": {"note": PW_NOTE}, "filter": cases, "memory": memory, "marks": build_tag_marks()}
+
+
+def build_tag_marks():
+    """CCRM-118 (Header Glyphs), approved 2026-11-13 (design/2026-11-13-ccrm118-header-glyphs.html §9, §10): the "Tag
+    marks" setting (tagMarks.personal / tagMarks.work, absent = on). The Summary's glyph column exists while any row
+    shown carries a marked tag (then the CCRM-115 drop rule measures as before); a row whose tag is off keeps a blank
+    slot while the column exists. The snapshot draws its column while the rows on it carry both tags and either is
+    marked. The filter and the Settings chip never read the setting."""
+    out = []
+    for name, rows, personal, work in [
+        ("both on (the default): every row draws its glyph", ["work", "personal", "work"], True, True),
+        ("Robin's choice, Personal off: Work rows draw the briefcase, Personal rows keep a blank slot",
+         ["work", "personal", "work"], False, True),
+        ("Work off: Personal rows draw the person, Work rows a blank slot", ["work", "personal", "work"], True, False),
+        ("both off: no column", ["work", "personal", "work"], False, False),
+        ("Personal off under the Personal filter: no row is marked, so no column", ["personal", "personal"], False, True),
+        ("Personal off, all accounts Personal: no column", ["personal", "personal", "personal"], False, True),
+        ("Work off under the Work filter: no column", ["work", "work"], True, False),
+        ("Personal off under the Work filter: every row draws the briefcase", ["work", "work"], False, True),
+    ]:
+        marks = {"personal": personal, "work": work}
+        column = any(marks[t] for t in rows)
+        both = "personal" in rows and "work" in rows
+        out.append({"name": name, "rows": rows, "tagMarks": marks,
+                    "expected": {"column": column,
+                                 "slots": [("glyph" if marks[t] else "blank") for t in rows] if column else None,
+                                 "snapshotColumn": both and column}})
+    return out
 
 
 def dump(obj):

@@ -1132,3 +1132,33 @@ landscape). Closes CCBG-90 (Inner Portrait Stretch) and CCBG-86 (Rail Marks Alik
   — **real-device check**.
 - **iPad** follows the same rule: portrait = Usage over Pace (title in the bar beside the floating tab bar);
   landscape = sidebar plus Usage | Pace side by side.
+
+### Header glyphs — CCRM-118 (Header Glyphs), both platforms, 2026-11-13
+
+Wireframe `design/2026-11-13-ccrm118-header-glyphs.html`, approved by Robin 2026-11-13 question by question. Supporting
+pages: `-tag-glyph-android-and-filter.html`, `-summary-header-glyphs.html`, `-tag-badge-styles.html`,
+`-tab-icon-tag-dot.html`, and `-android-account-switcher.html` (Android keeps its top tabs with swipe). Rule:
+BEHAVIOR-MOBILE §6 "The control" and "Tag marks"; fixture `spec/mobile/fixtures/tags/cases.json` → `marks`.
+
+- **The account icon (§2.3, the Native tabs above).** It is one drawing everywhere an account tab names an account:
+  the provider mark in the account's accent, with the person / briefcase as an ink figure in a disc knocked out of the
+  mark's lower right. Only when that tag's mark is on (Tag marks); otherwise the plain mark stays top-left.
+  - **iOS (`RailIcon`):** every tab — the bottom bar and More, the iPad sidebar, the Duo rails and tall bar — at
+    25 / 21 pt; History's strip at 24 / 20; the account header at 26 / 22, replacing CCRM-116's separate glyph.
+    iPad portrait's top bar shows names only (system). VoiceOver "Teams, Work account".
+  - **Android (`BadgedMark` in `ProviderTabLabel`):** a 24 dp box (mark 20) + 2 dp + name on the main and History
+    strips, the same width as before. TalkBack "Teams, Work account". The spike showed the iPhone 17e tab bar and the
+    iPad sidebar keep the colour (`design/research/2026-11-13-ccrm118/`).
+- **The filter (§2.8 Header).** "All" · person N · briefcase N. The glyph is 16 dp × font scale (iOS 14 pt), then
+  4, then the count at 12 sp (iOS 13 pt) tabular. N is the group's size among all accounts. An empty group is not
+  dimmed; a tap shows the 3 s note. "Work, 3 accounts" / "no accounts".
+- **The sort (§2.8 Header).** The closed button is always the current order's glyph + ▾: a drag handle for your
+  order, a ring at 20 % for most room first, a timer for resets soonest, a ring at 85 % for most used. The words
+  appear only in the menu, with a check on the current order. Android's 320 dp switch and iOS's words form are gone.
+- **Tag marks (§6.4 Appearance).** Placed after Summary order, with the same two-or-more-accounts gate. Title "Tag
+  marks", then the rows "Personal" and "Work" (switches, both on by default), then the note "Draws the tag's mark on
+  account tabs, the account header and the Summary rows. Off, the account keeps its tag — Settings and the Summary
+  filter always show both."
+- **Row glyph and snapshot (§2.8 Row glyph, §8.1).** The column exists while any row shown is marked, then the
+  CCRM-115 drop rule applies. An unmarked row keeps a blank slot. The snapshot column needs both tags on the card and
+  either marked.

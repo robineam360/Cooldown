@@ -393,8 +393,12 @@ struct SummaryTagsTests {
         }
     }
 
-    func list(_ entries: [SummaryEntry], _ resolved: SummaryFilter.Resolved, order: SummaryOrder = .yours) -> some View {
-        SummaryList(entries: entries, nowMs: now.ms, resolved: resolved, order: order).environment(\.menusAsLabels, true)
+    func list(_ entries: [SummaryEntry], _ resolved: SummaryFilter.Resolved, order: SummaryOrder = .yours,
+              counts: [AccountTag: Int]? = nil, marks: TagMarks = TagMarks()) -> some View {
+        let tags = entries.map(\.account.accountTag)
+        let counts = counts ?? [.personal: tags.filter { $0 == .personal }.count, .work: tags.filter { $0 == .work }.count]
+        return SummaryList(entries: entries, nowMs: now.ms, resolved: resolved, order: order, counts: counts, marks: marks)
+            .environment(\.menusAsLabels, true)
     }
 
     @Test("render: the Summary — the upgrade, both tags, each filter, narrow and wrapped, the glyph column dropped — dark and light")
@@ -433,5 +437,107 @@ struct SummaryTagsTests {
             r.save("i4-add-tag-control-work-\(t)", AddTagControl(tag: .constant(.work)).padding(16), width: 393, height: 130, scheme: scheme)
         }
         #expect(TagGlyph.symbol(.personal) == "person" && TagGlyph.symbol(.work) == "briefcase")
+    }
+
+    // MARK: CCRM-118 (Header Glyphs) — Tag marks, the filter as glyph + count, the sort glyphs, the badged icon
+
+    @Test("Tag marks: absent reads as on, each tag is stored on its own key in the App Group, and a flip is read back")
+    func tagMarksPref() {
+        let defaults = Prefs.defaults
+        defer { defaults.removeObject(forKey: TagMarks.personalKey); defaults.removeObject(forKey: TagMarks.workKey) }
+        defaults.removeObject(forKey: TagMarks.personalKey); defaults.removeObject(forKey: TagMarks.workKey)
+        #expect(Prefs.tagMarks == TagMarks(personal: true, work: true), "absent reads as on")
+        Prefs.tagMarks = TagMarks(personal: false, work: true)
+        #expect(defaults.object(forKey: "tagMarks.personal") as? Bool == false && defaults.object(forKey: "tagMarks.work") as? Bool == true)
+        #expect(Prefs.tagMarks.shows(.personal) == false && Prefs.tagMarks.shows(.work))
+    }
+
+    @Test("the snapshot's glyph column follows Tag marks: both tags on the card and either marked")
+    func snapshotMarks() throws {
+        let defaults = Prefs.defaults
+        defer { defaults.removeObject(forKey: TagMarks.personalKey); defaults.removeObject(forKey: TagMarks.workKey) }
+        let model = AppModel(demo: .standard)
+        func glyphs() throws -> Bool { try #require(SummarySnapshotSheet.make(model: model, filter: nil, order: .yours, layers: MapLayers())).glyphs }
+        Prefs.tagMarks = TagMarks(personal: false, work: true)
+        #expect(try glyphs(), "Personal off, Work on: briefcases and a blank slot")
+        Prefs.tagMarks = TagMarks(personal: false, work: false)
+        #expect(try !glyphs(), "both off: no column")
+        Prefs.tagMarks = TagMarks(personal: true, work: false)
+        #expect(try glyphs())
+    }
+
+    @Test("the filter reads \"All\", then glyph + count; VoiceOver says the group's size and \"no accounts\" for an empty one; nothing is dimmed")
+    func filterSpoken() {
+        #expect(SummaryFilterControl.spoken(.all, count: 5) == "All, 5 accounts")
+        #expect(SummaryFilterControl.spoken(.personal, count: 3) == "Personal, 3 accounts")
+        #expect(SummaryFilterControl.spoken(.personal, count: 1) == "Personal, 1 account")
+        #expect(SummaryFilterControl.spoken(.work, count: 0) == "Work, no accounts")
+    }
+
+    @Test("render: the filter as glyph + count (empty group at full ink), the four sort glyphs, rows under Tag marks, the badged icon")
+    func headerGlyphs() throws {
+        let three = tagged(build([teams, personal, lab]), work: ["Teams", "Lab"])
+        let tags = three.map(\.account.accountTag)
+        let resolved = SummaryFilter.resolve(tags: tags, remembered: nil)
+        let personalOnly = tagged(three, work: [])
+        for scheme in [ColorScheme.dark, .light] {
+            let t = scheme == .dark ? "dark" : "light"
+            func save(_ name: String, _ v: some View, width: CGFloat = 393, height: CGFloat = 400) {
+                r.save("ccrm118-\(name)-\(t)", v, width: width, height: height, scheme: scheme, background: scheme == .dark ? .black : nil)
+            }
+            save("rows-both-on", list(three, resolved))
+            save("rows-personal-off-mixed", list(three, resolved, marks: TagMarks(personal: false, work: true)))
+            save("rows-personal-off-personal-filter", list(three.filter { $0.account.accountTag == .personal },
+                 SummaryFilter.resolve(tags: tags, remembered: "personal"), counts: [.personal: 1, .work: 2], marks: TagMarks(personal: false, work: true)), height: 240)
+            save("rows-both-off", list(three, resolved, marks: TagMarks(personal: false, work: false)))
+            save("rows-empty-work", list(personalOnly, SummaryFilter.resolve(tags: personalOnly.map(\.account.accountTag), remembered: nil)), height: 330)
+            save("sort-glyphs", HStack(spacing: 12) { ForEach(SummaryOrder.allCases, id: \.self) { SummarySortMenu(order: $0, onSelect: { _ in }) } }
+                .environment(\.menusAsLabels, true), width: 260, height: 56)
+        }
+        // The two rings differ from each other and from the system glyphs; one glyph for the button and the menu rows.
+        #expect(SortGlyph.ring(0.2).pngData() != SortGlyph.ring(0.85).pngData())
+        #expect(SortGlyph.ring(0.2) === SortGlyph.ring(0.2))
+    }
+
+    @Test("the badged account icon: three providers x both tags x marked / unmarked, light and dark, in the three boxes")
+    func badgedIcon() throws {
+        let sizes: [RailIcon.Size] = [.tab, .strip, .header]
+        for scheme in [ColorScheme.dark, .light] {
+            let t = scheme == .dark ? "dark" : "light"
+            let p = Palette.current(scheme)
+            var shots: [(String, UIImage)] = []
+            for provider in [Provider.claude, .chatgpt, .antigravity] {
+                for tag in AccountTag.allCases {
+                    for size in sizes {
+                        let marked = RailIcon.image(provider: provider, accent: provider.accent(scheme), tag: tag, marked: true, scheme: scheme, ink: p.ink, size: size)
+                        let plain = RailIcon.image(provider: provider, accent: provider.accent(scheme), tag: tag, marked: false, scheme: scheme, ink: p.ink, size: size)
+                        #expect(marked.size == CGSize(width: size.side, height: size.side) && plain.size == marked.size)
+                        func alpha(_ image: UIImage, _ x: CGFloat, _ y: CGFloat) -> UInt8 {
+                            let scale = image.scale
+                            guard let cg = image.cgImage,
+                                  let data = cg.dataProvider?.data, let bytes = CFDataGetBytePtr(data) else { return 0 }
+                            let px = Int(x * scale), py = Int(y * scale)
+                            let alphaInfo = cg.alphaInfo
+                            let offset = py * cg.bytesPerRow + px * (cg.bitsPerPixel / 8)
+                            return alphaInfo == .premultipliedFirst || alphaInfo == .first || alphaInfo == .noneSkipFirst ? bytes[offset] : bytes[offset + 3]
+                        }
+                        // Past the mark (x or y beyond its box) only the badge's figure can draw: nothing unmarked, something marked.
+                        func overhang(_ image: UIImage) -> Int {
+                            var n = 0
+                            for x in stride(from: 0.0, to: size.side, by: 0.5) { for y in stride(from: 0.0, to: size.side, by: 0.5)
+                                where (x >= size.mark || y >= size.mark) && alpha(image, x, y) > 0 { n += 1 } }
+                            return n
+                        }
+                        #expect(overhang(plain) == 0, "an unmarked icon draws nothing past its mark")
+                        #expect(marked.pngData() != plain.pngData())
+                        // Same mark, same place: the top-left pixel block matches.
+                        #expect(alpha(marked, 2, 2) == alpha(plain, 2, 2))
+                        if size == .tab { shots.append(("\(provider.rawValue)-\(tag.rawValue)-on", marked)); shots.append(("\(provider.rawValue)-\(tag.rawValue)-off", plain)) }
+                    }
+                }
+            }
+            r.save("ccrm118-badged-icons-\(t)", HStack(spacing: 8) { ForEach(shots, id: \.0) { Image(uiImage: $0.1) } },
+                   width: 460, height: 56, scheme: scheme)
+        }
     }
 }

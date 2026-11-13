@@ -18,15 +18,24 @@ enum TagGlyph {
 /// CCRM-115: the glyph that leads a Summary row, before the provider's mark (or between the rank disc and the name on a
 /// one-line row): the chip's 12 pt symbol in a 14 pt box on a full row, 11 pt in a 12 pt box on one-line and snapshot rows,
 /// `sub` ink, never a colour or the word. Hidden from VoiceOver: the row's name reads "Teams, Work account".
+/// CCRM-118 (Header Glyphs) §9: a tag whose mark is off (`marked` false) leaves a clear box of the same size while the
+/// column exists, so the names align.
 struct TagRowGlyph: View {
     let tag: AccountTag
     var compact = false
+    var marked = true
     @Environment(\.palette) private var p
     var body: some View {
-        Image(systemName: TagGlyph.symbol(tag)).font(.system(size: compact ? 11 : 12, weight: .regular))
-            .foregroundStyle(p.sub)
-            .frame(width: compact ? 12 : 14, height: compact ? 12 : 14)
-            .accessibilityHidden(true)
+        Group {
+            if marked {
+                Image(systemName: TagGlyph.symbol(tag)).font(.system(size: compact ? 11 : 12, weight: .regular))
+                    .foregroundStyle(p.sub)
+            } else {
+                Color.clear
+            }
+        }
+        .frame(width: compact ? 12 : 14, height: compact ? 12 : 14)
+        .accessibilityHidden(true)
     }
 }
 
@@ -115,11 +124,14 @@ struct AddTagControl: View {
     }
 }
 
-/// The Summary's All · Personal · Work control: 13 pt, 28 pt high, an outlined segmented bar; the chosen segment a tonal fill
-/// and semibold, a segment with no accounts dimmed to 38%. Shown whenever the Summary exists. A tap on a dimmed segment
-/// answers instead of selecting (addendum T3 B): `onDisabled` shows "No Work accounts yet. Tag one in Settings." for 3 s.
+/// The Summary's All · person N · briefcase N control (CCRM-118 (Header Glyphs) §8): 28 pt high, an outlined segmented bar;
+/// "All" a word, the two tags a 14 pt glyph + 4 + the group's size among all accounts (13 pt, tabular). The chosen segment a
+/// tonal fill and semibold, digit included. An empty group keeps full ink with its 0: a tap answers instead of selecting
+/// (`onDisabled` shows "No Work accounts yet. Tag one in Settings." for 3 s). Always shows both tags, whatever Tag marks says.
 struct SummaryFilterControl: View {
     let resolved: SummaryFilter.Resolved
+    /// The group sizes among all accounts, never the rows shown.
+    var counts: [AccountTag: Int] = [:]
     var fill = false
     let onSelect: (SummaryFilter) -> Void
     var onDisabled: (SummaryFilter) -> Void = { _ in }
@@ -130,20 +142,27 @@ struct SummaryFilterControl: View {
             ForEach(Array(SummaryFilter.allCases.enumerated()), id: \.element) { i, filter in
                 let on = resolved.filter == filter
                 let enabled = resolved.segmentsEnabled?[filter] ?? true
-                // A segment with no accounts is dimmed, not disabled: its tap answers with one line (T3 B, "No Work accounts
-                // yet. Tag one in Settings."), and VoiceOver reads "Work, dimmed". (A disabled Button swallowed the tap.)
+                let weight: Font.Weight = on ? .semibold : .regular
                 Button { if enabled { onSelect(filter) } else { onDisabled(filter) } } label: {
-                    Text(filter.label).font(.system(size: 13, weight: on ? .semibold : .regular))
-                        .foregroundStyle(p.ink)
-                        .padding(.horizontal, 9)
-                        .frame(maxWidth: fill ? .infinity : nil, minHeight: 28)
-                        .background(on ? p.ink.opacity(0.13) : Color.clear)
-                        .contentShape(Rectangle())
+                    Group {
+                        if let tag = filter.tag {
+                            HStack(spacing: 4) {
+                                Image(systemName: TagGlyph.symbol(tag)).font(.system(size: 14, weight: weight)).accessibilityHidden(true)
+                                Text("\(counts[tag] ?? 0)").font(.system(size: 13, weight: weight)).monospacedDigit()
+                            }
+                        } else {
+                            Text(filter.label).font(.system(size: 13, weight: weight))
+                        }
+                    }
+                    .foregroundStyle(p.ink)
+                    .padding(.horizontal, 9)
+                    .frame(minWidth: filter.tag == nil ? 33 : 45, maxWidth: fill ? .infinity : nil, minHeight: 28)
+                    .background(on ? p.ink.opacity(0.13) : Color.clear)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .opacity(enabled ? 1 : 0.38)
                 .overlay(alignment: .leading) { if i > 0 { Rectangle().fill(p.sub.opacity(0.5)).frame(width: 1) } }
-                .accessibilityValue(enabled ? "" : "dimmed")
+                .accessibilityLabel(Self.spoken(filter, count: filter.tag.map { counts[$0] ?? 0 } ?? counts.values.reduce(0, +)))
                 .accessibilityAddTraits(on ? .isSelected : [])
             }
         }
@@ -153,6 +172,11 @@ struct SummaryFilterControl: View {
         .fixedSize(horizontal: !fill, vertical: true)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Filter")
+    }
+
+    /// "Work, 3 accounts" · "Work, 1 account" · "Work, no accounts"; All reads the total.
+    static func spoken(_ filter: SummaryFilter, count: Int) -> String {
+        return "\(filter.label), " + (count == 0 ? "no accounts" : count == 1 ? "1 account" : "\(count) accounts")
     }
 }
 
@@ -165,11 +189,48 @@ extension EnvironmentValues {
     }
 }
 
-/// "your order ▾": the four Summary orders as a native pull-down with a check on the current one; it writes the same
-/// setting as Appearance › Summary order, which stays. At a narrow width it shows its glyph alone ("⇅ ▾").
+/// CCRM-118 (Header Glyphs) §8: each Summary order's glyph — the button always shows the current order's, the menu rows
+/// show their own. line.3.horizontal (your order), ring 20 % (most room first), timer (resets soonest), ring 85 % (most
+/// used); the two rings are drawn here (a template image, so the button and the menu rows share one glyph).
+enum SortGlyph {
+    @MainActor
+    static func image(_ order: SummaryOrder) -> Image {
+        switch order {
+        case .yours: Image(systemName: "line.3.horizontal")
+        case .room: Image(uiImage: ring(0.20))
+        case .resets: Image(systemName: "timer")
+        case .used: Image(uiImage: ring(0.85))
+        }
+    }
+
+    /// A template ring, 18 pt box: a faint full track and the arc (`fraction` of the turn, clockwise from the top) in full.
+    @MainActor
+    static func ring(_ fraction: Double) -> UIImage {
+        if let hit = cache[fraction] { return hit }
+        let side: CGFloat = 18, line: CGFloat = 2.2
+        let r = (side - line) / 2, c = CGPoint(x: side / 2, y: side / 2)
+        let image = UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+            let g = ctx.cgContext
+            g.setLineWidth(line)
+            g.setLineCap(.round)
+            g.setStrokeColor(UIColor.black.withAlphaComponent(0.3).cgColor)
+            g.addArc(center: c, radius: r, startAngle: 0, endAngle: .pi * 2, clockwise: false)
+            g.strokePath()
+            g.setStrokeColor(UIColor.black.cgColor)
+            g.addArc(center: c, radius: r, startAngle: -.pi / 2, endAngle: -.pi / 2 + .pi * 2 * fraction, clockwise: false)
+            g.strokePath()
+        }.withRenderingMode(.alwaysTemplate)
+        cache[fraction] = image
+        return image
+    }
+    @MainActor private static var cache: [Double: UIImage] = [:]
+}
+
+/// The Summary's sort control: the current order's glyph and a chevron, always — the words are only in the menu (a native
+/// pull-down with the order's glyph on each row and a check on the current one). Writes the same setting as Appearance ›
+/// Summary order, which stays. One width for every order.
 struct SummarySortMenu: View {
     let order: SummaryOrder
-    var glyphOnly = false
     let onSelect: (SummaryOrder) -> Void
     @Environment(\.palette) private var p
     @Environment(\.menusAsLabels) private var asLabel
@@ -181,7 +242,7 @@ struct SummarySortMenu: View {
     private var menu: some View {
         Menu {
             Picker("Sort", selection: Binding(get: { order }, set: { onSelect($0) })) {
-                ForEach(SummaryOrder.allCases, id: \.self) { Text($0.label).tag($0) }
+                ForEach(SummaryOrder.allCases, id: \.self) { o in Label { Text(o.label) } icon: { SortGlyph.image(o) }.tag(o) }
             }
         } label: { label }
         .accessibilityLabel("Sort: \(order.header)")
@@ -189,12 +250,12 @@ struct SummarySortMenu: View {
 
     private var label: some View {
         HStack(spacing: 4) {
-            if glyphOnly { Image(systemName: "arrow.up.arrow.down").font(.system(size: 12, weight: .medium)) }
-            else { Text(order.header).font(.system(size: 13)).lineLimit(1) }
+            SortGlyph.image(order).resizable().scaledToFit().frame(width: 14, height: 14)
             Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold))
         }
         .foregroundStyle(p.txt)
         .padding(.horizontal, 7).padding(.vertical, 3)
+        .frame(height: 28)
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(p.line, lineWidth: 1))
         .fixedSize()
     }

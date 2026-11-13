@@ -32,6 +32,3 @@ Not here: desktop surfaces (the desktop repo's own layer) and anything a provide
 - CCRM-96 (Weekly First) and CCRM-97 (Pace Number): weekly leads every surface, the 5h companion,
   the per-account Headline, and the pace words — [BEHAVIOR-MOBILE §5](../BEHAVIOR-MOBILE.md) and
   `design/2026-11-02-weekly-first-pace.html`. Fold them into these files when they are built.
-- CCRM-118 (Header Glyphs): the Summary filter as glyphs + counts, the sort button as the order's glyph, Android's
-  account tabs as the badged mark — `design/2026-11-13-tag-glyph-android-and-filter.html`,
-  `design/2026-11-13-summary-header-glyphs.html` (badge style still open). Fold it into `app.md` §2.3 / §2.8 when built.

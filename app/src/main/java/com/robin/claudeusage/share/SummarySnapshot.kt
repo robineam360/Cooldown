@@ -25,6 +25,7 @@ import com.robin.claudeusage.data.MapLayers
 import com.robin.claudeusage.data.Pace
 import com.robin.claudeusage.data.Provider
 import com.robin.claudeusage.data.SummaryFilter
+import com.robin.claudeusage.data.TagMarks
 import com.robin.claudeusage.data.SummaryOrder
 import com.robin.claudeusage.data.SummaryRank
 import com.robin.claudeusage.ui.BarRenderer
@@ -118,6 +119,8 @@ internal object SummarySnapshot {
         val rows: List<Row>,
         /** Both tags on the card (CCRM-115): the glyph column is drawn. */
         val glyphColumn: Boolean,
+        /** CCRM-118: a row whose tag's mark is off draws a blank slot while the column exists. */
+        val tagMarks: Map<AccountTag, Boolean> = TagMarks.ALL_ON,
         val entries: List<PaceMapEntry>,
         val layers: MapLayers,
         val mode: PaceText.Mode,
@@ -133,8 +136,12 @@ internal object SummarySnapshot {
     /** The share entry is shown only when some account on the Summary has a reading (rev B §8). */
     fun hasReading(rows: List<SummaryRowModel>): Boolean = rows.any { it.data != null }
 
-    /** The glyph column rides only while the rows on the card carry both tags (addendum R4 A). */
-    fun glyphColumn(tags: List<AccountTag>): Boolean = tags.toSet().size == 2
+    /**
+     * The glyph column rides only while the rows on the card carry both tags (addendum R4 A) and, CCRM-118 (Header
+     * Glyphs), at least one of those tags is marked; a row whose tag is off leaves its slot blank.
+     */
+    fun glyphColumn(tags: List<AccountTag>, marks: Map<AccountTag, Boolean> = TagMarks.ALL_ON): Boolean =
+        TagMarks.snapshotColumn(tags, marks)
 
     /** "as of 2:00 PM, Tue Nov 10": the oldest reading the card shows (never the render's own time). */
     fun asOf(fetchedAts: List<Long>, zone: ZoneId): String? =
@@ -155,6 +162,7 @@ internal object SummarySnapshot {
         nowMs: Long = System.currentTimeMillis(),
         zone: ZoneId = ZoneId.systemDefault(),
         accentOf: (SummaryRowModel) -> Color,
+        tagMarks: Map<AccountTag, Boolean> = TagMarks.ALL_ON,
     ): Model {
         val usageLeft = mode == PaceText.Mode.LEFT
         val byKey = accounts.associateBy { it.key }
@@ -168,7 +176,8 @@ internal object SummarySnapshot {
             asOf = asOf(accounts.filter { a -> rows.any { it.profile.key == a.key } }.map { it.fetchedAt }, zone),
             orderName = order.header,
             rows = cards,
-            glyphColumn = glyphColumn(cards.map { it.tag }),
+            glyphColumn = glyphColumn(cards.map { it.tag }, tagMarks),
+            tagMarks = tagMarks,
             entries = entries,
             layers = layers,
             mode = mode,
@@ -359,7 +368,7 @@ internal object SummarySnapshot {
         var x = x0
         if (m.glyphColumn) {
             val g = px(glyphDp)
-            ContextCompat.getDrawable(context, tagGlyphRes(r.tag))?.mutate()?.let { d ->
+            if (m.tagMarks[r.tag] != false) ContextCompat.getDrawable(context, tagGlyphRes(r.tag))?.mutate()?.let { d ->
                 d.setTint(ink(m.dark, 0.6f * a))
                 val top = (baseline + (text.ascent() + text.descent()) / 2f - g / 2f).toInt()
                 d.setBounds(x.toInt(), top, (x + g).toInt(), top + g.toInt())

@@ -1263,6 +1263,7 @@ private fun renderSummaryCard(
         showOverPace = showOverPace,
         synthetic = SyntheticSeries.isOn || SampleMode.isOn || accounts.any { a -> a.synthetic && shown.any { it.key == a.key } },
         accentOf = { Palette.color(Palette.accentName(cache, it.profile), dark) },
+        tagMarks = cache.tagMarks(),
     )
     return SummarySnapshot.render(context, model)
 }

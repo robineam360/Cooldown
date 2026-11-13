@@ -264,7 +264,13 @@ clients). Both clients follow this paragraph and test it on [`fixtures/tags/case
   saved becomes Personal at upgrade with nothing written (Robin 2026-11-11: no prompt), an unknown value survives a
   round trip, and v1.9 ignores the key. The sample's accounts carry fixed tags (§7).
 - **The control.** An All · Personal · Work control sits beside "Weekly" whenever the Summary exists (two or more
-  accounts). A segment with no accounts is disabled; All never is.
+  accounts). A segment with no accounts is disabled; All never is. **Since CCRM-118 (Header Glyphs)**, approved
+  2026-11-13 (`design/2026-11-13-ccrm118-header-glyphs.html` §8), the control reads "All" (the word, no count) ·
+  person N · briefcase N. N is the group's size among all accounts, never the rows shown, and screen readers say
+  "Work, 3 accounts". A disabled segment (N = 0) is drawn at full ink with its 0, not dimmed. A tap on it shows the
+  3 s note below, as before. No rule here moved. The sort button beside it always shows the current order's glyph:
+  drag handle for your order, a ring at 20 % for most room first, a timer for resets soonest, a ring at 85 % for most
+  used. The words appear only in the menu.
 - **The filter in force** is the remembered value when it names an enabled segment, otherwise **All**. It narrows the
   list, the ranking, the rank numbers, the Pace map with its foot-line count, the one-line threshold (six rows
   **shown**, not six accounts) and the share snapshot, whose header names it ("All accounts", "Personal accounts",
@@ -289,7 +295,18 @@ clients). Both clients follow this paragraph and test it on [`fixtures/tags/case
   would fall under it. It is measured on the tightest row shown and re-measured on a width, filter, display or font
   change. Under a Personal or Work filter the glyph stays. **The share snapshot** draws the glyph column only while
   the rows on it carry both tags (so only under All; an install whose accounts are all Personal shares the card
-  without it). TalkBack and VoiceOver read the tag on the row's name — "Teams, Work account" — whether or not the
+  without it). **Tag marks** (CCRM-118 (Header Glyphs), Robin 2026-11-13): an Appearance setting with two switches,
+  Personal and Work (`tagMarks.personal`, `tagMarks.work`; absent reads as on; v1.9 ignores them; sample mode edits its
+  in-memory copy). It decides whether that tag's mark is drawn:
+  - on account icons (every account tab, sidebar row and More row on both clients, and the iOS account header — the
+    provider mark in the account's accent with the person / briefcase as a badge);
+  - on the Summary row glyph;
+  - on the snapshot's column.
+
+  It never touches the filter segments or the Settings tag chip. On the Summary the glyph column exists while any row
+  shown carries a marked tag, and then the drop-out above decides as before. A row whose tag is off keeps a blank slot
+  of the glyph's width, so names stay aligned. The snapshot draws its column while its rows carry both tags and either
+  is marked. The case table is `fixtures/tags/cases.json` → `marks`. TalkBack and VoiceOver read the tag on the row's name — "Teams, Work account" — whether or not the
   glyph is drawn; the glyph itself is hidden from accessibility. A tap on a disabled segment shows one line under the
   header for 3 s: "No Work accounts yet. Tag one in Settings." (Personal likewise). **Adding an account** (both
   clients alike): a Personal | Work control sits above the provider rows of the Add account sheet, Personal selected

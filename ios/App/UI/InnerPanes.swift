@@ -210,47 +210,80 @@ struct TrackedScroll<Content: View>: View {
 
 // MARK: - CCBG-86 (Rail Marks Alike): the wide inner screen's rail icons (§9a, B + C)
 
-/// The account's tab icon where iOS draws an icon-only rail (the wide inner screen): its provider mark in the account's
-/// accent, with the person / briefcase as a small badge at the lower right on a knocked-out disc. Drawn in original
-/// rendering, per account and per scheme, so the system does not tint it; it redraws with the accent, tag or theme.
+/// CCRM-118 (Header Glyphs) §1, 13: the account's one icon, on every account tab, the History strip and the account
+/// header: its provider mark in the account's accent at the box's top-left, with the person / briefcase as a badge at the
+/// lower right on a knocked-out disc (cleared circle r 8, ink figure in a 12 box at 6.5 in from the corner). `marked`
+/// false (Appearance › Tag marks) draws the whole mark, same size and place, nothing cleared. Drawn in original rendering,
+/// per look, so the system does not tint it.
 @MainActor
 enum RailIcon {
+    /// The icon box and the mark inside it: tab bar, rail, sidebar, More 25/21; History strip 24/20; header 26/22.
+    struct Size: Hashable {
+        let side: CGFloat, mark: CGFloat
+        static let tab = Size(side: 25, mark: 21)
+        static let strip = Size(side: 24, mark: 20)
+        static let header = Size(side: 26, mark: 22)
+    }
     /// The system's tab icon box.
-    static let side: CGFloat = 25
+    static let side: CGFloat = Size.tab.side
     /// Drawn once per look, so a redraw of the tabs hands the system the same image.
     private static var cache: [String: UIImage] = [:]
 
-    static func image(provider: Provider, accent: Color, tag: AccountTag, scheme: ColorScheme, ink: Color, surface: Color) -> UIImage {
-        let key = "\(provider.rawValue)|\(UIColor(accent).description)|\(tag.rawValue)|\(scheme == .dark)|\(UIColor(ink).description)"
+    static func image(provider: Provider, accent: Color, tag: AccountTag, marked: Bool = true, scheme: ColorScheme, ink: Color,
+                      size: Size = .tab) -> UIImage {
+        let key = "\(provider.rawValue)|\(UIColor(accent).description)|\(tag.rawValue)|\(marked)|\(size.side)/\(size.mark)|\(scheme == .dark)|\(UIColor(ink).description)"
         if let hit = cache[key] { return hit }
-        let made = draw(provider: provider, accent: accent, tag: tag, scheme: scheme, ink: ink)
+        let made = draw(provider: provider, accent: accent, tag: tag, marked: marked, scheme: scheme, ink: ink, size: size)
         cache[key] = made
         return made
     }
 
-    private static func draw(provider: Provider, accent: Color, tag: AccountTag, scheme: ColorScheme, ink: Color) -> UIImage {
+    private static func draw(provider: Provider, accent: Color, tag: AccountTag, marked: Bool, scheme: ColorScheme, ink: Color,
+                             size: Size) -> UIImage {
+        let side = size.side
         let traits = UITraitCollection(userInterfaceStyle: scheme == .dark ? .dark : .light)
         let accentUI = UIColor(accent).resolvedColor(with: traits)
         let inkUI = UIColor(ink).resolvedColor(with: traits)
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side))
         let image = renderer.image { ctx in
-            let markSide: CGFloat = 21
             if let mark = UIImage(named: provider.markAsset)?.withTintColor(accentUI, renderingMode: .alwaysOriginal) {
-                mark.draw(in: CGRect(x: 0, y: 0, width: markSide, height: markSide))
+                mark.draw(in: CGRect(x: 0, y: 0, width: size.mark, height: size.mark))
             }
-            // The badge: a 12 pt disc cut out of the mark (clear), the 9 pt glyph in ink inside it.
-            let badge = CGRect(x: side - 13, y: side - 13, width: 13, height: 13)
+            guard marked else { return }
+            // The badge: a disc of r 6.5 centred 6.5 in from the lower-right corner, cleared 1.5 wider out of the mark, the
+            // glyph in ink inside it.
+            let centre = CGPoint(x: side - 6.5, y: side - 6.5)
             ctx.cgContext.setBlendMode(.clear)
-            ctx.cgContext.fillEllipse(in: badge.insetBy(dx: -1.5, dy: -1.5))
+            ctx.cgContext.fillEllipse(in: CGRect(x: centre.x - 8, y: centre.y - 8, width: 16, height: 16))
             ctx.cgContext.setBlendMode(.normal)
             let config = UIImage.SymbolConfiguration(pointSize: 9, weight: .semibold)
             if let glyph = UIImage(systemName: TagGlyph.symbol(tag) + ".fill", withConfiguration: config)?
                 .withTintColor(inkUI, renderingMode: .alwaysOriginal) {
                 let s = glyph.size
-                glyph.draw(in: CGRect(x: badge.midX - s.width / 2, y: badge.midY - s.height / 2, width: s.width, height: s.height))
+                glyph.draw(in: CGRect(x: centre.x - s.width / 2, y: centre.y - s.height / 2, width: s.width, height: s.height))
             }
         }
         return image.withRenderingMode(.alwaysOriginal)
+    }
+}
+
+/// The icon as a view, for the header and the History strip (hidden from VoiceOver: the name carries "Teams, Work account").
+struct AccountIcon: View {
+    let account: Account
+    var size: RailIcon.Size = .strip
+    /// The badge figure's ink; nil = the palette's ink. History's strip passes `sub` for an unselected tab (§7).
+    var figure: Color? = nil
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var p
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        // Read so a Tag marks change in Settings redraws the icon at once.
+        let _ = model.displayStamp
+        Image(uiImage: RailIcon.image(provider: account.provider, accent: account.accent(scheme), tag: account.accountTag,
+                                      marked: Prefs.tagMarks.shows(account.accountTag), scheme: scheme, ink: figure ?? p.ink, size: size))
+            .frame(width: size.side, height: size.side)
+            .accessibilityHidden(true)
     }
 }
 

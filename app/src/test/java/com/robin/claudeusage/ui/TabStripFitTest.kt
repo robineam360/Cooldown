@@ -1,5 +1,6 @@
 package com.robin.claudeusage.ui
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,5 +40,15 @@ class TabStripFitTest {
     @Test
     fun `no labels, nothing to scroll`() {
         assertFalse(TabStripFit.scrolls(emptyList(), 320, pad))
+    }
+
+    @Test
+    fun `the badged label measures what the plain one did`() {
+        // CCRM-118 (Header Glyphs): 24 dp box + 2 dp gap = the 20 dp mark + 6 dp gap, so no strip changes its decision.
+        assertEquals(
+            TabLabelMetrics.PLAIN_MARK_DP + TabLabelMetrics.PLAIN_GAP_DP,
+            TabLabelMetrics.BOX_DP + TabLabelMetrics.GAP_DP,
+            0f,
+        )
     }
 }

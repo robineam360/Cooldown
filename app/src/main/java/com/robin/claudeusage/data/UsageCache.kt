@@ -100,7 +100,7 @@ class UsageCache private constructor(
         private val APPEARANCE_KEYS = setOf(
             "themeMode", "timeFormat", "use24hTime", "usageDisplay", "usageEndMark", "resetDisplay", "tileSubtitle",
             "showOverPace", "paceOverInApp", "density", "chartSize", "chartOrientation", "themeColor",
-            "openOnSummary", "summaryOrder", "summaryFilter",
+            "openOnSummary", "summaryOrder", "summaryFilter", TagMarks.KEY_PERSONAL, TagMarks.KEY_WORK,
             MapLayers.KEY_FIGURES, MapLayers.KEY_TRAILS, MapLayers.KEY_PROJECTION,
         )
 
@@ -631,6 +631,14 @@ class UsageCache private constructor(
 
     fun setSummaryOrder(order: SummaryOrder) {
         prefs.edit().putString("summaryOrder", order.key).apply()
+    }
+
+    /** CCRM-118 (Header Glyphs): Appearance › Tag marks, per tag, global; absent reads as on. */
+    fun tagMarks(): Map<AccountTag, Boolean> =
+        AccountTag.entries.associateWith { prefs.getBoolean(TagMarks.key(it), true) }
+
+    fun setTagMark(tag: AccountTag, on: Boolean) {
+        prefs.edit().putBoolean(TagMarks.key(tag), on).apply()
     }
 
     /**

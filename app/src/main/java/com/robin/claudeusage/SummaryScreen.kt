@@ -1,5 +1,10 @@
 package com.robin.claudeusage
 
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.selected
+import com.robin.claudeusage.ui.DragHandleIcon
+import com.robin.claudeusage.data.TagMarks
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -175,20 +180,23 @@ internal fun SummaryScreen(
                 Spacer(Modifier.height(6.dp))
                 // CCRM-115 (Row Tag Glyph): one decision for the whole list, measured on its tightest row.
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    val glyph = rowGlyphColumn(rows, repo, compact, mode, maxWidth.value)
+                    // CCRM-118 (Header Glyphs): the column exists while any row shown has a marked tag, then the fit rule.
+                    val marks = cache.tagMarks()
+                    val glyph = TagMarks.column(rows.map { cache.tag(it.profile) }, marks) &&
+                        rowGlyphColumn(rows, repo, compact, mode, maxWidth.value)
                     Column(Modifier.fillMaxWidth()) {
                     rows.forEachIndexed { i, r ->
                         if (i > 0) HorizontalDivider()
                         val accent = Palette.color(Palette.accentName(cache, r.profile), dark)
                         val tag = cache.tag(r.profile)
                         if (compact) {
-                            CompactSummaryRow(r, i + 1, accent, tag, glyph, mode, use24h, showOverPace) { onOpen(r.profile) }
+                            CompactSummaryRow(r, i + 1, accent, tag, glyph, marks[tag] != false, mode, use24h, showOverPace) { onOpen(r.profile) }
                         } else {
                             SummaryRow(
                                 r, accent, r.name,
                                 // API-CONTRACT §11's name, as Settings shows it.
                                 repo.plan(r.profile)?.let { Fmt.planLabel(r.profile.provider, it, repo.tier(r.profile)) },
-                                tag, glyph, mode, use24h, showOverPace,
+                                tag, glyph, marks[tag] != false, mode, use24h, showOverPace,
                             ) {
                                 onOpen(r.profile)
                             }
@@ -294,8 +302,9 @@ internal fun summaryRows(
 
 /**
  * CCRM-110 (Account Tags), wireframe rev B §6 as amended: "Weekly", the All · Personal · Work control beside it, and
- * the sort menu ("your order ▾") at the right. On a narrow list (a 360 dp phone's 288 dp) the sort button is its
- * glyph "⇅ ▾"; from font scale 1.5 the control wraps under the title across the whole width.
+ * the sort menu at the right. CCRM-118 (Header Glyphs): the control is "All", person N, briefcase N, and the sort
+ * button is always the current order's glyph and ▾ (one width for every order); from font scale 1.5 the control wraps
+ * under the title across the whole width.
  */
 @Composable
 private fun SummaryHeader(
@@ -308,11 +317,11 @@ private fun SummaryHeader(
 ) {
     val wrap = LocalDensity.current.fontScale >= 1.5f
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val glyphSort = maxWidth < 320.dp
         val control: @Composable (Modifier, Boolean) -> Unit = { m, fill ->
             SummaryFilterControl(
                 current = filter,
                 enabled = { SummaryFilters.enabled(it, tags) },
+                count = { f -> tags.count { f.matches(it) } },
                 onChoose = onChoose,
                 onDisabledTap = onDisabledTap,
                 modifier = m,
@@ -324,7 +333,7 @@ private fun SummaryHeader(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Weekly", style = MaterialTheme.typography.titleSmall)
                     Spacer(Modifier.weight(1f))
-                    SortMenu(order, glyphSort, onOrder)
+                    SortMenu(order, onOrder)
                 }
                 Spacer(Modifier.height(8.dp))
                 control(Modifier.fillMaxWidth(), true)
@@ -335,15 +344,38 @@ private fun SummaryHeader(
                 Spacer(Modifier.width(10.dp))
                 control(Modifier, false)
                 Spacer(Modifier.weight(1f))
-                SortMenu(order, glyphSort, onOrder)
+                SortMenu(order, onOrder)
             }
         }
     }
 }
 
-/** The sort button: the four Summary orders, a check on the current one; the same setting as Appearance › Summary order. */
+/** CCRM-118: the sort button's glyph per order — drag handle, ring 20 %, timer, ring 85 %. */
 @Composable
-private fun SortMenu(order: SummaryOrder, glyphOnly: Boolean, onOrder: (SummaryOrder) -> Unit) {
+private fun SortGlyph(order: SummaryOrder, tint: Color, size: androidx.compose.ui.unit.Dp) {
+    when (order) {
+        SummaryOrder.YOURS -> DragHandleIcon(tint, Modifier.size(size))
+        else -> Icon(
+            painterResource(
+                when (order) {
+                    SummaryOrder.MOST_ROOM -> R.drawable.ic_sort_room
+                    SummaryOrder.RESETS_SOONEST -> R.drawable.ic_sort_resets
+                    else -> R.drawable.ic_sort_used
+                },
+            ),
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(size),
+        )
+    }
+}
+
+/**
+ * The sort button: the current order's glyph (16 dp) and ▾; the four orders in the menu, each with its glyph and a check
+ * on the current one; the same setting as Appearance › Summary order. TalkBack: "Sort order: <order>".
+ */
+@Composable
+private fun SortMenu(order: SummaryOrder, onOrder: (SummaryOrder) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val ink = MaterialTheme.colorScheme.onSurfaceVariant
     val shape = RoundedCornerShape(8.dp)
@@ -358,30 +390,19 @@ private fun SortMenu(order: SummaryOrder, glyphOnly: Boolean, onOrder: (SummaryO
                 .semantics { contentDescription = "Sort order: ${order.header}" },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (glyphOnly) {
-                androidx.compose.foundation.Canvas(Modifier.size(width = 14.dp, height = 12.dp)) {
-                    val w = 1.4.dp.toPx()
-                    val h = size.height
-                    val x = size.width / 4f
-                    // ⇅ — an up arrow and a down arrow side by side.
-                    drawLine(ink, Offset(x, h), Offset(x, 1.dp.toPx()), w)
-                    drawLine(ink, Offset(x, 1.dp.toPx()), Offset(x - 2.5.dp.toPx(), 4.dp.toPx()), w)
-                    drawLine(ink, Offset(x, 1.dp.toPx()), Offset(x + 2.5.dp.toPx(), 4.dp.toPx()), w)
-                    val x2 = size.width * 3f / 4f
-                    drawLine(ink, Offset(x2, 0f), Offset(x2, h - 1.dp.toPx()), w)
-                    drawLine(ink, Offset(x2, h - 1.dp.toPx()), Offset(x2 - 2.5.dp.toPx(), h - 4.dp.toPx()), w)
-                    drawLine(ink, Offset(x2, h - 1.dp.toPx()), Offset(x2 + 2.5.dp.toPx(), h - 4.dp.toPx()), w)
-                }
-            } else {
-                Text(order.header, fontSize = 12.sp, color = ink, maxLines = 1, softWrap = false)
-            }
+            SortGlyph(order, ink, 16.dp)
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = ink, modifier = Modifier.size(18.dp))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (value in SummaryOrder.entries) {
                 DropdownMenuItem(
-                    text = { Text((if (value == order) "✓ " else "") + value.label) },
+                    text = { Text(value.label) },
+                    leadingIcon = { SortGlyph(value, ink, 20.dp) },
+                    trailingIcon = if (value == order) {
+                        { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(20.dp)) }
+                    } else null,
                     onClick = { open = false; onOrder(value) },
+                    modifier = Modifier.semantics { selected = value == order },
                 )
             }
         }
@@ -452,6 +473,8 @@ private fun SummaryRow(
     plan: String?,
     tag: AccountTag,
     glyph: Boolean,
+    /** CCRM-118: this row's tag has its mark on; while the column exists, off leaves a blank slot of the glyph's width. */
+    marked: Boolean,
     mode: PaceText.Mode,
     use24h: Boolean,
     showOverPace: Boolean,
@@ -507,7 +530,7 @@ private fun SummaryRow(
                 Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                     // CCRM-115 (Row Tag Glyph): a person or briefcase, 14 dp and 4 dp, before the provider mark.
                     if (glyph) {
-                        TagGlyph(tag, SummaryRows.GLYPH_FULL_DP.dp, muted)
+                        if (marked) TagGlyph(tag, SummaryRows.GLYPH_FULL_DP.dp, muted) else Spacer(Modifier.width(SummaryRows.GLYPH_FULL_DP.dp))
                         Spacer(Modifier.width(SummaryRows.GLYPH_GAP_DP.dp))
                     }
                     ProviderMark(r.profile.provider, size = 18.dp, tint = accent)
@@ -621,6 +644,8 @@ private fun CompactSummaryRow(
     accent: Color,
     tag: AccountTag,
     glyph: Boolean,
+    /** CCRM-118: this row's tag has its mark on; while the column exists, off leaves a blank slot of the glyph's width. */
+    marked: Boolean,
     mode: PaceText.Mode,
     use24h: Boolean,
     showOverPace: Boolean,
@@ -660,7 +685,11 @@ private fun CompactSummaryRow(
         // it costs the bar 16 dp and the row's gaps stay 7 dp.
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (glyph) {
-                TagGlyph(tag, SummaryRows.GLYPH_ONE_LINE_DP.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                if (marked) {
+                    TagGlyph(tag, SummaryRows.GLYPH_ONE_LINE_DP.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    Spacer(Modifier.width(SummaryRows.GLYPH_ONE_LINE_DP.dp))
+                }
                 Spacer(Modifier.width(SummaryRows.GLYPH_GAP_DP.dp))
             }
             Text(

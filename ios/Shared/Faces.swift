@@ -303,6 +303,18 @@ enum Prefs {
         get { SummaryOrder(key: defaults.string(forKey: "summaryOrder")) }
         set { defaults.set(newValue.rawValue, forKey: "summaryOrder") }
     }
+    /// CCRM-118 (Header Glyphs): Appearance › Tag marks, one switch per tag, absent reads as on (a new pair of keys; v1.9
+    /// never reads them). In the App Group so the snapshot and any later widget read the same values.
+    static var tagMarks: TagMarks {
+        get {
+            TagMarks(personal: defaults.object(forKey: TagMarks.personalKey) as? Bool ?? true,
+                     work: defaults.object(forKey: TagMarks.workKey) as? Bool ?? true)
+        }
+        set {
+            defaults.set(newValue.personal, forKey: TagMarks.personalKey)
+            defaults.set(newValue.work, forKey: TagMarks.workKey)
+        }
+    }
     /// CCRM-110 (Account Tags): the Summary's All · Personal · Work filter, remembered (a new key; v1.9 never reads it).
     static var summaryFilter: String? {
         get { defaults.string(forKey: "summaryFilter") }

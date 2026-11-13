@@ -20,6 +20,8 @@ struct SummarySnapshotView: View {
     /// CCRM-115 (Row Tag Glyph): the glyph column, drawn only while the rows on the card carry both tags (so only under All;
     /// an install whose accounts are all Personal shares the card without it).
     var glyphs = false
+    /// CCRM-118 (Header Glyphs) §10: Appearance › Tag marks; a row whose tag is off leaves its slot blank.
+    var marks = Prefs.tagMarks
     @Environment(\.palette) private var p
     @Environment(\.colorScheme) private var scheme
 
@@ -40,8 +42,8 @@ struct SummarySnapshotView: View {
             }
             Text(ShareCardView.asOf(asOfMs)).font(.system(size: 11)).foregroundStyle(p.sub.opacity(0.9)).padding(.top, 1)
             ForEach(entries) { entry in
-                if oneLine { OneLine(entry: entry, nowMs: nowMs, first: entry.id == entries.first?.id, glyph: glyphs) }
-                else { FullRow(entry: entry, nowMs: nowMs, glyph: glyphs) }
+                if oneLine { OneLine(entry: entry, nowMs: nowMs, first: entry.id == entries.first?.id, glyph: glyphs, marked: marks.shows(entry.account.accountTag)) }
+                else { FullRow(entry: entry, nowMs: nowMs, glyph: glyphs, marked: marks.shows(entry.account.accountTag)) }
             }
             Rectangle().fill(p.line).frame(height: 1).padding(.top, 14).padding(.bottom, 6)
             Text("Pace map").font(.system(size: 10.5)).foregroundStyle(p.ink)
@@ -95,6 +97,7 @@ struct SummarySnapshotView: View {
         let entry: SummaryEntry
         let nowMs: Int64
         var glyph = false
+        var marked = true
         @Environment(\.palette) private var p
         @Environment(\.colorScheme) private var scheme
 
@@ -108,7 +111,7 @@ struct SummarySnapshotView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 6) {
                         HStack(spacing: 4) {
-                            if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                            if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true, marked: marked) }
                             ProviderMark(provider: entry.account.provider, size: 14)
                         }
                         Text(entry.account.label).font(.system(size: 13, weight: .semibold)).foregroundStyle(p.ink).lineLimit(1)
@@ -162,6 +165,7 @@ struct SummarySnapshotView: View {
         let nowMs: Int64
         var first = false
         var glyph = false
+        var marked = true
         @Environment(\.palette) private var p
         @Environment(\.colorScheme) private var scheme
 
@@ -172,7 +176,7 @@ struct SummarySnapshotView: View {
             let used = dead ? nil : entry.usedPct
             HStack(spacing: 6) {
                 HStack(spacing: 4) {
-                    if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true) }
+                    if glyph { TagRowGlyph(tag: entry.account.accountTag, compact: true, marked: marked) }
                     ProviderMark(provider: entry.account.provider, size: 14)
                 }
                 Text(entry.account.label).font(.system(size: 12, weight: .semibold)).foregroundStyle(p.ink).lineLimit(1)
@@ -245,11 +249,13 @@ struct SummarySnapshotSheet: View {
     /// the newest reading among the rows shown.
     static func make(model: AppModel, filter: String?, order: SummaryOrder, layers: MapLayers) -> SummarySnapshotView? {
         let (entries, resolved) = SummaryEntry.current(model: model, filter: filter, order: order)
+        let marks = Prefs.tagMarks
         guard entries.contains(where: { $0.usedPct != nil }) else { return nil }
         let asOf = entries.compactMap { model.snapshots[$0.account.key]?.fetchedAtMs }.max() ?? model.nowMs
         return SummarySnapshotView(entries: entries, title: resolved.snapshotHeader, orderName: order.header,
                                    asOfMs: asOf, nowMs: model.nowMs, layers: layers, sample: model.isSample,
-                                   glyphs: resolved.snapshotGlyphs)
+                                   glyphs: resolved.snapshotGlyphs && marks.column(rows: entries.map(\.account.accountTag)),
+                                   marks: marks)
     }
 
     private func render(_ card: SummarySnapshotView) -> UIImage? {
