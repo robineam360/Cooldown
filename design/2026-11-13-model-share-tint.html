@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Model share tint on the Weekly bar (Claude accounts) — 2026-11-13</title>
+<style>
+*{box-sizing:border-box}
+:root{--pg:#fff;--bg:#F5EFE8;--card:#FCF8F4;--ink:#26211E;--mute:#6E6660;--line:#E7E1DC;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--tick:rgba(38,33,30,.48);--green:#2E7D32;--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#F3EDE7;--warnbg:#FDECEC;--warn:#9A2B2B;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-ink:#000;--ios-txt:#3A3A3C;--ios-sub:#6C6C70;--ios-line:#D1D1D6;--ios-tick:#8E8E93;--ios-fill:#E5E5EA}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#0D0D0D;--card:#1A1A1A;--ink:#EDE8E4;--mute:#9B928B;--line:#2C2825;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--tick:rgba(237,232,228,.6);--green:#81C995;--anno:#FFD27A;--annobg:#3A2E10;--tbl:#232120;--warnbg:#3A1E1E;--warn:#F0A0A0;--ios-bg:#0E0E0E;--ios-card:#1C1C1E;--ios-ink:#F2F2F2;--ios-txt:#D1D1D6;--ios-sub:#98989F;--ios-line:#38383A;--ios-tick:#C7C7CC;--ios-fill:#2C2C2E}}
+.dark{--bg:#0D0D0D;--card:#1A1A1A;--ink:#EDE8E4;--mute:#9B928B;--line:#2C2825;--claude:#E59980;--gpt:#19C39A;--gem:#8AB4F8;--y:#FDD663;--o:#FFA726;--r:#FF5252;--tick:rgba(237,232,228,.6);--green:#81C995;--ios-bg:#0E0E0E;--ios-card:#1C1C1E;--ios-ink:#F2F2F2;--ios-txt:#D1D1D6;--ios-sub:#98989F;--ios-line:#38383A;--ios-tick:#C7C7CC;--ios-fill:#2C2C2E;--pg:#111}
+.light{--bg:#F5EFE8;--card:#FCF8F4;--ink:#26211E;--mute:#6E6660;--line:#E7E1DC;--claude:#D97757;--gpt:#10A37F;--gem:#4285F4;--y:#F9A825;--o:#F57C00;--r:#C62828;--tick:rgba(38,33,30,.48);--green:#2E7D32;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-ink:#000;--ios-txt:#3A3A3C;--ios-sub:#6C6C70;--ios-line:#D1D1D6;--ios-tick:#8E8E93;--ios-fill:#E5E5EA;--pg:#fff}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1500px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--line)}h3{font-size:15px;margin:22px 0 6px}
+p,li{max-width:900px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:900px;margin:8px 0}.rec b{color:inherit}
+.unv{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:10px 14px;max-width:900px;margin:8px 0}.unv b{color:inherit}
+small.u{color:var(--warn);font-weight:700;letter-spacing:.04em}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+code,kbd{font:12px ui-monospace,Menlo,monospace;background:var(--tbl);padding:0 4px;border-radius:3px}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+figure{margin:0 0 18px}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:6px;max-width:420px}figcaption b{color:var(--ink)}
+.ph{background:var(--bg);color:var(--ink);border:1px solid var(--line);overflow:hidden;position:relative;padding:16px 16px}
+.card{background:var(--card);border-radius:12px;padding:16px}
+.tile{display:flex;align-items:center;gap:14px}.tile.n{gap:12px}
+.ring{flex:none}.bars{flex:1;min-width:0}
+.lr{display:flex;align-items:baseline;height:20px;gap:8px;margin-bottom:5px}.lr .lb{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lr .fg{margin-left:auto;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}.lr .fg small{font-size:58%}
+.mr .lb{font-size:12.5px;color:var(--mute)}.mr .fg{font-size:14px}
+.cap{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--mute);margin-top:3px;flex-wrap:wrap}.cap .r{margin-left:auto;text-align:right}
+.ln{font-size:13.5px;margin-top:10px}.ln b{color:var(--green)}.ln.m{color:var(--mute);margin-top:2px}
+.gap8{height:8px}
+/* the bar */
+.bar{position:relative;border-radius:999px;background:color-mix(in srgb,var(--c) 25%,transparent);--c:var(--claude);--tk:var(--tick)}
+.bar.h10{height:10px}.bar.h7{height:7px}.bar.h8{height:8px}.bar.h6{height:6px}.bar.h13{height:13px}.bar.h5{height:5px}
+.bar .f{position:absolute;left:0;top:0;height:100%;border-radius:999px;background:var(--c)}
+.bar .t{position:absolute;left:0;top:0;height:100%;border-radius:999px 0 0 999px;background:color-mix(in srgb,var(--card) 45%,transparent)}
+.bar .t.tr{border-radius:0 999px 999px 0;left:auto;right:auto}
+.bar .rd{position:absolute;top:0;height:100%;background:var(--r);border-radius:0 999px 999px 0}
+.bar .k{position:absolute;top:-3px;width:3px;height:calc(100% + 6px);background:var(--tk);border-radius:1px}
+.bar .room{position:absolute;top:0;height:100%;background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--c) 60%,transparent) 0 4px,transparent 4px 8px)}
+.bar .cl{position:absolute;top:-5px;width:1px;height:calc(100% + 10px);background:var(--ink);opacity:.35}
+.bar .inner{position:absolute;left:0;bottom:-5px;height:3px;width:100%;border-radius:2px;background:color-mix(in srgb,var(--c) 20%,transparent)}.bar .inner i{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:color-mix(in srgb,var(--c) 70%,transparent)}
+.y{--c:var(--y)}.o{--c:var(--o)}.rr{--c:var(--r)}
+.sw{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 14px;max-width:900px}.sw div{font-size:11px;color:var(--mute)}.sw .bar{margin:4px 0 2px}
+.ios{background:var(--ios-bg);color:var(--ios-ink);border:1px solid var(--ios-line);padding:16px;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.ios .card{background:var(--ios-card);border-radius:18px;padding:16px}
+.ios .lr .lb{font-size:15px;color:var(--ios-ink)}.ios .lr .fg{font-size:18px}.ios .mr .lb{font-size:13.5px;color:var(--ios-txt)}.ios .mr .fg{font-size:15px}
+.ios .cap{font-size:12.5px;color:var(--ios-sub)}.ios .bar{--tk:var(--ios-tick)}.ios .ln{font-size:14.5px;color:var(--ios-txt)}
+.ios .cap{color:var(--ios-sub)}
+/* settings */
+.set .h{font-size:17px;font-weight:600;margin:0 0 12px;display:flex;gap:8px;align-items:center}
+.set .grp{font-size:12.5px;color:var(--claude);font-weight:600;margin:14px 0 6px;letter-spacing:.04em}
+.set .it{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}.set .it .d{font-size:12.5px;color:var(--mute);margin-top:2px;line-height:1.4}
+.set .it.sw2{display:flex;gap:12px;align-items:center}.set .it.sub{padding-left:20px}
+.tg{width:46px;height:26px;border-radius:13px;position:relative;flex:none;margin-left:auto}.tg::after{content:"";position:absolute;top:3px;width:20px;height:20px;border-radius:50%}
+.tg.on{background:var(--claude)}.tg.on::after{right:3px;background:var(--card)}
+.tg.off{background:transparent;border:2px solid var(--mute)}.tg.off::after{left:3px;top:1px;background:var(--mute)}
+.seg{display:flex;border:1px solid var(--mute);border-radius:20px;overflow:hidden;margin-top:9px;font-size:13px}.seg span{flex:1;text-align:center;padding:7px 0;border-left:1px solid var(--mute)}.seg span:first-child{border-left:0}.seg span.on{background:color-mix(in srgb,var(--claude) 25%,transparent);font-weight:600}.seg span.dim{opacity:.38}
+.new{font:9.5px ui-monospace,monospace;letter-spacing:.06em;color:var(--anno);border:1px solid var(--anno);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.ios .set .grp{color:var(--ios-sub);font-weight:400;text-transform:uppercase;font-size:12px}.ios .set .it{border-color:var(--ios-line);font-size:17px}.ios .set .it .d{font-size:13px;color:var(--ios-sub)}.ios .tg.on{background:#34C759}.ios .tg.on::after{background:#fff}
+/* widget */
+.wg{background:var(--card);border-radius:22px;padding:16px;color:var(--ink)}
+.wg .hd{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}.wg .big{font-size:28px;font-weight:700;line-height:1}
+.wg .mrow{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:6px}.wg .mrow .bar{flex:1}
+.nc{width:360px;padding:16px;border-radius:24px;background:#232529;color:#ECECEC;font-family:Roboto,Arial,sans-serif}.nc .lbl{font-size:13px;font-weight:600;margin-bottom:4px}.nc .fig{font-size:24px;font-weight:700;color:#E59980}.nc .hs{font-size:12px;color:#9E9E9E;margin-top:4px}
+.nc .bar{--c:#E59980;--tk:rgba(242,242,244,.6);--card:#232529}
+ol.q li{margin-bottom:8px}
+.cost{font-size:12.5px;margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);color:var(--mute);max-width:900px}.cost b{color:var(--ink)}
+.chips{display:flex;gap:8px;margin:12px 0 8px}.chips span{border:1px solid var(--mute);border-radius:9px;padding:4px 14px;font-size:14px}.chips span.on{background:color-mix(in srgb,var(--ink) 13%,transparent);border-color:transparent}
+.chart{height:96px;border-radius:8px;background:repeating-linear-gradient(0deg,transparent 0 23px,color-mix(in srgb,var(--ink) 6%,transparent) 23px 24px);position:relative}.chart::after{content:"trend chart, unchanged";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mute)}
+.x2 .lr .lb{font-size:27px}.x2 .lr{height:40px}.x2 .lr .fg{font-size:36px}.x2 .cap{font-size:24px}.x2 .ln{font-size:27px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mk-claude" viewBox="0 0 24 24"><g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M12 2.4v19.2M2.4 12h19.2M5.2 5.2l13.6 13.6M18.8 5.2L5.2 18.8" stroke-width="2.4"/><path d="M12 12l3.7-8.9M12 12l-3.7 8.9M12 12l8.9 3.7M12 12l-8.9-3.7" stroke-width="2"/></g></symbol>
+<symbol id="ring72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="31.3" fill="none" stroke="currentColor" stroke-width="9.4" opacity=".16"/><circle cx="36" cy="36" r="31.3" fill="none" stroke="var(--claude)" stroke-width="9.4" stroke-dasharray="66.9 196.7" transform="rotate(-90 36 36)"/><text x="36" y="42" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor">34<tspan font-size="10">%</tspan></text></symbol>
+<symbol id="ring56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24.4" fill="none" stroke="currentColor" stroke-width="7.3" opacity=".16"/><circle cx="28" cy="28" r="24.4" fill="none" stroke="var(--claude)" stroke-width="7.3" stroke-dasharray="52 153" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">34<tspan font-size="8">%</tspan></text></symbol>
+<symbol id="ring50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="21.8" fill="none" stroke="currentColor" stroke-width="6.5" opacity=".16"/><circle cx="25" cy="25" r="21.8" fill="none" stroke="var(--claude)" stroke-width="6.5" stroke-dasharray="46.5 137" transform="rotate(-90 25 25)"/><text x="25" y="29.5" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">34<tspan font-size="7">%</tspan></text></symbol>
+</defs></svg>
+
+<h1>Model share tint on the Weekly bar (Claude accounts)</h1>
+<p class="lead">Design for Robin, 2026-11-13 · wireframe for approval (CLAUDE.md §2). Robin's idea: draw the Fable cap <b>inside</b> the Weekly bar as a lighter leading segment, as Claude's own Settings › Usage does (<code>design/research/2026-11-13-fable-tint/claude-settings-usage.webp</code>: Weekly 88%, Fable 55% used, "Up to 50% of your weekly limit", lighter segment ≈ 27.5% of the bar), and drop the separate Fable row. It is an option on the existing "Show model limits" switch (CCRM-99 (Model Limits Toggle)). Drawn at 1 dp = 1 px (iOS 1 pt = 1 px), real numbers from <code>spec/mobile/surfaces/app.md</code> §2.4.4+§2.4.5 (the tile) and the iOS tile; panels marked <b>dark</b> or <b>light</b> are forced so both show. No tracker ID is allocated here; the brief is design only.</p>
+
+<div class="rec"><b>Recommendation in one paragraph.</b> The share is <b>not in the payload</b> (§1), so the tint draws <b>Fable % × an assumed 50%</b>, clamped to the Weekly fill, flagged UNVERIFIED until Robin captures his own usage payload. The lighter segment <b>leads</b>, in the Weekly fill's own hue at 55% opacity, no ceiling tick (§2). The user learns the number from the <b>left slot of the caption line</b> already under the bar: "Fable 55%", zero extra height (§3). The option is a <b>sub-switch "Inside the Weekly bar"</b> under "Show model limits", per account, default off, <b>Claude accounts only in v1</b> (§6, §9): ChatGPT's and Antigravity's caps are independent limits, not a share of the week, so they keep separate rows (§9). The tint goes on the app tile (Android, iOS, inner panes) and the iOS Bars, Strip and Overview widgets, which are the surfaces that draw a model row today; Summary, share card, lock screen and the notification are unchanged (§5). The Fable chart chip stays (§4).</div>
+
+<h2>1 · Where does the ceiling come from? <small class="u">UNVERIFIED</small></h2>
+<p>What each provider's usage payload says about a model cap (<code>spec/core/API-CONTRACT.md</code> §3, §10; BEHAVIOR-SPEC §1.1; fixtures <code>usage/model-caps-and-severity.json</code>, <code>captured/claude-usage-2026-09.json</code>, <code>chatgpt/model-caps.json</code>):</p>
+<table>
+<tr><th>Provider</th><th>The cap in the payload</th><th>Its share of the weekly limit</th><th>Is the cap's use nested in the Weekly figure?</th></tr>
+<tr><td>Claude</td><td><code>limits[]</code> entry, <code>kind: weekly_scoped</code>: <code>percent</code> (of the cap's own limit), <code>resets_at</code>, <code>severity</code>, <code>scope.model.display_name</code> ("Fable"). Legacy fallback <code>seven_day_opus</code> / <code>seven_day_sonnet</code>: the same block shape.</td><td><b>No field.</b> "Up to 50% of your weekly limit" is Claude's UI copy only. The captured payload has <code>seven_day_breakdown: null</code>, so a breakdown may exist on some plans, but nothing captured carries one.</td><td>Not stated. Claude's UI draws it nested, which is the only evidence.</td></tr>
+<tr><td>ChatGPT</td><td><code>additional_rate_limits[].limit_name</code> ("gpt-6-thinking") with its own <code>rate_limit</code> block; the 604800-s slot is the cap: <code>used_percent</code>, <code>reset_at</code>.</td><td><b>None.</b> An independent limit with its own percent and its own reset.</td><td>No evidence either way.</td></tr>
+<tr><td>Antigravity (Gemini)</td><td>bucket <code>gemini-argon-wtu-weekly</code> → "Argon": <code>remainingFraction</code>, <code>resetTime</code>. "Its own limit on Pro".</td><td><b>None.</b> Independent of <code>gemini-weekly</code>.</td><td>No.</td></tr>
+</table>
+<div class="unv"><b>UNVERIFIED:</b> the 50% share, and whether Fable's use is counted inside the Weekly 88%. Neither is in any captured payload. <b>Before the build:</b> Robin captures his own usage reply (the account the screenshot came from) and we grep it for a share or breakdown field. If one exists the tint reads it; if not, the 50% is a Claude constant in core with a fixture and this flag. Nothing here invents a field.</div>
+<h3>1.1 What the tint can honestly draw</h3>
+<table>
+<tr><th></th><th>Option</th><th>Draws</th><th>Honest?</th><th>Cost</th></tr>
+<tr><td><b>A · recommended</b></td><td>Assumed share</td><td>tint width = Fable % × 50%, clamped to the Weekly fill; the caption writes only the payload's "Fable 55%", never the derived 27%</td><td>Yes, as long as the page and the setting's caption say the start of the bar is Fable's <i>estimated</i> share; the only unverified number is drawn, not written</td><td>One constant; wrong silently if Anthropic changes the share per plan</td></tr>
+<tr><td>B</td><td>User-set share</td><td>as A, with a stepper "Fable's share of the week: 50%" under the switch, "as Claude's Settings › Usage shows it"</td><td>Yes, and the user owns the number</td><td>One more control for a number almost nobody will change; Robin asked for no new setting</td></tr>
+<tr><td>C</td><td>No share: inner track</td><td>a 3 dp track under the Weekly bar with the cap's own 0–100 (§9 O1)</td><td>Yes, needs nothing</td><td>Not Claude's picture; it is the model row with its label removed</td></tr>
+</table>
+
+<h2>2 · Tint anatomy</h2>
+<p><b>Leading, as Claude does.</b> The solid part ends at the fill edge where the pace tick, the red over-pace slice, the dashed room and the Usage end mark all live; a trailing tint would sit under the red slice and the end mark. Leading leaves every existing mark where it is. <b>Colour:</b> the tint is the fill's own hue at <b>55% opacity</b> over the card (drawn as the card colour at 45% over the fill's leading segment), so the bar carries three steps of one hue: track 25%, tint 55%, fill 100%. It is never a second colour, so the "no accent may equal a severity colour" rule (BEHAVIOR-SPEC §5) gains no new case. <b>Ceiling tick: none</b> (the share is unverified, and a fixed mark at 50% would mostly sit under the fill; the bar already carries the pace tick, the red slice and the end mark). <b>Edges:</b> the tint takes the fill's rounded left end and has a flat right edge. <b>Minimum:</b> a tint narrower than the bar's height is not drawn (a lighter dot at the start reads as a glitch); the caption still says "Fable 2%". <b>Severity:</b> at > 80 the fill turns yellow, > 90 orange, 100 red (BEHAVIOR-SPEC §5), and the tint follows, as the screenshot shows at 88%. The cap's own severity rides on the caption's number (§3), never on the tint.</p>
+<div class="row">
+<figure><div class="ph light" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--y)">88<small>%</small></span></div>
+<div class="bar h10 y"><i class="f" style="width:88%"></i><i class="t" style="width:27.5%"></i><i class="rd" style="left:57%;width:31%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">57% pace mark · 31 over</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--o)">95<small>%</small></span></div>
+<div class="bar h10 o"><i class="f" style="width:95%"></i><i class="t" style="width:40%"></i><i class="rd" style="left:57%;width:38%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable <span style="color:var(--y)">80%</span></span><span class="r">57% pace mark · 38 over</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--r)">100<small>%</small></span></div>
+<div class="bar h10 rr"><i class="f" style="width:100%"></i><i class="t" style="width:27.5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">Out until Sun 9:30 PM</span></div>
+</div></div><figcaption><b>Light, Claude Orange, the ladder.</b> 52% accent (the red slice is off because the fill is under the mark; the dashed room runs to the tick); 88% yellow with the red slice from the tick — the screenshot's case, tint 27.5%; 95% orange, Fable 80% → tint 40% and the caption's number in the cap's own yellow; 100% red, "Out until …" in place of the caption. The tick is neutral ink everywhere (foundations §1.5).</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--y)">88<small>%</small></span></div>
+<div class="bar h10 y"><i class="f" style="width:88%"></i><i class="t" style="width:27.5%"></i><i class="rd" style="left:57%;width:31%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">57% pace mark · 31 over</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--o)">95<small>%</small></span></div>
+<div class="bar h10 o"><i class="f" style="width:95%"></i><i class="t" style="width:40%"></i><i class="rd" style="left:57%;width:38%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable <span style="color:var(--y)">80%</span></span><span class="r">57% pace mark · 38 over</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--r)">100<small>%</small></span></div>
+<div class="bar h10 rr"><i class="f" style="width:100%"></i><i class="t" style="width:27.5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">Out until Sun 9:30 PM</span></div>
+</div></div><figcaption><b>Dark, the same four.</b> The tint on the dark card is the fill at 55% over <code>#1A1A1A</code>; the step from track (25%) to tint (55%) to fill is wider than on light, so it reads more easily here.</figcaption></figure>
+<figure><div class="ph light" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Trailing (not recommended)</span><span class="fg" style="color:var(--y)">88<small>%</small></span></div>
+<div class="bar h10 y"><i class="f" style="width:88%"></i><i class="t tr" style="left:60.5%;width:27.5%"></i><i class="rd" style="left:57%;width:31%;opacity:.55"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">57% pace mark · 31 over</span></div>
+<div class="gap8"></div>
+<div class="lr"><span class="lb">Ceiling tick (not recommended)</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u><u class="cl" style="left:50%"></u></div>
+<div class="cap"><span>Fable 30% · up to 50%</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>The two rejected shapes.</b> Trailing: the tint and the red over-pace slice fight for the same pixels (here the red is drawn over the tint and loses its meaning). Ceiling tick at 50%: a third mark 7 dp from the pace tick, for an unverified number; under a fill past 50% it is invisible anyway.</figcaption></figure>
+</div>
+<h3>2.1 Every accent, light and dark (tint at Fable 55% × 50%, Weekly 60%)</h3>
+<div class="row">
+<figure><div class="ph light" style="width:560px"><div class="card"><div class="sw">
+<div>Claude orange<div class="bar h8" style="--c:#D97757"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Blue<div class="bar h8" style="--c:#1A73E8"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Indigo<div class="bar h8" style="--c:#3949AB"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Cyan<div class="bar h8" style="--c:#00ACC1"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Teal<div class="bar h8" style="--c:#00897B"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Green<div class="bar h8" style="--c:#188038"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Amber<div class="bar h8" style="--c:#B07D00"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Deep orange<div class="bar h8" style="--c:#E64A19"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Red<div class="bar h8" style="--c:#D93025"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Pink<div class="bar h8" style="--c:#D81B60"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Purple<div class="bar h8" style="--c:#8E24AA"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Brown<div class="bar h8" style="--c:#6D4C41"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+</div></div></div><figcaption><b>Light.</b> Every accent keeps three readable steps; Amber (<code>#B07D00</code>) at 55% does not meet the yellow rung (<code>#F9A825</code>) because the tint is darker than the rung, not lighter. Red accent at 60% with a red tint looks like the ladder's red, as it does today without a tint: an existing trait, not a new one.</figcaption></figure>
+<figure><div class="ph dark" style="width:560px"><div class="card"><div class="sw">
+<div>Claude orange<div class="bar h8" style="--c:#E59980"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Blue<div class="bar h8" style="--c:#8AB4F8"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Indigo<div class="bar h8" style="--c:#9FA8DA"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Cyan<div class="bar h8" style="--c:#4DD0E1"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Teal<div class="bar h8" style="--c:#4DB6AC"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Green<div class="bar h8" style="--c:#81C995"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Amber<div class="bar h8" style="--c:#D9A84A"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Deep orange<div class="bar h8" style="--c:#FF8A65"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Red<div class="bar h8" style="--c:#F28B82"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Pink<div class="bar h8" style="--c:#F48FB1"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Purple<div class="bar h8" style="--c:#CE93D8"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+<div>Brown<div class="bar h8" style="--c:#BCAAA4"><i class="f" style="width:60%"></i><i class="t" style="width:27.5%"></i></div></div>
+</div></div></div><figcaption><b>Dark.</b> The pale dark-mode accents (Indigo, Brown) keep the step because the tint is a fixed 45% of the card mixed in, not a hue shift. <b>Dashed room vs tint:</b> the room is the accent at 60% <i>dashed, after</i> the fill edge; the tint is solid, <i>before</i> it. Position and dashing keep them apart even at the same brightness.</figcaption></figure>
+</div>
+
+<h2>3 · Legend and readout — how the user learns "Fable 55%"</h2>
+<table>
+<tr><th></th><th>Where</th><th>Reads</th><th>Height</th><th>For</th><th>Against</th></tr>
+<tr><td><b>L1 · recommended</b></td><td>the <b>left slot of the caption line</b> under the Weekly bar (the V1 caption is right-aligned today; the left is empty)</td><td>"Fable 55%" — 12 sp / 12.5 pt onSurfaceVariant / <code>sub</code>, the number in the cap's severity colour from > 80 (yellow, orange, red at 100), as the old row's figure was</td><td>0 extra dp; wraps to a second 12 sp line only when both halves do not fit (§7)</td><td>Says the payload's number and nothing derived; the pinned label "Weekly · All models" (CCRM-106 (7d Chip), "unchanged") stays; same size as the model row's caption it replaces, so the eye finds it where the row was</td><td>Two facts on one 12 sp line; on an iPhone SE it wraps at default size</td></tr>
+<tr><td>L2</td><td>the <b>label clause</b>: "Weekly · Fable 55%" instead of "Weekly · All models"</td><td>13.5 sp beside the figure</td><td>0</td><td>Closest to the bar; one line</td><td>Overwrites the "All models" label the chip decision pinned, and the bar <i>is</i> still all models; ellipsises under large text with no graceful drop</td></tr>
+<tr><td>L3</td><td>the <b>press readout</b> only</td><td>pressing the Weekly figure swaps its caption for "Fable 55% · ≈27% of Weekly" for 3 s; nothing at rest</td><td>0</td><td>Nothing visible changes at rest</td><td>Fails "how does the user learn": a lighter stripe with no number is a mystery; and the press already has a job (underlining the V1 caption)</td></tr>
+</table>
+<p><b>Spoken form (both):</b> the Weekly bar row's TalkBack / VoiceOver label gains "Fable 55 percent of its limit" after the Weekly reading; the derived "about 27 percent of the week" is <i>not</i> spoken (unverified). The long written form "Fable 55% · ≈27% of Weekly" is shown below for comparison and not recommended: the ≈ is doing the honesty work a drawing already does.</p>
+<div class="row">
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>L1, recommended.</b> Caption line: left "Fable 30%", right the V1 caption, both 12 sp.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · Fable 30%</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>L2.</b> The label carries it; "All models" is gone from the row.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30% · ≈15% of Weekly</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>L1, long form (not recommended).</b> Writes the derived number; wraps on every phone narrower than the Fold cover.</figcaption></figure>
+</div>
+
+<h2>4 · The trade-off, side by side — row on / combined on</h2>
+<p>What the combined mode gives up, drawn: the Fable row's own <b>pace line</b> (its V1 caption), its <b>reset</b> and <b>projection</b> (in the open tile, when the Fable chip is chosen), its <b>press readout</b>, and its <b>dashed room</b>. What it keeps: the Fable reading, the tint's width, and — recommended — the <b>Fable chart chip</b> ("7d · Fable · 5h"), so the open tile can still chart Fable with its pace and projection lines; the chip is not part of the row, and the one place Fable's pace survives costs nothing. Alternative: the chip goes with the row (then the chips read "7d · 5h" and the inner screen's second chart column goes too).</p>
+<div class="row">
+<figure><div class="ph dark" style="width:411px"><div class="card">
+<div class="tile"><svg class="ring" width="72" height="72"><use href="#ring72"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 5 under</span></div>
+<div class="gap8"></div>
+<div class="lr mr"><span class="lb">Fable</span><span class="fg">30<small>%</small></span></div>
+<div class="bar h7"><i class="f" style="width:30%"></i><i class="room" style="left:30%;width:27%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 27 under</span></div>
+</div></div>
+<div class="ln"><b>21h 50m ahead</b> · resets Sun 9:30 PM</div>
+<div class="ln m">◔ resets in 2h 20m · on track for ~69%</div>
+</div></div><figcaption><b>Android tile, Compact (closed), separate rows — today, 411 dp (Fold 7 cover), dark.</b> Ring 72, gap 14, bar column 261 dp; Weekly label 13.5 sp, figure 18 sp, bar 10 dp; Fable label 12.5 sp, figure 14 sp, bar 7 dp, each bar with its own dashed room and V1 caption. Card height ≈ 160 dp.</figcaption></figure>
+<figure><div class="ph dark" style="width:411px"><div class="card">
+<div class="tile"><svg class="ring" width="72" height="72"><use href="#ring72"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div>
+<div class="ln"><b>21h 50m ahead</b> · resets Sun 9:30 PM</div>
+<div class="ln m">◔ resets in 2h 20m · on track for ~69%</div>
+</div></div><figcaption><b>The same tile, combined (Inside the Weekly bar).</b> The Fable row (20 + 5 + 7 + 3 + 16 + 8 ≈ 59 dp) is gone; the tint is 15% of the bar (30% × 50%) and the caption's left slot says "Fable 30%". Lost: Fable's own pace caption ("57% pace mark · 27 under"), its room, its press readout. Card height ≈ 101 dp; the ring now centres on one bar, so the tile is as tall as the ring.</figcaption></figure>
+</div>
+<div class="row">
+<figure><div class="ios light" style="width:375px"><div class="card">
+<div class="tile"><svg class="ring" width="72" height="72"><use href="#ring72"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h8"><i class="f" style="width:52%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 5 under</span></div>
+<div class="gap8"></div>
+<div class="lr mr"><span class="lb">Fable</span><span class="fg">30<small>%</small></span></div>
+<div class="bar h6"><i class="f" style="width:30%"></i><i class="room" style="left:30%;width:27%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 27 under</span></div>
+</div></div>
+<div class="chips"><span class="on">7d</span><span>Fable</span><span>5h</span></div>
+<div class="chart"></div>
+<div class="ln"><b>21h 50m ahead</b> · until Sun</div>
+<div class="ln m">At this pace: hits 100% Sat 3:10 AM · 0.8%/h</div>
+</div></div><figcaption><b>iOS tile, open, separate rows — today, iPhone 17e (375 pt), light.</b> Ring 72, gap 14, bars 211 pt wide; lead label 15 pt, figure 18 pt, bar 8 pt; model row 13.5 / 15 pt, bar 6 pt; captions 12.5 pt; chips 7d · Fable · 5h.</figcaption></figure>
+<figure><div class="ios light" style="width:375px"><div class="card">
+<div class="tile"><svg class="ring" width="72" height="72"><use href="#ring72"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h8"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div>
+<div class="chips"><span class="on">7d</span><span>Fable</span><span>5h</span></div>
+<div class="chart"></div>
+<div class="ln"><b>21h 50m ahead</b> · until Sun</div>
+<div class="ln m">At this pace: hits 100% Sat 3:10 AM · 0.8%/h</div>
+</div></div><figcaption><b>The same, combined.</b> The chip row keeps "Fable" (recommended), so choosing it still charts Fable with its pace and projection lines under the chart; the row above is gone. On the inner panes (CCRM-116 (Inner Panes)) the Usage card loses the row the same way and the Pace card is unchanged.</figcaption></figure>
+</div>
+
+<h2>5 · States</h2>
+<p>All at 261 dp (the Fold 7 cover's bar column), dark. The rule for each is in the caption.</p>
+<div class="row">
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 30%</span><span class="r">57% pace mark · 5 under</span></div>
+<div class="gap8"></div>
+<div class="lr mr"><span class="lb">Opus 4.5</span><span class="fg">45<small>%</small></span></div>
+<div class="bar h7"><i class="f" style="width:45%"></i><i class="room" style="left:45%;width:12%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 12 under</span></div>
+</div></div><figcaption><b>S1 · Several caps (Fable + Opus 4.5) — recommended rule.</b> The tint is a one-cap drawing: the <b>first</b> cap (the one the widgets already pick, <code>Face.modelLimit</code>) goes inside, every further cap keeps its row. Alternative S1b: two stacked tints (40% and 65% opacity) — two unverified shares and two alpha steps nobody can tell apart; rejected. Alternative S1c: two or more caps → separate rows for all, the option inert — simpler, but it takes the tint away from exactly the accounts with the most rows.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>S2 · No cap on the account.</b> Exactly today's no-cap tile: label "Weekly", no tint, no left caption. The Model limits group is not shown in Settings while the reading has no cap (as CCRM-99), so the sub-switch is not shown either; a stored choice comes back with the cap.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">64<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:64%"></i><i class="t" style="width:50%"></i><i class="rd" style="left:57%;width:7%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable <span style="color:var(--r)">100%</span></span><span class="r">57% pace mark · 7 over</span></div>
+</div></div><figcaption><b>S3 · The cap at 100%.</b> The tint fills its whole share: 50% of the bar, flat edge. The caption's number goes red, as the old row's figure did; the tint keeps the Weekly fill's hue (the bar is at 64%, accent), so the red is on the number only. Fable is unusable now, and the spent cap has no "Out until …" line in this mode: that is the trade-off.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="color:var(--r)">100<small>%</small></span></div>
+<div class="bar h10 rr"><i class="f" style="width:100%"></i><i class="t" style="width:27.5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r" style="color:var(--r)">Out until Sun 9:30 PM</span></div>
+</div></div><figcaption><b>S4 · Weekly at 100% (spent week).</b> Red fill to the end, the tint red at 55% for 27.5%; the right caption slot reads "Out until Sun 9:30 PM" as today (CCRM-102 (Spent Week Gate)), the left keeps "Fable 55%". The ring greys and the gate note follows under the tile, unchanged.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">52<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:52%"></i><i class="room" style="left:52%;width:5%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 0%</span><span class="r">57% pace mark · 5 under</span></div>
+</div></div><figcaption><b>S5 · The cap at 0%.</b> No tint (0 × 50% = 0); "Fable 0%" stays in the caption so the user knows the cap exists and is untouched. A cap whose reset has passed reads 0% too (widgets rule). Fable 2% → a 2.6 dp tint on this bar, under the 10 dp minimum: not drawn, caption "Fable 2%".</figcaption></figure>
+<figure><div class="ph dark" style="width:300px"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">30<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:30%"></i><i class="t" style="width:30%"></i><i class="room" style="left:30%;width:27%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable <span style="color:var(--y)">90%</span></span><span class="r">57% pace mark · 27 under</span></div>
+</div></div><figcaption><b>S6 · Skew: the cap exceeds the weekly figure</b> (Fable 90% × 50% = 45% &gt; Weekly 30%). The tint is <b>clamped to the fill</b>, so the whole fill is light; the caption writes the true 90%. The bar is still honest about what the payload said; only the assumed share is wrong here, which is the signal that it is wrong. No "≈", no warning glyph: the clamp is the rule.</figcaption></figure>
+</div>
+<p class="cost"><b>Also unchanged by the mode:</b> no reading ("—" and a bare track, no tint, no left caption); the error / stale notice (bars at 45%, tint included); Left mode (the caption reads "Fable 70% left"; the tint still draws the spend, as the bar does); Vs pace (the Weekly figure is coloured by Vs pace; the Fable number keeps the cap's severity colour, no sign — the cap has no pace line in this mode).</p>
+
+<h2>6 · The setting</h2>
+<p><b>Where:</b> under the existing per-account "Show model limits" switch — Android in the account card's ⋮ → "Headline…" sheet, group MODEL LIMITS (app.md §6.2); iOS on the account page, section Model limits. <b>Form:</b> a <b>sub-switch "Inside the Weekly bar"</b>, indented 20 dp / pt, shown only while "Show model limits" is on <i>and</i> the account is a Claude account with a cap. <b>Default: off</b> (the rows stay; nothing changes until chosen, as CCRM-99 did). <b>Stored:</b> per account, <code>modelLimitsInline</code> (bool, default false) beside <code>showModelLimits</code>; BEHAVIOR-MOBILE §5 "Model limits" gains the line. Robin wrote "applies to every Claude account": read here as <i>available on</i> every Claude account; if he means one value for all of them, the sub-switch moves to Appearance as "Model limits inside the Weekly bar" (global, Claude accounts only) and the per-account switch keeps on / off — decision D6.</p>
+<p><b>Copy.</b> On: "Fable's estimated share of the week shades the start of the Weekly bar, and its own row goes. Fable's pace, projection and reset are not shown." Off: "Fable keeps its own row and bar under Weekly." Two caps: "Fable's estimated share … ; Opus 4.5 keeps its row." The word <i>estimated</i> is the honesty of §1 in the UI.</p>
+<div class="row">
+<figure><div class="ph dark" style="width:411px"><div class="set">
+<div class="h"><svg width="20" height="20" style="color:var(--claude)"><use href="#mk-claude"/></svg> Teams</div>
+<div class="grp">HEADLINE</div>
+<div class="it">What the notification, status-bar gauge, new widgets and the card order lead with<div class="seg"><span class="on">Weekly</span><span>5-hour</span><span>Auto</span></div><div class="d" style="margin-top:7px">Auto shows Weekly, and switches to 5h while 5h is past 90% or on course to run out before it resets.</div></div>
+<div class="grp">MODEL LIMITS</div>
+<div class="it sw2"><div>Show model limits<div class="d">Fable · 30% this week</div></div><span class="tg on"></span></div>
+<div class="it sw2 sub"><div>Inside the Weekly bar <span class="new">NEW</span><div class="d">Fable's estimated share of the week shades the start of the Weekly bar, and its own row goes. Fable's pace, projection and reset are not shown.</div></div><span class="tg on"></span></div>
+</div></div><figcaption><b>Android, the Headline sheet, dark, sub-switch on.</b> Row 15 sp, subtitle 12.5 sp; the sub-row indented 20 dp. Each change re-posts the surfaces, as the parent does.</figcaption></figure>
+<figure><div class="ios light" style="width:375px"><div class="set">
+<div class="h">‹ Teams</div>
+<div class="grp">Model limits</div>
+<div class="it sw2"><div>Show model limits<div class="d">Fable · 30% this week</div></div><span class="tg on"></span></div>
+<div class="it sw2 sub"><div>Inside the Weekly bar<div class="d">Fable keeps its own row and bar under Weekly.</div></div><span class="tg off"></span></div>
+<div class="grp">Usage</div><div class="it">Details…</div><div class="it" style="color:#D93025">Clear usage history…</div>
+</div></div><figcaption><b>iOS account page, light, sub-switch off (the default).</b> 17 pt rows, 13 pt footers, the system green switch.</figcaption></figure>
+<figure><div class="ph dark" style="width:411px"><div class="set">
+<div class="grp">MODEL LIMITS</div>
+<div class="it">Model limits<div class="seg"><span>Separate rows</span><span class="on">Inside Weekly</span><span>Off</span></div><div class="d" style="margin-top:7px">Fable's estimated share of the week shades the start of the Weekly bar …</div></div>
+<div class="grp" style="margin-top:22px">MODEL LIMITS · on a ChatGPT account</div>
+<div class="it">Model limits<div class="seg"><span class="on">Separate rows</span><span class="dim">Inside Weekly</span><span>Off</span></div><div class="d" style="margin-top:7px">gpt-6-thinking has its own limit, not a share of the week, so it can't be drawn inside the bar.</div></div>
+</div></div><figcaption><b>The alternative: a three-way choice replacing the switch (not recommended).</b> One control, every state visible — but the stored boolean becomes an enum (migration true → rows, false → off), and on ChatGPT and Gemini the middle segment must be greyed with an excuse. The sub-switch simply does not exist there.</figcaption></figure>
+</div>
+
+<h2>7 · Narrow width and large text</h2>
+<p>Bar column widths (card padding 16, page margins 16): Android 360 dp → ring 56, gap 12 → <b>228 dp</b>; 411 dp → 261; iPhone 17e 375 pt → <b>211 pt</b>; iPhone SE 320 pt → <b>170 pt</b>. The tint at 27.5% is 63 / 72 / 58 / 47 wide. Caption-line fit (estimates ± 6 dp, Roboto / SF at 12 sp / 12.5 pt): "Fable 55%" ≈ 56 dp / 58 pt; "57% pace mark · 5 under" ≈ 132 / 136; gap 8. <b>Rule:</b> both on one line when they fit, else the left slot takes a line of its own above the right one (a `FlowRow` / `ViewThatFits`, the pace-line fit idiom of §1.2). It wraps on a 360 dp phone from about 1.3× font scale, on the SE at the default size, on the 17e from about 1.1×. Even wrapped, the combined tile is shorter than the separate rows by ≈ 43 dp.</p>
+<div class="row">
+<figure><div class="ph dark" style="width:360px"><div class="card">
+<div class="tile n"><svg class="ring" width="56" height="56"><use href="#ring56"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg" style="font-size:14px">88<small>%</small></span></div>
+<div class="bar h10 y"><i class="f" style="width:88%"></i><i class="t" style="width:27.5%"></i><i class="rd" style="left:57%;width:31%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span><span class="r">57% pace mark · 31 over</span></div>
+</div></div>
+<div class="ln"><b style="color:var(--r)">1d 4h behind</b> · resets Sun 9:30 PM</div>
+<div class="ln m">◔ resets in 2h 20m · on track for ~69%</div>
+</div></div><figcaption><b>360 dp, default text, dark.</b> Ring 56, gap 12, bars 228 dp; figure 14 sp at this ring size. One caption line: 56 + 8 + 132 = 196 of 228.</figcaption></figure>
+<figure><div class="ph dark x2" style="width:360px"><div class="card">
+<div class="tile n"><svg class="ring" width="56" height="56"><use href="#ring56"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All mo…</span><span class="fg" style="font-size:28px">88<small>%</small></span></div>
+<div class="bar h10 y"><i class="f" style="width:88%"></i><i class="t" style="width:27.5%"></i><i class="rd" style="left:57%;width:31%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span></div><div class="cap"><span></span><span class="r">57% pace mark · 31 over</span></div>
+</div></div>
+<div class="ln"><b style="color:var(--r)">1d 4h behind</b> · Sun</div>
+<div class="ln m">◔ resets in 2h 20m</div>
+</div></div><figcaption><b>360 dp at 2.0× font scale (Android's largest), dark.</b> The label ellipsises as today; the caption wraps: "Fable 55%" on its own line, the V1 caption under it, right-aligned; the pace line drops to "· Sun" by its own rule. Nothing is cut.</figcaption></figure>
+<figure><div class="ios light" style="width:320px"><div class="card">
+<div class="tile"><svg class="ring" width="72" height="72"><use href="#ring72"/></svg><div class="bars">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">88<small>%</small></span></div>
+<div class="bar h8 y"><i class="f" style="width:88%"></i><i class="t" style="width:27.5%"></i><i class="rd" style="left:57%;width:31%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span>Fable 55%</span></div><div class="cap"><span></span><span class="r">57% pace mark · 31 over</span></div>
+</div></div>
+<div class="ln"><b style="color:var(--r)">1d 4h behind</b> · Sun</div>
+<div class="ln m">◔ resets in 2h 20m · on track for ~69%</div>
+</div></div><figcaption><b>iPhone SE, 320 pt, default size, light.</b> Bars 170 pt: the caption wraps at the default size (58 + 8 + 136 = 202 &gt; 170). Two 12.5 pt lines, still 40 pt shorter than the row it replaces.</figcaption></figure>
+</div>
+
+<h2>8 · Every surface that draws a Weekly bar</h2>
+<table>
+<tr><th>Surface</th><th>Draws a model row today?</th><th>Under "Inside the Weekly bar"</th><th>Why</th></tr>
+<tr><td>Android account tile (Compact, open, inner-screen two stacks)</td><td>yes, each shown cap</td><td><b>tint + caption; the first cap's row goes</b> (§4, S1)</td><td>the surface the option is for</td></tr>
+<tr><td>iOS account tile; inner panes' Usage card (CCRM-116)</td><td>yes</td><td><b>tint + caption; row goes</b></td><td>same</td></tr>
+<tr><td>iOS Bars widget (small)</td><td>yes: the first cap, `FaceModelRow` 5 pt bar</td><td><b>tint on the 8 pt Weekly bar; the model row goes</b>; "Fable 55%" in its 12 pt at the foot where the row was (one line, left)</td><td>the widget already honours Model limits per account; the row's 5 pt bar is the one that gains most from going</td></tr>
+<tr><td>iOS Strip widget (medium)</td><td>yes: the first cap, 6 pt bar</td><td><b>tint on the 8 pt bar; row goes</b>; "Fable 55%" 13 pt in the row's place</td><td>same</td></tr>
+<tr><td>iOS Overview tile (T1–T3, XL)</td><td>yes: the first cap under the Weekly bar (6 pt)</td><td><b>tint; row goes</b></td><td>same tile as the app's</td></tr>
+<tr><td>iOS Overview T4 Compact, T5 Mini; Number; Countdown</td><td>no</td><td>unchanged</td><td>no row to drop; a 5–7 pt bar at 20 pt wide cannot carry a tint</td></tr>
+<tr><td>Android widgets (Ring, Number, Countdown, Strip)</td><td>no</td><td>unchanged</td><td>none draws a model cap</td></tr>
+<tr><td>Summary rows (both), iPad sidebar (5 pt bar), Summary snapshot</td><td>no</td><td>unchanged, no tint</td><td>the Summary draws no model limits by rule (CCRM-99 §3); a tint there would be new information on a surface that was deliberately kept to the Weekly</td></tr>
+<tr><td>Share card (both)</td><td>no</td><td>unchanged</td><td>no row; keep the card the frozen design</td></tr>
+<tr><td>Lock screen (circular, rectangular, inline), Live Activity, Island</td><td>no</td><td>unchanged</td><td>mono tinted by iOS: three alpha steps of one colour on a lock screen is below legibility</td></tr>
+<tr><td>Android notification, single expanded panel</td><td>yes: the model-cap row while Show model limits is on</td><td><b>unchanged in v1</b> (Robin: "stays as it is")</td><td>the panel row is the only place Fable's reset survives, and its bars are bitmaps (`BarRenderer`) with their own tick halo; a tint there is a second drawing job. Argued for later, not now</td></tr>
+<tr><td>Duet, status-bar gauge, QS tile, reset pings</td><td>no</td><td>unchanged</td><td>no model caps ever (CCBG-26 (Panel Scaling))</td></tr>
+<tr><td>History, Plan Fit</td><td>n/a</td><td>unchanged</td><td>past weeks</td></tr>
+</table>
+<div class="row">
+<figure><div class="ph dark" style="width:190px;padding:16px"><div class="wg" style="width:158px;height:158px;padding:16px">
+<div class="hd"><svg width="15" height="15" style="color:var(--claude)"><use href="#mk-claude"/></svg> Teams · Weekly</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><svg width="50" height="50"><use href="#ring50"/></svg><div style="flex:1"><div class="big">52<span style="font-size:58%">%</span></div><div class="bar h8" style="margin-top:5px"><i class="f" style="width:52%"></i><u class="k" style="left:57%"></u></div></div></div>
+<div style="font-size:11.5px;margin-top:6px">21h 50m ahead · Sun</div>
+<div class="mrow"><span style="width:38px">Fable</span><div class="bar h5"><i class="f" style="width:30%"></i><u class="k" style="left:57%"></u></div><span style="width:28px;text-align:right">30%</span></div>
+</div></div><figcaption><b>iOS Bars widget, today (small 158 pt).</b> The model row at the foot: name 12 pt, 5 pt bar, figure.</figcaption></figure>
+<figure><div class="ph dark" style="width:190px;padding:16px"><div class="wg" style="width:158px;height:158px;padding:16px">
+<div class="hd"><svg width="15" height="15" style="color:var(--claude)"><use href="#mk-claude"/></svg> Teams · Weekly</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><svg width="50" height="50"><use href="#ring50"/></svg><div style="flex:1"><div class="big">52<span style="font-size:58%">%</span></div><div class="bar h8" style="margin-top:5px"><i class="f" style="width:52%"></i><i class="t" style="width:15%"></i><u class="k" style="left:57%"></u></div></div></div>
+<div style="font-size:11.5px;margin-top:6px">21h 50m ahead · Sun</div>
+<div class="mrow" style="color:var(--mute)">Fable 30%</div>
+</div></div><figcaption><b>The same, combined.</b> Tint on the 8 pt Weekly bar (a 5 pt tint on a 5 pt bar would have been unreadable, which is why the row's bar is the one to drop); "Fable 30%" 12 pt where the row was.</figcaption></figure>
+<figure><div class="ph dark" style="width:392px;padding:16px"><div class="nc">
+<div style="display:flex;align-items:center;gap:14px"><div style="flex:1"><div class="lbl">Teams · Weekly</div><div class="bar h13"><i class="f" style="width:52%"></i><u class="k" style="left:57%"></u></div><div class="hs">21h 50m ahead · resets Sun 9:30 PM</div></div><div class="fig">52%</div></div>
+<div style="margin-top:14px"><div style="display:flex;font-size:13.5px"><span>Fable</span><span style="margin-left:auto;font-weight:700;font-size:16px">30%</span></div><div class="bar h10" style="margin-top:7px"><i class="f" style="width:30%"></i><u class="k" style="left:57%"></u></div></div>
+</div></div><figcaption><b>Android notification, expanded single, unchanged.</b> The header's 13 dp bar is a bitmap; the model row keeps its place in v1 whatever the app setting says.</figcaption></figure>
+</div>
+
+<h2>9 · Other accounts: can a combined bar honestly show their caps?</h2>
+<p><b>Answer: not as a nested tint.</b> ChatGPT's "gpt-6-thinking" and Antigravity's "Argon" report their own percent of their own limit with their own reset (§1); nothing says what fraction of the Weekly budget that use is, or that it is inside the Weekly figure at all. A leading tint <i>means</i> "this much of the week was this model"; for these caps that is a claim the data cannot back. What can be drawn instead:</p>
+<table>
+<tr><th></th><th>Option</th><th>Drawing</th><th>Honest?</th><th>Cost</th></tr>
+<tr><td>O1</td><td>Inner track</td><td>a 3 dp track 5 dp under the Weekly bar, full width, the cap's own 0–100 in the accent at 70% on a 20% track; no tick, no label; "Argon 45%" in the caption slot</td><td>yes: a second gauge, not a share</td><td>it is the model row with the label row cut (saves ≈ 25 dp of 59); two bars touching read as one bar with a shadow</td></tr>
+<tr><td>O2</td><td>Split bar</td><td>the Weekly bar's upper 6 dp = Weekly, lower 4 dp = the cap, one capsule</td><td>yes, but it hides that they are two scales</td><td>the pace tick, red slice, end mark and dashed room all belong to the upper half only; a 4 dp fill under a 6 dp one with one rounded outline is ambiguous</td></tr>
+<tr><td><b>O3 · recommended</b></td><td>Combined only where the cap is a known share; separate rows elsewhere</td><td>Claude: the tint. ChatGPT, Gemini: today's rows; the sub-switch does not appear on their accounts</td><td>yes</td><td>two drawings by provider; the setting's copy must say why ("has its own limit, not a share of the week")</td></tr>
+<tr><td>O4</td><td>Marker</td><td>a dot on the Weekly bar at the cap's percent</td><td><b>no</b>: 45% of Argon's limit placed at 45% of the week is a different number in the same place</td><td>—</td></tr>
+</table>
+<div class="row">
+<figure><div class="ph dark" style="width:300px;--claude:var(--gpt)"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">33<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:33%"></i><i class="room" style="left:33%;width:24%"></i><u class="k" style="left:57%"></u><span class="inner"><i style="width:55%"></i></span></div>
+<div class="cap" style="margin-top:8px"><span>gpt-6-thinking 55%</span><span class="r">57% pace mark · 24 under</span></div>
+</div></div><figcaption><b>O1 on a ChatGPT account (green), dark.</b> The inner track under the Weekly bar: the cap's own 55% on its own scale. Honest, and not much shorter than the row.</figcaption></figure>
+<figure><div class="ph dark" style="width:300px;--claude:var(--gem)"><div class="card">
+<div class="lr"><span class="lb">Weekly · All models</span><span class="fg">41<small>%</small></span></div>
+<div class="bar h10"><i class="f" style="width:41%"></i><i class="room" style="left:41%;width:16%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 16 under</span></div>
+<div class="gap8"></div>
+<div class="lr mr"><span class="lb">Argon</span><span class="fg">45<small>%</small></span></div>
+<div class="bar h7"><i class="f" style="width:45%"></i><i class="room" style="left:45%;width:12%"></i><u class="k" style="left:57%"></u></div>
+<div class="cap"><span></span><span class="r">57% pace mark · 12 under</span></div>
+</div></div><figcaption><b>O3 on a Gemini account (blue), dark: today's rows, unchanged.</b> The sub-switch is absent on this account; the Model limits group keeps its one switch.</figcaption></figure>
+</div>
+<div class="rec"><b>Claude-only for v1: yes.</b> The tint encodes a share, and only Claude's UI claims one. O1 can be offered later as a separate, provider-neutral "compact model row" if the row's height turns out to matter on ChatGPT and Gemini accounts; it is not this feature.</div>
+
+<h2>10 · Decisions for Robin</h2>
+<ol class="q">
+<li><b>D1 · The share.</b> Capture your own usage payload before the build and check for a share or breakdown field. If none: accept the 50% as a Claude constant in core, flagged as an assumption with a fixture (option A), or choose B (a user-set share) or C (no share, inner track).</li>
+<li><b>D2 · Anatomy.</b> Leading tint, the fill's hue at 55%, flat right edge, not drawn under the bar's height, clamped to the fill on skew, no ceiling tick. Yes / change.</li>
+<li><b>D3 · Legend.</b> L1: "Fable 55%" in the caption line's left slot, the number in the cap's severity colour, no derived "≈27%" written anywhere; spoken form says the cap's percent only. Or L2 (the label) / L3 (press only).</li>
+<li><b>D4 · Several caps.</b> S1: the first cap goes inside, the rest keep rows. Or S1c: two or more caps keep every row.</li>
+<li><b>D5 · The Fable chart chip stays</b> under the open tile (Fable's pace and projection survive there), or goes with the row.</li>
+<li><b>D6 · The setting.</b> A per-account sub-switch "Inside the Weekly bar" under "Show model limits", default off, Claude accounts with a cap only; copy as §6. Or one global value in Appearance for all Claude accounts; or the three-way choice.</li>
+<li><b>D7 · Surfaces.</b> Tint on the app tile (both platforms, inner panes) and the iOS Bars, Strip and Overview widgets; everything else unchanged, the notification included. Yes / add the notification now.</li>
+<li><b>D8 · Other accounts.</b> O3: Claude-only in v1; ChatGPT and Gemini keep rows. Or O1 everywhere as a second mode.</li>
+</ol>
+<p class="lead"><b>Shared change:</b> this touches the Weekly bar every client draws. The Desktop session (CooldownDesktop, Mac and Windows) is shown this page once it is frozen, before either desktop client builds it, and hears the D1 answer first since the share constant would be core.</p>
+</body>
+</html>
