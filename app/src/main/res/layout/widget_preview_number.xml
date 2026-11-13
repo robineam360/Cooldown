@@ -17,7 +17,7 @@
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+        android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="4dp" android:paddingBottom="4dp">
         <!-- The ring is as tall as the box leaves (rev D: Ø60 at 4×1), and square. -->
         <FrameLayout android:layout_width="wrap_content" android:layout_height="match_parent"
             android:layout_marginEnd="12dp">
@@ -36,7 +36,7 @@
                 <TextView style="@style/WFace" android:layout_width="0dp" android:layout_weight="1"
                     android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:ellipsize="end"
                     android:text="Pro" android:textSize="13sp" android:textColor="#FFEDE8E4" />
-                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="20%" android:textSize="32sp" android:textColor="#FFE59980" android:textStyle="bold" android:fontFeatureSettings="tnum,lnum" android:layout_marginStart="10dp" />
+                <TextView style="@style/WFace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:includeFontPadding="false" android:singleLine="true" android:text="20%" android:textSize="28sp" android:textColor="#FFE59980" android:textStyle="bold" android:fontFeatureSettings="tnum,lnum" android:layout_marginStart="10dp" />
             </LinearLayout>
             <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_marginTop="2dp" android:src="@drawable/widget_preview_bar_weekly"
