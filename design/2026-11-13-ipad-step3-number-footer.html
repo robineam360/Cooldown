@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Number Footer Cut</title>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--ink:#1c1c1e;--sub:#6e6e73;--line:#d8d8de;--gpt:#10a37f;--red:#d93025;--green:#34a853;--note:#fff8e1;--noteb:#e6d9a0;--pick:#e8f5e9;--pickb:#9fd4a6;--w:#2a2a2e;--wink:#f2f2f7;--wsub:#a0a0a8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--ink:#f2f2f7;--sub:#98989f;--line:#38383a;--note:#2b2614;--noteb:#5a4d1f;--pick:#132a17;--pickb:#2f6b37}}
+:root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--ink:#f2f2f7;--sub:#98989f;--line:#38383a;--note:#2b2614;--noteb:#5a4d1f;--pick:#132a17;--pickb:#2f6b37}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:28px;margin:0 0 4px}
+h2{font-size:21px;margin:36px 0 6px;padding-top:12px;border-top:1px solid var(--line)}
+.lede{color:var(--sub);max-width:760px}
+.q{background:var(--note);border:1px solid var(--noteb);border-radius:12px;padding:10px 14px;margin:12px 0}
+.rec{background:var(--pick);border:1px solid var(--pickb);border-radius:12px;padding:10px 14px;margin:12px 0}
+.grid{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.fig{display:flex;flex-direction:column;gap:6px}
+.cap{font-size:12.5px;color:var(--sub);max-width:230px}
+.bad{color:var(--red);font-weight:600}.good{color:var(--green);font-weight:600}
+/* the small widget: 158 x 158 pt, 16 pt padding, 1 pt = 1 px */
+.wd{width:158px;height:158px;border-radius:22px;background:var(--w);color:var(--wink);padding:16px;display:flex;flex-direction:column;font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
+.lab{font-size:14px;font-weight:600;display:flex;gap:5px;align-items:center;white-space:nowrap}
+.mk{width:14px;height:14px;border-radius:50%;background:var(--gpt);flex:none}
+.ring{margin:6px auto 0;width:84px;height:84px;border-radius:50%;border:9px solid #1f5c4c;border-top-color:var(--gpt);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;color:#6fd08c}
+.ft{margin-top:auto;font-size:12.5px;color:var(--wsub);white-space:nowrap;overflow:hidden}
+.ft.cut{text-overflow:ellipsis}
+table{border-collapse:collapse;margin:8px 0;font-size:13.5px}
+td,th{border:1px solid var(--line);padding:5px 9px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+code{font:12.5px ui-monospace,Menlo,monospace}
+</style>
+</head>
+<body>
+<main>
+<h1>Number Footer Cut</h1>
+<p class="lede">RUNBOOK Step 3, iPad half, 2026-11-13. On Robin's iPad Home Screen the small Number widget (5h window) reads
+"Resets in 4h 25m · 10:41…": the footer is cut mid-clock. The footer is one line with no drop order
+(<code>heroLine</code>, <code>ios/Shared/FaceViews.swift</code>); the same class as CCBG-99 (Live Activity 5h Cut), whose order Robin approved
+2026-11-12. Small widget 158 pt, 16 pt padding: 126 pt for the line, 12.5 pt text, scale floor 0.8. All three clock widths are drawn
+below at that real width (the iPad shows "10:41"; "12:30 PM"-style clocks are wider still).</p>
+
+<h2>1 · Today: the line is cut</h2>
+<div class="grid">
+  <div class="fig"><div class="wd"><div class="lab"><span class="mk"></span>ChatGPT</div><div class="ring">8%</div><div class="ft cut">Resets in 4h 25m · 10:41 PM</div></div>
+  <div class="cap"><span class="bad">Cut mid-clock</span> ("· 10:41…"), as on the iPad. Clock-first has the same cut: "Resets at 10:41 PM · in 4…".</div></div>
+</div>
+
+<h2>2 · Option A — the lead form alone (recommended)</h2>
+<div class="rec">The same rule as CCBG-99: the whole line while it fits; then the part that leads, alone; the second part never half-printed.
+Normal: "Resets in 4h 25m · 10:41 PM" → "Resets in 4h 25m". Clock first: "Resets at 10:41 PM · in 4h 25m" → "Resets at 10:41 PM". Built with
+<code>FitLine</code> (whole → lead → lead at 0.8 scale as the floor), so a wider widget (iPad medium widths, large text) keeps the whole line.</div>
+<div class="grid">
+  <div class="fig"><div class="wd"><div class="lab"><span class="mk"></span>ChatGPT</div><div class="ring">8%</div><div class="ft">Resets in 4h 25m</div></div><div class="cap">Reset time on (default): countdown alone.</div></div>
+  <div class="fig"><div class="wd"><div class="lab"><span class="mk"></span>ChatGPT</div><div class="ring">8%</div><div class="ft">Resets at 10:41 PM</div></div><div class="cap">Clock time first: the clock alone.</div></div>
+</div>
+
+<h2>3 · Option B — shorter words, both parts kept</h2>
+<div class="grid">
+  <div class="fig"><div class="wd"><div class="lab"><span class="mk"></span>ChatGPT</div><div class="ring">8%</div><div class="ft">in 4h 25m · 10:41 PM</div></div><div class="cap">Drops "Resets": about 119 pt, fits at 12.5 pt for "10:41 PM"; a wider clock ("12:30 AM", "Fri 12:30 AM") still cuts or scales to 0.8.</div></div>
+</div>
+<div class="q"><b>Question for Robin.</b> A (lead form alone, matches CCBG-99) or B (keep both parts, drop the word "Resets")? Medium and large widgets are not
+affected (they have the width). Weekly Number (the other face) and Countdown are unchanged.</div>
+</main>
+</body>
+</html>
