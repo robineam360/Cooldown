@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="release/screenshots/hero.png" alt="Cooldown — your Claude and ChatGPT usage limits, always in your Android shade" width="100%">
+  <img src="release/screenshots/hero.png" alt="Cooldown — your Claude, ChatGPT and Gemini usage limits, always in your Android shade" width="100%">
 </p>
 
 # Cooldown
 
-**Cooldown** — an Android app that shows how much of your **Claude** and **ChatGPT** usage
-limits you've burned through, and when your 5-hour and weekly windows reset. The main screen
+**Cooldown** — an Android app that shows how much of your **Claude**, **ChatGPT** and
+**Gemini** usage limits you've burned through, and when your weekly and 5-hour windows reset. The main screen
 folds to one line per card in **Compact** density or opens every chart in **Comfortable** — your
 call — and its home is an **always-on notification** that carries **two accounts side by side**,
 with a **ring in the status bar** that fills as your window does, and a **ping the moment a
@@ -15,17 +15,18 @@ especially in **Claude chat, Cowork and the ChatGPT apps**, where (unlike Claude
 no built-in way to see how close you are.
 
 Every account is a tab, a half of the notification, and its own pair of reset pings — mix
-Claude and ChatGPT accounts freely, as many as you use. **Gemini (Google Antigravity) is listed
-but greyed out**: its sign-in can't currently be completed on a phone, and the app says so
-rather than pretending otherwise.
+Claude, ChatGPT and Gemini accounts freely, as many as you use. **Gemini accounts** (Google
+Antigravity) sign in on Google's own page in your browser: you paste the code it shows.
 
 **Claude accounts need a paid plan — Pro, Max or Team.** A Free account can sign in, but
 Anthropic's usage endpoint refuses it (HTTP 403), so the app says so on the account card instead of
 showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …) alongside.
 
-**📱 Android only (for now)** — an iOS version is on the roadmap. iPhone folks, watch this space.
+**📱 iPhone and iPad** — Cooldown 2.0 is also a public beta on TestFlight:
+`<TestFlight public link>`. It reads the same three services. There is no iPhone file to download
+here; TestFlight installs it.
 
-📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v1.9.pdf) — the full
+📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v2.0.pdf) — the full
 install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
 a 2-page overview.
 
@@ -60,14 +61,52 @@ a 2-page overview.
 > internal endpoint reached with a consumer token by a tool OpenAI has not sanctioned, so the
 > same caveat applies — **OpenAI could revoke the token or flag the account**.
 >
-> What lowers the practical risk on both: the app is **read-only** (it never sends prompts or
+> **Gemini.** This carries the highest risk of the three. Cooldown signs in with the **public
+> OAuth client of Google's Antigravity command-line tool** on Google's own page (you paste the
+> code it shows), and reads an **undocumented** Google endpoint
+> (`daily-cloudcode-pa.googleapis.com`). It identifies as `Cooldown/<version>` followed by the
+> Antigravity CLI's own identifier, because Google returns Gemini usage only to that
+> identifier, so to Google the app presents as that tool. Google has not sanctioned this, and
+> could change or close the endpoint, **revoke the token or flag the account**, at any time.
+>
+> What lowers the practical risk on all three: the app is **read-only** (it never sends prompts or
 > spends quota — and it deliberately never calls OpenAI's one endpoint that *would* spend a
 > credit), signs in **once per install** (no repeated logins, no CLI subprocess), polls on a
 > slow interval, and is shared privately, not on any store. Use it at your own discretion.
 
 ## What it does
 
-- **Home-screen widgets are back** 🆕 — four faces in the picker under **Cooldown**: **Ring**
+- **Gemini accounts** 🆕 — **+ Add account → Gemini**, sign in on Google's own page in your
+  browser, paste the code it shows. A Gemini account gets the same cards, charts, notification,
+  widgets and pings, with its plan on the card; if Google changes what it returns, the app says
+  so and keeps your last reading (CCRM-55 (Antigravity Account))
+- **Weekly first, and your pace** 🆕 — the weekly window heads every card, the notification and
+  the widgets, with the 5-hour window as a small ring beside it; each account's **Headline**
+  (Weekly, 5-hour or Auto) can put 5h first again. One pace line under every window says how far
+  ahead or behind you are and when it resets; **Usage display → Vs pace** shows the big figure
+  as your distance from the pace mark (CCRM-96 (Weekly First), CCRM-97 (Pace Number), CCRM-100
+  (Vs Pace Display), CCRM-102 (Spent Week Gate), CCRM-104 (Pace Line Parity), CCRM-108 (Reset
+  Named))
+- **The Summary** 🆕 — with two or more accounts the app opens on **All**: every account's week
+  on one page, ranked by the most room for the time left, with a sort menu. The **Pace map**
+  plots each account against its own week, with **Figures**, **Trails** and **Projection**
+  layers. Tag accounts **Personal** or **Work** and filter by either. **Share snapshot** sends
+  the Summary as one image; names are shown, email addresses never are (CCRM-98 (Summary Tab),
+  CCRM-109 (Quiet Accounts), CCRM-110 (Account Tags), CCRM-111 (Map Layers), CCRM-112 (Summary
+  Snapshot))
+- **Charts and notification, reshaped** 🆕 — a column per day on every 7-day chart, one per
+  hour on 5-hour charts, a **7d** chip, and a **Show model limits** switch. The always-on
+  notification's big figure and bar are the weekly window, with the 5-hour window as a ring on
+  the left; two accounts give two rings and two stacked weekly bars, and the widgets follow the
+  same shapes (CCRM-103 (Hybrid Notification), CCRM-105 (Duet Stack), CCRM-106 (7d Chip),
+  CCRM-107 (Day Grid), CCRM-99 (Model Limits Toggle))
+- **Try with sample data** 🆕 — three made-up accounts, one per service, on every tab; nothing
+  is fetched, sent or saved (CCRM-113 (Sample Port)). **A new launcher icon** about the weekly
+  limit (CCRM-101 (Icon v3))
+- **iPhone and iPad** 🆕 — a public beta on TestFlight (`<TestFlight public link>`) with the
+  Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control
+  Center control (CCRM-94 (iOS App))
+- **Home-screen widgets are back** — four faces in the picker under **Cooldown**: **Ring**
   (one account as a gauge), **Number** (the big percentage), **Countdown** (when the window
   comes back, ticking live) and **All accounts** (every account as its own ring, side by side —
   never a sum). Adding one opens its settings — account, window, background — and each one
@@ -75,59 +114,58 @@ a 2-page overview.
   renderer as the status bar (CCRM-78 (Widgets Reborn), CCRM-79 (Ring Face), CCRM-80 (Number
   Face), CCRM-81 (Countdown Face), CCRM-82 (Accounts Strip), CCRM-83 (Ring Renderer), CCBG-44
   (Widget Fill)). Nothing placed before v1.6 comes back on its own
-- **Accounts show their email** 🆕 — under the name in Settings → Accounts and first in
+- **Accounts show their email** — under the name in Settings → Accounts and first in
   ⋮ → Details; Rename suggests a name from it (CCBG-34 (Account Display Name)).
   **Clear usage history…** starts an account's trend over without removing it (CCRM-14 (Clear
   History))
-- **Share snapshot** 🆕 — a square image of the ring, the bars with pace and resets, and the
+- **Share snapshot** — a square image of the ring, the bars with pace and resets, and the
   5h trend, from the main screen's ⋮ (CCRM-24 (Share Card))
 - **The main screen, as open or as compact as you want** — a **Density** switch in
   Settings → Appearance folds every card to a title, a bar and one line (tap to open its chart
   in place) or keeps today's fully-open **Comfortable** layout; a ⋮ → **Main screen layout**
   sheet reorders, hides or tucks cards behind "More", per account, with one always left in view
-- **Chart height and orientation, your call** 🆕 — Small, Medium (the new default) or Large
+- **Chart height and orientation, your call** — Small, Medium (the new default) or Large
   chart height, and a **Time down** option that turns the chart on its side so its curve lines
   up directly under the bar's pace mark
-- **The 7-day chart reads a model cap, not just the pool** 🆕 — chips above the chart switch it
+- **The 7-day chart reads a model cap, not just the pool** — chips above the chart switch it
   between **All** and a per-model cap like Fable, so a Max or Team account capped on one model
   but fine on the pool can finally see why
-- **A shorter Accounts tab, and drag to reorder** 🆕 — every account card is now a compact
+- **A shorter Accounts tab, and drag to reorder** — every account card is now a compact
   status line, a plan chip and three actions (Re-sign in / Clear / Dashboard); a new **Reorder**
   sheet lets you drag accounts into the order you want
-- **Plan Fit, on History** 🆕 — the 7-day pane on the History screen reads your last several
+- **Plan Fit, on History** — the 7-day pane on the History screen reads your last several
   closed weeks and says plainly whether your current plan fits how you use it — no dollar
   estimate, just the pattern
-- **The notification stays alive** 🆕 — the always-on notification now runs as a real
+- **The notification stays alive** — the always-on notification now runs as a real
   foreground service, so it keeps its place in the shade and keeps refreshing instead of
   sinking and going stale when the app is backgrounded
-- **Two accounts on one always-on notification** 🆕 — a silent notification that carries a
+- **Two accounts on one always-on notification** — a silent notification that carries a
   **First** and a **Second** account side by side: each half has its provider's mark, the
   account's name, a bar with the even-pace tick and a big percentage in that half's warning
   colour. Expand it for both headers with their reset lines, the **Weekly** rows, per-model
   caps and a one-tap Refresh. Each half is its own tap target — Cooldown on that account's
   tab, or the service's own app. One account, or Second set to None, gives the single layout
-- **A status-bar ring that says whose it is** 🆕 — a tiny ring fills with the shown account's
+- **A status-bar ring that says whose it is** — a tiny ring fills with the shown account's
   5-hour window, drawn in that account's own colour (Claude terracotta, ChatGPT green) until it
   climbs to yellow, orange and red; at 100% it goes solid red with an ×. Choose **First**,
   **Second** or **Whichever is higher**
-- **Reset pings, per account** 🆕 — for each account a **5h reset** and a **Weekly reset**
+- **Reset pings, per account** — for each account a **5h reset** and a **Weekly reset**
   ping, each Off / If busy / Always. They post as real notifications even with the always-on
   one running — and fire for an account left idle across the reset, not just one that kept
   chatting
 - **Claude *and* ChatGPT accounts, side by side** — pick the service when you add an account;
   each one carries its provider's mark on every surface and its brand colour as its default
-  accent, which you can override per account. Gemini (Antigravity) is greyed out until its
-  sign-in works on a phone
-- **Two rooms** 🆕 — a Claude tab sits on a warm ivory surface with its headline figures in a
+  accent, which you can override per account. Gemini (Antigravity) joined in v2.0
+- **Two rooms** — a Claude tab sits on a warm ivory surface with its headline figures in a
   serif; a ChatGPT tab is cool and neutral in the default sans. The cards themselves are
   identical, and the top bar leads with both marks
-- **One way to sign in, on the phone** 🆕 — a Claude account signs in through its browser
+- **One way to sign in, on the phone** — a Claude account signs in through its browser
   sign-in page and a ChatGPT account with a **short code** you type at `auth.openai.com` on any
   device. No computer, no copied token — the paste / QR backup method is gone
-- **A plan tag on every card** 🆕 — **Free, Pro, Max, Team Standard** or **Team Premium** beside
+- **A plan tag on every card** — **Free, Pro, Max, Team Standard** or **Team Premium** beside
   a Claude account, **Plus / Pro** beside ChatGPT. A Free Claude account is told plainly that
   Claude reports no usage for it, in the app and as a strip on the notification
-- **Settings in four swipeable tabs** 🆕 — **Accounts · Alerts · Appearance · More**. 24 rows
+- **Settings in four swipeable tabs** — **Accounts · Alerts · Appearance · More**. 24 rows
   instead of 43; one "Show red past the pace mark" switch covers the app and the
   notification; Usage credits appears only for accounts that have a credit budget
 - **Pace chart + burn-rate projection** — every reading plotted with threshold guides and a
@@ -148,7 +186,7 @@ a 2-page overview.
 - **15 theme colours** including Material You dynamic colour and **Per provider** (the
   default — each account wears its own service's colour), full light/dark support; usage bars
   shade yellow, orange, then a clear warning-red as you approach 100%
-- **The Pulse icon** 🆕 — an ECG beat on charcoal: Claude terracotta in, ChatGPT green out,
+- **The Pulse icon** — an ECG beat on charcoal: Claude terracotta in, ChatGPT green out,
   the red spike crossing a dashed even-pace ceiling. No trademarks on the tile
 
 **Gone in v1.6:** the Quick Settings tile, the standalone threshold and pace alerts, and the
@@ -161,9 +199,9 @@ ones fresh from the widget picker.
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-home.jpg" width="300" alt="A home screen mixing several Cooldown widget faces and sizes"><br><sub><b>Home-screen widgets</b> 🆕 — back in v1.8, mixing faces and sizes on one page</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-strip.jpg" width="300" alt="The All accounts widget face, every account as its own ring"><br><sub><b>All accounts</b> 🆕 — every account as its own ring, side by side</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-countdown.jpg" width="300" alt="The Countdown widget face at several sizes"><br><sub><b>Countdown</b> 🆕 — when the window comes back, at every size</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-home.jpg" width="300" alt="A home screen mixing several Cooldown widget faces and sizes"><br><sub><b>Home-screen widgets</b> — back in v1.8, mixing faces and sizes on one page</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-strip.jpg" width="300" alt="The All accounts widget face, every account as its own ring"><br><sub><b>All accounts</b> — every account as its own ring, side by side</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-countdown.jpg" width="300" alt="The Countdown widget face at several sizes"><br><sub><b>Countdown</b> — when the window comes back, at every size</sub></td>
   </tr>
   <tr>
     <td align="center" width="33%"><img src="release/docs/src/shots/v18-notif-duet-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>The always-on notification</b> — unchanged in v1.8, now backed by a foreground service so it doesn't go stale</sub></td>
@@ -172,27 +210,28 @@ ones fresh from the widget picker.
   </tr>
   <tr>
     <td align="center"><img src="release/docs/src/shots/v17-main-claude-light.jpg" width="300" alt="Main screen, a Claude account, light theme"><br><sub><b>Light theme</b> — the ivory room keeps its warmth; only dark went black</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-main-compact.jpg" width="300" alt="Main screen in Compact density, each card folded to a title, bar and one line"><br><sub><b>Compact density</b> 🆕 — every card folds to a title, a bar and one line; tap to open the chart in place</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-main-compact-7d-fable.jpg" width="300" alt="7-day card with the All and Fable chips, Fable selected"><br><sub><b>All, or a model cap</b> 🆕 — the 7-day chart switches to Fable's own curve on a chip tap</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-compact.jpg" width="300" alt="Main screen in Compact density, each card folded to a title, bar and one line"><br><sub><b>Compact density</b> — every card folds to a title, a bar and one line; tap to open the chart in place</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-main-compact-7d-fable.jpg" width="300" alt="7-day card with the All and Fable chips, Fable selected"><br><sub><b>All, or a model cap</b> — the 7-day chart switches to Fable's own curve on a chip tap</sub></td>
   </tr>
   <tr>
     <td align="center"><img src="release/docs/src/shots/v17-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account, dark theme"><br><sub><b>Same cards, other room</b> — a ChatGPT account</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-layout-sheet.jpg" width="300" alt="The Main screen layout sheet, reordering and hiding cards"><br><sub><b>Main screen layout</b> 🆕 — reorder, hide or fold cards behind "More", per account</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-settings-appearance.jpg" width="300" alt="Settings, Appearance tab with Density, Chart height and Chart orientation chips"><br><sub><b>Settings · Appearance</b> 🆕 — Density, Chart height and Chart orientation</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-layout-sheet.jpg" width="300" alt="The Main screen layout sheet, reordering and hiding cards"><br><sub><b>Main screen layout</b> — reorder, hide or fold cards behind "More", per account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-settings-appearance.jpg" width="300" alt="Settings, Appearance tab with Density, Chart height and Chart orientation chips"><br><sub><b>Settings · Appearance</b> — Density, Chart height and Chart orientation</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v17-chart-transposed.jpg" width="300" alt="A chart in Time down orientation, usage across and time down the axis"><br><sub><b>Time down</b> 🆕 — the chart transposed so its curve sits directly under the bar's pace mark</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-accounts.jpg" width="300" alt="Settings, Accounts tab with the redesigned compact cards"><br><sub><b>Settings · Accounts</b> 🆕 — compact cards, a status line, three actions, and Reorder</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-history-7d.jpg" width="300" alt="Usage history, 7-day pane with the Plan Fit block"><br><sub><b>Plan Fit</b> 🆕 — is this plan the right size, read off your closed weeks</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-chart-transposed.jpg" width="300" alt="A chart in Time down orientation, usage across and time down the axis"><br><sub><b>Time down</b> — the chart transposed so its curve sits directly under the bar's pace mark</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-accounts.jpg" width="300" alt="Settings, Accounts tab with the redesigned compact cards"><br><sub><b>Settings · Accounts</b> — compact cards, a status line, three actions, and Reorder</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v17-history-7d.jpg" width="300" alt="Usage history, 7-day pane with the Plan Fit block"><br><sub><b>Plan Fit</b> — is this plan the right size, read off your closed weeks</sub></td>
   </tr>
 </table>
 
 <p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
 
 All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.8
-build — the home-screen widgets, the redesigned main screen, Compact density, the layout sheet,
+build, so they show the layout from before v2.0 (the weekly-first cards and notification, the
+Summary and Gemini are not pictured) — the home-screen widgets, the redesigned main screen, Compact density, the layout sheet,
 the transposed chart, the redesigned Accounts tab and Plan Fit are shown above and walked through
-in the [PDF guide](release/docs/Cooldown-User-Guide-v1.9.pdf); the notification shots are the lock
+in the [PDF guide](release/docs/Cooldown-User-Guide-v2.0.pdf); the notification shots are the lock
 screen, which is where it lives. **Usage history** fills in over time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
@@ -220,8 +259,10 @@ the two services freely — if you keep each account logged in to claude.ai in a
 different browser, the built-in browser picker lets you route each Claude sign-in accordingly
 (e.g. Work in Chrome, Personal in Brave).
 
-**Gemini?** The third row in the sheet is greyed out. Google's Antigravity sign-in can't be
-completed on a phone today; the app says so rather than hiding the option.
+**2c. Sign in to Gemini.** Tap **"+ Add account" → Gemini**. Your browser opens Google's own
+sign-in page: sign in and approve, then copy the code the page shows, return to the app and
+paste it. The new tab appears with your numbers. See the risk box above: this is the
+riskiest of the three sign-ins.
 
 **3. Turn on the notification.** **Settings → Alerts → Always-on notification**, then pick a
 **First** and, if you like, a **Second** account under **Show accounts**. Set each account's
@@ -270,8 +311,8 @@ poll re-renders the always-on notification; a reset ping is scheduled at the kno
 moment, and an idle account's window is rolled over on the first poll after it.
 
 **Privacy:** your tokens stay on your device, encrypted with the Android Keystore
-(EncryptedSharedPreferences, AES-256-GCM). They are sent to Anthropic's and OpenAI's APIs and
-nowhere else. There are no servers, no analytics, no third-party network calls. Diagnostics
+(EncryptedSharedPreferences, AES-256-GCM). They are sent to Anthropic's, OpenAI's and, for a
+Gemini account, Google's APIs and nowhere else. There are no servers, no analytics, no third-party network calls. Diagnostics
 logs record outcomes and status codes — never tokens or headers. A crash report stays
 on your phone until you share it. The GitHub build also asks GitHub's releases API whether a newer
 version exists, sending no account data. The [privacy policy](docs/privacy.md) lists every host the
@@ -309,6 +350,9 @@ notification is plain RemoteViews. No other dependencies.
 - Anthropic's and OpenAI's consumer terms restrict the use of consumer OAuth tokens in
   third-party tools. Installing accepts some risk of token revocation or account flagging.
   This project exists for personal/educational use — use it at your own discretion.
+- Gemini: the app uses the public OAuth client of Google's Antigravity command-line tool and
+  presents as that tool (`Cooldown/<version>` plus its identifier) to an undocumented Google
+  endpoint; this is not sanctioned by Google.
 - Polling is rate-limit-friendly (default 15 min, hard floor of 5 min).
 
 ## Feedback
@@ -319,8 +363,28 @@ About section (it emails <robin@eam360.com>).
 ## Version history
 
 A quick, plain-English tour of what each update added (newest first). The full technical
-changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v1.9.pdf).
+changelog lives in the [User Guide](release/docs/Cooldown-User-Guide-v2.0.pdf).
 
+- **2.0** — **Gemini, Weekly first with your pace, the Summary, and iPhone and iPad.** Cooldown
+  now reads **Gemini** as well as Claude and ChatGPT: **+ Add account → Gemini**, sign in on
+  Google's own page, paste the code (CCRM-55 (Antigravity Account)). The weekly window now heads
+  every card, the notification and the widgets, with the 5-hour window as a small ring beside it;
+  each account's **Headline** can put 5h first again, and one pace line under every window says
+  how far ahead or behind you are and when it resets (CCRM-96 (Weekly First), CCRM-97 (Pace
+  Number), CCRM-104 (Pace Line Parity), CCRM-108 (Reset Named)). **Usage display → Vs pace**
+  shows the figure as your distance from the pace mark (CCRM-100 (Vs Pace Display)), and a spent
+  week greys out the 5-hour window with a note on when it returns (CCRM-102 (Spent Week Gate)).
+  With two or more accounts the app opens on the **Summary**: every account's week ranked on one
+  page, a **Pace map**, **Personal** and **Work** tags, and a **Share snapshot** image (CCRM-98
+  (Summary Tab), CCRM-109 (Quiet Accounts), CCRM-110 (Account Tags), CCRM-111 (Map Layers),
+  CCRM-112 (Summary Snapshot)). Charts get a column per day and a **7d** chip, with a **Show
+  model limits** switch (CCRM-107 (Day Grid), CCRM-106 (7d Chip), CCRM-99 (Model Limits
+  Toggle)). The always-on notification uses the weekly bar with a 5-hour ring, and two accounts
+  show two rings and two stacked bars (CCRM-103 (Hybrid Notification), CCRM-105 (Duet Stack)).
+  **Try with sample data** shows three made-up accounts, with nothing fetched, sent or saved
+  (CCRM-113 (Sample Port)). A new launcher icon (CCRM-101 (Icon v3)). **iPhone and iPad:**
+  Cooldown 2.0 is a public beta on TestFlight (CCRM-94 (iOS App)). A Gemini account's requests go
+  to Google and nowhere else; the [privacy policy](docs/privacy.md) lists the hosts.
 - **1.9** — **Crash reports that stay on the phone, a steadier sign-in store, a privacy
   policy.** If Cooldown crashes or stops responding, the next launch shows a card under the top
   bar — *"Cooldown crashed today at 6:17 PM"* — with **Share report** and **Not now**; the

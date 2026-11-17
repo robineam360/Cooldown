@@ -1,9 +1,7 @@
 <!--
-DRAFT, RUNBOOK Step D1 (2026-11-11). Written before CCRM-105…113 are built: every line is checked
-against the v2.0 release build before it is published (Step 4 finalises, Step 7 publishes). To fill:
-the TestFlight public link and the iOS build number (Q1: link in the notes, no IPA asset), the
-"Fixed" list (only defects a v1.9 user could see), and the guide link once release/docs/build.sh has
-written the v2.0 PDF. This comment is invisible on GitHub; delete it when the draft is final.
+FINAL TEXT, RUNBOOK Step 4 (2026-11-17). One placeholder stays on purpose and is filled by Step 7
+(Q1: link in the notes, no IPA asset): <TestFlight public link>; the iOS build number is 1 (2.0 (1)) and changes only if Step 6 had to upload again. The link is
+known only once Step 6 has created it. Delete this comment then.
 -->
 # Cooldown v2.0
 
@@ -47,7 +45,7 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 - The launcher icon is now about the weekly limit, in the colours of all three services
 
 **On iPhone and iPad** [CCRM-94 (iOS App)]
-- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **<TestFlight public link>** (build **<n>**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
+- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **<TestFlight public link>** (build **1**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
 - There is no iPhone file to download here: TestFlight installs it
 
 ## Privacy
@@ -57,7 +55,10 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 
 ## Fixed
 
-- <only defects a v1.9 user could see; filled from BUGS.md at the release step>
+- The History screen's footnote printed a literal "%s"; it now names the window: "Peak 5h readings…", "Peak weekly readings…" [CCBG-53 (History Footnote)]
+- The Amber theme's accent was the same yellow as the over-80% warning, so a bar at 46% and one at 84% looked alike; Amber is now a deeper gold, off the warning colours [CCBG-15 (Amber Ladder Blindness)]
+- The credits card could still show for an account that had switched extra usage off; it now hides when extra usage is off and nothing was spent [CCBG-3 (Credits Visibility)]
+- A long account name could wrap onto two lines in the History tab strip at 360 dp; the strip now scrolls when a name will not fit [CCBG-81 (History Tab Wrap)]
 
 ## Install
 

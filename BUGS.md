@@ -28,6 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+### CCBG-103 · CI Red — main's CI failed on lint and on the iOS app build from 2a62105 to cf87c55
+- **Status:** **Fixed** (RUNBOOK Step 4, 2026-11-17, in the release commit; CI green on that sha is Step 4's gate) · Android and iOS · found by Step 4's own lint run, then CI's history: every `main` run from 2a62105 (2026-11-13) on failed
+- **Severity:** Medium (no user-visible effect; it hid any other CI failure for eight commits and blocks the release gate)
+- **Symptom:** (1) `lintGithubDebug` / `lintPlayDebug` stop on `UnusedBoxWithConstraintsScope` at `SummaryScreen.kt` `SummaryHeader` (CCRM-118 (Header Glyphs) left a `BoxWithConstraints` whose scope it no longer reads); (2) the `ios-app` job does not compile `ios/App/UI/InnerPanes.swift`: `GeometryProxy.reservedRegions` is iOS 27.1 SDK API (CCRM-116 (Inner Panes)), and the runner's newest Xcode is 26.6. Local builds use Xcode 27.2, so neither showed on the Mac.
+- **Fix:** `Box` for the unused scope (same layout); the `reservedRegions` call inside `#if compiler(>=6.4)` (Swift 6.4 ships with Xcode 27), so CI's Xcode 26 builds it as "no fold reported", the case the code already handles. The release archive is built with Xcode 27.2 and keeps the fold.
+
 ### CCBG-102 · Number Footer Cut — the small Number widget's 5h footer is cut mid-clock
 - **Status:** **Fixed in code** (RUNBOOK Step 3, iPad half, 2026-11-13; blocked v2.0 per Robin 2026-11-12) · iOS · option A, Robin 2026-11-13 (`design/2026-11-13-ipad-step3-number-footer.html`): `FitLine` over the whole line, then the part that leads, alone (`CardContent.numberFooterVariants`); `NumberFooterTests` · rechecked on the iPad Home Screen the same day
 - **Severity:** Low

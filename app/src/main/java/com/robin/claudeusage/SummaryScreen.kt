@@ -316,7 +316,7 @@ private fun SummaryHeader(
     onOrder: (SummaryOrder) -> Unit,
 ) {
     val wrap = LocalDensity.current.fontScale >= 1.5f
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    Box(Modifier.fillMaxWidth()) {
         val control: @Composable (Modifier, Boolean) -> Unit = { m, fill ->
             SummaryFilterControl(
                 current = filter,
