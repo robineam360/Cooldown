@@ -4,7 +4,22 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — RUNBOOK Step 3's iPad half, then Step 4 (written 2026-11-12, after Step 3's Fold 7 half)
+## ▶ Next session — RUNBOOK Step 5 (store assets) and Step 6 (TestFlight, Robin) (written 2026-11-17, after Step 4)
+
+Step 4 closed: the release commit is `8deaf01` on `main`, CI green; APK, AAB and the iOS archive 2.0 (1) are built
+and checked (RUNBOOK Step 4 Log has the hashes and paths). The v2.0 release APK is installed on the Fold 7.
+
+- **Step 5** starts from RUNBOOK Step 5's fenced prompt in a fresh worktree session (Opus 5.5), on that installed
+  build. Its captures can also refresh the guide's v1.9-era pages 5, 7, 9 and 10 and the README screenshot table
+  (Step 4 Log, "Open"), a docs-only change on `main`.
+- **Step 6 is Robin's** at the Mac: Xcode Organizer lists "Cooldown 2.0 (1) 8deaf01"; Distribute App → App Store
+  Connect re-signs it for distribution. Then the fields in `release/testflight/`, Beta App Review, the public link.
+- **Step 7** fills the TestFlight link in `release/docs/release-notes-v2.0.md`, README, `release/USER-GUIDE.md`
+  and the guide's page 3 (all carry `<TestFlight public link>`).
+  The APK and AAB were built from `8deaf01`, so the tag goes on that commit (or Step 7 rebuilds from its own
+  tagged commit and re-checks, RELEASING §4); later docs-only commits do not change the build.
+
+## ▶ (superseded by the block above) — RUNBOOK Step 3's iPad half, then Step 4 (written 2026-11-12, after Step 3's Fold 7 half)
 
 Step 3's **Fold 7 half** landed on `main` (RUNBOOK Step 3 Log): CCBG-91…97 filed, and every Android defect fixed and
 rechecked, because Robin made every open defect block v2.0 ("we have to fix all our bugs and not keep it after

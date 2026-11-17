@@ -238,7 +238,7 @@ clients back at `cases.json`.
 |---|---|---|---|---|
 | 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☑ 2026-11-13 (Fold 7 and iPad halves; open: TalkBack on the Tag marks note, VoiceOver on the filter, see the Log) |
-| 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☐ |
+| 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☑ 2026-11-17 (release commit `8deaf01`; open: guide pages 5, 7, 9, 10 still show v1.9 screens, see the Log) |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
@@ -1335,16 +1335,68 @@ published in this step.
 ```
 
 **Done when:**
-- ☐ The release commit is on `main` with CI green; its sha is in the Log.
-- ☐ APK and AAB built from that sha, every RELEASING §5 check passed, sha256s logged; the AAB is kept out of
+- ☑ The release commit is on `main` with CI green; its sha is in the Log.
+- ☑ APK and AAB built from that sha, every RELEASING §5 check passed, sha256s logged; the AAB is kept out of
   the GitHub release.
-- ☐ The iOS archive built from that sha and passes RELEASING §6's checks (versions match in app and widget,
+- ☑ The iOS archive built from that sha and passes RELEASING §6's checks (versions match in app and widget,
   secret present, privacy manifests in, export compliance false).
-- ☐ The APK runs on the Fold 7 (Gemini row present, update check reads v1.9 as older).
+- ☑ The APK runs on the Fold 7 (Gemini row present, update check reads v1.9 as older).
+- ☑ (carried from Step 3) TalkBack on Appearance › Tag marks and VoiceOver on the Summary filter: closed by
+  accessibility-tree reads; the speech listens were skipped by Robin (see the Log).
 
 **Reversal:** `git revert` of the release commit before anything is tagged. Built files are local.
 
 **Log:**
+
+- **2026-11-17 · Step 4 closed.** **Release commit `8deaf015ddfcc75af2fdeaae335977c8b1b3ccba`** on `main`
+  (`a9a850f` v2.0 — versions, docs, notes; `8deaf01` the judge's fixes), CI green on that sha (push and PR runs,
+  PR #57). Nothing tagged, uploaded or published.
+  - **Versions:** Android versionCode 26 / "2.0"; iOS `MARKETING_VERSION` 2.0, build 1.
+  - **Two defects found and fixed in this step.** CCBG-103 (CI Red): `main`'s CI had failed since `2a62105` (lint:
+    unused `BoxWithConstraints` scope in `SummaryHeader`; iOS: `reservedRegions` is iOS 27.1 SDK API the runner's
+    Xcode 26.6 cannot compile, now behind `#if compiler(>=6.4)`). CCBG-104 (Bundle Version Default), the judge's
+    F1, blocking: XcodeGen wrote "1.0" / "1" into both Info.plists whatever `project.yml` said, so the upload
+    would have been 1.0 (1); both targets now map the build settings, and RELEASING.md §6 checks the exact values.
+  - **Docs (RELEASING §3):** README (Gemini sign-in step 2c and a Gemini paragraph in the risk box, the ToS line;
+    the TestFlight beta; the v2.0 features and version history), `release/USER-GUIDE.md`, the guide and brochure
+    rebuilt (`Cooldown-User-Guide-v2.0.pdf`, `Cooldown-whats-new-v2.0.png`, `Cooldown-Brochure.pdf`; written by a
+    Sonnet worker on claude-product, every changed page rendered and read). **Release notes final** except the
+    TestFlight public link, a placeholder Step 7 fills (build number 1 is written; it changes only if Step 6 has to
+    upload again). Fixed list: CCBG-53, CCBG-15, CCBG-3, CCBG-81 (the judge confirmed CCBG-96 and CCBG-100 never
+    reached a v1.9 user). **Open, for the orchestrator:** guide pages 5, 7, 9 and 10 and the README's screenshot
+    table still show v1.9 screens (the text says so); they want Step 5's v2.0 captures. The release notes link the
+    guide on `main`, so a docs-only refresh after Step 5 changes no build.
+  - **Judge** (fresh Opus @ high, model-mesh worker on claude-product): reject on F1 (above), with F2 (the 7-day
+    chip still called "All" in three docs), F3 (the compiler guard needs Xcode 27.1 or later, comment added) and F4
+    (README "not on any store" beside a TestFlight link). All four adopted in `8deaf01`; then tests decided:
+    gradle unit tests github + play, lint both, CooldownCore 215, iOS app 136 on the iPhone 17 Pro (iOS 26.5).
+  - **APK** (github, `assembleGithubRelease`, `app/build/asset/app-release.apk`):
+    sha256 `65d43a2316bfd41a6aa573050681bcf8fa8e19398fc031a9b593debc1c4a817c`; signer = the trusted digest;
+    `com.robin.claudeusage` 26 / 2.0; `check_artefact.py --channel github` PASS; Gemini secret non-empty.
+  - **AAB** (play, `bundlePlayRelease`): sha256 `6115207a74b0d281aa2a4e172b67d065e42b9a8f1c6b549d0d2ac529d815cd16`;
+    `bundletool validate` passes; signer = the trusted digest; versionCode 26 / "2.0"; `check_artefact.py --channel
+    play` PASS; Gemini secret non-empty. Not attached to any GitHub release. Copies of both files are in the
+    side-session notes folder (`release-v2.0-github-8deaf01.apk`, `release-v2.0-play-8deaf01.aab`).
+  - **iOS archive** (Xcode 27.2, Release, team 546C62BX57): `ios/out/Cooldown.xcarchive` in this worktree, copied
+    to `~/Library/Developer/Xcode/Archives/2026-11-17/Cooldown 2.0 (1) 8deaf01.xcarchive` so Organizer lists it.
+    App and widget both 2.0 (1); `AntigravityClientSecret` non-empty; both `PrivacyInfo.xcprivacy` in;
+    `ITSAppUsesNonExemptEncryption` false. **Signing:** the archive is signed Apple Development with the team
+    profile, as automatic signing archives; the Apple Distribution certificate is in the keychain and Organizer's
+    Distribute App → App Store Connect re-signs with it and an App Store profile. That last §6 item is Robin's to
+    see in Step 6 (a session never changes signing).
+  - **Gemini secret:** Android in `~/.gradle/gradle.properties`, iOS in `ios/Config/Antigravity.secrets.xcconfig`
+    (copied from the Step 3 worktree, identical in both). CI has no repository secret and needs none: no
+    workflow signs or reads it.
+  - **Fold 7 smoke** (Robin connected USB): installed over v1.9 (25 → 26) in place, accounts kept; the app opens on
+    the Summary with all five accounts, the Gemini account reading; Add account lists Claude, ChatGPT and Gemini,
+    all enabled; Check for updates: "You're running the latest version (v2.0)" (releases/latest is v1.9). Stay-awake
+    restored; screen timeout untouched. The v2.0 release build stays installed for Step 5.
+  - **Carried from Step 3.** Robin asked whether a listen is mandatory for Play (it is not: the pre-launch
+    report's accessibility scan advises, never gates) and chose "Tree check, skip listening". TalkBack, Tag marks
+    (fold7inner emulator, two test credentials stored with jdb, network off, app data cleared after): the heading
+    "Tag marks", then the full note, then two checkable rows "Personal" and "Work" (on); the glyphs are silent.
+    VoiceOver on the filter stands on Step 3's iPad tree read. Both speech listens: skipped by Robin, 2026-11-17.
+  - Sweeper: nothing removed (every other worktree holds non-disposable files).
 
 ---
 
