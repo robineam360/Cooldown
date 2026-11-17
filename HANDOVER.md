@@ -4,7 +4,22 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — RUNBOOK Step 5 (store assets) and Step 6 (TestFlight, Robin) (written 2026-11-17, after Step 4)
+## ▶ Next session — RUNBOOK Step 7 (publish GitHub v2.0), once Step 6 is approved (written 2026-11-17, after Step 5)
+
+Step 5 closed: the Play screenshots, the FGS video and the feature graphic are in `release/play/` (RUNBOOK Step 5
+Log); the guide's pages 5, 7, 9 and 10 show v2.0. Step 6 (TestFlight upload and Beta App Review) is Robin's at the
+Mac. Per Q2, **Step 7 starts only when Step 6's Log records Beta App Review approved**; then run RUNBOOK Step 7's
+fenced prompt in a fresh worktree session (Opus 5.5). It fills `<TestFlight public link>` in
+`release/docs/release-notes-v2.0.md`, README, `release/USER-GUIDE.md` and the guide's page 3, and tags `8deaf01`.
+
+Step 8 (Play Day 0) needs Step 7 published plus R1/R2; the assets it uploads are listed in `release/play/listing.md`
+§5, and Robin uploads `fgs-demo.mp4` to YouTube unlisted first.
+
+Still open, docs only: the README screenshot table and guide page 8 (widgets) show older screens; the v2.0
+captures for them are in `release/docs/src/shots/` (`v20-summary.jpg`, `v20-widgets-home.jpg`,
+`v20-share-snapshot.jpg`).
+
+## ▶ (superseded by the block above) — RUNBOOK Step 5 (store assets) and Step 6 (TestFlight, Robin) (written 2026-11-17, after Step 4)
 
 Step 4 closed: the release commit is `8deaf01` on `main`, CI green; APK, AAB and the iOS archive 2.0 (1) are built
 and checked (RUNBOOK Step 4 Log has the hashes and paths). The v2.0 release APK is installed on the Fold 7.

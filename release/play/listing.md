@@ -133,24 +133,25 @@ Account risk: Cooldown reads undocumented usage endpoints using your own sign-in
 
 - [ ] **App icon, 512×512 PNG** — export from the v2.0 launcher icon, CCRM-101 (Icon v3)'s "Shared pace"
   (`design/icon-v3/`). No provider marks on it.
-- [ ] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha), to be
-  re-exported at RUNBOOK Step 5 from variant C of `design/2026-11-11-play-feature-graphic-v20.html`
-  (`?only=c`), approved by Robin on 2026-11-11 (the v1.9 file is variant B of the 2026-10-01 page).
-- [ ] **Phone screenshots, 2 minimum, 4–8 recommended.** Candidates in `release/screenshots/`
-  (`token-guide.png` is excluded: it shows a removed feature):
-  1. `hero.png` — the README hero, if it works as a plain phone shot
-  2. `app-tabs-personal.png` — main screen, an account tab
-  3. `app-tabs-work.png` — main screen, a second account tab
-  4. `chart-above-pace-work-fold-inner.png` — chart above the even-pace line
-  5. `chart-wide-fold-inner.png` — wide chart
-  6. `history-5h-dark.png` — usage history, 5-hour sessions
-  7. `history-7d-dark.png` — usage history, weekly pane
-  8. `settings-top-dark.png` — Settings
-  Caveat: these files date from 7 Aug (early v0.x) and the Pulse-era app has changed since; some
-  may no longer match the current UI. **Robin's newer full-frame 1080×2371 shots should replace them
-  wherever he has them** (the v1.7/v1.8 shots in `release/docs/src/shots/` cover the main screen,
-  the always-on notification, widgets, Accounts and Plan Fit). Play shows the first ones
-  most prominently, so lead with the main screen and the notification.
+- [x] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha), exported
+  2026-11-17 (RUNBOOK Step 5) from variant C of `design/2026-11-11-play-feature-graphic-v20.html`
+  (`?only=c`), approved by Robin on 2026-11-11.
+- [x] **Phone screenshots, 8** — `release/play/screenshots/`, captured 2026-11-17 on the v2.0 release build
+  (8deaf01) on the Fold 7 cover screen, real accounts, cropped to 1080×2160 (Play's 2:1 rule; Q3). Upload in
+  this order:
+  1. `01-main-weekly.png` — an account tab, Weekly first, Fable cap, the 7-day chart and its projection
+  2. `02-summary.png` — the Summary (All), every account ranked
+  3. `03-notification-duet.png` — the always-on notification, Duet, expanded (the shade held nothing else)
+  4. `04-chart-chatgpt.png` — a ChatGPT tab, the weekly chart against even pace
+  5. `05-widgets.png` — the widget faces on one home-screen page
+  6. `06-accounts.png` — Settings → Accounts, Claude, ChatGPT and Gemini with Personal/Work tags; **the
+     e-mail line under each name is blanked** (Robin, 2026-11-17)
+  7. `07-share-snapshot.png` — the Summary share snapshot
+  8. `08-settings-alerts.png` — Settings → Alerts
+  Every shot was checked for e-mail addresses and other private data before commit.
+- [x] **FGS demo video** — `release/play/fgs-demo.mp4`, re-recorded 2026-11-17 on the release build
+  (switch on → Duet notification → expand → Refresh → switch off), 27 s, no e-mail on screen; Robin
+  uploads it to YouTube unlisted and pastes the link into the FGS declaration.
 - A provider logo that appears inside the app's own UI in a screenshot is fine (it is the real
   UI). No screenshot may be framed, captioned or arranged to suggest endorsement by a provider.
 - [ ] **7-inch and 10-inch tablet screenshots** — optional.

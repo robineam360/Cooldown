@@ -239,7 +239,7 @@ clients back at `cases.json`.
 | 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☑ 2026-11-13 (Fold 7 and iPad halves; open: TalkBack on the Tag marks note, VoiceOver on the filter, see the Log) |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☑ 2026-11-17 (release commit `8deaf01`; open: guide pages 5, 7, 9, 10 still show v1.9 screens, see the Log) |
-| 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☐ |
+| 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 9, 10 refreshed; open: README screenshot table, guide page 8) |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
 | 8 | Play Day 0: signing, internal upload, closed track, invites | **Robin at the console** · session guides | 4, 5, 7, R1, R2 | ☐ |
@@ -1420,12 +1420,34 @@ only. Commit the assets, close out and land.
 ```
 
 **Done when:**
-- ☐ Eight screenshots at the agreed size, each checked against Play's ratio rule.
-- ☐ The FGS video re-recorded on v2.0; the feature graphic exported from the approved variant at 1024×500.
+- ☑ Eight screenshots at the agreed size, each checked against Play's ratio rule.
+- ☑ The FGS video re-recorded on v2.0; the feature graphic exported from the approved variant at 1024×500.
 
 **Reversal:** `git revert`; the old assets come back.
 
 **Log:**
+
+- 2026-11-17 · Step 5 done (worktree session `peaceful-aryabhata-f425f7`), on the Step 4 release APK (26 / "2.0",
+  `8deaf01`) on the Fold 7 cover screen over USB; Robin unlocked it, cleared his shade and placed the widgets.
+  Q3 and Q4 were already answered (2026-11-11); variant C was approved in D1, so Step 5 only exported it.
+  - **Play screenshots** `release/play/screenshots/01-main-weekly.png` … `08-settings-alerts.png`: eight PNGs,
+    1080×2160 each (ratio 2.0, Play's limit), real accounts, cropped from the 1080×2520 cover frames (status band
+    off; the widgets shot is offset to keep the top row). Order and contents in `listing.md` §5. Privacy: every
+    shot read for e-mails and private notifications; Settings → Accounts shows each account's e-mail and has no
+    switch to hide it, so **the four e-mail lines are blanked with the card colour** (Robin chose this,
+    2026-11-17); shot 3 is a real full shade that Robin emptied first (his choice over a card-on-canvas), so
+    nothing else shows.
+  - **FGS video** `release/play/fgs-demo.mp4`: 27 s, 1080×2520 H.264, no audio: notification off → on → Duet
+    collapsed → expanded → Refresh → off → "No notifications". No e-mail or private notification on screen.
+    Robin uploads it unlisted.
+  - **Feature graphic** `release/play/feature-graphic.png`: 1024×500, 8-bit RGB, no alpha, headless Chrome on
+    `design/2026-11-11-play-feature-graphic-v20.html?only=c` (Icon v3 mark, Teams/Personal/Lab).
+  - **Guide** (Step 4's open item): pages 5, 7, 9 and 10 now use `release/docs/src/shots/v20-*.jpg` (full frames,
+    1080×2371, e-mails blanked on the Accounts shot; page 5's note says so); `Cooldown-User-Guide-v2.0.pdf`
+    rebuilt and every changed page read. Also captured, unused yet: `v20-summary.jpg`, `v20-widgets-home.jpg`,
+    `v20-share-snapshot.jpg`, for the README screenshot table and guide page 8 (v1.8 widget shots), both still open.
+  - **Device restored:** app theme System, Comfortable, Time across, Second = ChatGPT, notification on; stay-awake
+    back to 0; screen timeout untouched. Robin's widget page stays as he placed it.
 
 ---
 
