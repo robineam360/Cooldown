@@ -15,9 +15,7 @@ fenced prompt in a fresh worktree session (Opus 5.5). It fills `<TestFlight publ
 Step 8 (Play Day 0) needs Step 7 published plus R1/R2; the assets it uploads are listed in `release/play/listing.md`
 §5, and Robin uploads `fgs-demo.mp4` to YouTube unlisted first.
 
-Still open, docs only: the README screenshot table and guide page 8 (widgets) show older screens; the v2.0
-captures for them are in `release/docs/src/shots/` (`v20-summary.jpg`, `v20-widgets-home.jpg`,
-`v20-share-snapshot.jpg`).
+The README screenshot table and every guide page now show v2.0 screens.
 
 ## ▶ (superseded by the block above) — RUNBOOK Step 5 (store assets) and Step 6 (TestFlight, Robin) (written 2026-11-17, after Step 4)
 

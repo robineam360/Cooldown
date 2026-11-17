@@ -199,40 +199,33 @@ ones fresh from the widget picker.
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-home.jpg" width="300" alt="A home screen mixing several Cooldown widget faces and sizes"><br><sub><b>Home-screen widgets</b> — back in v1.8, mixing faces and sizes on one page</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-strip.jpg" width="300" alt="The All accounts widget face, every account as its own ring"><br><sub><b>All accounts</b> — every account as its own ring, side by side</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-widgets-countdown.jpg" width="300" alt="The Countdown widget face at several sizes"><br><sub><b>Countdown</b> — when the window comes back, at every size</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v20-summary.jpg" width="300" alt="The Summary tab, All filter: every account ranked by its weekly window"><br><sub><b>The Summary</b> — every account on one screen, weekly first, with the Pace map below</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v20-notif-duet-collapsed.jpg" width="300" alt="The always-on notification collapsed in the shade, two accounts on one row"><br><sub><b>The always-on notification</b> — two accounts, 5h rings and Weekly bars</sub></td>
+    <td align="center" width="33%"><img src="release/docs/src/shots/v20-notif-duet-expanded.jpg" width="300" alt="The notification expanded: both Weekly rows with reset lines and Refresh"><br><sub><b>Expanded</b> — each account's Weekly row, its reset line, one-tap Refresh</sub></td>
   </tr>
   <tr>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-notif-duet-collapsed.jpg" width="300" alt="Lock screen: the always-on notification collapsed, two accounts on one row"><br><sub><b>The always-on notification</b> — unchanged in v1.8, now backed by a foreground service so it doesn't go stale</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v18-notif-duet-expanded.jpg" width="300" alt="Lock screen: the notification expanded, both headers and the Weekly rows"><br><sub><b>Expanded</b> — both headers with reset lines, the Weekly rows, one-tap Refresh</sub></td>
-    <td align="center" width="33%"><img src="release/docs/src/shots/v17-main-claude-dark.jpg" width="300" alt="Main screen, a Claude account in Comfortable density, dark theme"><br><sub><b>The redesigned main screen</b> — Comfortable density; Claude's room now goes black in dark theme</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-main-product-dark.jpg" width="300" alt="Main screen, a Claude account with the Weekly and Fable bars and the 7-day chart, dark theme"><br><sub><b>An account tab</b> — the Weekly bar first, a model cap under it, the chart and its projection</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-main-product-light.jpg" width="300" alt="The same account tab, light theme"><br><sub><b>Light theme</b> — the same card in the ivory room</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-main-compact.jpg" width="300" alt="Main screen in Compact density, the card folded to a title, bars and one line"><br><sub><b>Compact density</b> — the card folds to a title, its bars and one line; tap to open the chart</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v17-main-claude-light.jpg" width="300" alt="Main screen, a Claude account, light theme"><br><sub><b>Light theme</b> — the ivory room keeps its warmth; only dark went black</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-main-compact.jpg" width="300" alt="Main screen in Compact density, each card folded to a title, bar and one line"><br><sub><b>Compact density</b> — every card folds to a title, a bar and one line; tap to open the chart in place</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-main-compact-7d-fable.jpg" width="300" alt="7-day card with the All and Fable chips, Fable selected"><br><sub><b>All, or a model cap</b> — the 7-day chart switches to Fable's own curve on a chip tap</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account, dark theme"><br><sub><b>Same cards, other service</b> — a ChatGPT account</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-chart-timedown.jpg" width="300" alt="A chart in Time down orientation"><br><sub><b>Time down</b> — the chart transposed so its curve sits under the bar's pace mark</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-widgets-home.jpg" width="300" alt="A home screen with several Cooldown widget faces and sizes"><br><sub><b>Home-screen widgets</b> — Ring, All accounts, Number and Countdown faces, mixed sizes</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="release/docs/src/shots/v17-main-chatgpt-dark.jpg" width="300" alt="Main screen, a ChatGPT account, dark theme"><br><sub><b>Same cards, other room</b> — a ChatGPT account</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-layout-sheet.jpg" width="300" alt="The Main screen layout sheet, reordering and hiding cards"><br><sub><b>Main screen layout</b> — reorder, hide or fold cards behind "More", per account</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-settings-appearance.jpg" width="300" alt="Settings, Appearance tab with Density, Chart height and Chart orientation chips"><br><sub><b>Settings · Appearance</b> — Density, Chart height and Chart orientation</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="release/docs/src/shots/v17-chart-transposed.jpg" width="300" alt="A chart in Time down orientation, usage across and time down the axis"><br><sub><b>Time down</b> — the chart transposed so its curve sits directly under the bar's pace mark</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-accounts.jpg" width="300" alt="Settings, Accounts tab with the redesigned compact cards"><br><sub><b>Settings · Accounts</b> — compact cards, a status line, three actions, and Reorder</sub></td>
-    <td align="center"><img src="release/docs/src/shots/v17-history-7d.jpg" width="300" alt="Usage history, 7-day pane with the Plan Fit block"><br><sub><b>Plan Fit</b> — is this plan the right size, read off your closed weeks</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-share-snapshot.jpg" width="300" alt="The Share snapshot sheet: every account and the Pace map as one image"><br><sub><b>Share snapshot</b> — the Summary as one image</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-accounts.jpg" width="300" alt="Settings, Accounts tab: Claude, ChatGPT and Gemini cards with Personal and Work tags"><br><sub><b>Settings · Accounts</b> — plan and Personal/Work tag on each card (e-mails blanked here)</sub></td>
+    <td align="center"><img src="release/docs/src/shots/v20-history-7d.jpg" width="300" alt="Usage history, 7-day pane with the Plan Fit block"><br><sub><b>Plan Fit</b> — is this plan the right size, read off your closed weeks</sub></td>
   </tr>
 </table>
 
 <p align="center"><img src="release/docs/src/shots/v16-statusbar-ring.png" width="300" alt="The status-bar ring beside the clock"><br><sub><b>The status-bar ring</b> — fills with the shown account's 5-hour window, in that account's own colour</sub></p>
 
-All screenshots are from a real device (a Galaxy Z Fold 7's cover and inner screens) on the v1.8
-build, so they show the layout from before v2.0 (the weekly-first cards and notification, the
-Summary and Gemini are not pictured) — the home-screen widgets, the redesigned main screen, Compact density, the layout sheet,
-the transposed chart, the redesigned Accounts tab and Plan Fit are shown above and walked through
-in the [PDF guide](release/docs/Cooldown-User-Guide-v2.0.pdf); the notification shots are the lock
-screen, which is where it lives. **Usage history** fills in over time as your windows close.
+All screenshots are from a real device (a Galaxy Z Fold 7's cover screen) on the v2.0 release build,
+with real accounts; the e-mail line under each account name is blanked on the Accounts shot. Every
+screen is walked through in the [PDF guide](release/docs/Cooldown-User-Guide-v2.0.pdf). **Usage
+history** fills in over time as your windows close.
 
 ## Get started — about 2 minutes, no computer needed
 

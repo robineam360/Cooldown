@@ -239,7 +239,7 @@ clients back at `cases.json`.
 | 2 | Fold-in: fixtures and §6.3 promoted, surfaces folded, tracker closed | session · judge | A6, I4 | ☑ 2026-11-12 |
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☑ 2026-11-13 (Fold 7 and iPad halves; open: TalkBack on the Tag marks note, VoiceOver on the filter, see the Log) |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☑ 2026-11-17 (release commit `8deaf01`; open: guide pages 5, 7, 9, 10 still show v1.9 screens, see the Log) |
-| 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 9, 10 refreshed; open: README screenshot table, guide page 8) |
+| 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 8, 9, 10 and the README screenshot table refreshed) |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☐ |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
 | 8 | Play Day 0: signing, internal upload, closed track, invites | **Robin at the console** · session guides | 4, 5, 7, R1, R2 | ☐ |
@@ -1448,6 +1448,12 @@ only. Commit the assets, close out and land.
     `v20-share-snapshot.jpg`, for the README screenshot table and guide page 8 (v1.8 widget shots), both still open.
   - **Device restored:** app theme System, Comfortable, Time across, Second = ChatGPT, notification on; stay-awake
     back to 0; screen timeout untouched. Robin's widget page stays as he placed it.
+- 2026-11-17 · The two docs left open, closed on Robin's word ("Yes, finish them", relayed by the orchestrator
+  session). **README** screenshot table: twelve v2.0 shots in the same 3-column format (Summary, notification
+  collapsed and expanded, account tab dark and light, Compact, ChatGPT, Time down, widgets, Share snapshot,
+  Accounts with e-mails blanked, Plan Fit); the note under it now says v2.0 release build. **Guide page 8**: the
+  widget home page plus three crops of it (`v20-widgets-ring.jpg`, `-strip.jpg`, `-bars.jpg`) replace the v1.8
+  shots; guide rebuilt and page 8 read. Same privacy check: no e-mail, no private notification, no model credit.
 
 ---
 
