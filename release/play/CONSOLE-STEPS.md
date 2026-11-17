@@ -4,11 +4,18 @@ Written 2026-11-10 for CCRM-66 (Play Store Launch). **Every click below is Robin
 signs in, pays, verifies, uploads, enrols a key or changes a Console setting; a session prepares the
 copy in `release/play/`, builds and checks the AAB, and guides one screen at a time.
 
-**Decided by Robin, 2026-11-10:** Play launches at **v2.0** on a **personal** developer account
+**Changed by Robin, 2026-11-17:** Play launches at **v2.0** on **EAM360's organisation developer
+account**, the same publisher as the App Store record. An organisation account has no closed-test
+rule (§ Policy check, 1), so Phase E is an optional internal test and Phase F is the production
+release. Phases A, E and F below are rewritten for that; the personal-account text is in git
+history (this file before 2026-11-17). [CLOSED-TEST-PLAN.md](CLOSED-TEST-PLAN.md) and
+[TESTER-INVITE.md](TESTER-INVITE.md) are retired.
+
+~~**Decided by Robin, 2026-11-10:** Play launches at **v2.0** on a **personal** developer account
 (Q4 in RUNBOOK.md Step 9 and ROADMAP.md's v1.9 section, now closed). The account does not exist
 yet. The mandatory closed test starts **after the eight v2.0 feedback items** (Robin's Fold 7
 notes of 2026-11-10) are built and land, never before. iOS stays on TestFlight, published by
-EAM360. The timeline is in [CLOSED-TEST-PLAN.md](CLOSED-TEST-PLAN.md).
+EAM360. The timeline is in CLOSED-TEST-PLAN.md.~~
 
 Policy facts below carry a source and the date they were read; the full list, with what could not
 be confirmed, is in [§ Policy check](#policy-check-2026-11-10) at the end. **Re-read every fee,
@@ -20,45 +27,32 @@ to paste is in this folder.
 
 ---
 
-## Phase A — the account (can start now; it does not wait for v2.0)
+## Phase A — access to EAM360's organisation account (2026-11-17)
 
-Identity checks can take days, so this phase is worth doing while v2.0's eight items are built.
+The account, its identity check (D-U-N-S), its payments profile and the fee are EAM360's and already
+done; nothing here is paid or verified by Robin.
 
-1. **Pick the Google account** that will own the developer account. ⛔ It cannot be swapped later
-   without transferring every app. A dedicated Gmail (for example one used only for publishing)
-   keeps Play mail out of a work inbox and survives a job change; Robin's call. Turn on 2-step
-   verification on it first (Play requires it to sign in to the Console).
-2. **Register** at <https://play.google.com/console/signup> → **"Yourself"** (personal), not "An
-   organisation". ⛔ The account type cannot be changed afterwards (an organisation later means a
-   new account and an app transfer). Pay the one-time registration fee 🔒 (US $25 as of the 2026-09 research; confirm on the sign-up page) (card in Robin's name;
-   the payments profile is created here).
-3. **Developer name** — the name shown under the app on Play. It can differ from Robin's legal
-   name. Suggested: `Robin Richard Rajan` or a portfolio name such as `Robin R. Apps`; it is the
-   name every future app in the portfolio shares. Changeable later (§ Policy check, 6a).
-4. **Identity verification** 🔒 — legal name and address, matching a government ID that Robin
-   uploads to Google (never to a session). The legal name must match the payments profile.
-5. **Contact details for Google** (private): a contact email and a phone number, each verified by
-   a code. These are Google's way to reach Robin and are **not** shown on Play.
-6. **Public developer details** (§ Policy check, 6a): on a personal account Play shows Robin's
-   **legal name**, his **country** and the **developer email** — even on a free app, whatever
-   developer name is chosen. A free app shows **no street address**; once the account monetises
-   (the possible "Pro" purchase) the **full address** is shown, so a business or virtual address
-   is needed before that day. For the **EEA and UK**, declare trader status: as a free hobby app
-   with no sales, **non-trader** shows only email and country (Robin's call; a trader shows name,
-   address, phone and email). Use a public-facing address for the developer email
-   (`robin@eam360.com` or a dedicated one).
-7. **Android device verification** — new personal accounts must prove access to a non-rooted
-   Android 10+ phone: the Console home page shows a QR code; install the **Play Console app** on
-   the phone, sign in as the account owner, pick the developer account, tap Verify (under a
-   minute; no phone number is collected). The Fold 7 works.
-8. **Wait for "Your identity has been verified"** (email and the Console's home page). Until then
-   apps can be created but not published to any testing track (UNVERIFIED for the closed track;
-   assume it).
+1. **The Google account** 🔒 — Robin's dedicated Google account, not his personal Gmail (kept for a
+   personal developer account of his own later). Its address is not written in this public repo.
+   Turn on 2-step verification on it (the Console requires it).
+2. **The invite** — EAM360's account owner or an admin adds that account under **Users and
+   permissions → Invite new users**. Permissions to ask for (Console names shift; match them on the
+   day): **Admin** for the account, or at least the account-level right to **create apps** plus, for
+   this app (or all apps): view app information · edit and delete draft apps · manage store presence
+   · manage policy declarations (App content) · release to testing tracks and manage tester lists ·
+   **release to production, exclude devices and use Play App Signing**. Without the last one Robin
+   cannot enrol the key or release, and the lead would have to do those screens.
+3. **Accept** the email invite, sign in at <https://play.google.com/console> with that account and
+   pick the EAM360 developer account.
+4. **No device verification** — the Android-phone check is for new personal accounts (§ Policy
+   check, 6); if the Console asks anyway, the Fold 7 works.
+5. **Public developer details** are EAM360's (name, address, email), set on the account by its
+   owner. The app's own contact email (Phase B, step 10) is `robin@eam360.com`.
 
 ## Phase B — create the app (can start now)
 
-9. **Create app**: app name `Cooldown — AI usage limits` 📄 ([listing.md](listing.md) §1; Play
-   allows 30 characters), default language **English (United Kingdom)** or **English (United
+9. **Create app**: app name per **Q7** (RUNBOOK): `Cooldown — AI usage limits` 📄
+   ([listing.md](listing.md) §1) or `EAM360 Cooldown` to match the App Store (Play allows 30 characters), default language **English (United Kingdom)** or **English (United
    States)** — pick the one the copy is written in (en-GB spelling: *colour*, *organisation*),
    **App**, **Free**. ⛔ **Free can never become paid upfront**; in-app purchases stay possible.
    Tick the Developer Programme Policies and US export laws declarations.
@@ -133,44 +127,28 @@ fix the draft in the repo first if they disagree.
     review wait) to see the Play-signed APK; verify **App bundle explorer → the signed universal
     APK's SHA-256 = RELEASING.md's trusted digest** before any tester installs it.
 
-## Phase E — the closed test (the 14-day clock)
+## Phase E — internal test (optional, no clock)
 
-23. **Testing → Closed testing → Create track** (or use the default "Closed testing - Alpha").
-24. **Testers:** a **Google Group** is the easiest list to maintain (add or remove people without
-    touching the Console; testers join the group with the Google account they use on their
-    phone). An email list in the Console works too. Add at least **15** people for the
-    12-tester rule (spares for drop-outs; CLOSED-TEST-PLAN.md § Recruiting).
-25. **Feedback channel** (shown to testers on the opt-in page): an email address or a URL. Use
-    `robin@eam360.com` or the GitHub issues page.
-26. **Create release** on the closed track → the v2.0 AAB → release notes 📄 (app only, no build
-    story) → **Review release → Start rollout to Closed testing**. Closed releases are reviewed by
-    Google (hours to a few days); the opt-in link only works once the release is approved.
-27. **Countries:** pick the countries the testers are in (India at least, plus any other tester's
-    country); a tester outside the selected countries cannot install.
-28. **Copy the opt-in link** (Testers tab, "Join on the web") and send the invite
-    ([TESTER-INVITE.md](TESTER-INVITE.md)) yourself. Each tester must **accept the opt-in on the
-    web and install from Play** with the same Google account.
-29. **Watch the counter:** the Console's Dashboard shows the progress toward production access
-    (testers opted in, days run). The 14 days count only while **12 or more testers are opted in
-    at the same time**; check it every couple of days (CLOSED-TEST-PLAN.md § The clock).
+An organisation account may go straight to production; this phase only gets the Play build onto
+colleagues' phones first, the way the TestFlight link does on iOS.
 
-## Phase F — apply for production (day 15 or later)
+23. **Testing → Internal testing → Testers:** an email list or a Google Group (up to 100 people).
+    Internal releases are not reviewed and are available within minutes.
+24. **The release** is the one from step 22 (the same AAB). Release notes 📄 (app only, no build story).
+25. **Copy the opt-in link** (Testers tab) and send it yourself. Each person accepts on the web and
+    installs from Play with the Google account on that list. Someone who has the GitHub APK
+    installs over it (same package, same signer once step 20 is done).
 
-30. **Dashboard → Apply for production** (enabled once the requirement shows met). Google asks a
-    questionnaire, in three groups (as described on Play's help page; wording varies; answer from
-    the closed test's real record — draft answers are in CLOSED-TEST-PLAN.md § Production
-    application):
-    - **About the closed test:** how easy it was to recruit testers; how engaged they were;
-      what feedback came in and how it was collected; a summary of that feedback.
-    - **About the app:** the intended audience; how the app provides value to users; expected
-      installs in the first year.
-    - **About production readiness:** what changed in the app because of the test; how you
-      decided it was ready for production.
-31. **Wait for the answer** (Google says usually 7 days or less). If refused, the email names what
-    to change; the closed test continues meanwhile and a new application is allowed.
-32. **Production release:** promote the closed-test release (same AAB, same versionCode) or upload
-    the current release's AAB → countries → **staged rollout** (for example 20%, then 100%) →
-    production review. Only then is the listing public.
+## Phase F — production
+
+26. **Countries:** pick the countries (India at least; all countries is fine for a free app).
+27. **Production → Create release** → the same AAB (same versionCode) or the current release's AAB
+    → release notes 📄 → **staged rollout** (for example 20%, then 100%; a bad rollout can be
+    halted). ⛔ Submitting puts the app in Google's review; once approved, the listing is public.
+    Optional: **Publishing overview → Managed publishing** holds an approved release until Robin
+    clicks Publish.
+28. **Wait for review** (hours to a few days for a new app; longer for a first `specialUse`
+    declaration). A rejection email names what to change; fix it in the repo first.
 
 ## Phase G — after launch, every release
 
@@ -189,7 +167,7 @@ the day they were read). **UNVERIFIED** marks what no primary Google page confir
 
 | # | Topic | Finding | Source |
 |---|---|---|---|
-| 1 | Closed test, new personal accounts | Applies to personal accounts created after 13 Nov 2023. **At least 12 testers opted in continuously for the 14 days** before applying for production (was 20 until Dec 2024; ROADMAP's CCRM-66 still says 20). A tester who opts out before 14 days does not count; an opt-out and back in must still add up to consecutive days. | <https://support.google.com/googleplay/android-developer/answer/14151465> |
+| 1 | Closed test, new personal accounts | **Not our case since 2026-11-17** (EAM360 is an organisation account; organisation accounts are exempt per secondary sources, confirm on the Console's Dashboard that Production is open). Applies to personal accounts created after 13 Nov 2023. **At least 12 testers opted in continuously for the 14 days** before applying for production (was 20 until Dec 2024; ROADMAP's CCRM-66 still says 20). A tester who opts out before 14 days does not count; an opt-out and back in must still add up to consecutive days. | <https://support.google.com/googleplay/android-developer/answer/14151465> |
 | 1a | Does a new build reset the clock? | **UNVERIFIED.** Google's page does not say. Most secondary sources say no (Google counts opted-in days, not versions); at least one says a new release needs testers to update and stay opted in. Plan for it to be safe, but keep updates few. | Secondary only, e.g. <https://www.testerscommunity.com/blog/does-updating-app-reset-14-day-closed-testing> |
 | 1b | Does dropping below 12 reset it? | Google's wording ("opted in continuously") implies yes; secondary sources say a dip below 12 restarts a fresh 14 continuous days. Treated as a reset here; strictly **UNVERIFIED** as to the exact counting. | Same page as #1 |
 | 1c | Production application | Three groups of questions: the closed test (recruiting ease, whether testers used all features, whether usage matched production, a feedback summary); the app (audience, value, estimated first-year installs); readiness (changes made from testing, how readiness was judged). | Same page as #1 |

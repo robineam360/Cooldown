@@ -1,5 +1,9 @@
 # Tester invite — draft for Robin to send
 
+> **Retired 2026-11-17.** Play launches on EAM360's organisation account, which has no
+> closed-test rule ([CONSOLE-STEPS.md](CONSOLE-STEPS.md), Phases A, E, F; RUNBOOK decision 7). Kept
+> for the record only.
+
 Written 2026-11-10 for CCRM-66 (Play Store Launch). Robin sends it himself, by email, WhatsApp or
 Teams; no session sends it. Fill the two links on the day. Two versions: the **ask** (before Day 0,
 to collect Google account emails) and the **go** (once the closed release is approved).

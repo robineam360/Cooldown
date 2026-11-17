@@ -1,5 +1,9 @@
 # Closed test plan — Cooldown v2.0 on Google Play
 
+> **Retired 2026-11-17.** Play launches on EAM360's organisation account, which has no
+> closed-test rule ([CONSOLE-STEPS.md](CONSOLE-STEPS.md), Phases A, E, F; RUNBOOK decision 7). Kept
+> for the record only.
+
 Written 2026-11-10 for CCRM-66 (Play Store Launch). The Console clicks are in
 [CONSOLE-STEPS.md](CONSOLE-STEPS.md); its § Policy check holds the sources for every rule quoted
 here.

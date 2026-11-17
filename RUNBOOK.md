@@ -56,9 +56,13 @@ Robin chose **B, the pace line names the reset** — ROADMAP's CCRM-108 and core
    "resets", then the clock (c1454d4).
 5. An account leaves the Pace map only when its row reads "0%" (1f8ee7b).
 6. The sample mode never reaches the notification, the status-bar icon, the reset pings or the widgets.
-7. Play launches at v2.0 on a **personal** developer account (not yet registered). The closed test (12+
-   testers opted in for 14 days in a row) starts after these items land. iOS stays on TestFlight, published by
-   EAM360. Terms risk accepted ("Proceed, risk accepted").
+7. ~~Play launches at v2.0 on a personal developer account; a 12-tester, 14-day closed test first.~~
+   **Replaced 2026-11-17 (Robin):** Play launches at v2.0 on **EAM360's organisation developer account**, the
+   same publisher as the App Store record ("EAM360 Cooldown"). An organisation account has no closed-test rule,
+   so the app goes from an optional internal test (colleagues, like the TestFlight link) straight to a production
+   release; the closed test and R2 are dropped. Robin joins that account as an invited user with a dedicated
+   Google account, not his personal one (kept for a future personal account of his own); the address is not
+   written in this public repo. Terms risk accepted ("Proceed, risk accepted").
 8. Version: Android versionCode **26** / versionName **"2.0"**; iOS `MARKETING_VERSION` **2.0**, build
    (`CURRENT_PROJECT_VERSION`) **1**, both set in the release commit and never earlier.
 9. **No "None" (Robin, 2026-11-11).** Every account is Personal or Work. It is chosen on the Add account sheet
@@ -182,7 +186,7 @@ clients back at `cases.json`.
 9. **Close-out, in order:** every *Done when* item; the status lines; the Progress tick and one dated Log line
    under the step; land; replace your own HANDOVER block with the next step's prompt. The last message gives
    what changed, what Robin must do, and the next prompt.
-10. **Decision gates.** A step whose *Gated on* names a question (Q1–Q6) does not start until that question's
+10. **Decision gates.** A step whose *Gated on* names a question (Q1–Q7) does not start until that question's
     answer is in "Robin's answers" below, in his words with the date. If it is not there, the step's first act is
     to ask Robin that question (one at a time, with the options listed), record the answer, and only then go on.
     An answer that adds a step (Q5 "in v2.0": a wireframe and a build) stops the arc: the revision takes the plan's
@@ -229,8 +233,8 @@ clients back at `cases.json`.
 
 | Step | What | Gated on | Status |
 |---|---|---|---|
-| R1 | Play Console Phases A–C (`release/play/CONSOLE-STEPS.md`): account, identity, device verification, app record, declarations | — | ☐ |
-| R2 | Recruit 15–18 testers ([TESTER-INVITE.md](release/play/TESTER-INVITE.md) §1 "the ask"), make the Google Group | — | ☐ |
+| R1 | Play Console Phases A–C (`release/play/CONSOLE-STEPS.md`): access to EAM360's organisation account, app record, declarations | — | ◐ 2026-11-17 (access requested from EAM360's lead developer) |
+| R2 | ~~Recruit 15–18 testers~~ **dropped 2026-11-17**: an organisation account has no closed-test rule | — | — |
 
 ### Tail (serial)
 
@@ -242,7 +246,7 @@ clients back at `cases.json`.
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 8, 9, 10 and the README screenshot table refreshed) |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ◐ 2026-11-17 (2.0 (1) uploaded, Waiting for Review) |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
-| 8 | Play Day 0: signing, internal upload, closed track, invites | **Robin at the console** · session guides | 4, 5, 7, R1, R2 | ☐ |
+| 8 | Play Day 0: signing, internal upload, production release | **Robin at the console** · session guides | 4, 5, 7, R1, Q7 | ☐ |
 
 ---
 
@@ -1526,34 +1530,34 @@ a fix ships as v2.0.1 with versionCode 27 on both channels.
 
 ## Step 8 · Play Day 0 — Robin at the console
 
-**Who:** **Robin** clicks, pays, verifies, enrols and uploads; the session guides one screen at a time from
-`release/play/CONSOLE-STEPS.md` Phases D–E and `CLOSED-TEST-PLAN.md`'s Day 0–3 rows, and checks what can be
-checked.
+**Who:** **Robin** clicks, enrols and uploads; the session guides one screen at a time from
+`release/play/CONSOLE-STEPS.md` Phases D–F, and checks what can be checked. (Changed 2026-11-17: EAM360's
+organisation account, no closed test; decision 7.)
 
-**Needs:** R1 done (identity verified), R2 done (15+ testers' Google accounts), Step 4's AAB and its sha256,
-Step 5's assets and Step 7 published.
+**Needs:** R1 done (Robin can see EAM360's account and holds the release permissions of Phase A), Q7 answered
+(the Play app name), Step 4's AAB and its sha256, Step 5's assets and Step 7 published.
 
 **Prompt (for the guiding session):**
 
 ```
-Read CLAUDE.md, RUNBOOK.md (Step 8 and Step 4's Log), release/play/CONSOLE-STEPS.md Phases D-E,
-CLOSED-TEST-PLAN.md and TESTER-INVITE.md; load the model-mesh skill. Guide Robin through Play Day 0, one
-screen at a time. Never open the Play Console yourself, never see the keystore, its passwords or the PEPK
-output, and name every irreversible action before he takes it: Play App Signing with the existing key (PEPK);
-the AAB from Step 4 to Internal testing (the package name is claimed here, for good); then check App bundle
-explorer's signed universal APK SHA-256 against RELEASING.md's trusted digest before any tester installs;
-the same AAB to the Closed track with the release notes and countries; the App content declarations
-re-checked against the v2.0 drafts (data safety with Google, app access via the sample, the FGS declaration
-and video link). When Google approves the closed release, give Robin TESTER-INVITE §2 "the go" with the
-opt-in link filled. Log every action with the date; the clock (Day S) starts when 12 are opted in.
+Read CLAUDE.md, RUNBOOK.md (Step 8, decision 7 and Step 4's Log) and release/play/CONSOLE-STEPS.md
+Phases B-F; load the model-mesh skill. Guide Robin through Play Day 0, one screen at a time. Never sign in to
+the Play Console or enter any credential; in the in-app browser fill only the copy Robin asks for, from
+release/play/. Never see the keystore, its passwords or the PEPK output, and name every irreversible action
+before he takes it: Play App Signing with the existing key (PEPK); the AAB from Step 4 to Internal testing (the
+package name com.robin.claudeusage is claimed here, for good); then check App bundle explorer's signed
+universal APK SHA-256 against RELEASING.md's trusted digest before anyone installs; the App content
+declarations re-checked against the v2.0 drafts (data safety with Google, app access via the sample, the FGS
+declaration and video link); then the same AAB to Production with the release notes, countries and a staged
+rollout, submitted for review only on Robin's go. Log every action with the date.
 ```
 
 **Done when:**
-- ☐ The AAB is on Internal testing and its Play-signed APK's digest matches; the same AAB is rolled out to
-  Closed testing; the invite is sent; the Log records Day 0 and, once reached, Day S.
+- ☐ The AAB is on Internal testing and its Play-signed APK's digest matches; the same AAB is submitted to
+  Production; the Log records the submission and, once it comes, Google's approval and the rollout.
 
-**Reversal:** none — the package name, the enrolled key and the fee are permanent. A bad closed release is
-replaced by a new versionCode on both channels.
+**Reversal:** none — the package name and the enrolled key are permanent. A bad release is halted (staged
+rollout) and replaced by a new versionCode on both channels.
 
 **Log:**
 
@@ -1575,7 +1579,7 @@ replaced by a new versionCode on both channels.
 
 The physical device checks and which defects block; any visible change beyond rev B and its 2026-11-11 addendum; the feature-graphic
 approval; the TestFlight upload and App Store Connect; the release go; everything in the Play Console (account,
-fee, identity, device verification, PEPK, uploads, the closed track); recruiting and inviting testers; the
+access to EAM360's account, PEPK, uploads, the production release); the
 answers to the open questions below.
 
 ## Questions for Robin — answered 2026-11-11 (see "Robin's answers")
@@ -1591,6 +1595,8 @@ answers to the open questions below.
   the v1.9 graphic and redraw later?
 - **Q5** (gates A4). The Android half of the Weekly-first share card (CCRM-24 (Share Card)) was left open after the first
   v2.0 pass and needs its own wireframe. In v2.0, or after?
+- **Q7** (gates Step 8; asked 2026-11-17). The Play app name: `Cooldown — AI usage limits` as drafted
+  (`release/play/listing.md` §1), or `EAM360 Cooldown` to match the App Store record?
 - **Q6** (gates A1 and I1; asked in Step 1). Lanes A and I may run at the same time on this Mac (two sessions, one gradle, simulators beside the
   emulator). Fine, or one lane at a time?
 

@@ -1,5 +1,7 @@
 # Google Play listing checklist — prepared 2026-11-04, used after v2.0
 
+> **2026-11-17 — Play moved to EAM360's organisation account; no closed test** (CONSOLE-STEPS.md).
+>
 > **2026-11-10 — superseded in order by [CONSOLE-STEPS.md](CONSOLE-STEPS.md).** Robin decided Play
 > launches **at v2.0** on a **personal** account (Q4 answered), with the closed test after the
 > eight v2.0 feedback items land ([CLOSED-TEST-PLAN.md](CLOSED-TEST-PLAN.md)). The tables below stay
@@ -37,7 +39,7 @@ new launcher icon (CCRM-101 (Icon v3)); all of them live on the v2.0 branch
 
 | # | Item | What it needs | Status today | Owner |
 |---|---|---|---|---|
-| 1 | Developer account | Personal or organisation (Q4 in RUNBOOK Step 9), fee, ID check | Open; Q4 unanswered | Robin |
+| 1 | Developer account | EAM360's organisation account (2026-11-17); Robin invited as a user | Access requested | Robin |
 | 2 | Create app | Name, default language, free, app or game, declarations | After v2.0 | Robin |
 | 3 | App name (30) | `Cooldown — AI usage limits` recommended | Drafted, `listing.md` §1 | session drafts, Robin pastes |
 | 4 | Short description (80) | `See your 5-hour and weekly AI usage limits, and when they reset.` | Drafted; **rewrite for v2.0**: the weekly window now leads | session |
@@ -57,7 +59,7 @@ new launcher icon (CCRM-101 (Icon v3)); all of them live on the v2.0 branch
 | 18 | Signing | Play App Signing with the existing key (PEPK export enrolled once, never staged) | After v2.0 | Robin |
 | 19 | AAB | `bundlePlayRelease` from the release commit, the same versionCode, validated and signer-checked per RELEASING.md §5 | **Not built for v1.9 or v2.0**; built when Play starts | session builds, Robin uploads |
 | 20 | Upload requirements | Target API level, 16 KB page size, anything new | Read on the day | session reads |
-| 21 | Internal testing track, then the closed-test rule (12 testers, 14 days on a new personal account, if Q4 is personal) | Testers list, release notes | After v2.0 | Robin |
+| 21 | Internal testing track (optional), then production; no closed-test rule on an organisation account | Testers list, release notes | After v2.0 | Robin |
 | 22 | Release notes (500) | App only, no build story | After v2.0 | session drafts |
 
 ## C. Rules that carry over unchanged
