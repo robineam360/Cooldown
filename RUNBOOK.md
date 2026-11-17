@@ -246,7 +246,7 @@ clients back at `cases.json`.
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 8, 9, 10 and the README screenshot table refreshed) |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ◐ 2026-11-17 (2.0 (1) uploaded, Waiting for Review) |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
-| 8 | Play Day 0: signing, internal upload, production release | **Robin at the console** · session guides | 4, 5, 7, R1, Q7 | ☐ |
+| 8 | Play Day 0: signing, internal upload, production release | **Robin at the console** · session guides | 4, 5, 7, R1, Q7 (answered) | ☐ |
 
 ---
 
@@ -1612,6 +1612,7 @@ Filled by the step that asks (Convention 10), in Robin's words, dated. Empty mea
 | Q4 | D1 part (7), Step 5 | "Redraw for v2.0 (Recommended)" — Lane D draws the graphic on the Icon v3 mark; Robin approves. | 2026-11-11 |
 | Q5 | A4 | "After v2.0 (Recommended)" — the Android half of CCRM-24 (Share Card) is not in v2.0; A4 is CCRM-110 + CCRM-112 only. | 2026-11-11 |
 | Q6 | Step 1's close, A1, I1 | "Both at once (Recommended)" — Lanes A and I run side by side. | 2026-11-11 |
+| Q7 | Step 8 | "EAM360 Cooldown" — the Play app name matches the App Store record. | 2026-11-17 |
 
 **Added 2026-11-11 (the amendment, Robin in the amendment session; AskUserQuestion, options quoted):** the narrow Duet,
 **"C: word takes the figure's slot (Recommended)"**; the tag model, **"Always Personal or Work (Recommended)"**, after

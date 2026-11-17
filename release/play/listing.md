@@ -38,7 +38,8 @@ None of these contains Claude, ChatGPT, OpenAI, Anthropic, Gemini or Google (che
 
 | | Name | Chars |
 |---|---|---|
-| **Recommended** | `Cooldown — AI usage limits` | 26 |
+| **Chosen (Robin, 2026-11-17, RUNBOOK Q7)** | `EAM360 Cooldown` — matches the App Store record | 15 |
+| Drafted earlier | `Cooldown — AI usage limits` | 26 |
 | Alternative A | `Cooldown: AI Usage Limits` | 25 |
 | Alternative B | `Cooldown — Usage Limit Meter` | 28 |
 

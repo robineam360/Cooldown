@@ -51,8 +51,8 @@ done; nothing here is paid or verified by Robin.
 
 ## Phase B — create the app (can start now)
 
-9. **Create app**: app name per **Q7** (RUNBOOK): `Cooldown — AI usage limits` 📄
-   ([listing.md](listing.md) §1) or `EAM360 Cooldown` to match the App Store (Play allows 30 characters), default language **English (United Kingdom)** or **English (United
+9. **Create app**: app name **`EAM360 Cooldown`** 📄 (Q7, Robin 2026-11-17: matches the
+   App Store record; [listing.md](listing.md) §1; Play allows 30 characters), default language **English (United Kingdom)** or **English (United
    States)** — pick the one the copy is written in (en-GB spelling: *colour*, *organisation*),
    **App**, **Free**. ⛔ **Free can never become paid upfront**; in-app purchases stay possible.
    Tick the Developer Programme Policies and US export laws declarations.

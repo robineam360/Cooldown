@@ -41,7 +41,7 @@ new launcher icon (CCRM-101 (Icon v3)); all of them live on the v2.0 branch
 |---|---|---|---|---|
 | 1 | Developer account | EAM360's organisation account (2026-11-17); Robin invited as a user | Access requested | Robin |
 | 2 | Create app | Name, default language, free, app or game, declarations | After v2.0 | Robin |
-| 3 | App name (30) | `Cooldown — AI usage limits` recommended | Drafted, `listing.md` §1 | session drafts, Robin pastes |
+| 3 | App name (30) | `EAM360 Cooldown` (Q7, 2026-11-17) | Drafted, `listing.md` §1 | session drafts, Robin pastes |
 | 4 | Short description (80) | `See your 5-hour and weekly AI usage limits, and when they reset.` | Drafted; **rewrite for v2.0**: the weekly window now leads | session |
 | 5 | Full description (4000) | 3344 characters, plain text | Drafted; **rewrite for v2.0** (Summary tab, Weekly first, Gemini) | session |
 | 6 | App icon (512×512) | No provider marks | See §A | session exports, Robin uploads |
