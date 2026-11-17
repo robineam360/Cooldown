@@ -28,6 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+### CCBG-104 · Bundle Version Default — the iOS app and widget read "1.0 (1)" whatever project.yml says
+- **Status:** **Fixed** (RUNBOOK Step 4, 2026-11-17, before the archive) · iOS · found by Step 4's judge (F1)
+- **Severity:** High for the release (the upload would have spent build "1.0 (1)" under the wrong version; no user ever ran it)
+- **Symptom:** neither target's `info.properties` in `ios/project.yml` named `CFBundleShortVersionString` or `CFBundleVersion`, so XcodeGen wrote its defaults "1.0" and "1" into the generated Info.plists; `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` never reached the bundle (Step 3's iPad log reads "Cooldown 1.0 (1)" while project.yml said 0.1). RELEASING.md §6 only checked that app and widget agree.
+- **Fix:** both targets map `$(MARKETING_VERSION)` and `$(CURRENT_PROJECT_VERSION)`; RELEASING.md §6 now checks the exact values; Step 4 read 2.0 (1) from the archive's app and widget.
+
 ### CCBG-103 · CI Red — main's CI failed on lint and on the iOS app build from 2a62105 to cf87c55
 - **Status:** **Fixed** (RUNBOOK Step 4, 2026-11-17, in the release commit; CI green on that sha is Step 4's gate) · Android and iOS · found by Step 4's own lint run, then CI's history: every `main` run from 2a62105 (2026-11-13) on failed
 - **Severity:** Medium (no user-visible effect; it hid any other CI failure for eight commits and blocks the release gate)

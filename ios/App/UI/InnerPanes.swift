@@ -48,6 +48,7 @@ struct PaneSplit<First: View, Second: View>: View {
     /// The fold, when the system reports an active division region crossing this area.
     static func fold(_ proxy: GeometryProxy) -> CGRect? {
         // CCBG-103 (CI Red): the API is in the iOS 27.1 SDK (Swift 6.4, Xcode 27); CI's Xcode 26 builds without it.
+        // The guard tests the compiler, not the SDK: it needs Xcode 27.1 or later, never 27.0.
         #if compiler(>=6.4)
         if #available(iOS 27.1, *) {
             return proxy.reservedRegions(kind: .division).first(where: \.isActive)?.frame

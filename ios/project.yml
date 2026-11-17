@@ -50,6 +50,9 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Cooldown
+        # CCBG-104 (Bundle Version Default): XcodeGen writes "1.0" / "1" unless told; read the build settings.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         AppIdentifierPrefix: $(AppIdentifierPrefix)
         UILaunchScreen: {}
         NSSupportsLiveActivities: true
@@ -88,6 +91,9 @@ targets:
       path: Widget/Info.plist
       properties:
         CFBundleDisplayName: Cooldown
+        # CCBG-104 (Bundle Version Default): XcodeGen writes "1.0" / "1" unless told; read the build settings.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         AppIdentifierPrefix: $(AppIdentifierPrefix)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

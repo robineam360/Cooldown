@@ -230,8 +230,9 @@ xcodebuild archive -project ios/Cooldown.xcodeproj -scheme Cooldown -configurati
    -destination 'generic/platform=iOS' -archivePath ios/out/Cooldown.xcarchive DEVELOPMENT_TEAM=<team>
 ```
 
-Check the archive before anything is uploaded: the app's and the widget's `Info.plist` carry the same
-`CFBundleShortVersionString` and `CFBundleVersion`; `AntigravityClientSecret` is non-empty; both
+Check the archive before anything is uploaded: the app's and the widget's `Info.plist` carry exactly this release's
+`MARKETING_VERSION` as `CFBundleShortVersionString` and its build number as `CFBundleVersion` (equal is not enough:
+both once read XcodeGen's default "1.0" / "1", CCBG-104 (Bundle Version Default)); `AntigravityClientSecret` is non-empty; both
 `PrivacyInfo.xcprivacy` files are inside the bundles; `ITSAppUsesNonExemptEncryption` is `false`; the
 signing identity is the Apple Distribution certificate and the profile is an App Store one.
 

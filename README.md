@@ -72,7 +72,7 @@ a 2-page overview.
 > What lowers the practical risk on all three: the app is **read-only** (it never sends prompts or
 > spends quota — and it deliberately never calls OpenAI's one endpoint that *would* spend a
 > credit), signs in **once per install** (no repeated logins, no CLI subprocess), polls on a
-> slow interval, and is shared privately, not on any store. Use it at your own discretion.
+> slow interval, and is not on any app store (the iOS beta is on TestFlight). Use it at your own discretion.
 
 ## What it does
 
@@ -128,7 +128,7 @@ a 2-page overview.
   chart height, and a **Time down** option that turns the chart on its side so its curve lines
   up directly under the bar's pace mark
 - **The 7-day chart reads a model cap, not just the pool** — chips above the chart switch it
-  between **All** and a per-model cap like Fable, so a Max or Team account capped on one model
+  between **7d** and a per-model cap like Fable, so a Max or Team account capped on one model
   but fine on the pool can finally see why
 - **A shorter Accounts tab, and drag to reorder** — every account card is now a compact
   status line, a plan chip and three actions (Re-sign in / Clear / Dashboard); a new **Reorder**
