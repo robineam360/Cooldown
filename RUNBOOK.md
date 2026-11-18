@@ -1621,6 +1621,13 @@ rollout) and replaced by a new versionCode on both channels.
     (4) Proof the Play bundle is the Step 4 AAB: the uploaded copy hashes to `6115207a…cd16`; the Play-signed universal
     APK check is still to run. (5) Full rollout vs planned staged. (6) "independent community project" wording.
     Closed since: the privacy URL and its deletion anchor resolve (200) and name EAM360 Cooldown.
+  - **Provider-terms research** (`design/research/2026-11-18-provider-terms-store-review.md`): the risk is the sign-in
+    method on all three, not Gemini alone — Claude (Claude Code's client; Anthropic forbids third-party Claude.ai login)
+    and Gemini (Antigravity's client and identity) high, ChatGPT (Codex's client) medium; Play and Apple 5.2.2 both
+    require the services' terms to permit it. **Robin, 2026-11-18: "Ask providers first."** Play submission and any App
+    Store submission are **on hold** until replies; drafts to Anthropic, OpenAI and Google are in
+    `release/outreach/2026-11-18-provider-permission-requests.md`, sent by Robin. The prepared Play release stays saved,
+    unsubmitted, Managed publishing on.
 
 ---
 
