@@ -1588,6 +1588,12 @@ rollout) and replaced by a new versionCode on both channels.
     build, five shots in `release/play/screenshots-foldable/` (the required 1:1, 4:3 and 10:16, plus the Product tab and Settings at 1:1, e-mail lines blanked), listed in `listing.md` §5. The screen
     timeout was raised for the session and restored to 600000. The Summary filter was switched from Work to All for the
     shots. Found CCBG-105 (Corner Label Collision).
+  - Foldable shots uploaded (5 / 8); listing saved with "Don't label assets" (Robin) on the AI asset declaration. The
+    dashboard's setup is complete; Internal, Closed, Open and Production are unlocked.
+  - **Signing blocker found before any upload:** App signing already shows a **Google-generated app signing key in use**
+    (SHA-256 `91:A7:…:17:7A`, created with the app record), not ours (`8B:C2:…:F6:4F`, the AAB's signer). With it, the Play
+    build and the GitHub APK would carry different signatures and could not update each other (Q3 wanted one key).
+    "Change key" needs an account admin; Robin is not one. Nothing is uploaded, so the key can still be changed.
 
 ---
 
