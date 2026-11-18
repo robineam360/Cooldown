@@ -1602,6 +1602,16 @@ rollout) and replaced by a new versionCode on both channels.
     Robin ran Google's PEPK with `ccooldown-release.jks` (alias `ccooldown`, passwords typed by Robin), uploaded the
     encrypted ZIP and saved; no new upload key. App signing now reads **8B:C2:1A:2A:…:D0:44:F6:4F**, the AAB's signer, so
     the Play and GitHub builds share one signature. `pepk-output.zip` deleted.
+  - **First upload:** Robin uploaded the Step 4 AAB (sha256 `6115207a…cd16`) to Internal testing as a draft (not rolled
+    out; Robin chose to skip internal testing). App bundle explorer: 26 (2.0), API 31+, target 36, 16 KB pages supported,
+    9,771 devices; Play signing active, automatic protection and auto-translation off.
+  - **Production release prepared, not submitted:** bundle 26 from the library, release name 26 (2.0), the en-GB notes from
+    `listing.md` §6; **178 countries / regions** (all, plus rest of world). Foreground-service declaration saved: special
+    use "Other", an 856-character justification condensed from `fgs-declaration.md` (Play now has one description field),
+    video `fgs-demo.mp4` uploaded by Robin to YouTube **unlisted** (https://www.youtube.com/watch?v=hgNE2UP7VRA, details
+    filled in the in-app browser). Release review: no errors; two warnings (no deobfuscation file, no native debug
+    symbols). Publishing overview holds **11 changes not yet submitted**, production as "Start full rollout";
+    **Managed publishing is off**, so an approved submission would go live at once.
 
 ---
 
