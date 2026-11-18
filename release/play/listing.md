@@ -132,8 +132,9 @@ Account risk: Cooldown reads undocumented usage endpoints using your own sign-in
 
 ## 5. Graphics checklist
 
-- [ ] **App icon, 512×512 PNG** — export from the v2.0 launcher icon, CCRM-101 (Icon v3)'s "Shared pace"
-  (`design/icon-v3/`). No provider marks on it.
+- [x] **App icon, 512×512 PNG** — `release/play/app-icon-512.png`, exported 2026-11-18 with headless Chrome
+  from CCRM-101 (Icon v3)'s master `design/icon-v3/shared-pace.svg` (full-bleed plate; Play applies its own
+  mask). No provider marks on it.
 - [x] **Feature graphic, 1024×500** — `release/play/feature-graphic.png` (24-bit RGB, no alpha), exported
   2026-11-17 (RUNBOOK Step 5) from variant C of `design/2026-11-11-play-feature-graphic-v20.html`
   (`?only=c`), approved by Robin on 2026-11-11.

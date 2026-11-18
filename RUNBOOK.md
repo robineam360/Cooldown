@@ -1578,6 +1578,11 @@ rollout) and replaced by a new versionCode on both channels.
     the main store listing redirects to Home. Robin asks the lead for "Manage store presence". Releases, signing and the
     FGS declaration (after the first upload) are not tried yet.
   - `docs/privacy.md` now names the EAM360 Cooldown listing (Play's deletion link must refer to the app's store name).
+  - **Later the same day:** Raja (EAM360) granted store presence. **Store settings saved:** category Tools; contact email
+    robin@eam360.com, website https://github.com/robineam360/Cooldown, no phone. **Default store listing (en-GB) saved as
+    a draft:** name EAM360 Cooldown, short description (75) and full description (3,930) from `listing.md` §2–3. Graphics
+    need Robin's upload (the in-app browser cannot pick files): `app-icon-512.png` (exported today),
+    `feature-graphic.png`, the eight `screenshots/` in `listing.md` §5 order.
 
 ---
 
