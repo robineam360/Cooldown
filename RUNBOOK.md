@@ -1585,7 +1585,7 @@ rollout) and replaced by a new versionCode on both channels.
     `feature-graphic.png`, the eight `screenshots/` in `listing.md` §5 order. **Robin uploaded them** (icon 1/1, graphic
     1/1, phone 8/8, draft saved).
   - **Foldable screenshots** (Play's optional section; Robin: show off the Fold 7): captured over USB on the release
-    build, three shots in `release/play/screenshots-foldable/` (1:1, 4:3, 10:16), listed in `listing.md` §5. The screen
+    build, five shots in `release/play/screenshots-foldable/` (the required 1:1, 4:3 and 10:16, plus the Product tab and Settings at 1:1, e-mail lines blanked), listed in `listing.md` §5. The screen
     timeout was raised for the session and restored to 600000. The Summary filter was switched from Work to All for the
     shots. Found CCBG-105 (Corner Label Collision).
 
