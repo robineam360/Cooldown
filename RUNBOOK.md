@@ -1612,6 +1612,15 @@ rollout) and replaced by a new versionCode on both channels.
     filled in the in-app browser). Release review: no errors; two warnings (no deobfuscation file, no native debug
     symbols). Publishing overview holds **11 changes not yet submitted**, production as "Start full rollout";
     Managed publishing was off; **turned on** the same day (Robin), so an approved submission waits for Robin's Publish click.
+  - **Submission gate (packet `923568d6…fc1c`, step `play-submit-v2.0-26`): BLOCKED, not submitted.** Fresh Opus judge
+    (record 20261118T112532Z-78efb3eb677dbf54) and Sol @ high (record 20261118T112415Z-75dabfcd83536625) both returned
+    `blocking`. Open: (1) **Play policy risk** (judge F1): the Gemini path uses Antigravity CLI's identity, which Play's
+    Device and Network Abuse policy may treat as unauthorized access to a Google service; a suspension would be a strike
+    on EAM360's account, which has other live apps — Robin's call, maybe EAM360's owner's; alternative: Play without
+    Gemini. (2) "full access" tick vs features needing a real account. (3) Data safety "required" vs sample mode (Sol).
+    (4) Proof the Play bundle is the Step 4 AAB: the uploaded copy hashes to `6115207a…cd16`; the Play-signed universal
+    APK check is still to run. (5) Full rollout vs planned staged. (6) "independent community project" wording.
+    Closed since: the privacy URL and its deletion anchor resolve (200) and name EAM360 Cooldown.
 
 ---
 
