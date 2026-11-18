@@ -244,7 +244,7 @@ clients back at `cases.json`.
 | 3 | Device pass 2: Fold 7 and iPad; defects filed and fixed | session · **Robin at the devices** | 2 | ☑ 2026-11-13 (Fold 7 and iPad halves; open: TalkBack on the Tag marks note, VoiceOver on the filter, see the Log) |
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☑ 2026-11-17 (release commit `8deaf01`; open: guide pages 5, 7, 9, 10 still show v1.9 screens, see the Log) |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 8, 9, 10 and the README screenshot table refreshed) |
-| 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ◐ 2026-11-17 (2.0 (1) uploaded, Waiting for Review) |
+| 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☑ 2026-11-18 (2.0 (1) Approved by Beta App Review; public link live) |
 | 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
 | 8 | Play Day 0: signing, internal upload, production release | **Robin at the console** · session guides | 4, 5, 7, R1, Q7 (answered) | ☐ |
 
@@ -1470,7 +1470,7 @@ the app record if it is not there, pastes `release/testflight/whats-to-test.md` 
 sample-mode path, with the three accounts I3 made), fills the privacy-policy URL, answers App Privacy with *Data
 Not Collected*, submits for Beta App Review and creates the public link. The link stays unshared until Step 7.
 
-**Done when:** ☑ Robin reports the build "2.0 (1)" uploaded and its review state; the Log records it. ☐ Beta App Review approved (Log).
+**Done when:** ☑ Robin reports the build "2.0 (1)" uploaded and its review state; the Log records it. ☑ Beta App Review approved (Log, 2026-11-18).
 
 **Reversal:** none once uploaded (the build number is spent; a new upload is "2.0 (2)"). A rejected build is
 fixed forward.
@@ -1494,6 +1494,10 @@ fixed forward.
   - **Plan change (Robin):** no separate public-beta stage is required before the App Store; the App Store release is
     planned from the beta testers' feedback. The Play name `Cooldown — AI usage limits` is not changed yet.
 
+
+- **2026-11-18, Beta App Review: Approved.** App Store Connect → TestFlight → iOS Builds reads build 2.0 (1) **Approved**,
+  expires in 90 days, in both groups (EAM360, Public Beta); the public link's page offers the beta. Step 7's Q2 gate
+  (approval before the GitHub notes carry the link) is met.
 
 ---
 
