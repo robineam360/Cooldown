@@ -1598,6 +1598,10 @@ rollout) and replaced by a new versionCode on both channels.
     (SHA-256 `91:A7:…:17:7A`, created with the app record), not ours (`8B:C2:…:F6:4F`, the AAB's signer). With it, the Play
     build and the GitHub APK would carry different signatures and could not update each other (Q3 wanted one key).
     "Change key" needs an account admin; Robin is not one. Nothing is uploaded, so the key can still be changed.
+  - **Signing fixed (⛔ permanent):** Raja made Robin an admin. Change key → "Export and upload a key from Java keystore";
+    Robin ran Google's PEPK with `ccooldown-release.jks` (alias `ccooldown`, passwords typed by Robin), uploaded the
+    encrypted ZIP and saved; no new upload key. App signing now reads **8B:C2:1A:2A:…:D0:44:F6:4F**, the AAB's signer, so
+    the Play and GitHub builds share one signature. `pepk-output.zip` deleted.
 
 ---
 
