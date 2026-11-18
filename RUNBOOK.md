@@ -1582,7 +1582,12 @@ rollout) and replaced by a new versionCode on both channels.
     robin@eam360.com, website https://github.com/robineam360/Cooldown, no phone. **Default store listing (en-GB) saved as
     a draft:** name EAM360 Cooldown, short description (75) and full description (3,930) from `listing.md` §2–3. Graphics
     need Robin's upload (the in-app browser cannot pick files): `app-icon-512.png` (exported today),
-    `feature-graphic.png`, the eight `screenshots/` in `listing.md` §5 order.
+    `feature-graphic.png`, the eight `screenshots/` in `listing.md` §5 order. **Robin uploaded them** (icon 1/1, graphic
+    1/1, phone 8/8, draft saved).
+  - **Foldable screenshots** (Play's optional section; Robin: show off the Fold 7): captured over USB on the release
+    build, three shots in `release/play/screenshots-foldable/` (1:1, 4:3, 10:16), listed in `listing.md` §5. The screen
+    timeout was raised for the session and restored to 600000. The Summary filter was switched from Work to All for the
+    shots. Found CCBG-105 (Corner Label Collision).
 
 ---
 

@@ -28,6 +28,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+### CCBG-105 · Corner Label Collision — a Pace map dot late in its week sits on the "behind pace" corner label
+- **Status:** **Open** (found 2026-11-18 while capturing Play's foldable screenshots on the release build 2.0 (26)) · Android, Fold 7 inner screen, portrait and landscape, Trails on or off · iOS: not checked · v2.0 or later is Robin's call
+- **Severity:** Low (cosmetic; the value label "Claude 9%" stays readable)
+- **Symptom:** with the Summary on All, the Claude account (9% used, day 6 of its week) is drawn over the plot's bottom-right "behind pace" label, which reads "b●ind pace". The ChatGPT "21%" label is also crossed by the dashed even-pace line. Shots: `release/play/screenshots-foldable/fold-01-inner-summary.png`, `fold-02-inner-landscape.png`.
+- **Likely cause:** the corner labels are fixed text that the dot and label placement does not avoid (CCBG-79 (Leader Reads as Trail) dealt with leaders, not the corner captions).
+
 ### CCBG-104 · Bundle Version Default — the iOS app and widget read "1.0 (1)" whatever project.yml says
 - **Status:** **Fixed** (RUNBOOK Step 4, 2026-11-17, before the archive) · iOS · found by Step 4's judge (F1)
 - **Severity:** High for the release (the upload would have spent build "1.0 (1)" under the wrong version; no user ever ran it)

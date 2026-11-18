@@ -156,6 +156,13 @@ Account risk: Cooldown reads undocumented usage endpoints using your own sign-in
   uploads it to YouTube unlisted and pastes the link into the FGS declaration.
 - A provider logo that appears inside the app's own UI in a screenshot is fine (it is the real
   UI). No screenshot may be framed, captioned or arranged to suggest endorsement by a provider.
+- [x] **Foldable screenshots, 3** — `release/play/screenshots-foldable/`, captured 2026-11-18 on the Fold 7 (release
+  build 2.0 (26), real accounts, Summary on All, Pace map with Trails off, no e-mail on screen). Play's required trio:
+  1. `fold-01-inner-summary.png` — unfolded, portrait, 1:1 (1968×1968; status bar and taskbar cropped, top padded with
+     the app background)
+  2. `fold-02-inner-landscape.png` — unfolded, landscape, 4:3 (2184×1638)
+  3. `fold-03-cover-summary.png` — folded cover screen, 10:16 (1250×2000; sides padded with the app background)
+  They show CCBG-105 (Corner Label Collision); retake if it is fixed before launch.
 - [ ] **7-inch and 10-inch tablet screenshots** — optional.
 
 ## 6. Release notes on Play — the closed track and production (limit 500)
