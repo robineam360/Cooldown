@@ -7,8 +7,9 @@ of the Android app Cooldown (package `com.robin.claudeusage`): the one downloade
 one installed from Google Play, and, in its own section below, Cooldown for iPhone and iPad. Where
 they differ, it says so.
 
-Cooldown is made by Robin Richard Rajan, an individual developer. Questions about this policy go to
-<robin@eam360.com>.
+Cooldown is made by Robin Richard Rajan, an individual developer. On Google Play and the App Store it is
+published by EAM360 under the name **EAM360 Cooldown**; this policy is the one for that listing. Questions
+about this policy go to <robin@eam360.com>.
 
 ## The short version
 

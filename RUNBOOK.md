@@ -233,7 +233,7 @@ clients back at `cases.json`.
 
 | Step | What | Gated on | Status |
 |---|---|---|---|
-| R1 | Play Console Phases A–C (`release/play/CONSOLE-STEPS.md`): access to EAM360's organisation account, app record, declarations | — | ◐ 2026-11-17 (access requested from EAM360's lead developer) |
+| R1 | Play Console Phases A–C (`release/play/CONSOLE-STEPS.md`): access to EAM360's organisation account, app record, declarations | — | ◐ 2026-11-18 (app record and every App content declaration done; open: "Manage store presence" for Store settings and the store listing) |
 | R2 | ~~Recruit 15–18 testers~~ **dropped 2026-11-17**: an organisation account has no closed-test rule | — | — |
 
 ### Tail (serial)
@@ -1560,6 +1560,24 @@ rollout, submitted for review only on Robin's go. Log every action with the date
 rollout) and replaced by a new versionCode on both channels.
 
 **Log:**
+
+- **2026-11-18, R1 (Phases A–C), Robin at the console, the orchestrator session filling forms in the in-app browser at Robin's
+  request.** Robin's dedicated Google account was added to EAM360's organisation account (it has other apps in production).
+  - **App created** by Robin: **EAM360 Cooldown**, package `com.robin.claudeusage` (Play: "available"), default language
+    English (United Kingdom), App, **Free**. Play's **automatic protection was turned off** (Robin: the GitHub APK is a normal
+    install path). The dashboard offers Production directly; no closed-test gate.
+  - **App content, all saved** ("You're all caught up"): privacy policy URL (`docs/privacy.md`); sign-in details (Yes,
+    restricted; one set "Sample data mode (no account needed)", no credentials, the 496-character note now in
+    `release/play/app-access.md`, "full access" ticked on Robin's word); ads No; advertising ID No (no `AD_ID` in the
+    playRelease merged manifest); government No; financial features none; health none; target audience 18 and over;
+    content rating (IARC, All Other App Types, every answer No, contact robin@eam360.com): ESRB Everyone, PEGI 3, IARC 3+;
+    data safety per `data-safety.md` (User IDs collected and shared, required, app functionality and account management;
+    crash logs and diagnostics collected, optional, analytics; encrypted in transit; no account creation, login with
+    accounts made outside the app ("Other": the provider's own sign-in); deletion URL `docs/privacy.md#deleting-your-data`).
+  - **Blocked on access:** Store settings (category, contact details) reads "You currently don't have the necessary rights";
+    the main store listing redirects to Home. Robin asks the lead for "Manage store presence". Releases, signing and the
+    FGS declaration (after the first upload) are not tried yet.
+  - `docs/privacy.md` now names the EAM360 Cooldown listing (Play's deletion link must refer to the app's store name).
 
 ---
 

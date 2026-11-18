@@ -17,7 +17,16 @@ In the Console, add one set of instructions with **no username and no password**
 allows that when no credentials are needed; **re-read on the day** whether it still does, and what
 its length limit is). The text below is 1,256 characters (Python `len()`).
 
-## The reviewer instructions
+## What is in the Console (2026-11-18)
+
+Play's form now calls this **Sign in details**, and its "any other information" field takes **500 characters**, so the
+long text below did not fit. Saved instead (496 characters), with no username or password and "full access" ticked:
+
+```text
+No account or password is needed. Use the built-in sample data: open the app and, on the first screen, tap "Try with sample data" (also in Settings > Accounts > + Add account, last row). Three made-up accounts (Claude, ChatGPT, Gemini) open under a violet "Sample data" banner; every tab, chart, the Summary and Settings work. Tap "Exit" on the banner to leave. The always-on notification, status-bar icon, reset pings and widgets show real accounts only; the foreground-service video shows them.
+```
+
+## The reviewer instructions (long version, for the record)
 
 ```text
 No account or password is needed. Cooldown has no account of its own: it shows the usage limits of the user's own Claude, ChatGPT or Gemini account. For review, use the built-in sample data:
