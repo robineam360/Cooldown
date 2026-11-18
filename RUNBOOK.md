@@ -1611,7 +1611,7 @@ rollout) and replaced by a new versionCode on both channels.
     video `fgs-demo.mp4` uploaded by Robin to YouTube **unlisted** (https://www.youtube.com/watch?v=hgNE2UP7VRA, details
     filled in the in-app browser). Release review: no errors; two warnings (no deobfuscation file, no native debug
     symbols). Publishing overview holds **11 changes not yet submitted**, production as "Start full rollout";
-    **Managed publishing is off**, so an approved submission would go live at once.
+    Managed publishing was off; **turned on** the same day (Robin), so an approved submission waits for Robin's Publish click.
 
 ---
 
