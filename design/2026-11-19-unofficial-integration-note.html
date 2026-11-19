@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unofficial integration note — 2026-11-19</title>
+<style>
+:root{--pg:#fff;--bg:#FEF7FF;--card:#F3EDF7;--sv:#E7E0EC;--ink:#1C1B1F;--mute:#49454F;--lv:#CAC4D0;--c:#D97757;--g:#10A37F;--m:#4285F4;--ios-bg:#F2F2F7;--ios-card:#fff;--ios-line:#C6C6C8;--ios-sub:#6E6E73;--ios-fill:rgba(118,118,128,.12);--anno:#7A4E00;--annobg:#FFF3D1;--tbl:#E7E0EC;--r:#C62828}
+@media (prefers-color-scheme:dark){:root{--pg:#111;--bg:#1C1B1F;--card:#2B2930;--sv:#36343B;--ink:#E6E1E5;--mute:#CAC4D0;--lv:#49454F;--c:#E59980;--g:#19C39A;--m:#8AB4F8;--ios-bg:#000;--ios-card:#1C1C1E;--ios-line:#3A3A3C;--ios-sub:#8E8E93;--ios-fill:rgba(118,118,128,.24);--anno:#FFD27A;--annobg:#3A2E10;--tbl:#2B2930;--r:#FF5252}}
+body{margin:24px;font:14px/1.5 Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--pg);color:var(--ink);max-width:1500px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 8px;padding-top:12px;border-top:1px solid var(--lv)}
+p,li{max-width:920px}.lead{color:var(--mute)}
+.rec{background:var(--annobg);color:var(--anno);border-radius:8px;padding:10px 14px;max-width:920px}
+table{border-collapse:collapse;font-size:12.5px;margin:8px 0 14px}th,td{border:1px solid var(--lv);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--tbl)}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+figure{margin:0}figcaption{font-size:11.5px;line-height:1.4;color:var(--mute);margin-top:6px;max-width:380px}figcaption b{color:var(--ink)}
+/* iOS sheet */
+.ios{width:360px;background:var(--ios-bg);border:1px solid var(--ios-line);border-radius:22px 22px 0 0;padding:8px 18px 20px;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;box-sizing:border-box}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--ios-line);margin:0 auto 14px}
+.ios h3{font-size:20px;font-weight:700;margin:0 0 10px}
+.ios .steps{font-size:15px;line-height:1.4;margin:0 0 14px}
+.cap{display:block;text-align:center;border-radius:999px;padding:12px;font-size:15.5px;font-weight:600;color:#000;margin:0 0 12px}
+.fld{background:var(--ios-card);border-radius:10px;padding:11px 12px;font-size:15px;color:var(--ios-sub);margin:0 0 12px}
+.two{display:flex;gap:10px}.two span{flex:1;text-align:center;border-radius:999px;padding:11px;font-size:15px;font-weight:600;background:var(--ios-fill)}
+.two .dis{opacity:.4;background:var(--ink);color:var(--pg)}
+.code{font:600 34px/1.1 ui-monospace,Menlo,monospace;letter-spacing:3px;text-align:center;margin:6px 0}
+.sub{font-size:13px;color:var(--ios-sub)}
+/* the note: iOS */
+.note{display:flex;gap:9px;background:var(--ios-fill);border-radius:12px;padding:10px 12px;margin:0 0 14px}
+.note .i{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ios-sub);color:var(--ios-sub);font:700 11px/15px -apple-system,Arial;text-align:center;margin-top:1px}
+.note b{display:block;font-size:14px;font-weight:600}
+.note span{font-size:13px;line-height:1.38;color:var(--ios-sub)}
+/* Android */
+.and{width:380px;background:var(--bg);border:1px solid var(--lv);border-radius:16px;padding:16px;box-sizing:border-box}
+.and .hdr{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:500;margin-bottom:10px}
+.mk{width:20px;height:20px;border-radius:5px;display:inline-block}
+.and h4{font-size:14px;font-weight:500;margin:0 0 6px}
+.and p{font-size:14px;margin:0 0 12px;color:var(--ink)}
+.anote{display:flex;gap:10px;background:var(--sv);border-radius:12px;padding:12px;margin:0 0 12px}
+.anote .i{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--mute);color:var(--mute);font:700 10px/13px Roboto,Arial;text-align:center;margin-top:2px}
+.anote b{display:block;font-size:14px;font-weight:500}
+.anote span{font-size:12px;line-height:1.4;color:var(--mute)}
+.btn{display:inline-block;border-radius:20px;padding:9px 20px;font-size:14px;font-weight:500;margin:0 8px 0 0}
+.fill{color:#fff}.out{border:1px solid var(--lv)}.txt{color:var(--c)}
+.afld{border:1px solid var(--lv);border-radius:4px;padding:14px 12px;font-size:15px;color:var(--mute);margin:0 0 12px}
+.sheet{border-radius:28px 28px 0 0}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:0 0 12px}
+.box{flex:none;width:18px;height:18px;border:2px solid var(--mute);border-radius:3px;margin-top:1px}
+</style></head><body>
+<h1>Unofficial integration note — sign-in, all three providers</h1>
+<p class="lead">2026-11-19. Robin asked for a generic note for all three providers, called "unofficial integration", with no mention of bans or terms. It ships in every build, the stores included. Only the copy and its placement are new: the sign-in flows are as shipped (<code>spec/mobile/surfaces/app.md</code> §7, plus §7.3 Gemini).</p>
+
+<h2>The copy (one sentence pattern, the provider's name filled in)</h2>
+<table>
+<tr><th>Part</th><th>Text</th></tr>
+<tr><td>Title</td><td><b>Unofficial integration</b></td></tr>
+<tr><td>Body</td><td>Cooldown isn't made by or affiliated with <i>&lt;Anthropic | OpenAI | Google&gt;</i>. It reads your usage through an unofficial connection that <i>&lt;same&gt;</i> may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</td></tr>
+<tr><td>Words it never uses</td><td>ban, suspend, terms, ToS, violate, risk, at your own risk</td></tr>
+</table>
+<p class="rec"><b>Recommended placement (A):</b> a quiet grey info box (never orange; it isn't an alarm) at the top of each provider's sign-in, above the first button. It shows on every sign-in, "Sign in again" included, and needs no extra tap. The Add account sheet's footnote gets the same title, so the words match on both screens. Variant B (a tick box before the button) is at the end, if you want a real opt-in.</p>
+
+<h2>iOS — sign-in sheets (medium/large detent, 360 pt shown)</h2>
+<div class="row">
+<figure><div class="ios"><div class="grab"></div>
+<h3>Sign in to Claude</h3>
+<div class="note"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with Anthropic. It reads your usage through an unofficial connection that Anthropic may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<div class="steps">1. Open the sign-in page and approve Cooldown.<br>2. Copy the code Claude shows you and paste it here.</div>
+<span class="cap" style="background:var(--c)">Open claude.com sign-in</span>
+<div class="fld">Paste the code</div>
+<div class="two"><span>Cancel</span><span class="dis">Sign in</span></div>
+</div><figcaption><b>Claude.</b> The note goes between the title and the steps. Note: 13 pt <code>sub</code> body, 14 pt semibold title, a 12 pt-radius <code>fill</code> background, and an 18 pt "i" ring. The sheet opens at large when the type is set larger.</figcaption></figure>
+
+<figure><div class="ios"><div class="grab"></div>
+<h3>Sign in to ChatGPT</h3>
+<div class="note"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with OpenAI. It reads your usage through an unofficial connection that OpenAI may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<div class="steps" style="font-size:14px">Open the page in any browser — it can be a different device — sign in to ChatGPT, and enter this code.</div>
+<div class="code">K7QM-2XPD</div>
+<div class="sub" style="text-align:center;margin-bottom:12px">Expires in 14:32 · Waiting for you to finish…</div>
+<span class="cap" style="background:var(--g)">Open auth.openai.com/codex/device</span>
+</div><figcaption><b>ChatGPT.</b> The note shows on the Starting and Waiting stages and goes away on the error stages (Expired, Denied, Unavailable, Failed), which keep their own boxes. The done page has no note.</figcaption></figure>
+
+<figure><div class="ios"><div class="grab"></div>
+<h3>Sign in to Gemini</h3>
+<div class="note"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with Google. It reads your usage through an unofficial connection that Google may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<div class="steps">1. Sign in with Google and approve Cooldown.<br>2. Copy the code Google shows you and paste it here.</div>
+<span class="cap" style="background:var(--m)">Sign in with Google</span>
+<div class="fld">4/…</div>
+<div class="two"><span>Cancel</span><span class="dis">Continue</span></div>
+</div><figcaption><b>Gemini.</b> Same box, same place. The trademark line stays where it is, in the Add sheet footnote and About.</figcaption></figure>
+</div>
+
+<h2>Android — Claude and Gemini in the account card, ChatGPT in its bottom sheet</h2>
+<div class="row">
+<figure><div class="and">
+<div class="hdr"><span class="mk" style="background:var(--c)"></span>Work <span style="font-size:12px;color:var(--mute);margin-left:6px">Not signed in</span></div>
+<div class="anote"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with Anthropic. It reads your usage through an unofficial connection that Anthropic may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<span class="btn fill" style="background:var(--c)">Sign in on this phone</span>
+<p style="font-size:12px;color:var(--mute);margin-top:10px">Opens Claude's sign-in in your browser — no computer needed. Needs a paid plan: Claude reports no usage for Free accounts.</p>
+</div><figcaption><b>Claude, signed out (start).</b> Note: <code>surfaceVariant</code>, 12 dp radius, 12 dp padding, a 16 dp info ring, title in titleSmall and body in bodySmall muted. It sits above the button. The "Finish signing in" paste step keeps the note above its field.</figcaption></figure>
+
+<figure><div class="and sheet">
+<div style="width:32px;height:4px;border-radius:2px;background:var(--lv);margin:0 auto 14px"></div>
+<div style="font-size:22px;margin-bottom:10px">Sign in to ChatGPT</div>
+<div class="anote"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with OpenAI. It reads your usage through an unofficial connection that OpenAI may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<p style="font-size:14px">Go to <b style="color:var(--g)">auth.openai.com/codex/device</b> and enter this code</p>
+<div class="code" style="font-size:30px;letter-spacing:2px">K7QM-2XPD</div>
+<p style="font-size:12px;color:var(--mute)">Code expires in 14:32 · Waiting for you to finish…</p>
+<span class="btn fill" style="background:var(--g)">Open in browser</span><span class="btn out">Copy code</span>
+</div><figcaption><b>ChatGPT sheet, Waiting.</b> The note goes above the instruction. The existing "First time? Turn on device code…" prerequisite box stays below the buttons, so there are two boxes in different roles. The sheet scrolls as before.</figcaption></figure>
+
+<figure><div class="and">
+<div class="hdr"><span class="mk" style="background:var(--m)"></span>Lab <span style="font-size:12px;color:var(--mute);margin-left:6px">Not signed in</span></div>
+<div class="anote"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with Google. It reads your usage through an unofficial connection that Google may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<span class="btn fill" style="background:var(--m)">Sign in with Google</span>
+</div><figcaption><b>Gemini, signed out (start).</b> Same as Claude.</figcaption></figure>
+</div>
+
+<h2>Add account sheet — footnote reworded (both platforms)</h2>
+<div class="row">
+<figure><div class="ios" style="border-radius:22px">
+<div class="sub" style="font-size:12.5px;line-height:1.45">Unofficial integration. Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.</div>
+</div><figcaption><b>iOS footnote.</b> It now opens with "Unofficial integration.", and the rest is unchanged. Android's Add sheet has no footnote today, so it gets this one line under the divider, above "Try with sample data", in bodySmall muted: "Unofficial integration. Not affiliated with Anthropic, OpenAI or Google."</figcaption></figure>
+</div>
+
+<h2>States</h2>
+<table>
+<tr><th>State</th><th>What the note does</th></tr>
+<tr><td>Larger text (iOS AX sizes, Android font 2.0 on 360 dp)</td><td>The body wraps and is never cut. The sheet or card scrolls (iOS opens at the large detent), and the primary button stays reachable by scrolling.</td></tr>
+<tr><td>Dark theme</td><td>The same grey fill tokens (iOS <code>fill</code>, Android <code>surfaceVariant</code>). No accent colour.</td></tr>
+<tr><td>Sign in again (re-auth)</td><td>Shown, same as a first sign-in.</td></tr>
+<tr><td>Sign-in error lines</td><td>Unchanged and red, under the field. The note stays where it is.</td></tr>
+<tr><td>Sample data</td><td>Never shown: the sample has no sign-in.</td></tr>
+<tr><td>Signed in, account page, cards</td><td>Never shown. The note appears only during sign-in. About keeps its existing "Unofficial. Not affiliated…" line.</td></tr>
+</table>
+
+<h2>Variant B — a real opt-in (if you want one)</h2>
+<div class="row">
+<figure><div class="ios"><div class="grab"></div>
+<h3>Sign in to Gemini</h3>
+<div class="note"><div class="i">i</div><div><b>Unofficial integration</b><span>Cooldown isn't made by or affiliated with Google. It reads your usage through an unofficial connection that Google may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.</span></div></div>
+<div class="chk"><span class="box"></span>I understand this is an unofficial integration.</div>
+<span class="cap" style="background:var(--m);opacity:.4">Sign in with Google</span>
+</div><figcaption><b>B:</b> the provider button stays disabled until the box is ticked. The tick is remembered per provider, so it is asked once, not on every "Sign in again". It adds one tap, and store reviewers see it in the sample-free sign-in path.</figcaption></figure>
+</div>
+</body></html>
