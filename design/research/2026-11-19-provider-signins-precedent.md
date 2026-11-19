@@ -222,3 +222,5 @@ Responses API call, which spends quota and breaks Cooldown's read-only promise, 
 above, ChatGPT falls back to **Ship as is** (Codex device code, honest `Cooldown/<ver>` User-Agent) on Robin's word,
 and the OpenAI request asks for a usage-read scope on Sign in with ChatGPT. The test registration "Cooldown" can be
 removed in ChatGPT Settings.
+
+**Decision (Robin, 2026-11-19):** "Yes keep it". ChatGPT ships as is, on the Codex device code.
