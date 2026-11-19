@@ -1,5 +1,7 @@
 # Permission requests to the three providers (drafts, 2026-11-18)
 
+> **Superseded 2026-11-19** by `2026-11-19-provider-consent-requests.md`. Not sent.
+
 > **2026-11-19: reword all three before sending** — see "The permission requests" in
 > `design/research/2026-11-19-provider-signins-precedent.md` (Anthropic: ask the Agent SDK's "previously approved" for a
 > `user:profile`-only sign-in; OpenAI: moving to SIWC open-source registration, ask about store eligibility and a usage
