@@ -1634,8 +1634,8 @@ rollout) and replaced by a new versionCode on both channels.
     three requests, reworded. The store hold stands.
   - **2026-11-19 — iOS record:** "iPhone and iPad Apps on Apple Silicon Macs" unticked in App Store Connect (saved and
     confirmed after reload). Naren's report from an M5 Max is CCBG-106 (Mac Sheet Wait), not applicable (Mac only). The Mac
-    app ships natively from CooldownDesktop. "Apple Vision Pro" availability is still ticked (version 1.0 shows as not
-    compatible).
+    app ships natively from CooldownDesktop. "Apple Vision Pro" availability unticked too (Robin, 2026-11-19; saved and
+    confirmed).
 
 ---
 
