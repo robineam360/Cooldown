@@ -1644,6 +1644,11 @@ rollout) and replaced by a new versionCode on both channels.
       cannot give written approval for the device code or undocumented endpoints. It points to the public docs and the
       Sign in with ChatGPT interest form for partnership access.
     - **Google:** only the Cloud contact form exists, with a 1,000-character cap. A short version is drafted.
+    - **Later the same day:** Robin submitted the Google Cloud contact form and the Sign in with ChatGPT interest form.
+      OpenAI's form says access expands "early Q4" and that they will reach out if the product fits.
+  - **2026-11-19 — Robin's decision:** keep the provider logos. v2.0 ships **only on TestFlight and as the GitHub
+    APK**. Play and the App Store wait until **all three** providers consent. Play release 26 stays saved and
+    unsubmitted.
 
 ---
 
