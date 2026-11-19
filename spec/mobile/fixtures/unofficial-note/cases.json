@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "note": "CCRM-120 (Unofficial Note): the sign-in note's words, one source both clients' tests read. Approved 2026-11-19, placement A (design/2026-11-19-unofficial-integration-note.html). Never uses: ban, suspend, terms, ToS, violate, risk.",
+    "neverWords": ["ban", "suspend", "terms", "tos", "violate", "risk"]
+  },
+  "title": "Unofficial integration",
+  "bodyTemplate": "Cooldown isn't made by or affiliated with {company}. It reads your usage through an unofficial connection that {company} may change or stop at any time. Cooldown only reads usage: it never sends prompts or uses your quota.",
+  "companies": { "claude": "Anthropic", "chatgpt": "OpenAI", "antigravity": "Google" },
+  "chatgptStages": { "starting": true, "waiting": true, "expired": false, "denied": false, "unavailable": false, "failed": false },
+  "iosAddFootnote": "Unofficial integration. Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.",
+  "androidAddFootnote": "Unofficial integration. Not affiliated with Anthropic, OpenAI or Google."
+}

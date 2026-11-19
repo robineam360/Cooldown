@@ -1984,6 +1984,8 @@ private fun TokenCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
+                com.robin.claudeusage.ui.UnofficialNote(Provider.CLAUDE)
+                Spacer(Modifier.height(12.dp))
                 Button(enabled = !busy, onClick = { beginSignIn() }) {
                     Text("Sign in on this phone")
                 }
@@ -2570,6 +2572,8 @@ private fun GeminiAccountBody(
 
     if (awaiting) {
         Spacer(Modifier.height(10.dp))
+        com.robin.claudeusage.ui.UnofficialNote(Provider.ANTIGRAVITY)
+        Spacer(Modifier.height(12.dp))
         Text(GeminiSignIn.PASTE_TITLE, style = MaterialTheme.typography.titleSmall)
         Spacer(Modifier.height(6.dp))
         Text(
@@ -2630,6 +2634,8 @@ private fun GeminiAccountBody(
         )
         Spacer(Modifier.height(12.dp))
         if (AntigravitySource.available) {
+            com.robin.claudeusage.ui.UnofficialNote(Provider.ANTIGRAVITY)
+            Spacer(Modifier.height(12.dp))
             Button(enabled = !busy, onClick = { begin() }) { Text(GeminiSignIn.NOT_SIGNED_IN_BUTTON) }
             Spacer(Modifier.height(2.dp))
             Text(
@@ -2763,6 +2769,11 @@ private fun DeviceCodeSheet(
         ) {
             Text(DeviceCodeCopy.TITLE, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
+            // CCRM-120 (Unofficial Note): Starting and Waiting only; the error stages keep their own boxes.
+            if (com.robin.claudeusage.ui.UnofficialNoteCopy.showsOn(stage)) {
+                com.robin.claudeusage.ui.UnofficialNote(Provider.CHATGPT)
+                Spacer(Modifier.height(12.dp))
+            }
             Text(
                 DeviceCodeCopy.body(stage, detail),
                 style = MaterialTheme.typography.bodyMedium,
@@ -2893,6 +2904,9 @@ private fun SignInCompletion(
     onCancel: () -> Unit,
 ) {
     Spacer(Modifier.height(10.dp))
+    // CCRM-120 (Unofficial Note): the paste step keeps the note above its field (sign in again included).
+    com.robin.claudeusage.ui.UnofficialNote(Provider.CLAUDE)
+    Spacer(Modifier.height(12.dp))
     Text("Finish signing in", style = MaterialTheme.typography.titleSmall)
     Spacer(Modifier.height(6.dp))
     Text(
@@ -3148,7 +3162,7 @@ private fun AddAccountSheet(
                 )
             }
             // CCRM-113 (Sample Port): the last row, under a divider; it ignores the Personal | Work control above.
-            com.robin.claudeusage.ui.SampleAddRow(onSample)
+            com.robin.claudeusage.ui.SampleAddRow(onSample, footnote = com.robin.claudeusage.ui.UnofficialNoteCopy.ADD_FOOTNOTE)
         }
     }
 }

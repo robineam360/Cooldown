@@ -3586,6 +3586,16 @@ keys) would still make this a different product. Not filed, not an open question
   50% of the Weekly limit; a cap such as Argon that is its own limit, not part of the Weekly usage, cannot be combined at
   all. Work out where each cap's share (or "not nested") comes from before any other decision on the page.
 
+### CCRM-120 · Unofficial Note — a grey "Unofficial integration" box on every sign-in
+- **Status:** **Built** for v2.0 (2026-11-19) · Android and iOS · wireframe `design/2026-11-19-unofficial-integration-note.html`,
+  placement A approved by Robin 2026-11-19 ("Approve A"); variant B (a tick box) not built
+- **Why:** the provider-terms research (`design/research/2026-11-19-mobile-apps-claude-antigravity.md`) settled that all
+  three providers ship in every build, the stores included, with a generic note at sign-in that names no bans or terms.
+- **What:** the note (title "Unofficial integration", a body naming Anthropic, OpenAI or Google) at the top of each sign-in:
+  iOS between the sheet title and the steps; Android above the first button in the Claude and Gemini cards (their paste
+  steps keep it) and under the ChatGPT sheet's title. ChatGPT only on Starting and Waiting. The Add account footnote opens
+  with "Unofficial integration." (iOS) or is a new line under the divider (Android). Copy shared through
+  `spec/mobile/fixtures/unofficial-note/cases.json`; spec `spec/mobile/surfaces/app.md` §6.2, §7.1–§7.4.
 ### CCRM-85 · Crash Capture — a crash's trace stays on the phone until the user shares it
 - **Status:** **Shipped v1.9 (2026-11-05).** **Verified on the Fold 7 2026-10-01** (RUNBOOK v1.9 Step 7): Crash now → the system recorded APP CRASH (EXCEPTION) → the card on relaunch → the shared text carries no token, email or message; backing out keeps the card, picking an app ends it, Not now keeps it gone across a restart. **Built 2026-09-30** (RUNBOOK Step 4), ships v1.9; Step 7 forces a crash on the Fold 7.
   Wireframe rev B approved by Robin 2026-09-30 (`design/2026-09-28-v19-play-ready.mockup.html` §1 and

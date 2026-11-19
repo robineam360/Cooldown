@@ -160,10 +160,19 @@ fun SampleEntry(onEnter: () -> Unit, modifier: Modifier = Modifier) {
  * same caption. It ignores the Personal | Work control (the sample's tags are fixed at entry).
  */
 @Composable
-fun SampleAddRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun SampleAddRow(onClick: () -> Unit, modifier: Modifier = Modifier, footnote: String? = null) {
     val violet = sampleViolet()
     Column(modifier.fillMaxWidth().padding(top = 14.dp)) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        // CCRM-120 (Unofficial Note): the Add sheet's one-line footnote, under the divider.
+        footnote?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 10.dp),
+            )
+        }
         Row(
             Modifier
                 .fillMaxWidth()

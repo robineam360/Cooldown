@@ -36,7 +36,8 @@ struct AddAccountSheet: View {
                 }
                 .padding(14).background(p.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
-            Text("Cooldown reads the same usage numbers the Claude, ChatGPT and Gemini apps show. Tokens stay in this device’s Keychain. Not affiliated with Anthropic, OpenAI or Google. “Gemini” and “Antigravity” are trademarks of Google LLC.")
+            // CCRM-120 (Unofficial Note): opens with the note's title, so the words match the sign-in sheets.
+            Text(UnofficialNoteCopy.addFootnote)
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.top, 2)
             Spacer(minLength: 0)
         }
@@ -79,8 +80,9 @@ struct GeminiSignInSheet: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ScrollView { VStack(alignment: .leading, spacing: 0) {
             Text("Sign in to Gemini").font(.system(size: 20, weight: .bold)).padding(.bottom, 8)
+            UnofficialNote(provider: .antigravity)
             if !opened {
                 Text("1. Sign in with Google and approve Cooldown.\n2. Copy the code Google shows you and paste it here.")
                     .font(.system(size: 15)).foregroundStyle(p.txt)
@@ -128,9 +130,9 @@ struct GeminiSignInSheet: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 20).padding(.top, 24)
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 20) }
+        .scrollBounceBehavior(.basedOnSize)
+        .signInDetents()
     }
 
     /// The field's label, as decided (rev B §5).
@@ -169,8 +171,9 @@ struct ClaudeSignInSheet: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ScrollView { VStack(alignment: .leading, spacing: 0) {
             Text("Sign in to Claude").font(.system(size: 20, weight: .bold)).padding(.bottom, 8)
+            UnofficialNote(provider: .claude)
             Text("1. Open the sign-in page and approve Cooldown.\n2. Copy the code Claude shows you and paste it here.")
                 .font(.system(size: 15)).foregroundStyle(p.txt)
             Button {
@@ -205,9 +208,9 @@ struct ClaudeSignInSheet: View {
                 .font(.system(size: 12.5)).foregroundStyle(p.sub).padding(.top, 14)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 20).padding(.top, 24)
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 20) }
+        .scrollBounceBehavior(.basedOnSize)
+        .signInDetents()
     }
 }
 
@@ -221,10 +224,11 @@ struct ChatGPTSignInSheet: View {
     @State private var attempt = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        ScrollView { VStack(alignment: .leading, spacing: 0) {
             Text(DeviceCodeCopy.title).font(.system(size: 20, weight: .bold)).padding(.bottom, 6)
             switch flow {
             case .stage(let stage, let detail):
+                if UnofficialNoteCopy.shows(on: stage) { UnofficialNote(provider: .chatgpt) }
                 Text(DeviceCodeCopy.body(for: stage, detail: detail)).font(.system(size: 15))
                     .foregroundStyle(stage == .starting ? p.txt : p.orange)
                 if let label = DeviceCodeCopy.primaryLabel(for: stage) {
@@ -235,6 +239,7 @@ struct ChatGPTSignInSheet: View {
                         .font(.system(size: 14)).padding(.top, 12)
                 }
             case .code(let started):
+                UnofficialNote(provider: .chatgpt)
                 Text(DeviceCodeCopy.body(for: .waiting)).font(.system(size: 14.5)).foregroundStyle(p.txt)
                 Text(started.userCode).font(.system(size: 34, weight: .semibold, design: .monospaced)).kerning(3)
                     .frame(maxWidth: .infinity).padding(.top, 18).padding(.bottom, 6)
@@ -269,15 +274,67 @@ struct ChatGPTSignInSheet: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 20).padding(.top, 24)
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 20) }
+        .scrollBounceBehavior(.basedOnSize)
+        .signInDetents()
         .task(id: attempt) {
             flow = .stage(.starting, detail: nil)
             flow = await model.startDeviceSignIn()
             if case .code(let started) = flow { flow = await model.waitForDevice(started) }
         }
     }
+}
+
+/// CCRM-120 (Unofficial Note), placement A: a quiet grey info box between a sign-in sheet's title and its steps. The
+/// iOS fill, a 12 pt radius, an 18 pt "i" ring, a 14 pt semibold title and a 13 pt grey body. Never an accent colour:
+/// it is not an alarm. Its sizes follow Dynamic Type and the body wraps, never cut; the sheet scrolls around it.
+struct UnofficialNote: View {
+    let provider: Provider
+
+    var body: some View {
+        // The rest of each sheet is set in fixed sizes, so past xxxLarge the note would dwarf the sheet's own title. The
+        // cap sits outside `Content` because `@ScaledMetric` reads the environment its view is given.
+        Content(provider: provider)
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+            .padding(.bottom, 14)
+    }
+
+    private struct Content: View {
+        let provider: Provider
+        @Environment(\.palette) private var p
+        @ScaledMetric(relativeTo: .subheadline) private var titleSize: CGFloat = 14
+        @ScaledMetric(relativeTo: .footnote) private var bodySize: CGFloat = 13
+        @ScaledMetric(relativeTo: .footnote) private var ring: CGFloat = 18
+
+        var body: some View {
+            HStack(alignment: .top, spacing: 9) {
+                Image(systemName: "info.circle").font(.system(size: ring)).foregroundStyle(p.sub)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(UnofficialNoteCopy.title).font(.system(size: titleSize, weight: .semibold)).foregroundStyle(p.ink)
+                    Text(UnofficialNoteCopy.body(provider)).font(.system(size: bodySize)).foregroundStyle(p.sub)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(p.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .accessibilityElement(children: .combine)
+        }
+    }
+}
+
+private struct SignInDetents: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var type
+    func body(content: Content) -> some View {
+        // CCRM-120 (Unofficial Note): at the accessibility sizes the sheet opens at large.
+        content
+            .presentationDetents(type.isAccessibilitySize ? [.large] : [.medium, .large])
+            .presentationDragIndicator(.visible)
+    }
+}
+
+extension View {
+    func signInDetents() -> some View { modifier(SignInDetents()) }
 }
 
 struct Pill: ButtonStyle {
