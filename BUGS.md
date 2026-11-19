@@ -28,9 +28,9 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
-> **v2.0 beta feedback, 2026-11-19.** Sources swept: TestFlight feedback for EAM360 Cooldown, Slack messages to Robin from
-> EAM360 colleagues since 2026-11-17, GitHub issues on robineam360/Cooldown (none), and this file. CCBG-106 (Mac Sheet Wait)
-> is the only report so far.
+> **v2.0 beta feedback, 2026-11-19.** Sources swept: TestFlight feedback for EAM360 Cooldown (no screenshot feedback, no
+> crash feedback), Slack messages to Robin from EAM360 colleagues since 2026-11-17, GitHub issues on robineam360/Cooldown
+> (none), and this file. CCBG-106 (Mac Sheet Wait) is the only report so far.
 
 ### CCBG-106 · Mac Sheet Wait — on a Mac the Claude sign-in sheet stays on "Signing in…" after the account is added
 - **Status:** **Not applicable (Mac only)** (reported 2026-11-18 by an EAM360 tester on Slack; triaged 2026-11-19) · iOS app run on an M5 Max Mac as "Designed for iPad" · TestFlight 2.0 (1) · Mac availability of the iOS app is being turned off, so no Mac user can reach it
