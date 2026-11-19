@@ -101,3 +101,28 @@ question of whether a route exists.
 - **Gemini: option 1.**
 - This needs Robin's call because of the EAM360 account. Option 2 is the safer variant if that account matters more
   than the listing.
+
+## Spike: Claude sign-in with `user:profile` only (2026-11-19)
+
+The script copied Cooldown's Android request (`OAuthSignIn.begin`, `ApiClient`) exactly: authorize at
+`claude.com/cai/oauth/authorize`, Anthropic's code-paste page, state equal to the verifier, and token calls at
+`platform.claude.com/v1/oauth/token`. Only the scope changed. Robin signed in twice. Both runs used the same Team premium
+seat: `claude_team`, `team_tier_1`, `default_claude_max_5x`.
+
+| Step | Result |
+|---|---|
+| Consent and token exchange | HTTP 200. Anthropic granted **`user:profile` only**. Refresh token issued. Lifetime 8 h |
+| `/api/oauth/usage` | HTTP 200. `five_hour`, `seven_day`, `extra_usage`, `limits`, `spend` and `weekly_scoped_shares` were all present |
+| `/api/oauth/profile` | HTTP 200. `organization_type`, `rate_limit_tier` and `seat_tier` were present, with the account fields |
+| Refresh | HTTP 200. The scope was still `user:profile`, and usage with the refreshed token returned 200 |
+
+**Conclusion:** the July 2026 note in `OAuthSignIn.kt:30` ("a reduced set was rejected") was really the old
+`claude.ai/oauth/authorize` endpoint failing, not the scope. Nothing Cooldown shows depends on the wider scopes.
+
+**Not tested:** a personal Pro or Max account. The endpoints are the same, so the Fold 7 device pass should check one
+before release.
+
+**Change:**
+- Set `SCOPE = "user:profile"` in `data/OAuthSignIn.kt:35` and fix the comment above it.
+- Make the same change to the iOS `OAuthSignIn.swift` scope and to the `ContractTests.swift:467` expectation.
+- Old tokens keep their wide scope until the user signs in again.
