@@ -205,3 +205,20 @@ replaces a written yes for Claude or Gemini.
 - **Inference:** TestFlight's public link is App Store distribution under Apple's guidelines too. Whether to keep
   it open is the release session's call.
 - Nothing was submitted or sent from this session.
+
+## Spike result: Sign in with ChatGPT token on `wham/usage` (2026-11-19)
+
+Robin signed in once through the open-source dynamic flow (`agent_name_hint=Cooldown`, loopback `127.0.0.1:1455`,
+all six scopes). Script: stdlib Python, tokens held in memory only, never printed or saved.
+
+- Registration worked: the callback returned an issued `oaiapp_…` client ID; token exchange 200; all scopes granted;
+  refresh token issued.
+- The access token is bound to `aud=https://api.openai.com/v1` and carries **no `chatgpt_account_id`** claim.
+- `GET chatgpt.com/backend-api/wham/usage` → **HTTP 401 `rejected_by_access_enforcement` / `no_matching_rule`**, with
+  and without a `ChatGPT-Account-Id` header.
+
+**Conclusion:** the official token cannot read plan usage. The only other signal would be rate-limit headers on a
+Responses API call, which spends quota and breaks Cooldown's read-only promise, so it was not tried. Per the verdict
+above, ChatGPT falls back to **Ship as is** (Codex device code, honest `Cooldown/<ver>` User-Agent) on Robin's word,
+and the OpenAI request asks for a usage-read scope on Sign in with ChatGPT. The test registration "Cooldown" can be
+removed in ChatGPT Settings.
