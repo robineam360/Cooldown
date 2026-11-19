@@ -13,11 +13,11 @@ public enum OAuthSignIn {
     public static let redirectURI = "https://platform.claude.com/oauth/code/callback"
     public static let clientID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
 
-    /// The exact scope set Claude Code requests. A **reduced set is rejected at grant
-    /// time** with "Invalid request format", even though only `user:profile` is needed
-    /// for usage — it must match the client's registered set verbatim.
-    public static let scope = "org:create_api_key user:profile user:inference "
-        + "user:sessions:claude_code user:mcp_servers user:file_upload"
+    /// Read-only: `user:profile` is all usage and profile need, and the token cannot send
+    /// prompts. Verified 2026-11-19 (grant, usage, profile, refresh all 200). The earlier
+    /// "reduced set rejected" result was the retired `claude.ai/oauth/authorize`, not the
+    /// scope. Never widen this.
+    public static let scope = "user:profile"
 
     /// The authorization-code family is capped around 30 days from sign-in. The token
     /// response omits the real figure, so this is an estimate for the re-sign-in prompt

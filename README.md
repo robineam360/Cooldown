@@ -272,8 +272,8 @@ behind one shared interface. Everything above that — tabs, the notification, r
 history — never learns the difference.
 
 **Claude.** The app signs in with the **same OAuth client as the Claude Code CLI** — the
-identical client ID and scopes (`org:create_api_key user:profile user:inference
-user:sessions:claude_code user:mcp_servers user:file_upload`) — via browser-based PKCE
+identical client ID, but asking only for the read-only `user:profile` scope, so its token
+cannot send prompts — via browser-based PKCE
 against `claude.com` / `platform.claude.com`. To read usage it calls an **undocumented**
 endpoint (`api.anthropic.com/api/oauth/usage`), sending `User-Agent: Cooldown/<version>
 (Android)` — its own name, on every host. (Through v1.6 this call borrowed the CLI's

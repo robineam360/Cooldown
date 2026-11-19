@@ -3839,7 +3839,10 @@ keys) would still make this a different product. Not filed, not an open question
 
 ### CCRM-17 · Window Pings — start a 5-hour window on a schedule
 - **2026-09-09:** Removed by CCRM-61 (Settings Diet) — the dormant ping code, its alarms, permissions and channel are deleted; the ToS posture stands.
-- **Status:** **Disabled in-app** (2026-08-18) — ToS posture (see the Posture paragraph
+- **Status:** **Cannot run** (2026-11-19): Claude sign-in now asks for `user:profile` only, so
+  the token has no `user:inference` and a ping would get 403. This is deliberate, for the store
+  posture (`design/research/2026-11-19-mobile-apps-claude-antigravity.md`). Before that:
+  **Disabled in-app** (2026-08-18) — ToS posture (see the Posture paragraph
   below): an automated inference call from a third-party client risks the *user's*
   account, so `UsageCache.pingEnabled` is hard-wired to `false` and the Settings
   section is hidden. Code retained dormant; a stored per-profile pref survives so a

@@ -27,14 +27,12 @@ object OAuthSignIn {
     // Same migration moved the callback host to platform.claude.com.
     const val REDIRECT_URI = "https://platform.claude.com/oauth/code/callback"
     private const val CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
-    // The exact scope set Claude Code 2.1.214 requests. We only need user:profile
-    // (the usage endpoint) but a reduced set was rejected at grant time with
-    // "Invalid request format", so we match the client's registered set verbatim.
-    // org:create_api_key is silently dropped on Team accounts that disable member
-    // API keys, so including it is harmless there and required for Pro/Max.
-    private const val SCOPE =
-        "org:create_api_key user:profile user:inference user:sessions:claude_code " +
-            "user:mcp_servers user:file_upload"
+    // Read-only: user:profile is all /api/oauth/usage and /profile need, and the token
+    // cannot send prompts. Verified 2026-11-19 (grant, usage, profile, refresh all 200;
+    // design/research/2026-11-19-mobile-apps-claude-antigravity.md). The July 2026
+    // "reduced set rejected" result was the retired claude.ai/oauth/authorize endpoint,
+    // not the scope. Never widen this: CCRM-17 (Window Pings) stays off for good.
+    private const val SCOPE = "user:profile"
 
     // The authorization-code family is capped ~30 days from sign-in. The token
     // response omits the exact expiry, so we estimate it for the "expires around"

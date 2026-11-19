@@ -215,16 +215,18 @@ justify diverging from the request that works.
 
 - **Verifier:** 32 random bytes, base64url, no padding.
 - **Challenge:** SHA-256 of the verifier's US-ASCII bytes, base64url, no padding.
-- **Scope — send this set verbatim:**
+- **Scope — `user:profile` only** (since 2026-11-19):
 
   ```
-  org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload
+  user:profile
   ```
 
-  Only `user:profile` is actually needed for usage, but a **reduced set is rejected at grant
-  time** with `Invalid request format`. It must match the client's registered set exactly.
-  `org:create_api_key` is silently dropped on Team accounts that disable member API keys —
-  harmless there, required for Pro/Max.
+  It is all `/api/oauth/usage` and `/api/oauth/profile` need, and the token cannot send
+  prompts. Verified 2026-11-19 on a Team seat: grant, usage, profile and refresh all HTTP 200,
+  and refresh keeps the scope (`design/research/2026-11-19-mobile-apps-claude-antigravity.md`).
+  The earlier note that "a reduced set is rejected at grant time" came from the retired
+  `claude.ai/oauth/authorize` endpoint, not the scope. Never widen it: CCRM-17 (Window Pings)
+  and any other inference call stay off.
 
 The verifier and state must be **persisted before the browser trip** and survive process
 death, since the user leaves the app.
@@ -362,6 +364,9 @@ anthropic-version: 2023-06-01
 ```
 
 What the spike established:
+
+> **2026-11-19:** history only. Sign-in no longer requests `user:inference` (see the scope
+> rule above), so this call cannot be made with Cooldown's token.
 
 1. **`user:inference` is honoured for a third-party caller** — a real ping returned **HTTP
    200** with a normal `message` object, `stop_reason: max_tokens`. Unlike the `setup-token`

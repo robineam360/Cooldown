@@ -464,7 +464,8 @@ func authorizeURLShape() {
         cursor = found?.upperBound ?? cursor
     }
     // Scope is form-encoded: spaces as '+', colons as %3A, and never %20.
-    #expect(url.contains("&scope=org%3Acreate_api_key+user%3Aprofile+user%3Ainference"))
+    #expect(url.contains("&scope=user%3Aprofile&"))
+    #expect(!url.contains("user%3Ainference"))
     #expect(!url.contains("%20"))
     // state IS the verifier.
     #expect(pending.state == pending.verifier)
