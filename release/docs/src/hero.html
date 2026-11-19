@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- README hero banner. Render (from release/docs/src):
+     Chrome --headless --hide-scrollbars --force-device-scale-factor=2 --window-size=1600,560 --screenshot=hero.png file://…/hero.html
+     then copy to release/screenshots/hero.png (3200×1120). -->
 <html>
 <head>
 <meta charset="utf-8">
@@ -7,51 +10,85 @@
   html,body { width:1600px; height:560px; overflow:hidden; }
   body {
     font-family:"Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
-    background:radial-gradient(120% 140% at 15% 10%, #2f2d2a 0%, #232220 55%, #1b1a18 100%);
-    color:#EDEAE2; display:flex; align-items:center; gap:40px; padding:0 64px;
+    background:#201D1A; color:#F2EEE6;
+    display:flex; align-items:center; justify-content:space-between; padding:0 96px 0 104px;
   }
-  .left { flex:1; max-width:840px; }
-  .brand { display:flex; align-items:center; gap:16px; margin-bottom:26px; }
-  .brand .name { font-size:26px; font-weight:700; letter-spacing:.01em; color:#F5F2EA; }
-  h1 { font-size:52px; line-height:1.08; font-weight:700; letter-spacing:-.02em; color:#F5F2EA; }
-  h1 em { font-style:normal; color:#D97757; }
-  .sub { font-size:19px; line-height:1.5; color:#C9C3B6; margin-top:20px; max-width:660px; font-weight:500; }
-  .chips { display:flex; gap:10px; margin-top:26px; flex-wrap:wrap; }
-  .chip { border:1px solid rgba(217,119,87,.6); color:#E8A87C; font-size:12.5px; letter-spacing:.08em;
-          padding:6px 13px; border-radius:20px; font-weight:600; }
-  .phones { display:flex; align-items:center; }
-  .phones img { height:452px; border-radius:20px; border:1px solid #45423e;
-                box-shadow:0 24px 55px rgba(0,0,0,.6); display:block; }
-  .phones img:nth-child(1){ transform:rotate(-5deg); z-index:1; margin-right:-40px; }
-  .phones img:nth-child(2){ transform:translateY(-14px); z-index:3; }
-  .phones img:nth-child(3){ transform:rotate(5deg); z-index:1; margin-left:-40px; }
+  .left { width:640px; }
+  .brand { display:flex; align-items:center; gap:20px; margin-bottom:34px; }
+  .brand img { width:76px; height:76px; border-radius:18px; border:1px solid #3A3531; }
+  .brand .name { font-size:40px; font-weight:700; letter-spacing:-.01em; }
+  h1 { font-size:50px; line-height:1.1; font-weight:700; letter-spacing:-.02em; color:#F5F2EA; }
+  .sub { font-size:21px; line-height:1.5; color:#BDB6A9; margin-top:22px; font-weight:500; }
+  .note { font-size:15px; color:#8E8678; margin-top:30px; font-weight:500; }
+
+  .rows { width:700px; display:flex; flex-direction:column; gap:18px; }
+  .row { display:flex; align-items:center; gap:26px; background:#2A2623; border:1px solid #3A3531;
+         border-radius:22px; padding:20px 30px 20px 24px; }
+  .ring { width:84px; height:84px; flex:none; }
+  .body { flex:1; }
+  .top { display:flex; align-items:baseline; justify-content:space-between; }
+  .who { font-size:24px; font-weight:600; display:flex; align-items:center; gap:12px; }
+  .who i { width:12px; height:12px; border-radius:50%; display:inline-block; }
+  .who small { font-size:17px; color:#8E8678; font-weight:500; }
+  .pct { font-size:38px; font-weight:700; letter-spacing:-.02em; }
+  .pct span { font-size:20px; }
+  .bar { position:relative; height:12px; border-radius:6px; background:#3D3833; margin:10px 0 12px; }
+  .bar b { position:absolute; left:0; top:0; bottom:0; border-radius:6px; }
+  .bar u { position:absolute; top:-6px; width:4px; height:24px; border-radius:2px; background:#E9E4DA; }
+  .pace { font-size:18px; color:#BDB6A9; font-weight:500; }
+  .pace em { font-style:normal; font-weight:700; }
+  .behind { color:#8FC79A; } .ahead { color:#F07B6E; }
 </style>
 </head>
 <body>
   <div class="left">
-    <div class="brand">
-      <svg width="46" height="46" viewBox="18 18 72 72" style="border-radius:22%;">
-      <defs><clipPath id="sqh"><path d="M54,18 C24.48,18 18,24.48 18,54 C18,83.52 24.48,90 54,90 C83.52,90 90,83.52 90,54 C90,24.48 83.52,18 54,18 Z"/></clipPath></defs>
-      <g clip-path="url(#sqh)">
-        <rect x="0" y="0" width="108" height="108" fill="#1F1B19"/>
-        <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" stroke="#F3EBE3" stroke-width="3.9" stroke-opacity=".72" fill="none"/>
-        <path d="M12,64 L27,64 L34,50 L41,64 L44,64" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M66,64 L71,64 L78,50 L85,64 L96,64" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M44,64 L48,72 L54,20 L60,74 L66,64" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </g>
-    </svg>
-      <div class="name">Cooldown</div>
-    </div>
-    <h1>Your Claude &amp; ChatGPT limits,<br>always in your <em>shade</em>.</h1>
-    <div class="sub">Two accounts on one always-on notification, a ring in the status bar, a ping the moment a window resets — with burn-rate forecasts on every window. Android, free, no servers.</div>
-    <div class="chips">
-      <span class="chip">CLAUDE + CHATGPT</span><span class="chip">ALWAYS-ON NOTIFICATION</span><span class="chip">STATUS-BAR RING</span><span class="chip">RESET PINGS</span>
-    </div>
+    <div class="brand"><img src="app-icon-512.png" alt=""><div class="name">Cooldown</div></div>
+    <h1>Your Claude, ChatGPT and Gemini limits in one place.</h1>
+    <div class="sub">Weekly and 5-hour limits, reset times and pace.<br>Android, iPhone and iPad. Free and open source.</div>
+    <div class="note">Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</div>
   </div>
-  <div class="phones">
-    <img src="shots/v17-main-chatgpt-dark.png">
-    <img src="shots/v17-main-claude-dark.png">
-    <img src="shots/v17-main-compact.png">
+
+  <div class="rows">
+    <!-- Claude: 5h ring 32% + weekly 41%, behind pace -->
+    <div class="row">
+      <svg class="ring" viewBox="0 0 84 84">
+        <circle cx="42" cy="42" r="34" fill="none" stroke="#3D3833" stroke-width="9"/>
+        <circle cx="42" cy="42" r="34" fill="none" stroke="#D97757" stroke-width="9" stroke-linecap="round"
+                stroke-dasharray="68.4 213.6" transform="rotate(-90 42 42)"/>
+        <text x="42" y="49" text-anchor="middle" font-size="21" font-weight="700" fill="#F2EEE6" font-family="Avenir Next">32</text>
+      </svg>
+      <div class="body">
+        <div class="top"><div class="who"><i style="background:#D97757"></i>Claude <small>Weekly</small></div><div class="pct">41<span>%</span></div></div>
+        <div class="bar"><b style="width:41%;background:#D97757"></b><u style="left:63%"></u></div>
+        <div class="pace"><em class="behind">1d 12h behind</em> · resets Sun 9:30 PM</div>
+      </div>
+    </div>
+    <!-- ChatGPT: weekly only (5h suspended on many plans), ahead of pace -->
+    <div class="row">
+      <svg class="ring" viewBox="0 0 84 84">
+        <circle cx="42" cy="42" r="34" fill="none" stroke="#3D3833" stroke-width="9"/>
+        <line x1="34" y1="42" x2="50" y2="42" stroke="#8E8678" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="body">
+        <div class="top"><div class="who"><i style="background:#10A37F"></i>ChatGPT <small>Weekly</small></div><div class="pct">72<span>%</span></div></div>
+        <div class="bar"><b style="width:72%;background:#10A37F"></b><u style="left:63%"></u></div>
+        <div class="pace"><em class="ahead">14h 48m ahead</em> · resets Mon 3:21 PM</div>
+      </div>
+    </div>
+    <!-- Gemini: 5h ring 12% + weekly 18%, behind pace -->
+    <div class="row">
+      <svg class="ring" viewBox="0 0 84 84">
+        <circle cx="42" cy="42" r="34" fill="none" stroke="#3D3833" stroke-width="9"/>
+        <circle cx="42" cy="42" r="34" fill="none" stroke="#4285F4" stroke-width="9" stroke-linecap="round"
+                stroke-dasharray="25.6 256.4" transform="rotate(-90 42 42)"/>
+        <text x="42" y="49" text-anchor="middle" font-size="21" font-weight="700" fill="#F2EEE6" font-family="Avenir Next">12</text>
+      </svg>
+      <div class="body">
+        <div class="top"><div class="who"><i style="background:#4285F4"></i>Gemini <small>Weekly</small></div><div class="pct">18<span>%</span></div></div>
+        <div class="bar"><b style="width:18%;background:#4285F4"></b><u style="left:50%"></u></div>
+        <div class="pace"><em class="behind">2d 6h behind</em> · resets Thu 8:00 AM</div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

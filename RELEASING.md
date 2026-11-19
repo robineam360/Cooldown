@@ -73,7 +73,7 @@ It reads `versionName` from `app/build.gradle.kts` and writes three files into
 
 | Output | What it's for |
 |---|---|
-| `Cooldown-User-Guide-v<ver>.pdf` | the 13-page guide the README and release notes link to |
+| `Cooldown-User-Guide-v<ver>.pdf` | the 12-page guide the README and release notes link to |
 | `Cooldown-Brochure.pdf` | the 2-page pitch |
 | `Cooldown-whats-new-v<ver>.png` | **guide page 3 as a single image** — paste under a Slack post |
 
@@ -93,7 +93,8 @@ row to a table, or a card to a grid, is enough to do it.
 
 Also update by hand when the UI or features change:
 
-- `release/USER-GUIDE.md` — the markdown guide (its own version header + changelog)
+- `release/USER-GUIDE.md` — a pointer to the PDF guide and the README; update the PDF filename in it when the version changes
+- `release/screenshots/hero.png` — the README banner, rendered from `release/docs/src/hero.html` (render command in that file's header comment)
 - `README.md` — feature bullets, and **both PDF links** if the version in the guide's
   filename changed
 - `release/docs/src/shots/` — screenshots. Retire any that show a removed feature; a

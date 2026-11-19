@@ -2,160 +2,135 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Cooldown — Brochure</title>
+<title>Cooldown brochure</title>
 <style>
+  @page { size:A4; margin:0; }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  :root{
-    --cream:#FAF9F5; --card:#F0EEE5; --card2:#EDE9DF; --ink:#201D1A; --muted:#6B6459;
-    --accent:#C96442; --accent-soft:#D97757; --peach:#F5E3DA; --dark:#262624;
-    --line:#E2DCCF; --green:#5E8D66;
-  }
-  @page { size: A4; margin: 0; }
-  body { font-family:"Avenir Next", Avenir, "Helvetica Neue", sans-serif; color:var(--ink); background:#888; }
-  code { font-family:Menlo, monospace; }
-  .page{ width:210mm; height:296.5mm; page-break-after:always; overflow:hidden; position:relative; }
-  .page:last-child{ page-break-after:auto; }
-  b{ font-weight:600; }
+  body { font-family:"Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif; color:#201D1A; font-size:10.5pt; line-height:1.5; }
+  .page { width:210mm; height:297mm; overflow:hidden; position:relative; page-break-after:always; padding:15mm; }
+  .page:last-child { page-break-after:auto; }
 
-  /* ============ PAGE 1 — dark hero ============ */
-  .hero{ background:var(--dark); color:#EDEAE2; padding:16mm 16mm 12mm; display:flex; flex-direction:column; }
-  .brandrow{ display:flex; align-items:center; gap:5mm; }
-  .brandrow .name{ font-size:15pt; font-weight:700; letter-spacing:.02em; color:#F5F2EA; }
-  .brandrow .byline{ font-size:8.5pt; color:#8F8A80; margin-top:.5mm; }
-  .hero h1{ font-size:33pt; font-weight:700; letter-spacing:-.02em; line-height:1.12; color:#F5F2EA; margin-top:10mm; }
-  .hero h1 em{ font-style:normal; color:var(--accent-soft); }
-  .hero .sub{ font-size:12pt; color:#C9C3B6; line-height:1.55; margin-top:5mm; max-width:165mm; font-weight:500;}
-  .hero .shots{ display:flex; gap:6mm; justify-content:center; margin-top:10mm; align-items:flex-start;}
-  .hero figure{ text-align:center; }
-  .hero figure img{ border-radius:3.5mm; border:1px solid #4A4845; box-shadow:0 4mm 10mm rgba(0,0,0,.55); display:block; }
-  .hero figcaption{ font-size:7.6pt; color:#8F8A80; margin-top:2.2mm; line-height:1.4; font-weight:500;}
-  .chips{ display:flex; gap:2.5mm; margin-top:9mm; flex-wrap:wrap; justify-content:center;}
-  .chip{ border:1px solid rgba(217,119,87,.65); color:#E8A87C; font-size:8pt; letter-spacing:.12em; padding:1.5mm 3.4mm; border-radius:10mm; font-weight:600;}
-  .claudeband{
-    margin-top:auto; background:linear-gradient(100deg, #3A3835, #33312E); border:1px solid #45423E;
-    border-radius:4mm; padding:5mm 6mm; display:flex; align-items:center; gap:6mm;
-  }
-  .claudeband .spark{ font-size:20pt; }
-  .claudeband p{ font-size:9.5pt; line-height:1.55; color:#D8D3C8; }
-  .claudeband p b{ color:#F5F2EA; }
-  .claudeband p .o{ color:var(--accent-soft); font-weight:600; }
+  /* page 1, dark */
+  .dark { background:#262624; color:#F2EEE6; display:flex; flex-direction:column; }
+  .brand { display:flex; align-items:center; gap:4mm; }
+  .brand img { width:15mm; height:15mm; border-radius:3.4mm; border:0.3mm solid #3A3531; }
+  .brand .name { font-size:20pt; font-weight:700; letter-spacing:-.01em; }
+  .brand .tag { margin-left:auto; font-size:9pt; color:#A59E91; font-weight:500; }
+  .dark h1 { font-size:34pt; line-height:1.08; font-weight:700; letter-spacing:-.02em; margin-top:12mm; color:#F5F2EA; }
+  .dark .lede { font-size:12.5pt; line-height:1.55; color:#C9C3B6; margin-top:6mm; max-width:150mm; font-weight:500; }
+  .shots { display:flex; justify-content:center; align-items:flex-end; gap:6mm; margin-top:auto; margin-bottom:9mm; }
+  .shots figure { text-align:center; }
+  .shots img { display:block; border-radius:3mm; border:0.3mm solid #45413C; }
+  .shots .side img { width:54mm; }
+  .shots .main img { width:67mm; }
+  .shots figcaption { font-size:8.5pt; color:#A59E91; margin-top:2.5mm; font-weight:500; }
+  .dark .foot { border-top:0.3mm solid #3A3531; padding-top:4mm; display:flex; justify-content:space-between; font-size:8.5pt; color:#A59E91; }
 
-  /* ============ PAGE 2 — cream ============ */
-  /* v1.5: the .fine disclaimer grew to name three vendors and now wraps to two lines, which
-     pushed it off the fixed-height page. Top padding 14mm -> 9mm lifts the whole column;
-     bottom padding is not the lever here — once content overflows a fixed .page it simply
-     runs past the bottom padding rather than being held above it. */
-  .p2{ background:var(--cream); padding:9mm 16mm 6mm; display:flex; flex-direction:column; }
-  .p2 h2{ font-size:17pt; font-weight:700; letter-spacing:-.01em; margin-bottom:4mm;}
-  .p2 h2 span{ color:var(--accent); }
-  .grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:3.5mm; }
-  .feat{ background:var(--card); border-radius:3mm; padding:3.4mm 3.8mm; }
-  .feat .ic{ font-size:13pt; display:block; margin-bottom:1.2mm;}
-  .feat b{ display:block; font-size:9.2pt; margin-bottom:1mm; }
-  .feat span{ font-size:7.9pt; color:var(--muted); line-height:1.45; display:block;}
-
-  .story{ margin-top:5mm; display:flex; gap:7mm; }
-  .story .txt{ flex:1.5; }
-  .story p{ font-size:9.3pt; line-height:1.6; }
-  .story p+p{ margin-top:2.2mm; }
-  .stats{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:3mm; align-content:start;}
-  .stat{ background:var(--peach); border-radius:3mm; padding:3mm 3.4mm; text-align:center;}
-  .stat b{ display:block; font-size:14pt; color:var(--accent); font-weight:700;}
-  .stat span{ font-size:7.4pt; color:var(--muted); line-height:1.3; display:block; margin-top:.6mm;}
-
-  .cta{
-    margin-top:2.5mm; background:var(--dark); color:#EDEAE2; border-radius:4mm;
-    padding:3.2mm 6.5mm; display:flex; align-items:center; gap:7mm;
-  }
-  .cta .qr{ background:#fff; border-radius:2.5mm; padding:2.2mm; width:26mm; height:26mm; flex-shrink:0;}
-  .cta .qr img{ width:100%; height:100%; display:block;}
-  .cta h3{ font-size:13pt; font-weight:700; color:#F5F2EA; margin-bottom:1.6mm;}
-  .cta p{ font-size:8.8pt; line-height:1.55; color:#C9C3B6;}
-  .cta p b{ color:#F5F2EA; }
-  .cta .o{ color:var(--accent-soft); font-weight:600;}
-  .fine{ margin-top:1.5mm; font-size:6.8pt; color:var(--muted); line-height:1.42; text-align:center;}
+  /* page 2, cream */
+  .cream { background:#FAF9F5; }
+  .cream h2 { font-size:20pt; font-weight:700; letter-spacing:-.01em; }
+  .cream .intro { color:#6B6459; margin-top:2mm; }
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); column-gap:7mm; row-gap:5mm; margin-top:6mm; }
+  .feat h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; display:flex; align-items:center; gap:2mm; }
+  .feat h3 i { width:2.2mm; height:2.2mm; border-radius:50%; background:#6B6459; display:inline-block; flex:none; }
+  .feat p { font-size:9.5pt; line-height:1.48; color:#3A352F; }
+  .behind { color:#5E8D66; font-weight:600; } .ahead { color:#C62828; font-weight:600; }
+  .wide { display:flex; gap:7mm; margin-top:6mm; align-items:flex-start; }
+  .wide img { width:78mm; border-radius:3mm; border:0.3mm solid #D8D2C4; display:block; }
+  .wide .txt h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; }
+  .wide .txt p { font-size:9.5pt; color:#3A352F; margin-bottom:3mm; }
+  .get { display:flex; gap:6mm; align-items:flex-start; border:0.3mm solid #D8D2C4; border-radius:3mm; padding:4.5mm 5mm; margin-top:5mm; background:#fff; }
+  .get .qr { width:26mm; height:26mm; flex:none; }
+  .get .qr img { width:100%; height:100%; display:block; }
+  .get h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; }
+  .get p { font-size:9.5pt; color:#3A352F; }
+  .get p + p { margin-top:2mm; }
+  .get .risk { color:#6B6459; }
+  .cream .foot { position:absolute; left:15mm; right:15mm; bottom:12mm; border-top:0.3mm solid #E2DCCF; padding-top:3mm; font-size:8.5pt; color:#6B6459; line-height:1.45; }
 </style>
 </head>
 <body>
 
-<!-- ================= PAGE 1 ================= -->
-<div class="page hero">
-  <div class="brandrow">
-    <svg width="46" height="46" viewBox="18 18 72 72" style="border-radius:22%;">
-      <defs><clipPath id="sqb"><path d="M54,18 C24.48,18 18,24.48 18,54 C18,83.52 24.48,90 54,90 C83.52,90 90,83.52 90,54 C90,24.48 83.52,18 54,18 Z"/></clipPath></defs>
-      <g clip-path="url(#sqb)">
-        <rect x="0" y="0" width="108" height="108" fill="#1F1B19"/>
-        <path d="M12,42 h7 M24.5,42 h7 M37,42 h7 M49.5,42 h7 M62,42 h7 M74.5,42 h7 M87,42 h7" stroke="#F3EBE3" stroke-width="3.9" stroke-opacity=".72" fill="none"/>
-        <path d="M12,64 L27,64 L34,50 L41,64 L44,64" stroke="#D97757" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M66,64 L71,64 L78,50 L85,64 L96,64" stroke="#10A37F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M44,64 L48,72 L54,20 L60,74 L66,64" stroke="#FF5252" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </g>
-    </svg>
-    <div>
-      <div class="name">Cooldown</div>
-      <div class="byline">an always-on companion for people who live in Claude, ChatGPT &amp; Gemini</div>
-    </div>
+<!-- ============ PAGE 1 ============ -->
+<div class="page dark">
+  <div class="brand">
+    <img src="app-icon-512.png" alt="">
+    <div class="name">Cooldown</div>
+    <div class="tag">Beta · Android, iPhone and iPad</div>
   </div>
 
-  <h1>Never get cut off by a<br>usage limit <em>mid-thought</em> again.</h1>
-  <div class="sub">Claude, ChatGPT and Gemini all meter you on a 5-hour window and a weekly one. Cooldown keeps them in your shade — <b style="color:#F5F2EA;">two accounts on one always-on notification, a ring in the status bar</b>, as many accounts as you use on any of the three — forecasts when you'll hit the wall at your current pace, and pings you the moment you're back.</div>
+  <h1>Know where your<br>week stands.</h1>
+  <p class="lede">Cooldown shows the weekly and 5-hour limits of your own Claude, ChatGPT and Gemini plans in one place. It tells you when each one resets and whether you are using it faster or slower than an even pace.</p>
 
   <div class="shots">
-    <figure><img src="shots/v17-main-claude-dark.png" width="172"><figcaption>The app, redesigned — a Claude<br>account, Compact-ready cards</figcaption></figure>
-    <figure><img src="shots/v16-notif-expanded.png" width="172"><figcaption>The notification — two accounts,<br>expanded, visible from inside any app</figcaption></figure>
-    <figure><img src="shots/v17-main-compact.png" width="172"><figcaption>Compact density — every<br>card in reach, tap to expand</figcaption></figure>
+    <figure class="side"><img src="shots/v20-notif-duet-expanded.jpg" alt=""><figcaption>Two accounts in one notification</figcaption></figure>
+    <figure class="main"><img src="shots/v20-summary.jpg" alt=""><figcaption>The Summary: every account at a glance</figcaption></figure>
+    <figure class="side"><img src="shots/v20-widgets-home-clean.jpg" alt=""><figcaption>Home-screen widgets</figcaption></figure>
   </div>
 
-  <div class="chips">
-    <span class="chip">CLAUDE + CHATGPT + GEMINI</span><span class="chip">ALWAYS-ON NOTIFICATION</span><span class="chip">STATUS-BAR RING</span><span class="chip">PACE CHART</span><span class="chip">RESET PINGS</span><span class="chip">NO SERVERS</span>
-  </div>
-
-  <div class="claudeband">
-    <div class="spark">🛟</div>
-    <p><b>New in v2.0: Gemini and the Summary.</b> <span class="o">Gemini accounts</span> join Claude and ChatGPT, the weekly window leads with your pace, and one <span class="o">Summary</span> page ranks every account.</p>
+  <div class="foot">
+    <span>Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</span>
+    <span>Free and open source</span>
   </div>
 </div>
 
-<!-- ================= PAGE 2 ================= -->
-<div class="page p2">
-  <h2>What it <span>does</span></h2>
+<!-- ============ PAGE 2 ============ -->
+<div class="page cream">
+  <h2>What you get</h2>
+  <p class="intro">Sign in once per account. Cooldown keeps the numbers fresh in the app, a notification and your home screen.</p>
+
   <div class="grid">
-    <div class="feat"><span class="ic">📌</span><b>Two accounts, one notification</b><span>Always-on and silent: a First and a Second account side by side, each with its mark, bar and big percentage.</span></div>
-    <div class="feat"><span class="ic">◎</span><b>The status-bar ring</b><span>A tiny ring fills with the 5-hour window, in the account's own colour so you know whose it is.</span></div>
-    <div class="feat"><span class="ic">📈</span><b>The pace chart</b><span>Every reading plotted, sized and oriented your way, with a forecast tail: "100% at Thu 2:40 PM — 1h 20m before the reset."</span></div>
-    <div class="feat"><span class="ic">🔔</span><b>Reset pings</b><span>Per account and per window — Off, If busy, or Always — so you know the moment you're back.</span></div>
-    <div class="feat"><span class="ic">📐</span><b>Your layout, your call</b><span>Comfortable or Compact density; reorder, hide, or fold any card behind More — Reset layout undoes it in one tap.</span></div>
-    <div class="feat"><span class="ic">👥</span><b>Claude <i>and</i> ChatGPT</b><span>Pick the service when you add an account, then mix as many as you like — each in its own room: ivory and serif for Claude, neutral for ChatGPT.</span></div>
-    <div class="feat"><span class="ic">🔐</span><b>Sign in on the phone</b><span>Claude uses the OAuth flow Claude Code does; ChatGPT takes a short code you approve at auth.openai.com. No computer, no copied tokens.</span></div>
-    <div class="feat"><span class="ic">📊</span><b>Plan Fit</b><span>Is this plan the right size? Read off your last eight closed weeks on the History tab — no dollar guesses, just the pattern.</span></div>
-    <div class="feat"><span class="ic">💾</span><b>Private &amp; backed up</b><span>No servers or telemetry; the token is Keystore-encrypted. History &amp; settings survive a reinstall (token excluded).</span></div>
+    <div class="feat">
+      <h3><i></i>The Summary</h3>
+      <p>One page lists every account you track. The account with the most room to spare comes first, so you know which one to use next.</p>
+    </div>
+    <div class="feat">
+      <h3><i></i>Time ahead or behind</h3>
+      <p>Cooldown turns your weekly use into time against an even pace: <span class="behind">1d 12h behind</span> means you have room, <span class="ahead">14h 48m ahead</span> means slow down. A percentage alone cannot tell you that.</p>
+    </div>
+    <div class="feat">
+      <h3><i></i>The Pace map</h3>
+      <p>A chart places each account against an even pace through its week. Tap a dot to open that account.</p>
+    </div>
+    <div class="feat">
+      <h3><i></i>Ring and bar</h3>
+      <p>The ring is the 5-hour limit, where the plan has one. The bar is the week, with a tick that marks an even pace.</p>
+    </div>
+    <div class="feat">
+      <h3><i></i>Two accounts at once</h3>
+      <p>On Android, an always-on notification shows two accounts side by side. The status bar shows the 5-hour ring, or the week on a plan without one.</p>
+    </div>
+    <div class="feat">
+      <h3><i></i>Widgets</h3>
+      <p>Rings, bars and reset times sit on your home screen. Pick one account or several, in sizes from small to wide.</p>
+    </div>
   </div>
 
-  <div class="story">
+  <div class="wide">
+    <img src="shots/v20-fold-inner-account.png" alt="">
     <div class="txt">
-      <h2 style="margin-bottom:2.5mm;">Why it <span>exists</span></h2>
-      <p>Cooldown exists because of one recurring pain: deep in a Claude chat, a Cowork run or a ChatGPT session, the dreaded <i>"approaching your limit"</i> — with no idea how close, or when the window resets. Claude Code can tell you; the chat apps can't. The fix: put the answer where your eyes already are.</p>
-      <p><b>Widgets spread that answer further</b> — Ring, Number, Countdown and All accounts, each one sized to whatever cell you drop it in, from a single square to a full row, so the number is visible without even opening the shade.</p>
-      <p><b>v2.0 adds Gemini.</b> Sign in on Google's own page and paste the code. It is the riskiest of the three sign-ins: an undocumented Google endpoint, reached with the Antigravity CLI's public client. Crash reports still stay on your phone until you share them.</p>
-    </div>
-    <div class="stats">
-      <div class="stat"><b>v2.0</b><span>Gemini, Summary,<br>iPhone &amp; iPad</span></div>
-      <div class="stat"><b>4</b><span>widget faces — Ring,<br>Number, Countdown, All</span></div>
-      <div class="stat"><b>3</b><span>services tracked —<br>Claude, ChatGPT, Gemini</span></div>
-      <div class="stat"><b>0</b><span>servers, trackers<br>or analytics</span></div>
+      <h3>Room to spread out</h3>
+      <p>On a foldable or a tablet, an account's limits and their charts sit side by side. Light and dark themes follow your phone.</p>
+      <h3>What it reads</h3>
+      <p>Cooldown only reads. It sends no prompts and uses no quota. It has no server. Your sign-ins stay on your device, encrypted, and go only to the service they belong to.</p>
+      <h3>What it needs</h3>
+      <p>Android 12 or later, or iOS and iPadOS 18 or later. A Claude, ChatGPT or Gemini subscription.</p>
     </div>
   </div>
 
-  <div class="cta">
-    <div class="qr"><img src="repo-qr.svg"></div>
+  <div class="get">
+    <div class="qr"><img src="repo-qr.svg" alt=""></div>
     <div>
-      <h3>Want it on your phone?</h3>
-      <p>It's <b>free &amp; open-source</b>. Scan the code (or visit <b>github.com/robineam360/Cooldown</b>), grab the <span class="o">latest APK</span> from the Releases page, and follow the <span class="o">detailed user guide</span> — install → sign-in → notification in ~3 minutes. <span class="o">Android 12+; iPhone and iPad in TestFlight beta.</span></p>
-      <p style="margin-top:1.6mm;">Free, open-source and yours to keep — no account, no subscription, no catch.</p>
+      <h3>Get the beta</h3>
+      <p>Scan the code or go to github.com/robineam360/Cooldown. Android: download the APK from Releases. iPhone and iPad: join the TestFlight beta, listed as EAM360 Cooldown.</p>
+      <p>We plan to release on Google Play and the App Store once Anthropic, OpenAI and Google have each reviewed and approved how Cooldown reads plan usage from their services.</p>
+      <p class="risk">No provider has approved this way of reading usage yet. A provider can change or close it at any time, or act on an account that uses it. Read "Before you install" on the GitHub page first.</p>
     </div>
   </div>
 
-  <div class="fine">Sideloaded personal app, not on any store · tokens encrypted on-device · <b>unofficial</b> — uses the Claude Code, Codex and Antigravity CLIs' clients against undocumented usage endpoints · <b>not affiliated with or endorsed by Anthropic, OpenAI or Google</b> · Robin Richard Rajan · v2.0, November 2026</div>
+  <div class="foot">
+    Cooldown is made by Robin Richard Rajan at EAM360. Free and open source. Unofficial integration. Not affiliated with Anthropic, OpenAI or Google. Claude, ChatGPT and Gemini are trademarks of their owners. Version 2.0, November 2026.
+  </div>
 </div>
 
 </body>
