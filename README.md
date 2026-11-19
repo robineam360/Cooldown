@@ -4,7 +4,7 @@
 
 # Cooldown
 
-**Cooldown** — an Android app that shows how much of your **Claude**, **ChatGPT** and
+**Cooldown** — an Android app (and an iPhone and iPad beta on TestFlight) that shows how much of your **Claude**, **ChatGPT** and
 **Gemini** usage limits you've burned through, and when your weekly and 5-hour windows reset. The main screen
 folds to one line per card in **Compact** density or opens every chart in **Comfortable** — your
 call — and its home is an **always-on notification** that carries **two accounts side by side**,
@@ -23,8 +23,9 @@ Anthropic's usage endpoint refuses it (HTTP 403), so the app says so on the acco
 showing numbers it can't get. ChatGPT accounts report their plan (Plus, Pro, …) alongside.
 
 **📱 iPhone and iPad** — Cooldown 2.0 is also a public beta on TestFlight:
-`<TestFlight public link>`. It reads the same three services. There is no iPhone file to download
-here; TestFlight installs it.
+**[join the beta](https://testflight.apple.com/join/TncpZQFM)** (https://testflight.apple.com/join/TncpZQFM). The current beta build is **2.0 (3)**, available until
+**17 Feb 2027** (TestFlight builds expire after 90 days; a newer build replaces it before then). It
+reads the same three services. There is no iPhone file to download here; TestFlight installs it.
 
 📄 **Docs:** [User Guide (PDF)](release/docs/Cooldown-User-Guide-v2.0.pdf) — the full
 install → sign-in → notification walkthrough · [Brochure (PDF)](release/docs/Cooldown-Brochure.pdf) —
@@ -103,7 +104,7 @@ a 2-page overview.
 - **Try with sample data** 🆕 — three made-up accounts, one per service, on every tab; nothing
   is fetched, sent or saved (CCRM-113 (Sample Port)). **A new launcher icon** about the weekly
   limit (CCRM-101 (Icon v3))
-- **iPhone and iPad** 🆕 — a public beta on TestFlight (`<TestFlight public link>`) with the
+- **iPhone and iPad** 🆕 — a public beta on TestFlight ([join the beta](https://testflight.apple.com/join/TncpZQFM), build 2.0 (3), until 17 Feb 2027) with the
   Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control
   Center control (CCRM-94 (iOS App))
 - **Home-screen widgets are back** — four faces in the picker under **Cooldown**: **Ring**

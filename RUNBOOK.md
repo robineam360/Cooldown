@@ -64,7 +64,9 @@ Robin chose **B, the pace line names the reset** — ROADMAP's CCRM-108 and core
    Google account, not his personal one (kept for a future personal account of his own); the address is not
    written in this public repo. Terms risk accepted ("Proceed, risk accepted").
 8. Version: Android versionCode **26** / versionName **"2.0"**; iOS `MARKETING_VERSION` **2.0**, build
-   (`CURRENT_PROJECT_VERSION`) **1**, both set in the release commit and never earlier.
+   (`CURRENT_PROJECT_VERSION`) **1**, both set in the release commit and never earlier. **As shipped (2026-11-19):**
+   GitHub v2.0 is versionCode **27** (26 is spent in the Play library by the never-submitted release 26) and iOS
+   **2.0 (3)**; the next Android release is versionCode **28** on every channel. Play release 26 is never submitted.
 9. **No "None" (Robin, 2026-11-11).** Every account is Personal or Work. It is chosen on the Add account sheet
    (a Personal | Work control above the provider rows, Personal selected each time), the first account (which never
    passes the sheet) is Personal without asking, and every account that exists at the upgrade is Personal, silently
@@ -245,7 +247,7 @@ clients back at `cases.json`.
 | 4 | Release commit: 26 / "2.0", iOS 2.0 (1), docs; APK, AAB, IPA archive built and checked | session · judge | 3, D1, Q1 | ☑ 2026-11-17 (release commit `8deaf01`; open: guide pages 5, 7, 9, 10 still show v1.9 screens, see the Log) |
 | 5 | Store assets on the release build: screenshots, FGS video, feature graphic | session · **Robin approves the graphic** | 4, Q3, Q4 | ☑ 2026-11-17 (eight Play shots, FGS video, graphic C; guide pages 5, 7, 8, 9, 10 and the README screenshot table refreshed) |
 | 6 | TestFlight upload and Beta App Review | **Robin at the Mac** | 4 | ☑ 2026-11-18 (2.0 (1) Approved by Beta App Review; public link live) |
-| 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☐ |
+| 7 | Publish GitHub v2.0 (APK, iOS build under the same version) | session · Fable judge + Sol · **Robin's go** | 4, 6, Q1, Q2 | ☑ 2026-11-19 (release commit `37bc83f`, versionCode 27, iOS 2.0 (3); see the Log) |
 | 8 | Play Day 0: signing, internal upload, production release | **Robin at the console** · session guides | 4, 5, 7, R1, Q7 (answered) | ☐ |
 
 ---
@@ -1521,14 +1523,47 @@ only after that. Install the published asset on the Fold 7 and check "Check for 
 ```
 
 **Done when:**
-- ☐ The release is published with the APK, and the iOS build named under the same version, never an iOS-only
+- ☑ The release is published with the APK, and the iOS build named under the same version, never an iOS-only
   release.
-- ☐ The judge, Sol and Robin's go are in the Log; the installed asset's sha256 equals the published one.
+- ☑ The judge, Sol and Robin's go are in the Log; the installed asset's sha256 equals the published one.
 
 **Reversal:** none for anyone who installed. `gh release edit v2.0 --draft` withdraws it from `releases/latest`;
-a fix ships as v2.0.1 with versionCode 27 on both channels.
+a fix ships as v2.0.1 with versionCode **28** on every channel (27 is spent by v2.0; 26 by Play release 26, which is
+never submitted).
 
 **Log:**
+
+- **2026-11-19 · Step 7 closed: GitHub v2.0 published** at 13:05:15Z, https://github.com/robineam360/Cooldown/releases/tag/v2.0,
+  now `releases/latest`.
+  - **Release commit `37bc83f3f6eb24dd8bf967f3aa0c7ef9729f694d`** (CI run 44522179821 green: build, ios-core, ios-app).
+    Android versionCode **27** / "2.0" (26 is spent in Play); iOS **2.0 (3)**. Path there: build 2 at `09d5ba8` (CCRM-120
+    (Unofficial Note), the `user:profile` Claude scope, CCBG-107 (Gemini Bucket Prefix)); Robin then had CCBG-105 (Corner
+    Label Collision) fixed first (`5f33b6a`), so the first draft and its tag were deleted (Robin deleted the remote tag)
+    and v2.0 was re-tagged on `37bc83f`.
+  - **APK:** clean build of `37bc83f`, sha256 `944e1e8e8bf3a7947ec8aef723b4cbf43c96e2c0594d0c3c375adc65f5239d46`, signer =
+    the trusted digest, `check_artefact.py --channel github` PASS, Gemini secret present (not printed), no
+    `user:inference`. The published `releases/latest/download/app-release.apk` re-downloaded hashes the same.
+  - **Fold 7:** the exact asset installed over 26 (pulled back, same sha256, versionCode 27). Seen on the device: the
+    Claude Pro account signed in again with `user:profile` and fetched usage, and the "Unofficial integration" note
+    showed on the sign-in step (on the attempt-1 build `daab188d`; sign-in code unchanged since); on `944e1e8e` the Pace
+    map's "behind pace" sits clear of Claude's 11% dot. No Gemini account on the device: CCBG-107 is unit-test only.
+  - **TestFlight:** 2.0 (2) and 2.0 (3) uploaded by Robin; the session added them to EAM360 and Public Beta with What to
+    Test (Beta App Review approved each at once). App Store Connect readback 12:34Z: builds 1–3 Testing in both groups.
+  - **Gate** (step `github-publish-v2.0`, command `gh release edit v2.0 --draft=false --latest`), three attempts:
+    - Attempt 1 (packet `9ab63b8e…`, `09d5ba8`): Sol blocking (Robin's go and CCBG-105; APK provenance; draft body and
+      latest flag unread; local test claim); Fable judge blocking (no device run on 27; TestFlight build 2 unproven;
+      RUNBOOK still says 26).
+    - Attempt 2 (packet `3eaedbe1…`, `37bc83f`): Sol blocking (go; TestFlight 3 unevidenced; body compared ignoring
+      blank lines); Fable judge concerns.
+    - Attempt 3, on Robin's exception ("Re-review first"; packet `dec7c3c8…`): Fable judge **concerns** (this Log and
+      the version text; Gemini unseen live; screenshots unregistered), Sol **blocking** (Robin's go pending; live check
+      of `main` — run before publishing: `main` = `v2.0` = `37bc83f`; device flows; Pace map words have no vertical
+      bounds check, filed as CCBG-108 (Wedge Word Bounds)).
+    - **Robin's go, verbatim:** "Go, publish" — answering "Publish v2.0 (37bc83f, APK 944e1e8e…), accepting Gemini
+      unchecked live and waiving Sol?". Sol's record waived with those words (waiver `20261119T130458Z-7096a4c40eb352ea`);
+      gate RUN (WAIVED), auth `b17dbc5b…`, outcome ok.
+  - **After publishing:** README fills the TestFlight link (build 2.0 (3), available until 17 Feb 2027) and the repo's
+    About text names the iOS beta. **Each new TestFlight build** moves that expiry date (upload date + 90 days).
 
 ---
 

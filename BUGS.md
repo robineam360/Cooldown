@@ -32,6 +32,12 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > crash feedback), Slack messages to Robin from EAM360 colleagues since 2026-11-17, GitHub issues on robineam360/Cooldown
 > (none), and this file. CCBG-106 (Mac Sheet Wait) is the only report so far.
 
+### CCBG-108 · Wedge Word Bounds — a Pace map corner word's placement checks only the horizontal plot edges
+- **Status:** **Open** (found 2026-11-19 by the Sol cross-check of the v2.0 publish, attempt 3, on CCBG-105 (Corner Label Collision)'s fix) · Android and iOS (and the desktop core's copy)
+- **Severity:** Low (no case seen; the words sit in the corners of a plot far taller than a line of text)
+- **Symptom (by reading, not seen):** the placers for "ahead of pace" and "behind pace" check the plot's left and right edges and the diagonal, but not its top and bottom edges, so a tall label on a short plot could pass and spill over the plot.
+- **Fix idea:** check both vertical edges in the shared rule (core §6.3) and add a short-plot, tall-label case to `printed.json` → `mapLabels.wedgeWords`.
+
 ### CCBG-107 · Gemini Bucket Prefix — the Argon cap vanished when Google renamed its bucket id
 - **Status:** **Fixed** (found 2026-11-19 in the provider-terms research, `design/research/2026-11-19-mobile-apps-claude-antigravity.md` "Decisions and hand-over"; fixed 2026-11-19 for v2.0, Android and iOS)
 - **Severity:** High (wrong numbers: a Pro account's own Argon limit silently disappeared from the 7-day card)
@@ -49,7 +55,7 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 - **Checked on iPhone and iPad, 2026-11-19:** iPhone 17 Pro and iPad Pro 13-inch (M5) simulators, iOS 27.2, fresh install, the real `completeClaudeSignIn` → `addAccount` path fed a fake grant by a temporary debug patch (never committed). On both, the permission alert shows over the sheet while it reads "Signing in…"; tapping Allow closes the sheet at once and lands on the new account. Not reproducible on either.
 
 ### CCBG-105 · Corner Label Collision — a Pace map dot late in its week sits on the "behind pace" corner label
-- **Status:** **Fixed** (found 2026-11-18 while capturing Play's foldable screenshots on the release build 2.0 (26); Robin 2026-11-19: "fix it first", before v2.0 ships; fixed 2026-11-19, Android and iOS, no device check yet) · Android, Fold 7 inner screen, portrait and landscape, Trails on or off · iOS had the same rule (words fixed at 97%/6%, dots never checked against them): its word sits a little lower, so at 9% the dot only grazes it (`before-ios/`), but a dot at about 4–8% late in its week covers it; fixed the same way
+- **Status:** **Fixed** (found 2026-11-18 while capturing Play's foldable screenshots on the release build 2.0 (26); Robin 2026-11-19: "fix it first", before v2.0 ships; fixed 2026-11-19, Android and iOS; device-checked on the Fold 7 cover screen on the v2.0 release APK `944e1e8e`, where "behind pace" sits clear of Claude's 11% dot; shipped in v2.0) · Android, Fold 7 inner screen, portrait and landscape, Trails on or off · iOS had the same rule (words fixed at 97%/6%, dots never checked against them): its word sits a little lower, so at 9% the dot only grazes it (`before-ios/`), but a dot at about 4–8% late in its week covers it; fixed the same way
 - **Severity:** Low (cosmetic; the value label "Claude 9%" stays readable)
 - **Symptom:** with the Summary on All, the Claude account (9% used, day 6 of its week) is drawn over the plot's bottom-right "behind pace" label, which reads "b●ind pace". The ChatGPT "21%" label is also crossed by the dashed even-pace line. Shots: `release/play/screenshots-foldable/fold-01-inner-summary.png`, `fold-02-inner-landscape.png`.
 - **Cause:** the wedge words were fixed text. Names already avoided them, but nothing kept a dot off them; a dot is data and cannot move (CCBG-79 (Leader Reads as Trail) dealt with leaders, not the corner words).
