@@ -28,6 +28,17 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > ones go to a separate iOS bug-fix session that also runs the iPad half (Robin's choice). CCBG-91 (One UI Expanded
 > Column) to CCBG-96 (Picker Preview Truncation) were found on the Fold 7 (github release of main 3d4aed2), CCBG-97 (Map Foot Clip) in the recheck.
 
+> **v2.0 beta feedback, 2026-11-19.** Sources swept: TestFlight feedback for EAM360 Cooldown, Slack messages to Robin from
+> EAM360 colleagues since 2026-11-17, GitHub issues on robineam360/Cooldown (none), and this file. CCBG-106 (Mac Sheet Wait)
+> is the only report so far.
+
+### CCBG-106 · Mac Sheet Wait — on a Mac the Claude sign-in sheet stays on "Signing in…" after the account is added
+- **Status:** **Not applicable (Mac only)** (reported 2026-11-18 by an EAM360 tester on Slack; triaged 2026-11-19) · iOS app run on an M5 Max Mac as "Designed for iPad" · TestFlight 2.0 (1) · Mac availability of the iOS app is being turned off, so no Mac user can reach it
+- **Severity:** Low (Mac only; the account is added and its numbers show behind the sheet)
+- **Symptom:** after Sign in on the Claude sheet, the dashboard behind it filled in ("Checked just now"), but the sheet stayed open with the button reading "Signing in…".
+- **Cause:** `ClaudeSignInSheet` dismisses only when `completeClaudeSignIn` returns, and `AppModel.addAccount` awaits `ResetAlerts.requestPermission()` (the first-time notification prompt) after the first refresh. On iPhone and iPad that prompt is a system alert above the sheet. On a Mac it arrives in Notification Center, outside the app window, so the await waits until the user answers it there.
+- **Checked on iPhone and iPad, 2026-11-19:** iPhone 17 Pro and iPad Pro 13-inch (M5) simulators, iOS 27.2, fresh install, the real `completeClaudeSignIn` → `addAccount` path fed a fake grant by a temporary debug patch (never committed). On both, the permission alert shows over the sheet while it reads "Signing in…"; tapping Allow closes the sheet at once and lands on the new account. Not reproducible on either.
+
 ### CCBG-105 · Corner Label Collision — a Pace map dot late in its week sits on the "behind pace" corner label
 - **Status:** **Open** (found 2026-11-18 while capturing Play's foldable screenshots on the release build 2.0 (26)) · Android, Fold 7 inner screen, portrait and landscape, Trails on or off · iOS: not checked · v2.0 or later is Robin's call
 - **Severity:** Low (cosmetic; the value label "Claude 9%" stays readable)
