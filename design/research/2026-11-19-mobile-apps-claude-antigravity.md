@@ -126,3 +126,24 @@ before release.
 - Set `SCOPE = "user:profile"` in `data/OAuthSignIn.kt:35` and fix the comment above it.
 - Make the same change to the iOS `OAuthSignIn.swift` scope and to the `ContractTests.swift:467` expectation.
 - Old tokens keep their wide scope until the user signs in again.
+
+## Decisions and hand-over (2026-11-19, end of session)
+
+- **Claude:** solved for now. Sign-in asks only for `user:profile` on Android and iOS (fdc8464), and on Mac and Windows
+  (CooldownDesktop 91e9754, CCM-259 (Accounts)). The Anthropic email still goes out, asking permission for the read scope.
+- **ChatGPT:** ships as is on the Codex device code (Robin: "Yes keep it").
+- **Gemini (Antigravity):** Robin's view, in his own words: "I still don't think we're doing wrong when there are many apps
+  doing it. I think the bans … may not be this usage (maybe an abuse)."
+  - The evidence agrees on the user side. Every ban report involved prompt traffic, and none involved quota reads. T3 Code,
+    CodexBar and five phone apps read quota this way.
+  - The remaining risk is to the store listing. The terms clause is broad, and no Gemini app with this sign-in is on a
+    store.
+  - Robin said "Okay good" to shipping Gemini with an opt-in warning on the add-account sheet, but did not name a channel.
+    **The release session confirms with Robin:**
+    - (a) all builds, including the stores, with the warning; or
+    - (b) only the GitHub APK and TestFlight builds.
+  - Either way, the warning needs a wireframe first (CLAUDE.md §2), and the Google email goes out.
+- **New defect for the release session:** `AntigravitySource.kt:200-208` matches exact bucket IDs. Since Neon launched,
+  Google no longer sends `gemini-argon-wtu-weekly`, so the Argon cap is silently gone and Neon is not shown. Match on the
+  ID prefix instead, as T3 Code does (`gemini-argon-*`, `gemini-carbon-*`, other `gemini-*`, `3p-*`). Before filing it in
+  BUGS.md, check whether the iOS parser has the same problem.
