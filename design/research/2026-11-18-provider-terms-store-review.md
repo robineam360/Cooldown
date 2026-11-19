@@ -1,5 +1,8 @@
 # Provider terms and store policy for Cooldown's sign-ins (2026-11-18)
 
+> **Verdicts superseded 2026-11-19** by [2026-11-19-provider-signins-precedent.md](2026-11-19-provider-signins-precedent.md)
+> (what comparable apps do; Claude hold, ChatGPT change method, Gemini hold).
+
 Prompted by the Play submission gate (RUNBOOK Step 8 log): the judge and Sol both returned `blocking`, the judge on a
 Play policy risk. Four read-only research agents (Sonnet), one per provider plus one on store policy, read the code and
 the providers' current pages. Quotes are short; "inference" marks what no page states. Android and iOS sign in the same

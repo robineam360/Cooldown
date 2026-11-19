@@ -1,5 +1,10 @@
 # Permission requests to the three providers (drafts, 2026-11-18)
 
+> **2026-11-19: reword all three before sending** — see "The permission requests" in
+> `design/research/2026-11-19-provider-signins-precedent.md` (Anthropic: ask the Agent SDK's "previously approved" for a
+> `user:profile`-only sign-in; OpenAI: moving to SIWC open-source registration, ask about store eligibility and a usage
+> scope; Google: Gemini out of store builds meanwhile).
+
 Robin's decision, 2026-11-18: **ask the providers first** before submitting to Google Play or the App Store
 (`design/research/2026-11-18-provider-terms-store-review.md`). Robin sends each message himself; nothing here is sent
 by a session. Replies are logged in RUNBOOK Step 8.
