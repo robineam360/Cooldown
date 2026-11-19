@@ -40,7 +40,7 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 - The launcher icon is now about the weekly limit, in the colours of all three services
 
 **On iPhone and iPad** [CCRM-94 (iOS App)]
-- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **https://testflight.apple.com/join/TncpZQFM** (build **2**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
+- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **https://testflight.apple.com/join/TncpZQFM** (build **3**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
 - There is no iPhone file to download here: TestFlight installs it
 
 **Sign-in** [CCRM-120 (Unofficial Note)]
@@ -60,6 +60,7 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 - A long account name could wrap onto two lines in the History tab strip at 360 dp; the strip now scrolls when a name will not fit [CCBG-81 (History Tab Wrap)]
 
 - A Gemini Pro account's own weekly model limit (Argon) could vanish after Google renamed it; Gemini limits are now recognised by family, and a Carbon limit shows when Google sends one [CCBG-107 (Gemini Bucket Prefix)]
+- On the Pace map, a dot late in its week could sit on the "behind pace" corner word and garble it; the corner words now move aside when a dot covers them [CCBG-105 (Corner Label Collision)]
 
 ## Install
 

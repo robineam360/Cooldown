@@ -3,11 +3,12 @@
 Cooldown shows how much of your Claude, ChatGPT and Gemini usage windows you have used, and when
 they reset. It reads usage only: it never sends a prompt and never spends quota.
 
-**New in build 2**
+**New in builds 2 and 3**
 - Every sign-in screen shows a short "Unofficial integration" note.
 - Claude sign-in asks for profile access only. If your Claude account is already signed in, sign in again
   once to move it to the smaller access.
 - Gemini Pro accounts show their weekly Argon limit again.
+- On the Pace map, the "ahead of pace" and "behind pace" corner words move aside when a dot covers them.
 
 **Please try**
 1. **Look around first:** on the first screen tap *Try with sample data* for three made-up accounts
