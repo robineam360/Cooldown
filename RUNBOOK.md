@@ -1636,6 +1636,14 @@ rollout) and replaced by a new versionCode on both channels.
     confirmed after reload). Naren's report from an M5 Max is CCBG-106 (Mac Sheet Wait), not applicable (Mac only). The Mac
     app ships natively from CooldownDesktop. "Apple Vision Pro" availability unticked too (Robin, 2026-11-19; saved and
     confirmed).
+  - **2026-11-19 — consent requests sent** (`release/outreach/2026-11-19-provider-consent-requests.md`), by Robin.
+    - **Anthropic:** sent to Anthropic Marketing, which auto-replied that a person reads every message. The auto-reply
+      also says the name may be used in plain text without implying endorsement, but **any logo use needs prior
+      written approval** (anthropic.com/legal/trademark-guidelines). The app shows the Claude mark.
+    - **OpenAI:** support (AI-assisted, case 20481229) answered that Sign in with ChatGPT has no usage scope and that it
+      cannot give written approval for the device code or undocumented endpoints. It points to the public docs and the
+      Sign in with ChatGPT interest form for partnership access.
+    - **Google:** only the Cloud contact form exists, with a 1,000-character cap. A short version is drafted.
 
 ---
 

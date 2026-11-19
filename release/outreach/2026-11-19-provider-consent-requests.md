@@ -223,6 +223,25 @@ Screenshots: https://github.com/robineam360/Cooldown/tree/main/release/play/scre
 Robin Richard Rajan, Product Manager, EAM360
 ```
 
+### Short form version (Google Cloud contact form, 1,000-character cap; 902 characters)
+
+```text
+Please route to the Antigravity / Gemini Code Assist team. Not a sales enquiry.
+
+EAM360 builds mobile apps for IBM Maximo. As an exception, I built EAM360 Cooldown: a free, open-source Android/iOS app that shows people their own AI plan usage in one place, so they can see if Pro or Ultra would pay off. No plans to sell it.
+
+It is read-only: no prompts, no quota used, no server, tokens stay on the device. With no public quota API, the user signs in on Google's consent page via the Antigravity CLI's OAuth client, and the app reads the quota summary endpoint every 15 min. We would rather identify as Cooldown.
+
+1. Is there a supported API for a user's own quota?
+2. If not, could a client registered to Cooldown read it?
+3. Until then, may we continue as we do now?
+
+We will remove Gemini if asked.
+Code: https://github.com/robineam360/Cooldown
+
+Robin Richard Rajan, Senior Product Manager, EAM360
+```
+
 ### Email version
 
 ```text
