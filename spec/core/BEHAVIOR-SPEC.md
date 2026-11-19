@@ -495,7 +495,11 @@ hover, a width the line cannot fit), and records each deviation in its wireframe
   name or dot; with nothing free, the name is not drawn — the dot stays and still opens its callout. A spot is
   refused if it leaves the plot or overlaps a placed label, a dot, a wedge or axis label or "even pace"; with the
   Projection layer on, a name does not sit on its own tail or ring. "even pace" slides along the diagonal to the
-  first free stretch.
+  first free stretch. **The wedge words yield to a dot** (CCBG-105 (Corner Label Collision)): "behind pace" and
+  "ahead of pace" start in their corners and, when a dot's hit box overlaps one, it slides along its own line away
+  from its corner ("behind pace" leftwards, "ahead of pace" rightwards) in 4 dp/pt steps to the first spot no dot
+  overlaps, never leaving its wedge or the plot; with nothing free it is not drawn. They are placed before "even
+  pace" and the names, which avoid them where they land (`printed.json` → `mapLabels.wedgeWords`).
 
 - **The day grid** (§6, CCRM-107 (Day Grid)). Every 7-day chart and the Pace map draw a grid under everything else:
   vertical lines at the window's start + k × 24 h (k = 1…6: window-relative days, not midnights, so the seven columns

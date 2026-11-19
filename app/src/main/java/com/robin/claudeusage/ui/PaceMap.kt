@@ -259,8 +259,8 @@ internal class PaceMapScene(
                 words += Word(t, Offset(f.left - PaceMapGeometry.AXIS_GAP_DP * d - t.size.width, f.y(v) - t.size.height / 2f))
             }
             val muted = label.copy(color = ink.copy(alpha = 0.55f))
-            measurer.measure(PaceText.MAP_AHEAD, muted).let { words += Word(it, Offset(f.x(3.0), f.y(91.0) - it.size.height)) }
-            measurer.measure(PaceText.MAP_BEHIND, muted).let { words += Word(it, Offset(f.x(97.0) - it.size.width, f.y(6.0) - it.size.height)) }
+            val ahead = measurer.measure(PaceText.MAP_AHEAD, muted)
+            val behind = measurer.measure(PaceText.MAP_BEHIND, muted)
             val axis = label.copy(color = ink.copy(alpha = 0.7f))
             val foot = height - 4 * d
             val start = measurer.measure(PaceText.MAP_WEEK_START, axis)
@@ -284,8 +284,6 @@ internal class PaceMapScene(
                 val t = measurer.measure(o.text, ordinalStyle)
                 words += Word(t, Offset(f.left + o.centreX * d - t.size.width / 2f, foot - t.size.height))
             }
-            val fixed = ArrayList(words.map { PaceMapGeometry.Rect(it.at.x, it.at.y, it.layout.size.width.toFloat(), it.layout.size.height.toFloat()) })
-
             // The dots and, with Projection on, each tail's end and its ring.
             data class Pre(val e: PaceMapEntry, val point: Offset, val figure: String?, val proj: PaceMapRules.ProjectionEnd?, val tailEnd: Offset?)
             val pre = entries.map { e ->
@@ -297,6 +295,18 @@ internal class PaceMapScene(
                 )
             }
             val ringBoxes = pre.mapNotNull { p -> p.tailEnd?.let { PaceMapGeometry.Rect(it.x - 3.5f * d, it.y - 3.5f * d, 7f * d, 7f * d) } }
+
+            // CCBG-105 (Corner Label Collision): a wedge word a dot sits on slides along its line, away from its corner.
+            val plotRect = MapLabels.Rect(f.left.toDouble(), f.top.toDouble(), (f.right - f.left).toDouble(), (f.bottom - f.top).toDouble())
+            val centres = pre.map { it.point.x.toDouble() to it.point.y.toDouble() }
+            fun wedge(t: TextLayoutResult, at: Offset, below: Boolean) {
+                val start = MapLabels.Rect(at.x.toDouble(), at.y.toDouble(), t.size.width.toDouble(), t.size.height.toDouble())
+                MapLabels.wedgeWord(start, below, plotRect, centres, MapLabels.Geometry.DP.dotHalf * d, MapLabels.WORD_STEP_DP * d)
+                    ?.let { words += Word(t, Offset(it.x.toFloat(), it.y.toFloat())) }
+            }
+            wedge(ahead, Offset(f.x(3.0), f.y(91.0) - ahead.size.height), below = false)
+            wedge(behind, Offset(f.x(97.0) - behind.size.width, f.y(6.0) - behind.size.height), below = true)
+            val fixed = ArrayList(words.map { PaceMapGeometry.Rect(it.at.x, it.at.y, it.layout.size.width.toFloat(), it.layout.size.height.toFloat()) })
 
             // "even pace" slides along the diagonal to the first stretch no dot or ring sits on.
             val even = measurer.measure(PaceText.MAP_EVEN, tiny.copy(color = pace))

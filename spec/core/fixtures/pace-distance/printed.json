@@ -7,6 +7,7 @@
     "dayGrid": "Inputs are the window start, now, the plot width and the label widths (measured by the wireframe's em model at 9.5 sp; a client tests its rule with these widths, not its own measurement). Verticals at start + k x 24 h (7-day) or + k x 1 h (5h), k = 1..n-1; horizontals at k/n of 100%, k = 1..n-1 (the 100% guide is the n-th). Ordinals 2..n-1 are centred in their columns; the start label is left-aligned at x 0 and the reset label right-aligned at the plot width. An ordinal gives way when its box is less than nowGap (6, the wireframe's words) from the 'now' label's box (centred on now), or less than endGap (4, the wireframe's drawing) from an end label's box; every ordinal drops when a column is under dropBelowColumn (14). nowColumn is 1-based; start + k x 24 h itself belongs to column k+1. Only an ordinal is bold: in columns 1 and n the end labels stay plain, as drawn.",
     "quiet": "An account leaves the Pace map when its row prints '0%' Weekly used: the displayed percent truncates like a window row (section 2's window bars), so 0.99 prints 0% and is hidden, and 1.0 prints 1% and is plotted (a row reading 1% is always on the map). The list still shows the row. The map's figure labels truncate the same way; only the callout's estimate rounds half up.",
     "mapLabels": "Placement geometry for the test (units are dp/pt; each family keeps its own drawn offsets, and tests its placer with these). Plot origin top-left, x = week gone % x width, y = (100 - used) % x height. A dot's hit box is 2 x dotHalf square. Names go top-down (smallest y first, then smallest x). Spots in order: right (cx + rightDx, cy - h/2), below (cx + belowDx, cy + h/2 + belowDy), left (cx - leftDx - w, cy - h/2), above-left (cx - leftDx - w, cy - aboveDy - h). Then leaders: each distance in leaderDistances, and for each the eight directions clockwise from east in screen coordinates (E, SE, S, SW, W, NW, N, NE); the leader ends at the dot centre + distance along the direction, and the name box touches that end by its side or corner facing away from the dot (E: left-middle; SE: top-left; S: top-centre; ...). A spot is refused if the box leaves the name area (the plot plus nameAreaMargin), comes within fixedGap of a fixed word, overlaps any dot's hit box, comes within nameGap of a placed name, sits on any ring, or crosses its own projection tail; a leader is refused also if its segment (dot centre to end) crosses a placed name's box or another dot's hit box. Nothing free: spot 'none', the name is not drawn and takes no space (its dot stays and still opens its callout). refusedFor lists the reasons met on the way, for reading the case.",
+    "wedgeWords": "CCBG-105 (Corner Label Collision). A wedge word ('behind pace' below the diagonal, 'ahead of pace' above it; units dp/pt, plot coordinates as mapLabels) starts at its family's corner box and slides along its own line away from the corner ('below' leftwards, 'above' rightwards) by wordStep, k = 0, 1, 2 ..., to the first box that overlaps no dot's hit box (2 x dotHalf square); rings sit on the right edge or the 100% line, out of reach. It stops when the box would leave the plot or its wedge ('below': the box's top-left corner on or under the diagonal, y >= H x (1 - x / W); 'above': its bottom-right corner on or over it). Nothing free: box null, the word is not drawn. The words are placed before 'even pace' and the names, which treat the result as a fixed word.",
     "forecast": "The callout's third line from section 3's estimate on the weekly samples: hitsLimitAtMs before the reset -> '100% at ' + the instant printed as a reset is (weekday dropped later the same local day); otherwise '~' + pctAtReset rounded half up + '% at reset'. No estimate, spent, or no reset clock -> no line. Times in UTC.",
     "projectionLayer": "A dashed tail from the dot to a ring. Runs out before the reset -> the ring sits on the 100% line at the week-gone % of hitsLimitAtMs, ring and tail end red; otherwise a hollow ring on the right edge (100% week gone) at pctAtReset. null = no tail, no ring."
   },
@@ -908,6 +909,258 @@
               "refusedFor": []
             }
           ]
+        }
+      }
+    ],
+    "wedgeWords": [
+      {
+        "name": "CCBG-105 as reported: Claude at 9%, day 6, sits on 'behind pace', which slides left clear of it",
+        "plot": {
+          "width": 271,
+          "height": 273
+        },
+        "dotHalf": 7,
+        "wordStep": 4,
+        "word": {
+          "word": "behind pace",
+          "side": "below",
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ]
+        },
+        "dots": [
+          {
+            "name": "ChatGPT",
+            "weekGonePct": 28.6,
+            "usedPct": 21
+          },
+          {
+            "name": "Work",
+            "weekGonePct": 39,
+            "usedPct": 17
+          },
+          {
+            "name": "Claude",
+            "weekGonePct": 86,
+            "usedPct": 9
+          },
+          {
+            "name": "Product",
+            "weekGonePct": 98,
+            "usedPct": 58
+          }
+        ],
+        "expected": {
+          "box": [
+            166.87,
+            242.62,
+            56,
+            14
+          ],
+          "steps": 10
+        }
+      },
+      {
+        "name": "nothing on the word: it stays in its corner",
+        "plot": {
+          "width": 271,
+          "height": 273
+        },
+        "dotHalf": 7,
+        "wordStep": 4,
+        "word": {
+          "word": "behind pace",
+          "side": "below",
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ]
+        },
+        "dots": [
+          {
+            "name": "ChatGPT",
+            "weekGonePct": 28.6,
+            "usedPct": 21
+          },
+          {
+            "name": "Work",
+            "weekGonePct": 39,
+            "usedPct": 17
+          },
+          {
+            "name": "Product",
+            "weekGonePct": 98,
+            "usedPct": 58
+          }
+        ],
+        "expected": {
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ],
+          "steps": 0
+        }
+      },
+      {
+        "name": "a dot on 'ahead of pace' early in its week: the word slides right, staying above the diagonal",
+        "plot": {
+          "width": 271,
+          "height": 273
+        },
+        "dotHalf": 7,
+        "wordStep": 4,
+        "word": {
+          "word": "ahead of pace",
+          "side": "above",
+          "box": [
+            8.13,
+            10.57,
+            67,
+            14
+          ]
+        },
+        "dots": [
+          {
+            "name": "Burst",
+            "weekGonePct": 8,
+            "usedPct": 93
+          }
+        ],
+        "expected": {
+          "box": [
+            32.13,
+            10.57,
+            67,
+            14
+          ],
+          "steps": 6
+        }
+      },
+      {
+        "name": "a dot just past the word's left end does not move it",
+        "plot": {
+          "width": 271,
+          "height": 273
+        },
+        "dotHalf": 7,
+        "wordStep": 4,
+        "word": {
+          "word": "behind pace",
+          "side": "below",
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ]
+        },
+        "dots": [
+          {
+            "name": "Near",
+            "weekGonePct": 72,
+            "usedPct": 6
+          }
+        ],
+        "expected": {
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ],
+          "steps": 0
+        }
+      },
+      {
+        "name": "the bottom row full of dots up to the diagonal: nothing free, the word is not drawn",
+        "plot": {
+          "width": 271,
+          "height": 273
+        },
+        "dotHalf": 7,
+        "wordStep": 4,
+        "word": {
+          "word": "behind pace",
+          "side": "below",
+          "box": [
+            206.87,
+            242.62,
+            56,
+            14
+          ]
+        },
+        "dots": [
+          {
+            "name": "D0",
+            "weekGonePct": 12,
+            "usedPct": 6
+          },
+          {
+            "name": "D1",
+            "weekGonePct": 20,
+            "usedPct": 6
+          },
+          {
+            "name": "D2",
+            "weekGonePct": 28,
+            "usedPct": 6
+          },
+          {
+            "name": "D3",
+            "weekGonePct": 36,
+            "usedPct": 6
+          },
+          {
+            "name": "D4",
+            "weekGonePct": 44,
+            "usedPct": 6
+          },
+          {
+            "name": "D5",
+            "weekGonePct": 52,
+            "usedPct": 6
+          },
+          {
+            "name": "D6",
+            "weekGonePct": 60,
+            "usedPct": 6
+          },
+          {
+            "name": "D7",
+            "weekGonePct": 68,
+            "usedPct": 6
+          },
+          {
+            "name": "D8",
+            "weekGonePct": 76,
+            "usedPct": 6
+          },
+          {
+            "name": "D9",
+            "weekGonePct": 84,
+            "usedPct": 6
+          },
+          {
+            "name": "D10",
+            "weekGonePct": 92,
+            "usedPct": 6
+          },
+          {
+            "name": "D11",
+            "weekGonePct": 100,
+            "usedPct": 6
+          }
+        ],
+        "expected": {
+          "box": null,
+          "steps": null
         }
       }
     ]

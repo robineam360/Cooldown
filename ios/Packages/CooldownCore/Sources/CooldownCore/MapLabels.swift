@@ -197,6 +197,28 @@ public enum MapLabels {
         return dots.compactMap { results[$0.key] }
     }
 
+    /// CCBG-105 (Corner Label Collision): the wedge words' step, pt.
+    public static let wordStep: Double = 4
+
+    /// CCBG-105 (Corner Label Collision), core §6.3, `printed.json` → `mapLabels.wedgeWords`: a wedge word starts at
+    /// [start] in its corner and slides along its line away from the corner ("behind pace", [below], leftwards; "ahead
+    /// of pace" rightwards) by [step] to the first box no dot's hit box overlaps, never leaving the plot or its wedge.
+    /// Nil: nothing is free and the word is not drawn. Plot coordinates; [dots] are the dot centres.
+    public static func wedgeWord(start: Rect, below: Bool, plotWidth W: Double, plotHeight H: Double,
+                                 dots: [(Double, Double)], dotHalf: Double, step: Double) -> Rect? {
+        let boxes = dots.map { Rect($0.0 - dotHalf, $0.1 - dotHalf, 2 * dotHalf, 2 * dotHalf) }
+        var k = 0.0
+        while true {
+            let x = below ? start.x - k * step : start.x + k * step
+            if x < 0 || x + start.w > W { return nil }
+            let inWedge = below ? start.y >= H * (1 - x / W) : start.y + start.h <= H * (1 - (x + start.w) / W)
+            if !inWedge { return nil }
+            let r = Rect(x, start.y, start.w, start.h)
+            if !boxes.contains(where: { r.near($0, 0) }) { return r }
+            k += 1
+        }
+    }
+
     /// Does the segment p–q meet the rectangle r? Liang–Barsky clipping.
     public static func segmentHits(_ p: (Double, Double), _ q: (Double, Double), _ r: Rect) -> Bool {
         let dx = q.0 - p.0, dy = q.1 - p.1

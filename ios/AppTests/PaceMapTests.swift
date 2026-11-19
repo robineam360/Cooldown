@@ -105,6 +105,29 @@ struct PaceMapTests {
         }
     }
 
+    // CCBG-105 (Corner Label Collision): the Summary as captured on the Fold 7 on 2026-11-18.
+    static let reported = [Spec(name: "ChatGPT", provider: .chatgpt, used: 21, gone: 28.6),
+                           Spec(name: "Work", provider: .claude, used: 17, gone: 39),
+                           Spec(name: "Claude", provider: .claude, used: 9, gone: 86),
+                           Spec(name: "Product", provider: .claude, used: 58, gone: 98)]
+
+    @Test("CCBG-105: no dot sits on a wedge word; with nothing on it the word stays in its corner",
+          arguments: [CGSize(width: 361, height: 230), CGSize(width: 288, height: 210), CGSize(width: 420, height: 340)])
+    func wedgeWords(size: CGSize) throws {
+        let s = PaceMapScene.make(entries: plotted(entries(Self.reported)), size: size,
+                                  layers: MapLayers(figures: true, trails: false, projection: false), mode: .used)
+        for w in [try #require(s.ahead), try #require(s.behind)] {
+            for i in s.items {
+                #expect(!w.intersects(CGRect(x: i.point.x - 7, y: i.point.y - 7, width: 14, height: 14)), "\(size): \(i.key) on a word")
+            }
+            #expect(s.words.contains(w), "\(size): the names avoid the word where it landed")
+        }
+        let quiet = PaceMapScene.make(entries: plotted(entries(Self.reported.filter { $0.name != "Claude" })), size: size,
+                                      layers: MapLayers(figures: true, trails: false, projection: false), mode: .used)
+        let behind = try #require(quiet.behind)
+        #expect(abs(behind.maxX - quiet.P(97, 6).x) < 0.5, "\(size): stays in its corner")
+    }
+
     @Test("projection: Gemini runs out (on the 100% line), Atlas is spent (none), the rest end on the right edge")
     func projection() {
         let s = PaceMapScene.make(entries: plotted(entries(Self.six)), size: CGSize(width: 339, height: 230),
@@ -249,6 +272,13 @@ struct PaceMapTests {
             save("quiet-one-account", card(entries([Self.personal])))
             save("quiet-unread-count", card(entries([Self.teams, Self.personal, Self.notes, Self.product])))
             withMode(.used) { save("dense-ten-figures", card(ten, fig)) }
+            withMode(.used) {
+                let fig = MapLayers(figures: true, trails: false, projection: false)
+                r.save("ccbg105-phone-\(t)", card(entries(Self.reported), fig), width: 393, height: 330, scheme: scheme,
+                       background: scheme == .dark ? .black : nil)
+                r.save("ccbg105-ipad-\(t)", card(entries(Self.reported), fig, height: 340), width: 420, height: 440, scheme: scheme,
+                       background: scheme == .dark ? .black : nil)
+            }
             save("narrow-320", card(six, height: 210), width: 320, height: 330)
             save("narrow-300-wrap", card(six, height: 210), width: 300, height: 360)
             withMode(.used) {

@@ -176,6 +176,33 @@ struct PaceMapV20Tests {
         }
     }
 
+    @Test("wedge words: CCBG-105, a word a dot sits on slides along its line, every case")
+    func wedgeWords() throws {
+        let labels = try #require(try fixture().dict("mapLabels"))
+        let cases = try list(labels, "wedgeWords")
+        #expect(cases.contains { ($0.str("name") ?? "").hasPrefix("CCBG-105") })
+        for c in cases {
+            let name = c.str("name") ?? "?"
+            let plot = try #require(c.dict("plot"))
+            let w = try #require(plot.num("width")), h = try #require(plot.num("height"))
+            #expect(c.num("wordStep") == MapLabels.wordStep, "\(name): step")
+            let word = try #require(c.dict("word"))
+            let b = try #require(word["box"] as? [NSNumber]).map(\.doubleValue)
+            let dots = try #require(c["dots"] as? [[String: Any]]).map { d in
+                ((d.num("weekGonePct") ?? 0) / 100 * w, (100 - (d.num("usedPct") ?? 0)) / 100 * h)
+            }
+            let got = MapLabels.wedgeWord(start: MapLabels.Rect(b[0], b[1], b[2], b[3]), below: word.str("side") == "below",
+                                          plotWidth: w, plotHeight: h, dots: dots,
+                                          dotHalf: try #require(c.num("dotHalf")), step: try #require(c.num("wordStep")))
+            if let e = c.dict("expected")?["box"] as? [NSNumber] {
+                let r = try #require(got, "\(name): expected a word")
+                #expect(abs(r.x - e[0].doubleValue) < 1e-3 && abs(r.y - e[1].doubleValue) < 1e-3, "\(name): \(r)")
+            } else {
+                #expect(got == nil, "\(name): expected no word")
+            }
+        }
+    }
+
     @Test("leaders stay short: never past the longest distance")
     func leaderLength() throws {
         let labels = try #require(try fixture().dict("mapLabels"))

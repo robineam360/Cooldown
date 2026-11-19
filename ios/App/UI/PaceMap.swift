@@ -77,6 +77,10 @@ struct PaceMapScene {
     /// Axis and wedge words, in canvas coordinates.
     let words: [CGRect]
     let rings: [CGRect]
+    /// CCBG-105 (Corner Label Collision): where "ahead of pace" and "behind pace" sit once they have yielded to the dots
+    /// (canvas coordinates; nil = nothing free, not drawn).
+    var ahead: CGRect? = nil
+    var behind: CGRect? = nil
 
     func P(_ x: Double, _ y: Double) -> CGPoint {
         CGPoint(x: plot.minX + x / 100 * plot.width, y: plot.maxY - y / 100 * plot.height)
@@ -103,8 +107,6 @@ struct PaceMapScene {
         let xStart = measure(PaceText.MapWords.xStart, size: 10), xEnd = measure(PaceText.MapWords.xEnd, size: 10)
         let digit = measure("4", size: 10)
         var words = [
-            CGRect(x: aheadAt.x, y: aheadAt.y - ahead.height / 2, width: ahead.width, height: ahead.height),
-            CGRect(x: behindAt.x - behind.width, y: behindAt.y - behind.height / 2, width: behind.width, height: behind.height),
             CGRect(x: plot.minX, y: axisY - xStart.height / 2, width: xStart.width, height: xStart.height),
             CGRect(x: plot.maxX - xEnd.width, y: axisY - xEnd.height / 2, width: xEnd.width, height: xEnd.height),
         ]
@@ -123,6 +125,18 @@ struct PaceMapScene {
                         projection: projection, tailEnd: projection.map { P($0.weekGonePct, $0.usedPct) }, label: nil)
         }
         let rings = items.compactMap(\.tailEnd).map { CGRect(x: $0.x - 3.5, y: $0.y - 3.5, width: 7, height: 7) }
+        // CCBG-105 (Corner Label Collision): a wedge word a dot sits on slides along its line, away from its corner.
+        let centres = items.map { (Double($0.point.x - plot.minX), Double($0.point.y - plot.minY)) }
+        func wedge(_ start: CGRect, below: Bool) -> CGRect? {
+            MapLabels.wedgeWord(start: MapLabels.Rect(start.minX - plot.minX, start.minY - plot.minY, start.width, start.height),
+                                below: below, plotWidth: plot.width, plotHeight: plot.height, dots: centres,
+                                dotHalf: geometry.dotHalf, step: MapLabels.wordStep)
+                .map { CGRect(x: plot.minX + $0.x, y: plot.minY + $0.y, width: $0.w, height: $0.h) }
+        }
+        let aheadBox = wedge(CGRect(x: aheadAt.x, y: aheadAt.y - ahead.height / 2, width: ahead.width, height: ahead.height), below: false)
+        let behindBox = wedge(CGRect(x: behindAt.x - behind.width, y: behindAt.y - behind.height / 2,
+                                     width: behind.width, height: behind.height), below: true)
+        words.insert(contentsOf: [aheadBox, behindBox].compactMap { $0 }, at: 0)
         let height = measure("Ag", size: nameSize, weight: .semibold).height
         // MapLabels works in the plot's own coordinates.
         func local(_ r: CGRect) -> MapLabels.Rect { MapLabels.Rect(r.minX - plot.minX, r.minY - plot.minY, r.width, r.height) }
@@ -134,7 +148,7 @@ struct PaceMapScene {
         let placed = MapLabels.place(dots: dots, plotWidth: plot.width, plotHeight: plot.height, geometry: geometry,
                                      fixed: words.map(local), rings: rings.map(local))
         for k in items.indices { items[k].label = placed.first { $0.key == items[k].key } }
-        return PaceMapScene(size: size, plot: plot, items: items, words: words, rings: rings)
+        return PaceMapScene(size: size, plot: plot, items: items, words: words, rings: rings, ahead: aheadBox, behind: behindBox)
     }
 
     static func ordinals(plot: CGRect) -> [DayGrid.Ordinal] {
@@ -364,8 +378,8 @@ struct PaceMap: View {
         }
         ctx.stroke(Path { $0.move(to: P(0, 0)); $0.addLine(to: P(100, 100)) }, with: .color(p.pace),
                    style: StrokeStyle(lineWidth: 1.6, dash: [3, 3]))
-        label(PaceText.MapWords.aboveDiagonal, P(3, 94), p.sub, .leading)
-        label(PaceText.MapWords.belowDiagonal, P(97, 6), p.sub, .trailing)
+        if let r = s.ahead { label(PaceText.MapWords.aboveDiagonal, CGPoint(x: r.minX, y: r.midY), p.sub, .leading) }
+        if let r = s.behind { label(PaceText.MapWords.belowDiagonal, CGPoint(x: r.maxX, y: r.midY), p.sub, .trailing) }
         let axisY = s.plot.maxY + 10
         label(PaceText.MapWords.xStart, CGPoint(x: s.plot.minX, y: axisY), p.sub, .leading)
         label(PaceText.MapWords.xEnd, CGPoint(x: s.plot.maxX, y: axisY), p.sub, .trailing)

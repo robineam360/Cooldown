@@ -411,6 +411,36 @@ def place_names(case):
     return out
 
 
+# ---------------------------------------------------------------- CCBG-105 (Corner Label Collision): wedge words yield
+
+def wedge_word(case):
+    """A wedge word starts in its corner and slides along its own line, away from the corner, by wordStep, to the
+    first spot clear of every dot's hit box (a ring sits on the right edge or the 100% line, out of a word's reach); it never leaves its wedge or the plot. Nothing free:
+    the word is not drawn."""
+    W, H = case["plot"]["width"], case["plot"]["height"]
+    dh, step = case["dotHalf"], case["wordStep"]
+    x0, y, w, h = case["word"]["box"]
+    below = case["word"]["side"] == "below"
+    boxes = [((d["weekGonePct"] / 100 * W) - dh, ((100 - d["usedPct"]) / 100 * H) - dh, 2 * dh, 2 * dh) for d in case["dots"]]
+    k = 0
+    pick = None
+    while True:
+        x = x0 - k * step if below else x0 + k * step
+        if x < 0 or x + w > W:
+            break
+        in_wedge = (y >= H * (1 - x / W)) if below else (y + h <= H * (1 - (x + w) / W))
+        if not in_wedge:
+            break
+        if not any(hit((x, y, w, h), b, 0) for b in boxes):
+            pick = k
+            break
+        k += 1
+    out = {k2: v for k2, v in case.items()}
+    out["expected"] = {"box": None if pick is None else [round(x0 - pick * step if below else x0 + pick * step, 4), y, w, h],
+                       "steps": pick}
+    return out
+
+
 # ---------------------------------------------------------------- the cases
 
 def build_core():
@@ -597,6 +627,29 @@ def build_core():
         ],
     })
 
+
+    # CCBG-105 (Corner Label Collision): the Fold 7 inner screen's map as reported (plot 271 x 273 dp, 10.5 sp words).
+    fw, fh = 271, 273
+    behind_box = [round(0.97 * fw - 56, 4), round(fh - 0.06 * fh - 14, 4), 56, 14]
+    ahead_box = [round(0.03 * fw, 4), round(fh - 0.91 * fh - 14, 4), 67, 14]
+    reported = [{"name": "ChatGPT", "weekGonePct": 28.6, "usedPct": 21}, {"name": "Work", "weekGonePct": 39, "usedPct": 17},
+                {"name": "Claude", "weekGonePct": 86, "usedPct": 9}, {"name": "Product", "weekGonePct": 98, "usedPct": 58}]
+    wcase = lambda name, side, box, dots: wedge_word({
+        "name": name, "plot": {"width": fw, "height": fh}, "dotHalf": 7, "wordStep": 4,
+        "word": {"word": "behind pace" if side == "below" else "ahead of pace", "side": side, "box": box},
+        "dots": dots})
+    wedge = [
+        wcase("CCBG-105 as reported: Claude at 9%, day 6, sits on 'behind pace', which slides left clear of it",
+              "below", behind_box, reported),
+        wcase("nothing on the word: it stays in its corner", "below", behind_box, [d for d in reported if d["name"] != "Claude"]),
+        wcase("a dot on 'ahead of pace' early in its week: the word slides right, staying above the diagonal",
+              "above", ahead_box, [{"name": "Burst", "weekGonePct": 8, "usedPct": 93}]),
+        wcase("a dot just past the word's left end does not move it", "below", behind_box,
+              [{"name": "Near", "weekGonePct": 72, "usedPct": 6}]),
+        wcase("the bottom row full of dots up to the diagonal: nothing free, the word is not drawn", "below", behind_box,
+              [{"name": f"D{i}", "weekGonePct": g, "usedPct": 6} for i, g in enumerate(range(12, 101, 8))]),
+    ]
+
     words = {"aboveDiagonal": "ahead of pace", "belowDiagonal": "behind pace", "diagonal": "even pace",
              "xStart": "week start", "xOrdinals": ["2", "3", "4", "5", "6"], "xEnd": "reset",
              "footNote": "each account's own week", "xCentre": None,
@@ -644,6 +697,15 @@ def build_core():
                           "box or another dot's hit box. Nothing free: spot 'none', the name is not drawn and takes "
                           "no space (its dot stays and still opens its callout). refusedFor lists the reasons met on "
                           "the way, for reading the case."),
+            "wedgeWords": ("CCBG-105 (Corner Label Collision). A wedge word ('behind pace' below the diagonal, "
+                           "'ahead of pace' above it; units dp/pt, plot coordinates as mapLabels) starts at its family's "
+                           "corner box and slides along its own line away from the corner ('below' leftwards, 'above' "
+                           "rightwards) by wordStep, k = 0, 1, 2 ..., to the first box that overlaps no dot's hit box "
+                           "(2 x dotHalf square); rings sit on the right edge or the 100% line, out of reach. It stops when the box would leave the plot or its wedge "
+                           "('below': the box's top-left corner on or under the diagonal, y >= H x (1 - x / W); "
+                           "'above': its bottom-right corner on or over it). Nothing free: box null, the word is not "
+                           "drawn. The words are placed before 'even pace' and the names, which treat the result as a "
+                           "fixed word."),
             "forecast": ("The callout's third line from section 3's estimate on the weekly samples: hitsLimitAtMs "
                          "before the reset -> '100% at ' + the instant printed as a reset is (weekday dropped later "
                          "the same local day); otherwise '~' + pctAtReset rounded half up + '% at reset'. No estimate, "
@@ -658,7 +720,7 @@ def build_core():
                               "nowMs is Wed 2026-11-04 14:00 UTC.", "cases": e2e},
         "dayGrid": grid_cases,
         "quiet": quiet,
-        "mapLabels": {"words": words, "figures": figs, "placement": [dense, proj]},
+        "mapLabels": {"words": words, "figures": figs, "placement": [dense, proj], "wedgeWords": wedge},
         "callout": {"forecast": fc},
         "projectionLayer": pj,
     }

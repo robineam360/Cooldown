@@ -154,6 +154,31 @@ object MapLabels {
         return dots.map { results.getValue(it.key) }
     }
 
+    /** CCBG-105 (Corner Label Collision): the wedge words' step, dp. */
+    const val WORD_STEP_DP = 4.0
+
+    /**
+     * CCBG-105 (Corner Label Collision), core §6.3, `printed.json` → `mapLabels.wedgeWords`: a wedge word starts at
+     * [start] in its corner and slides along its line away from the corner ("behind pace", [below], leftwards; "ahead
+     * of pace" rightwards) by [step] to the first box no dot's hit box overlaps, never leaving [plot] or its wedge.
+     * Null: nothing is free and the word is not drawn. [dots] are the dot centres, in [plot]'s coordinates.
+     */
+    fun wedgeWord(start: Rect, below: Boolean, plot: Rect, dots: List<Pair<Double, Double>>, dotHalf: Double, step: Double): Rect? {
+        val boxes = dots.map { Rect(it.first - dotHalf, it.second - dotHalf, 2 * dotHalf, 2 * dotHalf) }
+        var k = 0
+        while (true) {
+            val x = if (below) start.x - k * step else start.x + k * step
+            val u = x - plot.x
+            val v = start.y - plot.y
+            if (u < 0 || u + start.w > plot.w) return null
+            val inWedge = if (below) v >= plot.h * (1 - u / plot.w) else v + start.h <= plot.h * (1 - (u + start.w) / plot.w)
+            if (!inWedge) return null
+            val r = Rect(x, start.y, start.w, start.h)
+            if (boxes.none { r.near(it, 0.0) }) return r
+            k++
+        }
+    }
+
     /** Does the segment p–q meet the rectangle [r]? Liang–Barsky clipping. */
     fun segmentHits(p: Pair<Double, Double>, q: Pair<Double, Double>, r: Rect): Boolean {
         val dx = q.first - p.first

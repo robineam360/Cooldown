@@ -249,6 +249,44 @@ class PaceMapV20Test {
         }
     }
 
+    @Test fun `wedge words - CCBG-105, a word a dot sits on slides along its line, every case`() {
+        val l = cases(fx.getJSONObject("mapLabels"), "wedgeWords")
+        assertTrue("the reported case is there", l.any { it.getString("name").startsWith("CCBG-105") })
+        for (c in l) {
+            val name = c.getString("name")
+            val plot = c.getJSONObject("plot")
+            val w = plot.getDouble("width")
+            val h = plot.getDouble("height")
+            assertEquals("$name: step", MapLabels.WORD_STEP_DP, c.getDouble("wordStep"), 0.0)
+            assertEquals("$name: dot half", MapLabels.Geometry.DP.dotHalf, c.getDouble("dotHalf"), 0.0)
+            val word = c.getJSONObject("word")
+            val dots = c.getJSONArray("dots").objects().map { it.getDouble("weekGonePct") / 100 * w to (100 - it.getDouble("usedPct")) / 100 * h }
+            val got = MapLabels.wedgeWord(
+                rect(word.getJSONArray("box"))!!, word.getString("side") == "below", MapLabels.Rect(0.0, 0.0, w, h),
+                dots, c.getDouble("dotHalf"), c.getDouble("wordStep"),
+            )
+            val e = c.getJSONObject("expected")
+            if (e.isNull("box")) assertNull("$name: expected no word", got)
+            else {
+                val b = rect(e.getJSONArray("box"))!!
+                assertNotNull("$name: expected a word", got)
+                assertEquals("$name: x", b.x, got!!.x, 1e-3)
+                assertEquals("$name: y", b.y, got.y, 1e-3)
+            }
+        }
+    }
+
+    @Test fun `wedge words - the plot's origin does not change the answer`() {
+        val c = cases(fx.getJSONObject("mapLabels"), "wedgeWords").first()
+        val plot = c.getJSONObject("plot")
+        val w = plot.getDouble("width")
+        val h = plot.getDouble("height")
+        val word = rect(c.getJSONObject("word").getJSONArray("box"))!!
+        val dots = c.getJSONArray("dots").objects().map { 30 + it.getDouble("weekGonePct") / 100 * w to 12 + (100 - it.getDouble("usedPct")) / 100 * h }
+        val got = MapLabels.wedgeWord(MapLabels.Rect(word.x + 30, word.y + 12, word.w, word.h), true, MapLabels.Rect(30.0, 12.0, w, h), dots, 7.0, 4.0)
+        assertEquals(c.getJSONObject("expected").getJSONArray("box").getDouble(0) + 30, got!!.x, 1e-3)
+    }
+
     @Test fun `leaders stay short - the placer never goes past the longest distance`() {
         var leaders = 0
         for (c in cases(fx.getJSONObject("mapLabels"), "placement")) {
