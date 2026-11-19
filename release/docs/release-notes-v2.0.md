@@ -1,8 +1,3 @@
-<!--
-FINAL TEXT, RUNBOOK Step 4 (2026-11-17). One placeholder stays on purpose and is filled by Step 7
-(Q1: link in the notes, no IPA asset): <TestFlight public link>; the iOS build number is 1 (2.0 (1)) and changes only if Step 6 had to upload again. The link is
-known only once Step 6 has created it. Delete this comment then.
--->
 # Cooldown v2.0
 
 Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly limit and your pace, puts every account on one Summary page, and comes to iPhone and iPad. Install over v1.9 — settings, history, widgets and accounts all survive.
@@ -45,8 +40,12 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 - The launcher icon is now about the weekly limit, in the colours of all three services
 
 **On iPhone and iPad** [CCRM-94 (iOS App)]
-- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **<TestFlight public link>** (build **1**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
+- Cooldown 2.0 for iPhone and iPad is a public beta on TestFlight: **https://testflight.apple.com/join/TncpZQFM** (build **2**). It reads the same three services and has the Summary, home-screen and lock-screen widgets, reset alerts, a Live Activity and a Control Center control
 - There is no iPhone file to download here: TestFlight installs it
+
+**Sign-in** [CCRM-120 (Unofficial Note)]
+- Every sign-in screen now says plainly that Cooldown is an unofficial integration, not made by or affiliated with Anthropic, OpenAI or Google, and that it only reads usage
+- Claude sign-in asks for less access: profile only, which is all a usage reading needs. Accounts already signed in keep working; signing in again moves them to the smaller access
 
 ## Privacy
 
@@ -60,9 +59,11 @@ Cooldown now reads Gemini as well as Claude and ChatGPT, leads with the weekly l
 - The credits card could still show for an account that had switched extra usage off; it now hides when extra usage is off and nothing was spent [CCBG-3 (Credits Visibility)]
 - A long account name could wrap onto two lines in the History tab strip at 360 dp; the strip now scrolls when a name will not fit [CCBG-81 (History Tab Wrap)]
 
+- A Gemini Pro account's own weekly model limit (Argon) could vanish after Google renamed it; Gemini limits are now recognised by family, and a Carbon limit shows when Google sends one [CCBG-107 (Gemini Bucket Prefix)]
+
 ## Install
 
 - Android: download the APK from [releases/latest](https://github.com/robineam360/Cooldown/releases/latest)
-- iPhone and iPad: join the beta at **<TestFlight public link>**
+- iPhone and iPad: join the beta at **https://testflight.apple.com/join/TncpZQFM**
 - Read the [Cooldown User Guide v2.0](https://github.com/robineam360/Cooldown/blob/main/release/docs/Cooldown-User-Guide-v2.0.pdf)
 - [Privacy policy](https://github.com/robineam360/Cooldown/blob/main/docs/privacy.md)

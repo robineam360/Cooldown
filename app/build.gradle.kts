@@ -22,7 +22,7 @@ android {
         applicationId = "com.robin.claudeusage"
         minSdk = 31
         targetSdk = 36
-        versionCode = 26
+        versionCode = 27
         versionName = "2.0"
         // CCRM-55 (Antigravity Account): the Antigravity client's public installed-app secret.
         // Public by design, but GitHub push protection rejects it, so it never enters the repo:
