@@ -32,6 +32,15 @@ commits. IDs never change or get reused; only status moves. Feature work lives i
 > crash feedback), Slack messages to Robin from EAM360 colleagues since 2026-11-17, GitHub issues on robineam360/Cooldown
 > (none), and this file. CCBG-106 (Mac Sheet Wait) is the only report so far.
 
+### CCBG-107 · Gemini Bucket Prefix — the Argon cap vanished when Google renamed its bucket id
+- **Status:** **Fixed** (found 2026-11-19 in the provider-terms research, `design/research/2026-11-19-mobile-apps-claude-antigravity.md` "Decisions and hand-over"; fixed 2026-11-19 for v2.0, Android and iOS)
+- **Severity:** High (wrong numbers: a Pro account's own Argon limit silently disappeared from the 7-day card)
+- **Symptom:** since Gemini 4 Neon launched, Google no longer sends `gemini-argon-wtu-weekly`, so the Argon model cap was gone with no error. Gemini 4 Carbon's own weekly limit (`gemini-carbon-wtu-weekly`, seen by T3 Code and cockpit-tools) was never read.
+- **Cause:** `AntigravityUsageParser` on both platforms (`AntigravitySource.kt`, `Antigravity.swift`) matched five exact bucket ids; any renamed id fell into "unknown, ignored".
+- **Fix:** classify by id prefix and the bucket's `window` field, as T3 Code does: `gemini-argon-*` → cap "Argon", `gemini-carbon-*` → cap "Carbon" (weekly buckets only), other `gemini-*` → session / weekly (the exact old ids still win), `3p-*` → the Claude + GPT pool. Spec first: BEHAVIOR-SPEC §1.1, API-CONTRACT §10.3, fixtures `prefix-ids.json` and `renamed-main.json` in `spec/core/fixtures/antigravity/` (both failed on both platforms before the fix).
+- **Neon:** Gemini 4 Neon has no bucket of its own; it shares the Gemini 5h / weekly with Hydrogen and Flash, which the account already shows. A Carbon cap uses the approved model-cap row ("one row + bar per model cap, name from the server", `spec/mobile/surfaces/app.md` §2), so no new visible element.
+- **Not verified live:** no current reply was captured (it carries the project id and email); the fixtures are reconstructed. Check the 7-day card on a Pro account after release.
+
 ### CCBG-106 · Mac Sheet Wait — on a Mac the Claude sign-in sheet stays on "Signing in…" after the account is added
 - **Status:** **Not applicable (Mac only)** (reported 2026-11-18 by an EAM360 tester on Slack; triaged 2026-11-19) · iOS app run on an M5 Max Mac as "Designed for iPad" · TestFlight 2.0 (1) · Mac availability of the iOS app is being turned off, so no Mac user can reach it
 - **Severity:** Low (Mac only; the account is added and its numbers show behind the sheet)

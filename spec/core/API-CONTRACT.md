@@ -565,9 +565,12 @@ Response (field names as captured; treat each as optional):
   "description": "…" }
 ```
 
-Bucket ids: `gemini-5h`, `gemini-weekly` (the Gemini pool: Flash and Pro share it),
+Bucket ids, as captured 2026-11-02: `gemini-5h`, `gemini-weekly` (the Gemini pool: Flash and Pro share it),
 `gemini-argon-wtu-weekly` (Gemini 4 Argon, weekly only, its own limit on Pro), `3p-5h`, `3p-weekly`
-(the Claude + GPT pool inside Antigravity). Fractions are **remaining** and unrounded. A bucket's
+(the Claude + GPT pool inside Antigravity). **Ids change without notice**: by 2026-11-19 the Argon id above was
+gone (Neon launched; T3 Code and others see `gemini-carbon-wtu-weekly` for Gemini 4 Carbon), so a client classifies
+by prefix (`gemini-argon-*`, `gemini-carbon-*`, other `gemini-*`, `3p-*`) and the `window` field, never by exact id —
+BEHAVIOR-SPEC §1.1, CCBG-107 (Gemini Bucket Prefix). Fractions are **remaining** and unrounded. A bucket's
 `description` is Google's own words and is never shown (Robin, 2026-11-02). How a reply maps to
 windows is BEHAVIOR-SPEC §1.1; cases `fixtures/antigravity/cases.json` → `parse`.
 

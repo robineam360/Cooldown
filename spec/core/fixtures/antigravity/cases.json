@@ -142,6 +142,78 @@
       }
     },
     {
+      "file": "prefix-ids.json",
+      "nowMs": 1795076000000,
+      "nowIso": "2026-11-19T08:13:20Z",
+      "why": "CCBG-107 (Gemini Bucket Prefix): ids classified by prefix. gemini-argon-* and gemini-carbon-* weekly buckets are model caps named Argon and Carbon in reply order; their 5h buckets are ignored; a bucket with no known prefix is ignored",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 25.0,
+          "resetsAt": "2026-11-19T09:02:04Z"
+        },
+        "weekly": {
+          "usedPct": 12.0,
+          "resetsAt": "2026-11-22T16:51:10Z"
+        },
+        "modelCaps": [
+          {
+            "name": "Argon",
+            "usedPct": 40.0,
+            "resetsAt": "2026-11-24T03:58:44Z"
+          },
+          {
+            "name": "Carbon",
+            "usedPct": 10.0,
+            "resetsAt": "2026-11-25T12:00:00Z"
+          }
+        ],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "weekly": {
+              "usedPct": 0.0,
+              "resetsAt": null
+            },
+            "shown": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "renamed-main.json",
+      "nowMs": 1795076000000,
+      "nowIso": "2026-11-19T08:13:20Z",
+      "why": "CCBG-107 (Gemini Bucket Prefix): other gemini-* and 3p-* ids are placed by their window field (5h or weekly), so a renamed id still lands",
+      "expected": {
+        "status": "ok",
+        "session": {
+          "usedPct": 40.0,
+          "resetsAt": "2026-11-19T09:02:04Z"
+        },
+        "weekly": {
+          "usedPct": 30.0,
+          "resetsAt": "2026-11-22T16:51:10Z"
+        },
+        "modelCaps": [],
+        "pools": [
+          {
+            "name": "Claude + GPT in Antigravity",
+            "session": null,
+            "weekly": {
+              "usedPct": 6.0,
+              "resetsAt": "2026-11-23T11:15:00Z"
+            },
+            "shown": true
+          }
+        ]
+      }
+    },
+    {
       "file": "ua-rejected.json",
       "nowMs": 1793592600000,
       "nowIso": "2026-11-02T04:10:00Z",

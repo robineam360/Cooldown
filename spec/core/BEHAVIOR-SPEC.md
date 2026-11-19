@@ -71,12 +71,12 @@ one account):
 
 | Rule | Antigravity |
 |---|---|
-| Classified by | `bucketId`, never by group order: `gemini-5h` → session, `gemini-weekly` → weekly, `gemini-argon-wtu-weekly` → a model cap named "Argon", `3p-5h` / `3p-weekly` → the session / weekly of a pool named "Claude + GPT in Antigravity". Unknown ids are ignored |
+| Classified by | the `bucketId` **prefix**, never by group order or an exact id (Google renames ids: `gemini-argon-wtu-weekly` stopped arriving in 2026-11, CCBG-107 (Gemini Bucket Prefix)). Which window a bucket fills comes from its `window` field (`5h` or `weekly`; when absent, an id ending `-5h` / `-weekly`). `gemini-argon-*` → a model cap named "Argon", `gemini-carbon-*` → a model cap named "Carbon" (weekly buckets only; their 5h buckets are ignored; caps in reply order); any other `gemini-*` → the account's session / weekly (the exact ids `gemini-5h` / `gemini-weekly` win when several match); `3p-*` → the session / weekly of a pool named "Claude + GPT in Antigravity". Gemini 4 Neon, Hydrogen and Flash have no bucket of their own: they share the Gemini session / weekly. Any other id, or a window other than 5h / weekly, is ignored |
 | Percent | `used = (1 − remainingFraction) × 100`, unrounded (Google sends only fractions) |
 | Reset field | `resetTime`, ISO-8601 UTC |
 | Not started | Google slides an untouched window's reset to "now + window" on every call: `remainingFraction ≥ 1` **and** `resetTime` within 120 s of now + the window's length (5 h or 7 d) → `resetsAt` null |
 | Pools | The Claude + GPT pool is parsed whenever its buckets exist and **shown only once either window has started** (a reading above 0 or a reset clock); hidden while both are untouched. It never feeds the notification, widgets or the status-bar ring |
-| Unusable reply | No `gemini-*` bucket at all (the User-Agent was rejected, or Google changed the reply) → `invalidResponse`, worded "Google changed something — usage unavailable"; keep the last good reading, **never** a confident 0% or 100%. Not JSON → unparseable |
+| Unusable reply | No Gemini session or weekly bucket (no `gemini-*` id outside Argon and Carbon) (the User-Agent was rejected, or Google changed the reply) → `invalidResponse`, worded "Google changed something — usage unavailable"; keep the last good reading, **never** a confident 0% or 100%. Not JSON → unparseable |
 
 Cases: [`fixtures/antigravity/cases.json`](fixtures/antigravity/README.md).
 

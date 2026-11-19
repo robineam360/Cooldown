@@ -75,23 +75,52 @@ public enum AntigravityUsageParser {
 
     /// `nowMs` is when the reply was **fetched** — a cached reply is re-read with its own fetch time, or every
     /// untouched window would look started once the clock moved past the slack.
+    /// Weekly model caps, by bucket-id prefix (CCBG-107 (Gemini Bucket Prefix)): Google renames the ids.
+    static let capPrefixes: [(prefix: String, name: String)] = [("gemini-argon-", "Argon"), ("gemini-carbon-", "Carbon")]
+
+    private enum Span { case fiveHours, weekly }
+
+    /// `window` field first; an id ending `-5h` / `-weekly` when it is absent. Anything else → nil (ignored).
+    private static func span(_ b: JSON, _ id: String) -> Span? {
+        switch b["window"].nonEmptyString {
+        case "5h": return .fiveHours
+        case "weekly": return .weekly
+        case nil: return id.hasSuffix("-5h") ? .fiveHours : id.hasSuffix("-weekly") ? .weekly : nil
+        default: return nil
+        }
+    }
+
+    /// Classified by id prefix and `window`, never by exact id or group order (BEHAVIOR-SPEC §1.1):
+    /// `gemini-argon-*` / `gemini-carbon-*` weekly → model caps; other `gemini-*` → session / weekly (the exact
+    /// `gemini-5h` / `gemini-weekly` win); `3p-*` → the Claude + GPT pool.
     public static func parse(_ raw: String, nowMs: Int64) -> UsageData? {
         guard let data = raw.data(using: .utf8),
               let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return nil }
-        var buckets: [String: JSON] = [:]
+        var gemini: [Span: JSON] = [:]
+        var pool: [Span: JSON] = [:]
+        var caps: [ModelCap] = []
         for group in JSON(object)["groups"].array ?? [] {
             for bucket in JSON(group)["buckets"].array ?? [] {
                 let b = JSON(bucket)
-                if let id = b["bucketId"].nonEmptyString { buckets[id] = b }
+                guard let id = b["bucketId"].nonEmptyString, let span = span(b, id) else { continue }
+                if let cap = capPrefixes.first(where: { id.hasPrefix($0.prefix) }) {
+                    if span == .weekly, !caps.contains(where: { $0.modelName == cap.name }) {
+                        caps.append(ModelCap(modelName: cap.name, window: window(b, HistoryStats.weekMs, nowMs)))
+                    }
+                } else if id.hasPrefix("gemini-") {
+                    if id == "gemini-5h" || id == "gemini-weekly" || gemini[span] == nil { gemini[span] = b }
+                } else if id.hasPrefix("3p-"), pool[span] == nil {
+                    pool[span] = b
+                }
             }
         }
-        guard buckets["gemini-5h"] != nil || buckets["gemini-weekly"] != nil else { return nil }
-        let pool5 = buckets["3p-5h"].map { window($0, HistoryStats.sessionMs, nowMs) }
-        let poolW = buckets["3p-weekly"].map { window($0, HistoryStats.weekMs, nowMs) }
+        guard !gemini.isEmpty else { return nil }
+        let pool5 = pool[.fiveHours].map { window($0, HistoryStats.sessionMs, nowMs) }
+        let poolW = pool[.weekly].map { window($0, HistoryStats.weekMs, nowMs) }
         return UsageData(
-            session: buckets["gemini-5h"].map { window($0, HistoryStats.sessionMs, nowMs) },
-            weekly: buckets["gemini-weekly"].map { window($0, HistoryStats.weekMs, nowMs) },
-            modelCaps: buckets["gemini-argon-wtu-weekly"].map { [ModelCap(modelName: "Argon", window: window($0, HistoryStats.weekMs, nowMs))] } ?? [],
+            session: gemini[.fiveHours].map { window($0, HistoryStats.sessionMs, nowMs) },
+            weekly: gemini[.weekly].map { window($0, HistoryStats.weekMs, nowMs) },
+            modelCaps: caps,
             credits: nil,
             pools: pool5 == nil && poolW == nil ? [] : [UsagePool(name: poolName, session: pool5, weekly: poolW)])
     }

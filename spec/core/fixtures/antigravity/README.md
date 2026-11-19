@@ -13,6 +13,10 @@ payload carries the Cloud project id and the account's email, so none is stored.
   `resetsAt` null ("Not started yet"); the pool hidden.
 - `pool-used.json` — the pool's weekly at 6%: the pool is shown; its untouched 5h is not started.
 - `weekly-spent.json` — Gemini weekly at fraction 0 while the 5h is fresh: the Pro confusion.
+- `prefix-ids.json` — CCBG-107 (Gemini Bucket Prefix): Argon under a new id (`gemini-argon-weekly`, plus a
+  `gemini-argon-5h` that is ignored), Carbon (`gemini-carbon-wtu-weekly`) and an unknown `daily` bucket → caps
+  Argon then Carbon; the unknown bucket ignored.
+- `renamed-main.json` — the Gemini and pool ids renamed (`gemini-shared-*`, `3p-shared-weekly`): placed by `window`.
 - `ua-rejected.json`, `no-groups.json` — no Gemini group → `invalidResponse`, never 0% or 100%.
 - `malformed.json` — not JSON → unparseable.
 - `load-code-assist-{pro,free,ultra}.json` — the plan from `paidTier.id`; Ultra's id is unverified.

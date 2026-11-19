@@ -186,27 +186,61 @@ object AntigravityUsageParser {
     /** Google slides an untouched window's reset to "now + window"; this close counts as untouched. */
     private const val SLIDING_SLACK_MS = 120_000L
 
+    /** Weekly model caps, by bucket-id prefix (CCBG-107 (Gemini Bucket Prefix)): Google renames the ids. */
+    private val CAP_PREFIXES = listOf("gemini-argon-" to "Argon", "gemini-carbon-" to "Carbon")
+
+    private enum class Span { FIVE_H, WEEKLY }
+
+    /** `window` field first; an id ending `-5h` / `-weekly` when it is absent. Anything else → null (ignored). */
+    private fun span(b: JSONObject, id: String): Span? = when (b.optString("window")) {
+        "5h" -> Span.FIVE_H
+        "weekly" -> Span.WEEKLY
+        "" -> when {
+            id.endsWith("-5h") -> Span.FIVE_H
+            id.endsWith("-weekly") -> Span.WEEKLY
+            else -> null
+        }
+        else -> null
+    }
+
+    /**
+     * Classified by id prefix and `window`, never by exact id or group order (BEHAVIOR-SPEC §1.1):
+     * `gemini-argon-*` / `gemini-carbon-*` weekly → model caps; other `gemini-*` → session / weekly
+     * (the exact `gemini-5h` / `gemini-weekly` win); `3p-*` → the Claude + GPT pool.
+     */
     fun parse(raw: String, nowMs: Long = System.currentTimeMillis()): UsageData? = try {
-        val buckets = HashMap<String, JSONObject>()
+        val gemini = HashMap<Span, JSONObject>()
+        val pool = HashMap<Span, JSONObject>()
+        val caps = ArrayList<ModelCap>()
         val groups = JSONObject(raw).optJSONArray("groups")
         if (groups != null) for (i in 0 until groups.length()) {
             val list = groups.optJSONObject(i)?.optJSONArray("buckets") ?: continue
             for (j in 0 until list.length()) {
                 val b = list.optJSONObject(j) ?: continue
                 val id = b.optString("bucketId")
-                if (id.isNotEmpty()) buckets[id] = b
+                if (id.isEmpty()) continue
+                val span = span(b, id) ?: continue
+                val cap = CAP_PREFIXES.firstOrNull { id.startsWith(it.first) }
+                when {
+                    cap != null -> if (span == Span.WEEKLY && caps.none { it.modelName == cap.second }) {
+                        caps += ModelCap(cap.second, window(b, Projection.WEEKLY_MS, nowMs))
+                    }
+                    id.startsWith("gemini-") -> {
+                        val exact = id == "gemini-5h" || id == "gemini-weekly"
+                        if (exact || span !in gemini) gemini[span] = b
+                    }
+                    id.startsWith("3p-") -> if (span !in pool) pool[span] = b
+                }
             }
         }
-        if ("gemini-5h" !in buckets && "gemini-weekly" !in buckets) null
+        if (gemini.isEmpty()) null
         else {
-            val pool5 = buckets["3p-5h"]?.let { window(it, Projection.SESSION_MS, nowMs) }
-            val poolW = buckets["3p-weekly"]?.let { window(it, Projection.WEEKLY_MS, nowMs) }
+            val pool5 = pool[Span.FIVE_H]?.let { window(it, Projection.SESSION_MS, nowMs) }
+            val poolW = pool[Span.WEEKLY]?.let { window(it, Projection.WEEKLY_MS, nowMs) }
             UsageData(
-                session = buckets["gemini-5h"]?.let { window(it, Projection.SESSION_MS, nowMs) },
-                weekly = buckets["gemini-weekly"]?.let { window(it, Projection.WEEKLY_MS, nowMs) },
-                modelCaps = listOfNotNull(
-                    buckets["gemini-argon-wtu-weekly"]?.let { ModelCap("Argon", window(it, Projection.WEEKLY_MS, nowMs)) },
-                ),
+                session = gemini[Span.FIVE_H]?.let { window(it, Projection.SESSION_MS, nowMs) },
+                weekly = gemini[Span.WEEKLY]?.let { window(it, Projection.WEEKLY_MS, nowMs) },
+                modelCaps = caps,
                 pools = if (pool5 == null && poolW == null) emptyList()
                 else listOf(UsagePool(POOL_NAME, pool5, poolW)),
             )

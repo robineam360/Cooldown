@@ -1,0 +1,87 @@
+{
+  "groups": [
+    {
+      "buckets": [
+        {
+          "bucketId": "gemini-weekly",
+          "displayName": "Weekly Limit Remaining",
+          "window": "weekly",
+          "resetTime": "2026-11-22T16:51:10Z",
+          "remainingFraction": 0.88
+        },
+        {
+          "bucketId": "gemini-5h",
+          "displayName": "Five Hour Limit Remaining",
+          "window": "5h",
+          "resetTime": "2026-11-19T09:02:04Z",
+          "remainingFraction": 0.75
+        }
+      ],
+      "displayName": "Gemini Models",
+      "description": "Models within this group: Gemini 4 Neon, Gemini 4 Carbon, Gemini 4 Argon, Gemini 4 Hydrogen, Gemini 3.8 Flash"
+    },
+    {
+      "buckets": [
+        {
+          "bucketId": "3p-weekly",
+          "displayName": "Weekly Limit Remaining",
+          "window": "weekly",
+          "resetTime": "2026-11-26T08:13:20Z",
+          "remainingFraction": 1
+        },
+        {
+          "bucketId": "3p-5h",
+          "displayName": "Five Hour Limit Remaining",
+          "window": "5h",
+          "resetTime": "2026-11-19T13:13:20Z",
+          "remainingFraction": 1
+        }
+      ],
+      "displayName": "Claude and GPT models"
+    },
+    {
+      "buckets": [
+        {
+          "bucketId": "gemini-argon-weekly",
+          "displayName": "Weekly Limit Remaining",
+          "window": "weekly",
+          "resetTime": "2026-11-24T03:58:44Z",
+          "remainingFraction": 0.6
+        },
+        {
+          "bucketId": "gemini-argon-5h",
+          "displayName": "Five Hour Limit Remaining",
+          "window": "5h",
+          "resetTime": "2026-11-19T08:00:00Z",
+          "remainingFraction": 0.5
+        }
+      ],
+      "displayName": "Gemini 4 Argon"
+    },
+    {
+      "buckets": [
+        {
+          "bucketId": "gemini-carbon-wtu-weekly",
+          "displayName": "Weekly Limit Remaining",
+          "window": "weekly",
+          "resetTime": "2026-11-25T12:00:00Z",
+          "remainingFraction": 0.9
+        }
+      ],
+      "displayName": "Gemini 4 Carbon"
+    },
+    {
+      "buckets": [
+        {
+          "bucketId": "image-gen-daily",
+          "displayName": "Daily Limit Remaining",
+          "window": "daily",
+          "resetTime": "2026-11-20T00:00:00Z",
+          "remainingFraction": 0.1
+        }
+      ],
+      "displayName": "Something new"
+    }
+  ],
+  "description": "Within each group, models share a weekly limit and a 5-hour limit."
+}
