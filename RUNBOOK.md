@@ -1628,6 +1628,14 @@ rollout) and replaced by a new versionCode on both channels.
     Store submission are **on hold** until replies; drafts to Anthropic, OpenAI and Google are in
     `release/outreach/2026-11-18-provider-permission-requests.md`, sent by Robin. The prepared Play release stays saved,
     unsubmitted, Managed publishing on.
+  - **2026-11-19 — precedent research** (`design/research/2026-11-19-provider-signins-precedent.md`, PR 60): no provider
+    has acted against a read-only meter, but the written rules name Cooldown's method. Verdicts: Claude **hold**, ChatGPT
+    **change the method** (Sign in with ChatGPT, after a spike), Gemini **hold** and leave it out of store builds. Send all
+    three requests, reworded. The store hold stands.
+  - **2026-11-19 — iOS record:** "iPhone and iPad Apps on Apple Silicon Macs" unticked in App Store Connect (saved and
+    confirmed after reload). Naren's report from an M5 Max is CCBG-106 (Mac Sheet Wait), not applicable (Mac only). The Mac
+    app ships natively from CooldownDesktop. "Apple Vision Pro" availability is still ticked (version 1.0 shows as not
+    compatible).
 
 ---
 
