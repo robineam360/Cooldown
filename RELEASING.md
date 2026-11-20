@@ -74,7 +74,7 @@ It reads `versionName` from `app/build.gradle.kts` and writes three files into
 | Output | What it's for |
 |---|---|
 | `Cooldown-User-Guide-v<ver>.pdf` | the 12-page guide the README and release notes link to |
-| `Cooldown-Brochure.pdf` | the 2-page pitch |
+| `Cooldown-Brochure.pdf` | the 3-page pitch; opens with `release/screenshots/hero.png`, assets in `src/brochure/` |
 | `Cooldown-whats-new-v<ver>.png` | **guide page 3 as a single image** — paste under a Slack post |
 
 The one-pager is *sliced out of* `guide.html` at build time, not authored separately, so

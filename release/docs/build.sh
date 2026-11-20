@@ -30,6 +30,8 @@ echo "building docs for v$VERSION"
 WORK="$(mktemp -d /tmp/ccd-docs.XXXXXX)"
 trap 'rm -rf "$WORK"' EXIT
 cp -R "$SRC/." "$WORK/"
+# The brochure opens with the README banner; copy it in rather than keeping a second copy in src/.
+cp "$REPO/release/screenshots/hero.png" "$WORK/hero.png"
 
 render() {  # render <html> <pdf>
   "$CHROME" --headless --disable-gpu --no-pdf-header-footer \

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="release/screenshots/hero.png" alt="The Cooldown banner: the app name and the headline 'Your Claude, ChatGPT and Gemini limits in one place', beside three account rows, each with a 5-hour ring and a weekly bar" width="100%">
+  <img src="release/screenshots/hero.png" alt="The Cooldown banner: the app name and the headline 'Your Claude, ChatGPT and Gemini limits in one place', with Android, iPhone and iPad badges, beside three account rows, each with a 5-hour ring and a weekly bar" width="100%">
 </p>
 
 # Cooldown
@@ -99,7 +99,7 @@ Found a bug or want a feature? Open an issue on [GitHub Issues](https://github.c
 
 Made by Robin Richard Rajan, EAM360. Licensed under the [MIT License](LICENSE).
 
-Claude, ChatGPT and Gemini are trademarks of their owners.
+Claude, ChatGPT and Gemini are trademarks of their owners. iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries. Android is a trademark of Google LLC. The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License.
 
 <details>
 <summary>Every feature in full</summary>

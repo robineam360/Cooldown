@@ -3,133 +3,315 @@
 <head>
 <meta charset="utf-8">
 <title>Cooldown brochure</title>
+<!-- v2.0 brochure, rebuilt 2026-11-20. Opens with the README banner (release/screenshots/hero.png).
+     Assets in brochure/: crops of the README's v20 shots, the Shared pace icon (CCRM-101 (Icon v3)),
+     the provider marks from the app, and the two QR codes. Built by ../build.sh. -->
 <style>
   @page { size:A4; margin:0; }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  body { font-family:"Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif; color:#201D1A; font-size:10.5pt; line-height:1.5; }
-  .page { width:210mm; height:297mm; overflow:hidden; position:relative; page-break-after:always; padding:15mm; }
+  :root {
+    --bg:#201D1A; --card:#2A2623; --card2:#312C28; --line:#3D3833;
+    --ink:#F5F2EA; --ink2:#D3CCBF; --ink3:#A59E91;
+    --claude:#D97757; --gpt:#10A37F; --gem:#4285F4;
+    --behind:#8FC79A; --ahead:#F07B6E;
+  }
+  body { font-family:"Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); font-size:10pt; line-height:1.45; }
+  .page { width:210mm; height:297mm; overflow:hidden; position:relative; page-break-after:always; background:var(--bg); }
   .page:last-child { page-break-after:auto; }
+  .pad { padding:0 13mm; }
 
-  /* page 1, dark */
-  .dark { background:#262624; color:#F2EEE6; display:flex; flex-direction:column; }
-  .brand { display:flex; align-items:center; gap:4mm; }
-  .brand img { width:15mm; height:15mm; border-radius:3.4mm; border:0.3mm solid #3A3531; }
-  .brand .name { font-size:20pt; font-weight:700; letter-spacing:-.01em; }
-  .brand .tag { margin-left:auto; font-size:9pt; color:#A59E91; font-weight:500; }
-  .dark h1 { font-size:34pt; line-height:1.08; font-weight:700; letter-spacing:-.02em; margin-top:12mm; color:#F5F2EA; }
-  .dark .lede { font-size:12.5pt; line-height:1.55; color:#C9C3B6; margin-top:6mm; max-width:150mm; font-weight:500; }
-  .shots { display:flex; justify-content:center; align-items:flex-end; gap:6mm; margin-top:auto; margin-bottom:9mm; }
-  .shots figure { text-align:center; }
-  .shots img { display:block; border-radius:3mm; border:0.3mm solid #45413C; }
-  .shots .side img { width:54mm; }
-  .shots .main img { width:67mm; }
-  .shots figcaption { font-size:8.5pt; color:#A59E91; margin-top:2.5mm; font-weight:500; }
-  .dark .foot { border-top:0.3mm solid #3A3531; padding-top:4mm; display:flex; justify-content:space-between; font-size:8.5pt; color:#A59E91; }
+  .banner { display:block; width:210mm; height:auto; }
+  .stripe { height:1.2mm; display:flex; }
+  .stripe i { flex:1; } .stripe i:nth-child(1){background:var(--claude);} .stripe i:nth-child(2){background:var(--gpt);} .stripe i:nth-child(3){background:var(--gem);}
 
-  /* page 2, cream */
-  .cream { background:#FAF9F5; }
-  .cream h2 { font-size:20pt; font-weight:700; letter-spacing:-.01em; }
-  .cream .intro { color:#6B6459; margin-top:2mm; }
-  .grid { display:grid; grid-template-columns:repeat(3, 1fr); column-gap:7mm; row-gap:5mm; margin-top:6mm; }
-  .feat h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; display:flex; align-items:center; gap:2mm; }
-  .feat h3 i { width:2.2mm; height:2.2mm; border-radius:50%; background:#6B6459; display:inline-block; flex:none; }
-  .feat p { font-size:9.5pt; line-height:1.48; color:#3A352F; }
-  .behind { color:#5E8D66; font-weight:600; } .ahead { color:#C62828; font-weight:600; }
-  .wide { display:flex; gap:7mm; margin-top:6mm; align-items:flex-start; }
-  .wide img { width:78mm; border-radius:3mm; border:0.3mm solid #D8D2C4; display:block; }
-  .wide .txt h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; }
-  .wide .txt p { font-size:9.5pt; color:#3A352F; margin-bottom:3mm; }
-  .get { display:flex; gap:6mm; align-items:flex-start; border:0.3mm solid #D8D2C4; border-radius:3mm; padding:4.5mm 5mm; margin-top:5mm; background:#fff; }
-  .get .qr { width:26mm; height:26mm; flex:none; }
-  .get .qr img { width:100%; height:100%; display:block; }
-  .get h3 { font-size:11.5pt; font-weight:700; margin-bottom:1.2mm; }
-  .get p { font-size:9.5pt; color:#3A352F; }
-  .get p + p { margin-top:2mm; }
-  .get .risk { color:#6B6459; }
-  .cream .foot { position:absolute; left:15mm; right:15mm; bottom:12mm; border-top:0.3mm solid #E2DCCF; padding-top:3mm; font-size:8.5pt; color:#6B6459; line-height:1.45; }
+  /* "Now on iPhone and iPad" band */
+  .band { margin:7mm 13mm 0; background:linear-gradient(120deg,#2E2925 0%,#26302D 55%,#252B38 100%); border:0.3mm solid var(--line); border-radius:4mm; padding:6mm 7mm; display:flex; gap:6mm; align-items:center; }
+  .band img.icon { width:21mm; height:21mm; border-radius:5mm; flex:none; box-shadow:0 1mm 4mm rgba(0,0,0,.4); }
+  .band h1 { font-size:24pt; line-height:1.05; letter-spacing:-.02em; font-weight:700; }
+  .band p { color:var(--ink2); font-size:10.5pt; margin-top:2mm; font-weight:500; }
+  .band .chip { margin-top:3mm; }
+
+  .chip { display:inline-block; font-size:7.5pt; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:.7mm 2.2mm; border-radius:5mm; background:rgba(217,119,87,.16); color:#F0A487; }
+  .chip.re { background:rgba(66,133,244,.16); color:#8DB4F8; }
+  .chip.tf { background:rgba(255,255,255,.08); color:var(--ink2); letter-spacing:.03em; text-transform:none; font-weight:600; font-size:8pt; }
+
+  .sec { display:flex; align-items:center; gap:3mm; margin-top:7mm; }
+  .sec h2 { font-size:15pt; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
+  .sec .rule { flex:1; height:0.3mm; background:var(--line); }
+  .sec .marks { display:flex; gap:2mm; } .sec .marks img { width:4.5mm; height:4.5mm; }
+
+  h3 { font-size:12.5pt; font-weight:700; letter-spacing:-.005em; line-height:1.2; margin:1.6mm 0 1.2mm; }
+  p.body { color:var(--ink2); font-size:9.6pt; line-height:1.48; font-weight:500; }
+  .cap { color:var(--ink3); font-size:7.8pt; margin-top:1.6mm; font-weight:500; }
+  .shot { display:block; width:100%; border-radius:3mm; border:0.3mm solid var(--line); }
+  .behind { color:var(--behind); font-weight:700; } .ahead { color:var(--ahead); font-weight:700; }
+
+  /* page 1 feature grid */
+  .p1grid { display:grid; grid-template-columns:64mm 1fr; column-gap:7mm; margin-top:5mm; }
+  .p1grid .phone .shot { border-radius:4mm; }
+  .stack > div + div { margin-top:4.5mm; padding-top:4.5mm; border-top:0.3mm solid var(--line); }
+  .pace-ex { display:flex; gap:2.5mm; margin-top:2.5mm; }
+  .pace-ex div { flex:1; background:var(--card); border:0.3mm solid var(--line); border-radius:2.5mm; padding:2.2mm 3mm; }
+  .pace-ex b { display:block; font-size:14pt; letter-spacing:-.01em; line-height:1.15; }
+  .pace-ex span { font-size:8pt; color:var(--ink3); font-weight:500; }
+  .fade { -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%); mask-image:linear-gradient(to bottom,#000 55%,transparent 100%); border-bottom:none; border-radius:3mm 3mm 0 0; }
+
+  .trust { position:absolute; left:13mm; right:13mm; bottom:11mm; display:flex; gap:5mm; align-items:center; background:var(--card); border:0.3mm solid var(--line); border-radius:3mm; padding:3.5mm 5mm; }
+  .trust b { font-size:10.5pt; white-space:nowrap; }
+  .trust p { color:var(--ink2); font-size:9pt; font-weight:500; line-height:1.42; }
+  .pno { position:absolute; bottom:4.5mm; right:13mm; font-size:7.5pt; color:var(--ink3); }
+
+  /* page 2 */
+  .p2top { padding-top:11mm; }
+  .p2top .sec { margin-top:0; }
+  .rowA { display:grid; grid-template-columns:52mm 1fr; column-gap:7mm; margin-top:4.5mm; }
+  .rowA .widgets .shot { border-radius:4mm; }
+  .notifs .shot + .shot { margin-top:2mm; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; column-gap:6mm; margin-top:3mm; }
+  .plat { color:var(--ink3); font-size:8pt; font-weight:600; margin-top:1.2mm; }
+
+  .polish { display:grid; grid-template-columns:62mm 1fr; column-gap:7mm; margin-top:6mm; align-items:start; }
+  .polish h3.strip { margin-top:0; font-size:13pt; }
+  .mini { display:grid; grid-template-columns:1fr 1fr; column-gap:5mm; row-gap:2.6mm; margin-top:2mm; }
+  .mini b { display:block; font-size:9.6pt; }
+  .mini b .chip { font-size:6.5pt; padding:.4mm 1.6mm; margin-left:1mm; vertical-align:1px; }
+  .mini span { color:var(--ink2); font-size:8.8pt; line-height:1.4; font-weight:500; }
+
+  .readers { display:grid; grid-template-columns:1fr 1fr; column-gap:5mm; margin-top:6mm; }
+  .box { background:var(--card); border:0.3mm solid var(--line); border-radius:3mm; padding:4mm 5mm; }
+  .box h3 { margin-top:0; font-size:12pt; }
+  .box ul { margin:1mm 0 1.5mm 4mm; color:var(--ink2); font-size:9pt; font-weight:500; line-height:1.42; }
+  .box p.body { font-size:9pt; }
+  .box p.body + p.body { margin-top:1.2mm; }
+
+  .get { margin-top:5mm; border-radius:4mm; padding:5mm 6mm; background:linear-gradient(120deg,#33291F 0%,#2A2623 50%,#22302C 100%); border:0.3mm solid #4A423B; }
+  .get h2 { font-size:17pt; letter-spacing:-.015em; }
+  .get .intro { color:var(--ink2); font-size:9.5pt; font-weight:500; margin-top:.6mm; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; column-gap:6mm; margin-top:3.5mm; }
+  .col { display:flex; gap:4mm; align-items:flex-start; }
+  .qr { width:25mm; height:25mm; flex:none; background:#fff; border-radius:2mm; padding:1.8mm; }
+  .qr img { width:100%; height:100%; display:block; }
+  .col h4 { font-size:11.5pt; font-weight:700; }
+  .col p { color:var(--ink2); font-size:8.8pt; font-weight:500; line-height:1.4; margin-top:.6mm; }
+  .col .url { color:var(--ink); font-weight:700; }
+  .store { margin-top:3.5mm; padding-top:3mm; border-top:0.3mm solid #4A423B; color:var(--ink2); font-size:8.8pt; font-weight:500; line-height:1.42; }
+
+  .foot { position:absolute; left:13mm; right:13mm; bottom:8mm; color:var(--ink3); font-size:7.6pt; line-height:1.45; display:flex; gap:4mm; align-items:center; }
+  .foot img { width:7mm; height:7mm; border-radius:1.7mm; flex:none; }
+
+  /* v3 layout */
+  .p1grid { grid-template-columns:66mm 1fr; }
+  .ringbar { margin-top:2.5mm; }
+  .p2grid { display:grid; grid-template-columns:66mm 1fr; column-gap:7mm; margin-top:5mm; }
+  .rowpace { display:grid; grid-template-columns:86mm 1fr; column-gap:7mm; margin-top:7mm; padding-top:6mm; border-top:0.3mm solid var(--line); align-items:start; }
+  .p3 .polish { margin-top:5mm; }
+  .p3 .get { margin-top:6mm; }
+  .p3 .trust { position:static; margin-top:6mm; }
+  .qr { width:30mm; height:30mm; }
+
+  /* fit pass */
+  .band { margin-top:6mm; padding:4.5mm 6mm; }
+  .band img.icon { width:18mm; height:18mm; border-radius:4.2mm; }
+  .band h1 { font-size:22pt; }
+  .band p { font-size:10pt; margin-top:1.5mm; }
+  .band .chip { margin-top:2.2mm; }
+  .page > .pad > .sec:first-child { margin-top:6mm; }
+  .p1grid { margin-top:4mm; }
+  .stack > div + div { margin-top:3.5mm; padding-top:3.5mm; }
+  .ringbar { width:82mm; }
+  .col .url { overflow-wrap:anywhere; }
+  .p3 .qr { width:27mm; height:27mm; }
+  .p3 .polish { grid-template-columns:84mm 1fr; }
+  .p3 .mini { grid-template-columns:1fr; row-gap:3mm; margin-top:0; }
+  .rowpace { grid-template-columns:100mm 1fr; }
+  .p3 .readers { margin-top:7mm; }
+  .col p.url { color:var(--ink); font-weight:700; font-size:8.6pt; white-space:nowrap; margin-top:.3mm; }
+  .p3 .cols { column-gap:4mm; }
+  .p3 .col { gap:3.5mm; }
+  .page > .trust { bottom:12mm; }
+  .p3 .get { margin-top:7mm; }
+
+  /* platform marks */
+  .devs { display:flex; align-items:flex-end; gap:1.6mm; flex:none; }
+  .devs img.ph { height:11mm; } .devs img.pd { height:14mm; }
+  .band .icon-wrap { display:flex; flex-direction:column; align-items:center; gap:2.5mm; flex:none; }
+  .col h4 { display:flex; align-items:center; gap:2mm; }
+  .col h4 img.and { height:4.2mm; }
+  .col h4 img.dv { height:4.6mm; }
 </style>
 </head>
 <body>
 
 <!-- ============ PAGE 1 ============ -->
-<div class="page dark">
-  <div class="brand">
-    <img src="app-icon-512.png" alt="">
-    <div class="name">Cooldown</div>
-    <div class="tag">Beta · Android, iPhone and iPad</div>
+<div class="page">
+  <img class="banner" src="hero.png" alt="">
+  <div class="stripe"><i></i><i></i><i></i></div>
+
+  <div class="band">
+    <img class="icon" src="brochure/app-icon.png" alt="">
+    <div style="flex:1">
+      <h1>Now on iPhone and iPad</h1>
+      <p>Cooldown 2.0 runs on iPhone and iPad as a public beta on TestFlight. It has the Summary, home-screen and lock-screen widgets, a Live Activity and a Control Center control.</p>
+      <div class="chip tf">TestFlight beta · listed as EAM360 Cooldown</div>
+    </div>
+    <div class="devs"><img class="ph" src="brochure/device-iphone.svg" alt=""><img class="pd" src="brochure/device-ipad.svg" alt=""></div>
   </div>
 
-  <h1>Know where your<br>week stands.</h1>
-  <p class="lede">Cooldown shows the weekly and 5-hour limits of your own Claude, ChatGPT and Gemini plans in one place. It tells you when each one resets and whether you are using it faster or slower than an even pace.</p>
+  <div class="pad">
+    <div class="sec"><h2>New in version 2.0</h2><div class="rule"></div>
+      <div class="marks"><img src="brochure/mark-claude.svg" alt=""><img src="brochure/mark-chatgpt.svg" alt=""><img src="brochure/mark-gemini.svg" alt=""></div></div>
 
-  <div class="shots">
-    <figure class="side"><img src="shots/v20-notif-duet-expanded.jpg" alt=""><figcaption>Two accounts in one notification</figcaption></figure>
-    <figure class="main"><img src="shots/v20-summary.jpg" alt=""><figcaption>The Summary: every account at a glance</figcaption></figure>
-    <figure class="side"><img src="shots/v20-widgets-home-clean.jpg" alt=""><figcaption>Home-screen widgets</figcaption></figure>
+    <div class="p1grid">
+      <div class="phone">
+        <img class="shot" src="brochure/summary.jpg" alt="">
+        <div class="cap">The Summary with five accounts</div>
+      </div>
+      <div class="stack">
+        <div>
+          <span class="chip">New in 2.0</span>
+          <h3>Every account on one page</h3>
+          <p class="body">With two or more accounts, Cooldown opens on the Summary. It lists every account's week on one page. Sort by most room, and the account to use next comes first.</p>
+        </div>
+        <div>
+          <span class="chip">New in 2.0</span>
+          <h3>Time ahead or behind</h3>
+          <p class="body">Cooldown compares your weekly use with an even pace. The gap shows as time, which says more than a percentage.</p>
+          <div class="pace-ex">
+            <div><b class="behind">1d 12h behind</b><span>You have room to spare</span></div>
+            <div><b class="ahead">14h 48m ahead</b><span>Slow down</span></div>
+          </div>
+        </div>
+        <div>
+          <span class="chip">New in 2.0</span>
+          <h3>The ring and the bar</h3>
+          <p class="body">The ring is the 5-hour limit, where the plan has one. The bar is the week, and a tick marks an even pace. The same two shapes appear in the app, the notification and the widgets.</p>
+          <img class="shot ringbar" src="brochure/ringbar.jpg" alt="">
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="foot">
-    <span>Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</span>
-    <span>Free and open source</span>
-  </div>
+  <div class="pno">1 / 3</div>
 </div>
 
 <!-- ============ PAGE 2 ============ -->
-<div class="page cream">
-  <h2>What you get</h2>
-  <p class="intro">Sign in once per account. Cooldown keeps the numbers fresh in the app, a notification and your home screen.</p>
+<div class="page">
+  <div class="stripe"><i></i><i></i><i></i></div>
+  <div class="pad p2top">
+    <div class="sec"><h2>See it without opening the app</h2><div class="rule"></div></div>
 
-  <div class="grid">
-    <div class="feat">
-      <h3><i></i>The Summary</h3>
-      <p>One page lists every account you track. The account with the most room to spare comes first, so you know which one to use next.</p>
+    <div class="p2grid">
+      <div class="widgets">
+        <img class="shot" src="brochure/widgets.jpg" alt="" style="border-radius:4mm">
+        <div class="cap">An Android home screen</div>
+      </div>
+      <div class="stack">
+        <div>
+          <span class="chip re">Redrawn in 2.0</span>
+          <h3>Widgets for your home screen</h3>
+          <p class="body">On Android, a widget shows one account or all of them, as a ring, a number, a countdown or a row of rings. It fills the size you give it.</p>
+          <div class="plat">Android shown. iPhone and iPad have their own home-screen and lock-screen widgets.</div>
+        </div>
+        <div>
+          <span class="chip re">Redrawn in 2.0</span>
+          <h3>Two accounts in one notification</h3>
+          <p class="body">The always-on notification can show two accounts at once. Each has its own weekly bar and big figure. Expand it to see time ahead or behind, both reset times and a Refresh button.</p>
+          <div class="plat">Android only.</div>
+          <div class="notifs" style="margin-top:3mm">
+            <img class="shot" src="brochure/notif-collapsed.jpg" alt="">
+            <img class="shot" src="brochure/notif-expanded.jpg" alt="">
+            <div class="cap">Collapsed, then expanded</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="feat">
-      <h3><i></i>Time ahead or behind</h3>
-      <p>Cooldown turns your weekly use into time against an even pace: <span class="behind">1d 12h behind</span> means you have room, <span class="ahead">14h 48m ahead</span> means slow down. A percentage alone cannot tell you that.</p>
-    </div>
-    <div class="feat">
-      <h3><i></i>The Pace map</h3>
-      <p>A chart places each account against an even pace through its week. Tap a dot to open that account.</p>
-    </div>
-    <div class="feat">
-      <h3><i></i>Ring and bar</h3>
-      <p>The ring is the 5-hour limit, where the plan has one. The bar is the week, with a tick that marks an even pace.</p>
-    </div>
-    <div class="feat">
-      <h3><i></i>Two accounts at once</h3>
-      <p>On Android, an always-on notification shows two accounts side by side. The status bar shows the 5-hour ring, or the week on a plan without one.</p>
-    </div>
-    <div class="feat">
-      <h3><i></i>Widgets</h3>
-      <p>Rings, bars and reset times sit on your home screen. Pick one account or several, in sizes from small to wide.</p>
+
+    <div class="rowpace">
+      <div>
+        <img class="shot fade" src="brochure/pacemap.jpg" alt="">
+      </div>
+      <div>
+        <span class="chip">New in 2.0</span>
+        <h3>The Pace map</h3>
+        <p class="body">The Pace map plots each account as a dot against its own week. Switch on figures, trails or a projection to see more.</p>
+        <div class="cap">It sits under the Summary.</div>
+      </div>
     </div>
   </div>
-
-  <div class="wide">
-    <img src="shots/v20-fold-inner-account.png" alt="">
-    <div class="txt">
-      <h3>Room to spread out</h3>
-      <p>On a foldable or a tablet, an account's limits and their charts sit side by side. Light and dark themes follow your phone.</p>
-      <h3>What it reads</h3>
-      <p>Cooldown only reads. It sends no prompts and uses no quota. It has no server. Your sign-ins stay on your device, encrypted, and go only to the service they belong to.</p>
-      <h3>What it needs</h3>
-      <p>Android 12 or later, or iOS and iPadOS 18 or later. A Claude, ChatGPT or Gemini subscription.</p>
-    </div>
+  <div class="trust">
+    <b>What it reads</b>
+    <p>Cooldown only reads. It sends no prompts and uses no quota. It has no server. Your sign-ins stay on your device, encrypted, and go only to the service they belong to.</p>
   </div>
+  <div class="pno">2 / 3</div>
+</div>
 
-  <div class="get">
-    <div class="qr"><img src="repo-qr.svg" alt=""></div>
-    <div>
-      <h3>Get the beta</h3>
-      <p>Scan the code or go to github.com/robineam360/Cooldown. Android: download the APK from Releases. iPhone and iPad: join the TestFlight beta, listed as EAM360 Cooldown.</p>
-      <p>We plan to release on Google Play and the App Store once Anthropic, OpenAI and Google have each reviewed and approved how Cooldown reads plan usage from their services.</p>
-      <p class="risk">No provider has approved this way of reading usage yet. A provider can change or close it at any time, or act on an account that uses it. Read "Before you install" on the GitHub page first.</p>
+<!-- ============ PAGE 3 ============ -->
+<div class="page p3">
+  <div class="stripe"><i></i><i></i><i></i></div>
+  <div class="pad p2top">
+    <div class="sec"><h2>Tags, themes and bigger screens</h2><div class="rule"></div></div>
+    <div class="polish">
+      <div>
+        <img class="shot" src="brochure/fold.jpg" alt="">
+        <div class="cap">A foldable's inner screen</div>
+      </div>
+      <div class="mini">
+        <div><b>Personal and Work tags <span class="chip">New</span></b><span>Tag each account Personal or Work. Then filter the Summary by either tag.</span></div>
+        <div><b>Share the Summary <span class="chip">New</span></b><span>Share the Summary as one image. It shows account names and never email addresses.</span></div>
+        <div><b>Light and dark</b><span>Pick a light or dark theme, or let Cooldown follow your phone.</span></div>
+        <div><b>Foldables and iPad</b><span>Foldables and iPad get layouts that use the wider screen.</span></div>
+        <div><b>Compact layout</b><span>Compact folds each card to a title, a bar and one line.</span></div>
+      </div>
     </div>
+
+    <div class="readers">
+      <div class="box">
+        <h3>New to Cooldown?</h3>
+        <p class="body">Install the app, then sign in to each account on that service's own page. Setup takes about two minutes.</p>
+        <p class="body">To look around first, tap Try with sample data. It shows three made-up accounts and sends nothing.</p>
+      </div>
+      <div class="box">
+        <h3>Already on 1.x?</h3>
+        <p class="body">Version 2.0 adds:</p>
+        <ul>
+          <li>Cooldown for iPhone and iPad</li>
+          <li>Gemini accounts</li>
+          <li>The Summary and the Pace map</li>
+          <li>Time ahead or behind on every weekly limit</li>
+          <li>Personal and Work tags</li>
+          <li>A redrawn notification and widgets</li>
+        </ul>
+        <p class="body">The week now leads every card. You can put the 5-hour limit first again for any account. To update, download the 2.0 APK from GitHub Releases.</p>
+      </div>
+    </div>
+
+    <div class="get">
+      <h2>Get Cooldown 2.0</h2>
+      <p class="intro">Cooldown is in beta. It is free and open source.</p>
+      <div class="cols">
+        <div class="col">
+          <div class="qr"><img src="brochure/qr-github.svg" alt=""></div>
+          <div>
+            <h4><img class="and" src="brochure/android-robot.svg" alt="">Android</h4>
+            <p>Scan the code or go to</p><p class="url">github.com/robineam360/Cooldown</p><p>Download the APK from Releases. Needs Android 12 or later.</p>
+          </div>
+        </div>
+        <div class="col">
+          <div class="qr"><img src="brochure/qr-testflight.svg" alt=""></div>
+          <div>
+            <h4><img class="dv" src="brochure/device-iphone.svg" alt=""><img class="dv" src="brochure/device-ipad.svg" alt="">iPhone and iPad</h4>
+            <p>Scan the code or open</p><p class="url">testflight.apple.com/join/TncpZQFM</p><p>The beta is listed as EAM360 Cooldown.</p>
+            <p>Build 2.0 (3), available until 17 Feb 2027. Needs iOS or iPadOS 18 or later.</p>
+          </div>
+        </div>
+      </div>
+      <div class="store">You also need a Claude, ChatGPT or Gemini subscription. We plan to release on Google Play and the App Store once Anthropic, OpenAI and Google have each reviewed and approved how Cooldown reads plan usage from their services.</div>
+    </div>
+
   </div>
 
   <div class="foot">
-    Cooldown is made by Robin Richard Rajan at EAM360. Free and open source. Unofficial integration. Not affiliated with Anthropic, OpenAI or Google. Claude, ChatGPT and Gemini are trademarks of their owners. Version 2.0, November 2026.
+    <img src="brochure/app-icon.png" alt="">
+    <div>Cooldown is made by Robin Richard Rajan at EAM360. Free and open source. Unofficial integration. Not affiliated with Anthropic, OpenAI or Google. Claude, ChatGPT and Gemini are trademarks of their owners. iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries. Android is a trademark of Google LLC. The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License. Version 2.0, November 2026.</div>
   </div>
 </div>
 

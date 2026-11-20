@@ -19,7 +19,11 @@
   .brand .name { font-size:40px; font-weight:700; letter-spacing:-.01em; }
   h1 { font-size:50px; line-height:1.1; font-weight:700; letter-spacing:-.02em; color:#F5F2EA; }
   .sub { font-size:21px; line-height:1.5; color:#BDB6A9; margin-top:22px; font-weight:500; }
-  .note { font-size:15px; color:#8E8678; margin-top:30px; font-weight:500; }
+  .plats { display:flex; gap:12px; margin-top:24px; }
+  .plat { display:flex; align-items:center; gap:10px; background:#2A2623; border:1px solid #3A3531; border-radius:30px; padding:9px 18px 9px 14px; font-size:18px; font-weight:600; color:#E9E4DA; }
+  .plat img { height:24px; display:block; }
+  .plat img.and { height:20px; }
+  .note { font-size:15px; color:#8E8678; margin-top:24px; font-weight:500; }
 
   .rows { width:700px; display:flex; flex-direction:column; gap:18px; }
   .row { display:flex; align-items:center; gap:26px; background:#2A2623; border:1px solid #3A3531;
@@ -44,7 +48,12 @@
   <div class="left">
     <div class="brand"><img src="app-icon-512.png" alt=""><div class="name">Cooldown</div></div>
     <h1>Your Claude, ChatGPT and Gemini limits in one place.</h1>
-    <div class="sub">Weekly and 5-hour limits, reset times and pace.<br>Android, iPhone and iPad. Free and open source.</div>
+    <div class="sub">Weekly and 5-hour limits, reset times and pace.<br>Free and open source.</div>
+    <div class="plats">
+      <div class="plat"><img class="and" src="brochure/android-robot.svg" alt="">Android</div>
+      <div class="plat"><img src="brochure/device-iphone.svg" alt="">iPhone</div>
+      <div class="plat"><img src="brochure/device-ipad.svg" alt="">iPad</div>
+    </div>
     <div class="note">Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</div>
   </div>
 
