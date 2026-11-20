@@ -80,18 +80,29 @@
   .band img{ width:180mm; border:1px solid var(--hair); border-radius:var(--r); display:block; }
   .items{ display:grid; grid-template-columns:1fr 1fr; gap:4mm 8mm; }
   .items h3{ margin:0 0 1mm; font-size:12pt; }
+
+  /* 2026-11-20: cover opens with the README banner; install pair with QR codes and platform marks */
+  .cover .hero{ display:block; width:210mm; margin:-18mm -15mm 0; }
+  .cover .gtitle{ font-size:26pt; font-weight:700; letter-spacing:-.015em; color:#F5F2EA; margin-top:9mm; }
+  .cover .shots{ top:122mm; }
+  .get2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:5mm; width:180mm; }
+  .get2 .g{ display:flex; gap:4mm; align-items:flex-start; border:1px solid var(--hair); border-radius:var(--r); padding:3.6mm 4.2mm; background:#fff; }
+  .get2 .qr{ width:23mm; height:23mm; flex:none; }
+  .get2 .g > div{ min-width:0; }
+  .get2 h4{ font-size:11.5pt; font-weight:700; display:flex; align-items:center; gap:2mm; margin-bottom:1mm; }
+  .get2 h4 img{ height:4.4mm; }
+  .get2 p{ font-size:9pt; line-height:1.4; margin:0 0 1mm; }
+  .get2 code{ font-size:7.2pt; white-space:nowrap; }
+  .dk{ filter:invert(1) brightness(.15); }
 </style>
 </head>
 <body>
 
 <!-- PAGE 1 COVER -->
 <div class="page cover">
-  <div class="iconrow">
-    <img src="app-icon-512.png" alt="">
-    <h1>Cooldown</h1>
-  </div>
-  <p class="lead" style="font-size:15pt;">Know where your week stands. Cooldown shows the weekly and 5-hour limits of your own Claude, ChatGPT and Gemini plans in one place.</p>
-  <p class="small" style="font-size:10.5pt;">Listed as EAM360 Cooldown on TestFlight.<br>Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</p>
+  <img class="hero" src="hero.png" alt="">
+  <div class="gtitle">User guide</div>
+  <p class="small" style="font-size:10.5pt;">Version 2.0 beta. Listed as EAM360 Cooldown on TestFlight.<br>Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</p>
   <div class="shots row3">
     <figure><img src="shots/v20-summary.jpg" width="212" alt=""><figcaption>The Summary, all accounts on one page</figcaption></figure>
     <figure><img src="shots/v20-notif-duet-expanded.jpg" width="212" alt=""><figcaption>One notification, two accounts</figcaption></figure>
@@ -104,14 +115,14 @@
 <div class="page">
   <h2>What Cooldown does</h2>
   <p>Cooldown shows how much of your Claude, ChatGPT and Gemini plan limits you have used, and when they reset. It reads your own accounts and puts the weekly and 5-hour limits on one screen. It runs on Android, iPhone and iPad, and it is free and open source.</p>
-  <div class="band" style="margin:5mm 0 6mm;"><img src="feature-graphic.png" alt=""></div>
+  <div class="get2" style="margin:5mm 0 6mm;">
+    <div class="g"><img class="qr" src="brochure/qr-github.svg" alt=""><div><h4><img src="brochure/android-robot.svg" alt="">Android</h4><p>The APK on GitHub Releases.</p><p><code>github.com/robineam360/Cooldown</code></p><p>Android 12 or later.</p></div></div>
+    <div class="g"><img class="qr" src="brochure/qr-testflight.svg" alt=""><div><h4><img class="dk" src="brochure/device-iphone.svg" alt=""><img class="dk" src="brochure/device-ipad.svg" alt="">iPhone and iPad</h4><p>TestFlight, listed as EAM360 Cooldown.</p><p><code>testflight.apple.com/join/TncpZQFM</code></p><p>Build 2.0 (3), until 17 Feb 2027. iOS or iPadOS 18 or later.</p></div></div>
+  </div>
   <div class="two" style="grid-template-columns:1fr 1fr; gap:8mm;">
     <div>
       <h3>Get it</h3>
       <p>Cooldown is in beta. Get the Android build from GitHub Releases and the iPhone and iPad build from TestFlight. We plan to release on Google Play and the App Store once Anthropic, OpenAI and Google have each reviewed and approved how Cooldown reads plan usage from their services.</p>
-      <p>Android: the APK on GitHub Releases, <code>github.com/robineam360/Cooldown/releases</code>.</p>
-      <p>iPhone and iPad: <code>testflight.apple.com/join/TncpZQFM</code>. Build 2.0 (3), available until 17 Feb 2027.</p>
-      <p>Listed as EAM360 Cooldown on TestFlight.</p>
     </div>
     <div>
       <h3>In this guide</h3>
@@ -363,16 +374,14 @@
   <p>Unofficial integration. Not affiliated with Anthropic, OpenAI or Google.</p>
   <p>Beta. Store releases follow once each provider has reviewed and approved it. Listed as EAM360 Cooldown on TestFlight.</p>
   <p>Claude and Anthropic are trademarks of Anthropic. ChatGPT and OpenAI are trademarks of OpenAI. Gemini and Google are trademarks of Google. Cooldown uses the names only to say which service an account belongs to.</p>
+  <p>iPhone and iPad are trademarks of Apple Inc., registered in the U.S. and other countries. Android is a trademark of Google LLC. The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License.</p>
   <h3>More detail</h3>
   <p>The README on GitHub explains how each sign-in works and how to build from source. The privacy policy at <code>docs/privacy.md</code> lists every host the app talks to and everything it stores.</p>
   <h3>Credits</h3>
   <p>Made by Robin Richard Rajan, EAM360. Free and open source under the MIT License. Questions and feedback: open an issue on GitHub.</p>
-  <div style="display:flex; align-items:center; gap:8mm; margin-top:8mm;">
-    <img src="repo-qr.svg" alt="" style="width:42mm; height:42mm; border:1px solid var(--hair); border-radius:var(--r);">
-    <div>
-      <p><b>github.com/robineam360/Cooldown</b></p>
-      <p class="muted">Scan to open the repository.</p>
-    </div>
+<div class="get2" style="margin-top:6mm;">
+    <div class="g"><img class="qr" src="brochure/qr-github.svg" alt=""><div><h4><img src="brochure/android-robot.svg" alt="">Android</h4><p>The APK on GitHub Releases.</p><p><code>github.com/robineam360/Cooldown</code></p><p>Android 12 or later.</p></div></div>
+    <div class="g"><img class="qr" src="brochure/qr-testflight.svg" alt=""><div><h4><img class="dk" src="brochure/device-iphone.svg" alt=""><img class="dk" src="brochure/device-ipad.svg" alt="">iPhone and iPad</h4><p>TestFlight, listed as EAM360 Cooldown.</p><p><code>testflight.apple.com/join/TncpZQFM</code></p><p>Build 2.0 (3), until 17 Feb 2027. iOS or iPadOS 18 or later.</p></div></div>
   </div>
   <div class="foot"><span>Cooldown · User guide · Version 2.0 beta</span><span>12</span></div>
 </div>

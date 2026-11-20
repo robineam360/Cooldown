@@ -842,11 +842,11 @@ Sessions 1 and 3 can run in parallel; 2 depends on 1; 4 depends on 1–3.
   session transcripts *and* the `memory/` folder; it was renamed to match, or a session opened
   at the new path would have come up with no memory and no resumable history. The Mac repo's
   folder `~/Projects/CCooldownMac` is deliberately untouched — a different repo's business.
-- **Open follow-up: the brochure QR.** `release/docs/src/repo-qr.svg` encodes the **old** repo
-  URL. It still resolves, through the same redirect the update check relies on, so the
-  brochure is not wrong — but it should be regenerated to point at `Cooldown` directly.
-  No QR generator is installed on the build Mac (`qrencode`, `python3-qrcode` and `segno` are
-  all absent), so this was deliberately left rather than installing a tool during a release.
+- **Closed follow-up: the brochure QR (2026-11-20).** `release/docs/src/repo-qr.svg` encoded the
+  **old** repo URL. The v2.0 brochure rebuild replaced it with `release/docs/src/brochure/qr-github.svg`
+  (`github.com/robineam360/Cooldown/releases/latest`) and `qr-testflight.svg`. Both are made with
+  `python3-qrcode` in a scratch venv and decoded from the rendered PDF. The brochure and the guide
+  both use them, and `repo-qr.svg` is deleted.
 - **Tests:** `UpdateGateTest`'s sample URL follows the rename (it asserts parsing, not the
   host, but a stale name in a fixture is the kind of thing that gets copied forward).
 
