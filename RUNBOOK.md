@@ -1684,6 +1684,12 @@ rollout) and replaced by a new versionCode on both channels.
   - **2026-11-19 — Robin's decision:** keep the provider logos. v2.0 ships **only on TestFlight and as the GitHub
     APK**. Play and the App Store wait until **all three** providers consent. Play release 26 stays saved and
     unsubmitted.
+  - **2026-11-20: docs and beta announcement.**
+    - The v2.0 docs rework is on `main`: 0edd97e (PR 63) has the README, the guide and the About text; 0c40c4e
+      (PR 64) has the 3-page brochure, the banner's platform badges and the guide's cover.
+    - Robin posted the EAM360 Slack beta announcement in two channels, with the brochure and the banner attached.
+      It covers both installs (the GitHub APK and TestFlight 2.0 (3)) and asks for feedback before the store release.
+    - **Still waiting on:** replies from Anthropic, OpenAI and Google. The store hold stands.
 
 ---
 

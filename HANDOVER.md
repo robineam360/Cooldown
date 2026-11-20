@@ -4,7 +4,31 @@ The prompt for the next session lives here. Each session that ends with a next s
 the "Next session" block below (RUNBOOK.md Conventions §5). Statuses stay in ROADMAP.md and
 BUGS.md; the ordered plan stays in RUNBOOK.md.
 
-## ▶ Next session — RUNBOOK Step 7 (publish GitHub v2.0), once Step 6 is approved (written 2026-11-17, after Step 5)
+## ▶ Next session — after v2.0: beta feedback, provider replies (written 2026-11-20)
+
+v2.0 is out as a beta:
+- GitHub APK v2.0 (versionCode 27, commit 37bc83f).
+- TestFlight 2.0 (3), until 17 Feb 2027.
+
+The v2.0 docs are on `main`: 0edd97e and 0c40c4e (the 3-page brochure). Robin announced the beta on EAM360 Slack
+on 2026-11-20. **Play and the App Store wait** until Anthropic, OpenAI and Google all consent (RUNBOOK Step 8 Log).
+Play release 26 stays saved and unsubmitted. The next Android build is **28** on every channel, and iOS 2.0 (4) or
+later.
+
+Robin opens a new session when one of these comes in:
+- **A beta bug or feature request:** file it in BUGS.md or ROADMAP.md. A visible change needs a wireframe first
+  (CLAUDE.md §2).
+- **A provider reply:** log it in RUNBOOK Step 8. Anthropic's auto-reply says the Claude logo needs prior written
+  approval. Store submission resumes only when all three have consented.
+
+Open and not urgent:
+- CCBG-108 (Wedge Word Bounds), Low.
+- Gemini is not yet checked on a live account (CCBG-107 (Gemini Bucket Prefix)).
+- Guide page 4 ("Before you install") still says a provider can "sign Cooldown out, or act on an account that uses
+  it". The README's matching section has not been checked against it.
+- Each new TestFlight build moves the expiry date in the README and the repo About text.
+
+## ▶ (superseded by the block above) — RUNBOOK Step 7 (publish GitHub v2.0), once Step 6 is approved (written 2026-11-17, after Step 5)
 
 Step 5 closed: the Play screenshots, the FGS video and the feature graphic are in `release/play/` (RUNBOOK Step 5
 Log); the guide's pages 5, 7, 9 and 10 show v2.0. Step 6 (TestFlight upload and Beta App Review) is Robin's at the
